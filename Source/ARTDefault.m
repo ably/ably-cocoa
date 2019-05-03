@@ -8,14 +8,16 @@
 
 #import "ARTDefault+Private.h"
 
+#import "Ably.h"
+
 @implementation ARTDefault
 
 NSString *const ARTDefault_restHost = @"rest.ably.io";
 NSString *const ARTDefault_realtimeHost = @"realtime.ably.io";
 NSString *const ARTDefault_version = @"1.1";
-NSString *const ARTDefault_libraryVersion = @"1.1.1";
 NSString *const ARTDefault_ablyBundleId = @"io.ably.Ably";
 NSString *const ARTDefault_bundleVersionKey = @"CFBundleShortVersionString";
+NSString *const ARTDefault_bundleBuildNumberKey = @"CFBundleVersion";
 NSString *const ARTDefault_platform = @"ios-";
 
 static NSTimeInterval _realtimeRequestTimeout = 10.0;
@@ -81,7 +83,17 @@ static NSInteger _maxMessageSize = 65536;
 }
 
 + (NSString *)libraryVersion {
-    return [NSString stringWithFormat:@"%@%@", ARTDefault_platform, ARTDefault_libraryVersion];
+    return [NSString stringWithFormat:@"%@%@", ARTDefault_platform, [self bundleVersion]];
+}
+
++ (NSString *)bundleVersion {
+    NSDictionary *infoDictionary = [[NSBundle bundleForClass: [ARTDefault class]] infoDictionary];
+    return infoDictionary[ARTDefault_bundleVersionKey];
+}
+
++ (NSString *)bundleBuildNumber {
+    NSDictionary *infoDictionary = [[NSBundle bundleForClass: [ARTDefault class]] infoDictionary];
+    return infoDictionary[ARTDefault_bundleBuildNumberKey];
 }
 
 @end

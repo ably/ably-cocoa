@@ -8,7 +8,7 @@
 
 #import "ARTAuth+Private.h"
 
-#ifdef TARGET_OS_IPHONE
+#if TARGET_OS_IPHONE
 #import <UIKit/UIKit.h>
 #endif
 
@@ -52,10 +52,15 @@ ART_TRY_OR_REPORT_CRASH_START(rest) {
                                                      name:NSCurrentLocaleDidChangeNotification
                                                    object:nil];
 
-        #ifdef TARGET_OS_IPHONE
+        #if TARGET_OS_IPHONE
         [[NSNotificationCenter defaultCenter] addObserver:self
                                                  selector:@selector(didReceiveApplicationSignificantTimeChangeNotification:)
                                                      name:UIApplicationSignificantTimeChangeNotification
+                                                   object:nil];
+        #else
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(didReceiveApplicationSignificantTimeChangeNotification:)
+                                                     name:NSSystemClockDidChangeNotification
                                                    object:nil];
         #endif
     }
@@ -69,8 +74,10 @@ ART_TRY_OR_REPORT_CRASH_START(rest) {
 
 - (void)removeTimeOffsetObserver {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:NSCurrentLocaleDidChangeNotification object:nil];
-    #ifdef TARGET_OS_IPHONE
+    #if TARGET_OS_IPHONE
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationSignificantTimeChangeNotification object:nil];
+    #else
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:NSSystemClockDidChangeNotification object:nil];
     #endif
 }
 
@@ -168,12 +175,14 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 - (NSURL *)buildURL:(ARTAuthOptions *)options withParams:(ARTTokenParams *)params {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSURLComponents *urlComponents = [NSURLComponents componentsWithURL:options.authUrl resolvingAgainstBaseURL:YES];
-    
+
     if ([options isMethodGET]) {
         // TokenParams take precedence over any configured authParams when a name conflict occurs
         NSArray *unitedParams = [params toArrayWithUnion:options.authParams];
         // When GET, use query string params
-        if (!urlComponents.queryItems) urlComponents.queryItems = @[];
+        if (!urlComponents.queryItems) {
+            urlComponents.queryItems = @[];
+        }
         urlComponents.queryItems = [urlComponents.queryItems arrayByAddingObjectsFromArray:unitedParams];
     }
 
@@ -185,11 +194,10 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 
 - (NSMutableURLRequest *)buildRequest:(ARTAuthOptions *)options withParams:(ARTTokenParams *)params {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
-    if (!params.timestamp) params.timestamp = [self currentDate];
     NSURL *url = [self buildURL:options withParams:params];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     request.HTTPMethod = options.authMethod;
-    
+
     // HTTP Header Fields
     if ([options isMethodPOST]) {
         // TokenParams take precedence over any configured authParams when a name conflict occurs
@@ -203,11 +211,11 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     else {
         [request setValue:[_rest.defaultEncoder mimeType] forHTTPHeaderField:@"Accept"];
     }
-    
+
     for (NSString *key in options.authHeaders) {
         [request setValue:options.authHeaders[key] forHTTPHeaderField:key];
     }
-    
+
     return request;
 } ART_TRY_OR_REPORT_CRASH_END
 }
@@ -230,7 +238,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         if (self.tokenDetails.expires == nil) {
             return YES;
         }
-        else if ([self.tokenDetails.expires timeIntervalSinceDate:[self currentDate]] > 0) {
+        else if (![self hasTimeOffset] || [self.tokenDetails.expires timeIntervalSinceDate:[self currentDate]] > 0) {
             return YES;
         }
     }
@@ -561,23 +569,26 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     ARTTokenParams *currentTokenParams = tokenParams ? : [_tokenParams copy]; // copy since _tokenParams should be read-only
     currentTokenParams.timestamp = [self currentDate];
 
-    // Validate: Capability JSON text
-    NSError *errorCapability = nil;
-    [NSJSONSerialization JSONObjectWithData:[currentTokenParams.capability dataUsingEncoding:NSUTF8StringEncoding] options:0 error:&errorCapability];
+    if (currentTokenParams.capability) {
+        // Validate: Capability JSON text
+        NSError *errorCapability = nil;
+        
+        [NSJSONSerialization JSONObjectWithData:[currentTokenParams.capability dataUsingEncoding:NSUTF8StringEncoding] options:0 error:&errorCapability];
 
-    if (errorCapability) {
-        NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : [NSString stringWithFormat:@"Capability: %@", errorCapability.localizedDescription] };
-        callback(nil, [NSError errorWithDomain:ARTAblyErrorDomain code:errorCapability.code userInfo:userInfo]);
-        return;
+        if (errorCapability) {
+            NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : [NSString stringWithFormat:@"Capability: %@", errorCapability.localizedDescription] };
+            callback(nil, [NSError errorWithDomain:ARTAblyErrorDomain code:errorCapability.code userInfo:userInfo]);
+            return;
+        }
     }
-    
+
     if (replacedOptions.key == nil) {
         NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : @"no key provided for signing token requests" };
         callback(nil, [NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:userInfo]);
         return;
     }
 
-    if (_timeOffset && !replacedOptions.queryTime) {
+    if ([self hasTimeOffsetWithValue] && !replacedOptions.queryTime) {
         currentTokenParams.timestamp = [self currentDate];
         callback([currentTokenParams sign:replacedOptions.key], nil);
     }
@@ -588,7 +599,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
                     callback(nil, error);
                 } else {
                     NSDate *serverTime = [self handleServerTime:time];
-                    self->_timeOffset = [serverTime timeIntervalSinceNow];
+                    self->_timeOffset = @([serverTime timeIntervalSinceNow]);
                     currentTokenParams.timestamp = serverTime;
                     callback([currentTokenParams sign:replacedOptions.key], nil);
                 }
@@ -635,10 +646,18 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     }
 }
 
-- (NSDate*)currentDate {
+- (NSDate *)currentDate {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
-    return [[NSDate date] dateByAddingTimeInterval:_timeOffset];
+    return [[NSDate date] dateByAddingTimeInterval:_timeOffset.doubleValue];
 } ART_TRY_OR_REPORT_CRASH_END
+}
+
+- (BOOL)hasTimeOffset {
+    return _timeOffset != nil;
+}
+
+- (BOOL)hasTimeOffsetWithValue {
+    return _timeOffset != nil && _timeOffset.doubleValue > 0;
 }
 
 - (void)discardTimeOffset {
@@ -656,7 +675,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 // Called from NSNotificationCenter, so must put change in the queue.
 dispatch_sync(_queue, ^{
 ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
-        self->_timeOffset = 0;
+    [self clearTimeOffset];
 } ART_TRY_OR_REPORT_CRASH_END
 });
 }
@@ -669,7 +688,13 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 
 - (void)setTimeOffset:(NSTimeInterval)offset {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
-    _timeOffset = offset;
+    _timeOffset = @(offset);
+} ART_TRY_OR_REPORT_CRASH_END
+}
+
+- (void)clearTimeOffset; {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
+    _timeOffset = nil;
 } ART_TRY_OR_REPORT_CRASH_END
 }
 

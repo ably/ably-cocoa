@@ -7,6 +7,7 @@
 //
 
 import Ably
+import Ably.Private
 import Nimble
 import Quick
 import Aspects
@@ -332,7 +333,102 @@ class Auth : QuickSpec {
                         realtime.connect()
                     }
                 }
-                
+
+                // RSA4b1
+                context("local token validity check") {
+                    it("should be done if queryTime is true and local time is in sync with server") {
+                        let options = AblyTests.commonAppSetup()
+                        let testKey = options.key!
+
+                        let tokenDetails = getTestTokenDetails(key: testKey, ttl: 5.0, queryTime: true)
+
+                        options.queryTime = true
+                        options.tokenDetails = tokenDetails
+                        options.key = nil
+
+                        let rest = ARTRest(options: options)
+                        let proxyHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+
+                        // Sync server time offset
+                        let authOptions = ARTAuthOptions(key: testKey)
+                        authOptions.queryTime = true
+                        waitUntil(timeout: testTimeout) { done in
+                            rest.auth.createTokenRequest(nil, options: authOptions, callback: { tokenRequest, error in
+                                expect(error).to(beNil())
+                                expect(tokenRequest).toNot(beNil())
+                                done()
+                            })
+                        }
+
+                        // Let the token expire
+                        waitUntil(timeout: testTimeout) { done in
+                            delay(5.0) {
+                                done()
+                            }
+                        }
+
+                        expect(rest.auth.timeOffset).toNot(beNil())
+
+                        rest.httpExecutor = proxyHTTPExecutor
+                        waitUntil(timeout: testTimeout) { done in
+                            rest.channels.get("foo").history { _, error in
+                                guard let error = error else {
+                                    fail("Error is nil"); done(); return
+                                }
+                                expect((error ).code).to(equal(Int(ARTState.requestTokenFailed.rawValue)))
+                                expect(error.message).to(contain("no means to renew the token is provided"))
+
+                                expect(proxyHTTPExecutor.requests.count).to(equal(0))
+                                done()
+                            }
+                        }
+
+                        expect(rest.auth.tokenDetails).to(beNil())
+                    }
+
+                    it("should NOT be done if queryTime is false and local time is NOT in sync with server") {
+                        let options = AblyTests.commonAppSetup()
+                        let testKey = options.key!
+
+                        let tokenDetails = getTestTokenDetails(key: testKey, ttl: 5.0, queryTime: true)
+
+                        options.queryTime = false
+                        options.tokenDetails = tokenDetails
+                        options.key = nil
+
+                        let rest = ARTRest(options: options)
+                        let proxyHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+                        rest.httpExecutor = proxyHTTPExecutor
+
+                        // No server time offset
+                        rest.auth.clearTimeOffset()
+
+                        // Let the token expire
+                        waitUntil(timeout: testTimeout) { done in
+                            delay(5.0) {
+                                done()
+                            }
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            rest.channels.get("foo").history { _, error in
+                                guard let error = error else {
+                                    fail("Error is nil"); done(); return
+                                }
+                                expect((error ).code).to(equal(Int(ARTState.requestTokenFailed.rawValue)))
+                                expect(error.message).to(contain("no means to renew the token is provided"))
+                                expect(proxyHTTPExecutor.requests.count).to(equal(1))
+                                expect(proxyHTTPExecutor.responses.count).to(equal(1))
+                                guard let response = proxyHTTPExecutor.responses.first else {
+                                    fail("Response is nil"); done(); return
+                                }
+                                expect(response.allHeaderFields["X-Ably-Errorcode"] as? String).to(equal("40142"))
+                                done()
+                            }
+                        }
+                    }
+                }
+
                 // RSA4d
                 it("if a request by a realtime client to an authUrl results in an HTTP 403 the client library should transition to the FAILED state") {
                     let options = AblyTests.clientOptions()
@@ -881,25 +977,91 @@ class Auth : QuickSpec {
                 let tokenParams = ARTTokenParams()
                 expect(tokenParams.ttl).to(beNil())
             }
+
+            it("should URL query be correctly encoded") {
+                let tokenParams = ARTTokenParams()
+                tokenParams.capability = "{\"*\":[\"*\"]}"
+
+                if #available(iOS 10.0, *) {
+                    let dateFormatter = ISO8601DateFormatter()
+                    tokenParams.timestamp = dateFormatter.date(from: "2016-10-08T22:31:00Z")
+                }
+                else {
+                    let dateFormatter = DateFormatter()
+                    dateFormatter.dateFormat = "yyyy/MM/dd HH:mm zzz"
+                    tokenParams.timestamp = dateFormatter.date(from: "2016/10/08 22:31 GMT")
+                }
+
+                let options = ARTClientOptions()
+                options.authUrl = URL(string: "https://ably-test-suite.io")
+                let rest = ARTRest(options: options)
+                let request = rest.auth.buildRequest(options, with: tokenParams)
+
+                if let query = request.url?.query {
+                    expect(query).to(haveParam("capability", withValue: "%7B%22*%22:%5B%22*%22%5D%7D"))
+                    expect(query).to(haveParam("timestamp", withValue: "1475965860000"))
+                }
+                else {
+                    fail("URL is empty")
+                }
+            }
             
             // RSA6
-            it("should allow all operations when capability is not specified") {
+            it("should omit capability field if it is not specified") {
                 let tokenParams = ARTTokenParams()
-                expect(tokenParams.capability) == "{\"*\":[\"*\"]}"
+                expect(tokenParams.capability).to(beNil())
                 
                 let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
-                options.logLevel = .debug
                 let rest = ARTRest(options: options)
+                let testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+                rest.httpExecutor = testHTTPExecutor
 
                 waitUntil(timeout: testTimeout) { done in
                     // Token
                     rest.auth.requestToken(tokenParams, with: options) { tokenDetails, error in
                         if let e = error {
-                            XCTFail((e as! ARTErrorInfo).description)
+                            fail(e.localizedDescription); done(); return
+                        }
+                        expect(tokenParams.capability).to(beNil())
+                        expect(tokenDetails?.capability).to(equal("{\"*\":[\"*\"]}"))
+                        done()
+                    }
+                }
+
+                switch extractBodyAsMsgPack(testHTTPExecutor.requests.first) {
+                case .failure(let error):
+                    fail(error)
+                case .success(let httpBody):
+                    expect(httpBody.unbox["capability"]).to(beNil())
+                }
+            }
+
+            // RSA6
+            it("should add capability field if the user specifies it") {
+                let tokenParams = ARTTokenParams()
+                tokenParams.capability = "{\"*\":[\"*\"]}"
+
+                let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+                let rest = ARTRest(options: options)
+                let testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+                rest.httpExecutor = testHTTPExecutor
+
+                waitUntil(timeout: testTimeout) { done in
+                    // Token
+                    rest.auth.requestToken(tokenParams, with: options) { tokenDetails, error in
+                        if let e = error {
+                            fail(e.localizedDescription); done(); return
                         }
                         expect(tokenDetails?.capability).to(equal(tokenParams.capability))
                         done()
                     }
+                }
+
+                switch extractBodyAsMsgPack(testHTTPExecutor.requests.first) {
+                case .failure(let error):
+                    fail(error)
+                case .success(let httpBody):
+                    expect(httpBody.unbox["capability"] as? String).to(equal("{\"*\":[\"*\"]}"))
                 }
             }
             
@@ -1441,17 +1603,18 @@ class Auth : QuickSpec {
                         clientOptions.authMethod = "POST"
                         clientOptions.authHeaders = ["X-Header-1": "foo", "X-Header-2": "bar"]
                         let tokenParams = ARTTokenParams()
+                        tokenParams.ttl = 2000
+                        tokenParams.capability = "{\"cansubscribe:*\":[\"subscribe\"]}"
                         
                         let rest = ARTRest(options: clientOptions)
                         
                         let request = rest.auth.buildRequest(clientOptions, with: tokenParams)
                         
-                        let httpBodyJSON = try! JSONSerialization.jsonObject(with: request.httpBody ?? NSData() as Data, options: .mutableLeaves) as? NSDictionary
+                        let httpBodyJSON = try! JSONSerialization.jsonObject(with: request.httpBody ?? Data(), options: .mutableLeaves) as? NSDictionary
                         
                         expect(httpBodyJSON).toNot(beNil(), description: "HTTPBody is empty")
-                        expect(httpBodyJSON!["timestamp"]).toNot(beNil(), description: "HTTPBody has no timestamp")
-                        
-                        let expectedJSON = ["capability":"{\"*\":[\"*\"]}", "timestamp":httpBodyJSON!["timestamp"]!]
+
+                        let expectedJSON = ["capability": httpBodyJSON!["capability"]!, "ttl": httpBodyJSON!["ttl"]!]
                         
                         expect(httpBodyJSON) == expectedJSON as NSDictionary
 
@@ -1549,7 +1712,8 @@ class Auth : QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.requestToken(nil, with: nil, callback: { tokenDetails, error in
                             expect(tokenDetails?.clientId).to(equal(defaultTokenParams.clientId))
-                            expect(tokenDetails?.capability).to(equal(defaultTokenParams.capability))
+                            expect(defaultTokenParams.capability).to(beNil())
+                            expect(tokenDetails?.capability).to(equal("{\"*\":[\"*\"]}")) //Ably supplied capabilities of the underlying key
                             expect(tokenDetails?.issued).toNot(beNil())
                             expect(tokenDetails?.expires).toNot(beNil())
                             if let issued = tokenDetails?.issued, let expires = tokenDetails?.expires {
@@ -1789,6 +1953,7 @@ class Auth : QuickSpec {
 
                 let tokenParams = ARTTokenParams()
                 let defaultCapability = tokenParams.capability
+                expect(defaultCapability).to(beNil())
 
                 waitUntil(timeout: testTimeout) { done in
                     rest.auth.createTokenRequest(nil, options: nil) { tokenRequest, error in
@@ -1798,7 +1963,7 @@ class Auth : QuickSpec {
                         }
                         expect(tokenRequest.clientId).to(equal(options.clientId))
                         expect(tokenRequest.ttl).to(beNil())
-                        expect(tokenRequest.capability).to(equal(defaultCapability))
+                        expect(tokenRequest.capability).to(beNil())
                         done()
                     }
                 }
@@ -1811,8 +1976,8 @@ class Auth : QuickSpec {
                 authOptions.queryTime = true
                 authOptions.key = options.key
 
-                let mockServerDate = NSDate().addingTimeInterval(120)
-                rest.auth.testSuite_returnValue(for: NSSelectorFromString("handleServerTime:"), with: mockServerDate as Date)
+                let mockServerDate = Date().addingTimeInterval(120)
+                rest.auth.testSuite_returnValue(for: NSSelectorFromString("handleServerTime:"), with: mockServerDate)
 
                 var serverTimeRequestCount = 0
                 let hook = rest.testSuite_injectIntoMethod(after: #selector(rest._time(_:))) {
@@ -1981,7 +2146,7 @@ class Auth : QuickSpec {
                         }
                         expect(tokenRequest.clientId).to(beNil())
                         expect(tokenRequest.ttl).to(beNil())
-                        expect(tokenRequest.capability) == "{\"*\":[\"*\"]}"
+                        expect(tokenRequest.capability).to(beNil())
                         done()
                     }
                 }
@@ -2071,7 +2236,7 @@ class Auth : QuickSpec {
                             guard let tokenRequest = tokenRequest else {
                                 XCTFail("TokenRequest is nil"); return
                             }
-                            expect(tokenRequest.timestamp).to(beCloseTo(NSDate(), within: 1.0))
+                            expect(tokenRequest.timestamp).to(beCloseTo(Date(), within: 1.0))
                         })
                     }
                 }
@@ -2262,10 +2427,10 @@ class Auth : QuickSpec {
                 authOptions.queryTime = true
                 authOptions.key = AblyTests.commonAppSetup().key
 
-                var serverTime: NSDate?
+                var serverTime: Date?
                 waitUntil(timeout: testTimeout) { done in
                     rest.time({ date, error in
-                        serverTime = date as NSDate?
+                        serverTime = date
                         done()
                     })
                 }
@@ -3041,7 +3206,7 @@ class Auth : QuickSpec {
                 it("should supersede configured AuthOptions (using authCallback) even if arguments objects are empty") {
                     let rest = ARTRest(options: AblyTests.commonAppSetup())
 
-                    let testTokenDetails = ARTTokenDetails(token: "token", expires: NSDate() as Date, issued: NSDate() as Date, capability: nil, clientId: nil)
+                    let testTokenDetails = ARTTokenDetails(token: "token", expires: Date(), issued: Date(), capability: nil, clientId: nil)
                     var authCallbackHasBeenInvoked = false
                     let authOptions = ARTAuthOptions()
                     authOptions.authCallback = { tokenParams, completion in
@@ -3230,9 +3395,9 @@ class Auth : QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     let rest = ARTRest(options: options)
 
-                    let mockServerDate = NSDate().addingTimeInterval(120)
-                    rest.auth.testSuite_returnValue(for: NSSelectorFromString("handleServerTime:"), with: mockServerDate as Date)
-                    let currentDate = NSDate()
+                    let mockServerDate = Date().addingTimeInterval(120)
+                    rest.auth.testSuite_returnValue(for: NSSelectorFromString("handleServerTime:"), with: mockServerDate)
+                    let currentDate = Date()
 
                     var serverTimeRequestCount = 0
                     let hook = rest.testSuite_injectIntoMethod(after: #selector(rest._time(_:))) {
@@ -3250,8 +3415,12 @@ class Auth : QuickSpec {
                             guard let tokenDetails = tokenDetails else {
                                 fail("TokenDetails is nil"); done(); return
                             }
-                            expect(rest.auth.timeOffset).toNot(equal(0))
-                            let calculatedServerDate = currentDate.addingTimeInterval(rest.auth.timeOffset)
+                            guard let timeOffset = rest.auth.timeOffset?.doubleValue else {
+                                fail("Server Time Offset is nil"); done(); return
+                            }
+                            expect(timeOffset).toNot(equal(0))
+                            expect(rest.auth.timeOffset).toNot(beNil())
+                            let calculatedServerDate = currentDate.addingTimeInterval(timeOffset)
                             expect(calculatedServerDate).to(beCloseTo(mockServerDate, within: 0.5))
                             expect(serverTimeRequestCount) == 1
                             done()
@@ -3266,8 +3435,11 @@ class Auth : QuickSpec {
                             guard let tokenDetails = tokenDetails else {
                                 fail("TokenDetails is nil"); done(); return
                             }
-                            expect(rest.auth.timeOffset).toNot(equal(0))
-                            let calculatedServerDate = currentDate.addingTimeInterval(rest.auth.timeOffset)
+                            guard let timeOffset = rest.auth.timeOffset?.doubleValue else {
+                                fail("Server Time Offset is nil"); done(); return
+                            }
+                            expect(timeOffset).toNot(equal(0))
+                            let calculatedServerDate = currentDate.addingTimeInterval(timeOffset)
                             expect(calculatedServerDate).to(beCloseTo(mockServerDate, within: 0.5))
                             expect(serverTimeRequestCount) == 1
                             done()
@@ -3279,8 +3451,8 @@ class Auth : QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     let rest = ARTRest(options: options)
 
-                    let mockServerDate = NSDate().addingTimeInterval(120)
-                    rest.auth.testSuite_returnValue(for: NSSelectorFromString("handleServerTime:"), with: mockServerDate as Date)
+                    let mockServerDate = Date().addingTimeInterval(120)
+                    rest.auth.testSuite_returnValue(for: NSSelectorFromString("handleServerTime:"), with: mockServerDate)
 
                     var serverTimeRequestCount = 0
                     let hook = rest.testSuite_injectIntoMethod(after: #selector(rest._time(_:))) {
@@ -3298,8 +3470,11 @@ class Auth : QuickSpec {
                             guard let tokenRequest = tokenRequest else {
                                 fail("TokenRequest is nil"); done(); return
                             }
-                            expect(rest.auth.timeOffset).toNot(equal(0))
-                            expect(mockServerDate.timeIntervalSinceNow).to(beCloseTo(rest.auth.timeOffset, within: 0.1))
+                            guard let timeOffset = rest.auth.timeOffset?.doubleValue else {
+                                fail("Server Time Offset is nil"); done(); return
+                            }
+                            expect(timeOffset).toNot(equal(0))
+                            expect(mockServerDate.timeIntervalSinceNow).to(beCloseTo(timeOffset, within: 0.1))
                             expect(tokenRequest.timestamp).to(beCloseTo(mockServerDate))
                             expect(serverTimeRequestCount) == 1
                             done()
@@ -3324,16 +3499,22 @@ class Auth : QuickSpec {
                             guard let tokenDetails = tokenDetails else {
                                 fail("TokenDetails is nil"); done(); return
                             }
-                            expect(rest.auth.timeOffset).toNot(beCloseTo(0))
-                            let calculatedServerDate = NSDate().addingTimeInterval(rest.auth.timeOffset)
+                            guard let timeOffset = rest.auth.timeOffset?.doubleValue else {
+                                fail("Server Time Offset is nil"); done(); return
+                            }
+                            expect(timeOffset).toNot(beCloseTo(0))
+                            let calculatedServerDate = Date().addingTimeInterval(timeOffset)
                             expect(tokenDetails.expires).to(beCloseTo(calculatedServerDate.addingTimeInterval(ARTDefault.ttl()), within: 1.0))
                             expect(serverTimeRequestCount) == 1
                             done()
                         }
                     }
 
-                    rest.auth.discardTimeOffset()
-                    expect(rest.auth.timeOffset) == 0
+                    #if TARGET_OS_IPHONE
+                    NotificationCenter.default.post(name: UIApplication.significantTimeChangeNotification, object: nil)
+                    #else
+                    NotificationCenter.default.post(name: .NSSystemClockDidChange, object: nil)
+                    #endif
 
                     rest.auth.testSuite_forceTokenToExpire()
 
@@ -3343,7 +3524,7 @@ class Auth : QuickSpec {
                             guard let tokenDetails = tokenDetails else {
                                 fail("TokenDetails is nil"); done(); return
                             }
-                            expect(rest.auth.timeOffset) == 0
+                            expect(rest.auth.timeOffset).to(beNil())
                             expect(serverTimeRequestCount) == 1
                             done()
                         }
@@ -3367,8 +3548,11 @@ class Auth : QuickSpec {
                             guard let tokenRequest = tokenRequest else {
                                 fail("TokenRequest is nil"); done(); return
                             }
-                            expect(rest.auth.timeOffset) == fakeOffset
-                            let calculatedServerDate = NSDate().addingTimeInterval(rest.auth.timeOffset)
+                            guard let timeOffset = rest.auth.timeOffset?.doubleValue else {
+                                fail("Server Time Offset is nil"); done(); return
+                            }
+                            expect(timeOffset) == fakeOffset
+                            let calculatedServerDate = Date().addingTimeInterval(timeOffset)
                             expect(tokenRequest.timestamp).to(beCloseTo(calculatedServerDate, within: 0.5))
                             done()
                         }
@@ -3393,12 +3577,14 @@ class Auth : QuickSpec {
                     authOptions.queryTime = true
 
                     waitUntil(timeout: testTimeout) { done in
-                        expect(rest.auth.timeOffset).to(equal(fakeOffset))
                         rest.auth.authorize(nil, options: authOptions) { tokenDetails, error in
                             expect(error).to(beNil())
                             expect(tokenDetails).toNot(beNil())
-                            expect(rest.auth.timeOffset).toNot(equal(fakeOffset))
                             expect(serverTimeRequestCount) == 1
+                            guard let timeOffset = rest.auth.timeOffset?.doubleValue else {
+                                fail("Server Time Offset is nil"); done(); return
+                            }
+                            expect(timeOffset).toNot(equal(fakeOffset))
                             done()
                         }
                     }
@@ -3413,6 +3599,7 @@ class Auth : QuickSpec {
                     }
                     defer { hook.remove() }
 
+                    #if TARGET_OS_IPHONE
                     // Force notification
                     NotificationCenter.default.post(name: UIApplication.significantTimeChangeNotification, object: nil)
 
@@ -3420,6 +3607,15 @@ class Auth : QuickSpec {
 
                     // Force notification
                     NotificationCenter.default.post(name: NSLocale.currentLocaleDidChangeNotification, object: nil)
+                    #else
+                    // Force notification
+                    NotificationCenter.default.post(name: NSNotification.Name.NSSystemClockDidChange, object: nil)
+
+                    expect(discardTimeOffsetCallCount).toEventually(equal(1), timeout: testTimeout)
+
+                    // Force notification
+                    NotificationCenter.default.post(name: NSLocale.currentLocaleDidChangeNotification, object: nil)
+                    #endif
 
                     expect(discardTimeOffsetCallCount).toEventually(equal(2), timeout: testTimeout)
                 }
@@ -3432,13 +3628,13 @@ class Auth : QuickSpec {
             context("timestamp") {
                 it("if explicitly set, should be returned by the getter") {
                     let params = ARTTokenParams()
-                    params.timestamp = NSDate(timeIntervalSince1970: 123) as Date
-                    expect(params.timestamp).to(equal(NSDate(timeIntervalSince1970: 123) as Date))
+                    params.timestamp = Date(timeIntervalSince1970: 123)
+                    expect(params.timestamp).to(equal(Date(timeIntervalSince1970: 123)))
                 }
 
                 it("if explicitly set, the value should stick") {
                     let params = ARTTokenParams()
-                    params.timestamp = NSDate() as Date
+                    params.timestamp = Date()
 
                     waitUntil(timeout: testTimeout) { done in
                         let now = Double(NSDate().artToIntegerMs())
@@ -3568,7 +3764,7 @@ class Auth : QuickSpec {
                         let newTokenParams = ARTTokenParams(options: rest.auth.options)
                         expect(defaultTokenParamsCallCount) > 0
 
-                        newTokenParams.timestamp = NSDate() as Date
+                        newTokenParams.timestamp = Date()
                         expect(newTokenParams.timestamp).toNot(beNil())
                         expect(defaultTokenParams.timestamp).to(beNil()) //remain nil
                         done()
@@ -3596,7 +3792,7 @@ class Auth : QuickSpec {
                             expect(request.mac).to(equal("4rr4J+JzjiCL1DoS8wq7k11Z4oTGCb1PoeN+yGjkaH4="))
                             expect(request.capability).to(equal("{\"test\":[\"publish\"]}"))
                             expect(request.ttl as? TimeInterval).to(equal(TimeInterval(42)))
-                            expect(request.timestamp).to(equal(NSDate(timeIntervalSince1970: 1479087321.934) as Date))
+                            expect(request.timestamp).to(equal(Date(timeIntervalSince1970: 1479087321.934)))
                             expect(request.keyName).to(equal("xxxxxx.yyyyyy"))
                             expect(request.nonce).to(equal("7830658976108826"))
                         }
@@ -3614,7 +3810,7 @@ class Auth : QuickSpec {
                             expect(request.mac).to(equal("4rr4J+JzjiCL1DoS8wq7k11Z4oTGCb1PoeN+yGjkaH4="))
                             expect(request.capability).to(equal("{\"test\":[\"publish\"]}"))
                             expect(request.ttl).to(beNil())
-                            expect(request.timestamp).to(equal(NSDate(timeIntervalSince1970: 1479087321.934) as Date))
+                            expect(request.timestamp).to(equal(Date(timeIntervalSince1970: 1479087321.934)))
                             expect(request.keyName).to(equal("xxxxxx.yyyyyy"))
                             expect(request.nonce).to(equal("7830658976108826"))
                         }
@@ -3658,8 +3854,8 @@ class Auth : QuickSpec {
 
                 func check(_ details: ARTTokenDetails) {
                     expect(details.token).to(equal("xxxxxx.yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"))
-                    expect(details.issued).to(equal(NSDate(timeIntervalSince1970: 1479087321.934) as Date))
-                    expect(details.expires).to(equal(NSDate(timeIntervalSince1970: 1479087363.934) as Date))
+                    expect(details.issued).to(equal(Date(timeIntervalSince1970: 1479087321.934)))
+                    expect(details.expires).to(equal(Date(timeIntervalSince1970: 1479087363.934)))
                     expect(details.capability).to(equal("{\"test\":[\"publish\"]}"))
                     expect(details.clientId).to(equal("myClientId"))
                 }

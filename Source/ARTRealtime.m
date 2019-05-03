@@ -641,8 +641,10 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             [self.connection setMaxMessageSize:message.connectionDetails.maxMessageSize];
             if (!_resuming) {
                 [self.connection setSerial:message.connectionSerial];
-                [self.logger debug:@"RT:%p msgSerial of connection \"%@\" has been reset", self, self.connection.id_nosync];
-                self.msgSerial = 0;
+                if (message.error != nil || self.options.recover == nil || [[self.options.recover stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] isEqualToString:@""]) {
+                    [self.logger debug:@"RT:%p msgSerial of connection \"%@\" has been reset", self, self.connection.id_nosync];
+                    self.msgSerial = 0;
+                }
                 self.pendingMessageStartSerial = 0;
             }
             if (message.connectionDetails && message.connectionDetails.connectionStateTtl) {
@@ -837,6 +839,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         }
         else {
             // New Token
+            [self.auth setTokenDetails:nil];
             // Transport instance couldn't exist anymore when `authorize` completes or reaches time out.
             __weak __typeof(self) weakSelf = self;
 
@@ -1473,8 +1476,10 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     [_rest reportUncaughtException:e];
 }
 
+#if TARGET_OS_IOS
 - (ARTLocalDevice *)device {
     return _rest.device;
 }
+#endif
 
 @end

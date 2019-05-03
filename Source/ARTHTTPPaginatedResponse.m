@@ -6,7 +6,7 @@
 //  Copyright © 2018 Ably. All rights reserved.
 //
 
-#import "ARTHTTPPaginatedResponse.h"
+#import "ARTHTTPPaginatedResponse+Private.h"
 
 #import "ARTHttp.h"
 #import "ARTAuth.h"
@@ -17,9 +17,7 @@
 #import "ARTEncoder.h"
 #import "ARTConstants.h"
 
-@implementation ARTHTTPPaginatedResponse {
-    NSHTTPURLResponse *_response;
-}
+@implementation ARTHTTPPaginatedResponse
 
 - (instancetype)initWithResponse:(NSHTTPURLResponse *)response
                            items:(NSArray *)items

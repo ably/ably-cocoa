@@ -3,45 +3,53 @@ default_platform(:ios)
 platform :ios do
 
   lane :test_iOS12 do
-    run_tests(devices: ["iPhone XS (12.0)"],
-              xcargs: { ABLY_ENV: ENV['ABLY_ENV'] })
-    slack(
-      message: "Completed tests on iOS12",
-      success: :test_result,
-      default_payloads: [:test_result, :git_branch, :git_author, :last_git_commit_message]
+    run_tests(
+      scheme: "Ably-iOS-Tests",
+      devices: ["iPhone XS (12.0)"],
+      xcargs: { ABLY_ENV: ENV['ABLY_ENV'] }
     )
   end
 
   lane :test_iOS11 do
-    run_tests(devices: ["iPhone 8 (11.4)"],
-              test_without_building: false,
-              xcargs: { ABLY_ENV: ENV['ABLY_ENV'] })
-    slack(
-      message: "Completed tests on iOS11",
-      success: :test_result,
-      default_payloads: [:test_result, :git_branch, :git_author, :last_git_commit_message]
+    run_tests(
+      scheme: "Ably-iOS-Tests",
+      devices: ["iPhone 8 (11.4)"],
+      test_without_building: false,
+      xcargs: { ABLY_ENV: ENV['ABLY_ENV'] }
     )
   end
 
   lane :test_iOS10 do
-    run_tests(devices: ["iPhone 7 (10.3.1)"],
-              test_without_building: false,
-              xcargs: { ABLY_ENV: ENV['ABLY_ENV'] })
-    slack(
-      message: "Completed tests on iOS10",
-      success: :test_result,
-      default_payloads: [:test_result, :git_branch, :git_author, :last_git_commit_message]
+    run_tests(
+      scheme: "Ably-iOS-Tests",
+      devices: ["iPhone 7 (10.3.1)"],
+      test_without_building: false,
+      xcargs: { ABLY_ENV: ENV['ABLY_ENV'] }
     )
   end
 
   lane :test_iOS9 do
-    run_tests(devices: ["iPhone 6 (9.3)"],
-              test_without_building: false,
-              xcargs: { ABLY_ENV: ENV['ABLY_ENV'] })
-    slack(
-      message: "Completed tests on iOS9",
-      success: :test_result,
-      default_payloads: [:test_result, :git_branch, :git_author, :last_git_commit_message]
+    run_tests(
+      scheme: "Ably-iOS-Tests",
+      devices: ["iPhone 6 (9.3)"],
+      test_without_building: false,
+      xcargs: { ABLY_ENV: ENV['ABLY_ENV'] }
+    )
+  end
+
+  lane :test_tvOS12 do
+    run_tests(
+      scheme: "Ably-tvOS-Tests",
+      devices: ["Apple TV 4K"],
+      xcargs: { ABLY_ENV: ENV['ABLY_ENV'] }
+    )
+  end
+
+  lane :test_macOS do
+    run_tests(
+      scheme: "Ably-macOS-Tests",
+      test_without_building: false,
+      xcargs: { ABLY_ENV: ENV['ABLY_ENV'] }
     )
   end
 

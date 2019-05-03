@@ -15,8 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "856AAC891B6E304B00B07119"
-               BuildableName = "AblySpec.xctest"
-               BlueprintName = "AblySpec"
+               BuildableName = "Ably-iOS-Tests.xctest"
+               BlueprintName = "Ably-iOS-Tests"
                ReferencedContainer = "container:Ably.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -33,8 +33,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "856AAC891B6E304B00B07119"
-               BuildableName = "AblySpec.xctest"
-               BlueprintName = "AblySpec"
+               BuildableName = "Ably-iOS-Tests.xctest"
+               BlueprintName = "Ably-iOS-Tests"
                ReferencedContainer = "container:Ably.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -63,8 +63,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "856AAC891B6E304B00B07119"
-            BuildableName = "AblySpec.xctest"
-            BlueprintName = "AblySpec"
+            BuildableName = "Ably-iOS-Tests.xctest"
+            BlueprintName = "Ably-iOS-Tests"
             ReferencedContainer = "container:Ably.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -81,8 +81,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "856AAC891B6E304B00B07119"
-            BuildableName = "AblySpec.xctest"
-            BlueprintName = "AblySpec"
+            BuildableName = "Ably-iOS-Tests.xctest"
+            BlueprintName = "Ably-iOS-Tests"
             ReferencedContainer = "container:Ably.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

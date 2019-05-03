@@ -8,6 +8,5 @@
 
 #import "ARTConstants.h"
 
-NSString *const ARTHttpHeaderFieldErrorCodeKey = @"X-Ably-Errorcode";
-NSString *const ARTHttpHeaderFieldErrorMessageKey = @"X-Ably-Errormessage";
-
+NSString *const ARTHttpHeaderFieldErrorCodeKey = @"x-ably-errorcode";
+NSString *const ARTHttpHeaderFieldErrorMessageKey = @"x-ably-errormessage";

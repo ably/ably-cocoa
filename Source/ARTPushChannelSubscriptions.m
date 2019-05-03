@@ -25,7 +25,7 @@
     dispatch_queue_t _userQueue;
 }
 
-- (instancetype)init:(ARTRest *)rest {
+- (instancetype)initWithRest:(ARTRest *)rest {
     if (self = [super init]) {
         _rest = rest;
         _logger = [rest logger];
@@ -46,7 +46,11 @@
         };
     }
 
+    #if TARGET_OS_IOS
     ARTLocalDevice *local = _rest.device;
+    #else
+    ARTLocalDevice *local = nil;
+    #endif
 
 dispatch_async(_queue, ^{
 ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
@@ -186,7 +190,9 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     }
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
     request.HTTPMethod = @"DELETE";
+    #if TARGET_OS_IOS
     [request setDeviceAuthentication:[params objectForKey:@"deviceId"] localDevice:_rest.device_nosync];
+    #endif
 
     [_logger debug:__FILE__ line:__LINE__ message:@"remove channel subscription with request %@", request];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {

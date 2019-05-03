@@ -242,7 +242,7 @@ class RealtimeClientConnection: QuickSpec {
                             done()
                         case .connected:
                             if let transport = client.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
-                                expect(query).to(haveParam("lib", withValue: "ios-1.1.1"))
+                                expect(query).to(haveParam("lib", withValue: "ios-1.1.3"))
                             }
                             else {
                                 XCTFail("MockTransport isn't working")
@@ -1429,6 +1429,7 @@ class RealtimeClientConnection: QuickSpec {
                     expect(lastSerial).to(equal(4))
 
                     options.recover = client.connection.recoveryKey
+                    client.onError(AblyTests.newErrorProtocolMessage())
 
                     let recoveredClient = ARTRealtime(options: options)
                     defer { recoveredClient.close() }
@@ -2038,7 +2039,7 @@ class RealtimeClientConnection: QuickSpec {
                             }
                         }
                         client.connect()
-                        transport = client.transport as! TestProxyTransport
+                        transport = (client.transport as! TestProxyTransport)
                     }
 
                     let failures = transport.protocolMessagesReceived.filter({ $0.action == .error })

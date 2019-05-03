@@ -21,8 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// Publish a push notification.
 - (void)publish:(ARTPushRecipient *)recipient data:(ARTJsonObject *)data callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback;
 
-@property (nonatomic, readonly) ARTPushDeviceRegistrations* deviceRegistrations;
-@property (nonatomic, readonly) ARTPushChannelSubscriptions* channelSubscriptions;
+@property (nonatomic, readonly) ARTPushDeviceRegistrations *deviceRegistrations;
+@property (nonatomic, readonly) ARTPushChannelSubscriptions *channelSubscriptions;
 
 @end
 

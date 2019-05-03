@@ -1,13 +1,18 @@
 //
 //  ARTMsgPackEncoder.m
-//  ably
+//  Ably
 //
 //  Created by Toni Cárdenas on 21/3/16.
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
 #import "ARTMsgPackEncoder.h"
+#if COCOAPODS && !TEST_SUITE
+#import <MsgPackAblyFork/MessagePack.h>
+#else
+// Carthage
 #import <msgpack/MessagePack.h>
+#endif
 
 @implementation ARTMsgPackEncoder
 

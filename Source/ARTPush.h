@@ -8,16 +8,16 @@
 
 #import <Foundation/Foundation.h>
 #import <Ably/ARTTypes.h>
-#import <Ably/ARTPushAdmin.h>
 
 @class ARTRest;
 @class ARTRealtime;
+@class ARTPushAdmin;
 @class ARTDeviceDetails;
 @class ARTDeviceIdentityTokenDetails;
 
 #pragma mark ARTPushRegisterer interface
 
-#ifdef TARGET_OS_IOS
+#if TARGET_OS_IOS
 
 @protocol ARTPushRegistererDelegate
 
@@ -46,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init NS_UNAVAILABLE;
 
-#ifdef TARGET_OS_IOS
+#if TARGET_OS_IOS
 
 /// Push Registration token
 
@@ -61,6 +61,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Unregister a device.
 - (void)deactivate;
+
 #endif
 
 @end

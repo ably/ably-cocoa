@@ -373,7 +373,10 @@
 
 - (NSDictionary *)messageToDictionary:(ARTMessage *)message {
     NSMutableDictionary *output = [NSMutableDictionary dictionary];
-    
+    if (message.id) {
+        [output setObject:message.id forKey:@"id"];
+    }
+
     if (message.timestamp) {
         [output setObject:[message.timestamp artToNumberMs] forKey:@"timestamp"];
     }
@@ -548,12 +551,14 @@
 
     NSMutableDictionary *dictionary = [@{
              @"keyName":tokenRequest.keyName ? tokenRequest.keyName : @"",
-             @"capability":tokenRequest.capability ? tokenRequest.capability : @"",
              @"timestamp":timestamp,
              @"nonce":tokenRequest.nonce ? tokenRequest.nonce : @"",
              @"mac":tokenRequest.mac ? tokenRequest.mac : @""
         } mutableCopy];
 
+    if (tokenRequest.capability) {
+        dictionary[@"capability"] = tokenRequest.capability;
+    }
     if (tokenRequest.clientId) {
         dictionary[@"clientId"] = tokenRequest.clientId;
     }

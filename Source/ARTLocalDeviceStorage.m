@@ -35,7 +35,9 @@
 }
 
 - (NSString *)secretForDevice:(ARTDeviceId *)deviceId {
+    #if TARGET_OS_IPHONE
     SAMKeychain.accessibilityType = kSecAttrAccessibleWhenUnlocked;
+    #endif
     NSError *error = nil;
     NSString *value = [SAMKeychain passwordForService:ARTDeviceSecretKey account:(NSString *)deviceId error:&error];
 
@@ -50,7 +52,9 @@
 }
 
 - (void)setSecret:(NSString *)value forDevice:(ARTDeviceId *)deviceId {
+    #if TARGET_OS_IPHONE
     SAMKeychain.accessibilityType = kSecAttrAccessibleWhenUnlocked;
+    #endif
     NSError *error = nil;
 
     if (value == nil) {

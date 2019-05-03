@@ -28,7 +28,7 @@
 - (instancetype)initWithClientId:(NSString *)clientId nonce:(NSString *)nonce {
     if (self = [super init]) {
         _timestamp = nil;
-        _capability = @"{\"*\":[\"*\"]}"; // allow all
+        _capability = nil; // capabilities of the underlying key
         _clientId = clientId;
         _nonce = nonce;
     }
@@ -76,8 +76,8 @@
         [params addObject:[NSURLQueryItem queryItemWithName:@"ttl" value:[NSString stringWithFormat:@"%@", self.ttl]]];
     if (self.capability)
         [params addObject:[NSURLQueryItem queryItemWithName:@"capability" value:self.capability]];
-    if (self.timestamp > 0)
-        [params addObject:[NSURLQueryItem queryItemWithName:@"timestamp" value:[NSString stringWithFormat:@"%f", self.timestamp.timeIntervalSince1970]]];
+    if (self.timestamp)
+        [params addObject:[NSURLQueryItem queryItemWithName:@"timestamp" value:[NSString stringWithFormat:@"%llu", dateToMilliseconds(self.timestamp)]]];
     
     return params;
 }
@@ -91,8 +91,8 @@
         params[@"ttl"] = [NSString stringWithFormat:@"%@", self.ttl];
     if (self.capability)
         params[@"capability"] = self.capability;
-    if (self.timestamp > 0)
-        params[@"timestamp"] = [NSString stringWithFormat:@"%f", self.timestamp.timeIntervalSince1970];
+    if (self.timestamp)
+        params[@"timestamp"] = [NSString stringWithFormat:@"%llu", dateToMilliseconds(self.timestamp)];
     
     return params;
 }
@@ -161,12 +161,13 @@ static NSString *hmacForDataAndKey(NSData *data, NSData *key) {
     NSArray *keyComponents = decomposeKey(key);
     NSString *keyName = keyComponents[0];
     NSString *keySecret = keyComponents[1];
+    NSString *capability = self.capability ? self.capability : @"";
     NSString *clientId = self.clientId ? self.clientId : @"";
     NSString *ttl = self.ttl ? [NSString stringWithFormat:@"%lld", timeIntervalToMilliseconds([self.ttl doubleValue])] : @"";
-    
-    NSString *signText = [NSString stringWithFormat:@"%@\n%@\n%@\n%@\n%lld\n%@\n", keyName, ttl, self.capability, clientId, dateToMilliseconds(self.timestamp), nonce];
+
+    NSString *signText = [NSString stringWithFormat:@"%@\n%@\n%@\n%@\n%lld\n%@\n", keyName, ttl, capability, clientId, dateToMilliseconds(self.timestamp), nonce];
     NSString *mac = hmacForDataAndKey([signText dataUsingEncoding:NSUTF8StringEncoding], [keySecret dataUsingEncoding:NSUTF8StringEncoding]);
-    
+
     return [[ARTTokenRequest alloc] initWithTokenParams:self keyName:keyName nonce:nonce mac:mac];
 }
 

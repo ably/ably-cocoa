@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTDeviceIdentityTokenDetails : NSObject <NSCoding>
+@interface ARTDeviceIdentityTokenDetails : NSObject <NSSecureCoding>
 
 /**
  Token string.

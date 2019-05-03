@@ -233,6 +233,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
         }
         else {
             // New Token
+            [self.auth setTokenDetails:nil];
             [self.auth _authorize:nil options:self.options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
                 if (error) {
                     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p ARTRest reissuing token failed %@", self, error];
@@ -270,7 +271,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p executing request %@", self, request];
     [self.httpExecutor executeRequest:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         // Error messages in plaintext and HTML format (only if the URL request is different than `options.authUrl` and we don't have an error already)
-        if (error == nil && data != nil && ![request.URL.host isEqualToString:[self.options.authUrl host]]) {
+        if (error == nil && data != nil && data.length != 0 && ![request.URL.host isEqualToString:[self.options.authUrl host]]) {
             NSString *contentType = [response.allHeaderFields objectForKey:@"Content-Type"];
 
             BOOL validContentType = NO;
@@ -525,7 +526,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 }
 
 - (id<ARTCancellable>)internetIsUp:(void (^)(BOOL isUp)) cb {
-    NSURL *requestUrl = [NSURL URLWithString:@"http://internet-up.ably-realtime.com/is-the-internet-up.txt"];
+    NSURL *requestUrl = [NSURL URLWithString:@"https://internet-up.ably-realtime.com/is-the-internet-up.txt"];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl];
     request.HTTPMethod = @"GET";
 
@@ -673,6 +674,7 @@ void ARTstopHandlingUncaughtExceptions(ARTRest *self) {
     [ARTSentry setUserInfo:@"reportToAbly" value:[NSNumber numberWithBool:false]];
 }
 
+#if TARGET_OS_IOS
 - (ARTLocalDevice *)device {
     __block ARTLocalDevice *ret;
     dispatch_sync(_queue, ^{
@@ -680,11 +682,12 @@ void ARTstopHandlingUncaughtExceptions(ARTRest *self) {
     });
     return ret;
 }
+#endif
 
 // Store address of once_token to access it in debug function.
 static dispatch_once_t *device_once_token;
 
-- (NSString *)device_nosync {
+- (ARTLocalDevice *)device_nosync {
     static dispatch_once_t once;
     device_once_token = &once;
     static id device;

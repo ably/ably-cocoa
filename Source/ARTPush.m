@@ -14,9 +14,11 @@
 #import "ARTJsonEncoder.h"
 #import "ARTJsonLikeEncoder.h"
 #import "ARTEventEmitter.h"
-#ifdef TARGET_OS_IOS
-#import "ARTPushActivationStateMachine.h"
+#if TARGET_OS_IOS
+#import <UIKit/UIKit.h>
+#import "ARTPushActivationStateMachine+Private.h"
 #endif
+#import "ARTPushAdmin.h"
 #import "ARTPushActivationEvent.h"
 #import "ARTClientOptions+Private.h"
 #import "ARTPushAdmin+Private.h"
@@ -38,12 +40,12 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
     if (self = [super init]) {
         _rest = rest;
         _logger = [rest logger];
-        _admin = [[ARTPushAdmin alloc] init:rest];
+        _admin = [[ARTPushAdmin alloc] initWithRest:rest];
     }
     return self;
 }
 
-#ifdef TARGET_OS_IOS
+#if TARGET_OS_IOS
 
 - (ARTPushActivationStateMachine *)activationMachine {
     static dispatch_once_t once;
@@ -53,7 +55,6 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
     });
     return activationMachineInstance;
 }
-
 
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceTokenData rest:(ARTRest *)rest {
     // HEX string, i.e.: <12ce7dda 8032c423 8f8bd40f 3484e5bb f4698da5 8b7fdf8d 5c55e0a2 XXXXXXXX>
@@ -86,11 +87,29 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 }
 
 - (void)activate {
-    [[self activationMachine] sendEvent:[ARTPushActivationEventCalledActivate new]];
+    if (!self.activationMachine.delegate) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            // -[UIApplication delegate] is an UI API call
+            self.activationMachine.delegate = UIApplication.sharedApplication.delegate;
+            [self.activationMachine sendEvent:[ARTPushActivationEventCalledActivate new]];
+        });
+    }
+    else {
+        [self.activationMachine sendEvent:[ARTPushActivationEventCalledActivate new]];
+    }
 }
 
 - (void)deactivate {
-    [[self activationMachine] sendEvent:[ARTPushActivationEventCalledDeactivate new]];
+    if (!self.activationMachine.delegate) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            // -[UIApplication delegate] is an UI API call
+            self.activationMachine.delegate = UIApplication.sharedApplication.delegate;
+            [self.activationMachine sendEvent:[ARTPushActivationEventCalledDeactivate new]];
+        });
+    }
+    else {
+        [self.activationMachine sendEvent:[ARTPushActivationEventCalledDeactivate new]];
+    }
 }
 
 #endif
