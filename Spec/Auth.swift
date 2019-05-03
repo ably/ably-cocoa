@@ -422,7 +422,7 @@ class Auth : QuickSpec {
                                 guard let response = proxyHTTPExecutor.responses.first else {
                                     fail("Response is nil"); done(); return
                                 }
-                                expect(response.allHeaderFields["X-Ably-Errorcode"] as? String).to(equal("40142"))
+                                expect(response.value(forHTTPHeaderField: "X-Ably-Errorcode")).to(equal("40142"))
                                 done()
                             }
                         }
