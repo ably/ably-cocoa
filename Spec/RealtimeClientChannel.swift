@@ -1763,6 +1763,8 @@ class RealtimeClientChannel: QuickSpec {
                                 }
                                 expect((client.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
                             }
+
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
                         }
 
                         it("DETACHED then the messages should be published immediately") {
@@ -1789,6 +1791,8 @@ class RealtimeClientChannel: QuickSpec {
                                 }
                                 expect((client.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
                             }
+
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.detached))
                         }
 
                         it("ATTACHING then the messages should be published immediately") {
@@ -1802,6 +1806,10 @@ class RealtimeClientChannel: QuickSpec {
                             }
                             channel.attach()
                             expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
+                            guard let transport = client.transport as? TestProxyTransport else {
+                                fail("Expecting TestProxyTransport"); return
+                            }
+                            transport.actionsIgnored += [.attached]
 
                             waitUntil(timeout: testTimeout) { done in
                                 channel.publish(nil, data: "message") { error in
@@ -1810,6 +1818,8 @@ class RealtimeClientChannel: QuickSpec {
                                 }
                                 expect((client.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
                             }
+
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
                         }
 
                         it("DETACHING then the messages should be published immediately") {
@@ -1824,6 +1834,10 @@ class RealtimeClientChannel: QuickSpec {
                             expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connected))
                             channel.detach()
                             expect(channel.state).to(equal(ARTRealtimeChannelState.detaching))
+                            guard let transport = client.transport as? TestProxyTransport else {
+                                fail("Expecting TestProxyTransport"); return
+                            }
+                            transport.actionsIgnored += [.detached]
 
                             waitUntil(timeout: testTimeout) { done in
                                 channel.publish(nil, data: "message") { error in
@@ -1832,6 +1846,8 @@ class RealtimeClientChannel: QuickSpec {
                                 }
                                 expect((client.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
                             }
+
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.detaching))
                         }
                     }
 
