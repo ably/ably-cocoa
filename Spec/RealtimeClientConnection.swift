@@ -1398,7 +1398,6 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
 
-                // RTN10c
                 it("should have last known connection serial from restored connection") {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
@@ -1429,6 +1428,7 @@ class RealtimeClientConnection: QuickSpec {
                     expect(lastSerial).to(equal(4))
 
                     options.recover = client.connection.recoveryKey
+                    client.onError(AblyTests.newErrorProtocolMessage())
 
                     let recoveredClient = ARTRealtime(options: options)
                     defer { recoveredClient.close() }

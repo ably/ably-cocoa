@@ -629,16 +629,23 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     }
 
     switch (self.connection.state_nosync) {
-        case ARTRealtimeConnecting:
-            [self.connection setId:message.connectionId];
-            [self.connection setKey:message.connectionKey];
-            [self.connection setMaxMessageSize:message.connectionDetails.maxMessageSize];
-            if (!_resuming) {
-                [self.connection setSerial:message.connectionSerial];
+        case ARTRealtimeConnecting: {
+            // If no previous connectionId, don't reset the msgSerial
+            //as it may have been set by recover data (unless the recover failed)
+            NSString *prevConnId = self.connection.id_nosync;
+            BOOL connIdChanged = prevConnId && ![message.connectionId isEqualToString:prevConnId];
+            BOOL recoverFailure = !prevConnId && message.error;
+            if (connIdChanged || recoverFailure) {
                 [self.logger debug:@"RT:%p msgSerial of connection \"%@\" has been reset", self, self.connection.id_nosync];
                 self.msgSerial = 0;
                 self.pendingMessageStartSerial = 0;
             }
+
+            [self.connection setId:message.connectionId];
+            [self.connection setKey:message.connectionKey];
+            [self.connection setMaxMessageSize:message.connectionDetails.maxMessageSize];
+            [self.connection setSerial:message.connectionSerial];
+
             if (message.connectionDetails && message.connectionDetails.connectionStateTtl) {
                 _connectionStateTtl = message.connectionDetails.connectionStateTtl;
             }
@@ -649,6 +656,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             }
             [self transition:ARTRealtimeConnected withErrorInfo:message.error];
             break;
+        }
         case ARTRealtimeConnected: {
             // Renewing token.
             [self updateWithErrorInfo:message.error];
@@ -831,6 +839,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         }
         else {
             // New Token
+            [self.auth setTokenDetails:nil];
             // Transport instance couldn't exist anymore when `authorize` completes or reaches time out.
             __weak __typeof(self) weakSelf = self;
 

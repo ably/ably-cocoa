@@ -436,8 +436,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
 - (ARTEventListener *)subscribeWithAttachCallback:(void (^)(ARTErrorInfo * _Nullable))onAttach callback:(void (^)(ARTMessage * _Nonnull))cb {
     if (cb) {
-        void (^userCallback)(ARTMessage *__art_nullable m) = cb;
-        cb = ^(ARTMessage *__art_nullable m) {
+        void (^userCallback)(ARTMessage *_Nonnull m) = cb;
+        cb = ^(ARTMessage *_Nonnull m) {
             ART_EXITING_ABLY_CODE(self->_realtime.rest);
             dispatch_async(self->_userQueue, ^{
                 userCallback(m);
@@ -445,11 +445,11 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         };
     }
     if (onAttach) {
-        void (^userOnAttach)(ARTErrorInfo *__art_nullable m) = onAttach;
-        onAttach = ^(ARTErrorInfo *__art_nullable m) {
+        void (^userOnAttach)(ARTErrorInfo *_Nullable m) = onAttach;
+        onAttach = ^(ARTErrorInfo *_Nullable e) {
             ART_EXITING_ABLY_CODE(self->_realtime.rest);
             dispatch_async(self->_userQueue, ^{
-                userOnAttach(m);
+                userOnAttach(e);
             });
         };
     }
@@ -476,11 +476,20 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
 - (ARTEventListener *)subscribe:(NSString *)name onAttach:(void (^)(ARTErrorInfo * _Nullable))onAttach callback:(void (^)(ARTMessage * _Nonnull))cb {
     if (cb) {
-        void (^userCallback)(ARTMessage *__art_nullable m) = cb;
-        cb = ^(ARTMessage *__art_nullable m) {
+        void (^userCallback)(ARTMessage *_Nonnull m) = cb;
+        cb = ^(ARTMessage *_Nonnull m) {
             ART_EXITING_ABLY_CODE(self->_realtime.rest);
             dispatch_async(self->_userQueue, ^{
                 userCallback(m);
+            });
+        };
+    }
+    if (onAttach) {
+        void (^userOnAttach)(ARTErrorInfo *_Nullable m) = onAttach;
+        onAttach = ^(ARTErrorInfo *_Nullable e) {
+            ART_EXITING_ABLY_CODE(self->_realtime.rest);
+            dispatch_async(self->_userQueue, ^{
+                userOnAttach(e);
             });
         };
     }
