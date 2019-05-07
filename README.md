@@ -1,6 +1,6 @@
 # [Ably](https://www.ably.io) iOS, tvOS and macOS Objective-C and Swift client library SDK
 
-[![Build Status](https://travis-ci.org/ably/ably-ios.svg?branch=master)](https://travis-ci.org/ably/ably-ios)
+[![Build Status](https://travis-ci.org/ably/ably-cocoa.svg?branch=master)](https://travis-ci.org/ably/ably-cocoa)
 [![CocoaPods Compatible](https://img.shields.io/cocoapods/v/Ably.svg)](https://img.shields.io/cocoapods/v/Ably.svg)
 [![Carthage Compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
 ![Platforms](https://img.shields.io/badge/platforms-iOS%20%7C%20tvOS%20%7C%20macOS-333333.svg)
@@ -27,7 +27,7 @@ If you find any issues with unsupported platform versions, please [raise an issu
 As of version `1.1.3` this library based on the 1.1 library specification. It implements a subset of 1.1 features:
 - updated push API and push device authentication;
 - support for enforcement of the `maxMessageSize` attribute
-Other minor features and bugfixes are included, as listed in the [changelog](CHANGELOG.md#113-2019-01-10).
+Other minor features and bugfixes are included, as listed in the [changelog](CHANGELOG.md#114-2019-05-07).
 
 ##### macOS & tvOS
 
