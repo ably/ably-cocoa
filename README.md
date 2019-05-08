@@ -1,6 +1,6 @@
 # [Ably](https://www.ably.io) iOS, tvOS and macOS Objective-C and Swift client library SDK
 
-[![Build Status](https://travis-ci.org/ably/ably-ios.svg?branch=master)](https://travis-ci.org/ably/ably-ios)
+[![Build Status](https://travis-ci.org/ably/ably-cocoa.svg?branch=master)](https://travis-ci.org/ably/ably-cocoa)
 [![CocoaPods Compatible](https://img.shields.io/cocoapods/v/Ably.svg)](https://img.shields.io/cocoapods/v/Ably.svg)
 [![Carthage Compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
 ![Platforms](https://img.shields.io/badge/platforms-iOS%20%7C%20tvOS%20%7C%20macOS-333333.svg)
@@ -24,10 +24,10 @@ If you find any issues with unsupported platform versions, please [raise an issu
 
 #### Acknowledgments
 
-As of version `1.1.3` this library based on the 1.1 library specification. It implements a subset of 1.1 features:
+As of version `1.1.4` this library based on the 1.1 library specification. It implements a subset of 1.1 features:
 - updated push API and push device authentication;
 - support for enforcement of the `maxMessageSize` attribute
-Other minor features and bugfixes are included, as listed in the [changelog](CHANGELOG.md#113-2019-01-10).
+Other minor features and bugfixes are included, as listed in the [changelog](CHANGELOG.md#114-2019-05-07).
 
 ##### macOS & tvOS
 
@@ -98,7 +98,7 @@ If you see, for example, a `dyld: Library not loaded: @rpath/SocketRocket.framew
 
 ### Manual installation 
 
-1. Get the code from GitHub [from the release page](https://github.com/ably/ably-ios/releases/tag/1.1.3), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-ios.git`
+1. Get the code from GitHub [from the release page](https://github.com/ably/ably-ios/releases/tag/1.1.4), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-ios.git`
 2. Drag the directory `ably-ios/ably-ios` into your project as a group.
 3. Ably depends on our [SocketRocket Fork](https://github.com/ably-forks/SocketRocket) 0.5.2; get it [from the releases page](https://github.com/ably-forks/SocketRocket/releases/tag/0.5.2-ably-2) and follow [its manual installation instructions](https://github.com/ably-forks/SocketRocket/#installing).
 4. Ably also depends on our [MessagePack Fork](https://github.com/ably-forks/msgpack-objective-C) 0.2.0; get it [from the releases page](https://github.com/ably-forks/msgpack-objective-C/releases/tag/0.2.0-ably-1) and link it into your project.

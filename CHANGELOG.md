@@ -1,5 +1,34 @@
 # Change Log
 
+## [1.1.4](https://github.com/ably/ably-cocoa/tree/1.1.4) (2019-05-07)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.3...1.1.4)
+
+**Implemented enhancements:**
+
+- Add idempotent REST publishing [\#749](https://github.com/ably/ably-cocoa/issues/749)
+
+**Fixed bugs:**
+
+- Default token params should not include a capabilities member [\#576](https://github.com/ably/ably-cocoa/issues/576)
+- Unsubscribe on channel enumeration causing crash [\#842](https://github.com/ably/ably-cocoa/issues/842)
+
+**Closed issues:**
+
+- Address msgpack warnings [\#689](https://github.com/ably/ably-cocoa/issues/689)
+
+**Merged pull requests:**
+
+- Fix RTN16f [\#845](https://github.com/ably/ably-cocoa/pull/845) ([ricardopereira](https://github.com/ricardopereira))
+- Idempotent Rest Publishing [\#786](https://github.com/ably/ably-cocoa/pull/786) ([ricardopereira](https://github.com/ricardopereira))
+- RSL1j [\#784](https://github.com/ably/ably-cocoa/pull/784) ([ricardopereira](https://github.com/ricardopereira))
+- RSA4b1 [\#836](https://github.com/ably/ably-cocoa/pull/836) ([ricardopereira](https://github.com/ricardopereira))
+- Fix Channel.subscribe onAttachCallback [\#844](https://github.com/ably/ably-cocoa/pull/844) ([ricardopereira](https://github.com/ricardopereira))
+- Timestamp should not be generated in the client [\#831](https://github.com/ably/ably-cocoa/pull/831) ([ricardopereira](https://github.com/ricardopereira))
+- Fix URL query encoding of Capability and Timestamp fields [\#830](https://github.com/ably/ably-cocoa/pull/830) ([ricardopereira](https://github.com/ricardopereira))
+- Fix RSA6 [\#829](https://github.com/ably/ably-cocoa/pull/829) ([ricardopereira](https://github.com/ricardopereira))
+- Push State Machine: main thread sometimes gets stuck when accessing Local Device [\#826](https://github.com/ably/ably-cocoa/pull/826) ([ricardopereira](https://github.com/ricardopereira))
+- asd [\#784]() ([ricardopereira](https://github.com/ricardopereira))
+
 ## [1.1.3](https://github.com/ably/ably-ios/tree/1.1.3) (2019-01-10)
 [Full Changelog](https://github.com/ably/ably-ios/compare/1.1.2...1.1.3)
 
