@@ -869,6 +869,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
     if ([self isLastChannelSerial:message.channelSerial]) {
         [self.presenceMap endSync];
+        self.presenceMap.syncChannelSerial = nil;
         [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) PresenceMap sync ended", _realtime, self, self.name];
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
