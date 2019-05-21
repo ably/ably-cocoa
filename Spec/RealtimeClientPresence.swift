@@ -546,9 +546,15 @@ class RealtimeClientPresence: QuickSpec {
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
                         waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(2, done: done)
                             channel.presence.enterClient("user", data: nil) { error in
                                 expect(error).to(beNil())
-                                done()
+                                partialDone()
+                            }
+                            channel.presence.subscribe { message in
+                                expect(message.clientId).to(equal("user"))
+                                channel.presence.unsubscribe()
+                                partialDone()
                             }
                         }
 
@@ -597,9 +603,15 @@ class RealtimeClientPresence: QuickSpec {
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
                         waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(2, done: done)
                             channel.presence.enterClient("user", data: nil) { error in
                                 expect(error).to(beNil())
-                                done()
+                                partialDone()
+                            }
+                            channel.presence.subscribe { message in
+                                expect(message.clientId).to(equal("user"))
+                                channel.presence.unsubscribe()
+                                partialDone()
                             }
                         }
 
@@ -862,7 +874,7 @@ class RealtimeClientPresence: QuickSpec {
                             let channel = client.channels.get(channelName)
 
                             waitUntil(timeout: testTimeout) { done in
-                                let partialDone = AblyTests.splitDone(2, done: done)
+                                let partialDone = AblyTests.splitDone(3, done: done)
                                 channel.presence.get { members, error in
                                     expect(error).to(beNil())
                                     expect(members).to(haveCount(2))
@@ -871,6 +883,12 @@ class RealtimeClientPresence: QuickSpec {
                                 channel.presence.enter(nil) { error in
                                     expect(error).to(beNil())
                                     partialDone()
+                                }
+                                channel.presence.subscribe(.enter) { message in
+                                    if message.clientId == "local1" {
+                                        channel.presence.unsubscribe()
+                                        partialDone()
+                                    }
                                 }
                             }
 
@@ -1081,7 +1099,7 @@ class RealtimeClientPresence: QuickSpec {
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get(channelName)
                         waitUntil(timeout: testTimeout) { done in
-                            let partialDone = AblyTests.splitDone(2, done: done)
+                            let partialDone = AblyTests.splitDone(3, done: done)
                             channel.presence.enter(nil) { error in
                                 expect(error).to(beNil())
                                 partialDone()
@@ -1090,6 +1108,12 @@ class RealtimeClientPresence: QuickSpec {
                                 expect(error).to(beNil())
                                 expect(members).to(haveCount(3))
                                 partialDone()
+                            }
+                            channel.presence.subscribe(.enter) { message in
+                                if message.clientId == "tester" {
+                                    channel.presence.unsubscribe()
+                                    partialDone()
+                                }
                             }
                         }
 
@@ -1355,9 +1379,15 @@ class RealtimeClientPresence: QuickSpec {
                     let channel = client.channels.get("test")
 
                     waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
                         channel.presence.enter("online") { error in
                             expect(error).to(beNil())
-                            done()
+                            partialDone()
+                        }
+                        channel.presence.subscribe { message in
+                            expect(message.clientId).to(equal("john"))
+                            channel.presence.unsubscribe()
+                            partialDone()
                         }
                     }
 
