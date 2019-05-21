@@ -334,7 +334,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                // RSA4b1
+                // RSA4b
                 context("local token validity check") {
                     it("should be done if queryTime is true and local time is in sync with server") {
                         let options = AblyTests.commonAppSetup()
@@ -383,7 +383,7 @@ class Auth : QuickSpec {
                             }
                         }
 
-                        expect(rest.auth.tokenDetails).to(beNil())
+                        expect(rest.auth.tokenDetails).toNot(beNil())
                     }
 
                     it("should NOT be done if queryTime is false and local time is NOT in sync with server") {
