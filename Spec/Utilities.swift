@@ -426,7 +426,7 @@ class Utilities: QuickSpec {
                     }
 
                     expect(realtime.logger.history.count).toNot(beGreaterThan(100))
-                    expect(realtime.logger.history.map{ $0.message }.first).to(contain("channel state transitions to 2 - Attached"))
+                    expect(realtime.logger.history.map{ $0.message }.first).to(contain("channel state transitions from 1 - Attaching to 2 - Attached"))
                     expect(realtime.logger.history.filter{ $0.message.contains("realtime state transitions to 2 - Connected") }).to(haveCount(1))
                 }
 

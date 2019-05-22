@@ -149,6 +149,10 @@ static const char *logLevelName(ARTLogLevel level) {
     });
 }
 
+- (void)logWithError:(ARTErrorInfo *)error {
+    [self log:error.message withLevel:ARTLogLevelError];
+}
+
 - (NSArray<ARTLogLine *> *)history {
     return _history;
 }
