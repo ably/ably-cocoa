@@ -4141,6 +4141,39 @@ class Auth : QuickSpec {
                 }
             }
         }
+
+        // RSA11
+        context("currentTokenDetails") {
+
+            // RSA11b
+            it("should hold a @TokenDetails@ instance in which only the @token@ attribute is populated with that token string") {
+                let token = getTestToken()
+                let rest = ARTRest(token: token)
+                expect(rest.auth.tokenDetails?.token).to(equal(token))
+            }
+
+            // RSA11c
+            it("should be set with the current token (if applicable) on instantiation and each time it is replaced") {
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
+                expect(rest.auth.tokenDetails).to(beNil())
+                var authenticatedTokenDetails: ARTTokenDetails?
+                waitUntil(timeout: testTimeout) { done in
+                    rest.auth.authorize { tokenDetails, error in
+                        expect(error).to(beNil())
+                        authenticatedTokenDetails = tokenDetails
+                        done()
+                    }
+                }
+                expect(rest.auth.tokenDetails).to(equal(authenticatedTokenDetails))
+            }
+
+            // RSA11d
+            it("should be empty if there is no current token") {
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
+                expect(rest.auth.tokenDetails).to(beNil())
+            }
+
+        }
         
         // RSC1 RSC1a RSC1c RSA3d
         describe("JWT and rest") {
