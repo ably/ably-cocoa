@@ -27,7 +27,7 @@ If you find any issues with unsupported platform versions, please [raise an issu
 As of version `1.1.4` this library based on the 1.1 library specification. It implements a subset of 1.1 features:
 - updated push API and push device authentication;
 - support for enforcement of the `maxMessageSize` attribute
-Other minor features and bugfixes are included, as listed in the [changelog](CHANGELOG.md#114-2019-05-07).
+Other minor features and bugfixes are included, as listed in the [changelog](CHANGELOG.md#115-2019-05-23).
 
 ##### macOS & tvOS
 
@@ -601,7 +601,7 @@ client.time { time, error in
 
 ## Support, feedback and troubleshooting
 
-Please visit http://support.ably.io/ for access to our knowledgebase and to ask for any assistance.
+Please visit https://support.ably.io/ for access to our knowledgebase and to ask for any assistance.
 
 You can also view the [community reported Github issues](https://github.com/ably/ably-ios/issues).
 
@@ -640,4 +640,4 @@ This library uses [semantic versioning](http://semver.org/). For each release, t
 
 ## License
 
-Copyright (c) 2018 Ably Real-time Ltd, Licensed under the Apache License, Version 2.0.  Refer to [LICENSE](LICENSE) for the license terms.
+Copyright (c) 2019 Ably Real-time Ltd, Licensed under the Apache License, Version 2.0.  Refer to [LICENSE](LICENSE) for the license terms.
