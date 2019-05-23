@@ -360,10 +360,10 @@ func ==(lhs: ARTJsonCompatible?, rhs: ARTJsonCompatible?) -> Bool {
 
 class PublishTestMessage {
 
-    var completion: Optional<(ARTErrorInfo?)->()>
-    var error: ARTErrorInfo? = ARTErrorInfo.create(from: NSError(domain: "", code: -1, userInfo: nil))
+    var completion: ((ARTErrorInfo?) -> Void)? = nil
+    var error: ARTErrorInfo? = nil
 
-    init(client: ARTRest, failOnError: Bool = true, completion: Optional<(ARTErrorInfo?)->()> = nil) {
+    init(client: ARTRest, failOnError: Bool = true, completion: ((ARTErrorInfo?) -> Void)? = nil) {
         client.channels.get("test").publish(nil, data: "message") { error in
             self.error = error
             if let callback = completion {
@@ -375,8 +375,8 @@ class PublishTestMessage {
         }
     }
 
-    init(client: ARTRealtime, failOnError: Bool = true, completion: Optional<(ARTErrorInfo?)->()> = nil) {
-        let complete: (ARTErrorInfo?)->() = { errorInfo in
+    init(client: ARTRealtime, failOnError: Bool = true, completion: ((ARTErrorInfo?) -> Void)? = nil) {
+        let complete: (ARTErrorInfo?) -> Void = { errorInfo in
             // ARTErrorInfo to NSError
             self.error = errorInfo
 
