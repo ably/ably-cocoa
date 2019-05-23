@@ -303,6 +303,7 @@ class PushActivationStateMachine : QuickSpec {
                         guard let body = decodedBody as? NSDictionary else {
                             fail("body is invalid"); return
                         }
+                        expect(url.host).to(equal(rest.options.restUrl().host))
                         expect(request.httpMethod) == "POST"
                         expect(body.value(forKey: "id") as? String).to(equal(rest.device.id))
                         expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(expectedPushRecipient))
@@ -580,6 +581,7 @@ class PushActivationStateMachine : QuickSpec {
                         guard let url = request.url else {
                             fail("should have a \"/push/deviceRegistrations\" URL"); return
                         }
+                        expect(url.host).to(equal(rest.options.restUrl().host))
                         expect(request.httpMethod) == "DELETE"
                         expect(url.query).to(contain(rest.device.id))
                         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
@@ -628,6 +630,7 @@ class PushActivationStateMachine : QuickSpec {
                         guard let url = request.url else {
                             fail("should have a \"/push/deviceRegistrations\" URL"); return
                         }
+                        expect(url.host).to(equal(rest.options.restUrl().host))
                         expect(request.httpMethod) == "DELETE"
                         expect(url.query).to(contain(rest.device.id))
                         expect(rest.device.identityTokenDetails).to(beNil())
@@ -668,6 +671,7 @@ class PushActivationStateMachine : QuickSpec {
                         guard let url = request.url else {
                             fail("should have a \"/push/deviceRegistrations\" URL"); return
                         }
+                        expect(url.host).to(equal(rest.options.restUrl().host))
                         expect(request.httpMethod) == "DELETE"
                         expect(url.query).to(contain(rest.device.id))
                     }
@@ -863,6 +867,7 @@ class PushActivationStateMachine : QuickSpec {
                         guard let body = decodedBody as? NSDictionary else {
                             fail("body is invalid"); return
                         }
+                        expect(url.host).to(equal(rest.options.restUrl().host))
                         expect(request.httpMethod) == "PATCH"
                         expect(body.value(forKey: "id")).to(beNil())
                         expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(["recipient": ["transportType": "apns"]]))
@@ -922,6 +927,7 @@ class PushActivationStateMachine : QuickSpec {
                         guard let body = decodedBody as? NSDictionary else {
                             fail("body is invalid"); return
                         }
+                        expect(url.host).to(equal(rest.options.restUrl().host))
                         expect(request.httpMethod) == "PATCH"
                         expect(body.value(forKey: "id")).to(beNil())
                         expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(["recipient": ["transportType": "apns"]]))
@@ -1122,6 +1128,7 @@ class PushActivationStateMachine : QuickSpec {
                         guard let body = decodedBody as? NSDictionary else {
                             fail("body is invalid"); return
                         }
+                        expect(url.host).to(equal(rest.options.restUrl().host))
                         expect(request.httpMethod) == "PATCH"
                         expect(body.value(forKey: "id")).to(beNil())
                         expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(["recipient": ["transportType": "apns"]]))
@@ -1244,6 +1251,7 @@ class PushActivationStateMachine : QuickSpec {
                         guard let url = request.url else {
                             fail("should have a \"/push/deviceRegistrations\" URL"); return
                         }
+                        expect(url.host).to(equal(rest.options.restUrl().host))
                         expect(request.httpMethod) == "DELETE"
                         expect(url.query).to(contain(rest.device.id))
                         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
@@ -1290,6 +1298,7 @@ class PushActivationStateMachine : QuickSpec {
                         guard let url = request.url else {
                             fail("should have a \"/push/deviceRegistrations\" URL"); return
                         }
+                        expect(url.host).to(equal(rest.options.restUrl().host))
                         expect(request.httpMethod) == "DELETE"
                         expect(url.query).to(contain(rest.device.id))
                         expect(rest.device.identityTokenDetails).to(beNil())
@@ -1329,6 +1338,7 @@ class PushActivationStateMachine : QuickSpec {
                         guard let url = request.url else {
                             fail("should have a \"/push/deviceRegistrations\" URL"); return
                         }
+                        expect(url.host).to(equal(rest.options.restUrl().host))
                         expect(request.httpMethod) == "DELETE"
                         expect(url.query).to(contain(rest.device.id))
                     }

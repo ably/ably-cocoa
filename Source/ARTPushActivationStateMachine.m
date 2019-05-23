@@ -237,7 +237,7 @@ dispatch_async(_queue, ^{
     [request setDeviceAuthentication:local];
 
     [[_rest logger] debug:__FILE__ line:__LINE__ message:@"update device with request %@", request];
-    [_rest executeRequest:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [_rest executeRequest:request withAuthOption:ARTAuthenticationOff completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             [[self->_rest logger] error:@"%@: update device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
             [self sendEvent:[ARTPushActivationEventUpdatingRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
