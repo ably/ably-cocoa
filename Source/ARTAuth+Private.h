@@ -31,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, assign) ARTAuthMethod method;
 
 @property (nonatomic, weak) ARTLog *logger;
-@property (nullable, nonatomic, readonly, strong) ARTTokenDetails *tokenDetails;
+
 @property (nullable, nonatomic, readonly, strong) NSNumber *timeOffset;
 
 @property (nullable, weak) id<ARTAuthDelegate> delegate;
