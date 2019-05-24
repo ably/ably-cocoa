@@ -24,10 +24,10 @@ If you find any issues with unsupported platform versions, please [raise an issu
 
 #### Acknowledgments
 
-As of version `1.1.4` this library based on the 1.1 library specification. It implements a subset of 1.1 features:
+As of version `1.1.5` this library based on the 1.1 library specification. It implements a subset of 1.1 features:
 - updated push API and push device authentication;
 - support for enforcement of the `maxMessageSize` attribute
-Other minor features and bugfixes are included, as listed in the [changelog](CHANGELOG.md#114-2019-05-07).
+Other minor features and bugfixes are included, as listed in the [changelog](CHANGELOG.md#115-2019-05-23).
 
 ##### macOS & tvOS
 
@@ -98,7 +98,7 @@ If you see, for example, a `dyld: Library not loaded: @rpath/SocketRocket.framew
 
 ### Manual installation 
 
-1. Get the code from GitHub [from the release page](https://github.com/ably/ably-ios/releases/tag/1.1.4), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-ios.git`
+1. Get the code from GitHub [from the release page](https://github.com/ably/ably-ios/releases/tag/1.1.5), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-ios.git`
 2. Drag the directory `ably-ios/ably-ios` into your project as a group.
 3. Ably depends on our [SocketRocket Fork](https://github.com/ably-forks/SocketRocket) 0.5.2; get it [from the releases page](https://github.com/ably-forks/SocketRocket/releases/tag/0.5.2-ably-2) and follow [its manual installation instructions](https://github.com/ably-forks/SocketRocket/#installing).
 4. Ably also depends on our [MessagePack Fork](https://github.com/ably-forks/msgpack-objective-C) 0.2.0; get it [from the releases page](https://github.com/ably-forks/msgpack-objective-C/releases/tag/0.2.0-ably-1) and link it into your project.
@@ -601,7 +601,7 @@ client.time { time, error in
 
 ## Support, feedback and troubleshooting
 
-Please visit http://support.ably.io/ for access to our knowledgebase and to ask for any assistance.
+Please visit https://support.ably.io/ for access to our knowledgebase and to ask for any assistance.
 
 You can also view the [community reported Github issues](https://github.com/ably/ably-ios/issues).
 
@@ -640,4 +640,4 @@ This library uses [semantic versioning](http://semver.org/). For each release, t
 
 ## License
 
-Copyright (c) 2018 Ably Real-time Ltd, Licensed under the Apache License, Version 2.0.  Refer to [LICENSE](LICENSE) for the license terms.
+Copyright (c) 2019 Ably Real-time Ltd, Licensed under the Apache License, Version 2.0.  Refer to [LICENSE](LICENSE) for the license terms.

@@ -1,5 +1,30 @@
 # Change Log
 
+## [1.1.5](https://github.com/ably/ably-cocoa/tree/1.1.5) (2019-05-23)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.4...1.1.5)
+
+**Implemented enhancements:**
+
+- Swift 5 / Xcode 10.2 [\#838](https://github.com/ably/ably-cocoa/issues/838)
+
+**Fixed bugs:**
+
+- Issue reported in iOS push tutorial [\#850](https://github.com/ably/ably-cocoa/issues/850)
+
+**Closed issues:**
+
+- Expose `Auth.tokenDetails` [\#852](https://github.com/ably/ably-cocoa/issues/852)
+- Improve handling of clock skew [\#834](https://github.com/ably/ably-cocoa/issues/834)
+- `my-members` presenceMap requirement change for 1.1 [\#737](https://github.com/ably/ably-cocoa/issues/737)
+
+**Merged pull requests:**
+
+- Swift 5 (Xcode 10.2) [\#841](https://github.com/ably/ably-cocoa/pull/841) ([ricardopereira](https://github.com/ricardopereira))
+- RSA11 [\#853](https://github.com/ably/ably-cocoa/pull/853) ([ricardopereira](https://github.com/ricardopereira))
+- Push header docs [\#827](https://github.com/ably/ably-cocoa/pull/827) ([ricardopereira](https://github.com/ricardopereira))
+- Fix Push Update Device Registration [\#851](https://github.com/ably/ably-cocoa/pull/851) ([ricardopereira](https://github.com/ricardopereira))
+- RTP17b [\#835](https://github.com/ably/ably-cocoa/pull/835) ([ricardopereira](https://github.com/ricardopereira))
+
 ## [1.1.4](https://github.com/ably/ably-cocoa/tree/1.1.4) (2019-05-07)
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.3...1.1.4)
 
