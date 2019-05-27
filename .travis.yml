@@ -22,6 +22,8 @@ install:
 before_script:
   - xcrun simctl erase all
 script:
+script:
+  - sudo mkdir '/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 9.3.simruntime/Contents/Resources/RuntimeRoot/usr/lib/swift'
   - export ABLY_ENV="sandbox"
   - fastlane $LANE
 after_success:
