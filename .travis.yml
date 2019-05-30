@@ -18,10 +18,12 @@ install:
   - if [[ ${NAME} == "ably-tvOS" ]]; then carthage update --platform tvOS --cache-builds; fi
   - if [[ ${NAME} == "ably-macOS" ]]; then carthage update --platform macOS --cache-builds; fi
   # Update fastlane
-  - gem install fastlane -v '2.108.0'
+  - gem install fastlane -v '2.122.0'
 before_script:
   - xcrun simctl erase all
 script:
+script:
+  - sudo mkdir '/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 9.3.simruntime/Contents/Resources/RuntimeRoot/usr/lib/swift'
   - export ABLY_ENV="sandbox"
   - fastlane $LANE
 after_success:
