@@ -2659,6 +2659,7 @@ class RealtimeClientConnection: QuickSpec {
 
                     var resumed = false
                     waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
                         client.connection.once(.connected) { _ in
                             var sentQueuedMessage: ARTMessage?
                             channel.publish(nil, data: "message") { _ in
@@ -2667,7 +2668,7 @@ class RealtimeClientConnection: QuickSpec {
                                     expect(transport.protocolMessagesReceived.filter{ $0.action == .ack }).to(haveCount(1))
                                     let sentTransportMessage = transport.protocolMessagesSent.filter{ $0.action == .message }.first!.messages![0]
                                     expect(sentQueuedMessage).to(beIdenticalTo(sentTransportMessage))
-                                    done()
+                                    partialDone()
                                 }
                                 else {
                                     fail("Shouldn't be called")
@@ -2678,10 +2679,11 @@ class RealtimeClientConnection: QuickSpec {
                             }
                             client.connection.once(.connected) { _ in
                                 resumed = true
-                                channel.testSuite_injectIntoMethod(before: #selector(channel.sendQueuedMessages)) {
-                                    channel.testSuite_getArgument(from: #selector(channel.send), at: 0) { arg0 in
-                                        sentQueuedMessage = (arg0 as? ARTProtocolMessage)?.messages?[0]
-                                    }
+                            }
+                            channel.testSuite_injectIntoMethod(before: #selector(channel.sendQueuedMessages)) {
+                                channel.testSuite_getArgument(from: #selector(channel.send), at: 0) { arg0 in
+                                    sentQueuedMessage = (arg0 as? ARTProtocolMessage)?.messages?[0]
+                                    partialDone()
                                 }
                             }
                         }
