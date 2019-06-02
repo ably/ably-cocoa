@@ -1043,7 +1043,7 @@ class RestClientChannel: QuickSpec {
             let text = "John"
             let integer = "5"
             let decimal = "65.33"
-            let dictionary = ["number":3, "name":"John"] as [String : Any]
+            let dictionary = ["number": 3, "name": "John"] as [String : Any]
             let array = ["John", "Mary"]
             let binaryData = "123456".data(using: .utf8)!
 
@@ -1054,8 +1054,8 @@ class RestClientChannel: QuickSpec {
                     TestCase(value: text, expected: JSON(["data": text])),
                     TestCase(value: integer, expected: JSON(["data": integer])),
                     TestCase(value: decimal, expected: JSON(["data": decimal])),
-                    TestCase(value: dictionary, expected: ["data": JSON(dictionary).rawString()!, "encoding": "json"] as JSON),
-                    TestCase(value: array, expected: JSON(["data": JSON(array).rawString()!, "encoding": "json"])),
+                    TestCase(value: dictionary, expected: ["data": JSON(dictionary).rawString(options: [.sortedKeys])!, "encoding": "json"] as JSON),
+                    TestCase(value: array, expected: JSON(["data": JSON(array).rawString(options: [.sortedKeys])!, "encoding": "json"])),
                     TestCase(value: binaryData, expected: JSON(["data": binaryData.toBase64, "encoding": "base64"])),
                 ]
 
@@ -1073,11 +1073,11 @@ class RestClientChannel: QuickSpec {
                             var json = AblyTests.msgpackToJSON(httpBody)
                             if let s = json["data"].string, let data = try? JSONSerialization.jsonObject(with: s.data(using: .utf8)!) {
                                 // Make sure the formatting is the same by parsing
-                                // and reformatting in the same way as the test
-                                // case.
-                                json["data"] = JSON(JSON(data).rawString()!)
+                                // and reformatting in the same way as the test case.
+                                json["data"] = JSON(JSON(data).rawString(options: [.sortedKeys])!)
                             }
-                            expect(json).to(equal(caseTest.expected))
+                            let mergedWithExpectedJSON = try! json.merged(with: caseTest.expected)
+                            expect(json).to(equal(mergedWithExpectedJSON))
                             done()
                         }
                     }
