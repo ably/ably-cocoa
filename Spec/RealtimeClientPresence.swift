@@ -2870,11 +2870,11 @@ class RealtimeClientPresence: QuickSpec {
 
                 it("any ENTER, PRESENT, UPDATE or LEAVE event that matches the current connectionId should be applied to this object") {
                     let options = AblyTests.commonAppSetup()
+                    let channelName = NSUUID().uuidString
 
                     options.clientId = "a"
                     let clientA = ARTRealtime(options: options)
                     defer { clientA.dispose(); clientA.close() }
-                    let channelName = NSUUID().uuidString
                     let channelA = clientA.channels.get(channelName)
 
                     options.clientId = "b"
@@ -2900,7 +2900,7 @@ class RealtimeClientPresence: QuickSpec {
                             guard let currentConnectionId = clientB.connection.id else {
                                 fail("ClientB should be connected"); partialDone(); return
                             }
-                            expect(presence.action).to(equal(ARTPresenceAction.enter))
+                            expect(presence.action).to(equal(ARTPresenceAction.enter) || equal(ARTPresenceAction.present))
                             expect(presence.connectionId).toNot(equal(currentConnectionId))
                             expect(channelB.presenceMap.members).to(haveCount(1))
                             expect(channelB.presenceMap.localMembers).to(haveCount(0))
