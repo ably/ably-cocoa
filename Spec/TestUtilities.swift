@@ -12,7 +12,7 @@ import XCTest
 import Quick
 import Nimble
 import SwiftyJSON
-import SocketRocket
+import SocketRocketAblyFork
 import Aspects
 
 import Ably.Private
