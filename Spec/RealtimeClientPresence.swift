@@ -535,7 +535,7 @@ class RealtimeClientPresence: QuickSpec {
                                 expect(channel.queuedMessages).to(haveCount(0))
                                 done()
                             }
-                            delay(0.1) {
+                            client.rest.queue.async {
                                 channel.onError(protocolError)
                             }
                         }
@@ -2870,11 +2870,11 @@ class RealtimeClientPresence: QuickSpec {
 
                 it("any ENTER, PRESENT, UPDATE or LEAVE event that matches the current connectionId should be applied to this object") {
                     let options = AblyTests.commonAppSetup()
+                    let channelName = NSUUID().uuidString
 
                     options.clientId = "a"
                     let clientA = ARTRealtime(options: options)
                     defer { clientA.dispose(); clientA.close() }
-                    let channelName = NSUUID().uuidString
                     let channelA = clientA.channels.get(channelName)
 
                     options.clientId = "b"
@@ -2900,7 +2900,7 @@ class RealtimeClientPresence: QuickSpec {
                             guard let currentConnectionId = clientB.connection.id else {
                                 fail("ClientB should be connected"); partialDone(); return
                             }
-                            expect(presence.action).to(equal(ARTPresenceAction.enter))
+                            expect(presence.action).to(equal(ARTPresenceAction.enter) || equal(ARTPresenceAction.present))
                             expect(presence.connectionId).toNot(equal(currentConnectionId))
                             expect(channelB.presenceMap.members).to(haveCount(1))
                             expect(channelB.presenceMap.localMembers).to(haveCount(0))
@@ -3012,9 +3012,14 @@ class RealtimeClientPresence: QuickSpec {
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get(channelName)
                     waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
                         channel.presence.enterClient(clientId, data: nil) { error in
                             expect(error).to(beNil())
-                            done()
+                            partialDone()
+                        }
+                        channel.presence.subscribe(.enter) { presence in
+                            expect(presence.clientId).to(equal(clientId))
+                            partialDone()
                         }
                     }
                     waitUntil(timeout: testTimeout) { done in
@@ -4347,18 +4352,18 @@ class RealtimeClientPresence: QuickSpec {
                             done()
                         }
                     }
-
                 }
             }
             
             context("presence message attributes") {
                 
                 // TP3a
-                it ("if the presence message does not contain an id, it should be set to protocolMsgId:index") {
+                it("if the presence message does not contain an id, it should be set to protocolMsgId:index") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
+
                     let protocolMessage = ARTProtocolMessage()
                     protocolMessage.id = "protocolId"
                     let presenceMessage = ARTPresenceMessage()

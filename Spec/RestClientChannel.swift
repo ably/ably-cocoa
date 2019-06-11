@@ -1043,21 +1043,34 @@ class RestClientChannel: QuickSpec {
             let text = "John"
             let integer = "5"
             let decimal = "65.33"
-            let dictionary = ["number":3, "name":"John"] as [String : Any]
+            let dictionary = ["number": 3, "name": "John"] as [String : Any]
             let array = ["John", "Mary"]
             let binaryData = "123456".data(using: .utf8)!
 
             // RSL4a
             it("payloads should be binary, strings, or objects capable of JSON representation") {
-                let validCases = [
-                    TestCase(value: nil, expected: JSON([:])),
-                    TestCase(value: text, expected: JSON(["data": text])),
-                    TestCase(value: integer, expected: JSON(["data": integer])),
-                    TestCase(value: decimal, expected: JSON(["data": decimal])),
-                    TestCase(value: dictionary, expected: ["data": JSON(dictionary).rawString()!, "encoding": "json"] as JSON),
-                    TestCase(value: array, expected: JSON(["data": JSON(array).rawString()!, "encoding": "json"])),
-                    TestCase(value: binaryData, expected: JSON(["data": binaryData.toBase64, "encoding": "base64"])),
-                ]
+                let validCases: [TestCase]
+                if #available(iOS 11.0, *) {
+                    validCases = [
+                        TestCase(value: nil, expected: JSON([:])),
+                        TestCase(value: text, expected: JSON(["data": text])),
+                        TestCase(value: integer, expected: JSON(["data": integer])),
+                        TestCase(value: decimal, expected: JSON(["data": decimal])),
+                        TestCase(value: dictionary, expected: ["data": JSON(dictionary).rawString(options: [.sortedKeys])!, "encoding": "json"] as JSON),
+                        TestCase(value: array, expected: JSON(["data": JSON(array).rawString(options: [.sortedKeys])!, "encoding": "json"])),
+                        TestCase(value: binaryData, expected: JSON(["data": binaryData.toBase64, "encoding": "base64"])),
+                    ]
+                } else {
+                    validCases = [
+                        TestCase(value: nil, expected: JSON([:])),
+                        TestCase(value: text, expected: JSON(["data": text])),
+                        TestCase(value: integer, expected: JSON(["data": integer])),
+                        TestCase(value: decimal, expected: JSON(["data": decimal])),
+                        TestCase(value: dictionary, expected: ["data": JSON(dictionary).rawString()!, "encoding": "json"] as JSON),
+                        TestCase(value: array, expected: JSON(["data": JSON(array).rawString()!, "encoding": "json"])),
+                        TestCase(value: binaryData, expected: JSON(["data": binaryData.toBase64, "encoding": "base64"])),
+                    ]
+                }
 
                 client.options.idempotentRestPublishing = false
                 client.httpExecutor = testHTTPExecutor
@@ -1073,11 +1086,15 @@ class RestClientChannel: QuickSpec {
                             var json = AblyTests.msgpackToJSON(httpBody)
                             if let s = json["data"].string, let data = try? JSONSerialization.jsonObject(with: s.data(using: .utf8)!) {
                                 // Make sure the formatting is the same by parsing
-                                // and reformatting in the same way as the test
-                                // case.
-                                json["data"] = JSON(JSON(data).rawString()!)
+                                // and reformatting in the same way as the test case.
+                                if #available(iOS 11.0, *) {
+                                    json["data"] = JSON(JSON(data).rawString(options: [.sortedKeys])!)
+                                } else {
+                                    json["data"] = JSON(JSON(data).rawString()!)
+                                }
                             }
-                            expect(json).to(equal(caseTest.expected))
+                            let mergedWithExpectedJSON = try! json.merged(with: caseTest.expected)
+                            expect(json).to(equal(mergedWithExpectedJSON))
                             done()
                         }
                     }
