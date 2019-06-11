@@ -22,7 +22,6 @@
 		850BFB4D1B79323C009D0ADD /* ARTPaginatedResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 850BFB4B1B79323C009D0ADD /* ARTPaginatedResult.m */; };
 		851674EF1B7BA5CD00D35169 /* Stats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 851674EE1B7BA5CD00D35169 /* Stats.swift */; };
 		853ED7C41B7A1A3C006F1C6F /* RestClientStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 853ED7C31B7A1A3C006F1C6F /* RestClientStats.swift */; };
-		856AAC8F1B6E304B00B07119 /* Ably.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BF61311A35B2AB004CF2B3 /* Ably.framework */; };
 		856AAC971B6E30C800B07119 /* TestUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 856AAC961B6E30C800B07119 /* TestUtilities.swift */; };
 		856AAC991B6E312F00B07119 /* RestClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 856AAC981B6E312F00B07119 /* RestClient.swift */; };
 		856AAC9B1B6E326E00B07119 /* ably-common in Resources */ = {isa = PBXBuildFile; fileRef = 856AAC9A1B6E326E00B07119 /* ably-common */; };
@@ -88,7 +87,6 @@
 		D7093C33219ED41A00723F17 /* Nimble.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7093C30219ED41A00723F17 /* Nimble.framework */; };
 		D7093C34219ED41A00723F17 /* Aspects.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7093C31219ED41A00723F17 /* Aspects.framework */; };
 		D7093C35219ED41A00723F17 /* Quick.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7093C32219ED41A00723F17 /* Quick.framework */; };
-		D7093C3B219EDBFC00723F17 /* SocketRocket.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6A52194A09D008F54AD /* SocketRocket.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093C3C219EDC0900723F17 /* Nimble.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D7093C30219ED41A00723F17 /* Nimble.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093C3D219EDC1800723F17 /* Aspects.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D7093C31219ED41A00723F17 /* Aspects.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093C3E219EDC1800723F17 /* Quick.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D7093C32219ED41A00723F17 /* Quick.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -129,13 +127,13 @@
 		D7093C98219EE3E800723F17 /* msgpack.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6B82194A1FD008F54AD /* msgpack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093C9A219EE3E800723F17 /* KSCrash.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6AF2194A0B2008F54AD /* KSCrash.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093C9B219EE3E800723F17 /* SAMKeychain.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6AE2194A0B2008F54AD /* SAMKeychain.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		D7093C9C219EE3E800723F17 /* SocketRocket.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6AC2194A0B1008F54AD /* SocketRocket.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093C9D219EE3E800723F17 /* ULID.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6AD2194A0B2008F54AD /* ULID.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093CA9219EFA8A00723F17 /* MockDeviceStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7093CA8219EFA8A00723F17 /* MockDeviceStorage.swift */; };
 		D70EAAED1BC3376200CD8B9E /* ARTRestChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = D70EAAEB1BC3376200CD8B9E /* ARTRestChannel.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D70EAAEE1BC3376200CD8B9E /* ARTRestChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = D70EAAEC1BC3376200CD8B9E /* ARTRestChannel.m */; };
 		D70EECAC1FEAF331008A50CD /* ARTPendingMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = D70EECAA1FEAF331008A50CD /* ARTPendingMessage.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D70EECAD1FEAF331008A50CD /* ARTPendingMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = D70EECAB1FEAF331008A50CD /* ARTPendingMessage.m */; };
+		D70F277D2261046A00956251 /* Ably.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BF61311A35B2AB004CF2B3 /* Ably.framework */; };
 		D710D47D21949A27008F54AD /* Ably.h in Headers */ = {isa = PBXBuildFile; fileRef = D7534C311D79E5C20054C182 /* Ably.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D710D47F21949A28008F54AD /* Ably.h in Headers */ = {isa = PBXBuildFile; fileRef = D7534C311D79E5C20054C182 /* Ably.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D710D48021949A42008F54AD /* ARTDefault.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -505,11 +503,9 @@
 		D710D6A72194A09D008F54AD /* SAMKeychain.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6A22194A09C008F54AD /* SAMKeychain.framework */; };
 		D710D6A82194A09D008F54AD /* KSCrash.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6A32194A09D008F54AD /* KSCrash.framework */; };
 		D710D6A92194A09D008F54AD /* msgpack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6A42194A09D008F54AD /* msgpack.framework */; };
-		D710D6AA2194A09D008F54AD /* SocketRocket.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6A52194A09D008F54AD /* SocketRocket.framework */; };
 		D710D6AB2194A09D008F54AD /* ULID.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6A62194A09D008F54AD /* ULID.framework */; };
 		D710D6B42194A1FD008F54AD /* KSCrash.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6AF2194A0B2008F54AD /* KSCrash.framework */; };
 		D710D6B52194A1FD008F54AD /* SAMKeychain.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6AE2194A0B2008F54AD /* SAMKeychain.framework */; };
-		D710D6B62194A1FD008F54AD /* SocketRocket.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6AC2194A0B1008F54AD /* SocketRocket.framework */; };
 		D710D6B72194A1FD008F54AD /* ULID.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6AD2194A0B2008F54AD /* ULID.framework */; };
 		D710D6B92194A1FD008F54AD /* msgpack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6B82194A1FD008F54AD /* msgpack.framework */; };
 		D714A63E1C74D4B2002F2CA0 /* NSObject+TestSuite.swift in Sources */ = {isa = PBXBuildFile; fileRef = D714A63D1C74D4B2002F2CA0 /* NSObject+TestSuite.swift */; };
@@ -527,10 +523,14 @@
 		D73692001DB788C40062C150 /* ARTAuthDetails.m in Sources */ = {isa = PBXBuildFile; fileRef = D73691FE1DB788C40062C150 /* ARTAuthDetails.m */; };
 		D736A0C91F916553005ABE81 /* KSCrash.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D736A0C61F916553005ABE81 /* KSCrash.framework */; };
 		D736A0CA1F916553005ABE81 /* msgpack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D736A0C71F916553005ABE81 /* msgpack.framework */; };
-		D736A0CB1F916553005ABE81 /* SocketRocket.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D736A0C81F916553005ABE81 /* SocketRocket.framework */; };
 		D736A1231F9178B0005ABE81 /* KSCrash.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D736A0C61F916553005ABE81 /* KSCrash.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D736A1241F9178B0005ABE81 /* msgpack.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D736A0C71F916553005ABE81 /* msgpack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		D736A1251F9178B0005ABE81 /* SocketRocket.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D736A0C81F916553005ABE81 /* SocketRocket.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D73BF70C22609E7F00579773 /* SocketRocketAblyFork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D73BF70B22609E7F00579773 /* SocketRocketAblyFork.framework */; };
+		D73BF70E22609E9500579773 /* SocketRocketAblyFork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D73BF70D22609E9500579773 /* SocketRocketAblyFork.framework */; };
+		D73BF71022609EB500579773 /* SocketRocketAblyFork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D73BF70F22609EB500579773 /* SocketRocketAblyFork.framework */; };
+		D73BF71122609EDF00579773 /* SocketRocketAblyFork.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D73BF70B22609E7F00579773 /* SocketRocketAblyFork.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D73BF71222609EF600579773 /* SocketRocketAblyFork.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D73BF70D22609E9500579773 /* SocketRocketAblyFork.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D73BF71322609F0400579773 /* SocketRocketAblyFork.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D73BF70F22609EB500579773 /* SocketRocketAblyFork.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D746AE1D1BBB5207003ECEF8 /* ARTDataQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE1A1BBB5207003ECEF8 /* ARTDataQuery.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D746AE1E1BBB5207003ECEF8 /* ARTDataQuery+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE1B1BBB5207003ECEF8 /* ARTDataQuery+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D746AE1F1BBB5207003ECEF8 /* ARTDataQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = D746AE1C1BBB5207003ECEF8 /* ARTDataQuery.m */; };
@@ -684,13 +684,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		856AAC901B6E304B00B07119 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 96BF61281A35B2AB004CF2B3 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 96BF61301A35B2AB004CF2B3;
-			remoteInfo = ably;
-		};
 		D7093C10219E2DB200723F17 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 96BF61281A35B2AB004CF2B3 /* Project object */;
@@ -705,6 +698,13 @@
 			remoteGlobalIDString = D710D474219495FC008F54AD;
 			remoteInfo = "Ably-tvOS";
 		};
+		D73BF7162260E7BD00579773 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 96BF61281A35B2AB004CF2B3 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 96BF61301A35B2AB004CF2B3;
+			remoteInfo = "Ably-iOS";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -714,6 +714,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				D73BF71222609EF600579773 /* SocketRocketAblyFork.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C4B219EDCAB00723F17 /* ULID.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C49219EDC9B00723F17 /* msgpack.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C47219EDC8A00723F17 /* KSCrash.framework in Copy Carthage Frameworks to Test bundle */,
@@ -722,7 +723,6 @@
 				D7093C3D219EDC1800723F17 /* Aspects.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C3E219EDC1800723F17 /* Quick.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C3C219EDC0900723F17 /* Nimble.framework in Copy Carthage Frameworks to Test bundle */,
-				D7093C3B219EDBFC00723F17 /* SocketRocket.framework in Copy Carthage Frameworks to Test bundle */,
 			);
 			name = "Copy Carthage Frameworks to Test bundle";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -733,6 +733,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				D73BF71322609F0400579773 /* SocketRocketAblyFork.framework in Copy Carthage Frameworks to Test bundle */,
 				D75B861721BB48E200FD8DD2 /* Aspects.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C92219EE3E800723F17 /* Nimble.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C93219EE3E800723F17 /* Quick.framework in Copy Carthage Frameworks to Test bundle */,
@@ -740,7 +741,6 @@
 				D7093C98219EE3E800723F17 /* msgpack.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C9A219EE3E800723F17 /* KSCrash.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C9B219EE3E800723F17 /* SAMKeychain.framework in Copy Carthage Frameworks to Test bundle */,
-				D7093C9C219EE3E800723F17 /* SocketRocket.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C9D219EE3E800723F17 /* ULID.framework in Copy Carthage Frameworks to Test bundle */,
 			);
 			name = "Copy Carthage Frameworks to Test bundle";
@@ -752,6 +752,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				D73BF71122609EDF00579773 /* SocketRocketAblyFork.framework in Copy Carthage Frameworks to Test bundle */,
 				D7EEE6B421A6E082000E8474 /* SwiftyJSON.framework in Copy Carthage Frameworks to Test bundle */,
 				D7EEE6B321A6E075000E8474 /* Quick.framework in Copy Carthage Frameworks to Test bundle */,
 				D7EEE6B221A6E070000E8474 /* Nimble.framework in Copy Carthage Frameworks to Test bundle */,
@@ -759,7 +760,6 @@
 				D38D22F220FDFD9900194B40 /* ULID.framework in Copy Carthage Frameworks to Test bundle */,
 				D736A1231F9178B0005ABE81 /* KSCrash.framework in Copy Carthage Frameworks to Test bundle */,
 				D736A1241F9178B0005ABE81 /* msgpack.framework in Copy Carthage Frameworks to Test bundle */,
-				D736A1251F9178B0005ABE81 /* SocketRocket.framework in Copy Carthage Frameworks to Test bundle */,
 				D75F49C8205AD525003DE04F /* SAMKeychain.framework in Copy Carthage Frameworks to Test bundle */,
 			);
 			name = "Copy Carthage Frameworks to Test bundle";
@@ -855,9 +855,7 @@
 		D710D6A22194A09C008F54AD /* SAMKeychain.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SAMKeychain.framework; path = Carthage/Build/Mac/SAMKeychain.framework; sourceTree = "<group>"; };
 		D710D6A32194A09D008F54AD /* KSCrash.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = KSCrash.framework; path = Carthage/Build/Mac/KSCrash.framework; sourceTree = "<group>"; };
 		D710D6A42194A09D008F54AD /* msgpack.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = msgpack.framework; path = Carthage/Build/Mac/msgpack.framework; sourceTree = "<group>"; };
-		D710D6A52194A09D008F54AD /* SocketRocket.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SocketRocket.framework; path = Carthage/Build/Mac/SocketRocket.framework; sourceTree = "<group>"; };
 		D710D6A62194A09D008F54AD /* ULID.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ULID.framework; path = Carthage/Build/Mac/ULID.framework; sourceTree = "<group>"; };
-		D710D6AC2194A0B1008F54AD /* SocketRocket.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SocketRocket.framework; path = Carthage/Build/tvOS/SocketRocket.framework; sourceTree = "<group>"; };
 		D710D6AD2194A0B2008F54AD /* ULID.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ULID.framework; path = Carthage/Build/tvOS/ULID.framework; sourceTree = "<group>"; };
 		D710D6AE2194A0B2008F54AD /* SAMKeychain.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SAMKeychain.framework; path = Carthage/Build/tvOS/SAMKeychain.framework; sourceTree = "<group>"; };
 		D710D6AF2194A0B2008F54AD /* KSCrash.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = KSCrash.framework; path = Carthage/Build/tvOS/KSCrash.framework; sourceTree = "<group>"; };
@@ -878,7 +876,9 @@
 		D73691FE1DB788C40062C150 /* ARTAuthDetails.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTAuthDetails.m; sourceTree = "<group>"; };
 		D736A0C61F916553005ABE81 /* KSCrash.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = KSCrash.framework; path = Carthage/Build/iOS/KSCrash.framework; sourceTree = "<group>"; };
 		D736A0C71F916553005ABE81 /* msgpack.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = msgpack.framework; path = Carthage/Build/iOS/msgpack.framework; sourceTree = "<group>"; };
-		D736A0C81F916553005ABE81 /* SocketRocket.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SocketRocket.framework; path = Carthage/Build/iOS/SocketRocket.framework; sourceTree = "<group>"; };
+		D73BF70B22609E7F00579773 /* SocketRocketAblyFork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SocketRocketAblyFork.framework; path = Carthage/Build/iOS/SocketRocketAblyFork.framework; sourceTree = "<group>"; };
+		D73BF70D22609E9500579773 /* SocketRocketAblyFork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SocketRocketAblyFork.framework; path = Carthage/Build/Mac/SocketRocketAblyFork.framework; sourceTree = "<group>"; };
+		D73BF70F22609EB500579773 /* SocketRocketAblyFork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SocketRocketAblyFork.framework; path = Carthage/Build/tvOS/SocketRocketAblyFork.framework; sourceTree = "<group>"; };
 		D746AE1A1BBB5207003ECEF8 /* ARTDataQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTDataQuery.h; sourceTree = "<group>"; };
 		D746AE1B1BBB5207003ECEF8 /* ARTDataQuery+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTDataQuery+Private.h"; sourceTree = "<group>"; };
 		D746AE1C1BBB5207003ECEF8 /* ARTDataQuery.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTDataQuery.m; sourceTree = "<group>"; };
@@ -1029,7 +1029,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				856AAC8F1B6E304B00B07119 /* Ably.framework in Frameworks */,
+				D70F277D2261046A00956251 /* Ably.framework in Frameworks */,
 				D7EEE6AA21A6E048000E8474 /* Aspects.framework in Frameworks */,
 				D7EEE6B021A6E048000E8474 /* Quick.framework in Frameworks */,
 				D7EEE6AF21A6E048000E8474 /* Nimble.framework in Frameworks */,
@@ -1042,8 +1042,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				D736A0C91F916553005ABE81 /* KSCrash.framework in Frameworks */,
+				D73BF70C22609E7F00579773 /* SocketRocketAblyFork.framework in Frameworks */,
 				D736A0CA1F916553005ABE81 /* msgpack.framework in Frameworks */,
-				D736A0CB1F916553005ABE81 /* SocketRocket.framework in Frameworks */,
 				D77A0C961FFEEF0300711131 /* ULID.framework in Frameworks */,
 				D75F49C7205AD4D4003DE04F /* SAMKeychain.framework in Frameworks */,
 			);
@@ -1078,9 +1078,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				D710D6A72194A09D008F54AD /* SAMKeychain.framework in Frameworks */,
+				D73BF70E22609E9500579773 /* SocketRocketAblyFork.framework in Frameworks */,
 				D710D6A82194A09D008F54AD /* KSCrash.framework in Frameworks */,
 				D710D6A92194A09D008F54AD /* msgpack.framework in Frameworks */,
-				D710D6AA2194A09D008F54AD /* SocketRocket.framework in Frameworks */,
 				D710D6AB2194A09D008F54AD /* ULID.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1092,7 +1092,7 @@
 				D710D6B92194A1FD008F54AD /* msgpack.framework in Frameworks */,
 				D710D6B42194A1FD008F54AD /* KSCrash.framework in Frameworks */,
 				D710D6B52194A1FD008F54AD /* SAMKeychain.framework in Frameworks */,
-				D710D6B62194A1FD008F54AD /* SocketRocket.framework in Frameworks */,
+				D73BF71022609EB500579773 /* SocketRocketAblyFork.framework in Frameworks */,
 				D710D6B72194A1FD008F54AD /* ULID.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1442,6 +1442,9 @@
 		FAFEC5BB8312EB69E84C28D4 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D73BF70B22609E7F00579773 /* SocketRocketAblyFork.framework */,
+				D73BF70D22609E9500579773 /* SocketRocketAblyFork.framework */,
+				D73BF70F22609EB500579773 /* SocketRocketAblyFork.framework */,
 				D75B861521BB48C900FD8DD2 /* Aspects.framework */,
 				D7EEE6AC21A6E048000E8474 /* Nimble.framework */,
 				D7EEE6AD21A6E048000E8474 /* Quick.framework */,
@@ -1458,16 +1461,13 @@
 				D710D6A32194A09D008F54AD /* KSCrash.framework */,
 				D710D6AF2194A0B2008F54AD /* KSCrash.framework */,
 				D710D6AE2194A0B2008F54AD /* SAMKeychain.framework */,
-				D710D6AC2194A0B1008F54AD /* SocketRocket.framework */,
 				D710D6AD2194A0B2008F54AD /* ULID.framework */,
 				D710D6A42194A09D008F54AD /* msgpack.framework */,
 				D75F49C6205AD4D4003DE04F /* SAMKeychain.framework */,
 				D77A0C951FFEEF0300711131 /* ULID.framework */,
 				D736A0C61F916553005ABE81 /* KSCrash.framework */,
 				D736A0C71F916553005ABE81 /* msgpack.framework */,
-				D736A0C81F916553005ABE81 /* SocketRocket.framework */,
 				D710D6A22194A09C008F54AD /* SAMKeychain.framework */,
-				D710D6A52194A09D008F54AD /* SocketRocket.framework */,
 				D710D6A62194A09D008F54AD /* ULID.framework */,
 				3F3D07905A62187E022923A8 /* Pods.framework */,
 			);
@@ -1846,7 +1846,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				856AAC911B6E304B00B07119 /* PBXTargetDependency */,
+				D73BF7172260E7BD00579773 /* PBXTargetDependency */,
 			);
 			name = "Ably-iOS-Tests";
 			productName = AblySpec;
@@ -2383,11 +2383,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		856AAC911B6E304B00B07119 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 96BF61301A35B2AB004CF2B3 /* Ably-iOS */;
-			targetProxy = 856AAC901B6E304B00B07119 /* PBXContainerItemProxy */;
-		};
 		D7093C11219E2DB200723F17 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = D710D45A219495E2008F54AD /* Ably-macOS */;
@@ -2397,6 +2392,11 @@
 			isa = PBXTargetDependency;
 			target = D710D474219495FC008F54AD /* Ably-tvOS */;
 			targetProxy = D7093C66219EE1AE00723F17 /* PBXContainerItemProxy */;
+		};
+		D73BF7172260E7BD00579773 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 96BF61301A35B2AB004CF2B3 /* Ably-iOS */;
+			targetProxy = D73BF7162260E7BD00579773 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -2424,7 +2424,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = "Ably-iOS-Tests";
 				SWIFT_OBJC_BRIDGING_HEADER = "Spec/AblySpec-Bridging-Header.h";
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
@@ -2590,9 +2589,7 @@
 				MODULEMAP_FILE = Source/Ably.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = Ably;
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_SWIFT3_OBJC_INFERENCE = On;
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -2615,8 +2612,7 @@
 				MODULEMAP_FILE = Source/Ably.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = Ably;
-				SWIFT_SWIFT3_OBJC_INFERENCE = On;
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
@@ -2650,8 +2646,7 @@
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OBJC_BRIDGING_HEADER = "Spec/AblySpec-Bridging-Header.h";
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -2684,7 +2679,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SWIFT_OBJC_BRIDGING_HEADER = "Spec/AblySpec-Bridging-Header.h";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
@@ -2716,8 +2711,7 @@
 				SDKROOT = appletvos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OBJC_BRIDGING_HEADER = "Spec/AblySpec-Bridging-Header.h";
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 12.1;
 			};
@@ -2750,7 +2744,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				SWIFT_OBJC_BRIDGING_HEADER = "Spec/AblySpec-Bridging-Header.h";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 12.1;
 			};
