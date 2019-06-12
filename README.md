@@ -27,7 +27,7 @@ If you find any issues with unsupported platform versions, please [raise an issu
 As of version `1.1.5` this library based on the 1.1 library specification. It implements a subset of 1.1 features:
 - updated push API and push device authentication;
 - support for enforcement of the `maxMessageSize` attribute
-Other minor features and bugfixes are included, as listed in the [changelog](CHANGELOG.md#115-2019-05-23).
+Other minor features and bugfixes are included, as listed in the [changelog](CHANGELOG.md#116-2019-06-12).
 
 ##### macOS & tvOS
 
