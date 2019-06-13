@@ -67,7 +67,7 @@ class TestsTests: XCTestCase {
         URLSession.shared.dataTask(with: URL(string: "https://ably.io")!) { _,_,_  in
             realtime = ARTRealtime(key: key as String)
             realtime.channels.get("foo").attach { _ in
-                defer { backgroundRealtimeExpectation.fulfill() }
+                do { backgroundRealtimeExpectation.fulfill() }
             }
         } .resume()
         self.waitForExpectations(timeout: 10, handler: nil)
@@ -77,7 +77,7 @@ class TestsTests: XCTestCase {
         URLSession.shared.dataTask(with: URL(string: "https://ably.io")!) { _,_,_  in
             rest = ARTRest(key: key as String)
             rest.channels.get("foo").history { result, error in
-                defer { backgroundRestExpectation.fulfill() }
+                do { backgroundRestExpectation.fulfill() }
             }
         }.resume()
         self.waitForExpectations(timeout: 10, handler: nil)
