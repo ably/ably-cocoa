@@ -8,6 +8,37 @@
 
 iOS, tvOS and macOS Objective-C and Swift client library SDK for [Ably realtime messaging service](https://www.ably.io), written in Objective-C. This library currently targets the [Ably 1.1 client library specification](https://www.ably.io/documentation/client-lib-development-guide/features/). You can jump to the '[Known Limitations](#known-limitations)' section to see the features this client library does not yet support or [view our client library SDKs feature support matrix](https://www.ably.io/download/sdk-feature-support-matrix) to see the list of all the available features.
 
+- [Supported platforms](#supported-platforms)
+	- [Acknowledgments](#acknowledgments)
+- [Known Limitations](#known-limitations)
+- [Documentation](#documentation)
+- [Installation Guide](#installation-guide)
+	- [CocoaPods](#installing-through-cocoapods)
+	- [Carthage](#installing-through-carthage)
+	- [Manual](#manual-installation)
+- [Thread-safety Acknowledgments](#thread-safety)
+- [Using the Realtime API](#using-the-realtime-api)
+	- [Introduction](#introduction)
+	- [Connection](#connection)
+	- [Subscribing to a channel](#subscribing-to-a-channel)
+	- [Publishing to a channel](#publishing-to-a-channel)
+	- [Querying the history](#querying-the-history)
+	- [Presence on a channel](#presence-on-a-channel)
+	- [Querying the presence history](#querying-the-presence-history)
+	- [Using the authCallback](#using-the-authCallback)
+- [Using the REST API](#using-the-rest-api)
+	- [Publishing a message to a channel](#publishing-a-message-to-a-channel)
+	- [Querying the history](#querying-the-history)
+	- [Presence on a channel](#presence-on-a-channel)
+	- [Querying the presence history](#querying-the-presence-history)
+	- [Generate token](#generate-token)
+	- [Fetching your application's stats](#fetching-your-applications-stats)
+	- [Fetching the Ably service time](#fetching-the-ably-service-time)
+- [Support, feedback and troubleshooting](#support-feedback-and-troubleshooting)
+- [Contributing](#contributing)
+- [Running tests](#running-tests)
+- [Release Process](#release-process)
+
 ## Supported platforms
 
 This SDK is compatible with projects that target:
@@ -27,6 +58,7 @@ If you find any issues with unsupported platform versions, please [raise an issu
 As of version `1.1.6` this library based on the 1.1 library specification. It implements a subset of 1.1 features:
 - updated push API and push device authentication;
 - support for enforcement of the `maxMessageSize` attribute
+
 Other minor features and bugfixes are included, as listed in the [changelog](CHANGELOG.md#116-2019-06-12).
 
 ##### macOS & tvOS
@@ -92,9 +124,9 @@ Add this line to your application's Cartfile:
 
 And then run `carthage update` to build the framework and drag the built Ably.framework into your Xcode project.
 
-If you see, for example, a `dyld: Library not loaded: @rpath/SocketRocket.framework/SocketRocket` error, then most likely you forgot to add all the dependencies to your project. You have more detailed information [here](https://github.com/Carthage/Carthage#adding-frameworks-to-an-application).
+If you see, for example, a `dyld: Library not loaded: @rpath/SocketRocketAblyFork.framework/SocketRocketAblyFork` error, then most likely you forgot to add all the dependencies to your project. You have more detailed information [here](https://github.com/Carthage/Carthage#adding-frameworks-to-an-application).
 
-![](Examples/Images/linked-frameworks.png)
+![Screenshot 2019-06-13 at 14 06 43](https://user-images.githubusercontent.com/3541185/59460334-c3634b80-8e16-11e9-81b3-de2378b2f384.png)
 
 ### Manual installation 
 
