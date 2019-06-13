@@ -27,6 +27,7 @@ If you find any issues with unsupported platform versions, please [raise an issu
 As of version `1.1.6` this library based on the 1.1 library specification. It implements a subset of 1.1 features:
 - updated push API and push device authentication;
 - support for enforcement of the `maxMessageSize` attribute
+
 Other minor features and bugfixes are included, as listed in the [changelog](CHANGELOG.md#116-2019-06-12).
 
 ##### macOS & tvOS
@@ -92,9 +93,9 @@ Add this line to your application's Cartfile:
 
 And then run `carthage update` to build the framework and drag the built Ably.framework into your Xcode project.
 
-If you see, for example, a `dyld: Library not loaded: @rpath/SocketRocket.framework/SocketRocket` error, then most likely you forgot to add all the dependencies to your project. You have more detailed information [here](https://github.com/Carthage/Carthage#adding-frameworks-to-an-application).
+If you see, for example, a `dyld: Library not loaded: @rpath/SocketRocketAblyFork.framework/SocketRocketAblyFork` error, then most likely you forgot to add all the dependencies to your project. You have more detailed information [here](https://github.com/Carthage/Carthage#adding-frameworks-to-an-application).
 
-![](Examples/Images/linked-frameworks.png)
+![Screenshot 2019-06-13 at 14 06 43](https://user-images.githubusercontent.com/3541185/59460334-c3634b80-8e16-11e9-81b3-de2378b2f384.png)
 
 ### Manual installation 
 
