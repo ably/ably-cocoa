@@ -1,5 +1,21 @@
 # Change Log
 
+## [1.1.6](https://github.com/ably/ably-cocoa/tree/1.1.6) (2019-06-12)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.5...1.1.6)
+
+**Fixed bugs:**
+
+- Lexical or Preprocessor Issue: 'SRWebSocket.h' file not found [\#840](https://github.com/ably/ably-cocoa/issues/840)
+- KSCrashAblyFork ksthread_getQueueName [\#846](https://github.com/ably/ably-cocoa/issues/846)
+
+**Closed issues:**
+
+- Fix Travis CI (iOS 9 build is failing) [\#856](https://github.com/ably/ably-cocoa/issues/856)
+
+**Merged pull requests:**
+
+- Update KSCrash and SocketRocket [\#858](https://github.com/ably/ably-cocoa/pull/858) ([ricardopereira](https://github.com/ricardopereira))
+
 ## [1.1.5](https://github.com/ably/ably-cocoa/tree/1.1.5) (2019-05-23)
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.4...1.1.5)
 
