@@ -458,7 +458,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 dispatch_sync(_queue, ^{
 ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
     if (self.state_nosync == ARTRealtimeChannelFailed) {
-        if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in Failed state."]);
+        if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in FAILED state."]);
+        [self.logger warn:@"R:%p C:%p (%@) subscribe has been ignored (attempted to subscribe while channel is in FAILED state)", self->_realtime, self, self.name];
         return;
     }
     [self _attach:onAttach];
@@ -498,7 +499,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 dispatch_sync(_queue, ^{
 ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
     if (self.state_nosync == ARTRealtimeChannelFailed) {
-        if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in Failed state."]);
+        if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in FAILED state."]);
+        [self.logger warn:@"R:%p C:%p (%@) subscribe of '%@' has been ignored (attempted to subscribe while channel is in FAILED state)", self->_realtime, self, self.name, name];
         return;
     }
     [self _attach:onAttach];
