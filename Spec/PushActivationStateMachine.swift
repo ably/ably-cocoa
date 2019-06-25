@@ -785,7 +785,7 @@ class PushActivationStateMachine : QuickSpec {
                             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationUpdate.self))
                         }
 
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationUpdate.self))
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
                         expect(httpExecutor.requests.count) == 0
                     }
 
@@ -903,7 +903,7 @@ class PushActivationStateMachine : QuickSpec {
                         }
 
                         expect(stateMachine.rest.device.identityTokenDetails).to(beNil())
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationUpdate.self))
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
                         expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
                         expect(httpExecutor.requests.count) == 1
                         let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(stateMachine.rest.device.id)" })
@@ -988,7 +988,7 @@ class PushActivationStateMachine : QuickSpec {
                             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationUpdate.self))
                         }
 
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationUpdate.self))
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
                         expect(httpExecutor.requests.count) == 0
                     }
 
@@ -1104,7 +1104,7 @@ class PushActivationStateMachine : QuickSpec {
                         }
 
                         expect(stateMachine.rest.device.identityTokenDetails).to(beNil())
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationUpdate.self))
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
                         expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
                         expect(httpExecutor.requests.count) == 1
                         let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(stateMachine.rest.device.id)" })
