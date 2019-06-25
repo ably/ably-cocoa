@@ -722,7 +722,7 @@ class PushActivationStateMachine : QuickSpec {
                     )
 
                     stateMachine.send(ARTPushActivationEventRegistrationUpdated(identityTokenDetails: testIdentityTokenDetails))
-                    expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationUpdate.self))
+                    expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
                     expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
                 }
 

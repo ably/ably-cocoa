@@ -212,7 +212,7 @@
         [local setAndPersistIdentityTokenDetails:registrationUpdatedEvent.identityTokenDetails];
         #endif
         [self.machine callActivatedCallback:nil];
-        return [ARTPushActivationStateWaitingForRegistrationUpdate newWithMachine:self.machine];
+        return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventUpdatingRegistrationFailed class]]) {
         [self.machine callUpdateFailedCallback:[(ARTPushActivationEventUpdatingRegistrationFailed *)event error]];
