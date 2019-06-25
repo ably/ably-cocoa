@@ -1,5 +1,16 @@
 # Change Log
 
+## [1.1.7](https://github.com/ably/ably-cocoa/tree/1.1.7) (2019-06-25)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.6...1.1.7)
+
+**Fixed bugs:**
+
+- Push deactivate/activate sequence results in stopped notifications [\#863](https://github.com/ably/ably-cocoa/issues/863)
+
+**Merged pull requests:**
+
+- Fix Push Activation State Machine: WaitingForRegistrationUpdate bad state [\#864](https://github.com/ably/ably-cocoa/pull/858) ([ricardopereira](https://github.com/ricardopereira))
+
 ## [1.1.6](https://github.com/ably/ably-cocoa/tree/1.1.6) (2019-06-12)
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.5...1.1.6)
 
