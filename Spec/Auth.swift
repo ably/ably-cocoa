@@ -3005,9 +3005,9 @@ class Auth : QuickSpec {
                     }
 
                     options.authUrl = URL(string: "http://echo.ably.io")! as URL
-                    options.authParams = [NSURLQueryItem]() as [URLQueryItem]?
-                    options.authParams?.append(NSURLQueryItem(name: "type", value: "json") as URLQueryItem)
-                    options.authParams?.append(NSURLQueryItem(name: "body", value: tokenRequestJSON as String) as URLQueryItem)
+                    options.authParams = [URLQueryItem]()
+                    options.authParams?.append(URLQueryItem(name: "type", value: "json"))
+                    options.authParams?.append(URLQueryItem(name: "body", value: tokenRequestJSON))
                     options.key = nil
                     rest = ARTRest(options: options)
 
