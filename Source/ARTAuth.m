@@ -187,7 +187,17 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     }
 
     urlComponents.queryItems = [urlComponents.queryItems arrayByAddingObjectsFromArray:@[[NSURLQueryItem queryItemWithName:@"format" value:[_rest.defaultEncoder formatAsString]]]];
-    
+
+    // (Known '+' sign pitfall https://developer.apple.com/documentation/foundation/nsurlcomponents/1407752-queryitems?language=objc)
+    // Apple's Response:
+    // The '+' character is legal in the query component so it does not need to be percent-encoded.
+    // Some systems use the '+' as a space and require '+' the plus character to be percent-encoded. However, that kind of two stage encoding (converting plus sign to %2B and then converting space to plus sign) is prone to errors because it easily leads to encoding problems. It also breaks if the URL is normalized (syntax normalization of URLs includes the removal of all unnecessary percent-encoding -- see rfc3986 section 6.2.2.2).
+    // So, if you need that behavior because of the server your code is talking to, you'll handle that extra transformation(s) yourself.
+    // Reference: "NSURLComponents does not correctly handle "+" usage in query parameters." http://www.openradar.me/24076063
+    [urlComponents setPercentEncodedQuery:[[urlComponents percentEncodedQuery]
+                                            // manually encode '+' into percent encoding
+                                            stringByReplacingOccurrencesOfString:@"+" withString:@"%2B"]];
+
     return urlComponents.URL;
 } ART_TRY_OR_REPORT_CRASH_END
 }
