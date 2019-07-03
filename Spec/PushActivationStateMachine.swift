@@ -386,6 +386,8 @@ class PushActivationStateMachine : QuickSpec {
                             stateMachine.send(ARTPushActivationEventGotPushDeviceDetails())
                             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeviceRegistration.self))
                         }
+
+                        expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
                     }
 
                 }
@@ -888,9 +890,8 @@ class PushActivationStateMachine : QuickSpec {
                         
                         let deviceIdentityToken = stateMachine.rest.device.identityTokenDetails?.token.base64Encoded()
 
-                        var setAndPersistIdentityTokenDetailsCalled = false
                         let hookDevice = stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
-                            setAndPersistIdentityTokenDetailsCalled = true
+                            fail("'setAndPersistIdentityTokenDetails:' should not be called")
                         }
                         defer { hookDevice.remove() }
 
@@ -905,9 +906,8 @@ class PushActivationStateMachine : QuickSpec {
                             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationUpdate.self))
                         }
 
-                        expect(stateMachine.rest.device.identityTokenDetails).to(beNil())
+                        expect(stateMachine.rest.device.identityTokenDetails).toNot(beNil())
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
-                        expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
                         expect(httpExecutor.requests.count) == 1
                         let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(stateMachine.rest.device.id)" })
                         expect(requests).to(haveCount(1))
@@ -938,6 +938,7 @@ class PushActivationStateMachine : QuickSpec {
                         expect(body.value(forKey: "platform")).to(beNil())
                         expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
                         let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
+                        expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]).to(beNil())
                         expect(deviceAuthorization).to(equal(deviceIdentityToken))
                     }
 
@@ -947,9 +948,8 @@ class PushActivationStateMachine : QuickSpec {
                         let delegate = StateMachineDelegate()
                         stateMachine.delegate = delegate
 
-                        var setAndPersistIdentityTokenDetailsCalled = false
                         let hookDevice = stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
-                            setAndPersistIdentityTokenDetailsCalled = true
+                            fail("'setAndPersistIdentityTokenDetails:' should not be called")
                         }
                         defer { hookDevice.remove() }
 
@@ -1089,11 +1089,13 @@ class PushActivationStateMachine : QuickSpec {
                         let delegate = StateMachineDelegate()
                         stateMachine.delegate = delegate
 
-                        let deviceIdentityToken = stateMachine.rest.device.identityTokenDetails?.token.base64Encoded()
+                        guard let deviceIdentityToken = stateMachine.rest.device.identityTokenDetails?.token else {
+                            fail("Unexpected 'identityTokenDetails' is nil")
+                            return
+                        }
 
-                        var setAndPersistIdentityTokenDetailsCalled = false
                         let hookDevice = stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
-                            setAndPersistIdentityTokenDetailsCalled = true
+                            fail("'setAndPersistIdentityTokenDetails:' should not be called")
                         }
                         defer { hookDevice.remove() }
 
@@ -1108,9 +1110,8 @@ class PushActivationStateMachine : QuickSpec {
                             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationUpdate.self))
                         }
 
-                        expect(stateMachine.rest.device.identityTokenDetails).to(beNil())
+                        expect(stateMachine.rest.device.identityTokenDetails?.token).to(equal(deviceIdentityToken))
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
-                        expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
                         expect(httpExecutor.requests.count) == 1
                         let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(stateMachine.rest.device.id)" })
                         expect(requests).to(haveCount(1))
@@ -1141,7 +1142,7 @@ class PushActivationStateMachine : QuickSpec {
                         expect(body.value(forKey: "platform")).to(beNil())
                         expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
                         let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
-                        expect(deviceAuthorization).to(equal(deviceIdentityToken))
+                        expect(deviceAuthorization).to(equal(deviceIdentityToken.base64Encoded()))
                     }
 
                     it("should transition to WaitingForRegistrationUpdate") {
@@ -1150,9 +1151,8 @@ class PushActivationStateMachine : QuickSpec {
                         let delegate = StateMachineDelegate()
                         stateMachine.delegate = delegate
 
-                        var setAndPersistIdentityTokenDetailsCalled = false
                         let hookDevice = stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
-                            setAndPersistIdentityTokenDetailsCalled = true
+                            fail("'setAndPersistIdentityTokenDetails:' should not be called")
                         }
                         defer { hookDevice.remove() }
 
@@ -1357,9 +1357,8 @@ class PushActivationStateMachine : QuickSpec {
                         let delegate = StateMachineDelegate()
                         stateMachine.delegate = delegate
 
-                        var setAndPersistIdentityTokenDetailsCalled = false
                         let hookDevice = stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
-                            setAndPersistIdentityTokenDetailsCalled = true
+                            fail("'setAndPersistIdentityTokenDetails:' should not be called")
                         }
                         defer { hookDevice.remove() }
 
