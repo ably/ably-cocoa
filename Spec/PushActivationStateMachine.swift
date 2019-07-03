@@ -1493,7 +1493,18 @@ class PushActivationStateMachine : QuickSpec {
             }
 
         }
+
+        it("should remove identityTokenDetails from cache and storage") {
+            let storage = MockDeviceStorage()
+            rest.storage = storage
+            rest.device.setAndPersistIdentityTokenDetails(nil)
+            rest.resetDeviceOnceToken()
+            expect(rest.device.identityTokenDetails).to(beNil())
+            expect(rest.device.isRegistered()) == false
+            expect(storage.object(forKey: ARTDeviceIdentityTokenKey)).to(beNil())
+        }
     }
+
 }
 
 class StateMachineDelegate: NSObject, ARTPushRegistererDelegate {
