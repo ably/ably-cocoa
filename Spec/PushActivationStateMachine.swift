@@ -638,7 +638,7 @@ class PushActivationStateMachine : QuickSpec {
                         expect(url.query).to(contain(rest.device.id))
                         expect(rest.device.identityTokenDetails).to(beNil())
                         expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
-                        let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
+                        let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
                         expect(deviceAuthorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
                     }
 
@@ -878,7 +878,7 @@ class PushActivationStateMachine : QuickSpec {
                         expect(body.value(forKey: "formFactor")).to(beNil())
                         expect(body.value(forKey: "platform")).to(beNil())
                         expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
-                        let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
+                        let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
                         expect(deviceAuthorization).to(equal(deviceIdentityToken))
                     }
 
@@ -937,7 +937,7 @@ class PushActivationStateMachine : QuickSpec {
                         expect(body.value(forKey: "formFactor")).to(beNil())
                         expect(body.value(forKey: "platform")).to(beNil())
                         expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
-                        let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
+                        let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
                         expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]).to(beNil())
                         expect(deviceAuthorization).to(equal(deviceIdentityToken))
                     }
@@ -1079,7 +1079,7 @@ class PushActivationStateMachine : QuickSpec {
                         expect(body.value(forKey: "formFactor")).to(beNil())
                         expect(body.value(forKey: "platform")).to(beNil())
                         expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
-                        let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
+                        let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
                         expect(deviceAuthorization).to(equal(deviceIdentityToken))
                     }
 
@@ -1141,7 +1141,7 @@ class PushActivationStateMachine : QuickSpec {
                         expect(body.value(forKey: "formFactor")).to(beNil())
                         expect(body.value(forKey: "platform")).to(beNil())
                         expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
-                        let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
+                        let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
                         expect(deviceAuthorization).to(equal(deviceIdentityToken.base64Encoded()))
                     }
 
@@ -1310,7 +1310,7 @@ class PushActivationStateMachine : QuickSpec {
                         expect(url.query).to(contain(rest.device.id))
                         expect(rest.device.identityTokenDetails).to(beNil())
                         expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
-                        let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
+                        let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
                         expect(deviceAuthorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
                     }
 

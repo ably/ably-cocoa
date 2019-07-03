@@ -400,7 +400,7 @@ class PushAdmin : QuickSpec {
                             return
                         }
 
-                        let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
+                        let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
                         expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
                     }
 
@@ -504,7 +504,7 @@ class PushAdmin : QuickSpec {
                     }
 
                     expect(request.httpMethod) == "DELETE"
-                    expect(request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]).to(beNil())
+                    expect(request.allHTTPHeaderFields?["X-Ably-DeviceToken"]).to(beNil())
                     expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]).to(beNil())
                 }
             }
@@ -529,7 +529,7 @@ class PushAdmin : QuickSpec {
                     }
 
                     expect(request.httpMethod) == "PUT"
-                    expect(request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]).to(beNil())
+                    expect(request.allHTTPHeaderFields?["X-Ably-DeviceToken"]).to(beNil())
                     expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]).to(beNil())
                 }
 
@@ -565,7 +565,7 @@ class PushAdmin : QuickSpec {
                         }
                         expect(request.httpMethod).to(equal("PUT"))
 
-                        let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
+                        let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
                         expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
                     }
 
@@ -633,7 +633,7 @@ class PushAdmin : QuickSpec {
                     }
 
                     expect(request.httpMethod) == "DELETE"
-                    expect(request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]).to(beNil())
+                    expect(request.allHTTPHeaderFields?["X-Ably-DeviceToken"]).to(beNil())
                     expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]).to(beNil())
 
                     waitUntil(timeout: testTimeout) { done in
@@ -700,7 +700,7 @@ class PushAdmin : QuickSpec {
                     }
 
                     expect(request.httpMethod).to(equal("POST"))
-                    expect(request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]).to(beNil())
+                    expect(request.allHTTPHeaderFields?["X-Ably-DeviceToken"]).to(beNil())
                     expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]).to(beNil())
                 }
 
@@ -761,7 +761,7 @@ class PushAdmin : QuickSpec {
                             return
                         }
 
-                        let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
+                        let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
                         expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
                     }
 
@@ -847,7 +847,7 @@ class PushAdmin : QuickSpec {
                     }
 
                     expect(request.httpMethod).to(equal("DELETE"))
-                    expect(request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]).to(beNil())
+                    expect(request.allHTTPHeaderFields?["X-Ably-DeviceToken"]).to(beNil())
                     expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]).to(beNil())
 
                     waitUntil(timeout: testTimeout) { done in
@@ -893,7 +893,7 @@ class PushAdmin : QuickSpec {
                             return
                         }
 
-                        let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
+                        let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
                         expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
                     }
 

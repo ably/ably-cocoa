@@ -80,7 +80,7 @@ class PushChannel : QuickSpec {
                     expect(body.value(forKey: "deviceId") as? String).to(equal(rest.device.id))
                     expect(body.value(forKey: "channel") as? String).to(equal(channel.name))
 
-                    let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
+                    let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
                     expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
                     expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"]).to(beNil())
                 }
@@ -147,7 +147,7 @@ class PushChannel : QuickSpec {
                     expect(body.value(forKey: "clientId") as? String).to(equal(rest.device.clientId))
                     expect(body.value(forKey: "channel") as? String).to(equal(channel.name))
 
-                    expect(request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]).to(beNil())
+                    expect(request.allHTTPHeaderFields?["X-Ably-DeviceToken"]).to(beNil())
                     expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"]).to(beNil())
                 }
             }
@@ -195,7 +195,7 @@ class PushChannel : QuickSpec {
                     expect(query).to(haveParam("deviceId", withValue: rest.device.id))
                     expect(query).to(haveParam("channel", withValue: channel.name))
 
-                    let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
+                    let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
                     expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
                     expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"]).to(beNil())
                 }
@@ -252,7 +252,7 @@ class PushChannel : QuickSpec {
                     expect(query).to(haveParam("clientId", withValue: rest.device.clientId!))
                     expect(query).to(haveParam("channel", withValue: channel.name))
 
-                    expect(request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]).to(beNil())
+                    expect(request.allHTTPHeaderFields?["X-Ably-DeviceToken"]).to(beNil())
                     expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"]).to(beNil())
                 }
             }
