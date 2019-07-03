@@ -240,14 +240,7 @@ dispatch_async(_queue, ^{
             [self sendEvent:[ARTPushActivationEventUpdatingRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
             return;
         }
-        NSError *decodeError = nil;
-        ARTDeviceIdentityTokenDetails *identityTokenDetails = [[self->_rest defaultEncoder] decodeDeviceIdentityTokenDetails:data error:&decodeError];
-        if (decodeError) {
-            [[self->_rest logger] error:@"%@: decode identity token details failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
-            [self sendEvent:[ARTPushActivationEventUpdatingRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
-            return;
-        }
-        [self sendEvent:[ARTPushActivationEventRegistrationUpdated newWithIdentityTokenDetails:identityTokenDetails]];
+        [self sendEvent:[ARTPushActivationEventRegistrationUpdated new]];
     }];
     #endif
 }

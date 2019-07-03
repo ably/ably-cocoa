@@ -112,6 +112,10 @@ NSString *const ARTCoderIdentityTokenDetailsKey = @"identityTokenDetails";
     return self;
 }
 
++ (instancetype)new {
+    return [[self alloc] initWithIdentityTokenDetails:nil];
+}
+
 + (instancetype)newWithIdentityTokenDetails:(ARTDeviceIdentityTokenDetails *)identityTokenDetails {
     return [[self alloc] initWithIdentityTokenDetails:identityTokenDetails];
 }
