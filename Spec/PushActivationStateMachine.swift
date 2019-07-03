@@ -584,8 +584,9 @@ class PushActivationStateMachine : QuickSpec {
                         expect(url.host).to(equal(rest.options.restUrl().host))
                         expect(request.httpMethod) == "DELETE"
                         expect(url.query).to(contain(rest.device.id))
-                        let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
-                        expect(authorization).to(equal(rest.device.secret))
+                        expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
+                        let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
+                        expect(deviceAuthorization).to(equal(rest.device.secret))
                     }
 
                     // RSH3d2b, RSH3d2c, RSH3d2d
@@ -634,8 +635,9 @@ class PushActivationStateMachine : QuickSpec {
                         expect(request.httpMethod) == "DELETE"
                         expect(url.query).to(contain(rest.device.id))
                         expect(rest.device.identityTokenDetails).to(beNil())
-                        let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
-                        expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
+                        expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
+                        let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
+                        expect(deviceAuthorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
                     }
 
                     // RSH3d2c
@@ -873,8 +875,9 @@ class PushActivationStateMachine : QuickSpec {
                         expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(["recipient": ["transportType": "apns"]]))
                         expect(body.value(forKey: "formFactor")).to(beNil())
                         expect(body.value(forKey: "platform")).to(beNil())
-                        let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
-                        expect(authorization).to(equal(deviceIdentityToken))
+                        expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
+                        let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
+                        expect(deviceAuthorization).to(equal(deviceIdentityToken))
                     }
 
                     it("should fire RegistrationUpdated event and include device auth") {
@@ -933,8 +936,9 @@ class PushActivationStateMachine : QuickSpec {
                         expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(["recipient": ["transportType": "apns"]]))
                         expect(body.value(forKey: "formFactor")).to(beNil())
                         expect(body.value(forKey: "platform")).to(beNil())
-                        let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
-                        expect(authorization).to(equal(deviceIdentityToken))
+                        expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
+                        let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
+                        expect(deviceAuthorization).to(equal(deviceIdentityToken))
                     }
 
                     it("should transition to WaitingForRegistrationUpdate") {
@@ -1074,8 +1078,9 @@ class PushActivationStateMachine : QuickSpec {
                         expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(["recipient": ["transportType": "apns"]]))
                         expect(body.value(forKey: "formFactor")).to(beNil())
                         expect(body.value(forKey: "platform")).to(beNil())
-                        let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
-                        expect(authorization).to(equal(deviceIdentityToken))
+                        expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
+                        let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
+                        expect(deviceAuthorization).to(equal(deviceIdentityToken))
                     }
 
                     it("should fire RegistrationUpdated event and include device auth") {
@@ -1134,8 +1139,9 @@ class PushActivationStateMachine : QuickSpec {
                         expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(["recipient": ["transportType": "apns"]]))
                         expect(body.value(forKey: "formFactor")).to(beNil())
                         expect(body.value(forKey: "platform")).to(beNil())
-                        let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
-                        expect(authorization).to(equal(deviceIdentityToken))
+                        expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
+                        let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
+                        expect(deviceAuthorization).to(equal(deviceIdentityToken))
                     }
 
                     it("should transition to WaitingForRegistrationUpdate") {
@@ -1254,8 +1260,9 @@ class PushActivationStateMachine : QuickSpec {
                         expect(url.host).to(equal(rest.options.restUrl().host))
                         expect(request.httpMethod) == "DELETE"
                         expect(url.query).to(contain(rest.device.id))
-                        let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
-                        expect(authorization).to(equal(rest.device.secret))
+                        expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
+                        let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
+                        expect(deviceAuthorization).to(equal(rest.device.secret))
                     }
 
                     it("should fire Deregistered event and include DeviceIdentityToken HTTP header") {
@@ -1302,8 +1309,9 @@ class PushActivationStateMachine : QuickSpec {
                         expect(request.httpMethod) == "DELETE"
                         expect(url.query).to(contain(rest.device.id))
                         expect(rest.device.identityTokenDetails).to(beNil())
-                        let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
-                        expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
+                        expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
+                        let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
+                        expect(deviceAuthorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
                     }
 
                     it("should fire DeregistrationFailed event") {
