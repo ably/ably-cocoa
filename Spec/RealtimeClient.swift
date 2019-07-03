@@ -362,7 +362,7 @@ class RealtimeClient: QuickSpec {
                     expect(secs).to(beLessThanOrEqualTo(UInt(options.suspendedRetryTimeout)))
                 }
 
-                expect(client.connectionStateTtl).to(equal(120))
+                expect(client.connectionStateTtl).to(equal(120 as TimeInterval /*seconds*/))
             }
 
             // RTC8
