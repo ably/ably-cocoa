@@ -224,9 +224,6 @@ dispatch_async(_queue, ^{
     }
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:local.id]];
-    NSData *tokenData = [local.identityTokenDetails.token dataUsingEncoding:NSUTF8StringEncoding];
-    NSString *tokenBase64 = [tokenData base64EncodedStringWithOptions:0];
-    [request setValue:[NSString stringWithFormat:@"Bearer %@", tokenBase64] forHTTPHeaderField:@"Authorization"];
     request.HTTPMethod = @"PATCH";
     request.HTTPBody = [[_rest defaultEncoder] encode:@{
         @"push": @{
@@ -237,7 +234,7 @@ dispatch_async(_queue, ^{
     [request setDeviceAuthentication:local];
 
     [[_rest logger] debug:__FILE__ line:__LINE__ message:@"update device with request %@", request];
-    [_rest executeRequest:request withAuthOption:ARTAuthenticationOff completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             [[self->_rest logger] error:@"%@: update device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
             [self sendEvent:[ARTPushActivationEventUpdatingRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];

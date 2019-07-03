@@ -21,7 +21,7 @@
 
 - (void)setDeviceAuthentication:(ARTDeviceId *)deviceId localDevice:(ARTLocalDevice *)localDevice logger:(ARTLog *)logger {
     if ([localDevice.id isEqualToString:deviceId]) {
-        if (localDevice.identityTokenDetails) {
+        if (localDevice.identityTokenDetails.token) {
             [logger debug:__FILE__ line:__LINE__ message:@"adding device authentication using local device identity token"];
             [self setValue:[localDevice.identityTokenDetails.token base64Encoded] forHTTPHeaderField:@"X-Ably-DeviceIdentityToken"];
         }
