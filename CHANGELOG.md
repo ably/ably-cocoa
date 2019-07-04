@@ -1,5 +1,20 @@
 # Change Log
 
+## [1.1.8](https://github.com/ably/ably-cocoa/tree/1.1.8) (2019-07-03)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.7...1.1.8)
+
+**Fixed bugs:**
+
+- Push deactivate/activate sequence results in stopped notifications [\#863](https://github.com/ably/ably-cocoa/issues/863)
+- Library apparently interpreting the `connectionStateTtl` with incorrect units [\#866](https://github.com/ably/ably-cocoa/issues/866)
+
+**Merged pull requests:**
+
+- Push Device Update Registration: fix request authentication [\#867](https://github.com/ably/ably-cocoa/pull/867) ([ricardopereira](https://github.com/ricardopereira))
+- Fix consecutive Authorizations [\#833](https://github.com/ably/ably-cocoa/pull/833) ([ricardopereira](https://github.com/ricardopereira))
+- Fix milliseconds conversions [\#869](https://github.com/ably/ably-cocoa/pull/869) ([ricardopereira](https://github.com/ricardopereira))
+- Tests using `echo.ably.io` were failing intermittently with "Request mac does not match" [\#868](https://github.com/ably/ably-cocoa/pull/868) ([ricardopereira](https://github.com/ricardopereira))
+
 ## [1.1.7](https://github.com/ably/ably-cocoa/tree/1.1.7) (2019-06-25)
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.6...1.1.7)
 
