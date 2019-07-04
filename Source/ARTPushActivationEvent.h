@@ -34,12 +34,12 @@ NS_ASSUME_NONNULL_BEGIN
 /// Event with Device Identity Token details
 @interface ARTPushActivationDeviceIdentityEvent : ARTPushActivationEvent
 
-@property (nonatomic, readonly) ARTDeviceIdentityTokenDetails *identityTokenDetails;
+@property (nonatomic, readonly, nullable) ARTDeviceIdentityTokenDetails *identityTokenDetails;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-+ (instancetype)new UNAVAILABLE_ATTRIBUTE;
++ (instancetype)new;
 
-- (instancetype)initWithIdentityTokenDetails:(ARTDeviceIdentityTokenDetails *)identityTokenDetails;
+- (instancetype)initWithIdentityTokenDetails:(nullable ARTDeviceIdentityTokenDetails *)identityTokenDetails;
 + (instancetype)newWithIdentityTokenDetails:(ARTDeviceIdentityTokenDetails *)identityTokenDetails;
 
 @end

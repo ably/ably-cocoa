@@ -30,7 +30,7 @@
 }
 
 - (void)logEventTransition:(ARTPushActivationEvent *)event file:(const char *)file line:(NSUInteger)line {
-    NSLog(@"%@ state: transitioning to %@ event", NSStringFromClass(self.class), NSStringFromClass(event.class));
+    NSLog(@"%@ state: handling %@ event", NSStringFromClass(self.class), NSStringFromClass(event.class));
 }
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
@@ -208,8 +208,10 @@
     else if ([event isKindOfClass:[ARTPushActivationEventRegistrationUpdated class]]) {
         #if TARGET_OS_IOS
         ARTPushActivationEventRegistrationUpdated *registrationUpdatedEvent = (ARTPushActivationEventRegistrationUpdated *)event;
-        ARTLocalDevice *local = self.machine.rest.device_nosync;
-        [local setAndPersistIdentityTokenDetails:registrationUpdatedEvent.identityTokenDetails];
+        if (registrationUpdatedEvent.identityTokenDetails) {
+            ARTLocalDevice *local = self.machine.rest.device_nosync;
+            [local setAndPersistIdentityTokenDetails:registrationUpdatedEvent.identityTokenDetails];
+        }
         #endif
         [self.machine callActivatedCallback:nil];
         return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine];
