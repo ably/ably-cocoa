@@ -30,6 +30,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTConnectionStateChange *> *internalEventEmitter;
 @property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, NSNull *> *connectedEventEmitter;
 
+@property (readonly, nonatomic) NSMutableArray<void (^)(ARTRealtimeConnectionState, ARTErrorInfo *_Nullable)> *pendingAuthorizations;
+
 // State properties
 - (BOOL)shouldSendEvents;
 - (BOOL)shouldQueueEvents;

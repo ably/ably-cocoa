@@ -180,48 +180,45 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-- (void)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback {
+- (NSObject<ARTCancellable> *)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback {
 ART_TRY_OR_REPORT_CRASH_START(self) {
     request.URL = [NSURL URLWithString:request.URL.relativeString relativeToURL:self.baseUrl];
     
     switch (authOption) {
         case ARTAuthenticationOff:
-            [self executeRequest:request completion:callback];
-            break;
+            return [self executeRequest:request completion:callback];
         case ARTAuthenticationOn:
             _tokenErrorRetries = 0;
-            [self executeRequestWithAuthentication:request withMethod:self.auth.method force:NO completion:callback];
-            break;
+            return [self executeRequestWithAuthentication:request withMethod:self.auth.method force:NO completion:callback];
         case ARTAuthenticationNewToken:
             _tokenErrorRetries = 0;
-            [self executeRequestWithAuthentication:request withMethod:self.auth.method force:YES completion:callback];
-            break;
+            return [self executeRequestWithAuthentication:request withMethod:self.auth.method force:YES completion:callback];
         case ARTAuthenticationTokenRetry:
             _tokenErrorRetries = _tokenErrorRetries + 1;
-            [self executeRequestWithAuthentication:request withMethod:self.auth.method force:YES completion:callback];
-            break;
+            return [self executeRequestWithAuthentication:request withMethod:self.auth.method force:YES completion:callback];
         case ARTAuthenticationUseBasic:
-            [self executeRequestWithAuthentication:request withMethod:ARTAuthMethodBasic completion:callback];
-            break;
+            return [self executeRequestWithAuthentication:request withMethod:ARTAuthMethodBasic completion:callback];
     }
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-- (void)executeRequestWithAuthentication:(NSMutableURLRequest *)request withMethod:(ARTAuthMethod)method completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback {
+- (NSObject<ARTCancellable> *)executeRequestWithAuthentication:(NSMutableURLRequest *)request withMethod:(ARTAuthMethod)method completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback {
 ART_TRY_OR_REPORT_CRASH_START(self) {
-    [self executeRequestWithAuthentication:request withMethod:method force:NO completion:callback];
+    return [self executeRequestWithAuthentication:request withMethod:method force:NO completion:callback];
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-- (void)executeRequestWithAuthentication:(NSMutableURLRequest *)request withMethod:(ARTAuthMethod)method force:(BOOL)force completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback {
+- (NSObject<ARTCancellable> *)executeRequestWithAuthentication:(NSMutableURLRequest *)request withMethod:(ARTAuthMethod)method force:(BOOL)force completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback {
 ART_TRY_OR_REPORT_CRASH_START(self) {
     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p calculating authorization %lu", self, (unsigned long)method];
+    __block NSObject<ARTCancellable> *task;
+
     if (method == ARTAuthMethodBasic) {
         // Basic
         NSString *authorization = [self prepareBasicAuthorisationHeader:self.options.key];
         [request setValue:authorization forHTTPHeaderField:@"Authorization"];
         [self.logger verbose:@"RS:%p ARTRest: %@", self, authorization];
-        [self executeRequest:request completion:callback];
+        task = [self executeRequest:request completion:callback];
     }
     else {
         if (!force && [self.auth tokenRemainsValid]) {
@@ -229,12 +226,11 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
             NSString *authorization = [self prepareTokenAuthorisationHeader:self.auth.tokenDetails.token];
             [self.logger verbose:@"RS:%p ARTRest reusing token: authorization bearer in Base64 %@", self, authorization];
             [request setValue:authorization forHTTPHeaderField:@"Authorization"];
-            [self executeRequest:request completion:callback];
+            task = [self executeRequest:request completion:callback];
         }
         else {
             // New Token
-            [self.auth setTokenDetails:nil];
-            [self.auth _authorize:nil options:self.options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
+            task = [self.auth _authorize:nil options:self.options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
                 if (error) {
                     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p ARTRest reissuing token failed %@", self, error];
                     if (callback) callback(nil, nil, error);
@@ -243,20 +239,21 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
                 NSString *authorization = [self prepareTokenAuthorisationHeader:tokenDetails.token];
                 [self.logger verbose:@"RS:%p ARTRest reissuing token: authorization bearer in Base64 %@", self, authorization];
                 [request setValue:authorization forHTTPHeaderField:@"Authorization"];
-                [self executeRequest:request completion:callback];
+                task = [self executeRequest:request completion:callback];
             }];
         }
     }
+    return task;
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-- (void)executeRequest:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback {
+- (NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback {
 ART_TRY_OR_REPORT_CRASH_START(self) {
     return [self executeRequest:request completion:callback fallbacks:nil retries:0];
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-- (void)executeRequest:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback fallbacks:(ARTFallback *)fallbacks retries:(NSUInteger)retries {
+- (NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback fallbacks:(ARTFallback *)fallbacks retries:(NSUInteger)retries {
 ART_TRY_OR_REPORT_CRASH_START(self) {
     __block ARTFallback *blockFallbacks = fallbacks;
 
@@ -269,7 +266,8 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
     }
 
     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p executing request %@", self, request];
-    [self.httpExecutor executeRequest:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    __block NSObject<ARTCancellable> *task;
+    task = [self.httpExecutor executeRequest:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         // Error messages in plaintext and HTML format (only if the URL request is different than `options.authUrl` and we don't have an error already)
         if (error == nil && data != nil && data.length != 0 && ![request.URL.host isEqualToString:[self.options.authUrl host]]) {
             NSString *contentType = [response.allHeaderFields objectForKey:@"Content-Type"];
@@ -299,7 +297,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
                     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p retry request %@", self, request];
                     // Make a single attempt to reissue the token and resend the request
                     if (self->_tokenErrorRetries < 1) {
-                        [self executeRequest:(NSMutableURLRequest *)request withAuthOption:ARTAuthenticationTokenRetry completion:callback];
+                        task = [self executeRequest:(NSMutableURLRequest *)request withAuthOption:ARTAuthenticationTokenRetry completion:callback];
                         return;
                     }
                 }
@@ -327,7 +325,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
                     NSURL *url = request.URL;
                     NSString *urlStr = [NSString stringWithFormat:@"%@://%@:%@%@?%@", url.scheme, host, url.port, url.path, (url.query ? url.query : @"")];
                     newRequest.URL = [NSURL URLWithString:urlStr];
-                    [self executeRequest:newRequest completion:callback fallbacks:blockFallbacks retries:retries + 1];
+                    task = [self executeRequest:newRequest completion:callback fallbacks:blockFallbacks retries:retries + 1];
                     return;
                 }
             }
@@ -337,6 +335,8 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
             callback(response, data, error);
         }
     }];
+
+    return task;
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
@@ -410,7 +410,7 @@ dispatch_async(_queue, ^{
 });
 }
 
-- (void)_time:(void(^)(NSDate *time, NSError *error))callback {
+- (NSObject<ARTCancellable> *)_time:(void(^)(NSDate *time, NSError *error))callback {
 ART_TRY_OR_REPORT_CRASH_START(self) {
     NSURL *requestUrl = [NSURL URLWithString:@"/time" relativeToURL:self.baseUrl];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl];
@@ -418,7 +418,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
     NSString *accept = [[_encoders.allValues valueForKeyPath:@"mimeType"] componentsJoinedByString:@","];
     [request setValue:accept forHTTPHeaderField:@"Accept"];
     
-    [self executeRequest:request withAuthOption:ARTAuthenticationOff completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    return [self executeRequest:request withAuthOption:ARTAuthenticationOff completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             callback(nil, error);
             return;
@@ -525,12 +525,12 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-- (id<ARTCancellable>)internetIsUp:(void (^)(BOOL isUp)) cb {
+- (NSObject<ARTCancellable> *)internetIsUp:(void (^)(BOOL isUp)) cb {
     NSURL *requestUrl = [NSURL URLWithString:@"https://internet-up.ably-realtime.com/is-the-internet-up.txt"];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl];
     request.HTTPMethod = @"GET";
 
-    [_httpExecutor executeRequest:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+    return [_httpExecutor executeRequest:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             cb(NO);
             return;
@@ -538,7 +538,6 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
         NSString *str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
         cb(response.statusCode == 200 && str && [str isEqualToString:@"yes\n"]);
     }];
-    return nil;
 }
 
 - (BOOL)stats:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback {

@@ -32,6 +32,8 @@
     ARTTokenParams *_tokenParams;
     // Dedicated to Protocol Message
     NSString *_protocolClientId;
+    NSInteger _authorizationsCount;
+    ARTEventEmitter<ARTEvent *, ARTErrorInfo *> *_cancelationEventEmitter;
 }
 
 - (instancetype)init:(ARTRest *)rest withOptions:(ARTClientOptions *)options {
@@ -44,7 +46,9 @@ ART_TRY_OR_REPORT_CRASH_START(rest) {
         _options = options;
         _logger = rest.logger;
         _protocolClientId = nil;
+        _cancelationEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
         _tokenParams = options.defaultTokenParams ? : [[ARTTokenParams alloc] initWithOptions:self.options];
+        _authorizationsCount = 0;
         [self validate:options];
 
         [[NSNotificationCenter defaultCenter] addObserver:self
@@ -279,15 +283,16 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
 });
 }
 
-- (void)_requestToken:(ARTTokenParams *)tokenParams withOptions:(ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *, NSError *))callback {
+- (NSObject<ARTCancellable> *)_requestToken:(ARTTokenParams *)tokenParams withOptions:(ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *, NSError *))callback {
     // If options, params passed in, they're used instead of stored, don't merge them
     ARTAuthOptions *replacedOptions = authOptions ? authOptions : self.options;
     ARTTokenParams *currentTokenParams = [tokenParams ? tokenParams : _tokenParams copy];
     currentTokenParams.timestamp = [self currentDate];
+    __block NSObject<ARTCancellable> *task;
 
     if (![self canRenewTokenAutomatically:replacedOptions]) {
         callback(nil, [ARTErrorInfo createWithCode:ARTStateRequestTokenFailed message:ARTAblyMessageNoMeansToRenewToken]);
-        return;
+        return nil;
     }
 
     void (^checkerCallback)(ARTTokenDetails *_Nullable, NSError *_Nullable) = ^(ARTTokenDetails *tokenDetails, NSError *error) {
@@ -309,10 +314,10 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
 
     if (replacedOptions.authUrl) {
         NSMutableURLRequest *request = [self buildRequest:replacedOptions withParams:currentTokenParams];
-        
+
         [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p using authUrl (%@ %@)", _rest, request.HTTPMethod, request.URL];
-        
-        [_rest executeRequest:request withAuthOption:ARTAuthenticationOff completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+
+        task = [_rest executeRequest:request withAuthOption:ARTAuthenticationOff completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (error) {
                 checkerCallback(nil, error);
             } else {
@@ -347,18 +352,24 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
         } else {
             tokenDetailsFactory = ^(ARTTokenParams *tokenParams, void(^callback)(ARTTokenDetails *_Nullable, NSError *_Nullable)) {
                 // Create a TokenRequest and execute it
-                [self _createTokenRequest:currentTokenParams options:replacedOptions callback:^(ARTTokenRequest *tokenRequest, NSError *error) {
+                NSObject<ARTCancellable> *timeTask;
+                timeTask = [self _createTokenRequest:currentTokenParams options:replacedOptions callback:^(ARTTokenRequest *tokenRequest, NSError *error) {
                     if (error) {
                         callback(nil, error);
                     } else {
-                        [self executeTokenRequest:tokenRequest callback:callback];
+                        task = [self executeTokenRequest:tokenRequest callback:callback];
                     }
                 }];
+                if (timeTask) {
+                    task = timeTask;
+                }
             };
         };
 
         tokenDetailsFactory(currentTokenParams, checkerCallback);
     }
+
+    return task;
 }
 
 - (void)handleAuthUrlResponse:(NSHTTPURLResponse *)response withData:(NSData *)data completion:(void (^)(ARTTokenDetails *, NSError *))callback {
@@ -397,7 +408,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-- (void)executeTokenRequest:(ARTTokenRequest *)tokenRequest callback:(void (^)(ARTTokenDetails *, NSError *))callback {
+- (NSObject<ARTCancellable> *)executeTokenRequest:(ARTTokenRequest *)tokenRequest callback:(void (^)(ARTTokenDetails *, NSError *))callback {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     id<ARTEncoder> encoder = _rest.defaultEncoder;
 
@@ -411,12 +422,12 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     request.HTTPBody = [encoder encodeTokenRequest:tokenRequest error:&encodeError];
     if (encodeError) {
         callback(nil, encodeError);
-        return;
+        return nil;
     }
     [request setValue:[encoder mimeType] forHTTPHeaderField:@"Accept"];
     [request setValue:[encoder mimeType] forHTTPHeaderField:@"Content-Type"];
-    
-    [_rest executeRequest:request withAuthOption:ARTAuthenticationOff completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+
+    return [_rest executeRequest:request withAuthOption:ARTAuthenticationOff completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             callback(nil, error);
         } else {
@@ -430,6 +441,20 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         }
     }];
 } ART_TRY_OR_REPORT_CRASH_END
+}
+
+- (BOOL)authorizing {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
+    __block NSInteger count;
+    dispatch_sync(_queue, ^{
+        count = self->_authorizationsCount;
+    });
+    return count > 0;
+} ART_TRY_OR_REPORT_CRASH_END
+}
+
+- (BOOL)authorizing_nosync {
+    return _authorizationsCount > 0;
 }
 
 - (void)authorize:(void (^)(ARTTokenDetails *, NSError *))callback {
@@ -454,86 +479,45 @@ dispatch_async(_queue, ^{
 });
 }
 
-- (void)_authorize:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *, NSError *))callback {
+- (nullable NSObject<ARTCancellable> *)_authorize:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *, NSError *))callback {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
-    __block BOOL completed = false;
-
     ARTAuthOptions *replacedOptions = [authOptions copy] ? : [self.options copy];
     [self storeOptions:replacedOptions];
 
     ARTTokenParams *currentTokenParams = [self mergeParams:tokenParams];
     [self storeParams:currentTokenParams];
 
-    // Success
-    void (^successBlock)(ARTTokenDetails *) = ^(ARTTokenDetails *tokenDetails) {
-        [self.logger verbose:@"RS:%p ARTAuth: token request succeeded: %@", self->_rest, tokenDetails];
-        if (callback) {
-            callback(self.tokenDetails, nil);
-        }
-        self->_authorizing = false;
-    };
-
-    // Failure
-    void (^failureBlock)(NSError *) = ^(NSError *error) {
-        [self.logger verbose:@"RS:%p ARTAuth: token request failed: %@", self->_rest, error];
-        if (callback) {
-            callback(nil, error);
-        }
-        self->_authorizing = false;
-    };
-
     __weak id<ARTAuthDelegate> lastDelegate = self.delegate;
-    if (lastDelegate) {
-        // Only the last request should remain
-        [lastDelegate.authorizationEmitter off];
 
-        [lastDelegate.authorizationEmitter once:[ARTEvent newWithAuthorizationState:ARTAuthorizationSucceeded] callback:^(id null) {
-            successBlock(self->_tokenDetails);
-            [lastDelegate.authorizationEmitter off];
-        }];
-
-        [lastDelegate.authorizationEmitter once:[ARTEvent newWithAuthorizationState:ARTAuthorizationFailed] callback:^(NSError *error) {
-            if (completed) {
-                [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p authorization failed with \"%@\" but the request token has already been completed", self->_rest, error];
-                failureBlock(error);
-            }
-            else {
-                completed = true;
-                failureBlock(error);
-            }
-            [lastDelegate.authorizationEmitter off];
-        }];
-
-        [lastDelegate.authorizationEmitter once:[ARTEvent newWithAuthorizationState:ARTAuthorizationCancelled] callback:^(id null) {
-            NSError *cancelled = [ARTErrorInfo createWithCode:kCFURLErrorCancelled message:@"Authorization has been cancelled"];
-            if (completed) {
-                [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p authorization cancelled but the request token has already been completed", self->_rest];
-                failureBlock(cancelled);
-            }
-            else {
-                completed = true;
-                failureBlock(cancelled);
-            }
-            [lastDelegate.authorizationEmitter off];
-        }];
-    }
-
+    NSString *authorizeId = [[NSUUID new] UUIDString];
     // Request always a new token
-    [self.logger verbose:@"RS:%p ARTAuth: requesting new token.", _rest];
-    _authorizing = true;
-    [self _requestToken:currentTokenParams withOptions:replacedOptions callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
-        if (completed) {
-            return;
-        }
-        completed = true;
+    [self.logger verbose:@"RS:%p ARTAuth [authorize.%@, delegate=%@]: requesting new token", _rest, authorizeId, lastDelegate ? @"YES" : @"NO"];
+    NSObject<ARTCancellable> *task;
+    self->_authorizationsCount += 1;
+    task = [self _requestToken:currentTokenParams withOptions:replacedOptions callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
+        self->_authorizationsCount -= 1;
+
+        void (^successBlock)(void) = ^{
+            [self.logger verbose:@"RS:%p ARTAuth [authorize.%@]: success callback: %@", self->_rest, authorizeId, tokenDetails];
+            if (callback) {
+                callback(tokenDetails, nil);
+            }
+        };
+
+        void (^failureBlock)(NSError *) = ^(NSError *error) {
+            [self.logger verbose:@"RS:%p ARTAuth [authorize.%@]: failure callback: %@ with token details %@", self->_rest, authorizeId, error, tokenDetails];
+            if (callback) {
+                callback(tokenDetails, error);
+            }
+        };
 
         if (error) {
+            [self.logger debug:@"RS:%p ARTAuth [authorize.%@]: token request failed: %@", self->_rest, authorizeId, error];
             failureBlock(error);
-            if (lastDelegate) {
-                [lastDelegate.authorizationEmitter off];
-            }
             return;
         }
+
+        [self.logger debug:@"RS:%p ARTAuth [authorize.%@]: token request succeeded: %@", self->_rest, authorizeId, tokenDetails];
 
         self->_tokenDetails = tokenDetails;
         self->_method = ARTAuthMethodToken;
@@ -542,13 +526,43 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
             failureBlock([ARTErrorInfo createWithCode:0 message:@"Token details are empty"]);
         }
         else if (lastDelegate) {
-            [lastDelegate auth:self didAuthorize:tokenDetails];
+            [lastDelegate auth:self didAuthorize:tokenDetails completion:^(ARTAuthorizationState state, ARTErrorInfo *error) {
+                switch (state) {
+                    case ARTAuthorizationSucceeded:
+                        successBlock();
+                        self->_tokenDetails = tokenDetails;
+                        break;
+                    case ARTAuthorizationFailed:
+                        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p authorization failed with \"%@\" but the request token has already completed", self->_rest, error];
+                        failureBlock(error);
+                        self->_tokenDetails = nil;
+                        break;
+                    case ARTAuthorizationCancelled: {
+                        NSError *cancelled = [ARTErrorInfo createWithCode:kCFURLErrorCancelled message:@"Authorization has been cancelled"];
+                        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p authorization cancelled but the request token has already completed", self->_rest];
+                        failureBlock(cancelled);
+                        self->_tokenDetails = tokenDetails;
+                        break;
+                    }
+                }
+            }];
         }
         else {
-            successBlock(tokenDetails);
+            successBlock();
         }
     }];
+
+    [_cancelationEventEmitter once:^(ARTErrorInfo * _Nullable error) {
+        [task cancel];
+    }];
+
+    return task;
 } ART_TRY_OR_REPORT_CRASH_END
+}
+
+- (void)cancelAuthorization:(nullable ARTErrorInfo *)error {
+    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p authorization cancelled with %@", self->_rest, error];
+    [_cancelationEventEmitter emit:nil with:error];
 }
 
 - (void)createTokenRequest:(void (^)(ARTTokenRequest *, NSError *))callback {
@@ -573,7 +587,7 @@ dispatch_async(_queue, ^{
 });
 }
 
-- (void)_createTokenRequest:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)options callback:(void (^)(ARTTokenRequest *, NSError *))callback {
+- (NSObject<ARTCancellable> *)_createTokenRequest:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)options callback:(void (^)(ARTTokenRequest *, NSError *))callback {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     ARTAuthOptions *replacedOptions = options ? : self.options;
     ARTTokenParams *currentTokenParams = tokenParams ? : [_tokenParams copy]; // copy since _tokenParams should be read-only
@@ -588,23 +602,24 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         if (errorCapability) {
             NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : [NSString stringWithFormat:@"Capability: %@", errorCapability.localizedDescription] };
             callback(nil, [NSError errorWithDomain:ARTAblyErrorDomain code:errorCapability.code userInfo:userInfo]);
-            return;
+            return nil;
         }
     }
 
     if (replacedOptions.key == nil) {
         NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : @"no key provided for signing token requests" };
         callback(nil, [NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:userInfo]);
-        return;
+        return nil;
     }
 
     if ([self hasTimeOffsetWithValue] && !replacedOptions.queryTime) {
         currentTokenParams.timestamp = [self currentDate];
         callback([currentTokenParams sign:replacedOptions.key], nil);
+        return nil;
     }
     else {
         if (replacedOptions.queryTime) {
-            [_rest _time:^(NSDate *time, NSError *error) {
+            return [_rest _time:^(NSDate *time, NSError *error) {
                 if (error) {
                     callback(nil, error);
                 } else {
@@ -616,6 +631,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
             }];
         } else {
             callback([currentTokenParams sign:replacedOptions.key], nil);
+            return nil;
         }
     }
 } ART_TRY_OR_REPORT_CRASH_END

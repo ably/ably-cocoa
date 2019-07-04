@@ -676,10 +676,10 @@ class RealtimeClient: QuickSpec {
                             partialDone()
                         }
 
+                        let invalidToken = "xxxxxxxxxxxx"
                         let authOptions = ARTAuthOptions()
                         authOptions.authCallback = { tokenParams, completion in
-                            let invalidToken = "xxxxxxxxxxxx"
-                            completion(invalidToken as ARTTokenDetailsCompatible?, nil)
+                            completion(invalidToken as ARTTokenDetailsCompatible, nil)
                         }
 
                         client.auth.authorize(nil, options: authOptions) { tokenDetails, error in
@@ -687,7 +687,7 @@ class RealtimeClient: QuickSpec {
                                 fail("ErrorInfo is nil"); partialDone(); return
                             }
                             expect(error.localizedDescription).to(contain("Invalid accessToken"))
-                            expect(tokenDetails).to(beNil())
+                            expect(tokenDetails?.token).to(equal(invalidToken))
                             authError = error as NSError?
                             partialDone()
                         }
@@ -786,11 +786,11 @@ class RealtimeClient: QuickSpec {
                     }
                     defer { hook1?.remove() }
 
-                    var connectionsOpened = 0
-                    let hook2 = TestProxyTransport.testSuite_injectIntoClassMethod(#selector(TestProxyTransport.webSocketDidOpen)) {
-                        connectionsOpened += 1
+                    var connectionsConnected = 0
+                    let hook2 = client.connection.on(.connected) { _ in
+                        connectionsConnected += 1
                     }
-                    defer { hook2?.remove() }
+                    defer { client.connection.off(hook2) }
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.once(.connecting) { stateChange in
@@ -818,7 +818,7 @@ class RealtimeClient: QuickSpec {
                     }
 
                     expect(connections) == 2
-                    expect(connectionsOpened) == 1
+                    expect(connectionsConnected) == 1
 
                     expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
                 }
@@ -831,7 +831,6 @@ class RealtimeClient: QuickSpec {
                     options.token = testToken
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
-                    client.setTransport(TestProxyTransport.self)
 
                     waitUntil(timeout: testTimeout) { done in
                         let authOptions = ARTAuthOptions()
@@ -890,7 +889,8 @@ class RealtimeClient: QuickSpec {
                             guard let error = error else {
                                 fail("ErrorInfo is nil"); partialDone(); return
                             }
-                            expect(error.localizedDescription).to(contain("Fail test"))
+                            expect((error as NSError).code) == URLError.cancelled.rawValue
+                            expect(client.connection.errorReason?.localizedDescription).to(contain("Fail test"))
                             expect(tokenDetails).to(beNil())
                             partialDone()
                         }
@@ -929,10 +929,10 @@ class RealtimeClient: QuickSpec {
                         }
 
                         client.auth.authorize(nil, options: nil) { tokenDetails, error in
-                            guard let error = error as? ARTErrorInfo else {
+                            guard let error = error else {
                                 fail("ErrorInfo is nil"); partialDone(); return
                             }
-                            expect(UInt(error.code)) == ARTState.authorizationFailed.rawValue
+                            expect((error as NSError).code) == URLError.cancelled.rawValue
                             expect(tokenDetails).to(beNil())
                             partialDone()
                         }
@@ -948,7 +948,6 @@ class RealtimeClient: QuickSpec {
                     options.useTokenAuth = true
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
-                    client.setTransport(TestProxyTransport.self)
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.once(.connected) { stateChange in
@@ -973,10 +972,10 @@ class RealtimeClient: QuickSpec {
                         }
 
                         client.auth.authorize(nil, options: nil) { tokenDetails, error in
-                            guard let error = error as? ARTErrorInfo else {
-                                fail("ErrorInfo is nil"); partialDone(); return
+                            guard let error = error else {
+                                fail("Error is nil"); partialDone(); return
                             }
-                            expect(UInt((error).code)) == ARTState.authorizationFailed.rawValue
+                            expect((error as NSError).code) == URLError.cancelled.rawValue
                             expect(tokenDetails).to(beNil())
                             partialDone()
                         }

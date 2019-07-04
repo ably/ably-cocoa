@@ -20,6 +20,7 @@
 #import "ARTRealtimeTransport.h"
 #import "ARTGCD.h"
 #import "ARTLog+Private.h"
+#import "ARTEventEmitter+Private.h"
 
 enum {
     ARTWsNeverConnected = -1,
@@ -48,6 +49,7 @@ NSString *WebSocketStateToStr(SRReadyState state);
 }
 
 @synthesize delegate = _delegate;
+@synthesize stateEmitter = _stateEmitter;
 
 - (instancetype)initWithRest:(ARTRest *)rest options:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial {
     self = [super init];
@@ -62,6 +64,7 @@ NSString *WebSocketStateToStr(SRReadyState state);
         _options = [options copy];
         _resumeKey = resumeKey;
         _connectionSerial = connectionSerial;
+        _stateEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_workQueue];
 
         [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p WS:%p alloc", _delegate, self];
     }
@@ -261,6 +264,7 @@ NSString *WebSocketStateToStr(SRReadyState state);
 
 - (void)webSocketDidOpen:(SRWebSocket *)websocket {
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket did open", _delegate, self];
+    [_stateEmitter emit:[ARTEvent newWithTransportState:ARTRealtimeTransportStateOpened] with:nil];
     [_delegate realtimeTransportAvailable:self];
 }
 
@@ -281,9 +285,7 @@ NSString *WebSocketStateToStr(SRReadyState state);
         break;
     case ARTWsRefuse:
     case ARTWsPolicyValidation:
-        [_delegate realtimeTransportRefused:self withError:[[ARTRealtimeTransportError alloc] initWithError:[ARTErrorInfo createWithCode:code message:reason]
-                                                                                                           type:ARTRealtimeTransportErrorTypeRefused
-                                                                                                            url:self.websocketURL]];
+        [_delegate realtimeTransportRefused:self withError:[[ARTRealtimeTransportError alloc] initWithError:[ARTErrorInfo createWithCode:code message:reason] type:ARTRealtimeTransportErrorTypeRefused url:self.websocketURL]];
         break;
     case ARTWsTooBig:
         [_delegate realtimeTransportTooBig:self];
@@ -294,9 +296,7 @@ NSString *WebSocketStateToStr(SRReadyState state);
     case ARTWsExtension:
     case ARTWsTlsError:
         // Failed
-        [_delegate realtimeTransportFailed:self withError:[[ARTRealtimeTransportError alloc] initWithError:[ARTErrorInfo createWithCode:code message:reason]
-                                                                                                      type:ARTRealtimeTransportErrorTypeOther
-                                                                                                       url:self.websocketURL]];
+        [_delegate realtimeTransportFailed:self withError:[[ARTRealtimeTransportError alloc] initWithError:[ARTErrorInfo createWithCode:code message:reason] type:ARTRealtimeTransportErrorTypeOther url:self.websocketURL]];
         break;
     default:
         NSAssert(true, @"WebSocket close: unknown code");
@@ -304,6 +304,7 @@ NSString *WebSocketStateToStr(SRReadyState state);
     }
 
     _state = ARTRealtimeTransportStateClosed;
+    [_stateEmitter emit:[ARTEvent newWithTransportState:ARTRealtimeTransportStateClosed] with:nil];
 }
 
 - (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error {
@@ -383,6 +384,33 @@ NSString *WebSocketStateToStr(SRReadyState state) {
         case SR_CLOSING:
             return @"Closing"; //2
         case SR_CLOSED:
-            return @"Closed"; //2
+            return @"Closed"; //3
     }
 }
+
+NSString *ARTRealtimeTransportStateToStr(ARTRealtimeTransportState state) {
+    switch (state) {
+        case ARTRealtimeTransportStateOpening:
+            return @"Connecting"; //0
+        case ARTRealtimeTransportStateOpened:
+            return @"Open"; //1
+        case ARTRealtimeTransportStateClosing:
+            return @"Closing"; //2
+        case ARTRealtimeTransportStateClosed:
+            return @"Closed"; //3
+    }
+}
+
+#pragma mark - ARTEvent
+
+@implementation ARTEvent (TransportState)
+
+- (instancetype)initWithTransportState:(ARTRealtimeTransportState)value {
+    return [self initWithString:[NSString stringWithFormat:@"ARTRealtimeTransportState%@", ARTRealtimeTransportStateToStr(value)]];
+}
+
++ (instancetype)newWithTransportState:(ARTRealtimeTransportState)value {
+    return [[self alloc] initWithTransportState:value];
+}
+
+@end

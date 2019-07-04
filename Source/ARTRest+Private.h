@@ -45,17 +45,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) int fallbackCount;
 
 - (instancetype)initWithOptions:(ARTClientOptions *)options realtime:(ARTRealtime *_Nullable)realtime;
-- (void)_time:(void (^)(NSDate *_Nullable, NSError *_Nullable))callback;
+- (nullable NSObject<ARTCancellable> *)_time:(void (^)(NSDate *_Nullable, NSError *_Nullable))callback;
 
 // MARK: ARTHTTPExecutor
 
-- (void)executeRequest:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback;
+- (nullable NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request completion:(nullable void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback;
 
 // MARK: Internal
 
-- (void)executeRequest:(NSURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback;
+- (nullable NSObject<ARTCancellable> *)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData * _Nullable, NSError * _Nullable))callback;
 
-- (nullable id<ARTCancellable>)internetIsUp:(void (^)(BOOL isUp))cb;
+- (nullable NSObject<ARTCancellable> *)internetIsUp:(void (^)(BOOL isUp))cb;
 
 - (void)onUncaughtException:(NSException *)e;
 - (void)reportUncaughtException:(NSException *_Nullable)exception;

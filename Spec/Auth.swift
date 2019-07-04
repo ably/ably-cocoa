@@ -334,7 +334,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                // RSA4b1
+                // RSA4b
                 context("local token validity check") {
                     it("should be done if queryTime is true and local time is in sync with server") {
                         let options = AblyTests.commonAppSetup()
@@ -383,7 +383,7 @@ class Auth : QuickSpec {
                             }
                         }
 
-                        expect(rest.auth.tokenDetails).to(beNil())
+                        expect(rest.auth.tokenDetails).toNot(beNil())
                     }
 
                     it("should NOT be done if queryTime is false and local time is NOT in sync with server") {
@@ -3620,6 +3620,154 @@ class Auth : QuickSpec {
                     expect(discardTimeOffsetCallCount).toEventually(equal(2), timeout: testTimeout)
                 }
 
+            }
+
+            context("two consecutive authorizations") {
+                it("using REST, should call each authorize callback") {
+                    let options = AblyTests.commonAppSetup()
+                    options.useTokenAuth = true
+                    let rest = ARTRest(options: options)
+
+                    var tokenDetailsFirst: ARTTokenDetails?
+                    var tokenDetailsLast: ARTTokenDetails?
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+                        rest.auth.authorize { tokenDetails, error in
+                            if let error = error {
+                                fail(error.localizedDescription); partialDone(); return
+                            }
+                            expect(tokenDetails).toNot(beNil())
+                            if tokenDetailsFirst == nil {
+                                tokenDetailsFirst = tokenDetails
+                            }
+                            else {
+                                tokenDetailsLast = tokenDetails
+                            }
+                            partialDone()
+                        }
+                        rest.auth.authorize { tokenDetails, error in
+                            if let error = error {
+                                fail(error.localizedDescription); partialDone(); return
+                            }
+                            expect(tokenDetails).toNot(beNil())
+                            if tokenDetailsFirst == nil {
+                                tokenDetailsFirst = tokenDetails
+                            }
+                            else {
+                                tokenDetailsLast = tokenDetails
+                            }
+                            partialDone()
+                        }
+                    }
+
+                    expect(tokenDetailsFirst?.token).toNot(equal(tokenDetailsLast?.token))
+                    expect(rest.auth.tokenDetails).to(beIdenticalTo(tokenDetailsLast))
+                    expect(rest.auth.tokenDetails?.token).to(equal(tokenDetailsLast?.token))
+                }
+                it("using Realtime and connection is CONNECTING, should call each Realtime authorize callback") {
+                    let options = AblyTests.commonAppSetup()
+                    options.useTokenAuth = true
+                    let realtime = AblyTests.newRealtime(options)
+                    defer { realtime.close(); realtime.dispose() }
+
+                    var connectedStateCount = 0
+                    realtime.connection.on(.connected) { _ in
+                        connectedStateCount += 1
+                    }
+
+                    var tokenDetailsFirst: ARTTokenDetails?
+                    var tokenDetailsLast: ARTTokenDetails?
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+                        realtime.auth.authorize { tokenDetails, error in
+                            if let error = error, (error as NSError).code != URLError.cancelled.rawValue {
+                                fail(error.localizedDescription); partialDone(); return
+                            }
+                            expect(tokenDetails).toNot(beNil())
+                            if tokenDetailsFirst == nil {
+                                tokenDetailsFirst = tokenDetails
+                            }
+                            else {
+                                tokenDetailsLast = tokenDetails
+                            }
+                            partialDone()
+                        }
+                        realtime.auth.authorize { tokenDetails, error in
+                            if let error = error, (error as NSError).code != URLError.cancelled.rawValue {
+                                fail(error.localizedDescription); partialDone(); return
+                            }
+                            expect(tokenDetails).toNot(beNil())
+                            if tokenDetailsFirst == nil {
+                                tokenDetailsFirst = tokenDetails
+                            }
+                            else {
+                                tokenDetailsLast = tokenDetails
+                            }
+                            partialDone()
+                        }
+                    }
+
+                    expect(tokenDetailsFirst?.token).toNot(equal(tokenDetailsLast?.token))
+                    expect(realtime.auth.tokenDetails).to(beIdenticalTo(tokenDetailsLast))
+                    expect(realtime.auth.tokenDetails?.token).to(equal(tokenDetailsLast?.token))
+
+                    if let transport = realtime.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
+                        expect(query).to(haveParam("accessToken", withValue: realtime.auth.tokenDetails?.token ?? ""))
+                    }
+                    else {
+                        XCTFail("MockTransport is not working")
+                    }
+
+                    expect(connectedStateCount) == 1
+                }
+                it("using Realtime and connection is CONNECTED, should call each Realtime authorize callback") {
+                    let options = AblyTests.commonAppSetup()
+                    options.useTokenAuth = true
+                    let realtime = ARTRealtime(options: options)
+                    defer { realtime.close(); realtime.dispose() }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        realtime.connection.once(.connected) { state in
+                            done()
+                        }
+                    }
+
+                    var tokenDetailsFirst: ARTTokenDetails?
+                    var tokenDetailsLast: ARTTokenDetails?
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+                        realtime.auth.authorize { tokenDetails, error in
+                            if let error = error {
+                                fail(error.localizedDescription); partialDone(); return
+                            }
+                            expect(tokenDetails).toNot(beNil())
+                            if tokenDetailsFirst == nil {
+                                tokenDetailsFirst = tokenDetails
+                            }
+                            else {
+                                tokenDetailsLast = tokenDetails
+                            }
+                            partialDone()
+                        }
+                        realtime.auth.authorize { tokenDetails, error in
+                            if let error = error {
+                                fail(error.localizedDescription); partialDone(); return
+                            }
+                            expect(tokenDetails).toNot(beNil())
+                            if tokenDetailsFirst == nil {
+                                tokenDetailsFirst = tokenDetails
+                            }
+                            else {
+                                tokenDetailsLast = tokenDetails
+                            }
+                            partialDone()
+                        }
+                    }
+
+                    expect(tokenDetailsFirst?.token).toNot(equal(tokenDetailsLast?.token))
+                    expect(realtime.auth.tokenDetails).to(beIdenticalTo(tokenDetailsLast))
+                    expect(realtime.auth.tokenDetails?.token).to(equal(tokenDetailsLast?.token))
+                }
             }
 
         }
