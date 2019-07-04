@@ -575,7 +575,7 @@ class PushActivationStateMachine : QuickSpec {
 
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
                         expect(httpExecutor.requests.count) == 1
-                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations" })
+                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(rest.device.id)" })
                         expect(requests).to(haveCount(1))
                         guard let request = httpExecutor.requests.first else {
                             fail("should have a \"/push/deviceRegistrations\" request"); return
@@ -585,7 +585,6 @@ class PushActivationStateMachine : QuickSpec {
                         }
                         expect(url.host).to(equal(rest.options.restUrl().host))
                         expect(request.httpMethod) == "DELETE"
-                        expect(url.query).to(contain(rest.device.id))
                         expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
                         let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
                         expect(deviceAuthorization).to(equal(rest.device.secret))
@@ -625,7 +624,7 @@ class PushActivationStateMachine : QuickSpec {
 
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
                         expect(httpExecutor.requests.count) == 1
-                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations" })
+                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(rest.device.id)" })
                         expect(requests).to(haveCount(1))
                         guard let request = httpExecutor.requests.first else {
                             fail("should have a \"/push/deviceRegistrations\" request"); return
@@ -635,7 +634,6 @@ class PushActivationStateMachine : QuickSpec {
                         }
                         expect(url.host).to(equal(rest.options.restUrl().host))
                         expect(request.httpMethod) == "DELETE"
-                        expect(url.query).to(contain(rest.device.id))
                         expect(rest.device.identityTokenDetails).to(beNil())
                         expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
                         let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
@@ -667,7 +665,7 @@ class PushActivationStateMachine : QuickSpec {
 
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
                         expect(httpExecutor.requests.count) == 1
-                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations" })
+                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(rest.device.id)" })
                         expect(requests).to(haveCount(1))
                         guard let request = httpExecutor.requests.first else {
                             fail("should have a \"/push/deviceRegistrations\" request"); return
@@ -677,7 +675,6 @@ class PushActivationStateMachine : QuickSpec {
                         }
                         expect(url.host).to(equal(rest.options.restUrl().host))
                         expect(request.httpMethod) == "DELETE"
-                        expect(url.query).to(contain(rest.device.id))
                     }
 
                 }
@@ -1249,7 +1246,7 @@ class PushActivationStateMachine : QuickSpec {
 
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
                         expect(httpExecutor.requests.count) == 1
-                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations" })
+                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(rest.device.id)" })
                         expect(requests).to(haveCount(1))
                         guard let request = httpExecutor.requests.first else {
                             fail("should have a \"/push/deviceRegistrations\" request"); return
@@ -1259,7 +1256,6 @@ class PushActivationStateMachine : QuickSpec {
                         }
                         expect(url.host).to(equal(rest.options.restUrl().host))
                         expect(request.httpMethod) == "DELETE"
-                        expect(url.query).to(contain(rest.device.id))
                         expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
                         let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
                         expect(deviceAuthorization).to(equal(rest.device.secret))
@@ -1297,7 +1293,7 @@ class PushActivationStateMachine : QuickSpec {
 
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
                         expect(httpExecutor.requests.count) == 1
-                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations" })
+                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(rest.device.id)" })
                         expect(requests).to(haveCount(1))
                         guard let request = httpExecutor.requests.first else {
                             fail("should have a \"/push/deviceRegistrations\" request"); return
@@ -1307,7 +1303,6 @@ class PushActivationStateMachine : QuickSpec {
                         }
                         expect(url.host).to(equal(rest.options.restUrl().host))
                         expect(request.httpMethod) == "DELETE"
-                        expect(url.query).to(contain(rest.device.id))
                         expect(rest.device.identityTokenDetails).to(beNil())
                         expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
                         let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
@@ -1338,7 +1333,7 @@ class PushActivationStateMachine : QuickSpec {
 
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
                         expect(httpExecutor.requests.count) == 1
-                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations" })
+                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(rest.device.id)" })
                         expect(requests).to(haveCount(1))
                         guard let request = httpExecutor.requests.first else {
                             fail("should have a \"/push/deviceRegistrations\" request"); return
@@ -1348,7 +1343,6 @@ class PushActivationStateMachine : QuickSpec {
                         }
                         expect(url.host).to(equal(rest.options.restUrl().host))
                         expect(request.httpMethod) == "DELETE"
-                        expect(url.query).to(contain(rest.device.id))
                     }
 
                     it("should transition to WaitingForRegistrationUpdate") {

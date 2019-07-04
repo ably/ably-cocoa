@@ -272,12 +272,7 @@ dispatch_async(_queue, ^{
     }
 
     // Asynchronous HTTP request
-    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/deviceRegistrations"] resolvingAgainstBaseURL:NO];
-    components.queryItems = @[
-        [NSURLQueryItem queryItemWithName:@"deviceId" value:local.id],
-    ];
-
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:local.id]];
     request.HTTPMethod = @"DELETE";
     [request setDeviceAuthentication:local];
 
