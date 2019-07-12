@@ -80,7 +80,7 @@ class PushActivationStateMachine : QuickSpec {
                         let testDeviceId = "aaaa"
                         storage.simulateOnNextRead(string: testDeviceId, for: ARTDeviceIdKey)
 
-                        let testDeviceIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", deviceId: testDeviceId)
+                        let testDeviceIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
                         stateMachine.rest.device.setAndPersistIdentityTokenDetails(testDeviceIdentityTokenDetails)
                         defer { stateMachine.rest.device.setAndPersistIdentityTokenDetails(nil) }
 
@@ -433,7 +433,7 @@ class PushActivationStateMachine : QuickSpec {
                         issued: Date(),
                         expires: Date.distantFuture,
                         capability: "",
-                        deviceId: rest.device.id
+                        clientId: ""
                     )
 
                     stateMachine.send(ARTPushActivationEventGotDeviceRegistration(identityTokenDetails: testIdentityTokenDetails))
@@ -603,7 +603,7 @@ class PushActivationStateMachine : QuickSpec {
                             issued: Date(),
                             expires: Date.distantFuture,
                             capability: "",
-                            deviceId: rest.device.id
+                            clientId: ""
                         )
 
                         expect(rest.device.identityTokenDetails).to(beNil())
@@ -722,7 +722,7 @@ class PushActivationStateMachine : QuickSpec {
                         issued: Date(),
                         expires: Date.distantFuture,
                         capability: "",
-                        deviceId: rest.device.id
+                        clientId: ""
                     )
 
                     stateMachine.send(ARTPushActivationEventRegistrationUpdated(identityTokenDetails: testIdentityTokenDetails))
@@ -1276,7 +1276,7 @@ class PushActivationStateMachine : QuickSpec {
                             issued: Date(),
                             expires: Date.distantFuture,
                             capability: "",
-                            deviceId: rest.device.id
+                            clientId: ""
                         )
 
                         expect(rest.device.identityTokenDetails).to(beNil())
@@ -1535,8 +1535,8 @@ class StateMachineDelegateCustomCallbacks: StateMachineDelegate {
 
     func ablyPushCustomRegister(_ error: ARTErrorInfo?, deviceDetails: ARTDeviceDetails?, callback: @escaping (ARTDeviceIdentityTokenDetails?, ARTErrorInfo?) -> Void) {
         let error = onPushCustomRegister?(error, deviceDetails)
-        delay(0) { [deviceId = deviceDetails?.id] in
-            let deviceIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "123456", issued: Date(), expires: Date.distantFuture, capability: "", deviceId: deviceId ?? "unknown")
+        delay(0) {
+            let deviceIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "123456", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
             callback(deviceIdentityTokenDetails, error == nil ? nil : ARTErrorInfo.create(from: error!))
         }
     }
