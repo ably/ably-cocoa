@@ -226,6 +226,7 @@ dispatch_async(_queue, ^{
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:local.id]];
     request.HTTPMethod = @"PATCH";
     request.HTTPBody = [[_rest defaultEncoder] encode:@{
+        @"clientId": local.clientId,
         @"push": @{
             @"recipient": local.push.recipient
         }
