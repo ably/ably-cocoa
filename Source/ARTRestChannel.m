@@ -324,10 +324,4 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
 });
 }
 
-#if TARGET_OS_IOS
-- (ARTLocalDevice *)device {
-    return _rest.device;
-}
-#endif
-
 @end
