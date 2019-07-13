@@ -1,5 +1,16 @@
 # Change Log
 
+## [1.1.9](https://github.com/ably/ably-cocoa/tree/1.1.9) (2019-07-12)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.8...1.1.9)
+
+**Fixed bugs:**
+
+- Push deactivate on an app is failing with `push-subscribe` permissions [\#873](https://github.com/ably/ably-cocoa/issues/873)
+
+**Merged pull requests:**
+
+- Delete device registration should not use the general-purpose endpoint [\#871](https://github.com/ably/ably-cocoa/pull/871) ([ricardopereira](https://github.com/ricardopereira))
+
 ## [1.1.8](https://github.com/ably/ably-cocoa/tree/1.1.8) (2019-07-03)
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.7...1.1.8)
 
