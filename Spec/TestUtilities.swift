@@ -93,9 +93,33 @@ class AblyTests {
     static var testApplication: JSON?
     static fileprivate var setupOptionsCounter = 0
 
-    static var queue = DispatchQueue(label: "io.ably.tests", qos: .userInitiated)
-    static var userQueue = DispatchQueue(label: "io.ably.tests.callbacks", qos: .userInitiated)
-    static var extraQueue = DispatchQueue(label: "io.ably.tests.extra", qos: .userInitiated)
+    struct QueueIdentity {
+        let label: String
+    }
+
+    static var queueIdentityKey = DispatchSpecificKey<QueueIdentity>()
+
+    static var queue: DispatchQueue = {
+        let queue = DispatchQueue(label: "io.ably.tests", qos: .userInitiated)
+        queue.setSpecific(key: queueIdentityKey, value: QueueIdentity(label: queue.label))
+        return queue
+    }()
+
+    static var userQueue: DispatchQueue = {
+        let queue = DispatchQueue(label: "io.ably.tests.callbacks", qos: .userInitiated)
+        queue.setSpecific(key: queueIdentityKey, value: QueueIdentity(label: queue.label))
+        return queue
+    }()
+    
+    static var extraQueue: DispatchQueue = {
+        let queue = DispatchQueue(label: "io.ably.tests.extra", qos: .userInitiated)
+        queue.setSpecific(key: queueIdentityKey, value: QueueIdentity(label: queue.label))
+        return queue
+    }()
+
+    static func currentQueueLabel() -> String? {
+        return DispatchQueue.getSpecific(key: queueIdentityKey)?.label
+    }
 
     class func setupOptions(_ options: ARTClientOptions, forceNewApp: Bool = false, debug: Bool = false) -> ARTClientOptions {
         ARTChannels_getChannelNamePrefix = { "test-\(setupOptionsCounter)" }
