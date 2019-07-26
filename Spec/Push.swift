@@ -97,6 +97,9 @@ class Push : QuickSpec {
                 rest.httpExecutor = mockHttpExecutor
                 let storage = MockDeviceStorage()
                 rest.storage = storage
+                
+                rest.resetDeviceSingleton()
+                rest.push.resetActivationStateMachineSingleton()
 
                 let stateMachine = rest.push.activationMachine()
                 let testDeviceToken = "xxxx-xxxx-xxxx-xxxx-xxxx"

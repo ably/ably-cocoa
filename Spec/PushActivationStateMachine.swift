@@ -98,7 +98,7 @@ class PushActivationStateMachine : QuickSpec {
                     // RSH3a2b
                     context("local device") {
                         it("should have a generated id") {
-                            rest.resetDeviceOnceToken()
+                            rest.resetDeviceSingleton()
                             expect(rest.device.id.lengthOfBytes(using: .utf8)) == 26 //ulid
                         }
                         it("should have a generated secret") {
@@ -414,7 +414,7 @@ class PushActivationStateMachine : QuickSpec {
 
                 // RSH3c2
                 it("on Event GotDeviceRegistration") {
-                    rest.resetDeviceOnceToken()
+                    rest.resetDeviceSingleton()
 
                     var activatedCallbackCalled = false
                     let hook = stateMachine.testSuite_injectIntoMethod(after: NSSelectorFromString("callActivatedCallback:")) {
@@ -1497,7 +1497,7 @@ class PushActivationStateMachine : QuickSpec {
             let storage = MockDeviceStorage()
             rest.storage = storage
             rest.device.setAndPersistIdentityTokenDetails(nil)
-            rest.resetDeviceOnceToken()
+            rest.resetDeviceSingleton()
             expect(rest.device.identityTokenDetails).to(beNil())
             expect(rest.device.isRegistered()) == false
             expect(storage.object(forKey: ARTDeviceIdentityTokenKey)).to(beNil())

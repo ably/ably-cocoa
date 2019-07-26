@@ -47,13 +47,21 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 
 #if TARGET_OS_IOS
 
+// Store address of once_token to access it in debug function.
+static dispatch_once_t *activationMachine_once_token;
+
 - (ARTPushActivationStateMachine *)activationMachine {
     static dispatch_once_t once;
+    activationMachine_once_token = &once;
     static id activationMachineInstance;
     dispatch_once(&once, ^{
         activationMachineInstance = [[ARTPushActivationStateMachine alloc] init:self->_rest];
     });
     return activationMachineInstance;
+}
+
+- (void)resetActivationStateMachineSingleton {
+    if (activationMachine_once_token) *activationMachine_once_token = 0;
 }
 
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceTokenData rest:(ARTRest *)rest {

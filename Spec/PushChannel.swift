@@ -21,7 +21,7 @@ class PushChannel : QuickSpec {
             rest = ARTRest(key: "xxxx:xxxx")
             rest.options.clientId = "tester"
             rest.httpExecutor = mockHttpExecutor
-            rest.resetDeviceOnceToken()
+            rest.resetDeviceSingleton()
         }
 
         // RSH7
