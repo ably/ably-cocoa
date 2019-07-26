@@ -647,7 +647,9 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 - (void)setProtocolClientId:(NSString *)clientId {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     _protocolClientId = clientId;
+    #if TARGET_OS_IOS
     [self setLocalDeviceClientId_nosync:_protocolClientId];
+    #endif
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
@@ -710,7 +712,9 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
 - (void)setTokenDetails:(ARTTokenDetails *)tokenDetails {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     _tokenDetails = tokenDetails;
+    #if TARGET_OS_IOS
     [self setLocalDeviceClientId_nosync:tokenDetails.clientId];
+    #endif
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
@@ -747,6 +751,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
+#if TARGET_OS_IOS
 - (void)setLocalDeviceClientId_nosync:(NSString *)clientId {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (!_rest.device_nosync.clientId && clientId) {
@@ -754,6 +759,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     }
 } ART_TRY_OR_REPORT_CRASH_END
 }
+#endif
 
 @end
 
