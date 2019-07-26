@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSString *capability;
 
 /**
- Contains the deviceId assigned to the token if provided.
+ Contains the clientId assigned to the token if provided.
  */
 @property (nonatomic, readonly) NSString *clientId;
 
