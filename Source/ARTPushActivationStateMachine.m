@@ -20,6 +20,7 @@
 #import "ARTDevicePushDetails.h"
 #import "ARTDeviceIdentityTokenDetails.h"
 #import "ARTNSMutableRequest+ARTPush.h"
+#import "ARTAuth+Private.h"
 
 #if TARGET_OS_IOS
 
@@ -163,28 +164,39 @@ dispatch_async(_queue, ^{
         return;
     }
 
-    // Asynchronous HTTP request
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/deviceRegistrations"]];
-    request.HTTPMethod = @"POST";
-    request.HTTPBody = [[_rest defaultEncoder] encodeDeviceDetails:local error:nil];
-    [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
+    void (^doDeviceRegistration)(void) = ^{
+        // Asynchronous HTTP request
+        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/deviceRegistrations"]];
+        request.HTTPMethod = @"POST";
+        request.HTTPBody = [[self->_rest defaultEncoder] encodeDeviceDetails:local error:nil];
+        [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
-    [[_rest logger] debug:__FILE__ line:__LINE__ message:@"device registration with request %@", request];
-    [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
-        if (error) {
-            [[self->_rest logger] error:@"%@: device registration failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
-            [self sendEvent:[ARTPushActivationEventGettingDeviceRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
-            return;
-        }
-        NSError *decodeError = nil;
-        ARTDeviceIdentityTokenDetails *identityTokenDetails = [[self->_rest defaultEncoder] decodeDeviceIdentityTokenDetails:data error:&decodeError];
-        if (decodeError) {
-            [[self->_rest logger] error:@"%@: decode identity token details failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
-            [self sendEvent:[ARTPushActivationEventGettingDeviceRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
-            return;
-        }
-        [self sendEvent:[ARTPushActivationEventGotDeviceRegistration newWithIdentityTokenDetails:identityTokenDetails]];
-    }];
+        [[self->_rest logger] debug:__FILE__ line:__LINE__ message:@"device registration with request %@", request];
+        [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+            if (error) {
+                [[self->_rest logger] error:@"%@: device registration failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+                [self sendEvent:[ARTPushActivationEventGettingDeviceRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
+                return;
+            }
+            NSError *decodeError = nil;
+            ARTDeviceIdentityTokenDetails *identityTokenDetails = [[self->_rest defaultEncoder] decodeDeviceIdentityTokenDetails:data error:&decodeError];
+            if (decodeError) {
+                [[self->_rest logger] error:@"%@: decode identity token details failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+                [self sendEvent:[ARTPushActivationEventGettingDeviceRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
+                return;
+            }
+            [self sendEvent:[ARTPushActivationEventGotDeviceRegistration newWithIdentityTokenDetails:identityTokenDetails]];
+        }];
+    };
+
+    if (_rest.auth.method == ARTAuthMethodToken) {
+        [_rest.auth authorize:^(ARTTokenDetails *tokenDetails, NSError *error) {
+            doDeviceRegistration();
+        }];
+    }
+    else {
+        doDeviceRegistration();
+    }
     #endif
 }
 
