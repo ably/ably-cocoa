@@ -54,7 +54,7 @@
     ARTErrorInfo *_errorReason;
 }
 
-- (instancetype)initWithRealtime:(ARTRealtime *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options {
+- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options {
 ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
     self = [super initWithName:name andOptions:options rest:realtime.rest];
     if (self) {
@@ -79,7 +79,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-+ (instancetype)channelWithRealtime:(ARTRealtime *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options {
++ (instancetype)channelWithRealtime:(ARTRealtimeInternal *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options {
 ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
     return [[ARTRealtimeChannel alloc] initWithRealtime:realtime andName:name withOptions:options];
 } ART_TRY_OR_MOVE_TO_FAILED_END

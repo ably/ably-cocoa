@@ -17,18 +17,18 @@ class ReadmeExamples : QuickSpec {
     override func spec() {
 
         it("testMakeKeyInstance") {
-            let client = ARTRealtime(key: "xxxx:xxxx")
+            let client = ARTRealtimeInternal(key: "xxxx:xxxx")
             client.connection.close()
         }
 
         it("testMakeTokenInstance") {
-            let client = ARTRealtime(token: "xxxx")
+            let client = ARTRealtimeInternal(token: "xxxx")
             client.connection.close()
         }
 
         it("testListenToConnectionStateChanges") {
             let options = AblyTests.clientOptions(requestToken: true)
-            let client = ARTRealtime(options: options)
+            let client = ARTRealtimeInternal(options: options)
             defer { client.close() }
 
             client.connection.on { stateChange in
@@ -47,14 +47,14 @@ class ReadmeExamples : QuickSpec {
         it("testNoAutoConnect") {
             let options = ARTClientOptions(key: "xxxx:xxxx")
             options.autoConnect = false
-            let client = ARTRealtime(options: options)
+            let client = ARTRealtimeInternal(options: options)
             client.connection.connect()
             client.connection.close()
         }
 
         it("testSubscribeAndPublishingToChannel") {
             let options = AblyTests.clientOptions(requestToken: true)
-            let client = ARTRealtime(options: options)
+            let client = ARTRealtimeInternal(options: options)
             defer { client.close() }
 
             let channel = client.channels.get("test")
@@ -74,7 +74,7 @@ class ReadmeExamples : QuickSpec {
 
         it("testQueryingTheHistory") {
             let options = AblyTests.clientOptions(requestToken: true)
-            let client = ARTRealtime(options: options)
+            let client = ARTRealtimeInternal(options: options)
             defer { client.close() }
 
             let channel = client.channels.get("test")
@@ -95,7 +95,7 @@ class ReadmeExamples : QuickSpec {
         it("testPresenceOnAChannel") {
             let options = AblyTests.clientOptions(requestToken: true)
             options.clientId = "foo"
-            let client = ARTRealtime(options: options)
+            let client = ARTRealtimeInternal(options: options)
             defer { client.close() }
 
             client.connection.on { stateChange in
@@ -113,7 +113,7 @@ class ReadmeExamples : QuickSpec {
 
         it("testQueryingThePresenceHistory") {
             let options = AblyTests.clientOptions(requestToken: true)
-            let client = ARTRealtime(options: options)
+            let client = ARTRealtimeInternal(options: options)
             defer { client.close() }
 
             let channel = client.channels.get("test")

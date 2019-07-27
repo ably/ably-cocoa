@@ -8,12 +8,12 @@
 
 #import <Ably/ARTRest.h>
 #import <Ably/ARTHttp.h>
-#import <Ably/ARTRealtime.h>
 #import <Ably/ARTSentry.h>
 
 @protocol ARTEncoder;
 @protocol ARTHTTPExecutor;
 @protocol ARTDeviceStorage;
+@class ARTRealtimeInternal;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTRest () <ARTHTTPAuthenticatedExecutor>
 
 @property (nonatomic, strong, readonly) ARTClientOptions *options;
-@property (nonatomic, weak, nullable) ARTRealtime *realtime;
+@property (nonatomic, weak, nullable) ARTRealtimeInternal *realtime;
 @property (readonly, strong, nonatomic) id<ARTEncoder> defaultEncoder;
 @property (readonly, strong, nonatomic) NSString *defaultEncoding; //Content-Type
 @property (readonly, strong, nonatomic) NSDictionary<NSString *, id<ARTEncoder>> *encoders;
@@ -44,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) ARTAuth *auth;
 @property (readwrite, assign, nonatomic) int fallbackCount;
 
-- (instancetype)initWithOptions:(ARTClientOptions *)options realtime:(ARTRealtime *_Nullable)realtime;
+- (instancetype)initWithOptions:(ARTClientOptions *)options realtime:(ARTRealtimeInternal *_Nullable)realtime;
 - (nullable NSObject<ARTCancellable> *)_time:(void (^)(NSDate *_Nullable, NSError *_Nullable))callback;
 
 // MARK: ARTHTTPExecutor

@@ -74,7 +74,9 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 }
 
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken realtime:(ARTRealtime *)realtime {
-    [ARTPush didRegisterForRemoteNotificationsWithDeviceToken:deviceToken rest:realtime.rest];
+    [realtime internalAsync:^(ARTRealtimeInternal *realtime) {
+        [ARTPush didRegisterForRemoteNotificationsWithDeviceToken:deviceToken rest:realtime.rest];
+    }];
 }
 
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error rest:(ARTRest *)rest {
@@ -83,7 +85,9 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 }
 
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error realtime:(ARTRealtime *)realtime {
-    [ARTPush didFailToRegisterForRemoteNotificationsWithError:error rest:realtime.rest];
+    [realtime internalAsync:^(ARTRealtimeInternal *realtime) {
+        [ARTPush didFailToRegisterForRemoteNotificationsWithError:error rest:realtime.rest];
+    }];
 }
 
 - (void)activate {

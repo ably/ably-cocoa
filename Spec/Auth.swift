@@ -161,7 +161,7 @@ class Auth : QuickSpec {
                     options.token = getTestToken()
                     options.autoConnect = false
 
-                    let client = ARTRealtime(options: options)
+                    let client = ARTRealtimeInternal(options: options)
                     defer { client.dispose(); client.close() }
                     client.setTransport(TestProxyTransport.self)
                     client.connect()
@@ -226,7 +226,7 @@ class Auth : QuickSpec {
                         delay(0.2) { done() }
                     }
 
-                    let realtime = ARTRealtime(options: options)
+                    let realtime = ARTRealtimeInternal(options: options)
                     defer { realtime.dispose(); realtime.close() }
                     // No means to renew the token is provided
                     expect(realtime.options.key).to(beNil())
@@ -287,7 +287,7 @@ class Auth : QuickSpec {
                     }
                     options.autoConnect = false
 
-                    let realtime = ARTRealtime(options: options)
+                    let realtime = ARTRealtimeInternal(options: options)
                     defer { realtime.dispose(); realtime.close() }
 
                     waitUntil(timeout: testTimeout) { done in
@@ -316,7 +316,7 @@ class Auth : QuickSpec {
                     }
                     options.autoConnect = false
 
-                    let realtime = ARTRealtime(options: options)
+                    let realtime = ARTRealtimeInternal(options: options)
                     defer { realtime.dispose(); realtime.close() }
 
                     waitUntil(timeout: testTimeout) { done in
@@ -434,7 +434,7 @@ class Auth : QuickSpec {
                     let options = AblyTests.clientOptions()
                     options.autoConnect = false
                     options.authUrl = URL(string: "https://echo.ably.io/respondwith?status=403")!
-                    let realtime = ARTRealtime(options: options)
+                    let realtime = ARTRealtimeInternal(options: options)
                     defer { realtime.dispose(); realtime.close() }
                     
                     waitUntil(timeout: testTimeout) { done in
@@ -456,7 +456,7 @@ class Auth : QuickSpec {
                         authCallbackHasBeenInvoked = true
                         completion(nil, ARTErrorInfo(domain: "io.ably.cocoa", code: 40300, userInfo: ["ARTErrorInfoStatusCode": 403]))
                     }
-                    let realtime = ARTRealtime(options: options)
+                    let realtime = ARTRealtimeInternal(options: options)
                     defer { realtime.dispose(); realtime.close() }
                     
                     waitUntil(timeout: testTimeout) { done in
@@ -500,7 +500,7 @@ class Auth : QuickSpec {
                             let options = AblyTests.clientOptions()
                             options.autoConnect = false
                             options.authUrl = URL(string: "http://echo.ably.io")! as URL
-                            let realtime = ARTRealtime(options: options)
+                            let realtime = ARTRealtimeInternal(options: options)
                             defer { realtime.dispose(); realtime.close() }
 
                             waitUntil(timeout: testTimeout) { done in
@@ -534,7 +534,7 @@ class Auth : QuickSpec {
                             options.authParams?.append(NSURLQueryItem(name: "type", value: "text") as URLQueryItem)
                             options.authParams?.append(NSURLQueryItem(name: "body", value: token) as URLQueryItem)
 
-                            let realtime = ARTRealtime(options: options)
+                            let realtime = ARTRealtimeInternal(options: options)
                             defer { realtime.dispose(); realtime.close() }
 
                             waitUntil(timeout: testTimeout) { done in
@@ -574,7 +574,7 @@ class Auth : QuickSpec {
                             options.authCallback = { tokenParams, completion in
                                 completion(nil, NSError(domain: NSURLErrorDomain, code: -1003, userInfo: [NSLocalizedDescriptionKey: "A server with the specified hostname could not be found."]))
                             }
-                            let realtime = ARTRealtime(options: options)
+                            let realtime = ARTRealtimeInternal(options: options)
                             defer { realtime.dispose(); realtime.close() }
 
                             waitUntil(timeout: testTimeout) { done in
@@ -607,7 +607,7 @@ class Auth : QuickSpec {
                             options.authCallback = { tokenParams, completion in
                                 getTestTokenDetails(completion: completion)
                             }
-                            let realtime = ARTRealtime(options: options)
+                            let realtime = ARTRealtimeInternal(options: options)
                             defer { realtime.dispose(); realtime.close() }
 
                             waitUntil(timeout: testTimeout) { done in
@@ -650,7 +650,7 @@ class Auth : QuickSpec {
                             let invalidTokenFormat = "{secret_token:xxx}"
                             options.authParams?.append(NSURLQueryItem(name: "body", value: invalidTokenFormat) as URLQueryItem)
 
-                            let realtime = ARTRealtime(options: options)
+                            let realtime = ARTRealtimeInternal(options: options)
                             defer { realtime.dispose(); realtime.close() }
 
                             waitUntil(timeout: testTimeout) { done in
@@ -687,7 +687,7 @@ class Auth : QuickSpec {
                             let token = getTestToken()
                             options.authParams?.append(NSURLQueryItem(name: "body", value: token) as URLQueryItem)
 
-                            let realtime = ARTRealtime(options: options)
+                            let realtime = ARTRealtimeInternal(options: options)
                             defer { realtime.dispose(); realtime.close() }
 
                             waitUntil(timeout: testTimeout) { done in
@@ -744,7 +744,7 @@ class Auth : QuickSpec {
                                 // Ignore `completion` closure to force a time out
                             }
 
-                            let realtime = ARTRealtime(options: options)
+                            let realtime = ARTRealtimeInternal(options: options)
                             defer { realtime.dispose(); realtime.close() }
 
                             waitUntil(timeout: testTimeout) { done in
@@ -778,7 +778,7 @@ class Auth : QuickSpec {
                                 getTestTokenDetails(completion: completion)
                             }
 
-                            let realtime = ARTRealtime(options: options)
+                            let realtime = ARTRealtimeInternal(options: options)
                             defer { realtime.dispose(); realtime.close() }
 
                             waitUntil(timeout: testTimeout) { done in
@@ -861,7 +861,7 @@ class Auth : QuickSpec {
                         options.clientId = expectedClientId
                         options.autoConnect = false
 
-                        let client = ARTRealtime(options: options)
+                        let client = ARTRealtimeInternal(options: options)
                         defer { client.dispose(); client.close() }
                         client.setTransport(TestProxyTransport.self)
                         client.connect()
@@ -896,7 +896,7 @@ class Auth : QuickSpec {
                         let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                         options.clientId = "*"
                         expect{ ARTRest(options: options) }.to(raiseException())
-                        expect{ ARTRealtime(options: options) }.to(raiseException())
+                        expect{ ARTRealtimeInternal(options: options) }.to(raiseException())
                     }
                 }
                 
@@ -941,7 +941,7 @@ class Auth : QuickSpec {
                         options.authCallback = { tokenParams, completion in
                             completion(wrongTokenDetails, nil)
                         }
-                        let realtime = ARTRealtime(options: options)
+                        let realtime = ARTRealtimeInternal(options: options)
                         defer { realtime.close() }
 
                         waitUntil(timeout: testTimeout) { done in
@@ -1195,7 +1195,7 @@ class Auth : QuickSpec {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
                         options.token = getTestToken(clientId: "tester")
-                        let realtime = ARTRealtime(options: options)
+                        let realtime = ARTRealtimeInternal(options: options)
                         defer { realtime.dispose(); realtime.close() }
                         expect(realtime.auth.clientId).to(beNil())
 
@@ -1283,7 +1283,7 @@ class Auth : QuickSpec {
                     it("client does not have an identity when a wildcard string '*' is present") {
                         let options = AblyTests.clientOptions()
                         options.token = getTestToken(clientId: "*")
-                        let realtime = ARTRealtime(options: options)
+                        let realtime = ARTRealtimeInternal(options: options)
                         defer { realtime.dispose(); realtime.close() }
                         waitUntil(timeout: testTimeout) { done in
                             realtime.connection.on(.connected) { _ in
@@ -3723,7 +3723,7 @@ class Auth : QuickSpec {
                 it("using Realtime and connection is CONNECTED, should call each Realtime authorize callback") {
                     let options = AblyTests.commonAppSetup()
                     options.useTokenAuth = true
-                    let realtime = ARTRealtime(options: options)
+                    let realtime = ARTRealtimeInternal(options: options)
                     defer { realtime.close(); realtime.dispose() }
 
                     waitUntil(timeout: testTimeout) { done in
@@ -3813,7 +3813,7 @@ class Auth : QuickSpec {
                 let options = AblyTests.commonAppSetup()
                 let initialToken = getTestToken(clientId: "tester", capability: "{\"restricted\":[\"*\"]}")
                 options.token = initialToken
-                let realtime = ARTRealtime(options: options)
+                let realtime = ARTRealtimeInternal(options: options)
                 defer { realtime.dispose(); realtime.close() }
                 let channel = realtime.channels.get("foo")
 
@@ -3855,7 +3855,7 @@ class Auth : QuickSpec {
                 let options = AblyTests.commonAppSetup()
                 options.clientId = "tester"
                 options.useTokenAuth = true
-                let realtime = ARTRealtime(options: options)
+                let realtime = ARTRealtimeInternal(options: options)
                 defer { realtime.dispose(); realtime.close() }
 
                 waitUntil(timeout: testTimeout) { done in
@@ -4080,7 +4080,7 @@ class Auth : QuickSpec {
                         options.authParams = [URLQueryItem]() as [URLQueryItem]?
                         options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]) as URLQueryItem)
                         options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]) as URLQueryItem)
-                        let client = ARTRealtime(options: options)
+                        let client = ARTRealtimeInternal(options: options)
                         defer { client.dispose(); client.close() }
 
                         waitUntil(timeout: testTimeout) { done in
@@ -4101,7 +4101,7 @@ class Auth : QuickSpec {
                         options.authParams = [URLQueryItem]() as [URLQueryItem]?
                         options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]) as URLQueryItem)
                         options.authParams?.append(URLQueryItem(name: "keySecret", value: "INVALID") as URLQueryItem)
-                        let client = ARTRealtime(options: options)
+                        let client = ARTRealtimeInternal(options: options)
                         defer { client.dispose(); client.close() }
 
                         waitUntil(timeout: testTimeout) { done in
@@ -4123,7 +4123,7 @@ class Auth : QuickSpec {
                         options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]) as URLQueryItem)
                         options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]) as URLQueryItem)
                         options.authParams?.append(URLQueryItem(name: "expiresIn", value: String(UInt(tokenDuration))) as URLQueryItem)
-                        let client = ARTRealtime(options: options)
+                        let client = ARTRealtimeInternal(options: options)
                         defer { client.dispose(); client.close() }
                         
                         waitUntil(timeout: testTimeout) { done in
@@ -4150,7 +4150,7 @@ class Auth : QuickSpec {
                         options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]) as URLQueryItem)
                         options.authParams?.append(URLQueryItem(name: "expiresIn", value: String(UInt(tokenDuration))) as URLQueryItem)
                         options.autoConnect = false // Prevent auto connection so we can set the transport proxy
-                        let client = ARTRealtime(options: options)
+                        let client = ARTRealtimeInternal(options: options)
                         client.setTransport(TestProxyTransport.self)
                         defer { client.dispose(); client.close() }
                         
@@ -4181,7 +4181,7 @@ class Auth : QuickSpec {
                             let token = ARTTokenDetails(token: getJWTToken()!)
                             completion(token, nil)
                         }
-                        let client = ARTRealtime(options: options)
+                        let client = ARTRealtimeInternal(options: options)
                         defer { client.dispose(); client.close() }
 
                         waitUntil(timeout: testTimeout) { done in
@@ -4199,7 +4199,7 @@ class Auth : QuickSpec {
                             let token = ARTTokenDetails(token: getJWTToken(invalid: true)!)
                             completion(token, nil)
                         }
-                        let client = ARTRealtime(options: options)
+                        let client = ARTRealtimeInternal(options: options)
                         defer { client.dispose(); client.close() }
 
                         waitUntil(timeout: testTimeout) { done in
@@ -4225,7 +4225,7 @@ class Auth : QuickSpec {
                         let token = ARTTokenDetails(token: getJWTToken(expiresIn: Int(tokenDuration))!)
                         completion(token, nil)
                     }
-                    let client = ARTRealtime(options: options)
+                    let client = ARTRealtimeInternal(options: options)
                     defer { client.dispose(); client.close() }
                     var originalToken = ""
                     var originalConnectionID = ""
@@ -4254,7 +4254,7 @@ class Auth : QuickSpec {
                     let clientId = "JWTClientId"
                     let options = AblyTests.clientOptions()
                     options.tokenDetails = ARTTokenDetails(token: getJWTToken(clientId: clientId)!)
-                    let client = ARTRealtime(options: options)
+                    let client = ARTRealtimeInternal(options: options)
                     defer { client.dispose(); client.close() }
 
                     waitUntil(timeout: testTimeout) { done in
@@ -4272,7 +4272,7 @@ class Auth : QuickSpec {
                     let capability = "{\"\(channelName)\":[\"subscribe\"]}"
                     let options = AblyTests.clientOptions()
                     options.tokenDetails = ARTTokenDetails(token: getJWTToken(capability: capability)!)
-                    let client = ARTRealtime(options: options)
+                    let client = ARTRealtimeInternal(options: options)
                     defer { client.dispose(); client.close() }
 
                     let originalARTChannels_getChannelNamePrefix = ARTChannels_getChannelNamePrefix

@@ -25,7 +25,28 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTRealtime () <ARTRealtimeTransportDelegate, ARTAuthDelegate>
+@interface ARTRealtime ()
+
+- (void)internalAsync:(void (^)(ARTRealtimeInternal *))use;
+
+@end
+
+@interface ARTRealtimeInternal : NSObject<ARTRealtimeProtocol>
+
+@property (nonatomic, strong, readonly) ARTConnection *connection;
+@property (nonatomic, strong, readonly) ARTRealtimeChannels *channels;
+@property (readonly) ARTAuth *auth;
+@property (readonly) ARTPush *push;
+#if TARGET_OS_IOS
+@property (nonnull, nonatomic, readonly, getter=device) ARTLocalDevice *device;
+#endif
+@property (readonly, nullable, getter=clientId) NSString *clientId;
+
+@property (readonly, nonatomic) dispatch_queue_t queue;
+
+@end
+
+@interface ARTRealtimeInternal () <ARTRealtimeTransportDelegate, ARTAuthDelegate>
 
 @property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTConnectionStateChange *> *internalEventEmitter;
 @property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, NSNull *> *connectedEventEmitter;
@@ -43,8 +64,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-/// ARTRealtime private methods that are used for whitebox testing.
-@interface ARTRealtime ()
+/// ARTRealtimeInternal private methods that are used for whitebox testing.
+@interface ARTRealtimeInternal ()
 
 @property (readwrite, strong, nonatomic) ARTRest *rest;
 @property (readonly, nullable) id<ARTRealtimeTransport> transport;
@@ -75,7 +96,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface ARTRealtime (Private)
+@interface ARTRealtimeInternal (Private)
 
 - (BOOL)isActive;
 
@@ -106,7 +127,7 @@ NS_ASSUME_NONNULL_END
 
 #define ART_TRY_OR_MOVE_TO_FAILED_START(realtime) \
 	do {\
-	ARTRealtime *__realtime = realtime;\
+	ARTRealtimeInternal *__realtime = realtime;\
     BOOL __started = ARTstartHandlingUncaughtExceptions(__realtime.rest);\
     BOOL __caught = false;\
 	@try {\

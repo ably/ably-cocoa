@@ -12,7 +12,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class ARTRealtimeInternal;
+
 @interface ARTConnection ()
+
+- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime;
 
 - (NSString *)id_nosync;
 - (NSString *)key_nosync;
@@ -22,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)recoveryKey_nosync;
 
 @property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTConnectionStateChange *> *eventEmitter;
-@property(weak, nonatomic) ARTRealtime* realtime;
+@property(weak, nonatomic) ARTRealtimeInternal* realtime;
 
 @end
 

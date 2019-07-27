@@ -11,6 +11,7 @@
 #import <Ably/ARTRealtimeChannel.h>
 #import <Ably/ARTPresenceMap.h>
 #import <Ably/ARTEventEmitter.h>
+#import <Ably/ARTRealtime+Private.h>
 
 @class ARTProtocolMessage;
 
@@ -22,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (ARTErrorInfo *)errorReason_nosync;
 - (NSString *_Nullable)clientId_nosync;
 
-@property (readonly, weak, nonatomic) ARTRealtime *realtime;
+@property (readonly, weak, nonatomic) ARTRealtimeInternal *realtime;
 @property (readonly, strong, nonatomic) ARTRestChannel *restChannel;
 @property (readwrite, strong, nonatomic) NSMutableArray *queuedMessages;
 @property (readwrite, strong, nonatomic, nullable) NSString *attachSerial;
@@ -34,8 +35,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, strong, nonatomic) ARTPresenceMap *presenceMap;
 @property (readwrite, assign, nonatomic) ARTPresenceAction lastPresenceAction;
 
-- (instancetype)initWithRealtime:(ARTRealtime *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options;
-+ (instancetype)channelWithRealtime:(ARTRealtime *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options;
+- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options;
++ (instancetype)channelWithRealtime:(ARTRealtimeInternal *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options;
 
 - (bool)isLastChannelSerial:(NSString *)channelSerial;
 

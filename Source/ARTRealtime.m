@@ -50,6 +50,111 @@
 #pragma mark - ARTRealtime implementation
 
 @implementation ARTRealtime {
+    ARTRealtimeInternal *_internal;
+}
+
+- (void)dealloc {
+    __block ARTRealtimeInternal *internal = _internal;
+    dispatch_async(_internal.queue, ^{
+        internal = nil;
+    });
+}
+
+- (void)internalAsync:(void (^)(ARTRealtimeInternal * _Nonnull))use {
+    dispatch_async(_internal.queue, ^{
+        use(self->_internal);
+    });
+}
+
+- (ARTConnection *)connection {
+    return _internal.connection;
+}
+
+- (ARTRealtimeChannels *)channels {
+    return _internal.channels;
+}
+
+- (ARTAuth *)auth {
+    return _internal.auth;
+}
+
+- (ARTPush *)push {
+    return _internal.push;
+}
+
+#if TARGET_OS_IOS
+- (ARTLocalDevice *)device {
+    return _internal.device;
+}
+#endif
+
+- (NSString *)clientId {
+    return _internal.clientId;
+}
+
+- (instancetype)initWithOptions:(ARTClientOptions *)options {
+    self = [super init];
+    if (self) {
+        _internal = [[ARTRealtimeInternal alloc] initWithOptions:options];
+    }
+    return self;
+}
+
+- (instancetype)initWithKey:(NSString *)key {
+    self = [super init];
+    if (self) {
+        _internal = [[ARTRealtimeInternal alloc] initWithKey:key];
+    }
+    return self;
+}
+
+- (instancetype)initWithToken:(NSString *)token {
+    self = [super init];
+    if (self) {
+        _internal = [[ARTRealtimeInternal alloc] initWithToken:token];
+    }
+    return self;
+}
+
++ (instancetype)createWithOptions:(ARTClientOptions *)options {
+    return [[ARTRealtime alloc] initWithOptions:options];
+}
+
++ (instancetype)createWithKey:(NSString *)key {
+    return [[ARTRealtime alloc] initWithKey:key];
+}
+
++ (instancetype)createWithToken:(NSString *)tokenId {
+    return [[ARTRealtime alloc] initWithToken:tokenId];
+}
+
+- (void)time:(void (^)(NSDate *_Nullable, NSError *_Nullable))cb {
+    [_internal time:cb];
+}
+
+- (void)ping:(void (^)(ARTErrorInfo *_Nullable))cb {
+    [_internal ping:cb];
+}
+
+- (BOOL)stats:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback {
+    return [_internal stats:callback];
+}
+
+- (BOOL)stats:(nullable ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr {
+    return [_internal stats:query callback:callback error:errorPtr];
+}
+
+- (void)connect {
+    [_internal connect];
+}
+
+- (void)close {
+    [_internal close];
+}
+
+@end
+
+@implementation ARTRealtimeInternal {
     BOOL _resuming;
     BOOL _renewingToken;
     BOOL _suspendImmediateReconnection;
@@ -225,18 +330,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     return [self initWithOptions:[[ARTClientOptions alloc] initWithToken:token]];
 }
 
-+ (instancetype)createWithOptions:(ARTClientOptions *)options {
-    return [[ARTRealtime alloc] initWithOptions:options];
-}
-
-+ (instancetype)createWithKey:(NSString *)key {
-    return [[ARTRealtime alloc] initWithKey:key];
-}
-
-+ (instancetype)createWithToken:(NSString *)tokenId {
-    return [[ARTRealtime alloc] initWithToken:tokenId];
-}
-
 - (id<ARTRealtimeTransport>)transport {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     return _transport;
@@ -255,9 +348,9 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (NSString *)getClientId {
+- (NSString *)clientId {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
-    // Doesn't need synchronization since it's immutable.
+    // Doesn't need synchronization since it's 
     return _rest.options.clientId;
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }

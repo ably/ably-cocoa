@@ -25,8 +25,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, assign, nonatomic) ARTRealtimeConnectionState state;
 @property (nullable, readonly, strong, nonatomic) ARTErrorInfo *errorReason;
 
-- (instancetype)initWithRealtime:(ARTRealtime *)realtime;
-
 - (void)connect;
 - (void)close;
 - (void)ping:(void (^)(ARTErrorInfo *_Nullable))cb;

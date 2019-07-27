@@ -23,7 +23,7 @@ class RestClientPresence: QuickSpec {
                     let client = ARTRest(options: options)
                     let channel = client.channels.get("test")
 
-                    var disposable = [ARTRealtime]()
+                    var disposable = [ARTRealtimeInternal]()
                     defer {
                         for clientItem in disposable {
                             clientItem.dispose()
@@ -98,7 +98,7 @@ class RestClientPresence: QuickSpec {
                     let client = ARTRest(options: options)
                     let channel = client.channels.get("test")
 
-                    var realtime = ARTRealtime(options: options)
+                    var realtime = ARTRealtimeInternal(options: options)
                     defer { realtime.close() }
                     let realtimeChannel = realtime.channels.get("test")
 
@@ -131,7 +131,7 @@ class RestClientPresence: QuickSpec {
                     let client = ARTRest(options: options)
                     let channel = client.channels.get("test")
 
-                    var disposable = [ARTRealtime]()
+                    var disposable = [ARTRealtimeInternal]()
                     defer {
                         for clientItem in disposable {
                             clientItem.dispose()
@@ -185,7 +185,7 @@ class RestClientPresence: QuickSpec {
                     let client = ARTRest(options: options)
                     let channel = client.channels.get("test")
 
-                    var realtime: ARTRealtime!
+                    var realtime: ARTRealtimeInternal!
                     defer { realtime.dispose(); realtime.close() }
 
                     let expectedData = "online"
@@ -250,7 +250,7 @@ class RestClientPresence: QuickSpec {
                         let client = ARTRest(options: options)
                         let channel = client.channels.get("test")
 
-                        var disposable = [ARTRealtime]()
+                        var disposable = [ARTRealtimeInternal]()
                         defer {
                             for clientItem in disposable {
                                 clientItem.dispose()
@@ -312,7 +312,7 @@ class RestClientPresence: QuickSpec {
                         let client = ARTRest(options: options)
                         let channel = client.channels.get("test")
 
-                        var realtime: ARTRealtime!
+                        var realtime: ARTRealtimeInternal!
                         defer { realtime.dispose(); realtime.close() }
 
                         waitUntil(timeout: testTimeout) { done in
@@ -351,7 +351,7 @@ class RestClientPresence: QuickSpec {
                     let client = ARTRest(options: options)
                     let channel = client.channels.get("test")
 
-                    var disposable = [ARTRealtime]()
+                    var disposable = [ARTRealtimeInternal]()
                     defer {
                         for clientItem in disposable {
                             clientItem.dispose()
@@ -408,7 +408,7 @@ class RestClientPresence: QuickSpec {
                         let client = ARTRest(options: options)
                         let channel = client.channels.get("test")
 
-                        var disposable = [ARTRealtime]()
+                        var disposable = [ARTRealtimeInternal]()
                         defer {
                             for clientItem in disposable {
                                 clientItem.dispose()
@@ -504,7 +504,7 @@ class RestClientPresence: QuickSpec {
                     channel.publish(nil, data: expectedData) { _ in done() }
                 }
 
-                var realtime = ARTRealtime(options: options)
+                var realtime = ARTRealtimeInternal(options: options)
                 defer { realtime.dispose(); realtime.close() }
                 waitUntil(timeout: testTimeout) { done in
                     let partialDone = AblyTests.splitDone(2, done: done)

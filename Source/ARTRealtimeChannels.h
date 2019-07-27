@@ -14,8 +14,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtimeChannels : NSObject<NSFastEnumeration>
 
-- (instancetype)initWithRealtime:(ARTRealtime *)realtime;
-
 // We copy this from the parent class and replace ChannelType by ARTRealtimeChannel * because
 // Swift ignores Objective-C generics and thinks this is returning an id, failing to compile.
 // Thus, we can't make ARTRealtimeChannels inherit from ARTChannels; we have to compose them instead.

@@ -8,12 +8,15 @@
 //
 
 #import <Ably/ARTRealtimeChannels.h>
+#import <Ably/ARTRealtime+Private.h>
 
 @class ARTRealtimeChannel;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtimeChannels ()
+
+- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime;
 
 @property (readonly, getter=getNosyncIterable) id<NSFastEnumeration> nosyncIterable;
 @property (nonatomic, readonly, getter=getCollection) NSMutableDictionary<NSString *, ARTRealtimeChannel *> *collection;

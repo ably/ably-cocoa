@@ -26,7 +26,7 @@
     ARTErrorInfo *_errorReason;
 }
 
-- (instancetype)initWithRealtime:(ARTRealtime *)realtime {
+- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime {
 ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
     if (self = [super init]) {
         _eventEmitter = [[ARTPublicEventEmitter alloc] initWithRest:realtime.rest];

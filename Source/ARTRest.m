@@ -69,7 +69,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-- (instancetype)initWithOptions:(ARTClientOptions *)options realtime:(ARTRealtime *_Nullable)realtime {
+- (instancetype)initWithOptions:(ARTClientOptions *)options realtime:(ARTRealtimeInternal *_Nullable)realtime {
     self = [super init];
     if (self) {
         NSAssert(options, @"ARTRest: No options provided");

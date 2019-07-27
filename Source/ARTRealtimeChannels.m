@@ -15,7 +15,7 @@
 
 @interface ARTRealtimeChannels ()
 
-@property (weak, nonatomic) ARTRealtime *realtime;
+@property (weak, nonatomic) ARTRealtimeInternal *realtime;
 
 @end
 
@@ -28,7 +28,7 @@
     dispatch_queue_t _queue;
 }
 
-- (instancetype)initWithRealtime:(ARTRealtime *)realtime {
+- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime {
 ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
     if (self = [super init]) {
         _realtime = realtime;

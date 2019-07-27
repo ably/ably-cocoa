@@ -37,16 +37,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - ARTRealtime
 
-@interface ARTRealtime : NSObject
+@protocol ARTRealtimeProtocol <NSObject>
 
-@property (nonatomic, strong, readonly) ARTConnection *connection;
-@property (nonatomic, strong, readonly) ARTRealtimeChannels *channels;
+@property (readonly) ARTConnection *connection;
+@property (readonly) ARTRealtimeChannels *channels;
 @property (readonly) ARTAuth *auth;
 @property (readonly) ARTPush *push;
 #if TARGET_OS_IOS
-@property (nonnull, nonatomic, readonly, getter=device) ARTLocalDevice *device;
+@property (readonly) ARTLocalDevice *device;
 #endif
-@property (readonly, nullable, getter=getClientId) NSString *clientId;
+@property (readonly, nullable) NSString *clientId;
 
 - (instancetype)init NS_UNAVAILABLE;
 
@@ -63,10 +63,6 @@ Instance the Ably library using a key only. This is simply a convenience constru
 - (instancetype)initWithKey:(NSString *)key;
 - (instancetype)initWithToken:(NSString *)token;
 
-+ (instancetype)createWithOptions:(ARTClientOptions *)options NS_SWIFT_UNAVAILABLE("Use instance initializer instead");
-+ (instancetype)createWithKey:(NSString *)key NS_SWIFT_UNAVAILABLE("Use instance initializer instead");
-+ (instancetype)createWithToken:(NSString *)tokenId NS_SWIFT_UNAVAILABLE("Use instance initializer instead");
-
 - (void)time:(void (^)(NSDate *_Nullable, NSError *_Nullable))cb;
 - (void)ping:(void (^)(ARTErrorInfo *_Nullable))cb;
 
@@ -75,6 +71,14 @@ Instance the Ably library using a key only. This is simply a convenience constru
 
 - (void)connect;
 - (void)close;
+
+@end
+
+@interface ARTRealtime : NSObject <ARTRealtimeProtocol>
+
++ (instancetype)createWithOptions:(ARTClientOptions *)options NS_SWIFT_UNAVAILABLE("Use instance initializer instead");
++ (instancetype)createWithKey:(NSString *)key NS_SWIFT_UNAVAILABLE("Use instance initializer instead");
++ (instancetype)createWithToken:(NSString *)tokenId NS_SWIFT_UNAVAILABLE("Use instance initializer instead");
 
 @end
 
