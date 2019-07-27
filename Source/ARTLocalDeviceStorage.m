@@ -12,7 +12,7 @@
 #import <SAMKeychain/SAMKeychain.h>
 
 @implementation ARTLocalDeviceStorage {
-    __weak ARTLog *_logger;
+    ARTLog *_logger;
 }
 
 - (instancetype)initWithLogger:(ARTLog *)logger {

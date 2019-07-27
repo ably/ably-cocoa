@@ -37,7 +37,7 @@ extern NSString* (^_Nullable ARTChannels_getChannelNamePrefix)(void);
 - (BOOL)_exists:(NSString *)name;
 - (ChannelType)_get:(NSString *)name;
 - (ChannelType)_getChannel:(NSString *)name options:(ARTChannelOptions * _Nullable)options addPrefix:(BOOL)addPrefix;
-- (void)_release:(NSString *)name;
+- (void)_remove:(NSString *)name;
 
 - (instancetype)initWithDelegate:(id<ARTChannelsDelegate>)delegate dispatchQueue:(dispatch_queue_t)queue;
 

@@ -309,3 +309,26 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
 }
 
 @end
+
+@implementation ARTCancelOnFlush {
+    id<ARTCancellable> _cancellable;
+}
+
+- (instancetype)init:(id<ARTCancellable>)cancellable {
+    self = [self init];
+    if (self) {
+        _cancellable = cancellable;
+    }
+    return self;
+}
+
+- (void)cancel {
+    [_cancellable cancel];
+}
+
+- (void)flush {
+    [self cancel];
+}
+
+@end
+

@@ -40,6 +40,7 @@
 #import "ARTSentry.h"
 #import "ARTRealtimeChannels+Private.h"
 #import "ARTPush+Private.h"
+#import "ARTFlusher.h"
 
 @interface ARTConnectionStateChange ()
 
@@ -60,14 +61,12 @@
     Class _reachabilityClass;
     id<ARTRealtimeTransport> _transport;
     ARTFallback *_fallbacks;
-    __weak ARTEventListener *_connectionRetryFromSuspendedListener;
-    __weak ARTEventListener *_connectionRetryFromDisconnectedListener;
-    __weak ARTEventListener *_connectingTimeoutListener;
-    dispatch_block_t _authenitcatingTimeoutWork;
+    ARTEventListener *_connectingTimeoutListener;
+    dispatch_block_t _authenticatingTimeoutWork;
     dispatch_block_t _idleTimer;
     dispatch_queue_t _userQueue;
     dispatch_queue_t _queue;
-
+    ARTFlusher *_flushOnClose;
 }
 
 - (instancetype)initWithOptions:(ARTClientOptions *)options {
@@ -78,11 +77,16 @@
         _rest = [[ARTRest alloc] initWithOptions:options realtime:self];
         _userQueue = _rest.userQueue;
         _queue = _rest.queue;
+        _flushOnClose = [[ARTFlusher alloc] init];
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         _internalEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
+        [_flushOnClose add:_internalEventEmitter];
         _connectedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
+        [_flushOnClose add:_connectedEventEmitter];
         _pingEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
+        [_flushOnClose add:_pingEventEmitter];
         _channels = [[ARTRealtimeChannels alloc] initWithRealtime:self];
+        [_flushOnClose add:_channels];
         _transport = nil;
         _transportClass = [ARTWebSocketTransport class];
         _reachabilityClass = [ARTOSReachability class];
@@ -325,13 +329,16 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
 - (void)_close {
     [_reachability off];
-    [self cancelTimers];
+    
+    [_reachability off];
 
     switch (self.connection.state_nosync) {
     case ARTRealtimeInitialized:
     case ARTRealtimeClosing:
     case ARTRealtimeClosed:
     case ARTRealtimeFailed:
+        artDispatchCancel(_idleTimer);
+        [_flushOnClose flush];
         return;
     case ARTRealtimeConnecting: {
         [_internalEventEmitter once:^(ARTConnectionStateChange *change) {
@@ -453,9 +460,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     ARTStatus *status = nil;
     ARTEventListener *stateChangeEventListener = nil;
-    // Do not increase the reference count (avoid retain cycles):
-    // i.e. the `unlessStateChangesBefore` is setting a timer and if the `ARTRealtime` instance is released before that timer, then it could create a leak.
-    __weak __typeof(self) weakSelf = self;
 
     [self.logger verbose:@"R:%p realtime is transitioning from %@ to %@", self, ARTRealtimeConnectionStateToStr(stateChange.previous), ARTRealtimeConnectionStateToStr(stateChange.current)];
 
@@ -473,7 +477,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             }
 
             stateChangeEventListener = [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
-                [weakSelf onConnectionTimeOut];
+                [self onConnectionTimeOut];
             }];
             _connectingTimeoutListener = stateChangeEventListener;
 
@@ -498,20 +502,22 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                 self.connection.state_nosync != ARTRealtimeClosed &&
                 self.connection.state_nosync != ARTRealtimeDisconnected) {
                 [_reachability listenForHost:[_transport host] callback:^(BOOL reachable) {
+                    // The ref cycle creating by taking self here is resolved on close
+                    // when [_reachability off] is called.
                     if (reachable) {
-                        switch (weakSelf.connection.state_nosync) {
+                        switch (self.connection.state_nosync) {
                             case ARTRealtimeDisconnected:
                             case ARTRealtimeSuspended:
-                                [weakSelf transition:ARTRealtimeConnecting];
+                                [self transition:ARTRealtimeConnecting];
                             default:
                                 break;
                         }
                     } else {
-                        switch (weakSelf.connection.state_nosync) {
+                        switch (self.connection.state_nosync) {
                             case ARTRealtimeConnecting:
                             case ARTRealtimeConnected: {
                                 ARTErrorInfo *unreachable = [ARTErrorInfo createWithCode:-1003 message:@"unreachable host"];
-                                [weakSelf transition:ARTRealtimeDisconnected withErrorInfo:unreachable];
+                                [self transition:ARTRealtimeDisconnected withErrorInfo:unreachable];
                                 break;
                             }
                             default:
@@ -523,23 +529,22 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             break;
         }
         case ARTRealtimeClosing: {
-            [self stopIdleTimer];
+            artDispatchCancel(_idleTimer);
             [_reachability off];
             stateChangeEventListener = [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
-                [weakSelf transition:ARTRealtimeClosed];
+                [self transition:ARTRealtimeClosed];
             }];
             [self.transport sendClose];
             break;
         }
         case ARTRealtimeClosed:
-            [self stopIdleTimer];
-            [_reachability off];
             [self.transport close];
             _connection.key = nil;
             _connection.id = nil;
             _transport = nil;
             self.rest.prioritizedHost = nil;
             [self.auth cancelAuthorization:nil];
+            [self _close];
             break;
         case ARTRealtimeFailed:
             status = [ARTStatus state:ARTStateConnectionFailed info:stateChange.reason];
@@ -574,10 +579,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             }
             [stateChange setRetryIn:retryInterval];
             stateChangeEventListener = [self unlessStateChangesBefore:stateChange.retryIn do:^{
-                [weakSelf transition:ARTRealtimeConnecting];
-                self->_connectionRetryFromDisconnectedListener = nil;
+                [self transition:ARTRealtimeConnecting];
             }];
-            _connectionRetryFromDisconnectedListener = stateChangeEventListener;
             break;
         }
         case ARTRealtimeSuspended: {
@@ -585,10 +588,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             _transport = nil;
             [stateChange setRetryIn:self.options.suspendedRetryTimeout];
             stateChangeEventListener = [self unlessStateChangesBefore:stateChange.retryIn do:^{
-                [weakSelf transition:ARTRealtimeConnecting];
-                self->_connectionRetryFromSuspendedListener = nil;
+                [self transition:ARTRealtimeConnecting];
             }];
-            _connectionRetryFromSuspendedListener = stateChangeEventListener;
             [self.auth cancelAuthorization:nil];
             break;
         }
@@ -810,26 +811,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (void)cancelTimers {
-ART_TRY_OR_MOVE_TO_FAILED_START(self) {
-    [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p cancel timers", self];
-    [_connectionRetryFromSuspendedListener stopTimer];
-    _connectionRetryFromSuspendedListener = nil;
-    [_connectionRetryFromDisconnectedListener stopTimer];
-    _connectionRetryFromDisconnectedListener = nil;
-    // Cancel connecting scheduled work
-    [_connectingTimeoutListener stopTimer];
-    _connectingTimeoutListener = nil;
-    // Cancel auth scheduled work
-    artDispatchCancel(_authenitcatingTimeoutWork);
-    _authenitcatingTimeoutWork = nil;
-    // Idle timer
-    [self stopIdleTimer];
-    // Ping timer
-    [_pingEventEmitter off];
-} ART_TRY_OR_MOVE_TO_FAILED_END
-}
-
 - (void)onConnectionTimeOut {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p connection timed out", self];
@@ -837,8 +818,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     [_connectingTimeoutListener stopTimer];
     _connectingTimeoutListener = nil;
     // Cancel auth scheduled work
-    artDispatchCancel(_authenitcatingTimeoutWork);
-    _authenitcatingTimeoutWork = nil;
+    artDispatchCancel(_authenticatingTimeoutWork);
+    _authenticatingTimeoutWork = nil;
 
     ARTErrorInfo *error;
     if (self.auth.authorizing_nosync && (self.options.authUrl || self.options.authCallback)) {
@@ -903,13 +884,13 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         else {
             // New Token
             [self.auth setTokenDetails:nil];
-            // Transport instance couldn't exist anymore when `authorize` completes or reaches time out.
-            __weak __typeof(self) weakSelf = self;
 
             // Schedule timeout handler
-            _authenitcatingTimeoutWork = artDispatchScheduled([ARTDefault realtimeRequestTimeout], _rest.queue, ^{
-                [weakSelf onConnectionTimeOut];
-                // FIXME: should cancel the auth request as well.
+            
+            __block ARTCancelOnFlush *authTask = nil;
+            _authenticatingTimeoutWork = artDispatchScheduled([ARTDefault realtimeRequestTimeout], _rest.queue, ^{
+                [self onConnectionTimeOut];
+                [authTask cancel];
             });
 
             id<ARTAuthDelegate> delegate = self.auth.delegate;
@@ -918,13 +899,13 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                 self.auth.delegate = nil;
             }
             @try {
-                [self.auth _authorize:nil options:options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
+                authTask = [[ARTCancelOnFlush alloc] init:[self.auth _authorize:nil options:options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
+                    [self->_flushOnClose remove:authTask];
                     // Cancel scheduled work
-                    artDispatchCancel(self->_authenitcatingTimeoutWork);
-                    self->_authenitcatingTimeoutWork = nil;
+                    artDispatchCancel(self->_authenticatingTimeoutWork);
 
                     // It's still valid?
-                    switch (weakSelf.connection.state_nosync) {
+                    switch (self.connection.state_nosync) {
                         case ARTRealtimeClosing:
                         case ARTRealtimeClosed:
                             return;
@@ -932,9 +913,9 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                             break;
                     }
 
-                    [[weakSelf getLogger] debug:__FILE__ line:__LINE__ message:@"R:%p authorized: %@ error: %@", weakSelf, tokenDetails, error];
+                    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p authorized: %@ error: %@", self, tokenDetails, error];
                     if (error) {
-                        [weakSelf handleTokenAuthError:error];
+                        [self handleTokenAuthError:error];
                         return;
                     }
 
@@ -944,9 +925,10 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                         self->_transport.delegate = self;
                     }
                     if (newConnection) {
-                        [[weakSelf transport] connectWithToken:tokenDetails.token];
+                        [self.transport connectWithToken:tokenDetails.token];
                     }
-                }];
+                }]];
+                [_flushOnClose add:authTask];
             }
             @finally {
                 self.auth.delegate = delegate;
@@ -1305,13 +1287,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
         [self transition:ARTRealtimeDisconnected withErrorInfo:[ARTErrorInfo createWithCode:80003 status:408 message:@"Idle timer expired"]];
     });
-} ART_TRY_OR_MOVE_TO_FAILED_END
-}
-
-- (void)stopIdleTimer {
-ART_TRY_OR_MOVE_TO_FAILED_START(self) {
-    artDispatchCancel(_idleTimer);
-    _idleTimer = nil;
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 

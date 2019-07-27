@@ -11,6 +11,7 @@
 
 #import <Ably/ARTStatus.h>
 #import <Ably/ARTEventEmitter.h>
+#import "ARTFlusher.h"
 
 @class ARTStatus;
 @class ARTHttpResponse;
@@ -142,6 +143,10 @@ NSString *generateNonce(void);
 
 @protocol ARTCancellable
 - (void)cancel;
+@end
+
+@interface ARTCancelOnFlush : NSObject<ARTCancellable, ARTFlushable>
+- (instancetype)init:(id<ARTCancellable>)cancellable;
 @end
 
 #pragma mark - ARTConnectionStateChange

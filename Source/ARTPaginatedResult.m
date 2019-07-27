@@ -15,7 +15,7 @@
 #import "ARTNSHTTPURLResponse+ARTPaginated.h"
 
 @implementation ARTPaginatedResult {
-    __weak ARTRest *_rest;
+    ARTRest *_rest;
     dispatch_queue_t _userQueue;
     dispatch_queue_t _queue;
     NSMutableURLRequest *_relFirst;

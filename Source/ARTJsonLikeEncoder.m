@@ -33,8 +33,8 @@
 #import "ARTPushChannelSubscription.h"
 
 @implementation ARTJsonLikeEncoder {
-    __weak ARTRest *_rest;
-    __weak ARTLog *_logger;
+    __weak ARTRest *_rest; // weak because rest owns self
+    ARTLog *_logger;
 }
 
 - (instancetype)init {

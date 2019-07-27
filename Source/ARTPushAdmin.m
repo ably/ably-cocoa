@@ -17,7 +17,7 @@
 
 @implementation ARTPushAdmin {
     ARTRest *_rest;
-    __weak ARTLog *_logger;
+    ARTLog *_logger;
     dispatch_queue_t _userQueue;
     dispatch_queue_t _queue;
 }

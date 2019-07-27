@@ -33,7 +33,7 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 
 @implementation ARTPush {
     ARTRest *_rest;
-    __weak ARTLog *_logger;
+    ARTLog *_logger;
 }
 
 - (instancetype)init:(ARTRest *)rest {

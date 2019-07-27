@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtimeHistoryQuery ()
 
-@property (weak, readwrite) ARTRealtimeChannel *realtimeChannel;
+@property (strong, readwrite) ARTRealtimeChannel *realtimeChannel;
 
 @end
 

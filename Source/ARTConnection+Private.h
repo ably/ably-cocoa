@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)recoveryKey_nosync;
 
 @property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTConnectionStateChange *> *eventEmitter;
-@property(weak, nonatomic) ARTRealtime* realtime;
+@property(weak, nonatomic) ARTRealtime* realtime; // weak because realtime owns self
 
 @end
 

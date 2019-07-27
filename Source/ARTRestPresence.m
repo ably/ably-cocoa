@@ -59,7 +59,7 @@
 @end
 
 @implementation ARTRestPresence {
-    __weak ARTRestChannel *_channel;
+    __weak ARTRestChannel *_channel; // weak because channel owns self
     dispatch_queue_t _userQueue;
     dispatch_queue_t _queue;
 }

@@ -13,7 +13,7 @@
 
 - (instancetype)initWithName:(NSString *)name withOptions:(ARTChannelOptions *)options andRest:(ARTRest *)rest;
 
-@property (nonatomic, weak) ARTRest *rest;
+@property (nonatomic, weak) ARTRest *rest; // weak because rest owns self
 
 @end
 

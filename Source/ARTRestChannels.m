@@ -14,7 +14,7 @@
 
 @interface ARTRestChannels ()
 
-@property (weak, nonatomic) ARTRest *rest;
+@property (weak, nonatomic) ARTRest *rest; // weak because rest owns self
 
 @end
 

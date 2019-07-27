@@ -18,7 +18,7 @@
 #import "ARTDefault.h"
 
 @implementation ARTChannel {
-    __weak ARTRest *_rest;
+    __weak ARTRest *_rest; // weak because rest owns self
     dispatch_queue_t _queue;
 }
 

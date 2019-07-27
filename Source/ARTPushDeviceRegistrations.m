@@ -20,8 +20,8 @@
 #import "ARTNSMutableRequest+ARTPush.h"
 
 @implementation ARTPushDeviceRegistrations {
-    __weak ARTRest *_rest;
-    __weak ARTLog* _logger;
+    __weak ARTRest *_rest; // weak because rest owns self
+    ARTLog* _logger;
     dispatch_queue_t _queue;
     dispatch_queue_t _userQueue;
 }

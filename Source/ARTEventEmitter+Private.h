@@ -8,6 +8,7 @@
 
 #include <Ably/ARTEventEmitter.h>
 #include <Ably/ARTRest.h>
+#include "ARTFlusher.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -16,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTEventListener ()
 
 @property (nonatomic, readonly) NSString *eventId;
-@property (weak, nonatomic, readonly) id<NSObject> token;
+@property (nonatomic, readonly) id<NSObject> token;
 @property (nonatomic, readonly) NSUInteger count;
 
 - (instancetype)init NS_UNAVAILABLE;
@@ -53,6 +54,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithQueue:(dispatch_queue_t)queue;
 - (instancetype)initWithQueues:(dispatch_queue_t)queue userQueue:(_Nullable dispatch_queue_t)userQueue;
 
+@end
+
+@interface ARTEventEmitter () <ARTFlushable>
 @end
 
 NS_ASSUME_NONNULL_END

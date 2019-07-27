@@ -15,7 +15,7 @@
 
 @interface ARTRealtimeChannels ()
 
-@property (weak, nonatomic) ARTRealtime *realtime;
+@property (weak, nonatomic) ARTRealtime *realtime; // weak because realtime owns self
 
 @end
 
@@ -79,21 +79,11 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
         if (cb) cb(nil);
         return;
     }
-
+    
     ARTRealtimeChannel *channel = [self->_channels _get:name];
     [channel _detach:^(ARTErrorInfo *errorInfo) {
-        [channel off_nosync];
-        [channel _unsubscribe];
-        [channel.presence _unsubscribe];
-
-        // Only release if the stored channel now is the same as whne.
-        // Otherwise, subsequent calls to this release method race, and
-        // a new channel, created between the first call releases the stored
-        // one and the second call's detach callback is called, can be
-        // released unwillingly.
-        if ([self->_channels _exists:name] && [self->_channels _get:name] == channel) {
-            [self->_channels _release:name];
-        }
+        [channel close];
+        [self->_channels _remove:name];
 
         if (cb) cb(errorInfo);
     }];
@@ -117,6 +107,17 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
 - (ARTRealtimeChannel *)_getChannel:(NSString *)name options:(ARTChannelOptions *)options addPrefix:(BOOL)addPrefix {
     return [_channels _getChannel:name options:options addPrefix:addPrefix];
+}
+
+- (void)flush {
+    NSMutableArray<NSString *> *toRemove = [[NSMutableArray alloc] init];
+    for (ARTRealtimeChannel *channel in [self getNosyncIterable]) {
+        [channel close];
+        [toRemove addObject:channel.name];
+    }
+    for (NSString *channelName in toRemove) {
+        [_channels _remove:channelName];
+    }
 }
 
 @end

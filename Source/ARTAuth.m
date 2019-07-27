@@ -26,7 +26,7 @@
 #import "ARTEventEmitter+Private.h"
 
 @implementation ARTAuth {
-    __weak ARTRest *_rest;
+    __weak ARTRest *_rest; // weak because rest owns auth
     dispatch_queue_t _userQueue;
     dispatch_queue_t _queue;
     ARTTokenParams *_tokenParams;

@@ -16,7 +16,7 @@
 NSString* (^_Nullable ARTChannels_getChannelNamePrefix)(void);
 
 @interface ARTChannels() {
-    __weak id<ARTChannelsDelegate> _delegate;
+    __weak id<ARTChannelsDelegate> _delegate; // weak because delegates outlive their counterpart
     dispatch_queue_t _queue;
 }
 
@@ -67,11 +67,11 @@ dispatch_sync(_queue, ^{
 
 - (void)release:(NSString *)name {
 dispatch_sync(_queue, ^{
-    [self _release:name];
+    [self _remove:name];
 });
 }
 
-- (void)_release:(NSString *)name {
+- (void)_remove:(NSString *)name {
     [self->_channels removeObjectForKey:[ARTChannels addPrefix:name]];
 }
 

@@ -8,6 +8,7 @@
 //
 
 #import <Ably/ARTRealtimeChannels.h>
+#import "ARTFlusher.h"
 
 @class ARTRealtimeChannel;
 
@@ -19,6 +20,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, getter=getCollection) NSMutableDictionary<NSString *, ARTRealtimeChannel *> *collection;
 - (ARTRealtimeChannel *)_getChannel:(NSString *)name options:(ARTChannelOptions * _Nullable)options addPrefix:(BOOL)addPrefix;
 
+@end
+
+@interface ARTRealtimeChannels () <ARTFlushable>
 @end
 
 NS_ASSUME_NONNULL_END
