@@ -754,7 +754,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 #if TARGET_OS_IOS
 - (void)setLocalDeviceClientId_nosync:(NSString *)clientId {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
-    if (!_rest.device_nosync.clientId && clientId) {
+    if (clientId && ![clientId isEqualToString:@"*"]) {
         [_rest.device_nosync setClientId:clientId];
     }
 } ART_TRY_OR_REPORT_CRASH_END
