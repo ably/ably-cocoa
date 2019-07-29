@@ -76,6 +76,72 @@ class Push : QuickSpec {
                 }
             }
 
+            // https://github.com/ably/ably-cocoa/issues/877
+            it("should update LocalDevice.clientId when it's null with auth.clientId") {
+                let expectedClientId = "foo"
+                let options = AblyTests.clientOptions()
+
+                options.authCallback = { tokenParams, completion in
+                    getTestTokenDetails(clientId: expectedClientId, completion: { tokenDetails, error in
+                        expect(error).to(beNil())
+                        guard let tokenDetails = tokenDetails else {
+                            fail("TokenDetails are missing"); return
+                        }
+                        expect(tokenDetails.clientId) == expectedClientId
+                        completion(tokenDetails, error)
+                    })
+                }
+
+                let rest = ARTRest(options: options)
+                let mockHttpExecutor = MockHTTPExecutor()
+                rest.httpExecutor = mockHttpExecutor
+                let storage = MockDeviceStorage()
+                rest.storage = storage
+                
+                rest.resetDeviceSingleton()
+                rest.push.resetActivationStateMachineSingleton()
+
+                let stateMachine = rest.push.activationMachine()
+                let testDeviceToken = "xxxx-xxxx-xxxx-xxxx-xxxx"
+                stateMachine.rest.device.setAndPersistDeviceToken(testDeviceToken)
+                let stateMachineDelegate = StateMachineDelegate()
+                stateMachine.delegate = stateMachineDelegate
+                defer {
+                    stateMachine.transitions = nil
+                    stateMachine.delegate = nil
+                    stateMachine.rest.device.setAndPersistDeviceToken(nil)
+                }
+
+                expect(rest.device.clientId).to(beNil())
+                expect(rest.auth.clientId).to(beNil())
+
+                waitUntil(timeout: testTimeout) { done in
+                    let partialDone = AblyTests.splitDone(2, done: done)
+                    stateMachine.transitions = { event, _, _ in
+                        if event is ARTPushActivationEventGotPushDeviceDetails {
+                            partialDone()
+                        }
+                        else if event is ARTPushActivationEventGotDeviceRegistration {
+                            partialDone()
+                        }
+                    }
+                    rest.push.activate()
+                }
+
+                expect(rest.device.clientId) == expectedClientId
+                expect(rest.auth.clientId) == expectedClientId
+
+                switch extractBodyAsMsgPack(mockHttpExecutor.requests.last) {
+                case .failure(let error):
+                    fail(error)
+                case .success(let httpBody):
+                    guard let requestedClientId = httpBody.unbox["clientId"] as? String else {
+                        fail("No clientId field in HTTPBody"); return
+                    }
+                    expect(requestedClientId).to(equal(expectedClientId))
+                }
+            }
+
         }
 
     }

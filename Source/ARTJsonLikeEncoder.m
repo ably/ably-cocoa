@@ -674,9 +674,9 @@
     NSNumber *expiresMsecs = [deviceIdentityTokenInput artNumber:@"expires"];
     NSDate *expires = [NSDate dateWithMillisecondsSince1970:expiresMsecs.doubleValue];
     NSString *capability = [deviceIdentityTokenInput artString:@"capability"];
-    NSString *deviceId = [deviceIdentityTokenInput artString:@"deviceId"];
+    NSString *clientId = [deviceIdentityTokenInput artString:@"clientId"];
 
-    ARTDeviceIdentityTokenDetails *deviceIdentityTokenDetails = [[ARTDeviceIdentityTokenDetails alloc] initWithToken:token issued:issued expires:expires capability:capability deviceId:deviceId];
+    ARTDeviceIdentityTokenDetails *deviceIdentityTokenDetails = [[ARTDeviceIdentityTokenDetails alloc] initWithToken:token issued:issued expires:expires capability:capability clientId:clientId];
 
     return deviceIdentityTokenDetails;
 }

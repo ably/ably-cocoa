@@ -519,7 +519,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 
         [self.logger debug:@"RS:%p ARTAuth [authorize.%@]: token request succeeded: %@", self->_rest, authorizeId, tokenDetails];
 
-        self->_tokenDetails = tokenDetails;
+        [self setTokenDetails:tokenDetails];
         self->_method = ARTAuthMethodToken;
 
         if (!tokenDetails) {
@@ -530,18 +530,18 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
                 switch (state) {
                     case ARTAuthorizationSucceeded:
                         successBlock();
-                        self->_tokenDetails = tokenDetails;
+                        [self setTokenDetails:tokenDetails];
                         break;
                     case ARTAuthorizationFailed:
                         [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p authorization failed with \"%@\" but the request token has already completed", self->_rest, error];
                         failureBlock(error);
-                        self->_tokenDetails = nil;
+                        [self setTokenDetails:nil];
                         break;
                     case ARTAuthorizationCancelled: {
                         NSError *cancelled = [ARTErrorInfo createWithCode:kCFURLErrorCancelled message:@"Authorization has been cancelled"];
                         [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p authorization cancelled but the request token has already completed", self->_rest];
                         failureBlock(cancelled);
-                        self->_tokenDetails = tokenDetails;
+                        [self setTokenDetails:tokenDetails];
                         break;
                     }
                 }
@@ -647,6 +647,9 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 - (void)setProtocolClientId:(NSString *)clientId {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     _protocolClientId = clientId;
+    #if TARGET_OS_IOS
+    [self setLocalDeviceClientId_nosync:_protocolClientId];
+    #endif
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
@@ -709,6 +712,9 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
 - (void)setTokenDetails:(ARTTokenDetails *)tokenDetails {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     _tokenDetails = tokenDetails;
+    #if TARGET_OS_IOS
+    [self setLocalDeviceClientId_nosync:tokenDetails.clientId];
+    #endif
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
@@ -744,6 +750,16 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return parts[0];
 } ART_TRY_OR_REPORT_CRASH_END
 }
+
+#if TARGET_OS_IOS
+- (void)setLocalDeviceClientId_nosync:(NSString *)clientId {
+ART_TRY_OR_REPORT_CRASH_START(_rest) {
+    if (clientId && ![clientId isEqualToString:@"*"]) {
+        [_rest.device_nosync setClientId:clientId];
+    }
+} ART_TRY_OR_REPORT_CRASH_END
+}
+#endif
 
 @end
 
