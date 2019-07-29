@@ -1,5 +1,16 @@
 # Change Log
 
+## [1.1.10](https://github.com/ably/ably-cocoa/tree/1.1.10) (2019-07-29)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.9...1.1.10)
+
+**Fixed bugs:**
+
+- Push device registration omits `clientId` [\#877](https://github.com/ably/ably-cocoa/issues/877)
+
+**Merged pull requests:**
+
+- Update `LocalDevice.clientId` [\#874](https://github.com/ably/ably-cocoa/pull/874) ([ricardopereira](https://github.com/ricardopereira))
+
 ## [1.1.9](https://github.com/ably/ably-cocoa/tree/1.1.9) (2019-07-12)
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.8...1.1.9)
 
