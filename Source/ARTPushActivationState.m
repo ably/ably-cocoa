@@ -30,7 +30,7 @@
 }
 
 - (void)logEventTransition:(ARTPushActivationEvent *)event file:(const char *)file line:(NSUInteger)line {
-    NSLog(@"%@ state: handling %@ event", NSStringFromClass(self.class), NSStringFromClass(event.class));
+    [self.machine.rest.logger debug:@"ARTPush Activation: %@ state: handling %@ event", NSStringFromClass(self.class), NSStringFromClass(event.class)];
 }
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {

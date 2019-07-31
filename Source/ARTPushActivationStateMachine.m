@@ -87,17 +87,17 @@ dispatch_async(_queue, ^{
 }
 
 - (void)handleEvent:(nonnull ARTPushActivationEvent *)event {
-    NSLog(@"handling event %@ from %@", NSStringFromClass(event.class), NSStringFromClass(_current.class));
+    [_rest.logger debug:@"%@: handling event %@ from %@", NSStringFromClass(self.class), NSStringFromClass(event.class), NSStringFromClass(_current.class)];
     _lastHandledEvent = event;
 
     ARTPushActivationState *maybeNext = [_current transition:event];
 
     if (maybeNext == nil) {
-        NSLog(@"enqueuing event: %@", NSStringFromClass(event.class));
+        [_rest.logger debug:@"%@: enqueuing event: %@", NSStringFromClass(self.class), NSStringFromClass(event.class)];
         [_pendingEvents addObject:event];
         return;
     }
-    NSLog(@"transition: %@ -> %@", NSStringFromClass(_current.class), NSStringFromClass(maybeNext.class));
+    [_rest.logger debug:@"%@: transition: %@ -> %@", NSStringFromClass(self.class), NSStringFromClass(_current.class), NSStringFromClass(maybeNext.class)];
     if (self.transitions) self.transitions(event, _current, maybeNext);
     _current = maybeNext;
 
@@ -106,14 +106,14 @@ dispatch_async(_queue, ^{
         if (pending == nil) {
             break;
         }
-        NSLog(@"attempting to consume pending event: %@", NSStringFromClass(pending.class));
+        [_rest.logger debug:@"%@: attempting to consume pending event: %@", NSStringFromClass(self.class), NSStringFromClass(pending.class)];
         maybeNext = [_current transition:pending];
         if (maybeNext == nil) {
             break;
         }
         [_pendingEvents dequeue];
 
-        NSLog(@"transition: %@ -> %@", NSStringFromClass(_current.class), NSStringFromClass(maybeNext.class));
+        [_rest.logger debug:@"%@: transition: %@ -> %@", NSStringFromClass(self.class), NSStringFromClass(_current.class), NSStringFromClass(maybeNext.class)];
         if (self.transitions) self.transitions(event, _current, maybeNext);
         _current = maybeNext;
     }
@@ -171,7 +171,7 @@ dispatch_async(_queue, ^{
         request.HTTPBody = [[self->_rest defaultEncoder] encodeDeviceDetails:local error:nil];
         [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
-        [[self->_rest logger] debug:__FILE__ line:__LINE__ message:@"device registration with request %@", request];
+        [[self->_rest logger] debug:__FILE__ line:__LINE__ message:@"%@: device registration with request %@", NSStringFromClass(self.class), request];
         [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (error) {
                 [[self->_rest logger] error:@"%@: device registration failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
@@ -245,7 +245,7 @@ dispatch_async(_queue, ^{
     [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
     [request setDeviceAuthentication:local];
 
-    [[_rest logger] debug:__FILE__ line:__LINE__ message:@"update device with request %@", request];
+    [[_rest logger] debug:__FILE__ line:__LINE__ message:@"%@: update device with request %@", NSStringFromClass(self.class), request];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             [[self->_rest logger] error:@"%@: update device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
@@ -288,7 +288,7 @@ dispatch_async(_queue, ^{
     request.HTTPMethod = @"DELETE";
     [request setDeviceAuthentication:local];
 
-    [[_rest logger] debug:__FILE__ line:__LINE__ message:@"device deregistration with request %@", request];
+    [[_rest logger] debug:__FILE__ line:__LINE__ message:@"%@: device deregistration with request %@", NSStringFromClass(self.class), request];
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             [[self->_rest logger] error:@"%@: device deregistration failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
