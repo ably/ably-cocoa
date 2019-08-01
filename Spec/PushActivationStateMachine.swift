@@ -1345,7 +1345,7 @@ class PushActivationStateMachine : QuickSpec {
                         expect(request.httpMethod) == "DELETE"
                     }
 
-                    it("should transition to WaitingForRegistrationUpdate") {
+                    it("should transition to WaitingForDeregistration") {
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
 
                         let delegate = StateMachineDelegate()
