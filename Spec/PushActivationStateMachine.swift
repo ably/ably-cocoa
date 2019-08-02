@@ -135,10 +135,17 @@ class PushActivationStateMachine : QuickSpec {
                         }
                     }
 
-                    // RSH3a2d
+                    // RSH3a2d, RSH3a2e
                     it("none of them then should transition to WaitingForPushDeviceDetails") {
+                        var registerForRemoteNotificationsCalled = false
+                        let hook = stateMachine.testSuite_injectIntoMethod(after: NSSelectorFromString("registerForRemoteNotifications")) {
+                            registerForRemoteNotificationsCalled = true
+                        }
+                        defer { hook.remove() }
+
                         stateMachine.send(ARTPushActivationEventCalledActivate())
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForPushDeviceDetails.self))
+                        expect(registerForRemoteNotificationsCalled).to(beTrue())
                     }
                 }
 
