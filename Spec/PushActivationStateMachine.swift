@@ -410,6 +410,26 @@ class PushActivationStateMachine : QuickSpec {
 
                 }
 
+                // RSH3b4
+                it("on Event GettingPushDeviceDetailsFailed") {
+                    expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForPushDeviceDetails.self))
+
+                    let expectedError = ARTErrorInfo(domain: ARTAblyErrorDomain, code: 1234, userInfo: nil)
+
+                    var activatedCallbackCalled = false
+                    let hook = stateMachine.testSuite_getArgument(from: NSSelectorFromString("callActivatedCallback:"), at: 0, callback: { arg0 in
+                        activatedCallbackCalled = true
+                        guard let error = arg0 as? ARTErrorInfo else {
+                            fail("Error is missing"); return
+                        }
+                        expect(error) == expectedError
+                    })
+                    defer { hook.remove() }
+
+                    stateMachine.send(ARTPushActivationEventGettingPushDeviceDetailsFailed(error: expectedError))
+                    expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
+                    expect(activatedCallbackCalled).to(beTrue())
+                }
             }
 
             // RSH3c
