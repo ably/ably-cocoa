@@ -76,6 +76,35 @@ class Push : QuickSpec {
                 }
             }
 
+            // RSH2d
+            it("should occur a GettingPushDeviceDetailsFailed event when the APNS registration fails") {
+                let stateMachine = rest.push.activationMachine()
+                let stateMachineDelegate = StateMachineDelegate()
+                stateMachine.delegate = stateMachineDelegate
+                defer {
+                    stateMachine.transitions = nil
+                    stateMachine.delegate = nil
+                }
+
+                let expectedError = ARTErrorInfo(domain: ARTAblyErrorDomain, code: 1234, userInfo: nil)
+
+                let hook = stateMachine.testSuite_injectIntoMethod(after: NSSelectorFromString("registerForRemoteNotifications")) {
+                    AblyTests.extraQueue.async(execute: {
+                        ARTPush.didFailToRegisterForRemoteNotificationsWithError(expectedError, rest: rest)
+                    })
+                }
+                defer { hook.remove() }
+
+                waitUntil(timeout: testTimeout) { done in
+                    stateMachine.transitions = { event, _, _ in
+                        if let event = event as? ARTPushActivationEventGettingPushDeviceDetailsFailed {
+                            expect(event.error) == expectedError
+                            done()
+                        }
+                    }
+                    rest.push.activate()
+                }
+            }
             // https://github.com/ably/ably-cocoa/issues/877
             it("should update LocalDevice.clientId when it's null with auth.clientId") {
                 let expectedClientId = "foo"
