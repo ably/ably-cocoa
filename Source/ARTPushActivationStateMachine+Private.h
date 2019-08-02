@@ -24,6 +24,11 @@ extern NSString *const ARTPushActivationPendingEventsKey;
 
 @property (readonly, nonatomic) NSMutableArray<ARTPushActivationEvent *> *pendingEvents;
 
+#if TARGET_OS_IOS
+/// Register to receive remote notifications via Apple Push Notification service.
+- (void)registerForRemoteNotifications;
+#endif
+
 @end
 
 NS_ASSUME_NONNULL_END

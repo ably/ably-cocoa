@@ -23,6 +23,7 @@
 #import "ARTAuth+Private.h"
 
 #if TARGET_OS_IOS
+#import <UIKit/UIKit.h>
 
 NSString *const ARTPushActivationCurrentStateKey = @"ARTPushActivationCurrentState";
 NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEvents";
@@ -339,6 +340,14 @@ dispatch_async(_queue, ^{
                 [delegate didAblyPushRegistrationFail:error];
             }
         }
+    });
+    #endif
+}
+
+- (void)registerForRemoteNotifications {
+    #if TARGET_OS_IOS
+    dispatch_async(_userQueue, ^{
+        [UIApplication.sharedApplication registerForRemoteNotifications];
     });
     #endif
 }
