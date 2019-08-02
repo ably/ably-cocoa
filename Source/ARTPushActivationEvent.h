@@ -73,4 +73,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTPushActivationEventDeregistrationFailed : ARTPushActivationErrorEvent
 @end
 
+@interface ARTPushActivationEventGettingPushDeviceDetailsFailed : ARTPushActivationErrorEvent
+@end
+
 NS_ASSUME_NONNULL_END
