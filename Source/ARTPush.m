@@ -76,9 +76,9 @@ static dispatch_once_t *activationMachine_once_token;
         return;
     }
 
-    [[rest device] setAndPersistDeviceToken:deviceToken];
+    [rest.device setAndPersistDeviceToken:deviceToken];
     NSLog(@"ARTPush: device token stored");
-    [[rest.push activationMachine] sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
+    [rest.push.activationMachine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
 }
 
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken realtime:(ARTRealtime *)realtime {
@@ -87,7 +87,7 @@ static dispatch_once_t *activationMachine_once_token;
 
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error rest:(ARTRest *)rest {
     NSLog(@"ARTPush: device token not received (%@)", [error localizedDescription]);
-    [[rest.push activationMachine] sendEvent:[ARTPushActivationEventGettingDeviceRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
+    [rest.push.activationMachine sendEvent:[ARTPushActivationEventGettingPushDeviceDetailsFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
 }
 
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error realtime:(ARTRealtime *)realtime {
