@@ -108,6 +108,41 @@ class Push : QuickSpec {
                     rest.push.activate()
                 }
             }
+
+            // RSH2e
+            it("should verify the validity of the push device details") {
+                let stateMachine = rest.push.activationMachine()
+                let intialDeviceToken = "xxxx-xxxx-xxxx-xxxx-xxxx"
+                stateMachine.rest.device.setAndPersistDeviceToken(intialDeviceToken)
+                let stateMachineDelegate = StateMachineDelegate()
+                stateMachine.delegate = stateMachineDelegate
+                defer {
+                    stateMachine.transitions = nil
+                    stateMachine.delegate = nil
+                    stateMachine.rest.device.setAndPersistDeviceToken(nil)
+                }
+
+                let expectedDeviceToken = "12ce7dda8032c4238f8bd40f3484e5bbf4698da58b7fdf8d5c55e0a2"
+
+                let hook = stateMachine.testSuite_injectIntoMethod(after: NSSelectorFromString("registerForRemoteNotifications")) {
+                    AblyTests.extraQueue.async(execute: {
+                        ARTPush.didRegisterForRemoteNotifications(withDeviceToken: expectedDeviceToken.dataFromHexadecimalString()!, rest: rest)
+                    })
+                }
+                defer { hook.remove() }
+
+                waitUntil(timeout: testTimeout) { done in
+                    stateMachine.transitions = { event, _, _ in
+                        if event is ARTPushActivationEventGotPushDeviceDetails {
+                            done()
+                        }
+                    }
+                    rest.push.activate()
+                }
+
+                expect(rest.device.deviceToken()).to(equal(expectedDeviceToken))
+            }
+
             // https://github.com/ably/ably-cocoa/issues/877
             it("should update LocalDevice.clientId when it's null with auth.clientId") {
                 let expectedClientId = "foo"
