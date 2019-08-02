@@ -9,6 +9,7 @@
 #import "ARTRealtimePresence+Private.h"
 
 #import "ARTRealtime+Private.h"
+#import "ARTChannel+Private.h"
 #import "ARTRealtimeChannel+Private.h"
 #import "ARTPresenceMap.h"
 #import "ARTPresenceMessage.h"
@@ -497,6 +498,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self->_channel.realtime) {
     }
     [self->_channel _attach:onAttach];
     listener = [self->_channel.presenceEventEmitter on:cb];
+    [self->_channel.logger verbose:@"R:%p C:%p (%@) presence subscribe to all actions", self->_channel.realtime, self->_channel, self->_channel.name];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 });
     return listener;
@@ -537,6 +539,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self->_channel.realtime) {
     }
     [self->_channel _attach:onAttach];
     listener = [self->_channel.presenceEventEmitter on:[ARTEvent newWithPresenceAction:action] callback:cb];
+    [self->_channel.logger verbose:@"R:%p C:%p (%@) presence subscribe to action %@", self->_channel.realtime, self->_channel, self->_channel.name, ARTPresenceActionToStr(action)];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 });
     return listener;
@@ -546,6 +549,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self->_channel.realtime) {
 dispatch_sync(_queue, ^{
 ART_TRY_OR_MOVE_TO_FAILED_START(self->_channel.realtime) {
     [self _unsubscribe];
+    [self->_channel.logger verbose:@"R:%p C:%p (%@) presence unsubscribe to all actions", self->_channel.realtime, self->_channel, self->_channel.name];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 });
 }
@@ -557,7 +561,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self->_channel.realtime) {
 - (void)unsubscribe:(ARTEventListener *)listener {
 dispatch_sync(_queue, ^{
 ART_TRY_OR_MOVE_TO_FAILED_START(self->_channel.realtime) {
-        [self->_channel.presenceEventEmitter off:listener];
+    [self->_channel.presenceEventEmitter off:listener];
+    [self->_channel.logger verbose:@"R:%p C:%p (%@) presence unsubscribe to all actions", self->_channel.realtime, self->_channel, self->_channel.name];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 });
 }
@@ -566,6 +571,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self->_channel.realtime) {
 dispatch_sync(_queue, ^{
 ART_TRY_OR_MOVE_TO_FAILED_START(self->_channel.realtime) {
     [self->_channel.presenceEventEmitter off:[ARTEvent newWithPresenceAction:action] listener:listener];
+    [self->_channel.logger verbose:@"R:%p C:%p (%@) presence unsubscribe to action %@", self->_channel.realtime, self->_channel, self->_channel.name, ARTPresenceActionToStr(action)];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 });
 }
