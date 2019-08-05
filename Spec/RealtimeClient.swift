@@ -183,7 +183,7 @@ class RealtimeClient: QuickSpec {
             it("should have access to the underlying Connection object") {
                 let options = AblyTests.commonAppSetup()
                 options.autoConnect = false
-                let client = ARTRealtimeInternal(options: options)
+                let client = ARTRealtime(options: options)
                 expect(client.connection).to(beAKindOf(ARTConnection.self))
             }
 
