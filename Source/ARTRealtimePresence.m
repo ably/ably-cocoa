@@ -194,7 +194,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
     msg.clientId = clientId;
     msg.data = data;
 
-    msg.connectionId = _channel.realtime.connection.internal_nosync.id_nosync;
+    msg.connectionId = _channel.realtime.connection.id_nosync;
     [_channel publishPresence:msg callback:cb];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
@@ -257,7 +257,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
     msg.action = ARTPresenceUpdate;
     msg.clientId = clientId;
     msg.data = data;
-    msg.connectionId = _channel.realtime.connection.internal_nosync.id_nosync;
+    msg.connectionId = _channel.realtime.connection.id_nosync;
 
     [_channel publishPresence:msg callback:cb];
 } ART_TRY_OR_MOVE_TO_FAILED_END
@@ -333,7 +333,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
     msg.action = ARTPresenceLeave;
     msg.data = data;
     msg.clientId = clientId;
-    msg.connectionId = _channel.realtime.connection.internal_nosync.id_nosync;
+    msg.connectionId = _channel.realtime.connection.id_nosync;
     [_channel publishPresence:msg callback:cb];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }

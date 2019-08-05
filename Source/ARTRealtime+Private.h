@@ -21,7 +21,7 @@
 @class ARTRest;
 @class ARTErrorInfo;
 @class ARTProtocolMessage;
-@class ARTConnection;
+@class ARTConnectionInternal;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtimeInternal : NSObject<ARTRealtimeProtocol>
 
-@property (nonatomic, strong, readonly) ARTConnection *connection;
+@property (nonatomic, strong, readonly) ARTConnectionInternal *connection;
 @property (nonatomic, strong, readonly) ARTRealtimeChannels *channels;
 @property (readonly) ARTAuth *auth;
 @property (readonly) ARTPush *push;

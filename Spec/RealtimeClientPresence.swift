@@ -2244,7 +2244,7 @@ class RealtimeClientPresence: QuickSpec {
                                 let leaveMessage = ARTProtocolMessage()
                                 leaveMessage.action = .presence
                                 leaveMessage.channel = channel.name
-                                leaveMessage.connectionSerial = client.connection.internal_nosync.serial_nosync() + 1
+                                leaveMessage.connectionSerial = client.connection.serial_nosync() + 1
                                 leaveMessage.timestamp = Date()
                                 leaveMessage.presence = [
                                     ARTPresenceMessage(clientId: "user11", action: .leave, connectionId: "another", id: "another:123:0", timestamp: Date())

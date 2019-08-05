@@ -51,7 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTConnection ()
 
-- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime;
+- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime internal:(ARTConnectionInternal *)internal;
 - (void)internalAsync:(void (^)(ARTConnectionInternal *))use;
 
 @property (readonly) ARTConnectionInternal *internal_nosync;

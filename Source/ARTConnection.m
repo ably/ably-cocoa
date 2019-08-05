@@ -13,12 +13,15 @@
 #import "ARTSentry.h"
 
 @implementation ARTConnection {
+    ARTRealtimeInternal *_realtime;
     ARTConnectionInternal *_internal;
 }
 
 - (void)dealloc {
+    __block ARTRealtimeInternal *realtime = _realtime;
     __block ARTConnectionInternal *internal = _internal;
     dispatch_async(_internal.queue, ^{
+        realtime = nil;
         internal = nil;
     });
 }
@@ -61,10 +64,11 @@
     return _internal.errorReason;
 }
 
-- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime {
+- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime internal:(ARTConnectionInternal *)internal {
     self = [super init];
     if (self) {
-        _internal = [[ARTConnectionInternal alloc] initWithRealtime:realtime];
+        _realtime = realtime;
+        _internal = internal;
     }
     return self;
 }

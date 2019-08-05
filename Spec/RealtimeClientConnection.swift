@@ -2632,7 +2632,7 @@ class RealtimeClientConnection: QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.connecting) { _ in
-                                client.connection.internal_nosync.setKey("key_to_be_replaced")
+                                client.connection.setKey("key_to_be_replaced")
                                 done()
                             }
                         }

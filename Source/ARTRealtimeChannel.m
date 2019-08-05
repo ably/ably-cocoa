@@ -237,7 +237,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
 - (void)publishPresence:(ARTPresenceMessage *)msg callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable))cb {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
-    switch (_realtime.connection.internal_nosync.state_nosync) {
+    switch (_realtime.connection.state_nosync) {
         case ARTRealtimeConnected:
             break;
         case ARTRealtimeConnecting:
@@ -291,7 +291,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     __weak __typeof(self) weakSelf = self;
     ARTStatus *statusInvalidChannel = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:90001 message:@"channel operation failed (invalid channel state)"]];
 
-    switch (_realtime.connection.internal_nosync.state_nosync) {
+    switch (_realtime.connection.state_nosync) {
         case ARTRealtimeClosing:
         case ARTRealtimeClosed: {
             if (cb) {
@@ -340,7 +340,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         }
         case ARTRealtimeChannelAttached:
         {
-            if (_realtime.connection.internal_nosync.state_nosync == ARTRealtimeConnected) {
+            if (_realtime.connection.state_nosync == ARTRealtimeConnected) {
                 [self sendMessage:pm callback:cb];
             } else {
                 [self addToQueue:pm callback:queuedCallback];
@@ -377,14 +377,14 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
 - (void)sendMessage:(ARTProtocolMessage *)pm callback:(void (^)(ARTStatus *))cb {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
-    NSString *oldConnectionId = self.realtime.connection.internal_nosync.id_nosync;
+    NSString *oldConnectionId = self.realtime.connection.id_nosync;
     ARTProtocolMessage *pmSent = (ARTProtocolMessage *)[pm copy];
 
     __block BOOL connectionStateHasChanged = false;
     __block ARTEventListener *listener = [self.realtime.internalEventEmitter on:^(ARTConnectionStateChange *stateChange) {
         if (!(stateChange.current == ARTRealtimeClosed ||
               stateChange.current == ARTRealtimeFailed ||
-              (stateChange.current == ARTRealtimeConnected && ![oldConnectionId isEqual:self.realtime.connection.internal_nosync.id_nosync] /* connection state lost */))) {
+              (stateChange.current == ARTRealtimeConnected && ![oldConnectionId isEqual:self.realtime.connection.id_nosync] /* connection state lost */))) {
             // Ok
             return;
         }
@@ -403,7 +403,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     }];
 
     for (ARTMessage *msg in pm.messages) {
-        msg.connectionId = _realtime.connection.internal_nosync.id_nosync;
+        msg.connectionId = _realtime.connection.id_nosync;
     }
 
     [self.realtime send:pm sentCallback:nil ackCallback:^(ARTStatus *status) {
@@ -422,8 +422,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
 - (void)throwOnDisconnectedOrFailed {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
-    if (self.realtime.connection.internal_nosync.state_nosync == ARTRealtimeFailed || self.realtime.connection.internal_nosync.state_nosync == ARTRealtimeDisconnected) {
-        [ARTException raise:@"realtime cannot perform action in disconnected or failed state" format:@"state: %d", (int)self.realtime.connection.internal_nosync.state_nosync];
+    if (self.realtime.connection.state_nosync == ARTRealtimeFailed || self.realtime.connection.state_nosync == ARTRealtimeDisconnected) {
+        [ARTException raise:@"realtime cannot perform action in disconnected or failed state" format:@"state: %d", (int)self.realtime.connection.state_nosync];
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
@@ -1170,7 +1170,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
 - (NSString *)connectionId {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
-    return _realtime.connection.internal_nosync.id_nosync;
+    return _realtime.connection.id_nosync;
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 

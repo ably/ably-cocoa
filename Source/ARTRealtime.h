@@ -39,7 +39,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol ARTRealtimeProtocol <NSObject>
 
-@property (readonly) ARTConnection *connection;
 @property (readonly) ARTRealtimeChannels *channels;
 @property (readonly) ARTAuth *auth;
 @property (readonly) ARTPush *push;
@@ -75,6 +74,8 @@ Instance the Ably library using a key only. This is simply a convenience constru
 @end
 
 @interface ARTRealtime : NSObject <ARTRealtimeProtocol>
+
+@property (readonly) ARTConnection *connection;
 
 + (instancetype)createWithOptions:(ARTClientOptions *)options NS_SWIFT_UNAVAILABLE("Use instance initializer instead");
 + (instancetype)createWithKey:(NSString *)key NS_SWIFT_UNAVAILABLE("Use instance initializer instead");
