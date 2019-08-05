@@ -12,11 +12,106 @@
 #import "ARTEventEmitter+Private.h"
 #import "ARTSentry.h"
 
-@interface ARTConnection ()
+@implementation ARTConnection {
+    ARTConnectionInternal *_internal;
+}
+
+- (void)dealloc {
+    __block ARTConnectionInternal *internal = _internal;
+    dispatch_async(_internal.queue, ^{
+        internal = nil;
+    });
+}
+
+- (void)internalAsync:(void (^)(ARTConnectionInternal * _Nonnull))use {
+    dispatch_async(_internal.queue, ^{
+        use(self->_internal);
+    });
+}
+
+- (ARTConnectionInternal *_Nonnull)internal_nosync {
+    return _internal;
+}
+
+- (NSString *)id {
+    return _internal.id;
+}
+
+- (NSString *)key {
+    return _internal.key;
+}
+
+- (NSString *)recoveryKey {
+    return _internal.recoveryKey;
+}
+
+- (int64_t)serial {
+    return _internal.serial;
+}
+
+- (NSInteger)maxMessageSize {
+    return _internal.maxMessageSize;
+}
+
+- (ARTRealtimeConnectionState)state {
+    return _internal.state;
+}
+
+- (ARTErrorInfo *)errorReason {
+    return _internal.errorReason;
+}
+
+- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime {
+    self = [super init];
+    if (self) {
+        _internal = [[ARTConnectionInternal alloc] initWithRealtime:realtime];
+    }
+    return self;
+}
+
+- (void)close {
+    [_internal close];
+}
+
+- (void)connect {
+    [_internal connect];
+}
+
+- (void)off {
+    [_internal off];
+}
+
+- (void)off:(nonnull ARTEventListener *)listener {
+    [_internal off:listener];
+}
+
+- (void)off:(ARTRealtimeConnectionEvent)event listener:(nonnull ARTEventListener *)listener {
+    [_internal off:event listener:listener];
+}
+
+- (nonnull ARTEventListener *)on:(nonnull void (^)(ARTConnectionStateChange * _Nullable))cb {
+    return [_internal on:cb];
+}
+
+- (nonnull ARTEventListener *)on:(ARTRealtimeConnectionEvent)event callback:(nonnull void (^)(ARTConnectionStateChange * _Nullable))cb {
+    return [_internal on:event callback:cb];
+}
+
+- (nonnull ARTEventListener *)once:(nonnull void (^)(ARTConnectionStateChange * _Nullable))cb {
+    return [_internal once:cb];
+}
+
+- (nonnull ARTEventListener *)once:(ARTRealtimeConnectionEvent)event callback:(nonnull void (^)(ARTConnectionStateChange * _Nullable))cb {
+    return [_internal once:event callback:cb];
+}
+
+- (void)ping:(nonnull void (^)(ARTErrorInfo * _Nullable))cb {
+    [_internal ping:cb];
+}
 
 @end
 
-@implementation ARTConnection {
+@implementation ARTConnectionInternal {
     _Nonnull dispatch_queue_t _queue;
     NSString *_id;
     NSString *_key;
@@ -155,7 +250,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (NSString *)getRecoveryKey {
+- (NSString *)recoveryKey {
     __block NSString *ret;
 dispatch_sync(_queue, ^{
 ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {

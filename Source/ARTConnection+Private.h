@@ -14,7 +14,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class ARTRealtimeInternal;
 
-@interface ARTConnection ()
+@interface ARTConnectionInternal : NSObject<ARTConnectionProtocol>
+
+@property (nullable, readonly, strong, nonatomic) NSString *id;
+@property (nullable, readonly, strong, nonatomic) NSString *key;
+@property (nullable, readonly) NSString *recoveryKey;
+@property (readonly, assign, nonatomic) int64_t serial;
+@property (readonly, assign, nonatomic) NSInteger maxMessageSize;
+@property (readonly, assign, nonatomic) ARTRealtimeConnectionState state;
+@property (nullable, readonly, strong, nonatomic) ARTErrorInfo *errorReason;
 
 - (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime;
 
@@ -28,10 +36,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTConnectionStateChange *> *eventEmitter;
 @property(weak, nonatomic) ARTRealtimeInternal* realtime;
 
-@end
-
-@interface ARTConnection (Private)
-
 - (void)setId:(NSString *_Nullable)newId;
 - (void)setKey:(NSString *_Nullable)key;
 - (void)setSerial:(int64_t)serial;
@@ -40,6 +44,17 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setErrorReason:(ARTErrorInfo *_Nullable)errorReason;
 
 - (void)emit:(ARTRealtimeConnectionEvent)event with:(ARTConnectionStateChange *)data;
+
+@property (readonly, nonatomic) dispatch_queue_t queue;
+
+@end
+
+@interface ARTConnection ()
+
+- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime;
+- (void)internalAsync:(void (^)(ARTConnectionInternal *))use;
+
+@property (readonly) ARTConnectionInternal *internal_nosync;
 
 @end
 

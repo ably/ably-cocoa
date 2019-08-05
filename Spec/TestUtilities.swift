@@ -1199,8 +1199,8 @@ extension ARTRealtimeInternal {
         //1. Abruptly disconnect
         //2. Change the `Connection#id` and `Connection#key` before the client
         //   library attempts to reconnect and resume the connection
-        self.connection.setId("lost")
-        self.connection.setKey("xxxxx!xxxxxxx-xxxxxxxx-xxxxxxxx")
+        self.connection.internal_nosync.setId("lost")
+        self.connection.internal_nosync.setKey("xxxxx!xxxxxxx-xxxxxxxx-xxxxxxxx")
         self.onDisconnected()
     }
 
