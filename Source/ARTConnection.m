@@ -11,19 +11,11 @@
 #import "ARTRealtime+Private.h"
 #import "ARTEventEmitter+Private.h"
 #import "ARTSentry.h"
+#import "ARTQueuedDealloc.h"
 
 @implementation ARTConnection {
-    ARTRealtimeInternal *_realtime;
     ARTConnectionInternal *_internal;
-}
-
-- (void)dealloc {
-    __block ARTRealtimeInternal *realtime = _realtime;
-    __block ARTConnectionInternal *internal = _internal;
-    dispatch_async(_internal.queue, ^{
-        realtime = nil;
-        internal = nil;
-    });
+    ARTQueuedDealloc *_dealloc;
 }
 
 - (void)internalAsync:(void (^)(ARTConnectionInternal * _Nonnull))use {
@@ -64,11 +56,11 @@
     return _internal.errorReason;
 }
 
-- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime internal:(ARTConnectionInternal *)internal {
+- (instancetype)initWithInternal:(ARTConnectionInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc {
     self = [super init];
     if (self) {
-        _realtime = realtime;
         _internal = internal;
+        _dealloc = dealloc;
     }
     return self;
 }

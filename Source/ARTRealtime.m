@@ -40,6 +40,7 @@
 #import "ARTSentry.h"
 #import "ARTRealtimeChannels+Private.h"
 #import "ARTPush+Private.h"
+#import "ARTQueuedDealloc.h"
 
 @interface ARTConnectionStateChange ()
 
@@ -51,13 +52,7 @@
 
 @implementation ARTRealtime {
     ARTRealtimeInternal *_internal;
-}
-
-- (void)dealloc {
-    __block ARTRealtimeInternal *internal = _internal;
-    dispatch_async(_internal.queue, ^{
-        internal = nil;
-    });
+    ARTQueuedDealloc *_dealloc;
 }
 
 - (void)internalAsync:(void (^)(ARTRealtimeInternal * _Nonnull))use {
@@ -67,7 +62,7 @@
 }
 
 - (ARTConnection *)connection {
-    return [[ARTConnection alloc] initWithRealtime:_internal internal:_internal.connection];
+    return [[ARTConnection alloc] initWithInternal:_internal.connection queuedDealloc:_dealloc];
 }
 
 - (ARTRealtimeChannels *)channels {
@@ -96,6 +91,7 @@
     self = [super init];
     if (self) {
         _internal = [[ARTRealtimeInternal alloc] initWithOptions:options];
+        _dealloc = [[ARTQueuedDealloc alloc] init:_internal queue:_internal.queue];
     }
     return self;
 }

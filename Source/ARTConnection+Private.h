@@ -9,6 +9,7 @@
 #import <Ably/ARTConnection.h>
 #import <Ably/ARTEventEmitter.h>
 #import <Ably/ARTTypes.h>
+#import "ARTQueuedDealloc.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -51,7 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTConnection ()
 
-- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime internal:(ARTConnectionInternal *)internal;
+- (instancetype)initWithInternal:(ARTConnectionInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc;
 - (void)internalAsync:(void (^)(ARTConnectionInternal *))use;
 
 @property (readonly) ARTConnectionInternal *internal_nosync;
