@@ -62,7 +62,7 @@
 }
 
 - (ARTRealtimePresence *)presence {
-    return _internal.presence;
+    return [[ARTRealtimePresence alloc] initWithInternal:_internal.presence queuedDealloc:_dealloc];
 }
 
 #if TARGET_OS_IPHONE
@@ -204,7 +204,7 @@
 @end
 
 @interface ARTRealtimeChannelInternal () {
-    ARTRealtimePresence *_realtimePresence;
+    ARTRealtimePresenceInternal *_realtimePresence;
     #if TARGET_OS_IPHONE
     ARTPushChannel *_pushChannel;
     #endif
@@ -283,10 +283,10 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (ARTRealtimePresence *)presence {
+- (ARTRealtimePresenceInternal *)presence {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     if (!_realtimePresence) {
-        _realtimePresence = [[ARTRealtimePresence alloc] initWithChannel:self];
+        _realtimePresence = [[ARTRealtimePresenceInternal alloc] initWithChannel:self];
     }
     return _realtimePresence;
 } ART_TRY_OR_MOVE_TO_FAILED_END

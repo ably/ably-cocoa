@@ -9,10 +9,16 @@
 #import <Ably/ARTRealtimePresence.h>
 #import <Ably/ARTRealtimeChannel+Private.h>
 
-@interface ARTRealtimePresence ()
+@interface ARTRealtimePresenceInternal : NSObject <ARTRealtimePresenceProtocol>
 
 - (instancetype)initWithChannel:(ARTRealtimeChannelInternal *)channel;
 - (void)_unsubscribe;
-- (BOOL)getSyncComplete_nosync;
+- (BOOL)syncComplete_nosync;
+
+@end
+
+@interface ARTRealtimePresence ()
+
+- (instancetype)initWithInternal:(ARTRealtimePresenceInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc;
 
 @end

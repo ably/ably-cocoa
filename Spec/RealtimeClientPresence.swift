@@ -43,7 +43,7 @@ class RealtimeClientPresence: QuickSpec {
 
                     expect(attached.flags & 0x1).to(equal(0))
                     expect(attached.hasPresence).to(beFalse())
-                    expect(channel.presence.getSyncComplete).to(beFalse())
+                    expect(channel.presence.syncComplete).to(beFalse())
                     expect(channel.presenceMap.syncComplete).to(beFalse())
                 }
 
@@ -72,7 +72,7 @@ class RealtimeClientPresence: QuickSpec {
                     let channel = client.channels.get(channelName)
                     channel.attach()
 
-                    expect(channel.presence.getSyncComplete).to(beFalse())
+                    expect(channel.presence.syncComplete).to(beFalse())
                     expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
 
                     let transport = client.transport as! TestProxyTransport
@@ -82,7 +82,7 @@ class RealtimeClientPresence: QuickSpec {
                     expect(attached.flags & 0x1).to(equal(1))
                     expect(attached.hasPresence).to(beTrue())
                     
-                    expect(channel.presence.getSyncComplete).toEventually(beTrue(), timeout: testTimeout)
+                    expect(channel.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
 
                     expect(transport.protocolMessagesReceived.filter({ $0.action == .sync })).to(haveCount(3))
                 }
@@ -185,7 +185,7 @@ class RealtimeClientPresence: QuickSpec {
                             if msg.clientId != "a" {
                                 return
                             }
-                            expect(channel.presence.getSyncComplete).to(beFalse())
+                            expect(channel.presence.syncComplete).to(beFalse())
                             channel.presence.subscribe(.leave) { _ in
                                 done()
                             }
@@ -223,7 +223,7 @@ class RealtimeClientPresence: QuickSpec {
                         }
                     }
 
-                    expect(channel.presence.getSyncComplete).to(beTrue())
+                    expect(channel.presence.syncComplete).to(beTrue())
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.get { members, error in
                             expect(error).to(beNil())
@@ -280,7 +280,7 @@ class RealtimeClientPresence: QuickSpec {
                         transport.receive(syncMessage)
                     }
 
-                    expect(channel.presence.getSyncComplete).to(beTrue())
+                    expect(channel.presence.syncComplete).to(beTrue())
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.get { members, error in
                             expect(error).to(beNil())
@@ -344,7 +344,7 @@ class RealtimeClientPresence: QuickSpec {
                             done()
                         }
 
-                        // Request a sync
+                        // Request a sync   
                         let syncMessage = ARTProtocolMessage()
                         syncMessage.action = .sync
                         syncMessage.channel = channel.name
@@ -662,7 +662,7 @@ class RealtimeClientPresence: QuickSpec {
                             partialDone()
                         }
                         channel2.presence.subscribe(.enter) { _ in
-                            if channel2.presence.getSyncComplete {
+                            if channel2.presence.syncComplete {
                                 expect(channel2.presenceMap.members).to(haveCount(2))
                             }
                             else {
@@ -673,7 +673,7 @@ class RealtimeClientPresence: QuickSpec {
                         }
 
                         expect(channel2.queuedMessages).to(haveCount(1))
-                        expect(channel2.presence.getSyncComplete).to(beFalse())
+                        expect(channel2.presence.syncComplete).to(beFalse())
                         expect(channel2.presenceMap.members).to(haveCount(0))
                     }
 
@@ -683,7 +683,7 @@ class RealtimeClientPresence: QuickSpec {
 
                     expect(transport.protocolMessagesReceived.filter{ $0.action == .sync }).to(haveCount(1))
 
-                    expect(channel2.presence.getSyncComplete).toEventually(beTrue(), timeout: testTimeout)
+                    expect(channel2.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
                     expect(channel2.presenceMap.members).to(haveCount(2))
                 }
 
@@ -3246,7 +3246,7 @@ class RealtimeClientPresence: QuickSpec {
             }
 
             // RTP15e
-            let cases: [String:(ARTRealtimePresence, Optional<(ARTErrorInfo?)->Void>)->()] = [
+            let cases: [String:(ARTRealtimePresenceInternal, Optional<(ARTErrorInfo?)->Void>)->()] = [
                 "enterClient": { $0.enterClient("john", data: nil, callback: $1) },
                 "updateClient": { $0.updateClient("john", data: nil, callback: $1) },
                 "leaveClient": { $0.leaveClient("john", data: nil, callback: $1) }
@@ -4246,17 +4246,17 @@ class RealtimeClientPresence: QuickSpec {
                 let channel = client.channels.get("test")
                 channel.attach()
 
-                expect(channel.presence.getSyncComplete).to(beFalse())
+                expect(channel.presence.syncComplete).to(beFalse())
                 expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
 
                 let transport = client.transport as! TestProxyTransport
                 transport.beforeProcessingReceivedMessage = { protocolMessage in
                     if protocolMessage.action == .sync {
-                        expect(channel.presence.getSyncComplete_nosync()).to(beFalse())
+                        expect(channel.presence.syncComplete_nosync()).to(beFalse())
                     }
                 }
 
-                expect(channel.presence.getSyncComplete).toEventually(beTrue(), timeout: testTimeout)
+                expect(channel.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
                 expect(transport.protocolMessagesReceived.filter({ $0.action == .sync })).to(haveCount(3))
             }
 

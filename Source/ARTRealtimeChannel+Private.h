@@ -15,10 +15,13 @@
 #import <Ably/ARTQueuedDealloc.h>
 
 @class ARTProtocolMessage;
+@class ARTRealtimePresenceInternal;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtimeChannelInternal : ARTChannel <ARTPresenceMapDelegate, ARTRealtimeChannelProtocol>
+
+@property (readonly) ARTRealtimePresenceInternal *presence;
 
 @property (readwrite, assign, nonatomic) ARTRealtimeChannelState state;
 @property (readonly, strong, nonatomic, nullable) ARTErrorInfo *errorReason;

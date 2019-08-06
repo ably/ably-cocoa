@@ -40,14 +40,14 @@ class RealtimeClientChannel: QuickSpec {
 
                 channel2.attach()
 
-                expect(channel2.presence.getSyncComplete).to(beFalse())
+                expect(channel2.presence.syncComplete).to(beFalse())
 
                 expect(channel1.presenceMap.members).to(haveCount(1))
                 expect(channel2.presenceMap.members).to(haveCount(0))
 
                 expect(channel2.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
 
-                expect(channel2.presence.getSyncComplete).toEventually(beTrue(), timeout: testTimeout)
+                expect(channel2.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
 
                 expect(channel1.presenceMap.members).to(haveCount(1))
                 expect(channel2.presenceMap.members).toEventually(haveCount(1), timeout: testTimeout)
