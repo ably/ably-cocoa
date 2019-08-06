@@ -9,18 +9,25 @@
 
 #import <Ably/ARTRealtimeChannels.h>
 #import <Ably/ARTRealtime+Private.h>
+#import "ARTQueuedDealloc.h"
 
 @class ARTRealtimeChannel;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTRealtimeChannels ()
+@interface ARTRealtimeChannelsInternal : NSObject<ARTRealtimeChannelsProtocol>
 
 - (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime;
 
 @property (readonly, getter=getNosyncIterable) id<NSFastEnumeration> nosyncIterable;
 @property (nonatomic, readonly, getter=getCollection) NSMutableDictionary<NSString *, ARTRealtimeChannel *> *collection;
 - (ARTRealtimeChannel *)_getChannel:(NSString *)name options:(ARTChannelOptions * _Nullable)options addPrefix:(BOOL)addPrefix;
+
+@end
+
+@interface ARTRealtimeChannels ()
+
+- (instancetype)initWithInternal:(ARTRealtimeChannelsInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc;
 
 @end
 

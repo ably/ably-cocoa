@@ -184,7 +184,7 @@ class RealtimeClient: QuickSpec {
                 let options = AblyTests.commonAppSetup()
                 options.autoConnect = false
                 let client = ARTRealtime(options: options)
-                expect(client.connection).to(beAKindOf(ARTConnection.self))
+                expect(client.connection).to(beAKindOf(ARTConnectionInternal.self))
             }
 
             // RTC3

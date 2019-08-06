@@ -66,7 +66,7 @@
 }
 
 - (ARTRealtimeChannels *)channels {
-    return _internal.channels;
+    return [[ARTRealtimeChannels alloc] initWithInternal:_internal.channels queuedDealloc:_dealloc];
 }
 
 - (ARTAuth *)auth {
@@ -183,7 +183,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         _internalEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
         _connectedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
         _pingEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
-        _channels = [[ARTRealtimeChannels alloc] initWithRealtime:self];
+        _channels = [[ARTRealtimeChannelsInternal alloc] initWithRealtime:self];
         _transport = nil;
         _transportClass = [ARTWebSocketTransport class];
         _reachabilityClass = [ARTOSReachability class];

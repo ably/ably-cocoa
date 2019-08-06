@@ -13,16 +13,55 @@
 #import "ARTRealtime+Private.h"
 #import "ARTRealtimePresence+Private.h"
 
-@interface ARTRealtimeChannels ()
+@implementation ARTRealtimeChannels {
+    ARTRealtimeChannelsInternal *_internal;
+    ARTQueuedDealloc *_dealloc;
+}
+
+- (instancetype)initWithInternal:(ARTRealtimeChannelsInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc {
+    self = [super init];
+    if (self) {
+        _internal = internal;
+        _dealloc = dealloc;
+    }
+    return self;
+}
+
+- (BOOL)exists:(NSString *)name {
+    return [_internal exists:(NSString *)name];
+}
+
+- (ARTRealtimeChannel *)get:(NSString *)name {
+    return [_internal get:(NSString *)name];
+}
+
+- (ARTRealtimeChannel *)get:(NSString *)name options:(ARTChannelOptions *)options {
+    return [_internal get:(NSString *)name options:(ARTChannelOptions *)options];
+}
+
+- (void)release:(NSString *)name callback:(nullable void (^)(ARTErrorInfo *_Nullable))errorInfo {
+    [_internal release:(NSString *)name callback:errorInfo];
+}
+
+- (void)release:(NSString *)name {
+    [_internal release:(NSString *)name];
+}
+
+- (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(__unsafe_unretained id  _Nonnull *)buffer count:(NSUInteger)len {
+    return [_internal countByEnumeratingWithState:state objects:buffer count:len];
+}
+@end
+
+@interface ARTRealtimeChannelsInternal ()
 
 @property (weak, nonatomic) ARTRealtimeInternal *realtime;
 
 @end
 
-@interface ARTRealtimeChannels () <ARTChannelsDelegate>
+@interface ARTRealtimeChannelsInternal () <ARTChannelsDelegate>
 @end
 
-@implementation ARTRealtimeChannels {
+@implementation ARTRealtimeChannelsInternal {
     ARTChannels *_channels;
     dispatch_queue_t _userQueue;
     dispatch_queue_t _queue;

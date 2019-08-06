@@ -11,7 +11,7 @@ import Quick
 import Nimble
 
 // Swift isn't yet smart enough to do this automatically when bridging Objective-C APIs
-extension ARTRealtimeChannels: Sequence {
+extension ARTRealtimeChannelsInternal: Sequence {
     public func makeIterator() -> NSFastEnumerationIterator {
         return NSFastEnumerationIterator(self)
     }

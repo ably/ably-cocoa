@@ -11,7 +11,7 @@ import Quick
 import Nimble
 import SwiftyJSON
 
-func countChannels(_ channels: ARTRealtimeChannels) -> Int {
+func countChannels(_ channels: ARTRealtimeChannelsInternal) -> Int {
     var i = 0
     for _ in channels {
         i += 1
