@@ -11,7 +11,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class ARTRest;
+
 @interface ARTChannel()
+
+- (instancetype)initWithName:(NSString *)name andOptions:(ARTChannelOptions *)options rest:(ARTRest *)rest;
 
 @property (readonly, getter=getLogger) ARTLog *logger;
 @property (nonatomic, strong, null_resettable) ARTChannelOptions *options;
