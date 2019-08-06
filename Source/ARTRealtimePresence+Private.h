@@ -7,10 +7,11 @@
 //
 
 #import <Ably/ARTRealtimePresence.h>
+#import <Ably/ARTRealtimeChannel+Private.h>
 
 @interface ARTRealtimePresence ()
 
-- (instancetype)initWithChannel:(ARTRealtimeChannel *)channel;
+- (instancetype)initWithChannel:(ARTRealtimeChannelInternal *)channel;
 - (void)_unsubscribe;
 - (BOOL)getSyncComplete_nosync;
 

@@ -3669,7 +3669,7 @@ class RealtimeClientPresence: QuickSpec {
                 
                 // RTP11d
                 context("If the Channel is in the SUSPENDED state then") {
-                    func getSuspendedChannel() -> (ARTRealtimeChannel, ARTRealtimeInternal) {
+                    func getSuspendedChannel() -> (ARTRealtimeChannelInternal, ARTRealtimeInternal) {
                         let options = AblyTests.commonAppSetup()
                         
                         let client = ARTRealtimeInternal(options: options)
@@ -3694,7 +3694,7 @@ class RealtimeClientPresence: QuickSpec {
                             params.waitForSync = true
                             channel.presence.get(params, callback: callback)
                         })
-                    ] as [(String, (ARTRealtimeChannel, @escaping ([ARTPresenceMessage]?, ARTErrorInfo?) -> Void) -> Void)] {
+                    ] as [(String, (ARTRealtimeChannelInternal, @escaping ([ARTPresenceMessage]?, ARTErrorInfo?) -> Void) -> Void)] {
                         context(name) {
                             it("results in an error") {
                                 let (channel, client) = getSuspendedChannel()

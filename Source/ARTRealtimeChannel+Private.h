@@ -12,12 +12,16 @@
 #import <Ably/ARTPresenceMap.h>
 #import <Ably/ARTEventEmitter.h>
 #import <Ably/ARTRealtime+Private.h>
+#import <Ably/ARTQueuedDealloc.h>
 
 @class ARTProtocolMessage;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTRealtimeChannel () <ARTPresenceMapDelegate>
+@interface ARTRealtimeChannelInternal : ARTChannel <ARTPresenceMapDelegate, ARTRealtimeChannelProtocol>
+
+@property (readwrite, assign, nonatomic) ARTRealtimeChannelState state;
+@property (readonly, strong, nonatomic, nullable) ARTErrorInfo *errorReason;
 
 - (ARTRealtimeChannelState)state_nosync;
 - (ARTErrorInfo *)errorReason_nosync;
@@ -50,7 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface ARTRealtimeChannel (Private)
+@interface ARTRealtimeChannelInternal (Private)
 
 - (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status;
 
@@ -80,6 +84,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)sync;
 - (void)sync:(nullable void (^)(ARTErrorInfo *_Nullable))callback;
 - (void)requestContinueSync;
+
+@end
+
+@interface ARTRealtimeChannel ()
+
+- (instancetype)initWithInternal:(ARTRealtimeChannelInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc;
+
+@property (readonly) ARTRealtimeChannelInternal *internal_nosync;
 
 @end
 

@@ -35,7 +35,175 @@
 #import "ARTPushChannel.h"
 #endif
 
-@interface ARTRealtimeChannel () {
+@implementation ARTRealtimeChannel {
+    ARTRealtimeChannelInternal *_internal;
+    ARTQueuedDealloc *_dealloc;
+}
+
+- (instancetype)initWithInternal:(ARTRealtimeChannelInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc {
+    self = [super init];
+    if (self) {
+        _internal = internal;
+        _dealloc = dealloc;
+    }
+    return self;
+}
+
+- (NSString *)name {
+    return _internal.name;
+}
+
+- (ARTRealtimeChannelState)state {
+    return _internal.state;
+}
+
+- (ARTErrorInfo *)errorReason {
+    return _internal.errorReason;
+}
+
+- (ARTRealtimePresence *)presence {
+    return _internal.presence;
+}
+
+#if TARGET_OS_IPHONE
+
+- (ARTPushChannel *)push {
+    return _internal.push;
+}
+
+#endif
+
+- (void)publish:(nullable NSString *)name data:(nullable id)data {
+    [_internal publish:name data:data];
+}
+
+- (void)publish:(nullable NSString *)name data:(nullable id)data callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback {
+    [_internal publish:name data:data callback:callback];
+}
+
+- (void)publish:(nullable NSString *)name data:(nullable id)data clientId:(NSString *)clientId {
+    [_internal publish:name data:data clientId:clientId];
+}
+
+- (void)publish:(nullable NSString *)name data:(nullable id)data clientId:(NSString *)clientId callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback {
+    [_internal publish:name data:data clientId:clientId callback:callback];
+}
+
+- (void)publish:(nullable NSString *)name data:(nullable id)data extras:(nullable id<ARTJsonCompatible>)extras {
+    [_internal publish:name data:data extras:extras];
+}
+
+- (void)publish:(nullable NSString *)name data:(nullable id)data extras:(nullable id<ARTJsonCompatible>)extras callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback {
+    [_internal publish:name data:data extras:extras callback:callback];
+}
+
+- (void)publish:(nullable NSString *)name data:(nullable id)data clientId:(NSString *)clientId extras:(nullable id<ARTJsonCompatible>)extras {
+    [_internal publish:name data:data clientId:clientId extras:extras];
+}
+
+- (void)publish:(nullable NSString *)name data:(nullable id)data clientId:(NSString *)clientId extras:(nullable id<ARTJsonCompatible>)extras callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback {
+    [_internal publish:name data:data clientId:clientId extras:extras callback:callback];
+}
+
+- (void)publish:(NSArray<ARTMessage *> *)messages {
+    [_internal publish:messages];
+}
+
+- (void)publish:(NSArray<ARTMessage *> *)messages callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback {
+    [_internal publish:messages callback:callback];
+}
+
+- (void)history:(void(^)(ARTPaginatedResult<ARTMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
+    [_internal history:callback];
+}
+
+- (ARTLocalDevice *)device {
+    return [_internal device];
+}
+
+- (BOOL)exceedMaxSize:(NSArray<ARTBaseMessage *> *)messages {
+    return [_internal exceedMaxSize:messages];
+}
+
+- (void)attach {
+    [_internal attach];
+}
+
+- (void)attach:(nullable void (^)(ARTErrorInfo *_Nullable))callback {
+    [_internal attach:callback];
+}
+
+- (void)detach {
+    [_internal detach];
+}
+
+- (void)detach:(nullable void (^)(ARTErrorInfo *_Nullable))callback {
+    [_internal detach:callback];
+}
+
+- (ARTEventListener *_Nullable)subscribe:(void (^)(ARTMessage *message))callback {
+    return [_internal subscribe:callback];
+}
+
+- (ARTEventListener *_Nullable)subscribeWithAttachCallback:(nullable void (^)(ARTErrorInfo *_Nullable))onAttach callback:(void (^)(ARTMessage *message))cb {
+    return [_internal subscribeWithAttachCallback:onAttach callback:cb];
+}
+
+- (ARTEventListener *_Nullable)subscribe:(NSString *)name callback:(void (^)(ARTMessage *message))cb {
+    return [_internal subscribe:name callback:cb];
+}
+
+- (ARTEventListener *_Nullable)subscribe:(NSString *)name onAttach:(nullable void (^)(ARTErrorInfo *_Nullable))onAttach callback:(void (^)(ARTMessage *message))cb {
+    return [_internal subscribe:name onAttach:onAttach callback:cb];
+}
+
+- (void)unsubscribe {
+    [_internal unsubscribe];
+}
+
+- (void)unsubscribe:(ARTEventListener *_Nullable)listener {
+    [_internal unsubscribe:listener];
+}
+
+- (void)unsubscribe:(NSString *)name listener:(ARTEventListener *_Nullable)listener {
+    [_internal unsubscribe:name listener:listener];
+}
+
+- (BOOL)history:(ARTRealtimeHistoryQuery *_Nullable)query callback:(void(^)(ARTPaginatedResult<ARTMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback error:(NSError *_Nullable *_Nullable)errorPtr {
+    return [_internal history:query callback:callback error:errorPtr];
+}
+
+- (ARTEventListener *)on:(void (^)(ARTChannelStateChange * _Nullable))cb {
+    return [_internal on:cb];
+}
+
+- (ARTEventListener *)once:(ARTChannelEvent)event callback:(void (^)(ARTChannelStateChange * _Nullable))cb {
+    return [_internal once:event callback:cb];
+}
+
+- (ARTEventListener *)once:(void (^)(ARTChannelStateChange * _Nullable))cb {
+    return [_internal once:cb];
+}
+
+- (void)off:(ARTChannelEvent)event listener:(ARTEventListener *)listener {
+    [_internal off:event listener:listener];
+}
+
+- (void)off:(ARTEventListener *)listener {
+    [_internal off:listener];
+}
+
+- (void)off {
+    [_internal off];
+}
+
+- (nonnull ARTEventListener *)on:(ARTChannelEvent)event callback:(nonnull void (^)(ARTChannelStateChange * _Nullable))cb {
+    return [_internal on:event callback:cb];
+}
+
+@end
+
+@interface ARTRealtimeChannelInternal () {
     ARTRealtimePresence *_realtimePresence;
     #if TARGET_OS_IPHONE
     ARTPushChannel *_pushChannel;
@@ -48,7 +216,7 @@
 
 @end
 
-@implementation ARTRealtimeChannel {
+@implementation ARTRealtimeChannelInternal {
     dispatch_queue_t _queue;
     dispatch_queue_t _userQueue;
     ARTErrorInfo *_errorReason;
@@ -81,7 +249,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
 
 + (instancetype)channelWithRealtime:(ARTRealtimeInternal *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options {
 ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
-    return [[ARTRealtimeChannel alloc] initWithRealtime:realtime andName:name withOptions:options];
+    return [[ARTRealtimeChannelInternal alloc] initWithRealtime:realtime andName:name withOptions:options];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 

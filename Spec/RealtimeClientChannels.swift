@@ -25,7 +25,7 @@ class RealtimeClientChannels: QuickSpec {
             it("should exist methods to check if a channel exists or iterate through the existing channels") {
                 let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
                 defer { client.dispose(); client.close() }
-                var disposable = [ARTRealtimeChannel]()
+                var disposable = [ARTRealtimeChannelInternal]()
 
                 disposable.append(client.channels.get("test1"))
                 disposable.append(client.channels.get("test2"))
@@ -36,7 +36,7 @@ class RealtimeClientChannels: QuickSpec {
                 expect(client.channels.exists("testX")).to(beFalse())
 
                 for channel in client.channels {
-                    expect(disposable.contains(channel as! ARTRealtimeChannel)).to(beTrue())
+                    expect(disposable.contains(channel as! ARTRealtimeChannelInternal)).to(beTrue())
                 }
             }
 

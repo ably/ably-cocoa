@@ -1749,7 +1749,7 @@ class RealtimeClientChannel: QuickSpec {
                         options.useTokenAuth = true
                         options.autoConnect = false
                         var client: ARTRealtimeInternal!
-                        var channel: ARTRealtimeChannel!
+                        var channel: ARTRealtimeChannelInternal!
 
                         beforeEach {
                             client = ARTRealtimeInternal(options: options)
@@ -1896,7 +1896,7 @@ class RealtimeClientChannel: QuickSpec {
                         options.suspendedRetryTimeout = 0.3
                         options.autoConnect = false
                         var client: ARTRealtimeInternal!
-                        var channel: ARTRealtimeChannel!
+                        var channel: ARTRealtimeChannelInternal!
 
                         let previousConnectionStateTtl = ARTDefault.connectionStateTtl()
 

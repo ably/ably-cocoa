@@ -32,11 +32,11 @@
 }
 
 - (ARTRealtimeChannel *)get:(NSString *)name {
-    return [_internal get:(NSString *)name];
+    return [[ARTRealtimeChannel alloc] initWithInternal:[_internal get:(NSString *)name] queuedDealloc:_dealloc];
 }
 
 - (ARTRealtimeChannel *)get:(NSString *)name options:(ARTChannelOptions *)options {
-    return [_internal get:(NSString *)name options:(ARTChannelOptions *)options];
+    return [[ARTRealtimeChannel alloc] initWithInternal:[_internal get:(NSString *)name options:(ARTChannelOptions *)options] queuedDealloc:_dealloc];
 }
 
 - (void)release:(NSString *)name callback:(nullable void (^)(ARTErrorInfo *_Nullable))errorInfo {
@@ -47,9 +47,6 @@
     [_internal release:(NSString *)name];
 }
 
-- (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(__unsafe_unretained id  _Nonnull *)buffer count:(NSUInteger)len {
-    return [_internal countByEnumeratingWithState:state objects:buffer count:len];
-}
 @end
 
 @interface ARTRealtimeChannelsInternal ()
@@ -80,7 +77,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
 }
 
 - (id)makeChannel:(NSString *)name options:(ARTChannelOptions *)options {
-    return [ARTRealtimeChannel channelWithRealtime:_realtime andName:name withOptions:options];
+    return [ARTRealtimeChannelInternal channelWithRealtime:_realtime andName:name withOptions:options];
 }
 
 - (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(__unsafe_unretained id  _Nonnull *)buffer count:(NSUInteger)len {
@@ -119,7 +116,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
         return;
     }
 
-    ARTRealtimeChannel *channel = [self->_channels _get:name];
+    ARTRealtimeChannelInternal *channel = [self->_channels _get:name];
     [channel _detach:^(ARTErrorInfo *errorInfo) {
         [channel off_nosync];
         [channel _unsubscribe];
@@ -154,7 +151,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     return [_channels getNosyncIterable];
 }
 
-- (ARTRealtimeChannel *)_getChannel:(NSString *)name options:(ARTChannelOptions *)options addPrefix:(BOOL)addPrefix {
+- (ARTRealtimeChannelInternal *)_getChannel:(NSString *)name options:(ARTChannelOptions *)options addPrefix:(BOOL)addPrefix {
     return [_channels _getChannel:name options:options addPrefix:addPrefix];
 }
 

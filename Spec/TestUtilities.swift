@@ -1215,7 +1215,7 @@ extension ARTRealtimeInternal {
     }
 
     func dispose() {
-        let names = self.channels.map({ ($0 as! ARTRealtimeChannel).name })
+        let names = self.channels.map({ ($0 as! ARTRealtimeChannelInternal).name })
         for name in names {
             self.channels.release(name)
         }

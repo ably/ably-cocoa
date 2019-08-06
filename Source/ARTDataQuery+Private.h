@@ -7,7 +7,7 @@
 //
 
 #import <Ably/ARTDataQuery.h>
-#import <Ably/ARTRealtimeChannel.h>
+#import <Ably/ARTRealtimeChannel+Private.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtimeHistoryQuery ()
 
-@property (weak, readwrite) ARTRealtimeChannel *realtimeChannel;
+@property (weak, readwrite) ARTRealtimeChannelInternal *realtimeChannel;
 
 @end
 

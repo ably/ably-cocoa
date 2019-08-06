@@ -35,12 +35,12 @@
 #pragma mark - ARTRealtimePresence
 
 @implementation ARTRealtimePresence {
-    __weak ARTRealtimeChannel *_channel;
+    __weak ARTRealtimeChannelInternal *_channel;
     dispatch_queue_t _userQueue;
     dispatch_queue_t _queue;
 }
 
-- (instancetype)initWithChannel:(ARTRealtimeChannel *)channel {
+- (instancetype)initWithChannel:(ARTRealtimeChannelInternal *)channel {
 ART_TRY_OR_MOVE_TO_FAILED_START(channel.realtime) {
     if (self = [super init]) {
         _channel = channel;

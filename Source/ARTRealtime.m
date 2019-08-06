@@ -706,7 +706,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         }
         [self failQueuedMessages:channelStatus];
         // For every Channel
-        for (ARTRealtimeChannel *channel in self.channels.nosyncIterable) {
+        for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
             if (stateChange.current == ARTRealtimeClosing) {
                 //do nothing. Closed state is coming.
             }
@@ -760,7 +760,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         if (![message.connectionId isEqualToString:self.connection.id_nosync]) {
             [self.logger warn:@"R:%p ARTRealtime: connection has reconnected, but resume failed. Reattaching any attached channels", self];
             // Reattach all channels
-            for (ARTRealtimeChannel *channel in self.channels.nosyncIterable) {
+            for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
                 [channel reattachWithReason:message.error callback:nil];
             }
             _resuming = false;
@@ -772,7 +772,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
         [self.logger debug:@"RT:%p connection \"%@\" has reconnected and resumed successfully", self, self.connection.id_nosync];
 
-        for (ARTRealtimeChannel *channel in self.channels.nosyncIterable) {
+        for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
             if (channel.presenceMap.syncInProgress) {
                 // FIXME or not, regarding https://github.com/ably/docs/issues/349
                 //[channel requestContinueSync];
@@ -1089,7 +1089,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     if (message.channel == nil) {
         return;
     }
-    ARTRealtimeChannel *channel = [self.channels _getChannel:message.channel options:nil addPrefix:false];
+    ARTRealtimeChannelInternal *channel = [self.channels _getChannel:message.channel options:nil addPrefix:false];
     [channel onChannelMessage:message];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
