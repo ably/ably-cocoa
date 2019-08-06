@@ -33,16 +33,16 @@ NSString* (^_Nullable ARTChannels_getChannelNamePrefix)(void);
     return self;
 }
 
-- (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(__unsafe_unretained id [])buffer count:(NSUInteger)len {
-    __block NSUInteger ret;
+- (id<NSFastEnumeration>)iterate {
+    __block id<NSFastEnumeration>ret;
 dispatch_sync(_queue, ^{
-    ret = [[self getNosyncIterable] countByEnumeratingWithState:state objects:buffer count:len];
+    ret = [self getNosyncIterable];
 });
     return ret;
 }
 
 - (id<NSFastEnumeration>)getNosyncIterable {
-    return [[ARTChannelsNosyncIterable alloc] init:_channels];
+    return [_channels objectEnumerator];
 }
 
 - (BOOL)exists:(NSString *)name {
@@ -113,23 +113,3 @@ dispatch_sync(_queue, ^{
 
 @end
 
-@implementation ARTChannelsNosyncIterable {
-    NSDictionary *_channels;
-}
-
-- (instancetype)init:(NSDictionary<NSString *, id> *)channels {
-    if (self = [super init]) {
-        _channels = channels;
-    }
-    return self;
-}
-
-- (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(__unsafe_unretained id [])buffer count:(NSUInteger)len {
-    NSUInteger count = [self->_channels countByEnumeratingWithState:state objects:buffer count:len];
-    for (NSUInteger i = 0; i < count; i++) {
-        buffer[i] = self->_channels[buffer[i]];
-    }
-    return count;
-}
-
-@end

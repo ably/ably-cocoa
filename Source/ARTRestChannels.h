@@ -12,7 +12,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTRestChannels : NSObject<NSFastEnumeration>
+@interface ARTRestChannels : NSObject
 
 - (instancetype)initWithRest:(ARTRest *)rest;
 
@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (ARTRestChannel *)get:(NSString *)name;
 - (ARTRestChannel *)get:(NSString *)name options:(ARTChannelOptions *)options;
 - (void)release:(NSString *)name;
+- (id<NSFastEnumeration>)iterate;
 
 @end
 

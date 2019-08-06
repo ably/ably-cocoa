@@ -20,6 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)exists:(NSString *)name;
 - (void)release:(NSString *)name callback:(nullable void (^)(ARTErrorInfo *_Nullable))errorInfo;
 - (void)release:(NSString *)name;
+- (id<NSFastEnumeration>)iterate;
 
 @end
 

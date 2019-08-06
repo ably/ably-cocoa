@@ -14,7 +14,7 @@ import Aspects
 // Swift isn't yet smart enough to do this automatically when bridging Objective-C APIs
 extension ARTRestChannels: Sequence {
     public func makeIterator() -> NSFastEnumerationIterator {
-        return NSFastEnumerationIterator(self)
+        return NSFastEnumerationIterator(self.iterate())
     }
 }
 

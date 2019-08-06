@@ -15,7 +15,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTRealtimeChannelsInternal : NSObject<ARTRealtimeChannelsProtocol, NSFastEnumeration>
+@interface ARTRealtimeChannelsInternal : NSObject<ARTRealtimeChannelsProtocol>
 
 - (ARTRealtimeChannelInternal *)get:(NSString *)name;
 - (ARTRealtimeChannelInternal *)get:(NSString *)name options:(ARTChannelOptions *)options;

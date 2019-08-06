@@ -47,6 +47,14 @@
     [_internal release:(NSString *)name];
 }
 
+- (id<NSFastEnumeration>)iterate {
+    NSMutableArray *channels = [[NSMutableArray alloc] init];
+    for (ARTRealtimeChannelInternal *internalChannel in [_internal iterate]) {
+        [channels addObject:internalChannel];
+    }
+    return channels;
+}
+
 @end
 
 @interface ARTRealtimeChannelsInternal ()
@@ -80,8 +88,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
     return [ARTRealtimeChannelInternal channelWithRealtime:_realtime andName:name withOptions:options];
 }
 
-- (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(__unsafe_unretained id  _Nonnull *)buffer count:(NSUInteger)len {
-    return [_channels countByEnumeratingWithState:state objects:buffer count:len];
+- (id<NSFastEnumeration>)iterate {
+    return [_channels iterate];
 }
 
 - (ARTRealtimeChannel *)get:(NSString *)name {

@@ -41,9 +41,9 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-- (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(__unsafe_unretained id  _Nonnull *)buffer count:(NSUInteger)len {
+- (id<NSFastEnumeration>)iterate {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
-    return [_channels countByEnumeratingWithState:state objects:buffer count:len];
+    return [_channels iterate];
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
