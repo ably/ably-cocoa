@@ -7,21 +7,61 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ARTRestChannels.h"
+#import "ARTRestChannels+Private.h"
 #import "ARTChannels+Private.h"
 #import "ARTRestChannel+Private.h"
 #import "ARTRest+Private.h"
 
-@interface ARTRestChannels ()
+@implementation ARTRestChannels {
+    ARTRestChannelsInternal *_internal;
+    ARTQueuedDealloc *_dealloc;
+}
+
+- (instancetype)initWithInternal:(ARTRestChannelsInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc {
+    self = [super init];
+    if (self) {
+        _internal = internal;
+        _dealloc = dealloc;
+    }
+    return self;
+}
+
+- (BOOL)exists:(NSString *)name {
+    return [_internal exists:(NSString *)name];
+}
+
+- (ARTRestChannel *)get:(NSString *)name {
+    return [[ARTRestChannel alloc] initWithInternal:[_internal get:(NSString *)name] queuedDealloc:_dealloc];
+}
+
+- (ARTRestChannel *)get:(NSString *)name options:(ARTChannelOptions *)options {
+    return [[ARTRestChannel alloc] initWithInternal:[_internal get:(NSString *)name options:(ARTChannelOptions *)options] queuedDealloc:_dealloc];
+}
+
+- (void)release:(NSString *)name {
+    [_internal release:(NSString *)name];
+}
+
+- (id<NSFastEnumeration>)iterate {
+    NSMutableArray *channels = [[NSMutableArray alloc] init];
+    for (ARTRestChannelInternal *internalChannel in [_internal iterate]) {
+        [channels addObject:internalChannel];
+    }
+    return channels;
+}
+
+@end
+
+@interface ARTRestChannelsInternal ()
 
 @property (weak, nonatomic) ARTRestInternal *rest;
 
 @end
 
-@interface ARTRestChannels () <ARTChannelsDelegate>
+@interface ARTRestChannelsInternal () <ARTChannelsDelegate>
 @end
 
-@implementation ARTRestChannels {
+@implementation ARTRestChannelsInternal {
     ARTChannels *_channels;
 }
 
@@ -37,7 +77,7 @@ ART_TRY_OR_REPORT_CRASH_START(rest) {
 
 - (id)makeChannel:(NSString *)name options:(ARTChannelOptions *)options {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
-    return [[ARTRestChannel alloc] initWithName:name withOptions:options andRest:_rest];
+    return [[ARTRestChannelInternal alloc] initWithName:name withOptions:options andRest:_rest];
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
@@ -47,13 +87,13 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-- (ARTRestChannel *)get:(NSString *)name {
+- (ARTRestChannelInternal *)get:(NSString *)name {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return [_channels get:name];
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-- (ARTRestChannel *)get:(NSString *)name options:(ARTChannelOptions *)options {
+- (ARTRestChannelInternal *)get:(NSString *)name options:(ARTChannelOptions *)options {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return [_channels get:name options:options];
 } ART_TRY_OR_REPORT_CRASH_END
@@ -71,7 +111,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-- (ARTRestChannel *)_getChannel:(NSString *)name options:(ARTChannelOptions *)options addPrefix:(BOOL)addPrefix {
+- (ARTRestChannelInternal *)_getChannel:(NSString *)name options:(ARTChannelOptions *)options addPrefix:(BOOL)addPrefix {
     return [_channels _getChannel:name options:options addPrefix:addPrefix];
 }
 

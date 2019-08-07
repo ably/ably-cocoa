@@ -23,9 +23,93 @@
 #import "ARTPushChannel+Private.h"
 #import "ARTCrypto+Private.h"
 
+@implementation ARTRestChannel {
+    ARTRestChannelInternal *_internal;
+    ARTQueuedDealloc *_dealloc;
+}
+
+- (instancetype)initWithInternal:(ARTRestChannelInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc {
+    self = [super init];
+    if (self) {
+        _internal = internal;
+        _dealloc = dealloc;
+    }
+    return self;
+}
+
+- (ARTRestPresence *)presence {
+    return _internal.presence;
+}
+
+- (ARTPushChannel *)push {
+    return _internal.push;
+}
+
+- (NSString *)name {
+    return _internal.name;
+}
+
+- (BOOL)history:(nullable ARTDataQuery *)query callback:(void(^)(ARTPaginatedResult<ARTMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback error:(NSError *_Nullable *_Nullable)errorPtr {
+    return [_internal history:query callback:callback error:errorPtr];
+}
+
+- (void)publish:(nullable NSString *)name data:(nullable id)data {
+    [_internal publish:name data:data];
+}
+
+- (void)publish:(nullable NSString *)name data:(nullable id)data callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback {
+    [_internal publish:name data:data callback:callback];
+}
+
+- (void)publish:(nullable NSString *)name data:(nullable id)data clientId:(NSString *)clientId {
+    [_internal publish:name data:data clientId:clientId];
+}
+
+- (void)publish:(nullable NSString *)name data:(nullable id)data clientId:(NSString *)clientId callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback {
+    [_internal publish:name data:data clientId:clientId callback:callback];
+}
+
+- (void)publish:(nullable NSString *)name data:(nullable id)data extras:(nullable id<ARTJsonCompatible>)extras {
+    [_internal publish:name data:data extras:extras];
+}
+
+- (void)publish:(nullable NSString *)name data:(nullable id)data extras:(nullable id<ARTJsonCompatible>)extras callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback {
+    [_internal publish:name data:data extras:extras callback:callback];
+}
+
+- (void)publish:(nullable NSString *)name data:(nullable id)data clientId:(NSString *)clientId extras:(nullable id<ARTJsonCompatible>)extras {
+    [_internal publish:name data:data clientId:clientId extras:extras];
+}
+
+- (void)publish:(nullable NSString *)name data:(nullable id)data clientId:(NSString *)clientId extras:(nullable id<ARTJsonCompatible>)extras callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback {
+    [_internal publish:name data:data clientId:clientId extras:extras callback:callback];
+}
+
+- (void)publish:(NSArray<ARTMessage *> *)messages {
+    [_internal publish:messages];
+}
+
+- (void)publish:(NSArray<ARTMessage *> *)messages callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback {
+    [_internal publish:messages callback:callback];
+}
+
+- (void)history:(void(^)(ARTPaginatedResult<ARTMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
+    [_internal history:callback];
+}
+
+- (ARTLocalDevice *)device {
+    return [_internal device];
+}
+
+- (BOOL)exceedMaxSize:(NSArray<ARTBaseMessage *> *)messages {
+    return [_internal exceedMaxSize:messages];
+}
+
+@end
+
 static const NSUInteger kIdempotentLibraryGeneratedIdLength = 9; //bytes
 
-@implementation ARTRestChannel {
+@implementation ARTRestChannelInternal {
 @private
     dispatch_queue_t _queue;
     dispatch_queue_t _userQueue;

@@ -92,11 +92,11 @@ ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
     return [_channels iterate];
 }
 
-- (ARTRealtimeChannel *)get:(NSString *)name {
+- (ARTRealtimeChannelInternal *)get:(NSString *)name {
     return [_channels get:name];
 }
 
-- (ARTRealtimeChannel *)get:(NSString *)name options:(ARTChannelOptions *)options {
+- (ARTRealtimeChannelInternal *)get:(NSString *)name options:(ARTChannelOptions *)options {
     return [_channels get:name options:options];
 }
 

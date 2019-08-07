@@ -59,12 +59,12 @@
 @end
 
 @implementation ARTRestPresence {
-    __weak ARTRestChannel *_channel;
+    __weak ARTRestChannelInternal *_channel;
     dispatch_queue_t _userQueue;
     dispatch_queue_t _queue;
 }
 
-- (instancetype)initWithChannel:(ARTRestChannel *)channel {
+- (instancetype)initWithChannel:(ARTRestChannelInternal *)channel {
 ART_TRY_OR_REPORT_CRASH_START(channel.rest) {
     if (self = [super init]) {
         _channel = channel;

@@ -7,7 +7,7 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import <Ably/ARTRestChannel.h>
+#import <Ably/ARTRestChannel+Private.h>
 #import <Ably/ARTRealtimeChannel.h>
 #import <Ably/ARTPresenceMap.h>
 #import <Ably/ARTEventEmitter.h>
@@ -31,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *_Nullable)clientId_nosync;
 
 @property (readonly, weak, nonatomic) ARTRealtimeInternal *realtime;
-@property (readonly, strong, nonatomic) ARTRestChannel *restChannel;
+@property (readonly, strong, nonatomic) ARTRestChannelInternal *restChannel;
 @property (readwrite, strong, nonatomic) NSMutableArray *queuedMessages;
 @property (readwrite, strong, nonatomic, nullable) NSString *attachSerial;
 @property (readonly, nullable, getter=getClientId) NSString *clientId;

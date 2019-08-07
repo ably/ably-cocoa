@@ -7,15 +7,27 @@
 //
 
 #import <Ably/ARTRestChannels.h>
+#import "ARTQueuedDealloc.h"
+#import "ARTRestChannel+Private.h"
 
 @class ARTRestChannel;
+@class ARTRestInternal;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTRestChannels ()
+@interface ARTRestChannelsInternal : NSObject<ARTRestChannelsProtocol>
+
+- (ARTRestChannelInternal *)get:(NSString *)name;
+- (ARTRestChannelInternal *)get:(NSString *)name options:(ARTChannelOptions *)options;
 
 - (instancetype)initWithRest:(ARTRestInternal *)rest;
-- (ARTRestChannel *)_getChannel:(NSString *)name options:(ARTChannelOptions * _Nullable)options addPrefix:(BOOL)addPrefix;
+- (ARTRestChannelInternal *)_getChannel:(NSString *)name options:(ARTChannelOptions * _Nullable)options addPrefix:(BOOL)addPrefix;
+
+@end
+
+@interface ARTRestChannels ()
+
+- (instancetype)initWithInternal:(ARTRestChannelsInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc;
 
 @end
 

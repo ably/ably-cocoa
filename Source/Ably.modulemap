@@ -21,6 +21,7 @@ framework module Ably {
         header "ARTRealtimeChannel+Private.h"
         header "ARTRealtimeChannels+Private.h"
         header "ARTRest+Private.h"
+        header "ARTRestChannels+Private.h"
         header "ARTRestChannel+Private.h"
         header "ARTPaginatedResult+Private.h"
         header "ARTPresence+Private.h"

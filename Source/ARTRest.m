@@ -121,7 +121,7 @@
 }
 
 - (ARTRestChannels *)channels {
-    return _internal.channels;
+    return [[ARTRestChannels alloc] initWithInternal:_internal.channels queuedDealloc:_dealloc];
 }
 
 - (ARTAuth *)auth {
@@ -204,7 +204,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 
         _auth = [[ARTAuth alloc] init:self withOptions:_options];
         _push = [[ARTPush alloc] init:self];
-        _channels = [[ARTRestChannels alloc] initWithRest:self];
+        _channels = [[ARTRestChannelsInternal alloc] initWithRest:self];
         _handlingUncaughtExceptions = false;
 
         [self.logger verbose:__FILE__ line:__LINE__ message:@"RS:%p initialized", self];

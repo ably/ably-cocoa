@@ -83,11 +83,11 @@ dispatch_sync(_queue, ^{
     return channel;
 }
 
-- (ARTRestChannel *)_getChannel:(NSString *)name options:(ARTChannelOptions *)options addPrefix:(BOOL)addPrefix {
+- (ARTChannel *)_getChannel:(NSString *)name options:(ARTChannelOptions *)options addPrefix:(BOOL)addPrefix {
     if (addPrefix) {
         name = [ARTChannels addPrefix:name];
     }
-    ARTRestChannel *channel = [self _get:name];
+    ARTChannel *channel = [self _get:name];
     if (!channel) {
         channel = [_delegate makeChannel:name options:options];
         [self->_channels setObject:channel forKey:name];

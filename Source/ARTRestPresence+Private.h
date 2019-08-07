@@ -10,9 +10,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class ARTRestChannelInternal;
+
 @interface ARTRestPresence ()
 
-- (instancetype)initWithChannel:(ARTRestChannel *)channel;
+- (instancetype)initWithChannel:(ARTRestChannelInternal *)channel;
 
 @end
 

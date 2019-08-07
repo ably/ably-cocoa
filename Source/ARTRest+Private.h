@@ -9,6 +9,7 @@
 #import <Ably/ARTRest.h>
 #import <Ably/ARTHttp.h>
 #import <Ably/ARTSentry.h>
+#import "ARTRestChannels+Private.h"
 
 @protocol ARTEncoder;
 @protocol ARTHTTPExecutor;
@@ -20,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// ARTRest private methods that are used internally and for whitebox testing
 @interface ARTRestInternal : NSObject <ARTRestProtocol, ARTHTTPAuthenticatedExecutor>
 
-@property (nonatomic, strong, readonly) ARTRestChannels *channels;
+@property (nonatomic, strong, readonly) ARTRestChannelsInternal *channels;
 @property (nonatomic, strong, readonly) ARTAuth *auth;
 @property (nonatomic, strong, readonly) ARTPush *push;
 #if TARGET_OS_IOS

@@ -12,7 +12,7 @@ import Quick
 import Aspects
 
 // Swift isn't yet smart enough to do this automatically when bridging Objective-C APIs
-extension ARTRestChannels: Sequence {
+extension ARTRestChannelsInternal: Sequence {
     public func makeIterator() -> NSFastEnumerationIterator {
         return NSFastEnumerationIterator(self.iterate())
     }
@@ -45,7 +45,7 @@ class RestClientChannels: QuickSpec {
             context("channels") {
                 // RSN1
                 it("should return collection of channels") {
-                    let _: ARTRestChannels = client.channels
+                    let _: ARTRestChannelsInternal = client.channels
                 }
 
                 // RSN3
@@ -107,7 +107,7 @@ class RestClientChannels: QuickSpec {
                 // RSN4
                 context("releaseChannel") {
                     it("should release a channel") {
-                        weak var channel: ARTRestChannel!
+                        weak var channel: ARTRestChannelInternal!
 
                         autoreleasepool {
                             channel = client.channels.get(channelName)
@@ -128,7 +128,7 @@ class RestClientChannels: QuickSpec {
                     ]
 
                     for channel in client.channels {
-                        expect(channels).to(contain(channel as! ARTRestChannel))
+                        expect(channels).to(contain(channel as! ARTRestChannelInternal))
                     }
                 }
             }
