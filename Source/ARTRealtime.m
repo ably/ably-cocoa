@@ -87,11 +87,15 @@
     return _internal.clientId;
 }
 
+- (void)initCommon {
+    _dealloc = [[ARTQueuedDealloc alloc] init:_internal queue:_internal.queue];
+}
+
 - (instancetype)initWithOptions:(ARTClientOptions *)options {
     self = [super init];
     if (self) {
         _internal = [[ARTRealtimeInternal alloc] initWithOptions:options];
-        _dealloc = [[ARTQueuedDealloc alloc] init:_internal queue:_internal.queue];
+        [self initCommon];
     }
     return self;
 }
@@ -99,6 +103,7 @@
 - (instancetype)initWithKey:(NSString *)key {
     self = [super init];
     if (self) {
+        [self initCommon];
         _internal = [[ARTRealtimeInternal alloc] initWithKey:key];
     }
     return self;
@@ -107,6 +112,7 @@
 - (instancetype)initWithToken:(NSString *)token {
     self = [super init];
     if (self) {
+        [self initCommon];
         _internal = [[ARTRealtimeInternal alloc] initWithToken:token];
     }
     return self;
