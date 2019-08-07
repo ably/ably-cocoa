@@ -26,7 +26,7 @@
 #import "ARTEventEmitter+Private.h"
 
 @implementation ARTAuth {
-    __weak ARTRest *_rest;
+    __weak ARTRestInternal *_rest;
     dispatch_queue_t _userQueue;
     dispatch_queue_t _queue;
     ARTTokenParams *_tokenParams;
@@ -36,7 +36,7 @@
     ARTEventEmitter<ARTEvent *, ARTErrorInfo *> *_cancelationEventEmitter;
 }
 
-- (instancetype)init:(ARTRest *)rest withOptions:(ARTClientOptions *)options {
+- (instancetype)init:(ARTRestInternal *)rest withOptions:(ARTClientOptions *)options {
 ART_TRY_OR_REPORT_CRASH_START(rest) {
     if (self = [super init]) {
         _rest = rest;

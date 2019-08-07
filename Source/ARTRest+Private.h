@@ -18,7 +18,15 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /// ARTRest private methods that are used internally and for whitebox testing
-@interface ARTRest () <ARTHTTPAuthenticatedExecutor>
+@interface ARTRestInternal : NSObject <ARTRestProtocol, ARTHTTPAuthenticatedExecutor>
+
+@property (nonatomic, strong, readonly) ARTRestChannels *channels;
+@property (nonatomic, strong, readonly) ARTAuth *auth;
+@property (nonatomic, strong, readonly) ARTPush *push;
+#if TARGET_OS_IOS
+@property (nonnull, nonatomic, readonly, getter=device) ARTLocalDevice *device;
+@property (nonnull, nonatomic, readonly, getter=device_nosync) ARTLocalDevice *device_nosync;
+#endif
 
 @property (nonatomic, strong, readonly) ARTClientOptions *options;
 @property (nonatomic, weak, nullable) ARTRealtimeInternal *realtime;
@@ -41,7 +49,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 // MARK: Not accessible by tests
 @property (readonly, strong, nonatomic) ARTHttp *http;
-@property (strong, nonatomic) ARTAuth *auth;
 @property (readwrite, assign, nonatomic) int fallbackCount;
 
 - (instancetype)initWithOptions:(ARTClientOptions *)options realtime:(ARTRealtimeInternal *_Nullable)realtime;
@@ -65,12 +72,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-BOOL ARTstartHandlingUncaughtExceptions(ARTRest *self);
-void ARTstopHandlingUncaughtExceptions(ARTRest *self);
+@interface ARTRest ()
+
+- (void)internalAsync:(void (^)(ARTRestInternal *))use;
+
+@end
+
+BOOL ARTstartHandlingUncaughtExceptions(ARTRestInternal *self);
+void ARTstopHandlingUncaughtExceptions(ARTRestInternal *self);
 
 #define ART_TRY_OR_REPORT_CRASH_START(rest) \
 	do {\
-	ARTRest *__rest = rest;\
+	ARTRestInternal *__rest = rest;\
     BOOL __started = ARTstartHandlingUncaughtExceptions(__rest);\
     BOOL __caught = false;\
 	@try {\

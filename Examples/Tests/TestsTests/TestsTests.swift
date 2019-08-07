@@ -73,9 +73,9 @@ class TestsTests: XCTestCase {
         self.waitForExpectations(timeout: 10, handler: nil)
 
         let backgroundRestExpectation = self.expectation(description: "Rest in a Background Queue")
-        var rest: ARTRest! //strong reference
+        var rest: ARTRestInternal! //strong reference
         URLSession.shared.dataTask(with: URL(string: "https://ably.io")!) { _,_,_  in
-            rest = ARTRest(key: key as String)
+            rest = ARTRestInternal(key: key as String)
             rest.channels.get("foo").history { result, error in
                 do { backgroundRestExpectation.fulfill() }
             }

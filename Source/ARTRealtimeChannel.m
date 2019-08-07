@@ -32,7 +32,7 @@
 #import "ARTRestChannels+Private.h"
 #import "ARTEventEmitter+Private.h"
 #if TARGET_OS_IPHONE
-#import "ARTPushChannel.h"
+#import "ARTPushChannel+Private.h"
 #endif
 
 @implementation ARTRealtimeChannel {

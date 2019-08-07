@@ -142,7 +142,7 @@ class Utilities: QuickSpec {
                 context("in Rest") {
                     it("should handle and emit the invalid data error") {
                         let options = AblyTests.commonAppSetup()
-                        let rest = ARTRest(options: options)
+                        let rest = ARTRestInternal(options: options)
                         let channel = rest.channels.get("foo")
                         waitUntil(timeout: testTimeout) { done in
                             channel.publish("test", data: NSDate()) { error in
@@ -168,7 +168,7 @@ class Utilities: QuickSpec {
 
                     it("should ignore invalid response payload") {
                         let options = AblyTests.commonAppSetup()
-                        let rest = ARTRest(options: options)
+                        let rest = ARTRestInternal(options: options)
                         let testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
                         rest.httpExecutor = testHTTPExecutor
                         let channel = rest.channels.get("foo")

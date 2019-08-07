@@ -30,11 +30,11 @@ private func beAChannel(named channelName: String) -> Predicate<ARTChannel> {
 
 class RestClientChannels: QuickSpec {
     override func spec() {
-        var client: ARTRest!
+        var client: ARTRestInternal!
         var channelName: String!
 
         beforeEach {
-            client = ARTRest(key: "fake:key")
+            client = ARTRestInternal(key: "fake:key")
             channelName = ProcessInfo.processInfo.globallyUniqueString
             ARTChannels_getChannelNamePrefix = { "RestClientChannels-" }
         }

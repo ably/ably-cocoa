@@ -132,14 +132,14 @@ class ReadmeExamples : QuickSpec {
         }
 
         it("testMakeRestClientAndChannel") {
-            let client = ARTRest(key: "xxxx:xxxx")
+            let client = ARTRestInternal(key: "xxxx:xxxx")
             let channel = client.channels.get("test")
             _ = channel
         }
 
         it("testRestPublishMessage") {
             let options = AblyTests.clientOptions(requestToken: true)
-            let client = ARTRest(options: options)
+            let client = ARTRestInternal(options: options)
             let channel = client.channels.get("test")
 
             channel.publish("myEvent", data: "Hello!")
@@ -147,7 +147,7 @@ class ReadmeExamples : QuickSpec {
 
         it("testRestQueryingTheHistory") {
             let options = AblyTests.clientOptions(requestToken: true)
-            let client = ARTRest(options: options)
+            let client = ARTRestInternal(options: options)
             let channel = client.channels.get("test")
 
             channel.history { messagesPage, error in
@@ -163,7 +163,7 @@ class ReadmeExamples : QuickSpec {
 
         it("testRestPresenceOnAChannel") {
             let options = AblyTests.clientOptions(requestToken: true)
-            let client = ARTRest(options: options)
+            let client = ARTRestInternal(options: options)
             let channel = client.channels.get("test")
 
             channel.presence.get { membersPage, error in
@@ -179,7 +179,7 @@ class ReadmeExamples : QuickSpec {
 
         it("testRestQueryingThePresenceHistory") {
             let options = AblyTests.clientOptions(requestToken: true)
-            let client = ARTRest(options: options)
+            let client = ARTRestInternal(options: options)
             let channel = client.channels.get("test")
 
             channel.presence.history { presencePage, error in
@@ -194,18 +194,18 @@ class ReadmeExamples : QuickSpec {
         }
 
         it("testGenerateToken") {
-            let client = ARTRest(options: AblyTests.commonAppSetup())
+            let client = ARTRestInternal(options: AblyTests.commonAppSetup())
 
             client.auth.requestToken(nil, with: nil) { tokenDetails, error in
                 let tokenDetails = tokenDetails!
                 print(tokenDetails.token) // "xVLyHw.CLchevH3hF....MDh9ZC_Q"
-                let client = ARTRest(token: tokenDetails.token)
+                let client = ARTRestInternal(token: tokenDetails.token)
                 _ = client
             }
         }
         
         it("testFetchingStats") {
-            let client = ARTRest(options: AblyTests.commonAppSetup())
+            let client = ARTRestInternal(options: AblyTests.commonAppSetup())
             client.channels.get("test").publish("foo", data: "bar") { _ in
                 client.stats { statsPage, error in
                     let statsPage = statsPage!
@@ -218,7 +218,7 @@ class ReadmeExamples : QuickSpec {
         }
         
         it("testFetchingTime") {
-            let client = ARTRest(options: AblyTests.commonAppSetup())
+            let client = ARTRestInternal(options: AblyTests.commonAppSetup())
             
             client.time { time, error in
                 print(time as Any) // 2016-02-09 03:59:24 +0000

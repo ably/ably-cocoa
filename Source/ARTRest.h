@@ -25,7 +25,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTRest : NSObject
+@protocol ARTRestProtocol
 
 - (instancetype)init NS_UNAVAILABLE;
 
@@ -42,10 +42,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithKey:(NSString *)key;
 - (instancetype)initWithToken:(NSString *)tokenId;
 
-+ (instancetype)createWithOptions:(ARTClientOptions *)options NS_SWIFT_UNAVAILABLE("Use instance initializer instead");
-+ (instancetype)createWithKey:(NSString *)key NS_SWIFT_UNAVAILABLE("Use instance initializer instead");
-+ (instancetype)createWithToken:(NSString *)tokenId NS_SWIFT_UNAVAILABLE("Use instance initializer instead");
-
 - (void)time:(void (^)(NSDate *_Nullable, NSError *_Nullable))callback;
 
 - (BOOL)request:(NSString *)method path:(NSString *)path params:(nullable NSDictionary<NSString *, NSString *> *)params body:(nullable id)body headers:(nullable NSDictionary<NSString *, NSString *> *)headers callback:(void (^)(ARTHTTPPaginatedResponse *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr;
@@ -53,13 +49,20 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)stats:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback;
 - (BOOL)stats:(nullable ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
-@property (nonatomic, strong, readonly) ARTRestChannels *channels;
-@property (nonatomic, strong, readonly) ARTAuth *auth;
-@property (nonatomic, strong, readonly) ARTPush *push;
+@property (readonly) ARTRestChannels *channels;
+@property (readonly) ARTAuth *auth;
+@property (readonly) ARTPush *push;
 #if TARGET_OS_IOS
-@property (nonnull, nonatomic, readonly, getter=device) ARTLocalDevice *device;
-@property (nonnull, nonatomic, readonly, getter=device_nosync) ARTLocalDevice *device_nosync;
+@property (readonly) ARTLocalDevice *device;
 #endif
+
+@end
+
+@interface ARTRest : NSObject <ARTRestProtocol>
+
++ (instancetype)createWithOptions:(ARTClientOptions *)options NS_SWIFT_UNAVAILABLE("Use instance initializer instead");
++ (instancetype)createWithKey:(NSString *)key NS_SWIFT_UNAVAILABLE("Use instance initializer instead");
++ (instancetype)createWithToken:(NSString *)tokenId NS_SWIFT_UNAVAILABLE("Use instance initializer instead");
 
 @end
 

@@ -14,8 +14,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRestChannels : NSObject
 
-- (instancetype)initWithRest:(ARTRest *)rest;
-
 // We copy this from the parent class and replace ChannelType by ARTRestChannel * because
 // Swift ignores Objective-C generics and thinks this is returning an id, failing to compile.
 // Thus, we can't make ARTRestChannels inherit from ARTChannels; we have to compose them instead.

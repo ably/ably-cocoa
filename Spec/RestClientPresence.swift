@@ -20,7 +20,7 @@ class RestClientPresence: QuickSpec {
                 // RSP3a
                 it("should return a PaginatedResult page containing the first page of members") {
                     let options = AblyTests.commonAppSetup()
-                    let client = ARTRest(options: options)
+                    let client = ARTRestInternal(options: options)
                     let channel = client.channels.get("test")
 
                     var disposable = [ARTRealtimeInternal]()
@@ -79,7 +79,7 @@ class RestClientPresence: QuickSpec {
 
                 // RSP3a1
                 it("limit should support up to 1000 items") {
-                    let client = ARTRest(options: AblyTests.commonAppSetup())
+                    let client = ARTRestInternal(options: AblyTests.commonAppSetup())
                     let channel = client.channels.get("test")
 
                     let query = ARTPresenceQuery()
@@ -95,7 +95,7 @@ class RestClientPresence: QuickSpec {
                 // RSP3a2
                 it("clientId should filter members by the provided clientId") {
                     let options = AblyTests.commonAppSetup()
-                    let client = ARTRest(options: options)
+                    let client = ARTRestInternal(options: options)
                     let channel = client.channels.get("test")
 
                     var realtime = ARTRealtimeInternal(options: options)
@@ -128,7 +128,7 @@ class RestClientPresence: QuickSpec {
                 // RSP3a3
                 it("connectionId should filter members by the provided connectionId") {
                     let options = AblyTests.commonAppSetup()
-                    let client = ARTRest(options: options)
+                    let client = ARTRestInternal(options: options)
                     let channel = client.channels.get("test")
 
                     var disposable = [ARTRealtimeInternal]()
@@ -182,7 +182,7 @@ class RestClientPresence: QuickSpec {
                 // RSP4a
                 it("should return a PaginatedResult page containing the first page of members") {
                     let options = AblyTests.commonAppSetup()
-                    let client = ARTRest(options: options)
+                    let client = ARTRestInternal(options: options)
                     let channel = client.channels.get("test")
 
                     var realtime: ARTRealtimeInternal!
@@ -247,7 +247,7 @@ class RestClientPresence: QuickSpec {
                     // RSP4b2
                     it("direction should change the order of the members") {
                         let options = AblyTests.commonAppSetup()
-                        let client = ARTRest(options: options)
+                        let client = ARTRestInternal(options: options)
                         let channel = client.channels.get("test")
 
                         var disposable = [ARTRealtimeInternal]()
@@ -309,7 +309,7 @@ class RestClientPresence: QuickSpec {
                     // RSP4b3
                     it("limit supports up to 1000 members") {
                         let options = AblyTests.commonAppSetup()
-                        let client = ARTRest(options: options)
+                        let client = ARTRestInternal(options: options)
                         let channel = client.channels.get("test")
 
                         var realtime: ARTRealtimeInternal!
@@ -348,7 +348,7 @@ class RestClientPresence: QuickSpec {
                 // RSP3a3
                 it("connectionId should filter members by the provided connectionId") {
                     let options = AblyTests.commonAppSetup()
-                    let client = ARTRest(options: options)
+                    let client = ARTRestInternal(options: options)
                     let channel = client.channels.get("test")
 
                     var disposable = [ARTRealtimeInternal]()
@@ -405,7 +405,7 @@ class RestClientPresence: QuickSpec {
                     // RSP4b1
                     it("start and end should filter members between those two times") {
                         let options = AblyTests.commonAppSetup()
-                        let client = ARTRest(options: options)
+                        let client = ARTRestInternal(options: options)
                         let channel = client.channels.get("test")
 
                         var disposable = [ARTRealtimeInternal]()
@@ -469,7 +469,7 @@ class RestClientPresence: QuickSpec {
 
                     // RSP4b1
                     it("start must be equal to or less than end and is unaffected by the request direction") {
-                        let client = ARTRest(options: AblyTests.commonAppSetup())
+                        let client = ARTRestInternal(options: AblyTests.commonAppSetup())
                         let channel = client.channels.get("test")
 
                         let query = ARTDataQuery()
@@ -495,7 +495,7 @@ class RestClientPresence: QuickSpec {
             // RSP5
             it("presence messages retrieved are decoded in the same way that messages are decoded") {
                 let options = AblyTests.commonAppSetup()
-                let client = ARTRest(options: options)
+                let client = ARTRestInternal(options: options)
                 let channel = client.channels.get("test")
 
                 let expectedData = ["test":1]

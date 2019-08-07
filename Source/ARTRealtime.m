@@ -182,7 +182,7 @@
     if (self) {
         NSAssert(options, @"ARTRealtime: No options provided");
 
-        _rest = [[ARTRest alloc] initWithOptions:options realtime:self];
+        _rest = [[ARTRestInternal alloc] initWithOptions:options realtime:self];
         _userQueue = _rest.userQueue;
         _queue = _rest.queue;
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {

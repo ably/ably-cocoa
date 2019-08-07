@@ -1556,7 +1556,7 @@ class RealtimeClientChannel: QuickSpec {
                 it("should encode messages in the same way as the RestChannel") {
                     let data = ["value":1]
 
-                    let rest = ARTRest(options: AblyTests.commonAppSetup())
+                    let rest = ARTRestInternal(options: AblyTests.commonAppSetup())
                     let restChannel = rest.channels.get("test")
 
                     var restEncodedMessage: ARTMessage?
@@ -2839,7 +2839,7 @@ class RealtimeClientChannel: QuickSpec {
                 it("should support all the same params as Rest") {
                     let options = AblyTests.commonAppSetup()
 
-                    let rest = ARTRest(options: options)
+                    let rest = ARTRestInternal(options: options)
 
                     let realtime = ARTRealtimeInternal(options: options)
                     defer { realtime.close() }

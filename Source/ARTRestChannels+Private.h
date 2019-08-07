@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRestChannels ()
 
+- (instancetype)initWithRest:(ARTRestInternal *)rest;
 - (ARTRestChannel *)_getChannel:(NSString *)name options:(ARTChannelOptions * _Nullable)options addPrefix:(BOOL)addPrefix;
 
 @end

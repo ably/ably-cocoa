@@ -6,7 +6,7 @@
 //  Copyright © 2017 Ably. All rights reserved.
 //
 
-#import "ARTPushChannel.h"
+#import "ARTPushChannel+Private.h"
 #import "ARTHttp.h"
 #import "ARTLog.h"
 #import "ARTJsonLikeEncoder.h"
@@ -21,12 +21,12 @@
 const NSUInteger ARTDefaultLimit = 100;
 
 @implementation ARTPushChannel {
-    __weak ARTRest *_rest;
+    __weak ARTRestInternal *_rest;
     __weak ARTLog *_logger;
     __weak ARTChannel *_channel;
 }
 
-- (instancetype)init:(ARTRest *)rest withChannel:(ARTChannel *)channel {
+- (instancetype)init:(ARTRestInternal *)rest withChannel:(ARTChannel *)channel {
     if (self == [super self]) {
         _rest = rest;
         _logger = [rest logger];

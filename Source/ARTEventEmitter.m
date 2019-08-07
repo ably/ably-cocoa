@@ -311,12 +311,12 @@
 @end
 
 @implementation ARTPublicEventEmitter {
-    __weak ARTRest *_rest;
+    __weak ARTRestInternal *_rest;
     dispatch_queue_t _queue;
     dispatch_queue_t _userQueue;
 }
 
-- (instancetype)initWithRest:(ARTRest *)rest {
+- (instancetype)initWithRest:(ARTRestInternal *)rest {
     if (self = [super initWithQueue:rest.queue]) {
         _rest = rest;
         _queue = rest.queue;

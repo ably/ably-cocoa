@@ -3980,7 +3980,7 @@ class RealtimeClientPresence: QuickSpec {
                 it("should support all the same params as Rest") {
                     let options = AblyTests.commonAppSetup()
 
-                    let rest = ARTRest(options: options)
+                    let rest = ARTRestInternal(options: options)
 
                     let realtime = ARTRealtimeInternal(options: options)
                     defer { realtime.dispose(); realtime.close() }

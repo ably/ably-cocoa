@@ -18,7 +18,7 @@
 #import <Ably/ARTAuth+Private.h>
 #import <Ably/ARTRest+Private.h>
 
-@class ARTRest;
+@class ARTRestInternal;
 @class ARTErrorInfo;
 @class ARTProtocolMessage;
 @class ARTConnectionInternal;
@@ -68,7 +68,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// ARTRealtimeInternal private methods that are used for whitebox testing.
 @interface ARTRealtimeInternal ()
 
-@property (readwrite, strong, nonatomic) ARTRest *rest;
+@property (readwrite, strong, nonatomic) ARTRestInternal *rest;
 @property (readonly, nullable) id<ARTRealtimeTransport> transport;
 @property (readonly, strong, nonatomic, nonnull) id<ARTReachability> reachability;
 @property (readonly, getter=getLogger) ARTLog *logger;

@@ -28,6 +28,8 @@ framework module Ably {
         header "ARTProtocolMessage+Private.h"
         header "ARTTokenParams+Private.h"
         header "ARTURLSessionServerTrust.h"
+        header "ARTRealtimeTransport.h"
+        header "ARTWebSocketTransport.h"
         header "ARTWebSocketTransport+Private.h"
         header "ARTClientOptions+Private.h"
         header "ARTCrypto+Private.h"
@@ -46,5 +48,8 @@ framework module Ably {
         header "ARTNSMutableURLRequest+ARTPaginated.h"
         header "ARTNSDate+ARTUtil.h"
         header "ARTQueuedDealloc.h"
+        header "ARTJsonLikeEncoder.h"
+        header "ARTJsonEncoder.h"
+        header "ARTMsgPackEncoder.h"
     }
 }

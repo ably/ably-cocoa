@@ -33,7 +33,7 @@
 #import "ARTPushChannelSubscription.h"
 
 @implementation ARTJsonLikeEncoder {
-    __weak ARTRest *_rest;
+    __weak ARTRestInternal *_rest;
     __weak ARTLog *_logger;
 }
 
@@ -59,7 +59,7 @@
     return self;
 }
 
-- (instancetype)initWithRest:(ARTRest *)rest delegate:(id<ARTJsonLikeEncoderDelegate>)delegate {
+- (instancetype)initWithRest:(ARTRestInternal *)rest delegate:(id<ARTJsonLikeEncoderDelegate>)delegate {
     if (self = [super init]) {
         _rest = rest;
         _logger = rest.logger;

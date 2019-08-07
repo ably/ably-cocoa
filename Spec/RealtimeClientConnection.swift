@@ -2500,7 +2500,7 @@ class RealtimeClientConnection: QuickSpec {
                         options.tokenDetails = getTestTokenDetails(ttl: 5.0)
                         let client = AblyTests.newRealtime(options)
                         defer { client.dispose(); client.close() }
-                        let rest = ARTRest(options: AblyTests.clientOptions(key: options.key!))
+                        let rest = ARTRestInternal(options: AblyTests.clientOptions(key: options.key!))
 
                         let channel = client.channels.get("test")
                         waitUntil(timeout: testTimeout) { done in
@@ -4021,7 +4021,7 @@ class RealtimeClientConnection: QuickSpec {
                         fail("Missing accessToken from AUTH ProtocolMessage auth attribute"); return
                     }
                     
-                    let rest = ARTRest(options: AblyTests.clientOptions(key: options.key!))
+                    let rest = ARTRestInternal(options: AblyTests.clientOptions(key: options.key!))
 
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(2, done: done)
@@ -4096,7 +4096,7 @@ class RealtimeClientConnection: QuickSpec {
                     expect(client.connection.id).to(equal(initialConnectionId))
                     expect(authorizeMethodCallCount) == 1
                     
-                    let rest = ARTRest(options: AblyTests.clientOptions(key: options.key!))
+                    let rest = ARTRestInternal(options: AblyTests.clientOptions(key: options.key!))
 
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(2, done: done)
@@ -4396,7 +4396,7 @@ class RealtimeClientConnection: QuickSpec {
                 msgpackOptions.useBinaryProtocol = true
 
                 it("should send messages through raw JSON POST and retrieve equal messages through MsgPack and JSON") {
-                    let restPublishClient = ARTRest(options: jsonOptions)
+                    let restPublishClient = ARTRestInternal(options: jsonOptions)
                     let realtimeSubscribeClientMsgPack = AblyTests.newRealtime(msgpackOptions)
                     let realtimeSubscribeClientJSON = AblyTests.newRealtime(jsonOptions)
                     defer {
@@ -4446,9 +4446,9 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 it("should send messages through MsgPack and JSON and retrieve equal messages through raw JSON GET") {
-                    let restPublishClientMsgPack = ARTRest(options: msgpackOptions)
-                    let restPublishClientJSON = ARTRest(options: jsonOptions)
-                    let restRetrieveClient = ARTRest(options: jsonOptions)
+                    let restPublishClientMsgPack = ARTRestInternal(options: msgpackOptions)
+                    let restPublishClientJSON = ARTRestInternal(options: jsonOptions)
+                    let restRetrieveClient = ARTRestInternal(options: jsonOptions)
 
                     let restPublishChannelMsgPack = restPublishClientMsgPack.channels.get("test-publish")
                     let restPublishChannelJSON = restPublishClientJSON.channels.get(restPublishChannelMsgPack.name)

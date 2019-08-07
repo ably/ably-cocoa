@@ -33,7 +33,7 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
     dispatch_queue_t _userQueue;
 }
 
-- (instancetype)init:(ARTRest *)rest {
+- (instancetype)init:(ARTRestInternal *)rest {
     if (self = [super init]) {
         _rest = rest;
         _queue = _rest.queue;

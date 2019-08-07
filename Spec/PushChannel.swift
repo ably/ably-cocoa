@@ -13,12 +13,12 @@ import Quick
 class PushChannel : QuickSpec {
     override func spec() {
 
-        var rest: ARTRest!
+        var rest: ARTRestInternal!
         var mockHttpExecutor: MockHTTPExecutor!
 
         beforeEach {
             mockHttpExecutor = MockHTTPExecutor()
-            rest = ARTRest(key: "xxxx:xxxx")
+            rest = ARTRestInternal(key: "xxxx:xxxx")
             rest.options.clientId = "tester"
             rest.httpExecutor = mockHttpExecutor
             rest.resetDeviceOnceToken()
@@ -340,7 +340,7 @@ class PushChannel : QuickSpec {
                 it("should return a paginated result with PushChannelSubscription") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "tester"
-                    let rest = ARTRest(options: options)
+                    let rest = ARTRestInternal(options: options)
                     rest.storage = MockDeviceStorage()
                     // Prevent channel name to be prefixed by test-*
                     let originalChannelNamePrefix = ARTChannels_getChannelNamePrefix

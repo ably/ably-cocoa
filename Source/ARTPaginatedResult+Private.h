@@ -8,7 +8,7 @@
 
 #import <Ably/ARTPaginatedResult.h>
 
-@class ARTRest;
+@class ARTRestInternal;
 
 @protocol ARTHTTPAuthenticatedExecutor;
 
@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTPaginatedResult<ItemType> ()
 
-@property (nonatomic, readonly) ARTRest *rest;
+@property (nonatomic, readonly) ARTRestInternal *rest;
 @property (nonatomic, readonly) dispatch_queue_t userQueue;
 @property (nonatomic, readonly) dispatch_queue_t queue;
 @property (nonatomic, readonly) NSMutableURLRequest *relFirst;
@@ -26,13 +26,13 @@ NS_ASSUME_NONNULL_BEGIN
 typedef NSArray<ItemType> *_Nullable(^ARTPaginatedResultResponseProcessor)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable *_Nullable);
 
 - (instancetype)initWithItems:(NSArray *)items
-                         rest:(ARTRest *)rest
+                         rest:(ARTRestInternal *)rest
                      relFirst:(NSMutableURLRequest *)relFirst
                    relCurrent:(NSMutableURLRequest *)relCurrent
                       relNext:(NSMutableURLRequest *)relNext
             responseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor;
 
-+ (void)executePaginated:(ARTRest *)rest
++ (void)executePaginated:(ARTRestInternal *)rest
              withRequest:(NSMutableURLRequest *)request
     andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor
                 callback:(void (^)(ARTPaginatedResult<ItemType> *_Nullable result, ARTErrorInfo *_Nullable error))callback;

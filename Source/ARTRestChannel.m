@@ -20,7 +20,7 @@
 #import "ARTAuth+Private.h"
 #import "ARTTokenDetails.h"
 #import "ARTNSArray+ARTFunctional.h"
-#import "ARTPushChannel.h"
+#import "ARTPushChannel+Private.h"
 #import "ARTCrypto+Private.h"
 
 static const NSUInteger kIdempotentLibraryGeneratedIdLength = 9; //bytes
@@ -35,7 +35,7 @@ static const NSUInteger kIdempotentLibraryGeneratedIdLength = 9; //bytes
     NSString *_basePath;
 }
 
-- (instancetype)initWithName:(NSString *)name withOptions:(ARTChannelOptions *)options andRest:(ARTRest *)rest {
+- (instancetype)initWithName:(NSString *)name withOptions:(ARTChannelOptions *)options andRest:(ARTRestInternal *)rest {
 ART_TRY_OR_REPORT_CRASH_START(rest) {
     if (self = [super initWithName:name andOptions:options rest:rest]) {
         _rest = rest;

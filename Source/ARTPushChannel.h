@@ -19,7 +19,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTPushChannel : NSObject
 
 - (instancetype)init NS_UNAVAILABLE;
-- (instancetype)init:(ARTRest *)rest withChannel:(ARTChannel *)channel;
 
 - (void)subscribeDevice;
 - (void)subscribeDevice:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback;

@@ -363,7 +363,7 @@ class PublishTestMessage {
     var completion: ((ARTErrorInfo?) -> Void)? = nil
     var error: ARTErrorInfo? = nil
 
-    init(client: ARTRest, failOnError: Bool = true, completion: ((ARTErrorInfo?) -> Void)? = nil) {
+    init(client: ARTRestInternal, failOnError: Bool = true, completion: ((ARTErrorInfo?) -> Void)? = nil) {
         client.channels.get("test").publish(nil, data: "message") { error in
             self.error = error
             if let callback = completion {
@@ -413,11 +413,11 @@ class PublishTestMessage {
 }
 
 /// Rest - Publish message
-@discardableResult func publishTestMessage(_ rest: ARTRest, completion: Optional<(ARTErrorInfo?)->()>) -> PublishTestMessage {
+@discardableResult func publishTestMessage(_ rest: ARTRestInternal, completion: Optional<(ARTErrorInfo?)->()>) -> PublishTestMessage {
     return PublishTestMessage(client: rest, failOnError: false, completion: completion)
 }
 
-@discardableResult func publishTestMessage(_ rest: ARTRest, failOnError: Bool = true) -> PublishTestMessage {
+@discardableResult func publishTestMessage(_ rest: ARTRestInternal, failOnError: Bool = true) -> PublishTestMessage {
     return PublishTestMessage(client: rest, failOnError: failOnError)
 }
 
@@ -461,7 +461,7 @@ func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability
         options.queryTime = queryTime
     }
 
-    let client = ARTRest(options: options)
+    let client = ARTRestInternal(options: options)
 
     var tokenParams: ARTTokenParams? = nil
     if let capability = capability {

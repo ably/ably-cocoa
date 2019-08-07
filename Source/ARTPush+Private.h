@@ -9,12 +9,13 @@
 #import <Ably/ARTPush.h>
 
 @class ARTPushActivationStateMachine;
+@class ARTRestInternal;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTPush ()
 
-- (instancetype)init:(ARTRest *)rest;
+- (instancetype)init:(ARTRestInternal *)rest;
 
 - (ARTPushActivationStateMachine *)activationMachine;
 

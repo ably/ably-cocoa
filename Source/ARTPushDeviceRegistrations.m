@@ -6,7 +6,7 @@
 //  Copyright © 2017 Ably. All rights reserved.
 //
 
-#import "ARTPushDeviceRegistrations.h"
+#import "ARTPushDeviceRegistrations+Private.h"
 #import "ARTHttp.h"
 #import "ARTLog.h"
 #import "ARTPaginatedResult+Private.h"
@@ -20,13 +20,13 @@
 #import "ARTNSMutableRequest+ARTPush.h"
 
 @implementation ARTPushDeviceRegistrations {
-    __weak ARTRest *_rest;
+    __weak ARTRestInternal *_rest;
     __weak ARTLog* _logger;
     dispatch_queue_t _queue;
     dispatch_queue_t _userQueue;
 }
 
-- (instancetype)initWithRest:(ARTRest *)rest {
+- (instancetype)initWithRest:(ARTRestInternal *)rest {
     if (self = [super init]) {
         _rest = rest;
         _logger = [rest logger];

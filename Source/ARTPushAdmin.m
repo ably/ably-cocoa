@@ -9,20 +9,20 @@
 #import "ARTPushAdmin.h"
 #import "ARTHttp.h"
 #import "ARTRest+Private.h"
-#import "ARTPushDeviceRegistrations.h"
-#import "ARTPushChannelSubscriptions.h"
+#import "ARTPushDeviceRegistrations+Private.h"
+#import "ARTPushChannelSubscriptions+Private.h"
 #import "ARTLog.h"
 #import "ARTJsonEncoder.h"
 #import "ARTJsonLikeEncoder.h"
 
 @implementation ARTPushAdmin {
-    ARTRest *_rest;
+    ARTRestInternal *_rest;
     __weak ARTLog *_logger;
     dispatch_queue_t _userQueue;
     dispatch_queue_t _queue;
 }
 
-- (instancetype)initWithRest:(ARTRest *)rest {
+- (instancetype)initWithRest:(ARTRestInternal *)rest {
     if (self = [super init]) {
         _rest = rest;
         _logger = [rest logger];

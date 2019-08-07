@@ -115,7 +115,7 @@ class PushAdmin : QuickSpec {
         super.setUp()
         let options = AblyTests.commonAppSetup()
         options.pushFullWait = true
-        let rest = ARTRest(options: options)
+        let rest = ARTRestInternal(options: options)
         rest.storage = MockDeviceStorage()
         let group = DispatchGroup()
 
@@ -144,7 +144,7 @@ class PushAdmin : QuickSpec {
     }
 
     override class func tearDown() {
-        let rest = ARTRest(options: AblyTests.commonAppSetup())
+        let rest = ARTRestInternal(options: AblyTests.commonAppSetup())
         rest.storage = MockDeviceStorage()
         let group = DispatchGroup()
 
@@ -167,7 +167,7 @@ class PushAdmin : QuickSpec {
 
     override func spec() {
 
-        var rest: ARTRest!
+        var rest: ARTRestInternal!
         var mockHttpExecutor: MockHTTPExecutor!
         var storage: MockDeviceStorage!
         var localDevice: ARTLocalDevice!
@@ -183,7 +183,7 @@ class PushAdmin : QuickSpec {
         ]
 
         beforeEach {
-            rest = ARTRest(key: "xxxx:xxxx")
+            rest = ARTRestInternal(key: "xxxx:xxxx")
             mockHttpExecutor = MockHTTPExecutor()
             rest.httpExecutor = mockHttpExecutor
             storage = MockDeviceStorage()

@@ -18,7 +18,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTPushChannelSubscriptions : NSObject
 
 - (instancetype)init NS_UNAVAILABLE;
-- (instancetype)initWithRest:(ARTRest *)rest;
 
 - (void)save:(ARTPushChannelSubscription *)channelSubscription callback:(void (^)(ARTErrorInfo *_Nullable))callback;
 

@@ -8,13 +8,13 @@
 
 #import <Ably/ARTPushAdmin.h>
 
-@class ARTRest;
+@class ARTRestInternal;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTPushAdmin ()
 
-- (instancetype)initWithRest:(ARTRest *)rest;
+- (instancetype)initWithRest:(ARTRestInternal *)rest;
 
 @end
 

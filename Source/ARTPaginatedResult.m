@@ -15,7 +15,7 @@
 #import "ARTNSHTTPURLResponse+ARTPaginated.h"
 
 @implementation ARTPaginatedResult {
-    __weak ARTRest *_rest;
+    __weak ARTRestInternal *_rest;
     dispatch_queue_t _userQueue;
     dispatch_queue_t _queue;
     NSMutableURLRequest *_relFirst;
@@ -32,7 +32,7 @@
 @synthesize relNext = _relNext;
 
 - (instancetype)initWithItems:(NSArray *)items
-                     rest:(ARTRest *)rest
+                     rest:(ARTRestInternal *)rest
                      relFirst:(NSMutableURLRequest *)relFirst
                    relCurrent:(NSMutableURLRequest *)relCurrent
                       relNext:(NSMutableURLRequest *)relNext
@@ -96,7 +96,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-+ (void)executePaginated:(ARTRest *)rest withRequest:(NSMutableURLRequest *)request andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor callback:(void (^)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
++ (void)executePaginated:(ARTRestInternal *)rest withRequest:(NSMutableURLRequest *)request andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor callback:(void (^)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
 ART_TRY_OR_REPORT_CRASH_START(rest) {
     [rest.logger debug:__FILE__ line:__LINE__ message:@"Paginated request: %@", request];
 

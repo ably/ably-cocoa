@@ -37,7 +37,7 @@ private func postTestStats(_ stats: JSON) -> ARTClientOptions {
     return options
 }
 
-private func queryStats(_ client: ARTRest, _ query: ARTStatsQuery, file: FileString = #file, line: UInt = #line) -> ARTPaginatedResult<ARTStats> {
+private func queryStats(_ client: ARTRestInternal, _ query: ARTStatsQuery, file: FileString = #file, line: UInt = #line) -> ARTPaginatedResult<ARTStats> {
     let (stats, error) = (AblyTests.waitFor(timeout: testTimeout, file: file, line: line) { value in
         expect {
             try client.stats(query, callback: { result, err in
@@ -100,7 +100,7 @@ class RestClientStats: QuickSpec {
                     }
                     
                     it("should match minute-level inbound and outbound fixture data (forwards)") {
-                        let client = ARTRest(options: statsOptions)
+                        let client = ARTRestInternal(options: statsOptions)
                         let query = ARTStatsQuery()
                         query.start = date
                         query.direction = .forwards
@@ -120,7 +120,7 @@ class RestClientStats: QuickSpec {
                     }
                     
                     it("should match hour-level inbound and outbound fixture data (forwards)") {
-                        let client = ARTRest(options: statsOptions)
+                        let client = ARTRestInternal(options: statsOptions)
                         let query = ARTStatsQuery()
                         query.start = date
                         query.direction = .forwards
@@ -140,7 +140,7 @@ class RestClientStats: QuickSpec {
                     }
                     
                     it("should match day-level inbound and outbound fixture data (forwards)") {
-                        let client = ARTRest(options: statsOptions)
+                        let client = ARTRestInternal(options: statsOptions)
                         let query = ARTStatsQuery()
                         query.end = calendar.date(byAdding: .day, value: 1, to: date, options: NSCalendar.Options(rawValue: 0))
                         query.direction = .forwards
@@ -156,7 +156,7 @@ class RestClientStats: QuickSpec {
                     }
                     
                     it("should match month-level inbound and outbound fixture data (forwards)") {
-                        let client = ARTRest(options: statsOptions)
+                        let client = ARTRestInternal(options: statsOptions)
                         let query = ARTStatsQuery()
                         query.end = calendar.date(byAdding: .month, value: 1, to: date, options: NSCalendar.Options(rawValue: 0))
                         query.direction = .forwards
@@ -172,7 +172,7 @@ class RestClientStats: QuickSpec {
                     }
                     
                     it("should contain only one item when limit is 1 (backwards") {
-                        let client = ARTRest(options: statsOptions)
+                        let client = ARTRestInternal(options: statsOptions)
                         let query = ARTStatsQuery()
                         query.end = date.addingTimeInterval(60) // 20XX-02-03:16:04
                         query.limit = 1
@@ -187,7 +187,7 @@ class RestClientStats: QuickSpec {
                     }
                     
                     it("should contain only one item when limit is 1 (forwards") {
-                        let client = ARTRest(options: statsOptions)
+                        let client = ARTRestInternal(options: statsOptions)
                         let query = ARTStatsQuery()
                         query.end = date.addingTimeInterval(60) // 20XX-02-03:16:04
                         query.limit = 1
@@ -203,7 +203,7 @@ class RestClientStats: QuickSpec {
                     }
                     
                     it("should be paginated according to the limit (backwards") {
-                        let client = ARTRest(options: statsOptions)
+                        let client = ARTRestInternal(options: statsOptions)
                         let query = ARTStatsQuery()
                         query.end = date.addingTimeInterval(120) // 20XX-02-03:16:05
                         query.limit = 1
@@ -255,7 +255,7 @@ class RestClientStats: QuickSpec {
                     }
                     
                     it("should be paginated according to the limit (fowards)") {
-                        let client = ARTRest(options: statsOptions)
+                        let client = ARTRestInternal(options: statsOptions)
                         let query = ARTStatsQuery()
                         query.end = date.addingTimeInterval(120) // 20XX-02-03:16:05
                         query.limit = 1
@@ -313,7 +313,7 @@ class RestClientStats: QuickSpec {
                     // RSC6b1
                     context("start") {
                         it("should return an error when later than end") {
-                            let client = ARTRest(key: "fake:key")
+                            let client = ARTRestInternal(key: "fake:key")
                             let query = ARTStatsQuery()
                             
                             query.start = NSDate.distantFuture
@@ -341,7 +341,7 @@ class RestClientStats: QuickSpec {
                         }
                         
                         it("should return an error when greater than 1000") {
-                            let client = ARTRest(key: "fake:key")
+                            let client = ARTRestInternal(key: "fake:key")
                             let query = ARTStatsQuery()
                             
                             query.limit = 1001;

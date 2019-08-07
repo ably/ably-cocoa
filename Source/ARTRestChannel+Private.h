@@ -9,11 +9,13 @@
 
 #import <Ably/ARTRestChannel.h>
 
+@class ARTRestInternal;
+
 @interface ARTRestChannel ()
 
-- (instancetype)initWithName:(NSString *)name withOptions:(ARTChannelOptions *)options andRest:(ARTRest *)rest;
+- (instancetype)initWithName:(NSString *)name withOptions:(ARTChannelOptions *)options andRest:(ARTRestInternal *)rest;
 
-@property (nonatomic, weak) ARTRest *rest;
+@property (nonatomic, weak) ARTRestInternal *rest;
 
 @end
 

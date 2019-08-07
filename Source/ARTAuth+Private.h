@@ -9,6 +9,8 @@
 #import <Ably/ARTAuth.h>
 #import <Ably/ARTEventEmitter.h>
 
+@class ARTRestInternal;
+
 typedef NS_ENUM(NSUInteger, ARTAuthorizationState) {
     ARTAuthorizationSucceeded, //ItemType: nil
     ARTAuthorizationFailed, //ItemType: NSError
@@ -47,7 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTAuth (Private)
 
-- (instancetype)init:(ARTRest *)rest withOptions:(ARTClientOptions *)options;
+- (instancetype)init:(ARTRestInternal *)rest withOptions:(ARTClientOptions *)options;
 
 - (ARTAuthOptions *)mergeOptions:(ARTAuthOptions *)customOptions;
 - (ARTTokenParams *)mergeParams:(ARTTokenParams *)customParams;

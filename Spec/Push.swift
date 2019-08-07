@@ -13,12 +13,12 @@ import Quick
 class Push : QuickSpec {
     override func spec() {
 
-        var rest: ARTRest!
+        var rest: ARTRestInternal!
         var mockHttpExecutor: MockHTTPExecutor!
         var storage: MockDeviceStorage!
 
         beforeEach {
-            rest = ARTRest(key: "xxxx:xxxx")
+            rest = ARTRestInternal(key: "xxxx:xxxx")
             mockHttpExecutor = MockHTTPExecutor()
             rest.httpExecutor = mockHttpExecutor
             storage = MockDeviceStorage()

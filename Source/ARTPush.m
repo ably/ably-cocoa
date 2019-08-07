@@ -6,7 +6,7 @@
 //  Copyright © 2017 Ably. All rights reserved.
 //
 
-#import "ARTPush.h"
+#import "ARTPush+Private.h"
 #import "ARTDeviceDetails.h"
 #import "ARTDevicePushDetails.h"
 #import "ARTRest+Private.h"
@@ -32,11 +32,11 @@ NSString *const ARTDeviceIdentityTokenKey = @"ARTDeviceIdentityToken";
 NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 
 @implementation ARTPush {
-    ARTRest *_rest;
+    ARTRestInternal *_rest;
     __weak ARTLog *_logger;
 }
 
-- (instancetype)init:(ARTRest *)rest {
+- (instancetype)init:(ARTRestInternal *)rest {
     if (self = [super init]) {
         _rest = rest;
         _logger = [rest logger];
@@ -56,7 +56,7 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
     return activationMachineInstance;
 }
 
-+ (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceTokenData rest:(ARTRest *)rest {
++ (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceTokenData restInternal:(ARTRestInternal *)rest {
     // HEX string, i.e.: <12ce7dda 8032c423 8f8bd40f 3484e5bb f4698da5 8b7fdf8d 5c55e0a2 XXXXXXXX>
     // Normalizing token by removing symbols and spaces, i.e.: 12ce7dda8032c4238f8bd40f3484e5bbf4698da58b7fdf8d5c55e0a2XXXXXXXX
     NSString *deviceToken = [[[deviceTokenData description] stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"<>"]] stringByReplacingOccurrencesOfString:@" " withString:@""];
@@ -75,18 +75,30 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken realtime:(ARTRealtime *)realtime {
     [realtime internalAsync:^(ARTRealtimeInternal *realtime) {
-        [ARTPush didRegisterForRemoteNotificationsWithDeviceToken:deviceToken rest:realtime.rest];
+        [ARTPush didRegisterForRemoteNotificationsWithDeviceToken:deviceToken restInternal:realtime.rest];
     }];
 }
 
-+ (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error rest:(ARTRest *)rest {
++ (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken rest:(ARTRest *)rest {
+    [rest internalAsync:^(ARTRestInternal *rest) {
+        [ARTPush didRegisterForRemoteNotificationsWithDeviceToken:deviceToken restInternal:rest];
+    }];
+}
+
++ (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error restInternal:(ARTRestInternal *)rest {
     NSLog(@"ARTPush: device token not received (%@)", [error localizedDescription]);
     [[rest.push activationMachine] sendEvent:[ARTPushActivationEventGettingDeviceRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
 }
 
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error realtime:(ARTRealtime *)realtime {
     [realtime internalAsync:^(ARTRealtimeInternal *realtime) {
-        [ARTPush didFailToRegisterForRemoteNotificationsWithError:error rest:realtime.rest];
+        [ARTPush didFailToRegisterForRemoteNotificationsWithError:error restInternal:realtime.rest];
+    }];
+}
+
++ (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error rest:(ARTRest *)rest {
+    [rest internalAsync:^(ARTRestInternal *rest) {
+        [ARTPush didFailToRegisterForRemoteNotificationsWithError:error restInternal:rest];
     }];
 }
 

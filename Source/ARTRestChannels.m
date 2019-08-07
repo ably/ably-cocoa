@@ -14,7 +14,7 @@
 
 @interface ARTRestChannels ()
 
-@property (weak, nonatomic) ARTRest *rest;
+@property (weak, nonatomic) ARTRestInternal *rest;
 
 @end
 
@@ -25,7 +25,7 @@
     ARTChannels *_channels;
 }
 
-- (instancetype)initWithRest:(ARTRest *)rest {
+- (instancetype)initWithRest:(ARTRestInternal *)rest {
 ART_TRY_OR_REPORT_CRASH_START(rest) {
     if (self = [super init]) {
         _rest = rest;

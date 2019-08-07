@@ -13,7 +13,7 @@ import Quick
 class PushActivationStateMachine : QuickSpec {
     override func spec() {
 
-        var rest: ARTRest!
+        var rest: ARTRestInternal!
         var httpExecutor: MockHTTPExecutor!
         var storage: MockDeviceStorage!
         var initialStateMachine: ARTPushActivationStateMachine!
@@ -23,7 +23,7 @@ class PushActivationStateMachine : QuickSpec {
         let expectedPushRecipient: [String: [String: String]] = ["recipient": ["transportType": "apns"]]
 
         beforeEach {
-            rest = ARTRest(key: "xxxx:xxxx")
+            rest = ARTRestInternal(key: "xxxx:xxxx")
             httpExecutor = MockHTTPExecutor()
             rest.httpExecutor = httpExecutor
             storage = MockDeviceStorage()
