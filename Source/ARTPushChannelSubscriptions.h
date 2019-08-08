@@ -15,7 +15,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTPushChannelSubscriptions : NSObject
+@protocol ARTPushChannelSubscriptionsProtocol
 
 - (instancetype)init NS_UNAVAILABLE;
 
@@ -27,6 +27,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)remove:(ARTPushChannelSubscription *)subscription callback:(void (^)(ARTErrorInfo *_Nullable))callback;
 - (void)removeWhere:(NSDictionary<NSString *, NSString *> *)params callback:(void (^)(ARTErrorInfo *_Nullable))callback;
+
+@end
+
+@interface ARTPushChannelSubscriptions : NSObject <ARTPushChannelSubscriptionsProtocol>
 
 @end
 

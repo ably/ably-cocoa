@@ -10,12 +10,19 @@
 #define ARTPushDeviceRegistrations_Private_h
 
 #include "ARTPushDeviceRegistrations.h"
+#import "ARTQueuedDealloc.h"
 
 @class ARTRestInternal;
 
-@interface ARTPushDeviceRegistrations ()
+@interface ARTPushDeviceRegistrationsInternal : NSObject <ARTPushDeviceRegistrationsProtocol>
 
 - (instancetype)initWithRest:(ARTRestInternal *)rest;
+
+@end
+
+@interface ARTPushDeviceRegistrations ()
+
+- (instancetype)initWithInternal:(ARTPushDeviceRegistrationsInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc;
 
 @end
 

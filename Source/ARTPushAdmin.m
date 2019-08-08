@@ -34,11 +34,11 @@
 }
 
 - (ARTPushDeviceRegistrations *)deviceRegistrations {
-    return _internal.deviceRegistrations;
+    return [[ARTPushDeviceRegistrations alloc] initWithInternal:_internal.deviceRegistrations queuedDealloc:_dealloc];
 }
 
 - (ARTPushChannelSubscriptions *)channelSubscriptions {
-    return _internal.channelSubscriptions;
+    return [[ARTPushChannelSubscriptions alloc] initWithInternal:_internal.channelSubscriptions queuedDealloc:_dealloc];
 }
 
 @end
@@ -54,8 +54,8 @@
     if (self = [super init]) {
         _rest = rest;
         _logger = [rest logger];
-        _deviceRegistrations = [[ARTPushDeviceRegistrations alloc] initWithRest:rest];
-        _channelSubscriptions = [[ARTPushChannelSubscriptions alloc] initWithRest:rest];
+        _deviceRegistrations = [[ARTPushDeviceRegistrationsInternal alloc] initWithRest:rest];
+        _channelSubscriptions = [[ARTPushChannelSubscriptionsInternal alloc] initWithRest:rest];
         _userQueue = rest.userQueue;
         _queue = rest.queue;
     }

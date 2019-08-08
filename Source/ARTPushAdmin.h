@@ -8,9 +8,8 @@
 
 #import <Foundation/Foundation.h>
 #import <Ably/ARTTypes.h>
-
-@class ARTPushDeviceRegistrations;
-@class ARTPushChannelSubscriptions;
+#import <Ably/ARTPushDeviceRegistrations.h>
+#import <Ably/ARTPushChannelSubscriptions.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -21,12 +20,12 @@ NS_ASSUME_NONNULL_BEGIN
 /// Publish a push notification.
 - (void)publish:(ARTPushRecipient *)recipient data:(ARTJsonObject *)data callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback;
 
-@property (nonatomic, readonly) ARTPushDeviceRegistrations *deviceRegistrations;
-@property (nonatomic, readonly) ARTPushChannelSubscriptions *channelSubscriptions;
-
 @end
 
 @interface ARTPushAdmin : NSObject <ARTPushAdminProtocol>
+
+@property (nonatomic, readonly) ARTPushDeviceRegistrations *deviceRegistrations;
+@property (nonatomic, readonly) ARTPushChannelSubscriptions *channelSubscriptions;
 
 @end
 

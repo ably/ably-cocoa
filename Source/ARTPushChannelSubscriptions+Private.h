@@ -10,12 +10,19 @@
 #define ARTPushChannelSubscriptions_Private_h
 
 #include "ARTPushChannelSubscriptions.h"
+#include "ARTQueuedDealloc.h"
 
 @class ARTRestInternal;
 
-@interface ARTPushChannelSubscriptions ()
+@interface ARTPushChannelSubscriptionsInternal : NSObject <ARTPushChannelSubscriptionsProtocol>
 
 - (instancetype)initWithRest:(ARTRestInternal *)rest;
+
+@end
+
+@interface ARTPushChannelSubscriptions ()
+
+- (instancetype)initWithInternal:(ARTPushChannelSubscriptionsInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc;
 
 @end
 

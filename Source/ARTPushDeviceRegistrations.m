@@ -20,6 +20,42 @@
 #import "ARTNSMutableRequest+ARTPush.h"
 
 @implementation ARTPushDeviceRegistrations {
+    ARTPushDeviceRegistrationsInternal *_internal;
+    ARTQueuedDealloc *_dealloc;
+}
+
+- (instancetype)initWithInternal:(ARTPushDeviceRegistrationsInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc {
+    self = [super init];
+    if (self) {
+        _internal = internal;
+        _dealloc = dealloc;
+    }
+    return self;
+}
+
+- (void)save:(ARTDeviceDetails *)deviceDetails callback:(void (^)(ARTErrorInfo *_Nullable))callback {
+    [_internal save:deviceDetails callback:callback];
+}
+
+- (void)get:(ARTDeviceId *)deviceId callback:(void (^)(ARTDeviceDetails *_Nullable,  ARTErrorInfo *_Nullable))callback {
+    [_internal get:deviceId callback:callback];
+}
+
+- (void)list:(NSDictionary<NSString *, NSString *> *)params callback:(void (^)(ARTPaginatedResult<ARTDeviceDetails *> *_Nullable,  ARTErrorInfo *_Nullable))callback {
+    [_internal list:params callback:callback];
+}
+
+- (void)remove:(NSString *)deviceId callback:(void (^)(ARTErrorInfo *_Nullable))callback {
+    [_internal remove:deviceId callback:callback];
+}
+
+- (void)removeWhere:(NSDictionary<NSString *, NSString *> *)params callback:(void (^)(ARTErrorInfo *_Nullable))callback {
+    [_internal removeWhere:params callback:callback];
+}
+
+@end
+
+@implementation ARTPushDeviceRegistrationsInternal {
     __weak ARTRestInternal *_rest;
     __weak ARTLog* _logger;
     dispatch_queue_t _queue;
