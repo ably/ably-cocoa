@@ -26,12 +26,60 @@
 #import "ARTDeviceStorage.h"
 #import "ARTRealtime+Private.h"
 
+@implementation ARTPush {
+    ARTPushInternal *_internal;
+    ARTQueuedDealloc *_dealloc;
+}
+
+- (instancetype)initWithInternal:(ARTPushInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc {
+    self = [super init];
+    if (self) {
+        _internal = internal;
+        _dealloc = dealloc;
+    }
+    return self;
+}
+
+- (ARTPushAdmin *)admin {
+    return _internal.admin;
+}
+
+#if TARGET_OS_IOS
+
++ (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken rest:(ARTRest *)rest; {
+    return [ARTPushInternal didRegisterForRemoteNotificationsWithDeviceToken:deviceToken rest:rest];
+}
+
++ (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken realtime:(ARTRealtime *)realtime; {
+    return [ARTPushInternal didRegisterForRemoteNotificationsWithDeviceToken:deviceToken realtime:realtime];
+}
+
++ (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error rest:(ARTRest *)rest; {
+    return [ARTPushInternal didFailToRegisterForRemoteNotificationsWithError:error rest:rest];
+}
+
++ (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error realtime:(ARTRealtime *)realtime; {
+    return [ARTPushInternal didFailToRegisterForRemoteNotificationsWithError:error realtime:realtime];
+}
+
+- (void)activate {
+    [_internal activate];
+}
+
+- (void)deactivate {
+    [_internal deactivate];
+}
+
+#endif
+
+@end
+
 NSString *const ARTDeviceIdKey = @"ARTDeviceId";
 NSString *const ARTDeviceSecretKey = @"ARTDeviceSecret";
 NSString *const ARTDeviceIdentityTokenKey = @"ARTDeviceIdentityToken";
 NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 
-@implementation ARTPush {
+@implementation ARTPushInternal {
     ARTRestInternal *_rest;
     __weak ARTLog *_logger;
 }
@@ -75,13 +123,13 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken realtime:(ARTRealtime *)realtime {
     [realtime internalAsync:^(ARTRealtimeInternal *realtime) {
-        [ARTPush didRegisterForRemoteNotificationsWithDeviceToken:deviceToken restInternal:realtime.rest];
+        [ARTPushInternal didRegisterForRemoteNotificationsWithDeviceToken:deviceToken restInternal:realtime.rest];
     }];
 }
 
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken rest:(ARTRest *)rest {
     [rest internalAsync:^(ARTRestInternal *rest) {
-        [ARTPush didRegisterForRemoteNotificationsWithDeviceToken:deviceToken restInternal:rest];
+        [ARTPushInternal didRegisterForRemoteNotificationsWithDeviceToken:deviceToken restInternal:rest];
     }];
 }
 
@@ -92,13 +140,13 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error realtime:(ARTRealtime *)realtime {
     [realtime internalAsync:^(ARTRealtimeInternal *realtime) {
-        [ARTPush didFailToRegisterForRemoteNotificationsWithError:error restInternal:realtime.rest];
+        [ARTPushInternal didFailToRegisterForRemoteNotificationsWithError:error restInternal:realtime.rest];
     }];
 }
 
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error rest:(ARTRest *)rest {
     [rest internalAsync:^(ARTRestInternal *rest) {
-        [ARTPush didFailToRegisterForRemoteNotificationsWithError:error restInternal:rest];
+        [ARTPushInternal didFailToRegisterForRemoteNotificationsWithError:error restInternal:rest];
     }];
 }
 

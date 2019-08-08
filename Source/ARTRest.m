@@ -129,7 +129,7 @@
 }
 
 - (ARTPush *)push {
-    return _internal.push;
+    return [[ARTPush alloc] initWithInternal:_internal.push queuedDealloc:_dealloc];
 }
 
 #if TARGET_OS_IOS
@@ -203,7 +203,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
         _tokenErrorRetries = 0;
 
         _auth = [[ARTAuth alloc] init:self withOptions:_options];
-        _push = [[ARTPush alloc] init:self];
+        _push = [[ARTPushInternal alloc] init:self];
         _channels = [[ARTRestChannelsInternal alloc] initWithRest:self];
         _handlingUncaughtExceptions = false;
 

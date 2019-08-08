@@ -56,9 +56,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTPush : NSObject
+@protocol ARTPushProtocol
 
-@property (nonatomic, strong, readonly) ARTPushAdmin *admin;
+@property (readonly) ARTPushAdmin *admin;
 
 - (instancetype)init NS_UNAVAILABLE;
 
@@ -83,6 +83,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)deactivate;
 
 #endif
+
+@end
+
+@interface ARTPush : NSObject <ARTPushProtocol>
 
 @end
 

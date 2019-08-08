@@ -74,7 +74,7 @@
 }
 
 - (ARTPush *)push {
-    return _internal.push;
+    return [[ARTPush alloc] initWithInternal:_internal.push queuedDealloc:_dealloc];
 }
 
 #if TARGET_OS_IOS
@@ -382,7 +382,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (ARTPush *)push {
+- (ARTPushInternal *)push {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     return self.rest.push;
 } ART_TRY_OR_MOVE_TO_FAILED_END

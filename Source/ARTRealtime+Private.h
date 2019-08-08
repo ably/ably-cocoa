@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) ARTConnectionInternal *connection;
 @property (nonatomic, strong, readonly) ARTRealtimeChannelsInternal *channels;
 @property (readonly) ARTAuth *auth;
-@property (readonly) ARTPush *push;
+@property (readonly) ARTPushInternal *push;
 #if TARGET_OS_IOS
 @property (nonnull, nonatomic, readonly, getter=device) ARTLocalDevice *device;
 #endif
