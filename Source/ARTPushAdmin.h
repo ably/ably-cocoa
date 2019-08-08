@@ -14,7 +14,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTPushAdmin : NSObject
+@protocol ARTPushAdminProtocol
 
 - (instancetype)init NS_UNAVAILABLE;
 
@@ -23,6 +23,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) ARTPushDeviceRegistrations *deviceRegistrations;
 @property (nonatomic, readonly) ARTPushChannelSubscriptions *channelSubscriptions;
+
+@end
+
+@interface ARTPushAdmin : NSObject <ARTPushAdminProtocol>
 
 @end
 

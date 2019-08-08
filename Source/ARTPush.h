@@ -58,8 +58,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol ARTPushProtocol
 
-@property (readonly) ARTPushAdmin *admin;
-
 - (instancetype)init NS_UNAVAILABLE;
 
 #if TARGET_OS_IOS
@@ -87,6 +85,8 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface ARTPush : NSObject <ARTPushProtocol>
+
+@property (readonly) ARTPushAdmin *admin;
 
 @end
 

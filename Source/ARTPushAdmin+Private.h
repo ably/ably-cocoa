@@ -7,14 +7,24 @@
 //
 
 #import <Ably/ARTPushAdmin.h>
+#import "ARTQueuedDealloc.h"
 
 @class ARTRestInternal;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTPushAdmin ()
+@interface ARTPushAdminInternal : NSObject <ARTPushAdminProtocol>
+
+@property (nonatomic, readonly) ARTPushDeviceRegistrations *deviceRegistrations;
+@property (nonatomic, readonly) ARTPushChannelSubscriptions *channelSubscriptions;
 
 - (instancetype)initWithRest:(ARTRestInternal *)rest;
+
+@end
+
+@interface ARTPushAdmin ()
+
+- (instancetype)initWithInternal:(ARTPushAdminInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc;
 
 @end
 

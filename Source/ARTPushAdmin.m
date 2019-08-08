@@ -16,6 +16,34 @@
 #import "ARTJsonLikeEncoder.h"
 
 @implementation ARTPushAdmin {
+    ARTPushAdminInternal *_internal;
+    ARTQueuedDealloc *_dealloc;
+}
+
+- (instancetype)initWithInternal:(ARTPushAdminInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc {
+    self = [super init];
+    if (self) {
+        _internal = internal;
+        _dealloc = dealloc;
+    }
+    return self;
+}
+
+- (void)publish:(ARTPushRecipient *)recipient data:(ARTJsonObject *)data callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback {
+    [_internal publish:recipient data:data callback:callback];
+}
+
+- (ARTPushDeviceRegistrations *)deviceRegistrations {
+    return _internal.deviceRegistrations;
+}
+
+- (ARTPushChannelSubscriptions *)channelSubscriptions {
+    return _internal.channelSubscriptions;
+}
+
+@end
+
+@implementation ARTPushAdminInternal {
     ARTRestInternal *_rest;
     __weak ARTLog *_logger;
     dispatch_queue_t _userQueue;

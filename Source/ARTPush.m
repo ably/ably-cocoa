@@ -41,7 +41,7 @@
 }
 
 - (ARTPushAdmin *)admin {
-    return _internal.admin;
+    return [[ARTPushAdmin alloc] initWithInternal:_internal.admin queuedDealloc:_dealloc];
 }
 
 #if TARGET_OS_IOS
@@ -88,7 +88,7 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
     if (self = [super init]) {
         _rest = rest;
         _logger = [rest logger];
-        _admin = [[ARTPushAdmin alloc] initWithRest:rest];
+        _admin = [[ARTPushAdminInternal alloc] initWithRest:rest];
     }
     return self;
 }
