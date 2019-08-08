@@ -388,7 +388,7 @@ class RestClient: QuickSpec {
                 }
 
                 let client = ARTRestInternal(options: options)
-                expect(client.auth).to(beAnInstanceOf(ARTAuth.self))
+                expect(client.auth).to(beAnInstanceOf(ARTAuthInternal.self))
 
                 waitUntil(timeout: testTimeout) { done in
                     client.auth.authorize(nil, options: nil) { tokenDetails, error in

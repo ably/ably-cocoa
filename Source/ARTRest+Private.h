@@ -16,6 +16,7 @@
 @protocol ARTHTTPExecutor;
 @protocol ARTDeviceStorage;
 @class ARTRealtimeInternal;
+@class ARTAuthInternal;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -23,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTRestInternal : NSObject <ARTRestProtocol, ARTHTTPAuthenticatedExecutor>
 
 @property (nonatomic, strong, readonly) ARTRestChannelsInternal *channels;
-@property (nonatomic, strong, readonly) ARTAuth *auth;
+@property (nonatomic, strong, readonly) ARTAuthInternal *auth;
 @property (nonatomic, strong, readonly) ARTPushInternal *push;
 #if TARGET_OS_IOS
 @property (nonnull, nonatomic, readonly, getter=device) ARTLocalDevice *device;

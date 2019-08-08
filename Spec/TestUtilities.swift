@@ -1246,7 +1246,7 @@ extension ARTWebSocketTransport {
     }
 }
 
-extension ARTAuth {
+extension ARTAuthInternal {
 
     func testSuite_forceTokenToExpire(_ file: StaticString = #file, line: UInt = #line) {
         guard let tokenDetails = self.tokenDetails else {

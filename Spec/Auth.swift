@@ -2178,7 +2178,7 @@ class Auth : QuickSpec {
             // RSA9b
             it("should support AuthOptions") {
                 let rest = ARTRestInternal(options: AblyTests.commonAppSetup())
-                let auth: ARTAuth = rest.auth
+                let auth: ARTAuthInternal = rest.auth
 
                 let authOptions = ARTAuthOptions(key: "key:secret")
 
@@ -2588,9 +2588,9 @@ class Auth : QuickSpec {
                     requestMethodWasCalled = true
                 }
 
-                let hook = ARTAuth.aspect_hook(rest.auth)
+                let hook = ARTAuthInternal.aspect_hook(rest.auth)
                 // Adds a block of code after `requestToken` is triggered
-                let token = try? hook(#selector(ARTAuth._requestToken(_:with:callback:)), [], unsafeBitCast(block, to: ARTAuth.self))
+                let token = try? hook(#selector(ARTAuthInternal._requestToken(_:with:callback:)), [], unsafeBitCast(block, to: ARTAuth.self))
 
                 expect(token).toNot(beNil())
 

@@ -49,7 +49,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)stats:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback;
 - (BOOL)stats:(nullable ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
-@property (readonly) ARTAuth *auth;
 #if TARGET_OS_IOS
 @property (readonly) ARTLocalDevice *device;
 #endif
@@ -60,6 +59,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly) ARTRestChannels *channels;
 @property (readonly) ARTPush *push;
+@property (readonly) ARTAuth *auth;
 
 + (instancetype)createWithOptions:(ARTClientOptions *)options NS_SWIFT_UNAVAILABLE("Use instance initializer instead");
 + (instancetype)createWithKey:(NSString *)key NS_SWIFT_UNAVAILABLE("Use instance initializer instead");

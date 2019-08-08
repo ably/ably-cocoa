@@ -23,11 +23,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - ARTAuth
 
-@interface ARTAuth : NSObject
+@protocol ARTAuthProtocol
 
 @property (nullable, readonly) NSString *clientId;
 
-@property (nullable, nonatomic, readonly, strong) ARTTokenDetails *tokenDetails;
+@property (nullable, readonly) ARTTokenDetails *tokenDetails;
 
 - (instancetype)init NS_UNAVAILABLE;
 
@@ -54,6 +54,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)createTokenRequest:(nullable ARTTokenParams *)tokenParams options:(nullable ARTAuthOptions *)options
                   callback:(void (^)(ARTTokenRequest *_Nullable tokenRequest, NSError *_Nullable error))callback;
 - (void)createTokenRequest:(void (^)(ARTTokenRequest *_Nullable tokenRequest, NSError *_Nullable error))callback;
+
+@end
+
+@interface ARTAuth : NSObject <ARTAuthProtocol>
 
 @end
 

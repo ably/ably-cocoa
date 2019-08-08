@@ -70,7 +70,7 @@
 }
 
 - (ARTAuth *)auth {
-    return _internal.auth;
+    return [[ARTAuth alloc] initWithInternal:_internal.auth queuedDealloc:_dealloc];
 }
 
 - (ARTPush *)push {
@@ -218,7 +218,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
 #pragma mark - ARTAuthDelegate
 
-- (void)auth:(ARTAuth *)auth didAuthorize:(ARTTokenDetails *)tokenDetails completion:(void (^)(ARTAuthorizationState, ARTErrorInfo *_Nullable))completion {
+- (void)auth:(ARTAuthInternal *)auth didAuthorize:(ARTTokenDetails *)tokenDetails completion:(void (^)(ARTAuthorizationState, ARTErrorInfo *_Nullable))completion {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     void (^waitForResponse)(void) = ^{
         [self.pendingAuthorizations enqueue:^(ARTRealtimeConnectionState state, ARTErrorInfo *_Nullable error){
@@ -376,7 +376,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (ARTAuth *)auth {
+- (ARTAuthInternal *)auth {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     return self.rest.auth;
 } ART_TRY_OR_MOVE_TO_FAILED_END

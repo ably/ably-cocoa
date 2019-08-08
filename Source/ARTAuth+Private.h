@@ -8,6 +8,7 @@
 
 #import <Ably/ARTAuth.h>
 #import <Ably/ARTEventEmitter.h>
+#import "ARTQueuedDealloc.h"
 
 @class ARTRestInternal;
 
@@ -19,12 +20,21 @@ typedef NS_ENUM(NSUInteger, ARTAuthorizationState) {
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// Messages related to the ARTAuth
-@protocol ARTAuthDelegate <NSObject>
-- (void)auth:(ARTAuth *)auth didAuthorize:(ARTTokenDetails *)tokenDetails completion:(void (^)(ARTAuthorizationState, ARTErrorInfo *_Nullable))completion;
+@interface ARTAuthInternal : NSObject <ARTAuthProtocol>
+
+@property (nullable, readonly) NSString *clientId;
+@property (nullable, nonatomic, readonly, strong) ARTTokenDetails *tokenDetails;
+
 @end
 
-@interface ARTAuth ()
+/// Messages related to the ARTAuth
+@protocol ARTAuthDelegate <NSObject>
+- (void)auth:(ARTAuthInternal *)auth didAuthorize:(ARTTokenDetails *)tokenDetails completion:(void (^)(ARTAuthorizationState, ARTErrorInfo *_Nullable))completion;
+@end
+
+@interface ARTAuthInternal ()
+
+@property (readonly, nonatomic) dispatch_queue_t queue;
 
 - (NSString *)clientId_nosync;
 
@@ -47,7 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface ARTAuth (Private)
+@interface ARTAuthInternal (Private)
 
 - (instancetype)init:(ARTRestInternal *)rest withOptions:(ARTClientOptions *)options;
 
@@ -85,6 +95,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *_Nullable)clientId;
 
 - (NSString *_Nullable)appId;
+
+@end
+
+@interface ARTAuth ()
+
+- (instancetype)initWithInternal:(ARTAuthInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc;
+- (void)internalAsync:(void (^)(ARTAuthInternal *))use;
 
 @end
 

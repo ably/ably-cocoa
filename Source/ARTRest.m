@@ -125,7 +125,7 @@
 }
 
 - (ARTAuth *)auth {
-    return _internal.auth;
+    return [[ARTAuth alloc] initWithInternal:_internal.auth queuedDealloc:_dealloc];
 }
 
 - (ARTPush *)push {
@@ -202,7 +202,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
         _fallbackCount = 0;
         _tokenErrorRetries = 0;
 
-        _auth = [[ARTAuth alloc] init:self withOptions:_options];
+        _auth = [[ARTAuthInternal alloc] init:self withOptions:_options];
         _push = [[ARTPushInternal alloc] init:self];
         _channels = [[ARTRestChannelsInternal alloc] initWithRest:self];
         _handlingUncaughtExceptions = false;
