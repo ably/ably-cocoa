@@ -10,12 +10,19 @@
 #define ARTPushChannel_Private_h
 
 #import "ARTPushChannel.h"
+#import "ARTQueuedDealloc.h"
 
 @class ARTRestInternal;
 
-@interface ARTPushChannel ()
+@interface ARTPushChannelInternal : NSObject <ARTPushChannelProtocol>
 
 - (instancetype)init:(ARTRestInternal *)rest withChannel:(ARTChannel *)channel;
+
+@end
+
+@interface ARTPushChannel ()
+
+- (instancetype)initWithInternal:(ARTPushChannelInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc;
 
 @end
 

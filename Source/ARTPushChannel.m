@@ -18,9 +18,61 @@
 #import "ARTLocalDevice+Private.h"
 #import "ARTNSMutableRequest+ARTPush.h"
 
+@implementation ARTPushChannel {
+    ARTPushChannelInternal *_internal;
+    ARTQueuedDealloc *_dealloc;
+}
+
+- (instancetype)initWithInternal:(ARTPushChannelInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc {
+    self = [super init];
+    if (self) {
+        _internal = internal;
+        _dealloc = dealloc;
+    }
+    return self;
+}
+
+- (void)subscribeDevice {
+    [_internal subscribeDevice];
+}
+
+- (void)subscribeDevice:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback {
+    [_internal subscribeDevice:callback];
+}
+
+- (void)subscribeClient {
+    [_internal subscribeClient];
+}
+
+- (void)subscribeClient:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback {
+    [_internal subscribeClient:callback];
+}
+
+- (void)unsubscribeDevice {
+    [_internal unsubscribeDevice];
+}
+
+- (void)unsubscribeDevice:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback {
+    [_internal unsubscribeDevice:callback];
+}
+
+- (void)unsubscribeClient {
+    [_internal unsubscribeClient];
+}
+
+- (void)unsubscribeClient:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback {
+    [_internal unsubscribeClient:callback];
+}
+
+- (BOOL)listSubscriptions:(NSDictionary<NSString *, NSString *> *)params callback:(void(^)(ARTPaginatedResult<ARTPushChannelSubscription *> *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr {
+    return [_internal listSubscriptions:params callback:callback error:errorPtr];
+}
+
+@end
+
 const NSUInteger ARTDefaultLimit = 100;
 
-@implementation ARTPushChannel {
+@implementation ARTPushChannelInternal {
     __weak ARTRestInternal *_rest;
     __weak ARTLog *_logger;
     __weak ARTChannel *_channel;

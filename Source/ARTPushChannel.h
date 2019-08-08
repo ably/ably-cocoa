@@ -16,7 +16,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTPushChannel : NSObject
+@protocol ARTPushChannelProtocol
 
 - (instancetype)init NS_UNAVAILABLE;
 
@@ -31,6 +31,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)unsubscribeClient:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback;
 
 - (BOOL)listSubscriptions:(NSDictionary<NSString *, NSString *> *)params callback:(void(^)(ARTPaginatedResult<ARTPushChannelSubscription *> *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr;
+
+@end
+
+@interface ARTPushChannel : NSObject <ARTPushChannelProtocol>
 
 @end
 

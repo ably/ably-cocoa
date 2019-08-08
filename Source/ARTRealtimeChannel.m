@@ -68,7 +68,7 @@
 #if TARGET_OS_IPHONE
 
 - (ARTPushChannel *)push {
-    return _internal.push;
+    return [[ARTPushChannel alloc] initWithInternal:_internal.push queuedDealloc:_dealloc];
 }
 
 #endif
@@ -206,7 +206,7 @@
 @interface ARTRealtimeChannelInternal () {
     ARTRealtimePresenceInternal *_realtimePresence;
     #if TARGET_OS_IPHONE
-    ARTPushChannel *_pushChannel;
+    ARTPushChannelInternal *_pushChannel;
     #endif
     CFRunLoopTimerRef _attachTimer;
     CFRunLoopTimerRef _detachTimer;
@@ -293,9 +293,9 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 }
 
 #if TARGET_OS_IPHONE
-- (ARTPushChannel *)push {
+- (ARTPushChannelInternal *)push {
     if (!_pushChannel) {
-        _pushChannel = [[ARTPushChannel alloc] init:self.realtime.rest withChannel:self];
+        _pushChannel = [[ARTPushChannelInternal alloc] init:self.realtime.rest withChannel:self];
     }
     return _pushChannel;
 }

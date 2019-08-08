@@ -13,6 +13,7 @@
 #import <Ably/ARTEventEmitter.h>
 #import <Ably/ARTRealtime+Private.h>
 #import <Ably/ARTQueuedDealloc.h>
+#import <Ably/ARTPushChannel+Private.h>
 
 @class ARTProtocolMessage;
 @class ARTRealtimePresenceInternal;
@@ -22,6 +23,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTRealtimeChannelInternal : ARTChannel <ARTPresenceMapDelegate, ARTRealtimeChannelProtocol>
 
 @property (readonly) ARTRealtimePresenceInternal *presence;
+#if TARGET_OS_IPHONE
+@property (readonly) ARTPushChannelInternal *push;
+#endif
 
 @property (readwrite, assign, nonatomic) ARTRealtimeChannelState state;
 @property (readonly, strong, nonatomic, nullable) ARTErrorInfo *errorReason;
