@@ -8,13 +8,14 @@
 //
 
 #import <Ably/ARTRestChannel.h>
+#import <Ably/ARTRestPresence+Private.h>
 #import "ARTQueuedDealloc.h"
 
 @class ARTRestInternal;
 
 @interface ARTRestChannelInternal : ARTChannel <ARTRestChannelProtocol>
 
-@property (readonly) ARTRestPresence *presence;
+@property (readonly) ARTRestPresenceInternal *presence;
 @property (readonly) ARTPushChannel *push;
 
 - (instancetype)initWithName:(NSString *)name withOptions:(ARTChannelOptions *)options andRest:(ARTRestInternal *)rest;

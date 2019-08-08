@@ -19,7 +19,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol ARTRestChannelProtocol <ARTChannelProtocol>
 
-@property (readonly) ARTRestPresence *presence;
 @property (readonly) ARTPushChannel *push;
 
 - (BOOL)history:(nullable ARTDataQuery *)query callback:(void(^)(ARTPaginatedResult<ARTMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback error:(NSError *_Nullable *_Nullable)errorPtr;
@@ -27,6 +26,9 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface ARTRestChannel : NSObject <ARTRestChannelProtocol>
+
+@property (readonly) ARTRestPresence *presence;
+
 @end
 
 NS_ASSUME_NONNULL_END

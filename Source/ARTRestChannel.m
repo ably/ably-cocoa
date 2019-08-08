@@ -37,8 +37,8 @@
     return self;
 }
 
-- (ARTRestPresence *)presence {
-    return _internal.presence;
+- (ARTRestPresence*) presence {
+    return [[ARTRestPresence alloc] initWithInternal:_internal.presence queuedDealloc:_dealloc];
 }
 
 - (ARTPushChannel *)push {
@@ -113,7 +113,7 @@ static const NSUInteger kIdempotentLibraryGeneratedIdLength = 9; //bytes
 @private
     dispatch_queue_t _queue;
     dispatch_queue_t _userQueue;
-    ARTRestPresence *_presence;
+    ARTRestPresenceInternal *_presence;
     ARTPushChannel *_pushChannel;
 @public
     NSString *_basePath;
@@ -144,10 +144,10 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-- (ARTRestPresence *)presence {
+- (ARTRestPresenceInternal *)presence {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (!_presence) {
-        _presence = [[ARTRestPresence alloc] initWithChannel:self];
+        _presence = [[ARTRestPresenceInternal alloc] initWithChannel:self];
     }
     return _presence;
 } ART_TRY_OR_REPORT_CRASH_END

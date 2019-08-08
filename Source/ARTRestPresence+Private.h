@@ -7,14 +7,21 @@
 //
 
 #import <Ably/ARTRestPresence.h>
+#import "ARTQueuedDealloc.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class ARTRestChannelInternal;
 
-@interface ARTRestPresence ()
+@interface ARTRestPresenceInternal : ARTPresence <ARTRestPresenceProtocol>
 
 - (instancetype)initWithChannel:(ARTRestChannelInternal *)channel;
+
+@end
+
+@interface ARTRestPresence ()
+
+- (instancetype)initWithInternal:(ARTRestPresenceInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc;
 
 @end
 

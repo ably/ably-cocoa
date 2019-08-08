@@ -59,6 +59,42 @@
 @end
 
 @implementation ARTRestPresence {
+    ARTRestPresenceInternal *_internal;
+    ARTQueuedDealloc *_dealloc;
+}
+
+- (instancetype)initWithInternal:(ARTRestPresenceInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc {
+    self = [super init];
+    if (self) {
+        _internal = internal;
+        _dealloc = dealloc;
+    }
+    return self;
+}
+
+- (void)get:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
+    [_internal get:callback];
+}
+
+- (BOOL)get:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback error:(NSError *_Nullable *_Nullable)errorPtr {
+    return [_internal get:callback error:errorPtr];
+}
+
+- (BOOL)get:(ARTPresenceQuery *)query callback:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback error:(NSError *_Nullable *_Nullable)errorPtr {
+    return [_internal get:query callback:callback error:errorPtr];
+}
+
+- (BOOL)history:(nullable ARTDataQuery *)query callback:(void(^)(ARTPaginatedResult<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback error:(NSError *_Nullable *_Nullable)errorPtr {
+    return [_internal history:query callback:callback error:errorPtr];
+}
+
+- (void)history:(void(^)(ARTPaginatedResult<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
+    [_internal history:callback];
+}
+
+@end
+
+@implementation ARTRestPresenceInternal {
     __weak ARTRestChannelInternal *_channel;
     dispatch_queue_t _userQueue;
     dispatch_queue_t _queue;
