@@ -15,13 +15,14 @@
 #import "ARTNSHTTPURLResponse+ARTPaginated.h"
 
 @implementation ARTPaginatedResult {
-    __weak ARTRestInternal *_rest;
+    ARTRestInternal *_rest;
     dispatch_queue_t _userQueue;
     dispatch_queue_t _queue;
     NSMutableURLRequest *_relFirst;
     NSMutableURLRequest *_relCurrent;
     NSMutableURLRequest *_relNext;
     ARTPaginatedResultResponseProcessor _responseProcessor;
+    ARTQueuedDealloc *_dealloc;
 }
 
 @synthesize rest = _rest;
@@ -52,6 +53,19 @@
         _userQueue = rest.userQueue;
         _queue = rest.queue;
         _responseProcessor = responseProcessor;
+
+        // ARTPaginatedResult doesn't need a internal counterpart, as other
+        // public objects do. It basically acts as a proxy to a
+        // strongly-referenced ARTRestInternal, so it can be thought as an
+        // alternative public counterpart to ARTRestInternal.
+        //
+        // So, since it's owned by user code, it should dispatch its release of
+        // its ARTRestInternal to the internal queue. We could take the common
+        // ARTQueuedDealloc as an argument as other public objects do, but
+        // that would just be bookkeeping since we know it will be initialized
+        // from the ARTRestInternal we already have access to anyway, so we can
+        // make our own.
+        _dealloc = [[ARTQueuedDealloc alloc] init:_rest queue:_queue];
     }
     
     return self;
