@@ -32,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 #endif
 
 @property (nonatomic, strong, readonly) ARTClientOptions *options;
-@property (nonatomic, weak, nullable) ARTRealtimeInternal *realtime;
+@property (nonatomic, weak, nullable) ARTRealtimeInternal *realtime; // weak because realtime owns self
 @property (readonly, strong, nonatomic) id<ARTEncoder> defaultEncoder;
 @property (readonly, strong, nonatomic) NSString *defaultEncoding; //Content-Type
 @property (readonly, strong, nonatomic) NSDictionary<NSString *, id<ARTEncoder>> *encoders;
@@ -40,7 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 // Must be atomic!
 @property (readwrite, strong, atomic, nullable) NSString *prioritizedHost;
 
-@property (nonatomic, weak) id<ARTHTTPExecutor> httpExecutor;
+@property (nonatomic, strong) id<ARTHTTPExecutor> httpExecutor;
 @property (nonatomic) id<ARTDeviceStorage> storage;
 
 @property (nonatomic, readonly, getter=getBaseUrl) NSURL *baseUrl;

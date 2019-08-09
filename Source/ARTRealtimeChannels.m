@@ -58,7 +58,7 @@
 
 @interface ARTRealtimeChannelsInternal ()
 
-@property (weak, nonatomic) ARTRealtimeInternal *realtime;
+@property (weak, nonatomic) ARTRealtimeInternal *realtime; // weak because realtime owns self
 
 @end
 

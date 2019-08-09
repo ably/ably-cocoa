@@ -34,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (ARTErrorInfo *)errorReason_nosync;
 - (NSString *_Nullable)clientId_nosync;
 
-@property (readonly, weak, nonatomic) ARTRealtimeInternal *realtime;
+@property (readonly, weak, nonatomic) ARTRealtimeInternal *realtime; // weak because realtime owns self
 @property (readonly, strong, nonatomic) ARTRestChannelInternal *restChannel;
 @property (readwrite, strong, nonatomic) NSMutableArray *queuedMessages;
 @property (readwrite, strong, nonatomic, nullable) NSString *attachSerial;

@@ -16,7 +16,7 @@
 NSString* (^_Nullable ARTChannels_getChannelNamePrefix)(void);
 
 @interface ARTChannels() {
-    __weak id<ARTChannelsDelegate> _delegate;
+    __weak id<ARTChannelsDelegate> _delegate; // weak because delegates outlive their counterpart
     dispatch_queue_t _queue;
 }
 

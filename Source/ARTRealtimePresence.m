@@ -146,7 +146,7 @@
 #pragma mark - ARTRealtimePresenceInternal
 
 @implementation ARTRealtimePresenceInternal {
-    __weak ARTRealtimeChannelInternal *_channel;
+    __weak ARTRealtimeChannelInternal *_channel; // weak because channel owns self
     dispatch_queue_t _userQueue;
 }
 

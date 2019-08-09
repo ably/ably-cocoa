@@ -35,7 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)recoveryKey_nosync;
 
 @property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTConnectionStateChange *> *eventEmitter;
-@property(weak, nonatomic) ARTRealtimeInternal* realtime;
+@property(weak, nonatomic) ARTRealtimeInternal* realtime; // weak because realtime owns self
 
 - (void)setId:(NSString *_Nullable)newId;
 - (void)setKey:(NSString *_Nullable)key;

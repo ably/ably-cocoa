@@ -82,7 +82,7 @@
 @end
 
 @implementation ARTAuthInternal {
-    __weak ARTRestInternal *_rest;
+    __weak ARTRestInternal *_rest; // weak because rest owns auth
     dispatch_queue_t _userQueue;
     ARTTokenParams *_tokenParams;
     // Dedicated to Protocol Message

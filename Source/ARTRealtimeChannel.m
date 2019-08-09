@@ -454,7 +454,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
 - (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(void (^)(ARTStatus *))cb {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
-    __weak __typeof(self) weakSelf = self;
     ARTStatus *statusInvalidChannel = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:90001 message:@"channel operation failed (invalid channel state)"]];
 
     switch (_realtime.connection.state_nosync) {
@@ -470,7 +469,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     }
 
     void (^queuedCallback)(ARTStatus *) = ^(ARTStatus *status) {
-        switch (weakSelf.state_nosync) {
+        switch (self.state_nosync) {
             case ARTRealtimeChannelDetaching:
             case ARTRealtimeChannelDetached:
             case ARTRealtimeChannelFailed:
@@ -512,7 +511,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
                 [self addToQueue:pm callback:queuedCallback];
 
                 [self.realtime.internalEventEmitter once:[ARTEvent newWithConnectionEvent:ARTRealtimeConnectionEventConnected] callback:^(ARTConnectionStateChange *__art_nullable change) {
-                    [weakSelf sendQueuedMessages];
+                    [self sendQueuedMessages];
                 }];
             }
             break;
@@ -944,11 +943,10 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     [self failQueuedMessages:status];
     [self transition:ARTRealtimeChannelSuspended status:status];
-    __weak __typeof(self) weakSelf = self;
     [[self unlessStateChangesBefore:retryTimeout do:^{
-        [weakSelf reattachWithReason:nil callback:^(ARTErrorInfo *errorInfo) {
+        [self reattachWithReason:nil callback:^(ARTErrorInfo *errorInfo) {
             ARTStatus *status = [ARTStatus state:ARTStateError info:errorInfo];
-            [weakSelf setSuspended:status];
+            [self setSuspended:status];
         }];
     }] startTimer];
 } ART_TRY_OR_MOVE_TO_FAILED_END
@@ -1155,7 +1153,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     attachMessage.action = ARTProtocolMessageAttach;
     attachMessage.channel = self.name;
 
-    __weak typeof(self) weakSelf = self;
     [self.realtime send:attachMessage sentCallback:^(ARTErrorInfo *error) {
         if (error) {
             return;
@@ -1165,7 +1162,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
             // Timeout
             ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTStateAttachTimedOut message:@"attach timed out"];
             ARTStatus *status = [ARTStatus state:ARTStateAttachTimedOut info:errorInfo];
-            [weakSelf setSuspended:status];
+            [self setSuspended:status];
         }] startTimer];
     } ackCallback:nil];
 

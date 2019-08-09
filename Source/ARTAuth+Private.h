@@ -41,11 +41,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, strong) ARTClientOptions *options;
 @property (nonatomic, readonly, assign) ARTAuthMethod method;
 
-@property (nonatomic, weak) ARTLog *logger;
+@property (nonatomic, strong) ARTLog *logger;
 
 @property (nullable, nonatomic, readonly, strong) NSNumber *timeOffset;
 
-@property (nullable, weak) id<ARTAuthDelegate> delegate;
+@property (nullable, weak) id<ARTAuthDelegate> delegate; // weak because delegates outlive their counterpart
 @property (readonly) BOOL authorizing;
 @property (readonly) BOOL authorizing_nosync;
 

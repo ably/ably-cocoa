@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTEventListener ()
 
 @property (nonatomic, readonly) NSString *eventId;
-@property (weak, nonatomic, readonly) id<NSObject> token;
+@property (nonatomic, readonly) id<NSObject> token;
 @property (nonatomic, readonly) NSUInteger count;
 
 - (instancetype)init NS_UNAVAILABLE;

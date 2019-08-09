@@ -547,9 +547,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     ARTStatus *status = nil;
     ARTEventListener *stateChangeEventListener = nil;
-    // Do not increase the reference count (avoid retain cycles):
-    // i.e. the `unlessStateChangesBefore` is setting a timer and if the `ARTRealtime` instance is released before that timer, then it could create a leak.
-    __weak __typeof(self) weakSelf = self;
 
     [self.logger verbose:@"R:%p realtime is transitioning from %@ to %@", self, ARTRealtimeConnectionStateToStr(stateChange.previous), ARTRealtimeConnectionStateToStr(stateChange.current)];
 
@@ -567,7 +564,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             }
 
             stateChangeEventListener = [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
-                [weakSelf onConnectionTimeOut];
+                [self onConnectionTimeOut];
             }];
             _connectingTimeoutListener = stateChangeEventListener;
 
@@ -592,20 +589,22 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                 self.connection.state_nosync != ARTRealtimeClosed &&
                 self.connection.state_nosync != ARTRealtimeDisconnected) {
                 [_reachability listenForHost:[_transport host] callback:^(BOOL reachable) {
+                    // The ref cycle creating by taking self here is resolved on close
+                    // when [_reachability off] is called.
                     if (reachable) {
-                        switch (weakSelf.connection.state_nosync) {
+                        switch (self.connection.state_nosync) {
                             case ARTRealtimeDisconnected:
                             case ARTRealtimeSuspended:
-                                [weakSelf transition:ARTRealtimeConnecting];
+                                [self transition:ARTRealtimeConnecting];
                             default:
                                 break;
                         }
                     } else {
-                        switch (weakSelf.connection.state_nosync) {
+                        switch (self.connection.state_nosync) {
                             case ARTRealtimeConnecting:
                             case ARTRealtimeConnected: {
                                 ARTErrorInfo *unreachable = [ARTErrorInfo createWithCode:-1003 message:@"unreachable host"];
-                                [weakSelf transition:ARTRealtimeDisconnected withErrorInfo:unreachable];
+                                [self transition:ARTRealtimeDisconnected withErrorInfo:unreachable];
                                 break;
                             }
                             default:
@@ -620,7 +619,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             [self stopIdleTimer];
             [_reachability off];
             stateChangeEventListener = [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
-                [weakSelf transition:ARTRealtimeClosed];
+                [self transition:ARTRealtimeClosed];
             }];
             [self.transport sendClose];
             break;
@@ -668,8 +667,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             }
             [stateChange setRetryIn:retryInterval];
             stateChangeEventListener = [self unlessStateChangesBefore:stateChange.retryIn do:^{
-                [weakSelf transition:ARTRealtimeConnecting];
-                self->_connectionRetryFromDisconnectedListener = nil;
+                [self transition:ARTRealtimeConnecting];
             }];
             _connectionRetryFromDisconnectedListener = stateChangeEventListener;
             break;
@@ -679,8 +677,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             _transport = nil;
             [stateChange setRetryIn:self.options.suspendedRetryTimeout];
             stateChangeEventListener = [self unlessStateChangesBefore:stateChange.retryIn do:^{
-                [weakSelf transition:ARTRealtimeConnecting];
                 self->_connectionRetryFromSuspendedListener = nil;
+                [self transition:ARTRealtimeConnecting];
             }];
             _connectionRetryFromSuspendedListener = stateChangeEventListener;
             [self.auth cancelAuthorization:nil];
@@ -997,13 +995,10 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         else {
             // New Token
             [self.auth setTokenDetails:nil];
-            // Transport instance couldn't exist anymore when `authorize` completes or reaches time out.
-            __weak __typeof(self) weakSelf = self;
 
             // Schedule timeout handler
             _authenitcatingTimeoutWork = artDispatchScheduled([ARTDefault realtimeRequestTimeout], _rest.queue, ^{
-                [weakSelf onConnectionTimeOut];
-                // FIXME: should cancel the auth request as well.
+                [self onConnectionTimeOut];
             });
 
             id<ARTAuthDelegate> delegate = self.auth.delegate;
@@ -1018,7 +1013,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                     self->_authenitcatingTimeoutWork = nil;
 
                     // It's still valid?
-                    switch (weakSelf.connection.state_nosync) {
+                    switch (self.connection.state_nosync) {
                         case ARTRealtimeClosing:
                         case ARTRealtimeClosed:
                             return;
@@ -1026,9 +1021,9 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                             break;
                     }
 
-                    [[weakSelf getLogger] debug:__FILE__ line:__LINE__ message:@"R:%p authorized: %@ error: %@", weakSelf, tokenDetails, error];
+                    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p authorized: %@ error: %@", self, tokenDetails, error];
                     if (error) {
-                        [weakSelf handleTokenAuthError:error];
+                        [self handleTokenAuthError:error];
                         return;
                     }
 
@@ -1038,7 +1033,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                         self->_transport.delegate = self;
                     }
                     if (newConnection) {
-                        [[weakSelf transport] connectWithToken:tokenDetails.token];
+                        [self.transport connectWithToken:tokenDetails.token];
                     }
                 }];
             }

@@ -72,9 +72,9 @@
 const NSUInteger ARTDefaultLimit = 100;
 
 @implementation ARTPushChannelInternal {
-    __weak ARTRestInternal *_rest;
-    __weak ARTLog *_logger;
-    __weak ARTChannel *_channel;
+    __weak ARTRestInternal *_rest; // weak because rest may own self and always outlives it
+    ARTLog *_logger;
+    __weak ARTChannel *_channel; // weak because channel owns self
 }
 
 - (instancetype)init:(ARTRestInternal *)rest withChannel:(ARTChannel *)channel {
