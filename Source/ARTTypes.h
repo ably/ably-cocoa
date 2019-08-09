@@ -140,7 +140,6 @@ NSTimeInterval millisecondsToTimeInterval(uint64_t msecs);
 
 NSString *generateNonce(void);
 
-// FIXME: review
 @protocol ARTCancellable
 - (void)cancel;
 @end
@@ -227,6 +226,9 @@ NSString *generateNonce(void);
 - (void)enqueue:(id)object;
 - (id)dequeue;
 - (id)peek;
+@end
+
+@interface NSURLSessionTask (ARTCancellable) <ARTCancellable>
 @end
 
 NS_ASSUME_NONNULL_END

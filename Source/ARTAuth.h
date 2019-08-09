@@ -27,6 +27,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, readonly) NSString *clientId;
 
+@property (nullable, nonatomic, readonly, strong) ARTTokenDetails *tokenDetails;
+
 - (instancetype)init NS_UNAVAILABLE;
 
 /**

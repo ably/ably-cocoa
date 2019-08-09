@@ -59,16 +59,20 @@
 
     if (value == nil) {
         [SAMKeychain deletePasswordForService:ARTDeviceSecretKey account:(NSString *)deviceId error:&error];
+
+        if ([error code] == errSecItemNotFound) {
+            [_logger warn:@"Device Secret can't be deleted because it doesn't exist"];
+        }
+        else if (error) {
+            [_logger error:@"Device Secret couldn't be updated (%@)", [error localizedDescription]];
+        }
     }
     else {
         [SAMKeychain setPassword:value forService:ARTDeviceSecretKey account:(NSString *)deviceId error:&error];
-    }
 
-    if ([error code] == errSecItemNotFound) {
-        [_logger debug:__FILE__ line:__LINE__ message:@"Device Secret not found"];
-    }
-    else if (error) {
-        [_logger error:@"Device Secret couldn't be updated (%@)", [error localizedDescription]];
+        if (error) {
+            [_logger error:@"Device Secret couldn't be updated (%@)", [error localizedDescription]];
+        }
     }
 }
 

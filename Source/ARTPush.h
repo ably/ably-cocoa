@@ -21,15 +21,31 @@
 
 @protocol ARTPushRegistererDelegate
 
+/*
+ Ably will call the implementation of this method when the activation process is completed with success or with failure.
+ */
 - (void)didActivateAblyPush:(nullable ARTErrorInfo *)error;
+
+/*
+ Ably will call the implementation of this method when the deactivation process is completed with success or with failure.
+ */
 - (void)didDeactivateAblyPush:(nullable ARTErrorInfo *)error;
 
 @optional
 
 - (void)didAblyPushRegistrationFail:(nullable ARTErrorInfo *)error;
 
-- (void)ablyPushCustomRegister:(nullable ARTErrorInfo *)error deviceDetails:(nullable ARTDeviceDetails *)deviceDetails callback:(void (^ _Nonnull)(ARTDeviceIdentityTokenDetails * _Nullable, ARTErrorInfo * _Nullable))callback;
-- (void)ablyPushCustomDeregister:(nullable ARTErrorInfo *)error deviceId:(nullable ARTDeviceId *)deviceId callback:(void (^ _Nullable)(ARTErrorInfo * _Nullable))callback;
+/*
+ Optional method.
+ If you want to activate devices from your server, then you should implement this method (including the `ablyPushCustomDeregister:deviceId:callback` method) where the network request completion should call the callback argument to continue with the registration process.
+ */
+- (void)ablyPushCustomRegister:(nullable ARTErrorInfo *)error deviceDetails:(nonnull ARTDeviceDetails *)deviceDetails callback:(void (^ _Nonnull)(ARTDeviceIdentityTokenDetails * _Nullable, ARTErrorInfo * _Nullable))callback;
+
+/*
+ Optional method.
+ If you want to deactivate devices from your server, then you should implement this method (including the `ablyPushCustomRegister:deviceDetails:callback` method) where the network request completion should call the callback argument to continue with the registration process.
+ */
+- (void)ablyPushCustomDeregister:(nullable ARTErrorInfo *)error deviceId:(nonnull ARTDeviceId *)deviceId callback:(void (^ _Nullable)(ARTErrorInfo * _Nullable))callback;
 
 @end
 
@@ -56,10 +72,14 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error rest:(ARTRest *)rest;
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error realtime:(ARTRealtime *)realtime;
 
-/// Register a device, including the information necessary to deliver push notifications to it.
+/*
+ Activating a device for push notifications and registering it with Ably. The registration process can be performed entirely from the device or from your own server using the optional `ablyPushCustomRegister:deviceDetails:callback` method.
+ */
 - (void)activate;
 
-/// Unregister a device.
+/*
+ Deactivating a device for push notifications and unregistering it with Ably. The unregistration process can be performed entirely from the device or from your own server using the optional `ablyPushCustomDeregister:deviceId:callback` method.
+ */
 - (void)deactivate;
 
 #endif

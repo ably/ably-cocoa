@@ -75,7 +75,9 @@ NSString *const ARTDevicePushTransportType = @"apns";
     }
     device.secret = deviceSecret;
 
-    device->_identityTokenDetails = [ARTDeviceIdentityTokenDetails unarchive:[storage objectForKey:ARTDeviceIdentityTokenKey]];
+    id identityTokenDetailsInfo = [storage objectForKey:ARTDeviceIdentityTokenKey];
+    ARTDeviceIdentityTokenDetails *identityTokenDetails = [ARTDeviceIdentityTokenDetails unarchive:identityTokenDetailsInfo];
+    device->_identityTokenDetails = identityTokenDetails;
 
     [device setDeviceToken:[storage objectForKey:ARTDeviceTokenKey]];
 

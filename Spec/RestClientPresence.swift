@@ -529,10 +529,10 @@ class RestClientPresence: QuickSpec {
                 }
 
                 var decodeNumberOfCalls = 0
-                let hook = ARTBaseMessage.testSuite_injectIntoClassMethod(#selector(ARTBaseMessage.decode)) {
+                let hook = channel.dataEncoder.testSuite_injectIntoMethod(after: #selector(ARTDataEncoder.decode(_:encoding:))) {
                     decodeNumberOfCalls += 1
                 }
-                defer { hook?.remove() }
+                defer { hook.remove() }
 
                 waitUntil(timeout: testTimeout) { done in
                     channel.history(checkReceivedMessage(done))

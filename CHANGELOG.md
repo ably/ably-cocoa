@@ -1,5 +1,123 @@
 # Change Log
 
+## [1.1.10](https://github.com/ably/ably-cocoa/tree/1.1.10) (2019-07-29)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.9...1.1.10)
+
+**Fixed bugs:**
+
+- Push device registration omits `clientId` [\#877](https://github.com/ably/ably-cocoa/issues/877)
+
+**Merged pull requests:**
+
+- Update `LocalDevice.clientId` [\#874](https://github.com/ably/ably-cocoa/pull/874) ([ricardopereira](https://github.com/ricardopereira))
+
+## [1.1.9](https://github.com/ably/ably-cocoa/tree/1.1.9) (2019-07-12)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.8...1.1.9)
+
+**Fixed bugs:**
+
+- Push deactivate on an app is failing with `push-subscribe` permissions [\#873](https://github.com/ably/ably-cocoa/issues/873)
+
+**Merged pull requests:**
+
+- Delete device registration should not use the general-purpose endpoint [\#871](https://github.com/ably/ably-cocoa/pull/871) ([ricardopereira](https://github.com/ricardopereira))
+
+## [1.1.8](https://github.com/ably/ably-cocoa/tree/1.1.8) (2019-07-03)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.7...1.1.8)
+
+**Fixed bugs:**
+
+- Push deactivate/activate sequence results in stopped notifications [\#863](https://github.com/ably/ably-cocoa/issues/863)
+- Library apparently interpreting the `connectionStateTtl` with incorrect units [\#866](https://github.com/ably/ably-cocoa/issues/866)
+
+**Merged pull requests:**
+
+- Push Device Update Registration: fix request authentication [\#867](https://github.com/ably/ably-cocoa/pull/867) ([ricardopereira](https://github.com/ricardopereira))
+- Fix consecutive Authorizations [\#833](https://github.com/ably/ably-cocoa/pull/833) ([ricardopereira](https://github.com/ricardopereira))
+- Fix milliseconds conversions [\#869](https://github.com/ably/ably-cocoa/pull/869) ([ricardopereira](https://github.com/ricardopereira))
+- Tests using `echo.ably.io` were failing intermittently with "Request mac does not match" [\#868](https://github.com/ably/ably-cocoa/pull/868) ([ricardopereira](https://github.com/ricardopereira))
+
+## [1.1.7](https://github.com/ably/ably-cocoa/tree/1.1.7) (2019-06-25)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.6...1.1.7)
+
+**Fixed bugs:**
+
+- Push deactivate/activate sequence results in stopped notifications [\#863](https://github.com/ably/ably-cocoa/issues/863)
+
+**Merged pull requests:**
+
+- Fix Push Activation State Machine: WaitingForRegistrationUpdate bad state [\#864](https://github.com/ably/ably-cocoa/pull/858) ([ricardopereira](https://github.com/ricardopereira))
+
+## [1.1.6](https://github.com/ably/ably-cocoa/tree/1.1.6) (2019-06-12)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.5...1.1.6)
+
+**Fixed bugs:**
+
+- Lexical or Preprocessor Issue: 'SRWebSocket.h' file not found [\#840](https://github.com/ably/ably-cocoa/issues/840)
+- KSCrashAblyFork ksthread_getQueueName [\#846](https://github.com/ably/ably-cocoa/issues/846)
+
+**Closed issues:**
+
+- Fix Travis CI (iOS 9 build is failing) [\#856](https://github.com/ably/ably-cocoa/issues/856)
+
+**Merged pull requests:**
+
+- Update KSCrash and SocketRocket [\#858](https://github.com/ably/ably-cocoa/pull/858) ([ricardopereira](https://github.com/ricardopereira))
+
+## [1.1.5](https://github.com/ably/ably-cocoa/tree/1.1.5) (2019-05-23)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.4...1.1.5)
+
+**Implemented enhancements:**
+
+- Swift 5 / Xcode 10.2 [\#838](https://github.com/ably/ably-cocoa/issues/838)
+
+**Fixed bugs:**
+
+- Issue reported in iOS push tutorial [\#850](https://github.com/ably/ably-cocoa/issues/850)
+
+**Closed issues:**
+
+- Expose `Auth.tokenDetails` [\#852](https://github.com/ably/ably-cocoa/issues/852)
+- Improve handling of clock skew [\#834](https://github.com/ably/ably-cocoa/issues/834)
+- `my-members` presenceMap requirement change for 1.1 [\#737](https://github.com/ably/ably-cocoa/issues/737)
+
+**Merged pull requests:**
+
+- Swift 5 (Xcode 10.2) [\#841](https://github.com/ably/ably-cocoa/pull/841) ([ricardopereira](https://github.com/ricardopereira))
+- RSA11 [\#853](https://github.com/ably/ably-cocoa/pull/853) ([ricardopereira](https://github.com/ricardopereira))
+- Push header docs [\#827](https://github.com/ably/ably-cocoa/pull/827) ([ricardopereira](https://github.com/ricardopereira))
+- Fix Push Update Device Registration [\#851](https://github.com/ably/ably-cocoa/pull/851) ([ricardopereira](https://github.com/ricardopereira))
+- RTP17b [\#835](https://github.com/ably/ably-cocoa/pull/835) ([ricardopereira](https://github.com/ricardopereira))
+
+## [1.1.4](https://github.com/ably/ably-cocoa/tree/1.1.4) (2019-05-07)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.3...1.1.4)
+
+**Implemented enhancements:**
+
+- Add idempotent REST publishing [\#749](https://github.com/ably/ably-cocoa/issues/749)
+
+**Fixed bugs:**
+
+- Default token params should not include a capabilities member [\#576](https://github.com/ably/ably-cocoa/issues/576)
+- Unsubscribe on channel enumeration causing crash [\#842](https://github.com/ably/ably-cocoa/issues/842)
+
+**Closed issues:**
+
+- Address msgpack warnings [\#689](https://github.com/ably/ably-cocoa/issues/689)
+
+**Merged pull requests:**
+
+- Fix RTN16f [\#845](https://github.com/ably/ably-cocoa/pull/845) ([ricardopereira](https://github.com/ricardopereira))
+- Idempotent Rest Publishing [\#786](https://github.com/ably/ably-cocoa/pull/786) ([ricardopereira](https://github.com/ricardopereira))
+- RSL1j [\#784](https://github.com/ably/ably-cocoa/pull/784) ([ricardopereira](https://github.com/ricardopereira))
+- RSA4b1 [\#836](https://github.com/ably/ably-cocoa/pull/836) ([ricardopereira](https://github.com/ricardopereira))
+- Fix Channel.subscribe onAttachCallback [\#844](https://github.com/ably/ably-cocoa/pull/844) ([ricardopereira](https://github.com/ricardopereira))
+- Timestamp should not be generated in the client [\#831](https://github.com/ably/ably-cocoa/pull/831) ([ricardopereira](https://github.com/ricardopereira))
+- Fix URL query encoding of Capability and Timestamp fields [\#830](https://github.com/ably/ably-cocoa/pull/830) ([ricardopereira](https://github.com/ricardopereira))
+- Fix RSA6 [\#829](https://github.com/ably/ably-cocoa/pull/829) ([ricardopereira](https://github.com/ricardopereira))
+- Push State Machine: main thread sometimes gets stuck when accessing Local Device [\#826](https://github.com/ably/ably-cocoa/pull/826) ([ricardopereira](https://github.com/ricardopereira))
+- asd [\#784]() ([ricardopereira](https://github.com/ricardopereira))
+
 ## [1.1.3](https://github.com/ably/ably-ios/tree/1.1.3) (2019-01-10)
 [Full Changelog](https://github.com/ably/ably-ios/compare/1.1.2...1.1.3)
 

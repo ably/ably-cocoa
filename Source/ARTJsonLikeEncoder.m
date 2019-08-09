@@ -254,7 +254,7 @@
     if (resp && resp.count == 1) {
         NSNumber *num = resp[0];
         if ([num isKindOfClass:[NSNumber class]]) {
-            return [NSDate dateWithTimeIntervalSince1970:([num doubleValue] / 1000.0)];
+            return [NSDate dateWithTimeIntervalSince1970:millisecondsToTimeInterval(num.doubleValue)];
         }
     }
     return nil;
@@ -528,9 +528,9 @@
     
     NSString *token = [input artString:@"token"];
     NSNumber *expiresTimeInterval = [input objectForKey:@"expires"];
-    NSDate *expires = expiresTimeInterval ? [NSDate dateWithTimeIntervalSince1970:expiresTimeInterval.doubleValue / 1000] : nil;
+    NSDate *expires = expiresTimeInterval ? [NSDate dateWithTimeIntervalSince1970:millisecondsToTimeInterval(expiresTimeInterval.doubleValue)] : nil;
     NSNumber *issuedInterval = [input objectForKey:@"issued"];
-    NSDate *issued = issuedInterval ? [NSDate dateWithTimeIntervalSince1970:issuedInterval.doubleValue / 1000] : nil;
+    NSDate *issued = issuedInterval ? [NSDate dateWithTimeIntervalSince1970:millisecondsToTimeInterval(issuedInterval.doubleValue)] : nil;
     
     return [[ARTTokenDetails alloc] initWithToken:token
                                               expires:expires
@@ -563,7 +563,7 @@
         dictionary[@"clientId"] = tokenRequest.clientId;
     }
     if (tokenRequest.ttl) {
-        dictionary[@"ttl"] = [NSNumber numberWithUnsignedLongLong:timeIntervalToMilliseconds([tokenRequest.ttl doubleValue])];
+        dictionary[@"ttl"] = [NSNumber numberWithUnsignedLongLong:timeIntervalToMilliseconds(tokenRequest.ttl.doubleValue)];
     }
 
     return dictionary;
@@ -674,9 +674,9 @@
     NSNumber *expiresMsecs = [deviceIdentityTokenInput artNumber:@"expires"];
     NSDate *expires = [NSDate dateWithMillisecondsSince1970:expiresMsecs.doubleValue];
     NSString *capability = [deviceIdentityTokenInput artString:@"capability"];
-    NSString *deviceId = [deviceIdentityTokenInput artString:@"deviceId"];
+    NSString *clientId = [deviceIdentityTokenInput artString:@"clientId"];
 
-    ARTDeviceIdentityTokenDetails *deviceIdentityTokenDetails = [[ARTDeviceIdentityTokenDetails alloc] initWithToken:token issued:issued expires:expires capability:capability deviceId:deviceId];
+    ARTDeviceIdentityTokenDetails *deviceIdentityTokenDetails = [[ARTDeviceIdentityTokenDetails alloc] initWithToken:token issued:issued expires:expires capability:capability clientId:clientId];
 
     return deviceIdentityTokenDetails;
 }
@@ -751,7 +751,7 @@
                                           maxMessageSize:[input artInteger:@"maxMessageSize"]
                                             maxFrameSize:[input artInteger:@"maxFrameSize"]
                                           maxInboundRate:[input artInteger:@"maxInboundRate"]
-                                      connectionStateTtl:(NSTimeInterval)[input artInteger:@"connectionStateTtl"]
+                                      connectionStateTtl:millisecondsToTimeInterval([input artInteger:@"connectionStateTtl"])
                                                 serverId:[input artString:@"serverId"]
                                          maxIdleInterval:millisecondsToTimeInterval([input artInteger:@"maxIdleInterval"])];
 }

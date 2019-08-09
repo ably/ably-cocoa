@@ -78,7 +78,7 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
 
 - (BOOL)add:(ARTPresenceMessage *)message {
     ARTPresenceMessage *latest = [_members objectForKey:message.memberKey];
-    if ([self isNewestPresence:message comparingWith:latest]) {
+    if ([message isNewerThan:latest]) {
         ARTPresenceMessage *messageCopy = [message copy];
         switch (message.action) {
             case ARTPresenceEnter:
@@ -96,6 +96,7 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
         }
         return YES;
     }
+    [_logger debug:__FILE__ line:__LINE__ message:@"Presence member \"%@\" with action %@ has been ignored", message.memberKey, ARTPresenceActionToStr(message.action)];
     latest.syncSessionId = _syncSessionId;
     return NO;
 }
@@ -108,9 +109,9 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
     message.syncSessionId = sessionId;
     [_members setObject:message forKey:message.memberKey];
     // Local member
-    if ([message.connectionId isEqualToString:[self.delegate connectionId]]) {
+    if ([message.connectionId isEqualToString:self.delegate.connectionId]) {
         [_localMembers addObject:message];
-        [_logger debug:__FILE__ line:__LINE__ message:@"local member %@ added", message.memberKey];
+        [_logger debug:__FILE__ line:__LINE__ message:@"local member %@ with action %@ has been added", message.memberKey, ARTPresenceActionToStr(message.action).uppercaseString];
     }
 }
 
@@ -119,6 +120,10 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
 }
 
 - (void)internalRemove:(ARTPresenceMessage *)message force:(BOOL)force {
+    if ([message.connectionId isEqualToString:self.delegate.connectionId] && !message.isSynthesized) {
+        [_localMembers removeObject:message];
+    }
+
     if (!force && self.syncInProgress) {
         message.action = ARTPresenceAbsent;
         // Should be removed after Sync ends
@@ -126,48 +131,7 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
     }
     else {
         [_members removeObjectForKey:message.memberKey];
-        [_localMembers removeObject:message];
     }
-}
-
-- (BOOL)isNewestPresence:(nonnull ARTPresenceMessage *)received comparingWith:(ARTPresenceMessage *)latest  __attribute__((warn_unused_result)) {
-    if (latest == nil) {
-        return YES;
-    }
-
-    NSArray<NSString *> *receivedMessageIdParts = [received.id componentsSeparatedByCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@":"]];
-    if (receivedMessageIdParts.count != 3) {
-        [_logger error:@"Received presence message id is invalid %@", received.id];
-        return !received.timestamp ||
-            [latest.timestamp timeIntervalSince1970] <= [received.timestamp timeIntervalSince1970];
-    }
-    NSString *receivedConnectionId = [receivedMessageIdParts objectAtIndex:0];
-    NSInteger receivedMsgSerial = [[receivedMessageIdParts objectAtIndex:1] integerValue];
-    NSInteger receivedIndex = [[receivedMessageIdParts objectAtIndex:2] integerValue];
-
-    if ([receivedConnectionId isEqualToString:received.connectionId]) {
-        NSArray<NSString *> *latestRegisteredIdParts = [latest.id componentsSeparatedByCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@":"]];
-        if (latestRegisteredIdParts.count != 3) {
-            [_logger error:@"Latest registered presence message id is invalid %@", latest.id];
-            return !received.timestamp ||
-                [latest.timestamp timeIntervalSince1970] <= [received.timestamp timeIntervalSince1970];
-        }
-        NSInteger latestRegisteredMsgSerial = [[latestRegisteredIdParts objectAtIndex:1] integerValue];
-        NSInteger latestRegisteredIndex = [[latestRegisteredIdParts objectAtIndex:2] integerValue];
-
-        if (receivedMsgSerial > latestRegisteredMsgSerial) {
-            return YES;
-        }
-        else if (receivedMsgSerial == latestRegisteredMsgSerial && receivedIndex > latestRegisteredIndex) {
-            return YES;
-        }
-
-        [_logger debug:__FILE__ line:__LINE__ message:@"Presence member \"%@\" with action %@ has been ignored", received.memberKey, ARTPresenceActionToStr(received.action)];
-        return NO;
-    }
-
-    return !received.timestamp ||
-        [latest.timestamp timeIntervalSince1970] <= [received.timestamp timeIntervalSince1970];
 }
 
 - (void)cleanUpAbsentMembers {
@@ -206,18 +170,21 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
 }
 
 - (void)startSync {
+    [_logger debug:__FILE__ line:__LINE__ message:@"%p PresenceMap sync started", self];
     _syncSessionId++;
     _syncState = ARTPresenceSyncStarted;
     [_syncEventEmitter emit:[ARTEvent newWithPresenceSyncState:_syncState] with:nil];
 }
 
 - (void)endSync {
+    [_logger verbose:__FILE__ line:__LINE__ message:@"%p PresenceMap sync ending", self];
     [self cleanUpAbsentMembers];
     [self leaveMembersNotPresentInSync];
     _syncState = ARTPresenceSyncEnded;
     [self reenterLocalMembersMissingFromSync];
     [_syncEventEmitter emit:[ARTEvent newWithPresenceSyncState:ARTPresenceSyncEnded] with:[_members allValues]];
     [_syncEventEmitter off];
+    [_logger debug:__FILE__ line:__LINE__ message:@"%p PresenceMap sync ended", self];
 }
 
 - (void)failsSync:(ARTErrorInfo *)error {
@@ -228,18 +195,11 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
 }
 
 - (void)onceSyncEnds:(void (^)(NSArray<ARTPresenceMessage *> *))callback {
-    if (self.syncInProgress) {
-        [_syncEventEmitter once:[ARTEvent newWithPresenceSyncState:ARTPresenceSyncEnded] callback:callback];
-    }
-    else {
-        callback([_members allValues]);
-    }
+    [_syncEventEmitter once:[ARTEvent newWithPresenceSyncState:ARTPresenceSyncEnded] callback:callback];
 }
 
 - (void)onceSyncFails:(void (^)(ARTErrorInfo *))callback {
-    if (self.syncInProgress) {
-        [_syncEventEmitter once:[ARTEvent newWithPresenceSyncState:ARTPresenceSyncFailed] callback:callback];
-    }
+    [_syncEventEmitter once:[ARTEvent newWithPresenceSyncState:ARTPresenceSyncFailed] callback:callback];
 }
 
 - (BOOL)syncComplete {

@@ -49,11 +49,11 @@
     }
 
     BOOL haveEqualDeviceId = (!self.id && !device.id) || [self.id isEqualToString:device.id];
-    BOOL haveEqualCliendId = (!self.clientId && !device.clientId) || [self.clientId isEqualToString:device.clientId];
+    BOOL haveEqualClientId = (!self.clientId && !device.clientId) || [self.clientId isEqualToString:device.clientId];
     BOOL haveEqualPlatform = (!self.platform && !device.platform) || [self.platform isEqualToString:device.platform];
     BOOL haveEqualFormFactor = (!self.formFactor && !device.formFactor) || [self.formFactor isEqualToString:device.formFactor];
 
-    return haveEqualDeviceId && haveEqualCliendId && haveEqualPlatform && haveEqualFormFactor;
+    return haveEqualDeviceId && haveEqualClientId && haveEqualPlatform && haveEqualFormFactor;
 }
 
 #pragma mark - NSObject

@@ -242,7 +242,7 @@ class RealtimeClientConnection: QuickSpec {
                             done()
                         case .connected:
                             if let transport = client.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
-                                expect(query).to(haveParam("lib", withValue: "ios-1.1.3"))
+                                expect(query).to(haveParam("lib", withValue: "ios-1.1.10"))
                             }
                             else {
                                 XCTFail("MockTransport isn't working")
@@ -2697,7 +2697,7 @@ class RealtimeClientConnection: QuickSpec {
                                 fail("Shouldn't be called")
                             }
                         }
-                        delay(0) {
+                        AblyTests.extraQueue.async {
                             client.onDisconnected()
                         }
                         client.connection.once(.connected) { _ in
@@ -4372,7 +4372,7 @@ class RealtimeClientConnection: QuickSpec {
                                 "Accept" : "application/json",
                                 "Content-Type" : "application/json"
                             ]
-                            client.rest.execute(request as URLRequest, withAuthOption: .on, completion: { _, _, err in
+                            client.rest.execute(request, withAuthOption: .on, completion: { _, _, err in
                                 if let err = err {
                                     fail("\(err)")
                                 }
@@ -4396,7 +4396,7 @@ class RealtimeClientConnection: QuickSpec {
                                 let request = NSMutableURLRequest(url: URL(string: "/channels/\(channel.name)/messages?limit=1")! as URL)
                                 request.httpMethod = "GET"
                                 request.allHTTPHeaderFields = ["Accept" : "application/json"]
-                                client.rest.execute(request as URLRequest, withAuthOption: .on, completion: { _, data, err in
+                                client.rest.execute(request, withAuthOption: .on, completion: { _, data, err in
                                     if let err = err {
                                         fail("\(err)")
                                         done()
@@ -4458,7 +4458,7 @@ class RealtimeClientConnection: QuickSpec {
                                 "Accept" : "application/json",
                                 "Content-Type" : "application/json"
                             ]
-                            restPublishClient.execute(request as URLRequest, withAuthOption: .on, completion: { _, _, err in
+                            restPublishClient.execute(request, withAuthOption: .on, completion: { _, _, err in
                                 if let err = err {
                                     fail("\(err)")
                                 }
@@ -4499,7 +4499,7 @@ class RealtimeClientConnection: QuickSpec {
                                 let request = NSMutableURLRequest(url: URL(string: "/channels/\(restPublishChannel.name)/messages?limit=1")! as URL)
                                 request.httpMethod = "GET"
                                 request.allHTTPHeaderFields = ["Accept" : "application/json"]
-                                restRetrieveClient.execute(request as URLRequest, withAuthOption: .on, completion: { _, data, err in
+                                restRetrieveClient.execute(request, withAuthOption: .on, completion: { _, data, err in
                                     if let err = err {
                                         fail("\(err)")
                                         done()

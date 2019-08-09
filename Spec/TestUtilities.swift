@@ -12,7 +12,7 @@ import XCTest
 import Quick
 import Nimble
 import SwiftyJSON
-import SocketRocket
+import SocketRocketAblyFork
 import Aspects
 
 import Ably.Private
@@ -360,10 +360,10 @@ func ==(lhs: ARTJsonCompatible?, rhs: ARTJsonCompatible?) -> Bool {
 
 class PublishTestMessage {
 
-    var completion: Optional<(ARTErrorInfo?)->()>
-    var error: ARTErrorInfo? = ARTErrorInfo.create(from: NSError(domain: "", code: -1, userInfo: nil))
+    var completion: ((ARTErrorInfo?) -> Void)? = nil
+    var error: ARTErrorInfo? = nil
 
-    init(client: ARTRest, failOnError: Bool = true, completion: Optional<(ARTErrorInfo?)->()> = nil) {
+    init(client: ARTRest, failOnError: Bool = true, completion: ((ARTErrorInfo?) -> Void)? = nil) {
         client.channels.get("test").publish(nil, data: "message") { error in
             self.error = error
             if let callback = completion {
@@ -375,8 +375,8 @@ class PublishTestMessage {
         }
     }
 
-    init(client: ARTRealtime, failOnError: Bool = true, completion: Optional<(ARTErrorInfo?)->()> = nil) {
-        let complete: (ARTErrorInfo?)->() = { errorInfo in
+    init(client: ARTRealtime, failOnError: Bool = true, completion: ((ARTErrorInfo?) -> Void)? = nil) {
+        let complete: (ARTErrorInfo?) -> Void = { errorInfo in
             // ARTErrorInfo to NSError
             self.error = errorInfo
 
@@ -660,7 +660,7 @@ class MockHTTP: ARTHttp {
         super.init(AblyTests.queue, logger: logger)
     }
 
-    override public func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) {
+    override public func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) -> (ARTCancellable & NSObjectProtocol)? {
         delay(0.0) { // Delay to simulate asynchronicity.
             switch self.network {
             case .noInternet:
@@ -677,6 +677,7 @@ class MockHTTP: ARTHttp {
                 callback?(HTTPURLResponse(url: URL(string: "http://ios.test.suite")!, statusCode: 400, httpVersion: nil, headerFields: nil), nil, nil)
             }
         }
+        return nil
     }
 
 }
@@ -732,28 +733,30 @@ class MockHTTPExecutor: NSObject, ARTHTTPAuthenticatedExecutor {
         return self.encoder
     }
 
-    func execute(_ request: NSMutableURLRequest, withAuthOption authOption: ARTAuthentication, completion callback: @escaping (HTTPURLResponse?, Data?, Error?) -> Void) {
+    func execute(_ request: NSMutableURLRequest, withAuthOption authOption: ARTAuthentication, completion callback: @escaping (HTTPURLResponse?, Data?, Error?) -> Void) -> (ARTCancellable & NSObjectProtocol)? {
         self.requests.append(request as URLRequest)
 
         if var simulatedError = errorSimulator, var requestURL = request.url {
             defer { errorSimulator = nil }
             callback(nil, nil, simulatedError)
-            return
+            return nil
         }
 
         callback(HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: ["X-Ably-HTTPExecutor": "MockHTTPExecutor"]), nil, nil)
+        return nil
     }
 
-    func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) {
+    func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) -> (ARTCancellable & NSObjectProtocol)? {
         self.requests.append(request)
         
         if var simulatedError = errorSimulator, var requestURL = request.url {
             defer { errorSimulator = nil }
             callback?(nil, nil, simulatedError)
-            return
+            return nil
         }
 
         callback?(HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: ["X-Ably-HTTPExecutor": "MockHTTPExecutor"]), nil, nil)
+        return nil
     }
 
     func simulateIncomingErrorOnNextRequest(_ error: NSError) {
@@ -786,9 +789,9 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
     var afterRequest: Optional<(URLRequest, ((HTTPURLResponse?, Data?, NSError?) -> Void)?)->()> = nil
     var beforeProcessingDataResponse: Optional<(Data?)->(Data)> = nil
 
-    public func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) {
+    public func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) -> (ARTCancellable & NSObjectProtocol)? {
         guard let http = self.http else {
-            return
+            return nil
         }
         self.requests.append(request)
 
@@ -797,20 +800,20 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
                 errorSimulator = nil
             }
             if simulatedError.shouldPerformRequest {
-                http.execute(request, completion: { response, data, error in
+                return http.execute(request, completion: { response, data, error in
                     callback?(simulatedError.stubResponse(requestURL), simulatedError.stubData, nil)
                 })
             }
             else {
                 callback?(simulatedError.stubResponse(requestURL), simulatedError.stubData, nil)
-            }
-            return
+                return nil
+            }            
         }
 
         if let performEvent = beforeRequest {
             performEvent(request, callback)
         }
-        http.execute(request, completion: { response, data, error in
+        let task = http.execute(request, completion: { response, data, error in
             if let httpResponse = response {
                 self.responses.append(httpResponse)
             }
@@ -824,6 +827,7 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
         if let performEvent = afterRequest {
             performEvent(request, callback)
         }
+        return task
     }
 
     func simulateIncomingServerErrorOnNextRequest(_ errorValue: Int, description: String) {

@@ -8,6 +8,9 @@
 
 #import "ARTPresenceMessage+Private.h"
 
+NSString *const ARTPresenceMessageException = @"ARTPresenceMessageException";
+NSString *const ARTAblyMessageInvalidPresenceId = @"Received presence message id is invalid %@";
+
 @implementation ARTPresenceMessage
 
 - (instancetype)init {
@@ -31,7 +34,7 @@
     NSMutableString *description = [[super description] mutableCopy];
     [description deleteCharactersInRange:NSMakeRange(description.length - (description.length>2 ? 2:0), 2)];
     [description appendFormat:@",\n"];
-    [description appendFormat:@" action: %lu\n", (unsigned long)self.action];
+    [description appendFormat:@" action: %lu,\n", (unsigned long)self.action];
     [description appendFormat:@" syncSessionId: %lu\n", (unsigned long)self.syncSessionId];
     [description appendFormat:@"}"];
     return description;
@@ -50,6 +53,54 @@
     BOOL haveEqualCliendId = (!self.clientId && !presence.clientId) || [self.clientId isEqualToString:presence.clientId];
 
     return haveEqualConnectionId && haveEqualCliendId;
+}
+
+- (NSArray<NSString *> *)parseId {
+    if (!self.id) {
+        return nil;
+    }
+    NSArray<NSString *> *idParts = [self.id componentsSeparatedByCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@":"]];
+    if (idParts.count != 3) {
+        [ARTException raise:ARTPresenceMessageException format:ARTAblyMessageInvalidPresenceId, self.id];
+    }
+    return idParts;
+}
+
+- (BOOL)isSynthesized {
+    NSString *connectionId = [[self parseId] objectAtIndex:0];
+    return ![connectionId isEqualToString:self.connectionId];
+}
+
+- (NSInteger)msgSerialFromId {
+    NSInteger msgSerial = [[[self parseId] objectAtIndex:1] integerValue];
+    return msgSerial;
+}
+
+- (NSInteger)indexFromId {
+    NSInteger index = [[[self parseId] objectAtIndex:2] integerValue];
+    return index;
+}
+
+- (BOOL)isNewerThan:(ARTPresenceMessage *)latest {
+    if (latest == nil) {
+        return YES;
+    }
+
+    if ([self isSynthesized] || [latest isSynthesized]) {
+        return !self.timestamp || [latest.timestamp timeIntervalSince1970] <= [self.timestamp timeIntervalSince1970];
+    }
+
+    NSInteger currentMsgSerial = [self msgSerialFromId];
+    NSInteger currentIndex = [self indexFromId];
+    NSInteger latestMsgSerial = [latest msgSerialFromId];
+    NSInteger latestIndex = [latest indexFromId];
+
+    if (currentMsgSerial == latestMsgSerial) {
+        return currentIndex > latestIndex;
+    }
+    else {
+        return currentMsgSerial > latestMsgSerial;
+    }
 }
 
 #pragma mark - NSObject

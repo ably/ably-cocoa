@@ -8,12 +8,7 @@
 
 #import <Ably/ARTWebSocketTransport.h>
 #import <Ably/CompatibilityMacros.h>
-#if COCOAPODS && !TEST_SUITE
 #import <SocketRocketAblyFork/SRWebSocket.h>
-#else
-// Carthage
-#import <SocketRocket/SRWebSocket.h>
-#endif
 #import <Ably/ARTEncoder.h>
 #import <Ably/ARTAuth.h>
 
@@ -32,6 +27,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSURL *)setupWebSocket:(NSArray<NSURLQueryItem *> *)params withOptions:(ARTClientOptions *)options resumeKey:(NSString *_Nullable)resumeKey connectionSerial:(NSNumber *_Nullable)connectionSerial;
 
 - (void)setState:(ARTRealtimeTransportState)state;
+
+@end
+
+#pragma mark - ARTEvent
+
+@interface ARTEvent (TransportState)
+- (instancetype)initWithTransportState:(ARTRealtimeTransportState)value;
++ (instancetype)newWithTransportState:(ARTRealtimeTransportState)value;
 
 @end
 

@@ -18,6 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (ARTPushActivationStateMachine *)activationMachine;
 
+- (void)resetActivationStateMachineSingleton;
+
 @end
 
 NS_ASSUME_NONNULL_END

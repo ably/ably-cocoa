@@ -2922,14 +2922,20 @@ class RealtimeClientChannel: QuickSpec {
                     let realtime = ARTRealtime(options: options)
                     defer { realtime.close() }
 
-                    var restChannelHistoryMethodWasCalled = false
-                    let hook = ARTRestChannel.testSuite_injectIntoClassMethod(#selector(ARTRestChannel.history(_:callback:))) {
-                        restChannelHistoryMethodWasCalled = true
-                    }
-                    defer { hook?.remove() }
-
                     let channelRest = rest.channels.get("test")
                     let channelRealtime = realtime.channels.get("test")
+
+                    var restChannelHistoryMethodWasCalled = false
+
+                    let hookRest = channelRest.testSuite_injectIntoMethod(after: #selector(ARTRestChannel.history(_:callback:))) {
+                        restChannelHistoryMethodWasCalled = true
+                    }
+                    defer { hookRest.remove() }
+
+                    let hookRealtime = channelRealtime.testSuite_injectIntoMethod(after: #selector(ARTRestChannel.history(_:callback:))) {
+                        restChannelHistoryMethodWasCalled = true
+                    }
+                    defer { hookRealtime.remove() }
 
                     let queryRealtime = ARTRealtimeHistoryQuery()
                     queryRealtime.start = NSDate() as Date
@@ -3422,7 +3428,7 @@ class RealtimeClientChannel: QuickSpec {
 
                                 // Check retry
                                 let start = NSDate()
-                                channel.once(.attaching) { stateChange in
+                                channel.once(.attached) { stateChange in
                                     let end = NSDate()
                                     expect(start).to(beCloseTo(end, within: 1.5))
                                     expect(stateChange?.reason).to(beNil())

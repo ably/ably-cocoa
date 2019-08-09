@@ -164,6 +164,57 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
+- (void)sync {
+    [self sync:nil];
+}
+
+- (void)sync:(void (^)(ARTErrorInfo *__art_nullable error))callback {
+    if (callback) {
+        void (^userCallback)(ARTErrorInfo *__art_nullable error) = callback;
+        callback = ^(ARTErrorInfo *__art_nullable error) {
+            ART_EXITING_ABLY_CODE(self->_realtime.rest);
+            dispatch_async(self->_userQueue, ^{
+                userCallback(error);
+            });
+        };
+    }
+
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
+    switch (self.state) {
+        case ARTRealtimeChannelInitialized:
+        case ARTRealtimeChannelDetaching:
+        case ARTRealtimeChannelDetached: {
+            ARTErrorInfo *error = [ARTErrorInfo createWithCode:40000 message:@"unable to sync to channel; not attached"];
+            [self.logger logWithError:error];
+            if (callback) callback(error);
+            return;
+        }
+        default:
+            break;
+    }
+
+    [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) requesting a sync operation", _realtime, self, self.name];
+
+    ARTProtocolMessage *msg = [[ARTProtocolMessage alloc] init];
+    msg.action = ARTProtocolMessageSync;
+    msg.channel = self.name;
+    msg.channelSerial = self.presenceMap.syncChannelSerial;
+
+    [self.presenceMap startSync];
+    [self.realtime send:msg sentCallback:^(ARTErrorInfo *error) {
+        if (error) {
+            [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) SYNC request failed with %@", self->_realtime, self, self.name, error];
+            [self.presenceMap endSync];
+            callback(error);
+        }
+        else {
+            [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) SYNC requested with success", self->_realtime, self, self.name];
+            callback(nil);
+        }
+    } ackCallback:nil];
+} ART_TRY_OR_MOVE_TO_FAILED_END
+}
+
 - (void)requestContinueSync {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) requesting to continue sync operation after reconnect using msgSerial %lld and channelSerial %@", _realtime, self, self.name, self.presenceMap.syncMsgSerial, self.presenceMap.syncChannelSerial];
@@ -174,9 +225,13 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     msg.channelSerial = self.presenceMap.syncChannelSerial;
     msg.channel = self.name;
 
-    [self.realtime send:msg sentCallback:nil ackCallback:^(ARTStatus *status) {
-        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) continue sync, status is %@", self->_realtime, self, self.name, status];
-    }];
+    [self.presenceMap startSync];
+    [self.realtime send:msg sentCallback:^(ARTErrorInfo *error) {
+        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) continue sync, error is %@", self->_realtime, self, self.name, error];
+        if (error) {
+            [self.presenceMap endSync];
+        }
+    } ackCallback:nil];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
@@ -451,7 +506,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 dispatch_sync(_queue, ^{
 ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
     if (self.state_nosync == ARTRealtimeChannelFailed) {
-        if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in Failed state."]);
+        if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in FAILED state."]);
+        [self.logger warn:@"R:%p C:%p (%@) subscribe has been ignored (attempted to subscribe while channel is in FAILED state)", self->_realtime, self, self.name];
         return;
     }
     [self _attach:onAttach];
@@ -491,7 +547,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 dispatch_sync(_queue, ^{
 ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
     if (self.state_nosync == ARTRealtimeChannelFailed) {
-        if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in Failed state."]);
+        if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in FAILED state."]);
+        [self.logger warn:@"R:%p C:%p (%@) subscribe of '%@' has been ignored (attempted to subscribe while channel is in FAILED state)", self->_realtime, self, self.name, name];
         return;
     }
     [self _attach:onAttach];
@@ -585,7 +642,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
 - (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) channel state transitions to %tu - %@", _realtime, self, self.name, state, ARTRealtimeChannelStateToStr(state)];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) channel state transitions from %tu - %@ to %tu - %@", _realtime, self, self.name, self.state_nosync, ARTRealtimeChannelStateToStr(self.state_nosync), state, ARTRealtimeChannelStateToStr(state)];
     ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:state previous:self.state_nosync event:(ARTChannelEvent)state reason:status.errorInfo];
     self.state = state;
 
@@ -688,7 +745,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
     if (message.hasPresence) {
         [self.presenceMap startSync];
-        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) PresenceMap sync started", _realtime, self, self.name];
     }
     else if ([self.presenceMap.members count] > 0 || [self.presenceMap.localMembers count] > 0) {
         if (!message.resumed) {
@@ -827,11 +883,11 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
                 [self.logger error:@"R:%p C:%p (%@) %@", _realtime, self, self.name, errorInfo.message];
             }
         }
-        
+
         if (!presence.timestamp) {
             presence.timestamp = message.timestamp;
         }
-        
+
         if (!presence.id) {
             presence.id = [NSString stringWithFormat:@"%@:%d", message.id, i];
         }
@@ -852,7 +908,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
     if (!self.presenceMap.syncInProgress) {
         [self.presenceMap startSync];
-        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) PresenceMap sync started", _realtime, self, self.name];
     }
 
     for (int i=0; i<[message.presence count]; i++) {
@@ -864,6 +919,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
     if ([self isLastChannelSerial:message.channelSerial]) {
         [self.presenceMap endSync];
+        self.presenceMap.syncChannelSerial = nil;
         [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) PresenceMap sync ended", _realtime, self, self.name];
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END

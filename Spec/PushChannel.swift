@@ -21,7 +21,7 @@ class PushChannel : QuickSpec {
             rest = ARTRest(key: "xxxx:xxxx")
             rest.options.clientId = "tester"
             rest.httpExecutor = mockHttpExecutor
-            rest.resetDeviceOnceToken()
+            rest.resetDeviceSingleton()
         }
 
         // RSH7
@@ -44,7 +44,7 @@ class PushChannel : QuickSpec {
 
                 // RSH7a2, RSH7a3
                 it("should do a POST request to /push/channelSubscriptions and include device authentication") {
-                    let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", deviceId: rest.device.id)
+                    let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
                     rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
                     defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
@@ -80,7 +80,7 @@ class PushChannel : QuickSpec {
                     expect(body.value(forKey: "deviceId") as? String).to(equal(rest.device.id))
                     expect(body.value(forKey: "channel") as? String).to(equal(channel.name))
 
-                    let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
+                    let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
                     expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
                     expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"]).to(beNil())
                 }
@@ -90,7 +90,7 @@ class PushChannel : QuickSpec {
             context("subscribeClient") {
                 // RSH7b1
                 it("should fail if the LocalDevice doesn't have a clientId") {
-                    let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", deviceId: rest.device.id)
+                    let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
                     rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
                     defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
@@ -111,7 +111,7 @@ class PushChannel : QuickSpec {
 
                 // RSH7b2
                 it("should do a POST request to /push/channelSubscriptions") {
-                    let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", deviceId: rest.device.id)
+                    let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
                     rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
                     defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
@@ -147,7 +147,7 @@ class PushChannel : QuickSpec {
                     expect(body.value(forKey: "clientId") as? String).to(equal(rest.device.clientId))
                     expect(body.value(forKey: "channel") as? String).to(equal(channel.name))
 
-                    expect(request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]).to(beNil())
+                    expect(request.allHTTPHeaderFields?["X-Ably-DeviceToken"]).to(beNil())
                     expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"]).to(beNil())
                 }
             }
@@ -169,7 +169,7 @@ class PushChannel : QuickSpec {
 
                 // RSH7c2, RSH7c3
                 it("should do a DELETE request to /push/channelSubscriptions and include device authentication") {
-                    let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", deviceId: rest.device.id)
+                    let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
                     rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
                     defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
@@ -195,7 +195,7 @@ class PushChannel : QuickSpec {
                     expect(query).to(haveParam("deviceId", withValue: rest.device.id))
                     expect(query).to(haveParam("channel", withValue: channel.name))
 
-                    let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]
+                    let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
                     expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
                     expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"]).to(beNil())
                 }
@@ -205,7 +205,7 @@ class PushChannel : QuickSpec {
             context("unsubscribeClient") {
                 // RSH7d1
                 it("should fail if the LocalDevice doesn't have a clientId") {
-                    let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", deviceId: rest.device.id)
+                    let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
                     rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
                     defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
@@ -226,7 +226,7 @@ class PushChannel : QuickSpec {
 
                 // RSH7d2
                 it("should do a DELETE request to /push/channelSubscriptions") {
-                    let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", deviceId: rest.device.id)
+                    let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
                     rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
                     defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
@@ -252,7 +252,7 @@ class PushChannel : QuickSpec {
                     expect(query).to(haveParam("clientId", withValue: rest.device.clientId!))
                     expect(query).to(haveParam("channel", withValue: channel.name))
 
-                    expect(request.allHTTPHeaderFields?["X-Ably-DeviceIdentityToken"]).to(beNil())
+                    expect(request.allHTTPHeaderFields?["X-Ably-DeviceToken"]).to(beNil())
                     expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"]).to(beNil())
                 }
             }
@@ -348,7 +348,7 @@ class PushChannel : QuickSpec {
                     ARTChannels_getChannelNamePrefix = nil
 
                     // Activate device
-                    let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", deviceId: rest.device.id)
+                    let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
                     rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
                     defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
