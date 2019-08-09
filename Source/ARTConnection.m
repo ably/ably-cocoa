@@ -17,12 +17,6 @@
     ARTQueuedDealloc *_dealloc;
 }
 
-- (void)internalAsync:(void (^)(ARTConnectionInternal * _Nonnull))use {
-    dispatch_async(_internal.queue, ^{
-        use(self->_internal);
-    });
-}
-
 - (ARTConnectionInternal *_Nonnull)internal_nosync {
     return _internal;
 }
