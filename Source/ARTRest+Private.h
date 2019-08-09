@@ -77,6 +77,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRest ()
 
+@property (nonatomic, readonly) ARTRestInternal *internal;
+
 - (void)internalAsync:(void (^)(ARTRestInternal *))use;
 
 @end

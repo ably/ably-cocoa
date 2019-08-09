@@ -14,7 +14,6 @@
 #import "ARTQueuedDealloc.h"
 
 @implementation ARTConnection {
-    ARTConnectionInternal *_internal;
     ARTQueuedDealloc *_dealloc;
 }
 

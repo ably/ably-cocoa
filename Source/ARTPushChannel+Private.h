@@ -22,6 +22,8 @@
 
 @interface ARTPushChannel ()
 
+@property (nonatomic, readonly) ARTPushChannelInternal *internal;
+
 - (instancetype)initWithInternal:(ARTPushChannelInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc;
 
 @end

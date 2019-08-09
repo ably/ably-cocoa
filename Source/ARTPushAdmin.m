@@ -16,7 +16,6 @@
 #import "ARTJsonLikeEncoder.h"
 
 @implementation ARTPushAdmin {
-    ARTPushAdminInternal *_internal;
     ARTQueuedDealloc *_dealloc;
 }
 

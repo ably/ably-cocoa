@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRestPresence ()
 
+@property (nonatomic, readonly) ARTRestPresenceInternal *internal;
+
 - (instancetype)initWithInternal:(ARTRestPresenceInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc;
 
 @end

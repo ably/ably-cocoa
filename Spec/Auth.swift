@@ -30,15 +30,15 @@ class Auth : QuickSpec {
                 let clientOptions = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                 clientOptions.tls = false
 
-                expect{ ARTRestInternal(options: clientOptions) }.to(raiseException())
+                expect{ ARTRest(options: clientOptions) }.to(raiseException())
             }
 
             // RSA11
             it("should send the API key in the Authorization header") {
                 let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
-                let client = ARTRestInternal(options: options)
+                let client = ARTRest(options: options)
                 testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                client.httpExecutor = testHTTPExecutor
+                client.internal.httpExecutor = testHTTPExecutor
                 
                 waitUntil(timeout: testTimeout) { done in
                     client.channels.get("test").publish(nil, data: "message") { error in
@@ -46,7 +46,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                let key64 = "\(client.options.key!)"
+                let key64 = "\(client.internal.options.key!)"
                     .data(using: .utf8)!
                     .base64EncodedString(options: Data.Base64EncodingOptions(rawValue: 0))
                                 
@@ -64,9 +64,9 @@ class Auth : QuickSpec {
 
             // RSA2
             it("should be default when an API key is set") {
-                let client = ARTRestInternal(options: ARTClientOptions(key: "fake:key"))
+                let client = ARTRest(options: ARTClientOptions(key: "fake:key"))
 
-                expect(client.auth.method).to(equal(ARTAuthMethod.basic))
+                expect(client.auth.internal.method).to(equal(ARTAuthMethod.basic))
             }
         }
 
@@ -78,9 +78,9 @@ class Auth : QuickSpec {
                 it("should work over HTTP") {
                     let options = AblyTests.clientOptions(requestToken: true)
                     options.tls = false
-                    let clientHTTP = ARTRestInternal(options: options)
+                    let clientHTTP = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    clientHTTP.httpExecutor = testHTTPExecutor
+                    clientHTTP.internal.httpExecutor = testHTTPExecutor
                     
                     waitUntil(timeout: testTimeout) { done in
                         clientHTTP.channels.get("test").publish(nil, data: "message") { error in
@@ -102,9 +102,9 @@ class Auth : QuickSpec {
                 it("should work over HTTPS") {
                     let options = AblyTests.clientOptions(requestToken: true)
                     options.tls = true
-                    let clientHTTPS = ARTRestInternal(options: options)
+                    let clientHTTPS = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    clientHTTPS.httpExecutor = testHTTPExecutor
+                    clientHTTPS.internal.httpExecutor = testHTTPExecutor
                     
                     waitUntil(timeout: testTimeout) { done in
                         clientHTTPS.channels.get("test").publish(nil, data: "message") { error in
@@ -128,9 +128,9 @@ class Auth : QuickSpec {
                     let options = AblyTests.clientOptions()
                     options.token = getTestToken()
 
-                    let client = ARTRestInternal(options: options)
+                    let client = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    client.httpExecutor = testHTTPExecutor
+                    client.internal.httpExecutor = testHTTPExecutor
                     
                     waitUntil(timeout: testTimeout) { done in
                         client.channels.get("test").publish(nil, data: "message") { error in
@@ -138,7 +138,7 @@ class Auth : QuickSpec {
                         }
                     }
 
-                    guard let currentToken = client.options.token else {
+                    guard let currentToken = client.internal.options.token else {
                         fail("No access token")
                         return
                     }
@@ -161,12 +161,12 @@ class Auth : QuickSpec {
                     options.token = getTestToken()
                     options.autoConnect = false
 
-                    let client = ARTRealtimeInternal(options: options)
+                    let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
-                    client.setTransport(TestProxyTransport.self)
+                    client.internal.setTransport(TestProxyTransport.self)
                     client.connect()
 
-                    if let transport = client.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
+                    if let transport = client.internal.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
                         expect(query).to(haveParam("accessToken", withValue: client.auth.tokenDetails?.token ?? ""))
                     }
                     else {
@@ -182,9 +182,9 @@ class Auth : QuickSpec {
                         let options = ARTClientOptions()
                         caseSetter(options)
 
-                        let client = ARTRestInternal(options: options)
+                        let client = ARTRest(options: options)
 
-                        expect(client.auth.method).to(equal(ARTAuthMethod.token))
+                        expect(client.auth.internal.method).to(equal(ARTAuthMethod.token))
                     }
                 }
 
@@ -193,13 +193,13 @@ class Auth : QuickSpec {
                     let options = AblyTests.clientOptions()
                     options.token = getTestToken()
 
-                    let rest = ARTRestInternal(options: options)
+                    let rest = ARTRest(options: options)
                     // No means to renew the token is provided
-                    expect(rest.options.key).to(beNil())
-                    expect(rest.options.authCallback).to(beNil())
-                    expect(rest.options.authUrl).to(beNil())
+                    expect(rest.internal.options.key).to(beNil())
+                    expect(rest.internal.options.authCallback).to(beNil())
+                    expect(rest.internal.options.authUrl).to(beNil())
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    rest.httpExecutor = testHTTPExecutor
+                    rest.internal.httpExecutor = testHTTPExecutor
 
                     let channel = rest.channels.get("test")
 
@@ -226,13 +226,13 @@ class Auth : QuickSpec {
                         delay(0.2) { done() }
                     }
 
-                    let realtime = ARTRealtimeInternal(options: options)
+                    let realtime = ARTRealtime(options: options)
                     defer { realtime.dispose(); realtime.close() }
                     // No means to renew the token is provided
-                    expect(realtime.options.key).to(beNil())
-                    expect(realtime.options.authCallback).to(beNil())
-                    expect(realtime.options.authUrl).to(beNil())
-                    realtime.setTransport(TestProxyTransport.self)
+                    expect(realtime.internal.options.key).to(beNil())
+                    expect(realtime.internal.options.authCallback).to(beNil())
+                    expect(realtime.internal.options.authUrl).to(beNil())
+                    realtime.internal.setTransport(TestProxyTransport.self)
 
                     let channel = realtime.channels.get("test")
 
@@ -254,9 +254,9 @@ class Auth : QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     options.useTokenAuth = true
 
-                    let rest = ARTRestInternal(options: options)
+                    let rest = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    rest.httpExecutor = testHTTPExecutor
+                    rest.internal.httpExecutor = testHTTPExecutor
 
                     let channel = rest.channels.get("test")
 
@@ -287,7 +287,7 @@ class Auth : QuickSpec {
                     }
                     options.autoConnect = false
 
-                    let realtime = ARTRealtimeInternal(options: options)
+                    let realtime = ARTRealtime(options: options)
                     defer { realtime.dispose(); realtime.close() }
 
                     waitUntil(timeout: testTimeout) { done in
@@ -316,7 +316,7 @@ class Auth : QuickSpec {
                     }
                     options.autoConnect = false
 
-                    let realtime = ARTRealtimeInternal(options: options)
+                    let realtime = ARTRealtime(options: options)
                     defer { realtime.dispose(); realtime.close() }
 
                     waitUntil(timeout: testTimeout) { done in
@@ -346,7 +346,7 @@ class Auth : QuickSpec {
                         options.tokenDetails = tokenDetails
                         options.key = nil
 
-                        let rest = ARTRestInternal(options: options)
+                        let rest = ARTRest(options: options)
                         let proxyHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
 
                         // Sync server time offset
@@ -367,9 +367,9 @@ class Auth : QuickSpec {
                             }
                         }
 
-                        expect(rest.auth.timeOffset).toNot(beNil())
+                        expect(rest.auth.internal.timeOffset).toNot(beNil())
 
-                        rest.httpExecutor = proxyHTTPExecutor
+                        rest.internal.httpExecutor = proxyHTTPExecutor
                         waitUntil(timeout: testTimeout) { done in
                             rest.channels.get("foo").history { _, error in
                                 guard let error = error else {
@@ -396,12 +396,12 @@ class Auth : QuickSpec {
                         options.tokenDetails = tokenDetails
                         options.key = nil
 
-                        let rest = ARTRestInternal(options: options)
+                        let rest = ARTRest(options: options)
                         let proxyHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                        rest.httpExecutor = proxyHTTPExecutor
+                        rest.internal.httpExecutor = proxyHTTPExecutor
 
                         // No server time offset
-                        rest.auth.clearTimeOffset()
+                        rest.auth.internal.clearTimeOffset()
 
                         // Let the token expire
                         waitUntil(timeout: testTimeout) { done in
@@ -434,7 +434,7 @@ class Auth : QuickSpec {
                     let options = AblyTests.clientOptions()
                     options.autoConnect = false
                     options.authUrl = URL(string: "https://echo.ably.io/respondwith?status=403")!
-                    let realtime = ARTRealtimeInternal(options: options)
+                    let realtime = ARTRealtime(options: options)
                     defer { realtime.dispose(); realtime.close() }
                     
                     waitUntil(timeout: testTimeout) { done in
@@ -456,7 +456,7 @@ class Auth : QuickSpec {
                         authCallbackHasBeenInvoked = true
                         completion(nil, ARTErrorInfo(domain: "io.ably.cocoa", code: 40300, userInfo: ["ARTErrorInfoStatusCode": 403]))
                     }
-                    let realtime = ARTRealtimeInternal(options: options)
+                    let realtime = ARTRealtime(options: options)
                     defer { realtime.dispose(); realtime.close() }
                     
                     waitUntil(timeout: testTimeout) { done in
@@ -486,7 +486,7 @@ class Auth : QuickSpec {
                         let options = ARTClientOptions()
                         caseSetter(options)
                         
-                        expect{ ARTRestInternal(options: options) }.to(raiseException())
+                        expect{ ARTRest(options: options) }.to(raiseException())
                     }
                 }
 
@@ -500,7 +500,7 @@ class Auth : QuickSpec {
                             let options = AblyTests.clientOptions()
                             options.autoConnect = false
                             options.authUrl = URL(string: "http://echo.ably.io")! as URL
-                            let realtime = ARTRealtimeInternal(options: options)
+                            let realtime = ARTRealtime(options: options)
                             defer { realtime.dispose(); realtime.close() }
 
                             waitUntil(timeout: testTimeout) { done in
@@ -534,7 +534,7 @@ class Auth : QuickSpec {
                             options.authParams?.append(NSURLQueryItem(name: "type", value: "text") as URLQueryItem)
                             options.authParams?.append(NSURLQueryItem(name: "body", value: token) as URLQueryItem)
 
-                            let realtime = ARTRealtimeInternal(options: options)
+                            let realtime = ARTRealtime(options: options)
                             defer { realtime.dispose(); realtime.close() }
 
                             waitUntil(timeout: testTimeout) { done in
@@ -544,15 +544,13 @@ class Auth : QuickSpec {
                                 }
                             }
 
-                            AblyTests.queue.sync {
-                                // Token reauth will fail
-                                realtime.options.authParams = [NSURLQueryItem]() as [URLQueryItem]?
-                            }
+                            // Token reauth will fail
+                            realtime.internal.options.authParams = [NSURLQueryItem]() as [URLQueryItem]?
 
                             // Inject AUTH
                             let authMessage = ARTProtocolMessage()
                             authMessage.action = ARTProtocolMessageAction.auth
-                            realtime.transport?.receive(authMessage)
+                            realtime.internal.transport?.receive(authMessage)
 
                             expect(realtime.connection.errorReason).toEventuallyNot(beNil(), timeout: testTimeout)
                             guard let errorInfo = realtime.connection.errorReason else {
@@ -574,7 +572,7 @@ class Auth : QuickSpec {
                             options.authCallback = { tokenParams, completion in
                                 completion(nil, NSError(domain: NSURLErrorDomain, code: -1003, userInfo: [NSLocalizedDescriptionKey: "A server with the specified hostname could not be found."]))
                             }
-                            let realtime = ARTRealtimeInternal(options: options)
+                            let realtime = ARTRealtime(options: options)
                             defer { realtime.dispose(); realtime.close() }
 
                             waitUntil(timeout: testTimeout) { done in
@@ -607,7 +605,7 @@ class Auth : QuickSpec {
                             options.authCallback = { tokenParams, completion in
                                 getTestTokenDetails(completion: completion)
                             }
-                            let realtime = ARTRealtimeInternal(options: options)
+                            let realtime = ARTRealtime(options: options)
                             defer { realtime.dispose(); realtime.close() }
 
                             waitUntil(timeout: testTimeout) { done in
@@ -618,14 +616,14 @@ class Auth : QuickSpec {
                             }
 
                             // Token should renew and fail
-                            realtime.options.authCallback = { tokenParams, completion in
+                            realtime.internal.options.authCallback = { tokenParams, completion in
                                 completion(nil, NSError(domain: NSURLErrorDomain, code: -1003, userInfo: [NSLocalizedDescriptionKey: "A server with the specified hostname could not be found."]))
                             }
 
                             // Inject AUTH
                             let authMessage = ARTProtocolMessage()
                             authMessage.action = ARTProtocolMessageAction.auth
-                            realtime.transport?.receive(authMessage)
+                            realtime.internal.transport?.receive(authMessage)
 
                             expect(realtime.connection.errorReason).toEventuallyNot(beNil(), timeout: testTimeout)
                             guard let errorInfo = realtime.connection.errorReason else {
@@ -650,7 +648,7 @@ class Auth : QuickSpec {
                             let invalidTokenFormat = "{secret_token:xxx}"
                             options.authParams?.append(NSURLQueryItem(name: "body", value: invalidTokenFormat) as URLQueryItem)
 
-                            let realtime = ARTRealtimeInternal(options: options)
+                            let realtime = ARTRealtime(options: options)
                             defer { realtime.dispose(); realtime.close() }
 
                             waitUntil(timeout: testTimeout) { done in
@@ -687,7 +685,7 @@ class Auth : QuickSpec {
                             let token = getTestToken()
                             options.authParams?.append(NSURLQueryItem(name: "body", value: token) as URLQueryItem)
 
-                            let realtime = ARTRealtimeInternal(options: options)
+                            let realtime = ARTRealtime(options: options)
                             defer { realtime.dispose(); realtime.close() }
 
                             waitUntil(timeout: testTimeout) { done in
@@ -699,11 +697,14 @@ class Auth : QuickSpec {
 
                             // Token should renew and fail
                             let invalidToken = String(token.reversed())
-                            AblyTests.queue.sync {
-                                realtime.options.authParams = [NSURLQueryItem]() as [URLQueryItem]?
-                                realtime.options.authParams?.append(NSURLQueryItem(name: "type", value: "json") as URLQueryItem)
-                                let invalidTokenFormat = "{secret_token:xxx}"
-                                realtime.options.authParams?.append(NSURLQueryItem(name: "body", value: invalidTokenFormat) as URLQueryItem)
+                            waitUntil(timeout: testTimeout) { done in
+                                realtime.unwrapAsync { realtime in
+                                    realtime.options.authParams = [NSURLQueryItem]() as [URLQueryItem]?
+                                    realtime.options.authParams?.append(NSURLQueryItem(name: "type", value: "json") as URLQueryItem)
+                                    let invalidTokenFormat = "{secret_token:xxx}"
+                                    realtime.options.authParams?.append(NSURLQueryItem(name: "body", value: invalidTokenFormat) as URLQueryItem)
+                                    done()
+                                }
                             }
 
                             realtime.connection.on() { stateChange in
@@ -718,7 +719,7 @@ class Auth : QuickSpec {
                             // Inject AUTH
                             let authMessage = ARTProtocolMessage()
                             authMessage.action = ARTProtocolMessageAction.auth
-                            realtime.transport?.receive(authMessage)
+                            realtime.internal.transport?.receive(authMessage)
 
                             expect(realtime.connection.errorReason).toEventuallyNot(beNil(), timeout: testTimeout)
                             guard let errorInfo = realtime.connection.errorReason else {
@@ -744,7 +745,7 @@ class Auth : QuickSpec {
                                 // Ignore `completion` closure to force a time out
                             }
 
-                            let realtime = ARTRealtimeInternal(options: options)
+                            let realtime = ARTRealtime(options: options)
                             defer { realtime.dispose(); realtime.close() }
 
                             waitUntil(timeout: testTimeout) { done in
@@ -778,7 +779,7 @@ class Auth : QuickSpec {
                                 getTestTokenDetails(completion: completion)
                             }
 
-                            let realtime = ARTRealtimeInternal(options: options)
+                            let realtime = ARTRealtime(options: options)
                             defer { realtime.dispose(); realtime.close() }
 
                             waitUntil(timeout: testTimeout) { done in
@@ -794,15 +795,18 @@ class Auth : QuickSpec {
                             ARTDefault.setRealtimeRequestTimeout(0.5)
 
                             // Token should renew and fail
-                            realtime.options.authCallback = { tokenParams, completion in
+                            realtime.internal.options.authCallback = { tokenParams, completion in
                                 // Ignore `completion` closure to force a time out
                             }
 
                             // Inject AUTH
                             let authMessage = ARTProtocolMessage()
                             authMessage.action = ARTProtocolMessageAction.auth
-                            AblyTests.queue.sync {
-                                realtime.transport?.receive(authMessage)
+                            waitUntil(timeout: testTimeout) { done in
+                                realtime.unwrapAsync { realtime in
+                                    realtime.transport?.receive(authMessage)
+                                    done()
+                                }
                             }
 
                             expect(realtime.connection.errorReason).toEventuallyNot(beNil(), timeout: testTimeout)
@@ -829,15 +833,15 @@ class Auth : QuickSpec {
                         options.useTokenAuth = true
                         options.clientId = expectedClientId
 
-                        let client = ARTRestInternal(options: options)
+                        let client = ARTRest(options: options)
                         testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                        client.httpExecutor = testHTTPExecutor
+                        client.internal.httpExecutor = testHTTPExecutor
 
                         waitUntil(timeout: testTimeout) { done in
                             // Token
                             client.auth.authorize(nil, options: nil) { tokenDetails, error in
                                 expect(error).to(beNil())
-                                expect(client.auth.method).to(equal(ARTAuthMethod.token))
+                                expect(client.auth.internal.method).to(equal(ARTAuthMethod.token))
                                 guard let tokenDetails = tokenDetails else {
                                     fail("TokenDetails is nil"); done(); return
                                 }
@@ -861,9 +865,9 @@ class Auth : QuickSpec {
                         options.clientId = expectedClientId
                         options.autoConnect = false
 
-                        let client = ARTRealtimeInternal(options: options)
+                        let client = ARTRealtime(options: options)
                         defer { client.dispose(); client.close() }
-                        client.setTransport(TestProxyTransport.self)
+                        client.internal.setTransport(TestProxyTransport.self)
                         client.connect()
 
                         waitUntil(timeout: testTimeout) { done in
@@ -881,7 +885,7 @@ class Auth : QuickSpec {
                             }
                         }
 
-                        guard let transport = client.transport as? TestProxyTransport else {
+                        guard let transport = client.internal.transport as? TestProxyTransport else {
                             fail("Transport is nil"); return
                         }
                         guard let connectedMessage = transport.protocolMessagesReceived.filter({ $0.action == .connected }).last else {
@@ -895,8 +899,8 @@ class Auth : QuickSpec {
                     it("with wildcard") {
                         let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                         options.clientId = "*"
-                        expect{ ARTRestInternal(options: options) }.to(raiseException())
-                        expect{ ARTRealtimeInternal(options: options) }.to(raiseException())
+                        expect{ ARTRest(options: options) }.to(raiseException())
+                        expect{ ARTRealtime(options: options) }.to(raiseException())
                     }
                 }
                 
@@ -905,7 +909,7 @@ class Auth : QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = nil
                     
-                    let clientBasic = ARTRestInternal(options: options)
+                    let clientBasic = ARTRest(options: options)
 
                     waitUntil(timeout: testTimeout) { done in
                         // Basic
@@ -917,7 +921,7 @@ class Auth : QuickSpec {
                         }
                     }
 
-                    let clientToken = ARTRestInternal(options: options)
+                    let clientToken = ARTRest(options: options)
 
                     waitUntil(timeout: testTimeout) { done in
                         // Last TokenDetails
@@ -941,7 +945,7 @@ class Auth : QuickSpec {
                         options.authCallback = { tokenParams, completion in
                             completion(wrongTokenDetails, nil)
                         }
-                        let realtime = ARTRealtimeInternal(options: options)
+                        let realtime = ARTRealtime(options: options)
                         defer { realtime.close() }
 
                         waitUntil(timeout: testTimeout) { done in
@@ -957,7 +961,7 @@ class Auth : QuickSpec {
                     it("with Rest, it should result in an appropriate error response") {
                         let options = AblyTests.commonAppSetup()
                         options.clientId = "john"
-                        let rest = ARTRestInternal(options: options)
+                        let rest = ARTRest(options: options)
 
                         waitUntil(timeout: testTimeout) { done in
                             rest.auth.requestToken(ARTTokenParams(clientId: "wrong"), with: nil) { tokenDetails, error in
@@ -994,8 +998,8 @@ class Auth : QuickSpec {
 
                 let options = ARTClientOptions()
                 options.authUrl = URL(string: "https://ably-test-suite.io")
-                let rest = ARTRestInternal(options: options)
-                let request = rest.auth.buildRequest(options, with: tokenParams)
+                let rest = ARTRest(options: options)
+                let request = rest.auth.internal.buildRequest(options, with: tokenParams)
 
                 if let query = request.url?.query {
                     expect(query).to(haveParam("capability", withValue: "%7B%22*%22:%5B%22*%22%5D%7D"))
@@ -1012,9 +1016,9 @@ class Auth : QuickSpec {
                 expect(tokenParams.capability).to(beNil())
                 
                 let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
-                let rest = ARTRestInternal(options: options)
+                let rest = ARTRest(options: options)
                 let testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                rest.httpExecutor = testHTTPExecutor
+                rest.internal.httpExecutor = testHTTPExecutor
 
                 waitUntil(timeout: testTimeout) { done in
                     // Token
@@ -1042,9 +1046,9 @@ class Auth : QuickSpec {
                 tokenParams.capability = "{\"*\":[\"*\"]}"
 
                 let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
-                let rest = ARTRestInternal(options: options)
+                let rest = ARTRest(options: options)
                 let testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                rest.httpExecutor = testHTTPExecutor
+                rest.internal.httpExecutor = testHTTPExecutor
 
                 waitUntil(timeout: testTimeout) { done in
                     // Token
@@ -1073,9 +1077,9 @@ class Auth : QuickSpec {
                     let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                     options.clientId = expectedClientId
 
-                    let client = ARTRestInternal(options: options)
+                    let client = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    client.httpExecutor = testHTTPExecutor
+                    client.internal.httpExecutor = testHTTPExecutor
                     
                     waitUntil(timeout: testTimeout) { done in
                         client.channels.get("test").publish(nil, data: "message") { error in
@@ -1102,9 +1106,9 @@ class Auth : QuickSpec {
                     let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                     options.clientId = "client_string"
                     
-                    let client = ARTRestInternal(options: options)
+                    let client = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    client.httpExecutor = testHTTPExecutor
+                    client.internal.httpExecutor = testHTTPExecutor
                     
                     waitUntil(timeout: testTimeout) { done in
                         client.channels.get("test").publish(nil, data: "message") { error in
@@ -1125,7 +1129,7 @@ class Auth : QuickSpec {
                     let clientOptions = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                     clientOptions.clientId = "String"
                     
-                    expect(ARTRestInternal(options: clientOptions).options.clientId).to(equal("String"))
+                    expect(ARTRest(options: clientOptions).internal.options.clientId).to(equal("String"))
                 }
 
                 // RSA7a4
@@ -1139,7 +1143,7 @@ class Auth : QuickSpec {
                         }
                     }
                     options.defaultTokenParams = ARTTokenParams(clientId: "tester")
-                    let client = ARTRestInternal(options: options)
+                    let client = ARTRest(options: options)
                     let channel = client.channels.get("test")
 
                     expect(client.auth.clientId).to(equal("john"))
@@ -1179,7 +1183,7 @@ class Auth : QuickSpec {
                             }
                             realtime.connect()
                             
-                            let transport = realtime.transport as! TestProxyTransport
+                            let transport = realtime.internal.transport as! TestProxyTransport
                             transport.beforeProcessingReceivedMessage = { message in
                                 if message.action == .connected {
                                     if let details = message.connectionDetails {
@@ -1195,7 +1199,7 @@ class Auth : QuickSpec {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
                         options.token = getTestToken(clientId: "tester")
-                        let realtime = ARTRealtimeInternal(options: options)
+                        let realtime = ARTRealtime(options: options)
                         defer { realtime.dispose(); realtime.close() }
                         expect(realtime.auth.clientId).to(beNil())
 
@@ -1222,7 +1226,7 @@ class Auth : QuickSpec {
                         let clientOptions = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                         clientOptions.clientId = "Exist"
                         
-                        expect(ARTRestInternal(options: clientOptions).auth.clientId).to(equal("Exist"))
+                        expect(ARTRest(options: clientOptions).auth.clientId).to(equal("Exist"))
                     }
                     
                     // RSA7b2
@@ -1231,16 +1235,16 @@ class Auth : QuickSpec {
                         options.clientId = "client_string"
                         options.useTokenAuth = true
                         
-                        let client = ARTRestInternal(options: options)
+                        let client = ARTRest(options: options)
                         testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                        client.httpExecutor = testHTTPExecutor
+                        client.internal.httpExecutor = testHTTPExecutor
                         
                         // TokenDetails
                         waitUntil(timeout: 10) { done in
                             // Token
                             client.auth.authorize(nil, options: nil) { token, error in
                                 expect(error).to(beNil())
-                                expect(client.auth.method).to(equal(ARTAuthMethod.token))
+                                expect(client.auth.internal.method).to(equal(ARTAuthMethod.token))
                                 expect(client.auth.clientId).to(equal(options.clientId))
                                 done()
                             }
@@ -1270,7 +1274,7 @@ class Auth : QuickSpec {
                                 expect(stateChange!.reason).to(beNil())
                                 expect(realtime.auth.clientId).to(equal("john"))
 
-                                let transport = realtime.transport as! TestProxyTransport
+                                let transport = realtime.internal.transport as! TestProxyTransport
                                 let connectedProtocolMessage = transport.protocolMessagesReceived.filter{ $0.action == .connected }[0]
                                 expect(connectedProtocolMessage.connectionDetails!.clientId).to(equal("john"))
                                 done()
@@ -1283,7 +1287,7 @@ class Auth : QuickSpec {
                     it("client does not have an identity when a wildcard string '*' is present") {
                         let options = AblyTests.clientOptions()
                         options.token = getTestToken(clientId: "*")
-                        let realtime = ARTRealtimeInternal(options: options)
+                        let realtime = ARTRealtime(options: options)
                         defer { realtime.dispose(); realtime.close() }
                         waitUntil(timeout: testTimeout) { done in
                             realtime.connection.on(.connected) { _ in
@@ -1300,7 +1304,7 @@ class Auth : QuickSpec {
                     let clientOptions = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                     clientOptions.clientId = "*"
                     
-                    expect{ ARTRestInternal(options: clientOptions) }.to(raiseException())
+                    expect{ ARTRest(options: clientOptions) }.to(raiseException())
                 }
             }
         }
@@ -1312,7 +1316,7 @@ class Auth : QuickSpec {
                 it("should not merge with the configured params and options but instead replace all corresponding values, even when @null@") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "сlientId"
-                    let rest = ARTRestInternal(options: options)
+                    let rest = ARTRest(options: options)
 
                     let tokenParams = ARTTokenParams()
                     tokenParams.ttl = 2000
@@ -1333,7 +1337,7 @@ class Auth : QuickSpec {
 
                     let options2 = AblyTests.commonAppSetup()
                     options2.clientId = nil
-                    let rest2 = ARTRestInternal(options: options2)
+                    let rest2 = ARTRest(options: options2)
 
                     let precedenceOptions2 = AblyTests.commonAppSetup()
                     precedenceOptions2.clientId = nil
@@ -1354,7 +1358,7 @@ class Auth : QuickSpec {
                 it("should use configured defaults if the object arguments are omitted") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "tester"
-                    let rest = ARTRestInternal(options: options)
+                    let rest = ARTRest(options: options)
 
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.requestToken(nil, with: nil) { tokenDetails, error in
@@ -1425,9 +1429,9 @@ class Auth : QuickSpec {
                     options.authParams!.append(NSURLQueryItem(name: "type", value: "text") as URLQueryItem)
                     options.authParams!.append(NSURLQueryItem(name: "body", value: testToken) as URLQueryItem)
 
-                    let rest = ARTRestInternal(options: options)
+                    let rest = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    rest.httpExecutor = testHTTPExecutor
+                    rest.internal.httpExecutor = testHTTPExecutor
 
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.requestToken(nil, with: nil, callback: { tokenDetails, error in
@@ -1461,9 +1465,9 @@ class Auth : QuickSpec {
                     options.authParams?.append(NSURLQueryItem(name: "type", value: "json") as URLQueryItem)
                     options.authParams?.append(NSURLQueryItem(name: "body", value: jsonTokenDetails.toUTF8String) as URLQueryItem)
 
-                    let rest = ARTRestInternal(options: options)
+                    let rest = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    rest.httpExecutor = testHTTPExecutor
+                    rest.internal.httpExecutor = testHTTPExecutor
 
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.requestToken(nil, with: nil, callback: { tokenDetails, error in
@@ -1493,7 +1497,7 @@ class Auth : QuickSpec {
                     options.authUrl = URL(string: "http://echo.ably.io")
                     expect(options.authUrl).toNot(beNil())
 
-                    var rest = ARTRestInternal(options: options)
+                    var rest = ARTRest(options: options)
 
                     var tokenRequest: ARTTokenRequest?
                     waitUntil(timeout: testTimeout) { done in
@@ -1522,9 +1526,9 @@ class Auth : QuickSpec {
                     options.authParams?.append(NSURLQueryItem(name: "type", value: "json") as URLQueryItem)
                     options.authParams?.append(NSURLQueryItem(name: "body", value: jsonTokenRequest.toUTF8String) as URLQueryItem)
 
-                    rest = ARTRestInternal(options: options)
+                    rest = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    rest.httpExecutor = testHTTPExecutor
+                    rest.internal.httpExecutor = testHTTPExecutor
 
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.requestToken(nil, with: nil, callback: { tokenDetails, error in
@@ -1559,8 +1563,8 @@ class Auth : QuickSpec {
                         let tokenParams = ARTTokenParams()
                         tokenParams.clientId = "test"
 
-                        let rest = ARTRestInternal(options: clientOptions)
-                        let request = rest.auth.buildRequest(clientOptions, with: tokenParams)
+                        let rest = ARTRest(options: clientOptions)
+                        let request = rest.auth.internal.buildRequest(clientOptions, with: tokenParams)
 
                         for (header, expectedValue) in clientOptions.authHeaders! {
                             if let value = request.allHTTPHeaderFields?[header] {
@@ -1606,9 +1610,9 @@ class Auth : QuickSpec {
                         tokenParams.ttl = 2000
                         tokenParams.capability = "{\"cansubscribe:*\":[\"subscribe\"]}"
                         
-                        let rest = ARTRestInternal(options: clientOptions)
+                        let rest = ARTRest(options: clientOptions)
                         
-                        let request = rest.auth.buildRequest(clientOptions, with: tokenParams)
+                        let request = rest.auth.internal.buildRequest(clientOptions, with: tokenParams)
                         
                         let httpBodyJSON = try! JSONSerialization.jsonObject(with: request.httpBody ?? Data(), options: .mutableLeaves) as? NSDictionary
                         
@@ -1644,9 +1648,9 @@ class Auth : QuickSpec {
                     let tokenParams = ARTTokenParams()
                     tokenParams.clientId = "tester"
 
-                    let client = ARTRestInternal(options: options)
+                    let client = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    client.httpExecutor = testHTTPExecutor
+                    client.internal.httpExecutor = testHTTPExecutor
 
                     waitUntil(timeout: testTimeout) { done in
                         client.auth.requestToken(tokenParams, with: nil) { tokenDetails, error in
@@ -1661,25 +1665,25 @@ class Auth : QuickSpec {
                 it("should override previously configured parameters") {
                     let clientOptions = ARTClientOptions()
                     clientOptions.authUrl = URL(string: "http://auth.ably.io")
-                    let rest = ARTRestInternal(options: clientOptions)
+                    let rest = ARTRest(options: clientOptions)
                     
                     let authOptions = ARTAuthOptions()
                     authOptions.authUrl = URL(string: "http://auth.ably.io")
                     authOptions.authParams = [NSURLQueryItem(name: "ttl", value: "invalid") as URLQueryItem]
                     authOptions.authParams = [NSURLQueryItem(name: "test", value: "1") as URLQueryItem]
-                    let url = rest.auth.buildURL(authOptions, with: ARTTokenParams())
+                    let url = rest.auth.internal.buildURL(authOptions, with: ARTTokenParams())
                     expect(url.absoluteString).to(contain(URL(string: "http://auth.ably.io")?.absoluteString ?? ""))
                 }
             }
 
             // RSA8a
             it("implicitly creates a TokenRequest and requests a token") {
-                let rest = ARTRestInternal(options: AblyTests.commonAppSetup())
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                 var createTokenRequestMethodWasCalled = false
 
                 // Adds a block of code after `createTokenRequest` is triggered
-                let token = rest.auth.testSuite_injectIntoMethod(after: NSSelectorFromString("_createTokenRequest:options:callback:")) {
+                let token = rest.auth.internal.testSuite_injectIntoMethod(after: NSSelectorFromString("_createTokenRequest:options:callback:")) {
                     createTokenRequestMethodWasCalled = true
                 }
                 defer { token.remove() }
@@ -1702,7 +1706,7 @@ class Auth : QuickSpec {
                 let currentClientId = "client_string"
                 options.clientId = currentClientId
 
-                let rest = ARTRestInternal(options: options)
+                let rest = ARTRest(options: options)
 
                 it("using defaults") {
                     // Default values
@@ -1760,7 +1764,7 @@ class Auth : QuickSpec {
                         expect(tokenParams.clientId).to(beNil())
                         completion("token_string" as ARTTokenDetailsCompatible?, nil)
                     }
-                    let rest = ARTRestInternal(options: options)
+                    let rest = ARTRest(options: options)
 
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.requestToken(expectedTokenParams, with: nil) { tokenDetails, error in
@@ -1779,7 +1783,7 @@ class Auth : QuickSpec {
                         expect(tokenParams.clientId).to(beNil())
                         completion(ARTTokenDetails(token: "token_from_details"), nil)
                     }
-                    let rest = ARTRestInternal(options: options)
+                    let rest = ARTRest(options: options)
 
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.requestToken(expectedTokenParams, with: nil) { tokenDetails, error in
@@ -1794,7 +1798,7 @@ class Auth : QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     let expectedTokenParams = ARTTokenParams()
                     expectedTokenParams.clientId = "foo"
-                    var rest: ARTRestInternal!
+                    var rest: ARTRest!
 
                     options.authCallback = { tokenParams, completion in
                         expect(tokenParams.clientId).to(beIdenticalTo(expectedTokenParams.clientId))
@@ -1803,7 +1807,7 @@ class Auth : QuickSpec {
                         }
                     }
 
-                    rest = ARTRestInternal(options: options)
+                    rest = ARTRest(options: options)
 
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.requestToken(expectedTokenParams, with: nil) { tokenDetails, error in
@@ -1822,9 +1826,9 @@ class Auth : QuickSpec {
             it("ensure the message published does not have a clientId") {
                 let options = AblyTests.commonAppSetup()
                 options.token = getTestToken(clientId: nil)
-                let rest = ARTRestInternal(options: options)
+                let rest = ARTRest(options: options)
                 testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                rest.httpExecutor = testHTTPExecutor
+                rest.internal.httpExecutor = testHTTPExecutor
                 let channel = rest.channels.get("test")
 
                 waitUntil(timeout: testTimeout) { done in
@@ -1856,7 +1860,7 @@ class Auth : QuickSpec {
             it("ensure that the message is rejected") {
                 let options = AblyTests.commonAppSetup()
                 options.token = getTestToken(clientId: nil)
-                let rest = ARTRestInternal(options: options)
+                let rest = ARTRest(options: options)
                 let channel = rest.channels.get("test")
 
                 waitUntil(timeout: testTimeout) { done in
@@ -1875,7 +1879,7 @@ class Auth : QuickSpec {
             // RSA8f3
             it("ensure the message published with a wildcard '*' does not have a clientId") {
                 let options = AblyTests.commonAppSetup()
-                let rest = ARTRestInternal(options: options)
+                let rest = ARTRest(options: options)
 
                 waitUntil(timeout: testTimeout) { done in
                     rest.auth.authorize(ARTTokenParams(clientId: "*"), options: nil) { _, error in
@@ -1885,7 +1889,7 @@ class Auth : QuickSpec {
                 }
 
                 testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                rest.httpExecutor = testHTTPExecutor
+                rest.internal.httpExecutor = testHTTPExecutor
                 let channel = rest.channels.get("test")
 
                 waitUntil(timeout: testTimeout) { done in
@@ -1918,7 +1922,7 @@ class Auth : QuickSpec {
                 let options = AblyTests.commonAppSetup()
                 // Request a token with a wildcard '*' value clientId
                 options.token = getTestToken(clientId: "*")
-                let rest = ARTRestInternal(options: options)
+                let rest = ARTRest(options: options)
                 let channel = rest.channels.get("test")
 
                 waitUntil(timeout: testTimeout) { done in
@@ -1949,7 +1953,7 @@ class Auth : QuickSpec {
             it("should not merge with the configured params and options but instead replace all corresponding values, even when @null@") {
                 let options = AblyTests.commonAppSetup()
                 options.clientId = "client_string"
-                let rest = ARTRestInternal(options: options)
+                let rest = ARTRest(options: options)
 
                 let tokenParams = ARTTokenParams()
                 let defaultCapability = tokenParams.capability
@@ -1977,10 +1981,10 @@ class Auth : QuickSpec {
                 authOptions.key = options.key
 
                 let mockServerDate = Date().addingTimeInterval(120)
-                rest.auth.testSuite_returnValue(for: NSSelectorFromString("handleServerTime:"), with: mockServerDate)
+                rest.auth.internal.testSuite_returnValue(for: NSSelectorFromString("handleServerTime:"), with: mockServerDate)
 
                 var serverTimeRequestCount = 0
-                let hook = rest.testSuite_injectIntoMethod(after: #selector(rest._time(_:))) {
+                let hook = rest.internal.testSuite_injectIntoMethod(after: #selector(rest.internal._time(_:))) {
                     serverTimeRequestCount += 1
                 }
                 defer { hook.remove() }
@@ -2038,7 +2042,7 @@ class Auth : QuickSpec {
                 }
 
                 var testTokenRequest: ARTTokenRequest?
-                let rest = ARTRestInternal(options: defaultOptions)
+                let rest = ARTRest(options: defaultOptions)
                 rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
                     testTokenRequest = tokenRequest
                 })
@@ -2073,7 +2077,7 @@ class Auth : QuickSpec {
                     completion(tokenRequest, nil)
                 }
 
-                let rest = ARTRestInternal(options: defaultOptions)
+                let rest = ARTRest(options: defaultOptions)
                 rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
                     currentTokenRequest = tokenRequest
                 })
@@ -2090,7 +2094,7 @@ class Auth : QuickSpec {
 
             it("should replace defaults if `nil` option's field passed") {
                 let defaultOptions = AblyTests.commonAppSetup()
-                let rest = ARTRestInternal(options: defaultOptions)
+                let rest = ARTRest(options: defaultOptions)
 
                 let customOptions = ARTAuthOptions()
 
@@ -2108,7 +2112,7 @@ class Auth : QuickSpec {
             // RSA9h
             it("should use configured defaults if the object arguments are omitted") {
                 let options = AblyTests.commonAppSetup()
-                let rest = ARTRestInternal(options: options)
+                let rest = ARTRest(options: options)
 
                 let tokenParams = ARTTokenParams()
                 tokenParams.clientId = "tester"
@@ -2120,7 +2124,7 @@ class Auth : QuickSpec {
                 authOptions.key = options.key
 
                 var serverTimeRequestCount = 0
-                let hook = rest.testSuite_injectIntoMethod(after: #selector(rest._time(_:))) {
+                let hook = rest.internal.testSuite_injectIntoMethod(after: #selector(rest.internal._time(_:))) {
                     serverTimeRequestCount += 1
                 }
                 defer { hook.remove() }
@@ -2156,7 +2160,7 @@ class Auth : QuickSpec {
 
             // RSA9a
             it("should create and sign a TokenRequest") {
-                let rest = ARTRestInternal(options: AblyTests.commonAppSetup())
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
                 let expectedClientId = "client_string"
                 let tokenParams = ARTTokenParams(clientId: expectedClientId)
 
@@ -2177,8 +2181,8 @@ class Auth : QuickSpec {
 
             // RSA9b
             it("should support AuthOptions") {
-                let rest = ARTRestInternal(options: AblyTests.commonAppSetup())
-                let auth: ARTAuthInternal = rest.auth
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
+                let auth: ARTAuth = rest.auth
 
                 let authOptions = ARTAuthOptions(key: "key:secret")
 
@@ -2196,7 +2200,7 @@ class Auth : QuickSpec {
 
             // RSA9c
             it("should generate a unique 16+ character nonce if none is provided") {
-                let rest = ARTRestInternal(options: AblyTests.commonAppSetup())
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                 waitUntil(timeout: testTimeout) { done in
                     // First
@@ -2227,7 +2231,7 @@ class Auth : QuickSpec {
             context("should generate a timestamp") {
 
                 it("from current time if not provided") {
-                    let rest = ARTRestInternal(options: AblyTests.commonAppSetup())
+                    let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
@@ -2242,14 +2246,14 @@ class Auth : QuickSpec {
                 }
 
                 it("will retrieve the server time if queryTime is true") {
-                    let rest = ARTRestInternal(options: AblyTests.commonAppSetup())
+                    let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                     var serverTimeRequestWasMade = false
                     let block: @convention(block) (AspectInfo) -> Void = { _ in
                         serverTimeRequestWasMade = true
                     }
 
-                    let hook = ARTRestInternal.aspect_hook(rest)
+                    let hook = ARTRestInternal.aspect_hook(rest.internal)
                     // Adds a block of code after `time` is triggered
                     let _ = try? hook(#selector(ARTRestInternal._time(_:)), .positionBefore, unsafeBitCast(block, to: ARTRestInternal.self))
 
@@ -2275,7 +2279,7 @@ class Auth : QuickSpec {
             context("TTL") {
 
                 it("should be optional") {
-                    let rest = ARTRestInternal(options: AblyTests.commonAppSetup())
+                    let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
@@ -2308,7 +2312,7 @@ class Auth : QuickSpec {
                 }
 
                 it("should be specified in milliseconds") {
-                    let rest = ARTRestInternal(options: AblyTests.commonAppSetup())
+                    let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                     let params = ARTTokenParams()
                     params.ttl = NSNumber(value: 42)
@@ -2322,7 +2326,7 @@ class Auth : QuickSpec {
                             expect(tokenRequest.ttl as? TimeInterval).to(equal(42))
 
                             // Check if the encoder changes the TTL to milliseconds
-                            let encoder = rest.defaultEncoder as! ARTJsonLikeEncoder
+                            let encoder = rest.internal.defaultEncoder as! ARTJsonLikeEncoder
                             let data = try! encoder.encode(tokenRequest)
                             let jsonObject = (try! encoder.delegate!.decode(data)) as! NSDictionary
                             let ttl = jsonObject["ttl"] as! NSNumber
@@ -2336,7 +2340,7 @@ class Auth : QuickSpec {
                 }
 
                 it("should be valid to request a token for 24 hours") {
-                    let rest = ARTRestInternal(options: AblyTests.commonAppSetup())
+                    let rest = ARTRest(options: AblyTests.commonAppSetup())
                     let tokenParams = ARTTokenParams()
                     let dayInSeconds = TimeInterval(24 * 60 * 60)
                     tokenParams.ttl = dayInSeconds as NSNumber
@@ -2357,7 +2361,7 @@ class Auth : QuickSpec {
 
             // RSA9f
             it("should provide capability has json text") {
-                let rest = ARTRestInternal(options: AblyTests.commonAppSetup())
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                 let tokenParams = ARTTokenParams()
                 tokenParams.capability = "{ - }"
@@ -2387,7 +2391,7 @@ class Auth : QuickSpec {
 
             // RSA9g
             it("should generate a valid HMAC") {
-                let rest = ARTRestInternal(options: AblyTests.commonAppSetup())
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                 let tokenParams = ARTTokenParams(clientId: "client_string")
 
@@ -2397,7 +2401,7 @@ class Auth : QuickSpec {
                         guard let tokenRequest1 = tokenRequest else {
                             XCTFail("TokenRequest is nil"); done(); return
                         }
-                        let signed = tokenParams.sign(rest.options.key!, withNonce: tokenRequest1.nonce)
+                        let signed = tokenParams.sign(rest.internal.options.key!, withNonce: tokenRequest1.nonce)
                         expect(tokenRequest1.mac).to(equal(signed?.mac))
 
                         rest.auth.createTokenRequest(tokenParams, options: nil, callback: { tokenRequest, error in
@@ -2415,7 +2419,7 @@ class Auth : QuickSpec {
 
             // RSA9i
             it("should respect all requirements") {
-                let rest = ARTRestInternal(options: AblyTests.commonAppSetup())
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
                 let expectedClientId = "client_string"
                 let tokenParams = ARTTokenParams(clientId: expectedClientId)
                 let expectedTtl = 6.0
@@ -2462,7 +2466,7 @@ class Auth : QuickSpec {
             it("should always create a token") {
                 let options = AblyTests.commonAppSetup()
                 options.useTokenAuth = true
-                let rest = ARTRestInternal(options: options)
+                let rest = ARTRest(options: options)
                 let channel = rest.channels.get("test")
 
                 waitUntil(timeout: testTimeout) { done in
@@ -2473,7 +2477,7 @@ class Auth : QuickSpec {
                 }
 
                 // Check that token exists
-                expect(rest.auth.method).to(equal(ARTAuthMethod.token))
+                expect(rest.auth.internal.method).to(equal(ARTAuthMethod.token))
                 guard let firstTokenDetails = rest.auth.tokenDetails else {
                     fail("TokenDetails is nil"); return
                 }
@@ -2487,7 +2491,7 @@ class Auth : QuickSpec {
                 }
 
                 // Check that token has not changed
-                expect(rest.auth.method).to(equal(ARTAuthMethod.token))
+                expect(rest.auth.internal.method).to(equal(ARTAuthMethod.token))
                 guard let secondTokenDetails = rest.auth.tokenDetails else {
                     fail("TokenDetails is nil"); return
                 }
@@ -2519,7 +2523,7 @@ class Auth : QuickSpec {
                 let options = AblyTests.commonAppSetup()
                 let testToken = getTestToken()
                 options.token = testToken
-                let rest = ARTRestInternal(options: options)
+                let rest = ARTRest(options: options)
 
                 expect(rest.auth.tokenDetails?.token).toNot(beNil())
                 waitUntil(timeout: testTimeout) { done in
@@ -2528,11 +2532,11 @@ class Auth : QuickSpec {
                             XCTFail("TokenDetails is nil"); done(); return
                         }
                         expect(tokenDetails.token).toNot(equal(testToken))
-                        expect(rest.auth.method).to(equal(ARTAuthMethod.token))
+                        expect(rest.auth.internal.method).to(equal(ARTAuthMethod.token))
 
                         publishTestMessage(rest, completion: { error in
                             expect(error).to(beNil())
-                            expect(rest.auth.method).to(equal(ARTAuthMethod.token))
+                            expect(rest.auth.internal.method).to(equal(ARTAuthMethod.token))
                             expect(rest.auth.tokenDetails?.token).to(equal(tokenDetails.token))
                             done()
                         })
@@ -2543,7 +2547,7 @@ class Auth : QuickSpec {
             // RSA10a
             it("should create a token immediately and ensures Token Auth is used for all future requests") {
                 let options = AblyTests.commonAppSetup()
-                let rest = ARTRestInternal(options: options)
+                let rest = ARTRest(options: options)
 
                 expect(rest.auth.tokenDetails?.token).to(beNil())
                 waitUntil(timeout: testTimeout) { done in
@@ -2552,11 +2556,11 @@ class Auth : QuickSpec {
                             XCTFail("TokenDetails is nil"); done(); return
                         }
                         expect(tokenDetails.token).toNot(beNil())
-                        expect(rest.auth.method).to(equal(ARTAuthMethod.token))
+                        expect(rest.auth.internal.method).to(equal(ARTAuthMethod.token))
 
                         publishTestMessage(rest, completion: { error in
                             expect(error).to(beNil())
-                            expect(rest.auth.method).to(equal(ARTAuthMethod.token))
+                            expect(rest.auth.internal.method).to(equal(ARTAuthMethod.token))
                             expect(rest.auth.tokenDetails?.token).to(equal(tokenDetails.token))
                             done()
                         })
@@ -2566,7 +2570,7 @@ class Auth : QuickSpec {
 
             // RSA10b
             it("should supports all TokenParams and AuthOptions") {
-                let rest = ARTRestInternal(options: AblyTests.commonAppSetup())
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                 waitUntil(timeout: testTimeout) { done in
                     rest.auth.authorize(ARTTokenParams(), options: ARTAuthOptions(), callback: { tokenDetails, error in
@@ -2581,16 +2585,16 @@ class Auth : QuickSpec {
 
             // RSA10e
             it("should use the requestToken implementation") {
-                let rest = ARTRestInternal(options: AblyTests.commonAppSetup())
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                 var requestMethodWasCalled = false
                 let block: @convention(block) (AspectInfo) -> Void = { _ in
                     requestMethodWasCalled = true
                 }
 
-                let hook = ARTAuthInternal.aspect_hook(rest.auth)
+                let hook = ARTAuthInternal.aspect_hook(rest.auth.internal)
                 // Adds a block of code after `requestToken` is triggered
-                let token = try? hook(#selector(ARTAuthInternal._requestToken(_:with:callback:)), [], unsafeBitCast(block, to: ARTAuth.self))
+                let token = try? hook(#selector(ARTAuthInternal._requestToken(_:with:callback:)), [], unsafeBitCast(block, to: ARTAuthInternal.self))
 
                 expect(token).toNot(beNil())
 
@@ -2612,7 +2616,7 @@ class Auth : QuickSpec {
             it("should return TokenDetails with valid token metadata") {
                 let options = AblyTests.commonAppSetup()
                 options.clientId = "client_string"
-                let rest = ARTRestInternal(options: options)
+                let rest = ARTRest(options: options)
 
                 waitUntil(timeout: testTimeout) { done in
                     rest.auth.authorize(nil, options: nil) { tokenDetails, error in
@@ -2634,9 +2638,9 @@ class Auth : QuickSpec {
 
                 it("should store the AuthOptions with authUrl") {
                     let options = AblyTests.commonAppSetup()
-                    let rest = ARTRestInternal(options: options)
+                    let rest = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    rest.httpExecutor = testHTTPExecutor
+                    rest.internal.httpExecutor = testHTTPExecutor
                     let auth = rest.auth
 
                     let token = getTestToken()
@@ -2665,10 +2669,10 @@ class Auth : QuickSpec {
                                     XCTFail("TokenDetails is nil"); done(); return
                                 }
                                 expect(testHTTPExecutor.requests.last?.url?.host).to(equal("echo.ably.io"))
-                                expect(auth.options.authUrl!.host).to(equal("echo.ably.io"))
-                                expect(auth.options.authHeaders!["X-Ably"]).to(equal("Test"))
+                                expect(auth.internal.options.authUrl!.host).to(equal("echo.ably.io"))
+                                expect(auth.internal.options.authHeaders!["X-Ably"]).to(equal("Test"))
                                 expect(tokenDetails.token).to(equal(token))
-                                expect(auth.options.queryTime).to(beFalse())
+                                expect(auth.internal.options.queryTime).to(beFalse())
                                 done()
                             }
                         }
@@ -2676,7 +2680,7 @@ class Auth : QuickSpec {
                 }
 
                 it("should store the AuthOptions with authCallback") {
-                    let rest = ARTRestInternal(options: AblyTests.commonAppSetup())
+                    let rest = ARTRest(options: AblyTests.commonAppSetup())
                     let auth = rest.auth
 
                     var authCallbackHasBeenInvoked = false
@@ -2696,12 +2700,12 @@ class Auth : QuickSpec {
                             authCallbackHasBeenInvoked = false
                             let authOptions2 = ARTAuthOptions()
 
-                            auth.testSuite_forceTokenToExpire()
+                            auth.internal.testSuite_forceTokenToExpire()
 
                             auth.authorize(nil, options: authOptions2) { tokenDetails, error in
                                 expect(authCallbackHasBeenInvoked).to(beFalse())
-                                expect(auth.options.useTokenAuth).to(beFalse())
-                                expect(auth.options.queryTime).to(beFalse())
+                                expect(auth.internal.options.useTokenAuth).to(beFalse())
+                                expect(auth.internal.options.queryTime).to(beFalse())
                                 done()
                             }
                         }
@@ -2710,13 +2714,13 @@ class Auth : QuickSpec {
 
                 it("should not store queryTime") {
                     let options = AblyTests.commonAppSetup()
-                    let rest = ARTRestInternal(options: options)
+                    let rest = ARTRest(options: options)
                     let authOptions = ARTAuthOptions()
                     authOptions.key = options.key
                     authOptions.queryTime = true
 
                     var serverTimeRequestWasMade = false
-                    let hook = rest.testSuite_injectIntoMethod(after: #selector(rest._time(_:))) {
+                    let hook = rest.internal.testSuite_injectIntoMethod(after: #selector(rest.internal._time(_:))) {
                         serverTimeRequestWasMade = true
                     }
                     defer { hook.remove() }
@@ -2727,7 +2731,7 @@ class Auth : QuickSpec {
                             expect(error).to(beNil())
                             expect(tokenDetails).toNot(beNil())
                             expect(serverTimeRequestWasMade).to(beTrue())
-                            expect(rest.auth.options.queryTime).to(beFalse())
+                            expect(rest.auth.internal.options.queryTime).to(beFalse())
                             serverTimeRequestWasMade = false
 
                             // Second time
@@ -2735,7 +2739,7 @@ class Auth : QuickSpec {
                                 expect(error).to(beNil())
                                 expect(tokenDetails).toNot(beNil())
                                 expect(serverTimeRequestWasMade).to(beFalse())
-                                expect(rest.auth.options.queryTime).to(beFalse())
+                                expect(rest.auth.internal.options.queryTime).to(beFalse())
                                 done()
                             }
                         }
@@ -2743,7 +2747,7 @@ class Auth : QuickSpec {
                 }
 
                 it("should store the TokenParams") {
-                    let rest = ARTRestInternal(options: AblyTests.commonAppSetup())
+                    let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                     let tokenParams = ARTTokenParams()
                     tokenParams.clientId = ExpectedTokenParams.clientId
@@ -2776,7 +2780,7 @@ class Auth : QuickSpec {
 
                 it("should use configured defaults if the object arguments are omitted") {
                     let options = AblyTests.commonAppSetup()
-                    let rest = ARTRestInternal(options: options)
+                    let rest = ARTRest(options: options)
 
                     let tokenParams = ARTTokenParams()
                     tokenParams.clientId = ExpectedTokenParams.clientId
@@ -2817,7 +2821,7 @@ class Auth : QuickSpec {
             // RSA10h
             it("should use the configured Auth#clientId, if not null, by default") {
                 let options = AblyTests.commonAppSetup()
-                var rest = ARTRestInternal(options: options)
+                var rest = ARTRest(options: options)
 
                 // ClientId null
                 waitUntil(timeout: testTimeout) { done in
@@ -2832,7 +2836,7 @@ class Auth : QuickSpec {
                 }
 
                 options.clientId = "client_string"
-                rest = ARTRestInternal(options: options)
+                rest = ARTRest(options: options)
 
                 // ClientId not null
                 waitUntil(timeout: testTimeout) { done in
@@ -2853,7 +2857,7 @@ class Auth : QuickSpec {
                 it("TokenParams") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "client_string"
-                    let rest = ARTRestInternal(options: options)
+                    let rest = ARTRest(options: options)
 
                     let tokenParams = ARTTokenParams()
                     tokenParams.clientId = ExpectedTokenParams.clientId
@@ -2879,7 +2883,7 @@ class Auth : QuickSpec {
                 it("authCallback") {
                     var currentTokenRequest: ARTTokenRequest? = nil
 
-                    var rest = ARTRestInternal(options: AblyTests.commonAppSetup())
+                    var rest = ARTRest(options: AblyTests.commonAppSetup())
                     rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
                         currentTokenRequest = tokenRequest
                     })
@@ -2894,7 +2898,7 @@ class Auth : QuickSpec {
                         completion(currentTokenRequest!, nil)
                     }
 
-                    rest = ARTRestInternal(options: options)
+                    rest = ARTRest(options: options)
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                             expect(error).to(beNil())
@@ -2913,7 +2917,7 @@ class Auth : QuickSpec {
                     let options = ARTClientOptions()
                     options.authUrl = URL(string: "http://echo.ably.io")! as URL
 
-                    let rest = ARTRestInternal(options: options)
+                    let rest = ARTRest(options: options)
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                             guard let error = error as? ARTErrorInfo else {
@@ -2945,7 +2949,7 @@ class Auth : QuickSpec {
                     options.authParams = [NSURLQueryItem]() as [URLQueryItem]?
                     options.authParams?.append(NSURLQueryItem(name: "type", value: "json") as URLQueryItem)
                     options.authParams?.append(NSURLQueryItem(name: "body", value: "[]") as URLQueryItem)
-                    var rest = ARTRestInternal(options: options)
+                    var rest = ARTRest(options: options)
 
                     // Invalid TokenDetails
                     waitUntil(timeout: testTimeout) { done in
@@ -2961,7 +2965,7 @@ class Auth : QuickSpec {
 
                     options.authParams?.removeLast()
                     options.authParams?.append(NSURLQueryItem(name: "body", value: tokenDetailsJSON as String) as URLQueryItem)
-                    rest = ARTRestInternal(options: options)
+                    rest = ARTRest(options: options)
 
                     // Valid token
                     waitUntil(timeout: testTimeout) { done in
@@ -2977,7 +2981,7 @@ class Auth : QuickSpec {
                 it("authUrl returning TokenRequest decodes TTL as expected") {
                     let options = AblyTests.commonAppSetup()
 
-                    var rest = ARTRestInternal(options: options)
+                    var rest = ARTRest(options: options)
                     var tokenRequest: ARTTokenRequest!
                     waitUntil(timeout: testTimeout) { done in
                         let params = ARTTokenParams(clientId: "myClientId", nonce: "12345")
@@ -3009,7 +3013,7 @@ class Auth : QuickSpec {
                     options.authParams?.append(URLQueryItem(name: "type", value: "json"))
                     options.authParams?.append(URLQueryItem(name: "body", value: tokenRequestJSON))
                     options.key = nil
-                    rest = ARTRestInternal(options: options)
+                    rest = ARTRest(options: options)
 
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.authorize(nil, options: nil) { tokenDetails, error in
@@ -3029,7 +3033,7 @@ class Auth : QuickSpec {
                     options.authParams = [NSURLQueryItem]() as [URLQueryItem]?
                     options.authParams?.append(NSURLQueryItem(name: "type", value: "text") as URLQueryItem)
                     options.authParams?.append(NSURLQueryItem(name: "body", value: "") as URLQueryItem)
-                    var rest = ARTRestInternal(options: options)
+                    var rest = ARTRest(options: options)
 
                     // Invalid token
                     waitUntil(timeout: testTimeout) { done in
@@ -3042,7 +3046,7 @@ class Auth : QuickSpec {
 
                     options.authParams?.removeLast()
                     options.authParams?.append(NSURLQueryItem(name: "body", value: token) as URLQueryItem)
-                    rest = ARTRestInternal(options: options)
+                    rest = ARTRest(options: options)
 
                     // Valid token
                     waitUntil(timeout: testTimeout) { done in
@@ -3062,7 +3066,7 @@ class Auth : QuickSpec {
                 it("should supersede configured AuthOptions (using key) even if arguments objects are empty") {
                     let defaultOptions = AblyTests.clientOptions() //sandbox
                     defaultOptions.key = "xxxx:xxxx"
-                    let rest = ARTRestInternal(options: defaultOptions)
+                    let rest = ARTRest(options: defaultOptions)
 
                     let authOptions = ARTAuthOptions()
                     authOptions.key = AblyTests.commonAppSetup().key //valid key
@@ -3110,7 +3114,7 @@ class Auth : QuickSpec {
                 }
 
                 it("should supersede configured AuthOptions (using authUrl) even if arguments objects are empty") {
-                    let rest = ARTRestInternal(options: AblyTests.commonAppSetup())
+                    let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                     let testTokenDetails = getTestTokenDetails(ttl: 0.1)
                     let encoder = ARTJsonLikeEncoder()
@@ -3134,9 +3138,9 @@ class Auth : QuickSpec {
                                 XCTFail("TokenDetails is nil"); done(); return
                             }
                             expect(tokenDetails.token).to(equal(currentTokenDetails.token))
-                            expect(rest.auth.options.authUrl).toNot(beNil())
-                            expect(rest.auth.options.authParams).toNot(beNil())
-                            expect(rest.auth.options.authHeaders).toNot(beNil())
+                            expect(rest.auth.internal.options.authUrl).toNot(beNil())
+                            expect(rest.auth.internal.options.authParams).toNot(beNil())
+                            expect(rest.auth.internal.options.authHeaders).toNot(beNil())
                             delay(0.1) { //force to use the authUrl again
                                 done()
                             }
@@ -3152,8 +3156,8 @@ class Auth : QuickSpec {
                             }
                             expect(error.statusCode).to(equal(400))
                             expect(tokenDetails).to(beNil())
-                            expect(rest.auth.options.authParams).to(beNil())
-                            expect(rest.auth.options.authHeaders).to(beNil())
+                            expect(rest.auth.internal.options.authParams).to(beNil())
+                            expect(rest.auth.internal.options.authHeaders).to(beNil())
                             done()
                         }
                     }
@@ -3166,8 +3170,8 @@ class Auth : QuickSpec {
                             }
                             expect(error.statusCode).to(equal(400))
                             expect(tokenDetails).to(beNil())
-                            expect(rest.auth.options.authParams).to(beNil())
-                            expect(rest.auth.options.authHeaders).to(beNil())
+                            expect(rest.auth.internal.options.authParams).to(beNil())
+                            expect(rest.auth.internal.options.authHeaders).to(beNil())
                             done()
                         }
                     }
@@ -3180,9 +3184,9 @@ class Auth : QuickSpec {
                             }
                             expect(UInt((error as! ARTErrorInfo).code)).to(equal(ARTState.requestTokenFailed.rawValue))
                             expect(tokenDetails).to(beNil())
-                            expect(rest.auth.options.authUrl).to(beNil())
-                            expect(rest.auth.options.authParams).to(beNil())
-                            expect(rest.auth.options.authHeaders).to(beNil())
+                            expect(rest.auth.internal.options.authUrl).to(beNil())
+                            expect(rest.auth.internal.options.authParams).to(beNil())
+                            expect(rest.auth.internal.options.authHeaders).to(beNil())
                             done()
                         }
                     }
@@ -3195,16 +3199,16 @@ class Auth : QuickSpec {
                             }
                             expect(UInt((error as! ARTErrorInfo).code)).to(equal(ARTState.requestTokenFailed.rawValue))
                             expect(tokenDetails).to(beNil())
-                            expect(rest.auth.options.authUrl).to(beNil())
-                            expect(rest.auth.options.authParams).to(beNil())
-                            expect(rest.auth.options.authHeaders).to(beNil())
+                            expect(rest.auth.internal.options.authUrl).to(beNil())
+                            expect(rest.auth.internal.options.authParams).to(beNil())
+                            expect(rest.auth.internal.options.authHeaders).to(beNil())
                             done()
                         }
                     }
                 }
 
                 it("should supersede configured AuthOptions (using authCallback) even if arguments objects are empty") {
-                    let rest = ARTRestInternal(options: AblyTests.commonAppSetup())
+                    let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                     let testTokenDetails = ARTTokenDetails(token: "token", expires: Date(), issued: Date(), capability: nil, clientId: nil)
                     var authCallbackHasBeenInvoked = false
@@ -3219,7 +3223,7 @@ class Auth : QuickSpec {
                             expect(error).to(beNil())
                             expect(tokenDetails?.token).to(equal("token"))
                             expect(authCallbackHasBeenInvoked).to(beTrue())
-                            expect(rest.auth.options.authCallback).toNot(beNil())
+                            expect(rest.auth.internal.options.authCallback).toNot(beNil())
                             done()
                         }
                     }
@@ -3230,7 +3234,7 @@ class Auth : QuickSpec {
                             expect(error).to(beNil())
                             expect(tokenDetails?.token).to(equal("token"))
                             expect(authCallbackHasBeenInvoked).to(beTrue())
-                            expect(rest.auth.options.authCallback).toNot(beNil())
+                            expect(rest.auth.internal.options.authCallback).toNot(beNil())
                             done()
                         }
                     }
@@ -3245,7 +3249,7 @@ class Auth : QuickSpec {
                             expect(UInt((error as! ARTErrorInfo).code)).to(equal(ARTState.requestTokenFailed.rawValue))
                             expect(tokenDetails).to(beNil())
                             expect(authCallbackHasBeenInvoked).to(beFalse())
-                            expect(rest.auth.options.authCallback).to(beNil())
+                            expect(rest.auth.internal.options.authCallback).to(beNil())
                             done()
                         }
                     }
@@ -3258,7 +3262,7 @@ class Auth : QuickSpec {
                             expect(UInt((error as! ARTErrorInfo).code)).to(equal(ARTState.requestTokenFailed.rawValue))
                             expect(tokenDetails).to(beNil())
                             expect(authCallbackHasBeenInvoked).to(beFalse())
-                            expect(rest.auth.options.authCallback).to(beNil())
+                            expect(rest.auth.internal.options.authCallback).to(beNil())
                             done()
                         }
                     }
@@ -3268,7 +3272,7 @@ class Auth : QuickSpec {
                     let options = AblyTests.clientOptions()
                     options.key = "xxxx:xxxx"
                     options.clientId = "client_string"
-                    let rest = ARTRestInternal(options: options)
+                    let rest = ARTRest(options: options)
 
                     let tokenParams = ARTTokenParams(clientId: options.clientId)
                     let defaultTtl = tokenParams.ttl
@@ -3296,7 +3300,7 @@ class Auth : QuickSpec {
                     authOptions.queryTime = true
 
                     var serverTimeRequestCount = 0
-                    let hook = rest.testSuite_injectIntoMethod(after: #selector(rest._time(_:))) {
+                    let hook = rest.internal.testSuite_injectIntoMethod(after: #selector(rest.internal._time(_:))) {
                         serverTimeRequestCount += 1
                     }
                     defer { hook.remove() }
@@ -3315,7 +3319,7 @@ class Auth : QuickSpec {
                         }
                     }
 
-                    rest.auth.testSuite_forceTokenToExpire()
+                    rest.auth.internal.testSuite_forceTokenToExpire()
 
                     // Subsequent authorisations
                     waitUntil(timeout: testTimeout) { done in
@@ -3341,7 +3345,7 @@ class Auth : QuickSpec {
                         return $0
                     }(ARTTokenParams())
 
-                    let rest = ARTRestInternal(options: options)
+                    let rest = ARTRest(options: options)
 
                     let testTokenParams = ARTTokenParams()
                     testTokenParams.ttl = nil
@@ -3393,14 +3397,14 @@ class Auth : QuickSpec {
 
                 it("should obtain server time once and persist the offset from the local clock") {
                     let options = AblyTests.commonAppSetup()
-                    let rest = ARTRestInternal(options: options)
+                    let rest = ARTRest(options: options)
 
                     let mockServerDate = Date().addingTimeInterval(120)
-                    rest.auth.testSuite_returnValue(for: NSSelectorFromString("handleServerTime:"), with: mockServerDate)
+                    rest.auth.internal.testSuite_returnValue(for: NSSelectorFromString("handleServerTime:"), with: mockServerDate)
                     let currentDate = Date()
 
                     var serverTimeRequestCount = 0
-                    let hook = rest.testSuite_injectIntoMethod(after: #selector(rest._time(_:))) {
+                    let hook = rest.internal.testSuite_injectIntoMethod(after: #selector(rest.internal._time(_:))) {
                         serverTimeRequestCount += 1
                     }
                     defer { hook.remove() }
@@ -3415,11 +3419,11 @@ class Auth : QuickSpec {
                             guard let tokenDetails = tokenDetails else {
                                 fail("TokenDetails is nil"); done(); return
                             }
-                            guard let timeOffset = rest.auth.timeOffset?.doubleValue else {
+                            guard let timeOffset = rest.auth.internal.timeOffset?.doubleValue else {
                                 fail("Server Time Offset is nil"); done(); return
                             }
                             expect(timeOffset).toNot(equal(0))
-                            expect(rest.auth.timeOffset).toNot(beNil())
+                            expect(rest.auth.internal.timeOffset).toNot(beNil())
                             let calculatedServerDate = currentDate.addingTimeInterval(timeOffset)
                             expect(calculatedServerDate).to(beCloseTo(mockServerDate, within: 0.5))
                             expect(serverTimeRequestCount) == 1
@@ -3427,7 +3431,7 @@ class Auth : QuickSpec {
                         })
                     }
 
-                    rest.auth.testSuite_forceTokenToExpire()
+                    rest.auth.internal.testSuite_forceTokenToExpire()
 
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.authorize(nil, options: nil) { tokenDetails, error in
@@ -3435,7 +3439,7 @@ class Auth : QuickSpec {
                             guard let tokenDetails = tokenDetails else {
                                 fail("TokenDetails is nil"); done(); return
                             }
-                            guard let timeOffset = rest.auth.timeOffset?.doubleValue else {
+                            guard let timeOffset = rest.auth.internal.timeOffset?.doubleValue else {
                                 fail("Server Time Offset is nil"); done(); return
                             }
                             expect(timeOffset).toNot(equal(0))
@@ -3449,13 +3453,13 @@ class Auth : QuickSpec {
 
                 it("should be consistent the timestamp request with the server time") {
                     let options = AblyTests.commonAppSetup()
-                    let rest = ARTRestInternal(options: options)
+                    let rest = ARTRest(options: options)
 
                     let mockServerDate = Date().addingTimeInterval(120)
-                    rest.auth.testSuite_returnValue(for: NSSelectorFromString("handleServerTime:"), with: mockServerDate)
+                    rest.auth.internal.testSuite_returnValue(for: NSSelectorFromString("handleServerTime:"), with: mockServerDate)
 
                     var serverTimeRequestCount = 0
-                    let hook = rest.testSuite_injectIntoMethod(after: #selector(rest._time(_:))) {
+                    let hook = rest.internal.testSuite_injectIntoMethod(after: #selector(rest.internal._time(_:))) {
                         serverTimeRequestCount += 1
                     }
                     defer { hook.remove() }
@@ -3470,7 +3474,7 @@ class Auth : QuickSpec {
                             guard let tokenRequest = tokenRequest else {
                                 fail("TokenRequest is nil"); done(); return
                             }
-                            guard let timeOffset = rest.auth.timeOffset?.doubleValue else {
+                            guard let timeOffset = rest.auth.internal.timeOffset?.doubleValue else {
                                 fail("Server Time Offset is nil"); done(); return
                             }
                             expect(timeOffset).toNot(equal(0))
@@ -3485,10 +3489,10 @@ class Auth : QuickSpec {
                 it("should be possible by lib Client to discard the cached local clock offset") {
                     let options = AblyTests.commonAppSetup()
                     options.queryTime = true
-                    let rest = ARTRestInternal(options: options)
+                    let rest = ARTRest(options: options)
 
                     var serverTimeRequestCount = 0
-                    let hook = rest.testSuite_injectIntoMethod(after: #selector(rest._time(_:))) {
+                    let hook = rest.internal.testSuite_injectIntoMethod(after: #selector(rest.internal._time(_:))) {
                         serverTimeRequestCount += 1
                     }
                     defer { hook.remove() }
@@ -3499,7 +3503,7 @@ class Auth : QuickSpec {
                             guard let tokenDetails = tokenDetails else {
                                 fail("TokenDetails is nil"); done(); return
                             }
-                            guard let timeOffset = rest.auth.timeOffset?.doubleValue else {
+                            guard let timeOffset = rest.auth.internal.timeOffset?.doubleValue else {
                                 fail("Server Time Offset is nil"); done(); return
                             }
                             expect(timeOffset).toNot(beCloseTo(0))
@@ -3516,7 +3520,7 @@ class Auth : QuickSpec {
                     NotificationCenter.default.post(name: .NSSystemClockDidChange, object: nil)
                     #endif
 
-                    rest.auth.testSuite_forceTokenToExpire()
+                    rest.auth.internal.testSuite_forceTokenToExpire()
 
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.authorize(nil, options: nil) { tokenDetails, error in
@@ -3524,7 +3528,7 @@ class Auth : QuickSpec {
                             guard let tokenDetails = tokenDetails else {
                                 fail("TokenDetails is nil"); done(); return
                             }
-                            expect(rest.auth.timeOffset).to(beNil())
+                            expect(rest.auth.internal.timeOffset).to(beNil())
                             expect(serverTimeRequestCount) == 1
                             done()
                         }
@@ -3533,14 +3537,14 @@ class Auth : QuickSpec {
 
                 it("should use the local clock offset to calculate the server time") {
                     let options = AblyTests.commonAppSetup()
-                    let rest = ARTRestInternal(options: options)
+                    let rest = ARTRest(options: options)
 
                     let authOptions = ARTAuthOptions()
                     authOptions.key = options.key
                     authOptions.queryTime = false
 
                     let fakeOffset: TimeInterval = 60 //1 minute
-                    rest.auth.setTimeOffset(fakeOffset)
+                    rest.auth.internal.setTimeOffset(fakeOffset)
 
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.createTokenRequest(nil, options: authOptions) { tokenRequest, error in
@@ -3548,7 +3552,7 @@ class Auth : QuickSpec {
                             guard let tokenRequest = tokenRequest else {
                                 fail("TokenRequest is nil"); done(); return
                             }
-                            guard let timeOffset = rest.auth.timeOffset?.doubleValue else {
+                            guard let timeOffset = rest.auth.internal.timeOffset?.doubleValue else {
                                 fail("Server Time Offset is nil"); done(); return
                             }
                             expect(timeOffset) == fakeOffset
@@ -3561,16 +3565,16 @@ class Auth : QuickSpec {
 
                 it("should request server time when queryTime is true even if the time offset is assigned") {
                     let options = AblyTests.commonAppSetup()
-                    let rest = ARTRestInternal(options: options)
+                    let rest = ARTRest(options: options)
 
                     var serverTimeRequestCount = 0
-                    let hook = rest.testSuite_injectIntoMethod(after: #selector(rest._time)) {
+                    let hook = rest.internal.testSuite_injectIntoMethod(after: #selector(rest.internal._time)) {
                         serverTimeRequestCount += 1
                     }
                     defer { hook.remove() }
 
                     let fakeOffset: TimeInterval = 60 //1 minute
-                    rest.auth.setTimeOffset(fakeOffset)
+                    rest.auth.internal.setTimeOffset(fakeOffset)
 
                     let authOptions = ARTAuthOptions()
                     authOptions.key = options.key
@@ -3581,7 +3585,7 @@ class Auth : QuickSpec {
                             expect(error).to(beNil())
                             expect(tokenDetails).toNot(beNil())
                             expect(serverTimeRequestCount) == 1
-                            guard let timeOffset = rest.auth.timeOffset?.doubleValue else {
+                            guard let timeOffset = rest.auth.internal.timeOffset?.doubleValue else {
                                 fail("Server Time Offset is nil"); done(); return
                             }
                             expect(timeOffset).toNot(equal(fakeOffset))
@@ -3591,10 +3595,10 @@ class Auth : QuickSpec {
                 }
 
                 it("should discard the time offset in situations in which it may have been invalidated") {
-                    let rest = ARTRestInternal(options: AblyTests.commonAppSetup())
+                    let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                     var discardTimeOffsetCallCount = 0
-                    let hook = rest.auth.testSuite_injectIntoMethod(after: #selector(rest.auth.discardTimeOffset)) {
+                    let hook = rest.auth.internal.testSuite_injectIntoMethod(after: #selector(rest.auth.internal.discardTimeOffset)) {
                         discardTimeOffsetCallCount += 1
                     }
                     defer { hook.remove() }
@@ -3626,7 +3630,7 @@ class Auth : QuickSpec {
                 it("using REST, should call each authorize callback") {
                     let options = AblyTests.commonAppSetup()
                     options.useTokenAuth = true
-                    let rest = ARTRestInternal(options: options)
+                    let rest = ARTRest(options: options)
 
                     var tokenDetailsFirst: ARTTokenDetails?
                     var tokenDetailsLast: ARTTokenDetails?
@@ -3711,7 +3715,7 @@ class Auth : QuickSpec {
                     expect(realtime.auth.tokenDetails).to(beIdenticalTo(tokenDetailsLast))
                     expect(realtime.auth.tokenDetails?.token).to(equal(tokenDetailsLast?.token))
 
-                    if let transport = realtime.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
+                    if let transport = realtime.internal.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
                         expect(query).to(haveParam("accessToken", withValue: realtime.auth.tokenDetails?.token ?? ""))
                     }
                     else {
@@ -3723,7 +3727,7 @@ class Auth : QuickSpec {
                 it("using Realtime and connection is CONNECTED, should call each Realtime authorize callback") {
                     let options = AblyTests.commonAppSetup()
                     options.useTokenAuth = true
-                    let realtime = ARTRealtimeInternal(options: options)
+                    let realtime = ARTRealtime(options: options)
                     defer { realtime.close(); realtime.dispose() }
 
                     waitUntil(timeout: testTimeout) { done in
@@ -3813,7 +3817,7 @@ class Auth : QuickSpec {
                 let options = AblyTests.commonAppSetup()
                 let initialToken = getTestToken(clientId: "tester", capability: "{\"restricted\":[\"*\"]}")
                 options.token = initialToken
-                let realtime = ARTRealtimeInternal(options: options)
+                let realtime = ARTRealtime(options: options)
                 defer { realtime.dispose(); realtime.close() }
                 let channel = realtime.channels.get("foo")
 
@@ -3855,7 +3859,7 @@ class Auth : QuickSpec {
                 let options = AblyTests.commonAppSetup()
                 options.clientId = "tester"
                 options.useTokenAuth = true
-                let realtime = ARTRealtimeInternal(options: options)
+                let realtime = ARTRealtime(options: options)
                 defer { realtime.dispose(); realtime.close() }
 
                 waitUntil(timeout: testTimeout) { done in
@@ -3894,22 +3898,22 @@ class Auth : QuickSpec {
         describe("TokenParams") {
             // TK2d
             it("timestamp should not be a member of any default token params") {
-                let rest = ARTRestInternal(options: AblyTests.commonAppSetup())
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
                 waitUntil(timeout: testTimeout) { done in
                     rest.auth.authorize(nil, options: nil) { _, error in
                         expect(error).to(beNil())
-                        guard let defaultTokenParams = rest.auth.options.defaultTokenParams else {
+                        guard let defaultTokenParams = rest.auth.internal.options.defaultTokenParams else {
                             fail("DefaultTokenParams is nil"); done(); return
                         }
                         expect(defaultTokenParams.timestamp).to(beNil())
 
                         var defaultTokenParamsCallCount = 0
-                        let hook = rest.auth.options.testSuite_injectIntoMethod(after: NSSelectorFromString("defaultTokenParams")) {
+                        let hook = rest.auth.internal.options.testSuite_injectIntoMethod(after: NSSelectorFromString("defaultTokenParams")) {
                             defaultTokenParamsCallCount += 1
                         }
                         defer { hook.remove() }
 
-                        let newTokenParams = ARTTokenParams(options: rest.auth.options)
+                        let newTokenParams = ARTTokenParams(options: rest.auth.internal.options)
                         expect(defaultTokenParamsCallCount) > 0
 
                         newTokenParams.timestamp = Date()
@@ -4080,7 +4084,7 @@ class Auth : QuickSpec {
                         options.authParams = [URLQueryItem]() as [URLQueryItem]?
                         options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]) as URLQueryItem)
                         options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]) as URLQueryItem)
-                        let client = ARTRealtimeInternal(options: options)
+                        let client = ARTRealtime(options: options)
                         defer { client.dispose(); client.close() }
 
                         waitUntil(timeout: testTimeout) { done in
@@ -4101,7 +4105,7 @@ class Auth : QuickSpec {
                         options.authParams = [URLQueryItem]() as [URLQueryItem]?
                         options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]) as URLQueryItem)
                         options.authParams?.append(URLQueryItem(name: "keySecret", value: "INVALID") as URLQueryItem)
-                        let client = ARTRealtimeInternal(options: options)
+                        let client = ARTRealtime(options: options)
                         defer { client.dispose(); client.close() }
 
                         waitUntil(timeout: testTimeout) { done in
@@ -4123,7 +4127,7 @@ class Auth : QuickSpec {
                         options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]) as URLQueryItem)
                         options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]) as URLQueryItem)
                         options.authParams?.append(URLQueryItem(name: "expiresIn", value: String(UInt(tokenDuration))) as URLQueryItem)
-                        let client = ARTRealtimeInternal(options: options)
+                        let client = ARTRealtime(options: options)
                         defer { client.dispose(); client.close() }
                         
                         waitUntil(timeout: testTimeout) { done in
@@ -4150,14 +4154,14 @@ class Auth : QuickSpec {
                         options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]) as URLQueryItem)
                         options.authParams?.append(URLQueryItem(name: "expiresIn", value: String(UInt(tokenDuration))) as URLQueryItem)
                         options.autoConnect = false // Prevent auto connection so we can set the transport proxy
-                        let client = ARTRealtimeInternal(options: options)
-                        client.setTransport(TestProxyTransport.self)
+                        let client = ARTRealtime(options: options)
+                        client.internal.setTransport(TestProxyTransport.self)
                         defer { client.dispose(); client.close() }
                         
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.connected) { stateChange in
                                 let originalToken = client.auth.tokenDetails?.token
-                                let transport = client.transport as! TestProxyTransport
+                                let transport = client.internal.transport as! TestProxyTransport
                                 
                                 client.connection.once(.update) { stateChange in
                                     expect(transport.protocolMessagesReceived.filter({ $0.action == .auth })).to(haveCount(1))
@@ -4181,7 +4185,7 @@ class Auth : QuickSpec {
                             let token = ARTTokenDetails(token: getJWTToken()!)
                             completion(token, nil)
                         }
-                        let client = ARTRealtimeInternal(options: options)
+                        let client = ARTRealtime(options: options)
                         defer { client.dispose(); client.close() }
 
                         waitUntil(timeout: testTimeout) { done in
@@ -4199,7 +4203,7 @@ class Auth : QuickSpec {
                             let token = ARTTokenDetails(token: getJWTToken(invalid: true)!)
                             completion(token, nil)
                         }
-                        let client = ARTRealtimeInternal(options: options)
+                        let client = ARTRealtime(options: options)
                         defer { client.dispose(); client.close() }
 
                         waitUntil(timeout: testTimeout) { done in
@@ -4225,7 +4229,7 @@ class Auth : QuickSpec {
                         let token = ARTTokenDetails(token: getJWTToken(expiresIn: Int(tokenDuration))!)
                         completion(token, nil)
                     }
-                    let client = ARTRealtimeInternal(options: options)
+                    let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
                     var originalToken = ""
                     var originalConnectionID = ""
@@ -4254,7 +4258,7 @@ class Auth : QuickSpec {
                     let clientId = "JWTClientId"
                     let options = AblyTests.clientOptions()
                     options.tokenDetails = ARTTokenDetails(token: getJWTToken(clientId: clientId)!)
-                    let client = ARTRealtimeInternal(options: options)
+                    let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
 
                     waitUntil(timeout: testTimeout) { done in
@@ -4272,7 +4276,7 @@ class Auth : QuickSpec {
                     let capability = "{\"\(channelName)\":[\"subscribe\"]}"
                     let options = AblyTests.clientOptions()
                     options.tokenDetails = ARTTokenDetails(token: getJWTToken(capability: capability)!)
-                    let client = ARTRealtimeInternal(options: options)
+                    let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
 
                     let originalARTChannels_getChannelNamePrefix = ARTChannels_getChannelNamePrefix
@@ -4296,13 +4300,13 @@ class Auth : QuickSpec {
             // RSA11b
             it("should hold a @TokenDetails@ instance in which only the @token@ attribute is populated with that token string") {
                 let token = getTestToken()
-                let rest = ARTRestInternal(token: token)
+                let rest = ARTRest(token: token)
                 expect(rest.auth.tokenDetails?.token).to(equal(token))
             }
 
             // RSA11c
             it("should be set with the current token (if applicable) on instantiation and each time it is replaced") {
-                let rest = ARTRestInternal(options: AblyTests.commonAppSetup())
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
                 expect(rest.auth.tokenDetails).to(beNil())
                 var authenticatedTokenDetails: ARTTokenDetails?
                 waitUntil(timeout: testTimeout) { done in
@@ -4317,7 +4321,7 @@ class Auth : QuickSpec {
 
             // RSA11d
             it("should be empty if there is no current token") {
-                let rest = ARTRestInternal(options: AblyTests.commonAppSetup())
+                let rest = ARTRest(options: AblyTests.commonAppSetup())
                 expect(rest.auth.tokenDetails).to(beNil())
             }
 
@@ -4329,7 +4333,7 @@ class Auth : QuickSpec {
             
             context("when the JWT token embeds an Ably token") {
                 options.tokenDetails = ARTTokenDetails(token: getJWTToken(jwtType: "embedded")!)
-                let client = ARTRestInternal(options: options)
+                let client = ARTRest(options: options)
                 
                 it ("pulls stats successfully") {
                     waitUntil(timeout: testTimeout) { done in
@@ -4343,7 +4347,7 @@ class Auth : QuickSpec {
             
             context("when the JWT token embeds an Ably token and it is requested as encrypted") {
                 options.tokenDetails = ARTTokenDetails(token: getJWTToken(jwtType: "embedded", encrypted: 1)!)
-                let client = ARTRestInternal(options: options)
+                let client = ARTRest(options: options)
                 
                 it ("pulls stats successfully") {
                     waitUntil(timeout: testTimeout) { done in
@@ -4364,7 +4368,7 @@ class Auth : QuickSpec {
                 options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]) as URLQueryItem)
                 options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]) as URLQueryItem)
                 options.authParams?.append(URLQueryItem(name: "returnType", value: "jwt") as URLQueryItem)
-                let client = ARTRestInternal(options: options)
+                let client = ARTRest(options: options)
                 
                 it("the client successfully connects and pulls stats") {
                     waitUntil(timeout: testTimeout) { done in
@@ -4380,7 +4384,7 @@ class Auth : QuickSpec {
                         client.auth.requestToken(nil, with: nil, callback: { tokenDetails, error in
                             let newClientOptions = AblyTests.clientOptions()
                             newClientOptions.token = tokenDetails!.token
-                            let newClient = ARTRestInternal(options: newClientOptions)
+                            let newClient = ARTRest(options: newClientOptions)
                             newClient.stats { stats, error in
                                 expect(error).to(beNil())
                                 done()

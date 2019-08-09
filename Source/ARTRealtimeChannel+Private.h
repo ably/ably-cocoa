@@ -59,6 +59,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)_unsubscribe;
 - (void)off_nosync;
 
+@property (nonatomic, strong) dispatch_queue_t queue;
+
 @end
 
 @interface ARTRealtimeChannelInternal (Private)
@@ -95,6 +97,8 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface ARTRealtimeChannel ()
+
+@property (nonatomic, readonly) ARTRealtimeChannelInternal *internal;
 
 - (instancetype)initWithInternal:(ARTRealtimeChannelInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc;
 

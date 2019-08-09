@@ -20,10 +20,10 @@ class RestClientPresence: QuickSpec {
                 // RSP3a
                 it("should return a PaginatedResult page containing the first page of members") {
                     let options = AblyTests.commonAppSetup()
-                    let client = ARTRestInternal(options: options)
+                    let client = ARTRest(options: options)
                     let channel = client.channels.get("test")
 
-                    var disposable = [ARTRealtimeInternal]()
+                    var disposable = [ARTRealtime]()
                     defer {
                         for clientItem in disposable {
                             clientItem.dispose()
@@ -79,7 +79,7 @@ class RestClientPresence: QuickSpec {
 
                 // RSP3a1
                 it("limit should support up to 1000 items") {
-                    let client = ARTRestInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRest(options: AblyTests.commonAppSetup())
                     let channel = client.channels.get("test")
 
                     let query = ARTPresenceQuery()
@@ -95,10 +95,10 @@ class RestClientPresence: QuickSpec {
                 // RSP3a2
                 it("clientId should filter members by the provided clientId") {
                     let options = AblyTests.commonAppSetup()
-                    let client = ARTRestInternal(options: options)
+                    let client = ARTRest(options: options)
                     let channel = client.channels.get("test")
 
-                    var realtime = ARTRealtimeInternal(options: options)
+                    var realtime = ARTRealtime(options: options)
                     defer { realtime.close() }
                     let realtimeChannel = realtime.channels.get("test")
 
@@ -106,7 +106,7 @@ class RestClientPresence: QuickSpec {
                     realtimeChannel.presence.enterClient("john", data: "web")
                     realtimeChannel.presence.enterClient("casey", data: "mobile")
 
-                    expect(realtimeChannel.presenceMap.members).toEventually(haveCount(3), timeout: testTimeout)
+                    expect(realtimeChannel.internal.presenceMap.members).toEventually(haveCount(3), timeout: testTimeout)
 
                     let query = ARTPresenceQuery()
                     query.clientId = "john"
@@ -128,10 +128,10 @@ class RestClientPresence: QuickSpec {
                 // RSP3a3
                 it("connectionId should filter members by the provided connectionId") {
                     let options = AblyTests.commonAppSetup()
-                    let client = ARTRestInternal(options: options)
+                    let client = ARTRest(options: options)
                     let channel = client.channels.get("test")
 
-                    var disposable = [ARTRealtimeInternal]()
+                    var disposable = [ARTRealtime]()
                     defer {
                         for clientItem in disposable {
                             clientItem.dispose()
@@ -182,10 +182,10 @@ class RestClientPresence: QuickSpec {
                 // RSP4a
                 it("should return a PaginatedResult page containing the first page of members") {
                     let options = AblyTests.commonAppSetup()
-                    let client = ARTRestInternal(options: options)
+                    let client = ARTRest(options: options)
                     let channel = client.channels.get("test")
 
-                    var realtime: ARTRealtimeInternal!
+                    var realtime: ARTRealtime!
                     defer { realtime.dispose(); realtime.close() }
 
                     let expectedData = "online"
@@ -247,10 +247,10 @@ class RestClientPresence: QuickSpec {
                     // RSP4b2
                     it("direction should change the order of the members") {
                         let options = AblyTests.commonAppSetup()
-                        let client = ARTRestInternal(options: options)
+                        let client = ARTRest(options: options)
                         let channel = client.channels.get("test")
 
-                        var disposable = [ARTRealtimeInternal]()
+                        var disposable = [ARTRealtime]()
                         defer {
                             for clientItem in disposable {
                                 clientItem.dispose()
@@ -309,10 +309,10 @@ class RestClientPresence: QuickSpec {
                     // RSP4b3
                     it("limit supports up to 1000 members") {
                         let options = AblyTests.commonAppSetup()
-                        let client = ARTRestInternal(options: options)
+                        let client = ARTRest(options: options)
                         let channel = client.channels.get("test")
 
-                        var realtime: ARTRealtimeInternal!
+                        var realtime: ARTRealtime!
                         defer { realtime.dispose(); realtime.close() }
 
                         waitUntil(timeout: testTimeout) { done in
@@ -348,10 +348,10 @@ class RestClientPresence: QuickSpec {
                 // RSP3a3
                 it("connectionId should filter members by the provided connectionId") {
                     let options = AblyTests.commonAppSetup()
-                    let client = ARTRestInternal(options: options)
+                    let client = ARTRest(options: options)
                     let channel = client.channels.get("test")
 
-                    var disposable = [ARTRealtimeInternal]()
+                    var disposable = [ARTRealtime]()
                     defer {
                         for clientItem in disposable {
                             clientItem.dispose()
@@ -405,10 +405,10 @@ class RestClientPresence: QuickSpec {
                     // RSP4b1
                     it("start and end should filter members between those two times") {
                         let options = AblyTests.commonAppSetup()
-                        let client = ARTRestInternal(options: options)
+                        let client = ARTRest(options: options)
                         let channel = client.channels.get("test")
 
-                        var disposable = [ARTRealtimeInternal]()
+                        var disposable = [ARTRealtime]()
                         defer {
                             for clientItem in disposable {
                                 clientItem.dispose()
@@ -469,7 +469,7 @@ class RestClientPresence: QuickSpec {
 
                     // RSP4b1
                     it("start must be equal to or less than end and is unaffected by the request direction") {
-                        let client = ARTRestInternal(options: AblyTests.commonAppSetup())
+                        let client = ARTRest(options: AblyTests.commonAppSetup())
                         let channel = client.channels.get("test")
 
                         let query = ARTDataQuery()
@@ -495,7 +495,7 @@ class RestClientPresence: QuickSpec {
             // RSP5
             it("presence messages retrieved are decoded in the same way that messages are decoded") {
                 let options = AblyTests.commonAppSetup()
-                let client = ARTRestInternal(options: options)
+                let client = ARTRest(options: options)
                 let channel = client.channels.get("test")
 
                 let expectedData = ["test":1]
@@ -504,7 +504,7 @@ class RestClientPresence: QuickSpec {
                     channel.publish(nil, data: expectedData) { _ in done() }
                 }
 
-                var realtime = ARTRealtimeInternal(options: options)
+                var realtime = ARTRealtime(options: options)
                 defer { realtime.dispose(); realtime.close() }
                 waitUntil(timeout: testTimeout) { done in
                     let partialDone = AblyTests.splitDone(2, done: done)
@@ -529,7 +529,7 @@ class RestClientPresence: QuickSpec {
                 }
 
                 var decodeNumberOfCalls = 0
-                let hook = channel.dataEncoder.testSuite_injectIntoMethod(after: #selector(ARTDataEncoder.decode(_:encoding:))) {
+                let hook = channel.internal.dataEncoder.testSuite_injectIntoMethod(after: #selector(ARTDataEncoder.decode(_:encoding:))) {
                     decodeNumberOfCalls += 1
                 }
                 defer { hook.remove() }

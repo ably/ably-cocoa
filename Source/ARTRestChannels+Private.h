@@ -27,6 +27,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRestChannels ()
 
+@property (nonatomic, readonly) ARTRestChannelsInternal *internal;
+
 - (instancetype)initWithInternal:(ARTRestChannelsInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc;
 
 @end

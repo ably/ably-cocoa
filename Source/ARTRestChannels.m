@@ -13,7 +13,6 @@
 #import "ARTRest+Private.h"
 
 @implementation ARTRestChannels {
-    ARTRestChannelsInternal *_internal;
     ARTQueuedDealloc *_dealloc;
 }
 
@@ -45,7 +44,7 @@
 - (id<NSFastEnumeration>)iterate {
     NSMutableArray *channels = [[NSMutableArray alloc] init];
     for (ARTRestChannelInternal *internalChannel in [_internal iterate]) {
-        [channels addObject:internalChannel];
+        [channels addObject:[[ARTRestChannel alloc] initWithInternal:internalChannel queuedDealloc:_dealloc]];
     }
     return channels;
 }

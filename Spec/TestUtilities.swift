@@ -180,12 +180,12 @@ class AblyTests {
         return protocolMessage
     }
 
-    class func newRealtime(_ options: ARTClientOptions) -> ARTRealtimeInternal {
+    class func newRealtime(_ options: ARTClientOptions) -> ARTRealtime {
         let autoConnect = options.autoConnect
         options.autoConnect = false
-        let realtime = ARTRealtimeInternal(options: options)
-        realtime.setTransport(TestProxyTransport.self)
-        realtime.setReachabilityClass(TestReachability.self)
+        let realtime = ARTRealtime(options: options)
+        realtime.internal.setTransport(TestProxyTransport.self)
+        realtime.internal.setReachabilityClass(TestReachability.self)
         if autoConnect {
             options.autoConnect = true
             realtime.connect()
@@ -197,8 +197,8 @@ class AblyTests {
         return ProcessInfo.processInfo.globallyUniqueString
     }
 
-    class func addMembersSequentiallyToChannel(_ channelName: String, members: Int = 1, startFrom: Int = 1, data: AnyObject? = nil, options: ARTClientOptions, done: @escaping ()->()) -> ARTRealtimeInternal {
-        let client = ARTRealtimeInternal(options: options)
+    class func addMembersSequentiallyToChannel(_ channelName: String, members: Int = 1, startFrom: Int = 1, data: AnyObject? = nil, options: ARTClientOptions, done: @escaping ()->()) -> ARTRealtime {
+        let client = ARTRealtime(options: options)
         let channel = client.channels.get(channelName)
 
         class Total {
@@ -363,7 +363,7 @@ class PublishTestMessage {
     var completion: ((ARTErrorInfo?) -> Void)? = nil
     var error: ARTErrorInfo? = nil
 
-    init(client: ARTRestInternal, failOnError: Bool = true, completion: ((ARTErrorInfo?) -> Void)? = nil) {
+    init(client: ARTRest, failOnError: Bool = true, completion: ((ARTErrorInfo?) -> Void)? = nil) {
         client.channels.get("test").publish(nil, data: "message") { error in
             self.error = error
             if let callback = completion {
@@ -375,7 +375,7 @@ class PublishTestMessage {
         }
     }
 
-    init(client: ARTRealtimeInternal, failOnError: Bool = true, completion: ((ARTErrorInfo?) -> Void)? = nil) {
+    init(client: ARTRealtime, failOnError: Bool = true, completion: ((ARTErrorInfo?) -> Void)? = nil) {
         let complete: (ARTErrorInfo?) -> Void = { errorInfo in
             // ARTErrorInfo to NSError
             self.error = errorInfo
@@ -413,23 +413,23 @@ class PublishTestMessage {
 }
 
 /// Rest - Publish message
-@discardableResult func publishTestMessage(_ rest: ARTRestInternal, completion: Optional<(ARTErrorInfo?)->()>) -> PublishTestMessage {
+@discardableResult func publishTestMessage(_ rest: ARTRest, completion: Optional<(ARTErrorInfo?)->()>) -> PublishTestMessage {
     return PublishTestMessage(client: rest, failOnError: false, completion: completion)
 }
 
-@discardableResult func publishTestMessage(_ rest: ARTRestInternal, failOnError: Bool = true) -> PublishTestMessage {
+@discardableResult func publishTestMessage(_ rest: ARTRest, failOnError: Bool = true) -> PublishTestMessage {
     return PublishTestMessage(client: rest, failOnError: failOnError)
 }
 
 /// Realtime - Publish message with callback
 /// (publishes if connection state changes to CONNECTED and channel state changes to ATTACHED)
-@discardableResult func publishFirstTestMessage(_ realtime: ARTRealtimeInternal, completion: Optional<(ARTErrorInfo?)->()>) -> PublishTestMessage {
+@discardableResult func publishFirstTestMessage(_ realtime: ARTRealtime, completion: Optional<(ARTErrorInfo?)->()>) -> PublishTestMessage {
     return PublishTestMessage(client: realtime, failOnError: false, completion: completion)
 }
 
 /// Realtime - Publish message
 /// (publishes if connection state changes to CONNECTED and channel state changes to ATTACHED)
-@discardableResult func publishFirstTestMessage(_ realtime: ARTRealtimeInternal, failOnError: Bool = true) -> PublishTestMessage {
+@discardableResult func publishFirstTestMessage(_ realtime: ARTRealtime, failOnError: Bool = true) -> PublishTestMessage {
     return PublishTestMessage(client: realtime, failOnError: failOnError)
 }
 
@@ -461,7 +461,7 @@ func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability
         options.queryTime = queryTime
     }
 
-    let client = ARTRestInternal(options: options)
+    let client = ARTRest(options: options)
 
     var tokenParams: ARTTokenParams? = nil
     if let capability = capability {
@@ -1193,29 +1193,29 @@ extension String {
 
 }
 
-extension ARTRealtimeInternal {
+extension ARTRealtime {
 
     func simulateLostConnectionAndState() {
         //1. Abruptly disconnect
         //2. Change the `Connection#id` and `Connection#key` before the client
         //   library attempts to reconnect and resume the connection
-        self.connection.setId("lost")
-        self.connection.setKey("xxxxx!xxxxxxx-xxxxxxxx-xxxxxxxx")
-        self.onDisconnected()
+        self.connection.internal.setId("lost")
+        self.connection.internal.setKey("xxxxx!xxxxxxx-xxxxxxxx-xxxxxxxx")
+        self.internal.onDisconnected()
     }
 
     func simulateSuspended(beforeSuspension beforeSuspensionCallback: @escaping (_ done: @escaping () -> ()) -> Void) {
         waitUntil(timeout: testTimeout) { done in
             self.connection.once(.disconnected) { _ in
                 beforeSuspensionCallback(done)
-                self.onSuspended()
+                self.internal.onSuspended()
             }
-            self.onDisconnected()
+            self.internal.onDisconnected()
         }
     }
 
     func dispose() {
-        let names = self.channels.map({ ($0 as! ARTRealtimeChannelInternal).name })
+        let names = self.channels.map({ ($0 as! ARTRealtimeChannel).name })
         for name in names {
             self.channels.release(name)
         }
@@ -1506,5 +1506,32 @@ extension ARTHTTPPaginatedResponse {
     var headers: NSDictionary {
         return response.objc_allHeaderFields
     }
+}
 
+protocol ARTHasInternal {
+    associatedtype Internal
+    func unwrapAsync(_: @escaping (Internal) -> ())
+}
+
+extension ARTHasInternal {
+    var _in: Internal {
+        get {
+            var unwrapped: Internal? = nil
+            let semaphore = DispatchSemaphore(value: 0)
+            self.unwrapAsync { v in
+                unwrapped = v
+                semaphore.signal()
+            }
+            let result = semaphore.wait(timeout: .now() + testTimeout)
+            expect(result).to(equal(.success))
+            return unwrapped!
+        }
+    }
+}
+
+extension ARTRealtime: ARTHasInternal {
+    typealias Internal = ARTRealtimeInternal
+    func unwrapAsync(_ use: @escaping (Internal) -> ()) {
+        self.internalAsync(use)
+    }
 }

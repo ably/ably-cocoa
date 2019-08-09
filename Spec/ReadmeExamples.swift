@@ -17,18 +17,18 @@ class ReadmeExamples : QuickSpec {
     override func spec() {
 
         it("testMakeKeyInstance") {
-            let client = ARTRealtimeInternal(key: "xxxx:xxxx")
+            let client = ARTRealtime(key: "xxxx:xxxx")
             client.connection.close()
         }
 
         it("testMakeTokenInstance") {
-            let client = ARTRealtimeInternal(token: "xxxx")
+            let client = ARTRealtime(token: "xxxx")
             client.connection.close()
         }
 
         it("testListenToConnectionStateChanges") {
             let options = AblyTests.clientOptions(requestToken: true)
-            let client = ARTRealtimeInternal(options: options)
+            let client = ARTRealtime(options: options)
             defer { client.close() }
 
             client.connection.on { stateChange in
@@ -47,14 +47,14 @@ class ReadmeExamples : QuickSpec {
         it("testNoAutoConnect") {
             let options = ARTClientOptions(key: "xxxx:xxxx")
             options.autoConnect = false
-            let client = ARTRealtimeInternal(options: options)
+            let client = ARTRealtime(options: options)
             client.connection.connect()
             client.connection.close()
         }
 
         it("testSubscribeAndPublishingToChannel") {
             let options = AblyTests.clientOptions(requestToken: true)
-            let client = ARTRealtimeInternal(options: options)
+            let client = ARTRealtime(options: options)
             defer { client.close() }
 
             let channel = client.channels.get("test")
@@ -74,7 +74,7 @@ class ReadmeExamples : QuickSpec {
 
         it("testQueryingTheHistory") {
             let options = AblyTests.clientOptions(requestToken: true)
-            let client = ARTRealtimeInternal(options: options)
+            let client = ARTRealtime(options: options)
             defer { client.close() }
 
             let channel = client.channels.get("test")
@@ -95,7 +95,7 @@ class ReadmeExamples : QuickSpec {
         it("testPresenceOnAChannel") {
             let options = AblyTests.clientOptions(requestToken: true)
             options.clientId = "foo"
-            let client = ARTRealtimeInternal(options: options)
+            let client = ARTRealtime(options: options)
             defer { client.close() }
 
             client.connection.on { stateChange in
@@ -113,7 +113,7 @@ class ReadmeExamples : QuickSpec {
 
         it("testQueryingThePresenceHistory") {
             let options = AblyTests.clientOptions(requestToken: true)
-            let client = ARTRealtimeInternal(options: options)
+            let client = ARTRealtime(options: options)
             defer { client.close() }
 
             let channel = client.channels.get("test")
@@ -132,14 +132,14 @@ class ReadmeExamples : QuickSpec {
         }
 
         it("testMakeRestClientAndChannel") {
-            let client = ARTRestInternal(key: "xxxx:xxxx")
+            let client = ARTRest(key: "xxxx:xxxx")
             let channel = client.channels.get("test")
             _ = channel
         }
 
         it("testRestPublishMessage") {
             let options = AblyTests.clientOptions(requestToken: true)
-            let client = ARTRestInternal(options: options)
+            let client = ARTRest(options: options)
             let channel = client.channels.get("test")
 
             channel.publish("myEvent", data: "Hello!")
@@ -147,7 +147,7 @@ class ReadmeExamples : QuickSpec {
 
         it("testRestQueryingTheHistory") {
             let options = AblyTests.clientOptions(requestToken: true)
-            let client = ARTRestInternal(options: options)
+            let client = ARTRest(options: options)
             let channel = client.channels.get("test")
 
             channel.history { messagesPage, error in
@@ -163,7 +163,7 @@ class ReadmeExamples : QuickSpec {
 
         it("testRestPresenceOnAChannel") {
             let options = AblyTests.clientOptions(requestToken: true)
-            let client = ARTRestInternal(options: options)
+            let client = ARTRest(options: options)
             let channel = client.channels.get("test")
 
             channel.presence.get { membersPage, error in
@@ -179,7 +179,7 @@ class ReadmeExamples : QuickSpec {
 
         it("testRestQueryingThePresenceHistory") {
             let options = AblyTests.clientOptions(requestToken: true)
-            let client = ARTRestInternal(options: options)
+            let client = ARTRest(options: options)
             let channel = client.channels.get("test")
 
             channel.presence.history { presencePage, error in
@@ -194,18 +194,18 @@ class ReadmeExamples : QuickSpec {
         }
 
         it("testGenerateToken") {
-            let client = ARTRestInternal(options: AblyTests.commonAppSetup())
+            let client = ARTRest(options: AblyTests.commonAppSetup())
 
             client.auth.requestToken(nil, with: nil) { tokenDetails, error in
                 let tokenDetails = tokenDetails!
                 print(tokenDetails.token) // "xVLyHw.CLchevH3hF....MDh9ZC_Q"
-                let client = ARTRestInternal(token: tokenDetails.token)
+                let client = ARTRest(token: tokenDetails.token)
                 _ = client
             }
         }
         
         it("testFetchingStats") {
-            let client = ARTRestInternal(options: AblyTests.commonAppSetup())
+            let client = ARTRest(options: AblyTests.commonAppSetup())
             client.channels.get("test").publish("foo", data: "bar") { _ in
                 client.stats { statsPage, error in
                     let statsPage = statsPage!
@@ -218,7 +218,7 @@ class ReadmeExamples : QuickSpec {
         }
         
         it("testFetchingTime") {
-            let client = ARTRestInternal(options: AblyTests.commonAppSetup())
+            let client = ARTRest(options: AblyTests.commonAppSetup())
             
             client.time { time, error in
                 print(time as Any) // 2016-02-09 03:59:24 +0000

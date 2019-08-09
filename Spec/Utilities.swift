@@ -78,7 +78,7 @@ class Utilities: QuickSpec {
                 context("in Realtime") {
                     it("should handle and emit the invalid data error") {
                         let options = AblyTests.commonAppSetup()
-                        let realtime = ARTRealtimeInternal(options: options)
+                        let realtime = ARTRealtime(options: options)
                         defer { realtime.close() }
                         let channel = realtime.channels.get("foo")
                         waitUntil(timeout: testTimeout) { done in
@@ -105,7 +105,7 @@ class Utilities: QuickSpec {
 
                     it("should ignore invalid transport message") {
                         let options = AblyTests.commonAppSetup()
-                        let realtime = ARTRealtimeInternal(options: options)
+                        let realtime = ARTRealtime(options: options)
                         defer { realtime.close() }
                         let channel = realtime.channels.get("foo")
 
@@ -127,7 +127,7 @@ class Utilities: QuickSpec {
                                     fail("Should not receive any message")
                                 }
                                 var result: AnyObject?
-                                expect{ result = realtime.transport?.receive(with: data as Data) }.toNot(raiseException())
+                                expect{ result = realtime.internal.transport?.receive(with: data as Data) }.toNot(raiseException())
                                 expect(result).to(beNil())
                                 done()
                             }
@@ -142,7 +142,7 @@ class Utilities: QuickSpec {
                 context("in Rest") {
                     it("should handle and emit the invalid data error") {
                         let options = AblyTests.commonAppSetup()
-                        let rest = ARTRestInternal(options: options)
+                        let rest = ARTRest(options: options)
                         let channel = rest.channels.get("foo")
                         waitUntil(timeout: testTimeout) { done in
                             channel.publish("test", data: NSDate()) { error in
@@ -168,9 +168,9 @@ class Utilities: QuickSpec {
 
                     it("should ignore invalid response payload") {
                         let options = AblyTests.commonAppSetup()
-                        let rest = ARTRestInternal(options: options)
+                        let rest = ARTRest(options: options)
                         let testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                        rest.httpExecutor = testHTTPExecutor
+                        rest.internal.httpExecutor = testHTTPExecutor
                         let channel = rest.channels.get("foo")
 
                         // Garbage values (whatever is on the heap)
@@ -413,8 +413,8 @@ class Utilities: QuickSpec {
 
                 it("should have a history of logs") {
                     let options = AblyTests.commonAppSetup()
-                    let realtime = ARTRealtimeInternal(options: options)
-                    realtime.logger.logLevel = .verbose
+                    let realtime = ARTRealtime(options: options)
+                    realtime.internal.logger.logLevel = .verbose
                     defer { realtime.close() }
                     let channel = realtime.channels.get("foo")
 
@@ -425,9 +425,9 @@ class Utilities: QuickSpec {
                         }
                     }
 
-                    expect(realtime.logger.history.count).toNot(beGreaterThan(100))
-                    expect(realtime.logger.history.map{ $0.message }.first).to(contain("channel state transitions from 1 - Attaching to 2 - Attached"))
-                    expect(realtime.logger.history.filter{ $0.message.contains("realtime state transitions to 2 - Connected") }).to(haveCount(1))
+                    expect(realtime.internal.logger.history.count).toNot(beGreaterThan(100))
+                    expect(realtime.internal.logger.history.map{ $0.message }.first).to(contain("channel state transitions from 1 - Attaching to 2 - Attached"))
+                    expect(realtime.internal.logger.history.filter{ $0.message.contains("realtime state transitions to 2 - Connected") }).to(haveCount(1))
                 }
 
             }

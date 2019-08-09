@@ -59,7 +59,6 @@
 @end
 
 @implementation ARTRestPresence {
-    ARTRestPresenceInternal *_internal;
     ARTQueuedDealloc *_dealloc;
 }
 

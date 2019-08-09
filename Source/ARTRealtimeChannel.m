@@ -36,7 +36,6 @@
 #endif
 
 @implementation ARTRealtimeChannel {
-    ARTRealtimeChannelInternal *_internal;
     ARTQueuedDealloc *_dealloc;
 }
 
@@ -217,7 +216,6 @@
 @end
 
 @implementation ARTRealtimeChannelInternal {
-    dispatch_queue_t _queue;
     dispatch_queue_t _userQueue;
     ARTErrorInfo *_errorReason;
 }

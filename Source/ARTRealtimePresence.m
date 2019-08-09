@@ -33,7 +33,6 @@
 @end
 
 @implementation ARTRealtimePresence {
-    ARTRealtimePresenceInternal *_internal;
     ARTQueuedDealloc *_dealloc;
 }
 
@@ -149,7 +148,6 @@
 @implementation ARTRealtimePresenceInternal {
     __weak ARTRealtimeChannelInternal *_channel;
     dispatch_queue_t _userQueue;
-    dispatch_queue_t _queue;
 }
 
 - (instancetype)initWithChannel:(ARTRealtimeChannelInternal *)channel {

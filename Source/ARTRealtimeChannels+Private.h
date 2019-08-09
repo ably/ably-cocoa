@@ -26,9 +26,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, getter=getCollection) NSMutableDictionary<NSString *, ARTRealtimeChannelInternal *> *collection;
 - (ARTRealtimeChannelInternal *)_getChannel:(NSString *)name options:(ARTChannelOptions * _Nullable)options addPrefix:(BOOL)addPrefix;
 
+@property (nonatomic, strong) dispatch_queue_t queue;
+
 @end
 
 @interface ARTRealtimeChannels ()
+
+@property (nonatomic, readonly) ARTRealtimeChannelsInternal *internal;
 
 - (instancetype)initWithInternal:(ARTRealtimeChannelsInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc;
 

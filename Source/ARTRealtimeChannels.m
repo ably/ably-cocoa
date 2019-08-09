@@ -14,7 +14,6 @@
 #import "ARTRealtimePresence+Private.h"
 
 @implementation ARTRealtimeChannels {
-    ARTRealtimeChannelsInternal *_internal;
     ARTQueuedDealloc *_dealloc;
 }
 
@@ -50,7 +49,7 @@
 - (id<NSFastEnumeration>)iterate {
     NSMutableArray *channels = [[NSMutableArray alloc] init];
     for (ARTRealtimeChannelInternal *internalChannel in [_internal iterate]) {
-        [channels addObject:internalChannel];
+        [channels addObject:[[ARTRealtimeChannel alloc] initWithInternal:internalChannel queuedDealloc:_dealloc]];
     }
     return channels;
 }
@@ -69,7 +68,6 @@
 @implementation ARTRealtimeChannelsInternal {
     ARTChannels *_channels;
     dispatch_queue_t _userQueue;
-    dispatch_queue_t _queue;
 }
 
 - (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime {

@@ -24,7 +24,6 @@
 #import "ARTCrypto+Private.h"
 
 @implementation ARTRestChannel {
-    ARTRestChannelInternal *_internal;
     ARTQueuedDealloc *_dealloc;
 }
 
@@ -111,7 +110,6 @@ static const NSUInteger kIdempotentLibraryGeneratedIdLength = 9; //bytes
 
 @implementation ARTRestChannelInternal {
 @private
-    dispatch_queue_t _queue;
     dispatch_queue_t _userQueue;
     ARTRestPresenceInternal *_presence;
     ARTPushChannelInternal *_pushChannel;

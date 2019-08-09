@@ -51,7 +51,6 @@
 #pragma mark - ARTRealtime implementation
 
 @implementation ARTRealtime {
-    ARTRealtimeInternal *_internal;
     ARTQueuedDealloc *_dealloc;
 }
 
@@ -103,8 +102,8 @@
 - (instancetype)initWithKey:(NSString *)key {
     self = [super init];
     if (self) {
-        [self initCommon];
         _internal = [[ARTRealtimeInternal alloc] initWithKey:key];
+        [self initCommon];
     }
     return self;
 }
@@ -112,8 +111,8 @@
 - (instancetype)initWithToken:(NSString *)token {
     self = [super init];
     if (self) {
-        [self initCommon];
         _internal = [[ARTRealtimeInternal alloc] initWithToken:token];
+        [self initCommon];
     }
     return self;
 }

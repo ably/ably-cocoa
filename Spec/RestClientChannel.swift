@@ -14,13 +14,13 @@ import SwiftyJSON
 
 class RestClientChannel: QuickSpec {
     override func spec() {
-        var client: ARTRestInternal!
-        var channel: ARTChannel! //ARTRestChannel
+        var client: ARTRest!
+        var channel: ARTRestChannel!
         var testHTTPExecutor: TestProxyHTTPExecutor!
 
         beforeEach {
             let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
-            client = ARTRestInternal(options: options)
+            client = ARTRest(options: options)
             channel = client.channels.get(ProcessInfo.processInfo.globallyUniqueString)
             testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
         }
@@ -133,9 +133,9 @@ class RestClientChannel: QuickSpec {
             // RSL1c
             context("with an array of Message objects") {
                 it("publishes the messages in a single request and invokes callback with success") {
-                    let oldExecutor = client.httpExecutor
-                    defer { client.httpExecutor = oldExecutor}
-                    client.httpExecutor = testHTTPExecutor
+                    let oldExecutor = client.internal.httpExecutor
+                    defer { client.internal.httpExecutor = oldExecutor}
+                    client.internal.httpExecutor = testHTTPExecutor
 
                     var publishError: ARTErrorInfo? = ARTErrorInfo.create(from: NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessages: [ARTMessage] = []
@@ -146,7 +146,7 @@ class RestClientChannel: QuickSpec {
                     ]
                     channel.publish(messages) { error in
                         publishError = error
-                        client.httpExecutor = oldExecutor
+                        client.internal.httpExecutor = oldExecutor
                         channel.history { result, _ in
                             if let items = result?.items {
                                 publishedMessages.append(contentsOf:items)
@@ -168,12 +168,12 @@ class RestClientChannel: QuickSpec {
             context("Unidentified clients using Basic Auth") {
                 // RSL1f1
                 it("should publish message with the provided clientId") {
-                    let client = ARTRestInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRest(options: AblyTests.commonAppSetup())
                     let channel = client.channels.get("test")
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish([ARTMessage(name: nil, data: "message", clientId: "tester")]) { error in
                             expect(error).to(beNil())
-                            expect(client.auth.method).to(equal(ARTAuthMethod.basic))
+                            expect(client.auth.internal.method).to(equal(ARTAuthMethod.basic))
                             channel.history { page, error in
                                 expect(error).to(beNil())
                                 guard let page = page else {
@@ -200,7 +200,7 @@ class RestClientChannel: QuickSpec {
                     it("should be unnecessary to set clientId of the Message before publishing") {
                         let options = AblyTests.commonAppSetup()
                         options.clientId = "john"
-                        let client = ARTRestInternal(options: options)
+                        let client = ARTRest(options: options)
                         let channel = client.channels.get("test")
 
                         waitUntil(timeout: testTimeout) { done in
@@ -230,7 +230,7 @@ class RestClientChannel: QuickSpec {
                 it("when publishing a Message with the clientId attribute set to the identified client’s clientId") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "john"
-                    let client = ARTRestInternal(options: options)
+                    let client = ARTRest(options: options)
                     let channel = client.channels.get("test")
 
                     waitUntil(timeout: testTimeout) { done in
@@ -256,8 +256,8 @@ class RestClientChannel: QuickSpec {
                 it("when publishing a Message with a different clientId attribute value to the identified client’s clientId") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "john"
-                    let client = ARTRestInternal(options: options)
-                    client.httpExecutor = testHTTPExecutor
+                    let client = ARTRest(options: options)
+                    client.internal.httpExecutor = testHTTPExecutor
                     let channel = client.channels.get("test")
 
                     // Reject before the message is sent to the server
@@ -289,8 +289,8 @@ class RestClientChannel: QuickSpec {
                 it("when publishing a Message with an explicit clientId that is incompatible with the identified client’s clientId") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "john"
-                    let client = ARTRestInternal(options: options)
-                    client.httpExecutor = testHTTPExecutor
+                    let client = ARTRest(options: options)
+                    client.internal.httpExecutor = testHTTPExecutor
                     let channel = client.channels.get("test")
 
                     // Reject before the message is sent to the server
@@ -322,7 +322,7 @@ class RestClientChannel: QuickSpec {
             it("should provide an optional argument that allows the clientId value to be specified") {
                 let options = AblyTests.commonAppSetup()
                 options.clientId = "john"
-                let client = ARTRestInternal(options: options)
+                let client = ARTRest(options: options)
                 let channel = client.channels.get("test")
                 waitUntil(timeout: testTimeout) { done in
                     channel.publish("name", data: "some data", clientId: "tester") { error in
@@ -334,14 +334,14 @@ class RestClientChannel: QuickSpec {
 
             // RSL1h, RSL6a2
             it("should provide an optional argument that allows the extras value to be specified") {
-                let client = ARTRestInternal(options: AblyTests.commonAppSetup())
+                let client = ARTRest(options: AblyTests.commonAppSetup())
                 let originalARTChannels_getChannelNamePrefix = ARTChannels_getChannelNamePrefix
                 defer { ARTChannels_getChannelNamePrefix = originalARTChannels_getChannelNamePrefix }
                 ARTChannels_getChannelNamePrefix = nil // Force that channel name is not changed.
                 let channel = client.channels.get("pushenabled:test")
                 let extras = ["notification": ["title": "Hello from Ably!"]] as ARTJsonCompatible
 
-                expect((client.encoders["application/json"] as! ARTJsonLikeEncoder).message(from: [
+                expect((client.internal.encoders["application/json"] as! ARTJsonLikeEncoder).message(from: [
                     "data": "foo",
                     "extras": ["notification": ["title": "Hello from Ably!"]]
                 ]).extras == extras).to(beTrue())
@@ -378,7 +378,7 @@ class RestClientChannel: QuickSpec {
 
                 it("the client library should reject the publish and indicate an error") {
                     let options = AblyTests.commonAppSetup()
-                    let client = ARTRestInternal(options: options)
+                    let client = ARTRest(options: options)
                     let channel = client.channels.get(channelName)
                     let messages = buildMessagesThatExceedMaxMessageSize()
 
@@ -393,7 +393,7 @@ class RestClientChannel: QuickSpec {
 
                 it("also when using publish:data:clientId:extras") {
                     let options = AblyTests.commonAppSetup()
-                    let client = ARTRestInternal(options: options)
+                    let client = ARTRest(options: options)
                     let channel = client.channels.get(channelName)
                     let name = buildStringThatExceedMaxMessageSize()
 
@@ -457,10 +457,10 @@ class RestClientChannel: QuickSpec {
                         let message = ARTMessage(name: nil, data: "foo")
                         expect(message.id).to(beNil())
 
-                        let rest = ARTRestInternal(key: "xxxx:xxxx")
-                        rest.options.idempotentRestPublishing = true
+                        let rest = ARTRest(key: "xxxx:xxxx")
+                        rest.internal.options.idempotentRestPublishing = true
                         let mockHTTPExecutor = MockHTTPExecutor()
-                        rest.httpExecutor = mockHTTPExecutor
+                        rest.internal.httpExecutor = mockHTTPExecutor
                         let channel = rest.channels.get("idempotent")
 
                         waitUntil(timeout: testTimeout) { done in
@@ -485,10 +485,10 @@ class RestClientChannel: QuickSpec {
                         let message2 = ARTMessage(name: "john", data: "foo2")
                         expect(message2.id).to(beNil())
 
-                        let rest = ARTRestInternal(key: "xxxx:xxxx")
-                        rest.options.idempotentRestPublishing = true
+                        let rest = ARTRest(key: "xxxx:xxxx")
+                        rest.internal.options.idempotentRestPublishing = true
                         let mockHTTPExecutor = MockHTTPExecutor()
-                        rest.httpExecutor = mockHTTPExecutor
+                        rest.internal.httpExecutor = mockHTTPExecutor
                         let channel = rest.channels.get("idempotent")
 
                         waitUntil(timeout: testTimeout) { done in
@@ -518,10 +518,10 @@ class RestClientChannel: QuickSpec {
                     let message = ARTMessage(name: nil, data: "foo")
                     message.id = "123"
 
-                    let rest = ARTRestInternal(key: "xxxx:xxxx")
-                    rest.options.idempotentRestPublishing = true
+                    let rest = ARTRest(key: "xxxx:xxxx")
+                    rest.internal.options.idempotentRestPublishing = true
                     let mockHTTPExecutor = MockHTTPExecutor()
-                    rest.httpExecutor = mockHTTPExecutor
+                    rest.internal.httpExecutor = mockHTTPExecutor
                     let channel = rest.channels.get("idempotent")
 
                     waitUntil(timeout: testTimeout) { done in
@@ -540,10 +540,10 @@ class RestClientChannel: QuickSpec {
                 }
 
                 it("should generate for internal message that is created in publish(name:data:) method") {
-                    let rest = ARTRestInternal(key: "xxxx:xxxx")
-                    rest.options.idempotentRestPublishing = true
+                    let rest = ARTRest(key: "xxxx:xxxx")
+                    rest.internal.options.idempotentRestPublishing = true
                     let mockHTTPExecutor = MockHTTPExecutor()
-                    rest.httpExecutor = mockHTTPExecutor
+                    rest.internal.httpExecutor = mockHTTPExecutor
                     let channel = rest.channels.get("idempotent")
 
                     waitUntil(timeout: testTimeout) { done in
@@ -568,10 +568,10 @@ class RestClientChannel: QuickSpec {
                     let message2 = ARTMessage(name: "john", data: "foo2")
                     message2.id = "123"
 
-                    let rest = ARTRestInternal(key: "xxxx:xxxx")
-                    rest.options.idempotentRestPublishing = true
+                    let rest = ARTRest(key: "xxxx:xxxx")
+                    rest.internal.options.idempotentRestPublishing = true
                     let mockHTTPExecutor = MockHTTPExecutor()
-                    rest.httpExecutor = mockHTTPExecutor
+                    rest.internal.httpExecutor = mockHTTPExecutor
                     let channel = rest.channels.get("idempotent")
 
                     waitUntil(timeout: testTimeout) { done in
@@ -599,9 +599,9 @@ class RestClientChannel: QuickSpec {
                     let message2 = ARTMessage(name: "john", data: "foo2")
                     expect(message2.id).to(beNil())
 
-                    let rest = ARTRestInternal(options: options)
+                    let rest = ARTRest(options: options)
                     let mockHTTPExecutor = MockHTTPExecutor()
-                    rest.httpExecutor = mockHTTPExecutor
+                    rest.internal.httpExecutor = mockHTTPExecutor
                     let channel = rest.channels.get("idempotent")
 
                     waitUntil(timeout: testTimeout) { done in
@@ -622,9 +622,9 @@ class RestClientChannel: QuickSpec {
 
                 // RSL1k4
                 it("should have only one published message") {
-                    client.options.idempotentRestPublishing = true
-                    client.httpExecutor = testHTTPExecutor
-                    client.options.fallbackHostsUseDefault = true
+                    client.internal.options.idempotentRestPublishing = true
+                    client.internal.httpExecutor = testHTTPExecutor
+                    client.internal.options.fallbackHostsUseDefault = true
 
                     let forceRetryError = ErrorSimulator(
                         value: 50000,
@@ -666,8 +666,8 @@ class RestClientChannel: QuickSpec {
                 // RSL1k5
                 it("should publish a message with implicit Id only once") {
                     let options = AblyTests.commonAppSetup()
-                    let rest = ARTRestInternal(options: options)
-                    rest.options.idempotentRestPublishing = true
+                    let rest = ARTRest(options: options)
+                    rest.internal.options.idempotentRestPublishing = true
                     let channel = rest.channels.get("idempotent")
 
                     let message = ARTMessage(name: "unique", data: "foo")
@@ -699,9 +699,9 @@ class RestClientChannel: QuickSpec {
             // RSL1j
             it("should include attributes supplied by the caller in the encoded message") {
                 let options = AblyTests.commonAppSetup()
-                let client = ARTRestInternal(options: options)
+                let client = ARTRest(options: options)
                 let proxyHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                client.httpExecutor = proxyHTTPExecutor
+                client.internal.httpExecutor = proxyHTTPExecutor
 
                 let channel = client.channels.get("foo")
                 let message = ARTMessage(name: nil, data: "")
@@ -733,7 +733,7 @@ class RestClientChannel: QuickSpec {
 
             // RSL2a
             it("should return a PaginatedResult page containing the first page of messages") {
-                let client = ARTRestInternal(options: AblyTests.commonAppSetup())
+                let client = ARTRest(options: AblyTests.commonAppSetup())
                 let channel = client.channels.get("foo")
 
                 waitUntil(timeout: testTimeout) { done in
@@ -811,7 +811,7 @@ class RestClientChannel: QuickSpec {
 
                 // RSL2b1
                 it("start and end should filter messages between those two times") {
-                    let client = ARTRestInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRest(options: AblyTests.commonAppSetup())
                     let channel = client.channels.get("test")
 
                     let query = ARTDataQuery()
@@ -870,7 +870,7 @@ class RestClientChannel: QuickSpec {
 
                 // RSL2b1
                 it("start must be equal to or less than end and is unaffected by the request direction") {
-                    let client = ARTRestInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRest(options: AblyTests.commonAppSetup())
                     let channel = client.channels.get("test")
 
                     let query = ARTDataQuery()
@@ -891,7 +891,7 @@ class RestClientChannel: QuickSpec {
 
                 // RSL2b2
                 it("direction backwards or forwards") {
-                    let client = ARTRestInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRest(options: AblyTests.commonAppSetup())
                     let channel = client.channels.get("test")
 
                     let query = ARTDataQuery()
@@ -932,7 +932,7 @@ class RestClientChannel: QuickSpec {
 
                 // RSL2b3
                 it("limit items result") {
-                    let client = ARTRestInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRest(options: AblyTests.commonAppSetup())
                     let channel = client.channels.get("test")
 
                     let query = ARTDataQuery()
@@ -970,7 +970,7 @@ class RestClientChannel: QuickSpec {
 
                 // RSL2b3
                 it("limit supports up to 1000 items") {
-                    let client = ARTRestInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRest(options: AblyTests.commonAppSetup())
                     let channel = client.channels.get("test")
 
                     let query = ARTDataQuery()
@@ -1022,7 +1022,7 @@ class RestClientChannel: QuickSpec {
                         expect(message.data).toNot(beNil())
                         expect(message.action).to(equal(ARTPresenceAction.present))
 
-                        let encodedFixture = channel.dataEncoder.decode(
+                        let encodedFixture = channel.internal.dataEncoder.decode(
                             fixtureMessage["data"].object,
                             encoding:fixtureMessage.asDictionary!["encoding"] as? String
                         )
@@ -1072,8 +1072,8 @@ class RestClientChannel: QuickSpec {
                     ]
                 }
 
-                client.options.idempotentRestPublishing = false
-                client.httpExecutor = testHTTPExecutor
+                client.internal.options.idempotentRestPublishing = false
+                client.internal.httpExecutor = testHTTPExecutor
 
                 validCases.forEach { caseTest in
                     waitUntil(timeout: testTimeout) { done in
@@ -1119,7 +1119,7 @@ class RestClientChannel: QuickSpec {
                     TestCase(value: binaryData, expected: "base64"),
                 ]
 
-                client.httpExecutor = testHTTPExecutor
+                client.internal.httpExecutor = testHTTPExecutor
 
                 encodingCases.forEach { caseItem in
                     waitUntil(timeout: testTimeout) { done in
@@ -1139,7 +1139,7 @@ class RestClientChannel: QuickSpec {
             context("json") {
                 // RSL4d1
                 it("binary payload should be encoded as Base64 and represented as a JSON string") {
-                    client.httpExecutor = testHTTPExecutor
+                    client.internal.httpExecutor = testHTTPExecutor
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(nil, data: binaryData, callback: { error in
                             expect(error).to(beNil())
@@ -1158,7 +1158,7 @@ class RestClientChannel: QuickSpec {
 
                 // RSL4d
                 it("string payload should be represented as a JSON string") {
-                    client.httpExecutor = testHTTPExecutor
+                    client.internal.httpExecutor = testHTTPExecutor
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(nil, data: text, callback: { error in
                             expect(error).to(beNil())
@@ -1181,7 +1181,7 @@ class RestClientChannel: QuickSpec {
                 context("json payload should be stringified either") {
 
                     it("as a JSON Array") {
-                        client.httpExecutor = testHTTPExecutor
+                        client.internal.httpExecutor = testHTTPExecutor
                         // JSON Array
                         waitUntil(timeout: testTimeout) { done in
                             channel.publish(nil, data: array, callback: { error in
@@ -1202,7 +1202,7 @@ class RestClientChannel: QuickSpec {
                     }
 
                     it("as a JSON Object") {
-                        client.httpExecutor = testHTTPExecutor
+                        client.internal.httpExecutor = testHTTPExecutor
                         // JSON Object
                         waitUntil(timeout: testTimeout) { done in
                             channel.publish(nil, data: dictionary, callback: { error in
@@ -1282,8 +1282,8 @@ class RestClientChannel: QuickSpec {
                 for encryptionKeyLength: UInt in [128, 256] {
                     it("\(encryptionKeyLength) CBC mode") {
                         let options = AblyTests.commonAppSetup()
-                        let client = ARTRestInternal(options: options)
-                        client.httpExecutor = testHTTPExecutor
+                        let client = ARTRest(options: options)
+                        client.internal.httpExecutor = testHTTPExecutor
 
                         let params: ARTCipherParams = ARTCrypto.getDefaultParams([
                             "key": ARTCrypto.generateRandomKey(encryptionKeyLength)
@@ -1343,7 +1343,7 @@ class RestClientChannel: QuickSpec {
             // RSL6b
             it("should deliver with a binary payload when the payload was successfully decoded but it could not be decrypted") {
                 let options = AblyTests.commonAppSetup()
-                let clientEncrypted = ARTRestInternal(options: options)
+                let clientEncrypted = ARTRest(options: options)
 
                 let channelOptions = ARTChannelOptions(cipher: ["key":ARTCrypto.generateRandomKey()] as ARTCipherParamsCompatible)
                 let channelEncrypted = clientEncrypted.channels.get("test", options: channelOptions)
@@ -1356,7 +1356,7 @@ class RestClientChannel: QuickSpec {
                     }
                 }
 
-                let client = ARTRestInternal(options: options)
+                let client = ARTRest(options: options)
                 let channel = client.channels.get("test")
 
                 waitUntil(timeout: testTimeout) { done in
@@ -1380,10 +1380,10 @@ class RestClientChannel: QuickSpec {
                 let options = AblyTests.commonAppSetup()
                 options.useBinaryProtocol = false
                 options.logHandler = ARTLog(capturingOutput: true)
-                let client = ARTRestInternal(options: options)
+                let client = ARTRest(options: options)
                 let channelOptions = ARTChannelOptions(cipher: ["key":ARTCrypto.generateRandomKey()] as ARTCipherParamsCompatible)
                 let channel = client.channels.get("test", options: channelOptions)
-                client.httpExecutor = testHTTPExecutor
+                client.internal.httpExecutor = testHTTPExecutor
 
                 let expectedMessage = ["something":1]
                 let expectedData = try! JSONSerialization.data(withJSONObject: expectedMessage, options: JSONSerialization.WritingOptions(rawValue: 0))

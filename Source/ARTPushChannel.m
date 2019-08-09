@@ -19,7 +19,6 @@
 #import "ARTNSMutableRequest+ARTPush.h"
 
 @implementation ARTPushChannel {
-    ARTPushChannelInternal *_internal;
     ARTQueuedDealloc *_dealloc;
 }
 

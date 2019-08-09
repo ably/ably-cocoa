@@ -26,6 +26,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTPushAdmin ()
 
+@property (nonatomic, readonly) ARTPushAdminInternal *internal;
+
 - (instancetype)initWithInternal:(ARTPushAdminInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc;
 
 @end

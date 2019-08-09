@@ -19,7 +19,6 @@
 #import "ARTNSMutableRequest+ARTPush.h"
 
 @implementation ARTPushChannelSubscriptions {
-    ARTPushChannelSubscriptionsInternal *_internal;
     ARTQueuedDealloc *_dealloc;
 }
 

@@ -13,7 +13,7 @@ import Quick
 class PushActivationStateMachine : QuickSpec {
     override func spec() {
 
-        var rest: ARTRestInternal!
+        var rest: ARTRest!
         var httpExecutor: MockHTTPExecutor!
         var storage: MockDeviceStorage!
         var initialStateMachine: ARTPushActivationStateMachine!
@@ -23,12 +23,12 @@ class PushActivationStateMachine : QuickSpec {
         let expectedPushRecipient: [String: [String: String]] = ["recipient": ["transportType": "apns"]]
 
         beforeEach {
-            rest = ARTRestInternal(key: "xxxx:xxxx")
+            rest = ARTRest(key: "xxxx:xxxx")
             httpExecutor = MockHTTPExecutor()
-            rest.httpExecutor = httpExecutor
+            rest.internal.httpExecutor = httpExecutor
             storage = MockDeviceStorage()
-            rest.storage = storage
-            initialStateMachine = ARTPushActivationStateMachine(rest)
+            rest.internal.storage = storage
+            initialStateMachine = ARTPushActivationStateMachine(rest.internal)
         }
 
         describe("Activation state machine") {
@@ -39,8 +39,8 @@ class PushActivationStateMachine : QuickSpec {
 
             it("should read the current state from disk") {
                 let storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeviceRegistration(machine: initialStateMachine))
-                rest.storage = storage
-                let stateMachine = ARTPushActivationStateMachine(rest)
+                rest.internal.storage = storage
+                let stateMachine = ARTPushActivationStateMachine(rest.internal)
                 expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeviceRegistration.self))
                 expect(storage.keysRead).to(haveCount(2))
                 expect(storage.keysRead.filter({ $0.hasSuffix("CurrentState") })).to(haveCount(1))
@@ -55,8 +55,8 @@ class PushActivationStateMachine : QuickSpec {
 
                 beforeEach {
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateNotActivated(machine: initialStateMachine))
-                    rest.storage = storage
-                    stateMachine = ARTPushActivationStateMachine(rest)
+                    rest.internal.storage = storage
+                    stateMachine = ARTPushActivationStateMachine(rest.internal)
                 }
 
                 // RSH3a1
@@ -98,7 +98,7 @@ class PushActivationStateMachine : QuickSpec {
                     // RSH3a2b
                     context("local device") {
                         it("should have a generated id") {
-                            rest.resetDeviceOnceToken()
+                            rest.internal.resetDeviceOnceToken()
                             expect(rest.device.id.lengthOfBytes(using: .utf8)) == 26 //ulid
                         }
                         it("should have a generated secret") {
@@ -158,8 +158,8 @@ class PushActivationStateMachine : QuickSpec {
 
                 beforeEach {
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForPushDeviceDetails(machine: initialStateMachine))
-                    rest.storage = storage
-                    stateMachine = ARTPushActivationStateMachine(rest)
+                    rest.internal.storage = storage
+                    stateMachine = ARTPushActivationStateMachine(rest.internal)
                 }
 
                 // RSH3b1
@@ -303,7 +303,7 @@ class PushActivationStateMachine : QuickSpec {
                         guard let body = decodedBody as? NSDictionary else {
                             fail("body is invalid"); return
                         }
-                        expect(url.host).to(equal(rest.options.restUrl().host))
+                        expect(url.host).to(equal(rest.internal.options.restUrl().host))
                         expect(request.httpMethod) == "POST"
                         expect(body.value(forKey: "id") as? String).to(equal(rest.device.id))
                         expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(expectedPushRecipient))
@@ -402,8 +402,8 @@ class PushActivationStateMachine : QuickSpec {
 
                 beforeEach {
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeviceRegistration(machine: initialStateMachine))
-                    rest.storage = storage
-                    stateMachine = ARTPushActivationStateMachine(rest)
+                    rest.internal.storage = storage
+                    stateMachine = ARTPushActivationStateMachine(rest.internal)
                 }
 
                 // RSH3c1
@@ -414,7 +414,7 @@ class PushActivationStateMachine : QuickSpec {
 
                 // RSH3c2
                 it("on Event GotDeviceRegistration") {
-                    rest.resetDeviceOnceToken()
+                    rest.internal.resetDeviceOnceToken()
 
                     var activatedCallbackCalled = false
                     let hook = stateMachine.testSuite_injectIntoMethod(after: NSSelectorFromString("callActivatedCallback:")) {
@@ -472,8 +472,8 @@ class PushActivationStateMachine : QuickSpec {
 
                 beforeEach {
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForNewPushDeviceDetails(machine: initialStateMachine))
-                    rest.storage = storage
-                    stateMachine = ARTPushActivationStateMachine(rest)
+                    rest.internal.storage = storage
+                    stateMachine = ARTPushActivationStateMachine(rest.internal)
                 }
 
                 // RSH3d1
@@ -583,7 +583,7 @@ class PushActivationStateMachine : QuickSpec {
                         guard let url = request.url else {
                             fail("should have a \"/push/deviceRegistrations\" URL"); return
                         }
-                        expect(url.host).to(equal(rest.options.restUrl().host))
+                        expect(url.host).to(equal(rest.internal.options.restUrl().host))
                         expect(request.httpMethod) == "DELETE"
                         expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
                         let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
@@ -632,7 +632,7 @@ class PushActivationStateMachine : QuickSpec {
                         guard let url = request.url else {
                             fail("should have a \"/push/deviceRegistrations\" URL"); return
                         }
-                        expect(url.host).to(equal(rest.options.restUrl().host))
+                        expect(url.host).to(equal(rest.internal.options.restUrl().host))
                         expect(request.httpMethod) == "DELETE"
                         expect(rest.device.identityTokenDetails).to(beNil())
                         expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
@@ -673,7 +673,7 @@ class PushActivationStateMachine : QuickSpec {
                         guard let url = request.url else {
                             fail("should have a \"/push/deviceRegistrations\" URL"); return
                         }
-                        expect(url.host).to(equal(rest.options.restUrl().host))
+                        expect(url.host).to(equal(rest.internal.options.restUrl().host))
                         expect(request.httpMethod) == "DELETE"
                     }
 
@@ -689,8 +689,8 @@ class PushActivationStateMachine : QuickSpec {
 
                 beforeEach {
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForRegistrationUpdate(machine: initialStateMachine))
-                    rest.storage = storage
-                    stateMachine = ARTPushActivationStateMachine(rest)
+                    rest.internal.storage = storage
+                    stateMachine = ARTPushActivationStateMachine(rest.internal)
                 }
 
                 // RSH3e1
@@ -756,8 +756,8 @@ class PushActivationStateMachine : QuickSpec {
 
                 beforeEach {
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateAfterRegistrationUpdateFailed(machine: initialStateMachine))
-                    rest.storage = storage
-                    stateMachine = ARTPushActivationStateMachine(rest)
+                    rest.internal.storage = storage
+                    stateMachine = ARTPushActivationStateMachine(rest.internal)
                 }
 
                 // RSH3f1
@@ -868,7 +868,7 @@ class PushActivationStateMachine : QuickSpec {
                         guard let body = decodedBody as? NSDictionary else {
                             fail("body is invalid"); return
                         }
-                        expect(url.host).to(equal(rest.options.restUrl().host))
+                        expect(url.host).to(equal(rest.internal.options.restUrl().host))
                         expect(request.httpMethod) == "PATCH"
                         expect(body.value(forKey: "id")).to(beNil())
                         expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(["recipient": ["transportType": "apns"]]))
@@ -927,7 +927,7 @@ class PushActivationStateMachine : QuickSpec {
                         guard let body = decodedBody as? NSDictionary else {
                             fail("body is invalid"); return
                         }
-                        expect(url.host).to(equal(rest.options.restUrl().host))
+                        expect(url.host).to(equal(rest.internal.options.restUrl().host))
                         expect(request.httpMethod) == "PATCH"
                         expect(body.value(forKey: "id")).to(beNil())
                         expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(["recipient": ["transportType": "apns"]]))
@@ -1131,7 +1131,7 @@ class PushActivationStateMachine : QuickSpec {
                         guard let body = decodedBody as? NSDictionary else {
                             fail("body is invalid"); return
                         }
-                        expect(url.host).to(equal(rest.options.restUrl().host))
+                        expect(url.host).to(equal(rest.internal.options.restUrl().host))
                         expect(request.httpMethod) == "PATCH"
                         expect(body.value(forKey: "id")).to(beNil())
                         expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(["recipient": ["transportType": "apns"]]))
@@ -1254,7 +1254,7 @@ class PushActivationStateMachine : QuickSpec {
                         guard let url = request.url else {
                             fail("should have a \"/push/deviceRegistrations\" URL"); return
                         }
-                        expect(url.host).to(equal(rest.options.restUrl().host))
+                        expect(url.host).to(equal(rest.internal.options.restUrl().host))
                         expect(request.httpMethod) == "DELETE"
                         expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
                         let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
@@ -1301,7 +1301,7 @@ class PushActivationStateMachine : QuickSpec {
                         guard let url = request.url else {
                             fail("should have a \"/push/deviceRegistrations\" URL"); return
                         }
-                        expect(url.host).to(equal(rest.options.restUrl().host))
+                        expect(url.host).to(equal(rest.internal.options.restUrl().host))
                         expect(request.httpMethod) == "DELETE"
                         expect(rest.device.identityTokenDetails).to(beNil())
                         expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
@@ -1341,7 +1341,7 @@ class PushActivationStateMachine : QuickSpec {
                         guard let url = request.url else {
                             fail("should have a \"/push/deviceRegistrations\" URL"); return
                         }
-                        expect(url.host).to(equal(rest.options.restUrl().host))
+                        expect(url.host).to(equal(rest.internal.options.restUrl().host))
                         expect(request.httpMethod) == "DELETE"
                     }
 
@@ -1379,8 +1379,8 @@ class PushActivationStateMachine : QuickSpec {
 
                 beforeEach {
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeregistration(machine: initialStateMachine))
-                    rest.storage = storage
-                    stateMachine = ARTPushActivationStateMachine(rest)
+                    rest.internal.storage = storage
+                    stateMachine = ARTPushActivationStateMachine(rest.internal)
                 }
 
                 // RSH3g1
@@ -1436,8 +1436,8 @@ class PushActivationStateMachine : QuickSpec {
             it("should queue event that has no transition defined for it") {
                 // Start with WaitingForDeregistration state
                 let storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeregistration(machine: initialStateMachine))
-                rest.storage = storage
-                let stateMachine = ARTPushActivationStateMachine(rest)
+                rest.internal.storage = storage
+                let stateMachine = ARTPushActivationStateMachine(rest.internal)
 
                 stateMachine.transitions = { event, from, to in
                     fail("Should not handle the CalledActivate event because it should be queued")
@@ -1476,8 +1476,8 @@ class PushActivationStateMachine : QuickSpec {
             // RSH5
             it("event handling sould be atomic and sequential") {
                 let storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeregistration(machine: initialStateMachine))
-                rest.storage = storage
-                let stateMachine = ARTPushActivationStateMachine(rest)
+                rest.internal.storage = storage
+                let stateMachine = ARTPushActivationStateMachine(rest.internal)
                 stateMachine.send(ARTPushActivationEventCalledActivate())
                 DispatchQueue(label: "QueueA").sync {
                     stateMachine.send(ARTPushActivationEventDeregistered())
@@ -1489,9 +1489,9 @@ class PushActivationStateMachine : QuickSpec {
 
         it("should remove identityTokenDetails from cache and storage") {
             let storage = MockDeviceStorage()
-            rest.storage = storage
+            rest.internal.storage = storage
             rest.device.setAndPersistIdentityTokenDetails(nil)
-            rest.resetDeviceOnceToken()
+            rest.internal.resetDeviceOnceToken()
             expect(rest.device.identityTokenDetails).to(beNil())
             expect(rest.device.isRegistered()) == false
             expect(storage.object(forKey: ARTDeviceIdentityTokenKey)).to(beNil())

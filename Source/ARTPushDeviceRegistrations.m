@@ -20,7 +20,6 @@
 #import "ARTNSMutableRequest+ARTPush.h"
 
 @implementation ARTPushDeviceRegistrations {
-    ARTPushDeviceRegistrationsInternal *_internal;
     ARTQueuedDealloc *_dealloc;
 }
 

@@ -42,15 +42,15 @@ class RealtimeClientChannel: QuickSpec {
 
                 expect(channel2.presence.syncComplete).to(beFalse())
 
-                expect(channel1.presenceMap.members).to(haveCount(1))
-                expect(channel2.presenceMap.members).to(haveCount(0))
+                expect(channel1.internal.presenceMap.members).to(haveCount(1))
+                expect(channel2.internal.presenceMap.members).to(haveCount(0))
 
                 expect(channel2.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
 
                 expect(channel2.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
 
-                expect(channel1.presenceMap.members).to(haveCount(1))
-                expect(channel2.presenceMap.members).toEventually(haveCount(1), timeout: testTimeout)
+                expect(channel1.internal.presenceMap.members).to(haveCount(1))
+                expect(channel2.internal.presenceMap.members).toEventually(haveCount(1), timeout: testTimeout)
 
                 waitUntil(timeout: testTimeout) { done in
                     channel1.publish("message", data: nil) { errorInfo in
@@ -66,14 +66,14 @@ class RealtimeClientChannel: QuickSpec {
                     }
                 }
                 
-                expect(channel1.presenceMap.members).toEventually(haveCount(2), timeout: testTimeout)
-                expect(channel1.presenceMap.members.keys).to(allPass({ $0!.hasPrefix("\(channel1.connectionId):Client") || $0!.hasPrefix("\(channel2.connectionId):Client") }))
-                expect(channel1.presenceMap.members.values).to(allPass({ $0!.action == .present }))
+                expect(channel1.internal.presenceMap.members).toEventually(haveCount(2), timeout: testTimeout)
+                expect(channel1.internal.presenceMap.members.keys).to(allPass({ $0!.hasPrefix("\(channel1.internal.connectionId):Client") || $0!.hasPrefix("\(channel2.internal.connectionId):Client") }))
+                expect(channel1.internal.presenceMap.members.values).to(allPass({ $0!.action == .present }))
 
-                expect(channel2.presenceMap.members).toEventually(haveCount(2), timeout: testTimeout)
-                expect(channel2.presenceMap.members.keys).to(allPass({ $0!.hasPrefix("\(channel1.connectionId):Client") || $0!.hasPrefix("\(channel2.connectionId):Client") }))
-                expect(channel2.presenceMap.members["\(channel1.connectionId):Client 1"]!.action).to(equal(ARTPresenceAction.present))
-                expect(channel2.presenceMap.members["\(channel2.connectionId):Client 2"]!.action).to(equal(ARTPresenceAction.present))
+                expect(channel2.internal.presenceMap.members).toEventually(haveCount(2), timeout: testTimeout)
+                expect(channel2.internal.presenceMap.members.keys).to(allPass({ $0!.hasPrefix("\(channel1.internal.connectionId):Client") || $0!.hasPrefix("\(channel2.internal.connectionId):Client") }))
+                expect(channel2.internal.presenceMap.members["\(channel1.internal.connectionId):Client 1"]!.action).to(equal(ARTPresenceAction.present))
+                expect(channel2.internal.presenceMap.members["\(channel2.internal.connectionId):Client 2"]!.action).to(equal(ARTPresenceAction.present))
             }
 
             // RTL2
@@ -81,25 +81,25 @@ class RealtimeClientChannel: QuickSpec {
 
                 // RTL2a
                 it("should implement the EventEmitter and emit events for state changes") {
-                    let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
 
                     let channel = client.channels.get("test")
-                    expect(channel.statesEventEmitter).to(beAKindOf(ARTEventEmitter<ARTEvent, ARTChannelStateChange>.self))
+                    expect(channel.internal.statesEventEmitter).to(beAKindOf(ARTEventEmitter<ARTEvent, ARTChannelStateChange>.self))
 
                     var channelOnMethodCalled = false
-                    channel.testSuite_injectIntoMethod(after: #selector(ARTEventEmitter<ARTEvent, ARTChannelStateChange>.on(_:))) {
+                    channel.internal.testSuite_injectIntoMethod(after: #selector(ARTEventEmitter<ARTEvent, ARTChannelStateChange>.on(_:))) {
                         channelOnMethodCalled = true
                     }
 
                     // The `channel.on` should use `statesEventEmitter`
                     var statesEventEmitterOnMethodCalled = false
-                    channel.statesEventEmitter.testSuite_injectIntoMethod(after: #selector(ARTEventEmitter<ARTEvent, ARTChannelStateChange>.on(_:))) {
+                    channel.internal.statesEventEmitter.testSuite_injectIntoMethod(after: #selector(ARTEventEmitter<ARTEvent, ARTChannelStateChange>.on(_:))) {
                         statesEventEmitterOnMethodCalled = true
                     }
 
                     var emitCounter = 0
-                    channel.statesEventEmitter.testSuite_injectIntoMethod(after: #selector(ARTEventEmitter<ARTEvent, ARTChannelStateChange>.emit(_:with:))) {
+                    channel.internal.statesEventEmitter.testSuite_injectIntoMethod(after: #selector(ARTEventEmitter<ARTEvent, ARTChannelStateChange>.emit(_:with:))) {
                         emitCounter += 1
                     }
 
@@ -152,7 +152,7 @@ class RealtimeClientChannel: QuickSpec {
                 it("should implement the EventEmitter and emit events for FAILED state changes") {
                     let options = AblyTests.clientOptions()
                     options.token = getTestToken(capability: "{\"secret\":[\"subscribe\"]}")
-                    let client = ARTRealtimeInternal(options: options)
+                    let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
@@ -185,7 +185,7 @@ class RealtimeClientChannel: QuickSpec {
 
                 // RTL2a
                 it("should implement the EventEmitter and emit events for SUSPENDED state changes") {
-                    let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
@@ -212,7 +212,7 @@ class RealtimeClientChannel: QuickSpec {
 
                 // RTL2g
                 it("can emit an UPDATE event") {
-                    let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("foo")
                     waitUntil(timeout: testTimeout) { done in
@@ -246,13 +246,13 @@ class RealtimeClientChannel: QuickSpec {
                         let attachedMessage = ARTProtocolMessage()
                         attachedMessage.action = .attached
                         attachedMessage.channel = channel.name
-                        client.transport?.receive(attachedMessage)
+                        client.internal.transport?.receive(attachedMessage)
                     }
                 }
 
                 // RTL2b
                 it("state attribute should be the current state of the channel") {
-                    let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
 
                     let channel = client.channels.get("test")
@@ -265,7 +265,7 @@ class RealtimeClientChannel: QuickSpec {
 
                 // RTL2c
                 it("should contain an ErrorInfo object with details when an error occurs") {
-                    let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
@@ -279,13 +279,13 @@ class RealtimeClientChannel: QuickSpec {
                             expect(channel.errorReason).to(equal(pmError.error))
                             done()
                         }
-                        channel.onError(pmError)
+                        channel.internal.onError(pmError)
                     }
                 }
 
                 // RTL2d
                 it("a ChannelStateChange is emitted as the first argument for every channel state change") {
-                    let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
@@ -312,7 +312,7 @@ class RealtimeClientChannel: QuickSpec {
                             expect(stateChange.previous).to(equal(ARTRealtimeChannelState.attached))
                             done()
                         }
-                        channel.onError(AblyTests.newErrorProtocolMessage())
+                        channel.internal.onError(AblyTests.newErrorProtocolMessage())
                     }
                 }
 
@@ -320,7 +320,7 @@ class RealtimeClientChannel: QuickSpec {
                 it("ChannelStateChange will contain a resumed boolean attribute with value @true@ if the bit flag RESUMED was included") {
                     let options = AblyTests.commonAppSetup()
                     options.tokenDetails = getTestTokenDetails(ttl: 5.0)
-                    let client = ARTRealtimeInternal(options: options)
+                    let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
@@ -363,7 +363,7 @@ class RealtimeClientChannel: QuickSpec {
                 // RTL2f, TR4i
                 it("bit flag RESUMED was included") {
                     let options = AblyTests.commonAppSetup()
-                    let client = ARTRealtimeInternal(options: options)
+                    let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
@@ -395,7 +395,7 @@ class RealtimeClientChannel: QuickSpec {
                             expect(stateChange.previous).to(equal(ARTRealtimeChannelState.attached))
                             done()
                         }
-                        client.transport?.receive(attachedMessage)
+                        client.internal.transport?.receive(attachedMessage)
                     }
                 }
 
@@ -410,14 +410,14 @@ class RealtimeClientChannel: QuickSpec {
                     it("ATTACHING channel should transition to FAILED") {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
-                        let client = ARTRealtimeInternal(options: options)
-                        client.setTransport(TestProxyTransport.self)
+                        let client = ARTRealtime(options: options)
+                        client.internal.setTransport(TestProxyTransport.self)
                         client.connect()
                         defer { client.dispose(); client.close() }
 
                         let channel = client.channels.get("test")
                         channel.attach()
-                        let transport = client.transport as! TestProxyTransport
+                        let transport = client.internal.transport as! TestProxyTransport
                         transport.actionsIgnored += [.attached]
 
                         expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
@@ -432,14 +432,14 @@ class RealtimeClientChannel: QuickSpec {
                                 expect(channel.errorReason).to(beIdenticalTo(error))
                                 done()
                             }
-                            client.onError(pmError)
+                            client.internal.onError(pmError)
                         }
 
                         expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
                     }
 
                     it("ATTACHED channel should transition to FAILED") {
-                        let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
                         defer { client.dispose(); client.close() }
 
                         let channel = client.channels.get("test")
@@ -456,7 +456,7 @@ class RealtimeClientChannel: QuickSpec {
                                 expect(channel.errorReason).to(equal(error))
                                 done()
                             }
-                            client.onError(pmError)
+                            client.internal.onError(pmError)
                         }
 
                         expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
@@ -470,15 +470,15 @@ class RealtimeClientChannel: QuickSpec {
                     it("ATTACHING channel should transition to DETACHED") {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
-                        let client = ARTRealtimeInternal(options: options)
-                        client.setTransport(TestProxyTransport.self)
+                        let client = ARTRealtime(options: options)
+                        client.internal.setTransport(TestProxyTransport.self)
                         client.connect()
                         defer { client.dispose(); client.close() }
                         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
 
                         let channel = client.channels.get("test")
                         channel.attach()
-                        let transport = client.transport as! TestProxyTransport
+                        let transport = client.internal.transport as! TestProxyTransport
                         transport.actionsIgnored += [.attached]
 
                         expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
@@ -490,7 +490,7 @@ class RealtimeClientChannel: QuickSpec {
 
                     it("ATTACHED channel should transition to DETACHED") {
                         let options = AblyTests.commonAppSetup()
-                        let client = ARTRealtimeInternal(options: options)
+                        let client = ARTRealtime(options: options)
                         defer { client.dispose(); client.close() }
 
                         let channel = client.channels.get("test")
@@ -511,31 +511,31 @@ class RealtimeClientChannel: QuickSpec {
                     it("ATTACHING channel should transition to SUSPENDED") {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
-                        let client = ARTRealtimeInternal(options: options)
-                        client.setTransport(TestProxyTransport.self)
+                        let client = ARTRealtime(options: options)
+                        client.internal.setTransport(TestProxyTransport.self)
                         client.connect()
                         defer { client.dispose(); client.close() }
 
                         let channel = client.channels.get("test")
                         channel.attach()
-                        let transport = client.transport as! TestProxyTransport
+                        let transport = client.internal.transport as! TestProxyTransport
                         transport.actionsIgnored += [.attached]
 
                         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
                         expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
-                        client.onSuspended()
+                        client.internal.onSuspended()
                         expect(channel.state).to(equal(ARTRealtimeChannelState.suspended))
                     }
 
                     it("ATTACHED channel should transition to SUSPENDED") {
                         let options = AblyTests.commonAppSetup()
-                        let client = ARTRealtimeInternal(options: options)
+                        let client = ARTRealtime(options: options)
                         defer { client.dispose(); client.close() }
 
                         let channel = client.channels.get("test")
                         channel.attach()
                         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
-                        client.onSuspended()
+                        client.internal.onSuspended()
                         expect(channel.state).to(equal(ARTRealtimeChannelState.suspended))
                     }
 
@@ -545,7 +545,7 @@ class RealtimeClientChannel: QuickSpec {
                 it("if the connection state enters the CONNECTED state, then a SUSPENDED channel will initiate an attach operation") {
                     let options = AblyTests.commonAppSetup()
                     options.suspendedRetryTimeout = 1.0
-                    let client = ARTRealtimeInternal(options: options)
+                    let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
 
                     let channel = client.channels.get("foo")
@@ -562,7 +562,7 @@ class RealtimeClientChannel: QuickSpec {
                             done()
                         }
                         delay(0) {
-                            client.onSuspended()
+                            client.internal.onSuspended()
                         }
                     }
 
@@ -598,7 +598,7 @@ class RealtimeClientChannel: QuickSpec {
                 it("if the connection state enters the DISCONNECTED state, it will have no effect on the channel states") {
                     let options = AblyTests.commonAppSetup()
                     options.token = getTestToken(ttl: 5.0)
-                    let client = ARTRealtimeInternal(options: options)
+                    let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
 
                     let channel = client.channels.get("test")
@@ -632,7 +632,7 @@ class RealtimeClientChannel: QuickSpec {
 
                 // RTL4a
                 it("if already ATTACHED or ATTACHING nothing is done") {
-                    let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
 
                     var errorInfo: ARTErrorInfo?
@@ -663,7 +663,7 @@ class RealtimeClientChannel: QuickSpec {
                 it("if the user does not have sufficient permissions to attach, then the channel will transition to FAILED and set the errorReason") {
                     let options = AblyTests.commonAppSetup()
                     options.token = getTestToken(key: options.key!, capability: "{\"restricted\":[\"*\"]}")
-                    let client = ARTRealtimeInternal(options: options)
+                    let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
@@ -688,7 +688,7 @@ class RealtimeClientChannel: QuickSpec {
 
                 // RTL4g
                 it("if the channel is in the FAILED state, the attach request sets its errorReason to null, and proceeds with a channel attach") {
-                    let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
@@ -697,7 +697,7 @@ class RealtimeClientChannel: QuickSpec {
 
                     let errorMsg = AblyTests.newErrorProtocolMessage()
                     errorMsg.channel = channel.name
-                    client.onError(errorMsg)
+                    client.internal.onError(errorMsg)
                     expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
                     expect(channel.errorReason).toNot(beNil())
 
@@ -718,13 +718,13 @@ class RealtimeClientChannel: QuickSpec {
                     it("CLOSING") {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
-                        let client = ARTRealtimeInternal(options: options)
-                        client.setTransport(TestProxyTransport.self)
+                        let client = ARTRealtime(options: options)
+                        client.internal.setTransport(TestProxyTransport.self)
                         client.connect()
                         defer { client.dispose(); client.close() }
 
                         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
-                        let transport = client.transport as! TestProxyTransport
+                        let transport = client.internal.transport as! TestProxyTransport
                         transport.actionsIgnored += [.closed]
 
                         let channel = client.channels.get("test")
@@ -741,7 +741,7 @@ class RealtimeClientChannel: QuickSpec {
                     }
 
                     it("CLOSED") {
-                        let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
                         defer { client.dispose(); client.close() }
 
                         let channel = client.channels.get("test")
@@ -762,7 +762,7 @@ class RealtimeClientChannel: QuickSpec {
                         defer { client.dispose(); client.close() }
 
                         let channel = client.channels.get("test")
-                        client.onSuspended()
+                        client.internal.onSuspended()
                         expect(client.connection.state).to(equal(ARTRealtimeConnectionState.suspended))
                         waitUntil(timeout: testTimeout) { done in
                             channel.attach { error in
@@ -773,11 +773,11 @@ class RealtimeClientChannel: QuickSpec {
                     }
 
                     it("FAILED") {
-                        let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
                         defer { client.dispose(); client.close() }
 
                         let channel = client.channels.get("test")
-                        client.onError(AblyTests.newErrorProtocolMessage())
+                        client.internal.onError(AblyTests.newErrorProtocolMessage())
                         expect(client.connection.state).to(equal(ARTRealtimeConnectionState.failed))
                         waitUntil(timeout: testTimeout) { done in
                             channel.attach { error in
@@ -794,7 +794,7 @@ class RealtimeClientChannel: QuickSpec {
                     it("INITIALIZED") {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
-                        let client = ARTRealtimeInternal(options: options)
+                        let client = ARTRealtime(options: options)
                         defer { client.dispose(); client.close() }
 
                         let channel = client.channels.get("test")
@@ -813,7 +813,7 @@ class RealtimeClientChannel: QuickSpec {
                     it("CONNECTING") {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
-                        let client = ARTRealtimeInternal(options: options)
+                        let client = ARTRealtime(options: options)
                         defer { client.dispose(); client.close() }
 
                         let channel = client.channels.get("test")
@@ -832,7 +832,7 @@ class RealtimeClientChannel: QuickSpec {
 
                     it("DISCONNECTED") {
                         let options = AblyTests.commonAppSetup()
-                        let client = ARTRealtimeInternal(options: options)
+                        let client = ARTRealtime(options: options)
                         defer { client.dispose(); client.close() }
 
                         let channel = client.channels.get("test")
@@ -840,7 +840,7 @@ class RealtimeClientChannel: QuickSpec {
                         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
 
                         waitUntil(timeout: testTimeout) { done in
-                            client.onDisconnected()
+                            client.internal.onDisconnected()
                             expect(client.connection.state).to(equal(ARTRealtimeConnectionState.disconnected))
 
                             channel.attach { error in
@@ -856,13 +856,13 @@ class RealtimeClientChannel: QuickSpec {
                 it("should send an ATTACH ProtocolMessage, change state to ATTACHING and change state to ATTACHED after confirmation") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
-                    let client = ARTRealtimeInternal(options: options)
-                    client.setTransport(TestProxyTransport.self)
+                    let client = ARTRealtime(options: options)
+                    client.internal.setTransport(TestProxyTransport.self)
                     client.connect()
                     defer { client.dispose(); client.close() }
 
                     expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
-                    let transport = client.transport as! TestProxyTransport
+                    let transport = client.internal.transport as! TestProxyTransport
 
                     let channel = client.channels.get("test")
                     channel.attach()
@@ -878,7 +878,7 @@ class RealtimeClientChannel: QuickSpec {
                 it("should transition the channel state to FAILED if the user does not have sufficient permissions") {
                     let options = AblyTests.clientOptions()
                     options.token = getTestToken(capability: "{ \"main\":[\"subscribe\"] }")
-                    let client = ARTRealtimeInternal(options: options)
+                    let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
 
                     let channel = client.channels.get("test")
@@ -911,7 +911,7 @@ class RealtimeClientChannel: QuickSpec {
                     defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
                     ARTDefault.setRealtimeRequestTimeout(1.0)
 
-                    guard let transport = client.transport as? TestProxyTransport else {
+                    guard let transport = client.internal.transport as? TestProxyTransport else {
                         fail("TestProxyTransport is not set"); return
                     }
                     transport.actionsIgnored += [.attached]
@@ -943,7 +943,7 @@ class RealtimeClientChannel: QuickSpec {
                 }
 
                 it("if called with a callback should call it once attached") {
-                    let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
 
                     let channel = client.channels.get("test")
@@ -958,7 +958,7 @@ class RealtimeClientChannel: QuickSpec {
                 }
 
                 it("if called with a callback and already attaching should call the callback once attached") {
-                    let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
 
                     let channel = client.channels.get("test")
@@ -975,7 +975,7 @@ class RealtimeClientChannel: QuickSpec {
                 }
 
                 it("if called with a callback and already attached should call the callback with nil error") {
-                    let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
 
                     let channel = client.channels.get("test")
@@ -994,7 +994,7 @@ class RealtimeClientChannel: QuickSpec {
                 // RTL4h
                 it("if the channel is in a pending state ATTACHING, do the attach operation after the completion of the pending request") {
                     let options = AblyTests.commonAppSetup()
-                    let client = ARTRealtimeInternal(options: options)
+                    let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("foo")
 
@@ -1032,7 +1032,7 @@ class RealtimeClientChannel: QuickSpec {
                 // RTL4h
                 it("if the channel is in a pending state DETACHING, do the attach operation after the completion of the pending request") {
                     let options = AblyTests.commonAppSetup()
-                    let client = ARTRealtimeInternal(options: options)
+                    let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("foo")
                     waitUntil(timeout: testTimeout) { done in
@@ -1101,7 +1101,7 @@ class RealtimeClientChannel: QuickSpec {
                     defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
                     ARTDefault.setRealtimeRequestTimeout(1.0)
 
-                    guard let transport = client.transport as? TestProxyTransport else {
+                    guard let transport = client.internal.transport as? TestProxyTransport else {
                         fail("TestProxyTransport is not set"); return
                     }
 
@@ -1125,7 +1125,7 @@ class RealtimeClientChannel: QuickSpec {
             describe("detach") {
                 // RTL5a
                 it("if state is INITIALIZED or DETACHED nothing is done") {
-                    let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
 
                     var errorInfo: ARTErrorInfo?
@@ -1159,7 +1159,7 @@ class RealtimeClientChannel: QuickSpec {
                 // RTL5i
                 it("if the channel is in a pending state DETACHING, do the detach operation after the completion of the pending request") {
                     let options = AblyTests.commonAppSetup()
-                    let client = ARTRealtimeInternal(options: options)
+                    let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("foo")
                     waitUntil(timeout: testTimeout) { done in
@@ -1216,7 +1216,7 @@ class RealtimeClientChannel: QuickSpec {
                 // RTL5i
                 it("if the channel is in a pending state ATTACHING, do the detach operation after the completion of the pending request") {
                     let options = AblyTests.commonAppSetup()
-                    let client = ARTRealtimeInternal(options: options)
+                    let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("foo")
 
@@ -1256,11 +1256,11 @@ class RealtimeClientChannel: QuickSpec {
 
                 // RTL5b
                 it("results in an error if the connection state is FAILED") {
-                    let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
 
                     let channel = client.channels.get("test")
-                    client.onError(AblyTests.newErrorProtocolMessage())
+                    client.internal.onError(AblyTests.newErrorProtocolMessage())
                     expect(client.connection.state).to(equal(ARTRealtimeConnectionState.failed))
 
                     waitUntil(timeout: testTimeout) { done in
@@ -1275,13 +1275,13 @@ class RealtimeClientChannel: QuickSpec {
                 it("should send a DETACH ProtocolMessage, change state to DETACHING and change state to DETACHED after confirmation") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
-                    let client = ARTRealtimeInternal(options: options)
-                    client.setTransport(TestProxyTransport.self)
+                    let client = ARTRealtime(options: options)
+                    client.internal.setTransport(TestProxyTransport.self)
                     client.connect()
                     defer { client.dispose(); client.close() }
 
                     expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
-                    let transport = client.transport as! TestProxyTransport
+                    let transport = client.internal.transport as! TestProxyTransport
 
                     let channel = client.channels.get("test")
                     channel.attach()
@@ -1297,7 +1297,7 @@ class RealtimeClientChannel: QuickSpec {
 
                 // RTL5e
                 it("if called with a callback should call it once detached") {
-                    let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
 
                     let channel = client.channels.get("test")
@@ -1316,7 +1316,7 @@ class RealtimeClientChannel: QuickSpec {
 
                 // RTL5e
                 it("if called with a callback and already detaching should call the callback once detached") {
-                    let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
 
                     let channel = client.channels.get("test")
@@ -1337,7 +1337,7 @@ class RealtimeClientChannel: QuickSpec {
 
                 // RTL5e
                 it("if called with a callback and already detached should should call the callback with nil error") {
-                    let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
 
                     let channel = client.channels.get("test")
@@ -1359,13 +1359,13 @@ class RealtimeClientChannel: QuickSpec {
                 it("if a DETACHED is not received within the default realtime request timeout, the detach request should be treated as though it has failed and the channel will return to its previous state") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
-                    let client = ARTRealtimeInternal(options: options)
-                    client.setTransport(TestProxyTransport.self)
+                    let client = ARTRealtime(options: options)
+                    client.internal.setTransport(TestProxyTransport.self)
                     client.connect()
                     defer { client.dispose(); client.close() }
 
                     expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
-                    let transport = client.transport as! TestProxyTransport
+                    let transport = client.internal.transport as! TestProxyTransport
                     transport.actionsIgnored += [.detached]
 
                     let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
@@ -1399,13 +1399,13 @@ class RealtimeClientChannel: QuickSpec {
                     it("CLOSING") {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
-                        let client = ARTRealtimeInternal(options: options)
-                        client.setTransport(TestProxyTransport.self)
+                        let client = ARTRealtime(options: options)
+                        client.internal.setTransport(TestProxyTransport.self)
                         client.connect()
                         defer { client.dispose(); client.close() }
 
                         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
-                        let transport = client.transport as! TestProxyTransport
+                        let transport = client.internal.transport as! TestProxyTransport
                         transport.actionsIgnored += [.closed]
 
                         let channel = client.channels.get("test")
@@ -1424,14 +1424,14 @@ class RealtimeClientChannel: QuickSpec {
                     }
 
                     it("FAILED") {
-                        let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
                         defer { client.dispose(); client.close() }
 
                         let channel = client.channels.get("test")
                         channel.attach()
                         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
 
-                        client.onError(AblyTests.newErrorProtocolMessage())
+                        client.internal.onError(AblyTests.newErrorProtocolMessage())
                         expect(client.connection.state).to(equal(ARTRealtimeConnectionState.failed))
                         waitUntil(timeout: testTimeout) { done in
                             channel.detach { error in
@@ -1448,7 +1448,7 @@ class RealtimeClientChannel: QuickSpec {
                     it("INITIALIZED") {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
-                        let client = ARTRealtimeInternal(options: options)
+                        let client = ARTRealtime(options: options)
                         defer { client.dispose(); client.close() }
 
                         let channel = client.channels.get("test")
@@ -1469,7 +1469,7 @@ class RealtimeClientChannel: QuickSpec {
                     it("CONNECTING") {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
-                        let client = ARTRealtimeInternal(options: options)
+                        let client = ARTRealtime(options: options)
                         defer { client.dispose(); client.close() }
 
                         let channel = client.channels.get("test")
@@ -1489,7 +1489,7 @@ class RealtimeClientChannel: QuickSpec {
 
                     it("DISCONNECTED") {
                         let options = AblyTests.commonAppSetup()
-                        let client = ARTRealtimeInternal(options: options)
+                        let client = ARTRealtime(options: options)
                         defer { client.dispose(); client.close() }
 
                         let channel = client.channels.get("test")
@@ -1497,7 +1497,7 @@ class RealtimeClientChannel: QuickSpec {
                         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
 
                         waitUntil(timeout: testTimeout) { done in
-                            client.onDisconnected()
+                            client.internal.onDisconnected()
                             channel.attach()
                             expect(client.connection.state).to(equal(ARTRealtimeConnectionState.disconnected))
                             expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
@@ -1513,7 +1513,7 @@ class RealtimeClientChannel: QuickSpec {
 
                 // RTL5j
                 it("if the channel state is SUSPENDED, the @detach@ request transitions the channel immediately to the DETACHED state") {
-                    let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("foo")
 
@@ -1524,7 +1524,7 @@ class RealtimeClientChannel: QuickSpec {
                         }
                     }
 
-                    channel.setSuspended(ARTStatus.state(.ok))
+                    channel.internal.setSuspended(ARTStatus.state(.ok))
                     expect(channel.state).to(equal(ARTRealtimeChannelState.suspended))
 
                     waitUntil(timeout: testTimeout) { done in
@@ -1556,11 +1556,11 @@ class RealtimeClientChannel: QuickSpec {
                 it("should encode messages in the same way as the RestChannel") {
                     let data = ["value":1]
 
-                    let rest = ARTRestInternal(options: AblyTests.commonAppSetup())
+                    let rest = ARTRest(options: AblyTests.commonAppSetup())
                     let restChannel = rest.channels.get("test")
 
                     var restEncodedMessage: ARTMessage?
-                    restChannel.testSuite_getReturnValue(from: NSSelectorFromString("encodeMessageIfNeeded:error:")) { value in
+                    restChannel.internal.testSuite_getReturnValue(from: NSSelectorFromString("encodeMessageIfNeeded:error:")) { value in
                         restEncodedMessage = value as? ARTMessage
                     }
 
@@ -1571,14 +1571,14 @@ class RealtimeClientChannel: QuickSpec {
                         }
                     }
 
-                    let realtime = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                    let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { realtime.close() }
                     let realtimeChannel = realtime.channels.get("test")
                     realtimeChannel.attach()
                     expect(realtimeChannel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
 
                     var realtimeEncodedMessage: ARTMessage?
-                    realtimeChannel.testSuite_getReturnValue(from: NSSelectorFromString("encodeMessageIfNeeded:error:")) { value in
+                    realtimeChannel.internal.testSuite_getReturnValue(from: NSSelectorFromString("encodeMessageIfNeeded:error:")) { value in
                         realtimeEncodedMessage = value as? ARTMessage
                     }
 
@@ -1601,7 +1601,7 @@ class RealtimeClientChannel: QuickSpec {
                 context("should invoke callback") {
 
                     it("when the message is successfully delivered") {
-                        let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
                         defer { client.dispose(); client.close() }
 
                         waitUntil(timeout: testTimeout) { done in
@@ -1631,7 +1631,7 @@ class RealtimeClientChannel: QuickSpec {
                     it("upon failure") {
                         let options = AblyTests.commonAppSetup()
                         options.token = getTestToken(key: options.key, capability: "{ \"\(ARTChannels_getChannelNamePrefix!())-test\":[\"subscribe\"] }")
-                        let client = ARTRealtimeInternal(options: options)
+                        let client = ARTRealtime(options: options)
                         defer { client.dispose(); client.close() }
 
                         waitUntil(timeout: testTimeout) { done in
@@ -1673,7 +1673,7 @@ class RealtimeClientChannel: QuickSpec {
                     it("for all messages published") {
                         let options = AblyTests.commonAppSetup()
                         options.token = getTestToken(key: options.key, capability: "{ \"\(ARTChannels_getChannelNamePrefix!())-channelToSucceed\":[\"subscribe\", \"publish\"], \"\(ARTChannels_getChannelNamePrefix!())-channelToFail\":[\"subscribe\"] }")
-                        let client = ARTRealtimeInternal(options: options)
+                        let client = ARTRealtime(options: options)
                         defer { client.dispose(); client.close() }
 
                         TotalMessages.succeeded = 0
@@ -1739,7 +1739,7 @@ class RealtimeClientChannel: QuickSpec {
                                 expect(error).to(beNil())
                                 done()
                             }
-                            expect((client.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
+                            expect((client.internal.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
                         }
                     }
 
@@ -1748,13 +1748,13 @@ class RealtimeClientChannel: QuickSpec {
                         let options = AblyTests.commonAppSetup()
                         options.useTokenAuth = true
                         options.autoConnect = false
-                        var client: ARTRealtimeInternal!
-                        var channel: ARTRealtimeChannelInternal!
+                        var client: ARTRealtime!
+                        var channel: ARTRealtimeChannel!
 
                         beforeEach {
-                            client = ARTRealtimeInternal(options: options)
+                            client = ARTRealtime(options: options)
                             channel = client.channels.get("test")
-                            expect(client.options.queueMessages).to(beTrue())
+                            expect(client.internal.options.queueMessages).to(beTrue())
                         }
                         afterEach { client.close() }
 
@@ -1771,7 +1771,7 @@ class RealtimeClientChannel: QuickSpec {
                                 expect(client.connection.state).to(equal(ARTRealtimeConnectionState.initialized))
                                 publish(done)
                                 client.connect()
-                                expect(channel.queuedMessages).to(haveCount(1))
+                                expect(channel.internal.queuedMessages).to(haveCount(1))
                             }
                         }
 
@@ -1780,19 +1780,19 @@ class RealtimeClientChannel: QuickSpec {
                                 client.connect()
                                 expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connecting))
                                 publish(done)
-                                expect(channel.queuedMessages).to(haveCount(1))
+                                expect(channel.internal.queuedMessages).to(haveCount(1))
                             }
                         }
 
                         it("DISCONNECTED") {
                             client.connect()
                             expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
-                            client.onDisconnected()
+                            client.internal.onDisconnected()
 
                             waitUntil(timeout: testTimeout) { done in
                                 expect(client.connection.state).to(equal(ARTRealtimeConnectionState.disconnected))
                                 publish(done)
-                                expect(channel.queuedMessages).to(haveCount(1))
+                                expect(channel.internal.queuedMessages).to(haveCount(1))
                             }
                         }
 
@@ -1804,7 +1804,7 @@ class RealtimeClientChannel: QuickSpec {
                                 channel.attach()
                                 expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
                                 publish(done)
-                                expect(channel.queuedMessages).to(haveCount(1))
+                                expect(channel.internal.queuedMessages).to(haveCount(1))
                             }
                         }
 
@@ -1837,14 +1837,14 @@ class RealtimeClientChannel: QuickSpec {
 
                             waitUntil(timeout: testTimeout) { done in
                                 publish(done)
-                                expect(channel.queuedMessages).to(haveCount(1))
+                                expect(channel.internal.queuedMessages).to(haveCount(1))
                             }
                         }
                     }
 
                     // RTL6c3
                     it("implicitly attaches the channel; if the channel is in or moves to the FAILED state before the operation succeeds, it should result in an error") {
-                        let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
                         waitUntil(timeout: testTimeout) { done in
@@ -1861,13 +1861,13 @@ class RealtimeClientChannel: QuickSpec {
                                 }
                             }
                             expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
-                            channel.onError(protocolError)
+                            channel.internal.onError(protocolError)
                         }
                     }
 
                     // RTL6c3
                     it("implicitly attaches the channel; if the channel is in or moves to the DETACHED state before the operation succeeds, it should result in an error") {
-                        let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
 
@@ -1895,8 +1895,8 @@ class RealtimeClientChannel: QuickSpec {
                         let options = AblyTests.commonAppSetup()
                         options.suspendedRetryTimeout = 0.3
                         options.autoConnect = false
-                        var client: ARTRealtimeInternal!
-                        var channel: ARTRealtimeChannelInternal!
+                        var client: ARTRealtime!
+                        var channel: ARTRealtimeChannel!
 
                         let previousConnectionStateTtl = ARTDefault.connectionStateTtl()
 
@@ -1920,7 +1920,7 @@ class RealtimeClientChannel: QuickSpec {
                         it("connection is SUSPENDED") {
                             client.connect()
                             expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
-                            client.onSuspended()
+                            client.internal.onSuspended()
                             expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.suspended), timeout: testTimeout)
                             waitUntil(timeout: testTimeout) { done in
                                 publish(done)
@@ -1950,7 +1950,7 @@ class RealtimeClientChannel: QuickSpec {
                         it("connection is FAILED") {
                             client.connect()
                             expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
-                            client.onError(AblyTests.newErrorProtocolMessage())
+                            client.internal.onError(AblyTests.newErrorProtocolMessage())
                             expect(client.connection.state).to(equal(ARTRealtimeConnectionState.failed))
                             waitUntil(timeout: testTimeout) { done in
                                 publish(done)
@@ -1983,7 +1983,7 @@ class RealtimeClientChannel: QuickSpec {
                             client.connect()
                             channel.attach()
                             expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
-                            channel.setSuspended(ARTStatus.state(.ok))
+                            channel.internal.setSuspended(ARTStatus.state(.ok))
                             expect(channel.state).toEventually(equal(ARTRealtimeChannelState.suspended), timeout: testTimeout)
                             waitUntil(timeout: testTimeout) { done in
                                 publish(done)
@@ -1995,7 +1995,7 @@ class RealtimeClientChannel: QuickSpec {
                             channel.attach()
                             expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
                             let protocolError = AblyTests.newErrorProtocolMessage()
-                            channel.onError(protocolError)
+                            channel.internal.onError(protocolError)
                             expect(channel.state).toEventually(equal(ARTRealtimeChannelState.failed), timeout: testTimeout)
                             waitUntil(timeout: testTimeout) { done in
                                 publish(done)
@@ -2026,7 +2026,7 @@ class RealtimeClientChannel: QuickSpec {
                         client.connect()
                     }
 
-                    let transport = client.transport as! TestProxyTransport
+                    let transport = client.internal.transport as! TestProxyTransport
                     let protocolMessages = transport.protocolMessagesSent.filter{ $0.action == .message }
                     expect(protocolMessages).to(haveCount(1))
                     if protocolMessages.count != 1 {
@@ -2046,7 +2046,7 @@ class RealtimeClientChannel: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(messages) { error in
                             expect(error).to(beNil())
-                            let transport = client.transport as! TestProxyTransport
+                            let transport = client.internal.transport as! TestProxyTransport
                             let protocolMessages = transport.protocolMessagesSent.filter{ $0.action == .message }
                             expect(protocolMessages).to(haveCount(2))
                             if protocolMessages.count != 2 {
@@ -2080,7 +2080,7 @@ class RealtimeClientChannel: QuickSpec {
                         client.connect()
                     }
 
-                    let transport = client.transport as! TestProxyTransport
+                    let transport = client.internal.transport as! TestProxyTransport
                     let protocolMessages = transport.protocolMessagesSent.filter{ $0.action == .message }
                     // verify that messages are not bundled in a single protocol message
                     expect(protocolMessages.count).to(beGreaterThan(1))
@@ -2111,7 +2111,7 @@ class RealtimeClientChannel: QuickSpec {
                             client.connect()
                         }
                         
-                        let transport = client.transport as! TestProxyTransport
+                        let transport = client.internal.transport as! TestProxyTransport
                         let protocolMessages = transport.protocolMessagesSent.filter{ $0.action == .message }
                         expect(protocolMessages.count).to(equal(clientIDs.count))
                     }
@@ -2136,7 +2136,7 @@ class RealtimeClientChannel: QuickSpec {
                             client.connect()
                         }
                         
-                        let transport = client.transport as! TestProxyTransport
+                        let transport = client.internal.transport as! TestProxyTransport
                         let protocolMessages = transport.protocolMessagesSent.filter{ $0.action == .message }
                         expect(protocolMessages.count).to(equal(2))
                     }
@@ -2160,7 +2160,7 @@ class RealtimeClientChannel: QuickSpec {
                             client.connect()
                         }
                         
-                        let transport = client.transport as! TestProxyTransport
+                        let transport = client.internal.transport as! TestProxyTransport
                         let protocolMessages = transport.protocolMessagesSent.filter{ $0.action == .message }
                         expect(protocolMessages.count).to(equal(1))
                     }
@@ -2172,7 +2172,7 @@ class RealtimeClientChannel: QuickSpec {
 
                     // RTL6e1
                     it("should have the provided clientId on received message when it was published with clientId") {
-                        let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
                         defer { client.dispose(); client.close() }
 
                         expect(client.auth.clientId).to(beNil())
@@ -2203,7 +2203,7 @@ class RealtimeClientChannel: QuickSpec {
 
                 // RTL6f
                 it("Message#connectionId should match the current Connection#id for all published messages") {
-                    let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
@@ -2222,8 +2222,8 @@ class RealtimeClientChannel: QuickSpec {
                     it("an array of Message objects") {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
-                        let client = ARTRealtimeInternal(options: options)
-                        client.setTransport(TestProxyTransport.self)
+                        let client = ARTRealtime(options: options)
+                        client.internal.setTransport(TestProxyTransport.self)
                         client.connect()
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
@@ -2237,14 +2237,14 @@ class RealtimeClientChannel: QuickSpec {
                         let messages = [ARTMessage(name: nil, data: ["key":1]), ARTMessage(name: nil, data: ["key":2])]
                         channel.publish(messages)
 
-                        let transport = client.transport as! TestProxyTransport
+                        let transport = client.internal.transport as! TestProxyTransport
 
                         expect(transport.protocolMessagesSent.filter{ $0.action == .message }).toEventually(haveCount(1), timeout: testTimeout)
                         expect(result).toEventually(equal(messages.map{ $0.data as! JSONObject }), timeout: testTimeout)
                     }
 
                     it("a name string and data payload") {
-                        let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
 
@@ -2263,8 +2263,8 @@ class RealtimeClientChannel: QuickSpec {
                     it("allows name to be null") {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
-                        let client = ARTRealtimeInternal(options: options)
-                        client.setTransport(TestProxyTransport.self)
+                        let client = ARTRealtime(options: options)
+                        client.internal.setTransport(TestProxyTransport.self)
                         client.connect()
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
@@ -2284,7 +2284,7 @@ class RealtimeClientChannel: QuickSpec {
                             }
                         }
 
-                        let transport = client.transport as! TestProxyTransport
+                        let transport = client.internal.transport as! TestProxyTransport
                         
                         let rawProtoMsgsSent: [NSDictionary] = transport.rawDataSent.toMsgPackArray()
                         let rawMessagesSent = rawProtoMsgsSent.filter({ $0["action"] as! UInt == ARTProtocolMessageAction.message.rawValue })
@@ -2301,8 +2301,8 @@ class RealtimeClientChannel: QuickSpec {
                     it("allows data to be null") {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
-                        let client = ARTRealtimeInternal(options: options)
-                        client.setTransport(TestProxyTransport.self)
+                        let client = ARTRealtime(options: options)
+                        client.internal.setTransport(TestProxyTransport.self)
                         client.connect()
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
@@ -2322,7 +2322,7 @@ class RealtimeClientChannel: QuickSpec {
                             }
                         }
 
-                        let transport = client.transport as! TestProxyTransport
+                        let transport = client.internal.transport as! TestProxyTransport
 
                         let rawProtoMsgsSent: [NSDictionary] = transport.rawDataSent.toMsgPackArray()
                         let rawMessagesSent = rawProtoMsgsSent.filter({ $0["action"] as! UInt == ARTProtocolMessageAction.message.rawValue })
@@ -2339,8 +2339,8 @@ class RealtimeClientChannel: QuickSpec {
                     it("allows name and data to be assigned") {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
-                        let client = ARTRealtimeInternal(options: options)
-                        client.setTransport(TestProxyTransport.self)
+                        let client = ARTRealtime(options: options)
+                        client.internal.setTransport(TestProxyTransport.self)
                         client.connect()
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
@@ -2355,7 +2355,7 @@ class RealtimeClientChannel: QuickSpec {
                             }
                         }
 
-                        let transport = client.transport as! TestProxyTransport
+                        let transport = client.internal.transport as! TestProxyTransport
 
                         let rawProtoMsgsSent: [NSDictionary] = transport.rawDataSent.toMsgPackArray()
                         let rawMessagesSent = rawProtoMsgsSent.filter({ $0["action"] as! UInt == ARTProtocolMessageAction.message.rawValue })
@@ -2378,8 +2378,8 @@ class RealtimeClientChannel: QuickSpec {
                             let options = AblyTests.commonAppSetup()
                             options.clientId = "client_string"
                             options.autoConnect = false
-                            let client = ARTRealtimeInternal(options: options)
-                            client.setTransport(TestProxyTransport.self)
+                            let client = ARTRealtime(options: options)
+                            client.internal.setTransport(TestProxyTransport.self)
                             client.connect()
                             defer { client.dispose(); client.close() }
                             let channel = client.channels.get("test")
@@ -2395,7 +2395,7 @@ class RealtimeClientChannel: QuickSpec {
                                 channel.publish([message])
                             }
 
-                            let transport = client.transport as! TestProxyTransport
+                            let transport = client.internal.transport as! TestProxyTransport
 
                             let messageSent = transport.protocolMessagesSent.filter({ $0.action == .message })[0]
                             expect(messageSent.messages![0].clientId).to(beNil())
@@ -2410,7 +2410,7 @@ class RealtimeClientChannel: QuickSpec {
                     it("when publishing a Message with the clientId attribute value set to the identified client’s clientId") {
                         let options = AblyTests.commonAppSetup()
                         options.clientId = "john"
-                        let client = ARTRealtimeInternal(options: options)
+                        let client = ARTRealtime(options: options)
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
 
@@ -2436,7 +2436,7 @@ class RealtimeClientChannel: QuickSpec {
                     it("when publishing a Message with a different clientId attribute value from the identified client’s clientId, it should reject that publish operation immediately") {
                         let options = AblyTests.commonAppSetup()
                         options.clientId = "john"
-                        let client = ARTRealtimeInternal(options: options)
+                        let client = ARTRealtime(options: options)
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
 
@@ -2461,7 +2461,7 @@ class RealtimeClientChannel: QuickSpec {
                         options.authCallback = { tokenParams, completion in
                             getTestTokenDetails(clientId: "john", completion: completion)
                         }
-                        let client = ARTRealtimeInternal(options: options)
+                        let client = ARTRealtime(options: options)
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
                         let message = ARTMessage(name: nil, data: "message", clientId: "john")
@@ -2484,7 +2484,7 @@ class RealtimeClientChannel: QuickSpec {
                         options.authCallback = { tokenParams, completion in
                             getTestTokenDetails(clientId: "john", completion: completion)
                         }
-                        let client = ARTRealtimeInternal(options: options)
+                        let client = ARTRealtime(options: options)
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
                         let message = ARTMessage(name: nil, data: "message", clientId: "tester")
@@ -2501,7 +2501,7 @@ class RealtimeClientChannel: QuickSpec {
 
                 // RTL6h
                 it("should provide an optional argument that allows the clientId value to be specified") {
-                    let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
@@ -2528,7 +2528,7 @@ class RealtimeClientChannel: QuickSpec {
 
                 // RTL7a
                 it("with no arguments subscribes a listener to all messages") {
-                    let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
 
                     let channel = client.channels.get("test")
@@ -2552,7 +2552,7 @@ class RealtimeClientChannel: QuickSpec {
 
                 // RTL7b
                 it("with a single name argument subscribes a listener to only messages whose name member matches the string name") {
-                    let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
 
                     let channel = client.channels.get("test")
@@ -2577,7 +2577,7 @@ class RealtimeClientChannel: QuickSpec {
                 }
 
                 it("with a attach callback should subscribe and call the callback when attached") {
-                    let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
 
                     let channel = client.channels.get("test")
@@ -2603,7 +2603,7 @@ class RealtimeClientChannel: QuickSpec {
 
                 // RTL7c
                 it("should implicitly attach the channel") {
-                    let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
 
                     let channel = client.channels.get("test")
@@ -2615,11 +2615,11 @@ class RealtimeClientChannel: QuickSpec {
 
                 // RTL7c
                 it("should result in an error if channel is in the FAILED state") {
-                    let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
 
                     let channel = client.channels.get("test")
-                    channel.onError(AblyTests.newErrorProtocolMessage())
+                    channel.internal.onError(AblyTests.newErrorProtocolMessage())
                     expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
 
                     waitUntil(timeout: testTimeout) { done in
@@ -2642,8 +2642,8 @@ class RealtimeClientChannel: QuickSpec {
                             let options = AblyTests.commonAppSetup()
                             options.autoConnect = false
                             options.logHandler = ARTLog(capturingOutput: true)
-                            let client = ARTRealtimeInternal(options: options)
-                            client.setTransport(TestProxyTransport.self)
+                            let client = ARTRealtime(options: options)
+                            client.internal.setTransport(TestProxyTransport.self)
                             client.connect()
                             defer { client.dispose(); client.close() }
 
@@ -2654,7 +2654,7 @@ class RealtimeClientChannel: QuickSpec {
                             let channelOptions = ARTChannelOptions(cipher: cipherParams)
                             let channel = client.channels.get("test", options: channelOptions)
 
-                            let transport = client.transport as! TestProxyTransport
+                            let transport = client.internal.transport as! TestProxyTransport
 
                             transport.beforeProcessingSentMessage = { protocolMessage in
                                 if protocolMessage.action == .message {
@@ -2709,8 +2709,8 @@ class RealtimeClientChannel: QuickSpec {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
                         options.logHandler = ARTLog(capturingOutput: true)
-                        let client = ARTRealtimeInternal(options: options)
-                        client.setTransport(TestProxyTransport.self)
+                        let client = ARTRealtime(options: options)
+                        client.internal.setTransport(TestProxyTransport.self)
                         client.connect()
                         defer { client.dispose(); client.close() }
 
@@ -2720,7 +2720,7 @@ class RealtimeClientChannel: QuickSpec {
                         let expectedMessage = ["key":1]
                         let expectedData = try! JSONSerialization.data(withJSONObject: expectedMessage, options: JSONSerialization.WritingOptions(rawValue: 0))
 
-                        let transport = client.transport as! TestProxyTransport
+                        let transport = client.internal.transport as! TestProxyTransport
 
                         transport.beforeProcessingReceivedMessage = { protocolMessage in
                             if protocolMessage.action == .message {
@@ -2755,11 +2755,11 @@ class RealtimeClientChannel: QuickSpec {
                 // RTL7f
                 it("should exist ensuring published messages are not echoed back to the subscriber when echoMessages is false") {
                     let options = AblyTests.commonAppSetup()
-                    let client1 = ARTRealtimeInternal(options: options)
+                    let client1 = ARTRealtime(options: options)
                     defer { client1.close() }
 
                     options.echoMessages = false
-                    let client2 = ARTRealtimeInternal(options: options)
+                    let client2 = ARTRealtime(options: options)
                     defer { client2.close() }
 
                     let channel1 = client1.channels.get("test")
@@ -2789,7 +2789,7 @@ class RealtimeClientChannel: QuickSpec {
 
                 // RTL8a
                 it("with no arguments unsubscribes the provided listener to all messages if subscribed") {
-                    let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
 
                     let channel = client.channels.get("test")
@@ -2811,7 +2811,7 @@ class RealtimeClientChannel: QuickSpec {
 
                 // RTL8b
                 it("with a single name argument unsubscribes the provided listener if previously subscribed with a name-specific subscription") {
-                    let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
 
                     let channel = client.channels.get("test")
@@ -2839,9 +2839,9 @@ class RealtimeClientChannel: QuickSpec {
                 it("should support all the same params as Rest") {
                     let options = AblyTests.commonAppSetup()
 
-                    let rest = ARTRestInternal(options: options)
+                    let rest = ARTRest(options: options)
 
-                    let realtime = ARTRealtimeInternal(options: options)
+                    let realtime = ARTRealtime(options: options)
                     defer { realtime.close() }
 
                     let channelRest = rest.channels.get("test")
@@ -2896,7 +2896,7 @@ class RealtimeClientChannel: QuickSpec {
                     }
 
                     it("should invoke an error when the untilAttach is specified and the channel is not attached") {
-                        let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
 
@@ -2924,12 +2924,12 @@ class RealtimeClientChannel: QuickSpec {
                     for caseItem in cases {
                         it("where value is \(caseItem.untilAttach), should pass the querystring param fromSerial with the serial number assigned to the channel") {
                             let options = AblyTests.commonAppSetup()
-                            let client = ARTRealtimeInternal(options: options)
+                            let client = ARTRealtime(options: options)
                             defer { client.dispose(); client.close() }
                             let channel = client.channels.get("test")
 
                             let testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                            client.rest.httpExecutor = testHTTPExecutor
+                            client.internal.rest.httpExecutor = testHTTPExecutor
 
                             let query = ARTRealtimeHistoryQuery()
                             query.untilAttach = caseItem.untilAttach
@@ -2949,7 +2949,7 @@ class RealtimeClientChannel: QuickSpec {
                             let queryString = testHTTPExecutor.requests.last!.url!.query
 
                             if query.untilAttach {
-                                expect(queryString).to(contain("fromSerial=\(channel.attachSerial!)"))
+                                expect(queryString).to(contain("fromSerial=\(channel.internal.attachSerial!)"))
                             }
                             else {
                                 expect(queryString).toNot(contain("fromSerial"))
@@ -2959,11 +2959,11 @@ class RealtimeClientChannel: QuickSpec {
 
                     it("should retrieve messages prior to the moment that the channel was attached") {
                         let options = AblyTests.commonAppSetup()
-                        let client1 = ARTRealtimeInternal(options: options)
+                        let client1 = ARTRealtime(options: options)
                         defer { client1.close() }
 
                         options.autoConnect = false
-                        let client2 = ARTRealtimeInternal(options: options)
+                        let client2 = ARTRealtime(options: options)
                         defer { client2.close() }
 
                         let channel1 = client1.channels.get("test")
@@ -3027,7 +3027,7 @@ class RealtimeClientChannel: QuickSpec {
 
                 // RTL10c
                 it("should return a PaginatedResult page") {
-                    let realtime = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                    let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { realtime.close() }
                     let channel = realtime.channels.get("test")
 
@@ -3057,10 +3057,10 @@ class RealtimeClientChannel: QuickSpec {
                 // RTL10d
                 it("should retrieve all available messages") {
                     let options = AblyTests.commonAppSetup()
-                    let client1 = ARTRealtimeInternal(options: options)
+                    let client1 = ARTRealtime(options: options)
                     defer { client1.close() }
 
-                    let client2 = ARTRealtimeInternal(options: options)
+                    let client2 = ARTRealtime(options: options)
                     defer { client2.close() }
 
                     let channel1 = client1.channels.get("test")
@@ -3132,12 +3132,12 @@ class RealtimeClientChannel: QuickSpec {
                         attachedMessage.action = .attached
                         attachedMessage.channel = channel.name
 
-                        hook = channel.testSuite_injectIntoMethod(after: #selector(channel.onChannelMessage(_:))) {
+                        hook = channel.internal.testSuite_injectIntoMethod(after: #selector(channel.internal.onChannelMessage(_:))) {
                             done()
                         }
 
                         // Inject additional ATTACHED action without an error
-                        client.transport?.receive(attachedMessage)
+                        client.internal.transport?.receive(attachedMessage)
                     }
                     hook!.remove()
                     expect(channel.errorReason).to(beNil())
@@ -3159,7 +3159,7 @@ class RealtimeClientChannel: QuickSpec {
                         }
 
                         // Inject additional ATTACHED action with an error
-                        client.transport?.receive(attachedMessageWithError)
+                        client.internal.transport?.receive(attachedMessageWithError)
                     }
                     expect(channel.state).to(equal(ARTRealtimeChannelState.attached))
                 }
@@ -3182,7 +3182,7 @@ class RealtimeClientChannel: QuickSpec {
 
                         expect(channel.state).to(equal(ARTRealtimeChannelState.attached))
 
-                        guard let transport = client.transport as? TestProxyTransport else {
+                        guard let transport = client.internal.transport as? TestProxyTransport else {
                             fail("TestProxyTransport is not set"); return
                         }
 
@@ -3219,7 +3219,7 @@ class RealtimeClientChannel: QuickSpec {
                             }
                         }
 
-                        guard let transport = client.transport as? TestProxyTransport else {
+                        guard let transport = client.internal.transport as? TestProxyTransport else {
                             fail("TestProxyTransport is not set"); return
                         }
 
@@ -3275,7 +3275,7 @@ class RealtimeClientChannel: QuickSpec {
                             }
                         }
 
-                        guard let transport = client.transport as? TestProxyTransport else {
+                        guard let transport = client.internal.transport as? TestProxyTransport else {
                             fail("TestProxyTransport is not set"); return
                         }
 
@@ -3338,7 +3338,7 @@ class RealtimeClientChannel: QuickSpec {
                             let partialDone = AblyTests.splitDone(2, done: done)
                             channel.once(.attaching) { stateChange in
                                 expect(stateChange?.reason).to(beNil())
-                                client.transport?.receive(detachedMessageWithError)
+                                client.internal.transport?.receive(detachedMessageWithError)
                                 partialDone()
                             }
                             channel.once(.suspended) { stateChange in
@@ -3374,7 +3374,7 @@ class RealtimeClientChannel: QuickSpec {
                                 done()
                             }
                         }
-                        guard let transport = client.transport as? TestProxyTransport else {
+                        guard let transport = client.internal.transport as? TestProxyTransport else {
                             fail("TestProxyTransport is not set"); return
                         }
 
@@ -3423,7 +3423,7 @@ class RealtimeClientChannel: QuickSpec {
 
                 // RTL14
                 it("If an ERROR ProtocolMessage is received for this channel then the channel should immediately transition to the FAILED state, the errorReason should be set and an error should be emitted on the channel") {
-                    let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("foo")
                     waitUntil(timeout: testTimeout) { done in
@@ -3447,7 +3447,7 @@ class RealtimeClientChannel: QuickSpec {
                             done()
                         }
 
-                        client.transport?.receive(errorProtocolMessage)
+                        client.internal.transport?.receive(errorProtocolMessage)
                     }
 
                     expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
@@ -3460,13 +3460,13 @@ class RealtimeClientChannel: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
 
-                    let clientSender = ARTRealtimeInternal(options: options)
-                    clientSender.setTransport(TestProxyTransport.self)
+                    let clientSender = ARTRealtime(options: options)
+                    clientSender.internal.setTransport(TestProxyTransport.self)
                     defer { clientSender.close() }
                     clientSender.connect()
 
-                    let clientReceiver = ARTRealtimeInternal(options: options)
-                    clientReceiver.setTransport(TestProxyTransport.self)
+                    let clientReceiver = ARTRealtime(options: options)
+                    clientReceiver.internal.setTransport(TestProxyTransport.self)
                     defer { clientReceiver.close() }
                     clientReceiver.connect()
 
@@ -3521,7 +3521,7 @@ class RealtimeClientChannel: QuickSpec {
                     expect(received[1].name).to(equal("third"))
                     expect(received[1].data as? NSString).to(equal("third data"))
 
-                    let senderTransport = clientSender.transport as! TestProxyTransport
+                    let senderTransport = clientSender.internal.transport as! TestProxyTransport
                     let senderMessages = senderTransport.protocolMessagesSent.filter({ $0.action == .message })
                     for protocolMessage in senderMessages {
                         for message in protocolMessage.messages! {
@@ -3530,7 +3530,7 @@ class RealtimeClientChannel: QuickSpec {
                         }
                     }
 
-                    let receiverTransport = clientReceiver.transport as! TestProxyTransport
+                    let receiverTransport = clientReceiver.internal.transport as! TestProxyTransport
                     let receiverMessages = receiverTransport.protocolMessagesReceived.filter({ $0.action == .message })
                     for protocolMessage in receiverMessages {
                         for message in protocolMessage.messages! {
@@ -3552,7 +3552,7 @@ class RealtimeClientChannel: QuickSpec {
                 defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
                 ARTDefault.setRealtimeRequestTimeout(1.0)
 
-                guard let transport = client.transport as? TestProxyTransport else {
+                guard let transport = client.internal.transport as? TestProxyTransport else {
                     fail("TestProxyTransport is not set"); return
                 }
 
@@ -3580,7 +3580,7 @@ class RealtimeClientChannel: QuickSpec {
             
             // TM2a
             it("if the message does not contain an id, it should be set to protocolMsgId:index") {
-                let client = ARTRealtimeInternal(options: AblyTests.commonAppSetup())
+                let client = ARTRealtime(options: AblyTests.commonAppSetup())
                 defer { client.dispose(); client.close() }
                 let p = ARTProtocolMessage()
                 p.id = "protocolId"
@@ -3592,7 +3592,7 @@ class RealtimeClientChannel: QuickSpec {
                         expect(message.id).to(equal("protocolId:0"))
                         done()
                     }
-                    channel.onMessage(p)
+                    channel.internal.onMessage(p)
                 }
             }
         }

@@ -52,6 +52,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTConnection ()
 
+@property (nonatomic, readonly) ARTConnectionInternal *internal;
+
 - (instancetype)initWithInternal:(ARTConnectionInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc;
 - (void)internalAsync:(void (^)(ARTConnectionInternal *))use;
 

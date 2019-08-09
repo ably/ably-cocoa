@@ -27,7 +27,6 @@
 #import "ARTRealtime+Private.h"
 
 @implementation ARTPush {
-    ARTPushInternal *_internal;
     ARTQueuedDealloc *_dealloc;
 }
 
@@ -91,6 +90,10 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
         _admin = [[ARTPushAdminInternal alloc] initWithRest:rest];
     }
     return self;
+}
+
+- (dispatch_queue_t)queue {
+    return _rest.queue;
 }
 
 #if TARGET_OS_IOS

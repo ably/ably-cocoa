@@ -26,7 +26,6 @@
 #import "ARTEventEmitter+Private.h"
 
 @implementation ARTAuth {
-    ARTAuthInternal *_internal;
     ARTQueuedDealloc *_dealloc;
 }
 

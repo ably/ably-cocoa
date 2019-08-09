@@ -22,6 +22,8 @@
 
 @interface ARTPushChannelSubscriptions ()
 
+@property (nonatomic, readonly) ARTPushChannelSubscriptionsInternal *internal;
+
 - (instancetype)initWithInternal:(ARTPushChannelSubscriptionsInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc;
 
 @end

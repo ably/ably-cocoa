@@ -13,15 +13,15 @@ import Quick
 class PushChannel : QuickSpec {
     override func spec() {
 
-        var rest: ARTRestInternal!
+        var rest: ARTRest!
         var mockHttpExecutor: MockHTTPExecutor!
 
         beforeEach {
             mockHttpExecutor = MockHTTPExecutor()
-            rest = ARTRestInternal(key: "xxxx:xxxx")
-            rest.options.clientId = "tester"
-            rest.httpExecutor = mockHttpExecutor
-            rest.resetDeviceOnceToken()
+            rest = ARTRest(key: "xxxx:xxxx")
+            rest.internal.options.clientId = "tester"
+            rest.internal.httpExecutor = mockHttpExecutor
+            rest.internal.resetDeviceOnceToken()
         }
 
         // RSH7
@@ -67,7 +67,7 @@ class PushChannel : QuickSpec {
                     }
                     let decodedBody: Any
                     do {
-                        decodedBody = try rest.defaultEncoder.decode(rawBody)
+                        decodedBody = try rest.internal.defaultEncoder.decode(rawBody)
                     }
                     catch {
                         fail("Decode failed: \(error)"); return
@@ -134,7 +134,7 @@ class PushChannel : QuickSpec {
                     }
                     let decodedBody: Any
                     do {
-                        decodedBody = try rest.defaultEncoder.decode(rawBody)
+                        decodedBody = try rest.internal.defaultEncoder.decode(rawBody)
                     }
                     catch {
                         fail("Decode failed: \(error)"); return
@@ -340,8 +340,8 @@ class PushChannel : QuickSpec {
                 it("should return a paginated result with PushChannelSubscription") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "tester"
-                    let rest = ARTRestInternal(options: options)
-                    rest.storage = MockDeviceStorage()
+                    let rest = ARTRest(options: options)
+                    rest.internal.storage = MockDeviceStorage()
                     // Prevent channel name to be prefixed by test-*
                     let originalChannelNamePrefix = ARTChannels_getChannelNamePrefix
                     defer { ARTChannels_getChannelNamePrefix = originalChannelNamePrefix }

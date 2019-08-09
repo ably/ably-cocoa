@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTPushInternal : NSObject <ARTPushProtocol>
 
 @property (nonatomic, strong, readonly) ARTPushAdminInternal *admin;
+@property (readonly) dispatch_queue_t queue;
 
 - (instancetype)init:(ARTRestInternal *)rest;
 
@@ -26,6 +27,8 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface ARTPush ()
+
+@property (nonatomic, readonly) ARTPushInternal *internal;
 
 - (instancetype)initWithInternal:(ARTPushInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc;
 

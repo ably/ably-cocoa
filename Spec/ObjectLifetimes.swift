@@ -19,17 +19,9 @@ class ObjectLifetimes: QuickSpec {
             context("user code releases public object") {
                 it("the object's internal child's back-reference is released too") {
                     var realtime: ARTRealtime? = ARTRealtime(options: options)
-                    weak var internalRealtime: ARTRealtimeInternal?
-                    weak var internalConn: ARTConnectionInternal?
+                    weak var internalRealtime: ARTRealtimeInternal? = realtime!.internal
+                    weak var internalConn: ARTConnectionInternal? = realtime!.connection.internal
 
-                    waitUntil(timeout: testTimeout) { done in
-                        realtime!.internalAsync { realtime in
-                            internalRealtime = realtime
-                            internalConn = realtime.connection
-                            done()
-                        }
-                    }
-                    
                     waitUntil(timeout: testTimeout) { done in
                         options.internalDispatchQueue.async {
                             realtime = nil // Schedule deallocation for later in this queue

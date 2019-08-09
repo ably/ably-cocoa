@@ -100,6 +100,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTAuth ()
 
+@property (nonatomic, readonly) ARTAuthInternal *internal;
+
 - (instancetype)initWithInternal:(ARTAuthInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc;
 - (void)internalAsync:(void (^)(ARTAuthInternal *))use;
 
