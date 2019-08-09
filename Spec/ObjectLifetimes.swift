@@ -78,6 +78,27 @@ class ObjectLifetimes: QuickSpec {
                     }
                 }
             }
+            
+            context("when user leaves Realtime open") {
+                it("still works") {
+                    let options = AblyTests.commonAppSetup()
+                    
+                    var client: ARTRealtime? = ARTRealtime(options: options)
+                    
+                    weak var weakClient = client!.internal
+                    defer { client?.close() }
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        client!.channels.get("foo").subscribe(attachCallback: { _ in
+                            client = nil
+                            ARTRest(options: options).channels.get("foo").publish(nil, data: "bar")
+                        }, callback: { msg in
+                            expect(msg.data as? String).to(equal("bar"))
+                            done()
+                        })
+                    }
+                }
+            }
 
             context("when Realtime is closed and user loses its reference") {
                 it("channels don't leak") {
