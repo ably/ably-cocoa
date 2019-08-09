@@ -1000,10 +1000,9 @@ class RealtimeClientConnection: QuickSpec {
                                 }
                             }
                             channel.presence.enterClient("invalid", data: nil) { error in
-                                expect(error).toNot(beNil())
+                                expect(error?.code).to(equal(40012)) //mismatched clientId
                                 partialDone()
                             }
-
                         }
 
                         expect(client.msgSerial) == 5
@@ -1014,7 +1013,6 @@ class RealtimeClientConnection: QuickSpec {
                                 partialDone()
                             }
                             client.connection.once(.connected) { _ in
-                                channel.attach()
                                 partialDone()
                             }
                             client.simulateLostConnectionAndState()
@@ -1032,7 +1030,7 @@ class RealtimeClientConnection: QuickSpec {
                                 }
                             }
                             channel.presence.enterClient("invalid", data: nil) { error in
-                                expect(error).toNot(beNil())
+                                expect(error?.code).to(equal(40012)) //mismatched clientId
                                 partialDone()
                             }
                         }
@@ -1043,22 +1041,22 @@ class RealtimeClientConnection: QuickSpec {
                         let acks = reconnectedTransport.protocolMessagesReceived.filter({ $0.action == .ack })
                         let nacks = reconnectedTransport.protocolMessagesReceived.filter({ $0.action == .nack })
 
-                        if acks.count != 1 {
+                        // The server is free to roll up multiple acks into one or not
+                        if acks.count < 1 {
                             fail("Received invalid number of ACK responses: \(acks.count)")
                             return
                         }
-                        // Messages covered in a single ACK response
                         expect(acks[0].msgSerial) == 0
-                        expect(acks[0].count) == 1
+                        expect(acks.reduce(0, { $0 + $1.count })) == 3
 
                         if nacks.count != 1 {
                             fail("Received invalid number of NACK responses: \(nacks.count)")
                             return
                         }
-                        expect(nacks[0].msgSerial) == 1
+                        expect(nacks[0].msgSerial) == 3
                         expect(nacks[0].count) == 1
                         
-                        expect(client.msgSerial) == 2
+                        expect(client.msgSerial) == 4
                     }
                 }
 
