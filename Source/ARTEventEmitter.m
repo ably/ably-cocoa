@@ -120,6 +120,7 @@
     [_eventHandler off:self];
     if (_timeoutBlock) {
         _timeoutBlock();
+        _timeoutBlock = nil;
     }
 }
 
@@ -141,6 +142,7 @@
     artDispatchCancel(nil);
     artDispatchCancel(_work);
     _timerIsRunning = false;
+    _timeoutBlock = nil;
 }
 
 @end
