@@ -8,5 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
-dispatch_block_t artDispatchScheduled(NSTimeInterval seconds, dispatch_queue_t queue, dispatch_block_t block);
-void artDispatchCancel(dispatch_block_t block);
+@interface ARTScheduledBlockHandle : NSObject
+@end
+
+ARTScheduledBlockHandle *artDispatchScheduled(NSTimeInterval seconds, dispatch_queue_t queue, dispatch_block_t block);
+void artDispatchCancel(ARTScheduledBlockHandle *handle);

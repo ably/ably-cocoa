@@ -169,8 +169,8 @@
     __weak ARTEventListener *_connectionRetryFromSuspendedListener;
     __weak ARTEventListener *_connectionRetryFromDisconnectedListener;
     __weak ARTEventListener *_connectingTimeoutListener;
-    dispatch_block_t _authenitcatingTimeoutWork;
-    dispatch_block_t _idleTimer;
+    ARTScheduledBlockHandle *_authenitcatingTimeoutWork;
+    ARTScheduledBlockHandle *_idleTimer;
     dispatch_queue_t _userQueue;
     dispatch_queue_t _queue;
 
@@ -1405,6 +1405,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         return;
     }
     artDispatchCancel(_idleTimer);
+
     _idleTimer = artDispatchScheduled([ARTDefault realtimeRequestTimeout] + self.maxIdleInterval, _rest.queue, ^{
         [self.logger error:@"R:%p No activity seen from realtime in %f seconds; assuming connection has dropped", self, [[NSDate date] timeIntervalSinceDate:self->_lastActivity]];
 

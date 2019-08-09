@@ -64,7 +64,7 @@
     __weak ARTEventEmitter *_eventHandler; // weak because eventEmitter owns self
     NSTimeInterval _timeoutDeadline;
     void (^_timeoutBlock)(void);
-    dispatch_block_t _work;
+    ARTScheduledBlockHandle *_work;
 }
 
 - (instancetype)initWithId:(NSString *)eventId token:(id<NSObject>)token handler:(ARTEventEmitter *)eventHandler center:(NSNotificationCenter *)center {
