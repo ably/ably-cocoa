@@ -249,9 +249,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     void (^haltCurrentConnectionAndReconnect)(void) = ^{
         // Halt the current connection and reconnect with the most recent token
         [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p halt current connection and reconnect with %@", self.rest, tokenDetails];
-        [self->_transport abort:[ARTStatus state:ARTStateOk]];
-        self->_transport = [[self->_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:self->_transport.resumeKey connectionSerial:self->_transport.connectionSerial];
-        self->_transport.delegate = self;
+        [self abortAndReleaseTransport:[ARTStatus state:ARTStateOk]];
+        [self setTransportWithResumeKey:self->_transport.resumeKey connectionSerial:self->_transport.connectionSerial];
         [self->_transport connectWithToken:tokenDetails.token];
         [self cancelAllPendingAuthorizations];
         waitForResponse();
@@ -580,8 +579,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                     connectionSerial = [NSNumber numberWithLongLong:self.connection.serial_nosync];
                     _resuming = true;
                 }
-                _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:resumeKey connectionSerial:connectionSerial];
-                _transport.delegate = self;
+                [self setTransportWithResumeKey:resumeKey connectionSerial:connectionSerial];
                 [self transportConnectForcingNewToken:_renewingToken newConnection:true];
             }
 
@@ -627,7 +625,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         case ARTRealtimeClosed:
             [self stopIdleTimer];
             [_reachability off];
-            [self.transport close];
+            [self closeAndReleaseTransport];
             _connection.key = nil;
             _connection.id = nil;
             _transport = nil;
@@ -636,8 +634,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             break;
         case ARTRealtimeFailed:
             status = [ARTStatus state:ARTStateConnectionFailed info:stateChange.reason];
-            [self.transport abort:status];
-            _transport = nil;
+            [self abortAndReleaseTransport:status];
             self.rest.prioritizedHost = nil;
             [self.auth cancelAuthorization:stateChange.reason];
             break;
@@ -658,8 +655,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                 return nil;
             }
 
-            [self.transport close];
-            _transport = nil;
+            [self closeAndReleaseTransport];
             NSTimeInterval retryInterval = self.options.disconnectedRetryTimeout;
             // RTN15a - retry immediately if client was connected
             if (stateChange.previous == ARTRealtimeConnected && !_suspendImmediateReconnection) {
@@ -673,8 +669,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             break;
         }
         case ARTRealtimeSuspended: {
-            [self.transport close];
-            _transport = nil;
+            [self closeAndReleaseTransport];
             [stateChange setRetryIn:self.options.suspendedRetryTimeout];
             stateChangeEventListener = [self unlessStateChangesBefore:stateChange.retryIn do:^{
                 self->_connectionRetryFromSuspendedListener = nil;
@@ -731,6 +726,28 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
     return stateChangeEventListener;
 } ART_TRY_OR_MOVE_TO_FAILED_END
+}
+
+- (void)abortAndReleaseTransport:(ARTStatus *)status {
+    [_transport abort:status];
+    _transport = nil;
+}
+
+- (void)closeAndReleaseTransport {
+    if (_transport) {
+        [_transport close];
+        _transport = nil;
+    }
+}
+
+- (void)resetTransportWithResumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial {
+    [self closeAndReleaseTransport];
+    [self resetTransportWithResumeKey:resumeKey connectionSerial:connectionSerial];
+}
+
+- (void)setTransportWithResumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial {
+    _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:resumeKey connectionSerial:connectionSerial];
+    _transport.delegate = self;
 }
 
 - (ARTEventListener *)unlessStateChangesBefore:(NSTimeInterval)deadline do:(void(^)(void))callback __attribute__((warn_unused_result)) {
@@ -892,7 +909,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             return;
         }
         if ([self shouldRenewToken:&error]) {
-            [self.transport close];
             [self transportReconnectWithRenewedToken];
             return;
         }
@@ -965,6 +981,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
 - (void)transportReconnectWithHost:(NSString *)host {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
+    [self resetTransportWithResumeKey:_transport.resumeKey connectionSerial:_transport.connectionSerial];
     [self.transport setHost:host];
     [self transportConnectForcingNewToken:false newConnection:true];
 } ART_TRY_OR_MOVE_TO_FAILED_END
@@ -973,6 +990,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 - (void)transportReconnectWithRenewedToken {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     _renewingToken = true;
+    [self resetTransportWithResumeKey:_transport.resumeKey connectionSerial:_transport.connectionSerial];
     [self transportConnectForcingNewToken:true newConnection:true];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
@@ -1028,9 +1046,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                     }
 
                     if (forceNewToken && newConnection) {
-                        [self->_transport close];
-                        self->_transport = [[self->_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:self->_transport.resumeKey connectionSerial:self->_transport.connectionSerial];
-                        self->_transport.delegate = self;
+                        [self resetTransportWithResumeKey:self->_transport.resumeKey connectionSerial:self->_transport.connectionSerial];
                     }
                     if (newConnection) {
                         [self.transport connectWithToken:tokenDetails.token];
