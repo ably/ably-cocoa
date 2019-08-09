@@ -87,14 +87,19 @@
 }
 
 - (void)removeObserver {
+    if (!_token) {
+        return;
+    }
     [self invalidate];
     if (_eventHandler && _eventHandler.userQueue) {
         dispatch_async(_eventHandler.userQueue, ^{
             [self->_center removeObserver:self->_token];
+            self->_token = nil;
         });
     }
     else {
         [_center removeObserver:_token];
+        _token = nil;
     }
 }
 
