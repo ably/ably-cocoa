@@ -30,9 +30,9 @@ class ObjectLifetimes: QuickSpec {
                             done()
                         }
                     }
-                    
+
                     // Deallocation should happen here.
-                    
+
                     waitUntil(timeout: testTimeout) { done in
                         options.internalDispatchQueue.async {
                             expect(internalConn).to(beNil())
@@ -74,6 +74,48 @@ class ObjectLifetimes: QuickSpec {
                                 expect(weakConn).to(beNil())
                                 done()
                             }
+                        }
+                    }
+                }
+            }
+
+            context("when Realtime is closed and user loses its reference") {
+                it("channels don't leak") {
+                    let options = AblyTests.commonAppSetup()
+
+                    var client: ARTRealtime? = ARTRealtime(options: options)
+                    weak var weakClient = client!.internal
+
+                    var channel: ARTRealtimeChannel? = client!.channels.get("foo")
+                    weak var weakChannel = channel!.internal
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel!.attach { errorInfo in
+                            expect(errorInfo).to(beNil())
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client!.connection.on(.closed) { _ in
+                            done()
+                        }
+                        client!.close()
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        AblyTests.queue.async {
+                            client = nil // should enqueue a release
+                            channel = nil // should enqueue a release
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        AblyTests.queue.async {
+                            expect(weakClient).to(beNil())
+                            expect(weakChannel).to(beNil())
+                            done()
                         }
                     }
                 }
