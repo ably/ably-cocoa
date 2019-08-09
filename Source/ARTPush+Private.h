@@ -24,6 +24,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (ARTPushActivationStateMachine *)activationMachine;
 
+- (void)resetActivationStateMachineSingleton;
+
 @end
 
 @interface ARTPush ()

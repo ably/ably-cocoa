@@ -382,7 +382,7 @@ class PushAdmin : QuickSpec {
                             issued: Date(),
                             expires: Date.distantFuture,
                             capability: "",
-                            deviceId: localDevice.id
+                            clientId: ""
                         )
 
                         expect(localDevice.identityTokenDetails).to(beNil())
@@ -545,7 +545,7 @@ class PushAdmin : QuickSpec {
                             issued: Date(),
                             expires: Date.distantFuture,
                             capability: "",
-                            deviceId: localDevice.id
+                            clientId: ""
                         )
 
                         expect(localDevice.identityTokenDetails).to(beNil())
@@ -740,7 +740,7 @@ class PushAdmin : QuickSpec {
                             issued: Date(),
                             expires: Date.distantFuture,
                             capability: "",
-                            deviceId: localDevice.id
+                            clientId: ""
                         )
 
                         expect(localDevice.identityTokenDetails).to(beNil())
@@ -872,7 +872,7 @@ class PushAdmin : QuickSpec {
                             issued: Date(),
                             expires: Date.distantFuture,
                             capability: "",
-                            deviceId: localDevice.id
+                            clientId: ""
                         )
 
                         expect(localDevice.identityTokenDetails).to(beNil())

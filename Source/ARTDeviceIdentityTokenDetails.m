@@ -12,17 +12,17 @@ NSString *const ARTCoderTokenKey = @"token";
 NSString *const ARTCoderIssuedKey = @"issued";
 NSString *const ARTCoderExpiresKey = @"expires";
 NSString *const ARTCoderCapabilityKey = @"capability";
-NSString *const ARTCoderDeviceIdKey = @"deviceId";
+NSString *const ARTCoderClientIdKey = @"clientId";
 
 @implementation ARTDeviceIdentityTokenDetails
 
-- (instancetype)initWithToken:(NSString *)token issued:(NSDate *)issued expires:(NSDate *)expires capability:(NSString *)capability deviceId:(NSString *)deviceId {
+- (instancetype)initWithToken:(NSString *)token issued:(NSDate *)issued expires:(NSDate *)expires capability:(NSString *)capability clientId:(NSString *)clientId {
     if (self = [super init]) {
         _token  = token;
         _issued = issued;
         _expires = expires;
         _capability = capability;
-        _deviceId = deviceId;
+        _clientId = clientId;
     }
     return self;
 }
@@ -30,7 +30,7 @@ NSString *const ARTCoderDeviceIdKey = @"deviceId";
 // MARK: NSObject
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"%@ - \n\t token: %@; \n\t issued: %@; \n\t expires: %@; \n\t deviceId: %@;", [super description], self.token, self.issued, self.expires, self.deviceId];
+    return [NSString stringWithFormat:@"%@ - \n\t token: %@; \n\t issued: %@; \n\t expires: %@; \n\t clientId: %@;", [super description], self.token, self.issued, self.expires, self.clientId];
 }
 
 - (id)copyWithZone:(NSZone *)zone {
@@ -50,7 +50,7 @@ NSString *const ARTCoderDeviceIdKey = @"deviceId";
     _issued = [aDecoder decodeObjectOfClass:[NSDate class] forKey:ARTCoderIssuedKey];
     _expires = [aDecoder decodeObjectOfClass:[NSDate class] forKey:ARTCoderExpiresKey];
     _capability = [aDecoder decodeObjectOfClass:[NSString class] forKey:ARTCoderCapabilityKey];
-    _deviceId = [aDecoder decodeObjectOfClass:[NSString class] forKey:ARTCoderDeviceIdKey];
+    _clientId = [aDecoder decodeObjectOfClass:[NSString class] forKey:ARTCoderClientIdKey];
 
     return self;
 }
@@ -60,7 +60,7 @@ NSString *const ARTCoderDeviceIdKey = @"deviceId";
     [aCoder encodeObject:self.issued forKey:ARTCoderIssuedKey];
     [aCoder encodeObject:self.expires forKey:ARTCoderExpiresKey];
     [aCoder encodeObject:self.capability forKey:ARTCoderCapabilityKey];
-    [aCoder encodeObject:self.deviceId forKey:ARTCoderDeviceIdKey];
+    [aCoder encodeObject:self.clientId forKey:ARTCoderClientIdKey];
 }
 
 #pragma mark - NSSecureCoding
