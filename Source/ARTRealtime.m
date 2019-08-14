@@ -742,7 +742,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
 - (void)resetTransportWithResumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial {
     [self closeAndReleaseTransport];
-    [self resetTransportWithResumeKey:resumeKey connectionSerial:connectionSerial];
+    [self setTransportWithResumeKey:resumeKey connectionSerial:connectionSerial];
 }
 
 - (void)setTransportWithResumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial {
