@@ -122,10 +122,10 @@
 }
 
 - (void)timeout {
-    [_eventHandler off:self];
-    if (_timeoutBlock) {
-        _timeoutBlock();
-        _timeoutBlock = nil;
+    dispatch_block_t timeoutBlock = _timeoutBlock;
+    [_eventHandler off:self]; // removes self as a listener, which clears _timeoutBlock.
+    if (timeoutBlock) {
+        timeoutBlock();
     }
 }
 
@@ -144,7 +144,6 @@
 }
 
 - (void)stopTimer {
-    artDispatchCancel(nil);
     artDispatchCancel(_work);
     _timerIsRunning = false;
     _timeoutBlock = nil;
