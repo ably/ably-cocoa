@@ -188,7 +188,7 @@
 - (ARTEventListener *)once:(id<ARTEventIdentification>)event callback:(void (^)(id __art_nonnull))cb {
     NSString *eventId = [NSString stringWithFormat:@"%p-%@", self, [event identification]];
     __block ARTEventListener *listener;
-    __weak typeof(self) weakSelf = self; // weak to avoid a warning, but strong should be safe too since we the cycle is broken when the notification fires or the token is cancelled
+    __weak typeof(self) weakSelf = self; // weak to avoid a warning, but strong should be safe too since the cycle is broken when the notification fires or the token is cancelled
     id<NSObject> observerToken = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
         if (listener == nil || [listener invalidated]) return;
         if ([listener hasTimer] && ![listener timerIsRunning]) return;
@@ -219,7 +219,7 @@
 - (ARTEventListener *)once:(void (^)(id __art_nonnull))cb {
     NSString *eventId = [NSString stringWithFormat:@"%p", self];
     __block ARTEventListener *listener;
-    __weak typeof(self) weakSelf = self; // weak to avoid a warning, but strong should be safe too since we the cycle is broken when the notification fires or the token is cancelled
+    __weak typeof(self) weakSelf = self; // weak to avoid a warning, but strong should be safe too since the cycle is broken when the notification fires or the token is cancelled
     id<NSObject> observerToken = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
         if (listener == nil || [listener invalidated]) return;
         if ([listener hasTimer] && ![listener timerIsRunning]) return;
