@@ -350,7 +350,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
 - (NSString *)clientId {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
-    // Doesn't need synchronization since it's 
+    // Doesn't need synchronization since it's immutable.
     return _rest.options.clientId;
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
