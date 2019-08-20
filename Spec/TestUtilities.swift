@@ -1513,22 +1513,6 @@ protocol ARTHasInternal {
     func unwrapAsync(_: @escaping (Internal) -> ())
 }
 
-extension ARTHasInternal {
-    var _in: Internal {
-        get {
-            var unwrapped: Internal? = nil
-            let semaphore = DispatchSemaphore(value: 0)
-            self.unwrapAsync { v in
-                unwrapped = v
-                semaphore.signal()
-            }
-            let result = semaphore.wait(timeout: .now() + testTimeout)
-            expect(result).to(equal(.success))
-            return unwrapped!
-        }
-    }
-}
-
 extension ARTRealtime: ARTHasInternal {
     typealias Internal = ARTRealtimeInternal
     func unwrapAsync(_ use: @escaping (Internal) -> ()) {
