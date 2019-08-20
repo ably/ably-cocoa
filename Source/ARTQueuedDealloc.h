@@ -1,13 +1,13 @@
 //
-//  ARTExposed.h
+//  ARTQueuedDealloc.h
 //  Ably
 //
 //  Created by Toni Cárdenas on 05/08/2019.
 //  Copyright © 2019 Ably. All rights reserved.
 //
 
-#ifndef ARTExposed_h
-#define ARTExposed_h
+#ifndef ARTQueuedDealloc_h
+#define ARTQueuedDealloc_h
 
 #import <Foundation/Foundation.h>
 
@@ -22,4 +22,4 @@ NS_ASSUME_NONNULL_BEGIN
 
 NS_ASSUME_NONNULL_END
 
-#endif /* ARTExposed_h */
+#endif /* ARTQueuedDealloc_h */
