@@ -830,7 +830,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 
 @implementation NSString (ARTTokenDetailsCompatible)
 
-- (void)toTokenDetails:(ARTAuthInternal *)auth callback:(void (^)(ARTTokenDetails * _Nullable, NSError * _Nullable))callback {
+- (void)toTokenDetails:(ARTAuth *)auth callback:(void (^)(ARTTokenDetails * _Nullable, NSError * _Nullable))callback {
     callback([[ARTTokenDetails alloc] initWithToken:self], nil);
 }
 
