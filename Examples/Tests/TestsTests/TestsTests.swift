@@ -48,7 +48,7 @@ class TestsTests: XCTestCase {
 
         let options = ARTClientOptions(key: key as String)
         options.environment = "sandbox"
-        let client = ARTRealtimeInternal(options: options)
+        let client = ARTRealtime(options: options)
 
         let receiveExpectation = self.expectation(description: "message received")
 
@@ -63,9 +63,9 @@ class TestsTests: XCTestCase {
         self.waitForExpectations(timeout: 10, handler: nil)
 
         let backgroundRealtimeExpectation = self.expectation(description: "Realtime in a Background Queue")
-        var realtime: ARTRealtimeInternal! //strong reference
+        var realtime: ARTRealtime! //strong reference
         URLSession.shared.dataTask(with: URL(string: "https://ably.io")!) { _,_,_  in
-            realtime = ARTRealtimeInternal(key: key as String)
+            realtime = ARTRealtime(key: key as String)
             realtime.channels.get("foo").attach { _ in
                 do { backgroundRealtimeExpectation.fulfill() }
             }
@@ -73,9 +73,9 @@ class TestsTests: XCTestCase {
         self.waitForExpectations(timeout: 10, handler: nil)
 
         let backgroundRestExpectation = self.expectation(description: "Rest in a Background Queue")
-        var rest: ARTRestInternal! //strong reference
+        var rest: ARTRest! //strong reference
         URLSession.shared.dataTask(with: URL(string: "https://ably.io")!) { _,_,_  in
-            rest = ARTRestInternal(key: key as String)
+            rest = ARTRest(key: key as String)
             rest.channels.get("foo").history { result, error in
                 do { backgroundRestExpectation.fulfill() }
             }

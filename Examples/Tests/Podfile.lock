@@ -1,5 +1,5 @@
 PODS:
-  - Ably (1.1.6):
+  - Ably (1.1.10):
     - KSCrashAblyFork (= 1.15.20-ably-1)
     - MsgPackAblyFork (= 0.2.0-ably-1)
     - SAMKeychain (= 1.5.3)
@@ -89,7 +89,7 @@ EXTERNAL SOURCES:
     :path: "../.."
 
 SPEC CHECKSUMS:
-  Ably: 65134058f6586e4ed6bfe6f839fcc0818aea17e0
+  Ably: 3d69bc55c113562e4105dd676197d4fafbd5ed82
   KSCrashAblyFork: e58ed6ba92e08e6a8a6ad601077495ef21a233b7
   MsgPackAblyFork: 42dc34f3bd458b57de28341351e89f7c73393207
   SAMKeychain: 483e1c9f32984d50ca961e26818a534283b4cd5c
@@ -98,4 +98,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 6af34bf7f91045b23539816c1d0cfe253bec5ea5
 
-COCOAPODS: 1.7.1
+COCOAPODS: 1.7.5
