@@ -1083,7 +1083,7 @@ class RealtimeClientConnection: QuickSpec {
                                     guard let error = error else {
                                         fail("Error is nil"); done(); return
                                     }
-                                    expect(error.message).to(contain("connection broken before receiving publishing acknowledgement"))
+                                    expect(error.message).to(contain("connection broken before receiving publishing acknowledgment"))
                                     done()
                                 })
                                 // Wait until the message is pushed to Ably first

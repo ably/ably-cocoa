@@ -446,7 +446,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
             return;
         }
 
-        ARTErrorInfo *reason = stateChange.reason ? stateChange.reason : [ARTErrorInfo createWithCode:0 message:@"connection broken before receiving publishing acknowledgement."];
+        ARTErrorInfo *reason = stateChange.reason ? stateChange.reason : [ARTErrorInfo createWithCode:0 message:@"connection broken before receiving publishing acknowledgment."];
         cb([ARTStatus state:ARTStateError info:reason]);
     }];
 
@@ -455,7 +455,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     }
 
     [self.realtime send:pm sentCallback:nil ackCallback:^(ARTStatus *status) {
-        // New state change can occur before receiving publishing acknowledgement.
+        // New state change can occur before receiving publishing acknowledgment.
         [self.realtime.internalEventEmitter off:listener];
         if (cb && !connectionStateHasChanged) cb(status);
     }];
