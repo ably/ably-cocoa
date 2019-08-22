@@ -332,7 +332,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         case ARTRealtimeChannelAttached: {
             if (_realtime.connection.state_nosync == ARTRealtimeConnected) {
                 [self sendMessage:pm callback:^(ARTStatus *status) {
-                    cb(status.errorInfo);
+                    if (cb) cb(status.errorInfo);
                 }];
             }
             else {
