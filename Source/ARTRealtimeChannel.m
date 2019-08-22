@@ -764,11 +764,11 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         return;
     }
 
-    [self sendQueuedMessages];
-
     ARTStatus *status = message.error ? [ARTStatus state:ARTStateError info:message.error] : [ARTStatus state:ARTStateOk];
     [self transition:ARTRealtimeChannelAttached status:status];
     [_attachedEventEmitter emit:nil with:nil];
+
+    [self sendQueuedMessages];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
@@ -1174,8 +1174,15 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 - (void)sendQueuedMessages {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     NSArray *qms = self.queuedMessages;
+    ARTRealtimeChannelState channelState = self.state_nosync;
     self.queuedMessages = [NSMutableArray array];
     for (ARTQueuedMessage *qm in qms) {
+        if (qm.msg.action == ARTProtocolMessagePresence &&
+            channelState != ARTRealtimeChannelAttached) {
+            // Presence messages should only be sent when the channel is attached.
+            [self.queuedMessages addObject:qm];
+            continue;
+        }
         [self sendMessage:qm.msg callback:qm.ackCallback];
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
