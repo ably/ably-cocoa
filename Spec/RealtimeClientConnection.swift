@@ -242,7 +242,7 @@ class RealtimeClientConnection: QuickSpec {
                             done()
                         case .connected:
                             if let transport = client.internal.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
-                                expect(query).to(haveParam("lib", withValue: "ios-1.1.10"))
+                                expect(query).to(haveParam("lib", withValue: "ios-1.1.11-beta.0"))
                             }
                             else {
                                 XCTFail("MockTransport isn't working")
