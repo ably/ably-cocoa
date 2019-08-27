@@ -21,9 +21,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface ARTRealtimePresence : ARTPresence
+@protocol ARTRealtimePresenceProtocol
 
-@property (readonly, getter=getSyncComplete) BOOL syncComplete;
+@property (readonly) BOOL syncComplete;
 
 - (void)get:(void (^)(NSArray<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback;
 - (void)get:(ARTRealtimePresenceQuery *)query callback:(void (^)(NSArray<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback;
@@ -58,6 +58,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)history:(void(^)(ARTPaginatedResult<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback;
 - (BOOL)history:(ARTRealtimeHistoryQuery *_Nullable)query callback:(void(^)(ARTPaginatedResult<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
+@end
+
+@interface ARTRealtimePresence : ARTPresence <ARTRealtimePresenceProtocol>
 @end
 
 NS_ASSUME_NONNULL_END

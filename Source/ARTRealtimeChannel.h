@@ -23,15 +23,10 @@ NS_ASSUME_NONNULL_BEGIN
 @class ARTPushChannel;
 #endif
 
-@interface ARTRealtimeChannel : ARTChannel
+@protocol ARTRealtimeChannelProtocol <ARTChannelProtocol>
 
-@property (readwrite, assign, nonatomic) ARTRealtimeChannelState state;
-@property (readonly, strong, nonatomic, nullable) ARTErrorInfo *errorReason;
-
-@property (readonly) ARTRealtimePresence *presence;
-#if TARGET_OS_IPHONE
-@property (readonly) ARTPushChannel *push;
-#endif
+@property (readonly) ARTRealtimeChannelState state;
+@property (readonly, nullable) ARTErrorInfo *errorReason;
 
 - (void)attach;
 - (void)attach:(nullable void (^)(ARTErrorInfo *_Nullable))callback;
@@ -51,6 +46,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)history:(ARTRealtimeHistoryQuery *_Nullable)query callback:(void(^)(ARTPaginatedResult<ARTMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
 ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
+
+@end
+
+@interface ARTRealtimeChannel : NSObject <ARTRealtimeChannelProtocol>
+
+@property (readonly) ARTRealtimePresence *presence;
+#if TARGET_OS_IPHONE
+@property (readonly) ARTPushChannel *push;
+#endif
 
 @end
 

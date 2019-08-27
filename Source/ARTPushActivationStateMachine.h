@@ -19,11 +19,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTPushActivationStateMachine : NSObject
 
-@property (nonatomic, strong) ARTRest *rest;
-
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
-- (instancetype)init:(ARTRest *)rest;
 
 - (void)sendEvent:(ARTPushActivationEvent *)event;
 

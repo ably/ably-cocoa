@@ -32,15 +32,125 @@
 
 @end
 
-#pragma mark - ARTRealtimePresence
-
 @implementation ARTRealtimePresence {
-    __weak ARTRealtimeChannel *_channel;
-    dispatch_queue_t _userQueue;
-    dispatch_queue_t _queue;
+    ARTQueuedDealloc *_dealloc;
 }
 
-- (instancetype)initWithChannel:(ARTRealtimeChannel *)channel {
+- (instancetype)initWithInternal:(ARTRealtimePresenceInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc {
+    self = [super init];
+    if (self) {
+        _internal = internal;
+        _dealloc = dealloc;
+    }
+    return self;
+}
+
+- (BOOL)syncComplete {
+    return _internal.syncComplete;
+}
+
+- (void)get:(void (^)(NSArray<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
+    [_internal get:callback];
+}
+
+- (void)get:(ARTRealtimePresenceQuery *)query callback:(void (^)(NSArray<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
+    [_internal get:query callback:callback];
+}
+
+- (void)enter:(id _Nullable)data {
+    [_internal enter:data];
+}
+
+- (void)enter:(id _Nullable)data callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb {
+    [_internal enter:data callback:cb];
+}
+
+- (void)update:(id _Nullable)data {
+    [_internal update:data];
+}
+
+- (void)update:(id _Nullable)data callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb {
+    [_internal update:data callback:cb];
+}
+
+- (void)leave:(id _Nullable)data {
+    [_internal leave:data];
+}
+
+- (void)leave:(id _Nullable)data callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb {
+    [_internal leave:data callback:cb];
+}
+
+- (void)enterClient:(NSString *)clientId data:(id _Nullable)data {
+    [_internal enterClient:clientId data:data];
+}
+
+- (void)enterClient:(NSString *)clientId data:(id _Nullable)data callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb {
+    [_internal enterClient:clientId data:data callback:cb];
+}
+
+- (void)updateClient:(NSString *)clientId data:(id _Nullable)data {
+    [_internal updateClient:clientId data:data];
+}
+
+- (void)updateClient:(NSString *)clientId data:(id _Nullable)data callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb {
+    [_internal updateClient:clientId data:data callback:cb];
+}
+
+- (void)leaveClient:(NSString *)clientId data:(id _Nullable)data {
+    [_internal leaveClient:clientId data:data];
+}
+
+- (void)leaveClient:(NSString *)clientId data:(id _Nullable)data callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb {
+    [_internal leaveClient:clientId data:data callback:cb];
+}
+
+- (ARTEventListener *_Nullable)subscribe:(void (^)(ARTPresenceMessage *message))callback {
+    return [_internal subscribe:callback];
+}
+
+- (ARTEventListener *_Nullable)subscribeWithAttachCallback:(nullable void (^)(ARTErrorInfo *_Nullable))onAttach callback:(void (^)(ARTPresenceMessage *message))cb {
+    return [_internal subscribeWithAttachCallback:onAttach callback:cb];
+}
+
+- (ARTEventListener *_Nullable)subscribe:(ARTPresenceAction)action callback:(void (^)(ARTPresenceMessage *message))cb {
+    return [_internal subscribe:action callback:cb];
+}
+
+- (ARTEventListener *_Nullable)subscribe:(ARTPresenceAction)action onAttach:(nullable void (^)(ARTErrorInfo *_Nullable))onAttach callback:(void (^)(ARTPresenceMessage *message))cb {
+    return [_internal subscribe:action onAttach:onAttach callback:cb];
+}
+
+- (void)unsubscribe {
+    [_internal unsubscribe];
+}
+
+- (void)unsubscribe:(ARTEventListener *)listener {
+    [_internal unsubscribe:listener];
+}
+
+- (void)unsubscribe:(ARTPresenceAction)action listener:(ARTEventListener *)listener {
+    [_internal unsubscribe:action listener:listener];
+}
+
+- (void)history:(void(^)(ARTPaginatedResult<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
+    [_internal history:callback];
+}
+
+- (BOOL)history:(ARTRealtimeHistoryQuery *_Nullable)query callback:(void(^)(ARTPaginatedResult<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback error:(NSError *_Nullable *_Nullable)errorPtr {
+    return [_internal history:query callback:callback error:errorPtr];
+}
+
+@end
+
+#pragma mark - ARTRealtimePresenceInternal
+
+@implementation ARTRealtimePresenceInternal {
+    __weak ARTRealtimeChannelInternal *_channel; // weak because channel owns self
+    dispatch_queue_t _userQueue;
+}
+
+- (instancetype)initWithChannel:(ARTRealtimeChannelInternal *)channel {
 ART_TRY_OR_MOVE_TO_FAILED_START(channel.realtime) {
     if (self = [super init]) {
         _channel = channel;
@@ -338,17 +448,17 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (BOOL)getSyncComplete {
+- (BOOL)syncComplete {
     __block BOOL ret;
 dispatch_sync(_queue, ^{
 ART_TRY_OR_MOVE_TO_FAILED_START(self->_channel.realtime) {
-    ret = [self getSyncComplete_nosync];
+    ret = [self syncComplete_nosync];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 });
     return ret;
 }
 
-- (BOOL)getSyncComplete_nosync {
+- (BOOL)syncComplete_nosync {
     return _channel.presenceMap.syncComplete;
 }
 

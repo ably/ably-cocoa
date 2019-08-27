@@ -127,7 +127,7 @@ class Utilities: QuickSpec {
                                     fail("Should not receive any message")
                                 }
                                 var result: AnyObject?
-                                expect{ result = realtime.transport?.receive(with: data as Data) }.toNot(raiseException())
+                                expect{ result = realtime.internal.transport?.receive(with: data as Data) }.toNot(raiseException())
                                 expect(result).to(beNil())
                                 done()
                             }
@@ -170,7 +170,7 @@ class Utilities: QuickSpec {
                         let options = AblyTests.commonAppSetup()
                         let rest = ARTRest(options: options)
                         let testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                        rest.httpExecutor = testHTTPExecutor
+                        rest.internal.httpExecutor = testHTTPExecutor
                         let channel = rest.channels.get("foo")
 
                         // Garbage values (whatever is on the heap)
@@ -414,7 +414,7 @@ class Utilities: QuickSpec {
                 it("should have a history of logs") {
                     let options = AblyTests.commonAppSetup()
                     let realtime = ARTRealtime(options: options)
-                    realtime.logger.logLevel = .verbose
+                    realtime.internal.logger.logLevel = .verbose
                     defer { realtime.close() }
                     let channel = realtime.channels.get("foo")
 
@@ -425,9 +425,9 @@ class Utilities: QuickSpec {
                         }
                     }
 
-                    expect(realtime.logger.history.count).toNot(beGreaterThan(100))
-                    expect(realtime.logger.history.map{ $0.message }.first).to(contain("channel state transitions from 1 - Attaching to 2 - Attached"))
-                    expect(realtime.logger.history.filter{ $0.message.contains("realtime state transitions to 2 - Connected") }).to(haveCount(1))
+                    expect(realtime.internal.logger.history.count).toNot(beGreaterThan(100))
+                    expect(realtime.internal.logger.history.map{ $0.message }.first).to(contain("channel state transitions from 1 - Attaching to 2 - Attached"))
+                    expect(realtime.internal.logger.history.filter{ $0.message.contains("realtime state transitions to 2 - Connected") }).to(haveCount(1))
                 }
 
             }

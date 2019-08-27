@@ -47,13 +47,8 @@ FOUNDATION_EXPORT const unsigned char ablyVersionString[];
 #import <Ably/ARTRealtime.h>
 #import <Ably/ARTRealtimeChannel.h>
 #import <Ably/ARTRealtimePresence.h>
-#import <Ably/ARTRealtimeTransport.h>
 #import <Ably/ARTStats.h>
-#import <Ably/ARTWebSocketTransport.h>
 #import <Ably/ARTEncoder.h>
-#import <Ably/ARTJsonLikeEncoder.h>
-#import <Ably/ARTJsonEncoder.h>
-#import <Ably/ARTMsgPackEncoder.h>
 #import <Ably/ARTPaginatedResult.h>
 #import <Ably/ARTHTTPPaginatedResponse.h>
 #import <Ably/ARTPush.h>

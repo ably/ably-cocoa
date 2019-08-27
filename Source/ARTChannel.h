@@ -22,11 +22,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTChannel : NSObject
+@protocol ARTChannelProtocol
 
-@property (nonatomic, strong, readonly) NSString *name;
-
-- (instancetype)initWithName:(NSString *)name andOptions:(ARTChannelOptions *)options rest:(ARTRest *)rest;
+@property (readonly) NSString *name;
 
 - (void)publish:(nullable NSString *)name data:(nullable id)data;
 - (void)publish:(nullable NSString *)name data:(nullable id)data callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback;
@@ -48,6 +46,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (ARTLocalDevice *)device;
 
 - (BOOL)exceedMaxSize:(NSArray<ARTBaseMessage *> *)messages;
+
+@end
+
+@interface ARTChannel : NSObject<ARTChannelProtocol>
+
+@property (nonatomic, strong, readonly) NSString *name;
 
 @end
 

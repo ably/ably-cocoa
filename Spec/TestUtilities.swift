@@ -184,8 +184,8 @@ class AblyTests {
         let autoConnect = options.autoConnect
         options.autoConnect = false
         let realtime = ARTRealtime(options: options)
-        realtime.setTransport(TestProxyTransport.self)
-        realtime.setReachabilityClass(TestReachability.self)
+        realtime.internal.setTransport(TestProxyTransport.self)
+        realtime.internal.setReachabilityClass(TestReachability.self)
         if autoConnect {
             options.autoConnect = true
             realtime.connect()
@@ -1199,18 +1199,18 @@ extension ARTRealtime {
         //1. Abruptly disconnect
         //2. Change the `Connection#id` and `Connection#key` before the client
         //   library attempts to reconnect and resume the connection
-        self.connection.setId("lost")
-        self.connection.setKey("xxxxx!xxxxxxx-xxxxxxxx-xxxxxxxx")
-        self.onDisconnected()
+        self.connection.internal.setId("lost")
+        self.connection.internal.setKey("xxxxx!xxxxxxx-xxxxxxxx-xxxxxxxx")
+        self.internal.onDisconnected()
     }
 
     func simulateSuspended(beforeSuspension beforeSuspensionCallback: @escaping (_ done: @escaping () -> ()) -> Void) {
         waitUntil(timeout: testTimeout) { done in
             self.connection.once(.disconnected) { _ in
                 beforeSuspensionCallback(done)
-                self.onSuspended()
+                self.internal.onSuspended()
             }
-            self.onDisconnected()
+            self.internal.onDisconnected()
         }
     }
 
@@ -1246,7 +1246,7 @@ extension ARTWebSocketTransport {
     }
 }
 
-extension ARTAuth {
+extension ARTAuthInternal {
 
     func testSuite_forceTokenToExpire(_ file: StaticString = #file, line: UInt = #line) {
         guard let tokenDetails = self.tokenDetails else {
@@ -1506,5 +1506,16 @@ extension ARTHTTPPaginatedResponse {
     var headers: NSDictionary {
         return response.objc_allHeaderFields
     }
+}
 
+protocol ARTHasInternal {
+    associatedtype Internal
+    func unwrapAsync(_: @escaping (Internal) -> ())
+}
+
+extension ARTRealtime: ARTHasInternal {
+    typealias Internal = ARTRealtimeInternal
+    func unwrapAsync(_ use: @escaping (Internal) -> ()) {
+        self.internalAsync(use)
+    }
 }

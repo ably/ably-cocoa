@@ -8,6 +8,9 @@
 
 #import <Ably/ARTAuth.h>
 #import <Ably/ARTEventEmitter.h>
+#import "ARTQueuedDealloc.h"
+
+@class ARTRestInternal;
 
 typedef NS_ENUM(NSUInteger, ARTAuthorizationState) {
     ARTAuthorizationSucceeded, //ItemType: nil
@@ -17,23 +20,32 @@ typedef NS_ENUM(NSUInteger, ARTAuthorizationState) {
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// Messages related to the ARTAuth
-@protocol ARTAuthDelegate <NSObject>
-- (void)auth:(ARTAuth *)auth didAuthorize:(ARTTokenDetails *)tokenDetails completion:(void (^)(ARTAuthorizationState, ARTErrorInfo *_Nullable))completion;
+@interface ARTAuthInternal : NSObject <ARTAuthProtocol>
+
+@property (nullable, readonly) NSString *clientId;
+@property (nullable, nonatomic, readonly, strong) ARTTokenDetails *tokenDetails;
+
 @end
 
-@interface ARTAuth ()
+/// Messages related to the ARTAuth
+@protocol ARTAuthDelegate <NSObject>
+- (void)auth:(ARTAuthInternal *)auth didAuthorize:(ARTTokenDetails *)tokenDetails completion:(void (^)(ARTAuthorizationState, ARTErrorInfo *_Nullable))completion;
+@end
+
+@interface ARTAuthInternal ()
+
+@property (readonly, nonatomic) dispatch_queue_t queue;
 
 - (NSString *)clientId_nosync;
 
 @property (nonatomic, readonly, strong) ARTClientOptions *options;
 @property (nonatomic, readonly, assign) ARTAuthMethod method;
 
-@property (nonatomic, weak) ARTLog *logger;
+@property (nonatomic, strong) ARTLog *logger;
 
 @property (nullable, nonatomic, readonly, strong) NSNumber *timeOffset;
 
-@property (nullable, weak) id<ARTAuthDelegate> delegate;
+@property (nullable, weak) id<ARTAuthDelegate> delegate; // weak because delegates outlive their counterpart
 @property (readonly) BOOL authorizing;
 @property (readonly) BOOL authorizing_nosync;
 
@@ -45,9 +57,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface ARTAuth (Private)
+@interface ARTAuthInternal (Private)
 
-- (instancetype)init:(ARTRest *)rest withOptions:(ARTClientOptions *)options;
+- (instancetype)init:(ARTRestInternal *)rest withOptions:(ARTClientOptions *)options;
 
 - (ARTAuthOptions *)mergeOptions:(ARTAuthOptions *)customOptions;
 - (ARTTokenParams *)mergeParams:(ARTTokenParams *)customParams;
@@ -83,6 +95,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *_Nullable)clientId;
 
 - (NSString *_Nullable)appId;
+
+@end
+
+@interface ARTAuth ()
+
+@property (nonatomic, readonly) ARTAuthInternal *internal;
+
+- (instancetype)initWithInternal:(ARTAuthInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc;
+- (void)internalAsync:(void (^)(ARTAuthInternal *))use;
 
 @end
 

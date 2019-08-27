@@ -18,15 +18,13 @@
 #import "ARTDefault.h"
 
 @implementation ARTChannel {
-    __weak ARTRest *_rest;
     dispatch_queue_t _queue;
 }
 
-- (instancetype)initWithName:(NSString *)name andOptions:(ARTChannelOptions *)options rest:(ARTRest *)rest {
+- (instancetype)initWithName:(NSString *)name andOptions:(ARTChannelOptions *)options rest:(ARTRestInternal *)rest {
     if (self = [super init]) {
         _name = name;
         _logger = rest.logger;
-        _rest = rest;
         _queue = rest.queue;
         [self _setOptions:options];
         NSError *error = nil;

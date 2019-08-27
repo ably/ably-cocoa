@@ -9,25 +9,52 @@
 #import "ARTPushAdmin.h"
 #import "ARTHttp.h"
 #import "ARTRest+Private.h"
-#import "ARTPushDeviceRegistrations.h"
-#import "ARTPushChannelSubscriptions.h"
+#import "ARTPushDeviceRegistrations+Private.h"
+#import "ARTPushChannelSubscriptions+Private.h"
 #import "ARTLog.h"
 #import "ARTJsonEncoder.h"
 #import "ARTJsonLikeEncoder.h"
 
 @implementation ARTPushAdmin {
-    ARTRest *_rest;
-    __weak ARTLog *_logger;
+    ARTQueuedDealloc *_dealloc;
+}
+
+- (instancetype)initWithInternal:(ARTPushAdminInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc {
+    self = [super init];
+    if (self) {
+        _internal = internal;
+        _dealloc = dealloc;
+    }
+    return self;
+}
+
+- (void)publish:(ARTPushRecipient *)recipient data:(ARTJsonObject *)data callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback {
+    [_internal publish:recipient data:data callback:callback];
+}
+
+- (ARTPushDeviceRegistrations *)deviceRegistrations {
+    return [[ARTPushDeviceRegistrations alloc] initWithInternal:_internal.deviceRegistrations queuedDealloc:_dealloc];
+}
+
+- (ARTPushChannelSubscriptions *)channelSubscriptions {
+    return [[ARTPushChannelSubscriptions alloc] initWithInternal:_internal.channelSubscriptions queuedDealloc:_dealloc];
+}
+
+@end
+
+@implementation ARTPushAdminInternal {
+    ARTRestInternal *_rest;
+    ARTLog *_logger;
     dispatch_queue_t _userQueue;
     dispatch_queue_t _queue;
 }
 
-- (instancetype)initWithRest:(ARTRest *)rest {
+- (instancetype)initWithRest:(ARTRestInternal *)rest {
     if (self = [super init]) {
         _rest = rest;
         _logger = [rest logger];
-        _deviceRegistrations = [[ARTPushDeviceRegistrations alloc] initWithRest:rest];
-        _channelSubscriptions = [[ARTPushChannelSubscriptions alloc] initWithRest:rest];
+        _deviceRegistrations = [[ARTPushDeviceRegistrationsInternal alloc] initWithRest:rest];
+        _channelSubscriptions = [[ARTPushChannelSubscriptionsInternal alloc] initWithRest:rest];
         _userQueue = rest.userQueue;
         _queue = rest.queue;
     }

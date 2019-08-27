@@ -13,22 +13,64 @@
 #import "ARTRealtime+Private.h"
 #import "ARTRealtimePresence+Private.h"
 
-@interface ARTRealtimeChannels ()
-
-@property (weak, nonatomic) ARTRealtime *realtime;
-
-@end
-
-@interface ARTRealtimeChannels () <ARTChannelsDelegate>
-@end
-
 @implementation ARTRealtimeChannels {
-    ARTChannels *_channels;
-    dispatch_queue_t _userQueue;
-    dispatch_queue_t _queue;
+    ARTQueuedDealloc *_dealloc;
 }
 
-- (instancetype)initWithRealtime:(ARTRealtime *)realtime {
+- (instancetype)initWithInternal:(ARTRealtimeChannelsInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc {
+    self = [super init];
+    if (self) {
+        _internal = internal;
+        _dealloc = dealloc;
+    }
+    return self;
+}
+
+- (BOOL)exists:(NSString *)name {
+    return [_internal exists:(NSString *)name];
+}
+
+- (ARTRealtimeChannel *)get:(NSString *)name {
+    return [[ARTRealtimeChannel alloc] initWithInternal:[_internal get:(NSString *)name] queuedDealloc:_dealloc];
+}
+
+- (ARTRealtimeChannel *)get:(NSString *)name options:(ARTChannelOptions *)options {
+    return [[ARTRealtimeChannel alloc] initWithInternal:[_internal get:(NSString *)name options:(ARTChannelOptions *)options] queuedDealloc:_dealloc];
+}
+
+- (void)release:(NSString *)name callback:(nullable void (^)(ARTErrorInfo *_Nullable))errorInfo {
+    [_internal release:(NSString *)name callback:errorInfo];
+}
+
+- (void)release:(NSString *)name {
+    [_internal release:(NSString *)name];
+}
+
+- (id<NSFastEnumeration>)iterate {
+    NSMutableArray *channels = [[NSMutableArray alloc] init];
+    for (ARTRealtimeChannelInternal *internalChannel in [_internal iterate]) {
+        [channels addObject:[[ARTRealtimeChannel alloc] initWithInternal:internalChannel queuedDealloc:_dealloc]];
+    }
+    return channels;
+}
+
+@end
+
+@interface ARTRealtimeChannelsInternal ()
+
+@property (weak, nonatomic) ARTRealtimeInternal *realtime; // weak because realtime owns self
+
+@end
+
+@interface ARTRealtimeChannelsInternal () <ARTChannelsDelegate>
+@end
+
+@implementation ARTRealtimeChannelsInternal {
+    ARTChannels *_channels;
+    dispatch_queue_t _userQueue;
+}
+
+- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime {
 ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
     if (self = [super init]) {
         _realtime = realtime;
@@ -41,18 +83,18 @@ ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
 }
 
 - (id)makeChannel:(NSString *)name options:(ARTChannelOptions *)options {
-    return [ARTRealtimeChannel channelWithRealtime:_realtime andName:name withOptions:options];
+    return [ARTRealtimeChannelInternal channelWithRealtime:_realtime andName:name withOptions:options];
 }
 
-- (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(__unsafe_unretained id  _Nonnull *)buffer count:(NSUInteger)len {
-    return [_channels countByEnumeratingWithState:state objects:buffer count:len];
+- (id<NSFastEnumeration>)iterate {
+    return [_channels iterate];
 }
 
-- (ARTRealtimeChannel *)get:(NSString *)name {
+- (ARTRealtimeChannelInternal *)get:(NSString *)name {
     return [_channels get:name];
 }
 
-- (ARTRealtimeChannel *)get:(NSString *)name options:(ARTChannelOptions *)options {
+- (ARTRealtimeChannelInternal *)get:(NSString *)name options:(ARTChannelOptions *)options {
     return [_channels get:name options:options];
 }
 
@@ -80,7 +122,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
         return;
     }
 
-    ARTRealtimeChannel *channel = [self->_channels _get:name];
+    ARTRealtimeChannelInternal *channel = [self->_channels _get:name];
     [channel _detach:^(ARTErrorInfo *errorInfo) {
         [channel off_nosync];
         [channel _unsubscribe];
@@ -115,7 +157,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     return [_channels getNosyncIterable];
 }
 
-- (ARTRealtimeChannel *)_getChannel:(NSString *)name options:(ARTChannelOptions *)options addPrefix:(BOOL)addPrefix {
+- (ARTRealtimeChannelInternal *)_getChannel:(NSString *)name options:(ARTChannelOptions *)options addPrefix:(BOOL)addPrefix {
     return [_channels _getChannel:name options:options addPrefix:addPrefix];
 }
 

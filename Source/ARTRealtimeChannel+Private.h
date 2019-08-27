@@ -7,23 +7,35 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import <Ably/ARTRestChannel.h>
+#import <Ably/ARTRestChannel+Private.h>
 #import <Ably/ARTRealtimeChannel.h>
 #import <Ably/ARTPresenceMap.h>
 #import <Ably/ARTEventEmitter.h>
+#import <Ably/ARTRealtime+Private.h>
+#import <Ably/ARTQueuedDealloc.h>
+#import <Ably/ARTPushChannel+Private.h>
 
 @class ARTProtocolMessage;
+@class ARTRealtimePresenceInternal;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTRealtimeChannel () <ARTPresenceMapDelegate>
+@interface ARTRealtimeChannelInternal : ARTChannel <ARTPresenceMapDelegate, ARTRealtimeChannelProtocol>
+
+@property (readonly) ARTRealtimePresenceInternal *presence;
+#if TARGET_OS_IPHONE
+@property (readonly) ARTPushChannelInternal *push;
+#endif
+
+@property (readwrite, assign, nonatomic) ARTRealtimeChannelState state;
+@property (readonly, strong, nonatomic, nullable) ARTErrorInfo *errorReason;
 
 - (ARTRealtimeChannelState)state_nosync;
 - (ARTErrorInfo *)errorReason_nosync;
 - (NSString *_Nullable)clientId_nosync;
 
-@property (readonly, weak, nonatomic) ARTRealtime *realtime;
-@property (readonly, strong, nonatomic) ARTRestChannel *restChannel;
+@property (readonly, weak, nonatomic) ARTRealtimeInternal *realtime; // weak because realtime owns self
+@property (readonly, strong, nonatomic) ARTRestChannelInternal *restChannel;
 @property (readwrite, strong, nonatomic) NSMutableArray *queuedMessages;
 @property (readwrite, strong, nonatomic, nullable) NSString *attachSerial;
 @property (readonly, nullable, getter=getClientId) NSString *clientId;
@@ -34,8 +46,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, strong, nonatomic) ARTPresenceMap *presenceMap;
 @property (readwrite, assign, nonatomic) ARTPresenceAction lastPresenceAction;
 
-- (instancetype)initWithRealtime:(ARTRealtime *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options;
-+ (instancetype)channelWithRealtime:(ARTRealtime *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options;
+- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options;
++ (instancetype)channelWithRealtime:(ARTRealtimeInternal *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options;
 
 - (bool)isLastChannelSerial:(NSString *)channelSerial;
 
@@ -47,9 +59,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)_unsubscribe;
 - (void)off_nosync;
 
+@property (nonatomic, strong) dispatch_queue_t queue;
+
 @end
 
-@interface ARTRealtimeChannel (Private)
+@interface ARTRealtimeChannelInternal (Private)
 
 - (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status;
 
@@ -79,6 +93,16 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)sync;
 - (void)sync:(nullable void (^)(ARTErrorInfo *_Nullable))callback;
 - (void)requestContinueSync;
+
+@end
+
+@interface ARTRealtimeChannel ()
+
+@property (nonatomic, readonly) ARTRealtimeChannelInternal *internal;
+
+- (instancetype)initWithInternal:(ARTRealtimeChannelInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc;
+
+@property (readonly) ARTRealtimeChannelInternal *internal_nosync;
 
 @end
 

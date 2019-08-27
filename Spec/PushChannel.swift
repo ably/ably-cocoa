@@ -19,9 +19,9 @@ class PushChannel : QuickSpec {
         beforeEach {
             mockHttpExecutor = MockHTTPExecutor()
             rest = ARTRest(key: "xxxx:xxxx")
-            rest.options.clientId = "tester"
-            rest.httpExecutor = mockHttpExecutor
-            rest.resetDeviceSingleton()
+            rest.internal.options.clientId = "tester"
+            rest.internal.httpExecutor = mockHttpExecutor
+            rest.internal.resetDeviceSingleton()
         }
 
         // RSH7
@@ -67,7 +67,7 @@ class PushChannel : QuickSpec {
                     }
                     let decodedBody: Any
                     do {
-                        decodedBody = try rest.defaultEncoder.decode(rawBody)
+                        decodedBody = try rest.internal.defaultEncoder.decode(rawBody)
                     }
                     catch {
                         fail("Decode failed: \(error)"); return
@@ -134,7 +134,7 @@ class PushChannel : QuickSpec {
                     }
                     let decodedBody: Any
                     do {
-                        decodedBody = try rest.defaultEncoder.decode(rawBody)
+                        decodedBody = try rest.internal.defaultEncoder.decode(rawBody)
                     }
                     catch {
                         fail("Decode failed: \(error)"); return
@@ -341,7 +341,7 @@ class PushChannel : QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "tester"
                     let rest = ARTRest(options: options)
-                    rest.storage = MockDeviceStorage()
+                    rest.internal.storage = MockDeviceStorage()
                     // Prevent channel name to be prefixed by test-*
                     let originalChannelNamePrefix = ARTChannels_getChannelNamePrefix
                     defer { ARTChannels_getChannelNamePrefix = originalChannelNamePrefix }

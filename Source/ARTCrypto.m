@@ -20,7 +20,7 @@
 
 @interface ARTCrypto ()
 
-@property (nonatomic, weak) ARTLog * logger;
+@property (nonatomic, strong) ARTLog * logger;
 
 @end
 

@@ -7,7 +7,7 @@
 //
 
 #import "ARTPushActivationState.h"
-#import "ARTPushActivationStateMachine.h"
+#import "ARTPushActivationStateMachine+Private.h"
 #import "ARTPushActivationEvent.h"
 #import "ARTLocalDevice+Private.h"
 #import "ARTDeviceStorage.h"

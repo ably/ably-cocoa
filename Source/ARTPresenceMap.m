@@ -53,7 +53,7 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
 @end
 
 @implementation ARTPresenceMap {
-    __weak ARTLog *_logger;
+    ARTLog *_logger;
 }
 
 - (instancetype)initWithQueue:(_Nonnull dispatch_queue_t)queue logger:(ARTLog *)logger { 

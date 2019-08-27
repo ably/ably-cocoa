@@ -6,7 +6,7 @@
 //  Copyright © 2017 Ably. All rights reserved.
 //
 
-#import "ARTPushChannelSubscriptions.h"
+#import "ARTPushChannelSubscriptions+Private.h"
 #import "ARTHttp.h"
 #import "ARTLog.h"
 #import "ARTPaginatedResult+Private.h"
@@ -19,13 +19,48 @@
 #import "ARTNSMutableRequest+ARTPush.h"
 
 @implementation ARTPushChannelSubscriptions {
-    __weak ARTRest *_rest;
-    __weak ARTLog* _logger;
+    ARTQueuedDealloc *_dealloc;
+}
+
+- (instancetype)initWithInternal:(ARTPushChannelSubscriptionsInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc {
+    self = [super init];
+    if (self) {
+        _internal = internal;
+        _dealloc = dealloc;
+    }
+    return self;
+}
+
+- (void)save:(ARTPushChannelSubscription *)channelSubscription callback:(void (^)(ARTErrorInfo *_Nullable))callback {
+    [_internal save:channelSubscription callback:callback];
+}
+
+- (void)listChannels:(void (^)(ARTPaginatedResult<NSString *> *_Nullable,  ARTErrorInfo *_Nullable))callback {
+    [_internal listChannels:callback];
+}
+
+- (void)list:(NSDictionary<NSString *, NSString *> *)params callback:(void (^)(ARTPaginatedResult<ARTPushChannelSubscription *> *_Nullable,  ARTErrorInfo *_Nullable))callback {
+    [_internal list:params callback:callback];
+}
+
+- (void)remove:(ARTPushChannelSubscription *)subscription callback:(void (^)(ARTErrorInfo *_Nullable))callback {
+    [_internal remove:subscription callback:callback];
+}
+
+- (void)removeWhere:(NSDictionary<NSString *, NSString *> *)params callback:(void (^)(ARTErrorInfo *_Nullable))callback {
+    [_internal removeWhere:params callback:callback];
+}
+
+@end
+
+@implementation ARTPushChannelSubscriptionsInternal {
+    __weak ARTRestInternal *_rest; // weak because rest owns self
+    ARTLog* _logger;
     dispatch_queue_t _queue;
     dispatch_queue_t _userQueue;
 }
 
-- (instancetype)initWithRest:(ARTRest *)rest {
+- (instancetype)initWithRest:(ARTRestInternal *)rest {
     if (self = [super init]) {
         _rest = rest;
         _logger = [rest logger];

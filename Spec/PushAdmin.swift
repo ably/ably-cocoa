@@ -116,7 +116,7 @@ class PushAdmin : QuickSpec {
         let options = AblyTests.commonAppSetup()
         options.pushFullWait = true
         let rest = ARTRest(options: options)
-        rest.storage = MockDeviceStorage()
+        rest.internal.storage = MockDeviceStorage()
         let group = DispatchGroup()
 
         group.enter()
@@ -145,7 +145,7 @@ class PushAdmin : QuickSpec {
 
     override class func tearDown() {
         let rest = ARTRest(options: AblyTests.commonAppSetup())
-        rest.storage = MockDeviceStorage()
+        rest.internal.storage = MockDeviceStorage()
         let group = DispatchGroup()
 
         for device in allDeviceDetails {
@@ -185,9 +185,9 @@ class PushAdmin : QuickSpec {
         beforeEach {
             rest = ARTRest(key: "xxxx:xxxx")
             mockHttpExecutor = MockHTTPExecutor()
-            rest.httpExecutor = mockHttpExecutor
+            rest.internal.httpExecutor = mockHttpExecutor
             storage = MockDeviceStorage()
-            rest.storage = storage
+            rest.internal.storage = storage
             localDevice = rest.device
         }
         
@@ -375,7 +375,7 @@ class PushAdmin : QuickSpec {
                 context("push device authentication") {
                     it("should include DeviceIdentityToken HTTP header") {
                         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
-                        realtime.rest.httpExecutor = mockHttpExecutor
+                        realtime.internal.rest.httpExecutor = mockHttpExecutor
 
                         let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(
                             token: "123456",
@@ -386,8 +386,8 @@ class PushAdmin : QuickSpec {
                         )
 
                         expect(localDevice.identityTokenDetails).to(beNil())
-                        realtime.rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
-                        defer { realtime.rest.device.setAndPersistIdentityTokenDetails(nil) }
+                        realtime.internal.rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
+                        defer { realtime.internal.rest.device.setAndPersistIdentityTokenDetails(nil) }
 
                         waitUntil(timeout: testTimeout) { done in
                             realtime.push.admin.deviceRegistrations.get(localDevice.id) { device, error in
@@ -406,7 +406,7 @@ class PushAdmin : QuickSpec {
 
                     it("should include DeviceSecret HTTP header") {
                         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
-                        realtime.rest.httpExecutor = mockHttpExecutor
+                        realtime.internal.rest.httpExecutor = mockHttpExecutor
 
                         waitUntil(timeout: testTimeout) { done in
                             realtime.push.admin.deviceRegistrations.get(localDevice.id) { device, error in
@@ -490,7 +490,7 @@ class PushAdmin : QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     options.pushFullWait = true
                     let realtime = ARTRealtime(options: options)
-                    realtime.rest.httpExecutor = mockHttpExecutor
+                    realtime.internal.rest.httpExecutor = mockHttpExecutor
                     waitUntil(timeout: testTimeout) { done in
                         realtime.push.admin.deviceRegistrations.remove(self.deviceDetails.id) { error in
                             expect(error).to(beNil())
@@ -515,7 +515,7 @@ class PushAdmin : QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     options.pushFullWait = true
                     let realtime = ARTRealtime(options: options)
-                    realtime.rest.httpExecutor = mockHttpExecutor
+                    realtime.internal.rest.httpExecutor = mockHttpExecutor
                     waitUntil(timeout: testTimeout) { done in
                         realtime.push.admin.deviceRegistrations.save(self.deviceDetails) { error in
                             expect(error).to(beNil())
@@ -538,7 +538,7 @@ class PushAdmin : QuickSpec {
                         let options = AblyTests.commonAppSetup()
                         options.pushFullWait = true
                         let realtime = ARTRealtime(options: options)
-                        realtime.rest.httpExecutor = mockHttpExecutor
+                        realtime.internal.rest.httpExecutor = mockHttpExecutor
 
                         let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(
                             token: "123456",
@@ -549,8 +549,8 @@ class PushAdmin : QuickSpec {
                         )
 
                         expect(localDevice.identityTokenDetails).to(beNil())
-                        realtime.rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
-                        defer { realtime.rest.device.setAndPersistIdentityTokenDetails(nil) }
+                        realtime.internal.rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
+                        defer { realtime.internal.rest.device.setAndPersistIdentityTokenDetails(nil) }
 
                         waitUntil(timeout: testTimeout) { done in
                             realtime.push.admin.deviceRegistrations.save(localDevice) { error in
@@ -573,7 +573,7 @@ class PushAdmin : QuickSpec {
                         let options = AblyTests.commonAppSetup()
                         options.pushFullWait = true
                         let realtime = ARTRealtime(options: options)
-                        realtime.rest.httpExecutor = mockHttpExecutor
+                        realtime.internal.rest.httpExecutor = mockHttpExecutor
 
                         waitUntil(timeout: testTimeout) { done in
                             realtime.push.admin.deviceRegistrations.save(localDevice) { error in
@@ -618,7 +618,7 @@ class PushAdmin : QuickSpec {
                         }
                     }
 
-                    realtime.rest.httpExecutor = mockHttpExecutor
+                    realtime.internal.rest.httpExecutor = mockHttpExecutor
 
                     waitUntil(timeout: testTimeout) { done in
                         realtime.push.admin.deviceRegistrations.removeWhere(params) { error in
@@ -685,7 +685,7 @@ class PushAdmin : QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     let realtime = ARTRealtime(options: options)
                     let testProxyHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    realtime.rest.httpExecutor = testProxyHTTPExecutor
+                    realtime.internal.rest.httpExecutor = testProxyHTTPExecutor
 
                     waitUntil(timeout: testTimeout) { done in
                         realtime.push.admin.channelSubscriptions.save(subscription) { error in
@@ -733,7 +733,7 @@ class PushAdmin : QuickSpec {
                 context("push device authentication") {
                     it("should include DeviceIdentityToken HTTP header") {
                         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
-                        realtime.rest.httpExecutor = mockHttpExecutor
+                        realtime.internal.rest.httpExecutor = mockHttpExecutor
 
                         let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(
                             token: "123456",
@@ -744,8 +744,8 @@ class PushAdmin : QuickSpec {
                         )
 
                         expect(localDevice.identityTokenDetails).to(beNil())
-                        realtime.rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
-                        defer { realtime.rest.device.setAndPersistIdentityTokenDetails(nil) }
+                        realtime.internal.rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
+                        defer { realtime.internal.rest.device.setAndPersistIdentityTokenDetails(nil) }
 
                         let subscription = ARTPushChannelSubscription(deviceId: localDevice.id, channel: quxChannelName)
 
@@ -767,7 +767,7 @@ class PushAdmin : QuickSpec {
 
                     it("should include DeviceSecret HTTP header") {
                         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
-                        realtime.rest.httpExecutor = mockHttpExecutor
+                        realtime.internal.rest.httpExecutor = mockHttpExecutor
 
                         let subscription = ARTPushChannelSubscription(deviceId: localDevice.id, channel: quxChannelName)
 
@@ -832,7 +832,7 @@ class PushAdmin : QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     let realtime = ARTRealtime(options: options)
                     let testProxyHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    realtime.rest.httpExecutor = testProxyHTTPExecutor
+                    realtime.internal.rest.httpExecutor = testProxyHTTPExecutor
 
                     waitUntil(timeout: testTimeout) { done in
                         realtime.push.admin.channelSubscriptions.remove(subscription) { error in
@@ -865,7 +865,7 @@ class PushAdmin : QuickSpec {
                 context("push device authentication") {
                     it("should include DeviceIdentityToken HTTP header") {
                         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
-                        realtime.rest.httpExecutor = mockHttpExecutor
+                        realtime.internal.rest.httpExecutor = mockHttpExecutor
 
                         let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(
                             token: "123456",
@@ -876,8 +876,8 @@ class PushAdmin : QuickSpec {
                         )
 
                         expect(localDevice.identityTokenDetails).to(beNil())
-                        realtime.rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
-                        defer { realtime.rest.device.setAndPersistIdentityTokenDetails(nil) }
+                        realtime.internal.rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
+                        defer { realtime.internal.rest.device.setAndPersistIdentityTokenDetails(nil) }
 
                         let subscription = ARTPushChannelSubscription(deviceId: localDevice.id, channel: quxChannelName)
 
@@ -899,7 +899,7 @@ class PushAdmin : QuickSpec {
 
                     it("should include DeviceSecret HTTP header") {
                         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
-                        realtime.rest.httpExecutor = mockHttpExecutor
+                        realtime.internal.rest.httpExecutor = mockHttpExecutor
 
                         let subscription = ARTPushChannelSubscription(deviceId: localDevice.id, channel: quxChannelName)
 

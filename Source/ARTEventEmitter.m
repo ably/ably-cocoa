@@ -60,11 +60,11 @@
 @end
 
 @implementation ARTEventListener {
-    __weak NSNotificationCenter *_center;
-    __weak ARTEventEmitter *_eventHandler;
+    NSNotificationCenter *_center;
+    __weak ARTEventEmitter *_eventHandler; // weak because eventEmitter owns self
     NSTimeInterval _timeoutDeadline;
     void (^_timeoutBlock)(void);
-    dispatch_block_t _work;
+    ARTScheduledBlockHandle *_work;
 }
 
 - (instancetype)initWithId:(NSString *)eventId token:(id<NSObject>)token handler:(ARTEventEmitter *)eventHandler center:(NSNotificationCenter *)center {
@@ -87,14 +87,19 @@
 }
 
 - (void)removeObserver {
+    if (!_token) {
+        return;
+    }
     [self invalidate];
     if (_eventHandler && _eventHandler.userQueue) {
         dispatch_async(_eventHandler.userQueue, ^{
             [self->_center removeObserver:self->_token];
+            self->_token = nil;
         });
     }
     else {
         [_center removeObserver:_token];
+        _token = nil;
     }
 }
 
@@ -117,9 +122,10 @@
 }
 
 - (void)timeout {
-    [_eventHandler off:self];
-    if (_timeoutBlock) {
-        _timeoutBlock();
+    dispatch_block_t timeoutBlock = _timeoutBlock;
+    [_eventHandler off:self]; // removes self as a listener, which clears _timeoutBlock.
+    if (timeoutBlock) {
+        timeoutBlock();
     }
 }
 
@@ -132,16 +138,15 @@
         NSAssert(false, @"timer is already running");
     }
     _timerIsRunning = true;
-    __weak typeof(self) weakSelf = self;
     _work = artDispatchScheduled(_timeoutDeadline, [_eventHandler queue], ^{
-        [weakSelf timeout];
+        [self timeout];
     });
 }
 
 - (void)stopTimer {
-    artDispatchCancel(nil);
     artDispatchCancel(_work);
     _timerIsRunning = false;
+    _timeoutBlock = nil;
 }
 
 @end
@@ -168,68 +173,64 @@
 
 - (ARTEventListener *)on:(id<ARTEventIdentification>)event callback:(void (^)(id __art_nonnull))cb {
     NSString *eventId = [NSString stringWithFormat:@"%p-%@", self, [event identification]];
-    __weak __block ARTEventListener *weakListener;
+    __block ARTEventListener *listener;
     id<NSObject> observerToken = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
-        if (weakListener == nil || [weakListener invalidated]) return;
-        if ([weakListener hasTimer] && ![weakListener timerIsRunning]) return;
-        [weakListener stopTimer];
+        if (listener == nil || [listener invalidated]) return;
+        if ([listener hasTimer] && ![listener timerIsRunning]) return;
+        [listener stopTimer];
         cb(note.object);
     }];
-    ARTEventListener *eventToken = [[ARTEventListener alloc] initWithId:eventId token:observerToken handler:self center:_notificationCenter];
-    weakListener = eventToken;
-    [self addObject:eventToken toArrayWithKey:eventToken.eventId inDictionary:self.listeners];
-    return eventToken;
+    listener = [[ARTEventListener alloc] initWithId:eventId token:observerToken handler:self center:_notificationCenter];
+    [self addObject:listener toArrayWithKey:listener.eventId inDictionary:self.listeners];
+    return listener;
 }
 
 - (ARTEventListener *)once:(id<ARTEventIdentification>)event callback:(void (^)(id __art_nonnull))cb {
     NSString *eventId = [NSString stringWithFormat:@"%p-%@", self, [event identification]];
-    __weak __block ARTEventListener *weakListener;
-    __weak typeof(self) weakSelf = self;
+    __block ARTEventListener *listener;
+    __weak typeof(self) weakSelf = self; // weak to avoid a warning, but strong should be safe too since the cycle is broken when the notification fires or the token is cancelled
     id<NSObject> observerToken = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
-        if (weakListener == nil || [weakListener invalidated]) return;
-        if ([weakListener hasTimer] && ![weakListener timerIsRunning]) return;
-        if ([weakListener handled]) return;
-        [weakListener removeObserver];
-        [weakSelf removeObject:weakListener fromArrayWithKey:[weakListener eventId] inDictionary:[weakSelf listeners]];
+        if (listener == nil || [listener invalidated]) return;
+        if ([listener hasTimer] && ![listener timerIsRunning]) return;
+        if ([listener handled]) return;
+        [listener removeObserver];
+        [weakSelf removeObject:listener fromArrayWithKey:[listener eventId] inDictionary:[weakSelf listeners]];
         cb(note.object);
     }];
-    ARTEventListener *eventToken = [[ARTEventListener alloc] initWithId:eventId token:observerToken handler:self center:_notificationCenter];
-    weakListener = eventToken;
-    [self addObject:eventToken toArrayWithKey:eventToken.eventId inDictionary:self.listeners];
-    return eventToken;
+    listener = [[ARTEventListener alloc] initWithId:eventId token:observerToken handler:self center:_notificationCenter];
+    [self addObject:listener toArrayWithKey:listener.eventId inDictionary:self.listeners];
+    return listener;
 }
 
 - (ARTEventListener *)on:(void (^)(id __art_nonnull))cb {
     NSString *eventId = [NSString stringWithFormat:@"%p", self];
-    __weak __block ARTEventListener *weakListener;
+    __block ARTEventListener *listener;
     id<NSObject> observerToken = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
-        if (weakListener == nil || [weakListener invalidated]) return;
-        if ([weakListener hasTimer] && ![weakListener timerIsRunning]) return;
-        [weakListener stopTimer];
+        if (listener == nil || [listener invalidated]) return;
+        if ([listener hasTimer] && ![listener timerIsRunning]) return;
+        [listener stopTimer];
         cb(note.object);
     }];
-    ARTEventListener *eventToken = [[ARTEventListener alloc] initWithId:eventId token:observerToken handler:self center:_notificationCenter];
-    weakListener = eventToken;
-    [self.anyListeners addObject:eventToken];
-    return eventToken;
+    listener = [[ARTEventListener alloc] initWithId:eventId token:observerToken handler:self center:_notificationCenter];
+    [self.anyListeners addObject:listener];
+    return listener;
 }
 
 - (ARTEventListener *)once:(void (^)(id __art_nonnull))cb {
     NSString *eventId = [NSString stringWithFormat:@"%p", self];
-    __weak __block ARTEventListener *weakListener;
-    __weak typeof(self) weakSelf = self;
+    __block ARTEventListener *listener;
+    __weak typeof(self) weakSelf = self; // weak to avoid a warning, but strong should be safe too since the cycle is broken when the notification fires or the token is cancelled
     id<NSObject> observerToken = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
-        if (weakListener == nil || [weakListener invalidated]) return;
-        if ([weakListener hasTimer] && ![weakListener timerIsRunning]) return;
-        if ([weakListener handled]) return;
-        [weakListener removeObserver];
-        [[weakSelf anyListeners] removeObject:weakListener];
+        if (listener == nil || [listener invalidated]) return;
+        if ([listener hasTimer] && ![listener timerIsRunning]) return;
+        if ([listener handled]) return;
+        [listener removeObserver];
+        [[weakSelf anyListeners] removeObject:listener];
         cb(note.object);
     }];
-    ARTEventListener *eventToken = [[ARTEventListener alloc] initWithId:eventId token:observerToken handler:self center:_notificationCenter];
-    weakListener = eventToken;
-    [self.anyListeners addObject:eventToken];
-    return eventToken;
+    listener = [[ARTEventListener alloc] initWithId:eventId token:observerToken handler:self center:_notificationCenter];
+    [self.anyListeners addObject:listener];
+    return listener;
 }
 
 - (void)off:(id<ARTEventIdentification>)event listener:(ARTEventListener *)listener {
@@ -311,12 +312,12 @@
 @end
 
 @implementation ARTPublicEventEmitter {
-    __weak ARTRest *_rest;
+    __weak ARTRestInternal *_rest; // weak because rest owns self
     dispatch_queue_t _queue;
     dispatch_queue_t _userQueue;
 }
 
-- (instancetype)initWithRest:(ARTRest *)rest {
+- (instancetype)initWithRest:(ARTRestInternal *)rest {
     if (self = [super initWithQueue:rest.queue]) {
         _rest = rest;
         _queue = rest.queue;

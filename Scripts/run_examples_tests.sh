@@ -4,5 +4,6 @@
 set -e
 
 cd "Examples/Tests"
+pod repo update
 pod install
 fastlane scan -s Tests

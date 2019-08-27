@@ -21,7 +21,7 @@ class RestClient: QuickSpec {
                 let options = AblyTests.commonAppSetup()
                 let client = ARTRest(options: options)
                 testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                client.httpExecutor = testHTTPExecutor
+                client.internal.httpExecutor = testHTTPExecutor
                 let channel = client.channels.get("test")
                 waitUntil(timeout: testTimeout) { done in
                     channel.publish(nil, data: "message") { error in
@@ -39,7 +39,7 @@ class RestClient: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     
                     let client = ARTRest(key: options.key!)
-                    client.prioritizedHost = options.restHost
+                    client.internal.prioritizedHost = options.restHost
 
                     let publishTask = publishTestMessage(client)
 
@@ -108,9 +108,9 @@ class RestClient: QuickSpec {
                     options.logHandler = ARTLog(capturingOutput: true)
                     let client = ARTRest(options: options)
 
-                    client.logger.log("This is a warning", with: .warn)
+                    client.internal.logger.log("This is a warning", with: .warn)
 
-                    expect(client.logger.logLevel).to(equal(ARTLogLevel.warn))
+                    expect(client.internal.logger.logLevel).to(equal(ARTLogLevel.warn))
                     guard let line = options.logHandler.captured.last else {
                         fail("didn't log line.")
                         return
@@ -124,10 +124,10 @@ class RestClient: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     options.logHandler = ARTLog(capturingOutput: true)
                     let client = ARTRest(options: options)
-                    client.logger.logLevel = .error
+                    client.internal.logger.logLevel = .error
 
                     let logTime = NSDate()
-                    client.logger.log("This is a warning", with: .warn)
+                    client.internal.logger.log("This is a warning", with: .warn)
 
                     let logs = options.logHandler.captured.filter({!$0.date.isBefore(logTime as Date)})
                     expect(logs).to(beEmpty())
@@ -150,12 +150,12 @@ class RestClient: QuickSpec {
                     options.logLevel = .verbose
                     let client = ARTRest(options: options)
 
-                    client.logger.log("This is a warning", with: .warn)
+                    client.internal.logger.log("This is a warning", with: .warn)
                     
                     expect(Log.interceptedLog.0).to(equal("This is a warning"))
                     expect(Log.interceptedLog.1).to(equal(ARTLogLevel.warn))
                     
-                    expect(client.logger.logLevel).to(equal(customLogger.logLevel))
+                    expect(client.internal.logger.logLevel).to(equal(customLogger.logLevel))
                 }
             }
 
@@ -166,7 +166,7 @@ class RestClient: QuickSpec {
                     options.restHost = "fake.ably.io"
                     let client = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    client.httpExecutor = testHTTPExecutor
+                    client.internal.httpExecutor = testHTTPExecutor
                     
                     publishTestMessage(client, failOnError: false)
                     
@@ -179,7 +179,7 @@ class RestClient: QuickSpec {
                     options.restHost = "fake.ably.io"
                     let client = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    client.httpExecutor = testHTTPExecutor
+                    client.internal.httpExecutor = testHTTPExecutor
 
                     publishTestMessage(client, failOnError: false)
 
@@ -191,7 +191,7 @@ class RestClient: QuickSpec {
                     options.environment = "myEnvironment"
                     let client = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    client.httpExecutor = testHTTPExecutor
+                    client.internal.httpExecutor = testHTTPExecutor
                     
                     publishTestMessage(client, failOnError: false)
                     
@@ -202,7 +202,7 @@ class RestClient: QuickSpec {
                     let options = ARTClientOptions(key: "fake:key")
                     let client = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    client.httpExecutor = testHTTPExecutor
+                    client.internal.httpExecutor = testHTTPExecutor
                     
                     publishTestMessage(client, failOnError: false)
                     
@@ -214,7 +214,7 @@ class RestClient: QuickSpec {
                     options.tls = false
                     let client = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    client.httpExecutor = testHTTPExecutor
+                    client.internal.httpExecutor = testHTTPExecutor
                     
                     publishTestMessage(client, failOnError: false)
                     
@@ -225,8 +225,8 @@ class RestClient: QuickSpec {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.environment = "production"
                     let client = ARTRest(options: options)
-                    expect(client.options.restHost).to(equal(ARTDefault.restHost()))
-                    expect(client.options.realtimeHost).to(equal(ARTDefault.realtimeHost()))
+                    expect(client.internal.options.restHost).to(equal(ARTDefault.restHost()))
+                    expect(client.internal.options.realtimeHost).to(equal(ARTDefault.realtimeHost()))
                 }
             }
 
@@ -260,7 +260,7 @@ class RestClient: QuickSpec {
                     options.httpMaxRetryCount = 1
                     let client = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    client.httpExecutor = testHTTPExecutor
+                    client.internal.httpExecutor = testHTTPExecutor
                     testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
 
                     var totalRetry: UInt = 0
@@ -285,7 +285,7 @@ class RestClient: QuickSpec {
                     options.httpMaxRetryDuration = 1.0
                     let client = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    client.httpExecutor = testHTTPExecutor
+                    client.internal.httpExecutor = testHTTPExecutor
                     testHTTPExecutor.http = MockHTTP(network: .requestTimeout(timeout: 0.1), logger: options.logHandler)
                     let channel = client.channels.get("test")
                     waitUntil(timeout: testTimeout) { done in
@@ -304,7 +304,7 @@ class RestClient: QuickSpec {
                 let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                 let client = ARTRest(options: options)
                 
-                let authOptions = client.auth.options
+                let authOptions = client.auth.internal.options
 
                 expect(authOptions == options).to(beTrue())
             }
@@ -317,7 +317,7 @@ class RestClient: QuickSpec {
                 expect(options.restHost).to(equal("rest.ably.test"))
                 let client = ARTRest(options: options)
                 testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                client.httpExecutor = testHTTPExecutor
+                client.internal.httpExecutor = testHTTPExecutor
                 waitUntil(timeout: testTimeout) { done in
                     client.channels.get("test").publish(nil, data: "message") { error in
                         expect(error).toNot(beNil())
@@ -349,7 +349,7 @@ class RestClient: QuickSpec {
 
                 let clientHttps = ARTRest(options: options)
                 testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                clientHttps.httpExecutor = testHTTPExecutor
+                clientHttps.internal.httpExecutor = testHTTPExecutor
 
                 waitUntil(timeout: testTimeout) { done in
                     publishTestMessage(clientHttps) { error in
@@ -364,7 +364,7 @@ class RestClient: QuickSpec {
                 options.tls = false
                 let clientHttp = ARTRest(options: options)
                 testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                clientHttp.httpExecutor = testHTTPExecutor
+                clientHttp.internal.httpExecutor = testHTTPExecutor
 
                 waitUntil(timeout: testTimeout) { done in
                     publishTestMessage(clientHttp) { error in
@@ -414,7 +414,7 @@ class RestClient: QuickSpec {
                 options.token = getTestToken(ttl: 0.5)
                 let client = ARTRest(options: options)
                 testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                client.httpExecutor = testHTTPExecutor
+                client.internal.httpExecutor = testHTTPExecutor
                 let auth = client.auth
 
                 waitUntil(timeout: testTimeout) { done in
@@ -443,7 +443,7 @@ class RestClient: QuickSpec {
                 options.token = getTestToken(capability: "{ \"main\":[\"subscribe\"] }")
                 let client = ARTRest(options: options)
                 testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                client.httpExecutor = testHTTPExecutor
+                client.internal.httpExecutor = testHTTPExecutor
 
                 waitUntil(timeout: testTimeout) { done in
                     client.channels.get("test").history { result, error in
@@ -490,7 +490,7 @@ class RestClient: QuickSpec {
                 context("basic authentication flag") {
                     it("should be true when key is set") {
                         let client = ARTRest(key: "key:secret")
-                        expect(client.auth.options.isBasicAuth()).to(beTrue())
+                        expect(client.auth.internal.options.isBasicAuth()).to(beTrue())
                     }
 
                     for (caseName, caseSetter) in AblyTests.authTokenCases {
@@ -500,7 +500,7 @@ class RestClient: QuickSpec {
 
                             let client = ARTRest(options: options)
 
-                            expect(client.auth.options.isBasicAuth()).to(beFalse())
+                            expect(client.auth.internal.options.isBasicAuth()).to(beFalse())
                         }
                     }
                 }
@@ -528,7 +528,7 @@ class RestClient: QuickSpec {
                             }
 
                             let options = AblyTests.clientOptions()
-                            options.key = client.options.key
+                            options.key = client.internal.options.key
 
                             // Expired token
                             options.tokenDetails = ARTTokenDetails(token: currentTokenDetails.token, expires: currentTokenDetails.expires!.addingTimeInterval(testTimeout), issued: currentTokenDetails.issued, capability: currentTokenDetails.capability, clientId: currentTokenDetails.clientId)
@@ -542,7 +542,7 @@ class RestClient: QuickSpec {
 
                     let rest = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    rest.httpExecutor = testHTTPExecutor
+                    rest.internal.httpExecutor = testHTTPExecutor
 
                     waitUntil(timeout: testTimeout) { done in
                         // Delay for token expiration
@@ -585,14 +585,14 @@ class RestClient: QuickSpec {
                             }
 
                             let options = AblyTests.clientOptions()
-                            options.key = client.options.key
+                            options.key = client.internal.options.key
 
                             // Expired token
                             options.tokenDetails = ARTTokenDetails(token: currentTokenDetails.token, expires: currentTokenDetails.expires!.addingTimeInterval(testTimeout), issued: currentTokenDetails.issued, capability: currentTokenDetails.capability, clientId: currentTokenDetails.clientId)
 
                             let rest = ARTRest(options: options)
                             testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                            rest.httpExecutor = testHTTPExecutor
+                            rest.internal.httpExecutor = testHTTPExecutor
 
                             // Delay for token expiration
                             delay(TimeInterval(truncating: tokenParams.ttl!)) {
@@ -626,12 +626,12 @@ class RestClient: QuickSpec {
                         options.fallbackHostsUseDefault = true
 
                         let client = ARTRest(options: options)
-                        expect(client.options.fallbackHostsUseDefault).to(beTrue())
+                        expect(client.internal.options.fallbackHostsUseDefault).to(beTrue())
                         // Not production
-                        expect(client.options.environment).toNot(beNil())
-                        expect(client.options.environment).toNot(equal("production"))
+                        expect(client.internal.options.environment).toNot(beNil())
+                        expect(client.internal.options.environment).toNot(equal("production"))
 
-                        let fallback = ARTFallback(options: client.options)
+                        let fallback = ARTFallback(options: client.internal.options)
                         expect(fallback.hosts).to(haveCount(ARTDefault.fallbackHosts().count))
 
                         ARTDefault.fallbackHosts().forEach() {
@@ -646,12 +646,12 @@ class RestClient: QuickSpec {
                         options.fallbackHostsUseDefault = true
 
                         let client = ARTRest(options: options)
-                        expect(client.options.fallbackHostsUseDefault).to(beTrue())
+                        expect(client.internal.options.fallbackHostsUseDefault).to(beTrue())
                         // Custom
-                        expect(client.options.restHost).toNot(equal(ARTDefault.restHost()))
-                        expect(client.options.realtimeHost).toNot(equal(ARTDefault.realtimeHost()))
+                        expect(client.internal.options.restHost).toNot(equal(ARTDefault.restHost()))
+                        expect(client.internal.options.realtimeHost).toNot(equal(ARTDefault.realtimeHost()))
 
-                        let fallback = ARTFallback(options: client.options)
+                        let fallback = ARTFallback(options: client.internal.options)
                         expect(fallback.hosts).to(haveCount(ARTDefault.fallbackHosts().count))
 
                         ARTDefault.fallbackHosts().forEach() {
@@ -688,7 +688,7 @@ class RestClient: QuickSpec {
                     options.environment = "test"
                     let client = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    client.httpExecutor = testHTTPExecutor
+                    client.internal.httpExecutor = testHTTPExecutor
                     testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                     let channel = client.channels.get("test")
 
@@ -707,7 +707,7 @@ class RestClient: QuickSpec {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     let client = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    client.httpExecutor = testHTTPExecutor
+                    client.internal.httpExecutor = testHTTPExecutor
                     testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                     let channel = client.channels.get("test")
 
@@ -741,7 +741,7 @@ class RestClient: QuickSpec {
                     options.fallbackHosts = ["f.ably-realtime.com", "g.ably-realtime.com", "h.ably-realtime.com", "i.ably-realtime.com", "j.ably-realtime.com"]
                     let client = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    client.httpExecutor = testHTTPExecutor
+                    client.internal.httpExecutor = testHTTPExecutor
                     testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                     let channel = client.channels.get("test")
                     
@@ -776,7 +776,7 @@ class RestClient: QuickSpec {
                     options.fallbackHostsUseDefault = true
                     let client = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    client.httpExecutor = testHTTPExecutor
+                    client.internal.httpExecutor = testHTTPExecutor
                     testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                     let channel = client.channels.get("test")
 
@@ -811,7 +811,7 @@ class RestClient: QuickSpec {
                     options.fallbackHostsUseDefault = false
                     let client = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    client.httpExecutor = testHTTPExecutor
+                    client.internal.httpExecutor = testHTTPExecutor
                     testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                     let channel = client.channels.get("test")
 
@@ -831,7 +831,7 @@ class RestClient: QuickSpec {
                     options.fallbackHosts = [] //to test TO3k6
                     let client = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    client.httpExecutor = testHTTPExecutor
+                    client.internal.httpExecutor = testHTTPExecutor
                     testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                     let channel = client.channels.get("test")
                     
@@ -852,7 +852,7 @@ class RestClient: QuickSpec {
                     options.fallbackHosts = nil
                     let client = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    client.httpExecutor = testHTTPExecutor
+                    client.internal.httpExecutor = testHTTPExecutor
                     testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                     let channel = client.channels.get("test")
                     
@@ -885,7 +885,7 @@ class RestClient: QuickSpec {
                     options.httpMaxRetryCount = 1
                     let client = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    client.httpExecutor = testHTTPExecutor
+                    client.internal.httpExecutor = testHTTPExecutor
                     testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                     let channel = client.channels.get("test")
 
@@ -920,7 +920,7 @@ class RestClient: QuickSpec {
                     options.restHost = "fake.ably.io"
                     let client = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    client.httpExecutor = testHTTPExecutor
+                    client.internal.httpExecutor = testHTTPExecutor
                     testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                     let channel = client.channels.get("test")
 
@@ -943,9 +943,9 @@ class RestClient: QuickSpec {
                         return
                     }
 
-                    expect(client.options.restHost).to(equal("fake.ably.io"))
-                    expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.absoluteString, pattern: "//\(client.options.restHost)")).to(beTrue())
-                    expect(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.absoluteString, pattern: "//\(client.options.restHost)")).to(beTrue())
+                    expect(client.internal.options.restHost).to(equal("fake.ably.io"))
+                    expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.absoluteString, pattern: "//\(client.internal.options.restHost)")).to(beTrue())
+                    expect(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.absoluteString, pattern: "//\(client.internal.options.restHost)")).to(beTrue())
                 }
 
                 // RSC15a
@@ -983,7 +983,7 @@ class RestClient: QuickSpec {
                         let client = ARTRest(options: options)
                         options.httpMaxRetryCount = 3
                         testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                        client.httpExecutor = testHTTPExecutor
+                        client.internal.httpExecutor = testHTTPExecutor
                         testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                         testHTTPExecutor.afterRequest = { _, _ in
                             if testHTTPExecutor.requests.count > Int(1 + options.httpMaxRetryCount) {
@@ -1021,7 +1021,7 @@ class RestClient: QuickSpec {
                         options.fallbackHosts = customFallbackHosts
                         let client = ARTRest(options: options)
                         testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                        client.httpExecutor = testHTTPExecutor
+                        client.internal.httpExecutor = testHTTPExecutor
                         testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                         let channel = client.channels.get("test")
                         
@@ -1047,7 +1047,7 @@ class RestClient: QuickSpec {
                         options.httpMaxRetryCount = 10
                         let client = ARTRest(options: options)
                         testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                        client.httpExecutor = testHTTPExecutor
+                        client.internal.httpExecutor = testHTTPExecutor
                         testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                         let channel = client.channels.get("test")
 
@@ -1077,7 +1077,7 @@ class RestClient: QuickSpec {
                         
                         let client = ARTRest(options: options)
                         testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                        client.httpExecutor = testHTTPExecutor
+                        client.internal.httpExecutor = testHTTPExecutor
                         testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                         testHTTPExecutor.afterRequest = { _, _ in
                             if testHTTPExecutor.requests.count > Int(1 + options.httpMaxRetryCount) {
@@ -1112,7 +1112,7 @@ class RestClient: QuickSpec {
                         
                         let client = ARTRest(options: options)
                         testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                        client.httpExecutor = testHTTPExecutor
+                        client.internal.httpExecutor = testHTTPExecutor
                         testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                         let channel = client.channels.get("test")
                         
@@ -1140,7 +1140,7 @@ class RestClient: QuickSpec {
                         
                         let client = ARTRest(options: options)
                         testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                        client.httpExecutor = testHTTPExecutor
+                        client.internal.httpExecutor = testHTTPExecutor
                         testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
                         testHTTPExecutor.afterRequest = { _, _ in
                             if testHTTPExecutor.requests.count > Int(1 + options.httpMaxRetryCount) {
@@ -1171,7 +1171,7 @@ class RestClient: QuickSpec {
                             let options = ARTClientOptions(key: "xxxx:xxxx")
                             let client = ARTRest(options: options)
                             testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                            client.httpExecutor = testHTTPExecutor
+                            client.internal.httpExecutor = testHTTPExecutor
                             testHTTPExecutor.http = MockHTTP(network: caseTest, logger: options.logHandler)
                             let channel = client.channels.get("test")
 
@@ -1204,7 +1204,7 @@ class RestClient: QuickSpec {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     let client = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    client.httpExecutor = testHTTPExecutor
+                    client.internal.httpExecutor = testHTTPExecutor
                     testHTTPExecutor.http = MockHTTP(network: .host400BadRequest, logger: options.logHandler)
                     let channel = client.channels.get("test")
 
@@ -1233,7 +1233,7 @@ class RestClient: QuickSpec {
 
                 let rest = ARTRest(options: options)
                 testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                rest.httpExecutor = testHTTPExecutor
+                rest.internal.httpExecutor = testHTTPExecutor
                 waitUntil(timeout: testTimeout) { done in
                     rest.channels.get("test").publish(nil, data: "message") { error in
                         done()
@@ -1254,7 +1254,7 @@ class RestClient: QuickSpec {
                     }
                 }
 
-                let transport = realtime.transport as! TestProxyTransport
+                let transport = realtime.internal.transport as! TestProxyTransport
                 let object = AblyTests.msgpackToJSON(transport.rawDataSent.last!)
                 expect(object["messages"][0]["data"].string).to(equal("message"))
             }
@@ -1266,7 +1266,7 @@ class RestClient: QuickSpec {
 
                 let rest = ARTRest(options: options)
                 testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                rest.httpExecutor = testHTTPExecutor
+                rest.internal.httpExecutor = testHTTPExecutor
                 waitUntil(timeout: testTimeout) { done in
                     rest.channels.get("test").publish(nil, data: "message") { error in
                         done()
@@ -1287,7 +1287,7 @@ class RestClient: QuickSpec {
                     }
                 }
 
-                let transport = realtime.transport as! TestProxyTransport
+                let transport = realtime.internal.transport as! TestProxyTransport
                 let object = try! JSONSerialization.jsonObject(with: transport.rawDataSent.first!, options: JSONSerialization.ReadingOptions(rawValue: 0))
                 expect(JSONSerialization.isValidJSONObject(object)).to(beTrue())
             }
@@ -1297,7 +1297,7 @@ class RestClient: QuickSpec {
                 let options = AblyTests.commonAppSetup()
                 let client = ARTRest(options: options)
                 testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                client.httpExecutor = testHTTPExecutor
+                client.internal.httpExecutor = testHTTPExecutor
                 waitUntil(timeout: testTimeout) { done in
                     client.channels.get("test").publish(nil, data: "message") { error in
                         expect(error).to(beNil())
@@ -1316,7 +1316,7 @@ class RestClient: QuickSpec {
                 let options = AblyTests.commonAppSetup()
                 let client = ARTRest(options: options)
                 testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                client.httpExecutor = testHTTPExecutor
+                client.internal.httpExecutor = testHTTPExecutor
                 let channel = client.channels.get("test")
                 waitUntil(timeout: testTimeout) { done in
                     channel.publish(nil, data: "message") { error in
@@ -1372,7 +1372,7 @@ class RestClient: QuickSpec {
                 let request = NSURLRequest(url: URL(string: "https://www.example.com")! as URL)
                 waitUntil(timeout: testTimeout) { done in
                     let rest = ARTRest(key: "xxxx:xxxx")
-                    rest.execute(request as URLRequest, completion: { response, data, error in
+                    rest.internal.execute(request as URLRequest, completion: { response, data, error in
                         guard let contentType = response?.allHeaderFields["Content-Type"] as? String else {
                             fail("Response should have a Content-Type"); done(); return
                         }
@@ -1395,7 +1395,7 @@ class RestClient: QuickSpec {
                     it("should add query parameters") {
                         let rest = ARTRest(key: "xxxx:xxxx")
                         let mockHttpExecutor = MockHTTPExecutor()
-                        rest.httpExecutor = mockHttpExecutor
+                        rest.internal.httpExecutor = mockHttpExecutor
                         let params = ["foo": "1"]
 
                         waitUntil(timeout: testTimeout) { done in
@@ -1431,7 +1431,7 @@ class RestClient: QuickSpec {
                     it("should add a HTTP body") {
                         let rest = ARTRest(key: "xxxx:xxxx")
                         let mockHttpExecutor = MockHTTPExecutor()
-                        rest.httpExecutor = mockHttpExecutor
+                        rest.internal.httpExecutor = mockHttpExecutor
                         let bodyDict = ["blockchain": true]
 
                         waitUntil(timeout: testTimeout) { done in
@@ -1458,7 +1458,7 @@ class RestClient: QuickSpec {
 
                         let decodedBody: Any
                         do {
-                            decodedBody = try rest.defaultEncoder.decode(rawBody)
+                            decodedBody = try rest.internal.defaultEncoder.decode(rawBody)
                         }
                         catch {
                             fail("decode failure: \(error)"); return
@@ -1473,7 +1473,7 @@ class RestClient: QuickSpec {
                     it("should add a HTTP header") {
                         let rest = ARTRest(key: "xxxx:xxxx")
                         let mockHttpExecutor = MockHTTPExecutor()
-                        rest.httpExecutor = mockHttpExecutor
+                        rest.internal.httpExecutor = mockHttpExecutor
                         let headers = ["X-foo": "ok"]
 
                         waitUntil(timeout: testTimeout) { done in
@@ -1502,7 +1502,7 @@ class RestClient: QuickSpec {
                     it("should error if method is invalid") {
                         let rest = ARTRest(key: "xxxx:xxxx")
                         let mockHTTPExecutor = MockHTTPExecutor()
-                        rest.httpExecutor = mockHTTPExecutor
+                        rest.internal.httpExecutor = mockHTTPExecutor
 
                         do {
                             try rest.request("A", path: "feature", params: nil, body: nil, headers: nil) { paginatedResult, error in
@@ -1528,7 +1528,7 @@ class RestClient: QuickSpec {
                     it("should error if path is invalid") {
                         let rest = ARTRest(key: "xxxx:xxxx")
                         let mockHTTPExecutor = MockHTTPExecutor()
-                        rest.httpExecutor = mockHTTPExecutor
+                        rest.internal.httpExecutor = mockHTTPExecutor
 
                         do {
                             try rest.request("get", path: "new feature", params: nil, body: nil, headers: nil) { paginatedResult, error in
@@ -1554,7 +1554,7 @@ class RestClient: QuickSpec {
                     it("should error if body is not a Dictionary or an Array") {
                         let rest = ARTRest(key: "xxxx:xxxx")
                         let mockHttpExecutor = MockHTTPExecutor()
-                        rest.httpExecutor = mockHttpExecutor
+                        rest.internal.httpExecutor = mockHttpExecutor
 
                         do {
                             try rest.request("get", path: "feature", params: nil, body: mockHttpExecutor, headers: nil) { paginatedResult, error in
@@ -1579,7 +1579,7 @@ class RestClient: QuickSpec {
                         }
 
                         let proxyHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                        rest.httpExecutor = proxyHTTPExecutor
+                        rest.internal.httpExecutor = proxyHTTPExecutor
 
                         var httpPaginatedResponse: ARTHTTPPaginatedResponse!
                         waitUntil(timeout: testTimeout) { done in
@@ -1632,7 +1632,7 @@ class RestClient: QuickSpec {
                         }
 
                         let proxyHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                        rest.httpExecutor = proxyHTTPExecutor
+                        rest.internal.httpExecutor = proxyHTTPExecutor
 
                         waitUntil(timeout: testTimeout) { done in
                             do {
