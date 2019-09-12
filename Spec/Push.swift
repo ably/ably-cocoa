@@ -142,6 +142,14 @@ class Push : QuickSpec {
                 }
             }
 
+
+            // https://github.com/ably/ably-cocoa/issues/888
+            it("should not sync the local device dispatched in internal queue") {
+                let deviceTokenBase64 = "HYRXxPSQdt1pnxqtDAvc6PTTLH7N6okiBhYyLClJdmQ="
+                let deviceTokenData = Data(base64Encoded: deviceTokenBase64, options: [])!
+                expect { ARTPush.didRegisterForRemoteNotifications(withDeviceToken: deviceTokenData, rest: rest) }.toNot(raiseException())
+            }
+
         }
 
     }
