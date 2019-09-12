@@ -65,11 +65,18 @@ static dispatch_once_t *activationMachine_once_token;
 }
 
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceTokenData rest:(ARTRest *)rest {
-    // HEX string, i.e.: <12ce7dda 8032c423 8f8bd40f 3484e5bb f4698da5 8b7fdf8d 5c55e0a2 XXXXXXXX>
-    // Normalizing token by removing symbols and spaces, i.e.: 12ce7dda8032c4238f8bd40f3484e5bbf4698da58b7fdf8d5c55e0a2XXXXXXXX
-    NSString *deviceToken = [[[deviceTokenData description] stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"<>"]] stringByReplacingOccurrencesOfString:@" " withString:@""];
+    NSLog(@"ARTPush: device token data received: %@", [deviceTokenData base64EncodedStringWithOptions:0]);
 
-    NSLog(@"ARTPush: device token received %@", deviceToken);
+    NSUInteger dataLength = deviceTokenData.length;
+    const unsigned char *dataBuffer = deviceTokenData.bytes;
+    NSMutableString *hexString = [NSMutableString stringWithCapacity:(dataLength * 2)];
+    for (int i = 0; i < dataLength; ++i) {
+        [hexString appendFormat:@"%02x", dataBuffer[i]];
+    }
+
+    NSString *deviceToken = [hexString copy];
+
+    NSLog(@"ARTPush: device token: %@", deviceToken);
     NSString *currentDeviceToken = [rest.storage objectForKey:ARTDeviceTokenKey];
     if ([currentDeviceToken isEqualToString:deviceToken]) {
         // Already stored.

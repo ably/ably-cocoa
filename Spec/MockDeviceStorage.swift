@@ -11,7 +11,7 @@ import Ably
 class MockDeviceStorage: NSObject, ARTDeviceStorage {
 
     var keysRead: [String] = []
-    var keysWritten: [String] = []
+    var keysWritten: [String: Any?] = [:]
 
     private var simulateData: [String: Data] = [:]
     private var simulateString: [String: String] = [:]
@@ -37,7 +37,7 @@ class MockDeviceStorage: NSObject, ARTDeviceStorage {
     }
 
     func setObject(_ value: Any?, forKey key: String) {
-        keysWritten.append(key)
+        keysWritten.updateValue(value, forKey: key)
     }
 
     func secret(forDevice deviceId: ARTDeviceId) -> String? {
@@ -50,7 +50,7 @@ class MockDeviceStorage: NSObject, ARTDeviceStorage {
     }
 
     func setSecret(_ value: String?, forDevice deviceId: ARTDeviceId) {
-        keysWritten.append(ARTDeviceSecretKey)
+        keysWritten.updateValue(value, forKey: ARTDeviceSecretKey)
     }
 
     func simulateOnNextRead(data value: Data, `for` key: String) {
