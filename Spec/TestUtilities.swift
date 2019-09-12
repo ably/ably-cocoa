@@ -1081,6 +1081,27 @@ func += <K,V> (left: inout Dictionary<K,V>, right: Dictionary<K,V>?) {
     }
 }
 
+extension Collection {
+
+    /// Returns the element at the specified index iff it is within bounds, otherwise nil.
+    public func at(_ i: Index) -> Iterator.Element? {
+        return (i >= startIndex && i < endIndex) ? self[i] : nil
+    }
+
+}
+
+extension Dictionary {
+
+    /// Returns the element at the specified index iff it is within bounds, otherwise nil.
+    public func at(_ key: Key) -> Iterator.Element? {
+        guard let index = index(forKey: key) else {
+            return nil
+        }
+        return at(index)
+    }
+
+}
+
 extension ARTMessage {
 
     open override func isEqual(_ object: Any?) -> Bool {
