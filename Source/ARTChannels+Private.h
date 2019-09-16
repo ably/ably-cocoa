@@ -21,12 +21,6 @@ extern NSString* (^_Nullable ARTChannels_getChannelNamePrefix)(void);
 
 @end
 
-@interface ARTChannelsNosyncIterable : NSObject<NSFastEnumeration>
-
-- (instancetype)init:(NSDictionary<NSString *, id> *)channels;
-
-@end
-
 @interface ARTChannels<ChannelType> ()
 
 @property (nonatomic, readonly) NSMutableDictionary<NSString *, ChannelType> *channels;

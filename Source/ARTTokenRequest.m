@@ -64,7 +64,9 @@
 @implementation ARTTokenRequest (ARTTokenDetailsCompatible)
 
 - (void)toTokenDetails:(ARTAuth *)auth callback:(void (^)(ARTTokenDetails * _Nullable, NSError * _Nullable))callback {
-    [auth executeTokenRequest:self callback:callback];
+    [auth internalAsync:^(ARTAuthInternal *auth) {
+        [auth executeTokenRequest:self callback:callback];
+    }];
 }
 
 @end

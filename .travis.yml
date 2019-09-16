@@ -24,6 +24,7 @@ script:
   - sudo mkdir '/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 9.3.simruntime/Contents/Resources/RuntimeRoot/usr/lib/swift'
   - export ABLY_ENV="sandbox"
   - fastlane $LANE
+  - bash ./Scripts/run_examples_tests.sh
 after_success:
   - sleep 5
 cache:

@@ -10,12 +10,17 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class ARTRestInternal;
+
 extern NSString *const ARTPushActivationCurrentStateKey;
 extern NSString *const ARTPushActivationPendingEventsKey;
 
 @interface ARTPushActivationStateMachine ()
 
-@property (weak, nonatomic) id delegate;
+@property (nonatomic, strong) ARTRestInternal *rest;
+- (instancetype)init:(ARTRestInternal *)rest;
+
+@property (weak, nonatomic) id delegate; // weak because delegates outlive their counterpart
 @property (nonatomic, copy, nullable) void (^transitions)(ARTPushActivationEvent *event, ARTPushActivationState *from, ARTPushActivationState *to);
 @property (readonly, nonatomic) ARTPushActivationEvent *lastEvent;
 @property (readonly, nonatomic) ARTPushActivationEvent *lastEvent_nosync;

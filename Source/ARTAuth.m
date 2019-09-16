@@ -26,9 +26,64 @@
 #import "ARTEventEmitter+Private.h"
 
 @implementation ARTAuth {
-    __weak ARTRest *_rest;
+    ARTQueuedDealloc *_dealloc;
+}
+
+- (instancetype)initWithInternal:(ARTAuthInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc {
+    self = [super init];
+    if (self) {
+        _internal = internal;
+        _dealloc = dealloc;
+    }
+    return self;
+}
+
+- (void)internalAsync:(void (^)(ARTAuthInternal * _Nonnull))use {
+    dispatch_async(_internal.queue, ^{
+        use(self->_internal);
+    });
+}
+
+- (NSString *)clientId {
+    return _internal.clientId;
+}
+
+- (ARTTokenDetails *)tokenDetails {
+    return _internal.tokenDetails;
+}
+
+- (void)requestToken:(nullable ARTTokenParams *)tokenParams withOptions:(nullable ARTAuthOptions *)authOptions
+            callback:(void (^)(ARTTokenDetails *_Nullable, NSError *_Nullable))callback {
+    [_internal requestToken:tokenParams withOptions:authOptions callback:callback];
+}
+
+- (void)requestToken:(void (^)(ARTTokenDetails *_Nullable, NSError *_Nullable))callback {
+    [_internal requestToken:callback];
+}
+
+- (void)authorize:(nullable ARTTokenParams *)tokenParams options:(nullable ARTAuthOptions *)authOptions
+         callback:(void (^)(ARTTokenDetails *_Nullable, NSError *_Nullable))callback {
+    [_internal authorize:tokenParams options:authOptions callback:callback];
+}
+
+- (void)authorize:(void (^)(ARTTokenDetails *_Nullable, NSError *_Nullable))callback {
+    [_internal authorize:callback];
+}
+
+- (void)createTokenRequest:(nullable ARTTokenParams *)tokenParams options:(nullable ARTAuthOptions *)options
+                  callback:(void (^)(ARTTokenRequest *_Nullable tokenRequest, NSError *_Nullable error))callback {
+    [_internal createTokenRequest:tokenParams options:options callback:callback];
+}
+
+- (void)createTokenRequest:(void (^)(ARTTokenRequest *_Nullable tokenRequest, NSError *_Nullable error))callback {
+    [_internal createTokenRequest:callback];
+}
+
+@end
+
+@implementation ARTAuthInternal {
+    __weak ARTRestInternal *_rest; // weak because rest owns auth
     dispatch_queue_t _userQueue;
-    dispatch_queue_t _queue;
     ARTTokenParams *_tokenParams;
     // Dedicated to Protocol Message
     NSString *_protocolClientId;
@@ -36,7 +91,7 @@
     ARTEventEmitter<ARTEvent *, ARTErrorInfo *> *_cancelationEventEmitter;
 }
 
-- (instancetype)init:(ARTRest *)rest withOptions:(ARTClientOptions *)options {
+- (instancetype)init:(ARTRestInternal *)rest withOptions:(ARTClientOptions *)options {
 ART_TRY_OR_REPORT_CRASH_START(rest) {
     if (self = [super init]) {
         _rest = rest;
@@ -342,7 +397,7 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
                         if (error) {
                             callback(nil, error);
                         } else {
-                            [tokenDetailsCompat toTokenDetails:self callback:callback];
+                            [tokenDetailsCompat toTokenDetails:[self toAuth] callback:callback];
                         }
                     } ART_TRY_OR_REPORT_CRASH_END
                     });
@@ -372,6 +427,16 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     return task;
 }
 
+- (ARTAuth *)toAuth {
+    // This feels hackish, but the alternative would be to change
+    // ARTTokenDetailsCompatible to take a ARTAuthProtocol so we can just
+    // pass self, but that would
+    // break backwards-compatibility for users that have their own
+    // ARTTokenDetailsCompatible implementations.
+    ARTQueuedDealloc *dealloc = [[ARTQueuedDealloc alloc] init:self->_rest queue: self->_queue];
+    return [[ARTAuth alloc] initWithInternal:self queuedDealloc:dealloc];
+}
+
 - (void)handleAuthUrlResponse:(NSHTTPURLResponse *)response withData:(NSData *)data completion:(void (^)(ARTTokenDetails *, NSError *))callback {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     // The token retrieved is assumed by the library to be a token string if the response has Content-Type "text/plain", or taken to be a TokenRequest or TokenDetails object if the response has Content-Type "application/json"
@@ -385,7 +450,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
             if (decodeError) {
                 callback(nil, decodeError);
             } else if (tokenRequest) {
-                [tokenRequest toTokenDetails:self callback:callback];
+                [tokenRequest toTokenDetails:[self toAuth] callback:callback];
             } else {
                 callback(nil, [ARTErrorInfo createWithCode:ARTStateAuthUrlIncompatibleContent message:@"content response cannot be used for token request"]);
             }
@@ -491,33 +556,33 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 
     NSString *authorizeId = [[NSUUID new] UUIDString];
     // Request always a new token
-    [self.logger verbose:@"RS:%p ARTAuth [authorize.%@, delegate=%@]: requesting new token", _rest, authorizeId, lastDelegate ? @"YES" : @"NO"];
+    [self.logger verbose:@"RS:%p ARTAuthInternal [authorize.%@, delegate=%@]: requesting new token", _rest, authorizeId, lastDelegate ? @"YES" : @"NO"];
     NSObject<ARTCancellable> *task;
     self->_authorizationsCount += 1;
     task = [self _requestToken:currentTokenParams withOptions:replacedOptions callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
         self->_authorizationsCount -= 1;
 
         void (^successBlock)(void) = ^{
-            [self.logger verbose:@"RS:%p ARTAuth [authorize.%@]: success callback: %@", self->_rest, authorizeId, tokenDetails];
+            [self.logger verbose:@"RS:%p ARTAuthInternal [authorize.%@]: success callback: %@", self->_rest, authorizeId, tokenDetails];
             if (callback) {
                 callback(tokenDetails, nil);
             }
         };
 
         void (^failureBlock)(NSError *) = ^(NSError *error) {
-            [self.logger verbose:@"RS:%p ARTAuth [authorize.%@]: failure callback: %@ with token details %@", self->_rest, authorizeId, error, tokenDetails];
+            [self.logger verbose:@"RS:%p ARTAuthInternal [authorize.%@]: failure callback: %@ with token details %@", self->_rest, authorizeId, error, tokenDetails];
             if (callback) {
                 callback(tokenDetails, error);
             }
         };
 
         if (error) {
-            [self.logger debug:@"RS:%p ARTAuth [authorize.%@]: token request failed: %@", self->_rest, authorizeId, error];
+            [self.logger debug:@"RS:%p ARTAuthInternal [authorize.%@]: token request failed: %@", self->_rest, authorizeId, error];
             failureBlock(error);
             return;
         }
 
-        [self.logger debug:@"RS:%p ARTAuth [authorize.%@]: token request succeeded: %@", self->_rest, authorizeId, tokenDetails];
+        [self.logger debug:@"RS:%p ARTAuthInternal [authorize.%@]: token request succeeded: %@", self->_rest, authorizeId, tokenDetails];
 
         [self setTokenDetails:tokenDetails];
         self->_method = ARTAuthMethodToken;

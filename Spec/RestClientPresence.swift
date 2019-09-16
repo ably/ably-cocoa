@@ -106,7 +106,7 @@ class RestClientPresence: QuickSpec {
                     realtimeChannel.presence.enterClient("john", data: "web")
                     realtimeChannel.presence.enterClient("casey", data: "mobile")
 
-                    expect(realtimeChannel.presenceMap.members).toEventually(haveCount(3), timeout: testTimeout)
+                    expect(realtimeChannel.internal.presenceMap.members).toEventually(haveCount(3), timeout: testTimeout)
 
                     let query = ARTPresenceQuery()
                     query.clientId = "john"
@@ -529,7 +529,7 @@ class RestClientPresence: QuickSpec {
                 }
 
                 var decodeNumberOfCalls = 0
-                let hook = channel.dataEncoder.testSuite_injectIntoMethod(after: #selector(ARTDataEncoder.decode(_:encoding:))) {
+                let hook = channel.internal.dataEncoder.testSuite_injectIntoMethod(after: #selector(ARTDataEncoder.decode(_:encoding:))) {
                     decodeNumberOfCalls += 1
                 }
                 defer { hook.remove() }

@@ -11,14 +11,12 @@
 
 @class ARTDeviceDetails;
 @class ARTPaginatedResult;
-@class ARTRest;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTPushDeviceRegistrations : NSObject
+@protocol ARTPushDeviceRegistrationsProtocol
 
 - (instancetype)init NS_UNAVAILABLE;
-- (instancetype)initWithRest:(ARTRest *)rest;
 
 - (void)save:(ARTDeviceDetails *)deviceDetails callback:(void (^)(ARTErrorInfo *_Nullable))callback;
 
@@ -28,6 +26,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)remove:(NSString *)deviceId callback:(void (^)(ARTErrorInfo *_Nullable))callback;
 - (void)removeWhere:(NSDictionary<NSString *, NSString *> *)params callback:(void (^)(ARTErrorInfo *_Nullable))callback;
+
+@end
+
+@interface ARTPushDeviceRegistrations : NSObject <ARTPushDeviceRegistrationsProtocol>
 
 @end
 

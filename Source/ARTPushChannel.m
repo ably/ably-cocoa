@@ -6,7 +6,7 @@
 //  Copyright © 2017 Ably. All rights reserved.
 //
 
-#import "ARTPushChannel.h"
+#import "ARTPushChannel+Private.h"
 #import "ARTHttp.h"
 #import "ARTLog.h"
 #import "ARTJsonLikeEncoder.h"
@@ -18,15 +18,66 @@
 #import "ARTLocalDevice+Private.h"
 #import "ARTNSMutableRequest+ARTPush.h"
 
-const NSUInteger ARTDefaultLimit = 100;
-
 @implementation ARTPushChannel {
-    __weak ARTRest *_rest;
-    __weak ARTLog *_logger;
-    __weak ARTChannel *_channel;
+    ARTQueuedDealloc *_dealloc;
 }
 
-- (instancetype)init:(ARTRest *)rest withChannel:(ARTChannel *)channel {
+- (instancetype)initWithInternal:(ARTPushChannelInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc {
+    self = [super init];
+    if (self) {
+        _internal = internal;
+        _dealloc = dealloc;
+    }
+    return self;
+}
+
+- (void)subscribeDevice {
+    [_internal subscribeDevice];
+}
+
+- (void)subscribeDevice:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback {
+    [_internal subscribeDevice:callback];
+}
+
+- (void)subscribeClient {
+    [_internal subscribeClient];
+}
+
+- (void)subscribeClient:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback {
+    [_internal subscribeClient:callback];
+}
+
+- (void)unsubscribeDevice {
+    [_internal unsubscribeDevice];
+}
+
+- (void)unsubscribeDevice:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback {
+    [_internal unsubscribeDevice:callback];
+}
+
+- (void)unsubscribeClient {
+    [_internal unsubscribeClient];
+}
+
+- (void)unsubscribeClient:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback {
+    [_internal unsubscribeClient:callback];
+}
+
+- (BOOL)listSubscriptions:(NSDictionary<NSString *, NSString *> *)params callback:(void(^)(ARTPaginatedResult<ARTPushChannelSubscription *> *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr {
+    return [_internal listSubscriptions:params callback:callback error:errorPtr];
+}
+
+@end
+
+const NSUInteger ARTDefaultLimit = 100;
+
+@implementation ARTPushChannelInternal {
+    __weak ARTRestInternal *_rest; // weak because rest may own self and always outlives it
+    ARTLog *_logger;
+    __weak ARTChannel *_channel; // weak because channel owns self
+}
+
+- (instancetype)init:(ARTRestInternal *)rest withChannel:(ARTChannel *)channel {
     if (self == [super self]) {
         _rest = rest;
         _logger = [rest logger];

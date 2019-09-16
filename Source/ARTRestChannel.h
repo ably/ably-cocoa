@@ -17,12 +17,16 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTRestChannel : ARTChannel
+@protocol ARTRestChannelProtocol <ARTChannelProtocol>
+
+- (BOOL)history:(nullable ARTDataQuery *)query callback:(void(^)(ARTPaginatedResult<ARTMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback error:(NSError *_Nullable *_Nullable)errorPtr;
+
+@end
+
+@interface ARTRestChannel : NSObject <ARTRestChannelProtocol>
 
 @property (readonly) ARTRestPresence *presence;
 @property (readonly) ARTPushChannel *push;
-
-- (BOOL)history:(nullable ARTDataQuery *)query callback:(void(^)(ARTPaginatedResult<ARTMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
 @end
 
