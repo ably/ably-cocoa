@@ -52,7 +52,7 @@ class RestClientChannel: QuickSpec {
             // RSL1b, RSL1e
             context("with name only") {
                 it("publishes the message and invokes callback with success") {
-                    var publishError: ARTErrorInfo? = ARTErrorInfo.create(from: NSError(domain: "", code: -1, userInfo: nil))
+                    var publishError: ARTErrorInfo? = ARTErrorInfo.create(from: NSError(domain: "io.ably.XCTest", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
 
                     channel.publish(name, data: nil) { error in

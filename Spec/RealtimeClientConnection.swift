@@ -1000,10 +1000,9 @@ class RealtimeClientConnection: QuickSpec {
                                 }
                             }
                             channel.presence.enterClient("invalid", data: nil) { error in
-                                expect(error).toNot(beNil())
+                                expect(error?.code).to(equal(40012)) //mismatched clientId
                                 partialDone()
                             }
-
                         }
 
                         expect(client.internal.msgSerial) == 5
@@ -1014,7 +1013,6 @@ class RealtimeClientConnection: QuickSpec {
                                 partialDone()
                             }
                             client.connection.once(.connected) { _ in
-                                channel.attach()
                                 partialDone()
                             }
                             client.simulateLostConnectionAndState()
@@ -1032,7 +1030,7 @@ class RealtimeClientConnection: QuickSpec {
                                 }
                             }
                             channel.presence.enterClient("invalid", data: nil) { error in
-                                expect(error).toNot(beNil())
+                                expect(error?.code).to(equal(40012)) //mismatched clientId
                                 partialDone()
                             }
                         }
@@ -1043,22 +1041,22 @@ class RealtimeClientConnection: QuickSpec {
                         let acks = reconnectedTransport.protocolMessagesReceived.filter({ $0.action == .ack })
                         let nacks = reconnectedTransport.protocolMessagesReceived.filter({ $0.action == .nack })
 
-                        if acks.count != 1 {
+                        // The server is free to roll up multiple acks into one or not
+                        if acks.count < 1 {
                             fail("Received invalid number of ACK responses: \(acks.count)")
                             return
                         }
-                        // Messages covered in a single ACK response
                         expect(acks[0].msgSerial) == 0
-                        expect(acks[0].count) == 1
+                        expect(acks.reduce(0, { $0 + $1.count })) == 3
 
                         if nacks.count != 1 {
                             fail("Received invalid number of NACK responses: \(nacks.count)")
                             return
                         }
-                        expect(nacks[0].msgSerial) == 1
+                        expect(nacks[0].msgSerial) == 3
                         expect(nacks[0].count) == 1
                         
-                        expect(client.internal.msgSerial) == 2
+                        expect(client.internal.msgSerial) == 4
                     }
                 }
 
@@ -1085,7 +1083,7 @@ class RealtimeClientConnection: QuickSpec {
                                     guard let error = error else {
                                         fail("Error is nil"); done(); return
                                     }
-                                    expect(error.message).to(contain("connection broken before receiving publishing acknowledgement"))
+                                    expect(error.message).to(contain("connection broken before receiving publishing acknowledgment"))
                                     done()
                                 })
                                 // Wait until the message is pushed to Ably first
@@ -1367,7 +1365,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN10b
-                it("should not update when a message is sent but increments by one when ACK is received") {
+                fit("should not update when a message is sent but increments by one when ACK is received") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer {
                         client.dispose()
@@ -2350,6 +2348,7 @@ class RealtimeClientConnection: QuickSpec {
                         let expectedConnectionId = client.connection.id
                         client.internal.onDisconnected()
 
+                        channel.attach()
                         channel.publish(nil, data: "queued message")
                         expect(client.internal.queuedMessages).toEventually(haveCount(1), timeout: testTimeout)
 
@@ -2378,6 +2377,7 @@ class RealtimeClientConnection: QuickSpec {
                         let expectedConnectionId = client.connection.id
                         client.internal.onDisconnected()
 
+                        channel.attach()
                         channel.publish(nil, data: "queued message")
                         expect(client.internal.queuedMessages).toEventually(haveCount(1), timeout: testTimeout)
 
@@ -2659,32 +2659,52 @@ class RealtimeClientConnection: QuickSpec {
 
                     var resumed = false
                     waitUntil(timeout: testTimeout) { done in
-                        let partialDone = AblyTests.splitDone(2, done: done)
                         client.connection.once(.connected) { _ in
-                            var sentQueuedMessage: ARTMessage?
-                            channel.publish(nil, data: "message") { _ in
-                                if resumed {
-                                    let transport = client.internal.transport as! TestProxyTransport
-                                    expect(transport.protocolMessagesReceived.filter{ $0.action == .ack }).to(haveCount(1))
-                                    let sentTransportMessage = transport.protocolMessagesSent.filter{ $0.action == .message }.first!.messages![0]
-                                    expect(sentQueuedMessage).to(beIdenticalTo(sentTransportMessage))
-                                    partialDone()
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+
+                        guard let transport1 = client.internal.transport as? TestProxyTransport else {
+                            fail("TestProxyTransport not setup"); done(); return
+                        }
+
+                        var sentPendingMessage: ARTMessage?
+                        channel.publish(nil, data: "message") { _ in
+                            if resumed {
+                                guard let transport2 = client.internal.transport as? TestProxyTransport else {
+                                    fail("TestProxyTransport not setup"); done(); return
                                 }
-                                else {
-                                    fail("Shouldn't be called")
+                                expect(transport2.protocolMessagesReceived.filter{ $0.action == .ack }).to(haveCount(1))
+
+                                guard let sentTransportMessage1 = transport1.protocolMessagesSent.filter({ $0.action == .message }).first?.messages?.first else {
+                                    fail("Message that has been re-sent isn't available"); done(); return
                                 }
-                            }
-                            delay(0) {
-                                client.internal.onDisconnected()
-                            }
-                            client.connection.once(.connected) { _ in
-                                resumed = true
-                            }
-                            channel.internal.testSuite_injectIntoMethod(before: #selector(channel.internal.sendQueuedMessages)) {
-                                channel.internal.testSuite_getArgument(from: #selector(channel.internal.send), at: 0) { arg0 in
-                                    sentQueuedMessage = (arg0 as? ARTProtocolMessage)?.messages?[0]
-                                    partialDone()
+                                guard let sentTransportMessage2 = transport2.protocolMessagesSent.filter({ $0.action == .message }).first?.messages?.first else {
+                                    fail("Message that has been re-sent isn't available"); done(); return
                                 }
+
+                                expect(transport1).toNot(beIdenticalTo(transport2))
+                                expect(sentPendingMessage).to(beIdenticalTo(sentTransportMessage2))
+
+                                partialDone()
+                            }
+                            else {
+                                fail("Shouldn't be called")
+                            }
+                        }
+                        AblyTests.extraQueue.async {
+                            client.internal.onDisconnected()
+                        }
+                        client.connection.once(.connected) { _ in
+                            resumed = true
+                        }
+                        client.internal.testSuite_injectIntoMethod(before: Selector(("resendPendingMessages"))) {
+                            client.internal.testSuite_getArgument(from: #selector(ARTRealtimeInternal.send(_:sentCallback:ackCallback:)), at: 0) { arg0 in
+                                sentPendingMessage = (arg0 as? ARTProtocolMessage)?.messages?[0]
+                                partialDone()
                             }
                         }
                     }

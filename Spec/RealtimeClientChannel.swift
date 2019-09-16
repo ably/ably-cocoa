@@ -1725,34 +1725,142 @@ class RealtimeClientChannel: QuickSpec {
                 context("Connection state conditions") {
 
                     // RTL6c1
-                    it("if the connection is CONNECTED and the channel is ATTACHED then the messages should be published immediately") {
-                        let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
-                        defer { client.dispose(); client.close() }
-                        let channel = client.channels.get("test")
-                        channel.attach()
+                    context("if the connection is CONNECTED and the channel is") {
+                        it("ATTACHED then the messages should be published immediately") {
+                            let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
+                            defer { client.dispose(); client.close() }
+                            let channel = client.channels.get("test")
+                            channel.attach()
 
-                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
-                        expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connected))
+                            expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
+                            expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connected))
 
-                        waitUntil(timeout: testTimeout) { done in
-                            channel.publish(nil, data: "message") { error in
-                                expect(error).to(beNil())
-                                done()
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.publish(nil, data: "message") { error in
+                                    expect(error).to(beNil())
+                                    done()
+                                }
+                                expect((client.internal.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
                             }
-                            expect((client.internal.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
+                        }
+
+                        it("INITIALIZED then the messages should be published immediately") {
+                            let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
+                            defer { client.dispose(); client.close() }
+                            let channel = client.channels.get("test")
+                            waitUntil(timeout: testTimeout) { done in
+                                client.connection.once(.connected) { _ in
+                                    done()
+                                }
+                            }
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
+                            expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connected))
+
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.publish(nil, data: "message") { error in
+                                    expect(error).to(beNil())
+                                    done()
+                                }
+                                expect((client.internal.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
+                            }
+
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
+                        }
+
+                        it("DETACHED then the messages should be published immediately") {
+                            let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
+                            defer { client.dispose(); client.close() }
+                            let channel = client.channels.get("test")
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.attach() { _ in
+                                    done()
+                                }
+                            }
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.detach() { _ in
+                                    done()
+                                }
+                            }
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.detached))
+                            expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connected))
+
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.publish(nil, data: "message") { error in
+                                    expect(error).to(beNil())
+                                    done()
+                                }
+                                expect((client.internal.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
+                            }
+
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.detached))
+                        }
+
+                        it("ATTACHING then the messages should be published immediately") {
+                            let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
+                            defer { client.dispose(); client.close() }
+                            let channel = client.channels.get("test")
+                            waitUntil(timeout: testTimeout) { done in
+                                client.connection.once(.connected) { _ in
+                                    done()
+                                }
+                            }
+                            channel.attach()
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
+                            guard let transport = client.internal.transport as? TestProxyTransport else {
+                                fail("Expecting TestProxyTransport"); return
+                            }
+                            transport.actionsIgnored += [.attached]
+
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.publish(nil, data: "message") { error in
+                                    expect(error).to(beNil())
+                                    done()
+                                }
+                                expect((client.internal.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
+                            }
+
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
+                        }
+
+                        it("DETACHING then the messages should be published immediately") {
+                            let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
+                            defer { client.dispose(); client.close() }
+                            let channel = client.channels.get("test")
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.attach() { _ in
+                                    done()
+                                }
+                            }
+                            expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connected))
+                            channel.detach()
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.detaching))
+                            guard let transport = client.internal.transport as? TestProxyTransport else {
+                                fail("Expecting TestProxyTransport"); return
+                            }
+                            transport.actionsIgnored += [.detached]
+
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.publish(nil, data: "message") { error in
+                                    expect(error).to(beNil())
+                                    done()
+                                }
+                                expect((client.internal.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
+                            }
+
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.detaching))
                         }
                     }
 
                     // RTL6c2
-                    context("the message should be queued and delivered as soon as the connection state returns to CONNECTED if the connection is") {
-                        let options = AblyTests.commonAppSetup()
-                        options.useTokenAuth = true
-                        options.autoConnect = false
+                    context("the message") {
                         var client: ARTRealtime!
                         var channel: ARTRealtimeChannel!
 
                         beforeEach {
-                            client = ARTRealtime(options: options)
+                            let options = AblyTests.commonAppSetup()
+                            options.useTokenAuth = true
+                            options.autoConnect = false
+                            client = AblyTests.newRealtime(options)
                             channel = client.channels.get("test")
                             expect(client.internal.options.queueMessages).to(beTrue())
                         }
@@ -1766,126 +1874,95 @@ class RealtimeClientChannel: QuickSpec {
                             }
                         }
 
-                        it("INITIALIZED") {
-                            waitUntil(timeout: testTimeout) { done in
-                                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.initialized))
-                                publish(done)
+                        context("should be queued and delivered as soon as the connection state returns to CONNECTED if the connection is") {
+                            it("INITIALIZED") {
+                                waitUntil(timeout: testTimeout) { done in
+                                    expect(client.connection.state).to(equal(ARTRealtimeConnectionState.initialized))
+                                    publish(done)
+                                    client.connect()
+                                    expect(channel.internal.queuedMessages).to(haveCount(1))
+                                }
+                            }
+
+                            it("CONNECTING") {
+                                waitUntil(timeout: testTimeout) { done in
+                                    client.connect()
+                                    expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connecting))
+                                    publish(done)
+                                    expect(channel.internal.queuedMessages).to(haveCount(1))
+                                }
+                            }
+
+                            it("DISCONNECTED") {
                                 client.connect()
-                                expect(channel.internal.queuedMessages).to(haveCount(1))
+                                expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+                                client.internal.onDisconnected()
+
+                                waitUntil(timeout: testTimeout) { done in
+                                    expect(client.connection.state).to(equal(ARTRealtimeConnectionState.disconnected))
+                                    publish(done)
+                                    expect(channel.internal.queuedMessages).to(haveCount(1))
+                                }
                             }
                         }
 
-                        it("CONNECTING") {
-                            waitUntil(timeout: testTimeout) { done in
+                        context("should NOT be queued instead it should be published if the channel is") {
+                            it("INITIALIZED") {
                                 client.connect()
-                                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connecting))
-                                publish(done)
-                                expect(channel.internal.queuedMessages).to(haveCount(1))
-                            }
-                        }
+                                expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
 
-                        it("DISCONNECTED") {
-                            client.connect()
-                            expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
-                            client.internal.onDisconnected()
-
-                            waitUntil(timeout: testTimeout) { done in
-                                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.disconnected))
-                                publish(done)
-                                expect(channel.internal.queuedMessages).to(haveCount(1))
-                            }
-                        }
-
-                        it("ATTACHING") {
-                            client.connect()
-                            expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
-
-                            waitUntil(timeout: testTimeout) { done in
-                                channel.attach()
-                                expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
-                                publish(done)
-                                expect(channel.internal.queuedMessages).to(haveCount(1))
-                            }
-                        }
-
-                        it("ATTACHED") {
-                            waitUntil(timeout: testTimeout) { done in
-                                channel.attach() { error in
-                                    expect(error).to(beNil())
-                                    done()
+                                waitUntil(timeout: testTimeout) { done in
+                                    expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
+                                    publish(done)
+                                    expect(channel.internal.queuedMessages).to(haveCount(0))
+                                    expect((client.internal.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
                                 }
+                            }
+
+                            it("ATTACHING") {
                                 client.connect()
-                            }
+                                expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
 
-                            waitUntil(timeout: testTimeout) { done in
-                                let tokenParams = ARTTokenParams()
-                                tokenParams.ttl = 5.0
-                                client.auth.authorize(tokenParams, options: nil) { tokenDetails, error in
-                                    expect(error).to(beNil())
-                                    expect(tokenDetails).toNot(beNil())
-                                    done()
+                                waitUntil(timeout: testTimeout) { done in
+                                    channel.attach()
+                                    expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
+                                    publish(done)
+                                    expect(channel.internal.queuedMessages).to(haveCount(0))
+                                    expect((client.internal.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
                                 }
                             }
 
-                            waitUntil(timeout: testTimeout) { done in
-                                client.connection.once(.disconnected) { _ in
-                                    done()
+                            it("ATTACHED") {
+                                waitUntil(timeout: testTimeout) { done in
+                                    channel.attach() { error in
+                                        expect(error).to(beNil())
+                                        done()
+                                    }
+                                    client.connect()
                                 }
-                            }
 
-                            expect(channel.state).to(equal(ARTRealtimeChannelState.attached))
-
-                            waitUntil(timeout: testTimeout) { done in
-                                publish(done)
-                                expect(channel.internal.queuedMessages).to(haveCount(1))
-                            }
-                        }
-                    }
-
-                    // RTL6c3
-                    it("implicitly attaches the channel; if the channel is in or moves to the FAILED state before the operation succeeds, it should result in an error") {
-                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
-                        defer { client.dispose(); client.close() }
-                        let channel = client.channels.get("test")
-                        waitUntil(timeout: testTimeout) { done in
-                            let protocolError = AblyTests.newErrorProtocolMessage()
-                            expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
-                            channel.publish(nil, data: "message") { error in
-                                expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
-                                expect(error).to(beIdenticalTo(protocolError.error))
-
-                                channel.publish(nil, data: "message") { error in
-                                    expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
-                                    expect(error).toNot(beNil())
-                                    done()
+                                waitUntil(timeout: testTimeout) { done in
+                                    let tokenParams = ARTTokenParams()
+                                    tokenParams.ttl = 5.0
+                                    client.auth.authorize(tokenParams, options: nil) { tokenDetails, error in
+                                        expect(error).to(beNil())
+                                        expect(tokenDetails).toNot(beNil())
+                                        done()
+                                    }
                                 }
-                            }
-                            expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
-                            channel.internal.onError(protocolError)
-                        }
-                    }
 
-                    // RTL6c3
-                    it("implicitly attaches the channel; if the channel is in or moves to the DETACHED state before the operation succeeds, it should result in an error") {
-                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
-                        defer { client.dispose(); client.close() }
-                        let channel = client.channels.get("test")
-
-                        waitUntil(timeout: testTimeout) { done in
-                            let partialDone = AblyTests.splitDone(2, done: done)
-                            expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
-                            channel.once(.attached) { stateChange in
-                                expect(stateChange?.reason).to(beNil())
-                                channel.detach()
-                                partialDone()
-                            }
-                            channel.publish(nil, data: "message") { error in
-                                guard let error = error else {
-                                    fail("Error is nil"); done(); return
+                                waitUntil(timeout: testTimeout) { done in
+                                    client.connection.once(.disconnected) { _ in
+                                        done()
+                                    }
                                 }
-                                expect(error.message).to(contain("invalid channel state"))
-                                expect(channel.state).to(satisfyAnyOf(equal(ARTRealtimeChannelState.detaching), equal(ARTRealtimeChannelState.detached)))
-                                partialDone()
+
+                                expect(channel.state).to(equal(ARTRealtimeChannelState.attached))
+
+                                waitUntil(timeout: testTimeout) { done in
+                                    publish(done)
+                                    expect(channel.internal.queuedMessages).to(haveCount(1))
+                                }
                             }
                         }
                     }
@@ -1957,28 +2034,6 @@ class RealtimeClientChannel: QuickSpec {
                             }
                         }
 
-                        it("channel is DETACHING") {
-                            client.connect()
-                            channel.attach()
-                            expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
-                            channel.detach()
-                            expect(channel.state).to(equal(ARTRealtimeChannelState.detaching))
-                            waitUntil(timeout: testTimeout) { done in
-                                publish(done)
-                            }
-                        }
-
-                        it("channel is DETACHED") {
-                            client.connect()
-                            channel.attach()
-                            expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
-                            channel.detach()
-                            expect(channel.state).toEventually(equal(ARTRealtimeChannelState.detached), timeout: testTimeout)
-                            waitUntil(timeout: testTimeout) { done in
-                                publish(done)
-                            }
-                        }
-
                         it("channel is SUSPENDED") {
                             client.connect()
                             channel.attach()
@@ -2000,6 +2055,29 @@ class RealtimeClientChannel: QuickSpec {
                             waitUntil(timeout: testTimeout) { done in
                                 publish(done)
                             }
+                        }
+                    }
+
+                    // RTL6c5
+                    it("publish should not trigger an implicit attach") {
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                        defer { client.dispose(); client.close() }
+                        let channel = client.channels.get("test")
+                        waitUntil(timeout: testTimeout) { done in
+                            let protocolError = AblyTests.newErrorProtocolMessage()
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
+                            channel.publish(nil, data: "message") { error in
+                                expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
+                                expect(error).to(beIdenticalTo(protocolError.error))
+
+                                channel.publish(nil, data: "message") { error in
+                                    expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
+                                    expect(error).toNot(beNil())
+                                    done()
+                                }
+                            }
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
+                            channel.internal.onError(protocolError)
                         }
                     }
                 }
