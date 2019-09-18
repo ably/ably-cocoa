@@ -317,7 +317,11 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
 }
 
 - (ARTLocalDevice *)getDevice:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback {
-    ARTLocalDevice *device = [_channel device];
+    #if TARGET_OS_IOS
+    ARTLocalDevice *device = [_rest device_nosync];
+    #else
+    ARTLocalDevice *device = nil;
+    #endif
     if (![device isRegistered]) {
         if (callback) callback([ARTErrorInfo createWithCode:0 message:@"cannot use device before device activation has finished"]);
     }
@@ -335,11 +339,5 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     }
     return device.clientId;
 }
-
-#if TARGET_OS_IOS
-- (ARTLocalDevice *)device {
-    return _rest.device;
-}
-#endif
 
 @end

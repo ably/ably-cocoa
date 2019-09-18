@@ -764,7 +764,6 @@ void ARTstopHandlingUncaughtExceptions(ARTRestInternal *self) {
     });
     return ret;
 }
-#endif
 
 // Store address of once_token to access it in debug function.
 static dispatch_once_t *device_once_token;
@@ -782,5 +781,6 @@ static dispatch_once_t *device_once_token;
 - (void)resetDeviceSingleton {
     if (device_once_token) *device_once_token = 0;
 }
+#endif
 
 @end

@@ -116,10 +116,6 @@
     [_internal history:callback];
 }
 
-- (ARTLocalDevice *)device {
-    return [_internal device];
-}
-
 - (BOOL)exceedMaxSize:(NSArray<ARTBaseMessage *> *)messages {
     return [_internal exceedMaxSize:messages];
 }
@@ -297,12 +293,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         _pushChannel = [[ARTPushChannelInternal alloc] init:self.realtime.rest withChannel:self];
     }
     return _pushChannel;
-}
-#endif
-
-#if TARGET_OS_IOS
-- (ARTLocalDevice *)device {
-    return _realtime.device;
 }
 #endif
 

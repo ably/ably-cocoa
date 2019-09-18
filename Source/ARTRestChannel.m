@@ -96,10 +96,6 @@
     [_internal history:callback];
 }
 
-- (ARTLocalDevice *)device {
-    return [_internal device];
-}
-
 - (BOOL)exceedMaxSize:(NSArray<ARTBaseMessage *> *)messages {
     return [_internal exceedMaxSize:messages];
 }
