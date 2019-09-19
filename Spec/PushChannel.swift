@@ -18,7 +18,10 @@ class PushChannel : QuickSpec {
 
         beforeEach {
             mockHttpExecutor = MockHTTPExecutor()
-            rest = ARTRest(key: "xxxx:xxxx")
+            let options = ARTClientOptions(key: "xxxx:xxxx")
+            options.dispatchQueue = AblyTests.userQueue
+            options.internalDispatchQueue = AblyTests.queue
+            rest = ARTRest(options: options)
             rest.internal.options.clientId = "tester"
             rest.internal.httpExecutor = mockHttpExecutor
             rest.internal.resetDeviceSingleton()
@@ -37,6 +40,7 @@ class PushChannel : QuickSpec {
                                 fail("Error is nil"); done(); return
                             }
                             expect(error.message).to(contain("cannot use device before device activation has finished"))
+                            expect(AblyTests.currentQueueLabel() == AblyTests.userQueue.label).to(beTrue())
                             done()
                         }
                     }
@@ -104,6 +108,7 @@ class PushChannel : QuickSpec {
                                 fail("Error is nil"); done(); return
                             }
                             expect(error.message).to(contain("null client ID"))
+                            expect(AblyTests.currentQueueLabel() == AblyTests.userQueue.label).to(beTrue())
                             done()
                         }
                     }
@@ -162,6 +167,7 @@ class PushChannel : QuickSpec {
                                 fail("Error is nil"); done(); return
                             }
                             expect(error.message).to(contain("cannot use device before device activation has finished"))
+                            expect(AblyTests.currentQueueLabel() == AblyTests.userQueue.label).to(beTrue())
                             done()
                         }
                     }
@@ -219,6 +225,7 @@ class PushChannel : QuickSpec {
                                 fail("Error is nil"); done(); return
                             }
                             expect(error.message).to(contain("null client ID"))
+                            expect(AblyTests.currentQueueLabel() == AblyTests.userQueue.label).to(beTrue())
                             done()
                         }
                     }

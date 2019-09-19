@@ -181,9 +181,4 @@
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
 }
 
-- (ARTLocalDevice *)device {
-    NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
-    return nil;
-}
-
 @end
