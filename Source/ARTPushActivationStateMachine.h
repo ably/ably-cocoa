@@ -19,8 +19,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTPushActivationStateMachine : NSObject
 
-@property (nonatomic, strong) ARTRest *rest;
-
 @property (readonly, nonatomic) ARTPushActivationEvent *lastEvent;
 @property (readonly, nonatomic) ARTPushActivationState *current;
 @property (readonly, nonatomic) NSMutableArray<ARTPushActivationEvent *> *pendingEvents;
