@@ -71,7 +71,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)reportUncaughtException:(NSException *_Nullable)exception;
 - (void)forceReport:(NSString *)message exception:(NSException *_Nullable)e;
 
+#if TARGET_OS_IOS
 - (void)resetDeviceSingleton;
+#endif
 
 @end
 
