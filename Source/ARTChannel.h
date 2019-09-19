@@ -43,8 +43,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)history:(void(^)(ARTPaginatedResult<ARTMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback;
 
-- (ARTLocalDevice *)device;
-
 - (BOOL)exceedMaxSize:(NSArray<ARTBaseMessage *> *)messages;
 
 @end

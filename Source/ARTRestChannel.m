@@ -96,10 +96,6 @@
     [_internal history:callback];
 }
 
-- (ARTLocalDevice *)device {
-    return [_internal device];
-}
-
 - (BOOL)exceedMaxSize:(NSArray<ARTBaseMessage *> *)messages {
     return [_internal exceedMaxSize:messages];
 }
@@ -323,11 +319,5 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
 } ART_TRY_OR_REPORT_CRASH_END
 });
 }
-
-#if TARGET_OS_IOS
-- (ARTLocalDevice *)device {
-    return _rest.device;
-}
-#endif
 
 @end
