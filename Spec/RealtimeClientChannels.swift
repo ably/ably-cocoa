@@ -13,7 +13,7 @@ import Nimble
 // Swift isn't yet smart enough to do this automatically when bridging Objective-C APIs
 extension ARTRealtimeChannels: Sequence {
     public func makeIterator() -> NSFastEnumerationIterator {
-        return NSFastEnumerationIterator(self)
+        return NSFastEnumerationIterator(self.iterate())
     }
 }
 
@@ -25,18 +25,18 @@ class RealtimeClientChannels: QuickSpec {
             it("should exist methods to check if a channel exists or iterate through the existing channels") {
                 let client = ARTRealtime(options: AblyTests.commonAppSetup())
                 defer { client.dispose(); client.close() }
-                var disposable = [ARTRealtimeChannel]()
+                var disposable = [String]()
 
-                disposable.append(client.channels.get("test1"))
-                disposable.append(client.channels.get("test2"))
-                disposable.append(client.channels.get("test3"))
+                disposable.append(client.channels.get("test1").name)
+                disposable.append(client.channels.get("test2").name)
+                disposable.append(client.channels.get("test3").name)
 
                 expect(client.channels.get("test2")).toNot(beNil())
                 expect(client.channels.exists("test2")).to(beTrue())
                 expect(client.channels.exists("testX")).to(beFalse())
 
                 for channel in client.channels {
-                    expect(disposable.contains(channel as! ARTRealtimeChannel)).to(beTrue())
+                    expect(disposable.contains((channel as! ARTRealtimeChannel).name)).to(beTrue())
                 }
             }
 
@@ -48,13 +48,13 @@ class RealtimeClientChannels: QuickSpec {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
 
-                    expect(client.channels.collection).to(haveCount(0))
+                    expect(client.channels.internal.collection).to(haveCount(0))
                     let channel = client.channels.get("test")
                     expect(channel.name).to(equal("\(ARTChannels_getChannelNamePrefix!())-test"))
 
-                    expect(client.channels.collection).to(haveCount(1))
-                    expect(client.channels.get("test")).to(beIdenticalTo(channel))
-                    expect(client.channels.collection).to(haveCount(1))
+                    expect(client.channels.internal.collection).to(haveCount(1))
+                    expect(client.channels.get("test").internal).to(beIdenticalTo(channel.internal))
+                    expect(client.channels.internal.collection).to(haveCount(1))
                 }
 
                 // RTS3b
@@ -63,17 +63,17 @@ class RealtimeClientChannels: QuickSpec {
                     defer { client.dispose(); client.close() }
                     let options = ARTChannelOptions()
                     let channel = client.channels.get("test", options: options)
-                    expect(channel.options).to(beIdenticalTo(options))
+                    expect(channel.internal.options).to(beIdenticalTo(options))
                 }
 
                 // RTS3c
                 it("accessing an existing Channel with options should update the options and then return the object") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
-                    expect(client.channels.get("test").options).toNot(beNil())
+                    expect(client.channels.get("test").internal.options).toNot(beNil())
                     let options = ARTChannelOptions()
                     let channel = client.channels.get("test", options: options)
-                    expect(channel.options).to(beIdenticalTo(options))
+                    expect(channel.internal.options).to(beIdenticalTo(options))
                 }
 
             }

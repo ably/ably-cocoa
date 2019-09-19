@@ -33,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// The key is the clientId and the value is the latest relevant ARTPresenceMessage for that clientId.
 @property (readonly, atomic) NSMutableSet<ARTPresenceMessage *> *localMembers;
 
-@property (nullable, weak) id<ARTPresenceMapDelegate> delegate;
+@property (nullable, weak) id<ARTPresenceMapDelegate> delegate; // weak because delegates outlive their counterpart
 
 @property (readwrite, nonatomic, assign) int64_t syncMsgSerial;
 @property (readwrite, nonatomic, nullable) NSString *syncChannelSerial;

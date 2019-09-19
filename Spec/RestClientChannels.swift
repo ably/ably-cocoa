@@ -14,7 +14,7 @@ import Aspects
 // Swift isn't yet smart enough to do this automatically when bridging Objective-C APIs
 extension ARTRestChannels: Sequence {
     public func makeIterator() -> NSFastEnumerationIterator {
-        return NSFastEnumerationIterator(self)
+        return NSFastEnumerationIterator(self.iterate())
     }
 }
 
@@ -52,10 +52,10 @@ class RestClientChannels: QuickSpec {
                 context("get") {
                     // RSN3a
                     it("should return a channel") {
-                        let channel = client.channels.get(channelName)
+                        let channel = client.channels.get(channelName).internal
                         expect(channel).to(beAChannel(named: "\(ARTChannels_getChannelNamePrefix!())-\(channelName!)"))
 
-                        let sameChannel = client.channels.get(channelName)
+                        let sameChannel = client.channels.get(channelName).internal
                         expect(sameChannel).to(beIdenticalTo(channel))
                     }
 
@@ -64,16 +64,16 @@ class RestClientChannels: QuickSpec {
                         let options = ARTChannelOptions(cipher: cipherParams)
                         let channel = client.channels.get(channelName, options: options)
 
-                        expect(channel).to(beAChannel(named: "\(ARTChannels_getChannelNamePrefix!())-\(channelName!)"))
-                        expect(channel.options).to(beIdenticalTo(options))
+                        expect(channel.internal).to(beAChannel(named: "\(ARTChannels_getChannelNamePrefix!())-\(channelName!)"))
+                        expect(channel.internal.options).to(beIdenticalTo(options))
                     }
 
                     // RSN3b
                     it("should not replace the options on an existing channel when none are provided") {
                         let options = ARTChannelOptions(cipher: cipherParams)
-                        let channel = client.channels.get(channelName, options: options)
+                        let channel = client.channels.get(channelName, options: options).internal
 
-                        let newButSameChannel = client.channels.get(channelName)
+                        let newButSameChannel = client.channels.get(channelName).internal
 
                         expect(newButSameChannel).to(beIdenticalTo(channel))
                         expect(newButSameChannel.options).to(beIdenticalTo(options))
@@ -81,11 +81,11 @@ class RestClientChannels: QuickSpec {
 
                     // RSN3c
                     it("should replace the options on an existing channel when new ones are provided") {
-                        let channel = client.channels.get(channelName)
+                        let channel = client.channels.get(channelName).internal
                         let oldOptions = channel.options
 
                         let newOptions = ARTChannelOptions(cipher: cipherParams)
-                        let newButSameChannel = client.channels.get(channelName, options: newOptions)
+                        let newButSameChannel = client.channels.get(channelName, options: newOptions).internal
 
                         expect(newButSameChannel).to(beIdenticalTo(channel))
                         expect(newButSameChannel.options).to(beIdenticalTo(newOptions))
@@ -107,10 +107,10 @@ class RestClientChannels: QuickSpec {
                 // RSN4
                 context("releaseChannel") {
                     it("should release a channel") {
-                        weak var channel: ARTRestChannel!
+                        weak var channel: ARTRestChannelInternal!
 
                         autoreleasepool {
-                            channel = client.channels.get(channelName)
+                            channel = client.channels.get(channelName).internal
 
                             expect(channel).to(beAChannel(named: "\(ARTChannels_getChannelNamePrefix!())-\(channelName!)"))
                             client.channels.release(channel.name)
@@ -123,12 +123,12 @@ class RestClientChannels: QuickSpec {
                 // RSN2
                 it("should be enumerable") {
                     let channels = [
-                        client.channels.get(channelName),
-                        client.channels.get(String(channelName.reversed()))
+                        client.channels.get(channelName).internal,
+                        client.channels.get(String(channelName.reversed())).internal
                     ]
 
                     for channel in client.channels {
-                        expect(channels).to(contain(channel as! ARTRestChannel))
+                        expect(channels).to(contain((channel as! ARTRestChannel).internal))
                     }
                 }
             }

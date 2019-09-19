@@ -51,7 +51,7 @@ NSString *WebSocketStateToStr(SRReadyState state);
 @synthesize delegate = _delegate;
 @synthesize stateEmitter = _stateEmitter;
 
-- (instancetype)initWithRest:(ARTRest *)rest options:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial {
+- (instancetype)initWithRest:(ARTRestInternal *)rest options:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial {
     self = [super init];
     if (self) {
         _workQueue = rest.queue;

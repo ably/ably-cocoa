@@ -20,9 +20,9 @@ class Push : QuickSpec {
         beforeEach {
             rest = ARTRest(key: "xxxx:xxxx")
             mockHttpExecutor = MockHTTPExecutor()
-            rest.httpExecutor = mockHttpExecutor
+            rest.internal.httpExecutor = mockHttpExecutor
             storage = MockDeviceStorage()
-            rest.storage = storage
+            rest.internal.storage = storage
         }
 
         // RSH2
@@ -30,9 +30,9 @@ class Push : QuickSpec {
 
             // RSH2a
             it("activate method should send a CalledActivate event to the state machine") {
-                defer { rest.push.activationMachine().transitions = nil }
+                defer { rest.push.internal.activationMachine().transitions = nil }
                 waitUntil(timeout: testTimeout) { done in
-                    rest.push.activationMachine().transitions = { event, _, _ in
+                    rest.push.internal.activationMachine().transitions = { event, _, _ in
                         if event is ARTPushActivationEventCalledActivate {
                             done()
                         }
@@ -43,9 +43,9 @@ class Push : QuickSpec {
 
             // RSH2b
             it("deactivate method should send a CalledDeactivate event to the state machine") {
-                defer { rest.push.activationMachine().transitions = nil }
+                defer { rest.push.internal.activationMachine().transitions = nil }
                 waitUntil(timeout: testTimeout) { done in
-                    rest.push.activationMachine().transitions = { event, _, _ in
+                    rest.push.internal.activationMachine().transitions = { event, _, _ in
                         if event is ARTPushActivationEventCalledDeactivate {
                             done()
                         }
@@ -56,7 +56,7 @@ class Push : QuickSpec {
 
             // RSH2c
             it("should handle GotPushDeviceDetails event when platform’s APIs sends the details for push notifications") {
-                let stateMachine = rest.push.activationMachine()
+                let stateMachine = rest.push.internal.activationMachine()
                 let testDeviceToken = "xxxx-xxxx-xxxx-xxxx-xxxx"
                 stateMachine.rest.device.setAndPersistDeviceToken(testDeviceToken)
                 let stateMachineDelegate = StateMachineDelegate()
@@ -94,14 +94,14 @@ class Push : QuickSpec {
 
                 let rest = ARTRest(options: options)
                 let mockHttpExecutor = MockHTTPExecutor()
-                rest.httpExecutor = mockHttpExecutor
+                rest.internal.httpExecutor = mockHttpExecutor
                 let storage = MockDeviceStorage()
-                rest.storage = storage
+                rest.internal.storage = storage
                 
-                rest.resetDeviceSingleton()
-                rest.push.resetActivationStateMachineSingleton()
+                rest.internal.resetDeviceSingleton()
+                rest.push.internal.resetActivationStateMachineSingleton()
 
-                let stateMachine = rest.push.activationMachine()
+                let stateMachine = rest.push.internal.activationMachine()
                 let testDeviceToken = "xxxx-xxxx-xxxx-xxxx-xxxx"
                 stateMachine.rest.device.setAndPersistDeviceToken(testDeviceToken)
                 let stateMachineDelegate = StateMachineDelegate()
@@ -140,6 +140,14 @@ class Push : QuickSpec {
                     }
                     expect(requestedClientId).to(equal(expectedClientId))
                 }
+            }
+
+
+            // https://github.com/ably/ably-cocoa/issues/888
+            it("should not sync the local device dispatched in internal queue") {
+                let deviceTokenBase64 = "HYRXxPSQdt1pnxqtDAvc6PTTLH7N6okiBhYyLClJdmQ="
+                let deviceTokenData = Data(base64Encoded: deviceTokenBase64, options: [])!
+                expect { ARTPush.didRegisterForRemoteNotifications(withDeviceToken: deviceTokenData, rest: rest) }.toNot(raiseException())
             }
 
         }

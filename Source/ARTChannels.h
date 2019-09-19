@@ -12,11 +12,12 @@
 @class ARTRestChannel;
 @class ARTChannelOptions;
 
-@interface ARTChannels<ChannelType> : NSObject<NSFastEnumeration>
+@interface ARTChannels<ChannelType> : NSObject
 
 - (BOOL)exists:(NSString *)name;
 - (ChannelType)get:(NSString *)name;
 - (ChannelType)get:(NSString *)name options:(ARTChannelOptions *)options;
 - (void)release:(NSString *)name;
+- (id<NSFastEnumeration>)iterate;
 
 @end

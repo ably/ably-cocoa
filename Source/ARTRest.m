@@ -9,7 +9,7 @@
 #import "ARTRest+Private.h"
 
 #import "ARTChannel+Private.h"
-#import "ARTRestChannels.h"
+#import "ARTRestChannels+Private.h"
 #import "ARTDataQuery+Private.h"
 #import "ARTPaginatedResult+Private.h"
 #import "ARTAuth+Private.h"
@@ -50,14 +50,109 @@
 #import <KSCrash/KSCrash.h>
 #endif
 
-@interface ARTRest () {
+@implementation ARTRest {
+    ARTQueuedDealloc *_dealloc;
+}
+
+- (void)internalAsync:(void (^)(ARTRestInternal * _Nonnull))use {
+    dispatch_async(_internal.queue, ^{
+        use(self->_internal);
+    });
+}
+
+- (void)initCommon {
+    _dealloc = [[ARTQueuedDealloc alloc] init:_internal queue:_internal.queue];
+}
+
+- (instancetype)initWithOptions:(ARTClientOptions *)options {
+    self = [super init];
+    if (self) {
+        _internal = [[ARTRestInternal alloc] initWithOptions:options];
+        [self initCommon];
+    }
+    return self;
+}
+
+- (instancetype)initWithKey:(NSString *)key {
+    self = [super init];
+    if (self) {
+        _internal = [[ARTRestInternal alloc] initWithKey:key];
+        [self initCommon];
+    }
+    return self;
+}
+
+- (instancetype)initWithToken:(NSString *)token {
+    self = [super init];
+    if (self) {
+        _internal = [[ARTRestInternal alloc] initWithToken:token];
+        [self initCommon];
+    }
+    return self;
+}
+
++ (instancetype)createWithOptions:(ARTClientOptions *)options {
+    return [[ARTRest alloc] initWithOptions:options];
+}
+
++ (instancetype)createWithKey:(NSString *)key {
+    return [[ARTRest alloc] initWithKey:key];
+}
+
++ (instancetype)createWithToken:(NSString *)tokenId {
+    return [[ARTRest alloc] initWithToken:tokenId];
+}
+
+- (void)time:(void (^)(NSDate *_Nullable, NSError *_Nullable))callback {
+    [_internal time:callback];
+}
+
+- (BOOL)request:(NSString *)method path:(NSString *)path params:(nullable NSDictionary<NSString *, NSString *> *)params body:(nullable id)body headers:(nullable NSDictionary<NSString *, NSString *> *)headers callback:(void (^)(ARTHTTPPaginatedResponse *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr {
+    return [_internal request:(NSString *)method path:path params:params body:body headers:headers callback:callback error:errorPtr];
+}
+
+- (BOOL)stats:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback {
+    return [_internal stats:callback];
+}
+
+- (BOOL)stats:(nullable ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr {
+    return [_internal stats:query callback:callback error:errorPtr];
+}
+
+- (ARTRestChannels *)channels {
+    return [[ARTRestChannels alloc] initWithInternal:_internal.channels queuedDealloc:_dealloc];
+}
+
+- (ARTAuth *)auth {
+    return [[ARTAuth alloc] initWithInternal:_internal.auth queuedDealloc:_dealloc];
+}
+
+- (ARTPush *)push {
+    return [[ARTPush alloc] initWithInternal:_internal.push queuedDealloc:_dealloc];
+}
+
+#if TARGET_OS_IOS
+
+- (ARTLocalDevice *)device {
+    return _internal.device;
+}
+
+- (ARTLocalDevice *)device_nosync {
+    return _internal.device_nosync;
+}
+
+#endif
+
+@end
+
+@interface ARTRestInternal () {
     __block NSUInteger _tokenErrorRetries;
     BOOL _handlingUncaughtExceptions;
 }
 
 @end
 
-@implementation ARTRest {
+@implementation ARTRestInternal {
     ARTLog *_logger;
 }
 
@@ -69,7 +164,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-- (instancetype)initWithOptions:(ARTClientOptions *)options realtime:(ARTRealtime *_Nullable)realtime {
+- (instancetype)initWithOptions:(ARTClientOptions *)options realtime:(ARTRealtimeInternal *_Nullable)realtime {
     self = [super init];
     if (self) {
         NSAssert(options, @"ARTRest: No options provided");
@@ -106,9 +201,9 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
         _fallbackCount = 0;
         _tokenErrorRetries = 0;
 
-        _auth = [[ARTAuth alloc] init:self withOptions:_options];
-        _push = [[ARTPush alloc] init:self];
-        _channels = [[ARTRestChannels alloc] initWithRest:self];
+        _auth = [[ARTAuthInternal alloc] init:self withOptions:_options];
+        _push = [[ARTPushInternal alloc] init:self];
+        _channels = [[ARTRestChannelsInternal alloc] initWithRest:self];
         _handlingUncaughtExceptions = false;
 
         [self.logger verbose:__FILE__ line:__LINE__ message:@"RS:%p initialized", self];
@@ -141,18 +236,6 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 ART_TRY_OR_REPORT_CRASH_START(self) {
     return [self initWithOptions:[[ARTClientOptions alloc] initWithToken:token]];
 } ART_TRY_OR_REPORT_CRASH_END
-}
-
-+ (instancetype)createWithOptions:(ARTClientOptions *)options {
-    return [[ARTRest alloc] initWithOptions:options];
-}
-
-+ (instancetype)createWithKey:(NSString *)key {
-    return [[ARTRest alloc] initWithKey:key];
-}
-
-+ (instancetype)createWithToken:(NSString *)tokenId {
-    return [[ARTRest alloc] initWithToken:tokenId];
 }
 
 - (void)dealloc {
@@ -224,7 +307,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
         if (!force && [self.auth tokenRemainsValid]) {
             // Reuse token
             NSString *authorization = [self prepareTokenAuthorisationHeader:self.auth.tokenDetails.token];
-            [self.logger verbose:@"RS:%p ARTRest reusing token: authorization bearer in Base64 %@", self, authorization];
+            [self.logger verbose:@"RS:%p ARTRestInternal reusing token: authorization bearer in Base64 %@", self, authorization];
             [request setValue:authorization forHTTPHeaderField:@"Authorization"];
             task = [self executeRequest:request completion:callback];
         }
@@ -232,12 +315,12 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
             // New Token
             task = [self.auth _authorize:nil options:self.options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
                 if (error) {
-                    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p ARTRest reissuing token failed %@", self, error];
+                    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p ARTRestInternal reissuing token failed %@", self, error];
                     if (callback) callback(nil, nil, error);
                     return;
                 }
                 NSString *authorization = [self prepareTokenAuthorisationHeader:tokenDetails.token];
-                [self.logger verbose:@"RS:%p ARTRest reissuing token: authorization bearer in Base64 %@", self, authorization];
+                [self.logger verbose:@"RS:%p ARTRestInternal reissuing token: authorization bearer in Base64 %@", self, authorization];
                 [request setValue:authorization forHTTPHeaderField:@"Authorization"];
                 task = [self executeRequest:request completion:callback];
             }];
@@ -656,7 +739,7 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
     };
 }
 
-BOOL ARTstartHandlingUncaughtExceptions(ARTRest *self) {
+BOOL ARTstartHandlingUncaughtExceptions(ARTRestInternal *self) {
     if (!self || self->_handlingUncaughtExceptions) {
         return false;
     }
@@ -665,7 +748,7 @@ BOOL ARTstartHandlingUncaughtExceptions(ARTRest *self) {
     return true;
 }
 
-void ARTstopHandlingUncaughtExceptions(ARTRest *self) {
+void ARTstopHandlingUncaughtExceptions(ARTRestInternal *self) {
     if (!self) {
         return;
     }
@@ -681,7 +764,6 @@ void ARTstopHandlingUncaughtExceptions(ARTRest *self) {
     });
     return ret;
 }
-#endif
 
 // Store address of once_token to access it in debug function.
 static dispatch_once_t *device_once_token;
@@ -699,5 +781,6 @@ static dispatch_once_t *device_once_token;
 - (void)resetDeviceSingleton {
     if (device_once_token) *device_once_token = 0;
 }
+#endif
 
 @end

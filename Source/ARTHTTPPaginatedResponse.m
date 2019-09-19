@@ -21,7 +21,7 @@
 
 - (instancetype)initWithResponse:(NSHTTPURLResponse *)response
                            items:(NSArray *)items
-                            rest:(ARTRest *)rest
+                            rest:(ARTRestInternal *)rest
                         relFirst:(NSMutableURLRequest *)relFirst
                       relCurrent:(NSMutableURLRequest *)relCurrent
                          relNext:(NSMutableURLRequest *)relNext
@@ -95,7 +95,7 @@ ART_TRY_OR_REPORT_CRASH_START(self.rest) {
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-+ (void)executePaginated:(ARTRest *)rest withRequest:(NSMutableURLRequest *)request callback:(void (^)(ARTHTTPPaginatedResponse *_Nullable result, ARTErrorInfo *_Nullable error))callback {
++ (void)executePaginated:(ARTRestInternal *)rest withRequest:(NSMutableURLRequest *)request callback:(void (^)(ARTHTTPPaginatedResponse *_Nullable result, ARTErrorInfo *_Nullable error))callback {
 ART_TRY_OR_REPORT_CRASH_START(rest) {
     [rest.logger debug:__FILE__ line:__LINE__ message:@"HTTP Paginated request: %@", request];
 

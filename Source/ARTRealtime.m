@@ -40,6 +40,7 @@
 #import "ARTSentry.h"
 #import "ARTRealtimeChannels+Private.h"
 #import "ARTPush+Private.h"
+#import "ARTQueuedDealloc.h"
 
 @interface ARTConnectionStateChange ()
 
@@ -50,6 +51,111 @@
 #pragma mark - ARTRealtime implementation
 
 @implementation ARTRealtime {
+    ARTQueuedDealloc *_dealloc;
+}
+
+- (void)internalAsync:(void (^)(ARTRealtimeInternal * _Nonnull))use {
+    dispatch_async(_internal.queue, ^{
+        use(self->_internal);
+    });
+}
+
+- (ARTConnection *)connection {
+    return [[ARTConnection alloc] initWithInternal:_internal.connection queuedDealloc:_dealloc];
+}
+
+- (ARTRealtimeChannels *)channels {
+    return [[ARTRealtimeChannels alloc] initWithInternal:_internal.channels queuedDealloc:_dealloc];
+}
+
+- (ARTAuth *)auth {
+    return [[ARTAuth alloc] initWithInternal:_internal.auth queuedDealloc:_dealloc];
+}
+
+- (ARTPush *)push {
+    return [[ARTPush alloc] initWithInternal:_internal.push queuedDealloc:_dealloc];
+}
+
+#if TARGET_OS_IOS
+- (ARTLocalDevice *)device {
+    return _internal.device;
+}
+#endif
+
+- (NSString *)clientId {
+    return _internal.clientId;
+}
+
+- (void)initCommon {
+    _dealloc = [[ARTQueuedDealloc alloc] init:_internal queue:_internal.queue];
+}
+
+- (instancetype)initWithOptions:(ARTClientOptions *)options {
+    self = [super init];
+    if (self) {
+        _internal = [[ARTRealtimeInternal alloc] initWithOptions:options];
+        [self initCommon];
+    }
+    return self;
+}
+
+- (instancetype)initWithKey:(NSString *)key {
+    self = [super init];
+    if (self) {
+        _internal = [[ARTRealtimeInternal alloc] initWithKey:key];
+        [self initCommon];
+    }
+    return self;
+}
+
+- (instancetype)initWithToken:(NSString *)token {
+    self = [super init];
+    if (self) {
+        _internal = [[ARTRealtimeInternal alloc] initWithToken:token];
+        [self initCommon];
+    }
+    return self;
+}
+
++ (instancetype)createWithOptions:(ARTClientOptions *)options {
+    return [[ARTRealtime alloc] initWithOptions:options];
+}
+
++ (instancetype)createWithKey:(NSString *)key {
+    return [[ARTRealtime alloc] initWithKey:key];
+}
+
++ (instancetype)createWithToken:(NSString *)tokenId {
+    return [[ARTRealtime alloc] initWithToken:tokenId];
+}
+
+- (void)time:(void (^)(NSDate *_Nullable, NSError *_Nullable))cb {
+    [_internal time:cb];
+}
+
+- (void)ping:(void (^)(ARTErrorInfo *_Nullable))cb {
+    [_internal ping:cb];
+}
+
+- (BOOL)stats:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback {
+    return [_internal stats:callback];
+}
+
+- (BOOL)stats:(nullable ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr {
+    return [_internal stats:query callback:callback error:errorPtr];
+}
+
+- (void)connect {
+    [_internal connect];
+}
+
+- (void)close {
+    [_internal close];
+}
+
+@end
+
+@implementation ARTRealtimeInternal {
     BOOL _resuming;
     BOOL _renewingToken;
     BOOL _suspendImmediateReconnection;
@@ -63,8 +169,8 @@
     __weak ARTEventListener *_connectionRetryFromSuspendedListener;
     __weak ARTEventListener *_connectionRetryFromDisconnectedListener;
     __weak ARTEventListener *_connectingTimeoutListener;
-    dispatch_block_t _authenitcatingTimeoutWork;
-    dispatch_block_t _idleTimer;
+    ARTScheduledBlockHandle *_authenitcatingTimeoutWork;
+    ARTScheduledBlockHandle *_idleTimer;
     dispatch_queue_t _userQueue;
     dispatch_queue_t _queue;
 
@@ -75,14 +181,14 @@
     if (self) {
         NSAssert(options, @"ARTRealtime: No options provided");
 
-        _rest = [[ARTRest alloc] initWithOptions:options realtime:self];
+        _rest = [[ARTRestInternal alloc] initWithOptions:options realtime:self];
         _userQueue = _rest.userQueue;
         _queue = _rest.queue;
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         _internalEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
         _connectedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
         _pingEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
-        _channels = [[ARTRealtimeChannels alloc] initWithRealtime:self];
+        _channels = [[ARTRealtimeChannelsInternal alloc] initWithRealtime:self];
         _transport = nil;
         _transportClass = [ARTWebSocketTransport class];
         _reachabilityClass = [ARTOSReachability class];
@@ -91,7 +197,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         _pendingMessages = [NSMutableArray array];
         _pendingMessageStartSerial = 0;
         _pendingAuthorizations = [NSMutableArray array];
-        _connection = [[ARTConnection alloc] initWithRealtime:self];
+        _connection = [[ARTConnectionInternal alloc] initWithRealtime:self];
         _connectionStateTtl = [ARTDefault connectionStateTtl];
         self.auth.delegate = self;
 
@@ -111,7 +217,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
 #pragma mark - ARTAuthDelegate
 
-- (void)auth:(ARTAuth *)auth didAuthorize:(ARTTokenDetails *)tokenDetails completion:(void (^)(ARTAuthorizationState, ARTErrorInfo *_Nullable))completion {
+- (void)auth:(ARTAuthInternal *)auth didAuthorize:(ARTTokenDetails *)tokenDetails completion:(void (^)(ARTAuthorizationState, ARTErrorInfo *_Nullable))completion {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     void (^waitForResponse)(void) = ^{
         [self.pendingAuthorizations enqueue:^(ARTRealtimeConnectionState state, ARTErrorInfo *_Nullable error){
@@ -143,9 +249,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     void (^haltCurrentConnectionAndReconnect)(void) = ^{
         // Halt the current connection and reconnect with the most recent token
         [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p halt current connection and reconnect with %@", self.rest, tokenDetails];
-        [self->_transport abort:[ARTStatus state:ARTStateOk]];
-        self->_transport = [[self->_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:self->_transport.resumeKey connectionSerial:self->_transport.connectionSerial];
-        self->_transport.delegate = self;
+        [self abortAndReleaseTransport:[ARTStatus state:ARTStateOk]];
+        [self setTransportWithResumeKey:self->_transport.resumeKey connectionSerial:self->_transport.connectionSerial];
         [self->_transport connectWithToken:tokenDetails.token];
         [self cancelAllPendingAuthorizations];
         waitForResponse();
@@ -225,18 +330,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     return [self initWithOptions:[[ARTClientOptions alloc] initWithToken:token]];
 }
 
-+ (instancetype)createWithOptions:(ARTClientOptions *)options {
-    return [[ARTRealtime alloc] initWithOptions:options];
-}
-
-+ (instancetype)createWithKey:(NSString *)key {
-    return [[ARTRealtime alloc] initWithKey:key];
-}
-
-+ (instancetype)createWithToken:(NSString *)tokenId {
-    return [[ARTRealtime alloc] initWithToken:tokenId];
-}
-
 - (id<ARTRealtimeTransport>)transport {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     return _transport;
@@ -255,7 +348,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (NSString *)getClientId {
+- (NSString *)clientId {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     // Doesn't need synchronization since it's immutable.
     return _rest.options.clientId;
@@ -281,13 +374,13 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (ARTAuth *)auth {
+- (ARTAuthInternal *)auth {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     return self.rest.auth;
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (ARTPush *)push {
+- (ARTPushInternal *)push {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     return self.rest.push;
 } ART_TRY_OR_MOVE_TO_FAILED_END
@@ -453,9 +546,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     ARTStatus *status = nil;
     ARTEventListener *stateChangeEventListener = nil;
-    // Do not increase the reference count (avoid retain cycles):
-    // i.e. the `unlessStateChangesBefore` is setting a timer and if the `ARTRealtime` instance is released before that timer, then it could create a leak.
-    __weak __typeof(self) weakSelf = self;
 
     [self.logger verbose:@"R:%p realtime is transitioning from %@ to %@", self, ARTRealtimeConnectionStateToStr(stateChange.previous), ARTRealtimeConnectionStateToStr(stateChange.current)];
 
@@ -473,7 +563,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             }
 
             stateChangeEventListener = [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
-                [weakSelf onConnectionTimeOut];
+                [self onConnectionTimeOut];
             }];
             _connectingTimeoutListener = stateChangeEventListener;
 
@@ -489,8 +579,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                     connectionSerial = [NSNumber numberWithLongLong:self.connection.serial_nosync];
                     _resuming = true;
                 }
-                _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:resumeKey connectionSerial:connectionSerial];
-                _transport.delegate = self;
+                [self setTransportWithResumeKey:resumeKey connectionSerial:connectionSerial];
                 [self transportConnectForcingNewToken:_renewingToken newConnection:true];
             }
 
@@ -498,20 +587,22 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                 self.connection.state_nosync != ARTRealtimeClosed &&
                 self.connection.state_nosync != ARTRealtimeDisconnected) {
                 [_reachability listenForHost:[_transport host] callback:^(BOOL reachable) {
+                    // The ref cycle creating by taking self here is resolved on close
+                    // when [_reachability off] is called.
                     if (reachable) {
-                        switch (weakSelf.connection.state_nosync) {
+                        switch (self.connection.state_nosync) {
                             case ARTRealtimeDisconnected:
                             case ARTRealtimeSuspended:
-                                [weakSelf transition:ARTRealtimeConnecting];
+                                [self transition:ARTRealtimeConnecting];
                             default:
                                 break;
                         }
                     } else {
-                        switch (weakSelf.connection.state_nosync) {
+                        switch (self.connection.state_nosync) {
                             case ARTRealtimeConnecting:
                             case ARTRealtimeConnected: {
                                 ARTErrorInfo *unreachable = [ARTErrorInfo createWithCode:-1003 message:@"unreachable host"];
-                                [weakSelf transition:ARTRealtimeDisconnected withErrorInfo:unreachable];
+                                [self transition:ARTRealtimeDisconnected withErrorInfo:unreachable];
                                 break;
                             }
                             default:
@@ -526,7 +617,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             [self stopIdleTimer];
             [_reachability off];
             stateChangeEventListener = [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
-                [weakSelf transition:ARTRealtimeClosed];
+                [self transition:ARTRealtimeClosed];
             }];
             [self.transport sendClose];
             break;
@@ -534,7 +625,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         case ARTRealtimeClosed:
             [self stopIdleTimer];
             [_reachability off];
-            [self.transport close];
+            [self closeAndReleaseTransport];
             _connection.key = nil;
             _connection.id = nil;
             _transport = nil;
@@ -543,8 +634,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             break;
         case ARTRealtimeFailed:
             status = [ARTStatus state:ARTStateConnectionFailed info:stateChange.reason];
-            [self.transport abort:status];
-            _transport = nil;
+            [self abortAndReleaseTransport:status];
             self.rest.prioritizedHost = nil;
             [self.auth cancelAuthorization:stateChange.reason];
             break;
@@ -565,8 +655,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                 return nil;
             }
 
-            [self.transport close];
-            _transport = nil;
+            [self closeAndReleaseTransport];
             NSTimeInterval retryInterval = self.options.disconnectedRetryTimeout;
             // RTN15a - retry immediately if client was connected
             if (stateChange.previous == ARTRealtimeConnected && !_suspendImmediateReconnection) {
@@ -574,19 +663,17 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             }
             [stateChange setRetryIn:retryInterval];
             stateChangeEventListener = [self unlessStateChangesBefore:stateChange.retryIn do:^{
-                [weakSelf transition:ARTRealtimeConnecting];
-                self->_connectionRetryFromDisconnectedListener = nil;
+                [self transition:ARTRealtimeConnecting];
             }];
             _connectionRetryFromDisconnectedListener = stateChangeEventListener;
             break;
         }
         case ARTRealtimeSuspended: {
-            [self.transport close];
-            _transport = nil;
+            [self closeAndReleaseTransport];
             [stateChange setRetryIn:self.options.suspendedRetryTimeout];
             stateChangeEventListener = [self unlessStateChangesBefore:stateChange.retryIn do:^{
-                [weakSelf transition:ARTRealtimeConnecting];
                 self->_connectionRetryFromSuspendedListener = nil;
+                [self transition:ARTRealtimeConnecting];
             }];
             _connectionRetryFromSuspendedListener = stateChangeEventListener;
             [self.auth cancelAuthorization:nil];
@@ -610,6 +697,10 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
     if ([self shouldSendEvents]) {
         [self sendQueuedMessages];
+        // For every Channel
+        for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
+            [channel sendQueuedMessages];
+        }
     } else if (![self shouldQueueEvents]) {
         ARTStatus *channelStatus = status;
         if (!channelStatus) {
@@ -617,7 +708,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         }
         [self failQueuedMessages:channelStatus];
         // For every Channel
-        for (ARTRealtimeChannel *channel in self.channels.nosyncIterable) {
+        for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
             if (stateChange.current == ARTRealtimeClosing) {
                 //do nothing. Closed state is coming.
             }
@@ -639,6 +730,28 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
     return stateChangeEventListener;
 } ART_TRY_OR_MOVE_TO_FAILED_END
+}
+
+- (void)abortAndReleaseTransport:(ARTStatus *)status {
+    [_transport abort:status];
+    _transport = nil;
+}
+
+- (void)closeAndReleaseTransport {
+    if (_transport) {
+        [_transport close];
+        _transport = nil;
+    }
+}
+
+- (void)resetTransportWithResumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial {
+    [self closeAndReleaseTransport];
+    [self setTransportWithResumeKey:resumeKey connectionSerial:connectionSerial];
+}
+
+- (void)setTransportWithResumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial {
+    _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:resumeKey connectionSerial:connectionSerial];
+    _transport.delegate = self;
 }
 
 - (ARTEventListener *)unlessStateChangesBefore:(NSTimeInterval)deadline do:(void(^)(void))callback __attribute__((warn_unused_result)) {
@@ -671,7 +784,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         if (![message.connectionId isEqualToString:self.connection.id_nosync]) {
             [self.logger warn:@"R:%p ARTRealtime: connection has reconnected, but resume failed. Reattaching any attached channels", self];
             // Reattach all channels
-            for (ARTRealtimeChannel *channel in self.channels.nosyncIterable) {
+            for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
                 [channel reattachWithReason:message.error callback:nil];
             }
             _resuming = false;
@@ -683,7 +796,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
         [self.logger debug:@"RT:%p connection \"%@\" has reconnected and resumed successfully", self, self.connection.id_nosync];
 
-        for (ARTRealtimeChannel *channel in self.channels.nosyncIterable) {
+        for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
             if (channel.presenceMap.syncInProgress) {
                 // FIXME or not, regarding https://github.com/ably/docs/issues/349
                 //[channel requestContinueSync];
@@ -800,7 +913,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             return;
         }
         if ([self shouldRenewToken:&error]) {
-            [self.transport close];
             [self transportReconnectWithRenewedToken];
             return;
         }
@@ -873,6 +985,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
 - (void)transportReconnectWithHost:(NSString *)host {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
+    [self resetTransportWithResumeKey:_transport.resumeKey connectionSerial:_transport.connectionSerial];
     [self.transport setHost:host];
     [self transportConnectForcingNewToken:false newConnection:true];
 } ART_TRY_OR_MOVE_TO_FAILED_END
@@ -881,6 +994,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 - (void)transportReconnectWithRenewedToken {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     _renewingToken = true;
+    [self resetTransportWithResumeKey:_transport.resumeKey connectionSerial:_transport.connectionSerial];
     [self transportConnectForcingNewToken:true newConnection:true];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
@@ -903,13 +1017,10 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         else {
             // New Token
             [self.auth setTokenDetails:nil];
-            // Transport instance couldn't exist anymore when `authorize` completes or reaches time out.
-            __weak __typeof(self) weakSelf = self;
 
             // Schedule timeout handler
             _authenitcatingTimeoutWork = artDispatchScheduled([ARTDefault realtimeRequestTimeout], _rest.queue, ^{
-                [weakSelf onConnectionTimeOut];
-                // FIXME: should cancel the auth request as well.
+                [self onConnectionTimeOut];
             });
 
             id<ARTAuthDelegate> delegate = self.auth.delegate;
@@ -924,7 +1035,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                     self->_authenitcatingTimeoutWork = nil;
 
                     // It's still valid?
-                    switch (weakSelf.connection.state_nosync) {
+                    switch (self.connection.state_nosync) {
                         case ARTRealtimeClosing:
                         case ARTRealtimeClosed:
                             return;
@@ -932,19 +1043,17 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                             break;
                     }
 
-                    [[weakSelf getLogger] debug:__FILE__ line:__LINE__ message:@"R:%p authorized: %@ error: %@", weakSelf, tokenDetails, error];
+                    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p authorized: %@ error: %@", self, tokenDetails, error];
                     if (error) {
-                        [weakSelf handleTokenAuthError:error];
+                        [self handleTokenAuthError:error];
                         return;
                     }
 
                     if (forceNewToken && newConnection) {
-                        [self->_transport close];
-                        self->_transport = [[self->_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:self->_transport.resumeKey connectionSerial:self->_transport.connectionSerial];
-                        self->_transport.delegate = self;
+                        [self resetTransportWithResumeKey:self->_transport.resumeKey connectionSerial:self->_transport.connectionSerial];
                     }
                     if (newConnection) {
-                        [[weakSelf transport] connectWithToken:tokenDetails.token];
+                        [self.transport connectWithToken:tokenDetails.token];
                     }
                 }];
             }
@@ -1000,7 +1109,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     if (message.channel == nil) {
         return;
     }
-    ARTRealtimeChannel *channel = [self.channels _getChannel:message.channel options:nil addPrefix:false];
+    ARTRealtimeChannelInternal *channel = [self.channels _getChannel:message.channel options:nil addPrefix:false];
     [channel onChannelMessage:message];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
@@ -1300,6 +1409,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         return;
     }
     artDispatchCancel(_idleTimer);
+
     _idleTimer = artDispatchScheduled([ARTDefault realtimeRequestTimeout] + self.maxIdleInterval, _rest.queue, ^{
         [self.logger error:@"R:%p No activity seen from realtime in %f seconds; assuming connection has dropped", self, [[NSDate date] timeIntervalSinceDate:self->_lastActivity]];
 

@@ -18,14 +18,38 @@
 #import <Ably/ARTAuth+Private.h>
 #import <Ably/ARTRest+Private.h>
 
-@class ARTRest;
+@class ARTRestInternal;
 @class ARTErrorInfo;
 @class ARTProtocolMessage;
-@class ARTConnection;
+@class ARTConnectionInternal;
+@class ARTRealtimeChannelsInternal;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTRealtime () <ARTRealtimeTransportDelegate, ARTAuthDelegate>
+@interface ARTRealtime ()
+
+@property (nonatomic, readonly) ARTRealtimeInternal *internal;
+
+- (void)internalAsync:(void (^)(ARTRealtimeInternal *))use;
+
+@end
+
+@interface ARTRealtimeInternal : NSObject<ARTRealtimeProtocol>
+
+@property (nonatomic, strong, readonly) ARTConnectionInternal *connection;
+@property (nonatomic, strong, readonly) ARTRealtimeChannelsInternal *channels;
+@property (readonly) ARTAuthInternal *auth;
+@property (readonly) ARTPushInternal *push;
+#if TARGET_OS_IOS
+@property (nonnull, nonatomic, readonly, getter=device) ARTLocalDevice *device;
+#endif
+@property (readonly, nullable, getter=clientId) NSString *clientId;
+
+@property (readonly, nonatomic) dispatch_queue_t queue;
+
+@end
+
+@interface ARTRealtimeInternal () <ARTRealtimeTransportDelegate, ARTAuthDelegate>
 
 @property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTConnectionStateChange *> *internalEventEmitter;
 @property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, NSNull *> *connectedEventEmitter;
@@ -43,10 +67,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-/// ARTRealtime private methods that are used for whitebox testing.
-@interface ARTRealtime ()
+/// ARTRealtimeInternal private methods that are used for whitebox testing.
+@interface ARTRealtimeInternal ()
 
-@property (readwrite, strong, nonatomic) ARTRest *rest;
+@property (readwrite, strong, nonatomic) ARTRestInternal *rest;
 @property (readonly, nullable) id<ARTRealtimeTransport> transport;
 @property (readonly, strong, nonatomic, nonnull) id<ARTReachability> reachability;
 @property (readonly, getter=getLogger) ARTLog *logger;
@@ -75,7 +99,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface ARTRealtime (Private)
+@interface ARTRealtimeInternal (Private)
 
 - (BOOL)isActive;
 
@@ -106,7 +130,7 @@ NS_ASSUME_NONNULL_END
 
 #define ART_TRY_OR_MOVE_TO_FAILED_START(realtime) \
 	do {\
-	ARTRealtime *__realtime = realtime;\
+	ARTRealtimeInternal *__realtime = realtime;\
     BOOL __started = ARTstartHandlingUncaughtExceptions(__realtime.rest);\
     BOOL __caught = false;\
 	@try {\
