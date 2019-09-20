@@ -22,12 +22,8 @@ extern NSString *const ARTPushActivationPendingEventsKey;
 
 @property (weak, nonatomic) id delegate; // weak because delegates outlive their counterpart
 @property (nonatomic, copy, nullable) void (^transitions)(ARTPushActivationEvent *event, ARTPushActivationState *from, ARTPushActivationState *to);
-@property (readonly, nonatomic) ARTPushActivationEvent *lastEvent;
 @property (readonly, nonatomic) ARTPushActivationEvent *lastEvent_nosync;
-@property (readonly, nonatomic) ARTPushActivationState *current;
 @property (readonly, nonatomic) ARTPushActivationState *current_nosync;
-
-@property (readonly, nonatomic) NSMutableArray<ARTPushActivationEvent *> *pendingEvents;
 
 @end
 
