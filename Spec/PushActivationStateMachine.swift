@@ -458,7 +458,7 @@ class PushActivationStateMachine : QuickSpec {
                     expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
                     expect(activatedCallbackCalled).to(beTrue())
                     expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
-                    expect(storage.keysWritten).to(contain(["ARTDeviceId", "ARTDeviceSecret", "ARTDeviceIdentityToken"]))
+                    expect(storage.keysWritten.keys).to(contain(["ARTDeviceId", "ARTDeviceSecret", "ARTDeviceIdentityToken"]))
                 }
 
                 // RSH3c3
