@@ -120,7 +120,7 @@ static dispatch_once_t *activationMachine_once_token;
     // Normalizing token by removing symbols and spaces, i.e.: 12ce7dda8032c4238f8bd40f3484e5bbf4698da58b7fdf8d5c55e0a2XXXXXXXX
     NSString *deviceToken = [[[deviceTokenData description] stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"<>"]] stringByReplacingOccurrencesOfString:@" " withString:@""];
 
-    NSLog(@"ARTPush: device token received %@", deviceToken);
+    [rest.logger info:@"ARTPush: device token received %@", deviceToken];
     NSString *currentDeviceToken = [rest.storage objectForKey:ARTDeviceTokenKey];
     if ([currentDeviceToken isEqualToString:deviceToken]) {
         // Already stored.
@@ -128,7 +128,7 @@ static dispatch_once_t *activationMachine_once_token;
     }
 
     [rest.device_nosync setAndPersistDeviceToken:deviceToken];
-    NSLog(@"ARTPush: device token stored");
+    [rest.logger debug:@"ARTPush: device token stored"];
     [rest.push.activationMachine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
 }
 
@@ -145,7 +145,7 @@ static dispatch_once_t *activationMachine_once_token;
 }
 
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error restInternal:(ARTRestInternal *)rest {
-    NSLog(@"ARTPush: device token not received (%@)", [error localizedDescription]);
+    [rest.logger error:@"ARTPush: device token not received (%@)", [error localizedDescription]];
     [rest.push.activationMachine sendEvent:[ARTPushActivationEventGettingDeviceRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
 }
 
