@@ -110,6 +110,7 @@ class RealtimeClientConnection: QuickSpec {
                 it("should connect with query string params including clientId") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "client_string"
+                    options.useTokenAuth = true
                     options.autoConnect = false
                     options.echoMessages = false
 
