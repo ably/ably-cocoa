@@ -1366,7 +1366,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN10b
-                fit("should not update when a message is sent but increments by one when ACK is received") {
+                it("should not update when a message is sent but increments by one when ACK is received") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer {
                         client.dispose()
