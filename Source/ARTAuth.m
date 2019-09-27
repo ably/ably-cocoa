@@ -24,6 +24,7 @@
 #import "ARTJsonEncoder.h"
 #import "ARTGCD.h"
 #import "ARTEventEmitter+Private.h"
+#import "ARTFormEncode.h"
 
 @implementation ARTAuth {
     ARTQueuedDealloc *_dealloc;
@@ -271,11 +272,11 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if ([options isMethodPOST]) {
         // TokenParams take precedence over any configured authParams when a name conflict occurs
         NSDictionary *unitedParams = [params toDictionaryWithUnion:options.authParams];
-        // When POST, use body of the POST request
-        NSData *bodyData = [NSJSONSerialization dataWithJSONObject:unitedParams options:0 error:nil];
-        request.HTTPBody = bodyData;
-        [request setValue:[_rest.defaultEncoder mimeType] forHTTPHeaderField:@"Content-Type"];
-        [request setValue:[NSString stringWithFormat:@"%d", (unsigned int)bodyData.length] forHTTPHeaderField:@"Content-Length"];
+        NSString *encodedParametersString = ARTFormEncode(unitedParams);
+        NSData *formData = [encodedParametersString dataUsingEncoding:NSUTF8StringEncoding];
+        [request setHTTPBody:formData];
+        [request setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
+        [request addValue:[NSString stringWithFormat:@"%lu", (unsigned long)formData.length] forHTTPHeaderField:@"Content-Length"];
     }
     else {
         [request setValue:[_rest.defaultEncoder mimeType] forHTTPHeaderField:@"Accept"];
