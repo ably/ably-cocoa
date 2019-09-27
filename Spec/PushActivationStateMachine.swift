@@ -1598,7 +1598,7 @@ class StateMachineDelegate: NSObject, ARTPushRegistererDelegate {
 
 typealias ARTDeviceId = String
 
-class StateMachineDelegateCustomCallbacks: StateMachineDelegate {
+private class StateMachineDelegateCustomCallbacks: StateMachineDelegate {
 
     var onPushCustomRegister: ((ARTErrorInfo?, ARTDeviceDetails?) -> NSError?)?
     var onPushCustomDeregister: ((ARTErrorInfo?, ARTDeviceId?) -> NSError?)?
