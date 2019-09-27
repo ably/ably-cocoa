@@ -1630,6 +1630,8 @@ class Auth : QuickSpec {
 
                         expect(request.value(forHTTPHeaderField: "Content-Type")).to(equal("application/x-www-form-urlencoded"))
 
+                        expect(request.value(forHTTPHeaderField: "Content-Length")).to(equal("89"))
+
                         for (header, expectedValue) in clientOptions.authHeaders! {
                             if let value = request.value(forHTTPHeaderField: header) {
                                 expect(value).to(equal(expectedValue))
