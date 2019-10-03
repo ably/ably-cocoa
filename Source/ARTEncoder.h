@@ -7,7 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "CompatibilityMacros.h"
 #import "ARTTypes.h"
 
 @class ARTMessage;

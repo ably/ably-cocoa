@@ -7,7 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "CompatibilityMacros.h"
 
 #import <Ably/ARTStatus.h>
 #import <Ably/ARTEventEmitter.h>
