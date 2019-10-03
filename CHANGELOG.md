@@ -1,5 +1,47 @@
 # Change Log
 
+## [1.1.12](https://github.com/ably/ably-cocoa/tree/1.1.12) (2019-10-03)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.10...1.1.12)
+
+**Fixed bugs:**
+
+ - Push token: replace `NSData.description` usage [\#889](https://github.com/ably/ably-cocoa/issues/889)
+
+**Merged pull requests:**
+
+ - Replace `NSData.description` to stringify device tokens correctly [\#893](https://github.com/ably/ably-cocoa/issues/893) ([ricardopereira](https://github.com/ricardopereira))
+
+## [1.1.11-beta.1](https://github.com/ably/ably-cocoa/tree/1.1.11-beta.1) (2019-09-20)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.10...1.1.11-beta.1)
+
+**Fixed bugs:**
+
+ - Push token: replace `NSData.description` usage [\#889](https://github.com/ably/ably-cocoa/issues/889)
+ - `PushChannel.subscribe` should not call the callback in the internal queue [\#862](https://github.com/ably/ably-cocoa/issues/862)
+ - Crash in ARTPush: "dispatch_sync called on queue already owned by current thread" [\#888](https://github.com/ably/ably-cocoa/issues/888)
+ - Push is using the system `NSLog` directly instead of the `ARTLogger` [\#896](https://github.com/ably/ably-cocoa/issues/896)
+
+- **Tentative fix of:** Crash on creating weak ref to deallocating object [\#879](https://github.com/ably/ably-cocoa/issues/879)
+
+**Merged pull requests:**
+
+ - Push: replace system `NSLog` with internal `ARTLogger` [\#896](https://github.com/ably/ably-cocoa/issues/896) ([ricardopereira](https://github.com/ricardopereira))
+ - Replace `NSData.description` to stringify device tokens correctly [\#893](https://github.com/ably/ably-cocoa/issues/893) ([ricardopereira](https://github.com/ricardopereira))
+ - Push: fix crash "_dispatch_sync called on queue already owned by current thread_" [\#888](https://github.com/ably/ably-cocoa/issues/888) ([ricardopereira](https://github.com/ricardopereira))
+ - Push: `PushChannel.subscribe` should not call the callback in the internal queue [\#862](https://github.com/ably/ably-cocoa/issues/862) ([ricardopereira](https://github.com/ricardopereira))
+- Split in public and internal objects [\#882](https://github.com/ably/ably-cocoa/pull/882) ([tcard](https://github.com/tcard ))
+
+## [1.1.11-beta.0](https://github.com/ably/ably-cocoa/tree/1.1.11-beta.0) (2019-08-27)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.10...1.1.11-beta.0)
+
+**Fixed bugs:**
+
+- **Tentative fix of:** Crash on creating weak ref to deallocating object [\#879](https://github.com/ably/ably-cocoa/issues/879)
+
+**Merged pull requests:**
+
+- Split in public and internal objects [\#882](https://github.com/ably/ably-cocoa/pull/882) ([tcard](https://github.com/tcard ))
+
 ## [1.1.10](https://github.com/ably/ably-cocoa/tree/1.1.10) (2019-07-29)
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.9...1.1.10)
 
