@@ -669,7 +669,7 @@ This library uses [semantic versioning](http://semver.org/). For each release, t
 * Visit [releases page](https://github.com/ably/ably-ios/releases) and `Add release notes`.
 * Release an update for CocoaPods: `pod lib lint && pod trunk push Ably.podspec`.
 * Generate the prebuilt framework for Carthage (`carthage build --no-skip-current --archive`) and attach the zip file to the release.
-* Test the integration of the library in a Xcode project using Carthage and CocoaPods.
+* Test the integration of the library in a Xcode project using Carthage and CocoaPods using the [installation guide](https://github.com/ably/ably-cocoa#installation-guide).
 
 ## License
 
