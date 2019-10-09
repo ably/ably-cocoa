@@ -362,7 +362,7 @@ NSString *WebSocketStateToStr(SRReadyState state);
 }
 
 - (void)webSocketMessageData:(NSData *)data {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket in %@ state did receive data %@", _delegate, self, WebSocketStateToStr(self.websocket.readyState), data];
+    [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket in %@ state did receive data %@", _delegate, self, WebSocketStateToStr(self.websocket.readyState), data];
 
     [self receiveWithData:data];
 }

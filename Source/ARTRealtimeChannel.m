@@ -437,12 +437,11 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     pm.channel = self.name;
     pm.presence = @[msg];
 
-    ARTErrorInfo *invalidChannelError = [ARTErrorInfo createWithCode:90001 message:@"channel operation failed (invalid channel state)"];
-
     switch (_realtime.connection.state_nosync) {
         case ARTRealtimeClosing:
         case ARTRealtimeClosed: {
             if (cb) {
+                ARTErrorInfo *invalidChannelError = [ARTErrorInfo createWithCode:90001 message:[NSString stringWithFormat:@"channel operation failed (invalid channel state: %@)", ARTRealtimeChannelStateToStr(self.state_nosync)]];
                 cb(invalidChannelError);
             }
             return;
@@ -457,6 +456,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
             case ARTRealtimeChannelDetached:
             case ARTRealtimeChannelFailed:
                 if (cb) {
+                    ARTErrorInfo *invalidChannelError = [ARTErrorInfo createWithCode:90001 message:[NSString stringWithFormat:@"channel operation failed (invalid channel state: %@)", ARTRealtimeChannelStateToStr(self.state_nosync)]];
                     cb(status.state == ARTStateOk ? invalidChannelError : status.errorInfo);
                 }
                 return;
@@ -481,6 +481,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         case ARTRealtimeChannelDetached:
         case ARTRealtimeChannelFailed: {
             if (cb) {
+                ARTErrorInfo *invalidChannelError = [ARTErrorInfo createWithCode:90001 message:[NSString stringWithFormat:@"channel operation failed (invalid channel state: %@)", ARTRealtimeChannelStateToStr(self.state_nosync)]];
                 cb(invalidChannelError);
             }
             break;
@@ -502,14 +503,12 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
 - (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(void (^)(ARTStatus *))cb {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
-    ARTStatus *statusInvalidConnectionState = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:90001 message:@"channel operation failed (invalid connection state)"]];
-    ARTStatus *statusInvalidChannelState = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:90001 message:@"channel operation failed (invalid channel state)"]];
-
     void (^queuedCallback)(ARTStatus *) = ^(ARTStatus *status) {
         switch (self.state_nosync) {
             case ARTRealtimeChannelSuspended:
             case ARTRealtimeChannelFailed:
                 if (cb) {
+                    ARTStatus *statusInvalidChannelState = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:90001 message:[NSString stringWithFormat:@"channel operation failed (invalid channel state: %@)", ARTRealtimeChannelStateToStr(self.state_nosync)]]];
                     cb(status.state == ARTStateOk ? statusInvalidChannelState : status);
                 }
                 return;
@@ -525,6 +524,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         case ARTRealtimeClosing:
         case ARTRealtimeClosed: {
             if (cb) {
+                ARTStatus *statusInvalidConnectionState = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:90001 message:[NSString stringWithFormat:@"channel operation failed (invalid connection state: %@)", ARTRealtimeConnectionStateToStr(_realtime.connection.state_nosync)]]];
                 cb(statusInvalidConnectionState);
             }
             return;
@@ -537,6 +537,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         case ARTRealtimeChannelSuspended:
         case ARTRealtimeChannelFailed: {
             if (cb) {
+                ARTStatus *statusInvalidChannelState = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:90001 message:[NSString stringWithFormat:@"channel operation failed (invalid channel state: %@)", ARTRealtimeChannelStateToStr(self.state_nosync)]]];
                 cb(statusInvalidChannelState);
             }
             break;
@@ -667,6 +668,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
     }
     [self _attach:onAttach];
     listener = [self.messagesEventEmitter on:cb];
+    [self.logger verbose:@"R:%p C:%p (%@) subscribe to all events", self->_realtime, self, self.name];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 });
     return listener;
@@ -708,6 +710,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
     }
     [self _attach:onAttach];
     listener = [self.messagesEventEmitter on:name callback:cb];
+    [self.logger verbose:@"R:%p C:%p (%@) subscribe to event '%@'", self->_realtime, self, self.name, name];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 });
     return listener;
@@ -717,6 +720,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
 dispatch_sync(_queue, ^{
 ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
     [self _unsubscribe];
+    [self.logger verbose:@"R:%p C:%p (%@) unsubscribe to all events", self->_realtime, self, self.name];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 });
 }
@@ -729,6 +733,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
 dispatch_sync(_queue, ^{
 ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
     [self.messagesEventEmitter off:listener];
+    [self.logger verbose:@"R:%p C:%p (%@) unsubscribe to all events", self->_realtime, self, self.name];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 });
 }
@@ -737,6 +742,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
 dispatch_sync(_queue, ^{
 ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
     [self.messagesEventEmitter off:name listener:listener];
+    [self.logger verbose:@"R:%p C:%p (%@) unsubscribe to event '%@'", self->_realtime, self, self.name, name];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 });
 }
@@ -856,6 +862,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) received channel message %tu - %@", _realtime, self, self.name, message.action, ARTProtocolMessageActionToStr(message.action)];
     switch (message.action) {
         case ARTProtocolMessageAttached:
+            [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) %@", _realtime, self, self.name, message.description];
             [self setAttached:message];
             break;
         case ARTProtocolMessageDetach:
@@ -1062,6 +1069,9 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
     if (!self.presenceMap.syncInProgress) {
         [self.presenceMap startSync];
+    }
+    else {
+        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) PresenceMap sync is in progress", _realtime, self, self.name];
     }
 
     for (int i=0; i<[message.presence count]; i++) {
