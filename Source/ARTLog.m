@@ -7,7 +7,7 @@
 //
 
 #import "ARTLog+Private.h"
-#import "ARTNSDate+ARTUtil.m"
+#import "ARTNSDate+ARTUtil.h"
 #import "ARTSentry.h"
 
 static const char *logLevelName(ARTLogLevel level) {
