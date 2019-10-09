@@ -475,7 +475,7 @@
 
 - (NSDictionary *)protocolMessageToDictionary:(ARTProtocolMessage *)message {
     NSMutableDictionary *output = [NSMutableDictionary dictionary];
-    output[@"action"] = [NSNumber numberWithInt:message.action];
+    output[@"action"] = [NSNumber numberWithLongLong:message.action];
 
     if (message.channel) {
         output[@"channel"] = message.channel;
