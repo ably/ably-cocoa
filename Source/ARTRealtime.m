@@ -173,7 +173,6 @@
     ARTScheduledBlockHandle *_idleTimer;
     dispatch_queue_t _userQueue;
     dispatch_queue_t _queue;
-
 }
 
 - (instancetype)initWithOptions:(ARTClientOptions *)options {
@@ -574,7 +573,9 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             if (!_transport) {
                 NSString *resumeKey = nil;
                 NSNumber *connectionSerial = nil;
-                if (stateChange.previous == ARTRealtimeFailed || stateChange.previous == ARTRealtimeDisconnected || stateChange.previous == ARTRealtimeSuspended) {
+                if (stateChange.previous == ARTRealtimeFailed ||
+                    stateChange.previous == ARTRealtimeDisconnected ||
+                    stateChange.previous == ARTRealtimeSuspended) {
                     resumeKey = self.connection.key_nosync;
                     connectionSerial = [NSNumber numberWithLongLong:self.connection.serial_nosync];
                     _resuming = true;
@@ -782,7 +783,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     // Resuming
     if (_resuming) {
         if (![message.connectionId isEqualToString:self.connection.id_nosync]) {
-            [self.logger warn:@"R:%p ARTRealtime: connection has reconnected, but resume failed. Reattaching any attached channels", self];
+            [self.logger warn:@"RT:%p connection \"%@\" has reconnected, but resume failed. Reattaching any attached channels", self, message.connectionId];
             // Reattach all channels
             for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
                 [channel reattachWithReason:message.error callback:nil];
@@ -790,11 +791,12 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             _resuming = false;
         }
         else if (message.error) {
-            [self.logger warn:@"R:%p ARTRealtime: connection has resumed with non-fatal error %@", self, message.error.message];
+            [self.logger warn:@"RT:%p connection \"%@\" has resumed with non-fatal error %@", self, message.connectionId, message.error.message];
             // The error will be emitted on `transition`
         }
-
-        [self.logger debug:@"RT:%p connection \"%@\" has reconnected and resumed successfully", self, self.connection.id_nosync];
+        else {
+            [self.logger debug:@"RT:%p connection \"%@\" has reconnected and resumed successfully", self, message.connectionId];
+        }
 
         for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
             if (channel.presenceMap.syncInProgress) {
@@ -806,8 +808,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
     switch (self.connection.state_nosync) {
         case ARTRealtimeConnecting: {
-            // If no previous connectionId, don't reset the msgSerial
-            //as it may have been set by recover data (unless the recover failed)
+            // If there's no previous connectionId, then don't reset the msgSerial
+            //as it may have been set by recover data (unless the recover failed).
             NSString *prevConnId = self.connection.id_nosync;
             BOOL connIdChanged = prevConnId && ![message.connectionId isEqualToString:prevConnId];
             BOOL recoverFailure = !prevConnId && message.error;
@@ -1556,21 +1558,21 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (void)realtimeTransportFailed:(id<ARTRealtimeTransport>)transport withError:(ARTRealtimeTransportError *)error {
+- (void)realtimeTransportFailed:(id<ARTRealtimeTransport>)transport withError:(ARTRealtimeTransportError *)transportError {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     if (transport != self.transport) {
         // Old connection
         return;
     }
 
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p realtime transport failed: %@", self, error];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p realtime transport failed: %@", self, transportError];
 
-    if ([self shouldRetryWithFallback:error]) {
+    if ([self shouldRetryWithFallback:transportError]) {
         [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p host is down; can retry with fallback host", self];
-        if (!_fallbacks && [error.url.host isEqualToString:[ARTDefault realtimeHost]]) {
+        if (!_fallbacks && [transportError.url.host isEqualToString:[ARTDefault realtimeHost]]) {
             [self.rest internetIsUp:^void(BOOL isUp) {
                 self->_fallbacks = [[ARTFallback alloc] initWithOptions:[self getClientOptions]];
-                (self->_fallbacks != nil) ? [self reconnectWithFallback] : [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:error.error]];
+                (self->_fallbacks != nil) ? [self reconnectWithFallback] : [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:transportError.error]];
             }];
             return;
         } else if (_fallbacks && [self reconnectWithFallback]) {
@@ -1578,13 +1580,13 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         }
     }
 
-    switch (error.type) {
+    switch (transportError.type) {
         case ARTRealtimeTransportErrorTypeBadResponse:
         case ARTRealtimeTransportErrorTypeOther:
-            [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:error.error]];
+            [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:transportError.error]];
             break;
         default:
-            [self transition:ARTRealtimeDisconnected withErrorInfo:[ARTErrorInfo createFromNSError:error.error]];
+            [self transition:ARTRealtimeDisconnected withErrorInfo:[ARTErrorInfo createFromNSError:transportError.error]];
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
