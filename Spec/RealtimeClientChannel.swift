@@ -596,7 +596,7 @@ class RealtimeClientChannel: QuickSpec {
 
 
                 // RTL3d
-                fit("should attach successfully and remain attached when the connection state without a successful recovery gets CONNECTED") {
+                it("should attach successfully and remain attached when the connection state without a successful recovery gets CONNECTED") {
                     let options = AblyTests.commonAppSetup()
                     options.disconnectedRetryTimeout = 0.5
                     options.suspendedRetryTimeout = 3.0
