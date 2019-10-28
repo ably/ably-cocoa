@@ -2458,7 +2458,7 @@ class RealtimeClientConnection: QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.connected) { stateChange in
-                                expect(stateChange!.reason!.message).to(equal("Injected error"))
+                                expect(stateChange?.reason?.message).to(equal("Injected error"))
                                 expect(client.connection.errorReason).to(beIdenticalTo(stateChange!.reason))
                                 let transport = client.internal.transport as! TestProxyTransport
                                 let connectedPM = transport.protocolMessagesReceived.filter{ $0.action == .connected }[0]
