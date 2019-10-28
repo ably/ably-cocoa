@@ -2139,7 +2139,6 @@ class RealtimeClientConnection: QuickSpec {
                 // RTN14e
                 it("connection state has been in the DISCONNECTED state for more than the default connectionStateTtl should change the state to SUSPENDED") {
                     let options = AblyTests.commonAppSetup()
-                    // to not wait the defaul 15s before reconnecting
                     options.disconnectedRetryTimeout = 0.1
                     options.suspendedRetryTimeout = 0.5
                     options.autoConnect = false
@@ -2149,10 +2148,6 @@ class RealtimeClientConnection: QuickSpec {
                         // Force a timeout
                     }
 
-                    let previousConnectionStateTtl = ARTDefault.connectionStateTtl()
-                    defer { ARTDefault.setConnectionStateTtl(previousConnectionStateTtl) }
-                    ARTDefault.setConnectionStateTtl(expectedTime)
-
                     let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
                     defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
                     ARTDefault.setRealtimeRequestTimeout(0.1)
@@ -2160,6 +2155,8 @@ class RealtimeClientConnection: QuickSpec {
                     let client = ARTRealtime(options: options)
                     client.internal.suspendImmediateReconnection = true
                     defer { client.dispose(); client.close() }
+
+                    client.overrideConnectionStateTTL(0.3)
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.on(.suspended) { stateChange in
@@ -2174,6 +2171,75 @@ class RealtimeClientConnection: QuickSpec {
                         }
                         client.connect()
                     }
+                }
+
+                // RTN14e - https://github.com/ably/ably-cocoa/issues/913
+                it("should change the state to SUSPENDED when the connection state has been in the DISCONNECTED state for more than the connectionStateTtl") {
+                    let options = AblyTests.commonAppSetup()
+                    options.disconnectedRetryTimeout = 0.5
+                    options.suspendedRetryTimeout = 2.0
+                    options.autoConnect = false
+
+                    let client = ARTRealtime(options: options)
+                    client.internal.setTransport(TestProxyTransport.self)
+                    client.internal.setReachabilityClass(TestReachability.self)
+                    defer {
+                        client.simulateRestoreInternetConnection()
+                        client.dispose()
+                        client.close()
+                    }
+
+                    client.overrideConnectionStateTTL(3.0)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.connected) { stateChange in
+                            expect(stateChange?.reason).to(beNil())
+                            done()
+                        }
+                        client.connect()
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        // Should move 6 times to the DISCONNECTED state
+                        //   3.0 connectionStateTtl / 0.5 disconnectedRetryTimeout = 6 times + 1 (SUSPENDED)
+                        let partialDone = AblyTests.splitDone(7, done: done)
+                        client.connection.on(.disconnected) { stateChange in
+                            partialDone()
+                        }
+                        client.connection.once(.suspended) { stateChange in
+                            client.connection.off()
+                            guard let error = stateChange?.reason else {
+                                fail("SUSPENDED reason should not be nil"); done(); return
+                            }
+                            expect(error.message).to(contain("network is down"))
+                            expect(client.connection.errorReason).to(beIdenticalTo(error))
+                            partialDone()
+                        }
+                        client.simulateNoInternetConnection()
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(4, done: done)
+                        client.connection.once(.disconnected) { stateChange in
+                            fail("Should not reach DISCONNECTED state")
+                        }
+                        client.connection.once(.connected) { stateChange in
+                            expect(stateChange?.reason).to(beNil())
+                            expect(client.connection.errorReason).to(beNil())
+                            partialDone()
+                        }
+                        client.connection.on(.suspended) { stateChange in
+                            guard let error = stateChange?.reason else {
+                                fail("SUSPENDED reason should not be nil"); done(); return
+                            }
+                            expect(error.message).to(contain("network is down"))
+                            expect(client.connection.errorReason).to(beIdenticalTo(error))
+                            partialDone()
+                        }
+                        client.simulateRestoreInternetConnection(after: 7.0)
+                    }
+
+                    expect(client.connection.state).to(equal(.connected))
                 }
 
                 it("on CLOSE the connection should stop connection retries") {
