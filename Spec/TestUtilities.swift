@@ -1301,6 +1301,12 @@ extension ARTRealtime {
         }
     }
 
+    func overrideConnectionStateTTL(_ ttl: TimeInterval) {
+        self.internal.testSuite_injectIntoMethod(before: NSSelectorFromString("setSuspendTime")) {
+            self.internal.connectionStateTtl = ttl
+        }
+    }
+
     func dispose() {
         let names = self.channels.map({ ($0 as! ARTRealtimeChannel).name })
         for name in names {
