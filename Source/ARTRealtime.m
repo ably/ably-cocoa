@@ -160,7 +160,7 @@
     BOOL _renewingToken;
     BOOL _disableImmediateReconnection;
     ARTEventEmitter<ARTEvent *, ARTErrorInfo *> *_pingEventEmitter;
-    NSDate *_startedReconnection;
+    NSDate *_suspendTime;
     NSDate *_lastActivity;
     Class _transportClass;
     Class _reachabilityClass;
@@ -168,6 +168,7 @@
     ARTFallback *_fallbacks;
     __weak ARTEventListener *_connectionRetryFromSuspendedListener;
     __weak ARTEventListener *_connectionRetryFromDisconnectedListener;
+    __weak ARTEventListener *_connectionSuspendModeListener;
     __weak ARTEventListener *_connectingTimeoutListener;
     ARTScheduledBlockHandle *_authenitcatingTimeoutWork;
     ARTScheduledBlockHandle *_idleTimer;
@@ -404,6 +405,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         // New connection
         _transport = nil;
     }
+    [self setSuspendTime];
     [self transition:ARTRealtimeConnecting];
 }
 
@@ -507,14 +509,15 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
 - (void)transition:(ARTRealtimeConnectionState)state withErrorInfo:(ARTErrorInfo *)errorInfo {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
+    if (state == ARTRealtimeDisconnected && [self isSuspendMode]) {
+        state = ARTRealtimeSuspended;
+    }
+
     [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p realtime state transitions to %tu - %@", self, state, ARTRealtimeConnectionStateToStr(state)];
 
     ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:state previous:self.connection.state_nosync event:(ARTRealtimeConnectionEvent)state reason:errorInfo retryIn:0];
     [self.connection setState:state];
-
-    if (errorInfo != nil) {
-        [self.connection setErrorReason:errorInfo];
-    }
+    [self.connection setErrorReason:errorInfo];
 
     ARTEventListener *stateChangeEventListener = [self transitionSideEffects:stateChange];
 
@@ -640,36 +643,36 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             [self.auth cancelAuthorization:stateChange.reason];
             break;
         case ARTRealtimeDisconnected: {
-            if (!_startedReconnection) {
-                _startedReconnection = [NSDate date];
-                [_internalEventEmitter on:^(ARTConnectionStateChange *change) {
-                    if (change.current != ARTRealtimeDisconnected && change.current != ARTRealtimeConnecting) {
-                        self->_startedReconnection = nil;
-                    }
-                }];
-            }
-
-            if ([[NSDate date] timeIntervalSinceDate:_startedReconnection] >= _connectionStateTtl) {
-                artDispatchScheduled(0, _rest.queue, ^{
+            if ([self isSuspendMode]) {
+                [self.logger verbose:@"RT:%p realtime connection has staled", self];
+                [_connectionRetryFromDisconnectedListener stopTimer];
+                _connectionRetryFromDisconnectedListener = nil;
+                stateChangeEventListener = [self unlessStateChangesBefore:0 do:^{
+                    self->_connectionSuspendModeListener = nil;
                     [self transition:ARTRealtimeSuspended withErrorInfo:stateChange.reason];
-                });
-                return nil;
+                }];
+                _connectionSuspendModeListener = stateChangeEventListener;
             }
-
-            [self closeAndReleaseTransport];
-            NSTimeInterval retryInterval = self.options.disconnectedRetryTimeout;
-            // RTN15a - retry immediately if client was connected
-            if (stateChange.previous == ARTRealtimeConnected && !_suspendImmediateReconnection) {
-                retryInterval = 0.1;
+            else {
+                [self closeAndReleaseTransport];
+                NSTimeInterval retryInterval = self.options.disconnectedRetryTimeout;
+                // RTN15a - retry immediately if client was connected
+                if (stateChange.previous == ARTRealtimeConnected && !_disableImmediateReconnection) {
+                    retryInterval = 0.1;
+                }
+                [stateChange setRetryIn:retryInterval];
+                stateChangeEventListener = [self unlessStateChangesBefore:stateChange.retryIn do:^{
+                    self->_connectionRetryFromDisconnectedListener = nil;
+                    [self transition:ARTRealtimeConnecting];
+                }];
+                _connectionRetryFromDisconnectedListener = stateChangeEventListener;
             }
-            [stateChange setRetryIn:retryInterval];
-            stateChangeEventListener = [self unlessStateChangesBefore:stateChange.retryIn do:^{
-                [self transition:ARTRealtimeConnecting];
-            }];
-            _connectionRetryFromDisconnectedListener = stateChangeEventListener;
             break;
         }
         case ARTRealtimeSuspended: {
+            [_connectionRetryFromDisconnectedListener stopTimer];
+            _connectionRetryFromDisconnectedListener = nil;
+            [self.auth cancelAuthorization:nil];
             [self closeAndReleaseTransport];
             [stateChange setRetryIn:self.options.suspendedRetryTimeout];
             stateChangeEventListener = [self unlessStateChangesBefore:stateChange.retryIn do:^{
@@ -677,11 +680,11 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                 [self transition:ARTRealtimeConnecting];
             }];
             _connectionRetryFromSuspendedListener = stateChangeEventListener;
-            [self.auth cancelAuthorization:nil];
             break;
         }
         case ARTRealtimeConnected: {
             _fallbacks = nil;
+            [self setSuspendTime];
             if (stateChange.reason) {
                 ARTStatus *status = [ARTStatus state:ARTStateError info:[stateChange.reason copy]];
                 [self failPendingMessages:status];
@@ -844,6 +847,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     }
 
     _resuming = false;
+    [self setSuspendTime];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
@@ -931,6 +935,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     _connectionRetryFromSuspendedListener = nil;
     [_connectionRetryFromDisconnectedListener stopTimer];
     _connectionRetryFromDisconnectedListener = nil;
+    [_connectionSuspendModeListener stopTimer];
+    _connectionSuspendModeListener = nil;
     // Cancel connecting scheduled work
     [_connectingTimeoutListener stopTimer];
     _connectingTimeoutListener = nil;
@@ -1119,6 +1125,20 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 - (void)onSuspended {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     [self transition:ARTRealtimeSuspended];
+} ART_TRY_OR_MOVE_TO_FAILED_END
+}
+
+- (void)setSuspendTime {
+ART_TRY_OR_MOVE_TO_FAILED_START(self) {
+    _suspendTime = [[NSDate date] dateByAddingTimeInterval:_connectionStateTtl];
+    [self.logger verbose:@"RT:%p set suspend time to %@ (ttl=%f)", self, _suspendTime, _connectionStateTtl];
+} ART_TRY_OR_MOVE_TO_FAILED_END
+}
+
+- (BOOL)isSuspendMode {
+ART_TRY_OR_MOVE_TO_FAILED_START(self) {
+    NSDate *currentTime = [NSDate date];
+    return [currentTime timeIntervalSinceDate:_suspendTime] > 0;
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
