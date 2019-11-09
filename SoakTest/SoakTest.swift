@@ -8,10 +8,12 @@
 
 import Foundation
 import XCTest
-import Ably
+import Ably.Private
 
 class SoakTest: XCTestCase {
     func testSoak() {
+        ARTWebSocketTransport.setWebSocketClass(SoakTestWebSocket.self)
+
         var _: ARTRealtime?
         XCTAssertTrue(true)
     }

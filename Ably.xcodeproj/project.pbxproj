@@ -707,6 +707,10 @@
 		EBB721BA2376A4AF001C3550 /* msgpack.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D736A0C71F916553005ABE81 /* msgpack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EBB721BB2376A4AF001C3550 /* SAMKeychain.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D75F49C6205AD4D4003DE04F /* SAMKeychain.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EBB721C22376A4E6001C3550 /* SoakTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB721C12376A4E6001C3550 /* SoakTest.swift */; };
+		EBB721C52376A948001C3550 /* ARTWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = EBB721C42376A948001C3550 /* ARTWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		EBB721C62376A948001C3550 /* ARTWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = EBB721C42376A948001C3550 /* ARTWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		EBB721C72376A948001C3550 /* ARTWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = EBB721C42376A948001C3550 /* ARTWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		EBB721C92376B16C001C3550 /* SoakTestWebSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB721C82376B16B001C3550 /* SoakTestWebSocket.swift */; };
 		EBD947B41EBB8F160005DD16 /* ARTSentry.h in Headers */ = {isa = PBXBuildFile; fileRef = EBD947B31EBB8F160005DD16 /* ARTSentry.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EBD947B61EBB8F2B0005DD16 /* ARTSentry.m in Sources */ = {isa = PBXBuildFile; fileRef = EBD947B51EBB8F2B0005DD16 /* ARTSentry.m */; };
 		EBF2285B1F4D9AD6009091DD /* ARTWebSocketTransport+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D714A63F1C75F0C5002F2CA0 /* ARTWebSocketTransport+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -1085,6 +1089,8 @@
 		EBB721BF2376A4AF001C3550 /* Ably-iOS-SoakTest.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Ably-iOS-SoakTest.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		EBB721C12376A4E6001C3550 /* SoakTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoakTest.swift; sourceTree = "<group>"; };
 		EBB721C32376A853001C3550 /* Ably-iOS-SoakTest-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Ably-iOS-SoakTest-Info.plist"; sourceTree = "<group>"; };
+		EBB721C42376A948001C3550 /* ARTWebSocket.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTWebSocket.h; sourceTree = "<group>"; };
+		EBB721C82376B16B001C3550 /* SoakTestWebSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoakTestWebSocket.swift; sourceTree = "<group>"; };
 		EBD947B31EBB8F160005DD16 /* ARTSentry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTSentry.h; sourceTree = "<group>"; };
 		EBD947B51EBB8F2B0005DD16 /* ARTSentry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTSentry.m; sourceTree = "<group>"; };
 		EBFFAC181E97919C003E7326 /* ARTLocalDevice+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTLocalDevice+Private.h"; sourceTree = "<group>"; };
@@ -1372,6 +1378,7 @@
 				D714A63F1C75F0C5002F2CA0 /* ARTWebSocketTransport+Private.h */,
 				96E408461A3895E800087F77 /* ARTWebSocketTransport.m */,
 				EB20F8D61C653F1E00EF3978 /* ARTPresence+Private.h */,
+				EBB721C42376A948001C3550 /* ARTWebSocket.h */,
 			);
 			name = Transport;
 			sourceTree = "<group>";
@@ -1532,6 +1539,7 @@
 			children = (
 				EBB721C32376A853001C3550 /* Ably-iOS-SoakTest-Info.plist */,
 				EBB721C12376A4E6001C3550 /* SoakTest.swift */,
+				EBB721C82376B16B001C3550 /* SoakTestWebSocket.swift */,
 			);
 			path = SoakTest;
 			sourceTree = "<group>";
@@ -1672,6 +1680,7 @@
 				D7F1D3731BF4DE07001A4B5E /* ARTRestPresence.h in Headers */,
 				D7B17EE31C07208B00A6958E /* ARTConnectionDetails.h in Headers */,
 				D7F2B8B21E42410D00B65151 /* ARTPresenceMessage+Private.h in Headers */,
+				EBB721C52376A948001C3550 /* ARTWebSocket.h in Headers */,
 				EBFA366E1D58B05000B09AA7 /* ARTRestPresence+Private.h in Headers */,
 				EBFFAC1D1E97FB76003E7326 /* ARTPush+Private.h in Headers */,
 				EB2D85011CD769C800F23CDA /* ARTOSReachability.h in Headers */,
@@ -1794,6 +1803,7 @@
 				D710D4D721949BF9008F54AD /* ARTConnectionDetails.h in Headers */,
 				D710D4DB21949BF9008F54AD /* ARTRealtimeChannels.h in Headers */,
 				D710D61021949DDB008F54AD /* ARTFallback.h in Headers */,
+				EBB721C62376A948001C3550 /* ARTWebSocket.h in Headers */,
 				D710D4C321949B9C008F54AD /* ARTWebSocketTransport.h in Headers */,
 				D710D4D621949BF9008F54AD /* ARTConnection.h in Headers */,
 				D710D50421949C18008F54AD /* ARTRealtime+Private.h in Headers */,
@@ -1916,6 +1926,7 @@
 				D710D4E721949BFB008F54AD /* ARTConnectionDetails.h in Headers */,
 				D710D4EB21949BFB008F54AD /* ARTRealtimeChannels.h in Headers */,
 				D710D61A21949DDC008F54AD /* ARTFallback.h in Headers */,
+				EBB721C72376A948001C3550 /* ARTWebSocket.h in Headers */,
 				D710D4C721949B9D008F54AD /* ARTWebSocketTransport.h in Headers */,
 				D710D4E621949BFB008F54AD /* ARTConnection.h in Headers */,
 				D710D51021949C19008F54AD /* ARTRealtime+Private.h in Headers */,
@@ -2519,6 +2530,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				EBB721C22376A4E6001C3550 /* SoakTest.swift in Sources */,
+				EBB721C92376B16C001C3550 /* SoakTestWebSocket.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

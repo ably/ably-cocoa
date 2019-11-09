@@ -1052,25 +1052,25 @@ class TestProxyTransport: ARTWebSocketTransport {
         super.receive(msg)
     }
 
-    override func webSocketDidOpen(_ webSocket: SRWebSocket) {
+    override func webSocketDidOpen(_ webSocket: ARTWebSocket) {
         if !ignoreWebSocket {
             super.webSocketDidOpen(webSocket)
         }
     }
 
-    override func webSocket(_ webSocket: SRWebSocket, didFailWithError error: Error) {
+    override func webSocket(_ webSocket: ARTWebSocket, didFailWithError error: Error) {
         if !ignoreWebSocket {
             super.webSocket(webSocket, didFailWithError: error)
         }
     }
 
-    override func webSocket(_ webSocket: SRWebSocket, didReceiveMessage message: Any?) {
+    override func webSocket(_ webSocket: ARTWebSocket, didReceiveMessage message: Any?) {
         if !ignoreWebSocket {
             super.webSocket(webSocket, didReceiveMessage: message as Any)
         }
     }
 
-    override func webSocket(_ webSocket: SRWebSocket, didCloseWithCode code: Int, reason: String?, wasClean: Bool) {
+    override func webSocket(_ webSocket: ARTWebSocket, didCloseWithCode code: Int, reason: String?, wasClean: Bool) {
         if !ignoreWebSocket {
             super.webSocket(webSocket, didCloseWithCode: code, reason: reason, wasClean: wasClean)
         }
@@ -1274,20 +1274,20 @@ extension ARTWebSocketTransport {
     func simulateIncomingNormalClose() {
         let CLOSE_NORMAL = 1000
         self.setState(ARTRealtimeTransportState.closing)
-        let webSocketDelegate = self as SRWebSocketDelegate
-        webSocketDelegate.webSocket!(self.websocket!, didCloseWithCode: CLOSE_NORMAL, reason: "", wasClean: true)
+        let webSocketDelegate = self as ARTWebSocketDelegate
+        webSocketDelegate.webSocket(self.websocket!, didCloseWithCode: CLOSE_NORMAL, reason: "", wasClean: true)
     }
 
     func simulateIncomingAbruptlyClose() {
         let CLOSE_ABNORMAL = 1006
-        let webSocketDelegate = self as SRWebSocketDelegate
-        webSocketDelegate.webSocket!(self.websocket!, didCloseWithCode: CLOSE_ABNORMAL, reason: "connection was closed abnormally", wasClean: false)
+        let webSocketDelegate = self as ARTWebSocketDelegate
+        webSocketDelegate.webSocket(self.websocket!, didCloseWithCode: CLOSE_ABNORMAL, reason: "connection was closed abnormally", wasClean: false)
     }
 
     func simulateIncomingError() {
         let error = NSError(domain: ARTAblyErrorDomain, code: 0, userInfo: [NSLocalizedDescriptionKey:"Fail test"])
-        let webSocketDelegate = self as SRWebSocketDelegate
-        webSocketDelegate.webSocket!(self.websocket!, didFailWithError: error)
+        let webSocketDelegate = self as ARTWebSocketDelegate
+        webSocketDelegate.webSocket(self.websocket!, didFailWithError: error)
     }
 }
 

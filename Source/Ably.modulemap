@@ -32,6 +32,7 @@ framework module Ably {
         header "ARTRealtimeTransport.h"
         header "ARTWebSocketTransport.h"
         header "ARTWebSocketTransport+Private.h"
+        header "ARTWebSocket.h"
         header "ARTClientOptions+Private.h"
         header "ARTCrypto+Private.h"
         header "ARTLog+Private.h"

@@ -39,6 +39,11 @@ enum {
 
 NSString *WebSocketStateToStr(SRReadyState state);
 
+@interface SRWebSocket () <ARTWebSocket>
+@end
+
+Class websocketClass = nil;
+
 @implementation ARTWebSocketTransport {
     id<ARTRealtimeTransportDelegate> _delegate;
     ARTRealtimeTransportState _state;
@@ -51,7 +56,19 @@ NSString *WebSocketStateToStr(SRReadyState state);
 @synthesize delegate = _delegate;
 @synthesize stateEmitter = _stateEmitter;
 
++ (void)setWebSocketClass:(Class)class {
+    websocketClass = class;
+}
+
 - (instancetype)initWithRest:(ARTRestInternal *)rest options:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial {
+
+    static dispatch_once_t setWebSocketClassOnce;
+    dispatch_once(&setWebSocketClassOnce, ^{
+        if (websocketClass == nil) {
+            [ARTWebSocketTransport setWebSocketClass:[SRWebSocket class]];
+        }
+    });
+    
     self = [super init];
     if (self) {
         _workQueue = rest.queue;
@@ -196,7 +213,7 @@ NSString *WebSocketStateToStr(SRReadyState state);
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
 
-    self.websocket = [[SRWebSocket alloc] initWithURLRequest:request];
+    self.websocket = [[websocketClass alloc] initWithURLRequest:request];
     [self.websocket setDelegateDispatchQueue:_workQueue];
     self.websocket.delegate = self;
     self.websocketURL = url;
@@ -262,13 +279,13 @@ NSString *WebSocketStateToStr(SRReadyState state);
 // since we pass it as delegate queue on setupWebSocket. So we can safely
 // call all our delegate's methods.
 
-- (void)webSocketDidOpen:(SRWebSocket *)websocket {
+- (void)webSocketDidOpen:(id<ARTWebSocket>)websocket {
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket did open", _delegate, self];
     [_stateEmitter emit:[ARTEvent newWithTransportState:ARTRealtimeTransportStateOpened] with:nil];
     [_delegate realtimeTransportAvailable:self];
 }
 
-- (void)webSocket:(SRWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean {
+- (void)webSocket:(id<ARTWebSocket>)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean {
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket did disconnect (code %ld) %@", _delegate, self, (long)code, reason];
 
     switch (code) {
@@ -307,7 +324,7 @@ NSString *WebSocketStateToStr(SRReadyState state);
     [_stateEmitter emit:[ARTEvent newWithTransportState:ARTRealtimeTransportStateClosed] with:nil];
 }
 
-- (void)webSocket:(SRWebSocket *)webSocket didFailWithError:(NSError *)error {
+- (void)webSocket:(id<ARTWebSocket>)webSocket didFailWithError:(NSError *)error {
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket did receive error %@", _delegate, self, error];
 
     [_delegate realtimeTransportFailed:self withError:[self classifyError:error]];
@@ -335,7 +352,7 @@ NSString *WebSocketStateToStr(SRReadyState state);
     return [[ARTRealtimeTransportError alloc] initWithError:error type:type url:self.websocketURL];
 }
 
-- (void)webSocket:(SRWebSocket *)webSocket didReceiveMessage:(id)message {
+- (void)webSocket:(id<ARTWebSocket>)webSocket didReceiveMessage:(id)message {
     [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket did receive message", _delegate, self];
 
     if (self.websocket.readyState == SR_CLOSED) {
