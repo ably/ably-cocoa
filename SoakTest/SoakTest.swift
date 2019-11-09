@@ -14,8 +14,10 @@ class SoakTest: XCTestCase {
     func testSoak() {
         ARTWebSocketTransport.setWebSocketClass(SoakTestWebSocket.self)
         ARTHttp.setURLSessionClass(SoakTestURLSession.self)
-
-        var _: ARTRealtime?
+        if let realtime = (nil as ARTRealtime?) {
+            realtime.internal.setReachabilityClass(SoakTestReachability.self)
+        }
+        
         XCTAssertTrue(true)
     }
 }
