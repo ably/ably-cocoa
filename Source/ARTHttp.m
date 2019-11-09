@@ -12,9 +12,11 @@
 
 @interface ARTHttp ()
 
-@property (readonly, strong, nonatomic) ARTURLSessionServerTrust *urlSession;
+@property (readonly, strong, nonatomic) id<ARTURLSession> urlSession;
 
 @end
+
+Class urlSessionClass = nil;
 
 #pragma mark - ARTHttp
 
@@ -23,10 +25,21 @@
     _Nullable dispatch_queue_t _queue;
 }
 
++ (void)setURLSessionClass:(Class)class {
+    urlSessionClass = class;
+}
+
 - (instancetype)init:(dispatch_queue_t)queue logger:(ARTLog *)logger {
+    static dispatch_once_t setURLSessionClassOnce;
+    dispatch_once(&setURLSessionClassOnce, ^{
+        if (urlSessionClass == nil) {
+            [ARTHttp setURLSessionClass:[ARTURLSessionServerTrust class]];
+        }
+    });
+
     self = [super init];
     if (self) {
-        _urlSession = [[ARTURLSessionServerTrust alloc] init:queue];
+        _urlSession = [[urlSessionClass alloc] init:queue];
         _logger = logger;
     }
     return self;

@@ -13,6 +13,7 @@ import Ably.Private
 class SoakTest: XCTestCase {
     func testSoak() {
         ARTWebSocketTransport.setWebSocketClass(SoakTestWebSocket.self)
+        ARTHttp.setURLSessionClass(SoakTestURLSession.self)
 
         var _: ARTRealtime?
         XCTAssertTrue(true)
