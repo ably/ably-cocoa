@@ -1513,17 +1513,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (void)realtimeTransportUnavailable:(id<ARTRealtimeTransport>)transport {
-ART_TRY_OR_MOVE_TO_FAILED_START(self) {
-    if (transport != self.transport) {
-        // Old connection
-        return;
-    }
-
-    [self transition:ARTRealtimeDisconnected];
-} ART_TRY_OR_MOVE_TO_FAILED_END
-}
-
 - (void)realtimeTransportClosed:(id<ARTRealtimeTransport>)transport {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     if (transport != self.transport) {
