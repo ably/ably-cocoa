@@ -12,7 +12,7 @@ import Ably.Private
 
 let randomSeed: Int = 13
 let concurrentConnections: Int = 1000
-let runTime: TimeInterval = 60 * 30
+let runTime: TimeInterval = 60 * 25
 
 class SoakTest: XCTestCase {
     override func setUp() {
