@@ -672,6 +672,22 @@
 		EB2D84F71CD75CCE00F23CDA /* ARTReachability.h in Headers */ = {isa = PBXBuildFile; fileRef = EB2D84F61CD75CCE00F23CDA /* ARTReachability.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		EB2D84FD1CD769B800F23CDA /* ARTOSReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = EB2D84FC1CD769B700F23CDA /* ARTOSReachability.m */; };
 		EB2D85011CD769C800F23CDA /* ARTOSReachability.h in Headers */ = {isa = PBXBuildFile; fileRef = EB2D85001CD769C800F23CDA /* ARTOSReachability.h */; };
+		EB36308C23804F7A00B83598 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB36308B23804F7A00B83598 /* AppDelegate.swift */; };
+		EB36308E23804F7A00B83598 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB36308D23804F7A00B83598 /* SceneDelegate.swift */; };
+		EB36309023804F7A00B83598 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB36308F23804F7A00B83598 /* ContentView.swift */; };
+		EB36309223804F7C00B83598 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EB36309123804F7C00B83598 /* Assets.xcassets */; };
+		EB36309523804F7C00B83598 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EB36309423804F7C00B83598 /* Preview Assets.xcassets */; };
+		EB36309823804F7C00B83598 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EB36309623804F7C00B83598 /* LaunchScreen.storyboard */; };
+		EB3630AD2380508900B83598 /* Ably.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BF61311A35B2AB004CF2B3 /* Ably.framework */; };
+		EB3630BF2380536300B83598 /* SoakTestURLSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB721CE2376B60E001C3550 /* SoakTestURLSession.swift */; };
+		EB3630C02380536300B83598 /* SoakTestReachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB721D02376B999001C3550 /* SoakTestReachability.swift */; };
+		EB3630C12380536300B83598 /* SoakTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB721C12376A4E6001C3550 /* SoakTest.swift */; };
+		EB3630C22380536300B83598 /* SoakTestWebSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB721C82376B16B001C3550 /* SoakTestWebSocket.swift */; };
+		EB3630CE2380562400B83598 /* msgpack.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = EB3630C92380562400B83598 /* msgpack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		EB3630CF2380562400B83598 /* KSCrash.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = EB3630CA2380562400B83598 /* KSCrash.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		EB3630D02380562400B83598 /* SocketRocketAblyFork.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = EB3630CB2380562400B83598 /* SocketRocketAblyFork.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		EB3630D12380562400B83598 /* SAMKeychain.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = EB3630CC2380562400B83598 /* SAMKeychain.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		EB3630D22380562400B83598 /* ULID.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = EB3630CD2380562400B83598 /* ULID.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EB4B1A0C1F2190BB00467F07 /* ARTRestChannels+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB4B1A0B1F2190BB00467F07 /* ARTRestChannels+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		EB503C881C7E4A090053AF00 /* ARTClientOptions+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB503C871C7E4A090053AF00 /* ARTClientOptions+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		EB503C8A1C7F1FE40053AF00 /* ARTLog+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB503C891C7F1FE40053AF00 /* ARTLog+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -692,30 +708,12 @@
 		EB9C530B1CD7BEB100.8.557 /* ARTJsonLikeEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = EB9C530A1CD7BEB100.8.557 /* ARTJsonLikeEncoder.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		EB9C530D1CD7BFF300.8.557 /* ARTJsonLikeEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB9C530C1CD7BFF300.8.557 /* ARTJsonLikeEncoder.m */; };
 		EBAB9A6F1C69702800AF036B /* ReadmeExamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBAB9A6E1C69702800AF036B /* ReadmeExamples.swift */; };
-		EBB721AB2376A4AF001C3550 /* Ably.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BF61311A35B2AB004CF2B3 /* Ably.framework */; };
-		EBB721AC2376A4AF001C3550 /* Aspects.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7093C8E219EE3D800723F17 /* Aspects.framework */; };
-		EBB721AD2376A4AF001C3550 /* Quick.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7EEE6AD21A6E048000E8474 /* Quick.framework */; };
-		EBB721AE2376A4AF001C3550 /* Nimble.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7EEE6AC21A6E048000E8474 /* Nimble.framework */; };
-		EBB721AF2376A4AF001C3550 /* SwiftyJSON.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7EEE6AB21A6E048000E8474 /* SwiftyJSON.framework */; };
-		EBB721B32376A4AF001C3550 /* SocketRocketAblyFork.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D73BF70B22609E7F00579773 /* SocketRocketAblyFork.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		EBB721B42376A4AF001C3550 /* SwiftyJSON.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D7EEE6AB21A6E048000E8474 /* SwiftyJSON.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		EBB721B52376A4AF001C3550 /* Quick.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D7EEE6AD21A6E048000E8474 /* Quick.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		EBB721B62376A4AF001C3550 /* Nimble.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D7EEE6AC21A6E048000E8474 /* Nimble.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		EBB721B72376A4AF001C3550 /* Aspects.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D7093C8E219EE3D800723F17 /* Aspects.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		EBB721B82376A4AF001C3550 /* ULID.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D77A0C951FFEEF0300711131 /* ULID.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		EBB721B92376A4AF001C3550 /* KSCrash.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D736A0C61F916553005ABE81 /* KSCrash.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		EBB721BA2376A4AF001C3550 /* msgpack.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D736A0C71F916553005ABE81 /* msgpack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		EBB721BB2376A4AF001C3550 /* SAMKeychain.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D75F49C6205AD4D4003DE04F /* SAMKeychain.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		EBB721C22376A4E6001C3550 /* SoakTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB721C12376A4E6001C3550 /* SoakTest.swift */; };
 		EBB721C52376A948001C3550 /* ARTWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = EBB721C42376A948001C3550 /* ARTWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		EBB721C62376A948001C3550 /* ARTWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = EBB721C42376A948001C3550 /* ARTWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		EBB721C72376A948001C3550 /* ARTWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = EBB721C42376A948001C3550 /* ARTWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		EBB721C92376B16C001C3550 /* SoakTestWebSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB721C82376B16B001C3550 /* SoakTestWebSocket.swift */; };
 		EBB721CB2376B454001C3550 /* ARTURLSession.h in Headers */ = {isa = PBXBuildFile; fileRef = EBB721CA2376B454001C3550 /* ARTURLSession.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		EBB721CC2376B454001C3550 /* ARTURLSession.h in Headers */ = {isa = PBXBuildFile; fileRef = EBB721CA2376B454001C3550 /* ARTURLSession.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		EBB721CD2376B454001C3550 /* ARTURLSession.h in Headers */ = {isa = PBXBuildFile; fileRef = EBB721CA2376B454001C3550 /* ARTURLSession.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		EBB721CF2376B60E001C3550 /* SoakTestURLSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB721CE2376B60E001C3550 /* SoakTestURLSession.swift */; };
-		EBB721D12376B999001C3550 /* SoakTestReachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB721D02376B999001C3550 /* SoakTestReachability.swift */; };
 		EBD947B41EBB8F160005DD16 /* ARTSentry.h in Headers */ = {isa = PBXBuildFile; fileRef = EBD947B31EBB8F160005DD16 /* ARTSentry.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EBD947B61EBB8F2B0005DD16 /* ARTSentry.m in Sources */ = {isa = PBXBuildFile; fileRef = EBD947B51EBB8F2B0005DD16 /* ARTSentry.m */; };
 		EBF2285B1F4D9AD6009091DD /* ARTWebSocketTransport+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D714A63F1C75F0C5002F2CA0 /* ARTWebSocketTransport+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -747,7 +745,14 @@
 			remoteGlobalIDString = 96BF61301A35B2AB004CF2B3;
 			remoteInfo = "Ably-iOS";
 		};
-		EBB7218F2376A4AF001C3550 /* PBXContainerItemProxy */ = {
+		EB36309F23804F7C00B83598 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 96BF61281A35B2AB004CF2B3 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = EB36308823804F7A00B83598;
+			remoteInfo = "Ably-SoakTest-App";
+		};
+		EB3630AB2380508000B83598 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 96BF61281A35B2AB004CF2B3 /* Project object */;
 			proxyType = 1;
@@ -814,23 +819,18 @@
 			name = "Copy Carthage Frameworks to Test bundle";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		EBB721B22376A4AF001C3550 /* Copy Carthage Frameworks to Test bundle */ = {
+		EB3630C8238055F100B83598 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				EBB721B32376A4AF001C3550 /* SocketRocketAblyFork.framework in Copy Carthage Frameworks to Test bundle */,
-				EBB721B42376A4AF001C3550 /* SwiftyJSON.framework in Copy Carthage Frameworks to Test bundle */,
-				EBB721B52376A4AF001C3550 /* Quick.framework in Copy Carthage Frameworks to Test bundle */,
-				EBB721B62376A4AF001C3550 /* Nimble.framework in Copy Carthage Frameworks to Test bundle */,
-				EBB721B72376A4AF001C3550 /* Aspects.framework in Copy Carthage Frameworks to Test bundle */,
-				EBB721B82376A4AF001C3550 /* ULID.framework in Copy Carthage Frameworks to Test bundle */,
-				EBB721B92376A4AF001C3550 /* KSCrash.framework in Copy Carthage Frameworks to Test bundle */,
-				EBB721BA2376A4AF001C3550 /* msgpack.framework in Copy Carthage Frameworks to Test bundle */,
-				EBB721BB2376A4AF001C3550 /* SAMKeychain.framework in Copy Carthage Frameworks to Test bundle */,
+				EB3630CE2380562400B83598 /* msgpack.framework in CopyFiles */,
+				EB3630CF2380562400B83598 /* KSCrash.framework in CopyFiles */,
+				EB3630D02380562400B83598 /* SocketRocketAblyFork.framework in CopyFiles */,
+				EB3630D12380562400B83598 /* SAMKeychain.framework in CopyFiles */,
+				EB3630D22380562400B83598 /* ULID.framework in CopyFiles */,
 			);
-			name = "Copy Carthage Frameworks to Test bundle";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -1073,6 +1073,21 @@
 		EB2D85001CD769C800F23CDA /* ARTOSReachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTOSReachability.h; path = Private/ARTOSReachability.h; sourceTree = "<group>"; };
 		EB3239421C59AB0400892664 /* ARTDataEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTDataEncoder.m; sourceTree = "<group>"; };
 		EB3239461C59AB2C00892664 /* ARTDataEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTDataEncoder.h; sourceTree = "<group>"; };
+		EB36308923804F7A00B83598 /* Ably-SoakTest-App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Ably-SoakTest-App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		EB36308B23804F7A00B83598 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		EB36308D23804F7A00B83598 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		EB36308F23804F7A00B83598 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		EB36309123804F7C00B83598 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		EB36309423804F7C00B83598 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		EB36309723804F7C00B83598 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		EB36309923804F7C00B83598 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		EB36309E23804F7C00B83598 /* Ably-SoakTest-AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Ably-SoakTest-AppUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		EB3630A423804F7C00B83598 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		EB3630C92380562400B83598 /* msgpack.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = msgpack.framework; path = Carthage/Build/iOS/msgpack.framework; sourceTree = "<group>"; };
+		EB3630CA2380562400B83598 /* KSCrash.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = KSCrash.framework; path = Carthage/Build/iOS/KSCrash.framework; sourceTree = "<group>"; };
+		EB3630CB2380562400B83598 /* SocketRocketAblyFork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SocketRocketAblyFork.framework; path = Carthage/Build/iOS/SocketRocketAblyFork.framework; sourceTree = "<group>"; };
+		EB3630CC2380562400B83598 /* SAMKeychain.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SAMKeychain.framework; path = Carthage/Build/iOS/SAMKeychain.framework; sourceTree = "<group>"; };
+		EB3630CD2380562400B83598 /* ULID.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ULID.framework; path = Carthage/Build/iOS/ULID.framework; sourceTree = "<group>"; };
 		EB4B1A0B1F2190BB00467F07 /* ARTRestChannels+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTRestChannels+Private.h"; sourceTree = "<group>"; };
 		EB503C871C7E4A090053AF00 /* ARTClientOptions+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTClientOptions+Private.h"; sourceTree = "<group>"; };
 		EB503C891C7F1FE40053AF00 /* ARTLog+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTLog+Private.h"; sourceTree = "<group>"; };
@@ -1091,9 +1106,7 @@
 		EB9C530A1CD7BEB100.8.557 /* ARTJsonLikeEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTJsonLikeEncoder.h; sourceTree = "<group>"; };
 		EB9C530C1CD7BFF300.8.557 /* ARTJsonLikeEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTJsonLikeEncoder.m; sourceTree = "<group>"; };
 		EBAB9A6E1C69702800AF036B /* ReadmeExamples.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReadmeExamples.swift; sourceTree = "<group>"; };
-		EBB721BF2376A4AF001C3550 /* Ably-iOS-SoakTest.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Ably-iOS-SoakTest.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		EBB721C12376A4E6001C3550 /* SoakTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoakTest.swift; sourceTree = "<group>"; };
-		EBB721C32376A853001C3550 /* Ably-iOS-SoakTest-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Ably-iOS-SoakTest-Info.plist"; sourceTree = "<group>"; };
 		EBB721C42376A948001C3550 /* ARTWebSocket.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTWebSocket.h; sourceTree = "<group>"; };
 		EBB721C82376B16B001C3550 /* SoakTestWebSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoakTestWebSocket.swift; sourceTree = "<group>"; };
 		EBB721CA2376B454001C3550 /* ARTURLSession.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTURLSession.h; sourceTree = "<group>"; };
@@ -1179,15 +1192,18 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		EBB721AA2376A4AF001C3550 /* Frameworks */ = {
+		EB36308623804F7A00B83598 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EBB721AB2376A4AF001C3550 /* Ably.framework in Frameworks */,
-				EBB721AC2376A4AF001C3550 /* Aspects.framework in Frameworks */,
-				EBB721AD2376A4AF001C3550 /* Quick.framework in Frameworks */,
-				EBB721AE2376A4AF001C3550 /* Nimble.framework in Frameworks */,
-				EBB721AF2376A4AF001C3550 /* SwiftyJSON.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EB36309B23804F7C00B83598 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EB3630AD2380508900B83598 /* Ably.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1235,11 +1251,17 @@
 		96BF61271A35B2AB004CF2B3 = {
 			isa = PBXGroup;
 			children = (
+				EB3630CA2380562400B83598 /* KSCrash.framework */,
+				EB3630C92380562400B83598 /* msgpack.framework */,
+				EB3630CC2380562400B83598 /* SAMKeychain.framework */,
+				EB3630CB2380562400B83598 /* SocketRocketAblyFork.framework */,
+				EB3630CD2380562400B83598 /* ULID.framework */,
 				D75B85F921BAF8F900FD8DD2 /* Ably.xcconfig */,
 				D7EE14F51F07964500C178D5 /* Version.xcconfig */,
 				96BF61331A35B2AB004CF2B3 /* Source */,
 				856AAC8B1B6E304B00B07119 /* Spec */,
-				EBB7218C2376A3FC001C3550 /* SoakTest */,
+				EB36308A23804F7A00B83598 /* Ably-SoakTest-App */,
+				EB3630A123804F7C00B83598 /* Ably-SoakTest-AppUITests */,
 				96BF61321A35B2AB004CF2B3 /* Products */,
 				FAFEC5BB8312EB69E84C28D4 /* Frameworks */,
 			);
@@ -1256,7 +1278,8 @@
 				D710D475219495FC008F54AD /* Ably.framework */,
 				D7093C0A219E2DB200723F17 /* Ably-macOS-Tests.xctest */,
 				D7093C60219EE1AE00723F17 /* Ably-tvOS-Tests.xctest */,
-				EBB721BF2376A4AF001C3550 /* Ably-iOS-SoakTest.xctest */,
+				EB36308923804F7A00B83598 /* Ably-SoakTest-App.app */,
+				EB36309E23804F7C00B83598 /* Ably-SoakTest-AppUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1543,16 +1566,38 @@
 			name = Push;
 			sourceTree = "<group>";
 		};
-		EBB7218C2376A3FC001C3550 /* SoakTest */ = {
+		EB36308A23804F7A00B83598 /* Ably-SoakTest-App */ = {
 			isa = PBXGroup;
 			children = (
-				EBB721C32376A853001C3550 /* Ably-iOS-SoakTest-Info.plist */,
+				EB36308B23804F7A00B83598 /* AppDelegate.swift */,
+				EB36308D23804F7A00B83598 /* SceneDelegate.swift */,
+				EB36308F23804F7A00B83598 /* ContentView.swift */,
+				EB36309123804F7C00B83598 /* Assets.xcassets */,
+				EB36309623804F7C00B83598 /* LaunchScreen.storyboard */,
+				EB36309923804F7C00B83598 /* Info.plist */,
+				EB36309323804F7C00B83598 /* Preview Content */,
+			);
+			path = "Ably-SoakTest-App";
+			sourceTree = "<group>";
+		};
+		EB36309323804F7C00B83598 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				EB36309423804F7C00B83598 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		EB3630A123804F7C00B83598 /* Ably-SoakTest-AppUITests */ = {
+			isa = PBXGroup;
+			children = (
 				EBB721C12376A4E6001C3550 /* SoakTest.swift */,
 				EBB721C82376B16B001C3550 /* SoakTestWebSocket.swift */,
 				EBB721CE2376B60E001C3550 /* SoakTestURLSession.swift */,
 				EBB721D02376B999001C3550 /* SoakTestReachability.swift */,
+				EB3630A423804F7C00B83598 /* Info.plist */,
 			);
-			path = SoakTest;
+			path = "Ably-SoakTest-AppUITests";
 			sourceTree = "<group>";
 		};
 		FAFEC5BB8312EB69E84C28D4 /* Frameworks */ = {
@@ -2079,23 +2124,42 @@
 			productReference = D710D475219495FC008F54AD /* Ably.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		EBB7218D2376A4AF001C3550 /* Ably-iOS-SoakTest */ = {
+		EB36308823804F7A00B83598 /* Ably-SoakTest-App */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = EBB721BC2376A4AF001C3550 /* Build configuration list for PBXNativeTarget "Ably-iOS-SoakTest" */;
+			buildConfigurationList = EB3630A523804F7C00B83598 /* Build configuration list for PBXNativeTarget "Ably-SoakTest-App" */;
 			buildPhases = (
-				EBB721902376A4AF001C3550 /* Sources */,
-				EBB721AA2376A4AF001C3550 /* Frameworks */,
-				EBB721B22376A4AF001C3550 /* Copy Carthage Frameworks to Test bundle */,
+				EB36308523804F7A00B83598 /* Sources */,
+				EB36308623804F7A00B83598 /* Frameworks */,
+				EB36308723804F7A00B83598 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				EBB7218E2376A4AF001C3550 /* PBXTargetDependency */,
 			);
-			name = "Ably-iOS-SoakTest";
-			productName = AblySpec;
-			productReference = EBB721BF2376A4AF001C3550 /* Ably-iOS-SoakTest.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
+			name = "Ably-SoakTest-App";
+			productName = "Ably-SoakTest-App";
+			productReference = EB36308923804F7A00B83598 /* Ably-SoakTest-App.app */;
+			productType = "com.apple.product-type.application";
+		};
+		EB36309D23804F7C00B83598 /* Ably-SoakTest-AppUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EB3630A823804F7C00B83598 /* Build configuration list for PBXNativeTarget "Ably-SoakTest-AppUITests" */;
+			buildPhases = (
+				EB36309A23804F7C00B83598 /* Sources */,
+				EB36309B23804F7C00B83598 /* Frameworks */,
+				EB36309C23804F7C00B83598 /* Resources */,
+				EB3630C8238055F100B83598 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				EB3630AC2380508000B83598 /* PBXTargetDependency */,
+				EB3630A023804F7C00B83598 /* PBXTargetDependency */,
+			);
+			name = "Ably-SoakTest-AppUITests";
+			productName = "Ably-SoakTest-AppUITests";
+			productReference = EB36309E23804F7C00B83598 /* Ably-SoakTest-AppUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
 
@@ -2105,7 +2169,7 @@
 			attributes = {
 				CLASSPREFIX = ART;
 				DefaultBuildSystemTypeForWorkspace = Original;
-				LastSwiftUpdateCheck = 1010;
+				LastSwiftUpdateCheck = 1120;
 				LastUpgradeCheck = 1020;
 				ORGANIZATIONNAME = Ably;
 				TargetAttributes = {
@@ -2135,6 +2199,16 @@
 						CreatedOnToolsVersion = 10.1;
 						ProvisioningStyle = Automatic;
 					};
+					EB36308823804F7A00B83598 = {
+						CreatedOnToolsVersion = 11.2;
+						DevelopmentTeam = 4B9259DB4Y;
+						ProvisioningStyle = Automatic;
+					};
+					EB36309D23804F7C00B83598 = {
+						CreatedOnToolsVersion = 11.2;
+						ProvisioningStyle = Automatic;
+						TestTargetID = EB36308823804F7A00B83598;
+					};
 				};
 			};
 			buildConfigurationList = 96BF612B1A35B2AB004CF2B3 /* Build configuration list for PBXProject "Ably" */;
@@ -2152,11 +2226,12 @@
 			targets = (
 				96BF61301A35B2AB004CF2B3 /* Ably-iOS */,
 				856AAC891B6E304B00B07119 /* Ably-iOS-Tests */,
-				EBB7218D2376A4AF001C3550 /* Ably-iOS-SoakTest */,
 				D710D45A219495E2008F54AD /* Ably-macOS */,
 				D7093C09219E2DB200723F17 /* Ably-macOS-Tests */,
 				D710D474219495FC008F54AD /* Ably-tvOS */,
 				D7093C5F219EE1AE00723F17 /* Ably-tvOS-Tests */,
+				EB36308823804F7A00B83598 /* Ably-SoakTest-App */,
+				EB36309D23804F7C00B83598 /* Ably-SoakTest-AppUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -2201,6 +2276,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		D710D473219495FC008F54AD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EB36308723804F7A00B83598 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EB36309823804F7C00B83598 /* LaunchScreen.storyboard in Resources */,
+				EB36309523804F7C00B83598 /* Preview Assets.xcassets in Resources */,
+				EB36309223804F7C00B83598 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EB36309C23804F7C00B83598 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -2539,14 +2631,24 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		EBB721902376A4AF001C3550 /* Sources */ = {
+		EB36308523804F7A00B83598 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EBB721D12376B999001C3550 /* SoakTestReachability.swift in Sources */,
-				EBB721CF2376B60E001C3550 /* SoakTestURLSession.swift in Sources */,
-				EBB721C22376A4E6001C3550 /* SoakTest.swift in Sources */,
-				EBB721C92376B16C001C3550 /* SoakTestWebSocket.swift in Sources */,
+				EB36308C23804F7A00B83598 /* AppDelegate.swift in Sources */,
+				EB36308E23804F7A00B83598 /* SceneDelegate.swift in Sources */,
+				EB36309023804F7A00B83598 /* ContentView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EB36309A23804F7C00B83598 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EB3630C02380536300B83598 /* SoakTestReachability.swift in Sources */,
+				EB3630C22380536300B83598 /* SoakTestWebSocket.swift in Sources */,
+				EB3630BF2380536300B83598 /* SoakTestURLSession.swift in Sources */,
+				EB3630C12380536300B83598 /* SoakTest.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2568,12 +2670,28 @@
 			target = 96BF61301A35B2AB004CF2B3 /* Ably-iOS */;
 			targetProxy = D73BF7162260E7BD00579773 /* PBXContainerItemProxy */;
 		};
-		EBB7218E2376A4AF001C3550 /* PBXTargetDependency */ = {
+		EB3630A023804F7C00B83598 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = EB36308823804F7A00B83598 /* Ably-SoakTest-App */;
+			targetProxy = EB36309F23804F7C00B83598 /* PBXContainerItemProxy */;
+		};
+		EB3630AC2380508000B83598 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 96BF61301A35B2AB004CF2B3 /* Ably-iOS */;
-			targetProxy = EBB7218F2376A4AF001C3550 /* PBXContainerItemProxy */;
+			targetProxy = EB3630AB2380508000B83598 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		EB36309623804F7C00B83598 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				EB36309723804F7C00B83598 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		856AAC931B6E304B00B07119 /* Debug */ = {
@@ -3071,58 +3189,123 @@
 			};
 			name = Release;
 		};
-		EBB721BD2376A4AF001C3550 /* Debug */ = {
+		EB3630A623804F7C00B83598 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = "$(inherited)";
-				CLANG_ENABLE_MODULES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Carthage/Build/iOS",
-				);
-				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"$(inherited)",
-					"TEST_SUITE=1",
-				);
-				INFOPLIST_FILE = "SoakTest/Ably-iOS-SoakTest-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				OTHER_SWIFT_FLAGS = "$(inherited) -D TEST_SUITE -D TARGET_OS_IOS -D TARGET_OS_IPHONE -D TARGET_OS_MAC";
-				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
+				DEVELOPMENT_ASSET_PATHS = "\"Ably-SoakTest-App/Preview Content\"";
+				DEVELOPMENT_TEAM = 4B9259DB4Y;
+				ENABLE_PREVIEWS = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = "Ably-SoakTest-App/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "ably.io.Ably-SoakTest-App";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "Spec/AblySpec-Bridging-Header.h";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
-		EBB721BE2376A4AF001C3550 /* Release */ = {
+		EB3630A723804F7C00B83598 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = "$(inherited)";
-				CLANG_ENABLE_MODULES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DYLIB_COMPATIBILITY_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Ably-SoakTest-App/Preview Content\"";
+				DEVELOPMENT_TEAM = 4B9259DB4Y;
+				ENABLE_PREVIEWS = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = "Ably-SoakTest-App/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "ably.io.Ably-SoakTest-App";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		EB3630A923804F7C00B83598 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				DEBUG_INFORMATION_FORMAT = dwarf;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
 				);
-				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"$(inherited)",
-					"TEST_SUITE=1",
-				);
-				INFOPLIST_FILE = "SoakTest/Ably-iOS-SoakTest-Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = "Ably-SoakTest-AppUITests/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				OTHER_SWIFT_FLAGS = "$(inherited) -D TEST_SUITE -D TARGET_OS_IOS -D TARGET_OS_IPHONE -D TARGET_OS_MAC";
-				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "ably.io.Ably-SoakTest-AppUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_OBJC_BRIDGING_HEADER = "Spec/AblySpec-Bridging-Header.h";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "Ably-SoakTest-App";
+			};
+			name = Debug;
+		};
+		EB3630AA23804F7C00B83598 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = "Ably-SoakTest-AppUITests/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "ably.io.Ably-SoakTest-AppUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "Ably-SoakTest-App";
 			};
 			name = Release;
 		};
@@ -3192,11 +3375,20 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		EBB721BC2376A4AF001C3550 /* Build configuration list for PBXNativeTarget "Ably-iOS-SoakTest" */ = {
+		EB3630A523804F7C00B83598 /* Build configuration list for PBXNativeTarget "Ably-SoakTest-App" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				EBB721BD2376A4AF001C3550 /* Debug */,
-				EBB721BE2376A4AF001C3550 /* Release */,
+				EB3630A623804F7C00B83598 /* Debug */,
+				EB3630A723804F7C00B83598 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		EB3630A823804F7C00B83598 /* Build configuration list for PBXNativeTarget "Ably-SoakTest-AppUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EB3630A923804F7C00B83598 /* Debug */,
+				EB3630AA23804F7C00B83598 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

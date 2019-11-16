@@ -15,6 +15,10 @@ let concurrentConnections: Int = 1000
 let runTime: TimeInterval = 60 * 30
 
 class SoakTest: XCTestCase {
+    override func setUp() {
+        continueAfterFailure = false
+    }
+
     func testSoak() {
         ARTWebSocketTransport.setWebSocketClass(SoakTestWebSocket.self)
         ARTHttp.setURLSessionClass(SoakTestURLSession.self)
