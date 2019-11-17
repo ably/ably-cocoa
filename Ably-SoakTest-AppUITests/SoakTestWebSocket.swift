@@ -60,7 +60,15 @@ class SoakTestWebSocket: NSObject, ARTWebSocket {
                 }
                 
                 self.doIfStillOpen(afterSecondsBetween: 3.0 ... 300.0) {
-                    self.delegate?.webSocket(self, didCloseWithCode: SRStatusCode.codeAbnormal.rawValue, reason: "fake abrupt close", wasClean: false)
+                    let (code, clean) : (SRStatusCode, Bool) = [
+                        (.codeAbnormal, false),
+                        (.codeNormal, true),
+                        (.codeGoingAway, true),
+                        (.codePolicyViolated, true),
+                        (.codeMessageTooBig, true),
+                        (.codeInternalError, true),
+                    ].randomElement(using: &seededRandomNumberGenerator)!
+                    self.delegate?.webSocket(self, didCloseWithCode: code.rawValue, reason: "fake close", wasClean: clean)
                 }
             } else {
                 self.delegate?.webSocket(self, didFailWithError: fakeError)
