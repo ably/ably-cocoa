@@ -32,7 +32,15 @@ class SoakTest: XCTestCase {
             queues.append(internalQueue)
 
             queue.async {
-                let options = ARTClientOptions(key: "fake:key")
+                let options: ARTClientOptions = {
+                    if true.times(1, outOf: 2) {
+                        return ARTClientOptions(key: "fake:key")
+                    } else {
+                        let options = ARTClientOptions()
+                        options.authUrl = NSURL(string: "http://fakeauth.com") as URL?
+                        return options
+                    }
+                }()
                 options.autoConnect = false
                 options.logLevel = .debug
                 options.dispatchQueue = queue

@@ -182,6 +182,16 @@ class SoakTestWebSocket: NSObject, ARTWebSocket {
 
                 self.serialForAttachedChannel.removeValue(forKey: message.channel!)
             }
+        case .auth:
+            doIfStillOpen(afterSecondsBetween: 0.1 ... 3.0) {
+                if true.times(1, outOf: 10) {
+                    self.messageToClient(action: .error) { m in
+                        m.error = authError()
+                    }
+                } else {
+                    self.messageToClient(action: .connected)
+                }
+            }
         default:
             break
         }
@@ -221,9 +231,20 @@ class SoakTestWebSocket: NSObject, ARTWebSocket {
     }
 }
 
+let jsonEncoder = ARTJsonLikeEncoder(delegate: ARTJsonEncoder())
 let msgPackEncoder = ARTJsonLikeEncoder(delegate: ARTMsgPackEncoder())
 
-let fakeError = NSError(domain: "io.ably", code: 1, userInfo: [NSLocalizedDescriptionKey: "fake error for soak test"])
+extension String {
+    func asError(code: Int = 1) -> NSError {
+        return NSError(domain: "io.ably", code: code, userInfo: [NSLocalizedDescriptionKey: self])
+    }
+}
+
+let fakeError = "fake error for soak test".asError()
+
+func authError() -> ARTErrorInfo {
+    return ARTErrorInfo.create(from: "fake auth error".asError(code: 40140))
+}
 
 func serialSequence(label: String, first: Int64 = 0) -> (() -> Int64) {
     let queue = DispatchQueue(label: "io.ably.soakTest.\(label)")
