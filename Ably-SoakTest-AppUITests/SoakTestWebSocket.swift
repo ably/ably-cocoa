@@ -153,6 +153,14 @@ class SoakTestWebSocket: NSObject, ARTWebSocket {
                 if let s = self.serialForAttachedChannel[message.channel!] {
                     serial = s
                 } else {
+                    if true.times(1, outOf: 10) {
+                        self.messageToClient(action: .error) { m in
+                            m.channel = message.channel
+                            m.error = ARTErrorInfo.create(from: fakeError)
+                        }
+                        return
+                    }
+
                     serial = -1
                     self.serialForAttachedChannel[message.channel!] = -1
                 }
