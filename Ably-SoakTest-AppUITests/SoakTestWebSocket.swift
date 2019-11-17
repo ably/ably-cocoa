@@ -107,9 +107,18 @@ class SoakTestWebSocket: NSObject, ARTWebSocket {
             if self.pendingSerials.count == 0 {
                 return
             }
-            self.messageToClient(action: .ack) { m in
-                m.msgSerial = self.pendingSerials.first!
-                m.count = Int32(self.pendingSerials.count)
+            
+            if true.times(1, outOf: 5) {
+                self.messageToClient(action: .ack) { m in
+                    m.msgSerial = self.pendingSerials.first!
+                    m.count = Int32(self.pendingSerials.count)
+                }
+            } else {
+                self.messageToClient(action: .nack) { m in
+                    m.msgSerial = self.pendingSerials.first!
+                    m.count = Int32(self.pendingSerials.count)
+                    m.error = ARTErrorInfo.create(from: fakeError)
+                }
             }
             self.pendingSerials.removeAll()
         }
