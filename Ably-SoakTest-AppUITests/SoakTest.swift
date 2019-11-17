@@ -50,7 +50,7 @@ class SoakTest: XCTestCase {
                     realtime.connect()
                 }
                 
-                sendMessages(realtime: realtime, queue: queue)
+                channelOperations(realtime: realtime, queue: queue)
             }
         }
         
@@ -62,20 +62,60 @@ class SoakTest: XCTestCase {
     }
 }
 
-func sendMessages(realtime: ARTRealtime, queue: DispatchQueue) {
+func channelOperations(realtime: ARTRealtime, queue: DispatchQueue) {
     queue.afterSeconds(between: 0.1 ... 1.0) {
         if realtime.connection.state == .closed {
             return
         }
-        sendMessages(realtime: realtime, queue: queue)
+        channelOperations(realtime: realtime, queue: queue)
 
         let channel = realtime.channels.get("channel.\(Int((0 ... 100).randomWithin()))")
-        channel.subscribe { message in
-            print("got message: \(message)")
+        
+        queue.afterSeconds(between: 0.1 ... 1) {
+            channel.attach { error in
+                print("\(channel.name): attached; error: \(String(describing: error))")
+            }
         }
-        channel.publish("fakeMessage", data: messageFixtures.randomElement(using: &seededRandomNumberGenerator) ?? nil) { error in
-                print("got message ack; error: \(String(describing: error))")
+        
+        queue.afterSeconds(between: 0.1 ... 60) {
+            channel.detach { error in
+                print("\(channel.name): detached; error: \(String(describing: error))")
+            }
         }
+        
+        queue.afterSeconds(between: 0.3 ... 2) {
+            channel.subscribe { message in
+                print("\(channel.name): got message: \(message)")
+            }
+        }
+        
+        queue.afterSeconds(between: 0.5 ... 3) {
+            channel.publish("fakeMessage", data: messageFixtures.randomElement(using: &seededRandomNumberGenerator) ?? nil) { error in
+                    print("\(channel.name): got message ack; error: \(String(describing: error))")
+            }
+        }
+        
+        queue.afterSeconds(between: 0.1 ... 1) {
+            realtime.channels.exists(channel.name)
+        }
+        
+        queue.afterSeconds(between: 0.1 ... 2) {
+            realtime.channels.release(channel.name) { error in
+                print("\(channel.name): released; error: \(String(describing: error))")
+            }
+        }
+        
+        if true.times(1, outOf: 10) {
+            for channel in realtime.channels {
+                _ = channel
+            }
+        }
+    }
+}
+
+extension ARTRealtimeChannels: Sequence {
+    public func makeIterator() -> NSFastEnumerationIterator {
+        return NSFastEnumerationIterator(self.iterate())
     }
 }
 
