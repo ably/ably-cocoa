@@ -47,7 +47,7 @@ class SoakTestWebSocket: NSObject, ARTWebSocket {
                                 maxInboundRate: 999999999,
                                 connectionStateTtl: 2.0,
                                 serverId: "fakeServer",
-                                maxIdleInterval: 0
+                                maxIdleInterval: (0.0 ... 60.0).randomWithin()
                             )
                         }
                         self.ackMessages()
