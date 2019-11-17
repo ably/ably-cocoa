@@ -163,6 +163,17 @@ class SoakTestWebSocket: NSObject, ARTWebSocket {
 
                 self.sendMessages(channel: message.channel!)
             }
+        case .detach:
+            doIfStillOpen(afterSecondsBetween: 0.1 ... 3.0) {
+                self.messageToClient(action: .detached) { m in
+                    m.channel = message.channel
+                    if true.times(1, outOf: 5) {
+                        m.error = ARTErrorInfo.create(from: fakeError)
+                    }
+                }
+
+                self.serialForAttachedChannel.removeValue(forKey: message.channel!)
+            }
         default:
             break
         }
