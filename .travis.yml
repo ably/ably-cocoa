@@ -15,7 +15,7 @@ install:
   - if [[ ${NAME} == "ably-iOS" ]]; then carthage update --platform iOS --cache-builds; fi
   - if [[ ${NAME} == "ably-tvOS" ]]; then carthage update --platform tvOS --cache-builds; fi
   - if [[ ${NAME} == "ably-macOS" ]]; then carthage update --platform macOS --cache-builds; fi
-  - gem install
+  - bundle install
 before_script:
   - xcrun simctl erase all
 script:
