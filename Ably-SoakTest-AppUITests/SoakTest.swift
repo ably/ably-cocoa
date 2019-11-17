@@ -39,18 +39,13 @@ class SoakTest: XCTestCase {
                 options.internalDispatchQueue = internalQueue
                 let realtime = ARTRealtime(options: options)
                 realtime.internal.setReachabilityClass(SoakTestReachability.self)
-                
-                queue.afterSeconds(between: 0.0 ... 2.0) {
-                    realtime.connection.on { state in
-                        print("got connection notification; error: \(String(describing: state?.reason))")
-                        queue.afterSeconds(between: 0.0 ... 120.0) {
-                            realtime.close()
-                        }
-                    }
-                    realtime.connect()
+
+                realtime.connection.on { state in
+                    print("got connection notification; error: \(String(describing: state?.reason))")
                 }
-                
-                channelOperations(realtime: realtime, queue: queue)
+
+                realtimeOperations(realtime: realtime, queue: queue)
+                channelsOperations(realtime: realtime, queue: queue)
             }
         }
         
@@ -62,12 +57,34 @@ class SoakTest: XCTestCase {
     }
 }
 
-func channelOperations(realtime: ARTRealtime, queue: DispatchQueue) {
+func realtimeOperations(realtime: ARTRealtime, queue: DispatchQueue) {
+    queue.afterSeconds(between: 0.1 ... 1.0) {
+        realtimeOperations(realtime: realtime, queue: queue)
+    }
+
+    queue.afterSeconds(between: 0.1 ... 10.0) {
+        realtime.connect()
+    }
+
+    if true.times(1, outOf: 20) {
+        queue.afterSeconds(between: 0.0 ... 120.0) {
+            realtime.close()
+        }
+    }
+    
+    queue.afterSeconds(between: 0.1 ... 3.0) {
+        realtime.ping { error in
+            print("pinged; error: \(String(describing: error))")
+        }
+    }
+}
+
+func channelsOperations(realtime: ARTRealtime, queue: DispatchQueue) {
     queue.afterSeconds(between: 0.1 ... 1.0) {
         if realtime.connection.state == .closed {
             return
         }
-        channelOperations(realtime: realtime, queue: queue)
+        channelsOperations(realtime: realtime, queue: queue)
 
         let channel = realtime.channels.get("channel.\(Int((0 ... 100).randomWithin()))")
         
