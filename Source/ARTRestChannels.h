@@ -19,7 +19,6 @@ NS_ASSUME_NONNULL_BEGIN
 // Thus, we can't make ARTRestChannels inherit from ARTChannels; we have to compose them instead.
 - (BOOL)exists:(NSString *)name;
 - (void)release:(NSString *)name;
-- (id<NSFastEnumeration>)iterate;
 
 @end
 
@@ -27,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (ARTRestChannel *)get:(NSString *)name;
 - (ARTRestChannel *)get:(NSString *)name options:(ARTChannelOptions *)options;
+- (id<NSFastEnumeration>)iterate;
 
 @end
 

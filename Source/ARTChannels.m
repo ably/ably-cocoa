@@ -33,10 +33,14 @@ NSString* (^_Nullable ARTChannels_getChannelNamePrefix)(void);
     return self;
 }
 
-- (id<NSFastEnumeration>)iterate {
+- (id<NSFastEnumeration>)copyIntoIteratorWithMapper:(id (^)(id))mapper {
     __block id<NSFastEnumeration>ret;
 dispatch_sync(_queue, ^{
-    ret = [self getNosyncIterable];
+    NSMutableArray *channels = [[NSMutableArray alloc] init];
+    for (id internalChannel in [self getNosyncIterable]) {
+        [channels addObject:mapper(internalChannel)];
+    }
+    ret = [channels objectEnumerator];
 });
     return ret;
 }
