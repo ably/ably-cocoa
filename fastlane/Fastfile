@@ -67,7 +67,7 @@ platform :ios do
       devices: [                          # Device(s) to run tests on
         {
           ios_model_id: 'iphonex',        # Device model ID, see gcloud command above
-          ios_version_id: '11.2',         # iOS version ID, see gcloud command above
+          ios_version_id: '12.3',         # iOS version ID, see gcloud command above
           locale: 'en_US',                # Optional: default to en_US if not set
           orientation: 'portrait'         # Optional: default to portrait if not set
         }

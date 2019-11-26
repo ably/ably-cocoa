@@ -672,17 +672,7 @@
 		EB2D84F71CD75CCE00F23CDA /* ARTReachability.h in Headers */ = {isa = PBXBuildFile; fileRef = EB2D84F61CD75CCE00F23CDA /* ARTReachability.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		EB2D84FD1CD769B800F23CDA /* ARTOSReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = EB2D84FC1CD769B700F23CDA /* ARTOSReachability.m */; };
 		EB2D85011CD769C800F23CDA /* ARTOSReachability.h in Headers */ = {isa = PBXBuildFile; fileRef = EB2D85001CD769C800F23CDA /* ARTOSReachability.h */; };
-		EB36308C23804F7A00B83598 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB36308B23804F7A00B83598 /* AppDelegate.swift */; };
-		EB36308E23804F7A00B83598 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB36308D23804F7A00B83598 /* SceneDelegate.swift */; };
-		EB36309023804F7A00B83598 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB36308F23804F7A00B83598 /* ContentView.swift */; };
-		EB36309223804F7C00B83598 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EB36309123804F7C00B83598 /* Assets.xcassets */; };
-		EB36309523804F7C00B83598 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EB36309423804F7C00B83598 /* Preview Assets.xcassets */; };
-		EB36309823804F7C00B83598 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EB36309623804F7C00B83598 /* LaunchScreen.storyboard */; };
 		EB3630AD2380508900B83598 /* Ably.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BF61311A35B2AB004CF2B3 /* Ably.framework */; };
-		EB3630BF2380536300B83598 /* SoakTestURLSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB721CE2376B60E001C3550 /* SoakTestURLSession.swift */; };
-		EB3630C02380536300B83598 /* SoakTestReachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB721D02376B999001C3550 /* SoakTestReachability.swift */; };
-		EB3630C12380536300B83598 /* SoakTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB721C12376A4E6001C3550 /* SoakTest.swift */; };
-		EB3630C22380536300B83598 /* SoakTestWebSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB721C82376B16B001C3550 /* SoakTestWebSocket.swift */; };
 		EB3630CE2380562400B83598 /* msgpack.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = EB3630C92380562400B83598 /* msgpack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EB3630CF2380562400B83598 /* KSCrash.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = EB3630CA2380562400B83598 /* KSCrash.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EB3630D02380562400B83598 /* SocketRocketAblyFork.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = EB3630CB2380562400B83598 /* SocketRocketAblyFork.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -702,6 +692,15 @@
 		EB89D4091C61C5ED007FA5B7 /* ARTRealtimeChannels.h in Headers */ = {isa = PBXBuildFile; fileRef = EB89D4081C61C5ED007FA5B7 /* ARTRealtimeChannels.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EB89D40B1C61C6EA007FA5B7 /* ARTRealtimeChannels.m in Sources */ = {isa = PBXBuildFile; fileRef = EB89D40A1C61C6EA007FA5B7 /* ARTRealtimeChannels.m */; };
 		EB89D40F1C62303E007FA5B7 /* ARTConnection+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB89D40E1C62303E007FA5B7 /* ARTConnection+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		EB8A0C33238D53DF00A20331 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB8A0C0F238D53A200A20331 /* AppDelegate.swift */; };
+		EB8A0C35238D53DF00A20331 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB8A0C13238D53A200A20331 /* ViewController.swift */; };
+		EB8A0C36238D53EB00A20331 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EB8A0C1A238D53A300A20331 /* LaunchScreen.storyboard */; };
+		EB8A0C37238D53EE00A20331 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EB8A0C15238D53A200A20331 /* Main.storyboard */; };
+		EB8A0C38238D53F300A20331 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EB8A0C18238D53A300A20331 /* Assets.xcassets */; };
+		EB8A0C39238D540200A20331 /* SoakTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB721C12376A4E6001C3550 /* SoakTest.swift */; };
+		EB8A0C3A238D540900A20331 /* SoakTestWebSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB721C82376B16B001C3550 /* SoakTestWebSocket.swift */; };
+		EB8A0C3B238D540900A20331 /* SoakTestURLSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB721CE2376B60E001C3550 /* SoakTestURLSession.swift */; };
+		EB8A0C3C238D540900A20331 /* SoakTestReachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB721D02376B999001C3550 /* SoakTestReachability.swift */; };
 		EB8AC6431C6515ED002ABA92 /* ARTTokenParams+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB8AC6421C6515ED002ABA92 /* ARTTokenParams+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		EB91213E1CA0AD6600BA0A40 /* ARTMsgPackEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = EB91213D1CA0AD6600BA0A40 /* ARTMsgPackEncoder.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EB9121401CA0AD8200BA0A40 /* ARTMsgPackEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB91213F1CA0AD8200BA0A40 /* ARTMsgPackEncoder.m */; };
@@ -1074,13 +1073,6 @@
 		EB3239421C59AB0400892664 /* ARTDataEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTDataEncoder.m; sourceTree = "<group>"; };
 		EB3239461C59AB2C00892664 /* ARTDataEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTDataEncoder.h; sourceTree = "<group>"; };
 		EB36308923804F7A00B83598 /* Ably-SoakTest-App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Ably-SoakTest-App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		EB36308B23804F7A00B83598 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		EB36308D23804F7A00B83598 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		EB36308F23804F7A00B83598 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		EB36309123804F7C00B83598 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		EB36309423804F7C00B83598 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		EB36309723804F7C00B83598 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		EB36309923804F7C00B83598 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		EB36309E23804F7C00B83598 /* Ably-SoakTest-AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Ably-SoakTest-AppUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		EB3630A423804F7C00B83598 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		EB3630C92380562400B83598 /* msgpack.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = msgpack.framework; path = Carthage/Build/iOS/msgpack.framework; sourceTree = "<group>"; };
@@ -1100,6 +1092,12 @@
 		EB89D4081C61C5ED007FA5B7 /* ARTRealtimeChannels.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTRealtimeChannels.h; sourceTree = "<group>"; };
 		EB89D40A1C61C6EA007FA5B7 /* ARTRealtimeChannels.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRealtimeChannels.m; sourceTree = "<group>"; };
 		EB89D40E1C62303E007FA5B7 /* ARTConnection+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTConnection+Private.h"; sourceTree = "<group>"; };
+		EB8A0C0F238D53A200A20331 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		EB8A0C13238D53A200A20331 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		EB8A0C16238D53A200A20331 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		EB8A0C18238D53A300A20331 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		EB8A0C1B238D53A300A20331 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		EB8A0C1D238D53A300A20331 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		EB8AC6421C6515ED002ABA92 /* ARTTokenParams+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTTokenParams+Private.h"; sourceTree = "<group>"; };
 		EB91213D1CA0AD6600BA0A40 /* ARTMsgPackEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTMsgPackEncoder.h; sourceTree = "<group>"; };
 		EB91213F1CA0AD8200BA0A40 /* ARTMsgPackEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTMsgPackEncoder.m; sourceTree = "<group>"; };
@@ -1569,23 +1567,14 @@
 		EB36308A23804F7A00B83598 /* Ably-SoakTest-App */ = {
 			isa = PBXGroup;
 			children = (
-				EB36308B23804F7A00B83598 /* AppDelegate.swift */,
-				EB36308D23804F7A00B83598 /* SceneDelegate.swift */,
-				EB36308F23804F7A00B83598 /* ContentView.swift */,
-				EB36309123804F7C00B83598 /* Assets.xcassets */,
-				EB36309623804F7C00B83598 /* LaunchScreen.storyboard */,
-				EB36309923804F7C00B83598 /* Info.plist */,
-				EB36309323804F7C00B83598 /* Preview Content */,
+				EB8A0C0F238D53A200A20331 /* AppDelegate.swift */,
+				EB8A0C13238D53A200A20331 /* ViewController.swift */,
+				EB8A0C15238D53A200A20331 /* Main.storyboard */,
+				EB8A0C18238D53A300A20331 /* Assets.xcassets */,
+				EB8A0C1A238D53A300A20331 /* LaunchScreen.storyboard */,
+				EB8A0C1D238D53A300A20331 /* Info.plist */,
 			);
 			path = "Ably-SoakTest-App";
-			sourceTree = "<group>";
-		};
-		EB36309323804F7C00B83598 /* Preview Content */ = {
-			isa = PBXGroup;
-			children = (
-				EB36309423804F7C00B83598 /* Preview Assets.xcassets */,
-			);
-			path = "Preview Content";
 			sourceTree = "<group>";
 		};
 		EB3630A123804F7C00B83598 /* Ably-SoakTest-AppUITests */ = {
@@ -2201,11 +2190,12 @@
 					};
 					EB36308823804F7A00B83598 = {
 						CreatedOnToolsVersion = 11.2;
-						DevelopmentTeam = 4B9259DB4Y;
+						DevelopmentTeam = XXY98AVDR6;
 						ProvisioningStyle = Automatic;
 					};
 					EB36309D23804F7C00B83598 = {
 						CreatedOnToolsVersion = 11.2;
+						DevelopmentTeam = XXY98AVDR6;
 						ProvisioningStyle = Automatic;
 						TestTargetID = EB36308823804F7A00B83598;
 					};
@@ -2286,9 +2276,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EB36309823804F7C00B83598 /* LaunchScreen.storyboard in Resources */,
-				EB36309523804F7C00B83598 /* Preview Assets.xcassets in Resources */,
-				EB36309223804F7C00B83598 /* Assets.xcassets in Resources */,
+				EB8A0C37238D53EE00A20331 /* Main.storyboard in Resources */,
+				EB8A0C36238D53EB00A20331 /* LaunchScreen.storyboard in Resources */,
+				EB8A0C38238D53F300A20331 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2635,9 +2625,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EB36308C23804F7A00B83598 /* AppDelegate.swift in Sources */,
-				EB36308E23804F7A00B83598 /* SceneDelegate.swift in Sources */,
-				EB36309023804F7A00B83598 /* ContentView.swift in Sources */,
+				EB8A0C35238D53DF00A20331 /* ViewController.swift in Sources */,
+				EB8A0C33238D53DF00A20331 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2645,10 +2634,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EB3630C02380536300B83598 /* SoakTestReachability.swift in Sources */,
-				EB3630C22380536300B83598 /* SoakTestWebSocket.swift in Sources */,
-				EB3630BF2380536300B83598 /* SoakTestURLSession.swift in Sources */,
-				EB3630C12380536300B83598 /* SoakTest.swift in Sources */,
+				EB8A0C3C238D540900A20331 /* SoakTestReachability.swift in Sources */,
+				EB8A0C3B238D540900A20331 /* SoakTestURLSession.swift in Sources */,
+				EB8A0C39238D540200A20331 /* SoakTest.swift in Sources */,
+				EB8A0C3A238D540900A20331 /* SoakTestWebSocket.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2683,10 +2672,18 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
-		EB36309623804F7C00B83598 /* LaunchScreen.storyboard */ = {
+		EB8A0C15238D53A200A20331 /* Main.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
-				EB36309723804F7C00B83598 /* Base */,
+				EB8A0C16238D53A200A20331 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		EB8A0C1A238D53A300A20331 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				EB8A0C1B238D53A300A20331 /* Base */,
 			);
 			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
@@ -3201,12 +3198,12 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_ASSET_PATHS = "\"Ably-SoakTest-App/Preview Content\"";
-				DEVELOPMENT_TEAM = 4B9259DB4Y;
+				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = XXY98AVDR6;
 				ENABLE_PREVIEWS = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = "Ably-SoakTest-App/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -3232,12 +3229,12 @@
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_ASSET_PATHS = "\"Ably-SoakTest-App/Preview Content\"";
-				DEVELOPMENT_TEAM = 4B9259DB4Y;
+				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = XXY98AVDR6;
 				ENABLE_PREVIEWS = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = "Ably-SoakTest-App/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = "ably.io.Ably-SoakTest-App";
@@ -3259,6 +3256,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = XXY98AVDR6;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
@@ -3292,6 +3290,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = XXY98AVDR6;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
