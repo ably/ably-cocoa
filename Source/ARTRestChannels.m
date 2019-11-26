@@ -42,11 +42,9 @@
 }
 
 - (id<NSFastEnumeration>)iterate {
-    NSMutableArray *channels = [[NSMutableArray alloc] init];
-    for (ARTRestChannelInternal *internalChannel in [_internal iterate]) {
-        [channels addObject:[[ARTRestChannel alloc] initWithInternal:internalChannel queuedDealloc:_dealloc]];
-    }
-    return channels;
+    return [_internal copyIntoIteratorWithMapper:^ARTRestChannel *(ARTRestChannelInternal *internalChannel) {
+        return [[ARTRestChannel alloc] initWithInternal:internalChannel queuedDealloc:self->_dealloc];
+    }];
 }
 
 @end
@@ -80,9 +78,9 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
-- (id<NSFastEnumeration>)iterate {
+- (id<NSFastEnumeration>)copyIntoIteratorWithMapper:(ARTRestChannel *(^)(ARTRestChannelInternal *))mapper {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
-    return [_channels iterate];
+    return [_channels copyIntoIteratorWithMapper:mapper];
 } ART_TRY_OR_REPORT_CRASH_END
 }
 
