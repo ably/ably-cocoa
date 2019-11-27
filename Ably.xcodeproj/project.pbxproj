@@ -18,6 +18,9 @@
 		1C6C18A41ADFDAB100AB79E4 /* ARTLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C6C18A21ADFDAB100AB79E4 /* ARTLog.m */; };
 		1CD8DC9F1B1C7315007EAF36 /* ARTDefault.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1CD8DCA01B1C7315007EAF36 /* ARTDefault.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CD8DC9E1B1C7315007EAF36 /* ARTDefault.m */; };
+		56190954238C3D3200A862A6 /* CryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 56190953238C3D3200A862A6 /* CryptoTest.m */; };
+		56190955238C3D3200A862A6 /* CryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 56190953238C3D3200A862A6 /* CryptoTest.m */; };
+		56190956238C3D3200A862A6 /* CryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 56190953238C3D3200A862A6 /* CryptoTest.m */; };
 		850BFB4C1B79323C009D0ADD /* ARTPaginatedResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 850BFB4A1B79323C009D0ADD /* ARTPaginatedResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		850BFB4D1B79323C009D0ADD /* ARTPaginatedResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 850BFB4B1B79323C009D0ADD /* ARTPaginatedResult.m */; };
 		851674EF1B7BA5CD00D35169 /* Stats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 851674EE1B7BA5CD00D35169 /* Stats.swift */; };
@@ -798,6 +801,7 @@
 		1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTDefault.h; sourceTree = "<group>"; };
 		1CD8DC9E1B1C7315007EAF36 /* ARTDefault.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTDefault.m; sourceTree = "<group>"; };
 		3F3D07905A62187E022923A8 /* Pods.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		56190953238C3D3200A862A6 /* CryptoTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CryptoTest.m; sourceTree = "<group>"; };
 		850BFB4A1B79323C009D0ADD /* ARTPaginatedResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPaginatedResult.h; sourceTree = "<group>"; };
 		850BFB4B1B79323C009D0ADD /* ARTPaginatedResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPaginatedResult.m; sourceTree = "<group>"; };
 		851674EE1B7BA5CD00D35169 /* Stats.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Stats.swift; sourceTree = "<group>"; };
@@ -1158,6 +1162,7 @@
 				D7DF73831EA5FE620013CD36 /* PushActivationStateMachine.swift */,
 				D777EEE620650A85002EBA03 /* PushChannel.swift */,
 				EB1B53F822F85CE4006A59AC /* ObjectLifetimes.swift */,
+				56190953238C3D3200A862A6 /* CryptoTest.m */,
 			);
 			path = Spec;
 			sourceTree = "<group>";
@@ -2126,6 +2131,7 @@
 				D777EEE820650ADF002EBA03 /* PushChannel.swift in Sources */,
 				D746AE2D1BBB625E003ECEF8 /* RestClientChannels.swift in Sources */,
 				EBAB9A6F1C69702800AF036B /* ReadmeExamples.swift in Sources */,
+				56190954238C3D3200A862A6 /* CryptoTest.m in Sources */,
 				D7C1B8771BBEA81A0087B55F /* Auth.swift in Sources */,
 				D7EBE5A31BE8391E0086E675 /* RealtimeClientConnection.swift in Sources */,
 			);
@@ -2234,6 +2240,7 @@
 				D7093C21219E466E00723F17 /* RestClientChannels.swift in Sources */,
 				D7093C26219E466E00723F17 /* RealtimeClientChannel.swift in Sources */,
 				D7093C22219E466E00723F17 /* RestClientPresence.swift in Sources */,
+				56190955238C3D3200A862A6 /* CryptoTest.m in Sources */,
 				D7093C1D219E466600723F17 /* Auth.swift in Sources */,
 				D7093C25219E466E00723F17 /* RealtimeClientConnection.swift in Sources */,
 			);
@@ -2261,6 +2268,7 @@
 				D7093C74219EE26400723F17 /* Auth.swift in Sources */,
 				D7093C72219EE25B00723F17 /* NSObject+TestSuite.swift in Sources */,
 				D7093C7B219EE26400723F17 /* RealtimeClient.swift in Sources */,
+				56190956238C3D3200A862A6 /* CryptoTest.m in Sources */,
 				D7093C7A219EE26400723F17 /* RestPaginated.swift in Sources */,
 				D7093C81219EE26400723F17 /* Utilities.swift in Sources */,
 			);
