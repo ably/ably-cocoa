@@ -55,15 +55,24 @@ static NSString* _hex(NSData *const data) {
 
     // Perform encrypt and decrypt on message data trimmed at all lengths up
     // to and including maxLength.
-    NSMutableString *const results = [NSMutableString string];
+    NSMutableArray<NSDictionary *> *const results = [NSMutableArray arrayWithCapacity:maxLength];
     for (NSUInteger i = 1; i <= maxLength; i++) {
         // Encrypt i bytes from the start of the message data.
         NSData *const dIn = [NSData dataWithBytes:&messageData length:i];
         NSData * dOut;
         XCTAssertEqual(ARTStateOk, [cipher encrypt:dIn output:&dOut].state);
         
-        // Emit encryption result to console in Java code.
-        [results appendFormat:@"\tapple.put(\n\t\t\"%@\",\n\t\t\"%@\");\n", _hex(dIn), _hex(dOut)];
+        // Add encryption result to results in format ready for fixture.
+        [results addObject:@{
+            @"encoded": @{
+                @"data": [dIn base64EncodedStringWithOptions:0],
+                @"encoding": @"base64",
+            },
+            @"encrypted": @{
+                @"data": [dOut base64EncodedStringWithOptions:0],
+                @"encoding": @"cipher+aes-256-cbc/base64",
+            },
+        }];
         
         // Decrypt the encrypted data and verify the result is the same as what
         // we submitted for encryption.
@@ -73,8 +82,24 @@ static NSString* _hex(NSData *const data) {
     }
     
     // Emit key, IV and encryption results to console in Java code.
-    NSLog(@"Encryption results:\n\tfinal String appleKey = \"%@\";\n\tfinal String appleIv = \"%@\";\n%@",
-          _hex(key), _hex(iv), results);
+    const id fixture = @{
+        @"algorithm": @"aes",
+        @"mode": @"cbc",
+        @"keylength": @256,
+        @"key": [key base64EncodedStringWithOptions:0],
+        @"iv": [iv base64EncodedStringWithOptions:0],
+        @"items": results,
+    };
+    
+    NSData *const json =
+        [NSJSONSerialization dataWithJSONObject:fixture
+                                        options:NSJSONWritingPrettyPrinted
+                                          error:nil];
+    XCTAssertNotNil(json);
+    
+
+    NSLog(@"Fixture JSON for test-resources:\n%@",
+          [[NSString alloc] initWithData:json encoding:NSUTF8StringEncoding]);
 }
 
 @end
