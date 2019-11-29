@@ -53,13 +53,13 @@
         [results addObject:@{
             @"encoded": @{
                 @"name": @"example",
-                @"data": [dIn base64EncodedStringWithOptions:0],
                 @"encoding": @"base64",
+                @"data": [dIn base64EncodedStringWithOptions:0],
             },
             @"encrypted": @{
                 @"name": @"example",
-                @"data": [dOut base64EncodedStringWithOptions:0],
                 @"encoding": @"cipher+aes-256-cbc/base64",
+                @"data": [dOut base64EncodedStringWithOptions:0],
             },
         }];
         
@@ -85,9 +85,10 @@
                                           error:nil];
     XCTAssertNotNil(json);
     
+    NSString *const appleJson = [[NSString alloc] initWithData:json encoding:NSUTF8StringEncoding];
+    NSString *const cleanJson = [appleJson stringByReplacingOccurrencesOfString:@"\\/" withString:@"/"];
 
-    NSLog(@"Fixture JSON for test-resources:\n%@",
-          [[NSString alloc] initWithData:json encoding:NSUTF8StringEncoding]);
+    NSLog(@"Fixture JSON for test-resources:\n%@", cleanJson);
 }
 
 @end
