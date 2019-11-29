@@ -714,7 +714,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         // invalidating the iterator and causing a crashing.
         //
         // So fail later, when we're done using the iterator.
-        NSMutableArray<ARTRealtimeChannelInternal *> *toFail = [[NSMutableArray alloc] init];
+        NSMutableArray<ARTRealtimeChannelInternal *> * const toFail = [[NSMutableArray alloc] init];
 
         for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
             if (stateChange.current == ARTRealtimeClosing) {
