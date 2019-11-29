@@ -716,6 +716,7 @@
 		EBD947B41EBB8F160005DD16 /* ARTSentry.h in Headers */ = {isa = PBXBuildFile; fileRef = EBD947B31EBB8F160005DD16 /* ARTSentry.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EBD947B61EBB8F2B0005DD16 /* ARTSentry.m in Sources */ = {isa = PBXBuildFile; fileRef = EBD947B51EBB8F2B0005DD16 /* ARTSentry.m */; };
 		EBF2285B1F4D9AD6009091DD /* ARTWebSocketTransport+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D714A63F1C75F0C5002F2CA0 /* ARTWebSocketTransport+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		EBF70D95239145E0004824FA /* Ably.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 96BF61311A35B2AB004CF2B3 /* Ably.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EBFA366E1D58B05000B09AA7 /* ARTRestPresence+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB7617701CB6C18C00D0981E /* ARTRestPresence+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		EBFFAC191E97919C003E7326 /* ARTLocalDevice+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFAC181E97919C003E7326 /* ARTLocalDevice+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		EBFFAC1B1E97EF68003E7326 /* ARTPushAdmin+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFAC1A1E97EF5C003E7326 /* ARTPushAdmin+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -825,6 +826,7 @@
 			dstSubfolderSpec = 10;
 			files = (
 				EB3630CE2380562400B83598 /* msgpack.framework in CopyFiles */,
+				EBF70D95239145E0004824FA /* Ably.framework in CopyFiles */,
 				EB3630CF2380562400B83598 /* KSCrash.framework in CopyFiles */,
 				EB3630D02380562400B83598 /* SocketRocketAblyFork.framework in CopyFiles */,
 				EB3630D12380562400B83598 /* SAMKeychain.framework in CopyFiles */,
