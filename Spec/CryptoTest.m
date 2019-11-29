@@ -52,10 +52,12 @@
         // Add encryption result to results in format ready for fixture.
         [results addObject:@{
             @"encoded": @{
+                @"name": @"example",
                 @"data": [dIn base64EncodedStringWithOptions:0],
                 @"encoding": @"base64",
             },
             @"encrypted": @{
+                @"name": @"example",
                 @"data": [dOut base64EncodedStringWithOptions:0],
                 @"encoding": @"cipher+aes-256-cbc/base64",
             },
