@@ -10,19 +10,6 @@
 @implementation CryptoTest
 
 /**
- Utility function to render binary data in hexadecimal.
- */
-static NSString* _hex(NSData *const data) {
-    const UInt8 *const bytes = data.bytes;
-    const NSUInteger length = data.length;
-    NSMutableString *const s = [NSMutableString stringWithCapacity:length * 2];
-    for (NSUInteger i=0; i<length; i++) {
-        [s appendFormat:@"%02X", bytes[i]];
-    }
-    return [s copy];
-}
-
-/**
  Test encryption using a 256 bit key and varying lengths of data.
  
  The key, IV and message data are the same for every test run so that the
