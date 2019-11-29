@@ -21,12 +21,15 @@ before_script:
   # Decrypt every .enc file in travis/
   # Those were encrypted with `travis encrypt-file`
   - for file in $(ls ./travis/*.enc); do openssl aes-256-cbc -K $encrypted_b41778345f70_key -iv $encrypted_b41778345f70_iv -in $file -out $(echo $file | sed 's/\.enc$//') -d; done
+  - ./travis/add-signing-key.sh
 script:
 script:
   - sudo mkdir '/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 9.3.simruntime/Contents/Resources/RuntimeRoot/usr/lib/swift'
   - export ABLY_ENV="sandbox"
   - fastlane $LANE
   - if [ ${RUN_EXAMPLES} == "true" ]; then bash ./Scripts/run_examples_tests.sh; fi
+after_script:
+  - ./travis/remove-signing-key.sh
 after_success:
   - sleep 5
 cache:
