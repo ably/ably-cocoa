@@ -63,7 +63,7 @@ platform :ios do
       should_zip_build_products: true     # Must be true to set the correct format for Firebase Test Lab
     )
     firebase_test_lab_ios_xctest(
-      gcp_project: 'ably-cocoa', # Your Google Cloud project name
+      gcp_project: 'ably-cocoa-260210',   # Your Google Cloud project name
       devices: [                          # Device(s) to run tests on
         {
           ios_model_id: 'iphonex',        # Device model ID, see gcloud command above
