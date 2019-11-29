@@ -68,7 +68,6 @@
         XCTAssertEqualObjects(dIn, dVerify);
     }
     
-    // Emit key, IV and encryption results to console in Java code.
     const id fixture = @{
         @"algorithm": @"aes",
         @"mode": @"cbc",
