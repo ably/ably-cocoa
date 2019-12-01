@@ -164,12 +164,23 @@ class SoakTestWebSocket: NSObject, ARTWebSocket {
                     serial = -1
                     self.serialForAttachedChannel[message.channel!] = -1
                 }
+                
+                let hasPresence = true.times(4, outOf: 5)
+                
                 self.messageToClient(action: .attached) { m in
                     m.channel = message.channel
                     m.channelSerial = "somethingsomething:\(serial)"
+                    if hasPresence {
+                        m.flags = m.flags | Int64(ARTProtocolMessageFlag.hasPresence.rawValue)
+                    }
+                }
+                
+                if hasPresence {
+                    self.startPresenceSync(channel: message.channel!)
                 }
 
                 self.sendMessages(channel: message.channel!)
+                self.sendPresenceMessages(channel: message.channel!)
             }
         case .detach:
             doIfStillOpen(afterSecondsBetween: 0.1 ... 3.0) {
@@ -199,25 +210,109 @@ class SoakTestWebSocket: NSObject, ARTWebSocket {
     
     var serialForAttachedChannel: [String: Int64] = [:]
     
+    func nextMessageToClient(forChannel channel: String, action: ARTProtocolMessageAction, setUp: (ARTProtocolMessage) -> Void = { _ in }) {
+        guard var channelSerial = self.serialForAttachedChannel[channel] else {
+            return
+        }
+        channelSerial += 1
+        self.serialForAttachedChannel[channel] = channelSerial
+        
+        messageToClient(action: action) { m in
+            m.channel = channel
+            m.channelSerial = "somethingsomething:\(channelSerial)"
+            setUp(m)
+        }
+    }
+    
     func sendMessages(channel: String) {
         doIfStillOpen(afterSecondsBetween: 0.1 ... 2.0) {
-            guard var channelSerial = self.serialForAttachedChannel[channel] else {
-                return
-            }
-            channelSerial += 1
-            self.serialForAttachedChannel[channel] = channelSerial
-            
-            self.messageToClient(action: .message) { m in
+            self.nextMessageToClient(forChannel: channel, action: .message) { m in
                 m.id = "message.\(nextGlobalSerial())"
-                m.channel = channel
-                m.channelSerial = "somethingsomething:\(channelSerial)"
                 m.messages = [ARTMessage(
                     name: "fakeMessage",
                     data: randomMessageData()
                 )]
             }
-            
+
             self.sendMessages(channel: channel)
+        }
+    }
+    
+    func sendPresenceMessages(channel: String) {
+        doIfStillOpen(afterSecondsBetween: 0.1 ... 2.0) {
+            let presence = ARTPresenceMessage()
+            presence.clientId = "someone.\(nextGlobalSerial())"
+            presence.data = randomMessageData()
+            presence.action = .enter
+
+            self.nextMessageToClient(forChannel: channel, action: .presence) { m in
+                m.id = "presence:\(nextGlobalSerial())"
+                m.presence = [presence]
+            }
+
+            self.sendPresenceMessages(channel: channel)
+            
+            self.updatePresence(channel: channel, clientId: presence.clientId!)
+        }
+    }
+    
+    func updatePresence(channel: String, clientId: String) {
+        doIfStillOpen(afterSecondsBetween: 0.1 ... 10.0) {
+            let presence = ARTPresenceMessage()
+            presence.clientId = clientId
+
+            if true.times(3, outOf: 4) {
+                presence.action = .update
+                presence.data = randomMessageData()
+            } else {
+                presence.action = .leave
+            }
+            
+            self.nextMessageToClient(forChannel: channel, action: .presence) { m in
+                m.id = "presence:\(nextGlobalSerial())"
+                m.presence = [presence]
+            }
+            
+            if presence.action == .update {
+                self.updatePresence(channel: channel, clientId: clientId)
+            }
+        }
+    }
+    
+    func startPresenceSync(channel: String) {
+        let numMembers = Int((1 ... 10).randomWithin())
+        let members = (1 ... numMembers).map { "member\($0)" }
+        let memberPages = Array(Groups(of: 3, outOf: members))
+        var iter = memberPages.enumerated().makeIterator()
+
+        sendPresenceSyncs(next: { iter.next() }, numPages: memberPages.count)
+    }
+    
+    func sendPresenceSyncs(next: @escaping () -> (Int, [String])?, numPages: Int) {
+        guard let (i, page) = next() else {
+            return
+        }
+        
+        var cursor: String
+        let isLast = i == numPages - 1
+        if isLast {
+            cursor = ""
+        } else {
+            cursor = "page\(i)"
+        }
+        
+        doIfStillOpen(afterSecondsBetween: (0.1 ... 1.0)) {
+            self.messageToClient(action: .sync) { m in
+                m.channelSerial = "somethingsomething:\(cursor)"
+                m.presence = page.map { member in
+                    let message = ARTPresenceMessage()
+                    message.clientId = member
+                    message.action = .present
+                    return message
+                }
+            }
+            
+            self.sendPresenceSyncs(next: next, numPages: numPages)
         }
     }
     
@@ -271,3 +366,40 @@ extension ARTProtocolMessage {
         return m
     }
 }
+
+private class Groups<S: Sequence>: Sequence, IteratorProtocol {
+    typealias Element = [S.Element]
+        
+    let perGroup: Int
+    var outOf: S.Iterator
+    var done = false
+    
+    required init(of: Int, outOf: S) {
+        self.perGroup = of
+        self.outOf = outOf.makeIterator()
+    }
+    
+    func next() -> Element? {
+        if done {
+            return nil
+        }
+
+        var group: [S.Element]?
+
+        for _ in 0 ..< perGroup {
+            guard let next = outOf.next() else {
+                done = true
+                break
+            }
+            
+            if group == nil {
+                group = []
+            }
+            group!.append(next)
+        }
+        
+        return group
+    }
+}
+
+

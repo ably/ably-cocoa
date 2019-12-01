@@ -11,8 +11,8 @@ import XCTest
 import Ably.Private
 
 let randomSeed: Int = 13
-let concurrentConnections: Int = 1000
-let runTime: TimeInterval = 60 * 25
+let concurrentConnections: Int = 100
+let runTime: TimeInterval = 60 * 2
 
 class SoakTest: XCTestCase {
     override func setUp() {
@@ -145,11 +145,21 @@ func channelsOperations(realtime: ARTRealtime, queue: DispatchQueue) {
                 print("\(channel.name): got message: \(message)")
             }
         }
-        
+
         queue.afterSeconds(between: 0.5 ... 3) {
             channel.publish("fakeMessage", data: randomMessageData()) { error in
                     print("\(channel.name): got message ack; error: \(String(describing: error))")
             }
+        }
+        
+        queue.afterSeconds(between: 0.3 ... 2) {
+            channel.presence.subscribe { message in
+                print("\(channel.name): got presence message: \(message)")
+            }
+        }
+        
+        queue.afterSeconds(between: 0.5 ... 3) {
+            presenceCycle(channel: channel, queue: queue)
         }
         
         queue.afterSeconds(between: 0.1 ... 1) {
@@ -170,20 +180,45 @@ func channelsOperations(realtime: ARTRealtime, queue: DispatchQueue) {
     }
 }
 
+func presenceCycle(channel: ARTRealtimeChannel, queue: DispatchQueue) {
+    let client = "presenceClient.\(nextGlobalSerial())"
+    channel.presence.enterClient(client, data: randomMessageData()) { error in
+        print("\(channel.name): got enter ack; error: \(String(describing: error))")
+        guard error == nil else {
+           return
+        }
+        queue.afterSeconds(between: 0.5 ... 3) {
+            channel.presence.updateClient(client, data: randomMessageData()) { error in
+                print("\(channel.name): got update ack; error: \(String(describing: error))")
+                guard error == nil else {
+                   return
+                }
+                queue.afterSeconds(between: 0.5 ... 3) {
+                    channel.presence.leaveClient(client, data: randomMessageData()) { error in
+                        print("\(channel.name): got leave ack; error: \(String(describing: error))")
+                        guard error == nil else {
+                           return
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 extension ARTRealtimeChannels: Sequence {
     public func makeIterator() -> NSFastEnumerationIterator {
         return NSFastEnumerationIterator(self.iterate())
     }
 }
 
-let messageFixtures: [Any?] = [
+let messageFixtures: [Any] = [
     "a string",
     ["some", ["values": 456]],
-    nil,
 ]
 
-func randomMessageData() -> Any? {
-    return messageFixtures.randomElement(using: &seededRandomNumberGenerator) as Any?
+func randomMessageData() -> Any {
+    return messageFixtures.randomElement(using: &seededRandomNumberGenerator)!
 }
 
 var randDouble : () -> Double = {
