@@ -22,14 +22,12 @@ class SoakTest: XCTestCase {
     func testSoak() {
         ARTWebSocketTransport.setWebSocketClass(SoakTestWebSocket.self)
         ARTHttp.setURLSessionClass(SoakTestURLSession.self)
-
-        var queues: [DispatchQueue] = []
+        
+        var shouldStop = DispatchQueue(label: "io.ably.soakTest.shouldStop").syncValue(false)
         
         for i in (0 ..< concurrentConnections) {
             let queue = DispatchQueue(label: "io.ably.soakTest.\(i)")
             let internalQueue = DispatchQueue(label: "io.ably.soakTest.internal.\(i)")
-            queues.append(queue)
-            queues.append(internalQueue)
 
             queue.async {
                 let options: ARTClientOptions = {
@@ -52,26 +50,60 @@ class SoakTest: XCTestCase {
                     print("got connection notification; error: \(String(describing: state?.reason))")
                 }
 
-                realtimeOperations(realtime: realtime, queue: queue)
+                realtimeOperations(realtime: realtime, queue: queue, shouldStop: shouldStop.get)
                 channelsOperations(realtime: realtime, queue: queue)
             }
         }
         
         Thread.sleep(forTimeInterval: runTime)
         
-        for queue in queues {
-            queue.suspend()
+        shouldStop.set(true)
+    }
+}
+
+extension DispatchQueue {
+    func syncValue<T>(_ value: T) -> SyncValue<T> {
+        return SyncValue(queue: self, value: value)
+    }
+}
+
+struct SyncValue<T> {
+    private var queue: DispatchQueue
+    private var value: T
+
+    init(queue: DispatchQueue, value: T) {
+        self.queue = queue
+        self.value = value
+    }
+
+    func get() -> T {
+        var value: T? = nil
+        queue.sync {
+            value = self.value
+        }
+        return value!
+    }
+
+    mutating func set(_ value: T) {
+        queue.sync {
+            self.value = value
         }
     }
 }
 
-func realtimeOperations(realtime: ARTRealtime, queue: DispatchQueue) {
+func realtimeOperations(realtime: ARTRealtime, queue: DispatchQueue, shouldStop: @escaping () -> Bool) {
+    if shouldStop() {
+        return
+    }
+
     queue.afterSeconds(between: 0.1 ... 1.0) {
-        realtimeOperations(realtime: realtime, queue: queue)
+        realtimeOperations(realtime: realtime, queue: queue, shouldStop: shouldStop)
     }
 
     queue.afterSeconds(between: 0.1 ... 10.0) {
-        realtime.connect()
+        if !shouldStop() {
+            realtime.connect()
+        }
     }
 
     if true.times(1, outOf: 20) {
