@@ -213,7 +213,7 @@ class SoakTestWebSocket: NSObject, ARTWebSocket {
                 m.channelSerial = "somethingsomething:\(channelSerial)"
                 m.messages = [ARTMessage(
                     name: "fakeMessage",
-                    data: messageFixtures.randomElement(using: &seededRandomNumberGenerator) as Any
+                    data: randomMessageData()
                 )]
             }
             

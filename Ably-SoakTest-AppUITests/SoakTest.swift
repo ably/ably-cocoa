@@ -115,7 +115,7 @@ func channelsOperations(realtime: ARTRealtime, queue: DispatchQueue) {
         }
         
         queue.afterSeconds(between: 0.5 ... 3) {
-            channel.publish("fakeMessage", data: messageFixtures.randomElement(using: &seededRandomNumberGenerator) ?? nil) { error in
+            channel.publish("fakeMessage", data: randomMessageData()) { error in
                     print("\(channel.name): got message ack; error: \(String(describing: error))")
             }
         }
@@ -149,6 +149,10 @@ let messageFixtures: [Any?] = [
     ["some", ["values": 456]],
     nil,
 ]
+
+func randomMessageData() -> Any? {
+    return messageFixtures.randomElement(using: &seededRandomNumberGenerator) as Any?
+}
 
 var randDouble : () -> Double = {
     srand48(randomSeed)
