@@ -10,11 +10,7 @@
 @implementation CryptoTest
 
 /**
- Test encryption using a 256 bit key and varying lengths of data.
- 
- The key, IV and message data are the same for every test run so that the
- encrypted data may be exported from the console output for consumption by tests
- run on other platforms.
+ Test encryption and decryption using a 256 bit key and varying lengths of data.
  */
 -(void)testEncryptAndDecrypt {
     // Configure the cipher.
@@ -42,26 +38,11 @@
 
     // Perform encrypt and decrypt on message data trimmed at all lengths up
     // to and including maxLength.
-    NSMutableArray<NSDictionary *> *const results = [NSMutableArray arrayWithCapacity:maxLength];
     for (NSUInteger i = 1; i <= maxLength; i++) {
         // Encrypt i bytes from the start of the message data.
         NSData *const dIn = [NSData dataWithBytes:&messageData length:i];
         NSData * dOut;
         XCTAssertEqual(ARTStateOk, [cipher encrypt:dIn output:&dOut].state);
-        
-        // Add encryption result to results in format ready for fixture.
-        [results addObject:@{
-            @"encoded": @{
-                @"name": @"example",
-                @"encoding": @"base64",
-                @"data": [dIn base64EncodedStringWithOptions:0],
-            },
-            @"encrypted": @{
-                @"name": @"example",
-                @"encoding": @"cipher+aes-256-cbc/base64",
-                @"data": [dOut base64EncodedStringWithOptions:0],
-            },
-        }];
         
         // Decrypt the encrypted data and verify the result is the same as what
         // we submitted for encryption.
@@ -69,26 +50,6 @@
         XCTAssertEqual(ARTStateOk, [cipher decrypt:dOut output:&dVerify].state);
         XCTAssertEqualObjects(dIn, dVerify);
     }
-    
-    const id fixture = @{
-        @"algorithm": @"aes",
-        @"mode": @"cbc",
-        @"keylength": @256,
-        @"key": [key base64EncodedStringWithOptions:0],
-        @"iv": [iv base64EncodedStringWithOptions:0],
-        @"items": results,
-    };
-    
-    NSData *const json =
-        [NSJSONSerialization dataWithJSONObject:fixture
-                                        options:NSJSONWritingPrettyPrinted
-                                          error:nil];
-    XCTAssertNotNil(json);
-    
-    NSString *const appleJson = [[NSString alloc] initWithData:json encoding:NSUTF8StringEncoding];
-    NSString *const cleanJson = [appleJson stringByReplacingOccurrencesOfString:@"\\/" withString:@"/"];
-
-    NSLog(@"Fixture JSON for test-resources:\n%@", cleanJson);
 }
 
 @end
