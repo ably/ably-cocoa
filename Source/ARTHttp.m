@@ -16,7 +16,7 @@
 
 @end
 
-Class urlSessionClass = nil;
+Class configuredUrlSessionClass = nil;
 
 #pragma mark - ARTHttp
 
@@ -26,19 +26,13 @@ Class urlSessionClass = nil;
 }
 
 + (void)setURLSessionClass:(Class)class {
-    urlSessionClass = class;
+    configuredUrlSessionClass = class;
 }
 
 - (instancetype)init:(dispatch_queue_t)queue logger:(ARTLog *)logger {
-    static dispatch_once_t setURLSessionClassOnce;
-    dispatch_once(&setURLSessionClassOnce, ^{
-        if (urlSessionClass == nil) {
-            [ARTHttp setURLSessionClass:[ARTURLSessionServerTrust class]];
-        }
-    });
-
     self = [super init];
     if (self) {
+        const Class urlSessionClass = configuredUrlSessionClass ? configuredUrlSessionClass : [ARTURLSessionServerTrust class];
         _urlSession = [[urlSessionClass alloc] init:queue];
         _logger = logger;
     }

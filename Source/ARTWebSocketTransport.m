@@ -42,7 +42,7 @@ NSString *WebSocketStateToStr(SRReadyState state);
 @interface SRWebSocket () <ARTWebSocket>
 @end
 
-Class websocketClass = nil;
+Class configuredWebsocketClass = nil;
 
 @implementation ARTWebSocketTransport {
     id<ARTRealtimeTransportDelegate> _delegate;
@@ -57,18 +57,10 @@ Class websocketClass = nil;
 @synthesize stateEmitter = _stateEmitter;
 
 + (void)setWebSocketClass:(Class)class {
-    websocketClass = class;
+    configuredWebsocketClass = class;
 }
 
 - (instancetype)initWithRest:(ARTRestInternal *)rest options:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial {
-
-    static dispatch_once_t setWebSocketClassOnce;
-    dispatch_once(&setWebSocketClassOnce, ^{
-        if (websocketClass == nil) {
-            [ARTWebSocketTransport setWebSocketClass:[SRWebSocket class]];
-        }
-    });
-    
     self = [super init];
     if (self) {
         _workQueue = rest.queue;
@@ -213,6 +205,7 @@ Class websocketClass = nil;
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
 
+    const Class websocketClass = configuredWebsocketClass ? configuredWebsocketClass : [SRWebSocket class];
     self.websocket = [[websocketClass alloc] initWithURLRequest:request];
     [self.websocket setDelegateDispatchQueue:_workQueue];
     self.websocket.delegate = self;
