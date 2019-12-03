@@ -47,11 +47,9 @@
 }
 
 - (id<NSFastEnumeration>)iterate {
-    NSMutableArray *channels = [[NSMutableArray alloc] init];
-    for (ARTRealtimeChannelInternal *internalChannel in [_internal iterate]) {
-        [channels addObject:[[ARTRealtimeChannel alloc] initWithInternal:internalChannel queuedDealloc:_dealloc]];
-    }
-    return channels;
+    return [_internal copyIntoIteratorWithMapper:^ARTRealtimeChannel *(ARTRealtimeChannelInternal *internalChannel) {
+        return [[ARTRealtimeChannel alloc] initWithInternal:internalChannel queuedDealloc:self->_dealloc];
+    }];
 }
 
 @end
@@ -86,8 +84,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
     return [ARTRealtimeChannelInternal channelWithRealtime:_realtime andName:name withOptions:options];
 }
 
-- (id<NSFastEnumeration>)iterate {
-    return [_channels iterate];
+- (id<NSFastEnumeration>)copyIntoIteratorWithMapper:(ARTRealtimeChannel *(^)(ARTRealtimeChannelInternal *))mapper {
+    return [_channels copyIntoIteratorWithMapper:mapper];
 }
 
 - (ARTRealtimeChannelInternal *)get:(NSString *)name {
