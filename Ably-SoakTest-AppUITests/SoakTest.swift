@@ -11,7 +11,7 @@ import XCTest
 import Ably.Private
 
 let randomSeed: Int = 13
-let concurrentConnections: Int = 1000
+let concurrentConnections: Int = 100
 let runTime: TimeInterval = 60 * 20
 
 class SoakTest: XCTestCase {
