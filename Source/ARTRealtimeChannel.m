@@ -1253,6 +1253,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
             [_attachedEventEmitter once:^(ARTErrorInfo *errorInfo) {
                 if (callback && errorInfo) {
                     callback(errorInfo);
+                    return;
                 }
                 [self _detach:callback];
             }];

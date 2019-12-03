@@ -461,6 +461,40 @@ class RealtimeClientChannel: QuickSpec {
 
                         expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
                     }
+                    
+                    it("channel being released waiting for DETACH shouldn't crash (issue #918)") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let client = ARTRealtime(options: options)
+                        client.internal.setTransport(TestProxyTransport.self)
+                        client.connect()
+                        defer { client.dispose(); client.close() }
+                        
+                        // Force the callback on .release below to be triggered by our
+                        // forced FAILED message, not by a DETACHED.
+                        let transport = client.internal.transport as! TestProxyTransport
+                        transport.actionsIgnored += [.detached]
+                        
+                        for i in (0..<100) { // We need a few channels to trigger iterator invalidation.
+                            let channel = client.channels.get("test\(i)")
+                            channel.attach() // No need to wait; ATTACHING state is good enough.
+                            expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attaching), timeout: testTimeout)
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(2, done: done)
+                            
+                            client.channels.release("test0") { _ in
+                                partialDone()
+                            }
+                            
+                            AblyTests.queue.async {
+                                let pmError = AblyTests.newErrorProtocolMessage()
+                                client.internal.onError(pmError)
+                                partialDone()
+                            }
+                        }
+                    }
 
                 }
 
@@ -502,7 +536,6 @@ class RealtimeClientChannel: QuickSpec {
                         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.detached), timeout: testTimeout)
                         expect(client.connection.state).to(equal(ARTRealtimeConnectionState.closed))
                     }
-
                 }
 
                 // RTL3c
@@ -537,6 +570,39 @@ class RealtimeClientChannel: QuickSpec {
                         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
                         client.internal.onSuspended()
                         expect(channel.state).to(equal(ARTRealtimeChannelState.suspended))
+                    }
+                    
+                    it("channel being released waiting for DETACH shouldn't crash (issue #918)") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let client = ARTRealtime(options: options)
+                        client.internal.setTransport(TestProxyTransport.self)
+                        client.connect()
+                        defer { client.dispose(); client.close() }
+                        
+                        // Force the callback on .release below to be triggered by our
+                        // forced SUSPENDED message, not by a DETACHED.
+                        let transport = client.internal.transport as! TestProxyTransport
+                        transport.actionsIgnored += [.detached]
+                        
+                        for i in (0..<100) { // We need a few channels to trigger iterator invalidation.
+                            let channel = client.channels.get("test\(i)")
+                            channel.attach() // No need to wait; ATTACHING state is good enough.
+                            expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attaching), timeout: testTimeout)
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(2, done: done)
+                            
+                            client.channels.release("test0") { _ in
+                                partialDone()
+                            }
+                            
+                            AblyTests.queue.async {
+                                client.internal.onSuspended()
+                                partialDone()
+                            }
+                        }
                     }
 
                 }
