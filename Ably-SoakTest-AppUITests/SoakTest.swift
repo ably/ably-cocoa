@@ -40,7 +40,7 @@ class SoakTest: XCTestCase {
                     }
                 }()
                 options.autoConnect = false
-                options.logLevel = .debug
+                options.logLevel = .error
                 options.dispatchQueue = queue
                 options.internalDispatchQueue = internalQueue
                 let realtime = ARTRealtime(options: options)
