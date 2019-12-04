@@ -16,13 +16,17 @@ class Push : QuickSpec {
         var rest: ARTRest!
         var mockHttpExecutor: MockHTTPExecutor!
         var storage: MockDeviceStorage!
+        var stateMachineDelegate: StateMachineDelegate!
 
         beforeEach {
             rest = ARTRest(key: "xxxx:xxxx")
+            rest.internal.resetDeviceSingleton()
             mockHttpExecutor = MockHTTPExecutor()
             rest.internal.httpExecutor = mockHttpExecutor
             storage = MockDeviceStorage()
             rest.internal.storage = storage
+            stateMachineDelegate = StateMachineDelegate()
+            rest.push.internal.activationMachine().delegate = stateMachineDelegate
         }
 
         // RSH2

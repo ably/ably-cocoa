@@ -361,6 +361,7 @@ class RestClient: QuickSpec {
                 expect(requestUrlA.scheme).to(equal("https"))
 
                 options.clientId = "client_http"
+                options.useTokenAuth = true
                 options.tls = false
                 let clientHttp = ARTRest(options: options)
                 testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)

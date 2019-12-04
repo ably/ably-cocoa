@@ -78,7 +78,7 @@ class AblyTests {
         }
     }
 
-    class var authTokenCases: [String: (ARTAuthOptions) -> ()] {
+    class var authTokenCases: [String: (ARTAuthOptions) -> Void] {
         get { return [
             "useTokenAuth": { $0.useTokenAuth = true; $0.key = "fake:key" },
             "authUrl": { $0.authUrl = URL(string: "http://test.com") },
