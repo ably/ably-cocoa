@@ -200,7 +200,6 @@ class RestClientChannel: QuickSpec {
                     it("should be unnecessary to set clientId of the Message before publishing") {
                         let options = AblyTests.commonAppSetup()
                         options.clientId = "john"
-                        options.useTokenAuth = true
                         let client = ARTRest(options: options)
                         let channel = client.channels.get("test")
 

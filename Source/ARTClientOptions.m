@@ -136,6 +136,7 @@ NSString *const ARTDefaultProduction = @"production";
 - (BOOL)isBasicAuth {
     return self.useTokenAuth == false &&
     self.key != nil &&
+    self.clientId == nil &&
     self.token == nil &&
     self.tokenDetails == nil &&
     self.authUrl == nil &&

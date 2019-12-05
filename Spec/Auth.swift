@@ -4393,13 +4393,6 @@ class Auth : QuickSpec {
                     }
                 }
             }
-
-            // https://github.com/ably/ably-cocoa/issues/849
-            it("should not force token auth when clientId is set") {
-                let options = AblyTests.commonAppSetup()
-                options.clientId = "foo"
-                expect(options.isBasicAuth()).to(beTrue())
-            }
         }
     }
 }
