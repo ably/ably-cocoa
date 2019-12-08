@@ -2441,9 +2441,15 @@ class RealtimeClientConnection: QuickSpec {
                         }
 
                         let oldConnectionId = client.connection.id
-                        client.simulateLostConnectionAndState()
 
                         waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(2, done: done)
+
+                            channel.once(.attaching) { _ in
+                                expect(channel.errorReason).to(beNil())
+                                partialDone()
+                            }
+
                             client.connection.once(.connected) { stateChange in
                                 guard let error = stateChange?.reason else {
                                     fail("Connection resume failed and error should be propagated to the channel"); done(); return
@@ -2451,16 +2457,18 @@ class RealtimeClientConnection: QuickSpec {
                                 expect(error.code).to(equal(80008))
                                 expect(error.message).to(contain("Unable to recover connection"))
                                 expect(client.connection.errorReason).to(beIdenticalTo(stateChange!.reason))
-                                done()
+                                partialDone()
                             }
+                            
+                            client.simulateLostConnectionAndState()
                         }
+
                         let transport = client.internal.transport as! TestProxyTransport
                         let connectedPM = transport.protocolMessagesReceived.filter{ $0.action == .connected }[0]
                         expect(connectedPM.connectionId).toNot(equal(oldConnectionId))
                         expect(client.connection.id).to(equal(connectedPM.connectionId))
                         expect(client.internal.msgSerial).to(equal(0))
-                        expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
-                        expect(channel.errorReason).to(beNil())
+
                         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
                     }
 
