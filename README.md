@@ -55,7 +55,7 @@ If you find any issues with unsupported platform versions, please [raise an issu
 
 #### Acknowledgments
 
-As of version `1.1.12` this library based on the 1.1 library specification. It implements a subset of 1.1 features:
+As of version `1.1.0` this library based on the 1.1 library specification. It implements a subset of 1.1 features:
 - updated push API and push device authentication;
 - support for enforcement of the `maxMessageSize` attribute
 
