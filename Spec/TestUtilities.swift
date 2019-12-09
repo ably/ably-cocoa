@@ -148,7 +148,6 @@ class AblyTests {
             testApplication = try! JSON(data: responseData!)
             
             if debug {
-                options.logLevel = .verbose
                 print(testApplication!)
             }
 
@@ -159,6 +158,9 @@ class AblyTests {
         options.key = key["keyStr"].stringValue
         options.dispatchQueue = userQueue
         options.internalDispatchQueue = queue
+        if debug {
+            options.logLevel = .verbose
+        }
         return options
     }
     
