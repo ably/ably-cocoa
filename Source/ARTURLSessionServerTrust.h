@@ -9,16 +9,11 @@
 #import <Foundation/Foundation.h>
 
 #import <Ably/ARTTypes.h>
+#import <Ably/ARTURLSession.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTURLSessionServerTrust : NSObject<NSURLSessionDelegate, NSURLSessionTaskDelegate>
-
-- (instancetype)init:(dispatch_queue_t)queue;
-
-- (NSURLSessionTask *)get:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback;
-
-- (void)finishTasksAndInvalidate;
+@interface ARTURLSessionServerTrust : NSObject<NSURLSessionDelegate, NSURLSessionTaskDelegate, ARTURLSession>
 
 @end
 

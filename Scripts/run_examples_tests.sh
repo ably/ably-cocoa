@@ -6,4 +6,4 @@ set -e
 cd "Examples/Tests"
 pod repo update
 pod install
-fastlane scan -s Tests
+bundle exec fastlane scan -s Tests
