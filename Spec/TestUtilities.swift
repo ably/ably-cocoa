@@ -17,13 +17,19 @@ import Aspects
 
 import Ably.Private
 
-enum CryptoTest: String {
-    case aes128 = "crypto-data-128"
-    case aes256 = "crypto-data-256"
+class CryptoTest {
+    private static let aes128 = "cipher+aes-128-cbc";
+    private static let aes256 = "cipher+aes-256-cbc";
 
-    static var all: [CryptoTest] {
-        return [.aes128, .aes256]
-    }
+    public static let fixtures: [(
+        fileName: String,
+        expectedEncryptedEncoding: String,
+        keyLength: UInt
+    )] = [
+        ("crypto-data-128", aes128, 128),
+        ("crypto-data-256", aes256, 256),
+        ("crypto-data-256-variable-lengths", aes256, 256),
+    ];
 }
 
 class Configuration : QuickConfiguration {
@@ -291,7 +297,8 @@ class AblyTests {
 
     }
 
-    class func loadCryptoTestData(_ file: String) -> (key: Data, iv: Data, items: [CryptoTestItem]) {
+    class func loadCryptoTestData(_ fileName: String) -> (key: Data, iv: Data, items: [CryptoTestItem]) {
+        let file = testResourcesPath + fileName + ".json";
         let json = JSON(parseJSON: try! String(contentsOfFile: pathForTestResource(file)))
 
         let keyData = Data(base64Encoded: json["key"].stringValue, options: Data.Base64DecodingOptions(rawValue: 0))!
@@ -300,11 +307,6 @@ class AblyTests {
         
         return (keyData, ivData, items)
     }
-
-    class func loadCryptoTestData(_ crypto: CryptoTest) -> (key: Data, iv: Data, items: [CryptoTestItem]) {
-        return loadCryptoTestData(testResourcesPath + crypto.rawValue + ".json")
-    }
-
 }
 
 class NSURLSessionServerTrustSync: NSObject, URLSessionDelegate, URLSessionTaskDelegate {

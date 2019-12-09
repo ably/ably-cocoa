@@ -11,7 +11,7 @@ import Nimble
 import Quick
 import SwiftyJSON
 
-class Crypto : QuickSpec {
+class Crypto : QuickSpec {    
     override func spec() {
         describe("Crypto") {
             let key = "+/h4eHh4eHh4eHh4eHh4eA=="
@@ -133,9 +133,9 @@ class Crypto : QuickSpec {
                 }
             }
 
-            for cryptoTest in CryptoTest.all {
-                context("with fixtures from \(cryptoTest).json") {
-                    let (key, iv, items) = AblyTests.loadCryptoTestData(cryptoTest)
+            for cryptoFixture in CryptoTest.fixtures {
+                context("with fixtures from \(cryptoFixture.fileName).json") {
+                    let (key, iv, items) = AblyTests.loadCryptoTestData(cryptoFixture.fileName)
                     let decoder = ARTDataEncoder.init(cipherParams: nil, error: nil)
                     let cipherParams = ARTCipherParams(algorithm: "aes", key: key as ARTCipherKeyCompatible, iv: iv)
                     let encrypter = ARTDataEncoder.init(cipherParams: cipherParams, error: nil)
@@ -150,15 +150,18 @@ class Crypto : QuickSpec {
                         for item in items {
                             let fixture = extractMessage(item.encoded)
                             let encryptedFixture = extractMessage(item.encrypted)
+                            expect(encryptedFixture.encoding).to(endWith("\(cryptoFixture.expectedEncryptedEncoding)/base64"))
 
                             var error: NSError?
                             let decoded = fixture.decode(with: decoder, error: &error) as! ARTMessage
                             expect(error).to(beNil())
+                            expect(decoded).notTo(beNil())
 
                             let encrypted = decoded.encode(with: encrypter, error: &error)
                             expect(error).to(beNil())
+                            expect(encrypted).notTo(beNil())
 
-                            expect(encrypted as? ARTMessage).to(equal(encryptedFixture))
+                            expect((encrypted as! ARTMessage)).to(equal(encryptedFixture))
                         }
                     }
 
@@ -166,15 +169,18 @@ class Crypto : QuickSpec {
                         for item in items {
                             let fixture = extractMessage(item.encoded)
                             let encryptedFixture = extractMessage(item.encrypted)
+                            expect(encryptedFixture.encoding).to(endWith("\(cryptoFixture.expectedEncryptedEncoding)/base64"))
 
                             var error: NSError?
                             let decoded = fixture.decode(with: decoder, error: &error) as! ARTMessage
                             expect(error).to(beNil())
+                            expect(decoded).notTo(beNil())
 
                             let decrypted = encryptedFixture.decode(with: encrypter, error: &error)
                             expect(error).to(beNil())
-
-                            expect(decrypted as? ARTMessage).to(equal(decoded))
+                            expect(decrypted).notTo(beNil())
+                            
+                            expect((decrypted as! ARTMessage)).to(equal(decoded))
                         }
                     }
                 }

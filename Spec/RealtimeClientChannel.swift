@@ -2780,9 +2780,13 @@ class RealtimeClientChannel: QuickSpec {
 
                 // RTL7d
                 context("should deliver the message even if there is an error while decoding") {
-
-                    for cryptoTest in [CryptoTest.aes128, CryptoTest.aes256] {
-                        it("using \(cryptoTest) ") {
+                    
+                    /*
+                     This test makes a deep assumption about the content of these two files,
+                     specifically the format of the first message in the items array.
+                     */
+                    for cryptoFixtureFileName in ["crypto-data-128", "crypto-data-256"] {
+                        it("using \(cryptoFixtureFileName) ") {
                             let options = AblyTests.commonAppSetup()
                             options.autoConnect = false
                             options.logHandler = ARTLog(capturingOutput: true)
@@ -2791,7 +2795,7 @@ class RealtimeClientChannel: QuickSpec {
                             client.connect()
                             defer { client.dispose(); client.close() }
 
-                            let (keyData, ivData, messages) = AblyTests.loadCryptoTestData(cryptoTest)
+                            let (keyData, ivData, messages) = AblyTests.loadCryptoTestData(cryptoFixtureFileName)
                             let testMessage = messages[0]
 
                             let cipherParams = ARTCipherParams(algorithm: "aes", key: keyData as ARTCipherKeyCompatible, iv: ivData)
@@ -2810,7 +2814,8 @@ class RealtimeClientChannel: QuickSpec {
                             transport.beforeProcessingReceivedMessage = { protocolMessage in
                                 if protocolMessage.action == .message {
                                     expect(protocolMessage.messages![0].data as? NSObject).to(equal(AblyTests.base64ToData(testMessage.encrypted.data) as NSObject?))
-                                    expect(protocolMessage.messages![0].encoding).to(equal("utf-8/cipher+aes-\(cryptoTest == CryptoTest.aes128 ? "128" : "256")-cbc"))
+                                    expect(protocolMessage.messages![0].encoding).to(equal("utf-8/cipher+aes-\(cryptoFixtureFileName.suffix(3))-cbc"))
+                                    
                                     // Force an error decoding a message
                                     protocolMessage.messages![0].encoding = "bad_encoding_type"
                                 }
