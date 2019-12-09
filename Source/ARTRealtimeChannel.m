@@ -311,7 +311,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         data = @[data];
     }
 
-dispatch_async(_queue, ^{
+dispatch_sync(_queue, ^{
 ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
     ARTProtocolMessage *msg = [[ARTProtocolMessage alloc] init];
     msg.action = ARTProtocolMessageMessage;
