@@ -1,7 +1,13 @@
 # Change Log
 
-## [1.1.13](https://github.com/ably/ably-cocoa/tree/1.1.13) (2019-12-09)
+## [1.1.14](https://github.com/ably/ably-cocoa/tree/1.1.14) (2019-12-16)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.13...1.1.14)
 
+**Fixed bugs:**
+
+- iOS Incompatible library version crash - DYLIB_COMPATIBILITY_VERSION vs DYLIB_CURRENT_VERSION [\#946](https://github.com/ably/ably-cocoa/issues/946)
+
+## [1.1.13](https://github.com/ably/ably-cocoa/tree/1.1.13) (2019-12-09)
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.12...1.1.13)
 
 **Fixed bugs:**
