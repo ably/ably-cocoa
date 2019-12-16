@@ -663,12 +663,13 @@ This library uses [semantic versioning](http://semver.org/). For each release, t
 * Run `make bump_[major|minor|patch]` to bump the new version number (creates a Git commit and tag)
 * Run [`github_changelog_generator`](https://github.com/github-changelog-generator/github-changelog-generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). This may require some manual intervention, both in terms of how the command is run and how the change log file is modified. Your mileage may vary:
     * The command you will need to run will look something like this: `github_changelog_generator -u ably -p ably-cocoa --since-tag 1.1.14`
-    * Change the `Unreleased` heading and link with the current version number such as `v1.0.0`
-    * Also ensure that the `Full Changelog` link points to the new version tag instead of the `HEAD`
-    * Create a Git commit for this change
-* Push the tag created by the bump script earlier to origin such as `git push origin x.x.x`
-* Make a pull request against `develop`
-* Wait for review. Once the PR is approved, merge it into `develop`
+    * Change the "Unreleased" heading and link with the current version number such as `v1.0.0`
+    * Also ensure that the "Full Changelog" link points to the new version tag instead of the `HEAD`
+    * Commit this change: `git add CHANGELOG.md && git commit -m "Update change log."`
+* Push both commits to origin: `git push -u origin release/x.x.x`
+* Push the tag created by the bump script earlier to origin: `git push origin x.x.x`
+* Make a pull request against `develop` and await approval of reviewer(s).
+* Once approved, merge the PR. If you do this from Github's web interface then use the "Rebase and merge" option to retain the relationship with the tag.
 * Fast-forward the master branch: `git checkout master && git merge --ff-only develop && git push origin master`
 * Add to [releases](https://github.com/ably/ably-ios/releases) - refer to previous releases for release notes format
 * Release an update for CocoaPods: `pod trunk push Ably.podspec` (you can, optionally, first run `pod lib lint` to verify that the trunk push should succeed). Details on this command, as well as instructions for adding other contributors as maintainers, are at [Getting setup with Trunk](https://guides.cocoapods.org/making/getting-setup-with-trunk.html) in the [CocoaPods Guides](https://guides.cocoapods.org/).
