@@ -30,6 +30,7 @@ sed -i '' -e 's/'"$OLD_VERSION"'/'"$NEW_VERSION"'/g' Spec/RealtimeClientConnecti
 
 git add README.md
 git add Spec/RealtimeClientConnection.swift
+git add Version.xcconfig
 git commit -m "Bump version to $NEW_VERSION."
 git tag "$NEW_VERSION"
 
