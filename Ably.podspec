@@ -21,7 +21,7 @@ Pod::Spec.new do |s|
   s.module_map        = 'Source/Ably.modulemap'
   s.dependency 'SocketRocketAblyFork', '0.5.2-ably-4'
   s.dependency 'MsgPackAblyFork', '0.2.0-ably-1'
-  s.dependency 'KSCrashAblyFork', '1.15.20-ably-1'
+  s.dependency 'KSCrashAblyFork', '1.15.20-ably-5'
   s.dependency 'ULID', '1.1.0'
   s.dependency 'SAMKeychain', '1.5.3'
 end

@@ -42,13 +42,7 @@
 #import "ARTLocalDeviceStorage.h"
 #import "ARTNSMutableRequest+ARTRest.h"
 #import "ARTHTTPPaginatedResponse+Private.h"
-
-#if COCOAPODS
 #import <KSCrashAblyFork/KSCrash.h>
-#else
-// Carthage
-#import <KSCrash/KSCrash.h>
-#endif
 
 @implementation ARTRest {
     ARTQueuedDealloc *_dealloc;
