@@ -7,12 +7,7 @@
 //
 
 #import "ARTMsgPackEncoder.h"
-#if COCOAPODS && !TEST_SUITE
 #import <MsgPackAblyFork/MessagePack.h>
-#else
-// Carthage
-#import <msgpack/MessagePack.h>
-#endif
 
 @implementation ARTMsgPackEncoder
 
