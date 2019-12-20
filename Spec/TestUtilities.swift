@@ -28,7 +28,6 @@ class CryptoTest {
     )] = [
         ("crypto-data-128", aes128, 128),
         ("crypto-data-256", aes256, 256),
-        ("crypto-data-256-variable-lengths", aes256, 256),
     ];
 }
 
