@@ -1567,3 +1567,20 @@ extension ARTRealtime: ARTHasInternal {
         self.internalAsync(use)
     }
 }
+
+extension Array where Element: Equatable {
+    func deduplicateContiguous() -> [Element] {
+        var deduplicated = [Element]()
+        var previous: Element? = nil
+        for e in self {
+            if let previous = previous {
+                if previous == e {
+                    continue
+                }
+            }
+            deduplicated.append(e)
+            previous = e
+        }
+        return deduplicated
+    }
+}
