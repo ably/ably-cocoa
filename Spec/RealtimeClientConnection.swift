@@ -3582,12 +3582,13 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     expect(NSRegularExpression.match(testHttpExecutor.requests[0].url!.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt")).to(beTrue())
-                    expect(urlConnections).to(haveCount(6)) // default + 5 fallbacks
 
                     let extractHostname = { (url: NSURL) in
                         NSRegularExpression.extract(url.absoluteString, pattern: "[a-e].ably-realtime.com")
                     }
-                    let resultFallbackHosts = urlConnections.compactMap(extractHostname)
+                    // While connecting to a fallback host, concurrent requests will be sent to that
+                    // host too, so deduplicate those.
+                    let resultFallbackHosts = urlConnections.compactMap(extractHostname).deduplicateContiguous()
                     let expectedFallbackHosts = Array(expectedHostOrder.map({ ARTDefault.fallbackHosts()[$0] }))
 
                     expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
@@ -3636,12 +3637,13 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     expect(NSRegularExpression.match(testHttpExecutor.requests[0].url!.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt")).to(beTrue())
-                    expect(urlConnections).to(haveCount(6)) // default + 5 provided fallbacks
                     
                     let extractHostname = { (url: NSURL) in
                         NSRegularExpression.extract(url.absoluteString, pattern: "[f-j].ably-realtime.com")
                     }
-                    let resultFallbackHosts = urlConnections.compactMap(extractHostname)
+                    // While connecting to a fallback host, concurrent requests will be sent to that
+                    // host too, so deduplicate those.
+                    let resultFallbackHosts = urlConnections.compactMap(extractHostname).deduplicateContiguous()
                     let expectedFallbackHosts = Array(expectedHostOrder.map({ fbHosts[$0] }))
                     
                     expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
