@@ -1,6 +1,5 @@
 //
 //  ARTPushActivationStateMachine+Private.h
-//  ably-ios
 //
 //  Created by Ricardo Pereira on 26/01/2018.
 //  Copyright (c) 2014 Ably. All rights reserved.
