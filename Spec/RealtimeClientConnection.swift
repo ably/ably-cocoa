@@ -3149,36 +3149,19 @@ class RealtimeClientConnection: QuickSpec {
             // RTN17
             context("Host Fallback") {
                 let expectedHostOrder = [3, 4, 0, 2, 1]
-                let originalARTFallback_getRandomHostIndex = ARTFallback_getRandomHostIndex
+                let originalARTFallback_shuffleArray = ARTFallback_shuffleArray
 
                 beforeEach {
-                    ARTFallback_getRandomHostIndex = {
-                        let hostIndexes = [1, 1, 0, 0, 0]
-                        var i = 0
-                        return { count in
-                            assert(count > 0, "Fallback array is empty")
-
-                            let hostIndex: Int32
-                            if i < Int(count) {
-                                hostIndex = Int32(hostIndexes[i])
-                            }
-                            else {
-                                hostIndex = count - 1
-                            }
-
-                            if i < hostIndexes.count {
-                                i += 1
-                            }
-                            else {
-                                i = 0
-                            }
-                            return Int32(hostIndex)
+                    ARTFallback_shuffleArray = { array in
+                        let arranged = expectedHostOrder.reversed().map { array[$0] }
+                        for (i, element) in arranged.enumerated() {
+                            array[i] = element
                         }
-                    }()
+                    }
                 }
 
                 afterEach {
-                    ARTFallback_getRandomHostIndex = originalARTFallback_getRandomHostIndex
+                    ARTFallback_shuffleArray = originalARTFallback_shuffleArray
                 }
 
                 // RTN17b
