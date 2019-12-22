@@ -159,8 +159,7 @@ NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE N
 
 Those examples need to be kept in sync with:
 
-ablySpec/ReadmeExamples.swift
-ably-iosTests/ARTReadmeExamples.m
+Spec/ReadmeExamples.swift
 
 ==============================================
 **********************************************
