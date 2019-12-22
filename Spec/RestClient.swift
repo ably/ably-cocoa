@@ -1326,7 +1326,7 @@ class RestClient: QuickSpec {
                         let ablyBundleLibVersion = ARTDefault.libraryVersion()
                         expect(headerLibVersion).to(equal(ablyBundleLibVersion))
                         
-                        let patternToMatch = "ios-1.1."
+                        let patternToMatch = "cocoa-1.1."
                         let match = headerLibVersion?.hasPrefix(patternToMatch)
                         expect(match).to(beTrue())
                         
