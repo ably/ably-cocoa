@@ -18,7 +18,20 @@ NSString *const ARTDefault_version = @"1.1";
 NSString *const ARTDefault_ablyBundleId = @"io.ably.Ably";
 NSString *const ARTDefault_bundleVersionKey = @"CFBundleShortVersionString";
 NSString *const ARTDefault_bundleBuildNumberKey = @"CFBundleVersion";
-NSString *const ARTDefault_platform = @"cocoa-";
+NSString *const ARTDefault_platform = @"cocoa";
+NSString *const ARTDefault_variant =
+    #if TARGET_OS_IOS
+        @".ios"
+    #elif TARGET_OS_TV
+        @".tvos"
+    #elif TARGET_OS_WATCH
+        @".watchos"
+    #elif TARGET_OS_OSX
+        @".macos"
+    #else
+        @""
+    #endif
+    ;
 
 static NSTimeInterval _realtimeRequestTimeout = 10.0;
 static NSTimeInterval _connectionStateTtl = 60.0;
@@ -83,7 +96,7 @@ static NSInteger _maxMessageSize = 65536;
 }
 
 + (NSString *)libraryVersion {
-    return [NSString stringWithFormat:@"%@%@", ARTDefault_platform, [self bundleVersion]];
+    return [NSString stringWithFormat:@"%@%@-%@", ARTDefault_platform, ARTDefault_variant, [self bundleVersion]];
 }
 
 + (NSString *)bundleVersion {

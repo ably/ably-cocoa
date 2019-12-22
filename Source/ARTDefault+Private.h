@@ -8,6 +8,8 @@
 
 #import <Ably/ARTDefault.h>
 
+extern NSString *const ARTDefault_variant;
+
 @interface ARTDefault (Private)
 
 + (void)setRealtimeRequestTimeout:(NSTimeInterval)value;
