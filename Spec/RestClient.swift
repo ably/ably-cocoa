@@ -1335,7 +1335,7 @@ class RestClient: QuickSpec {
                 }
             }
 
-            // https://github.com/ably/ably-ios/issues/117
+            // https://github.com/ably/ably-cocoa/issues/117
             it("should indicate an error if there is no way to renew the token") {
                 let options = AblyTests.clientOptions()
                 options.token = getTestToken(ttl: 0.1)
@@ -1355,7 +1355,7 @@ class RestClient: QuickSpec {
                 }
             }
 
-            // https://github.com/ably/ably-ios/issues/577
+            // https://github.com/ably/ably-cocoa/issues/577
             it("background behaviour") {
                 let options = AblyTests.commonAppSetup()
                 waitUntil(timeout: testTimeout) { done in
@@ -1368,7 +1368,7 @@ class RestClient: QuickSpec {
                 }
             }
 
-            // https://github.com/ably/ably-ios/issues/589
+            // https://github.com/ably/ably-cocoa/issues/589
             it("client should handle error messages in plaintext and HTML format") {
                 let request = NSURLRequest(url: URL(string: "https://www.example.com")! as URL)
                 waitUntil(timeout: testTimeout) { done in

@@ -2977,7 +2977,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                // https://github.com/ably/ably-ios/issues/618
+                // https://github.com/ably/ably-cocoa/issues/618
                 it("authUrl returning TokenRequest decodes TTL as expected") {
                     let options = AblyTests.commonAppSetup()
 
@@ -3802,7 +3802,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                // https://github.com/ably/ably-ios/pull/508#discussion_r82577728
+                // https://github.com/ably/ably-cocoa/pull/508#discussion_r82577728
                 it("object has no timestamp value unless explicitly set") {
                     let params = ARTTokenParams()
                     expect(params.timestamp).to(beNil())

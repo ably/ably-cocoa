@@ -4302,7 +4302,7 @@ class RealtimeClientConnection: QuickSpec {
                 expect(client.connection.errorReason).to(beNil())
             }
 
-            // https://github.com/ably/ably-ios/issues/454
+            // https://github.com/ably/ably-cocoa/issues/454
             it("should not move to FAILED if received DISCONNECT with an error") {
                 let options = AblyTests.commonAppSetup()
                 let client = ARTRealtime(options: options)
