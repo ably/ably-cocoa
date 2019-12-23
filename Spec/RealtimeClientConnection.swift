@@ -578,6 +578,7 @@ class RealtimeClientConnection: QuickSpec {
                 let numClients = 50
                 let numMessages = 5
                 let channelName = "chat"
+                let testTimeout = TimeInterval(60)
 
                 defer {
                     for client in disposable {
