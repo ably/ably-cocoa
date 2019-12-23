@@ -575,7 +575,8 @@ class RealtimeClientConnection: QuickSpec {
                 let options = AblyTests.commonAppSetup()
                 options.echoMessages = false
                 var disposable = [ARTRealtime]()
-                let max = 25
+                let numClients = 25
+                let numMessages = 50
                 let channelName = "chat"
 
                 defer {
@@ -586,8 +587,8 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 waitUntil(timeout: testTimeout) { done in
-                    let partialDone = AblyTests.splitDone(max, done: done)
-                    for _ in 1...max {
+                    let partialDone = AblyTests.splitDone(numClients, done: done)
+                    for _ in 1...numClients {
                         let client = ARTRealtime(options: options)
                         disposable.append(client)
                         let channel = client.channels.get(channelName)
@@ -600,20 +601,20 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
 
-                var i = 0
+                var messagesReceived = 0
                 waitUntil(timeout: testTimeout) { done in
-                    // Sends 50 messages from different clients to the same channel
-                    // 50 messages for 50 clients = 50*50 total messages
+                    // Sends numMessages messages from different clients to the same channel
+                    // numMessages messages for numClients clients = numMessages*numClients total messages
                     // echo is off, so we need to subtract one message per client
-                    let total = max*max - max
+                    let messagesExpected = numMessages * numClients - 1 * numClients
                     for client in disposable {
                         let channel = client.channels.get(channelName)
                         expect(channel.state).to(equal(ARTRealtimeChannelState.attached))
 
                         channel.subscribe { message in
                             expect(message.data as? String).to(equal("message_string"))
-                            i += 1
-                            if i == total {
+                            messagesReceived += 1
+                            if messagesReceived == messagesExpected {
                                 done()
                             }
                         }
@@ -622,7 +623,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
 
-                expect(disposable.count).to(equal(max))
+                expect(disposable.count).to(equal(numClients))
                 expect(countChannels(disposable.first!.channels)).to(equal(1))
                 expect(countChannels(disposable.last!.channels)).to(equal(1))
             }
