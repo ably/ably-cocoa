@@ -577,7 +577,6 @@ class RealtimeClientConnection: QuickSpec {
                 var disposable = [ARTRealtime]()
                 let max = 25
                 let channelName = "chat"
-                let sync = NSLock()
 
                 defer {
                     for client in disposable {
@@ -596,9 +595,7 @@ class RealtimeClientConnection: QuickSpec {
                             if let error = error {
                                 fail(error.message); done()
                             }
-                            sync.lock()
                             partialDone()
-                            sync.unlock()
                         }
                     }
                 }
@@ -615,12 +612,10 @@ class RealtimeClientConnection: QuickSpec {
 
                         channel.subscribe { message in
                             expect(message.data as? String).to(equal("message_string"))
-                            sync.lock()
                             i += 1
                             if i == total {
                                 done()
                             }
-                            sync.unlock()
                         }
 
                         channel.publish(nil, data: "message_string", callback: nil)
