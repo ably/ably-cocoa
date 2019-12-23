@@ -575,8 +575,8 @@ class RealtimeClientConnection: QuickSpec {
                 let options = AblyTests.commonAppSetup()
                 options.echoMessages = false
                 var disposable = [ARTRealtime]()
-                let numClients = 25
-                let numMessages = 50
+                let numClients = 50
+                let numMessages = 5
                 let channelName = "chat"
 
                 defer {
