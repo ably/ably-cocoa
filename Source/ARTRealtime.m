@@ -1570,7 +1570,11 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         if (!_fallbacks && [error.url.host isEqualToString:[ARTDefault realtimeHost]]) {
             [self.rest internetIsUp:^void(BOOL isUp) {
                 self->_fallbacks = [[ARTFallback alloc] initWithOptions:[self getClientOptions]];
-                (self->_fallbacks != nil) ? [self reconnectWithFallback] : [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:error.error]];
+                if (self->_fallbacks != nil) {
+                    [self reconnectWithFallback];
+                } else {
+                    [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:error.error]];
+                }
             }];
             return;
         } else if (_fallbacks && [self reconnectWithFallback]) {
