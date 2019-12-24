@@ -3560,16 +3560,19 @@ class RealtimeClientConnection: QuickSpec {
                     TestProxyTransport.network = .hostUnreachable
                     defer { TestProxyTransport.network = nil }
 
-                    var urlConnections = [NSURL]()
+                    var urls = [NSURL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.internal.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urls.append(url as NSURL)
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
-
-                    waitUntil(timeout: testTimeout) { done in
+                    testHttpExecutor.afterRequest = { request, _ in
+                        urls.append(request.url! as NSURL)
+                    }
+                    
+                    waitUntil(timeout: testTimeout * 1000) { done in
                         // wss://[a-e].ably-realtime.com: when a timeout occurs
                         client.connection.once(.disconnected) { error in
                             done()
@@ -3580,14 +3583,27 @@ class RealtimeClientConnection: QuickSpec {
                         }
                         client.connect()
                     }
-
-                    expect(NSRegularExpression.match(testHttpExecutor.requests[0].url!.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt")).to(beTrue())
-                    expect(urlConnections).to(haveCount(6)) // default + 5 fallbacks
-
+                    
                     let extractHostname = { (url: NSURL) in
                         NSRegularExpression.extract(url.absoluteString, pattern: "[a-e].ably-realtime.com")
                     }
-                    let resultFallbackHosts = urlConnections.compactMap(extractHostname)
+
+                    var resultFallbackHosts = [String]()
+                    var gotInternetIsUpCheck = false
+                    for url in urls {
+                        if NSRegularExpression.match(url.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt") {
+                            gotInternetIsUpCheck = true
+                        } else if let fallbackHost = extractHostname(url) {
+                            if Optional(fallbackHost) == resultFallbackHosts.last {
+                                continue
+                            }
+                            // Host changed; should've had a internet check before.
+                            expect(gotInternetIsUpCheck).to(beTrue())
+                            gotInternetIsUpCheck = false
+                            resultFallbackHosts.append(fallbackHost)
+                        }
+                    }
+                    
                     let expectedFallbackHosts = Array(expectedHostOrder.map({ ARTDefault.fallbackHosts()[$0] }))
 
                     expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
@@ -3614,14 +3630,17 @@ class RealtimeClientConnection: QuickSpec {
                     TestProxyTransport.network = .hostUnreachable
                     defer { TestProxyTransport.network = nil }
                     
-                    var urlConnections = [NSURL]()
+                    var urls = [NSURL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.internal.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urls.append(url as NSURL)
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
+                    testHttpExecutor.afterRequest = { request, _ in
+                        urls.append(request.url! as NSURL)
+                    }
 
                     waitUntil(timeout: testTimeout) { done in
                         // wss://[a-e].ably-realtime.com: when a timeout occurs
@@ -3635,13 +3654,26 @@ class RealtimeClientConnection: QuickSpec {
                         client.connect()
                     }
 
-                    expect(NSRegularExpression.match(testHttpExecutor.requests[0].url!.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt")).to(beTrue())
-                    expect(urlConnections).to(haveCount(6)) // default + 5 provided fallbacks
-                    
                     let extractHostname = { (url: NSURL) in
                         NSRegularExpression.extract(url.absoluteString, pattern: "[f-j].ably-realtime.com")
                     }
-                    let resultFallbackHosts = urlConnections.compactMap(extractHostname)
+
+                    var resultFallbackHosts = [String]()
+                    var gotInternetIsUpCheck = false
+                    for url in urls {
+                        if NSRegularExpression.match(url.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt") {
+                            gotInternetIsUpCheck = true
+                        } else if let fallbackHost = extractHostname(url) {
+                            if Optional(fallbackHost) == resultFallbackHosts.last {
+                                continue
+                            }
+                            // Host changed; should've had a internet check before.
+                            expect(gotInternetIsUpCheck).to(beTrue())
+                            gotInternetIsUpCheck = false
+                            resultFallbackHosts.append(fallbackHost)
+                        }
+                    }
+
                     let expectedFallbackHosts = Array(expectedHostOrder.map({ fbHosts[$0] }))
                     
                     expect(resultFallbackHosts).to(equal(expectedFallbackHosts))

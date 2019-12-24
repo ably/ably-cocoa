@@ -1383,9 +1383,11 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     NSString *host = [_fallbacks popFallbackHost];
     if (host != nil) {
-        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p host is down; retrying realtime connection at %@", self, host];
-        self.rest.prioritizedHost = host;
-        [self transportReconnectWithHost:host];
+        [self.rest internetIsUp:^void(BOOL isUp) {
+            [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p host is down; retrying realtime connection at %@", self, host];
+            self.rest.prioritizedHost = host;
+            [self transportReconnectWithHost:host];
+        }];
         return true;
     } else {
         _fallbacks = nil;
@@ -1568,14 +1570,12 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     if ([self shouldRetryWithFallback:error]) {
         [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p host is down; can retry with fallback host", self];
         if (!_fallbacks && [error.url.host isEqualToString:[ARTDefault realtimeHost]]) {
-            [self.rest internetIsUp:^void(BOOL isUp) {
-                self->_fallbacks = [[ARTFallback alloc] initWithOptions:[self getClientOptions]];
-                if (self->_fallbacks != nil) {
-                    [self reconnectWithFallback];
-                } else {
-                    [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:error.error]];
-                }
-            }];
+            self->_fallbacks = [[ARTFallback alloc] initWithOptions:[self getClientOptions]];
+            if (self->_fallbacks != nil) {
+                [self reconnectWithFallback];
+            } else {
+                [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:error.error]];
+            }
             return;
         } else if (_fallbacks && [self reconnectWithFallback]) {
             return;
