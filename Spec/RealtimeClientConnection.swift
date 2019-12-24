@@ -606,8 +606,9 @@ class RealtimeClientConnection: QuickSpec {
                 waitUntil(timeout: testTimeout) { done in
                     // Sends numMessages messages from different clients to the same channel
                     // numMessages messages for numClients clients = numMessages*numClients total messages
-                    // echo is off, so we need to subtract one message per client
-                    let messagesExpected = numMessages * numClients - 1 * numClients
+                    // echo is off, so we need to subtract one message per publish
+                    let messagesExpected = numMessages * numClients - 1 * numMessages
+                    var messagesSent = 0
                     for client in disposable {
                         let channel = client.channels.get(channelName)
                         expect(channel.state).to(equal(ARTRealtimeChannelState.attached))
@@ -619,8 +620,11 @@ class RealtimeClientConnection: QuickSpec {
                                 done()
                             }
                         }
-
-                        channel.publish(nil, data: "message_string", callback: nil)
+                        
+                        if messagesSent < numMessages {
+                            channel.publish(nil, data: "message_string", callback: nil)
+                            messagesSent += 1
+                        }
                     }
                 }
 
