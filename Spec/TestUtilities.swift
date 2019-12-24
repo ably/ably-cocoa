@@ -822,6 +822,10 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
         }
         self.requests.append(request)
 
+        if let performEvent = beforeRequest {
+           performEvent(request, callback)
+       }
+
         if var simulatedError = errorSimulator, var requestURL = request.url {
             defer {
                 errorSimulator = nil
@@ -837,9 +841,6 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
             }            
         }
 
-        if let performEvent = beforeRequest {
-            performEvent(request, callback)
-        }
         let task = http.execute(request, completion: { response, data, error in
             if let httpResponse = response {
                 self.responses.append(httpResponse)

@@ -1384,6 +1384,11 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     NSString *host = [_fallbacks popFallbackHost];
     if (host != nil) {
         [self.rest internetIsUp:^void(BOOL isUp) {
+            if (!isUp) {
+                [self transition:ARTRealtimeDisconnected withErrorInfo:[ARTErrorInfo createWithCode:0 message:@"no Internet connection"]];
+                return;
+            }
+
             [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p host is down; retrying realtime connection at %@", self, host];
             self.rest.prioritizedHost = host;
             [self transportReconnectWithHost:host];

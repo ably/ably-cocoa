@@ -3608,6 +3608,61 @@ class RealtimeClientConnection: QuickSpec {
 
                     expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
                 }
+                
+                // RTN17c
+                it("doesn't try fallback host if Internet connection check fails") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    options.autoConnect = false
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("test")
+
+                    let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
+                    defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
+                    ARTDefault.setRealtimeRequestTimeout(1.0)
+
+                    let testHttpExecutor = TestProxyHTTPExecutor(options.logHandler)
+                    client.internal.rest.httpExecutor = testHttpExecutor
+
+                    client.internal.setTransport(TestProxyTransport.self)
+                    TestProxyTransport.network = .hostUnreachable
+                    defer { TestProxyTransport.network = nil }
+
+                    let extractHostname = { (url: NSURL) in
+                        NSRegularExpression.extract(url.absoluteString, pattern: "[a-e].ably-realtime.com")
+                    }
+
+                    TestProxyTransport.networkConnectEvent = { transport, url in
+                        if client.internal.transport !== transport {
+                            return
+                        }
+                        if extractHostname(url as NSURL) != nil {
+                            fail("shouldn't try fallback host after failed connectivity check")
+                        }
+                    }
+                    defer { TestProxyTransport.networkConnectEvent = nil }
+
+                    testHttpExecutor.beforeRequest = { request, _ in
+                        if NSRegularExpression.match(
+                            request.url!.absoluteString,
+                            pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt"
+                        ) {
+                            testHttpExecutor.simulateIncomingServerErrorOnNextRequest(500, description: "fake error")
+                        }
+                    }
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        // wss://[a-e].ably-realtime.com: when a timeout occurs
+                        client.connection.once(.disconnected) { error in
+                            done()
+                        }
+                        // wss://[a-e].ably-realtime.com: when a 401 occurs because of the `xxxx:xxxx` key
+                        client.connection.once(.failed) { error in
+                            done()
+                        }
+                        client.connect()
+                    }
+                }
 
                 it("should retry custom fallback hosts in random order after checkin if an internet connection is available") {
                     let fbHosts = ["f.ably-realtime.com", "g.ably-realtime.com", "h.ably-realtime.com", "i.ably-realtime.com", "j.ably-realtime.com"]
