@@ -3766,7 +3766,6 @@ class RealtimeClientConnection: QuickSpec {
                         }
                     }
                     
-                    expect(NSRegularExpression.match(testHttpExecutor.requests[0].url!.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt")).to(beTrue())
                     expect(urlConnections).to(haveCount(1))
                 }
 
