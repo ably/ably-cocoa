@@ -59,7 +59,7 @@ As of version `1.1.0` this library based on the 1.1 library specification. It im
 - updated push API and push device authentication;
 - support for enforcement of the `maxMessageSize` attribute
 
-Other minor features and bugfixes are included, as listed in the [changelog](CHANGELOG.md#1113-2019-12-09).
+Other minor features and bugfixes are included, as listed in the [changelog](CHANGELOG.md#1115-2019-12-23).
 
 ##### macOS & tvOS
 
@@ -130,7 +130,7 @@ If you see, for example, a `dyld: Library not loaded: @rpath/SocketRocketAblyFor
 
 ### Manual installation 
 
-1. Get the code from GitHub [from the release page](https://github.com/ably/ably-ios/releases/tag/1.1.14), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-ios.git`
+1. Get the code from GitHub [from the release page](https://github.com/ably/ably-ios/releases/tag/1.1.15), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-ios.git`
 2. Drag the directory `ably-ios/ably-ios` into your project as a group.
 3. Ably depends on our [SocketRocket Fork](https://github.com/ably-forks/SocketRocket) 0.5.2; get it [from the releases page](https://github.com/ably-forks/SocketRocket/releases/tag/0.5.2-ably-2) and follow [its manual installation instructions](https://github.com/ably-forks/SocketRocket/#installing).
 4. Ably also depends on our [MessagePack Fork](https://github.com/ably-forks/msgpack-objective-C) 0.2.0; get it [from the releases page](https://github.com/ably-forks/msgpack-objective-C/releases/tag/0.2.0-ably-1) and link it into your project.
@@ -662,7 +662,7 @@ This library uses [semantic versioning](http://semver.org/). For each release, t
 * Create a new branch `release/x.x.x` (where `x.x.x` is the new version number) from the `develop` branch
 * Run `make bump_[major|minor|patch]` to bump the new version number (creates a Git commit and tag)
 * Run [`github_changelog_generator`](https://github.com/github-changelog-generator/github-changelog-generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). This may require some manual intervention, both in terms of how the command is run and how the change log file is modified. Your mileage may vary:
-    * The command you will need to run will look something like this: `github_changelog_generator -u ably -p ably-cocoa --since-tag 1.1.14`
+    * The command you will need to run will look something like this: `github_changelog_generator -u ably -p ably-cocoa --since-tag 1.1.15`
     * Change the "Unreleased" heading and link with the current version number such as `v1.0.0`
     * Also ensure that the "Full Changelog" link points to the new version tag instead of the `HEAD`
     * Commit this change: `git add CHANGELOG.md && git commit -m "Update change log."`

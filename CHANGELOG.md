@@ -1,5 +1,15 @@
 # Change Log
 
+## [1.1.15](https://github.com/ably/ably-cocoa/tree/1.1.15) (2019-12-23)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.14...1.1.15)
+
+**Merged pull requests:**
+
+- KSCrash fork has been renamed to KSCrashAblyFork 
+ [\#955](https://github.com/ably/ably-cocoa/pull/955) ([ricardopereira](https://github.com/ricardopereira))
+- Update msgpack to v0.3 [\#951](https://github.com/ably/ably-cocoa/pull/951) ([ricardopereira](https://github.com/ricardopereira))
+- Simplify random fallback host selection [\#953](https://github.com/ably/ably-cocoa/pull/953) ([tcard](https://github.com/tcard))
+
 ## [1.1.14](https://github.com/ably/ably-cocoa/tree/1.1.14) (2019-12-16)
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.13...1.1.14)
 
