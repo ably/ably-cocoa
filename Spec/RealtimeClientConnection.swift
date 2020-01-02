@@ -3597,7 +3597,7 @@ class RealtimeClientConnection: QuickSpec {
                             if Optional(fallbackHost) == resultFallbackHosts.last {
                                 continue
                             }
-                            // Host changed; should've had a internet check before.
+                            // Host changed; should've had an internet check before.
                             expect(gotInternetIsUpCheck).to(beTrue())
                             gotInternetIsUpCheck = false
                             resultFallbackHosts.append(fallbackHost)
@@ -3722,7 +3722,7 @@ class RealtimeClientConnection: QuickSpec {
                             if Optional(fallbackHost) == resultFallbackHosts.last {
                                 continue
                             }
-                            // Host changed; should've had a internet check before.
+                            // Host changed; should've had an internet check before.
                             expect(gotInternetIsUpCheck).to(beTrue())
                             gotInternetIsUpCheck = false
                             resultFallbackHosts.append(fallbackHost)
