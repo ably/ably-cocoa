@@ -55,6 +55,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)onceSyncFails:(void (^)(ARTErrorInfo *))callback;
 
 - (void)internalAdd:(ARTPresenceMessage *)message;
+- (void)internalAdd:(ARTPresenceMessage *)message withSessionId:(NSUInteger)sessionId;
 
 @end
 

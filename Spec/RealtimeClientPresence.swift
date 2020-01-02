@@ -2220,7 +2220,6 @@ class RealtimeClientPresence: QuickSpec {
                     let client = AblyTests.newRealtime(options)
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get(channelName)
-                    channel.attach()
 
                     guard let transport = client.internal.transport as? TestProxyTransport else {
                         fail("TestProxyTransport is not set"); return
@@ -2228,42 +2227,43 @@ class RealtimeClientPresence: QuickSpec {
 
                     var hook: AspectToken?
                     waitUntil(timeout: testTimeout) { done in
-                        let partialDone = AblyTests.splitDone(3, done: done)
-                        hook = channel.internal.presenceMap.testSuite_injectIntoMethod(after: #selector(ARTPresenceMap.startSync)) {
-                            expect(channel.internal.presenceMap.syncInProgress).to(beTrue())
+                        let partialDone = AblyTests.splitDone(2, done: done)
+                        
+                        channel.presence.subscribe(.leave) { leave in
+                            expect(leave.clientId).to(equal("user11"))
+                            partialDone()
+                        }
 
-                            AblyTests.extraQueue.async {
-                                channel.presence.subscribe(.leave) { leave in
-                                    expect(leave.clientId).to(equal("user11"))
-                                    expect(channel.internal.presenceMap.members.filter{ _, presence in presence.action == .leave }).to(beEmpty())
-                                    expect(channel.internal.presenceMap.members.filter{ _, presence in presence.action == .absent }).to(haveCount(1))
-                                    partialDone()
-                                }
-                                
-                                // Inject a fabricated Presence message
-                                let leaveMessage = ARTProtocolMessage()
-                                leaveMessage.action = .presence
-                                leaveMessage.channel = channel.name
-                                leaveMessage.connectionSerial = client.connection.internal.serial_nosync() + 1
-                                leaveMessage.timestamp = Date()
-                                leaveMessage.presence = [
-                                    ARTPresenceMessage(clientId: "user11", action: .leave, connectionId: "another", id: "another:123:0", timestamp: Date())
-                                ]
-                                transport.receive(leaveMessage)
+                        hook = channel.internal.presenceMap.testSuite_getArgument(
+                            from: #selector(ARTPresenceMap.internalAdd(_:withSessionId:)),
+                            at: 0
+                        ) { arg in
+                            let m = arg as? ARTPresenceMessage
+                            if (m?.clientId == "user11" && m?.action == .absent) {
+                                partialDone()
                             }
                         }
-                        channel.internal.presenceMap.testSuite_injectIntoMethod(before: #selector(ARTPresenceMap.endSync)) {
-                            expect(channel.internal.presenceMap.members.filter{ _, presence in presence.action == .absent }).to(haveCount(1))
-                            partialDone()
-                        }
-                        channel.internal.presenceMap.testSuite_injectIntoMethod(after: #selector(ARTPresenceMap.endSync)) {
-                            expect(channel.internal.presenceMap.syncInProgress).to(beFalse())
-                            expect(channel.internal.presenceMap.members.filter{ _, presence in presence.action == .leave }).to(beEmpty())
-                            expect(channel.internal.presenceMap.members.filter{ _, presence in presence.action == .absent }).to(beEmpty())
-                            partialDone()
+                        
+                        channel.attach { _ in
+                            expect(channel.internal.presenceMap.syncInProgress).to(beTrue())
+
+                            // Inject a fabricated Presence message
+                            let leaveMessage = ARTProtocolMessage()
+                            leaveMessage.action = .presence
+                            leaveMessage.channel = channel.name
+                            leaveMessage.connectionSerial = client.connection.internal.serial_nosync() + 1
+                            leaveMessage.timestamp = Date()
+                            leaveMessage.presence = [
+                                ARTPresenceMessage(clientId: "user11", action: .leave, connectionId: "another", id: "another:123:0", timestamp: Date())
+                            ]
+                            transport.receive(leaveMessage)
                         }
                     }
                     hook?.remove()
+                    
+                    expect(channel.internal.presenceMap.syncInProgress).toEventually(beFalse(), timeout: testTimeout)
+                    expect(channel.internal.presenceMap.members.filter{ _, presence in presence.action == .leave }).to(beEmpty())
+                    expect(channel.internal.presenceMap.members.filter{ _, presence in presence.action == .absent }).to(beEmpty())
 
                     // A single clientId may be present multiple times on the same channel via different client connections and that's way user11 is present because user11 presences messages were in distinct connections.
                     expect(channel.internal.presenceMap.members).to(haveCount(20))
