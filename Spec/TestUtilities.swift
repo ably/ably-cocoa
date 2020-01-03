@@ -17,13 +17,18 @@ import Aspects
 
 import Ably.Private
 
-enum CryptoTest: String {
-    case aes128 = "crypto-data-128"
-    case aes256 = "crypto-data-256"
+class CryptoTest {
+    private static let aes128 = "cipher+aes-128-cbc";
+    private static let aes256 = "cipher+aes-256-cbc";
 
-    static var all: [CryptoTest] {
-        return [.aes128, .aes256]
-    }
+    public static let fixtures: [(
+        fileName: String,
+        expectedEncryptedEncoding: String,
+        keyLength: UInt
+    )] = [
+        ("crypto-data-128", aes128, 128),
+        ("crypto-data-256", aes256, 256),
+    ];
 }
 
 class Configuration : QuickConfiguration {
@@ -78,7 +83,7 @@ class AblyTests {
         }
     }
 
-    class var authTokenCases: [String: (ARTAuthOptions) -> ()] {
+    class var authTokenCases: [String: (ARTAuthOptions) -> Void] {
         get { return [
             "useTokenAuth": { $0.useTokenAuth = true; $0.key = "fake:key" },
             "authUrl": { $0.authUrl = URL(string: "http://test.com") },
@@ -148,7 +153,6 @@ class AblyTests {
             testApplication = try! JSON(data: responseData!)
             
             if debug {
-                options.logLevel = .verbose
                 print(testApplication!)
             }
 
@@ -159,6 +163,9 @@ class AblyTests {
         options.key = key["keyStr"].stringValue
         options.dispatchQueue = userQueue
         options.internalDispatchQueue = queue
+        if debug {
+            options.logLevel = .verbose
+        }
         return options
     }
     
@@ -289,7 +296,8 @@ class AblyTests {
 
     }
 
-    class func loadCryptoTestData(_ file: String) -> (key: Data, iv: Data, items: [CryptoTestItem]) {
+    class func loadCryptoTestData(_ fileName: String) -> (key: Data, iv: Data, items: [CryptoTestItem]) {
+        let file = testResourcesPath + fileName + ".json";
         let json = JSON(parseJSON: try! String(contentsOfFile: pathForTestResource(file)))
 
         let keyData = Data(base64Encoded: json["key"].stringValue, options: Data.Base64DecodingOptions(rawValue: 0))!
@@ -298,11 +306,6 @@ class AblyTests {
         
         return (keyData, ivData, items)
     }
-
-    class func loadCryptoTestData(_ crypto: CryptoTest) -> (key: Data, iv: Data, items: [CryptoTestItem]) {
-        return loadCryptoTestData(testResourcesPath + crypto.rawValue + ".json")
-    }
-
 }
 
 class NSURLSessionServerTrustSync: NSObject, URLSessionDelegate, URLSessionTaskDelegate {
@@ -1052,25 +1055,25 @@ class TestProxyTransport: ARTWebSocketTransport {
         super.receive(msg)
     }
 
-    override func webSocketDidOpen(_ webSocket: SRWebSocket) {
+    override func webSocketDidOpen(_ webSocket: ARTWebSocket) {
         if !ignoreWebSocket {
             super.webSocketDidOpen(webSocket)
         }
     }
 
-    override func webSocket(_ webSocket: SRWebSocket, didFailWithError error: Error) {
+    override func webSocket(_ webSocket: ARTWebSocket, didFailWithError error: Error) {
         if !ignoreWebSocket {
             super.webSocket(webSocket, didFailWithError: error)
         }
     }
 
-    override func webSocket(_ webSocket: SRWebSocket, didReceiveMessage message: Any?) {
+    override func webSocket(_ webSocket: ARTWebSocket, didReceiveMessage message: Any?) {
         if !ignoreWebSocket {
             super.webSocket(webSocket, didReceiveMessage: message as Any)
         }
     }
 
-    override func webSocket(_ webSocket: SRWebSocket, didCloseWithCode code: Int, reason: String?, wasClean: Bool) {
+    override func webSocket(_ webSocket: ARTWebSocket, didCloseWithCode code: Int, reason: String?, wasClean: Bool) {
         if !ignoreWebSocket {
             super.webSocket(webSocket, didCloseWithCode: code, reason: reason, wasClean: wasClean)
         }
@@ -1274,20 +1277,20 @@ extension ARTWebSocketTransport {
     func simulateIncomingNormalClose() {
         let CLOSE_NORMAL = 1000
         self.setState(ARTRealtimeTransportState.closing)
-        let webSocketDelegate = self as SRWebSocketDelegate
-        webSocketDelegate.webSocket!(self.websocket!, didCloseWithCode: CLOSE_NORMAL, reason: "", wasClean: true)
+        let webSocketDelegate = self as ARTWebSocketDelegate
+        webSocketDelegate.webSocket(self.websocket!, didCloseWithCode: CLOSE_NORMAL, reason: "", wasClean: true)
     }
 
     func simulateIncomingAbruptlyClose() {
         let CLOSE_ABNORMAL = 1006
-        let webSocketDelegate = self as SRWebSocketDelegate
-        webSocketDelegate.webSocket!(self.websocket!, didCloseWithCode: CLOSE_ABNORMAL, reason: "connection was closed abnormally", wasClean: false)
+        let webSocketDelegate = self as ARTWebSocketDelegate
+        webSocketDelegate.webSocket(self.websocket!, didCloseWithCode: CLOSE_ABNORMAL, reason: "connection was closed abnormally", wasClean: false)
     }
 
     func simulateIncomingError() {
         let error = NSError(domain: ARTAblyErrorDomain, code: 0, userInfo: [NSLocalizedDescriptionKey:"Fail test"])
-        let webSocketDelegate = self as SRWebSocketDelegate
-        webSocketDelegate.webSocket!(self.websocket!, didFailWithError: error)
+        let webSocketDelegate = self as ARTWebSocketDelegate
+        webSocketDelegate.webSocket(self.websocket!, didFailWithError: error)
     }
 }
 

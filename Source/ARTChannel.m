@@ -64,26 +64,7 @@
 }
 
 - (void)publish:(art_nullable NSString *)name data:(art_nullable id)data extras:(id<ARTJsonCompatible>)extras callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback {
-    NSError *error = nil;
-    ARTMessage *message = [[ARTMessage alloc] initWithName:name data:data];
-    message.extras = extras;
-    ARTMessage *messagesWithDataEncoded = [self encodeMessageIfNeeded:message error:&error];
-    if (error) {
-        if (callback) callback([ARTErrorInfo createFromNSError:error]);
-        return;
-    }
-    
-    // Checked after encoding, so that the client can receive callback with encoding errors
-    if ([self exceedMaxSize:@[message]]) {
-        ARTErrorInfo *sizeError = [ARTErrorInfo createWithCode:40009
-                                                       message:@"maximum message length exceeded"];
-        if (callback) {
-            callback(sizeError);
-        }
-        return;
-    }
-    
-    [self internalPostMessages:messagesWithDataEncoded callback:callback];
+    [self publish:name message:[[ARTMessage alloc] initWithName:name data:data] extras:extras callback:callback];
 }
 
 - (void)publish:(NSString *)name data:(id)data clientId:(NSString *)clientId {
@@ -99,8 +80,11 @@
 }
 
 - (void)publish:(NSString *)name data:(id)data clientId:(NSString *)clientId extras:(id<ARTJsonCompatible>)extras callback:(void (^)(ARTErrorInfo * _Nullable))callback {
+    [self publish:name message:[[ARTMessage alloc] initWithName:name data:data clientId:clientId] extras:extras callback:callback];
+}
+
+- (void)publish:(NSString *)name message:(ARTMessage *)message extras:(id<ARTJsonCompatible>)extras callback:(void (^)(ARTErrorInfo * _Nullable))callback {
     NSError *error = nil;
-    ARTMessage *message = [[ARTMessage alloc] initWithName:name data:data clientId:clientId];
     message.extras = extras;
     ARTMessage *messagesWithDataEncoded = [self encodeMessageIfNeeded:message error:&error];
     if (error) {

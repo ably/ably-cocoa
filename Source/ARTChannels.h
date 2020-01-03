@@ -18,6 +18,6 @@
 - (ChannelType)get:(NSString *)name;
 - (ChannelType)get:(NSString *)name options:(ARTChannelOptions *)options;
 - (void)release:(NSString *)name;
-- (id<NSFastEnumeration>)iterate;
+- (id<NSFastEnumeration>)copyIntoIteratorWithMapper:(id (^)(ChannelType))mapper;
 
 @end

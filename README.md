@@ -55,11 +55,11 @@ If you find any issues with unsupported platform versions, please [raise an issu
 
 #### Acknowledgments
 
-As of version `1.1.10` this library based on the 1.1 library specification. It implements a subset of 1.1 features:
+As of version `1.1.0` this library based on the 1.1 library specification. It implements a subset of 1.1 features:
 - updated push API and push device authentication;
 - support for enforcement of the `maxMessageSize` attribute
 
-Other minor features and bugfixes are included, as listed in the [changelog](CHANGELOG.md#1110-2019-07-29).
+Other minor features and bugfixes are included, as listed in the [changelog](CHANGELOG.md#1115-2019-12-23).
 
 ##### macOS & tvOS
 
@@ -130,7 +130,7 @@ If you see, for example, a `dyld: Library not loaded: @rpath/SocketRocketAblyFor
 
 ### Manual installation 
 
-1. Get the code from GitHub [from the release page](https://github.com/ably/ably-ios/releases/tag/1.1.10), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-ios.git`
+1. Get the code from GitHub [from the release page](https://github.com/ably/ably-ios/releases/tag/1.1.15), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-ios.git`
 2. Drag the directory `ably-ios/ably-ios` into your project as a group.
 3. Ably depends on our [SocketRocket Fork](https://github.com/ably-forks/SocketRocket) 0.5.2; get it [from the releases page](https://github.com/ably-forks/SocketRocket/releases/tag/0.5.2-ably-2) and follow [its manual installation instructions](https://github.com/ably-forks/SocketRocket/#installing).
 4. Ably also depends on our [MessagePack Fork](https://github.com/ably-forks/msgpack-objective-C) 0.2.0; get it [from the releases page](https://github.com/ably-forks/msgpack-objective-C/releases/tag/0.2.0-ably-1) and link it into your project.
@@ -659,16 +659,22 @@ Note: [Fastlane](https://fastlane.tools) should be installed.
 
 This library uses [semantic versioning](http://semver.org/). For each release, the following needs to be done:
 
-* Create a new branch `release-x.x.x` (where `x.x.x` is the new version number) from the `develop` branch
-* Run `make bump_[major|minor|patch]` to bump the new version number.
-* Run [`github_changelog_generator`](https://github.com/skywinder/Github-Changelog-Generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). Once the CHANGELOG has completed, manually change the `Unreleased` heading and link with the current version number such as `v1.0.0`. Also ensure that the `Full Changelog` link points to the new version tag instead of the `HEAD`. Commit this change.
-* Push tag to origin such as `git push origin x.x.x`.
-* Make a PR against `develop`
-* Wait for review. Once the PR is approved, merge it into `develop`
+* Create a new branch `release/x.x.x` (where `x.x.x` is the new version number) from the `develop` branch
+* Run `make bump_[major|minor|patch]` to bump the new version number (creates a Git commit and tag)
+* Run [`github_changelog_generator`](https://github.com/github-changelog-generator/github-changelog-generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). This may require some manual intervention, both in terms of how the command is run and how the change log file is modified. Your mileage may vary:
+    * The command you will need to run will look something like this: `github_changelog_generator -u ably -p ably-cocoa --since-tag 1.1.15`
+    * Change the "Unreleased" heading and link with the current version number such as `v1.0.0`
+    * Also ensure that the "Full Changelog" link points to the new version tag instead of the `HEAD`
+    * Commit this change: `git add CHANGELOG.md && git commit -m "Update change log."`
+* Push both commits to origin: `git push -u origin release/x.x.x`
+* Push the tag created by the bump script earlier to origin: `git push origin x.x.x`
+* Make a pull request against `develop` and await approval of reviewer(s).
+* Once approved, merge the PR. If you do this from Github's web interface then use the "Rebase and merge" option to retain the relationship with the tag.
 * Fast-forward the master branch: `git checkout master && git merge --ff-only develop && git push origin master`
-* Visit [releases page](https://github.com/ably/ably-ios/releases) and `Add release notes`.
-* Release an update for CocoaPods: `(pod lib lint && pod trunk push Ably.podspec)`.
-* Generate the prebuilt framework for Carthage (`(carthage build --no-skip-current && carthage archive Ably)`) and attach the zip file to the release.
+* Add to [releases](https://github.com/ably/ably-ios/releases) - refer to previous releases for release notes format
+* Release an update for CocoaPods: `pod trunk push Ably.podspec` (you can, optionally, first run `pod lib lint` to verify that the trunk push should succeed). Details on this command, as well as instructions for adding other contributors as maintainers, are at [Getting setup with Trunk](https://guides.cocoapods.org/making/getting-setup-with-trunk.html) in the [CocoaPods Guides](https://guides.cocoapods.org/).
+* Generate the prebuilt framework for Carthage (`carthage build --no-skip-current --archive`) and attach the file generated by that step to the release: `Ably.framework.zip`
+* Test the integration of the library in a Xcode project using Carthage and CocoaPods using the [installation guide](https://github.com/ably/ably-cocoa#installation-guide).
 
 ## License
 

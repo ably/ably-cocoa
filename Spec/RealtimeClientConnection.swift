@@ -110,6 +110,7 @@ class RealtimeClientConnection: QuickSpec {
                 it("should connect with query string params including clientId") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "client_string"
+                    options.useTokenAuth = true
                     options.autoConnect = false
                     options.echoMessages = false
 
@@ -242,7 +243,7 @@ class RealtimeClientConnection: QuickSpec {
                             done()
                         case .connected:
                             if let transport = client.internal.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
-                                expect(query).to(haveParam("lib", withValue: "ios-1.1.10"))
+                                expect(query).to(haveParam("lib", withValue: "ios-1.1.15"))
                             }
                             else {
                                 XCTFail("MockTransport isn't working")
@@ -574,9 +575,10 @@ class RealtimeClientConnection: QuickSpec {
                 let options = AblyTests.commonAppSetup()
                 options.echoMessages = false
                 var disposable = [ARTRealtime]()
-                let max = 25
+                let numClients = 50
+                let numMessages = 5
                 let channelName = "chat"
-                let sync = NSLock()
+                let testTimeout = TimeInterval(60)
 
                 defer {
                     for client in disposable {
@@ -586,8 +588,8 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 waitUntil(timeout: testTimeout) { done in
-                    let partialDone = AblyTests.splitDone(max, done: done)
-                    for _ in 1...max {
+                    let partialDone = AblyTests.splitDone(numClients, done: done)
+                    for _ in 1...numClients {
                         let client = ARTRealtime(options: options)
                         disposable.append(client)
                         let channel = client.channels.get(channelName)
@@ -595,38 +597,38 @@ class RealtimeClientConnection: QuickSpec {
                             if let error = error {
                                 fail(error.message); done()
                             }
-                            sync.lock()
                             partialDone()
-                            sync.unlock()
                         }
                     }
                 }
 
-                var i = 0
+                var messagesReceived = 0
                 waitUntil(timeout: testTimeout) { done in
-                    // Sends 50 messages from different clients to the same channel
-                    // 50 messages for 50 clients = 50*50 total messages
-                    // echo is off, so we need to subtract one message per client
-                    let total = max*max - max
+                    // Sends numMessages messages from different clients to the same channel
+                    // numMessages messages for numClients clients = numMessages*numClients total messages
+                    // echo is off, so we need to subtract one message per publish
+                    let messagesExpected = numMessages * numClients - 1 * numMessages
+                    var messagesSent = 0
                     for client in disposable {
                         let channel = client.channels.get(channelName)
                         expect(channel.state).to(equal(ARTRealtimeChannelState.attached))
 
                         channel.subscribe { message in
                             expect(message.data as? String).to(equal("message_string"))
-                            sync.lock()
-                            i += 1
-                            if i == total {
+                            messagesReceived += 1
+                            if messagesReceived == messagesExpected {
                                 done()
                             }
-                            sync.unlock()
                         }
-
-                        channel.publish(nil, data: "message_string", callback: nil)
+                        
+                        if messagesSent < numMessages {
+                            channel.publish(nil, data: "message_string", callback: nil)
+                            messagesSent += 1
+                        }
                     }
                 }
 
-                expect(disposable.count).to(equal(max))
+                expect(disposable.count).to(equal(numClients))
                 expect(countChannels(disposable.first!.channels)).to(equal(1))
                 expect(countChannels(disposable.last!.channels)).to(equal(1))
             }
@@ -1365,7 +1367,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN10b
-                fit("should not update when a message is sent but increments by one when ACK is received") {
+                it("should not update when a message is sent but increments by one when ACK is received") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer {
                         client.dispose()
@@ -2440,9 +2442,15 @@ class RealtimeClientConnection: QuickSpec {
                         }
 
                         let oldConnectionId = client.connection.id
-                        client.simulateLostConnectionAndState()
 
                         waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(2, done: done)
+
+                            channel.once(.attaching) { _ in
+                                expect(channel.errorReason).to(beNil())
+                                partialDone()
+                            }
+
                             client.connection.once(.connected) { stateChange in
                                 guard let error = stateChange?.reason else {
                                     fail("Connection resume failed and error should be propagated to the channel"); done(); return
@@ -2450,16 +2458,18 @@ class RealtimeClientConnection: QuickSpec {
                                 expect(error.code).to(equal(80008))
                                 expect(error.message).to(contain("Unable to recover connection"))
                                 expect(client.connection.errorReason).to(beIdenticalTo(stateChange!.reason))
-                                done()
+                                partialDone()
                             }
+                            
+                            client.simulateLostConnectionAndState()
                         }
+
                         let transport = client.internal.transport as! TestProxyTransport
                         let connectedPM = transport.protocolMessagesReceived.filter{ $0.action == .connected }[0]
                         expect(connectedPM.connectionId).toNot(equal(oldConnectionId))
                         expect(client.connection.id).to(equal(connectedPM.connectionId))
                         expect(client.internal.msgSerial).to(equal(0))
-                        expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
-                        expect(channel.errorReason).to(beNil())
+
                         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
                     }
 
@@ -3140,36 +3150,19 @@ class RealtimeClientConnection: QuickSpec {
             // RTN17
             context("Host Fallback") {
                 let expectedHostOrder = [3, 4, 0, 2, 1]
-                let originalARTFallback_getRandomHostIndex = ARTFallback_getRandomHostIndex
+                let originalARTFallback_shuffleArray = ARTFallback_shuffleArray
 
                 beforeEach {
-                    ARTFallback_getRandomHostIndex = {
-                        let hostIndexes = [1, 1, 0, 0, 0]
-                        var i = 0
-                        return { count in
-                            assert(count > 0, "Fallback array is empty")
-
-                            let hostIndex: Int32
-                            if i < Int(count) {
-                                hostIndex = Int32(hostIndexes[i])
-                            }
-                            else {
-                                hostIndex = count - 1
-                            }
-
-                            if i < hostIndexes.count {
-                                i += 1
-                            }
-                            else {
-                                i = 0
-                            }
-                            return Int32(hostIndex)
+                    ARTFallback_shuffleArray = { array in
+                        let arranged = expectedHostOrder.reversed().map { array[$0] }
+                        for (i, element) in arranged.enumerated() {
+                            array[i] = element
                         }
-                    }()
+                    }
                 }
 
                 afterEach {
-                    ARTFallback_getRandomHostIndex = originalARTFallback_getRandomHostIndex
+                    ARTFallback_shuffleArray = originalARTFallback_shuffleArray
                 }
 
                 // RTN17b

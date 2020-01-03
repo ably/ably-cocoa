@@ -29,7 +29,7 @@
     [_session finishTasksAndInvalidate];
 }
 
-- (NSURLSessionTask *)get:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback {
+- (NSObject<ARTCancellable> *)get:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback {
     NSURLSessionDataTask *task = [_session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         dispatch_async(self->_queue, ^{
             callback((NSHTTPURLResponse *)response, data, error);

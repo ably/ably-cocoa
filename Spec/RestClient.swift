@@ -361,6 +361,7 @@ class RestClient: QuickSpec {
                 expect(requestUrlA.scheme).to(equal("https"))
 
                 options.clientId = "client_http"
+                options.useTokenAuth = true
                 options.tls = false
                 let clientHttp = ARTRest(options: options)
                 testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
@@ -952,22 +953,19 @@ class RestClient: QuickSpec {
                 context("retry hosts in random order") {
                     let expectedHostOrder = [4, 3, 0, 2, 1]
 
-                    let originalARTFallback_getRandomHostIndex = ARTFallback_getRandomHostIndex
+                    let originalARTFallback_shuffleArray = ARTFallback_shuffleArray
 
                     beforeEach {
-                        ARTFallback_getRandomHostIndex = {
-                            let hostIndexes = [1, 1, 0, 0, 0]
-                            var i = 0
-                            return { count in
-                                let hostIndex = hostIndexes[i]
-                                i += 1
-                                return Int32(hostIndex)
+                        ARTFallback_shuffleArray = { array in
+                            let arranged = expectedHostOrder.reversed().map { array[$0] }
+                            for (i, element) in arranged.enumerated() {
+                                array[i] = element
                             }
-                        }()
+                        }
                     }
 
                     afterEach {
-                        ARTFallback_getRandomHostIndex = originalARTFallback_getRandomHostIndex
+                        ARTFallback_shuffleArray = originalARTFallback_shuffleArray
                     }
 
                     it("default fallback hosts should match @[a-e].ably-realtime.com@") {

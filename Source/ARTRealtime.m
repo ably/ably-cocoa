@@ -508,7 +508,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
 - (void)transition:(ARTRealtimeConnectionState)state withErrorInfo:(ARTErrorInfo *)errorInfo {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p realtime state transitions to %tu - %@", self, state, ARTRealtimeConnectionStateToStr(state)];
+    [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p realtime state transitions to %tu - %@", self, state, ARTRealtimeConnectionStateToStr(state)];
 
     ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:state previous:self.connection.state_nosync event:(ARTRealtimeConnectionEvent)state reason:errorInfo retryIn:0];
     [self.connection setState:state];
@@ -547,7 +547,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     ARTStatus *status = nil;
     ARTEventListener *stateChangeEventListener = nil;
 
-    [self.logger verbose:@"R:%p realtime is transitioning from %@ to %@", self, ARTRealtimeConnectionStateToStr(stateChange.previous), ARTRealtimeConnectionStateToStr(stateChange.current)];
+    [self.logger debug:@"R:%p realtime is transitioning from %tu - %@ to %tu - %@", self, stateChange.previous, ARTRealtimeConnectionStateToStr(stateChange.previous), stateChange.current, ARTRealtimeConnectionStateToStr(stateChange.current)];
 
     switch (stateChange.current) {
         case ARTRealtimeConnecting: {
@@ -707,8 +707,19 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             channelStatus = stateChange.reason ? [ARTStatus state:ARTStateError info:stateChange.reason] : [self defaultError];
         }
         [self failQueuedMessages:channelStatus];
-        // For every Channel
+        
+        // If there's a channels.release() going on waiting on this channel
+        // to detach, doing those operations on it here would fire its event listener and
+        // immediately remove the channel from the channels dictionary, thus
+        // invalidating the iterator and causing a crashing.
+        //
+        // So copy the channels and operate on them later, when we're done using the iterator.
+        NSMutableArray<ARTRealtimeChannelInternal *> * const channels = [[NSMutableArray alloc] init];
         for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
+            [channels addObject:channel];
+        }
+        
+        for (ARTRealtimeChannelInternal *channel in channels) {
             if (stateChange.current == ARTRealtimeClosing) {
                 //do nothing. Closed state is coming.
             }
@@ -1461,7 +1472,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     [self.logger verbose:@"R:%p did receive Protocol Message %@ (connection state is %@)", self, ARTProtocolMessageActionToStr(message.action), ARTRealtimeConnectionStateToStr(self.connection.state_nosync)];
 
     if (message.error) {
-        [self.logger verbose:@"R:%p Protocol Message with error %@ ", self, message.error];
+        [self.logger verbose:@"R:%p Protocol Message with error %@", self, message.error];
     }
 
     NSAssert(transport == self.transport, @"Unexpected transport");
@@ -1510,17 +1521,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 - (void)realtimeTransportAvailable:(id<ARTRealtimeTransport>)transport {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     // Do nothing
-} ART_TRY_OR_MOVE_TO_FAILED_END
-}
-
-- (void)realtimeTransportUnavailable:(id<ARTRealtimeTransport>)transport {
-ART_TRY_OR_MOVE_TO_FAILED_START(self) {
-    if (transport != self.transport) {
-        // Old connection
-        return;
-    }
-
-    [self transition:ARTRealtimeDisconnected];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 

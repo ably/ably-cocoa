@@ -9,7 +9,7 @@
 #ifndef ARTPushDeviceRegistrations_Private_h
 #define ARTPushDeviceRegistrations_Private_h
 
-#include "ARTPushDeviceRegistrations.h"
+#import <Ably/ARTPushDeviceRegistrations.h>
 #import "ARTQueuedDealloc.h"
 
 @class ARTRestInternal;

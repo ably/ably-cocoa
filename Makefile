@@ -159,19 +159,19 @@ update_carthage_dependencies_macos:
 
 ## -- Version --
 
-## [Version] Bump Patch Version
+## [Version] Bump Patch Version, creating Git commit and tag
 bump_patch:
 	$(info Bumping version Patch type…)
 
 	Scripts/set-version.sh `Scripts/get-version.sh | awk -F. '{$$NF = $$NF + 1;} 1' | sed 's/ /./g'`
 
-## [Version] Bump Minor Version
+## [Version] Bump Minor Version, creating Git commit and tag
 bump_minor:
 	$(info Bumping version Minor type…)
 
 	Scripts/set-version.sh `Scripts/get-version.sh | awk -F. '{$$(NF-1) = $$(NF-1) + 1;} 1' | sed 's/ /./g' | awk -F. '{$$(NF) = 0;} 1' | sed 's/ /./g' `
 
-## [Version] Bump Major Version
+## [Version] Bump Major Version, creating Git commit and tag
 bump_major:
 	$(info Bumping version Major type…)
 

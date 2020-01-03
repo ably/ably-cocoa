@@ -42,6 +42,4 @@
     return customDateFormatter;
 }
 
-
-
 @end

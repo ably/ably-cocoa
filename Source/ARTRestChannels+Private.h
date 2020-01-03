@@ -19,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (ARTRestChannelInternal *)get:(NSString *)name;
 - (ARTRestChannelInternal *)get:(NSString *)name options:(ARTChannelOptions *)options;
+- (id<NSFastEnumeration>)copyIntoIteratorWithMapper:(ARTRestChannel *(^)(ARTRestChannelInternal *))mapper;
 
 - (instancetype)initWithRest:(ARTRestInternal *)rest;
 - (ARTRestChannelInternal *)_getChannel:(NSString *)name options:(ARTChannelOptions * _Nullable)options addPrefix:(BOOL)addPrefix;

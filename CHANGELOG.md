@@ -1,5 +1,95 @@
 # Change Log
 
+## [1.1.15](https://github.com/ably/ably-cocoa/tree/1.1.15) (2019-12-23)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.14...1.1.15)
+
+**Merged pull requests:**
+
+- KSCrash fork has been renamed to KSCrashAblyFork 
+ [\#955](https://github.com/ably/ably-cocoa/pull/955) ([ricardopereira](https://github.com/ricardopereira))
+- Update msgpack to v0.3 [\#951](https://github.com/ably/ably-cocoa/pull/951) ([ricardopereira](https://github.com/ricardopereira))
+- Simplify random fallback host selection [\#953](https://github.com/ably/ably-cocoa/pull/953) ([tcard](https://github.com/tcard))
+
+## [1.1.14](https://github.com/ably/ably-cocoa/tree/1.1.14) (2019-12-16)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.13...1.1.14)
+
+**Fixed bugs:**
+
+- iOS Incompatible library version crash - DYLIB_COMPATIBILITY_VERSION vs DYLIB_CURRENT_VERSION [\#946](https://github.com/ably/ably-cocoa/issues/946)
+
+## [1.1.13](https://github.com/ably/ably-cocoa/tree/1.1.13) (2019-12-09)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.12...1.1.13)
+
+**Fixed bugs:**
+
+- OS Network Reachability sometimes doesn't detect network state changes [\#908](https://github.com/ably/ably-cocoa/issues/908)
+- Using a clientId should no longer be forcing token auth in the 1.1 spec [\#849](https://github.com/ably/ably-cocoa/issues/849)
+- Move channels to FAILED only after their iterator is done.  [\#920](https://github.com/ably/ably-cocoa/pull/920) ([tcard](https://github.com/tcard))
+- Copy channels for public iterate\(\) on internal queue. [\#919](https://github.com/ably/ably-cocoa/pull/919) ([tcard](https://github.com/tcard))
+
+**Closed issues:**
+
+- Queuing messages before attach can lead to out-of-order publishing [\#926](https://github.com/ably/ably-cocoa/issues/926)
+- Channels mutated-while-enumerated crash [\#918](https://github.com/ably/ably-cocoa/issues/918)
+- Xcode 11 warnings [\#905](https://github.com/ably/ably-cocoa/issues/905)
+
+**Merged pull requests:**
+
+- Make ARTRealtimeChannel.publish thread-safe [\#929](https://github.com/ably/ably-cocoa/pull/929) ([tcard](https://github.com/tcard))
+- Extract duplicate code from ARTChannel.publish methods [\#928](https://github.com/ably/ably-cocoa/pull/928) ([tcard](https://github.com/tcard))
+- Set logLevel=verbose every time setupOptions is called with debug=true [\#927](https://github.com/ably/ably-cocoa/pull/927) ([tcard](https://github.com/tcard))
+- Don't assert on error messages. [\#925](https://github.com/ably/ably-cocoa/pull/925) ([tcard](https://github.com/tcard))
+- Prevent mutate-channels-while-iterating for suspend too. [\#922](https://github.com/ably/ably-cocoa/pull/922) ([tcard](https://github.com/tcard))
+- Soak test [\#916](https://github.com/ably/ably-cocoa/pull/916) ([tcard](https://github.com/tcard))
+- Fix Network Reachability: instance not found for target [\#910](https://github.com/ably/ably-cocoa/pull/910) ([ricardopereira](https://github.com/ricardopereira))
+- Fix Xcode 11 new warnings [\#907](https://github.com/ably/ably-cocoa/pull/907) ([ricardopereira](https://github.com/ricardopereira))
+- README: update the release process [\#906](https://github.com/ably/ably-cocoa/pull/906) ([ricardopereira](https://github.com/ricardopereira))
+- Carthage: fix public header imports [\#902](https://github.com/ably/ably-cocoa/pull/902) ([ricardopereira](https://github.com/ricardopereira))
+- Should not force token auth when clientId is set [\#898](https://github.com/ably/ably-cocoa/pull/898) ([ricardopereira](https://github.com/ricardopereira))
+- Improve error and debug messages [\#895](https://github.com/ably/ably-cocoa/pull/895) ([ricardopereira](https://github.com/ricardopereira))
+
+## [1.1.12](https://github.com/ably/ably-cocoa/tree/1.1.12) (2019-10-03)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.10...1.1.12)
+
+**Fixed bugs:**
+
+ - Push token: replace `NSData.description` usage [\#889](https://github.com/ably/ably-cocoa/issues/889)
+
+**Merged pull requests:**
+
+ - Replace `NSData.description` to stringify device tokens correctly [\#893](https://github.com/ably/ably-cocoa/issues/893) ([ricardopereira](https://github.com/ricardopereira))
+
+## [1.1.11-beta.1](https://github.com/ably/ably-cocoa/tree/1.1.11-beta.1) (2019-09-20)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.10...1.1.11-beta.1)
+
+**Fixed bugs:**
+
+ - Push token: replace `NSData.description` usage [\#889](https://github.com/ably/ably-cocoa/issues/889)
+ - `PushChannel.subscribe` should not call the callback in the internal queue [\#862](https://github.com/ably/ably-cocoa/issues/862)
+ - Crash in ARTPush: "dispatch_sync called on queue already owned by current thread" [\#888](https://github.com/ably/ably-cocoa/issues/888)
+ - Push is using the system `NSLog` directly instead of the `ARTLogger` [\#896](https://github.com/ably/ably-cocoa/issues/896)
+
+- **Tentative fix of:** Crash on creating weak ref to deallocating object [\#879](https://github.com/ably/ably-cocoa/issues/879)
+
+**Merged pull requests:**
+
+ - Push: replace system `NSLog` with internal `ARTLogger` [\#896](https://github.com/ably/ably-cocoa/issues/896) ([ricardopereira](https://github.com/ricardopereira))
+ - Replace `NSData.description` to stringify device tokens correctly [\#893](https://github.com/ably/ably-cocoa/issues/893) ([ricardopereira](https://github.com/ricardopereira))
+ - Push: fix crash "_dispatch_sync called on queue already owned by current thread_" [\#888](https://github.com/ably/ably-cocoa/issues/888) ([ricardopereira](https://github.com/ricardopereira))
+ - Push: `PushChannel.subscribe` should not call the callback in the internal queue [\#862](https://github.com/ably/ably-cocoa/issues/862) ([ricardopereira](https://github.com/ricardopereira))
+- Split in public and internal objects [\#882](https://github.com/ably/ably-cocoa/pull/882) ([tcard](https://github.com/tcard ))
+
+## [1.1.11-beta.0](https://github.com/ably/ably-cocoa/tree/1.1.11-beta.0) (2019-08-27)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.10...1.1.11-beta.0)
+
+**Fixed bugs:**
+
+- **Tentative fix of:** Crash on creating weak ref to deallocating object [\#879](https://github.com/ably/ably-cocoa/issues/879)
+
+**Merged pull requests:**
+
+- Split in public and internal objects [\#882](https://github.com/ably/ably-cocoa/pull/882) ([tcard](https://github.com/tcard ))
+
 ## [1.1.10](https://github.com/ably/ably-cocoa/tree/1.1.10) (2019-07-29)
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.9...1.1.10)
 
@@ -1203,6 +1293,4 @@
 - code examples in the readme [\#7](https://github.com/ably/ably-ios/pull/7) ([thevixac](https://github.com/thevixac))
 - Ably ready for importing. [\#5](https://github.com/ably/ably-ios/pull/5) ([thevixac](https://github.com/thevixac))
 
-
-
-\* *This Change Log was automatically generated by [github_changelog_generator](https://github.com/skywinder/Github-Changelog-Generator)*
+\* *This Changelog was automatically generated by [github_changelog_generator](https://github.com/github-changelog-generator/github-changelog-generator)*
