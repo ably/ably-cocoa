@@ -19,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (ARTRealtimeChannelInternal *)get:(NSString *)name;
 - (ARTRealtimeChannelInternal *)get:(NSString *)name options:(ARTChannelOptions *)options;
+- (id<NSFastEnumeration>)copyIntoIteratorWithMapper:(ARTRealtimeChannel *(^)(ARTRealtimeChannelInternal *))mapper;
 
 - (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime;
 

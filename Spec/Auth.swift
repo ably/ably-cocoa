@@ -4064,7 +4064,6 @@ class Auth : QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.failed) { stateChange in
                                 expect(stateChange!.reason!.code).to(equal(40144))
-                                expect(stateChange!.reason!.description).to(contain("invalid signature"))
                                 done()
                             }
                             client.connect()
@@ -4111,7 +4110,6 @@ class Auth : QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.disconnected) { stateChange in
                                 expect(stateChange!.reason!.code).to(equal(40144))
-                                expect(stateChange!.reason!.description).to(contain("invalid signature"))
                                 done()
                             }
                             client.connect()
@@ -4209,7 +4207,6 @@ class Auth : QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.disconnected) { stateChange in
                                 expect(stateChange!.reason!.code).to(equal(40144))
-                                expect(stateChange!.reason!.description).to(contain("invalid signature"))
                                 done()
                             }
                             client.connect()
@@ -4392,6 +4389,13 @@ class Auth : QuickSpec {
                         })
                     }
                 }
+            }
+
+            // https://github.com/ably/ably-cocoa/issues/849
+            it("should not force token auth when clientId is set") {
+                let options = AblyTests.commonAppSetup()
+                options.clientId = "foo"
+                expect(options.isBasicAuth()).to(beTrue())
             }
         }
     }

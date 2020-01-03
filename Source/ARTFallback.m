@@ -13,8 +13,10 @@
 #import "ARTHttp.h"
 #import "ARTClientOptions.h"
 
-int (^ARTFallback_getRandomHostIndex)(int count) = ^int(int count) {
-    return arc4random() % count;
+void (^ARTFallback_shuffleArray)(NSMutableArray *) = ^void(NSMutableArray *a) {
+    for (NSUInteger i = a.count; i > 1; i--) {
+        [a exchangeObjectAtIndex:i - 1 withObjectAtIndex:arc4random_uniform((u_int32_t)i)];
+    }
 };
 
 @interface ARTFallback ()
@@ -29,14 +31,8 @@ int (^ARTFallback_getRandomHostIndex)(int count) = ^int(int count) {
         if (fallbackHosts != nil && fallbackHosts.count == 0) {
             return nil;
         }
-        self.hosts = [NSMutableArray array];
-        NSMutableArray * hostArray = [[NSMutableArray alloc] initWithArray: fallbackHosts ? fallbackHosts : [ARTDefault fallbackHosts]];
-        size_t count = [hostArray count];
-        for (int i=0; i <count; i++) {
-            int randomIndex = ARTFallback_getRandomHostIndex((int)[hostArray count]);
-            [self.hosts addObject:[hostArray objectAtIndex:randomIndex]];
-            [hostArray removeObjectAtIndex:randomIndex];
-        }
+        self.hosts = [[NSMutableArray alloc] initWithArray: fallbackHosts ? fallbackHosts : [ARTDefault fallbackHosts]];
+        ARTFallback_shuffleArray(self.hosts);
     }
     return self;
 }

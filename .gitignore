@@ -45,6 +45,9 @@ Pods/
 Carthage/Checkouts
 Carthage/Build
 
+# Output from `carthage build`
+Ably.framework.zip
+
 ### Objective-C Patch ###
 *.xcscmblueprint
 

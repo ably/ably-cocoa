@@ -307,18 +307,22 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         };
     }
 
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
-    ARTProtocolMessage *msg = [[ARTProtocolMessage alloc] init];
-    msg.action = ARTProtocolMessageMessage;
-    msg.channel = self.name;
     if (![data isKindOfClass:[NSArray class]]) {
         data = @[data];
     }
+
+dispatch_sync(_queue, ^{
+ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
+    ARTProtocolMessage *msg = [[ARTProtocolMessage alloc] init];
+    msg.action = ARTProtocolMessageMessage;
+    msg.channel = self.name;
     msg.messages = data;
+    
     [self publishProtocolMessage:msg callback:^void(ARTStatus *status) {
         if (callback) callback(status.errorInfo);
     }];
 } ART_TRY_OR_MOVE_TO_FAILED_END
+});
 }
 
 - (void)sync {
@@ -1258,6 +1262,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
             [_attachedEventEmitter once:^(ARTErrorInfo *errorInfo) {
                 if (callback && errorInfo) {
                     callback(errorInfo);
+                    return;
                 }
                 [self _detach:callback];
             }];

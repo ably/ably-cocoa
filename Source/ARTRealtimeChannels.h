@@ -20,7 +20,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)exists:(NSString *)name;
 - (void)release:(NSString *)name callback:(nullable void (^)(ARTErrorInfo *_Nullable))errorInfo;
 - (void)release:(NSString *)name;
-- (id<NSFastEnumeration>)iterate;
 
 @end
 
@@ -28,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (ARTRealtimeChannel *)get:(NSString *)name;
 - (ARTRealtimeChannel *)get:(NSString *)name options:(ARTChannelOptions *)options;
+- (id<NSFastEnumeration>)iterate;
 
 @end
 

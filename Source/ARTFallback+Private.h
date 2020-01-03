@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-extern int (^ARTFallback_getRandomHostIndex)(int count);
+extern void (^ARTFallback_shuffleArray)(NSMutableArray *);
 
 @interface ARTFallback ()
 
