@@ -736,13 +736,13 @@ class PushActivationStateMachine : QuickSpec {
             }
 
             // RSH3e
-            context("State WaitingForRegistrationUpdate") {
+            context("State WaitingForRegistrationSync") {
 
                 var stateMachine: ARTPushActivationStateMachine!
                 var storage: MockDeviceStorage!
 
                 beforeEach {
-                    storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForRegistrationUpdate(machine: initialStateMachine))
+                    storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForRegistrationSync(machine: initialStateMachine))
                     rest.internal.storage = storage
                     stateMachine = ARTPushActivationStateMachine(rest.internal)
                 }
@@ -756,12 +756,12 @@ class PushActivationStateMachine : QuickSpec {
                     defer { hook.remove() }
 
                     stateMachine.send(ARTPushActivationEventCalledActivate())
-                    expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationUpdate.self))
+                    expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
                     expect(activatedCallbackCalled).to(beTrue())
                 }
 
                 // RSH3e2
-                it("on Event RegistrationUpdated") {
+                it("on Event RegistrationSynced") {
                     var setAndPersistIdentityTokenDetailsCalled = false
                     let hookDevice = stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
                         setAndPersistIdentityTokenDetailsCalled = true
@@ -776,13 +776,13 @@ class PushActivationStateMachine : QuickSpec {
                         clientId: ""
                     )
 
-                    stateMachine.send(ARTPushActivationEventRegistrationUpdated(identityTokenDetails: testIdentityTokenDetails))
+                    stateMachine.send(ARTPushActivationEventRegistrationSynced(identityTokenDetails: testIdentityTokenDetails))
                     expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
                     expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
                 }
 
                 // RSH3e3
-                it("on Event UpdatingRegistrationFailed") {
+                it("on Event SyncRegistrationFailed") {
                     let expectedError = ARTErrorInfo(domain: ARTAblyErrorDomain, code: 1234, userInfo: nil)
 
                     var updateFailedCallbackCalled = false
@@ -795,29 +795,29 @@ class PushActivationStateMachine : QuickSpec {
                     })
                     defer { hook.remove() }
 
-                    stateMachine.send(ARTPushActivationEventUpdatingRegistrationFailed(error: expectedError))
-                    expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
+                    stateMachine.send(ARTPushActivationEventSyncRegistrationFailed(error: expectedError))
+                    expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
                     expect(updateFailedCallbackCalled).to(beTrue())
                 }
 
             }
 
             // RSH3f
-            context("State AfterRegistrationUpdateFailed") {
+            context("State AfterRegistrationSyncFailed") {
 
                 var stateMachine: ARTPushActivationStateMachine!
                 var storage: MockDeviceStorage!
 
                 beforeEach {
-                    storage = MockDeviceStorage(startWith: ARTPushActivationStateAfterRegistrationUpdateFailed(machine: initialStateMachine))
+                    storage = MockDeviceStorage(startWith: ARTPushActivationStateAfterRegistrationSyncFailed(machine: initialStateMachine))
                     rest.internal.storage = storage
                     stateMachine = ARTPushActivationStateMachine(rest.internal)
                 }
 
                 // RSH3f1
                 context("on Event CalledActivate") {
-                    it("should use custom registerCallback and fire RegistrationUpdated event") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
+                    it("should use custom registerCallback and fire RegistrationSynced event") {
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
 
                         let delegate = StateMachineDelegateCustomCallbacks()
                         stateMachine.delegate = delegate
@@ -826,10 +826,10 @@ class PushActivationStateMachine : QuickSpec {
                             let partialDone = AblyTests.splitDone(3, done: done)
                             stateMachine.transitions = { event, previousState, currentState in
                                 if event is ARTPushActivationEventCalledActivate {
-                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationUpdate.self))
+                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
                                     partialDone()
                                 }
-                                else if event is ARTPushActivationEventRegistrationUpdated {
+                                else if event is ARTPushActivationEventRegistrationSynced {
                                     stateMachine.transitions = nil
                                     partialDone()
                                 }
@@ -847,8 +847,8 @@ class PushActivationStateMachine : QuickSpec {
                         expect(httpExecutor.requests.count) == 0
                     }
 
-                    it("should use custom registerCallback and fire UpdatingRegistrationFailed event") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
+                    it("should use custom registerCallback and fire SyncRegistrationFailed event") {
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
 
                         let delegate = StateMachineDelegateCustomCallbacks()
                         stateMachine.delegate = delegate
@@ -858,10 +858,10 @@ class PushActivationStateMachine : QuickSpec {
                             let partialDone = AblyTests.splitDone(3, done: done)
                             stateMachine.transitions = { event, previousState, currentState in
                                 if event is ARTPushActivationEventCalledActivate {
-                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationUpdate.self))
+                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
                                     partialDone()
                                 }
-                                else if let event = event as? ARTPushActivationEventUpdatingRegistrationFailed {
+                                else if let event = event as? ARTPushActivationEventSyncRegistrationFailed {
                                     expect(event.error.domain) == ARTAblyErrorDomain
                                     expect(event.error.code) == simulatedError.code
                                     stateMachine.transitions = nil
@@ -877,12 +877,12 @@ class PushActivationStateMachine : QuickSpec {
                             stateMachine.send(ARTPushActivationEventCalledActivate())
                         }
 
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
                         expect(httpExecutor.requests.count) == 0
                     }
 
-                    it("should fire UpdatingRegistrationFailed event and include device auth") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
+                    it("should fire SyncRegistrationFailed event and include device auth") {
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
 
                         let delegate = StateMachineDelegate()
                         stateMachine.delegate = delegate
@@ -896,10 +896,10 @@ class PushActivationStateMachine : QuickSpec {
                             let partialDone = AblyTests.splitDone(2, done: done)
                             stateMachine.transitions = { event, previousState, currentState in
                                 if event is ARTPushActivationEventCalledActivate {
-                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationUpdate.self))
+                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
                                     partialDone()
                                 }
-                                else if let event = event as? ARTPushActivationEventUpdatingRegistrationFailed {
+                                else if let event = event as? ARTPushActivationEventSyncRegistrationFailed {
                                     expect(event.error.domain) == ARTAblyErrorDomain
                                     expect(event.error.code) == simulatedError.code
                                     stateMachine.transitions = nil
@@ -909,7 +909,7 @@ class PushActivationStateMachine : QuickSpec {
                             stateMachine.send(ARTPushActivationEventCalledActivate())
                         }
 
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
                         expect(httpExecutor.requests.count) == 1
                         let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(stateMachine.rest.device.id)" })
                         expect(requests).to(haveCount(1))
@@ -943,8 +943,8 @@ class PushActivationStateMachine : QuickSpec {
                         expect(deviceAuthorization).to(equal(deviceIdentityToken))
                     }
 
-                    it("should fire RegistrationUpdated event and include device auth") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
+                    it("should fire RegistrationSynced event and include device auth") {
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
 
                         let delegate = StateMachineDelegate()
                         stateMachine.delegate = delegate
@@ -960,10 +960,10 @@ class PushActivationStateMachine : QuickSpec {
                             let partialDone = AblyTests.splitDone(2, done: done)
                             stateMachine.transitions = { event, previousState, currentState in
                                 if event is ARTPushActivationEventCalledActivate {
-                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationUpdate.self))
+                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
                                     partialDone()
                                 }
-                                else if event is ARTPushActivationEventRegistrationUpdated {
+                                else if event is ARTPushActivationEventRegistrationSynced {
                                     stateMachine.transitions = nil
                                     partialDone()
                                 }
@@ -1007,8 +1007,8 @@ class PushActivationStateMachine : QuickSpec {
                         expect(deviceAuthorization).to(equal(deviceIdentityToken))
                     }
 
-                    it("should transition to WaitingForRegistrationUpdate") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
+                    it("should transition to WaitingForRegistrationSync") {
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
 
                         let delegate = StateMachineDelegate()
                         stateMachine.delegate = delegate
@@ -1021,7 +1021,7 @@ class PushActivationStateMachine : QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             stateMachine.transitions = { event, previousState, currentState in
                                 if event is ARTPushActivationEventCalledActivate {
-                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationUpdate.self))
+                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
                                     stateMachine.transitions = nil
                                     done()
                                 }
@@ -1033,8 +1033,8 @@ class PushActivationStateMachine : QuickSpec {
 
                 // RSH3f1
                 context("on Event GotPushDeviceDetails") {
-                    it("should use custom registerCallback and fire RegistrationUpdated event") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
+                    it("should use custom registerCallback and fire RegistrationSynced event") {
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
 
                         let delegate = StateMachineDelegateCustomCallbacks()
                         stateMachine.delegate = delegate
@@ -1042,7 +1042,7 @@ class PushActivationStateMachine : QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             let partialDone = AblyTests.splitDone(2, done: done)
                             stateMachine.transitions = { event, previousState, currentState in
-                                if event is ARTPushActivationEventRegistrationUpdated {
+                                if event is ARTPushActivationEventRegistrationSynced {
                                     stateMachine.transitions = nil
                                     partialDone()
                                 }
@@ -1054,15 +1054,15 @@ class PushActivationStateMachine : QuickSpec {
                                 return nil
                             }
                             stateMachine.send(ARTPushActivationEventGotPushDeviceDetails())
-                            expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationUpdate.self))
+                            expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
                         }
 
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
                         expect(httpExecutor.requests.count) == 0
                     }
 
-                    it("should use custom registerCallback and fire UpdatingRegistrationFailed event") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
+                    it("should use custom registerCallback and fire SyncRegistrationFailed event") {
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
 
                         let delegate = StateMachineDelegateCustomCallbacks()
                         stateMachine.delegate = delegate
@@ -1071,7 +1071,7 @@ class PushActivationStateMachine : QuickSpec {
                             let simulatedError = NSError(domain: ARTAblyErrorDomain, code: 1234, userInfo: nil)
                             let partialDone = AblyTests.splitDone(2, done: done)
                             stateMachine.transitions = { event, previousState, currentState in
-                                if let event = event as? ARTPushActivationEventUpdatingRegistrationFailed {
+                                if let event = event as? ARTPushActivationEventSyncRegistrationFailed {
                                     expect(event.error.domain) == ARTAblyErrorDomain
                                     expect(event.error.code) == simulatedError.code
                                     stateMachine.transitions = nil
@@ -1085,15 +1085,15 @@ class PushActivationStateMachine : QuickSpec {
                                 return simulatedError
                             }
                             stateMachine.send(ARTPushActivationEventGotPushDeviceDetails())
-                            expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationUpdate.self))
+                            expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
                         }
 
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
                         expect(httpExecutor.requests.count) == 0
                     }
 
-                    it("should fire UpdatingRegistrationFailed event and include device auth") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
+                    it("should fire SyncRegistrationFailed event and include device auth") {
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
 
                         let delegate = StateMachineDelegate()
                         stateMachine.delegate = delegate
@@ -1105,7 +1105,7 @@ class PushActivationStateMachine : QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             stateMachine.transitions = { event, previousState, currentState in
-                                if let event = event as? ARTPushActivationEventUpdatingRegistrationFailed {
+                                if let event = event as? ARTPushActivationEventSyncRegistrationFailed {
                                     expect(event.error.domain) == ARTAblyErrorDomain
                                     expect(event.error.code) == simulatedError.code
                                     stateMachine.transitions = nil
@@ -1113,10 +1113,10 @@ class PushActivationStateMachine : QuickSpec {
                                 }
                             }
                             stateMachine.send(ARTPushActivationEventGotPushDeviceDetails())
-                            expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationUpdate.self))
+                            expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
                         }
 
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
                         expect(httpExecutor.requests.count) == 1
                         let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(stateMachine.rest.device.id)" })
                         expect(requests).to(haveCount(1))
@@ -1148,8 +1148,8 @@ class PushActivationStateMachine : QuickSpec {
                         expect(deviceAuthorization).to(equal(deviceIdentityToken))
                     }
 
-                    it("should fire RegistrationUpdated event and include device auth") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
+                    it("should fire RegistrationSynced event and include device auth") {
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
 
                         let delegate = StateMachineDelegate()
                         stateMachine.delegate = delegate
@@ -1168,10 +1168,10 @@ class PushActivationStateMachine : QuickSpec {
                             let partialDone = AblyTests.splitDone(2, done: done)
                             stateMachine.transitions = { event, previousState, currentState in
                                 if event is ARTPushActivationEventGotPushDeviceDetails {
-                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationUpdate.self))
+                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
                                     partialDone()
                                 }
-                                else if event is ARTPushActivationEventRegistrationUpdated {
+                                else if event is ARTPushActivationEventRegistrationSynced {
                                     stateMachine.transitions = nil
                                     partialDone()
                                 }
@@ -1214,8 +1214,8 @@ class PushActivationStateMachine : QuickSpec {
                         expect(deviceAuthorization).to(equal(deviceIdentityToken.base64Encoded()))
                     }
 
-                    it("should transition to WaitingForRegistrationUpdate") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
+                    it("should transition to WaitingForRegistrationSync") {
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
 
                         let delegate = StateMachineDelegate()
                         stateMachine.delegate = delegate
@@ -1228,7 +1228,7 @@ class PushActivationStateMachine : QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             stateMachine.transitions = { event, previousState, currentState in
                                 if event is ARTPushActivationEventGotPushDeviceDetails {
-                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationUpdate.self))
+                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
                                     stateMachine.transitions = nil
                                     done()
                                 }
@@ -1241,7 +1241,7 @@ class PushActivationStateMachine : QuickSpec {
                 // RSH3f2
                 context("on Event CalledDeactivate") {
                     it("should use custom deregisterCallback and fire Deregistered event") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
 
                         let delegate = StateMachineDelegateCustomCallbacks()
                         stateMachine.delegate = delegate
@@ -1272,7 +1272,7 @@ class PushActivationStateMachine : QuickSpec {
                     }
 
                     it("should use custom deregisterCallback and fire DeregistrationFailed event") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
 
                         let delegate = StateMachineDelegateCustomCallbacks()
                         stateMachine.delegate = delegate
@@ -1306,7 +1306,7 @@ class PushActivationStateMachine : QuickSpec {
                     }
 
                     it("should fire Deregistered event and include DeviceSecret HTTP header") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
 
                         let delegate = StateMachineDelegate()
                         stateMachine.delegate = delegate
@@ -1344,7 +1344,7 @@ class PushActivationStateMachine : QuickSpec {
                     }
 
                     it("should fire Deregistered event and include DeviceIdentityToken HTTP header") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
 
                         let delegate = StateMachineDelegate()
                         stateMachine.delegate = delegate
@@ -1396,7 +1396,7 @@ class PushActivationStateMachine : QuickSpec {
                     }
 
                     it("should fire DeregistrationFailed event") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
 
                         let delegate = StateMachineDelegate()
                         stateMachine.delegate = delegate
@@ -1436,7 +1436,7 @@ class PushActivationStateMachine : QuickSpec {
                     }
 
                     it("should transition to WaitingForDeregistration") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationUpdateFailed.self))
+                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
 
                         let delegate = StateMachineDelegate()
                         stateMachine.delegate = delegate

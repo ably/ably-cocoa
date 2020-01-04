@@ -231,17 +231,17 @@ dispatch_async(_queue, ^{
                 if (error) {
                     // Failed
                     [delegate didActivateAblyPush:error];
-                    [self sendEvent:[ARTPushActivationEventUpdatingRegistrationFailed newWithError:error]];
+                    [self sendEvent:[ARTPushActivationEventSyncRegistrationFailed newWithError:error]];
                 }
                 else if (identityTokenDetails) {
                     // Success
                     [delegate didActivateAblyPush:nil];
-                    [self sendEvent:[ARTPushActivationEventRegistrationUpdated newWithIdentityTokenDetails:identityTokenDetails]];
+                    [self sendEvent:[ARTPushActivationEventRegistrationSynced newWithIdentityTokenDetails:identityTokenDetails]];
                 }
                 else {
                     ARTErrorInfo *missingIdentityTokenError = [ARTErrorInfo createWithCode:0 message:@"Device Identity Token Details is expected"];
                     [delegate didActivateAblyPush:missingIdentityTokenError];
-                    [self sendEvent:[ARTPushActivationEventUpdatingRegistrationFailed newWithError:missingIdentityTokenError]];
+                    [self sendEvent:[ARTPushActivationEventSyncRegistrationFailed newWithError:missingIdentityTokenError]];
                 }
             }];
         });
@@ -262,10 +262,10 @@ dispatch_async(_queue, ^{
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             [[self->_rest logger] error:@"%@: update device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
-            [self sendEvent:[ARTPushActivationEventUpdatingRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
+            [self sendEvent:[ARTPushActivationEventSyncRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
             return;
         }
-        [self sendEvent:[ARTPushActivationEventRegistrationUpdated new]];
+        [self sendEvent:[ARTPushActivationEventRegistrationSynced new]];
     }];
     #endif
 }

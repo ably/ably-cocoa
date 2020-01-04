@@ -49,10 +49,10 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTPushActivationStateWaitingForNewPushDeviceDetails : ARTPushActivationPersistentState
 @end
 
-@interface ARTPushActivationStateWaitingForRegistrationUpdate : ARTPushActivationState
+@interface ARTPushActivationStateWaitingForRegistrationSync : ARTPushActivationState
 @end
 
-@interface ARTPushActivationStateAfterRegistrationUpdateFailed : ARTPushActivationPersistentState
+@interface ARTPushActivationStateAfterRegistrationSyncFailed : ARTPushActivationPersistentState
 @end
 
 @interface ARTPushActivationStateWaitingForDeregistration : ARTPushActivationState
