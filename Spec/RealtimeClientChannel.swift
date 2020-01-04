@@ -703,16 +703,16 @@ class RealtimeClientChannel: QuickSpec {
                     }
 
                     waitUntil(timeout: testTimeout) { done in
-                        channel.once(.attaching) { stateChange in
-                            expect(stateChange?.reason).to(beNil())
+                        client.connection.once(.connected) { stateChange in
+                            expect(stateChange?.reason?.code).to(equal(80008)) //didn't resumed
                             done()
                         }
-                     }
-
-                    client.simulateRestoreInternetConnection(after: 1.0)
+                        client.simulateRestoreInternetConnection(after: 1.0)
+                    }
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.once(.attached) { stateChange in
+                            expect(stateChange?.resumed).to(beFalse())
                             expect(stateChange?.reason).to(beNil())
                             channel.on(.suspended) { _ in
                                 fail("Should not reach SUSPENDED state")
