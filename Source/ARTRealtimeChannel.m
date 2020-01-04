@@ -818,6 +818,18 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     switch (state) {
         case ARTRealtimeChannelSuspended:
             [_attachedEventEmitter emit:nil with:status.errorInfo];
+
+            if (self.realtime.shouldSendEvents) {
+                [[self unlessStateChangesBefore:self.realtime.options.channelRetryTimeout do:^{
+                    [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) reattach initiated by retry timeout", self->_realtime, self, self.name];
+                    [self reattachWithReason:nil callback:^(ARTErrorInfo *errorInfo) {
+                        if (errorInfo) {
+                            ARTStatus *status = [ARTStatus state:ARTStateError info:errorInfo];
+                            [self setSuspended:status];
+                        }
+                    }];
+                }] startTimer];
+            }
             break;
         case ARTRealtimeChannelDetached:
             [self.presenceMap failsSync:status.errorInfo];
@@ -950,7 +962,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) reattach initiated by DETACHED message but it is currently attaching", _realtime, self, self.name];
             ARTStatus *status = message.error ? [ARTStatus state:ARTStateError info:message.error] : [ARTStatus state:ARTStateOk];
             status.storeErrorInfo = false;
-            [self setSuspended:status retryIn:_realtime.options.channelRetryTimeout];
+            [self setSuspended:status];
             return;
         }
         case ARTRealtimeChannelFailed:
@@ -984,23 +996,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
 - (void)setSuspended:(ARTStatus *)status {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
-    [self setSuspended:status retryIn:self.realtime.options.channelRetryTimeout];
-} ART_TRY_OR_MOVE_TO_FAILED_END
-}
-
-- (void)setSuspended:(ARTStatus *)status retryIn:(NSTimeInterval)retryTimeout {
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     [self failQueuedMessages:status];
     [self transition:ARTRealtimeChannelSuspended status:status];
-    [[self unlessStateChangesBefore:retryTimeout do:^{
-        [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) reattach initiated by retry timeout", self->_realtime, self, self.name];
-        [self reattachWithReason:nil callback:^(ARTErrorInfo *errorInfo) {
-            if (errorInfo) {
-                ARTStatus *status = [ARTStatus state:ARTStateError info:errorInfo];
-                [self setSuspended:status];
-            }
-        }];
-    }] startTimer];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
