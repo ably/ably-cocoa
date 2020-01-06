@@ -3113,7 +3113,7 @@ class RealtimeClientConnection: QuickSpec {
                         }
                         urlConnections.append(url as NSURL)
                         if urlConnections.count == 1 {
-                            TestProxyTransport.network = nil
+                            TestProxyTransport.networkConnectEvent = nil
                         }
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
@@ -3178,8 +3178,8 @@ class RealtimeClientConnection: QuickSpec {
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
-                    TestProxyTransport.network = .hostUnreachable
-                    defer { TestProxyTransport.network = nil }
+                    TestProxyTransport.fakeNetworkResponse = .hostUnreachable
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
 
                     var urlConnections = [NSURL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3239,8 +3239,8 @@ class RealtimeClientConnection: QuickSpec {
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
-                    TestProxyTransport.network = .hostUnreachable
-                    defer { TestProxyTransport.network = nil }
+                    TestProxyTransport.fakeNetworkResponse = .hostUnreachable
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
 
                     var urlConnections = [NSURL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3283,8 +3283,8 @@ class RealtimeClientConnection: QuickSpec {
                     ARTDefault.setRealtimeRequestTimeout(1.0)
 
                     client.internal.setTransport(TestProxyTransport.self)
-                    TestProxyTransport.network = .hostUnreachable
-                    defer { TestProxyTransport.network = nil }
+                    TestProxyTransport.fakeNetworkResponse = .hostUnreachable
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
 
                     var urlConnections = [NSURL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3293,7 +3293,7 @@ class RealtimeClientConnection: QuickSpec {
                         }
                         urlConnections.append(url as NSURL)
                         if urlConnections.count == 1 {
-                            TestProxyTransport.network = nil
+                            TestProxyTransport.fakeNetworkResponse = nil
                         }
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
@@ -3331,8 +3331,8 @@ class RealtimeClientConnection: QuickSpec {
                     ARTDefault.setRealtimeRequestTimeout(1.0)
 
                     client.internal.setTransport(TestProxyTransport.self)
-                    TestProxyTransport.network = .hostUnreachable
-                    defer { TestProxyTransport.network = nil }
+                    TestProxyTransport.fakeNetworkResponse = .hostUnreachable
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
                     
                     var urlConnections = [NSURL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3341,7 +3341,7 @@ class RealtimeClientConnection: QuickSpec {
                         }
                         urlConnections.append(url as NSURL)
                         if urlConnections.count == 1 {
-                            TestProxyTransport.network = nil
+                            TestProxyTransport.fakeNetworkResponse = nil
                         }
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
@@ -3367,7 +3367,7 @@ class RealtimeClientConnection: QuickSpec {
 
                 // RTN17d
                 context("should use an alternative host when") {
-                    for caseTest: NetworkAnswer in [.hostUnreachable,
+                    for caseTest: FakeNetworkResponse in [.hostUnreachable,
                                                     .requestTimeout(timeout: 0.1),
                                                     .hostInternalError(code: 501)] {
                         it("\(caseTest)") {
@@ -3382,8 +3382,8 @@ class RealtimeClientConnection: QuickSpec {
                             ARTDefault.setRealtimeRequestTimeout(1.0)
 
                             client.internal.setTransport(TestProxyTransport.self)
-                            TestProxyTransport.network = caseTest
-                            defer { TestProxyTransport.network = nil }
+                            TestProxyTransport.fakeNetworkResponse = caseTest
+                            defer { TestProxyTransport.fakeNetworkResponse = nil }
 
                             var urlConnections = [NSURL]()
                             TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3392,7 +3392,7 @@ class RealtimeClientConnection: QuickSpec {
                                 }
                                 urlConnections.append(url as NSURL)
                                 if urlConnections.count == 1 {
-                                    TestProxyTransport.network = nil
+                                    TestProxyTransport.fakeNetworkResponse = nil
                                 }
                             }
                             defer { TestProxyTransport.networkConnectEvent = nil }
@@ -3457,8 +3457,8 @@ class RealtimeClientConnection: QuickSpec {
                     ARTDefault.setRealtimeRequestTimeout(1.0)
 
                     client.internal.setTransport(TestProxyTransport.self)
-                    TestProxyTransport.network = .host400BadRequest
-                    defer { TestProxyTransport.network = nil }
+                    TestProxyTransport.fakeNetworkResponse = .host400BadRequest
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
 
                     var urlConnections = [NSURL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3495,8 +3495,8 @@ class RealtimeClientConnection: QuickSpec {
                     ARTDefault.setRealtimeRequestTimeout(1.0)
 
                     client.internal.setTransport(TestProxyTransport.self)
-                    TestProxyTransport.network = .hostUnreachable
-                    defer { TestProxyTransport.network = nil }
+                    TestProxyTransport.fakeNetworkResponse = .hostUnreachable
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
 
                     var urlConnections = [NSURL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3504,7 +3504,7 @@ class RealtimeClientConnection: QuickSpec {
                             return
                         }
                         urlConnections.append(url as NSURL)
-                        TestProxyTransport.network = nil
+                        TestProxyTransport.fakeNetworkResponse = nil
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
 
@@ -3558,8 +3558,8 @@ class RealtimeClientConnection: QuickSpec {
                     client.internal.rest.httpExecutor = testHttpExecutor
 
                     client.internal.setTransport(TestProxyTransport.self)
-                    TestProxyTransport.network = .hostUnreachable
-                    defer { TestProxyTransport.network = nil }
+                    TestProxyTransport.fakeNetworkResponse = .hostUnreachable
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
 
                     var urlConnections = [NSURL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3612,8 +3612,8 @@ class RealtimeClientConnection: QuickSpec {
                     client.internal.rest.httpExecutor = testHttpExecutor
                     
                     client.internal.setTransport(TestProxyTransport.self)
-                    TestProxyTransport.network = .hostUnreachable
-                    defer { TestProxyTransport.network = nil }
+                    TestProxyTransport.fakeNetworkResponse = .hostUnreachable
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
                     
                     var urlConnections = [NSURL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3659,8 +3659,8 @@ class RealtimeClientConnection: QuickSpec {
                     client.internal.rest.httpExecutor = testHttpExecutor
                     
                     client.internal.setTransport(TestProxyTransport.self)
-                    TestProxyTransport.network = .hostUnreachable
-                    defer { TestProxyTransport.network = nil }
+                    TestProxyTransport.fakeNetworkResponse = .hostUnreachable
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
                     
                     var urlConnections = [NSURL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3694,8 +3694,8 @@ class RealtimeClientConnection: QuickSpec {
                     client.internal.rest.httpExecutor = testHttpExecutor
 
                     client.internal.setTransport(TestProxyTransport.self)
-                    TestProxyTransport.network = .hostUnreachable
-                    defer { TestProxyTransport.network = nil }
+                    TestProxyTransport.fakeNetworkResponse = .hostUnreachable
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
 
                     var urlConnections = [NSURL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3704,7 +3704,7 @@ class RealtimeClientConnection: QuickSpec {
                         }
                         urlConnections.append(url as NSURL)
                         if urlConnections.count == 2 {
-                            TestProxyTransport.network = nil
+                            TestProxyTransport.fakeNetworkResponse = nil
                             (client.internal.transport as! TestProxyTransport).simulateTransportSuccess()
                         }
                     }
