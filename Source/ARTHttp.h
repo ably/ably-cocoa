@@ -37,6 +37,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTHttp : NSObject<ARTHTTPExecutor>
 
++ (void)setURLSessionClass:(Class)class;
+
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 - (instancetype)init:(dispatch_queue_t)queue logger:(ARTLog *)logger;
 

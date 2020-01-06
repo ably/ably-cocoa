@@ -711,8 +711,19 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             channelStatus = stateChange.reason ? [ARTStatus state:ARTStateError info:stateChange.reason] : [self defaultError];
         }
         [self failQueuedMessages:channelStatus];
-        // For every Channel
+        
+        // If there's a channels.release() going on waiting on this channel
+        // to detach, doing those operations on it here would fire its event listener and
+        // immediately remove the channel from the channels dictionary, thus
+        // invalidating the iterator and causing a crashing.
+        //
+        // So copy the channels and operate on them later, when we're done using the iterator.
+        NSMutableArray<ARTRealtimeChannelInternal *> * const channels = [[NSMutableArray alloc] init];
         for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
+            [channels addObject:channel];
+        }
+        
+        for (ARTRealtimeChannelInternal *channel in channels) {
             if (stateChange.current == ARTRealtimeClosing) {
                 //do nothing. Closed state is coming.
             }
@@ -1532,17 +1543,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 - (void)realtimeTransportAvailable:(id<ARTRealtimeTransport>)transport {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     // Do nothing
-} ART_TRY_OR_MOVE_TO_FAILED_END
-}
-
-- (void)realtimeTransportUnavailable:(id<ARTRealtimeTransport>)transport {
-ART_TRY_OR_MOVE_TO_FAILED_START(self) {
-    if (transport != self.transport) {
-        // Old connection
-        return;
-    }
-
-    [self transition:ARTRealtimeDisconnected];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 

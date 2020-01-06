@@ -461,6 +461,40 @@ class RealtimeClientChannel: QuickSpec {
 
                         expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
                     }
+                    
+                    it("channel being released waiting for DETACH shouldn't crash (issue #918)") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let client = ARTRealtime(options: options)
+                        client.internal.setTransport(TestProxyTransport.self)
+                        client.connect()
+                        defer { client.dispose(); client.close() }
+                        
+                        // Force the callback on .release below to be triggered by our
+                        // forced FAILED message, not by a DETACHED.
+                        let transport = client.internal.transport as! TestProxyTransport
+                        transport.actionsIgnored += [.detached]
+                        
+                        for i in (0..<100) { // We need a few channels to trigger iterator invalidation.
+                            let channel = client.channels.get("test\(i)")
+                            channel.attach() // No need to wait; ATTACHING state is good enough.
+                            expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attaching), timeout: testTimeout)
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(2, done: done)
+                            
+                            client.channels.release("test0") { _ in
+                                partialDone()
+                            }
+                            
+                            AblyTests.queue.async {
+                                let pmError = AblyTests.newErrorProtocolMessage()
+                                client.internal.onError(pmError)
+                                partialDone()
+                            }
+                        }
+                    }
 
                 }
 
@@ -502,7 +536,6 @@ class RealtimeClientChannel: QuickSpec {
                         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.detached), timeout: testTimeout)
                         expect(client.connection.state).to(equal(ARTRealtimeConnectionState.closed))
                     }
-
                 }
 
                 // RTL3c
@@ -537,6 +570,39 @@ class RealtimeClientChannel: QuickSpec {
                         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
                         client.internal.onSuspended()
                         expect(channel.state).to(equal(ARTRealtimeChannelState.suspended))
+                    }
+                    
+                    it("channel being released waiting for DETACH shouldn't crash (issue #918)") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let client = ARTRealtime(options: options)
+                        client.internal.setTransport(TestProxyTransport.self)
+                        client.connect()
+                        defer { client.dispose(); client.close() }
+                        
+                        // Force the callback on .release below to be triggered by our
+                        // forced SUSPENDED message, not by a DETACHED.
+                        let transport = client.internal.transport as! TestProxyTransport
+                        transport.actionsIgnored += [.detached]
+                        
+                        for i in (0..<100) { // We need a few channels to trigger iterator invalidation.
+                            let channel = client.channels.get("test\(i)")
+                            channel.attach() // No need to wait; ATTACHING state is good enough.
+                            expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attaching), timeout: testTimeout)
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(2, done: done)
+                            
+                            client.channels.release("test0") { _ in
+                                partialDone()
+                            }
+                            
+                            AblyTests.queue.async {
+                                client.internal.onSuspended()
+                                partialDone()
+                            }
+                        }
                     }
 
                 }
@@ -640,16 +706,16 @@ class RealtimeClientChannel: QuickSpec {
                     }
 
                     waitUntil(timeout: testTimeout) { done in
-                        channel.once(.attaching) { stateChange in
-                            expect(stateChange?.reason).to(beNil())
+                        client.connection.once(.connected) { stateChange in
+                            expect(stateChange?.reason?.code).to(equal(80008)) //didn't resumed
                             done()
                         }
-                     }
-
-                    client.simulateRestoreInternetConnection(after: 1.0)
+                        client.simulateRestoreInternetConnection(after: 1.0)
+                    }
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.once(.attached) { stateChange in
+                            expect(stateChange?.resumed).to(beFalse())
                             expect(stateChange?.reason).to(beNil())
                             channel.on(.suspended) { _ in
                                 fail("Should not reach SUSPENDED state")
@@ -2783,9 +2849,13 @@ class RealtimeClientChannel: QuickSpec {
 
                 // RTL7d
                 context("should deliver the message even if there is an error while decoding") {
-
-                    for cryptoTest in [CryptoTest.aes128, CryptoTest.aes256] {
-                        it("using \(cryptoTest) ") {
+                    
+                    /*
+                     This test makes a deep assumption about the content of these two files,
+                     specifically the format of the first message in the items array.
+                     */
+                    for cryptoFixtureFileName in ["crypto-data-128", "crypto-data-256"] {
+                        it("using \(cryptoFixtureFileName) ") {
                             let options = AblyTests.commonAppSetup()
                             options.autoConnect = false
                             options.logHandler = ARTLog(capturingOutput: true)
@@ -2794,7 +2864,7 @@ class RealtimeClientChannel: QuickSpec {
                             client.connect()
                             defer { client.dispose(); client.close() }
 
-                            let (keyData, ivData, messages) = AblyTests.loadCryptoTestData(cryptoTest)
+                            let (keyData, ivData, messages) = AblyTests.loadCryptoTestData(cryptoFixtureFileName)
                             let testMessage = messages[0]
 
                             let cipherParams = ARTCipherParams(algorithm: "aes", key: keyData as ARTCipherKeyCompatible, iv: ivData)
@@ -2813,7 +2883,8 @@ class RealtimeClientChannel: QuickSpec {
                             transport.beforeProcessingReceivedMessage = { protocolMessage in
                                 if protocolMessage.action == .message {
                                     expect(protocolMessage.messages![0].data as? NSObject).to(equal(AblyTests.base64ToData(testMessage.encrypted.data) as NSObject?))
-                                    expect(protocolMessage.messages![0].encoding).to(equal("utf-8/cipher+aes-\(cryptoTest == CryptoTest.aes128 ? "128" : "256")-cbc"))
+                                    expect(protocolMessage.messages![0].encoding).to(equal("utf-8/cipher+aes-\(cryptoFixtureFileName.suffix(3))-cbc"))
+                                    
                                     // Force an error decoding a message
                                     protocolMessage.messages![0].encoding = "bad_encoding_type"
                                 }

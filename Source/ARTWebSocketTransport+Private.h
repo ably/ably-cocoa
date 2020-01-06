@@ -11,17 +11,20 @@
 #import <SocketRocketAblyFork/SRWebSocket.h>
 #import <Ably/ARTEncoder.h>
 #import <Ably/ARTAuth.h>
+#import <Ably/ARTWebSocket.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTWebSocketTransport () <SRWebSocketDelegate>
+@interface ARTWebSocketTransport () <ARTWebSocketDelegate>
+
++ (void)setWebSocketClass:(Class)class;
 
 // From RestClient
 @property (readwrite, strong, nonatomic) id<ARTEncoder> encoder;
 @property (readonly, strong, nonatomic) ARTLog *logger;
 @property (readonly, strong, nonatomic) ARTClientOptions *options;
 
-@property (readwrite, strong, nonatomic, nullable) SRWebSocket *websocket;
+@property (readwrite, strong, nonatomic, nullable) id<ARTWebSocket> websocket;
 @property (readwrite, strong, nonatomic, nullable) NSURL *websocketURL;
 
 - (NSURL *)setupWebSocket:(NSArray<NSURLQueryItem *> *)params withOptions:(ARTClientOptions *)options resumeKey:(NSString *_Nullable)resumeKey connectionSerial:(NSNumber *_Nullable)connectionSerial;

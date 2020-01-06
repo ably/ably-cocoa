@@ -18,6 +18,9 @@
 		1C6C18A41ADFDAB100AB79E4 /* ARTLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C6C18A21ADFDAB100AB79E4 /* ARTLog.m */; };
 		1CD8DC9F1B1C7315007EAF36 /* ARTDefault.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1CD8DCA01B1C7315007EAF36 /* ARTDefault.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CD8DC9E1B1C7315007EAF36 /* ARTDefault.m */; };
+		56190954238C3D3200A862A6 /* CryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 56190953238C3D3200A862A6 /* CryptoTest.m */; };
+		56190955238C3D3200A862A6 /* CryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 56190953238C3D3200A862A6 /* CryptoTest.m */; };
+		56190956238C3D3200A862A6 /* CryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 56190953238C3D3200A862A6 /* CryptoTest.m */; };
 		850BFB4C1B79323C009D0ADD /* ARTPaginatedResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 850BFB4A1B79323C009D0ADD /* ARTPaginatedResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		850BFB4D1B79323C009D0ADD /* ARTPaginatedResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 850BFB4B1B79323C009D0ADD /* ARTPaginatedResult.m */; };
 		851674EF1B7BA5CD00D35169 /* Stats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 851674EE1B7BA5CD00D35169 /* Stats.swift */; };
@@ -93,7 +96,7 @@
 		D7093C40219EDC3C00723F17 /* SwiftyJSON.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7093C3F219EDC3C00723F17 /* SwiftyJSON.framework */; };
 		D7093C41219EDC5000723F17 /* SwiftyJSON.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D7093C3F219EDC3C00723F17 /* SwiftyJSON.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093C44219EDC6B00723F17 /* SAMKeychain.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6A22194A09C008F54AD /* SAMKeychain.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		D7093C47219EDC8A00723F17 /* KSCrash.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6A32194A09D008F54AD /* KSCrash.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D7093C47219EDC8A00723F17 /* KSCrashAblyFork.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6A32194A09D008F54AD /* KSCrashAblyFork.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093C49219EDC9B00723F17 /* msgpack.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6A42194A09D008F54AD /* msgpack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093C4B219EDCAB00723F17 /* ULID.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6A62194A09D008F54AD /* ULID.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093C5B219EDE3200723F17 /* ably-common in Resources */ = {isa = PBXBuildFile; fileRef = 856AAC9A1B6E326E00B07119 /* ably-common */; };
@@ -125,7 +128,7 @@
 		D7093C93219EE3E800723F17 /* Quick.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D7093C88219EE3C900723F17 /* Quick.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093C94219EE3E800723F17 /* SwiftyJSON.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D7093C8A219EE3C900723F17 /* SwiftyJSON.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093C98219EE3E800723F17 /* msgpack.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6B82194A1FD008F54AD /* msgpack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		D7093C9A219EE3E800723F17 /* KSCrash.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6AF2194A0B2008F54AD /* KSCrash.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D7093C9A219EE3E800723F17 /* KSCrashAblyFork.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6AF2194A0B2008F54AD /* KSCrashAblyFork.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093C9B219EE3E800723F17 /* SAMKeychain.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6AE2194A0B2008F54AD /* SAMKeychain.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093C9D219EE3E800723F17 /* ULID.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6AD2194A0B2008F54AD /* ULID.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093CA9219EFA8A00723F17 /* MockDeviceStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7093CA8219EFA8A00723F17 /* MockDeviceStorage.swift */; };
@@ -501,10 +504,10 @@
 		D710D69F21949F0D008F54AD /* ARTJsonLikeEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = EB9C530A1CD7BEB100.8.557 /* ARTJsonLikeEncoder.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D710D6A121949F0E008F54AD /* ARTJsonLikeEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = EB9C530A1CD7BEB100.8.557 /* ARTJsonLikeEncoder.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D710D6A72194A09D008F54AD /* SAMKeychain.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6A22194A09C008F54AD /* SAMKeychain.framework */; };
-		D710D6A82194A09D008F54AD /* KSCrash.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6A32194A09D008F54AD /* KSCrash.framework */; };
+		D710D6A82194A09D008F54AD /* KSCrashAblyFork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6A32194A09D008F54AD /* KSCrashAblyFork.framework */; };
 		D710D6A92194A09D008F54AD /* msgpack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6A42194A09D008F54AD /* msgpack.framework */; };
 		D710D6AB2194A09D008F54AD /* ULID.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6A62194A09D008F54AD /* ULID.framework */; };
-		D710D6B42194A1FD008F54AD /* KSCrash.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6AF2194A0B2008F54AD /* KSCrash.framework */; };
+		D710D6B42194A1FD008F54AD /* KSCrashAblyFork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6AF2194A0B2008F54AD /* KSCrashAblyFork.framework */; };
 		D710D6B52194A1FD008F54AD /* SAMKeychain.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6AE2194A0B2008F54AD /* SAMKeychain.framework */; };
 		D710D6B72194A1FD008F54AD /* ULID.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6AD2194A0B2008F54AD /* ULID.framework */; };
 		D710D6B92194A1FD008F54AD /* msgpack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6B82194A1FD008F54AD /* msgpack.framework */; };
@@ -521,9 +524,9 @@
 		D72C67DF201AB74000978EBB /* ARTPushActivationStateMachine+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D72C67DE201AB74000978EBB /* ARTPushActivationStateMachine+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D73691FF1DB788C40062C150 /* ARTAuthDetails.h in Headers */ = {isa = PBXBuildFile; fileRef = D73691FD1DB788C40062C150 /* ARTAuthDetails.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D73692001DB788C40062C150 /* ARTAuthDetails.m in Sources */ = {isa = PBXBuildFile; fileRef = D73691FE1DB788C40062C150 /* ARTAuthDetails.m */; };
-		D736A0C91F916553005ABE81 /* KSCrash.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D736A0C61F916553005ABE81 /* KSCrash.framework */; };
+		D736A0C91F916553005ABE81 /* KSCrashAblyFork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D736A0C61F916553005ABE81 /* KSCrashAblyFork.framework */; };
 		D736A0CA1F916553005ABE81 /* msgpack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D736A0C71F916553005ABE81 /* msgpack.framework */; };
-		D736A1231F9178B0005ABE81 /* KSCrash.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D736A0C61F916553005ABE81 /* KSCrash.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D736A1231F9178B0005ABE81 /* KSCrashAblyFork.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D736A0C61F916553005ABE81 /* KSCrashAblyFork.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D736A1241F9178B0005ABE81 /* msgpack.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D736A0C71F916553005ABE81 /* msgpack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D73BF70C22609E7F00579773 /* SocketRocketAblyFork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D73BF70B22609E7F00579773 /* SocketRocketAblyFork.framework */; };
 		D73BF70E22609E9500579773 /* SocketRocketAblyFork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D73BF70D22609E9500579773 /* SocketRocketAblyFork.framework */; };
@@ -672,6 +675,12 @@
 		EB2D84F71CD75CCE00F23CDA /* ARTReachability.h in Headers */ = {isa = PBXBuildFile; fileRef = EB2D84F61CD75CCE00F23CDA /* ARTReachability.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		EB2D84FD1CD769B800F23CDA /* ARTOSReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = EB2D84FC1CD769B700F23CDA /* ARTOSReachability.m */; };
 		EB2D85011CD769C800F23CDA /* ARTOSReachability.h in Headers */ = {isa = PBXBuildFile; fileRef = EB2D85001CD769C800F23CDA /* ARTOSReachability.h */; };
+		EB3630AD2380508900B83598 /* Ably.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BF61311A35B2AB004CF2B3 /* Ably.framework */; };
+		EB3630CE2380562400B83598 /* msgpack.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = EB3630C92380562400B83598 /* msgpack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		EB3630CF2380562400B83598 /* KSCrashAblyFork.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = EB3630CA2380562400B83598 /* KSCrashAblyFork.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		EB3630D02380562400B83598 /* SocketRocketAblyFork.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = EB3630CB2380562400B83598 /* SocketRocketAblyFork.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		EB3630D12380562400B83598 /* SAMKeychain.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = EB3630CC2380562400B83598 /* SAMKeychain.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		EB3630D22380562400B83598 /* ULID.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = EB3630CD2380562400B83598 /* ULID.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EB4B1A0C1F2190BB00467F07 /* ARTRestChannels+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB4B1A0B1F2190BB00467F07 /* ARTRestChannels+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		EB503C881C7E4A090053AF00 /* ARTClientOptions+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB503C871C7E4A090053AF00 /* ARTClientOptions+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		EB503C8A1C7F1FE40053AF00 /* ARTLog+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB503C891C7F1FE40053AF00 /* ARTLog+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -686,15 +695,31 @@
 		EB89D4091C61C5ED007FA5B7 /* ARTRealtimeChannels.h in Headers */ = {isa = PBXBuildFile; fileRef = EB89D4081C61C5ED007FA5B7 /* ARTRealtimeChannels.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EB89D40B1C61C6EA007FA5B7 /* ARTRealtimeChannels.m in Sources */ = {isa = PBXBuildFile; fileRef = EB89D40A1C61C6EA007FA5B7 /* ARTRealtimeChannels.m */; };
 		EB89D40F1C62303E007FA5B7 /* ARTConnection+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB89D40E1C62303E007FA5B7 /* ARTConnection+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		EB8A0C33238D53DF00A20331 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB8A0C0F238D53A200A20331 /* AppDelegate.swift */; };
+		EB8A0C35238D53DF00A20331 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB8A0C13238D53A200A20331 /* ViewController.swift */; };
+		EB8A0C36238D53EB00A20331 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EB8A0C1A238D53A300A20331 /* LaunchScreen.storyboard */; };
+		EB8A0C37238D53EE00A20331 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EB8A0C15238D53A200A20331 /* Main.storyboard */; };
+		EB8A0C38238D53F300A20331 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EB8A0C18238D53A300A20331 /* Assets.xcassets */; };
+		EB8A0C39238D540200A20331 /* SoakTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB721C12376A4E6001C3550 /* SoakTest.swift */; };
+		EB8A0C3A238D540900A20331 /* SoakTestWebSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB721C82376B16B001C3550 /* SoakTestWebSocket.swift */; };
+		EB8A0C3B238D540900A20331 /* SoakTestURLSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB721CE2376B60E001C3550 /* SoakTestURLSession.swift */; };
+		EB8A0C3C238D540900A20331 /* SoakTestReachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB721D02376B999001C3550 /* SoakTestReachability.swift */; };
 		EB8AC6431C6515ED002ABA92 /* ARTTokenParams+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB8AC6421C6515ED002ABA92 /* ARTTokenParams+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		EB91213E1CA0AD6600BA0A40 /* ARTMsgPackEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = EB91213D1CA0AD6600BA0A40 /* ARTMsgPackEncoder.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EB9121401CA0AD8200BA0A40 /* ARTMsgPackEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB91213F1CA0AD8200BA0A40 /* ARTMsgPackEncoder.m */; };
 		EB9C530B1CD7BEB100.8.557 /* ARTJsonLikeEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = EB9C530A1CD7BEB100.8.557 /* ARTJsonLikeEncoder.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		EB9C530D1CD7BFF300.8.557 /* ARTJsonLikeEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = EB9C530C1CD7BFF300.8.557 /* ARTJsonLikeEncoder.m */; };
 		EBAB9A6F1C69702800AF036B /* ReadmeExamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBAB9A6E1C69702800AF036B /* ReadmeExamples.swift */; };
+		EBB721C52376A948001C3550 /* ARTWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = EBB721C42376A948001C3550 /* ARTWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		EBB721C62376A948001C3550 /* ARTWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = EBB721C42376A948001C3550 /* ARTWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		EBB721C72376A948001C3550 /* ARTWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = EBB721C42376A948001C3550 /* ARTWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		EBB721CB2376B454001C3550 /* ARTURLSession.h in Headers */ = {isa = PBXBuildFile; fileRef = EBB721CA2376B454001C3550 /* ARTURLSession.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		EBB721CC2376B454001C3550 /* ARTURLSession.h in Headers */ = {isa = PBXBuildFile; fileRef = EBB721CA2376B454001C3550 /* ARTURLSession.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		EBB721CD2376B454001C3550 /* ARTURLSession.h in Headers */ = {isa = PBXBuildFile; fileRef = EBB721CA2376B454001C3550 /* ARTURLSession.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		EBD947B41EBB8F160005DD16 /* ARTSentry.h in Headers */ = {isa = PBXBuildFile; fileRef = EBD947B31EBB8F160005DD16 /* ARTSentry.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		EBD947B61EBB8F2B0005DD16 /* ARTSentry.m in Sources */ = {isa = PBXBuildFile; fileRef = EBD947B51EBB8F2B0005DD16 /* ARTSentry.m */; };
 		EBF2285B1F4D9AD6009091DD /* ARTWebSocketTransport+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D714A63F1C75F0C5002F2CA0 /* ARTWebSocketTransport+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		EBF70D95239145E0004824FA /* Ably.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 96BF61311A35B2AB004CF2B3 /* Ably.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EBFA366E1D58B05000B09AA7 /* ARTRestPresence+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EB7617701CB6C18C00D0981E /* ARTRestPresence+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		EBFFAC191E97919C003E7326 /* ARTLocalDevice+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFAC181E97919C003E7326 /* ARTLocalDevice+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		EBFFAC1B1E97EF68003E7326 /* ARTPushAdmin+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = EBFFAC1A1E97EF5C003E7326 /* ARTPushAdmin+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -723,6 +748,20 @@
 			remoteGlobalIDString = 96BF61301A35B2AB004CF2B3;
 			remoteInfo = "Ably-iOS";
 		};
+		EB36309F23804F7C00B83598 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 96BF61281A35B2AB004CF2B3 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = EB36308823804F7A00B83598;
+			remoteInfo = "Ably-SoakTest-App";
+		};
+		EB3630AB2380508000B83598 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 96BF61281A35B2AB004CF2B3 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 96BF61301A35B2AB004CF2B3;
+			remoteInfo = "Ably-iOS";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -735,7 +774,7 @@
 				D73BF71222609EF600579773 /* SocketRocketAblyFork.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C4B219EDCAB00723F17 /* ULID.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C49219EDC9B00723F17 /* msgpack.framework in Copy Carthage Frameworks to Test bundle */,
-				D7093C47219EDC8A00723F17 /* KSCrash.framework in Copy Carthage Frameworks to Test bundle */,
+				D7093C47219EDC8A00723F17 /* KSCrashAblyFork.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C44219EDC6B00723F17 /* SAMKeychain.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C41219EDC5000723F17 /* SwiftyJSON.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C3D219EDC1800723F17 /* Aspects.framework in Copy Carthage Frameworks to Test bundle */,
@@ -757,7 +796,7 @@
 				D7093C93219EE3E800723F17 /* Quick.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C94219EE3E800723F17 /* SwiftyJSON.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C98219EE3E800723F17 /* msgpack.framework in Copy Carthage Frameworks to Test bundle */,
-				D7093C9A219EE3E800723F17 /* KSCrash.framework in Copy Carthage Frameworks to Test bundle */,
+				D7093C9A219EE3E800723F17 /* KSCrashAblyFork.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C9B219EE3E800723F17 /* SAMKeychain.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C9D219EE3E800723F17 /* ULID.framework in Copy Carthage Frameworks to Test bundle */,
 			);
@@ -776,11 +815,26 @@
 				D7EEE6B221A6E070000E8474 /* Nimble.framework in Copy Carthage Frameworks to Test bundle */,
 				D7EEE6B121A6E068000E8474 /* Aspects.framework in Copy Carthage Frameworks to Test bundle */,
 				D38D22F220FDFD9900194B40 /* ULID.framework in Copy Carthage Frameworks to Test bundle */,
-				D736A1231F9178B0005ABE81 /* KSCrash.framework in Copy Carthage Frameworks to Test bundle */,
+				D736A1231F9178B0005ABE81 /* KSCrashAblyFork.framework in Copy Carthage Frameworks to Test bundle */,
 				D736A1241F9178B0005ABE81 /* msgpack.framework in Copy Carthage Frameworks to Test bundle */,
 				D75F49C8205AD525003DE04F /* SAMKeychain.framework in Copy Carthage Frameworks to Test bundle */,
 			);
 			name = "Copy Carthage Frameworks to Test bundle";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EB3630C8238055F100B83598 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				EB3630CE2380562400B83598 /* msgpack.framework in CopyFiles */,
+				EBF70D95239145E0004824FA /* Ably.framework in CopyFiles */,
+				EB3630CF2380562400B83598 /* KSCrashAblyFork.framework in CopyFiles */,
+				EB3630D02380562400B83598 /* SocketRocketAblyFork.framework in CopyFiles */,
+				EB3630D12380562400B83598 /* SAMKeychain.framework in CopyFiles */,
+				EB3630D22380562400B83598 /* ULID.framework in CopyFiles */,
+			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -798,6 +852,7 @@
 		1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTDefault.h; sourceTree = "<group>"; };
 		1CD8DC9E1B1C7315007EAF36 /* ARTDefault.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTDefault.m; sourceTree = "<group>"; };
 		3F3D07905A62187E022923A8 /* Pods.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		56190953238C3D3200A862A6 /* CryptoTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CryptoTest.m; sourceTree = "<group>"; };
 		850BFB4A1B79323C009D0ADD /* ARTPaginatedResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPaginatedResult.h; sourceTree = "<group>"; };
 		850BFB4B1B79323C009D0ADD /* ARTPaginatedResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPaginatedResult.m; sourceTree = "<group>"; };
 		851674EE1B7BA5CD00D35169 /* Stats.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Stats.swift; sourceTree = "<group>"; };
@@ -871,12 +926,12 @@
 		D710D475219495FC008F54AD /* Ably.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Ably.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D710D478219495FC008F54AD /* Info-tvOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-tvOS.plist"; sourceTree = "<group>"; };
 		D710D6A22194A09C008F54AD /* SAMKeychain.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SAMKeychain.framework; path = Carthage/Build/Mac/SAMKeychain.framework; sourceTree = "<group>"; };
-		D710D6A32194A09D008F54AD /* KSCrash.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = KSCrash.framework; path = Carthage/Build/Mac/KSCrash.framework; sourceTree = "<group>"; };
+		D710D6A32194A09D008F54AD /* KSCrashAblyFork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = KSCrashAblyFork.framework; path = Carthage/Build/Mac/KSCrashAblyFork.framework; sourceTree = "<group>"; };
 		D710D6A42194A09D008F54AD /* msgpack.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = msgpack.framework; path = Carthage/Build/Mac/msgpack.framework; sourceTree = "<group>"; };
 		D710D6A62194A09D008F54AD /* ULID.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ULID.framework; path = Carthage/Build/Mac/ULID.framework; sourceTree = "<group>"; };
 		D710D6AD2194A0B2008F54AD /* ULID.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ULID.framework; path = Carthage/Build/tvOS/ULID.framework; sourceTree = "<group>"; };
 		D710D6AE2194A0B2008F54AD /* SAMKeychain.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SAMKeychain.framework; path = Carthage/Build/tvOS/SAMKeychain.framework; sourceTree = "<group>"; };
-		D710D6AF2194A0B2008F54AD /* KSCrash.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = KSCrash.framework; path = Carthage/Build/tvOS/KSCrash.framework; sourceTree = "<group>"; };
+		D710D6AF2194A0B2008F54AD /* KSCrashAblyFork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = KSCrashAblyFork.framework; path = Carthage/Build/tvOS/KSCrashAblyFork.framework; sourceTree = "<group>"; };
 		D710D6B82194A1FD008F54AD /* msgpack.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = msgpack.framework; path = Carthage/Build/tvOS/msgpack.framework; sourceTree = "<group>"; };
 		D714A63D1C74D4B2002F2CA0 /* NSObject+TestSuite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSObject+TestSuite.swift"; sourceTree = "<group>"; };
 		D714A63F1C75F0C5002F2CA0 /* ARTWebSocketTransport+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTWebSocketTransport+Private.h"; sourceTree = "<group>"; };
@@ -892,7 +947,7 @@
 		D72C67DE201AB74000978EBB /* ARTPushActivationStateMachine+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTPushActivationStateMachine+Private.h"; sourceTree = "<group>"; };
 		D73691FD1DB788C40062C150 /* ARTAuthDetails.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTAuthDetails.h; sourceTree = "<group>"; };
 		D73691FE1DB788C40062C150 /* ARTAuthDetails.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTAuthDetails.m; sourceTree = "<group>"; };
-		D736A0C61F916553005ABE81 /* KSCrash.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = KSCrash.framework; path = Carthage/Build/iOS/KSCrash.framework; sourceTree = "<group>"; };
+		D736A0C61F916553005ABE81 /* KSCrashAblyFork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = KSCrashAblyFork.framework; path = Carthage/Build/iOS/KSCrashAblyFork.framework; sourceTree = "<group>"; };
 		D736A0C71F916553005ABE81 /* msgpack.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = msgpack.framework; path = Carthage/Build/iOS/msgpack.framework; sourceTree = "<group>"; };
 		D73BF70B22609E7F00579773 /* SocketRocketAblyFork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SocketRocketAblyFork.framework; path = Carthage/Build/iOS/SocketRocketAblyFork.framework; sourceTree = "<group>"; };
 		D73BF70D22609E9500579773 /* SocketRocketAblyFork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SocketRocketAblyFork.framework; path = Carthage/Build/Mac/SocketRocketAblyFork.framework; sourceTree = "<group>"; };
@@ -1023,6 +1078,14 @@
 		EB2D85001CD769C800F23CDA /* ARTOSReachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTOSReachability.h; path = Private/ARTOSReachability.h; sourceTree = "<group>"; };
 		EB3239421C59AB0400892664 /* ARTDataEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTDataEncoder.m; sourceTree = "<group>"; };
 		EB3239461C59AB2C00892664 /* ARTDataEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTDataEncoder.h; sourceTree = "<group>"; };
+		EB36308923804F7A00B83598 /* Ably-SoakTest-App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Ably-SoakTest-App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		EB36309E23804F7C00B83598 /* Ably-SoakTest-AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Ably-SoakTest-AppUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		EB3630A423804F7C00B83598 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		EB3630C92380562400B83598 /* msgpack.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = msgpack.framework; path = Carthage/Build/iOS/msgpack.framework; sourceTree = "<group>"; };
+		EB3630CA2380562400B83598 /* KSCrashAblyFork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = KSCrashAblyFork.framework; path = Carthage/Build/iOS/KSCrashAblyFork.framework; sourceTree = "<group>"; };
+		EB3630CB2380562400B83598 /* SocketRocketAblyFork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SocketRocketAblyFork.framework; path = Carthage/Build/iOS/SocketRocketAblyFork.framework; sourceTree = "<group>"; };
+		EB3630CC2380562400B83598 /* SAMKeychain.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SAMKeychain.framework; path = Carthage/Build/iOS/SAMKeychain.framework; sourceTree = "<group>"; };
+		EB3630CD2380562400B83598 /* ULID.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ULID.framework; path = Carthage/Build/iOS/ULID.framework; sourceTree = "<group>"; };
 		EB4B1A0B1F2190BB00467F07 /* ARTRestChannels+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTRestChannels+Private.h"; sourceTree = "<group>"; };
 		EB503C871C7E4A090053AF00 /* ARTClientOptions+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTClientOptions+Private.h"; sourceTree = "<group>"; };
 		EB503C891C7F1FE40053AF00 /* ARTLog+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTLog+Private.h"; sourceTree = "<group>"; };
@@ -1035,12 +1098,24 @@
 		EB89D4081C61C5ED007FA5B7 /* ARTRealtimeChannels.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTRealtimeChannels.h; sourceTree = "<group>"; };
 		EB89D40A1C61C6EA007FA5B7 /* ARTRealtimeChannels.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRealtimeChannels.m; sourceTree = "<group>"; };
 		EB89D40E1C62303E007FA5B7 /* ARTConnection+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTConnection+Private.h"; sourceTree = "<group>"; };
+		EB8A0C0F238D53A200A20331 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		EB8A0C13238D53A200A20331 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		EB8A0C16238D53A200A20331 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		EB8A0C18238D53A300A20331 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		EB8A0C1B238D53A300A20331 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		EB8A0C1D238D53A300A20331 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		EB8AC6421C6515ED002ABA92 /* ARTTokenParams+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTTokenParams+Private.h"; sourceTree = "<group>"; };
 		EB91213D1CA0AD6600BA0A40 /* ARTMsgPackEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTMsgPackEncoder.h; sourceTree = "<group>"; };
 		EB91213F1CA0AD8200BA0A40 /* ARTMsgPackEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTMsgPackEncoder.m; sourceTree = "<group>"; };
 		EB9C530A1CD7BEB100.8.557 /* ARTJsonLikeEncoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTJsonLikeEncoder.h; sourceTree = "<group>"; };
 		EB9C530C1CD7BFF300.8.557 /* ARTJsonLikeEncoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTJsonLikeEncoder.m; sourceTree = "<group>"; };
 		EBAB9A6E1C69702800AF036B /* ReadmeExamples.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReadmeExamples.swift; sourceTree = "<group>"; };
+		EBB721C12376A4E6001C3550 /* SoakTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoakTest.swift; sourceTree = "<group>"; };
+		EBB721C42376A948001C3550 /* ARTWebSocket.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTWebSocket.h; sourceTree = "<group>"; };
+		EBB721C82376B16B001C3550 /* SoakTestWebSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoakTestWebSocket.swift; sourceTree = "<group>"; };
+		EBB721CA2376B454001C3550 /* ARTURLSession.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTURLSession.h; sourceTree = "<group>"; };
+		EBB721CE2376B60E001C3550 /* SoakTestURLSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoakTestURLSession.swift; sourceTree = "<group>"; };
+		EBB721D02376B999001C3550 /* SoakTestReachability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoakTestReachability.swift; sourceTree = "<group>"; };
 		EBD947B31EBB8F160005DD16 /* ARTSentry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTSentry.h; sourceTree = "<group>"; };
 		EBD947B51EBB8F2B0005DD16 /* ARTSentry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTSentry.m; sourceTree = "<group>"; };
 		EBFFAC181E97919C003E7326 /* ARTLocalDevice+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTLocalDevice+Private.h"; sourceTree = "<group>"; };
@@ -1065,7 +1140,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D736A0C91F916553005ABE81 /* KSCrash.framework in Frameworks */,
+				D736A0C91F916553005ABE81 /* KSCrashAblyFork.framework in Frameworks */,
 				D73BF70C22609E7F00579773 /* SocketRocketAblyFork.framework in Frameworks */,
 				D736A0CA1F916553005ABE81 /* msgpack.framework in Frameworks */,
 				D77A0C961FFEEF0300711131 /* ULID.framework in Frameworks */,
@@ -1103,7 +1178,7 @@
 			files = (
 				D710D6A72194A09D008F54AD /* SAMKeychain.framework in Frameworks */,
 				D73BF70E22609E9500579773 /* SocketRocketAblyFork.framework in Frameworks */,
-				D710D6A82194A09D008F54AD /* KSCrash.framework in Frameworks */,
+				D710D6A82194A09D008F54AD /* KSCrashAblyFork.framework in Frameworks */,
 				D710D6A92194A09D008F54AD /* msgpack.framework in Frameworks */,
 				D710D6AB2194A09D008F54AD /* ULID.framework in Frameworks */,
 			);
@@ -1114,10 +1189,25 @@
 			buildActionMask = 2147483647;
 			files = (
 				D710D6B92194A1FD008F54AD /* msgpack.framework in Frameworks */,
-				D710D6B42194A1FD008F54AD /* KSCrash.framework in Frameworks */,
+				D710D6B42194A1FD008F54AD /* KSCrashAblyFork.framework in Frameworks */,
 				D710D6B52194A1FD008F54AD /* SAMKeychain.framework in Frameworks */,
 				D73BF71022609EB500579773 /* SocketRocketAblyFork.framework in Frameworks */,
 				D710D6B72194A1FD008F54AD /* ULID.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EB36308623804F7A00B83598 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EB36309B23804F7C00B83598 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EB3630AD2380508900B83598 /* Ably.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1158,6 +1248,7 @@
 				D7DF73831EA5FE620013CD36 /* PushActivationStateMachine.swift */,
 				D777EEE620650A85002EBA03 /* PushChannel.swift */,
 				EB1B53F822F85CE4006A59AC /* ObjectLifetimes.swift */,
+				56190953238C3D3200A862A6 /* CryptoTest.m */,
 			);
 			path = Spec;
 			sourceTree = "<group>";
@@ -1165,10 +1256,17 @@
 		96BF61271A35B2AB004CF2B3 = {
 			isa = PBXGroup;
 			children = (
+				EB3630CA2380562400B83598 /* KSCrashAblyFork.framework */,
+				EB3630C92380562400B83598 /* msgpack.framework */,
+				EB3630CC2380562400B83598 /* SAMKeychain.framework */,
+				EB3630CB2380562400B83598 /* SocketRocketAblyFork.framework */,
+				EB3630CD2380562400B83598 /* ULID.framework */,
 				D75B85F921BAF8F900FD8DD2 /* Ably.xcconfig */,
 				D7EE14F51F07964500C178D5 /* Version.xcconfig */,
 				96BF61331A35B2AB004CF2B3 /* Source */,
 				856AAC8B1B6E304B00B07119 /* Spec */,
+				EB36308A23804F7A00B83598 /* Ably-SoakTest-App */,
+				EB3630A123804F7C00B83598 /* Ably-SoakTest-AppUITests */,
 				96BF61321A35B2AB004CF2B3 /* Products */,
 				FAFEC5BB8312EB69E84C28D4 /* Frameworks */,
 			);
@@ -1185,6 +1283,8 @@
 				D710D475219495FC008F54AD /* Ably.framework */,
 				D7093C0A219E2DB200723F17 /* Ably-macOS-Tests.xctest */,
 				D7093C60219EE1AE00723F17 /* Ably-tvOS-Tests.xctest */,
+				EB36308923804F7A00B83598 /* Ably-SoakTest-App.app */,
+				EB36309E23804F7C00B83598 /* Ably-SoakTest-AppUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1314,6 +1414,7 @@
 				D714A63F1C75F0C5002F2CA0 /* ARTWebSocketTransport+Private.h */,
 				96E408461A3895E800087F77 /* ARTWebSocketTransport.m */,
 				EB20F8D61C653F1E00EF3978 /* ARTPresence+Private.h */,
+				EBB721C42376A948001C3550 /* ARTWebSocket.h */,
 			);
 			name = Transport;
 			sourceTree = "<group>";
@@ -1434,6 +1535,7 @@
 				D74CBC02212EB58700D090E4 /* ARTNSHTTPURLResponse+ARTPaginated.m */,
 				D74CBC05212EB5B900D090E4 /* ARTNSMutableURLRequest+ARTPaginated.h */,
 				D74CBC06212EB5B900D090E4 /* ARTNSMutableURLRequest+ARTPaginated.m */,
+				EBB721CA2376B454001C3550 /* ARTURLSession.h */,
 			);
 			name = HTTP;
 			sourceTree = "<group>";
@@ -1469,6 +1571,31 @@
 			name = Push;
 			sourceTree = "<group>";
 		};
+		EB36308A23804F7A00B83598 /* Ably-SoakTest-App */ = {
+			isa = PBXGroup;
+			children = (
+				EB8A0C0F238D53A200A20331 /* AppDelegate.swift */,
+				EB8A0C13238D53A200A20331 /* ViewController.swift */,
+				EB8A0C15238D53A200A20331 /* Main.storyboard */,
+				EB8A0C18238D53A300A20331 /* Assets.xcassets */,
+				EB8A0C1A238D53A300A20331 /* LaunchScreen.storyboard */,
+				EB8A0C1D238D53A300A20331 /* Info.plist */,
+			);
+			path = "Ably-SoakTest-App";
+			sourceTree = "<group>";
+		};
+		EB3630A123804F7C00B83598 /* Ably-SoakTest-AppUITests */ = {
+			isa = PBXGroup;
+			children = (
+				EBB721C12376A4E6001C3550 /* SoakTest.swift */,
+				EBB721C82376B16B001C3550 /* SoakTestWebSocket.swift */,
+				EBB721CE2376B60E001C3550 /* SoakTestURLSession.swift */,
+				EBB721D02376B999001C3550 /* SoakTestReachability.swift */,
+				EB3630A423804F7C00B83598 /* Info.plist */,
+			);
+			path = "Ably-SoakTest-AppUITests";
+			sourceTree = "<group>";
+		};
 		FAFEC5BB8312EB69E84C28D4 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -1488,14 +1615,14 @@
 				D7093C30219ED41A00723F17 /* Nimble.framework */,
 				D7093C32219ED41A00723F17 /* Quick.framework */,
 				D710D6B82194A1FD008F54AD /* msgpack.framework */,
-				D710D6A32194A09D008F54AD /* KSCrash.framework */,
-				D710D6AF2194A0B2008F54AD /* KSCrash.framework */,
+				D710D6A32194A09D008F54AD /* KSCrashAblyFork.framework */,
+				D710D6AF2194A0B2008F54AD /* KSCrashAblyFork.framework */,
 				D710D6AE2194A0B2008F54AD /* SAMKeychain.framework */,
 				D710D6AD2194A0B2008F54AD /* ULID.framework */,
 				D710D6A42194A09D008F54AD /* msgpack.framework */,
 				D75F49C6205AD4D4003DE04F /* SAMKeychain.framework */,
 				D77A0C951FFEEF0300711131 /* ULID.framework */,
-				D736A0C61F916553005ABE81 /* KSCrash.framework */,
+				D736A0C61F916553005ABE81 /* KSCrashAblyFork.framework */,
 				D736A0C71F916553005ABE81 /* msgpack.framework */,
 				D710D6A22194A09C008F54AD /* SAMKeychain.framework */,
 				D710D6A62194A09D008F54AD /* ULID.framework */,
@@ -1546,6 +1673,7 @@
 				EB89D4091C61C5ED007FA5B7 /* ARTRealtimeChannels.h in Headers */,
 				96E408431A38939E00087F77 /* ARTProtocolMessage.h in Headers */,
 				D78D780921271FB10016808B /* ARTHTTPPaginatedResponse+Private.h in Headers */,
+				EBB721CB2376B454001C3550 /* ARTURLSession.h in Headers */,
 				D746AE381BBC3201003ECEF8 /* ARTMessage.h in Headers */,
 				D746AE471BBD6FE9003ECEF8 /* ARTQueuedMessage.h in Headers */,
 				1C2B0FFD1B136A6D00E3633C /* ARTPresenceMap.h in Headers */,
@@ -1605,6 +1733,7 @@
 				D7F1D3731BF4DE07001A4B5E /* ARTRestPresence.h in Headers */,
 				D7B17EE31C07208B00A6958E /* ARTConnectionDetails.h in Headers */,
 				D7F2B8B21E42410D00B65151 /* ARTPresenceMessage+Private.h in Headers */,
+				EBB721C52376A948001C3550 /* ARTWebSocket.h in Headers */,
 				EBFA366E1D58B05000B09AA7 /* ARTRestPresence+Private.h in Headers */,
 				EBFFAC1D1E97FB76003E7326 /* ARTPush+Private.h in Headers */,
 				EB2D85011CD769C800F23CDA /* ARTOSReachability.h in Headers */,
@@ -1668,6 +1797,7 @@
 				D710D68121949EB3008F54AD /* ARTReachability.h in Headers */,
 				D710D58921949D29008F54AD /* ARTBaseMessage.h in Headers */,
 				D710D55721949C8C008F54AD /* ARTPushActivationEvent.h in Headers */,
+				EBB721CC2376B454001C3550 /* ARTURLSession.h in Headers */,
 				D710D4CE21949BB2008F54AD /* ARTWebSocketTransport+Private.h in Headers */,
 				D710D56C21949CB9008F54AD /* ARTPushChannelSubscriptions.h in Headers */,
 				D710D56721949CA1008F54AD /* ARTPushActivationStateMachine+Private.h in Headers */,
@@ -1727,6 +1857,7 @@
 				D710D4D721949BF9008F54AD /* ARTConnectionDetails.h in Headers */,
 				D710D4DB21949BF9008F54AD /* ARTRealtimeChannels.h in Headers */,
 				D710D61021949DDB008F54AD /* ARTFallback.h in Headers */,
+				EBB721C62376A948001C3550 /* ARTWebSocket.h in Headers */,
 				D710D4C321949B9C008F54AD /* ARTWebSocketTransport.h in Headers */,
 				D710D4D621949BF9008F54AD /* ARTConnection.h in Headers */,
 				D710D50421949C18008F54AD /* ARTRealtime+Private.h in Headers */,
@@ -1790,6 +1921,7 @@
 				D710D68321949EB4008F54AD /* ARTReachability.h in Headers */,
 				D710D5AF21949D2A008F54AD /* ARTBaseMessage.h in Headers */,
 				D710D55D21949C8D008F54AD /* ARTPushActivationEvent.h in Headers */,
+				EBB721CD2376B454001C3550 /* ARTURLSession.h in Headers */,
 				D710D4D021949BB3008F54AD /* ARTWebSocketTransport+Private.h in Headers */,
 				D710D57221949CBA008F54AD /* ARTPushChannelSubscriptions.h in Headers */,
 				D710D56921949CA2008F54AD /* ARTPushActivationStateMachine+Private.h in Headers */,
@@ -1849,6 +1981,7 @@
 				D710D4E721949BFB008F54AD /* ARTConnectionDetails.h in Headers */,
 				D710D4EB21949BFB008F54AD /* ARTRealtimeChannels.h in Headers */,
 				D710D61A21949DDC008F54AD /* ARTFallback.h in Headers */,
+				EBB721C72376A948001C3550 /* ARTWebSocket.h in Headers */,
 				D710D4C721949B9D008F54AD /* ARTWebSocketTransport.h in Headers */,
 				D710D4E621949BFB008F54AD /* ARTConnection.h in Headers */,
 				D710D51021949C19008F54AD /* ARTRealtime+Private.h in Headers */,
@@ -1987,6 +2120,43 @@
 			productReference = D710D475219495FC008F54AD /* Ably.framework */;
 			productType = "com.apple.product-type.framework";
 		};
+		EB36308823804F7A00B83598 /* Ably-SoakTest-App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EB3630A523804F7C00B83598 /* Build configuration list for PBXNativeTarget "Ably-SoakTest-App" */;
+			buildPhases = (
+				EB36308523804F7A00B83598 /* Sources */,
+				EB36308623804F7A00B83598 /* Frameworks */,
+				EB36308723804F7A00B83598 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Ably-SoakTest-App";
+			productName = "Ably-SoakTest-App";
+			productReference = EB36308923804F7A00B83598 /* Ably-SoakTest-App.app */;
+			productType = "com.apple.product-type.application";
+		};
+		EB36309D23804F7C00B83598 /* Ably-SoakTest-AppUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EB3630A823804F7C00B83598 /* Build configuration list for PBXNativeTarget "Ably-SoakTest-AppUITests" */;
+			buildPhases = (
+				EB36309A23804F7C00B83598 /* Sources */,
+				EB36309B23804F7C00B83598 /* Frameworks */,
+				EB36309C23804F7C00B83598 /* Resources */,
+				EB3630C8238055F100B83598 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				EB3630AC2380508000B83598 /* PBXTargetDependency */,
+				EB3630A023804F7C00B83598 /* PBXTargetDependency */,
+			);
+			name = "Ably-SoakTest-AppUITests";
+			productName = "Ably-SoakTest-AppUITests";
+			productReference = EB36309E23804F7C00B83598 /* Ably-SoakTest-AppUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -1995,7 +2165,7 @@
 			attributes = {
 				CLASSPREFIX = ART;
 				DefaultBuildSystemTypeForWorkspace = Original;
-				LastSwiftUpdateCheck = 1010;
+				LastSwiftUpdateCheck = 1120;
 				LastUpgradeCheck = 1020;
 				ORGANIZATIONNAME = Ably;
 				TargetAttributes = {
@@ -2025,6 +2195,15 @@
 						CreatedOnToolsVersion = 10.1;
 						ProvisioningStyle = Automatic;
 					};
+					EB36308823804F7A00B83598 = {
+						CreatedOnToolsVersion = 11.2;
+						ProvisioningStyle = Manual;
+					};
+					EB36309D23804F7C00B83598 = {
+						CreatedOnToolsVersion = 11.2;
+						ProvisioningStyle = Manual;
+						TestTargetID = EB36308823804F7A00B83598;
+					};
 				};
 			};
 			buildConfigurationList = 96BF612B1A35B2AB004CF2B3 /* Build configuration list for PBXProject "Ably" */;
@@ -2046,6 +2225,8 @@
 				D7093C09219E2DB200723F17 /* Ably-macOS-Tests */,
 				D710D474219495FC008F54AD /* Ably-tvOS */,
 				D7093C5F219EE1AE00723F17 /* Ably-tvOS-Tests */,
+				EB36308823804F7A00B83598 /* Ably-SoakTest-App */,
+				EB36309D23804F7C00B83598 /* Ably-SoakTest-AppUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -2096,6 +2277,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		EB36308723804F7A00B83598 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EB8A0C37238D53EE00A20331 /* Main.storyboard in Resources */,
+				EB8A0C36238D53EB00A20331 /* LaunchScreen.storyboard in Resources */,
+				EB8A0C38238D53F300A20331 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EB36309C23804F7C00B83598 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -2126,6 +2324,7 @@
 				D777EEE820650ADF002EBA03 /* PushChannel.swift in Sources */,
 				D746AE2D1BBB625E003ECEF8 /* RestClientChannels.swift in Sources */,
 				EBAB9A6F1C69702800AF036B /* ReadmeExamples.swift in Sources */,
+				56190954238C3D3200A862A6 /* CryptoTest.m in Sources */,
 				D7C1B8771BBEA81A0087B55F /* Auth.swift in Sources */,
 				D7EBE5A31BE8391E0086E675 /* RealtimeClientConnection.swift in Sources */,
 			);
@@ -2234,6 +2433,7 @@
 				D7093C21219E466E00723F17 /* RestClientChannels.swift in Sources */,
 				D7093C26219E466E00723F17 /* RealtimeClientChannel.swift in Sources */,
 				D7093C22219E466E00723F17 /* RestClientPresence.swift in Sources */,
+				56190955238C3D3200A862A6 /* CryptoTest.m in Sources */,
 				D7093C1D219E466600723F17 /* Auth.swift in Sources */,
 				D7093C25219E466E00723F17 /* RealtimeClientConnection.swift in Sources */,
 			);
@@ -2261,6 +2461,7 @@
 				D7093C74219EE26400723F17 /* Auth.swift in Sources */,
 				D7093C72219EE25B00723F17 /* NSObject+TestSuite.swift in Sources */,
 				D7093C7B219EE26400723F17 /* RealtimeClient.swift in Sources */,
+				56190956238C3D3200A862A6 /* CryptoTest.m in Sources */,
 				D7093C7A219EE26400723F17 /* RestPaginated.swift in Sources */,
 				D7093C81219EE26400723F17 /* Utilities.swift in Sources */,
 			);
@@ -2428,6 +2629,26 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		EB36308523804F7A00B83598 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EB8A0C35238D53DF00A20331 /* ViewController.swift in Sources */,
+				EB8A0C33238D53DF00A20331 /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EB36309A23804F7C00B83598 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EB8A0C3C238D540900A20331 /* SoakTestReachability.swift in Sources */,
+				EB8A0C3B238D540900A20331 /* SoakTestURLSession.swift in Sources */,
+				EB8A0C39238D540200A20331 /* SoakTest.swift in Sources */,
+				EB8A0C3A238D540900A20331 /* SoakTestWebSocket.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -2446,7 +2667,36 @@
 			target = 96BF61301A35B2AB004CF2B3 /* Ably-iOS */;
 			targetProxy = D73BF7162260E7BD00579773 /* PBXContainerItemProxy */;
 		};
+		EB3630A023804F7C00B83598 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = EB36308823804F7A00B83598 /* Ably-SoakTest-App */;
+			targetProxy = EB36309F23804F7C00B83598 /* PBXContainerItemProxy */;
+		};
+		EB3630AC2380508000B83598 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 96BF61301A35B2AB004CF2B3 /* Ably-iOS */;
+			targetProxy = EB3630AB2380508000B83598 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		EB8A0C15238D53A200A20331 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				EB8A0C16238D53A200A20331 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		EB8A0C1A238D53A300A20331 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				EB8A0C1B238D53A300A20331 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		856AAC931B6E304B00B07119 /* Debug */ = {
@@ -2537,7 +2787,8 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
-				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_COMPATIBILITY_VERSION = 1.0.0;
+				DYLIB_CURRENT_VERSION = "$(CURRENT_PROJECT_VERSION)";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -2597,7 +2848,8 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_COMPATIBILITY_VERSION = 1.0.0;
+				DYLIB_CURRENT_VERSION = "$(CURRENT_PROJECT_VERSION)";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -2622,10 +2874,9 @@
 		96BF61481A35B2AB004CF2B3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
 				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = "$(CURRENT_PROJECT_VERSION)";
-				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2638,6 +2889,7 @@
 				MODULEMAP_FILE = Source/Ably.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = Ably;
+				PROVISIONING_PROFILE_SPECIFIER = "ably-cocoa-soak-test";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
@@ -2645,10 +2897,9 @@
 		96BF61491A35B2AB004CF2B3 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
 				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = "$(CURRENT_PROJECT_VERSION)";
-				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2661,6 +2912,7 @@
 				MODULEMAP_FILE = Source/Ably.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = Ably;
+				PROVISIONING_PROFILE_SPECIFIER = "ably-cocoa-soak-test";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
@@ -2813,8 +3065,6 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2851,8 +3101,6 @@
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2886,8 +3134,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2923,8 +3169,6 @@
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -2942,6 +3186,138 @@
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
+		EB3630A623804F7C00B83598 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Manual;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = "Ably-SoakTest-App/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.3;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "ably.io.Ably-SoakTest-App";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		EB3630A723804F7C00B83598 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = "Ably-SoakTest-App/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.3;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "ably.io.Ably-SoakTest-App";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		EB3630A923804F7C00B83598 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Manual;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = "Ably-SoakTest-AppUITests/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "ably.io.Ably-SoakTest-AppUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "Ably-SoakTest-App";
+			};
+			name = Debug;
+		};
+		EB3630AA23804F7C00B83598 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = "Ably-SoakTest-AppUITests/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "ably.io.Ably-SoakTest-AppUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = "Ably-SoakTest-App";
 			};
 			name = Release;
 		};
@@ -3007,6 +3383,24 @@
 			buildConfigurations = (
 				D710D47B219495FC008F54AD /* Debug */,
 				D710D47C219495FC008F54AD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		EB3630A523804F7C00B83598 /* Build configuration list for PBXNativeTarget "Ably-SoakTest-App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EB3630A623804F7C00B83598 /* Debug */,
+				EB3630A723804F7C00B83598 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		EB3630A823804F7C00B83598 /* Build configuration list for PBXNativeTarget "Ably-SoakTest-AppUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EB3630A923804F7C00B83598 /* Debug */,
+				EB3630AA23804F7C00B83598 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

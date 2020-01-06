@@ -307,18 +307,22 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         };
     }
 
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
-    ARTProtocolMessage *msg = [[ARTProtocolMessage alloc] init];
-    msg.action = ARTProtocolMessageMessage;
-    msg.channel = self.name;
     if (![data isKindOfClass:[NSArray class]]) {
         data = @[data];
     }
+
+dispatch_sync(_queue, ^{
+ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
+    ARTProtocolMessage *msg = [[ARTProtocolMessage alloc] init];
+    msg.action = ARTProtocolMessageMessage;
+    msg.channel = self.name;
     msg.messages = data;
+    
     [self publishProtocolMessage:msg callback:^void(ARTStatus *status) {
         if (callback) callback(status.errorInfo);
     }];
 } ART_TRY_OR_MOVE_TO_FAILED_END
+});
 }
 
 - (void)sync {
@@ -811,9 +815,21 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         _errorReason = status.errorInfo;
     }
 
+    ARTEventListener *channelRetryListener = nil;
     switch (state) {
         case ARTRealtimeChannelSuspended:
             [_attachedEventEmitter emit:nil with:status.errorInfo];
+            if (self.realtime.shouldSendEvents) {
+                channelRetryListener = [self unlessStateChangesBefore:self.realtime.options.channelRetryTimeout do:^{
+                    [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) reattach initiated by retry timeout", self->_realtime, self, self.name];
+                    [self reattachWithReason:nil callback:^(ARTErrorInfo *errorInfo) {
+                        if (errorInfo) {
+                            ARTStatus *status = [ARTStatus state:ARTStateError info:errorInfo];
+                            [self setSuspended:status];
+                        }
+                    }];
+                }];
+            }
             break;
         case ARTRealtimeChannelDetached:
             [self.presenceMap failsSync:status.errorInfo];
@@ -828,6 +844,10 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     }
 
     [self emit:stateChange.event with:stateChange];
+
+    if (channelRetryListener) {
+        [channelRetryListener startTimer];
+    }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
@@ -946,7 +966,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) reattach initiated by DETACHED message but it is currently attaching", _realtime, self, self.name];
             ARTStatus *status = message.error ? [ARTStatus state:ARTStateError info:message.error] : [ARTStatus state:ARTStateOk];
             status.storeErrorInfo = false;
-            [self setSuspended:status retryIn:_realtime.options.channelRetryTimeout];
+            [self setSuspended:status];
             return;
         }
         case ARTRealtimeChannelFailed:
@@ -980,23 +1000,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
 - (void)setSuspended:(ARTStatus *)status {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
-    [self setSuspended:status retryIn:self.realtime.options.channelRetryTimeout];
-} ART_TRY_OR_MOVE_TO_FAILED_END
-}
-
-- (void)setSuspended:(ARTStatus *)status retryIn:(NSTimeInterval)retryTimeout {
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     [self failQueuedMessages:status];
     [self transition:ARTRealtimeChannelSuspended status:status];
-    [[self unlessStateChangesBefore:retryTimeout do:^{
-        [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) reattach initiated by retry timeout", self->_realtime, self, self.name];
-        [self reattachWithReason:nil callback:^(ARTErrorInfo *errorInfo) {
-            if (errorInfo) {
-                ARTStatus *status = [ARTStatus state:ARTStateError info:errorInfo];
-                [self setSuspended:status];
-            }
-        }];
-    }] startTimer];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
@@ -1258,6 +1263,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
             [_attachedEventEmitter once:^(ARTErrorInfo *errorInfo) {
                 if (callback && errorInfo) {
                     callback(errorInfo);
+                    return;
                 }
                 [self _detach:callback];
             }];
