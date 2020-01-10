@@ -56,8 +56,8 @@ Class configuredWebsocketClass = nil;
 @synthesize delegate = _delegate;
 @synthesize stateEmitter = _stateEmitter;
 
-+ (void)setWebSocketClass:(Class)class {
-    configuredWebsocketClass = class;
++ (void)setWebSocketClass:(const Class)webSocketClass {
+    configuredWebsocketClass = webSocketClass;
 }
 
 - (instancetype)initWithRest:(ARTRestInternal *)rest options:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial {
