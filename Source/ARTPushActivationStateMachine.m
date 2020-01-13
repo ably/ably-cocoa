@@ -35,8 +35,13 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
 }
 
 - (instancetype)init:(ARTRestInternal *)rest {
+    return [self init:rest delegate:nil];
+}
+
+- (instancetype)init:(ARTRestInternal *)rest delegate:(id)delegate {
     if (self = [super init]) {
         _rest = rest;
+        _delegate = delegate;
         _queue = _rest.queue;
         _userQueue = _rest.userQueue;
         // Unarchiving
@@ -51,6 +56,14 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
         _pendingEvents = [NSKeyedUnarchiver unarchiveObjectWithData:pendingEventsData];
         if (!_pendingEvents) {
             _pendingEvents = [NSMutableArray array];
+        }
+
+        // Due to bug #966, old versions of the library might have led us to an illegal
+        // persisted state: we have a deviceToken, but the persisted push state is WaitingForPushDeviceDetails.
+        // So we need to re-emit the GotPushDeviceDetails event that led us there.
+        if ([_current isKindOfClass:[ARTPushActivationStateWaitingForPushDeviceDetails class]] && rest.device_nosync.deviceToken != nil) {
+            [rest.logger debug:@"ARTPush: re-emitting stored device details for stuck state machine"];
+            [self handleEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
         }
     }
     return self;
