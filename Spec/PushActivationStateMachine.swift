@@ -409,7 +409,24 @@ class PushActivationStateMachine : QuickSpec {
                     }
 
                 }
+                
+                // https://github.com/ably/ably-cocoa/issues/966
+                it("when initializing from persistent state with a deviceToken, GotPushDeviceDetails should be re-emitted") {
+                    storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForPushDeviceDetails(machine: initialStateMachine))
+                    rest.internal.storage = storage
+                    rest.device.setAndPersistDeviceToken("foo")
+                    
+                    var registered = false
 
+                    let delegate = StateMachineDelegateCustomCallbacks()
+                    stateMachine = ARTPushActivationStateMachine(rest.internal, delegate: delegate)
+                    delegate.onPushCustomRegister = { error, deviceDetails in
+                        registered = true
+                        return nil
+                    }
+
+                    expect(registered).toEventually(beTrue())
+                }
             }
 
             // RSH3c
