@@ -106,7 +106,17 @@ static dispatch_once_t *activationMachine_once_token;
     activationMachine_once_token = &once;
     static id activationMachineInstance;
     dispatch_once(&once, ^{
-        activationMachineInstance = [[ARTPushActivationStateMachine alloc] init:self->_rest];
+        // -[UIApplication delegate] is an UI API call, so needs to be called from main thread.
+        __block id delegate = nil;
+        if ([NSThread isMainThread]) {
+            delegate = UIApplication.sharedApplication.delegate;
+        } else {
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                delegate = UIApplication.sharedApplication.delegate;
+            });
+        }
+        
+        activationMachineInstance = [[ARTPushActivationStateMachine alloc] init:self->_rest delegate:delegate];
     });
     return activationMachineInstance;
 }
@@ -169,29 +179,11 @@ static dispatch_once_t *activationMachine_once_token;
 }
 
 - (void)activate {
-    if (!self.activationMachine.delegate) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            // -[UIApplication delegate] is an UI API call
-            self.activationMachine.delegate = UIApplication.sharedApplication.delegate;
-            [self.activationMachine sendEvent:[ARTPushActivationEventCalledActivate new]];
-        });
-    }
-    else {
-        [self.activationMachine sendEvent:[ARTPushActivationEventCalledActivate new]];
-    }
+    [self.activationMachine sendEvent:[ARTPushActivationEventCalledActivate new]];
 }
 
 - (void)deactivate {
-    if (!self.activationMachine.delegate) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            // -[UIApplication delegate] is an UI API call
-            self.activationMachine.delegate = UIApplication.sharedApplication.delegate;
-            [self.activationMachine sendEvent:[ARTPushActivationEventCalledDeactivate new]];
-        });
-    }
-    else {
-        [self.activationMachine sendEvent:[ARTPushActivationEventCalledDeactivate new]];
-    }
+    [self.activationMachine sendEvent:[ARTPushActivationEventCalledDeactivate new]];
 }
 
 #endif
