@@ -415,6 +415,7 @@ class PushActivationStateMachine : QuickSpec {
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForPushDeviceDetails(machine: initialStateMachine))
                     rest.internal.storage = storage
                     rest.device.setAndPersistDeviceToken("foo")
+                    defer { rest.device.setAndPersistDeviceToken(nil) }
                     
                     var registered = false
 
