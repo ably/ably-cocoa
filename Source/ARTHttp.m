@@ -25,8 +25,8 @@ Class configuredUrlSessionClass = nil;
     _Nullable dispatch_queue_t _queue;
 }
 
-+ (void)setURLSessionClass:(Class)class {
-    configuredUrlSessionClass = class;
++ (void)setURLSessionClass:(const Class)urlSessionClass {
+    configuredUrlSessionClass = urlSessionClass;
 }
 
 - (instancetype)init:(dispatch_queue_t)queue logger:(ARTLog *)logger {
