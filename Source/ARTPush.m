@@ -81,6 +81,7 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 @implementation ARTPushInternal {
     ARTRestInternal *_rest;
     ARTLog *_logger;
+    ARTPushActivationStateMachine *_activationMachine;
 }
 
 - (instancetype)init:(ARTRestInternal *)rest {
@@ -88,6 +89,7 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
         _rest = rest;
         _logger = [rest logger];
         _admin = [[ARTPushAdminInternal alloc] initWithRest:rest];
+        _activationMachine = nil;
     }
     return self;
 }
@@ -98,14 +100,8 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 
 #if TARGET_OS_IOS
 
-// Store address of once_token to access it in debug function.
-static dispatch_once_t *activationMachine_once_token;
-
 - (ARTPushActivationStateMachine *)activationMachine {
-    static dispatch_once_t once;
-    activationMachine_once_token = &once;
-    static id activationMachineInstance;
-    dispatch_once(&once, ^{
+    if (_activationMachine == nil) {
         // -[UIApplication delegate] is an UI API call, so needs to be called from main thread.
         __block id delegate = nil;
         if ([NSThread isMainThread]) {
@@ -116,13 +112,9 @@ static dispatch_once_t *activationMachine_once_token;
             });
         }
         
-        activationMachineInstance = [[ARTPushActivationStateMachine alloc] init:self->_rest delegate:delegate];
-    });
-    return activationMachineInstance;
-}
-
-- (void)resetActivationStateMachineSingleton {
-    if (activationMachine_once_token) *activationMachine_once_token = 0;
+        _activationMachine = [[ARTPushActivationStateMachine alloc] init:self->_rest delegate:delegate];
+    }
+    return _activationMachine;
 }
 
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceTokenData restInternal:(ARTRestInternal *)rest {

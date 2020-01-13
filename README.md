@@ -96,6 +96,10 @@ This client library is currently *not compatible* with some of the Ably features
 | [Remember fallback host during failures](https://ably.io/documentation/realtime/usage#client-options) | 
 | [ErrorInfo URLs to help debug issues](https://ably.io/documentation/realtime/types#error-info) |
 
+### Concurrent push-receiving Ably instances
+
+Only one instance of `ARTRest` or `ARTRealtime` at a time must be [activated for receiving push notifications](https://www.ably.io/documentation/general/push/activate-subscribe). Having more than one activated instance at a time may have unexpected consequences.
+
 ## Documentation
 
 Visit [ably.io/documentation](https://www.ably.io/documentation) for a complete API reference and more examples.
