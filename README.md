@@ -663,6 +663,7 @@ This library uses [semantic versioning](http://semver.org/). For each release, t
 * Run `make bump_[major|minor|patch]` to bump the new version number (creates a Git commit and tag)
 * Run [`github_changelog_generator`](https://github.com/github-changelog-generator/github-changelog-generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). This may require some manual intervention, both in terms of how the command is run and how the change log file is modified. Your mileage may vary:
     * The command you will need to run will look something like this: `github_changelog_generator -u ably -p ably-cocoa --since-tag 1.1.15`
+      - `--since-tag` will remove old releases from the `CHANGELOG.md`. You may need to add them back.
     * Change the "Unreleased" heading and link with the current version number such as `v1.0.0`
     * Also ensure that the "Full Changelog" link points to the new version tag instead of the `HEAD`
     * Commit this change: `git add CHANGELOG.md && git commit -m "Update change log."`
