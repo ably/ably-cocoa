@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.1.17](https://github.com/ably/ably-cocoa/tree/1.1.17)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.16...1.1.17)
+
+**Merged pull requests:**
+
+- Remove push state machine singleton [\#972](https://github.com/ably/ably-cocoa/pull/972) ([tcard](https://github.com/tcard))
+- Add clarification to release process: document --since-tag effects [\#971](https://github.com/ably/ably-cocoa/pull/971) ([tcard](https://github.com/tcard))
+
 ## [1.1.16](https://github.com/ably/ably-cocoa/tree/1.1.16)
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.15...1.1.16)
 
