@@ -678,7 +678,8 @@ class RealtimeClientChannel: QuickSpec {
                     }
 
                     // Move to SUSPENDED
-                    client.overrideConnectionStateTTL(3.0)
+                    let ttlHookToken = client.overrideConnectionStateTTL(0.3)
+                    defer { ttlHookToken.remove() }
 
                     let channel = client.channels.get("foo")
                     waitUntil(timeout: testTimeout) { done in

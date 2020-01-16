@@ -17,6 +17,8 @@ import Aspects
 
 import Ably.Private
 
+typealias HookToken = AspectToken
+
 let AblyTestsErrorDomain = "test.ably.io"
 
 class CryptoTest {
@@ -1304,8 +1306,8 @@ extension ARTRealtime {
         }
     }
 
-    func overrideConnectionStateTTL(_ ttl: TimeInterval) {
-        self.internal.testSuite_injectIntoMethod(before: NSSelectorFromString("setSuspendTime")) {
+    func overrideConnectionStateTTL(_ ttl: TimeInterval) -> HookToken {
+        return self.internal.testSuite_injectIntoMethod(before: NSSelectorFromString("setSuspendTime")) {
             self.internal.connectionStateTtl = ttl
         }
     }

@@ -2158,7 +2158,8 @@ class RealtimeClientConnection: QuickSpec {
                     client.internal.disableImmediateReconnection = true
                     defer { client.dispose(); client.close() }
 
-                    client.overrideConnectionStateTTL(0.3)
+                    let ttlHookToken = client.overrideConnectionStateTTL(0.3)
+                    defer { ttlHookToken.remove() }
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.on(.suspended) { stateChange in
@@ -2191,7 +2192,8 @@ class RealtimeClientConnection: QuickSpec {
                         client.close()
                     }
 
-                    client.overrideConnectionStateTTL(3.0)
+                    let ttlHookToken = client.overrideConnectionStateTTL(0.3)
+                    defer { ttlHookToken.remove() }
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.once(.connected) { stateChange in
