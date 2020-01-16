@@ -678,7 +678,7 @@ class RealtimeClientChannel: QuickSpec {
                     }
 
                     // Move to SUSPENDED
-                    let ttlHookToken = client.overrideConnectionStateTTL(0.3)
+                    let ttlHookToken = client.overrideConnectionStateTTL(3.0)
                     defer { ttlHookToken.remove() }
 
                     let channel = client.channels.get("foo")

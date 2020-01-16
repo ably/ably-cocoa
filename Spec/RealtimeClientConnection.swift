@@ -2192,7 +2192,7 @@ class RealtimeClientConnection: QuickSpec {
                         client.close()
                     }
 
-                    let ttlHookToken = client.overrideConnectionStateTTL(0.3)
+                    let ttlHookToken = client.overrideConnectionStateTTL(3.0)
                     defer { ttlHookToken.remove() }
 
                     waitUntil(timeout: testTimeout) { done in
