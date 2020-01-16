@@ -644,7 +644,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             break;
         case ARTRealtimeDisconnected: {
             if ([self isSuspendMode]) {
-                [self.logger verbose:@"RT:%p realtime connection has staled", self];
+                [self.logger verbose:@"RT:%p still no connection; keeping suspended state", self];
                 [_connectionRetryFromDisconnectedListener stopTimer];
                 _connectionRetryFromDisconnectedListener = nil;
                 stateChangeEventListener = [self unlessStateChangesBefore:0 do:^{
