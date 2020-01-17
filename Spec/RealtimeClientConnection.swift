@@ -2203,46 +2203,47 @@ class RealtimeClientConnection: QuickSpec {
                         client.connect()
                     }
 
-                    waitUntil(timeout: testTimeout) { done in
-                        // Should move 6 times to the DISCONNECTED state
-                        //   3.0 connectionStateTtl / 0.5 disconnectedRetryTimeout = 6 times + 1 (SUSPENDED)
-                        let partialDone = AblyTests.splitDone(7, done: done)
-                        client.connection.on(.disconnected) { stateChange in
-                            partialDone()
-                        }
-                        client.connection.once(.suspended) { stateChange in
-                            client.connection.off()
-                            guard let error = stateChange?.reason else {
-                                fail("SUSPENDED reason should not be nil"); done(); return
-                            }
-                            expect(error.message).to(contain("network is down"))
-                            expect(client.connection.errorReason).to(beIdenticalTo(error))
-                            partialDone()
-                        }
-                        client.simulateNoInternetConnection()
+                    var events: [ARTRealtimeConnectionState] = []
+                    client.connection.on { stateChange in
+                        events.append(stateChange!.current)
                     }
+                    client.simulateNoInternetConnection()
 
-                    waitUntil(timeout: testTimeout) { done in
-                        let partialDone = AblyTests.splitDone(4, done: done)
-                        client.connection.once(.disconnected) { stateChange in
-                            fail("Should not reach DISCONNECTED state")
-                        }
-                        client.connection.once(.connected) { stateChange in
-                            expect(stateChange?.reason).to(beNil())
-                            expect(client.connection.errorReason).to(beNil())
-                            partialDone()
-                        }
-                        client.connection.on(.suspended) { stateChange in
-                            guard let error = stateChange?.reason else {
-                                fail("SUSPENDED reason should not be nil"); done(); return
-                            }
-                            expect(error.message).to(contain("network is down"))
-                            expect(client.connection.errorReason).to(beIdenticalTo(error))
-                            partialDone()
-                        }
-                        client.simulateRestoreInternetConnection(after: 7.0)
-                    }
+                    expect(events).toEventually(equal([
+                        .disconnected,
+                        .connecting, //0.5 - 1
+                        .disconnected,
+                        .connecting, //1.0 - 2
+                        .disconnected,
+                        .connecting, //1.5 - 3
+                        .disconnected,
+                        .connecting, //2.0 - 4
+                        .disconnected,
+                        .connecting, //2.5 - 5
+                        .disconnected,
+                        .connecting, //3.0 - 6
+                        .suspended,
+                        .connecting,
+                        .suspended
+                    ]), timeout: testTimeout)
 
+                    events.removeAll()
+                    client.simulateRestoreInternetConnection(after: 7.0)
+
+                    expect(events).toEventually(equal([
+                        .connecting, //2.0 - 1
+                        .suspended,
+                        .connecting, //4.0 - 2
+                        .suspended,
+                        .connecting, //6.0 - 3
+                        .suspended,
+                        .connecting,
+                        .connected
+                    ]), timeout: testTimeout)
+
+                    client.connection.off()
+
+                    expect(client.connection.errorReason).to(beNil())
                     expect(client.connection.state).to(equal(.connected))
                 }
 
