@@ -695,7 +695,7 @@ class RealtimeClientChannel: QuickSpec {
                             guard let error = stateChange?.reason else {
                                 fail("SUSPENDED reason should not be nil"); done(); return
                             }
-                            expect(error.message).to(contain("network is down"))
+                            expect(error.message).to(satisfyAnyOf(contain("network is down"), contain("unreachable host")))
                             done()
                         }
                         client.simulateNoInternetConnection()
