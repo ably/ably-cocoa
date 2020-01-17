@@ -168,7 +168,6 @@
     ARTFallback *_fallbacks;
     __weak ARTEventListener *_connectionRetryFromSuspendedListener;
     __weak ARTEventListener *_connectionRetryFromDisconnectedListener;
-    __weak ARTEventListener *_connectionSuspendModeListener;
     __weak ARTEventListener *_connectingTimeoutListener;
     ARTScheduledBlockHandle *_authenitcatingTimeoutWork;
     ARTScheduledBlockHandle *_idleTimer;
@@ -509,10 +508,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
 - (void)transition:(ARTRealtimeConnectionState)state withErrorInfo:(ARTErrorInfo *)errorInfo {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
-    if (state == ARTRealtimeDisconnected && [self isSuspendMode]) {
-        state = ARTRealtimeSuspended;
-    }
-
     [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p realtime state transitions to %tu - %@", self, state, ARTRealtimeConnectionStateToStr(state)];
 
     ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:state previous:self.connection.state_nosync event:(ARTRealtimeConnectionEvent)state reason:errorInfo retryIn:0];
@@ -525,6 +520,19 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
     [stateChangeEventListener startTimer];
 } ART_TRY_OR_MOVE_TO_FAILED_END
+}
+
+- (void)transitionToDisconnectedOrSuspended {
+    [self transitionToDisconnectedOrSuspendedWithError:nil];
+}
+
+- (void)transitionToDisconnectedOrSuspendedWithError:(nullable ARTErrorInfo *)errorInfo {
+    if ([self isSuspendMode]) {
+        [self transition:ARTRealtimeSuspended withErrorInfo:errorInfo];
+    }
+    else {
+        [self transition:ARTRealtimeDisconnected withErrorInfo:errorInfo];
+    }
 }
 
 - (void)updateWithErrorInfo:(nullable ARTErrorInfo *)errorInfo {
@@ -606,7 +614,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                             case ARTRealtimeConnecting:
                             case ARTRealtimeConnected: {
                                 ARTErrorInfo *unreachable = [ARTErrorInfo createWithCode:-1003 message:@"unreachable host"];
-                                [self transition:ARTRealtimeDisconnected withErrorInfo:unreachable];
+                                [self transitionToDisconnectedOrSuspendedWithError:unreachable];
                                 break;
                             }
                             default:
@@ -643,30 +651,18 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             [self.auth cancelAuthorization:stateChange.reason];
             break;
         case ARTRealtimeDisconnected: {
-            if ([self isSuspendMode]) {
-                [self.logger verbose:@"RT:%p still no connection; keeping suspended state", self];
-                [_connectionRetryFromDisconnectedListener stopTimer];
-                _connectionRetryFromDisconnectedListener = nil;
-                stateChangeEventListener = [self unlessStateChangesBefore:0 do:^{
-                    self->_connectionSuspendModeListener = nil;
-                    [self transition:ARTRealtimeSuspended withErrorInfo:stateChange.reason];
-                }];
-                _connectionSuspendModeListener = stateChangeEventListener;
+            [self closeAndReleaseTransport];
+            NSTimeInterval retryInterval = self.options.disconnectedRetryTimeout;
+            // RTN15a - retry immediately if client was connected
+            if (stateChange.previous == ARTRealtimeConnected && !_disableImmediateReconnection) {
+                retryInterval = 0.1;
             }
-            else {
-                [self closeAndReleaseTransport];
-                NSTimeInterval retryInterval = self.options.disconnectedRetryTimeout;
-                // RTN15a - retry immediately if client was connected
-                if (stateChange.previous == ARTRealtimeConnected && !_disableImmediateReconnection) {
-                    retryInterval = 0.1;
-                }
-                [stateChange setRetryIn:retryInterval];
-                stateChangeEventListener = [self unlessStateChangesBefore:stateChange.retryIn do:^{
-                    self->_connectionRetryFromDisconnectedListener = nil;
-                    [self transition:ARTRealtimeConnecting];
-                }];
-                _connectionRetryFromDisconnectedListener = stateChangeEventListener;
-            }
+            [stateChange setRetryIn:retryInterval];
+            stateChangeEventListener = [self unlessStateChangesBefore:stateChange.retryIn do:^{
+                self->_connectionRetryFromDisconnectedListener = nil;
+                [self transition:ARTRealtimeConnecting];
+            }];
+            _connectionRetryFromDisconnectedListener = stateChangeEventListener;
             break;
         }
         case ARTRealtimeSuspended: {
@@ -873,13 +869,14 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     [self.logger info:@"R:%p Realtime disconnected", self];
     ARTErrorInfo *error = message.error;
     if ([self shouldRenewToken:&error]) {
-        [self transition:ARTRealtimeDisconnected withErrorInfo:error];
+        [self transitionToDisconnectedOrSuspendedWithError:error];
         [self.connection setErrorReason:nil];
         _renewingToken = true;
         [self transition:ARTRealtimeConnecting withErrorInfo:nil];
-        return;
     }
-    [self transition:ARTRealtimeDisconnected withErrorInfo:error];
+    else {
+        [self transitionToDisconnectedOrSuspendedWithError:error];
+    }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
@@ -926,7 +923,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                 [self transition:ARTRealtimeFailed withErrorInfo:message.error];
                 return;
             }
-            [self transition:ARTRealtimeDisconnected withErrorInfo:message.error];
+            [self transitionToDisconnectedOrSuspendedWithError:message.error];
             return;
         }
         if ([self shouldRenewToken:&error]) {
@@ -946,8 +943,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     _connectionRetryFromSuspendedListener = nil;
     [_connectionRetryFromDisconnectedListener stopTimer];
     _connectionRetryFromDisconnectedListener = nil;
-    [_connectionSuspendModeListener stopTimer];
-    _connectionSuspendModeListener = nil;
     // Cancel connecting scheduled work
     [_connectingTimeoutListener stopTimer];
     _connectingTimeoutListener = nil;
@@ -983,7 +978,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             [self transition:ARTRealtimeConnected withErrorInfo:error];
             break;
         default:
-            [self transition:ARTRealtimeDisconnected withErrorInfo:error];
+            [self transitionToDisconnectedOrSuspendedWithError:error];
             break;
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
@@ -1100,13 +1095,13 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                 break;
             default:
                 // RSA4c
-                [self transition:ARTRealtimeDisconnected withErrorInfo:errorInfo];
+                [self transitionToDisconnectedOrSuspendedWithError:errorInfo];
                 break;
         }
     }
     else {
         // RSA4b
-        [self transition:ARTRealtimeDisconnected withErrorInfo:[ARTErrorInfo createFromNSError:error]];
+        [self transitionToDisconnectedOrSuspendedWithError:[ARTErrorInfo createFromNSError:error]];
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
@@ -1446,7 +1441,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     _idleTimer = artDispatchScheduled([ARTDefault realtimeRequestTimeout] + self.maxIdleInterval, _rest.queue, ^{
         [self.logger error:@"R:%p No activity seen from realtime in %f seconds; assuming connection has dropped", self, [[NSDate date] timeIntervalSinceDate:self->_lastActivity]];
 
-        [self transition:ARTRealtimeDisconnected withErrorInfo:[ARTErrorInfo createWithCode:80003 status:408 message:@"Idle timer expired"]];
+        ARTErrorInfo *idleTimerExpired = [ARTErrorInfo createWithCode:80003 status:408 message:@"Idle timer expired"];
+        [self transitionToDisconnectedOrSuspendedWithError:idleTimerExpired];
     });
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
@@ -1558,7 +1554,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         [self transition:ARTRealtimeClosed];
     } else if (self.connection.state_nosync != ARTRealtimeClosed && self.connection.state_nosync != ARTRealtimeFailed) {
         // Unexpected closure; recover.
-        [self transition:ARTRealtimeDisconnected];
+        [self transitionToDisconnectedOrSuspended];
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
@@ -1573,7 +1569,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     if (self.connection.state_nosync == ARTRealtimeClosing) {
         [self transition:ARTRealtimeClosed];
     } else {
-        [self transition:ARTRealtimeDisconnected withErrorInfo:[ARTErrorInfo createFromNSError:error.error]];
+        [self transitionToDisconnectedOrSuspendedWithError:[ARTErrorInfo createFromNSError:error.error]];
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
@@ -1605,8 +1601,10 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         case ARTRealtimeTransportErrorTypeOther:
             [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:transportError.error]];
             break;
-        default:
-            [self transition:ARTRealtimeDisconnected withErrorInfo:[ARTErrorInfo createFromNSError:transportError.error]];
+        default: {
+            ARTErrorInfo *error = [ARTErrorInfo createFromNSError:transportError.error];
+            [self transitionToDisconnectedOrSuspendedWithError:error];
+        }
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
