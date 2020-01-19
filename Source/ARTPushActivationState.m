@@ -125,7 +125,7 @@
                 [self.machine syncDevice];
             }
             
-            return [ARTPushActivationStateWaitingForRegistrationSync newWithMachine:self.machine];
+            return [ARTPushActivationStateWaitingForRegistrationSync newWithMachine:self.machine fromEvent:event];
         } else if ([local deviceToken]) {
             [self.machine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
         }
@@ -197,14 +197,27 @@
     }
     else if ([event isKindOfClass:[ARTPushActivationEventGotPushDeviceDetails class]]) {
         [self.machine deviceUpdateRegistration:nil];
-        return [ARTPushActivationStateWaitingForRegistrationSync newWithMachine:self.machine];
+        return [ARTPushActivationStateWaitingForRegistrationSync newWithMachine:self.machine fromEvent:event];
     }
     return nil;
 }
 
 @end
 
-@implementation ARTPushActivationStateWaitingForRegistrationSync
+@implementation ARTPushActivationStateWaitingForRegistrationSync {
+    ARTPushActivationEvent *_fromEvent;
+}
+
+- (instancetype)initWithMachine:(ARTPushActivationStateMachine *)machine fromEvent:(ARTPushActivationEvent *)event {
+    if (self = [super initWithMachine:machine]) {
+        _fromEvent = event;
+    }
+    return self;
+}
+
++ (instancetype)newWithMachine:(ARTPushActivationStateMachine *)machine fromEvent:(ARTPushActivationEvent *)event {
+    return [[self alloc] initWithMachine:machine fromEvent:event];
+}
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
     [self logEventTransition:event file:__FILE__ line:__LINE__];
@@ -220,11 +233,21 @@
             [local setAndPersistIdentityTokenDetails:registrationUpdatedEvent.identityTokenDetails];
         }
         #endif
-        [self.machine callActivatedCallback:nil];
+
+        if ([_fromEvent isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
+            [self.machine callActivatedCallback:nil];
+        }
+
         return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventSyncRegistrationFailed class]]) {
-        [self.machine callUpdateFailedCallback:[(ARTPushActivationEventSyncRegistrationFailed *)event error]];
+        ARTErrorInfo *error = [(ARTPushActivationEventSyncRegistrationFailed *)event error];
+        if ([_fromEvent isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
+            [self.machine callActivatedCallback:error];
+        } else {
+            [self.machine callUpdateFailedCallback:error];
+        }
+
         return [ARTPushActivationStateAfterRegistrationSyncFailed newWithMachine:self.machine];
     }
     return nil;
@@ -239,7 +262,7 @@
     if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]] ||
         [event isKindOfClass:[ARTPushActivationEventGotPushDeviceDetails class]]) {
         [self.machine deviceUpdateRegistration:nil];
-        return [ARTPushActivationStateWaitingForRegistrationSync newWithMachine:self.machine];
+        return [ARTPushActivationStateWaitingForRegistrationSync newWithMachine:self.machine fromEvent:event];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventCalledDeactivate class]]) {
         [self.machine deviceUnregistration:nil];
