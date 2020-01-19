@@ -32,6 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTPushActivationStateMachine (Protected)
 - (void)deviceRegistration:(nullable ARTErrorInfo *)error;
+- (void)syncDevice;
 - (void)deviceUpdateRegistration:(nullable ARTErrorInfo *)error;
 - (void)deviceUnregistration:(nullable ARTErrorInfo *)error;
 - (void)callActivatedCallback:(nullable ARTErrorInfo *)error;

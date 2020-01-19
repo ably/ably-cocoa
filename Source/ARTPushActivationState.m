@@ -14,6 +14,7 @@
 #import "ARTDevicePushDetails.h"
 #import "ARTLog.h"
 #import "ARTRest+Private.h"
+#import "ARTAuth+Private.h"
 #import "ARTHttp.h"
 
 @implementation ARTPushActivationState
@@ -116,10 +117,16 @@
 
         if (local.identityTokenDetails) {
             // Already registered.
-            return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine];
-        }
-
-        if ([local deviceToken]) {
+            NSString *instanceClientId = self.machine.rest.auth.clientId_nosync;
+            if (local.clientId != nil && instanceClientId && ![local.clientId isEqualToString:instanceClientId]) {
+                ARTErrorInfo *error = [ARTErrorInfo createWithCode:61002 message:@"Activation failed: present clientId is not compatible with existing device registration"];
+                [self.machine sendEvent:[ARTPushActivationEventSyncRegistrationFailed newWithError:error]];
+            } else {
+                [self.machine syncDevice];
+            }
+            
+            return [ARTPushActivationStateWaitingForRegistrationSync newWithMachine:self.machine];
+        } else if ([local deviceToken]) {
             [self.machine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
         }
         #endif
