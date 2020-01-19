@@ -31,6 +31,10 @@ class PushActivationStateMachine : QuickSpec {
             initialStateMachine = ARTPushActivationStateMachine(rest.internal)
         }
 
+        afterEach {
+           rest.internal.resetDeviceSingleton()
+        }
+
         describe("Activation state machine") {
 
             it("should set NotActivated state as current state when disk is empty") {
