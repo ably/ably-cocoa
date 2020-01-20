@@ -160,7 +160,7 @@
     BOOL _renewingToken;
     BOOL _shouldImmediatelyReconnect;
     ARTEventEmitter<ARTEvent *, ARTErrorInfo *> *_pingEventEmitter;
-    NSDate *_suspendTime;
+    NSDate *_expectedSuspensionTime;
     NSDate *_lastActivity;
     Class _transportClass;
     Class _reachabilityClass;
@@ -405,7 +405,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         // New connection
         _transport = nil;
     }
-    [self setSuspendTime];
+    [self setExpectedSuspensionTime];
     [self transition:ARTRealtimeConnecting];
 }
 
@@ -681,7 +681,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         }
         case ARTRealtimeConnected: {
             _fallbacks = nil;
-            [self setSuspendTime];
+            [self setExpectedSuspensionTime];
             if (stateChange.reason) {
                 ARTStatus *status = [ARTStatus state:ARTStateError info:[stateChange.reason copy]];
                 [self failPendingMessages:status];
@@ -855,7 +855,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     }
 
     _resuming = false;
-    [self setSuspendTime];
+    [self setExpectedSuspensionTime];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
@@ -1135,17 +1135,17 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (void)setSuspendTime {
+- (void)setExpectedSuspensionTime {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
-    _suspendTime = [[NSDate date] dateByAddingTimeInterval:_connectionStateTtl];
-    [self.logger verbose:@"RT:%p set suspend time to %@ (ttl=%f)", self, _suspendTime, _connectionStateTtl];
+    _expectedSuspensionTime = [[NSDate date] dateByAddingTimeInterval:_connectionStateTtl];
+    [self.logger verbose:@"RT:%p set expected suspension time to %@ (ttl=%f)", self, _expectedSuspensionTime, _connectionStateTtl];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (BOOL)isSuspendMode {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     NSDate *currentTime = [NSDate date];
-    return [currentTime timeIntervalSinceDate:_suspendTime] > 0;
+    return [currentTime timeIntervalSinceDate:_expectedSuspensionTime] > 0;
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 

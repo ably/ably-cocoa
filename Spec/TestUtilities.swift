@@ -1307,7 +1307,7 @@ extension ARTRealtime {
     }
 
     func overrideConnectionStateTTL(_ ttl: TimeInterval) -> HookToken {
-        return self.internal.testSuite_injectIntoMethod(before: NSSelectorFromString("setSuspendTime")) {
+        return self.internal.testSuite_injectIntoMethod(before: NSSelectorFromString("setExpectedSuspensionTime")) {
             self.internal.connectionStateTtl = ttl
         }
     }
