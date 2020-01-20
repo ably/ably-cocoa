@@ -160,7 +160,7 @@
     BOOL _renewingToken;
     BOOL _shouldImmediatelyReconnect;
     ARTEventEmitter<ARTEvent *, ARTErrorInfo *> *_pingEventEmitter;
-    NSDate *_expectedSuspensionTime;
+    NSDate *_connectionLostAt;
     NSDate *_lastActivity;
     Class _transportClass;
     Class _reachabilityClass;
@@ -405,7 +405,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         // New connection
         _transport = nil;
     }
-    [self setExpectedSuspensionTime];
+    _connectionLostAt = nil;
     [self transition:ARTRealtimeConnecting];
 }
 
@@ -653,6 +653,10 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             break;
         case ARTRealtimeDisconnected: {
             [self closeAndReleaseTransport];
+            if (!_connectionLostAt) {
+                _connectionLostAt = [NSDate date];
+                [self.logger verbose:@"RT:%p set connection lost time; expected suspension at %@ (ttl=%f)", self, [self suspensionTime], self.connectionStateTtl];
+            }
             NSTimeInterval retryInterval = self.options.disconnectedRetryTimeout;
             // RTN15a - retry immediately if client was connected
             if (stateChange.previous == ARTRealtimeConnected && _shouldImmediatelyReconnect) {
@@ -681,7 +685,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         }
         case ARTRealtimeConnected: {
             _fallbacks = nil;
-            [self setExpectedSuspensionTime];
+            _connectionLostAt = nil;
             if (stateChange.reason) {
                 ARTStatus *status = [ARTStatus state:ARTStateError info:[stateChange.reason copy]];
                 [self failPendingMessages:status];
@@ -855,7 +859,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     }
 
     _resuming = false;
-    [self setExpectedSuspensionTime];
+    _connectionLostAt = nil;
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
@@ -1135,17 +1139,16 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (void)setExpectedSuspensionTime {
+- (NSDate *)suspensionTime {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
-    _expectedSuspensionTime = [[NSDate date] dateByAddingTimeInterval:_connectionStateTtl];
-    [self.logger verbose:@"RT:%p set expected suspension time to %@ (ttl=%f)", self, _expectedSuspensionTime, _connectionStateTtl];
+    return [_connectionLostAt dateByAddingTimeInterval:self.connectionStateTtl];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (BOOL)isSuspendMode {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     NSDate *currentTime = [NSDate date];
-    return [currentTime timeIntervalSinceDate:_expectedSuspensionTime] > 0;
+    return [currentTime timeIntervalSinceDate:[self suspensionTime]] > 0;
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
