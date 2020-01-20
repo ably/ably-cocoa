@@ -95,7 +95,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, getter=getClientOptions) ARTClientOptions *options;
 
 /// Suspend the behavior defined in RTN15a, that is trying to immediately reconnect after a disconnection
-@property (readwrite, assign, nonatomic) BOOL disableImmediateReconnection;
+@property (readwrite, assign, nonatomic) BOOL shouldImmediatelyReconnect;
 
 @end
 

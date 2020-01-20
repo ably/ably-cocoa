@@ -3131,7 +3131,7 @@ class RealtimeClientPresence: QuickSpec {
                     it("should be applied to any LEAVE event with a connectionId that matches the current client’s connectionId and is not a synthesized") {
                         let options = AblyTests.commonAppSetup()
                         let client = ARTRealtime(options: options)
-                        client.internal.disableImmediateReconnection = true
+                        client.internal.shouldImmediatelyReconnect = false
                         defer { client.dispose(); client.close() }
 
                         let channel = client.channels.get("foo")

@@ -158,7 +158,7 @@
 @implementation ARTRealtimeInternal {
     BOOL _resuming;
     BOOL _renewingToken;
-    BOOL _disableImmediateReconnection;
+    BOOL _shouldImmediatelyReconnect;
     ARTEventEmitter<ARTEvent *, ARTErrorInfo *> *_pingEventEmitter;
     NSDate *_suspendTime;
     NSDate *_lastActivity;
@@ -198,6 +198,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         _pendingAuthorizations = [NSMutableArray array];
         _connection = [[ARTConnectionInternal alloc] initWithRealtime:self];
         _connectionStateTtl = [ARTDefault connectionStateTtl];
+        _shouldImmediatelyReconnect = true;
         self.auth.delegate = self;
 
         [self.connection setState:ARTRealtimeInitialized];
@@ -654,7 +655,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             [self closeAndReleaseTransport];
             NSTimeInterval retryInterval = self.options.disconnectedRetryTimeout;
             // RTN15a - retry immediately if client was connected
-            if (stateChange.previous == ARTRealtimeConnected && !_disableImmediateReconnection) {
+            if (stateChange.previous == ARTRealtimeConnected && _shouldImmediatelyReconnect) {
                 retryInterval = 0.1;
             }
             [stateChange setRetryIn:retryInterval];

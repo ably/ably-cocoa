@@ -2102,7 +2102,7 @@ class RealtimeClientConnection: QuickSpec {
                     ARTDefault.setRealtimeRequestTimeout(0.1)
 
                     let client = ARTRealtime(options: options)
-                    client.internal.disableImmediateReconnection = true
+                    client.internal.shouldImmediatelyReconnect = false
                     defer {
                         client.connection.off()
                         client.close()
@@ -2155,7 +2155,7 @@ class RealtimeClientConnection: QuickSpec {
                     ARTDefault.setRealtimeRequestTimeout(0.1)
 
                     let client = ARTRealtime(options: options)
-                    client.internal.disableImmediateReconnection = true
+                    client.internal.shouldImmediatelyReconnect = false
                     defer { client.dispose(); client.close() }
 
                     let ttlHookToken = client.overrideConnectionStateTTL(0.3)
@@ -2268,7 +2268,7 @@ class RealtimeClientConnection: QuickSpec {
                     ARTDefault.setRealtimeRequestTimeout(0.1)
 
                     let client = ARTRealtime(options: options)
-                    client.internal.disableImmediateReconnection = true
+                    client.internal.shouldImmediatelyReconnect = false
                     defer { client.dispose(); client.close() }
 
                     waitUntil(timeout: testTimeout) { done in
@@ -2801,7 +2801,7 @@ class RealtimeClientConnection: QuickSpec {
                     
                     it("uses a new connection") {
                         client = AblyTests.newRealtime(options)
-                        client.internal.disableImmediateReconnection = true
+                        client.internal.shouldImmediatelyReconnect = false
                         client.connect()
                         defer { client.close() }
                         
@@ -2831,7 +2831,7 @@ class RealtimeClientConnection: QuickSpec {
                     // RTN15g3
                     it("reattaches to the same channels after a new connection has been established") {
                         client = AblyTests.newRealtime(options)
-                        client.internal.disableImmediateReconnection = true
+                        client.internal.shouldImmediatelyReconnect = false
                         defer { client.close() }
                         let channelName = "test-reattach-after-ttl"
                         let channel = client.channels.get(channelName)
