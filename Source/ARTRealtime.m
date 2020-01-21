@@ -405,7 +405,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         // New connection
         _transport = nil;
     }
-    _connectionLostAt = nil;
     [self transition:ARTRealtimeConnecting];
 }
 
@@ -859,7 +858,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     }
 
     _resuming = false;
-    _connectionLostAt = nil;
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
