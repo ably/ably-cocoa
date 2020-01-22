@@ -2102,7 +2102,7 @@ class RealtimeClientConnection: QuickSpec {
                     ARTDefault.setRealtimeRequestTimeout(0.1)
 
                     let client = ARTRealtime(options: options)
-                    client.internal.suspendImmediateReconnection = true
+                    client.internal.shouldImmediatelyReconnect = false
                     defer {
                         client.connection.off()
                         client.close()
@@ -2141,7 +2141,6 @@ class RealtimeClientConnection: QuickSpec {
                 // RTN14e
                 it("connection state has been in the DISCONNECTED state for more than the default connectionStateTtl should change the state to SUSPENDED") {
                     let options = AblyTests.commonAppSetup()
-                    // to not wait the defaul 15s before reconnecting
                     options.disconnectedRetryTimeout = 0.1
                     options.suspendedRetryTimeout = 0.5
                     options.autoConnect = false
@@ -2151,17 +2150,16 @@ class RealtimeClientConnection: QuickSpec {
                         // Force a timeout
                     }
 
-                    let previousConnectionStateTtl = ARTDefault.connectionStateTtl()
-                    defer { ARTDefault.setConnectionStateTtl(previousConnectionStateTtl) }
-                    ARTDefault.setConnectionStateTtl(expectedTime)
-
                     let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
                     defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
                     ARTDefault.setRealtimeRequestTimeout(0.1)
 
                     let client = ARTRealtime(options: options)
-                    client.internal.suspendImmediateReconnection = true
+                    client.internal.shouldImmediatelyReconnect = false
                     defer { client.dispose(); client.close() }
+
+                    let ttlHookToken = client.overrideConnectionStateTTL(0.3)
+                    defer { ttlHookToken.remove() }
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.on(.suspended) { stateChange in
@@ -2176,6 +2174,77 @@ class RealtimeClientConnection: QuickSpec {
                         }
                         client.connect()
                     }
+                }
+
+                // RTN14e - https://github.com/ably/ably-cocoa/issues/913
+                it("should change the state to SUSPENDED when the connection state has been in the DISCONNECTED state for more than the connectionStateTtl") {
+                    let options = AblyTests.commonAppSetup()
+                    options.disconnectedRetryTimeout = 0.5
+                    options.suspendedRetryTimeout = 2.0
+                    options.autoConnect = false
+
+                    let client = ARTRealtime(options: options)
+                    client.internal.setTransport(TestProxyTransport.self)
+                    client.internal.setReachabilityClass(TestReachability.self)
+                    defer {
+                        client.simulateRestoreInternetConnection()
+                        client.dispose()
+                        client.close()
+                    }
+
+                    let ttlHookToken = client.overrideConnectionStateTTL(3.0)
+                    defer { ttlHookToken.remove() }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.connected) { stateChange in
+                            expect(stateChange?.reason).to(beNil())
+                            done()
+                        }
+                        client.connect()
+                    }
+
+                    var events: [ARTRealtimeConnectionState] = []
+                    client.connection.on { stateChange in
+                        events.append(stateChange!.current)
+                    }
+                    client.simulateNoInternetConnection()
+
+                    expect(events).toEventually(equal([
+                        .disconnected,
+                        .connecting, //0.5 - 1
+                        .disconnected,
+                        .connecting, //1.0 - 2
+                        .disconnected,
+                        .connecting, //1.5 - 3
+                        .disconnected,
+                        .connecting, //2.0 - 4
+                        .disconnected,
+                        .connecting, //2.5 - 5
+                        .disconnected,
+                        .connecting, //3.0 - 6
+                        .suspended,
+                        .connecting,
+                        .suspended
+                    ]), timeout: testTimeout)
+
+                    events.removeAll()
+                    client.simulateRestoreInternetConnection(after: 7.0)
+
+                    expect(events).toEventually(equal([
+                        .connecting, //2.0 - 1
+                        .suspended,
+                        .connecting, //4.0 - 2
+                        .suspended,
+                        .connecting, //6.0 - 3
+                        .suspended,
+                        .connecting,
+                        .connected
+                    ]), timeout: testTimeout)
+
+                    client.connection.off()
+
+                    expect(client.connection.errorReason).to(beNil())
+                    expect(client.connection.state).to(equal(.connected))
                 }
 
                 it("on CLOSE the connection should stop connection retries") {
@@ -2199,7 +2268,7 @@ class RealtimeClientConnection: QuickSpec {
                     ARTDefault.setRealtimeRequestTimeout(0.1)
 
                     let client = ARTRealtime(options: options)
-                    client.internal.suspendImmediateReconnection = true
+                    client.internal.shouldImmediatelyReconnect = false
                     defer { client.dispose(); client.close() }
 
                     waitUntil(timeout: testTimeout) { done in
@@ -2394,7 +2463,7 @@ class RealtimeClientConnection: QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.connected) { stateChange in
-                                expect(stateChange!.reason!.message).to(equal("Injected error"))
+                                expect(stateChange?.reason?.message).to(equal("Injected error"))
                                 expect(client.connection.errorReason).to(beIdenticalTo(stateChange!.reason))
                                 let transport = client.internal.transport as! TestProxyTransport
                                 let connectedPM = transport.protocolMessagesReceived.filter{ $0.action == .connected }[0]
@@ -2732,7 +2801,7 @@ class RealtimeClientConnection: QuickSpec {
                     
                     it("uses a new connection") {
                         client = AblyTests.newRealtime(options)
-                        client.internal.suspendImmediateReconnection = true
+                        client.internal.shouldImmediatelyReconnect = false
                         client.connect()
                         defer { client.close() }
                         
@@ -2762,7 +2831,7 @@ class RealtimeClientConnection: QuickSpec {
                     // RTN15g3
                     it("reattaches to the same channels after a new connection has been established") {
                         client = AblyTests.newRealtime(options)
-                        client.internal.suspendImmediateReconnection = true
+                        client.internal.shouldImmediatelyReconnect = false
                         defer { client.close() }
                         let channelName = "test-reattach-after-ttl"
                         let channel = client.channels.get(channelName)
