@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)internalPostMessages:(id)data callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback;
 - (void)setOptions_nosync:(ARTChannelOptions *_Nullable)options;
+- (BOOL)exceedMaxSize:(NSArray<ARTBaseMessage *> *)messages;
 
 @end
 
