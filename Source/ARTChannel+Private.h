@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) ARTDataEncoder *dataEncoder;
 
 - (void)internalPostMessages:(id)data callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback;
-- (void)_setOptions:(ARTChannelOptions *_Nullable)options;
+- (void)setOptions_nosync:(ARTChannelOptions *_Nullable)options;
 
 @end
 

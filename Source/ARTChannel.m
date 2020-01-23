@@ -26,7 +26,7 @@
         _name = name;
         _logger = rest.logger;
         _queue = rest.queue;
-        [self _setOptions:options];
+        [self setOptions_nosync:options];
         NSError *error = nil;
         _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:_options.cipher error:&error];
         if (error != nil) {
@@ -39,11 +39,11 @@
 
 - (void)setOptions:(ARTChannelOptions *)options {
     dispatch_sync(_queue, ^{
-        [self _setOptions:options];
+        [self setOptions_nosync:options];
     });
 }
 
-- (void)_setOptions:(ARTChannelOptions *)options {
+- (void)setOptions_nosync:(ARTChannelOptions *)options {
     if (!options) {
         _options = [[ARTChannelOptions alloc] initWithCipher:nil];
     } else {
