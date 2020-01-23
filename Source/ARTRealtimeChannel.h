@@ -45,6 +45,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)history:(ARTRealtimeHistoryQuery *_Nullable)query callback:(void(^)(ARTPaginatedResult<ARTMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
+- (void)setOptions:(ARTChannelOptions *_Nullable)options callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb;
+
 ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
 
 @end
