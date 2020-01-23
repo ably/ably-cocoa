@@ -95,7 +95,7 @@ dispatch_sync(_queue, ^{
         channel = [_delegate makeChannel:name options:options];
         [self->_channels setObject:channel forKey:name];
     } else if (options) {
-        [channel _setOptions:options];
+        [channel setOptions_nosync:options];
     }
     return channel;
 }
