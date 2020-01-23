@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)history:(nullable ARTDataQuery *)query callback:(void(^)(ARTPaginatedResult<ARTMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
+- (void)setOptions:(ARTChannelOptions *_Nullable)options;
+
 @end
 
 @interface ARTRestChannel : NSObject <ARTRestChannelProtocol>
