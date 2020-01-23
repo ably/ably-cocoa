@@ -95,6 +95,8 @@
     [_internal history:callback];
 }
 
+- (void)setOptions:(ARTChannelOptions *_Nullable)options {
+    [_internal setOptions:options];
 }
 
 @end
