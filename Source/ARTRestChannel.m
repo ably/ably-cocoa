@@ -96,8 +96,6 @@
     [_internal history:callback];
 }
 
-- (BOOL)exceedMaxSize:(NSArray<ARTBaseMessage *> *)messages {
-    return [_internal exceedMaxSize:messages];
 }
 
 @end
