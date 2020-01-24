@@ -17,6 +17,7 @@
 #import "ARTRealtimePresence+Private.h"
 #import "ARTChannel.h"
 #import "ARTChannelOptions.h"
+#import "ARTRealtimeChannelOptions.h"
 #import "ARTProtocolMessage.h"
 #import "ARTProtocolMessage+Private.h"
 #import "ARTPresenceMap.h"
@@ -195,7 +196,7 @@
     return [_internal on:event callback:cb];
 }
 
-- (void)setOptions:(ARTChannelOptions *_Nullable)options callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb {
+- (void)setOptions:(ARTRealtimeChannelOptions *_Nullable)options callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb {
     return [_internal setOptions:options callback:cb];
 }
 
@@ -1232,7 +1233,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     return size > maxSize;
 }
 
-- (void)setOptions:(ARTChannelOptions *_Nullable)options callback:(nullable void (^)(ARTErrorInfo *_Nullable))callback {
+- (void)setOptions:(ARTRealtimeChannelOptions *_Nullable)options callback:(nullable void (^)(ARTErrorInfo *_Nullable))callback {
 
 }
 

@@ -46,6 +46,7 @@ FOUNDATION_EXPORT const unsigned char ablyVersionString[];
 #import <Ably/ARTRestPresence.h>
 #import <Ably/ARTRealtime.h>
 #import <Ably/ARTRealtimeChannel.h>
+#import <Ably/ARTRealtimeChannelOptions.h>
 #import <Ably/ARTRealtimePresence.h>
 #import <Ably/ARTStats.h>
 #import <Ably/ARTEncoder.h>
