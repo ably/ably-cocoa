@@ -10,11 +10,14 @@
 
 #import <Ably/ARTChannelOptions.h>
 
+/**
+ ARTChannelMode bitmask matching the ARTProtocolMessageFlag.
+ */
 typedef NS_OPTIONS(NSUInteger, ARTChannelMode) {
-    ARTChannelModePresence = 0,
-    ARTChannelModePublish = 1 << 0,
-    ARTChannelModeSubscribe = 1 << 1,
-    ARTChannelModePresenceSubscribe = 1 << 2
+    ARTChannelModePresence = 1 << 16,
+    ARTChannelModePublish = 1 << 17,
+    ARTChannelModeSubscribe = 1 << 18,
+    ARTChannelModePresenceSubscribe = 1 << 19
 };
 
 NS_ASSUME_NONNULL_BEGIN
