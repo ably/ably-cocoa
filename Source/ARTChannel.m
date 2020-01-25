@@ -19,6 +19,7 @@
 
 @implementation ARTChannel {
     dispatch_queue_t _queue;
+    ARTChannelOptions *_options;
 }
 
 - (instancetype)initWithName:(NSString *)name andOptions:(ARTChannelOptions *)options rest:(ARTRestInternal *)rest {
@@ -26,7 +27,7 @@
         _name = name;
         _logger = rest.logger;
         _queue = rest.queue;
-        [self setOptions_nosync:options];
+        _options = options;
         NSError *error = nil;
         _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:_options.cipher error:&error];
         if (error != nil) {
@@ -35,6 +36,18 @@
         }
     }
     return self;
+}
+
+- (ARTChannelOptions *)options {
+    __block ARTChannelOptions *ret;
+    dispatch_sync(_queue, ^{
+        ret = [self options_nosync];
+    });
+    return ret;
+}
+
+- (ARTChannelOptions *)options_nosync {
+    return _options;
 }
 
 - (void)setOptions:(ARTChannelOptions *)options {
