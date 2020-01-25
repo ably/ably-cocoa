@@ -197,8 +197,12 @@
     return [_internal on:event callback:cb];
 }
 
+- (ARTRealtimeChannelOptions *)getOptions {
+    return [_internal getOptions];
+}
+
 - (void)setOptions:(ARTRealtimeChannelOptions *_Nullable)options callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb {
-    return [_internal setOptions:options callback:cb];
+    [_internal setOptions:options callback:cb];
 }
 
 @end
@@ -322,7 +326,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
     msg.action = ARTProtocolMessageMessage;
     msg.channel = self.name;
     msg.messages = data;
-    
+
     [self publishProtocolMessage:msg callback:^void(ARTStatus *status) {
         if (callback) callback(status.errorInfo);
     }];
@@ -1436,8 +1440,33 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     return size > maxSize;
 }
 
-- (void)setOptions:(ARTRealtimeChannelOptions *_Nullable)options callback:(nullable void (^)(ARTErrorInfo *_Nullable))callback {
+- (ARTRealtimeChannelOptions *)getOptions {
+    return (ARTRealtimeChannelOptions *)[self options];
+}
 
+- (ARTRealtimeChannelOptions *)getOptions_nosync {
+    return (ARTRealtimeChannelOptions *)[self options_nosync];
+}
+
+- (void)setOptions:(ARTRealtimeChannelOptions *_Nullable)options callback:(nullable void (^)(ARTErrorInfo *_Nullable))callback {
+    if (callback) {
+        void (^userCallback)(ARTErrorInfo *_Nullable error) = callback;
+        callback = ^(ARTErrorInfo *_Nullable error) {
+            ART_EXITING_ABLY_CODE(self->_realtime.rest);
+            dispatch_async(self->_userQueue, ^{
+                userCallback(error);
+            });
+        };
+    }
+    dispatch_sync(_queue, ^{
+        [self setOptions_nosync:options callback:callback];
+    });
+}
+
+- (void)setOptions_nosync:(ARTRealtimeChannelOptions *_Nullable)options callback:(nullable void (^)(ARTErrorInfo *_Nullable))callback {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
+    [self setOptions_nosync:options];
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 @end

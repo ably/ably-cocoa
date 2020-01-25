@@ -28,6 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly) ARTRealtimeChannelState state;
 @property (readonly, nullable) ARTErrorInfo *errorReason;
+@property (readonly, nullable, getter=getOptions) ARTRealtimeChannelOptions *options;
 
 - (void)attach;
 - (void)attach:(nullable void (^)(ARTErrorInfo *_Nullable))callback;
