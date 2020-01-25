@@ -1037,6 +1037,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     ARTProtocolMessage *attachMessage = [[ARTProtocolMessage alloc] init];
     attachMessage.action = ARTProtocolMessageAttach;
     attachMessage.channel = self.name;
+    attachMessage.params = self.options_nosync.params;
+    attachMessage.flags = self.options_nosync.modes;
 
     [self.realtime send:attachMessage sentCallback:^(ARTErrorInfo *error) {
         if (error) {
@@ -1263,6 +1265,22 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 - (void)setOptions_nosync:(ARTRealtimeChannelOptions *_Nullable)options callback:(nullable void (^)(ARTErrorInfo *_Nullable))callback {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     [self setOptions_nosync:options];
+
+    if (!options.modes && !options.params) {
+        callback(nil);
+        return;
+    }
+
+    switch (self.state_nosync) {
+        case ARTRealtimeChannelAttached:
+        case ARTRealtimeChannelAttaching:
+            [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) set options in %@ state", _realtime, self, self.name, ARTRealtimeChannelStateToStr(self.state_nosync)];
+            [self internalAttach:callback withReason:nil];
+            break;
+        default:
+            callback(nil);
+            break;
+    }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
