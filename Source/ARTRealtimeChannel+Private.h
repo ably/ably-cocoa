@@ -28,6 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readwrite, assign, nonatomic) ARTRealtimeChannelState state;
 @property (readonly, strong, nonatomic, nullable) ARTErrorInfo *errorReason;
+@property (readonly, nullable, getter=getOptions_nosync) ARTRealtimeChannelOptions *options_nosync;
 
 - (ARTRealtimeChannelState)state_nosync;
 - (ARTErrorInfo *)errorReason_nosync;
