@@ -3765,6 +3765,62 @@ class RealtimeClientChannel: QuickSpec {
                     expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
                 }
 
+                // RTL16
+                context("Channel options") {
+
+                    // RTL16a
+                    context("setOptions") {
+                        it("should send an ATTACH message with params & modes if the channel is attached") {
+                            let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
+                            defer { client.dispose(); client.close() }
+                            let channel = client.channels.get("foo")
+
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.attach() { error in
+                                    expect(error).to(beNil())
+                                    done()
+                                }
+                            }
+
+                            guard let transport = client.internal.transport as? TestProxyTransport else {
+                                fail("Expecting TestProxyTransport"); return
+                            }
+
+                            let channelOptions = ARTRealtimeChannelOptions()
+                            channelOptions.modes = [.subscribe, .publish]
+                            channelOptions.params = [
+                                "codec": "vcdiff"
+                            ]
+
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.setOptions(channelOptions) { error in
+                                    expect(error).to(beNil())
+                                    done()
+                                }
+                            }
+
+                            let attach = transport.protocolMessagesSent.filter({ $0.action == .attach }).last!
+                            expect(attach.flags & Int64(ARTChannelMode.publish.rawValue)).to(beGreaterThan(0)) //true
+                            expect(attach.flags & Int64(ARTChannelMode.subscribe.rawValue)).to(beGreaterThan(0)) //true
+                            expect(attach.params).to(equal(channelOptions.params))
+
+                            let attached = transport.protocolMessagesReceived.filter({ $0.action == .attached }).last!
+                            expect(attached.flags & Int64(ARTChannelMode.publish.rawValue)).to(beGreaterThan(0)) //true
+                            expect(attached.flags & Int64(ARTChannelMode.subscribe.rawValue)).to(beGreaterThan(0)) //true
+                            expect(attached.params).to(equal(channelOptions.params))
+                        }
+
+                        it("should send an ATTACH message with params & modes if the channel is attaching") {
+                            //TODO
+                        }
+
+                        it("should success immediately if channel is not attaching or attached") {
+                            //TODO
+                        }
+                    }
+
+                }
+
             }
 
             context("crypto") {
