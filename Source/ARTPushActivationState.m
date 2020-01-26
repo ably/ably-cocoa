@@ -103,6 +103,29 @@
 
 #pragma mark - Activation States
 
+ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, ARTPushActivationEvent *event) {
+    #if TARGET_OS_IOS
+    ARTLocalDevice *local = machine.rest.device_nosync;
+
+    if (local.identityTokenDetails) {
+        // Already registered.
+        NSString *instanceClientId = machine.rest.auth.clientId_nosync;
+        if (local.clientId != nil && instanceClientId && ![local.clientId isEqualToString:instanceClientId]) {
+            ARTErrorInfo *error = [ARTErrorInfo createWithCode:61002 message:@"Activation failed: present clientId is not compatible with existing device registration"];
+            [machine sendEvent:[ARTPushActivationEventSyncRegistrationFailed newWithError:error]];
+        } else {
+            [machine syncDevice];
+        }
+        
+        return [ARTPushActivationStateWaitingForRegistrationSync newWithMachine:machine fromEvent:event];
+    } else if ([local deviceToken]) {
+        [machine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
+    }
+    #endif
+
+    return [ARTPushActivationStateWaitingForPushDeviceDetails newWithMachine:machine];
+}
+
 @implementation ARTPushActivationStateNotActivated
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
@@ -112,26 +135,7 @@
         return self;
     }
     else if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
-        #if TARGET_OS_IOS
-        ARTLocalDevice *local = self.machine.rest.device_nosync;
-
-        if (local.identityTokenDetails) {
-            // Already registered.
-            NSString *instanceClientId = self.machine.rest.auth.clientId_nosync;
-            if (local.clientId != nil && instanceClientId && ![local.clientId isEqualToString:instanceClientId]) {
-                ARTErrorInfo *error = [ARTErrorInfo createWithCode:61002 message:@"Activation failed: present clientId is not compatible with existing device registration"];
-                [self.machine sendEvent:[ARTPushActivationEventSyncRegistrationFailed newWithError:error]];
-            } else {
-                [self.machine syncDevice];
-            }
-            
-            return [ARTPushActivationStateWaitingForRegistrationSync newWithMachine:self.machine fromEvent:event];
-        } else if ([local deviceToken]) {
-            [self.machine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
-        }
-        #endif
-
-        return [ARTPushActivationStateWaitingForPushDeviceDetails newWithMachine:self.machine];
+        return validateAndSync(self.machine, event);
     }
     return nil;
 }
@@ -261,8 +265,8 @@
     [self logEventTransition:event file:__FILE__ line:__LINE__];
     if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]] ||
         [event isKindOfClass:[ARTPushActivationEventGotPushDeviceDetails class]]) {
-        [self.machine deviceUpdateRegistration:nil];
-        return [ARTPushActivationStateWaitingForRegistrationSync newWithMachine:self.machine fromEvent:event];
+
+        return validateAndSync(self.machine, event);
     }
     else if ([event isKindOfClass:[ARTPushActivationEventCalledDeactivate class]]) {
         [self.machine deviceUnregistration:nil];
