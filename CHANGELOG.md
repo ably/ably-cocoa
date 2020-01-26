@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.1.17](https://github.com/ably/ably-cocoa/tree/1.1.17)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.16...1.1.17)
+
+**Merged pull requests:**
+
+- Remove push state machine singleton [\#972](https://github.com/ably/ably-cocoa/pull/972) ([tcard](https://github.com/tcard))
+- Add clarification to release process: document --since-tag effects [\#971](https://github.com/ably/ably-cocoa/pull/971) ([tcard](https://github.com/tcard))
+
 ## [1.1.16](https://github.com/ably/ably-cocoa/tree/1.1.16)
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.15...1.1.16)
 
@@ -7,7 +15,6 @@
 
 - Cannot compile Objective-C++ file if Ably headers included [\#964](https://github.com/ably/ably-cocoa/issues/964)
 - Realtime Channel endless loop: suspended \> attached \> suspended [\#881](https://github.com/ably/ably-cocoa/issues/881)
-- Allow library to be used from Objective-C++ \(.mm\) files again [\#965](https://github.com/ably/ably-cocoa/pull/965) ([QuintinWillison](https://github.com/QuintinWillison))
 
 **Closed issues:**
 
@@ -17,10 +24,8 @@
 
 - If waiting for push device details and got them persisted, re-emit them. [\#967](https://github.com/ably/ably-cocoa/pull/967) ([tcard](https://github.com/tcard))
 - Update msgpack \(fix CocoaPod warnings\) [\#962](https://github.com/ably/ably-cocoa/pull/962) ([ricardopereira](https://github.com/ricardopereira))
-- Release 1.1.15 [\#960](https://github.com/ably/ably-cocoa/pull/960) ([ricardopereira](https://github.com/ricardopereira))
 - Alleviate RTN5 flakiness [\#957](https://github.com/ably/ably-cocoa/pull/957) ([tcard](https://github.com/tcard))
 - Fix SUSPENDED channel reattach [\#909](https://github.com/ably/ably-cocoa/pull/909) ([ricardopereira](https://github.com/ricardopereira))
-
 
 ## [1.1.15](https://github.com/ably/ably-cocoa/tree/1.1.15) (2019-12-23)
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.14...1.1.15)

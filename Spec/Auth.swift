@@ -4063,7 +4063,11 @@ class Auth : QuickSpec {
                     it("fails to connect with reason 'invalid signature'") {
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.failed) { stateChange in
-                                expect(stateChange!.reason!.code).to(equal(40144))
+                                guard let reason = stateChange?.reason else {
+                                    fail("Reason error is nil"); done(); return
+                                }
+                                expect(reason.code).to(equal(40144))
+                                expect(reason.description).to(satisfyAnyOf(contain("invalid signature"), contain("signature verification failed")))
                                 done()
                             }
                             client.connect()
@@ -4109,7 +4113,11 @@ class Auth : QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.disconnected) { stateChange in
-                                expect(stateChange!.reason!.code).to(equal(40144))
+                                guard let reason = stateChange?.reason else {
+                                    fail("Reason error is nil"); done(); return
+                                }
+                                expect(reason.code).to(equal(40144))
+                                expect(reason.description).to(satisfyAnyOf(contain("invalid signature"), contain("signature verification failed")))
                                 done()
                             }
                             client.connect()
@@ -4206,7 +4214,11 @@ class Auth : QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.disconnected) { stateChange in
-                                expect(stateChange!.reason!.code).to(equal(40144))
+                                guard let reason = stateChange?.reason else {
+                                    fail("Reason error is nil"); done(); return
+                                }
+                                expect(reason.code).to(equal(40144))
+                                expect(reason.description).to(satisfyAnyOf(contain("invalid signature"), contain("signature verification failed")))
                                 done()
                             }
                             client.connect()

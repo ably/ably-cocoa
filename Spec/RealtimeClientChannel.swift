@@ -660,8 +660,7 @@ class RealtimeClientChannel: QuickSpec {
                     })
                 }
 
-
-                // RTL3d
+                // RTL3d - https://github.com/ably/ably-cocoa/issues/881
                 it("should attach successfully and remain attached when the connection state without a successful recovery gets CONNECTED") {
                     let options = AblyTests.commonAppSetup()
                     options.disconnectedRetryTimeout = 0.5
@@ -672,7 +671,15 @@ class RealtimeClientChannel: QuickSpec {
                     let client = ARTRealtime(options: options)
                     client.internal.setTransport(TestProxyTransport.self)
                     client.internal.setReachabilityClass(TestReachability.self)
-                    defer { client.dispose(); client.close() }
+                    defer {
+                        client.simulateRestoreInternetConnection()
+                        client.dispose()
+                        client.close()
+                    }
+
+                    // Move to SUSPENDED
+                    let ttlHookToken = client.overrideConnectionStateTTL(3.0)
+                    defer { ttlHookToken.remove() }
 
                     let channel = client.channels.get("foo")
                     waitUntil(timeout: testTimeout) { done in
@@ -683,15 +690,12 @@ class RealtimeClientChannel: QuickSpec {
                         client.connect()
                     }
 
-                    // Move to SUSPENDED
-                    client.internal.connectionStateTtl = 3.0
-
                     waitUntil(timeout: testTimeout) { done in
                         channel.once(.suspended) { stateChange in
                             guard let error = stateChange?.reason else {
                                 fail("SUSPENDED reason should not be nil"); done(); return
                             }
-                            expect(error.message).to(contain("network is down"))
+                            expect(error.message).to(satisfyAnyOf(contain("network is down"), contain("unreachable host")))
                             done()
                         }
                         client.simulateNoInternetConnection()
