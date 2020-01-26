@@ -1162,7 +1162,7 @@ class RestClient: QuickSpec {
                 // RSC15d
                 context("should use an alternative host when") {
 
-                    for caseTest: NetworkAnswer in [.hostUnreachable,
+                    for caseTest: FakeNetworkResponse in [.hostUnreachable,
                                                     .requestTimeout(timeout: 0.1),
                                                     .hostInternalError(code: 501)] {
                         it("\(caseTest)") {

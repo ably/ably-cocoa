@@ -17,6 +17,10 @@ import Aspects
 
 import Ably.Private
 
+typealias HookToken = AspectToken
+
+let AblyTestsErrorDomain = "test.ably.io"
+
 class CryptoTest {
     private static let aes128 = "cipher+aes-128-cbc";
     private static let aes256 = "cipher+aes-256-cbc";
@@ -564,9 +568,8 @@ func getKeys() -> Dictionary<String, String> {
     return ["keyName": keyName, "keySecret": keySecret]
 }
 
-public func delay(_ seconds: TimeInterval, closure: @escaping ()->()) {
-    DispatchQueue.main.asyncAfter(
-        deadline: DispatchTime.now() + Double(Int64(seconds * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC), execute: closure)
+public func delay(_ seconds: TimeInterval, closure: @escaping () -> Void) {
+    DispatchQueue.main.asyncAfter(deadline: .now() + seconds, execute: closure)
 }
 
 public func getEnvironment() -> String {
@@ -670,28 +673,58 @@ func extractBodyAsMessages(_ request: URLRequest?) -> Result<[NSDictionary]> {
     return Result.success(Box(httpBody.map{$0 as! NSDictionary}))
 }
 
-enum NetworkAnswer {
+enum FakeNetworkResponse {
     case noInternet
     case hostUnreachable
     case requestTimeout(timeout: TimeInterval)
     case hostInternalError(code: Int)
     case host400BadRequest
+
+    var error: NSError {
+        switch self {
+        case .noInternet:
+            return NSError(domain: NSPOSIXErrorDomain, code: 50, userInfo: [NSLocalizedDescriptionKey: "network is down", NSLocalizedFailureReasonErrorKey: AblyTestsErrorDomain + ".FakeNetworkResponse"])
+        case .hostUnreachable:
+            return NSError(domain: kCFErrorDomainCFNetwork as String, code: 2, userInfo: [NSLocalizedDescriptionKey: "host unreachable", NSLocalizedFailureReasonErrorKey: AblyTestsErrorDomain + ".FakeNetworkResponse"])
+        case .requestTimeout:
+            return NSError(domain: "com.squareup.SocketRocket", code: 504, userInfo: [NSLocalizedDescriptionKey: "timed out", NSLocalizedFailureReasonErrorKey: AblyTestsErrorDomain + ".FakeNetworkResponse"])
+        case .hostInternalError(let code):
+            return NSError(domain: AblyTestsErrorDomain, code: code, userInfo: [NSLocalizedDescriptionKey: "internal error", NSLocalizedFailureReasonErrorKey: AblyTestsErrorDomain + ".FakeNetworkResponse"])
+        case .host400BadRequest:
+            return NSError(domain: AblyTestsErrorDomain, code: 400, userInfo: [NSLocalizedDescriptionKey: "bad request", NSLocalizedFailureReasonErrorKey: AblyTestsErrorDomain + ".FakeNetworkResponse"])
+        }
+    }
+
+    func transportError(for url: URL) -> ARTRealtimeTransportError {
+        switch self {
+        case .noInternet:
+            return ARTRealtimeTransportError(error: error, type: .noInternet, url: url)
+        case .hostUnreachable:
+            return ARTRealtimeTransportError(error: error, type: .hostUnreachable, url: url)
+        case .requestTimeout:
+            return ARTRealtimeTransportError(error: error, type: .timeout, url: url)
+        case .hostInternalError(let code):
+            return ARTRealtimeTransportError(error: error, badResponseCode: code, url: url)
+        case .host400BadRequest:
+            return ARTRealtimeTransportError(error: error, badResponseCode: 400, url: url)
+        }
+    }
 }
 
 class MockHTTP: ARTHttp {
 
-    let network: NetworkAnswer
+    let network: FakeNetworkResponse
 
-    init(network: NetworkAnswer, logger: ARTLog) {
+    init(network: FakeNetworkResponse, logger: ARTLog) {
         self.network = network
         super.init(AblyTests.queue, logger: logger)
     }
 
     override public func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) -> (ARTCancellable & NSObjectProtocol)? {
-        delay(0.0) { // Delay to simulate asynchronicity.
+        AblyTests.queue.async { // Delay to simulate asynchronicity.
             switch self.network {
             case .noInternet:
-                callback?(nil, nil, NSError(domain: NSURLErrorDomain, code: -1009, userInfo: [NSLocalizedDescriptionKey: "The Internet connection appears to be offline.."]))
+                callback?(nil, nil, NSError(domain: NSURLErrorDomain, code: -1009, userInfo: [NSLocalizedDescriptionKey: "The Internet connection appears to be offline."]))
             case .hostUnreachable:
                 callback?(nil, nil, NSError(domain: NSURLErrorDomain, code: -1003, userInfo: [NSLocalizedDescriptionKey: "A server with the specified hostname could not be found."]))
             case .requestTimeout(let timeout):
@@ -812,9 +845,9 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
     var requests: [URLRequest] = []
     var responses: [HTTPURLResponse] = []
 
-    var beforeRequest: Optional<(URLRequest, ((HTTPURLResponse?, Data?, NSError?) -> Void)?)->()> = nil
-    var afterRequest: Optional<(URLRequest, ((HTTPURLResponse?, Data?, NSError?) -> Void)?)->()> = nil
-    var beforeProcessingDataResponse: Optional<(Data?)->(Data)> = nil
+    var beforeRequest: ((URLRequest, ((HTTPURLResponse?, Data?, NSError?) -> Void)?) -> Void)?
+    var afterRequest: ((URLRequest, ((HTTPURLResponse?, Data?, NSError?) -> Void)?) -> Void)?
+    var beforeProcessingDataResponse: ((Data?) -> (Data))?
 
     public func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) -> (ARTCancellable & NSObjectProtocol)? {
         guard let http = self.http else {
@@ -884,103 +917,80 @@ class TestProxyTransport: ARTWebSocketTransport {
     fileprivate(set) var rawDataSent = [Data]()
     fileprivate(set) var rawDataReceived = [Data]()
     fileprivate var replacingAcksWithNacks: ARTErrorInfo?
+
     var ignoreWebSocket = false
 
-    var beforeProcessingSentMessage: Optional<(ARTProtocolMessage)->()> = nil
-    var beforeProcessingReceivedMessage: Optional<(ARTProtocolMessage) -> Void> = nil
-    var afterProcessingReceivedMessage: Optional<(ARTProtocolMessage)->()> = nil
-    var changeReceivedMessage: ((ARTProtocolMessage) -> ARTProtocolMessage)? = nil
+    var beforeProcessingSentMessage: ((ARTProtocolMessage) -> Void)?
+    var beforeProcessingReceivedMessage: ((ARTProtocolMessage) -> Void)?
+    var afterProcessingReceivedMessage: ((ARTProtocolMessage) -> Void)?
+    var changeReceivedMessage: ((ARTProtocolMessage) -> ARTProtocolMessage)?
 
     var actionsIgnored = [ARTProtocolMessageAction]()
     var ignoreSends = false
 
-    static var network: NetworkAnswer? = nil
-    static var networkConnectEvent: Optional<(ARTRealtimeTransport, URL)->()> = nil
+    /// This will affect all WebSocketTransport instances.
+    /// Set it to nil after the test ends.
+    static var fakeNetworkResponse: FakeNetworkResponse?
+    static var networkConnectEvent: ((ARTRealtimeTransport, URL) -> Void)?
 
     override func connect(withKey key: String) {
-        if let network = TestProxyTransport.network {
-            var hook: AspectToken?
-            hook = SRWebSocket.testSuite_replaceClassMethod(#selector(SRWebSocket.open)) {
-                if TestProxyTransport.network == nil {
-                    return
-                }
-                func performConnectError(_ secondsForDelay: TimeInterval, error: ARTRealtimeTransportError) {
-                    delay(secondsForDelay) {
-                        self.delegate?.realtimeTransportFailed(self, withError: error)
-                        hook?.remove()
-                    }
-                }
-                switch network {
-                case .noInternet, .hostUnreachable:
-                    let error = NSError.init(domain: "test.ably.io", code: 0, userInfo: [NSLocalizedDescriptionKey: "host unreachable"])
-                    performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, type: .hostUnreachable, url: self.lastUrl!))
-                case .requestTimeout(let timeout):
-                    let error = NSError.init(domain: "test.ably.io", code: 0, userInfo: [NSLocalizedDescriptionKey: "timed out"])
-                    performConnectError(0.1 + timeout, error: ARTRealtimeTransportError.init(error: error, type: .timeout, url: self.lastUrl!))
-                case .hostInternalError(let code):
-                    let error = NSError.init(domain: "test.ably.io", code: 500, userInfo: [NSLocalizedDescriptionKey: "internal error"])
-                    performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, badResponseCode: code, url: self.lastUrl!))
-                case .host400BadRequest:
-                    let error = NSError.init(domain: "test.ably.io", code: 400, userInfo: [NSLocalizedDescriptionKey: "bad request"])
-                    performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, badResponseCode: 400, url: self.lastUrl!))
-                }
-            }
+        if let fakeResponse = TestProxyTransport.fakeNetworkResponse {
+            setupFakeNetworkResponse(fakeResponse)
         }
         super.connect(withKey: key)
-
-        if let performNetworkConnect = TestProxyTransport.networkConnectEvent {
-            func perform() {
-                if let lastUrl = self.lastUrl {
-                    performNetworkConnect(self, lastUrl)
-                } else {
-                    delay(0.1) { perform() }
-                }
-            }
-            perform()
-        }
+        performNetworkConnectEvent()
     }
 
     override func connect(withToken token: String) {
-        if let network = TestProxyTransport.network {
-            var hook: AspectToken?
-            hook = SRWebSocket.testSuite_replaceClassMethod(#selector(SRWebSocket.open)) {
-                if TestProxyTransport.network == nil {
-                    return
-                }
-                func performConnectError(_ secondsForDelay: TimeInterval, error: ARTRealtimeTransportError) {
-                    delay(secondsForDelay) {
-                        self.delegate?.realtimeTransportFailed(self, withError: error)
-                        hook?.remove()
-                    }
-                }
-                let error = NSError.init(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "TestProxyTransport error"])
-                guard let lastUrl = self.lastUrl else {
-                    print("lastUrl is empty")
-                    return
-                }
-                switch network {
-                case .noInternet, .hostUnreachable:
-                    performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, type: .hostUnreachable, url: lastUrl))
-                case .requestTimeout(let timeout):
-                    performConnectError(0.1 + timeout, error: ARTRealtimeTransportError.init(error: error, type: .timeout, url: lastUrl))
-                case .hostInternalError(let code):
-                    performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, badResponseCode: code, url: lastUrl))
-                case .host400BadRequest:
-                    performConnectError(0.1, error: ARTRealtimeTransportError.init(error: error, badResponseCode: 400, url: lastUrl))
-                }
-            }
+        if let fakeResponse = TestProxyTransport.fakeNetworkResponse {
+            setupFakeNetworkResponse(fakeResponse)
         }
         super.connect(withToken: token)
+        performNetworkConnectEvent()
+    }
 
-        if let performNetworkConnect = TestProxyTransport.networkConnectEvent {
-            func perform() {
-                if let lastUrl = self.lastUrl {
-                    performNetworkConnect(self, lastUrl)
-                } else {
-                    delay(0.1) { perform() }
+    private func setupFakeNetworkResponse(_ networkResponse: FakeNetworkResponse) {
+        var hook: AspectToken?
+        hook = SRWebSocket.testSuite_replaceClassMethod(#selector(SRWebSocket.open)) {
+            if TestProxyTransport.fakeNetworkResponse == nil {
+                return
+            }
+
+            func performFakeConnectionError(_ secondsForDelay: TimeInterval, error: ARTRealtimeTransportError) {
+                AblyTests.queue.asyncAfter(deadline: .now() + secondsForDelay) {
+                    self.delegate?.realtimeTransportFailed(self, withError: error)
+                    hook?.remove()
                 }
             }
-            perform()
+
+            guard let url = self.lastUrl else {
+                fatalError("MockNetworkResponse: lastUrl should not be nil")
+            }
+
+            switch networkResponse {
+            case .noInternet,
+                 .hostUnreachable,
+                 .hostInternalError,
+                 .host400BadRequest:
+                performFakeConnectionError(0.1, error: networkResponse.transportError(for: url))
+            case .requestTimeout(let timeout):
+                performFakeConnectionError(0.1 + timeout, error: networkResponse.transportError(for: url))
+            }
+        }
+    }
+
+    private func performNetworkConnectEvent() {
+        guard let networkConnectEventHandler = TestProxyTransport.networkConnectEvent else {
+            return
+        }
+        if let lastUrl = self.lastUrl {
+            networkConnectEventHandler(self, lastUrl)
+        }
+        else {
+            AblyTests.queue.asyncAfter(deadline: .now() + 0.1) {
+                // Repeat until `lastUrl` is assigned.
+                self.performNetworkConnectEvent()
+            }
         }
     }
 
@@ -992,11 +1002,17 @@ class TestProxyTransport: ARTWebSocketTransport {
 
     func send(_ message: ARTProtocolMessage) {
         let data = try! encoder.encode(message)
-        let _ = send(data, withSource: message)
+        send(data, withSource: message)
     }
 
     @discardableResult
     override func send(_ data: Data, withSource decodedObject: Any?) -> Bool {
+        if let networkAnswer = TestProxyTransport.fakeNetworkResponse, let ws = self.websocket {
+            // Ignore it because it should fake a failure.
+            self.webSocket(ws, didFailWithError: networkAnswer.error)
+            return false
+        }
+
         if let msg = decodedObject as? ARTProtocolMessage {
             if ignoreSends {
                 protocolMessagesSentIgnored.append(msg)
@@ -1069,6 +1085,12 @@ class TestProxyTransport: ARTWebSocketTransport {
     }
 
     override func webSocket(_ webSocket: ARTWebSocket, didReceiveMessage message: Any?) {
+        if let networkAnswer = TestProxyTransport.fakeNetworkResponse, let ws = self.websocket {
+            // Ignore it because it should fake a failure.
+            self.webSocket(ws, didFailWithError: networkAnswer.error)
+            return
+        }
+
         if !ignoreWebSocket {
             super.webSocket(webSocket, didReceiveMessage: message as Any)
         }
@@ -1227,7 +1249,7 @@ extension NSRegularExpression {
         let regex = try! NSRegularExpression(pattern: pattern, options: options)
         let range = NSMakeRange(0, value.lengthOfBytes(using: String.Encoding.utf8))
         let result = regex.firstMatch(in: value, options: [], range: range)
-      guard let textRange = result?.range(at: 0) else { return nil }
+        guard let textRange = result?.range(at: 0) else { return nil }
         let convertedRange =  value.index(value.startIndex, offsetBy: textRange.location)..<value.index(value.startIndex, offsetBy: textRange.location+textRange.length)
         return String(value[convertedRange.lowerBound..<convertedRange.upperBound])
     }
@@ -1260,6 +1282,34 @@ extension ARTRealtime {
                 self.internal.onSuspended()
             }
             self.internal.onDisconnected()
+        }
+    }
+
+    func simulateNoInternetConnection() {
+        guard let reachability = self.internal.reachability as? TestReachability else {
+            fatalError("Expected test reachability")
+        }
+
+        AblyTests.queue.async {
+            TestProxyTransport.fakeNetworkResponse = .noInternet
+            reachability.simulate(false)
+        }
+    }
+
+    func simulateRestoreInternetConnection(after seconds: TimeInterval? = nil) {
+        guard let reachability = self.internal.reachability as? TestReachability else {
+            fatalError("Expected test reachability")
+        }
+
+        AblyTests.queue.asyncAfter(deadline: .now() + (seconds ?? 0)) {
+            TestProxyTransport.fakeNetworkResponse = nil
+            reachability.simulate(true)
+        }
+    }
+
+    func overrideConnectionStateTTL(_ ttl: TimeInterval) -> HookToken {
+        return self.internal.testSuite_injectIntoMethod(before: NSSelectorFromString("connectionStateTtl")) {
+            self.internal.connectionStateTtl = ttl
         }
     }
 

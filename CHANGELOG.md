@@ -1,5 +1,42 @@
 # Change Log
 
+## [1.1.17](https://github.com/ably/ably-cocoa/tree/1.1.17)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.16...1.1.17)
+
+**Merged pull requests:**
+
+- Remove push state machine singleton [\#972](https://github.com/ably/ably-cocoa/pull/972) ([tcard](https://github.com/tcard))
+- Add clarification to release process: document --since-tag effects [\#971](https://github.com/ably/ably-cocoa/pull/971) ([tcard](https://github.com/tcard))
+
+## [1.1.16](https://github.com/ably/ably-cocoa/tree/1.1.16)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.15...1.1.16)
+
+**Fixed bugs:**
+
+- Cannot compile Objective-C++ file if Ably headers included [\#964](https://github.com/ably/ably-cocoa/issues/964)
+- Realtime Channel endless loop: suspended \> attached \> suspended [\#881](https://github.com/ably/ably-cocoa/issues/881)
+
+**Closed issues:**
+
+- Flaky test: RTN5 \(basic operations should work simultaneously\) [\#934](https://github.com/ably/ably-cocoa/issues/934)
+
+**Merged pull requests:**
+
+- If waiting for push device details and got them persisted, re-emit them. [\#967](https://github.com/ably/ably-cocoa/pull/967) ([tcard](https://github.com/tcard))
+- Update msgpack \(fix CocoaPod warnings\) [\#962](https://github.com/ably/ably-cocoa/pull/962) ([ricardopereira](https://github.com/ricardopereira))
+- Alleviate RTN5 flakiness [\#957](https://github.com/ably/ably-cocoa/pull/957) ([tcard](https://github.com/tcard))
+- Fix SUSPENDED channel reattach [\#909](https://github.com/ably/ably-cocoa/pull/909) ([ricardopereira](https://github.com/ricardopereira))
+
+## [1.1.15](https://github.com/ably/ably-cocoa/tree/1.1.15) (2019-12-23)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.14...1.1.15)
+
+**Merged pull requests:**
+
+- KSCrash fork has been renamed to KSCrashAblyFork 
+ [\#955](https://github.com/ably/ably-cocoa/pull/955) ([ricardopereira](https://github.com/ricardopereira))
+- Update msgpack to v0.3 [\#951](https://github.com/ably/ably-cocoa/pull/951) ([ricardopereira](https://github.com/ricardopereira))
+- Simplify random fallback host selection [\#953](https://github.com/ably/ably-cocoa/pull/953) ([tcard](https://github.com/tcard))
+
 ## [1.1.14](https://github.com/ably/ably-cocoa/tree/1.1.14) (2019-12-16)
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.13...1.1.14)
 

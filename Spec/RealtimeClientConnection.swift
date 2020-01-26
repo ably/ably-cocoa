@@ -243,7 +243,7 @@ class RealtimeClientConnection: QuickSpec {
                             done()
                         case .connected:
                             if let transport = client.internal.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
-                                expect(query).to(haveParam("lib", withValue: "ios-1.1.14"))
+                                expect(query).to(haveParam("lib", withValue: "ios-1.1.17"))
                             }
                             else {
                                 XCTFail("MockTransport isn't working")
@@ -575,9 +575,10 @@ class RealtimeClientConnection: QuickSpec {
                 let options = AblyTests.commonAppSetup()
                 options.echoMessages = false
                 var disposable = [ARTRealtime]()
-                let max = 25
+                let numClients = 50
+                let numMessages = 5
                 let channelName = "chat"
-                let sync = NSLock()
+                let testTimeout = TimeInterval(60)
 
                 defer {
                     for client in disposable {
@@ -587,8 +588,8 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 waitUntil(timeout: testTimeout) { done in
-                    let partialDone = AblyTests.splitDone(max, done: done)
-                    for _ in 1...max {
+                    let partialDone = AblyTests.splitDone(numClients, done: done)
+                    for _ in 1...numClients {
                         let client = ARTRealtime(options: options)
                         disposable.append(client)
                         let channel = client.channels.get(channelName)
@@ -596,38 +597,38 @@ class RealtimeClientConnection: QuickSpec {
                             if let error = error {
                                 fail(error.message); done()
                             }
-                            sync.lock()
                             partialDone()
-                            sync.unlock()
                         }
                     }
                 }
 
-                var i = 0
+                var messagesReceived = 0
                 waitUntil(timeout: testTimeout) { done in
-                    // Sends 50 messages from different clients to the same channel
-                    // 50 messages for 50 clients = 50*50 total messages
-                    // echo is off, so we need to subtract one message per client
-                    let total = max*max - max
+                    // Sends numMessages messages from different clients to the same channel
+                    // numMessages messages for numClients clients = numMessages*numClients total messages
+                    // echo is off, so we need to subtract one message per publish
+                    let messagesExpected = numMessages * numClients - 1 * numMessages
+                    var messagesSent = 0
                     for client in disposable {
                         let channel = client.channels.get(channelName)
                         expect(channel.state).to(equal(ARTRealtimeChannelState.attached))
 
                         channel.subscribe { message in
                             expect(message.data as? String).to(equal("message_string"))
-                            sync.lock()
-                            i += 1
-                            if i == total {
+                            messagesReceived += 1
+                            if messagesReceived == messagesExpected {
                                 done()
                             }
-                            sync.unlock()
                         }
-
-                        channel.publish(nil, data: "message_string", callback: nil)
+                        
+                        if messagesSent < numMessages {
+                            channel.publish(nil, data: "message_string", callback: nil)
+                            messagesSent += 1
+                        }
                     }
                 }
 
-                expect(disposable.count).to(equal(max))
+                expect(disposable.count).to(equal(numClients))
                 expect(countChannels(disposable.first!.channels)).to(equal(1))
                 expect(countChannels(disposable.last!.channels)).to(equal(1))
             }
@@ -2101,7 +2102,7 @@ class RealtimeClientConnection: QuickSpec {
                     ARTDefault.setRealtimeRequestTimeout(0.1)
 
                     let client = ARTRealtime(options: options)
-                    client.internal.suspendImmediateReconnection = true
+                    client.internal.shouldImmediatelyReconnect = false
                     defer {
                         client.connection.off()
                         client.close()
@@ -2140,7 +2141,6 @@ class RealtimeClientConnection: QuickSpec {
                 // RTN14e
                 it("connection state has been in the DISCONNECTED state for more than the default connectionStateTtl should change the state to SUSPENDED") {
                     let options = AblyTests.commonAppSetup()
-                    // to not wait the defaul 15s before reconnecting
                     options.disconnectedRetryTimeout = 0.1
                     options.suspendedRetryTimeout = 0.5
                     options.autoConnect = false
@@ -2150,17 +2150,16 @@ class RealtimeClientConnection: QuickSpec {
                         // Force a timeout
                     }
 
-                    let previousConnectionStateTtl = ARTDefault.connectionStateTtl()
-                    defer { ARTDefault.setConnectionStateTtl(previousConnectionStateTtl) }
-                    ARTDefault.setConnectionStateTtl(expectedTime)
-
                     let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
                     defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
                     ARTDefault.setRealtimeRequestTimeout(0.1)
 
                     let client = ARTRealtime(options: options)
-                    client.internal.suspendImmediateReconnection = true
+                    client.internal.shouldImmediatelyReconnect = false
                     defer { client.dispose(); client.close() }
+
+                    let ttlHookToken = client.overrideConnectionStateTTL(0.3)
+                    defer { ttlHookToken.remove() }
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.on(.suspended) { stateChange in
@@ -2175,6 +2174,77 @@ class RealtimeClientConnection: QuickSpec {
                         }
                         client.connect()
                     }
+                }
+
+                // RTN14e - https://github.com/ably/ably-cocoa/issues/913
+                it("should change the state to SUSPENDED when the connection state has been in the DISCONNECTED state for more than the connectionStateTtl") {
+                    let options = AblyTests.commonAppSetup()
+                    options.disconnectedRetryTimeout = 0.5
+                    options.suspendedRetryTimeout = 2.0
+                    options.autoConnect = false
+
+                    let client = ARTRealtime(options: options)
+                    client.internal.setTransport(TestProxyTransport.self)
+                    client.internal.setReachabilityClass(TestReachability.self)
+                    defer {
+                        client.simulateRestoreInternetConnection()
+                        client.dispose()
+                        client.close()
+                    }
+
+                    let ttlHookToken = client.overrideConnectionStateTTL(3.0)
+                    defer { ttlHookToken.remove() }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.connected) { stateChange in
+                            expect(stateChange?.reason).to(beNil())
+                            done()
+                        }
+                        client.connect()
+                    }
+
+                    var events: [ARTRealtimeConnectionState] = []
+                    client.connection.on { stateChange in
+                        events.append(stateChange!.current)
+                    }
+                    client.simulateNoInternetConnection()
+
+                    expect(events).toEventually(equal([
+                        .disconnected,
+                        .connecting, //0.5 - 1
+                        .disconnected,
+                        .connecting, //1.0 - 2
+                        .disconnected,
+                        .connecting, //1.5 - 3
+                        .disconnected,
+                        .connecting, //2.0 - 4
+                        .disconnected,
+                        .connecting, //2.5 - 5
+                        .disconnected,
+                        .connecting, //3.0 - 6
+                        .suspended,
+                        .connecting,
+                        .suspended
+                    ]), timeout: testTimeout)
+
+                    events.removeAll()
+                    client.simulateRestoreInternetConnection(after: 7.0)
+
+                    expect(events).toEventually(equal([
+                        .connecting, //2.0 - 1
+                        .suspended,
+                        .connecting, //4.0 - 2
+                        .suspended,
+                        .connecting, //6.0 - 3
+                        .suspended,
+                        .connecting,
+                        .connected
+                    ]), timeout: testTimeout)
+
+                    client.connection.off()
+
+                    expect(client.connection.errorReason).to(beNil())
+                    expect(client.connection.state).to(equal(.connected))
                 }
 
                 it("on CLOSE the connection should stop connection retries") {
@@ -2198,7 +2268,7 @@ class RealtimeClientConnection: QuickSpec {
                     ARTDefault.setRealtimeRequestTimeout(0.1)
 
                     let client = ARTRealtime(options: options)
-                    client.internal.suspendImmediateReconnection = true
+                    client.internal.shouldImmediatelyReconnect = false
                     defer { client.dispose(); client.close() }
 
                     waitUntil(timeout: testTimeout) { done in
@@ -2393,7 +2463,7 @@ class RealtimeClientConnection: QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.connected) { stateChange in
-                                expect(stateChange!.reason!.message).to(equal("Injected error"))
+                                expect(stateChange?.reason?.message).to(equal("Injected error"))
                                 expect(client.connection.errorReason).to(beIdenticalTo(stateChange!.reason))
                                 let transport = client.internal.transport as! TestProxyTransport
                                 let connectedPM = transport.protocolMessagesReceived.filter{ $0.action == .connected }[0]
@@ -2731,7 +2801,7 @@ class RealtimeClientConnection: QuickSpec {
                     
                     it("uses a new connection") {
                         client = AblyTests.newRealtime(options)
-                        client.internal.suspendImmediateReconnection = true
+                        client.internal.shouldImmediatelyReconnect = false
                         client.connect()
                         defer { client.close() }
                         
@@ -2761,7 +2831,7 @@ class RealtimeClientConnection: QuickSpec {
                     // RTN15g3
                     it("reattaches to the same channels after a new connection has been established") {
                         client = AblyTests.newRealtime(options)
-                        client.internal.suspendImmediateReconnection = true
+                        client.internal.shouldImmediatelyReconnect = false
                         defer { client.close() }
                         let channelName = "test-reattach-after-ttl"
                         let channel = client.channels.get(channelName)
@@ -3112,7 +3182,7 @@ class RealtimeClientConnection: QuickSpec {
                         }
                         urlConnections.append(url)
                         if urlConnections.count == 1 {
-                            TestProxyTransport.network = nil
+                            TestProxyTransport.networkConnectEvent = nil
                         }
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
@@ -3177,8 +3247,8 @@ class RealtimeClientConnection: QuickSpec {
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
-                    TestProxyTransport.network = .hostUnreachable
-                    defer { TestProxyTransport.network = nil }
+                    TestProxyTransport.fakeNetworkResponse = .hostUnreachable
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
 
                     var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3238,8 +3308,8 @@ class RealtimeClientConnection: QuickSpec {
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
-                    TestProxyTransport.network = .hostUnreachable
-                    defer { TestProxyTransport.network = nil }
+                    TestProxyTransport.fakeNetworkResponse = .hostUnreachable
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
 
                     var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3282,8 +3352,8 @@ class RealtimeClientConnection: QuickSpec {
                     ARTDefault.setRealtimeRequestTimeout(1.0)
 
                     client.internal.setTransport(TestProxyTransport.self)
-                    TestProxyTransport.network = .hostUnreachable
-                    defer { TestProxyTransport.network = nil }
+                    TestProxyTransport.fakeNetworkResponse = .hostUnreachable
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
 
                     var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3292,7 +3362,7 @@ class RealtimeClientConnection: QuickSpec {
                         }
                         urlConnections.append(url)
                         if urlConnections.count == 1 {
-                            TestProxyTransport.network = nil
+                            TestProxyTransport.fakeNetworkResponse = nil
                         }
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
@@ -3330,8 +3400,8 @@ class RealtimeClientConnection: QuickSpec {
                     ARTDefault.setRealtimeRequestTimeout(1.0)
 
                     client.internal.setTransport(TestProxyTransport.self)
-                    TestProxyTransport.network = .hostUnreachable
-                    defer { TestProxyTransport.network = nil }
+                    TestProxyTransport.fakeNetworkResponse = .hostUnreachable
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
                     
                     var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3340,7 +3410,7 @@ class RealtimeClientConnection: QuickSpec {
                         }
                         urlConnections.append(url)
                         if urlConnections.count == 1 {
-                            TestProxyTransport.network = nil
+                            TestProxyTransport.fakeNetworkResponse = nil
                         }
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
@@ -3366,7 +3436,7 @@ class RealtimeClientConnection: QuickSpec {
 
                 // RTN17d
                 context("should use an alternative host when") {
-                    for caseTest: NetworkAnswer in [.hostUnreachable,
+                    for caseTest: FakeNetworkResponse in [.hostUnreachable,
                                                     .requestTimeout(timeout: 0.1),
                                                     .hostInternalError(code: 501)] {
                         it("\(caseTest)") {
@@ -3381,8 +3451,8 @@ class RealtimeClientConnection: QuickSpec {
                             ARTDefault.setRealtimeRequestTimeout(1.0)
 
                             client.internal.setTransport(TestProxyTransport.self)
-                            TestProxyTransport.network = caseTest
-                            defer { TestProxyTransport.network = nil }
+                            TestProxyTransport.fakeNetworkResponse = caseTest
+                            defer { TestProxyTransport.fakeNetworkResponse = nil }
 
                             var urlConnections = [URL]()
                             TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3391,7 +3461,7 @@ class RealtimeClientConnection: QuickSpec {
                                 }
                                 urlConnections.append(url)
                                 if urlConnections.count == 1 {
-                                    TestProxyTransport.network = nil
+                                    TestProxyTransport.fakeNetworkResponse = nil
                                 }
                             }
                             defer { TestProxyTransport.networkConnectEvent = nil }
@@ -3456,8 +3526,8 @@ class RealtimeClientConnection: QuickSpec {
                     ARTDefault.setRealtimeRequestTimeout(1.0)
 
                     client.internal.setTransport(TestProxyTransport.self)
-                    TestProxyTransport.network = .host400BadRequest
-                    defer { TestProxyTransport.network = nil }
+                    TestProxyTransport.fakeNetworkResponse = .host400BadRequest
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
 
                     var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3494,8 +3564,8 @@ class RealtimeClientConnection: QuickSpec {
                     ARTDefault.setRealtimeRequestTimeout(1.0)
 
                     client.internal.setTransport(TestProxyTransport.self)
-                    TestProxyTransport.network = .hostUnreachable
-                    defer { TestProxyTransport.network = nil }
+                    TestProxyTransport.fakeNetworkResponse = .hostUnreachable
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
 
                     var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3503,7 +3573,7 @@ class RealtimeClientConnection: QuickSpec {
                             return
                         }
                         urlConnections.append(url)
-                        TestProxyTransport.network = nil
+                        TestProxyTransport.fakeNetworkResponse = nil
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
 
@@ -3557,8 +3627,8 @@ class RealtimeClientConnection: QuickSpec {
                     client.internal.rest.httpExecutor = testHttpExecutor
 
                     client.internal.setTransport(TestProxyTransport.self)
-                    TestProxyTransport.network = .hostUnreachable
-                    defer { TestProxyTransport.network = nil }
+                    TestProxyTransport.fakeNetworkResponse = .hostUnreachable
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
 
                     var urls = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3625,8 +3695,8 @@ class RealtimeClientConnection: QuickSpec {
                     client.internal.rest.httpExecutor = testHttpExecutor
 
                     client.internal.setTransport(TestProxyTransport.self)
-                    TestProxyTransport.network = .hostUnreachable
-                    defer { TestProxyTransport.network = nil }
+                    TestProxyTransport.fakeNetworkResponse = .hostUnreachable
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
 
                     let extractHostname = { (url: URL) in
                         NSRegularExpression.extract(url.absoluteString, pattern: "[a-e].ably-realtime.com")
@@ -3682,8 +3752,8 @@ class RealtimeClientConnection: QuickSpec {
                     client.internal.rest.httpExecutor = testHttpExecutor
                     
                     client.internal.setTransport(TestProxyTransport.self)
-                    TestProxyTransport.network = .hostUnreachable
-                    defer { TestProxyTransport.network = nil }
+                    TestProxyTransport.fakeNetworkResponse = .hostUnreachable
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
                     
                     var urls = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3745,8 +3815,8 @@ class RealtimeClientConnection: QuickSpec {
                     client.internal.rest.httpExecutor = testHttpExecutor
                     
                     client.internal.setTransport(TestProxyTransport.self)
-                    TestProxyTransport.network = .hostUnreachable
-                    defer { TestProxyTransport.network = nil }
+                    TestProxyTransport.fakeNetworkResponse = .hostUnreachable
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
                     
                     var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3779,8 +3849,8 @@ class RealtimeClientConnection: QuickSpec {
                     client.internal.rest.httpExecutor = testHttpExecutor
 
                     client.internal.setTransport(TestProxyTransport.self)
-                    TestProxyTransport.network = .hostUnreachable
-                    defer { TestProxyTransport.network = nil }
+                    TestProxyTransport.fakeNetworkResponse = .hostUnreachable
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
 
                     var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3789,7 +3859,7 @@ class RealtimeClientConnection: QuickSpec {
                         }
                         urlConnections.append(url)
                         if urlConnections.count == 2 {
-                            TestProxyTransport.network = nil
+                            TestProxyTransport.fakeNetworkResponse = nil
                             (client.internal.transport as! TestProxyTransport).simulateTransportSuccess()
                         }
                     }
