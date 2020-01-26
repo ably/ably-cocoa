@@ -22,6 +22,8 @@ class PushActivationStateMachine : QuickSpec {
         let expectedPlatform = "ios"
         let expectedPushRecipient: [String: [String: String]] = ["recipient": ["transportType": "apns"]]
 
+        var stateMachine: ARTPushActivationStateMachine!
+
         beforeEach {
             rest = ARTRest(key: "xxxx:xxxx")
             httpExecutor = MockHTTPExecutor()
@@ -54,9 +56,6 @@ class PushActivationStateMachine : QuickSpec {
             // RSH3a
             context("State NotActivated") {
 
-                var stateMachine: ARTPushActivationStateMachine!
-                var storage: MockDeviceStorage!
-
                 beforeEach {
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateNotActivated(machine: initialStateMachine))
                     rest.internal.storage = storage
@@ -80,131 +79,7 @@ class PushActivationStateMachine : QuickSpec {
                 // RSH3a2
                 context("on Event CalledActivate") {
                     // RSH3a2a
-                    context("the local device has id and deviceIdentityToken") {
-                        let testDeviceId = "aaaa"
-                        
-                        // RSH3a2a1
-                        it("emits a SyncRegistrationFailed event with code 61002 if client IDs don't match") {
-                            let options = ARTClientOptions(key: "xxxx:xxxx")
-                            options.clientId = "deviceClient"
-                            let rest = ARTRest(options: options)
-                            rest.internal.storage = storage
-                            expect(rest.device.clientId).to(equal("deviceClient"))
-
-                            let newOptions = ARTClientOptions(key: "xxxx:xxxx")
-                            newOptions.clientId = "instanceClient"
-                            let newRest = ARTRest(options: newOptions)
-                            newRest.internal.storage = storage
-                            let stateMachine = ARTPushActivationStateMachine(newRest.internal)
-                            
-                            storage.simulateOnNextRead(string: testDeviceId, for: ARTDeviceIdKey)
-
-                            let testDeviceIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "deviceClient")
-                            stateMachine.rest.device.setAndPersistIdentityTokenDetails(testDeviceIdentityTokenDetails)
-                            defer { stateMachine.rest.device.setAndPersistIdentityTokenDetails(nil) }
-                            
-                            waitUntil(timeout: testTimeout) { done in
-                                stateMachine.transitions = { event, _, _ in
-                                    if let event = event as? ARTPushActivationEventSyncRegistrationFailed {
-                                        expect(event.error.code).to(equal(61002))
-                                        done()
-                                    }
-                                }
-                                stateMachine.send(ARTPushActivationEventCalledActivate())
-                            }
-                        }
-                        
-                        context("the local DeviceDetails matches the instance's client ID") {
-                            beforeEach {
-                                storage.simulateOnNextRead(string: testDeviceId, for: ARTDeviceIdKey)
-
-                                let testDeviceIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
-                                stateMachine.rest.device.setAndPersistIdentityTokenDetails(testDeviceIdentityTokenDetails)
-                            }
-                                
-                            afterEach {
-                                stateMachine.rest.device.setAndPersistIdentityTokenDetails(nil)
-                            }
-                            
-                            // RSH3a2a2, RSH3a2a4
-                            it("calls registerCallback, transitions to WaitingForRegistrationSync") {
-                                let delegate = StateMachineDelegateCustomCallbacks()
-                                stateMachine.delegate = delegate
-
-                                waitUntil(timeout: testTimeout) { done in
-                                    let partialDone = AblyTests.splitDone(3, done: done)
-                                    stateMachine.transitions = { event, previousState, currentState in
-                                        if event is ARTPushActivationEventCalledActivate {
-                                            expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
-                                            partialDone()
-                                        }
-                                        else if event is ARTPushActivationEventRegistrationSynced {
-                                            stateMachine.transitions = nil
-                                            partialDone()
-                                        }
-                                    }
-                                    delegate.onPushCustomRegister = { error, deviceDetails in
-                                        expect(error).to(beNil())
-                                        expect(deviceDetails).to(beIdenticalTo(rest.device))
-                                        partialDone()
-                                        return nil
-                                    }
-                                    stateMachine.send(ARTPushActivationEventCalledActivate())
-                                }
-
-                                expect(httpExecutor.requests.count) == 0
-                            }
-                            
-                            // RSH3a2a3, RSH3a2a4, RSH3b3c
-                            it("PUTs device registration, transitions to WaitingForRegistrationSync") {
-                                let delegate = StateMachineDelegate()
-                                stateMachine.delegate = delegate
-
-                                waitUntil(timeout: testTimeout) { done in
-                                    let partialDone = AblyTests.splitDone(2, done: done)
-                                    stateMachine.transitions = { event, previousState, currentState in
-                                        if event is ARTPushActivationEventCalledActivate {
-                                            expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
-                                            partialDone()
-                                        }
-                                        else if event is ARTPushActivationEventRegistrationSynced || event is ARTPushActivationEventSyncRegistrationFailed {
-                                            stateMachine.transitions = nil
-                                            partialDone()
-                                        }
-                                    }
-                                    stateMachine.send(ARTPushActivationEventCalledActivate())
-                                }
-                                
-                                let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(testDeviceId)" })
-                                expect(requests).to(haveCount(1))
-                                guard let request = httpExecutor.requests.first else {
-                                    fail("should have a \"/push/deviceRegistrations/:deviceId\" request"); return
-                                }
-                                guard let url = request.url else {
-                                    fail("should have a URL"); return
-                                }
-                                guard let rawBody = request.httpBody else {
-                                    fail("should have a body"); return
-                                }
-                                let decodedBody: Any
-                                do {
-                                    decodedBody = try stateMachine.rest.defaultEncoder.decode(rawBody)
-                                }
-                                catch {
-                                    fail("Decode failed: \(error)"); return
-                                }
-                                guard let body = decodedBody as? NSDictionary else {
-                                    fail("body is invalid"); return
-                                }
-                                expect(url.host).to(equal(rest.internal.options.restUrl().host))
-                                expect(request.httpMethod) == "PUT"
-                                expect(body.value(forKey: "id") as? String).to(equal(rest.device.id))
-                                expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(expectedPushRecipient))
-                                expect(body.value(forKey: "formFactor") as? String) == expectedFormFactor
-                                expect(body.value(forKey: "platform") as? String) == expectedPlatform
-                            }
-                        }
-                    }
+                    rsh3a2a()
 
                     // RSH3a2b
                     context("local device") {
@@ -263,9 +138,6 @@ class PushActivationStateMachine : QuickSpec {
 
             // RSH3b
             context("State WaitingForPushDeviceDetails") {
-
-                var stateMachine: ARTPushActivationStateMachine!
-                var storage: MockDeviceStorage!
 
                 beforeEach {
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForPushDeviceDetails(machine: initialStateMachine))
@@ -544,9 +416,6 @@ class PushActivationStateMachine : QuickSpec {
             // RSH3c
             context("State WaitingForDeviceRegistration") {
 
-                var stateMachine: ARTPushActivationStateMachine!
-                var storage: MockDeviceStorage!
-
                 beforeEach {
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeviceRegistration(machine: initialStateMachine))
                     rest.internal.storage = storage
@@ -614,9 +483,6 @@ class PushActivationStateMachine : QuickSpec {
             // RSH3d
             context("State WaitingForNewPushDeviceDetails") {
 
-                var stateMachine: ARTPushActivationStateMachine!
-                var storage: MockDeviceStorage!
-
                 beforeEach {
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForNewPushDeviceDetails(machine: initialStateMachine))
                     rest.internal.storage = storage
@@ -638,210 +504,7 @@ class PushActivationStateMachine : QuickSpec {
 
                 // RSH3d2
                 context("on Event CalledDeactivate") {
-
-                    // RSH3d2a, RSH3d2c, RSH3d2d
-                    it("should use custom deregisterCallback and fire Deregistered event") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
-
-                        let delegate = StateMachineDelegateCustomCallbacks()
-                        stateMachine.delegate = delegate
-
-                        waitUntil(timeout: testTimeout) { done in
-                            let partialDone = AblyTests.splitDone(3, done: done)
-                            stateMachine.transitions = { event, previousState, currentState in
-                                if event is ARTPushActivationEventCalledDeactivate {
-                                    // RSH3d2d
-                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
-                                    partialDone()
-                                }
-                                else if event is ARTPushActivationEventDeregistered {
-                                    stateMachine.transitions = nil
-                                    partialDone()
-                                }
-                            }
-                            delegate.onPushCustomDeregister = { error, deviceId in
-                                expect(error).to(beNil())
-                                expect(deviceId) == rest.device.id
-                                partialDone()
-                                return nil
-                            }
-                            stateMachine.send(ARTPushActivationEventCalledDeactivate())
-                        }
-
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
-                        expect(httpExecutor.requests.count) == 0
-                    }
-
-                    // RSH3d2c
-                    it("should use custom deregisterCallback and fire DeregistrationFailed event") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
-
-                        let delegate = StateMachineDelegateCustomCallbacks()
-                        stateMachine.delegate = delegate
-
-                        waitUntil(timeout: testTimeout) { done in
-                            let simulatedError = NSError(domain: ARTAblyErrorDomain, code: 1234, userInfo: nil)
-                            let partialDone = AblyTests.splitDone(3, done: done)
-                            stateMachine.transitions = { event, previousState, currentState in
-                                if event is ARTPushActivationEventCalledDeactivate {
-                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
-                                    partialDone()
-                                }
-                                else if let event = event as? ARTPushActivationEventDeregistrationFailed {
-                                    expect(event.error.domain) == ARTAblyErrorDomain
-                                    expect(event.error.code) == simulatedError.code
-                                    stateMachine.transitions = nil
-                                    partialDone()
-                                }
-                            }
-                            delegate.onPushCustomDeregister = { error, deviceId in
-                                expect(error).to(beNil())
-                                expect(deviceId) == rest.device.id
-                                partialDone()
-                                return simulatedError
-                            }
-                            stateMachine.send(ARTPushActivationEventCalledDeactivate())
-                        }
-
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
-                        expect(httpExecutor.requests.count) == 0
-                    }
-
-                    // RSH3d2b, RSH3d2c, RSH3d2d
-                    it("should fire Deregistered event and include DeviceSecret HTTP header") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
-
-                        let delegate = StateMachineDelegate()
-                        stateMachine.delegate = delegate
-
-                        waitUntil(timeout: testTimeout) { done in
-                            let partialDone = AblyTests.splitDone(2, done: done)
-                            stateMachine.transitions = { event, previousState, currentState in
-                                if event is ARTPushActivationEventCalledDeactivate {
-                                    // RSH3d2d
-                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
-                                    partialDone()
-                                }
-                                else if event is ARTPushActivationEventDeregistered {
-                                    stateMachine.transitions = nil
-                                    partialDone()
-                                }
-                            }
-                            stateMachine.send(ARTPushActivationEventCalledDeactivate())
-                        }
-
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
-                        expect(httpExecutor.requests.count) == 1
-                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(rest.device.id)" })
-                        expect(requests).to(haveCount(1))
-                        guard let request = httpExecutor.requests.first else {
-                            fail("should have a \"/push/deviceRegistrations\" request"); return
-                        }
-                        guard let url = request.url else {
-                            fail("should have a \"/push/deviceRegistrations\" URL"); return
-                        }
-                        expect(url.host).to(equal(rest.internal.options.restUrl().host))
-                        expect(request.httpMethod) == "DELETE"
-                        expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
-                        let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
-                        expect(deviceAuthorization).to(equal(rest.device.secret))
-                    }
-
-                    // RSH3d2b, RSH3d2c, RSH3d2d
-                    it("should fire Deregistered event and include DeviceIdentityToken HTTP header") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
-
-                        let delegate = StateMachineDelegate()
-                        stateMachine.delegate = delegate
-
-                        let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(
-                            token: "123456",
-                            issued: Date(),
-                            expires: Date.distantFuture,
-                            capability: "",
-                            clientId: ""
-                        )
-
-                        expect(rest.device.identityTokenDetails).to(beNil())
-                        rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
-                        defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
-                        expect(rest.device.identityTokenDetails).toNot(beNil())
-
-                        waitUntil(timeout: testTimeout) { done in
-                            let partialDone = AblyTests.splitDone(2, done: done)
-                            stateMachine.transitions = { event, previousState, currentState in
-                                if event is ARTPushActivationEventCalledDeactivate {
-                                    // RSH3d2d
-                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
-                                    partialDone()
-                                }
-                                else if event is ARTPushActivationEventDeregistered {
-                                    stateMachine.transitions = nil
-                                    partialDone()
-                                }
-                            }
-                            stateMachine.send(ARTPushActivationEventCalledDeactivate())
-                        }
-
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
-                        expect(httpExecutor.requests.count) == 1
-                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(rest.device.id)" })
-                        expect(requests).to(haveCount(1))
-                        guard let request = httpExecutor.requests.first else {
-                            fail("should have a \"/push/deviceRegistrations\" request"); return
-                        }
-                        guard let url = request.url else {
-                            fail("should have a \"/push/deviceRegistrations\" URL"); return
-                        }
-                        expect(url.host).to(equal(rest.internal.options.restUrl().host))
-                        expect(request.httpMethod) == "DELETE"
-                        expect(rest.device.identityTokenDetails).to(beNil())
-                        expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
-                        let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
-                        expect(deviceAuthorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
-                    }
-
-                    // RSH3d2c
-                    it("should fire DeregistrationFailed event") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
-
-                        let delegate = StateMachineDelegate()
-                        stateMachine.delegate = delegate
-
-                        let simulatedError = NSError(domain: ARTAblyErrorDomain, code: 1234, userInfo: nil)
-                        httpExecutor.simulateIncomingErrorOnNextRequest(simulatedError)
-
-                        waitUntil(timeout: testTimeout) { done in
-                            let partialDone = AblyTests.splitDone(2, done: done)
-                            stateMachine.transitions = { event, previousState, currentState in
-                                if event is ARTPushActivationEventCalledDeactivate {
-                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
-                                    partialDone()
-                                }
-                                else if let event = event as? ARTPushActivationEventDeregistrationFailed {
-                                    expect(event.error.domain) == ARTAblyErrorDomain
-                                    expect(event.error.code) == simulatedError.code
-                                    stateMachine.transitions = nil
-                                    partialDone()
-                                }
-                            }
-                            stateMachine.send(ARTPushActivationEventCalledDeactivate())
-                        }
-
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
-                        expect(httpExecutor.requests.count) == 1
-                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(rest.device.id)" })
-                        expect(requests).to(haveCount(1))
-                        guard let request = httpExecutor.requests.first else {
-                            fail("should have a \"/push/deviceRegistrations\" request"); return
-                        }
-                        guard let url = request.url else {
-                            fail("should have a \"/push/deviceRegistrations\" URL"); return
-                        }
-                        expect(url.host).to(equal(rest.internal.options.restUrl().host))
-                        expect(request.httpMethod) == "DELETE"
-                    }
-
+                    rsh3d2()
                 }
 
             }
@@ -852,8 +515,6 @@ class PushActivationStateMachine : QuickSpec {
                 ARTPushActivationEventGotPushDeviceDetails()
             ] {
                 context("State WaitingForRegistrationSync through \(fromEvent)") {
-                    var stateMachine: ARTPushActivationStateMachine!
-                    var storage: MockDeviceStorage!
 
                     beforeEach {
                         storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForRegistrationSync(machine: initialStateMachine, from: fromEvent))
@@ -945,9 +606,6 @@ class PushActivationStateMachine : QuickSpec {
             // RSH3f
             context("State AfterRegistrationSyncFailed") {
 
-                var stateMachine: ARTPushActivationStateMachine!
-                var storage: MockDeviceStorage!
-
                 beforeEach {
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateAfterRegistrationSyncFailed(machine: initialStateMachine))
                     rest.internal.storage = storage
@@ -956,660 +614,23 @@ class PushActivationStateMachine : QuickSpec {
 
                 // RSH3f1
                 context("on Event CalledActivate") {
-                    it("should use custom registerCallback and fire RegistrationSynced event") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
-
-                        let delegate = StateMachineDelegateCustomCallbacks()
-                        stateMachine.delegate = delegate
-
-                        waitUntil(timeout: testTimeout) { done in
-                            let partialDone = AblyTests.splitDone(3, done: done)
-                            stateMachine.transitions = { event, previousState, currentState in
-                                if event is ARTPushActivationEventCalledActivate {
-                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
-                                    partialDone()
-                                }
-                                else if event is ARTPushActivationEventRegistrationSynced {
-                                    stateMachine.transitions = nil
-                                    partialDone()
-                                }
-                            }
-                            delegate.onPushCustomRegister = { error, deviceDetails in
-                                expect(error).to(beNil())
-                                expect(deviceDetails).to(beIdenticalTo(rest.device))
-                                partialDone()
-                                return nil
-                            }
-                            stateMachine.send(ARTPushActivationEventCalledActivate())
-                        }
-
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
-                        expect(httpExecutor.requests.count) == 0
-                    }
-
-                    it("should use custom registerCallback and fire SyncRegistrationFailed event") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
-
-                        let delegate = StateMachineDelegateCustomCallbacks()
-                        stateMachine.delegate = delegate
-
-                        waitUntil(timeout: testTimeout) { done in
-                            let simulatedError = NSError(domain: ARTAblyErrorDomain, code: 1234, userInfo: nil)
-                            let partialDone = AblyTests.splitDone(3, done: done)
-                            stateMachine.transitions = { event, previousState, currentState in
-                                if event is ARTPushActivationEventCalledActivate {
-                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
-                                    partialDone()
-                                }
-                                else if let event = event as? ARTPushActivationEventSyncRegistrationFailed {
-                                    expect(event.error.domain) == ARTAblyErrorDomain
-                                    expect(event.error.code) == simulatedError.code
-                                    stateMachine.transitions = nil
-                                    partialDone()
-                                }
-                            }
-                            delegate.onPushCustomRegister = { error, deviceDetails in
-                                expect(error).to(beNil())
-                                expect(deviceDetails).to(beIdenticalTo(rest.device))
-                                partialDone()
-                                return simulatedError
-                            }
-                            stateMachine.send(ARTPushActivationEventCalledActivate())
-                        }
-
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
-                        expect(httpExecutor.requests.count) == 0
-                    }
-
-                    it("should fire SyncRegistrationFailed event and include device auth") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
-
-                        let delegate = StateMachineDelegate()
-                        stateMachine.delegate = delegate
-
-                        let deviceIdentityToken = stateMachine.rest.device.identityTokenDetails?.token.base64Encoded()
-
-                        let simulatedError = NSError(domain: ARTAblyErrorDomain, code: 1234, userInfo: nil)
-                        httpExecutor.simulateIncomingErrorOnNextRequest(simulatedError)
-
-                        waitUntil(timeout: testTimeout) { done in
-                            let partialDone = AblyTests.splitDone(2, done: done)
-                            stateMachine.transitions = { event, previousState, currentState in
-                                if event is ARTPushActivationEventCalledActivate {
-                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
-                                    partialDone()
-                                }
-                                else if let event = event as? ARTPushActivationEventSyncRegistrationFailed {
-                                    expect(event.error.domain) == ARTAblyErrorDomain
-                                    expect(event.error.code) == simulatedError.code
-                                    stateMachine.transitions = nil
-                                    partialDone()
-                                }
-                            }
-                            stateMachine.send(ARTPushActivationEventCalledActivate())
-                        }
-
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
-                        expect(httpExecutor.requests.count) == 1
-                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(stateMachine.rest.device.id)" })
-                        expect(requests).to(haveCount(1))
-                        guard let request = httpExecutor.requests.first else {
-                            fail("should have a \"/push/deviceRegistrations\" request"); return
-                        }
-                        guard let url = request.url else {
-                            fail("should have a \"/push/deviceRegistrations\" URL"); return
-                        }
-                        guard let rawBody = request.httpBody else {
-                            fail("should have a body"); return
-                        }
-                        let decodedBody: Any
-                        do {
-                            decodedBody = try stateMachine.rest.defaultEncoder.decode(rawBody)
-                        }
-                        catch {
-                            fail("Decode failed: \(error)"); return
-                        }
-                        guard let body = decodedBody as? NSDictionary else {
-                            fail("body is invalid"); return
-                        }
-                        expect(url.host).to(equal(rest.internal.options.restUrl().host))
-                        expect(request.httpMethod) == "PATCH"
-                        expect(body.value(forKey: "id")).to(beNil())
-                        expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(["recipient": ["transportType": "apns"]]))
-                        expect(body.value(forKey: "formFactor")).to(beNil())
-                        expect(body.value(forKey: "platform")).to(beNil())
-                        expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
-                        let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
-                        expect(deviceAuthorization).to(equal(deviceIdentityToken))
-                    }
-
-                    it("should fire RegistrationSynced event and include device auth") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
-
-                        let delegate = StateMachineDelegate()
-                        stateMachine.delegate = delegate
-                        
-                        let deviceIdentityToken = stateMachine.rest.device.identityTokenDetails?.token.base64Encoded()
-
-                        let hookDevice = stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
-                            fail("'setAndPersistIdentityTokenDetails:' should not be called")
-                        }
-                        defer { hookDevice.remove() }
-
-                        waitUntil(timeout: testTimeout) { done in
-                            let partialDone = AblyTests.splitDone(2, done: done)
-                            stateMachine.transitions = { event, previousState, currentState in
-                                if event is ARTPushActivationEventCalledActivate {
-                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
-                                    partialDone()
-                                }
-                                else if event is ARTPushActivationEventRegistrationSynced {
-                                    stateMachine.transitions = nil
-                                    partialDone()
-                                }
-                            }
-                            stateMachine.send(ARTPushActivationEventCalledActivate())
-                        }
-
-                        expect(stateMachine.rest.device.identityTokenDetails).toNot(beNil())
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
-                        expect(httpExecutor.requests.count) == 1
-                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(stateMachine.rest.device.id)" })
-                        expect(requests).to(haveCount(1))
-                        guard let request = httpExecutor.requests.first else {
-                            fail("should have a \"/push/deviceRegistrations\" request"); return
-                        }
-                        guard let url = request.url else {
-                            fail("should have a \"/push/deviceRegistrations\" URL"); return
-                        }
-                        guard let rawBody = request.httpBody else {
-                            fail("should have a body"); return
-                        }
-                        let decodedBody: Any
-                        do {
-                            decodedBody = try stateMachine.rest.defaultEncoder.decode(rawBody)
-                        }
-                        catch {
-                            fail("Decode failed: \(error)"); return
-                        }
-                        guard let body = decodedBody as? NSDictionary else {
-                            fail("body is invalid"); return
-                        }
-                        expect(url.host).to(equal(rest.internal.options.restUrl().host))
-                        expect(request.httpMethod) == "PATCH"
-                        expect(body.value(forKey: "id")).to(beNil())
-                        expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(["recipient": ["transportType": "apns"]]))
-                        expect(body.value(forKey: "formFactor")).to(beNil())
-                        expect(body.value(forKey: "platform")).to(beNil())
-                        expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
-                        let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
-                        expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]).to(beNil())
-                        expect(deviceAuthorization).to(equal(deviceIdentityToken))
-                    }
-
-                    it("should transition to WaitingForRegistrationSync") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
-
-                        let delegate = StateMachineDelegate()
-                        stateMachine.delegate = delegate
-
-                        let hookDevice = stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
-                            fail("'setAndPersistIdentityTokenDetails:' should not be called")
-                        }
-                        defer { hookDevice.remove() }
-
-                        waitUntil(timeout: testTimeout) { done in
-                            stateMachine.transitions = { event, previousState, currentState in
-                                if event is ARTPushActivationEventCalledActivate {
-                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
-                                    stateMachine.transitions = nil
-                                    done()
-                                }
-                            }
-                            stateMachine.send(ARTPushActivationEventCalledActivate())
-                        }
-                    }
+                    rsh3a2a()
                 }
 
                 // RSH3f1
                 context("on Event GotPushDeviceDetails") {
-                    it("should use custom registerCallback and fire RegistrationSynced event") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
-
-                        let delegate = StateMachineDelegateCustomCallbacks()
-                        stateMachine.delegate = delegate
-
-                        waitUntil(timeout: testTimeout) { done in
-                            let partialDone = AblyTests.splitDone(2, done: done)
-                            stateMachine.transitions = { event, previousState, currentState in
-                                if event is ARTPushActivationEventRegistrationSynced {
-                                    stateMachine.transitions = nil
-                                    partialDone()
-                                }
-                            }
-                            delegate.onPushCustomRegister = { error, deviceDetails in
-                                expect(error).to(beNil())
-                                expect(deviceDetails).to(beIdenticalTo(rest.device))
-                                partialDone()
-                                return nil
-                            }
-                            stateMachine.send(ARTPushActivationEventGotPushDeviceDetails())
-                            expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
-                        }
-
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
-                        expect(httpExecutor.requests.count) == 0
-                    }
-
-                    it("should use custom registerCallback and fire SyncRegistrationFailed event") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
-
-                        let delegate = StateMachineDelegateCustomCallbacks()
-                        stateMachine.delegate = delegate
-
-                        waitUntil(timeout: testTimeout) { done in
-                            let simulatedError = NSError(domain: ARTAblyErrorDomain, code: 1234, userInfo: nil)
-                            let partialDone = AblyTests.splitDone(2, done: done)
-                            stateMachine.transitions = { event, previousState, currentState in
-                                if let event = event as? ARTPushActivationEventSyncRegistrationFailed {
-                                    expect(event.error.domain) == ARTAblyErrorDomain
-                                    expect(event.error.code) == simulatedError.code
-                                    stateMachine.transitions = nil
-                                    partialDone()
-                                }
-                            }
-                            delegate.onPushCustomRegister = { error, deviceDetails in
-                                expect(error).to(beNil())
-                                expect(deviceDetails).to(beIdenticalTo(rest.device))
-                                partialDone()
-                                return simulatedError
-                            }
-                            stateMachine.send(ARTPushActivationEventGotPushDeviceDetails())
-                            expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
-                        }
-
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
-                        expect(httpExecutor.requests.count) == 0
-                    }
-
-                    it("should fire SyncRegistrationFailed event and include device auth") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
-
-                        let delegate = StateMachineDelegate()
-                        stateMachine.delegate = delegate
-
-                        let deviceIdentityToken = stateMachine.rest.device.identityTokenDetails?.token.base64Encoded()
-
-                        let simulatedError = NSError(domain: ARTAblyErrorDomain, code: 1234, userInfo: nil)
-                        httpExecutor.simulateIncomingErrorOnNextRequest(simulatedError)
-
-                        waitUntil(timeout: testTimeout) { done in
-                            stateMachine.transitions = { event, previousState, currentState in
-                                if let event = event as? ARTPushActivationEventSyncRegistrationFailed {
-                                    expect(event.error.domain) == ARTAblyErrorDomain
-                                    expect(event.error.code) == simulatedError.code
-                                    stateMachine.transitions = nil
-                                    done()
-                                }
-                            }
-                            stateMachine.send(ARTPushActivationEventGotPushDeviceDetails())
-                            expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
-                        }
-
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
-                        expect(httpExecutor.requests.count) == 1
-                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(stateMachine.rest.device.id)" })
-                        expect(requests).to(haveCount(1))
-                        guard let request = httpExecutor.requests.first else {
-                            fail("should have a \"/push/deviceRegistrations\" request"); return
-                        }
-                        guard let url = request.url else {
-                            fail("should have a \"/push/deviceRegistrations\" URL"); return
-                        }
-                        guard let rawBody = request.httpBody else {
-                            fail("should have a body"); return
-                        }
-                        let decodedBody: Any
-                        do {
-                            decodedBody = try stateMachine.rest.defaultEncoder.decode(rawBody)
-                        }
-                        catch {
-                            fail("Decode failed: \(error)"); return
-                        }
-                        guard let body = decodedBody as? NSDictionary else {
-                            fail("body is invalid"); return
-                        }
-                        expect(body.value(forKey: "id")).to(beNil())
-                        expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(["recipient": ["transportType": "apns"]]))
-                        expect(body.value(forKey: "formFactor")).to(beNil())
-                        expect(body.value(forKey: "platform")).to(beNil())
-                        expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
-                        let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
-                        expect(deviceAuthorization).to(equal(deviceIdentityToken))
-                    }
-
-                    it("should fire RegistrationSynced event and include device auth") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
-
-                        let delegate = StateMachineDelegate()
-                        stateMachine.delegate = delegate
-
-                        guard let deviceIdentityToken = stateMachine.rest.device.identityTokenDetails?.token else {
-                            fail("Unexpected 'identityTokenDetails' is nil")
-                            return
-                        }
-
-                        let hookDevice = stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
-                            fail("'setAndPersistIdentityTokenDetails:' should not be called")
-                        }
-                        defer { hookDevice.remove() }
-
-                        waitUntil(timeout: testTimeout) { done in
-                            let partialDone = AblyTests.splitDone(2, done: done)
-                            stateMachine.transitions = { event, previousState, currentState in
-                                if event is ARTPushActivationEventGotPushDeviceDetails {
-                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
-                                    partialDone()
-                                }
-                                else if event is ARTPushActivationEventRegistrationSynced {
-                                    stateMachine.transitions = nil
-                                    partialDone()
-                                }
-                            }
-                            stateMachine.send(ARTPushActivationEventGotPushDeviceDetails())
-                        }
-
-                        expect(stateMachine.rest.device.identityTokenDetails?.token).to(equal(deviceIdentityToken))
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
-                        expect(httpExecutor.requests.count) == 1
-                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(stateMachine.rest.device.id)" })
-                        expect(requests).to(haveCount(1))
-                        guard let request = httpExecutor.requests.first else {
-                            fail("should have a \"/push/deviceRegistrations\" request"); return
-                        }
-                        guard let url = request.url else {
-                            fail("should have a \"/push/deviceRegistrations\" URL"); return
-                        }
-                        guard let rawBody = request.httpBody else {
-                            fail("should have a body"); return
-                        }
-                        let decodedBody: Any
-                        do {
-                            decodedBody = try stateMachine.rest.defaultEncoder.decode(rawBody)
-                        }
-                        catch {
-                            fail("Decode failed: \(error)"); return
-                        }
-                        guard let body = decodedBody as? NSDictionary else {
-                            fail("body is invalid"); return
-                        }
-                        expect(url.host).to(equal(rest.internal.options.restUrl().host))
-                        expect(request.httpMethod) == "PATCH"
-                        expect(body.value(forKey: "id")).to(beNil())
-                        expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(["recipient": ["transportType": "apns"]]))
-                        expect(body.value(forKey: "formFactor")).to(beNil())
-                        expect(body.value(forKey: "platform")).to(beNil())
-                        expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
-                        let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
-                        expect(deviceAuthorization).to(equal(deviceIdentityToken.base64Encoded()))
-                    }
-
-                    it("should transition to WaitingForRegistrationSync") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
-
-                        let delegate = StateMachineDelegate()
-                        stateMachine.delegate = delegate
-
-                        let hookDevice = stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
-                            fail("'setAndPersistIdentityTokenDetails:' should not be called")
-                        }
-                        defer { hookDevice.remove() }
-
-                        waitUntil(timeout: testTimeout) { done in
-                            stateMachine.transitions = { event, previousState, currentState in
-                                if event is ARTPushActivationEventGotPushDeviceDetails {
-                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
-                                    stateMachine.transitions = nil
-                                    done()
-                                }
-                            }
-                            stateMachine.send(ARTPushActivationEventGotPushDeviceDetails())
-                        }
-                    }
+                    rsh3a2a()
                 }
 
                 // RSH3f2
                 context("on Event CalledDeactivate") {
-                    it("should use custom deregisterCallback and fire Deregistered event") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
-
-                        let delegate = StateMachineDelegateCustomCallbacks()
-                        stateMachine.delegate = delegate
-
-                        waitUntil(timeout: testTimeout) { done in
-                            let partialDone = AblyTests.splitDone(3, done: done)
-                            stateMachine.transitions = { event, previousState, currentState in
-                                if event is ARTPushActivationEventCalledDeactivate {
-                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
-                                    partialDone()
-                                }
-                                else if event is ARTPushActivationEventDeregistered {
-                                    stateMachine.transitions = nil
-                                    partialDone()
-                                }
-                            }
-                            delegate.onPushCustomDeregister = { error, deviceId in
-                                expect(error).to(beNil())
-                                expect(deviceId) == rest.device.id
-                                partialDone()
-                                return nil
-                            }
-                            stateMachine.send(ARTPushActivationEventCalledDeactivate())
-                        }
-
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
-                        expect(httpExecutor.requests.count) == 0
-                    }
-
-                    it("should use custom deregisterCallback and fire DeregistrationFailed event") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
-
-                        let delegate = StateMachineDelegateCustomCallbacks()
-                        stateMachine.delegate = delegate
-
-                        waitUntil(timeout: testTimeout) { done in
-                            let simulatedError = NSError(domain: ARTAblyErrorDomain, code: 1234, userInfo: nil)
-                            let partialDone = AblyTests.splitDone(3, done: done)
-                            stateMachine.transitions = { event, previousState, currentState in
-                                if event is ARTPushActivationEventCalledDeactivate {
-                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
-                                    partialDone()
-                                }
-                                else if let event = event as? ARTPushActivationEventDeregistrationFailed {
-                                    expect(event.error.domain) == ARTAblyErrorDomain
-                                    expect(event.error.code) == simulatedError.code
-                                    stateMachine.transitions = nil
-                                    partialDone()
-                                }
-                            }
-                            delegate.onPushCustomDeregister = { error, deviceId in
-                                expect(error).to(beNil())
-                                expect(deviceId) == rest.device.id
-                                partialDone()
-                                return simulatedError
-                            }
-                            stateMachine.send(ARTPushActivationEventCalledDeactivate())
-                        }
-
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
-                        expect(httpExecutor.requests.count) == 0
-                    }
-
-                    it("should fire Deregistered event and include DeviceSecret HTTP header") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
-
-                        let delegate = StateMachineDelegate()
-                        stateMachine.delegate = delegate
-
-                        waitUntil(timeout: testTimeout) { done in
-                            let partialDone = AblyTests.splitDone(2, done: done)
-                            stateMachine.transitions = { event, previousState, currentState in
-                                if event is ARTPushActivationEventCalledDeactivate {
-                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
-                                    partialDone()
-                                }
-                                else if event is ARTPushActivationEventDeregistered {
-                                    stateMachine.transitions = nil
-                                    partialDone()
-                                }
-                            }
-                            stateMachine.send(ARTPushActivationEventCalledDeactivate())
-                        }
-
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
-                        expect(httpExecutor.requests.count) == 1
-                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(rest.device.id)" })
-                        expect(requests).to(haveCount(1))
-                        guard let request = httpExecutor.requests.first else {
-                            fail("should have a \"/push/deviceRegistrations\" request"); return
-                        }
-                        guard let url = request.url else {
-                            fail("should have a \"/push/deviceRegistrations\" URL"); return
-                        }
-                        expect(url.host).to(equal(rest.internal.options.restUrl().host))
-                        expect(request.httpMethod) == "DELETE"
-                        expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
-                        let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
-                        expect(deviceAuthorization).to(equal(rest.device.secret))
-                    }
-
-                    it("should fire Deregistered event and include DeviceIdentityToken HTTP header") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
-
-                        let delegate = StateMachineDelegate()
-                        stateMachine.delegate = delegate
-
-                        let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(
-                            token: "123456",
-                            issued: Date(),
-                            expires: Date.distantFuture,
-                            capability: "",
-                            clientId: ""
-                        )
-
-                        expect(rest.device.identityTokenDetails).to(beNil())
-                        rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
-                        defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
-                        expect(rest.device.identityTokenDetails).toNot(beNil())
-
-                        waitUntil(timeout: testTimeout) { done in
-                            let partialDone = AblyTests.splitDone(2, done: done)
-                            stateMachine.transitions = { event, previousState, currentState in
-                                if event is ARTPushActivationEventCalledDeactivate {
-                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
-                                    partialDone()
-                                }
-                                else if event is ARTPushActivationEventDeregistered {
-                                    stateMachine.transitions = nil
-                                    partialDone()
-                                }
-                            }
-                            stateMachine.send(ARTPushActivationEventCalledDeactivate())
-                        }
-
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
-                        expect(httpExecutor.requests.count) == 1
-                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(rest.device.id)" })
-                        expect(requests).to(haveCount(1))
-                        guard let request = httpExecutor.requests.first else {
-                            fail("should have a \"/push/deviceRegistrations\" request"); return
-                        }
-                        guard let url = request.url else {
-                            fail("should have a \"/push/deviceRegistrations\" URL"); return
-                        }
-                        expect(url.host).to(equal(rest.internal.options.restUrl().host))
-                        expect(request.httpMethod) == "DELETE"
-                        expect(rest.device.identityTokenDetails).to(beNil())
-                        expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
-                        let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
-                        expect(deviceAuthorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
-                    }
-
-                    it("should fire DeregistrationFailed event") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
-
-                        let delegate = StateMachineDelegate()
-                        stateMachine.delegate = delegate
-
-                        let simulatedError = NSError(domain: ARTAblyErrorDomain, code: 1234, userInfo: nil)
-                        httpExecutor.simulateIncomingErrorOnNextRequest(simulatedError)
-
-                        waitUntil(timeout: testTimeout) { done in
-                            let partialDone = AblyTests.splitDone(2, done: done)
-                            stateMachine.transitions = { event, previousState, currentState in
-                                if event is ARTPushActivationEventCalledDeactivate {
-                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
-                                    partialDone()
-                                }
-                                else if let event = event as? ARTPushActivationEventDeregistrationFailed {
-                                    expect(event.error.domain) == ARTAblyErrorDomain
-                                    expect(event.error.code) == simulatedError.code
-                                    stateMachine.transitions = nil
-                                    partialDone()
-                                }
-                            }
-                            stateMachine.send(ARTPushActivationEventCalledDeactivate())
-                        }
-
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
-                        expect(httpExecutor.requests.count) == 1
-                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(rest.device.id)" })
-                        expect(requests).to(haveCount(1))
-                        guard let request = httpExecutor.requests.first else {
-                            fail("should have a \"/push/deviceRegistrations\" request"); return
-                        }
-                        guard let url = request.url else {
-                            fail("should have a \"/push/deviceRegistrations\" URL"); return
-                        }
-                        expect(url.host).to(equal(rest.internal.options.restUrl().host))
-                        expect(request.httpMethod) == "DELETE"
-                    }
-
-                    it("should transition to WaitingForDeregistration") {
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
-
-                        let delegate = StateMachineDelegate()
-                        stateMachine.delegate = delegate
-
-                        var setAndPersistIdentityTokenDetailsCalled = false
-                        let hookDevice = stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
-                            setAndPersistIdentityTokenDetailsCalled = true
-                        }
-                        defer { hookDevice.remove() }
-
-                        waitUntil(timeout: testTimeout) { done in
-                            stateMachine.transitions = { event, previousState, currentState in
-                                if event is ARTPushActivationEventCalledDeactivate {
-                                    stateMachine.transitions = nil
-                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
-                                    done()
-                                }
-                            }
-                            stateMachine.send(ARTPushActivationEventCalledDeactivate())
-                        }
-
-                        expect(stateMachine.lastEvent).toEventually(beAKindOf(ARTPushActivationEventDeregistered.self), timeout: testTimeout)
-                        expect(setAndPersistIdentityTokenDetailsCalled) == true
-                    }
+                    rsh3d2()
                 }
 
             }
 
             // RSH3g
             context("State WaitingForDeregistration") {
-
-                var stateMachine: ARTPushActivationStateMachine!
-                var storage: MockDeviceStorage!
 
                 beforeEach {
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeregistration(machine: initialStateMachine))
@@ -1730,6 +751,329 @@ class PushActivationStateMachine : QuickSpec {
             expect(rest.device.isRegistered()) == false
             expect(storage.object(forKey: ARTDeviceIdentityTokenKey)).to(beNil())
         }
+
+                func rsh3a2a() {
+            context("the local device has id and deviceIdentityToken") {
+                let testDeviceId = "aaaa"
+                
+                // RSH3a2a1
+                it("emits a SyncRegistrationFailed event with code 61002 if client IDs don't match") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    options.clientId = "deviceClient"
+                    let rest = ARTRest(options: options)
+                    rest.internal.storage = storage
+                    expect(rest.device.clientId).to(equal("deviceClient"))
+
+                    let newOptions = ARTClientOptions(key: "xxxx:xxxx")
+                    newOptions.clientId = "instanceClient"
+                    let newRest = ARTRest(options: newOptions)
+                    newRest.internal.storage = storage
+                    let stateMachine = ARTPushActivationStateMachine(newRest.internal)
+                    
+                    storage.simulateOnNextRead(string: testDeviceId, for: ARTDeviceIdKey)
+
+                    let testDeviceIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "deviceClient")
+                    stateMachine.rest.device.setAndPersistIdentityTokenDetails(testDeviceIdentityTokenDetails)
+                    defer { stateMachine.rest.device.setAndPersistIdentityTokenDetails(nil) }
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        stateMachine.transitions = { event, _, _ in
+                            if let event = event as? ARTPushActivationEventSyncRegistrationFailed {
+                                expect(event.error.code).to(equal(61002))
+                                done()
+                            }
+                        }
+                        stateMachine.send(ARTPushActivationEventCalledActivate())
+                    }
+                }
+                
+                context("the local DeviceDetails matches the instance's client ID") {
+                    beforeEach {
+                        storage.simulateOnNextRead(string: testDeviceId, for: ARTDeviceIdKey)
+
+                        let testDeviceIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
+                        stateMachine.rest.device.setAndPersistIdentityTokenDetails(testDeviceIdentityTokenDetails)
+                    }
+                        
+                    afterEach {
+                        stateMachine.rest.device.setAndPersistIdentityTokenDetails(nil)
+                    }
+                    
+                    // RSH3a2a2, RSH3a2a4
+                    it("calls registerCallback, transitions to WaitingForRegistrationSync") {
+                        let delegate = StateMachineDelegateCustomCallbacks()
+                        stateMachine.delegate = delegate
+
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(3, done: done)
+                            stateMachine.transitions = { event, previousState, currentState in
+                                if event is ARTPushActivationEventCalledActivate {
+                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
+                                    partialDone()
+                                }
+                                else if event is ARTPushActivationEventRegistrationSynced {
+                                    stateMachine.transitions = nil
+                                    partialDone()
+                                }
+                            }
+                            delegate.onPushCustomRegister = { error, deviceDetails in
+                                expect(error).to(beNil())
+                                expect(deviceDetails).to(beIdenticalTo(rest.device))
+                                partialDone()
+                                return nil
+                            }
+                            stateMachine.send(ARTPushActivationEventCalledActivate())
+                        }
+
+                        expect(httpExecutor.requests.count) == 0
+                    }
+                    
+                    // RSH3a2a3, RSH3a2a4, RSH3b3c
+                    it("PUTs device registration, transitions to WaitingForRegistrationSync") {
+                        let delegate = StateMachineDelegate()
+                        stateMachine.delegate = delegate
+
+                        waitUntil(timeout: testTimeout) { done in
+                            let partialDone = AblyTests.splitDone(2, done: done)
+                            stateMachine.transitions = { event, previousState, currentState in
+                                if event is ARTPushActivationEventCalledActivate {
+                                    expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
+                                    partialDone()
+                                }
+                                else if event is ARTPushActivationEventRegistrationSynced || event is ARTPushActivationEventSyncRegistrationFailed {
+                                    stateMachine.transitions = nil
+                                    partialDone()
+                                }
+                            }
+                            stateMachine.send(ARTPushActivationEventCalledActivate())
+                        }
+                        
+                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(testDeviceId)" })
+                        expect(requests).to(haveCount(1))
+                        guard let request = httpExecutor.requests.first else {
+                            fail("should have a \"/push/deviceRegistrations/:deviceId\" request"); return
+                        }
+                        guard let url = request.url else {
+                            fail("should have a URL"); return
+                        }
+                        guard let rawBody = request.httpBody else {
+                            fail("should have a body"); return
+                        }
+                        let decodedBody: Any
+                        do {
+                            decodedBody = try stateMachine.rest.defaultEncoder.decode(rawBody)
+                        }
+                        catch {
+                            fail("Decode failed: \(error)"); return
+                        }
+                        guard let body = decodedBody as? NSDictionary else {
+                            fail("body is invalid"); return
+                        }
+                        expect(url.host).to(equal(rest.internal.options.restUrl().host))
+                        expect(request.httpMethod) == "PUT"
+                        expect(body.value(forKey: "id") as? String).to(equal(rest.device.id))
+                        expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(expectedPushRecipient))
+                        expect(body.value(forKey: "formFactor") as? String) == expectedFormFactor
+                        expect(body.value(forKey: "platform") as? String) == expectedPlatform
+                    }
+                }
+            }
+        }
+
+        func rsh3d2() {
+            // RSH3d2a, RSH3d2c, RSH3d2d
+            it("should use custom deregisterCallback and fire Deregistered event") {
+                let delegate = StateMachineDelegateCustomCallbacks()
+                stateMachine.delegate = delegate
+
+                waitUntil(timeout: testTimeout) { done in
+                    let partialDone = AblyTests.splitDone(3, done: done)
+                    stateMachine.transitions = { event, previousState, currentState in
+                        if event is ARTPushActivationEventCalledDeactivate {
+                            // RSH3d2d
+                            expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
+                            partialDone()
+                        }
+                        else if event is ARTPushActivationEventDeregistered {
+                            stateMachine.transitions = nil
+                            partialDone()
+                        }
+                    }
+                    delegate.onPushCustomDeregister = { error, deviceId in
+                        expect(error).to(beNil())
+                        expect(deviceId) == rest.device.id
+                        partialDone()
+                        return nil
+                    }
+                    stateMachine.send(ARTPushActivationEventCalledDeactivate())
+                }
+
+                expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
+                expect(httpExecutor.requests.count) == 0
+            }
+
+            // RSH3d2c
+            it("should use custom deregisterCallback and fire DeregistrationFailed event") {
+                let delegate = StateMachineDelegateCustomCallbacks()
+                stateMachine.delegate = delegate
+
+                waitUntil(timeout: testTimeout) { done in
+                    let simulatedError = NSError(domain: ARTAblyErrorDomain, code: 1234, userInfo: nil)
+                    let partialDone = AblyTests.splitDone(3, done: done)
+                    stateMachine.transitions = { event, previousState, currentState in
+                        if event is ARTPushActivationEventCalledDeactivate {
+                            expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
+                            partialDone()
+                        }
+                        else if let event = event as? ARTPushActivationEventDeregistrationFailed {
+                            expect(event.error.domain) == ARTAblyErrorDomain
+                            expect(event.error.code) == simulatedError.code
+                            stateMachine.transitions = nil
+                            partialDone()
+                        }
+                    }
+                    delegate.onPushCustomDeregister = { error, deviceId in
+                        expect(error).to(beNil())
+                        expect(deviceId) == rest.device.id
+                        partialDone()
+                        return simulatedError
+                    }
+                    stateMachine.send(ARTPushActivationEventCalledDeactivate())
+                }
+
+                expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
+                expect(httpExecutor.requests.count) == 0
+            }
+
+            // RSH3d2b, RSH3d2c, RSH3d2d
+            it("should fire Deregistered event and include DeviceSecret HTTP header") {
+                let delegate = StateMachineDelegate()
+                stateMachine.delegate = delegate
+
+                waitUntil(timeout: testTimeout) { done in
+                    let partialDone = AblyTests.splitDone(2, done: done)
+                    stateMachine.transitions = { event, previousState, currentState in
+                        if event is ARTPushActivationEventCalledDeactivate {
+                            // RSH3d2d
+                            expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
+                            partialDone()
+                        }
+                        else if event is ARTPushActivationEventDeregistered {
+                            stateMachine.transitions = nil
+                            partialDone()
+                        }
+                    }
+                    stateMachine.send(ARTPushActivationEventCalledDeactivate())
+                }
+
+                expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
+                expect(httpExecutor.requests.count) == 1
+                let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(rest.device.id)" })
+                expect(requests).to(haveCount(1))
+                guard let request = httpExecutor.requests.first else {
+                    fail("should have a \"/push/deviceRegistrations\" request"); return
+                }
+                guard let url = request.url else {
+                    fail("should have a \"/push/deviceRegistrations\" URL"); return
+                }
+                expect(url.host).to(equal(rest.internal.options.restUrl().host))
+                expect(request.httpMethod) == "DELETE"
+                expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
+                let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
+                expect(deviceAuthorization).to(equal(rest.device.secret))
+            }
+
+            // RSH3d2b, RSH3d2c, RSH3d2d
+            it("should fire Deregistered event and include DeviceIdentityToken HTTP header") {
+                let delegate = StateMachineDelegate()
+                stateMachine.delegate = delegate
+
+                let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(
+                    token: "123456",
+                    issued: Date(),
+                    expires: Date.distantFuture,
+                    capability: "",
+                    clientId: ""
+                )
+
+                expect(rest.device.identityTokenDetails).to(beNil())
+                rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
+                defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
+                expect(rest.device.identityTokenDetails).toNot(beNil())
+
+                waitUntil(timeout: testTimeout) { done in
+                    let partialDone = AblyTests.splitDone(2, done: done)
+                    stateMachine.transitions = { event, previousState, currentState in
+                        if event is ARTPushActivationEventCalledDeactivate {
+                            // RSH3d2d
+                            expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
+                            partialDone()
+                        }
+                        else if event is ARTPushActivationEventDeregistered {
+                            stateMachine.transitions = nil
+                            partialDone()
+                        }
+                    }
+                    stateMachine.send(ARTPushActivationEventCalledDeactivate())
+                }
+
+                expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
+                expect(httpExecutor.requests.count) == 1
+                let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(rest.device.id)" })
+                expect(requests).to(haveCount(1))
+                guard let request = httpExecutor.requests.first else {
+                    fail("should have a \"/push/deviceRegistrations\" request"); return
+                }
+                guard let url = request.url else {
+                    fail("should have a \"/push/deviceRegistrations\" URL"); return
+                }
+                expect(url.host).to(equal(rest.internal.options.restUrl().host))
+                expect(request.httpMethod) == "DELETE"
+                expect(rest.device.identityTokenDetails).to(beNil())
+                expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
+                let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
+                expect(deviceAuthorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
+            }
+
+            // RSH3d2c
+            it("should fire DeregistrationFailed event") {
+                let delegate = StateMachineDelegate()
+                stateMachine.delegate = delegate
+
+                let simulatedError = NSError(domain: ARTAblyErrorDomain, code: 1234, userInfo: nil)
+                httpExecutor.simulateIncomingErrorOnNextRequest(simulatedError)
+
+                waitUntil(timeout: testTimeout) { done in
+                    let partialDone = AblyTests.splitDone(2, done: done)
+                    stateMachine.transitions = { event, previousState, currentState in
+                        if event is ARTPushActivationEventCalledDeactivate {
+                            expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
+                            partialDone()
+                        }
+                        else if let event = event as? ARTPushActivationEventDeregistrationFailed {
+                            expect(event.error.domain) == ARTAblyErrorDomain
+                            expect(event.error.code) == simulatedError.code
+                            stateMachine.transitions = nil
+                            partialDone()
+                        }
+                    }
+                    stateMachine.send(ARTPushActivationEventCalledDeactivate())
+                }
+
+                expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
+                expect(httpExecutor.requests.count) == 1
+                let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(rest.device.id)" })
+                expect(requests).to(haveCount(1))
+                guard let request = httpExecutor.requests.first else {
+                    fail("should have a \"/push/deviceRegistrations\" request"); return
+                }
+                guard let url = request.url else {
+                    fail("should have a \"/push/deviceRegistrations\" URL"); return
+                }
+                expect(url.host).to(equal(rest.internal.options.restUrl().host))
+                expect(request.httpMethod) == "DELETE"
+            }
+        }   
     }
 
 }
