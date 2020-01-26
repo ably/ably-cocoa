@@ -159,17 +159,14 @@ dispatch_async(_queue, ^{
             [delegate ablyPushCustomRegister:error deviceDetails:local callback:^(ARTDeviceIdentityTokenDetails *identityTokenDetails, ARTErrorInfo *error) {
                 if (error) {
                     // Failed
-                    [delegate didActivateAblyPush:error];
                     [self sendEvent:[ARTPushActivationEventGettingDeviceRegistrationFailed newWithError:error]];
                 }
                 else if (identityTokenDetails) {
                     // Success
-                    [delegate didActivateAblyPush:nil];
                     [self sendEvent:[ARTPushActivationEventGotDeviceRegistration newWithIdentityTokenDetails:identityTokenDetails]];
                 }
                 else {
                     ARTErrorInfo *missingIdentityTokenError = [ARTErrorInfo createWithCode:0 message:@"Device Identity Token Details is expected"];
-                    [delegate didActivateAblyPush:missingIdentityTokenError];
                     [self sendEvent:[ARTPushActivationEventGettingDeviceRegistrationFailed newWithError:missingIdentityTokenError]];
                 }
             }];
@@ -230,17 +227,14 @@ dispatch_async(_queue, ^{
             [delegate ablyPushCustomRegister:error deviceDetails:local callback:^(ARTDeviceIdentityTokenDetails *identityTokenDetails, ARTErrorInfo *error) {
                 if (error) {
                     // Failed
-                    [delegate didActivateAblyPush:error];
                     [self sendEvent:[ARTPushActivationEventSyncRegistrationFailed newWithError:error]];
                 }
                 else if (identityTokenDetails) {
                     // Success
-                    [delegate didActivateAblyPush:nil];
                     [self sendEvent:[ARTPushActivationEventRegistrationSynced newWithIdentityTokenDetails:identityTokenDetails]];
                 }
                 else {
                     ARTErrorInfo *missingIdentityTokenError = [ARTErrorInfo createWithCode:0 message:@"Device Identity Token Details is expected"];
-                    [delegate didActivateAblyPush:missingIdentityTokenError];
                     [self sendEvent:[ARTPushActivationEventSyncRegistrationFailed newWithError:missingIdentityTokenError]];
                 }
             }];
@@ -345,12 +339,10 @@ dispatch_async(_queue, ^{
             [delegate ablyPushCustomDeregister:error deviceId:local.id callback:^(ARTErrorInfo *error) {
                 if (error) {
                     // Failed
-                    [delegate didDeactivateAblyPush:error];
                     [self sendEvent:[ARTPushActivationEventDeregistrationFailed newWithError:error]];
                 }
                 else {
                     // Success
-                    [delegate didDeactivateAblyPush:nil];
                     [self sendEvent:[ARTPushActivationEventDeregistered new]];
                 }
             }];
