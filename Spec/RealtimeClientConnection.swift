@@ -3175,12 +3175,12 @@ class RealtimeClientConnection: QuickSpec {
                     let client = AblyTests.newRealtime(options)
                     defer { client.dispose(); client.close() }
 
-                    var urlConnections = [NSURL]()
+                    var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.internal.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urlConnections.append(url)
                         if urlConnections.count == 1 {
                             TestProxyTransport.networkConnectEvent = nil
                         }
@@ -3250,12 +3250,12 @@ class RealtimeClientConnection: QuickSpec {
                     TestProxyTransport.fakeNetworkResponse = .hostUnreachable
                     defer { TestProxyTransport.fakeNetworkResponse = nil }
 
-                    var urlConnections = [NSURL]()
+                    var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.internal.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urlConnections.append(url)
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
 
@@ -3311,12 +3311,12 @@ class RealtimeClientConnection: QuickSpec {
                     TestProxyTransport.fakeNetworkResponse = .hostUnreachable
                     defer { TestProxyTransport.fakeNetworkResponse = nil }
 
-                    var urlConnections = [NSURL]()
+                    var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.internal.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urlConnections.append(url)
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
 
@@ -3355,12 +3355,12 @@ class RealtimeClientConnection: QuickSpec {
                     TestProxyTransport.fakeNetworkResponse = .hostUnreachable
                     defer { TestProxyTransport.fakeNetworkResponse = nil }
 
-                    var urlConnections = [NSURL]()
+                    var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.internal.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urlConnections.append(url)
                         if urlConnections.count == 1 {
                             TestProxyTransport.fakeNetworkResponse = nil
                         }
@@ -3403,12 +3403,12 @@ class RealtimeClientConnection: QuickSpec {
                     TestProxyTransport.fakeNetworkResponse = .hostUnreachable
                     defer { TestProxyTransport.fakeNetworkResponse = nil }
                     
-                    var urlConnections = [NSURL]()
+                    var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.internal.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urlConnections.append(url)
                         if urlConnections.count == 1 {
                             TestProxyTransport.fakeNetworkResponse = nil
                         }
@@ -3454,12 +3454,12 @@ class RealtimeClientConnection: QuickSpec {
                             TestProxyTransport.fakeNetworkResponse = caseTest
                             defer { TestProxyTransport.fakeNetworkResponse = nil }
 
-                            var urlConnections = [NSURL]()
+                            var urlConnections = [URL]()
                             TestProxyTransport.networkConnectEvent = { transport, url in
                                 if client.internal.transport !== transport {
                                     return
                                 }
-                                urlConnections.append(url as NSURL)
+                                urlConnections.append(url)
                                 if urlConnections.count == 1 {
                                     TestProxyTransport.fakeNetworkResponse = nil
                                 }
@@ -3529,12 +3529,12 @@ class RealtimeClientConnection: QuickSpec {
                     TestProxyTransport.fakeNetworkResponse = .host400BadRequest
                     defer { TestProxyTransport.fakeNetworkResponse = nil }
 
-                    var urlConnections = [NSURL]()
+                    var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.internal.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urlConnections.append(url)
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
 
@@ -3567,12 +3567,12 @@ class RealtimeClientConnection: QuickSpec {
                     TestProxyTransport.fakeNetworkResponse = .hostUnreachable
                     defer { TestProxyTransport.fakeNetworkResponse = nil }
 
-                    var urlConnections = [NSURL]()
+                    var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.internal.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urlConnections.append(url)
                         TestProxyTransport.fakeNetworkResponse = nil
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
@@ -3630,15 +3630,97 @@ class RealtimeClientConnection: QuickSpec {
                     TestProxyTransport.fakeNetworkResponse = .hostUnreachable
                     defer { TestProxyTransport.fakeNetworkResponse = nil }
 
-                    var urlConnections = [NSURL]()
+                    var urls = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.internal.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urls.append(url)
+                    }
+                    defer { TestProxyTransport.networkConnectEvent = nil }
+                    testHttpExecutor.afterRequest = { request, _ in
+                        urls.append(request.url!)
+                    }
+                    
+                    waitUntil(timeout: testTimeout * 1000) { done in
+                        // wss://[a-e].ably-realtime.com: when a timeout occurs
+                        client.connection.once(.disconnected) { error in
+                            done()
+                        }
+                        // wss://[a-e].ably-realtime.com: when a 401 occurs because of the `xxxx:xxxx` key
+                        client.connection.once(.failed) { error in
+                            done()
+                        }
+                        client.connect()
+                    }
+                    
+                    let extractHostname = { (url: URL) in
+                        NSRegularExpression.extract(url.absoluteString, pattern: "[a-e].ably-realtime.com")
+                    }
+
+                    var resultFallbackHosts = [String]()
+                    var gotInternetIsUpCheck = false
+                    for url in urls {
+                        if NSRegularExpression.match(url.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt") {
+                            gotInternetIsUpCheck = true
+                        } else if let fallbackHost = extractHostname(url) {
+                            if Optional(fallbackHost) == resultFallbackHosts.last {
+                                continue
+                            }
+                            // Host changed; should've had an internet check before.
+                            expect(gotInternetIsUpCheck).to(beTrue())
+                            gotInternetIsUpCheck = false
+                            resultFallbackHosts.append(fallbackHost)
+                        }
+                    }
+                    
+                    let expectedFallbackHosts = Array(expectedHostOrder.map({ ARTDefault.fallbackHosts()[$0] }))
+
+                    expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
+                }
+                
+                // RTN17c
+                it("doesn't try fallback host if Internet connection check fails") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    options.autoConnect = false
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("test")
+
+                    let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
+                    defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
+                    ARTDefault.setRealtimeRequestTimeout(1.0)
+
+                    let testHttpExecutor = TestProxyHTTPExecutor(options.logHandler)
+                    client.internal.rest.httpExecutor = testHttpExecutor
+
+                    client.internal.setTransport(TestProxyTransport.self)
+                    TestProxyTransport.fakeNetworkResponse = .hostUnreachable
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
+
+                    let extractHostname = { (url: URL) in
+                        NSRegularExpression.extract(url.absoluteString, pattern: "[a-e].ably-realtime.com")
+                    }
+
+                    TestProxyTransport.networkConnectEvent = { transport, url in
+                        if client.internal.transport !== transport {
+                            return
+                        }
+                        if extractHostname(url) != nil {
+                            fail("shouldn't try fallback host after failed connectivity check")
+                        }
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
 
+                    testHttpExecutor.beforeRequest = { request, _ in
+                        if NSRegularExpression.match(
+                            request.url!.absoluteString,
+                            pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt"
+                        ) {
+                            testHttpExecutor.simulateIncomingServerErrorOnNextRequest(500, description: "fake error")
+                        }
+                    }
+                    
                     waitUntil(timeout: testTimeout) { done in
                         // wss://[a-e].ably-realtime.com: when a timeout occurs
                         client.connection.once(.disconnected) { error in
@@ -3650,17 +3732,6 @@ class RealtimeClientConnection: QuickSpec {
                         }
                         client.connect()
                     }
-
-                    expect(NSRegularExpression.match(testHttpExecutor.requests[0].url!.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt")).to(beTrue())
-                    expect(urlConnections).to(haveCount(6)) // default + 5 fallbacks
-
-                    let extractHostname = { (url: NSURL) in
-                        NSRegularExpression.extract(url.absoluteString, pattern: "[a-e].ably-realtime.com")
-                    }
-                    let resultFallbackHosts = urlConnections.compactMap(extractHostname)
-                    let expectedFallbackHosts = Array(expectedHostOrder.map({ ARTDefault.fallbackHosts()[$0] }))
-
-                    expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
                 }
 
                 it("should retry custom fallback hosts in random order after checkin if an internet connection is available") {
@@ -3684,14 +3755,17 @@ class RealtimeClientConnection: QuickSpec {
                     TestProxyTransport.fakeNetworkResponse = .hostUnreachable
                     defer { TestProxyTransport.fakeNetworkResponse = nil }
                     
-                    var urlConnections = [NSURL]()
+                    var urls = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.internal.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urls.append(url)
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
+                    testHttpExecutor.afterRequest = { request, _ in
+                        urls.append(request.url!)
+                    }
 
                     waitUntil(timeout: testTimeout) { done in
                         // wss://[a-e].ably-realtime.com: when a timeout occurs
@@ -3705,13 +3779,26 @@ class RealtimeClientConnection: QuickSpec {
                         client.connect()
                     }
 
-                    expect(NSRegularExpression.match(testHttpExecutor.requests[0].url!.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt")).to(beTrue())
-                    expect(urlConnections).to(haveCount(6)) // default + 5 provided fallbacks
-                    
-                    let extractHostname = { (url: NSURL) in
+                    let extractHostname = { (url: URL) in
                         NSRegularExpression.extract(url.absoluteString, pattern: "[f-j].ably-realtime.com")
                     }
-                    let resultFallbackHosts = urlConnections.compactMap(extractHostname)
+
+                    var resultFallbackHosts = [String]()
+                    var gotInternetIsUpCheck = false
+                    for url in urls {
+                        if NSRegularExpression.match(url.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt") {
+                            gotInternetIsUpCheck = true
+                        } else if let fallbackHost = extractHostname(url) {
+                            if Optional(fallbackHost) == resultFallbackHosts.last {
+                                continue
+                            }
+                            // Host changed; should've had an internet check before.
+                            expect(gotInternetIsUpCheck).to(beTrue())
+                            gotInternetIsUpCheck = false
+                            resultFallbackHosts.append(fallbackHost)
+                        }
+                    }
+
                     let expectedFallbackHosts = Array(expectedHostOrder.map({ fbHosts[$0] }))
                     
                     expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
@@ -3731,12 +3818,12 @@ class RealtimeClientConnection: QuickSpec {
                     TestProxyTransport.fakeNetworkResponse = .hostUnreachable
                     defer { TestProxyTransport.fakeNetworkResponse = nil }
                     
-                    var urlConnections = [NSURL]()
+                    var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.internal.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urlConnections.append(url)
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
                     
@@ -3749,7 +3836,6 @@ class RealtimeClientConnection: QuickSpec {
                         }
                     }
                     
-                    expect(NSRegularExpression.match(testHttpExecutor.requests[0].url!.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt")).to(beTrue())
                     expect(urlConnections).to(haveCount(1))
                 }
 
@@ -3766,12 +3852,12 @@ class RealtimeClientConnection: QuickSpec {
                     TestProxyTransport.fakeNetworkResponse = .hostUnreachable
                     defer { TestProxyTransport.fakeNetworkResponse = nil }
 
-                    var urlConnections = [NSURL]()
+                    var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.internal.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urlConnections.append(url)
                         if urlConnections.count == 2 {
                             TestProxyTransport.fakeNetworkResponse = nil
                             (client.internal.transport as! TestProxyTransport).simulateTransportSuccess()
