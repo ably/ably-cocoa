@@ -1402,9 +1402,16 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     NSString *host = [_fallbacks popFallbackHost];
     if (host != nil) {
-        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p host is down; retrying realtime connection at %@", self, host];
-        self.rest.prioritizedHost = host;
-        [self transportReconnectWithHost:host];
+        [self.rest internetIsUp:^void(BOOL isUp) {
+            if (!isUp) {
+                [self transition:ARTRealtimeDisconnected withErrorInfo:[ARTErrorInfo createWithCode:0 message:@"no Internet connection"]];
+                return;
+            }
+
+            [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p host is down; retrying realtime connection at %@", self, host];
+            self.rest.prioritizedHost = host;
+            [self transportReconnectWithHost:host];
+        }];
         return true;
     } else {
         _fallbacks = nil;
@@ -1588,10 +1595,12 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     if ([self shouldRetryWithFallback:transportError]) {
         [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p host is down; can retry with fallback host", self];
         if (!_fallbacks && [transportError.url.host isEqualToString:[ARTDefault realtimeHost]]) {
-            [self.rest internetIsUp:^void(BOOL isUp) {
-                self->_fallbacks = [[ARTFallback alloc] initWithOptions:[self getClientOptions]];
-                (self->_fallbacks != nil) ? [self reconnectWithFallback] : [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:transportError.error]];
-            }];
+            self->_fallbacks = [[ARTFallback alloc] initWithOptions:[self getClientOptions]];
+            if (self->_fallbacks != nil) {
+                [self reconnectWithFallback];
+            } else {
+                [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:transportError.error]];
+            }
             return;
         } else if (_fallbacks && [self reconnectWithFallback]) {
             return;
