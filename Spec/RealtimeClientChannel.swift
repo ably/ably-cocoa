@@ -3696,7 +3696,7 @@ class RealtimeClientChannel: QuickSpec {
                             let channelOptions = ARTRealtimeChannelOptions()
                             channelOptions.modes = [.subscribe, .publish]
                             channelOptions.params = [
-                                "codec": "vcdiff"
+                                "delta": "vcdiff"
                             ]
 
                             waitUntil(timeout: testTimeout) { done in
@@ -3706,23 +3706,207 @@ class RealtimeClientChannel: QuickSpec {
                                 }
                             }
 
-                            let attach = transport.protocolMessagesSent.filter({ $0.action == .attach }).last!
-                            expect(attach.flags & Int64(ARTChannelMode.publish.rawValue)).to(beGreaterThan(0)) //true
-                            expect(attach.flags & Int64(ARTChannelMode.subscribe.rawValue)).to(beGreaterThan(0)) //true
-                            expect(attach.params).to(equal(channelOptions.params))
+                            expect(channel.options?.modes).to(equal(channelOptions.modes))
+                            expect(channel.options?.params).to(equal(channelOptions.params))
 
-                            let attached = transport.protocolMessagesReceived.filter({ $0.action == .attached }).last!
-                            expect(attached.flags & Int64(ARTChannelMode.publish.rawValue)).to(beGreaterThan(0)) //true
-                            expect(attached.flags & Int64(ARTChannelMode.subscribe.rawValue)).to(beGreaterThan(0)) //true
-                            expect(attached.params).to(equal(channelOptions.params))
+                            let attachMessages = transport.protocolMessagesSent.filter({ $0.action == .attach })
+                            expect(attachMessages).to(haveCount(2))
+                            guard let lastAttach = attachMessages.last else {
+                                fail("Last ATTACH message is missing"); return
+                            }
+                            expect(lastAttach.flags & Int64(ARTChannelMode.publish.rawValue)).to(beGreaterThan(0)) //true
+                            expect(lastAttach.flags & Int64(ARTChannelMode.subscribe.rawValue)).to(beGreaterThan(0)) //true
+                            expect(lastAttach.params).to(equal(channelOptions.params))
+
+                            let attachedMessages = transport.protocolMessagesReceived.filter({ $0.action == .attached })
+                            expect(attachMessages).to(haveCount(2))
+                            guard let lastAttached = attachedMessages.last else {
+                                fail("Last ATTACH message is missing"); return
+                            }
+                            expect(lastAttached.flags & Int64(ARTChannelMode.publish.rawValue)).to(beGreaterThan(0)) //true
+                            expect(lastAttached.flags & Int64(ARTChannelMode.subscribe.rawValue)).to(beGreaterThan(0)) //true
+                            expect(lastAttached.params).to(equal(channelOptions.params))
                         }
 
                         it("should send an ATTACH message with params & modes if the channel is attaching") {
-                            //TODO
+                            let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
+                            defer { client.dispose(); client.close() }
+                            let channel = client.channels.get("foo")
+
+                            waitUntil(timeout: testTimeout) { done in
+                                client.connection.once(.connected) { _ in
+                                    done()
+                                }
+                            }
+
+                            guard let transport = client.internal.transport as? TestProxyTransport else {
+                                fail("Expecting TestProxyTransport"); return
+                            }
+
+                            let channelOptions = ARTRealtimeChannelOptions()
+                            channelOptions.modes = [.subscribe]
+                            channelOptions.params = [
+                                "delta": "vcdiff"
+                            ]
+
+                            waitUntil(timeout: testTimeout) { done in
+                                let partialDone = AblyTests.splitDone(3, done: done)
+                                channel.once(.attaching) { _ in
+                                    channel.setOptions(channelOptions) { error in
+                                        expect(error).to(beNil())
+                                        partialDone()
+                                    }
+                                }
+                                channel.once(.attached) { _ in
+                                    partialDone()
+                                }
+                                channel.once(.update) { _ in
+                                    partialDone()
+                                }
+                                channel.attach()
+                            }
+
+                            let subscribeFlag = Int64(ARTChannelMode.subscribe.rawValue)
+
+                            let attachMessages = transport.protocolMessagesSent.filter({ $0.action == .attach })
+                            expect(attachMessages).to(haveCount(2))
+                            guard let lastAttach = attachMessages.last else {
+                                fail("Last ATTACH message is missing"); return
+                            }
+                            expect(lastAttach.flags & subscribeFlag).to(equal(subscribeFlag))
+                            expect(lastAttach.params).to(equal(channelOptions.params))
+
+                            let attachedMessages = transport.protocolMessagesReceived.filter({ $0.action == .attached })
+                            expect(attachedMessages).to(haveCount(2))
+                            guard let lastAttached = attachedMessages.last else {
+                                fail("Last ATTACH message is missing"); return
+                            }
+                            expect(lastAttached.flags & subscribeFlag).to(equal(subscribeFlag))
+                            expect(lastAttached.params).to(equal(channelOptions.params))
                         }
 
                         it("should success immediately if channel is not attaching or attached") {
-                            //TODO
+                            let options = AblyTests.commonAppSetup()
+                            options.autoConnect = false
+                            let client = AblyTests.newRealtime(options)
+                            defer { client.dispose(); client.close() }
+                            let channel = client.channels.get("foo")
+
+                            let channelOptions = ARTRealtimeChannelOptions()
+                            channelOptions.modes = [.subscribe]
+                            channelOptions.params = [
+                                "delta": "vcdiff"
+                            ]
+
+                            channel.setOptions(channelOptions) { error in
+                                expect(error).to(beNil())
+                            }
+
+                            expect(channel.state).to(equal(.initialized))
+                            expect(channel.options?.modes).to(equal(channelOptions.modes))
+                            expect(channel.options?.params).to(equal(channelOptions.params))
+                        }
+
+                        it("should fail if the attach moves to FAILED") {
+                            let options = AblyTests.commonAppSetup()
+                            options.token = getTestToken(capability: "{\"secret\":[\"subscribe\"]}") //access denied
+                            let client = AblyTests.newRealtime(options)
+                            defer { client.dispose(); client.close() }
+                            let channel = client.channels.get("foo")
+
+                            waitUntil(timeout: testTimeout) { done in
+                                client.connection.once(.connected) { _ in
+                                    done()
+                                }
+                            }
+
+                            guard let transport = client.internal.transport as? TestProxyTransport else {
+                                fail("Expecting TestProxyTransport"); return
+                            }
+
+                            let channelOptions = ARTRealtimeChannelOptions()
+                            channelOptions.modes = [.subscribe]
+                            channelOptions.params = [
+                                "delta": "vcdiff"
+                            ]
+
+                            waitUntil(timeout: testTimeout) { done in
+                                let partialDone = AblyTests.splitDone(2, done: done)
+                                channel.once(.failed) { stateChange in
+                                    expect(stateChange?.reason?.code).to(equal(40160))
+                                    partialDone()
+                                }
+                                channel.attach()
+                                channel.setOptions(channelOptions) { error in
+                                    expect(error?.code).to(equal(40160))
+                                    partialDone()
+                                }
+                            }
+
+                            let subscribeFlag = Int64(ARTChannelMode.subscribe.rawValue)
+
+                            let attachMessages = transport.protocolMessagesSent.filter({ $0.action == .attach })
+                            expect(attachMessages).to(haveCount(2))
+                            guard let lastAttach = attachMessages.last else {
+                                fail("Last ATTACH message is missing"); return
+                            }
+                            expect(lastAttach.flags & subscribeFlag).to(equal(subscribeFlag))
+                            expect(lastAttach.params).to(equal(channelOptions.params))
+
+                            let attachedMessages = transport.protocolMessagesReceived.filter({ $0.action == .attached })
+                            expect(attachedMessages).to(beEmpty())
+                        }
+
+                        it("should fail if the attach moves to DETACHED") {
+                            let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
+                            defer { client.dispose(); client.close() }
+                            let channel = client.channels.get("foo")
+
+                            waitUntil(timeout: testTimeout) { done in
+                                client.connection.once(.connected) { _ in
+                                    done()
+                                }
+                            }
+
+                            guard let transport = client.internal.transport as? TestProxyTransport else {
+                                fail("Expecting TestProxyTransport"); return
+                            }
+
+                            let channelOptions = ARTRealtimeChannelOptions()
+                            channelOptions.modes = [.subscribe]
+                            channelOptions.params = [
+                                "delta": "vcdiff"
+                            ]
+
+                            // Convert ATTACHED to DETACHED
+                            transport.changeReceivedMessage = { protocolMessage in
+                                if protocolMessage.action == .attached {
+                                    protocolMessage.action = .detached
+                                    protocolMessage.error = ARTErrorInfo.create(withCode: 50000, status: 500, message: "internal error")
+                                }
+                                return protocolMessage
+                            }
+
+                            waitUntil(timeout: testTimeout) { done in
+                                let partialDone = AblyTests.splitDone(2, done: done)
+                                channel.attach() { _ in
+                                    partialDone()
+                                }
+                                channel.setOptions(channelOptions) { error in
+                                    expect(error?.code).to(equal(50000))
+                                    partialDone()
+                                }
+                            }
+
+                            let subscribeFlag = Int64(ARTChannelMode.subscribe.rawValue)
+
+                            let attachMessages = transport.protocolMessagesSent.filter({ $0.action == .attach })
+                            expect(attachMessages).to(haveCount(2))
+                            guard let lastAttach = attachMessages.last else {
+                                fail("Last ATTACH message is missing"); return
+                            }
+                            expect(lastAttach.flags & subscribeFlag).to(equal(subscribeFlag))
+                            expect(lastAttach.params).to(equal(channelOptions.params))
                         }
                     }
 
