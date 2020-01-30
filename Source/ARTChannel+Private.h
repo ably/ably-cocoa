@@ -17,6 +17,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithName:(NSString *)name andOptions:(ARTChannelOptions *)options rest:(ARTRestInternal *)rest;
 
+@property (readonly, nullable) ARTChannelOptions *options;
+
 @property (readonly, getter=getLogger) ARTLog *logger;
 @property (nonatomic, strong, readonly) ARTDataEncoder *dataEncoder;
 
