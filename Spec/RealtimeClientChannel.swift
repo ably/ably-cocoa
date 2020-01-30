@@ -3070,7 +3070,7 @@ class RealtimeClientChannel: QuickSpec {
                             let testMessage = messages[0]
 
                             let cipherParams = ARTCipherParams(algorithm: "aes", key: keyData as ARTCipherKeyCompatible, iv: ivData)
-                            let channelOptions = ARTChannelOptions(cipher: cipherParams)
+                            let channelOptions = ARTRealtimeChannelOptions(cipher: cipherParams)
                             let channel = client.channels.get("test", options: channelOptions)
 
                             let transport = client.internal.transport as! TestProxyTransport
@@ -3134,7 +3134,7 @@ class RealtimeClientChannel: QuickSpec {
                         client.connect()
                         defer { client.dispose(); client.close() }
 
-                        let channelOptions = ARTChannelOptions(cipher: ["key":ARTCrypto.generateRandomKey()] as ARTCipherParamsCompatible)
+                        let channelOptions = ARTRealtimeChannelOptions(cipher: ["key":ARTCrypto.generateRandomKey()] as ARTCipherParamsCompatible)
                         let channel = client.channels.get("test", options: channelOptions)
 
                         let expectedMessage = ["key":1]
@@ -3948,8 +3948,8 @@ class RealtimeClientChannel: QuickSpec {
                     clientReceiver.connect()
 
                     let key = ARTCrypto.generateRandomKey()
-                    let sender = clientSender.channels.get("test", options: ARTChannelOptions(cipherKey: key as ARTCipherKeyCompatible))
-                    let receiver = clientReceiver.channels.get("test", options: ARTChannelOptions(cipherKey: key as ARTCipherKeyCompatible))
+                    let sender = clientSender.channels.get("test", options: ARTRealtimeChannelOptions(cipherKey: key as ARTCipherKeyCompatible))
+                    let receiver = clientReceiver.channels.get("test", options: ARTRealtimeChannelOptions(cipherKey: key as ARTCipherKeyCompatible))
 
                     var received = [ARTMessage]()
 
