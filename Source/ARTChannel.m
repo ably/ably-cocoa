@@ -57,11 +57,7 @@
 }
 
 - (void)setOptions_nosync:(ARTChannelOptions *)options {
-    if (!options) {
-        _options = [[ARTChannelOptions alloc] initWithCipher:nil];
-    } else {
-        _options = options;
-    }
+    _options = options;
 }
 
 - (void)publish:(NSString *)name data:(id)data {
