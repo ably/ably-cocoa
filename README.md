@@ -674,7 +674,6 @@ For each release, the following needs to be done:
     * Also ensure that the "Full Changelog" link points to the new version tag instead of the `HEAD`
     * Commit this change: `git add CHANGELOG.md && git commit -m "Update change log."`
 * Push both commits to origin: `git push -u origin release/x.x.x`
-* Push the tag created by the bump script earlier to origin: 
 * Make a pull request against `master` and await approval of reviewer(s).
 * Once approved and/or any additional commits have been added, merge the PR. If you do this from Github's web interface then use the "Rebase and merge" option to retain the relationship with the tag.
 * Create a tag for this version number: `git checkout master && git pull && git tag x.x.x`
