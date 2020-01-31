@@ -1,5 +1,26 @@
 # Change Log
 
+## [1.1.18](https://github.com/ably/ably-cocoa/tree/HEAD)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.17...1.1.18)
+
+**Fixed bugs:**
+
+- Result of internet-up.ably-realtime.com is ignored [\#952](https://github.com/ably/ably-cocoa/issues/952)
+- Realtime suspended connection retrial using wrong timeout [\#913](https://github.com/ably/ably-cocoa/issues/913)
+
+**Closed issues:**
+
+- Remove develop branch [\#969](https://github.com/ably/ably-cocoa/issues/969)
+- Flaky test: RTP2f \(incoming LEAVE while SYNCing\) [\#938](https://github.com/ably/ably-cocoa/issues/938)
+- Flaky test: RTN17\* \(fallback hosts\) [\#931](https://github.com/ably/ably-cocoa/issues/931)
+
+**Merged pull requests:**
+
+- Remove redundant direct calls to push delegate callbacks [\#975](https://github.com/ably/ably-cocoa/pull/975) ([tcard](https://github.com/tcard))
+- Simplify hooks on RTP2f test [\#963](https://github.com/ably/ably-cocoa/pull/963) ([tcard](https://github.com/tcard))
+- Fix internet-up.ably-realtime.com checks [\#961](https://github.com/ably/ably-cocoa/pull/961) ([tcard](https://github.com/tcard))
+- Fix connection SUSPENDED timeout [\#917](https://github.com/ably/ably-cocoa/pull/917) ([ricardopereira](https://github.com/ricardopereira))
+
 ## [1.1.17](https://github.com/ably/ably-cocoa/tree/1.1.17)
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.16...1.1.17)
 
