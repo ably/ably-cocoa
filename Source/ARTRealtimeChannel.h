@@ -19,6 +19,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class ARTRealtimePresence;
+@class ARTRealtimeChannelOptions;
 #if TARGET_OS_IPHONE
 @class ARTPushChannel;
 #endif
@@ -27,6 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly) ARTRealtimeChannelState state;
 @property (readonly, nullable) ARTErrorInfo *errorReason;
+@property (readonly, nullable, getter=getOptions) ARTRealtimeChannelOptions *options;
 
 - (void)attach;
 - (void)attach:(nullable void (^)(ARTErrorInfo *_Nullable))callback;
@@ -44,6 +46,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)unsubscribe:(NSString *)name listener:(ARTEventListener *_Nullable)listener;
 
 - (BOOL)history:(ARTRealtimeHistoryQuery *_Nullable)query callback:(void(^)(ARTPaginatedResult<ARTMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback error:(NSError *_Nullable *_Nullable)errorPtr;
+
+- (void)setOptions:(ARTRealtimeChannelOptions *_Nullable)options callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb;
 
 ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
 

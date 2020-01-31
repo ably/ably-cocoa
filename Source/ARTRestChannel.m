@@ -96,8 +96,12 @@
     [_internal history:callback];
 }
 
-- (BOOL)exceedMaxSize:(NSArray<ARTBaseMessage *> *)messages {
-    return [_internal exceedMaxSize:messages];
+- (ARTChannelOptions *)options {
+    return [_internal options];
+}
+
+- (void)setOptions:(ARTChannelOptions *_Nullable)options {
+    [_internal setOptions:options];
 }
 
 @end
@@ -112,6 +116,8 @@ static const NSUInteger kIdempotentLibraryGeneratedIdLength = 9; //bytes
 @public
     NSString *_basePath;
 }
+
+@dynamic options;
 
 - (instancetype)initWithName:(NSString *)name withOptions:(ARTChannelOptions *)options andRest:(ARTRestInternal *)rest {
 ART_TRY_OR_REPORT_CRASH_START(rest) {

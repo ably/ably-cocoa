@@ -61,6 +61,7 @@
     [description appendFormat:@" flags.hasBacklog: %@,\n", NSStringFromBOOL(self.hasBacklog)];
     [description appendFormat:@" flags.resumed: %@,\n", NSStringFromBOOL(self.resumed)];
     [description appendFormat:@" messages: %@\n", self.messages];
+    [description appendFormat:@" params: %@\n", self.params];
     [description appendFormat:@"}"];
     return description;
 }
@@ -83,6 +84,7 @@
     pm.flags = self.flags;
     pm.error = self.error;
     pm.connectionDetails = self.connectionDetails;
+    pm.params = self.params;
     return pm;
 }
 

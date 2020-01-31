@@ -65,7 +65,7 @@ class RestClientChannels: QuickSpec {
                         let channel = client.channels.get(channelName, options: options)
 
                         expect(channel.internal).to(beAChannel(named: "\(ARTChannels_getChannelNamePrefix!())-\(channelName!)"))
-                        expect(channel.internal.options).to(beIdenticalTo(options))
+                        expect(channel.options).to(beIdenticalTo(options))
                     }
 
                     // RSN3b

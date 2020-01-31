@@ -17,6 +17,7 @@
 #import "ARTRealtimePresence+Private.h"
 #import "ARTChannel.h"
 #import "ARTChannelOptions.h"
+#import "ARTRealtimeChannelOptions.h"
 #import "ARTProtocolMessage.h"
 #import "ARTProtocolMessage+Private.h"
 #import "ARTPresenceMap.h"
@@ -196,6 +197,14 @@
     return [_internal on:event callback:cb];
 }
 
+- (ARTRealtimeChannelOptions *)getOptions {
+    return [_internal getOptions];
+}
+
+- (void)setOptions:(ARTRealtimeChannelOptions *_Nullable)options callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb {
+    [_internal setOptions:options callback:cb];
+}
+
 @end
 
 @interface ARTRealtimeChannelInternal () {
@@ -217,7 +226,7 @@
     ARTErrorInfo *_errorReason;
 }
 
-- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options {
+- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime andName:(NSString *)name withOptions:(ARTRealtimeChannelOptions *)options {
 ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
     self = [super initWithName:name andOptions:options rest:realtime.rest];
     if (self) {
@@ -242,7 +251,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-+ (instancetype)channelWithRealtime:(ARTRealtimeInternal *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options {
++ (instancetype)channelWithRealtime:(ARTRealtimeInternal *)realtime andName:(NSString *)name withOptions:(ARTRealtimeChannelOptions *)options {
 ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
     return [[ARTRealtimeChannelInternal alloc] initWithRealtime:realtime andName:name withOptions:options];
 } ART_TRY_OR_MOVE_TO_FAILED_END
@@ -317,7 +326,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
     msg.action = ARTProtocolMessageMessage;
     msg.channel = self.name;
     msg.messages = data;
-    
+
     [self publishProtocolMessage:msg callback:^void(ARTStatus *status) {
         if (callback) callback(status.errorInfo);
     }];
@@ -1204,6 +1213,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     ARTProtocolMessage *attachMessage = [[ARTProtocolMessage alloc] init];
     attachMessage.action = ARTProtocolMessageAttach;
     attachMessage.channel = self.name;
+    attachMessage.params = self.options_nosync.params;
+    attachMessage.flags = self.options_nosync.modes;
 
     [self.realtime send:attachMessage sentCallback:^(ARTErrorInfo *error) {
         if (error) {
@@ -1429,6 +1440,51 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         maxSize = self.realtime.connection.maxMessageSize;
     }
     return size > maxSize;
+}
+
+- (ARTRealtimeChannelOptions *)getOptions {
+    return (ARTRealtimeChannelOptions *)[self options];
+}
+
+- (ARTRealtimeChannelOptions *)getOptions_nosync {
+    return (ARTRealtimeChannelOptions *)[self options_nosync];
+}
+
+- (void)setOptions:(ARTRealtimeChannelOptions *_Nullable)options callback:(nullable void (^)(ARTErrorInfo *_Nullable))callback {
+    if (callback) {
+        void (^userCallback)(ARTErrorInfo *_Nullable error) = callback;
+        callback = ^(ARTErrorInfo *_Nullable error) {
+            ART_EXITING_ABLY_CODE(self->_realtime.rest);
+            dispatch_async(self->_userQueue, ^{
+                userCallback(error);
+            });
+        };
+    }
+    dispatch_sync(_queue, ^{
+        [self setOptions_nosync:options callback:callback];
+    });
+}
+
+- (void)setOptions_nosync:(ARTRealtimeChannelOptions *_Nullable)options callback:(nullable void (^)(ARTErrorInfo *_Nullable))callback {
+ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
+    [self setOptions_nosync:options];
+
+    if (!options.modes && !options.params) {
+        callback(nil);
+        return;
+    }
+
+    switch (self.state_nosync) {
+        case ARTRealtimeChannelAttached:
+        case ARTRealtimeChannelAttaching:
+            [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) set options in %@ state", _realtime, self, self.name, ARTRealtimeChannelStateToStr(self.state_nosync)];
+            [self internalAttach:callback withReason:nil];
+            break;
+        default:
+            callback(nil);
+            break;
+    }
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 @end

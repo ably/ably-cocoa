@@ -17,12 +17,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithName:(NSString *)name andOptions:(ARTChannelOptions *)options rest:(ARTRestInternal *)rest;
 
+@property (readonly, nullable) ARTChannelOptions *options;
+
 @property (readonly, getter=getLogger) ARTLog *logger;
-@property (nonatomic, strong, null_resettable) ARTChannelOptions *options;
 @property (nonatomic, strong, readonly) ARTDataEncoder *dataEncoder;
 
 - (void)internalPostMessages:(id)data callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback;
-- (void)_setOptions:(ARTChannelOptions *_Nullable)options;
+- (BOOL)exceedMaxSize:(NSArray<ARTBaseMessage *> *)messages;
+
+- (nullable ARTChannelOptions *)options;
+- (nullable ARTChannelOptions *)options_nosync;
+- (void)setOptions:(ARTChannelOptions *_Nullable)options;
+- (void)setOptions_nosync:(ARTChannelOptions *_Nullable)options;
 
 @end
 

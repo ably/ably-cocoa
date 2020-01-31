@@ -34,8 +34,8 @@
     return [[ARTRealtimeChannel alloc] initWithInternal:[_internal get:(NSString *)name] queuedDealloc:_dealloc];
 }
 
-- (ARTRealtimeChannel *)get:(NSString *)name options:(ARTChannelOptions *)options {
-    return [[ARTRealtimeChannel alloc] initWithInternal:[_internal get:(NSString *)name options:(ARTChannelOptions *)options] queuedDealloc:_dealloc];
+- (ARTRealtimeChannel *)get:(NSString *)name options:(ARTRealtimeChannelOptions *)options {
+    return [[ARTRealtimeChannel alloc] initWithInternal:[_internal get:(NSString *)name options:options] queuedDealloc:_dealloc];
 }
 
 - (void)release:(NSString *)name callback:(nullable void (^)(ARTErrorInfo *_Nullable))errorInfo {
@@ -80,7 +80,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (id)makeChannel:(NSString *)name options:(ARTChannelOptions *)options {
+- (id)makeChannel:(NSString *)name options:(ARTRealtimeChannelOptions *)options {
     return [ARTRealtimeChannelInternal channelWithRealtime:_realtime andName:name withOptions:options];
 }
 

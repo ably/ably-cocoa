@@ -501,6 +501,14 @@
         output[@"auth"] = [self authDetailsToDictionary:message.auth];
     }
 
+    if (message.flags) {
+        output[@"flags"] = [NSNumber numberWithLongLong:message.flags];
+    }
+
+    if (message.params) {
+        output[@"params"] = message.params;
+    }
+
     [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: protocolMessageToDictionary %@", _rest, [_delegate formatAsString], output];
     return output;
 }
@@ -732,6 +740,7 @@
     message.flags = [[input artNumber:@"flags"] longLongValue];
     message.connectionDetails = [self connectionDetailsFromDictionary:[input valueForKey:@"connectionDetails"]];
     message.auth = [self authDetailsFromDictionary:[input valueForKey:@"auth"]];
+    message.params = [input valueForKey:@"params"];
 
     NSDictionary *error = [input valueForKey:@"error"];
     if (error) {
