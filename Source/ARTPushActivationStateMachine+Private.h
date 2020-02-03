@@ -18,6 +18,7 @@ extern NSString *const ARTPushActivationPendingEventsKey;
 
 @property (nonatomic, strong) ARTRestInternal *rest;
 - (instancetype)init:(ARTRestInternal *)rest;
+- (instancetype)init:(ARTRestInternal *)rest delegate:(nullable id)delegate;
 
 @property (weak, nonatomic) id delegate; // weak because delegates outlive their counterpart
 @property (nonatomic, copy, nullable) void (^transitions)(ARTPushActivationEvent *event, ARTPushActivationState *from, ARTPushActivationState *to);

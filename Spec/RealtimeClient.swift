@@ -1416,11 +1416,12 @@ class RealtimeClient: QuickSpec {
                     }
                 }
                 if channel.state != .attached {
+                    fail("Channel is not attached")
                     return
                 }
 
                 client.internal.onDisconnected()
-                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.disconnected))
+                expect(client.connection.state).to(equal(.disconnected))
 
                 // If we now send a message through the channel, it will be queued and the channel
                 // should register a listener in the connection's _internal_ event emitter.

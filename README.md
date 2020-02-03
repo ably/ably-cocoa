@@ -59,7 +59,7 @@ As of version `1.1.0` this library based on the 1.1 library specification. It im
 - updated push API and push device authentication;
 - support for enforcement of the `maxMessageSize` attribute
 
-Other minor features and bugfixes are included, as listed in the [changelog](CHANGELOG.md#1113-2019-12-09).
+Other minor features and bugfixes are included, as listed in the [changelog](CHANGELOG.md#1115-2019-12-23).
 
 ##### macOS & tvOS
 
@@ -96,6 +96,10 @@ This client library is currently *not compatible* with some of the Ably features
 | [Remember fallback host during failures](https://ably.io/documentation/realtime/usage#client-options) | 
 | [ErrorInfo URLs to help debug issues](https://ably.io/documentation/realtime/types#error-info) |
 
+### Concurrent push-receiving Ably instances
+
+Only one instance of `ARTRest` or `ARTRealtime` at a time must be [activated for receiving push notifications](https://www.ably.io/documentation/general/push/activate-subscribe). Having more than one activated instance at a time may have unexpected consequences.
+
 ## Documentation
 
 Visit [ably.io/documentation](https://www.ably.io/documentation) for a complete API reference and more examples.
@@ -130,7 +134,7 @@ If you see, for example, a `dyld: Library not loaded: @rpath/SocketRocketAblyFor
 
 ### Manual installation 
 
-1. Get the code from GitHub [from the release page](https://github.com/ably/ably-cocoa/releases/tag/1.1.14), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-cocoa.git`
+1. Get the code from GitHub [from the release page](https://github.com/ably/ably-cocoa/releases/tag/1.1.18), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-cocoa.git`
 2. Drag the directory `ably-cocoa/ably-cocoa` into your project as a group.
 3. Ably depends on our [SocketRocket Fork](https://github.com/ably-forks/SocketRocket) 0.5.2; get it [from the releases page](https://github.com/ably-forks/SocketRocket/releases/tag/0.5.2-ably-2) and follow [its manual installation instructions](https://github.com/ably-forks/SocketRocket/#installing).
 4. Ably also depends on our [MessagePack Fork](https://github.com/ably-forks/msgpack-objective-C) 0.2.0; get it [from the releases page](https://github.com/ably-forks/msgpack-objective-C/releases/tag/0.2.0-ably-1) and link it into your project.
@@ -638,15 +642,17 @@ You can also view the [community reported Github issues](https://github.com/ably
 
 ## Contributing
 
-In this repo the `master` branch contains the latest stable version of the Ably SDK. Pushing changes to the `master` branch is locked. All the development (bug fixing, feature implementation, etc.) is done against the `develop` branch, which you should branch from whenever you'd like to make modifications. Here's the steps to follow when contributing to this repo.
+In this repository the `master` branch contains the latest development version of the Ably SDK. All development (bug fixing, feature implementation, etc.) is done against the `master` branch, which you should branch from whenever you'd like to make modifications. Here's the steps to follow when contributing to this repository.
 
 1. Fork it
 2. Setup or update your machine by running `make setup|update`
-3. Create your feature branch from `develop` (`git checkout develop && git checkout -b my-new-feature-branch`)
+3. Create your feature branch from `master` (`git checkout master && git checkout -b my-new-feature-branch`)
 4. Commit your changes (`git commit -am 'Add some feature'`)
 5. Ensure you have added suitable tests and the test suite is passing
 6. Push to the branch (`git push origin my-new-feature-branch`)
 7. Create a new Pull Request
+
+Releases of the Ably SDK built by the sources in this repository are tagged with their [semantic version](http://semver.org/) numbers.
 
 ## Running tests
 
@@ -656,21 +662,30 @@ Note: [Fastlane](https://fastlane.tools) should be installed.
 
 ## Release Process
 
-This library uses [semantic versioning](http://semver.org/). For each release, the following needs to be done:
+For each release, the following needs to be done:
 
-* Create a new branch `release/x.x.x` (where `x.x.x` is the new version number) from the `develop` branch
-* Run `make bump_[major|minor|patch]` to bump the new version number (creates a Git commit and tag)
+* Create a new branch `release/x.x.x` (where `x.x.x` is the new version number) from the `master` branch
+* Run `make bump_[major|minor|patch]` to bump the new version number (creates a Git commit)
 * Run [`github_changelog_generator`](https://github.com/github-changelog-generator/github-changelog-generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). This may require some manual intervention, both in terms of how the command is run and how the change log file is modified. Your mileage may vary:
-    * The command you will need to run will look something like this: `github_changelog_generator -u ably -p ably-cocoa --since-tag 1.1.14`
+    * The command you will need to run will look something like this: `github_changelog_generator -u ably -p ably-cocoa --since-tag 1.1.18`
+      - `--since-tag` will remove old releases from the `CHANGELOG.md`. You may need to add them back.
     * Change the "Unreleased" heading and link with the current version number such as `v1.0.0`
     * Also ensure that the "Full Changelog" link points to the new version tag instead of the `HEAD`
     * Commit this change: `git add CHANGELOG.md && git commit -m "Update change log."`
 * Push both commits to origin: `git push -u origin release/x.x.x`
+<<<<<<< HEAD
 * Push the tag created by the bump script earlier to origin: `git push origin x.x.x`
 * Make a pull request against `develop` and await approval of reviewer(s).
 * Once approved, merge the PR. If you do this from Github's web interface then use the "Rebase and merge" option to retain the relationship with the tag.
 * Fast-forward the master branch: `git checkout master && git merge --ff-only develop && git push origin master`
 * Add to [releases](https://github.com/ably/ably-cocoa/releases) - refer to previous releases for release notes format
+=======
+* Make a pull request against `master` and await approval of reviewer(s).
+* Once approved and/or any additional commits have been added, merge the PR. If you do this from Github's web interface then use the "Rebase and merge" option to retain the relationship with the tag.
+* Create a tag for this version number: `git checkout master && git pull && git tag x.x.x`
+* Push the tag: `git push origin x.x.x`
+* Add to [releases](https://github.com/ably/ably-ios/releases) - refer to previous releases for release notes format
+>>>>>>> 91f7891d6a5fb06b15dfadb8e924bc1687a4f24e
 * Release an update for CocoaPods: `pod trunk push Ably.podspec` (you can, optionally, first run `pod lib lint` to verify that the trunk push should succeed). Details on this command, as well as instructions for adding other contributors as maintainers, are at [Getting setup with Trunk](https://guides.cocoapods.org/making/getting-setup-with-trunk.html) in the [CocoaPods Guides](https://guides.cocoapods.org/).
 * Generate the prebuilt framework for Carthage (`carthage build --no-skip-current --archive`) and attach the file generated by that step to the release: `Ably.framework.zip`
 * Test the integration of the library in a Xcode project using Carthage and CocoaPods using the [installation guide](https://github.com/ably/ably-cocoa#installation-guide).

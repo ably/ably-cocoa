@@ -96,7 +96,7 @@
 		D7093C40219EDC3C00723F17 /* SwiftyJSON.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7093C3F219EDC3C00723F17 /* SwiftyJSON.framework */; };
 		D7093C41219EDC5000723F17 /* SwiftyJSON.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D7093C3F219EDC3C00723F17 /* SwiftyJSON.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093C44219EDC6B00723F17 /* SAMKeychain.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6A22194A09C008F54AD /* SAMKeychain.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		D7093C47219EDC8A00723F17 /* KSCrash.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6A32194A09D008F54AD /* KSCrash.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D7093C47219EDC8A00723F17 /* KSCrashAblyFork.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6A32194A09D008F54AD /* KSCrashAblyFork.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093C49219EDC9B00723F17 /* msgpack.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6A42194A09D008F54AD /* msgpack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093C4B219EDCAB00723F17 /* ULID.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6A62194A09D008F54AD /* ULID.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093C5B219EDE3200723F17 /* ably-common in Resources */ = {isa = PBXBuildFile; fileRef = 856AAC9A1B6E326E00B07119 /* ably-common */; };
@@ -128,7 +128,7 @@
 		D7093C93219EE3E800723F17 /* Quick.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D7093C88219EE3C900723F17 /* Quick.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093C94219EE3E800723F17 /* SwiftyJSON.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D7093C8A219EE3C900723F17 /* SwiftyJSON.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093C98219EE3E800723F17 /* msgpack.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6B82194A1FD008F54AD /* msgpack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		D7093C9A219EE3E800723F17 /* KSCrash.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6AF2194A0B2008F54AD /* KSCrash.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D7093C9A219EE3E800723F17 /* KSCrashAblyFork.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6AF2194A0B2008F54AD /* KSCrashAblyFork.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093C9B219EE3E800723F17 /* SAMKeychain.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6AE2194A0B2008F54AD /* SAMKeychain.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093C9D219EE3E800723F17 /* ULID.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6AD2194A0B2008F54AD /* ULID.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093CA9219EFA8A00723F17 /* MockDeviceStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7093CA8219EFA8A00723F17 /* MockDeviceStorage.swift */; };
@@ -504,10 +504,10 @@
 		D710D69F21949F0D008F54AD /* ARTJsonLikeEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = EB9C530A1CD7BEB100.8.557 /* ARTJsonLikeEncoder.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D710D6A121949F0E008F54AD /* ARTJsonLikeEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = EB9C530A1CD7BEB100.8.557 /* ARTJsonLikeEncoder.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D710D6A72194A09D008F54AD /* SAMKeychain.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6A22194A09C008F54AD /* SAMKeychain.framework */; };
-		D710D6A82194A09D008F54AD /* KSCrash.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6A32194A09D008F54AD /* KSCrash.framework */; };
+		D710D6A82194A09D008F54AD /* KSCrashAblyFork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6A32194A09D008F54AD /* KSCrashAblyFork.framework */; };
 		D710D6A92194A09D008F54AD /* msgpack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6A42194A09D008F54AD /* msgpack.framework */; };
 		D710D6AB2194A09D008F54AD /* ULID.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6A62194A09D008F54AD /* ULID.framework */; };
-		D710D6B42194A1FD008F54AD /* KSCrash.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6AF2194A0B2008F54AD /* KSCrash.framework */; };
+		D710D6B42194A1FD008F54AD /* KSCrashAblyFork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6AF2194A0B2008F54AD /* KSCrashAblyFork.framework */; };
 		D710D6B52194A1FD008F54AD /* SAMKeychain.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6AE2194A0B2008F54AD /* SAMKeychain.framework */; };
 		D710D6B72194A1FD008F54AD /* ULID.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6AD2194A0B2008F54AD /* ULID.framework */; };
 		D710D6B92194A1FD008F54AD /* msgpack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6B82194A1FD008F54AD /* msgpack.framework */; };
@@ -524,9 +524,9 @@
 		D72C67DF201AB74000978EBB /* ARTPushActivationStateMachine+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D72C67DE201AB74000978EBB /* ARTPushActivationStateMachine+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D73691FF1DB788C40062C150 /* ARTAuthDetails.h in Headers */ = {isa = PBXBuildFile; fileRef = D73691FD1DB788C40062C150 /* ARTAuthDetails.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D73692001DB788C40062C150 /* ARTAuthDetails.m in Sources */ = {isa = PBXBuildFile; fileRef = D73691FE1DB788C40062C150 /* ARTAuthDetails.m */; };
-		D736A0C91F916553005ABE81 /* KSCrash.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D736A0C61F916553005ABE81 /* KSCrash.framework */; };
+		D736A0C91F916553005ABE81 /* KSCrashAblyFork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D736A0C61F916553005ABE81 /* KSCrashAblyFork.framework */; };
 		D736A0CA1F916553005ABE81 /* msgpack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D736A0C71F916553005ABE81 /* msgpack.framework */; };
-		D736A1231F9178B0005ABE81 /* KSCrash.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D736A0C61F916553005ABE81 /* KSCrash.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D736A1231F9178B0005ABE81 /* KSCrashAblyFork.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D736A0C61F916553005ABE81 /* KSCrashAblyFork.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D736A1241F9178B0005ABE81 /* msgpack.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D736A0C71F916553005ABE81 /* msgpack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D73BF70C22609E7F00579773 /* SocketRocketAblyFork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D73BF70B22609E7F00579773 /* SocketRocketAblyFork.framework */; };
 		D73BF70E22609E9500579773 /* SocketRocketAblyFork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D73BF70D22609E9500579773 /* SocketRocketAblyFork.framework */; };
@@ -677,7 +677,7 @@
 		EB2D85011CD769C800F23CDA /* ARTOSReachability.h in Headers */ = {isa = PBXBuildFile; fileRef = EB2D85001CD769C800F23CDA /* ARTOSReachability.h */; };
 		EB3630AD2380508900B83598 /* Ably.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BF61311A35B2AB004CF2B3 /* Ably.framework */; };
 		EB3630CE2380562400B83598 /* msgpack.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = EB3630C92380562400B83598 /* msgpack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		EB3630CF2380562400B83598 /* KSCrash.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = EB3630CA2380562400B83598 /* KSCrash.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		EB3630CF2380562400B83598 /* KSCrashAblyFork.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = EB3630CA2380562400B83598 /* KSCrashAblyFork.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EB3630D02380562400B83598 /* SocketRocketAblyFork.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = EB3630CB2380562400B83598 /* SocketRocketAblyFork.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EB3630D12380562400B83598 /* SAMKeychain.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = EB3630CC2380562400B83598 /* SAMKeychain.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		EB3630D22380562400B83598 /* ULID.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = EB3630CD2380562400B83598 /* ULID.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -774,7 +774,7 @@
 				D73BF71222609EF600579773 /* SocketRocketAblyFork.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C4B219EDCAB00723F17 /* ULID.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C49219EDC9B00723F17 /* msgpack.framework in Copy Carthage Frameworks to Test bundle */,
-				D7093C47219EDC8A00723F17 /* KSCrash.framework in Copy Carthage Frameworks to Test bundle */,
+				D7093C47219EDC8A00723F17 /* KSCrashAblyFork.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C44219EDC6B00723F17 /* SAMKeychain.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C41219EDC5000723F17 /* SwiftyJSON.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C3D219EDC1800723F17 /* Aspects.framework in Copy Carthage Frameworks to Test bundle */,
@@ -796,7 +796,7 @@
 				D7093C93219EE3E800723F17 /* Quick.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C94219EE3E800723F17 /* SwiftyJSON.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C98219EE3E800723F17 /* msgpack.framework in Copy Carthage Frameworks to Test bundle */,
-				D7093C9A219EE3E800723F17 /* KSCrash.framework in Copy Carthage Frameworks to Test bundle */,
+				D7093C9A219EE3E800723F17 /* KSCrashAblyFork.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C9B219EE3E800723F17 /* SAMKeychain.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C9D219EE3E800723F17 /* ULID.framework in Copy Carthage Frameworks to Test bundle */,
 			);
@@ -815,7 +815,7 @@
 				D7EEE6B221A6E070000E8474 /* Nimble.framework in Copy Carthage Frameworks to Test bundle */,
 				D7EEE6B121A6E068000E8474 /* Aspects.framework in Copy Carthage Frameworks to Test bundle */,
 				D38D22F220FDFD9900194B40 /* ULID.framework in Copy Carthage Frameworks to Test bundle */,
-				D736A1231F9178B0005ABE81 /* KSCrash.framework in Copy Carthage Frameworks to Test bundle */,
+				D736A1231F9178B0005ABE81 /* KSCrashAblyFork.framework in Copy Carthage Frameworks to Test bundle */,
 				D736A1241F9178B0005ABE81 /* msgpack.framework in Copy Carthage Frameworks to Test bundle */,
 				D75F49C8205AD525003DE04F /* SAMKeychain.framework in Copy Carthage Frameworks to Test bundle */,
 			);
@@ -830,7 +830,7 @@
 			files = (
 				EB3630CE2380562400B83598 /* msgpack.framework in CopyFiles */,
 				EBF70D95239145E0004824FA /* Ably.framework in CopyFiles */,
-				EB3630CF2380562400B83598 /* KSCrash.framework in CopyFiles */,
+				EB3630CF2380562400B83598 /* KSCrashAblyFork.framework in CopyFiles */,
 				EB3630D02380562400B83598 /* SocketRocketAblyFork.framework in CopyFiles */,
 				EB3630D12380562400B83598 /* SAMKeychain.framework in CopyFiles */,
 				EB3630D22380562400B83598 /* ULID.framework in CopyFiles */,
@@ -926,12 +926,12 @@
 		D710D475219495FC008F54AD /* Ably.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Ably.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D710D478219495FC008F54AD /* Info-tvOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-tvOS.plist"; sourceTree = "<group>"; };
 		D710D6A22194A09C008F54AD /* SAMKeychain.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SAMKeychain.framework; path = Carthage/Build/Mac/SAMKeychain.framework; sourceTree = "<group>"; };
-		D710D6A32194A09D008F54AD /* KSCrash.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = KSCrash.framework; path = Carthage/Build/Mac/KSCrash.framework; sourceTree = "<group>"; };
+		D710D6A32194A09D008F54AD /* KSCrashAblyFork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = KSCrashAblyFork.framework; path = Carthage/Build/Mac/KSCrashAblyFork.framework; sourceTree = "<group>"; };
 		D710D6A42194A09D008F54AD /* msgpack.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = msgpack.framework; path = Carthage/Build/Mac/msgpack.framework; sourceTree = "<group>"; };
 		D710D6A62194A09D008F54AD /* ULID.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ULID.framework; path = Carthage/Build/Mac/ULID.framework; sourceTree = "<group>"; };
 		D710D6AD2194A0B2008F54AD /* ULID.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ULID.framework; path = Carthage/Build/tvOS/ULID.framework; sourceTree = "<group>"; };
 		D710D6AE2194A0B2008F54AD /* SAMKeychain.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SAMKeychain.framework; path = Carthage/Build/tvOS/SAMKeychain.framework; sourceTree = "<group>"; };
-		D710D6AF2194A0B2008F54AD /* KSCrash.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = KSCrash.framework; path = Carthage/Build/tvOS/KSCrash.framework; sourceTree = "<group>"; };
+		D710D6AF2194A0B2008F54AD /* KSCrashAblyFork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = KSCrashAblyFork.framework; path = Carthage/Build/tvOS/KSCrashAblyFork.framework; sourceTree = "<group>"; };
 		D710D6B82194A1FD008F54AD /* msgpack.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = msgpack.framework; path = Carthage/Build/tvOS/msgpack.framework; sourceTree = "<group>"; };
 		D714A63D1C74D4B2002F2CA0 /* NSObject+TestSuite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSObject+TestSuite.swift"; sourceTree = "<group>"; };
 		D714A63F1C75F0C5002F2CA0 /* ARTWebSocketTransport+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTWebSocketTransport+Private.h"; sourceTree = "<group>"; };
@@ -947,7 +947,7 @@
 		D72C67DE201AB74000978EBB /* ARTPushActivationStateMachine+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTPushActivationStateMachine+Private.h"; sourceTree = "<group>"; };
 		D73691FD1DB788C40062C150 /* ARTAuthDetails.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTAuthDetails.h; sourceTree = "<group>"; };
 		D73691FE1DB788C40062C150 /* ARTAuthDetails.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTAuthDetails.m; sourceTree = "<group>"; };
-		D736A0C61F916553005ABE81 /* KSCrash.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = KSCrash.framework; path = Carthage/Build/iOS/KSCrash.framework; sourceTree = "<group>"; };
+		D736A0C61F916553005ABE81 /* KSCrashAblyFork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = KSCrashAblyFork.framework; path = Carthage/Build/iOS/KSCrashAblyFork.framework; sourceTree = "<group>"; };
 		D736A0C71F916553005ABE81 /* msgpack.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = msgpack.framework; path = Carthage/Build/iOS/msgpack.framework; sourceTree = "<group>"; };
 		D73BF70B22609E7F00579773 /* SocketRocketAblyFork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SocketRocketAblyFork.framework; path = Carthage/Build/iOS/SocketRocketAblyFork.framework; sourceTree = "<group>"; };
 		D73BF70D22609E9500579773 /* SocketRocketAblyFork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SocketRocketAblyFork.framework; path = Carthage/Build/Mac/SocketRocketAblyFork.framework; sourceTree = "<group>"; };
@@ -1082,7 +1082,7 @@
 		EB36309E23804F7C00B83598 /* Ably-SoakTest-AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Ably-SoakTest-AppUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		EB3630A423804F7C00B83598 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		EB3630C92380562400B83598 /* msgpack.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = msgpack.framework; path = Carthage/Build/iOS/msgpack.framework; sourceTree = "<group>"; };
-		EB3630CA2380562400B83598 /* KSCrash.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = KSCrash.framework; path = Carthage/Build/iOS/KSCrash.framework; sourceTree = "<group>"; };
+		EB3630CA2380562400B83598 /* KSCrashAblyFork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = KSCrashAblyFork.framework; path = Carthage/Build/iOS/KSCrashAblyFork.framework; sourceTree = "<group>"; };
 		EB3630CB2380562400B83598 /* SocketRocketAblyFork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SocketRocketAblyFork.framework; path = Carthage/Build/iOS/SocketRocketAblyFork.framework; sourceTree = "<group>"; };
 		EB3630CC2380562400B83598 /* SAMKeychain.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SAMKeychain.framework; path = Carthage/Build/iOS/SAMKeychain.framework; sourceTree = "<group>"; };
 		EB3630CD2380562400B83598 /* ULID.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ULID.framework; path = Carthage/Build/iOS/ULID.framework; sourceTree = "<group>"; };
@@ -1140,7 +1140,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D736A0C91F916553005ABE81 /* KSCrash.framework in Frameworks */,
+				D736A0C91F916553005ABE81 /* KSCrashAblyFork.framework in Frameworks */,
 				D73BF70C22609E7F00579773 /* SocketRocketAblyFork.framework in Frameworks */,
 				D736A0CA1F916553005ABE81 /* msgpack.framework in Frameworks */,
 				D77A0C961FFEEF0300711131 /* ULID.framework in Frameworks */,
@@ -1178,7 +1178,7 @@
 			files = (
 				D710D6A72194A09D008F54AD /* SAMKeychain.framework in Frameworks */,
 				D73BF70E22609E9500579773 /* SocketRocketAblyFork.framework in Frameworks */,
-				D710D6A82194A09D008F54AD /* KSCrash.framework in Frameworks */,
+				D710D6A82194A09D008F54AD /* KSCrashAblyFork.framework in Frameworks */,
 				D710D6A92194A09D008F54AD /* msgpack.framework in Frameworks */,
 				D710D6AB2194A09D008F54AD /* ULID.framework in Frameworks */,
 			);
@@ -1189,7 +1189,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D710D6B92194A1FD008F54AD /* msgpack.framework in Frameworks */,
-				D710D6B42194A1FD008F54AD /* KSCrash.framework in Frameworks */,
+				D710D6B42194A1FD008F54AD /* KSCrashAblyFork.framework in Frameworks */,
 				D710D6B52194A1FD008F54AD /* SAMKeychain.framework in Frameworks */,
 				D73BF71022609EB500579773 /* SocketRocketAblyFork.framework in Frameworks */,
 				D710D6B72194A1FD008F54AD /* ULID.framework in Frameworks */,
@@ -1256,7 +1256,7 @@
 		96BF61271A35B2AB004CF2B3 = {
 			isa = PBXGroup;
 			children = (
-				EB3630CA2380562400B83598 /* KSCrash.framework */,
+				EB3630CA2380562400B83598 /* KSCrashAblyFork.framework */,
 				EB3630C92380562400B83598 /* msgpack.framework */,
 				EB3630CC2380562400B83598 /* SAMKeychain.framework */,
 				EB3630CB2380562400B83598 /* SocketRocketAblyFork.framework */,
@@ -1615,14 +1615,14 @@
 				D7093C30219ED41A00723F17 /* Nimble.framework */,
 				D7093C32219ED41A00723F17 /* Quick.framework */,
 				D710D6B82194A1FD008F54AD /* msgpack.framework */,
-				D710D6A32194A09D008F54AD /* KSCrash.framework */,
-				D710D6AF2194A0B2008F54AD /* KSCrash.framework */,
+				D710D6A32194A09D008F54AD /* KSCrashAblyFork.framework */,
+				D710D6AF2194A0B2008F54AD /* KSCrashAblyFork.framework */,
 				D710D6AE2194A0B2008F54AD /* SAMKeychain.framework */,
 				D710D6AD2194A0B2008F54AD /* ULID.framework */,
 				D710D6A42194A09D008F54AD /* msgpack.framework */,
 				D75F49C6205AD4D4003DE04F /* SAMKeychain.framework */,
 				D77A0C951FFEEF0300711131 /* ULID.framework */,
-				D736A0C61F916553005ABE81 /* KSCrash.framework */,
+				D736A0C61F916553005ABE81 /* KSCrashAblyFork.framework */,
 				D736A0C71F916553005ABE81 /* msgpack.framework */,
 				D710D6A22194A09C008F54AD /* SAMKeychain.framework */,
 				D710D6A62194A09D008F54AD /* ULID.framework */,
@@ -2722,6 +2722,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = "Ably-iOS-Tests";
 				SWIFT_OBJC_BRIDGING_HEADER = "Spec/AblySpec-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;

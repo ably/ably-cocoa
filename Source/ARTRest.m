@@ -41,13 +41,7 @@
 #import "ARTLocalDeviceStorage.h"
 #import "ARTNSMutableRequest+ARTRest.h"
 #import "ARTHTTPPaginatedResponse+Private.h"
-
-#if COCOAPODS
 #import <KSCrashAblyFork/KSCrash.h>
-#else
-// Carthage
-#import <KSCrash/KSCrash.h>
-#endif
 
 @implementation ARTRest {
     ARTQueuedDealloc *_dealloc;
@@ -768,6 +762,14 @@ void ARTstopHandlingUncaughtExceptions(ARTRestInternal *self) {
 static dispatch_once_t *device_once_token;
 
 - (ARTLocalDevice *)device_nosync {
+    // The device is shared in a static variable because it's a reflection
+    // of what's persisted. Having a device instance per ARTRest instance
+    // could leave some instances in a stale state, if, through another
+    // instance, the persisted state is changed.
+    //
+    // As a side effect, the first instance "wins" at setting the device's
+    // client ID.
+
     static dispatch_once_t once;
     device_once_token = &once;
     static id device;
