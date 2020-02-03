@@ -3760,7 +3760,7 @@ class RealtimeClientChannel: QuickSpec {
                 }
             }
 
-            // https://github.com/ably/ably-ios/issues/614
+            // https://github.com/ably/ably-cocoa/issues/614
             it("should not crash when an ATTACH request is responded with a DETACHED") {
                 let options = AblyTests.commonAppSetup()
                 let client = AblyTests.newRealtime(options)
