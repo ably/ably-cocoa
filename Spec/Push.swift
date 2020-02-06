@@ -58,7 +58,7 @@ class Push : QuickSpec {
                 }
             }
 
-            // RSH2c
+            // RSH2c / RSH8g
             it("should handle GotPushDeviceDetails event when platform’s APIs sends the details for push notifications") {
                 let stateMachine = rest.push.internal.activationMachine()
                 let testDeviceToken = "xxxx-xxxx-xxxx-xxxx-xxxx"
@@ -164,5 +164,84 @@ class Push : QuickSpec {
 
         }
 
+        context("LocalDevice") {
+            // RSH8
+            it("has a device method that returns a LocalDevice") {
+                let _: ARTLocalDevice = ARTRest(key: "fake:key").device
+                let _: ARTLocalDevice = ARTRealtime(key: "fake:key").device
+            }
+            
+            // RSH8a
+            it("the device is lazily populated from the persisted state") {
+                let testToken = "testDeviceToken"
+                let testIdentity = ARTDeviceIdentityTokenDetails(
+                    token: "123456",
+                    issued: Date(),
+                    expires: Date.distantFuture,
+                    capability: "",
+                    clientId: ""
+                )
+
+                let rest = ARTRest(key: "fake:key")
+                rest.internal.storage = storage
+                storage.simulateOnNextRead(string: testToken, for: ARTDeviceTokenKey)
+                storage.simulateOnNextRead(data: testIdentity.archive(), for: ARTDeviceIdentityTokenKey)
+
+                let device = rest.device
+                
+                expect(device.deviceToken()).to(equal(testToken))
+                expect(device.identityTokenDetails?.token).to(equal(testIdentity.token))
+            }
+            
+            // RSH8d
+            context("when using token authentication") {
+                it("new clientID is set") {
+                    let options = ARTClientOptions(key: "fake:key")
+                    options.autoConnect = false
+                    options.authCallback = { _, callback in
+                        delay(0.1) {
+                            callback(ARTTokenDetails(token: "fake:token", expires: nil, issued: nil, capability: nil, clientId: "testClient"), nil)
+                        }
+                    }
+
+                    let realtime = ARTRealtime(options: options)
+                    expect(realtime.device.clientId).to(beNil())
+
+                    waitUntil(timeout: testTimeout) { done in
+                        realtime.auth.authorize { _, _ in
+                            done()
+                        }
+                    }
+
+                    expect(realtime.device.clientId).to(equal("testClient"))
+                }
+            }
+            
+            context("when getting a client ID from CONNECTED message") {
+                it("new clientID is set") {
+                    let options = ARTClientOptions(key: "fake:key")
+                    options.autoConnect = false
+
+                    let realtime = ARTRealtime(options: options)
+                    expect(realtime.device.clientId).to(beNil())
+                    
+                    realtime.internal.setTransport(TestProxyTransport.self)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        realtime.connection.once(.connected) { _ in
+                            done()
+                        }
+                        realtime.connect()
+                        
+                        let transport = realtime.internal.transport as! TestProxyTransport
+                        transport.actionsIgnored += [.error]
+                        transport.simulateTransportSuccess(clientId: "testClient")
+                    }
+
+                    expect(realtime.device.clientId).to(equal("testClient"))
+                }
+
+            }
+        }
     }
 }

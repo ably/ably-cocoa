@@ -96,6 +96,15 @@ class PushActivationStateMachine : QuickSpec {
                             }
                             expect(data.count) == 32 //32 bytes digest
                         }
+
+                        // RSH8b
+                        it("should have a clientID if the client is identified") {
+                            let options = ARTClientOptions(key: "xxxx:xxxx")
+                            options.clientId = "deviceClient"
+                            let rest = ARTRest(options: options)
+                            rest.internal.storage = storage
+                            expect(rest.device.clientId).to(equal("deviceClient"))
+                        }
                     }
 
                     // RSH3a2c
@@ -428,7 +437,7 @@ class PushActivationStateMachine : QuickSpec {
                     expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeviceRegistration.self))
                 }
 
-                // RSH3c2
+                // RSH3c2 / RSH8c
                 it("on Event GotDeviceRegistration") {
                     rest.internal.resetDeviceSingleton()
 
