@@ -761,7 +761,7 @@ class PushActivationStateMachine : QuickSpec {
             expect(storage.object(forKey: ARTDeviceIdentityTokenKey)).to(beNil())
         }
 
-                func rsh3a2a() {
+        func rsh3a2a() {
             context("the local device has id and deviceIdentityToken") {
                 let testDeviceId = "aaaa"
                 
