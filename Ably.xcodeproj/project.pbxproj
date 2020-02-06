@@ -132,6 +132,12 @@
 		D7093C9B219EE3E800723F17 /* SAMKeychain.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6AE2194A0B2008F54AD /* SAMKeychain.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093C9D219EE3E800723F17 /* ULID.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6AD2194A0B2008F54AD /* ULID.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093CA9219EFA8A00723F17 /* MockDeviceStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7093CA8219EFA8A00723F17 /* MockDeviceStorage.swift */; };
+		D70C36C3233E6831002FD6E3 /* ARTFormEncode.h in Headers */ = {isa = PBXBuildFile; fileRef = D70C36C1233E6831002FD6E3 /* ARTFormEncode.h */; };
+		D70C36C4233E6831002FD6E3 /* ARTFormEncode.h in Headers */ = {isa = PBXBuildFile; fileRef = D70C36C1233E6831002FD6E3 /* ARTFormEncode.h */; };
+		D70C36C5233E6831002FD6E3 /* ARTFormEncode.h in Headers */ = {isa = PBXBuildFile; fileRef = D70C36C1233E6831002FD6E3 /* ARTFormEncode.h */; };
+		D70C36C6233E6831002FD6E3 /* ARTFormEncode.m in Sources */ = {isa = PBXBuildFile; fileRef = D70C36C2233E6831002FD6E3 /* ARTFormEncode.m */; };
+		D70C36C7233E6831002FD6E3 /* ARTFormEncode.m in Sources */ = {isa = PBXBuildFile; fileRef = D70C36C2233E6831002FD6E3 /* ARTFormEncode.m */; };
+		D70C36C8233E6831002FD6E3 /* ARTFormEncode.m in Sources */ = {isa = PBXBuildFile; fileRef = D70C36C2233E6831002FD6E3 /* ARTFormEncode.m */; };
 		D70EAAED1BC3376200CD8B9E /* ARTRestChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = D70EAAEB1BC3376200CD8B9E /* ARTRestChannel.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D70EAAEE1BC3376200CD8B9E /* ARTRestChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = D70EAAEC1BC3376200CD8B9E /* ARTRestChannel.m */; };
 		D70EECAC1FEAF331008A50CD /* ARTPendingMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = D70EECAA1FEAF331008A50CD /* ARTPendingMessage.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -923,6 +929,8 @@
 		D7093C8A219EE3C900723F17 /* SwiftyJSON.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftyJSON.framework; path = Carthage/Build/tvOS/SwiftyJSON.framework; sourceTree = "<group>"; };
 		D7093C8E219EE3D800723F17 /* Aspects.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Aspects.framework; path = Carthage/Build/iOS/Aspects.framework; sourceTree = "<group>"; };
 		D7093CA8219EFA8A00723F17 /* MockDeviceStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDeviceStorage.swift; sourceTree = "<group>"; };
+		D70C36C1233E6831002FD6E3 /* ARTFormEncode.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTFormEncode.h; sourceTree = "<group>"; };
+		D70C36C2233E6831002FD6E3 /* ARTFormEncode.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTFormEncode.m; sourceTree = "<group>"; };
 		D70EAAEB1BC3376200CD8B9E /* ARTRestChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTRestChannel.h; sourceTree = "<group>"; };
 		D70EAAEC1BC3376200CD8B9E /* ARTRestChannel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRestChannel.m; sourceTree = "<group>"; };
 		D70EECAA1FEAF331008A50CD /* ARTPendingMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPendingMessage.h; sourceTree = "<group>"; };
@@ -1545,6 +1553,8 @@
 				D74CBC02212EB58700D090E4 /* ARTNSHTTPURLResponse+ARTPaginated.m */,
 				D74CBC05212EB5B900D090E4 /* ARTNSMutableURLRequest+ARTPaginated.h */,
 				D74CBC06212EB5B900D090E4 /* ARTNSMutableURLRequest+ARTPaginated.m */,
+				D70C36C1233E6831002FD6E3 /* ARTFormEncode.h */,
+				D70C36C2233E6831002FD6E3 /* ARTFormEncode.m */,
 				EBB721CA2376B454001C3550 /* ARTURLSession.h */,
 			);
 			name = HTTP;
@@ -1736,6 +1746,7 @@
 				EB1B53FD22F8D91C006A59AC /* ARTQueuedDealloc.h in Headers */,
 				D77394031C6F6FFE00F5478F /* ARTProtocolMessage+Private.h in Headers */,
 				D746AE2F1BBBE7D7003ECEF8 /* ARTPaginatedResult+Private.h in Headers */,
+				D70C36C3233E6831002FD6E3 /* ARTFormEncode.h in Headers */,
 				D7AE18CE1E5B40FE00478D82 /* ARTPushDeviceRegistrations.h in Headers */,
 				D746AE431BBC5CD0003ECEF8 /* ARTRealtimeChannel+Private.h in Headers */,
 				D746AE251BBB611C003ECEF8 /* ARTChannel+Private.h in Headers */,
@@ -1861,6 +1872,7 @@
 				EB1B53FE22F8D91C006A59AC /* ARTQueuedDealloc.h in Headers */,
 				D710D56A21949CB9008F54AD /* ARTPushAdmin.h in Headers */,
 				D710D48321949A4E008F54AD /* ARTDefault+Private.h in Headers */,
+				D70C36C4233E6831002FD6E3 /* ARTFormEncode.h in Headers */,
 				D710D59021949D29008F54AD /* ARTStatus.h in Headers */,
 				D710D61D21949DEC008F54AD /* ARTHTTPPaginatedResponse+Private.h in Headers */,
 				D710D58321949D28008F54AD /* ARTTokenDetails.h in Headers */,
@@ -1986,6 +1998,7 @@
 				EB1B53FF22F8D91C006A59AC /* ARTQueuedDealloc.h in Headers */,
 				D710D57021949CBA008F54AD /* ARTPushAdmin.h in Headers */,
 				D710D48521949A4F008F54AD /* ARTDefault+Private.h in Headers */,
+				D70C36C5233E6831002FD6E3 /* ARTFormEncode.h in Headers */,
 				D710D5B621949D2A008F54AD /* ARTStatus.h in Headers */,
 				D710D62921949DED008F54AD /* ARTHTTPPaginatedResponse+Private.h in Headers */,
 				D710D5A921949D2A008F54AD /* ARTTokenDetails.h in Headers */,
@@ -2402,6 +2415,7 @@
 				D7F1D3781BF4DE72001A4B5E /* ARTRealtimePresence.m in Sources */,
 				D7DF738B1EA645300013CD36 /* ARTLocalDeviceStorage.m in Sources */,
 				D7B621911E4A6E0200684474 /* ARTPush.m in Sources */,
+				D70C36C6233E6831002FD6E3 /* ARTFormEncode.m in Sources */,
 				D7AE18D31E5B410F00478D82 /* ARTPushChannelSubscriptions.m in Sources */,
 				1CD8DCA01B1C7315007EAF36 /* ARTDefault.m in Sources */,
 				D7AE18CF1E5B40FE00478D82 /* ARTPushDeviceRegistrations.m in Sources */,
@@ -2540,6 +2554,7 @@
 				D710D67321949E79008F54AD /* ARTSentry.m in Sources */,
 				D710D5D521949D78008F54AD /* ARTClientOptions.m in Sources */,
 				D710D5D621949D78008F54AD /* ARTChannel.m in Sources */,
+				D70C36C7233E6831002FD6E3 /* ARTFormEncode.m in Sources */,
 				D710D5D121949D78008F54AD /* ARTAuthDetails.m in Sources */,
 				D710D4EC21949C0D008F54AD /* ARTRealtime.m in Sources */,
 				D710D4ED21949C0D008F54AD /* ARTRealtimeChannel.m in Sources */,
@@ -2622,6 +2637,7 @@
 				D710D65921949E77008F54AD /* ARTSentry.m in Sources */,
 				D710D5FB21949D79008F54AD /* ARTClientOptions.m in Sources */,
 				D710D5FC21949D79008F54AD /* ARTChannel.m in Sources */,
+				D70C36C8233E6831002FD6E3 /* ARTFormEncode.m in Sources */,
 				D710D5F721949D79008F54AD /* ARTAuthDetails.m in Sources */,
 				D710D4FC21949C0E008F54AD /* ARTRealtime.m in Sources */,
 				D710D4FD21949C0E008F54AD /* ARTRealtimeChannel.m in Sources */,
