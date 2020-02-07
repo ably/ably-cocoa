@@ -130,11 +130,16 @@ class Push : QuickSpec {
                     }
                     rest.push.activate()
                 }
+                stateMachine.transitions = nil
 
                 expect(rest.device.clientId) == expectedClientId
                 expect(rest.auth.clientId) == expectedClientId
+                
+                let registerRequest = mockHttpExecutor.requests.filter { req in
+                    req.httpMethod == "POST" && req.url?.path == "/push/deviceRegistrations"
+                }.first
 
-                switch extractBodyAsMsgPack(mockHttpExecutor.requests.last) {
+                switch extractBodyAsMsgPack(registerRequest) {
                 case .failure(let error):
                     fail(error)
                 case .success(let httpBody):
@@ -217,6 +222,7 @@ class Push : QuickSpec {
                 }
             }
             
+            // RSH8d
             context("when getting a client ID from CONNECTED message") {
                 it("new clientID is set") {
                     let options = ARTClientOptions(key: "fake:key")
@@ -240,7 +246,51 @@ class Push : QuickSpec {
 
                     expect(realtime.device.clientId).to(equal("testClient"))
                 }
+            }
+            
+            // RSH8e
+            it("authentication on registered device sends a GotPushDeviceDetails with new clientID") {
+                let testToken = "testDeviceToken"
+                let testIdentity = ARTDeviceIdentityTokenDetails(
+                    token: "123456",
+                    issued: Date(),
+                    expires: Date.distantFuture,
+                    capability: "",
+                    clientId: ""
+                )
 
+                let options = ARTClientOptions(key: "fake:key")
+                options.autoConnect = false
+                options.authCallback = { _, callback in
+                    delay(0.1) {
+                        callback(ARTTokenDetails(token: "fake:token", expires: nil, issued: nil, capability: nil, clientId: "testClient"), nil)
+                    }
+                }
+
+                let realtime = ARTRealtime(options: options)
+                let storage = MockDeviceStorage(
+                    startWith: ARTPushActivationStateWaitingForNewPushDeviceDetails(
+                        machine: ARTPushActivationStateMachine(rest.internal)
+                    )
+                )
+                realtime.internal.rest.storage = storage
+                let stateMachine = realtime.internal.rest.push.activationMachine()
+                let delegate = StateMachineDelegate()
+                stateMachine.delegate = delegate
+                
+                storage.simulateOnNextRead(string: testToken, for: ARTDeviceTokenKey)
+                storage.simulateOnNextRead(data: testIdentity.archive(), for: ARTDeviceIdentityTokenKey)
+
+                waitUntil(timeout: testTimeout) { done in
+                    stateMachine.transitions = { event, _, _ in
+                        if event is ARTPushActivationEventGotPushDeviceDetails {
+                            done()
+                        }
+                    }
+                    realtime.auth.authorize { _, _ in }
+                }
+
+                expect(realtime.device.clientId).to(equal("testClient"))
             }
         }
     }
