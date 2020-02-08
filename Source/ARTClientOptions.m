@@ -11,6 +11,9 @@
 #import "ARTDefault.h"
 #import "ARTStatus.h"
 #import "ARTTokenParams.h"
+#import "ARTPlugin.h"
+#import "ARTPluginSet.h"
+#import "ARTDeltaCodec.h"
 
 NSString *ARTDefaultEnvironment = nil;
 NSString *const ARTDefaultProduction = @"production";
@@ -49,6 +52,10 @@ NSString *const ARTDefaultProduction = @"production";
     _internalDispatchQueue = dispatch_queue_create("io.ably.main", DISPATCH_QUEUE_SERIAL);
     _pushFullWait = false;
     _idempotentRestPublishing = [ARTClientOptions getDefaultIdempotentRestPublishingForVersion:[ARTDefault version]];
+    if (![_plugins pluginClassOf:ARTPluginTypeVCDiff]) {
+        ARTPlugin *vcdiffPlugin = [ARTPlugin newWithType:ARTPluginTypeVCDiff pluginClass:[ARTDeltaCodec class]];
+        _plugins = _plugins == nil ? [NSSet setWithObject:vcdiffPlugin] : [_plugins setByAddingObject:vcdiffPlugin];
+    }
     return self;
 }
 
@@ -128,6 +135,7 @@ NSString *const ARTDefaultProduction = @"production";
     options.internalDispatchQueue = self.internalDispatchQueue;
     options.pushFullWait = self.pushFullWait;
     options.idempotentRestPublishing = self.idempotentRestPublishing;
+    options.plugins = self.plugins;
 
     return options;
 }
