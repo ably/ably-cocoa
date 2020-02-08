@@ -16,6 +16,7 @@
 #import "ARTDataQuery.h"
 #import "ARTRest+Private.h"
 #import "ARTDefault.h"
+#import "ARTClientOptions.h"
 
 @implementation ARTChannel {
     dispatch_queue_t _queue;
@@ -29,10 +30,10 @@
         _queue = rest.queue;
         _options = options;
         NSError *error = nil;
-        _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:_options.cipher error:&error];
+        _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:_options.cipher plugins:rest.options.plugins error:&error];
         if (error != nil) {
             [_logger warn:@"creating ARTDataEncoder: %@", error];
-            _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:nil error:nil];
+            _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:nil plugins:rest.options.plugins error:nil];
         }
     }
     return self;
