@@ -9,6 +9,9 @@
 #import "ARTCrypto+Private.h"
 #import "ARTLog.h"
 #import "ARTDataEncoder.h"
+#import "ARTPlugin.h"
+#import "ARTPluginSet.h"
+#import "ARTDeltaCodec.h"
 
 @implementation ARTDataEncoderOutput
 
@@ -26,9 +29,11 @@
 
 @implementation ARTDataEncoder {
     id<ARTChannelCipher> _cipher;
+    id<ARTVCDiffDecoder> _vcdiffDecoder;
+    NSData *_lastMessageData;
 }
 
-- (instancetype)initWithCipherParams:(ARTCipherParams *)params error:(NSError **)error {
+- (instancetype)initWithCipherParams:(ARTCipherParams *)params plugins:(NSSet<ARTPlugin *> *)plugins error:(NSError **)error {
     self = [super init];
     if (self) {
         if (params) {
@@ -42,6 +47,10 @@
                 }
                 return nil;
             }
+        }
+        Class vcdiffPluginClass = [plugins pluginClassOf:ARTPluginTypeVCDiff];
+        if ([vcdiffPluginClass conformsToProtocol:@protocol(ARTVCDiffDecoder)]) {
+            _vcdiffDecoder = [[vcdiffPluginClass alloc] init];
         }
     }
     return self;
@@ -114,6 +123,7 @@
 
 - (ARTDataEncoderOutput *)decode:(id)data encoding:(NSString *)encoding {
     if (!data || !encoding ) {
+        _lastMessageData = [data dataUsingEncoding:NSUTF8StringEncoding];
         return [[ARTDataEncoderOutput alloc] initWithData:data encoding:encoding errorInfo:nil];
     }
     
@@ -159,6 +169,24 @@
             ARTStatus *status = [_cipher decrypt:data output:&data];
             if (status.state != ARTStateOk) {
                 errorInfo = status.errorInfo ? status.errorInfo : [ARTErrorInfo createWithCode:0 message:@"decrypt failed"];
+            }
+        } else if ([encoding isEqualToString:@"vcdiff"]) {
+            NSError *error;
+            if (_vcdiffDecoder) {
+                NSData *delta = data;
+                NSData *base = _lastMessageData;
+                data = [_vcdiffDecoder decode:delta base:base error:&error];
+                _lastMessageData = data;
+            }
+            else {
+                errorInfo = [ARTErrorInfo createWithCode:0 message:@"VCDiffDecoder is missing"];
+            }
+
+            if (error) {
+                errorInfo = [ARTErrorInfo createFromNSError:error];
+            }
+            else if (!data) {
+                errorInfo = [ARTErrorInfo createWithCode:0 message:@"Data is nil"];
             }
         } else {
             errorInfo = [ARTErrorInfo createWithCode:0 message:[NSString stringWithFormat:@"unknown encoding: '%@'", encoding]];
