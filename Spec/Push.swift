@@ -292,6 +292,37 @@ class Push : QuickSpec {
 
                 expect(realtime.device.clientId).to(equal("testClient"))
             }
+
+            // RSH8f
+            it("sets device's client ID from registration response") {
+                let expectedClientId = "testClientId"
+
+                let stateMachineDelegate = StateMachineDelegateCustomCallbacks()
+                stateMachineDelegate.onPushCustomRegisterIdentity = { _, _ in
+                    return ARTDeviceIdentityTokenDetails(
+                        token: "123456",
+                        issued: Date(),
+                        expires: Date.distantFuture,
+                        capability: "",
+                        clientId: expectedClientId
+                    )
+                }
+                rest.push.internal.activationMachine().delegate = stateMachineDelegate
+                                
+                expect(rest.device.clientId).to(beNil())
+                
+                waitUntil(timeout: testTimeout) { done in
+                    stateMachineDelegate.onDidActivateAblyPush = { _ in
+                        done()
+                    }
+
+                    rest.push.activate()
+                    
+                    ARTPush.didRegisterForRemoteNotifications(withDeviceToken: "testDeviceToken".data(using: .utf8)!, rest: rest)
+                }
+                
+                expect(rest.device.clientId).to(equal(expectedClientId))
+            }
         }
     }
 }

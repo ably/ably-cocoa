@@ -1109,16 +1109,27 @@ class StateMachineDelegate: NSObject, ARTPushRegistererDelegate {
 
 typealias ARTDeviceId = String
 
-private class StateMachineDelegateCustomCallbacks: StateMachineDelegate {
+class StateMachineDelegateCustomCallbacks: StateMachineDelegate {
 
     var onPushCustomRegister: ((ARTErrorInfo?, ARTDeviceDetails?) -> NSError?)?
+    var onPushCustomRegisterIdentity: ((ARTErrorInfo?, ARTDeviceDetails?) throws -> ARTDeviceIdentityTokenDetails)?
     var onPushCustomDeregister: ((ARTErrorInfo?, ARTDeviceId?) -> NSError?)?
 
     func ablyPushCustomRegister(_ error: ARTErrorInfo?, deviceDetails: ARTDeviceDetails?, callback: @escaping (ARTDeviceIdentityTokenDetails?, ARTErrorInfo?) -> Void) {
-        let error = onPushCustomRegister?(error, deviceDetails)
+        var registerError: NSError?
+        var identity: ARTDeviceIdentityTokenDetails?
+        if let register = onPushCustomRegister {
+            registerError = register(error, deviceDetails)
+            identity = ARTDeviceIdentityTokenDetails(token: "123456", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
+        } else {
+            do {
+                identity = try onPushCustomRegisterIdentity!(error, deviceDetails)
+            } catch {
+                registerError = error as NSError
+            }
+        }
         delay(0) {
-            let deviceIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "123456", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
-            callback(deviceIdentityTokenDetails, error == nil ? nil : ARTErrorInfo.create(from: error!))
+            callback(identity, registerError == nil ? nil : ARTErrorInfo.create(from: registerError!))
         }
     }
 
