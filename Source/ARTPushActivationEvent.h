@@ -55,6 +55,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTPushActivationEventGotPushDeviceDetails : ARTPushActivationEvent
 @end
 
+@interface ARTPushActivationEventGettingPushDeviceDetailsFailed : ARTPushActivationErrorEvent
+@end
+
 @interface ARTPushActivationEventGotDeviceRegistration : ARTPushActivationDeviceIdentityEvent
 @end
 

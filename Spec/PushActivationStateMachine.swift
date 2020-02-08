@@ -402,6 +402,24 @@ class PushActivationStateMachine : QuickSpec {
 
                 }
                 
+                // RSH3b4
+                it("on Event GettingPushDeviceDetailsFailed") {
+                    let expectedError = ARTErrorInfo(domain: ARTAblyErrorDomain, code: 1234, userInfo: nil)
+
+                    let delegate = StateMachineDelegate()
+                    stateMachine.delegate = delegate
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        delegate.onDidActivateAblyPush = { error in
+                            expect(error).to(equal(expectedError))
+                            done()
+                        }
+                        stateMachine.send(ARTPushActivationEventGettingPushDeviceDetailsFailed(error: expectedError))
+                    }
+
+                    expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
+                }
+                
                 // https://github.com/ably/ably-cocoa/issues/966
                 it("when initializing from persistent state with a deviceToken, GotPushDeviceDetails should be re-emitted") {
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForPushDeviceDetails(machine: initialStateMachine))
