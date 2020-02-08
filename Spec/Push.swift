@@ -79,6 +79,23 @@ class Push : QuickSpec {
                     rest.push.activate()
                 }
             }
+            
+            // RSH2d / RSH8h
+            it("sends GettingPushDeviceDetailsFailed when push registration fails") {
+                let stateMachine = rest.push.internal.activationMachine()
+                defer { stateMachine.transitions = nil }
+                waitUntil(timeout: testTimeout) { done in
+                    stateMachine.transitions = { event, _, _ in
+                        if event is ARTPushActivationEventGettingPushDeviceDetailsFailed {
+                            done()
+                        }
+                    }
+                    rest.push.activate()
+                    
+                    let error = NSError(domain: ARTAblyErrorDomain, code: 42, userInfo: nil)
+                    ARTPush.didFailToRegisterForRemoteNotificationsWithError(error, rest: rest)
+                }
+            }
 
             // https://github.com/ably/ably-cocoa/issues/877
             it("should update LocalDevice.clientId when it's null with auth.clientId") {
