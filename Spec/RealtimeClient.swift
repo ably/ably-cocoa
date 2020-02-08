@@ -1229,7 +1229,7 @@ class RealtimeClient: QuickSpec {
                 }
             }
 
-            // https://github.com/ably/ably-ios/issues/577
+            // https://github.com/ably/ably-cocoa/issues/577
             it("background behaviour") {
                 waitUntil(timeout: testTimeout) { done in
                   URLSession.shared.dataTask(with: URL(string:"https://ably.io")! as URL) { _ , _ , _  in
@@ -1365,7 +1365,7 @@ class RealtimeClient: QuickSpec {
                 static let sharedClient = ARTRealtime(options: { $0.autoConnect = false; return $0 }(ARTClientOptions(key: "xxxx:xxxx")))
             }
 
-            // Issue https://github.com/ably/ably-ios/issues/640
+            // Issue https://github.com/ably/ably-cocoa/issues/640
             it("should dispatch in user queue when removing an observer") {
                 class Foo {
                     init() {

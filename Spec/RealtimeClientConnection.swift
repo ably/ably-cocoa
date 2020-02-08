@@ -243,7 +243,7 @@ class RealtimeClientConnection: QuickSpec {
                             done()
                         case .connected:
                             if let transport = client.internal.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
-                                expect(query).to(haveParam("lib", withValue: "ios-1.1.17"))
+                                expect(query).to(haveParam("lib", withValue: "cocoa\(ARTDefault_variant)-1.1.18"))
                             }
                             else {
                                 XCTFail("MockTransport isn't working")
@@ -4441,7 +4441,7 @@ class RealtimeClientConnection: QuickSpec {
                 expect(client.connection.errorReason).to(beNil())
             }
 
-            // https://github.com/ably/ably-ios/issues/454
+            // https://github.com/ably/ably-cocoa/issues/454
             it("should not move to FAILED if received DISCONNECT with an error") {
                 let options = AblyTests.commonAppSetup()
                 let client = ARTRealtime(options: options)
