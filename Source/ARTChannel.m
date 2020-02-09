@@ -16,7 +16,7 @@
 #import "ARTDataQuery.h"
 #import "ARTRest+Private.h"
 #import "ARTDefault.h"
-#import "ARTClientOptions.h"
+#import "ARTClientOptions+Private.h"
 
 @implementation ARTChannel {
     dispatch_queue_t _queue;
