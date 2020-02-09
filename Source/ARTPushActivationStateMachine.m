@@ -266,16 +266,16 @@ dispatch_async(_queue, ^{
 
 - (void)syncDevice {
     #if TARGET_OS_IOS
-    ARTLocalDevice *local = _rest.device_nosync;
+    ARTLocalDevice *const local = _rest.device_nosync;
 
-    __block id delegate = self.delegate;
+    __block id const delegate = self.delegate;
 
     if (![delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
         [NSException raise:@"ARTPushRegistererDelegate must be implemented on AppDelegate" format:@""];
     }
 
     // Custom register
-    SEL customRegisterMethodSelector = @selector(ablyPushCustomRegister:deviceDetails:callback:);
+    SEL const customRegisterMethodSelector = @selector(ablyPushCustomRegister:deviceDetails:callback:);
     if ([delegate respondsToSelector:customRegisterMethodSelector]) {
         dispatch_async(_userQueue, ^{
             [delegate ablyPushCustomRegister:nil deviceDetails:local callback:^(ARTDeviceIdentityTokenDetails *identityTokenDetails, ARTErrorInfo *error) {
@@ -288,8 +288,8 @@ dispatch_async(_queue, ^{
                     [self sendEvent:[ARTPushActivationEventRegistrationSynced newWithIdentityTokenDetails:identityTokenDetails]];
                 }
                 else {
-                    ARTErrorInfo *missingIdentityTokenError = [ARTErrorInfo createWithCode:0 message:@"Device Identity Token Details is expected"];
-                        [self sendEvent:[ARTPushActivationEventSyncRegistrationFailed newWithError:missingIdentityTokenError]];
+                    ARTErrorInfo *const missingIdentityTokenError = [ARTErrorInfo createWithCode:0 message:@"Device Identity Token Details is expected"];
+                    [self sendEvent:[ARTPushActivationEventSyncRegistrationFailed newWithError:missingIdentityTokenError]];
                 }
             }];
         });
@@ -298,8 +298,8 @@ dispatch_async(_queue, ^{
 
     void (^doDeviceSync)(void) = ^{
         // Asynchronous HTTP request
-        NSString *path = [@"/push/deviceRegistrations" stringByAppendingPathComponent:local.id];
-        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:path]];
+        NSString *const path = [@"/push/deviceRegistrations" stringByAppendingPathComponent:local.id];
+        NSMutableURLRequest *const request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:path]];
         request.HTTPMethod = @"PUT";
         request.HTTPBody = [[self->_rest defaultEncoder] encodeDeviceDetails:local error:nil];
         [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
