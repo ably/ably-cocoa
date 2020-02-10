@@ -1,6 +1,5 @@
 //
 //  ARTRealtime+Private.h
-//  ably-ios
 //
 //  Created by vic on 24/03/2015.
 //  Copyright (c) 2015 Ably. All rights reserved.
@@ -95,7 +94,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, getter=getClientOptions) ARTClientOptions *options;
 
 /// Suspend the behavior defined in RTN15a, that is trying to immediately reconnect after a disconnection
-@property (readwrite, assign, nonatomic) BOOL suspendImmediateReconnection;
+@property (readwrite, assign, nonatomic) BOOL shouldImmediatelyReconnect;
 
 @end
 

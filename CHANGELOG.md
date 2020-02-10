@@ -1,5 +1,53 @@
 # Change Log
 
+## [1.1.18](https://github.com/ably/ably-cocoa/tree/HEAD)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.17...1.1.18)
+
+**Fixed bugs:**
+
+- Result of internet-up.ably-realtime.com is ignored [\#952](https://github.com/ably/ably-cocoa/issues/952)
+- Realtime suspended connection retrial using wrong timeout [\#913](https://github.com/ably/ably-cocoa/issues/913)
+
+**Closed issues:**
+
+- Remove develop branch [\#969](https://github.com/ably/ably-cocoa/issues/969)
+- Flaky test: RTP2f \(incoming LEAVE while SYNCing\) [\#938](https://github.com/ably/ably-cocoa/issues/938)
+- Flaky test: RTN17\* \(fallback hosts\) [\#931](https://github.com/ably/ably-cocoa/issues/931)
+
+**Merged pull requests:**
+
+- Remove redundant direct calls to push delegate callbacks [\#975](https://github.com/ably/ably-cocoa/pull/975) ([tcard](https://github.com/tcard))
+- Simplify hooks on RTP2f test [\#963](https://github.com/ably/ably-cocoa/pull/963) ([tcard](https://github.com/tcard))
+- Fix internet-up.ably-realtime.com checks [\#961](https://github.com/ably/ably-cocoa/pull/961) ([tcard](https://github.com/tcard))
+- Fix connection SUSPENDED timeout [\#917](https://github.com/ably/ably-cocoa/pull/917) ([ricardopereira](https://github.com/ricardopereira))
+
+## [1.1.17](https://github.com/ably/ably-cocoa/tree/1.1.17)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.16...1.1.17)
+
+**Merged pull requests:**
+
+- Remove push state machine singleton [\#972](https://github.com/ably/ably-cocoa/pull/972) ([tcard](https://github.com/tcard))
+- Add clarification to release process: document --since-tag effects [\#971](https://github.com/ably/ably-cocoa/pull/971) ([tcard](https://github.com/tcard))
+
+## [1.1.16](https://github.com/ably/ably-cocoa/tree/1.1.16)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.15...1.1.16)
+
+**Fixed bugs:**
+
+- Cannot compile Objective-C++ file if Ably headers included [\#964](https://github.com/ably/ably-cocoa/issues/964)
+- Realtime Channel endless loop: suspended \> attached \> suspended [\#881](https://github.com/ably/ably-cocoa/issues/881)
+
+**Closed issues:**
+
+- Flaky test: RTN5 \(basic operations should work simultaneously\) [\#934](https://github.com/ably/ably-cocoa/issues/934)
+
+**Merged pull requests:**
+
+- If waiting for push device details and got them persisted, re-emit them. [\#967](https://github.com/ably/ably-cocoa/pull/967) ([tcard](https://github.com/tcard))
+- Update msgpack \(fix CocoaPod warnings\) [\#962](https://github.com/ably/ably-cocoa/pull/962) ([ricardopereira](https://github.com/ricardopereira))
+- Alleviate RTN5 flakiness [\#957](https://github.com/ably/ably-cocoa/pull/957) ([tcard](https://github.com/tcard))
+- Fix SUSPENDED channel reattach [\#909](https://github.com/ably/ably-cocoa/pull/909) ([ricardopereira](https://github.com/ricardopereira))
+
 ## [1.1.15](https://github.com/ably/ably-cocoa/tree/1.1.15) (2019-12-23)
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.14...1.1.15)
 

@@ -2754,6 +2754,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = "Ably-iOS-Tests";
 				SWIFT_OBJC_BRIDGING_HEADER = "Spec/AblySpec-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;

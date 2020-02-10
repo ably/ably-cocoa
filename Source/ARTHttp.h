@@ -1,6 +1,5 @@
 //
 //  ARTHttp.h
-//  ably-ios
 //
 //  Created by Jason Choy on 08/12/2014.
 //  Copyright (c) 2014 Ably. All rights reserved.
@@ -37,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTHttp : NSObject<ARTHTTPExecutor>
 
-+ (void)setURLSessionClass:(Class)class;
++ (void)setURLSessionClass:(Class)urlSessionClass;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 - (instancetype)init:(dispatch_queue_t)queue logger:(ARTLog *)logger;

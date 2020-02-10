@@ -660,6 +660,76 @@ class RealtimeClientChannel: QuickSpec {
                     })
                 }
 
+                // RTL3d - https://github.com/ably/ably-cocoa/issues/881
+                it("should attach successfully and remain attached when the connection state without a successful recovery gets CONNECTED") {
+                    let options = AblyTests.commonAppSetup()
+                    options.disconnectedRetryTimeout = 0.5
+                    options.suspendedRetryTimeout = 3.0
+                    options.channelRetryTimeout = 0.5
+                    options.autoConnect = false
+
+                    let client = ARTRealtime(options: options)
+                    client.internal.setTransport(TestProxyTransport.self)
+                    client.internal.setReachabilityClass(TestReachability.self)
+                    defer {
+                        client.simulateRestoreInternetConnection()
+                        client.dispose()
+                        client.close()
+                    }
+
+                    // Move to SUSPENDED
+                    let ttlHookToken = client.overrideConnectionStateTTL(3.0)
+                    defer { ttlHookToken.remove() }
+
+                    let channel = client.channels.get("foo")
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach() { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                        client.connect()
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.once(.suspended) { stateChange in
+                            guard let error = stateChange?.reason else {
+                                fail("SUSPENDED reason should not be nil"); done(); return
+                            }
+                            expect(error.message).to(satisfyAnyOf(contain("network is down"), contain("unreachable host")))
+                            done()
+                        }
+                        client.simulateNoInternetConnection()
+                    }
+
+                    AblyTests.queue.async {
+                        // Do not resume
+                        client.simulateLostConnectionAndState()
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.connected) { stateChange in
+                            expect(stateChange?.reason?.code).to(equal(80008)) //didn't resumed
+                            done()
+                        }
+                        client.simulateRestoreInternetConnection(after: 1.0)
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.once(.attached) { stateChange in
+                            expect(stateChange?.resumed).to(beFalse())
+                            expect(stateChange?.reason).to(beNil())
+                            channel.on(.suspended) { _ in
+                                fail("Should not reach SUSPENDED state")
+                            }
+                            delay(3.0) {
+                                // Wait some seconds to see if the channel doesn't change to SUSPENDED again
+                                done()
+                            }
+                        }
+                    }
+                    channel.off()
+                }
+
                 // RTL3e
                 it("if the connection state enters the DISCONNECTED state, it will have no effect on the channel states") {
                     let options = AblyTests.commonAppSetup()
@@ -3930,7 +4000,7 @@ class RealtimeClientChannel: QuickSpec {
                 }
             }
 
-            // https://github.com/ably/ably-ios/issues/614
+            // https://github.com/ably/ably-cocoa/issues/614
             it("should not crash when an ATTACH request is responded with a DETACHED") {
                 let options = AblyTests.commonAppSetup()
                 let client = AblyTests.newRealtime(options)

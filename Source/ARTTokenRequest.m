@@ -1,6 +1,5 @@
 //
 //  ARTTokenRequest.m
-//  ably-ios
 //
 //  Created by Ricardo Pereira on 05/10/2015.
 //  Copyright (c) 2015 Ably. All rights reserved.

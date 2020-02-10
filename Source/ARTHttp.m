@@ -1,6 +1,5 @@
 //
 //  ARTHttp.m
-//  ably-ios
 //
 //  Created by Jason Choy on 08/12/2014.
 //  Copyright (c) 2014 Ably. All rights reserved.
@@ -25,8 +24,8 @@ Class configuredUrlSessionClass = nil;
     _Nullable dispatch_queue_t _queue;
 }
 
-+ (void)setURLSessionClass:(Class)class {
-    configuredUrlSessionClass = class;
++ (void)setURLSessionClass:(const Class)urlSessionClass {
+    configuredUrlSessionClass = urlSessionClass;
 }
 
 - (instancetype)init:(dispatch_queue_t)queue logger:(ARTLog *)logger {

@@ -2987,7 +2987,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                // https://github.com/ably/ably-ios/issues/618
+                // https://github.com/ably/ably-cocoa/issues/618
                 it("authUrl returning TokenRequest decodes TTL as expected") {
                     let options = AblyTests.commonAppSetup()
 
@@ -3812,7 +3812,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                // https://github.com/ably/ably-ios/pull/508#discussion_r82577728
+                // https://github.com/ably/ably-cocoa/pull/508#discussion_r82577728
                 it("object has no timestamp value unless explicitly set") {
                     let params = ARTTokenParams()
                     expect(params.timestamp).to(beNil())
@@ -4073,7 +4073,11 @@ class Auth : QuickSpec {
                     it("fails to connect with reason 'invalid signature'") {
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.failed) { stateChange in
-                                expect(stateChange!.reason!.code).to(equal(40144))
+                                guard let reason = stateChange?.reason else {
+                                    fail("Reason error is nil"); done(); return
+                                }
+                                expect(reason.code).to(equal(40144))
+                                expect(reason.description).to(satisfyAnyOf(contain("invalid signature"), contain("signature verification failed")))
                                 done()
                             }
                             client.connect()
@@ -4119,7 +4123,11 @@ class Auth : QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.disconnected) { stateChange in
-                                expect(stateChange!.reason!.code).to(equal(40144))
+                                guard let reason = stateChange?.reason else {
+                                    fail("Reason error is nil"); done(); return
+                                }
+                                expect(reason.code).to(equal(40144))
+                                expect(reason.description).to(satisfyAnyOf(contain("invalid signature"), contain("signature verification failed")))
                                 done()
                             }
                             client.connect()
@@ -4216,7 +4224,11 @@ class Auth : QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.disconnected) { stateChange in
-                                expect(stateChange!.reason!.code).to(equal(40144))
+                                guard let reason = stateChange?.reason else {
+                                    fail("Reason error is nil"); done(); return
+                                }
+                                expect(reason.code).to(equal(40144))
+                                expect(reason.description).to(satisfyAnyOf(contain("invalid signature"), contain("signature verification failed")))
                                 done()
                             }
                             client.connect()

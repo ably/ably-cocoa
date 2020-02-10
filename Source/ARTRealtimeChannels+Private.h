@@ -1,7 +1,6 @@
 
 //
 //  ARTRealtimeChannels+Private.h
-//  ably-ios
 //
 //  Created by Ricardo Pereira on 07/03/2016.
 //  Copyright (c) 2015 Ably. All rights reserved.
