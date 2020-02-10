@@ -276,7 +276,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         NSData *const formData = [encodedParametersString dataUsingEncoding:NSUTF8StringEncoding];
         [request setHTTPBody:formData];
         [request setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
-        [request addValue:[NSString stringWithFormat:@"%lu", (unsigned long)formData.length] forHTTPHeaderField:@"Content-Length"];
+        [request setValue:[NSString stringWithFormat:@"%lu", (unsigned long)formData.length] forHTTPHeaderField:@"Content-Length"];
     }
     else {
         [request setValue:[_rest.defaultEncoder mimeType] forHTTPHeaderField:@"Accept"];
