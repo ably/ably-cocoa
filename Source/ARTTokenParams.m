@@ -81,8 +81,8 @@
     return params;
 }
 
-- (NSMutableDictionary *)toDictionary {
-    NSMutableDictionary *params = [[NSMutableDictionary alloc] init];
+- (NSMutableDictionary<NSString *, NSString *> *)toDictionary {
+    NSMutableDictionary<NSString *, NSString *> *const params = [NSMutableDictionary new];
     
     if (self.clientId)
         params[@"clientId"] = self.clientId;
@@ -117,8 +117,8 @@
     return tokenParams;
 }
 
-- (NSDictionary *)toDictionaryWithUnion:(NSArray *)items {
-    NSMutableDictionary *tokenParams = [self toDictionary];
+- (NSDictionary<NSString *, NSString *> *)toDictionaryWithUnion:(NSArray<NSURLQueryItem *> *const)items {
+    NSMutableDictionary<NSString *, NSString *> *const tokenParams = [self toDictionary];
     BOOL add = YES;
     
     for (NSURLQueryItem *item in items) {
@@ -135,7 +135,7 @@
         add = YES;
     }
     
-    return tokenParams;
+    return [tokenParams copy]; // immutable
 }
 
 static NSString *hmacForDataAndKey(NSData *data, NSData *key) {
