@@ -270,12 +270,13 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     // HTTP Header Fields
     if ([options isMethodPOST]) {
         // TokenParams take precedence over any configured authParams when a name conflict occurs
-        NSDictionary *unitedParams = [params toDictionaryWithUnion:options.authParams];
-        NSString *encodedParametersString = ARTFormEncode(unitedParams);
-        NSData *formData = [encodedParametersString dataUsingEncoding:NSUTF8StringEncoding];
+        NSDictionary<NSString *, NSString *> *const unitedParams =
+            [params toDictionaryWithUnion:options.authParams];
+        NSString *const encodedParametersString = ARTFormEncode(unitedParams);
+        NSData *const formData = [encodedParametersString dataUsingEncoding:NSUTF8StringEncoding];
         [request setHTTPBody:formData];
         [request setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
-        [request addValue:[NSString stringWithFormat:@"%lu", (unsigned long)formData.length] forHTTPHeaderField:@"Content-Length"];
+        [request setValue:[NSString stringWithFormat:@"%lu", (unsigned long)formData.length] forHTTPHeaderField:@"Content-Length"];
     }
     else {
         [request setValue:[_rest.defaultEncoder mimeType] forHTTPHeaderField:@"Accept"];
