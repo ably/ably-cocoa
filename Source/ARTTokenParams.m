@@ -135,7 +135,7 @@
         add = YES;
     }
     
-    return tokenParams;
+    return [tokenParams copy]; // immutable
 }
 
 static NSString *hmacForDataAndKey(NSData *data, NSData *key) {
