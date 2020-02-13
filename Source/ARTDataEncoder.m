@@ -55,6 +55,15 @@
     return self;
 }
 
+- (void)setLastMessageData:(nullable id)data {
+    if ([data isKindOfClass:[NSData class]]) {
+        _lastMessageData = data;
+    }
+    else if ([data isKindOfClass:[NSString class]]) {
+        _lastMessageData = [data dataUsingEncoding:NSUTF8StringEncoding];
+    }
+}
+
 - (ARTDataEncoderOutput *)encode:(id)data {
     NSString *encoding = nil;
     id encoded = nil;
@@ -129,7 +138,7 @@
 
 - (ARTDataEncoderOutput *)decode:(id)data encoding:(NSString *)encoding {
     if (!data || !encoding ) {
-        _lastMessageData = [data dataUsingEncoding:NSUTF8StringEncoding];
+        [self setLastMessageData:data];
         return [[ARTDataEncoderOutput alloc] initWithData:data encoding:encoding errorInfo:nil];
     }
     
@@ -182,7 +191,6 @@
                 NSData *delta = data;
                 NSData *base = _lastMessageData;
                 data = [_vcdiffDecoder decode:delta base:base error:&error];
-                _lastMessageData = data;
             }
             else {
                 errorInfo = [ARTErrorInfo createWithCode:0 message:@"VCDiffDecoder is missing"];
@@ -197,6 +205,8 @@
         } else {
             errorInfo = [ARTErrorInfo createWithCode:0 message:[NSString stringWithFormat:@"unknown encoding: '%@'", encoding]];
         }
+
+        [self setLastMessageData:data];
 
         if (errorInfo == nil) {
             outputEncoding = [outputEncoding artRemoveLastEncoding];
