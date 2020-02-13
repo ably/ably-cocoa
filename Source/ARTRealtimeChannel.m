@@ -216,6 +216,7 @@
     CFRunLoopTimerRef _detachTimer;
     __GENERIC(ARTEventEmitter, ARTEvent *, ARTErrorInfo *) *_attachedEventEmitter;
     __GENERIC(ARTEventEmitter, ARTEvent *, ARTErrorInfo *) *_detachedEventEmitter;
+    NSString * _Nullable _lastPayloadMessageId;
 }
 
 @end
@@ -1010,12 +1011,31 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (void)onMessage:(ARTProtocolMessage *)message {
+- (void)onMessage:(ARTProtocolMessage *)pm {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     int i = 0;
+
+    ARTMessage *firstMessage = pm.messages.firstObject;
+    if (firstMessage.extras) {
+        NSError *extrasDecodeError;
+        NSDictionary *const extras = [firstMessage.extras toJSON:&extrasDecodeError];
+        if (extrasDecodeError) {
+            [self.logger error:@"R:%p C:%p (%@) message extras %@ decode error: %@", _realtime, self, self.name, firstMessage.extras, extrasDecodeError];
+        }
+        else {
+            NSString *const deltaFrom = [[extras objectForKey:@"delta"] objectForKey:@"from"];
+            if (deltaFrom && _lastPayloadMessageId && ![deltaFrom isEqualToString:_lastPayloadMessageId]) {
+                ARTErrorInfo *incompatibleIdError = [ARTErrorInfo createWithCode:40018 message:[NSString stringWithFormat:@"previous id '%@' is incompatible with message delta %@", _lastPayloadMessageId, firstMessage]];
+                [self.logger error:@"R:%p C:%p (%@) %@", _realtime, self, self.name, incompatibleIdError.message];
+                return;
+            }
+        }
+    }
+
     ARTDataEncoder *dataEncoder = self.dataEncoder;
-    for (ARTMessage *m in message.messages) {
+    for (ARTMessage *m in pm.messages) {
         ARTMessage *msg = m;
+
         if (msg.data && dataEncoder) {
             NSError *error = nil;
             msg = [msg decodeWithEncoder:dataEncoder error:&error];
@@ -1029,11 +1049,13 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         }
 
         if (!msg.timestamp) {
-            msg.timestamp = message.timestamp;
+            msg.timestamp = pm.timestamp;
         }
         if (!msg.id) {
-            msg.id = [NSString stringWithFormat:@"%@:%d", message.id, i];
+            msg.id = [NSString stringWithFormat:@"%@:%d", pm.id, i];
         }
+
+        _lastPayloadMessageId = msg.id;
 
         [self.messagesEventEmitter emit:msg.name with:msg];
 
