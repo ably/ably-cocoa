@@ -248,6 +248,40 @@ class Auth : QuickSpec {
                         }
                     }
                 }
+                
+                // RSA4b
+                it("on token error, reissues token and retries REST requests") {
+                    var authCallbackCalled = 0
+
+                    let options = AblyTests.commonAppSetup()
+                    options.authCallback = { _, callback in
+                        authCallbackCalled += 1
+                        getTestTokenDetails { token, err in
+                            callback(token, err)
+                        }
+                    }
+
+                    let rest = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+                    rest.internal.httpExecutor = testHTTPExecutor
+
+                    let channel = rest.channels.get("test")
+
+                    testHTTPExecutor.simulateIncomingServerErrorOnNextRequest(40141, description: "token revoked")
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish("message", data: nil) { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    // First request and a second attempt
+                    expect(testHTTPExecutor.requests).to(haveCount(2))
+                    
+                    // First token issue, and then reissue on token error.
+                    expect(authCallbackCalled).to(equal(2))
+                }
 
                 // RSA4b
                 it("in REST, if the token creation failed or the subsequent request with the new token failed due to a token error, then the request should result in an error") {
@@ -334,7 +368,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                // RSA4b
+                // RSA4b1
                 context("local token validity check") {
                     it("should be done if queryTime is true and local time is in sync with server") {
                         let options = AblyTests.commonAppSetup()
