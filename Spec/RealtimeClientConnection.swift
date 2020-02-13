@@ -1912,7 +1912,7 @@ class RealtimeClientConnection: QuickSpec {
 
             // RTN14b
             context("connection request fails") {
-                it("should not emit error with a renewable token") {
+                it("on DISCONNECTED after CONNECTED, should not emit error with a renewable token") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     options.authCallback = { tokenParams, callback in
@@ -1957,6 +1957,40 @@ class RealtimeClientConnection: QuickSpec {
                         client.connect()
                     }
                 }
+                
+                it("on token error while CONNECTING, reissues token and reconnects") {
+                    var authCallbackCalled = 0
+                    
+                    var tokenTTL = 0.1
+
+                    let options = AblyTests.commonAppSetup()
+                    options.authCallback = { _, callback in
+                        authCallbackCalled += 1
+                        getTestTokenDetails(ttl: tokenTTL) { token, err in
+                            // Next time, tokenTTL will be longer so that it doesn't expire right away
+                            tokenTTL = 60
+                            callback(token, err)
+                        }
+                    }
+                    options.autoConnect = false
+
+                    let realtime = ARTRealtime(options: options)
+                    defer { realtime.close() }
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        realtime.connection.once(.connected) { _ in
+                            done()
+                        }
+
+                        delay(tokenTTL + 1.0) {
+                            realtime.connect()
+                        }
+                    }
+                    
+                    // First token issue, and then reissue on token error.
+                    expect(authCallbackCalled).to(equal(2))
+                }
+
 
                 it("should transition to disconnected when the token renewal fails") {
                     let options = AblyTests.commonAppSetup()

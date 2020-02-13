@@ -920,14 +920,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         [self onChannelMessage:message];
     } else {
         ARTErrorInfo *error = message.error;
-        if (error.code >= 40140 && error.code < 40150) {
-            if (![self shouldRenewToken:&error]) {
-                [self transition:ARTRealtimeFailed withErrorInfo:message.error];
-                return;
-            }
-            [self transitionToDisconnectedOrSuspendedWithError:message.error];
-            return;
-        }
         if ([self shouldRenewToken:&error]) {
             [self transportReconnectWithRenewedToken];
             return;
