@@ -608,6 +608,9 @@
 		D798553C23EB905B00946BE2 /* DeltaCodec.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D798553B23EB905B00946BE2 /* DeltaCodec.framework */; };
 		D798554023EB90A600946BE2 /* DeltaCodec.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D798553F23EB90A600946BE2 /* DeltaCodec.framework */; };
 		D798554423EB90B100946BE2 /* DeltaCodec.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D798554323EB90B100946BE2 /* DeltaCodec.framework */; };
+		D798554823EB96C000946BE2 /* DeltaCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = D798554723EB96C000946BE2 /* DeltaCodec.swift */; };
+		D798554923EB96C000946BE2 /* DeltaCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = D798554723EB96C000946BE2 /* DeltaCodec.swift */; };
+		D798554A23EB96C000946BE2 /* DeltaCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = D798554723EB96C000946BE2 /* DeltaCodec.swift */; };
 		D798554B23EB992C00946BE2 /* DeltaCodec.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D798553B23EB905B00946BE2 /* DeltaCodec.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D798554C23EB993500946BE2 /* DeltaCodec.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D798553F23EB90A600946BE2 /* DeltaCodec.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D798554D23EB994000946BE2 /* DeltaCodec.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D798554323EB90B100946BE2 /* DeltaCodec.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -1051,6 +1054,7 @@
 		D798553B23EB905B00946BE2 /* DeltaCodec.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DeltaCodec.framework; path = Carthage/Build/iOS/DeltaCodec.framework; sourceTree = "<group>"; };
 		D798553F23EB90A600946BE2 /* DeltaCodec.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DeltaCodec.framework; path = Carthage/Build/Mac/DeltaCodec.framework; sourceTree = "<group>"; };
 		D798554323EB90B100946BE2 /* DeltaCodec.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DeltaCodec.framework; path = Carthage/Build/tvOS/DeltaCodec.framework; sourceTree = "<group>"; };
+		D798554723EB96C000946BE2 /* DeltaCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeltaCodec.swift; sourceTree = "<group>"; };
 		D798554E23ECCD1700946BE2 /* ARTPluginType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTPluginType.h; sourceTree = "<group>"; };
 		D798554F23ECCD1700946BE2 /* ARTPluginType.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTPluginType.m; sourceTree = "<group>"; };
 		D798555623ECCD4000946BE2 /* ARTPluginSet.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTPluginSet.h; sourceTree = "<group>"; };
@@ -1292,6 +1296,7 @@
 				D7DF73831EA5FE620013CD36 /* PushActivationStateMachine.swift */,
 				D777EEE620650A85002EBA03 /* PushChannel.swift */,
 				EB1B53F822F85CE4006A59AC /* ObjectLifetimes.swift */,
+				D798554723EB96C000946BE2 /* DeltaCodec.swift */,
 				56190953238C3D3200A862A6 /* CryptoTest.m */,
 			);
 			path = Spec;
@@ -2388,6 +2393,7 @@
 				D74EFAEB1C4D09B500CFF98E /* RealtimeClientChannel.swift in Sources */,
 				851674EF1B7BA5CD00D35169 /* Stats.swift in Sources */,
 				EB1AE0CE1C5C3A4900D62250 /* Utilities.swift in Sources */,
+				D798554823EB96C000946BE2 /* DeltaCodec.swift in Sources */,
 				D74CBC0B212EC22800D090E4 /* RestPaginated.swift in Sources */,
 				D72304701BB72CED00F1ABDA /* RealtimeClient.swift in Sources */,
 				D74A17B81FA0D9A3006D27B5 /* PushAdmin.swift in Sources */,
@@ -2506,6 +2512,7 @@
 				D7093C20219E466E00723F17 /* RestClientChannel.swift in Sources */,
 				EB1B53FA22F85CE4006A59AC /* ObjectLifetimes.swift in Sources */,
 				D7093C2A219E466E00723F17 /* Utilities.swift in Sources */,
+				D798554923EB96C000946BE2 /* DeltaCodec.swift in Sources */,
 				D7093C21219E466E00723F17 /* RestClientChannels.swift in Sources */,
 				D7093C26219E466E00723F17 /* RealtimeClientChannel.swift in Sources */,
 				D7093C22219E466E00723F17 /* RestClientPresence.swift in Sources */,
@@ -2534,6 +2541,7 @@
 				D7093C82219EE26400723F17 /* Crypto.swift in Sources */,
 				EB1B53FB22F85CE4006A59AC /* ObjectLifetimes.swift in Sources */,
 				D7093C7C219EE26400723F17 /* RealtimeClientConnection.swift in Sources */,
+				D798554A23EB96C000946BE2 /* DeltaCodec.swift in Sources */,
 				D7093C74219EE26400723F17 /* Auth.swift in Sources */,
 				D7093C72219EE25B00723F17 /* NSObject+TestSuite.swift in Sources */,
 				D7093C7B219EE26400723F17 /* RealtimeClient.swift in Sources */,
