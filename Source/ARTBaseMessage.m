@@ -36,7 +36,7 @@
 - (id)decodeWithEncoder:(ARTDataEncoder*)encoder error:(NSError **)error {
     ARTDataEncoderOutput *decoded = [encoder decode:self.data encoding:self.encoding];
     if (decoded.errorInfo && error) {
-        *error = [NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:@{NSLocalizedDescriptionKey: @"decoding failed",
+        *error = [NSError errorWithDomain:ARTAblyErrorDomain code:decoded.errorInfo.code userInfo:@{NSLocalizedDescriptionKey: @"decoding failed",
                                                                                NSLocalizedFailureReasonErrorKey: decoded.errorInfo.message}];
     }
     id ret = [self copy];
