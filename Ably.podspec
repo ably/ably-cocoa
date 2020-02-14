@@ -24,4 +24,5 @@ Pod::Spec.new do |s|
   s.dependency 'msgpack', '0.3.1'
   s.dependency 'ULID', '1.1.0'
   s.dependency 'SAMKeychain', '1.5.3'
+  s.dependency 'DeltaCodec', '1.1.0'
 end
