@@ -217,6 +217,8 @@
     __GENERIC(ARTEventEmitter, ARTEvent *, ARTErrorInfo *) *_attachedEventEmitter;
     __GENERIC(ARTEventEmitter, ARTEvent *, ARTErrorInfo *) *_detachedEventEmitter;
     NSString * _Nullable _lastPayloadMessageId;
+    NSString * _Nullable _lastPayloadProtocolMessageChannelSerial;
+    BOOL _decodeFailureRecoveryInProgress;
 }
 
 @end
@@ -900,6 +902,10 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
             [self setDetached:message];
             break;
         case ARTProtocolMessageMessage:
+            if (_decodeFailureRecoveryInProgress) {
+                [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) message decode recovery in progress, message skipped: %@", _realtime, self, self.name, message.description];
+                break;
+            }
             [self onMessage:message];
             break;
         case ARTProtocolMessagePresence:
@@ -1031,6 +1037,10 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
             if (deltaFrom && _lastPayloadMessageId && ![deltaFrom isEqualToString:_lastPayloadMessageId]) {
                 ARTErrorInfo *incompatibleIdError = [ARTErrorInfo createWithCode:40018 message:[NSString stringWithFormat:@"previous id '%@' is incompatible with message delta %@", _lastPayloadMessageId, firstMessage]];
                 [self.logger error:@"R:%p C:%p (%@) %@", _realtime, self, self.name, incompatibleIdError.message];
+                for (int j = i + 1; j < pm.messages.count; j++) {
+                    [self.logger verbose:@"R:%p C:%p (%@) message skipped %@", _realtime, self, self.name, pm.messages[j]];
+                }
+                [self startDecodeFailureRecoveryWithChannelSerial:_lastPayloadProtocolMessageChannelSerial error:incompatibleIdError];
                 return;
             }
         }
@@ -1041,14 +1051,19 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         ARTMessage *msg = m;
 
         if (msg.data && dataEncoder) {
-            NSError *error = nil;
-            msg = [msg decodeWithEncoder:dataEncoder error:&error];
-            if (error != nil) {
-                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createFromNSError:error] prepend:@"Failed to decode data: "];
-                [self.logger error:@"RT:%p C:%p (%@) %@", _realtime, self, self.name, errorInfo.message];
+            NSError *decodeError = nil;
+            msg = [msg decodeWithEncoder:dataEncoder error:&decodeError];
+            if (decodeError) {
+                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createFromNSError:decodeError] prepend:@"Failed to decode data: "];
+                [self.logger error:@"R:%p C:%p (%@) %@", _realtime, self, self.name, errorInfo.message];
                 _errorReason = errorInfo;
                 ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:self.state_nosync previous:self.state_nosync event:ARTChannelEventUpdate reason:errorInfo];
                 [self emit:stateChange.event with:stateChange];
+
+                if (decodeError.code == 40018) {
+                    [self startDecodeFailureRecoveryWithChannelSerial:_lastPayloadProtocolMessageChannelSerial error:errorInfo];
+                    return;
+                }
             }
         }
 
@@ -1065,6 +1080,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
         ++i;
     }
+
+    _lastPayloadProtocolMessageChannelSerial = pm.channelSerial;
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
@@ -1196,15 +1213,19 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         default:
             break;
     }
-    [self internalAttach:callback withReason:reason storeErrorInfo:false];
+    [self internalAttach:callback withReason:reason];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)internalAttach:(void (^)(ARTErrorInfo *))callback withReason:(ARTErrorInfo *)reason {
-    [self internalAttach:callback withReason:reason storeErrorInfo:false];
+    [self internalAttach:callback reason:reason storeErrorInfo:false channelSerial:nil];
 }
 
-- (void)internalAttach:(void (^)(ARTErrorInfo *))callback withReason:(ARTErrorInfo *)reason storeErrorInfo:(BOOL)storeErrorInfo {
+- (void)internalAttach:(void (^)(ARTErrorInfo *))callback channelSerial:(NSString *)channelSerial reason:(ARTErrorInfo *)reason {
+    [self internalAttach:callback reason:reason storeErrorInfo:false channelSerial:channelSerial];
+}
+
+- (void)internalAttach:(void (^)(ARTErrorInfo *))callback reason:(ARTErrorInfo *)reason storeErrorInfo:(BOOL)storeErrorInfo channelSerial:(NSString *)channelSerial {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     switch (self.state_nosync) {
         case ARTRealtimeChannelDetaching: {
@@ -1232,15 +1253,16 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     status.storeErrorInfo = storeErrorInfo;
     [self transition:ARTRealtimeChannelAttaching status:status];
 
-    [self attachAfterChecks:callback];
+    [self attachAfterChecks:callback channelSerial:channelSerial];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (void)attachAfterChecks:(void (^)(ARTErrorInfo * _Nullable))callback {
+- (void)attachAfterChecks:(void (^)(ARTErrorInfo * _Nullable))callback channelSerial:(NSString *)channelSerial {
 ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     ARTProtocolMessage *attachMessage = [[ARTProtocolMessage alloc] init];
     attachMessage.action = ARTProtocolMessageAttach;
     attachMessage.channel = self.name;
+    attachMessage.channelSerial = channelSerial;
     attachMessage.params = self.options_nosync.params;
     attachMessage.flags = self.options_nosync.modes;
 
@@ -1260,7 +1282,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     if (![self.realtime shouldQueueEvents]) {
         ARTEventListener *reconnectedListener = [self.realtime.connectedEventEmitter once:^(NSNull *n) {
             // Disconnected and connected while attaching, re-attach.
-            [self attachAfterChecks:callback];
+            [self attachAfterChecks:callback channelSerial:channelSerial];
         }];
         [_attachedEventEmitter once:^(ARTErrorInfo *err) {
             [self.realtime.connectedEventEmitter off:reconnectedListener];
@@ -1426,6 +1448,18 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     query.realtimeChannel = self;
     return [_restChannel history:query callback:callback error:errorPtr];
 } ART_TRY_OR_MOVE_TO_FAILED_END
+}
+
+- (void)startDecodeFailureRecoveryWithChannelSerial:(NSString *)channelSerial error:(ARTErrorInfo *)error {
+    if (_decodeFailureRecoveryInProgress) {
+        return;
+    }
+
+    [self.logger warn:@"R:%p C:%p (%@) starting delta decode failure recovery process", _realtime, self, self.name];
+    _decodeFailureRecoveryInProgress = true;
+    [self internalAttach:^(ARTErrorInfo *e) {
+        self->_decodeFailureRecoveryInProgress = false;
+    } channelSerial:channelSerial reason:error];
 }
 
 #pragma mark - ARTPresenceMapDelegate
