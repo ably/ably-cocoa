@@ -136,6 +136,64 @@ class DeltaCodec: QuickSpec {
 
                     expect(receivedMessages).toEventually(haveCount(testData.count))
                 }
+
+                // RTL18
+                it("should recover when the vcdiff message decoding fails") {
+                    let options = AblyTests.commonAppSetup()
+                    let client = AblyTests.newRealtime(options)
+                    defer { client.dispose(); client.close() }
+                    let channelOptions = ARTRealtimeChannelOptions()
+                    channelOptions.params = ["delta": "vcdiff"]
+                    let channel = client.channels.get("foo", options: channelOptions)
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach() { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    guard let transport = client.internal.transport as? TestProxyTransport else {
+                        fail("TestProxyTransport is not be assigned"); return
+                    }
+
+                    transport.changeReceivedMessage = { protocolMessage in
+                        if protocolMessage.action == .message,
+                            let thirdMessage = protocolMessage.messages?.filter({ $0.name == "2" }).first {
+                            thirdMessage.data = Data() //invalid delta
+                            transport.changeReceivedMessage = nil
+                        }
+                        return protocolMessage
+                    }
+
+                    var receivedMessages: [ARTMessage] = []
+                    channel.subscribe { message in
+                        receivedMessages.append(message)
+                    }
+
+                    for (i, data) in testData.enumerated() {
+                        channel.publish(String(i), data: data)
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+                        channel.once(.attaching) { stateChange in
+                            expect(receivedMessages).to(haveCount(testData.count - 3)) //messages discarded
+                            guard let errorReason = stateChange?.reason else {
+                                fail("Reason should not be empty"); partialDone(); return
+                            }
+                            expect(errorReason.code).to(equal(40018))
+                            expect(errorReason.message.lowercased()).to(contain("failed to decode data"))
+                            partialDone()
+                        }
+                        channel.once(.attached) { stateChange in
+                            partialDone()
+                        }
+                    }
+
+                    expect(receivedMessages).toEventually(haveCount(testData.count))
+                }
+
             }
 
         }
