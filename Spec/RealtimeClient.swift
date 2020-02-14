@@ -1229,7 +1229,7 @@ class RealtimeClient: QuickSpec {
                 }
             }
 
-            // https://github.com/ably/ably-ios/issues/577
+            // https://github.com/ably/ably-cocoa/issues/577
             it("background behaviour") {
                 waitUntil(timeout: testTimeout) { done in
                   URLSession.shared.dataTask(with: URL(string:"https://ably.io")! as URL) { _ , _ , _  in
@@ -1365,7 +1365,7 @@ class RealtimeClient: QuickSpec {
                 static let sharedClient = ARTRealtime(options: { $0.autoConnect = false; return $0 }(ARTClientOptions(key: "xxxx:xxxx")))
             }
 
-            // Issue https://github.com/ably/ably-ios/issues/640
+            // Issue https://github.com/ably/ably-cocoa/issues/640
             it("should dispatch in user queue when removing an observer") {
                 class Foo {
                     init() {
@@ -1416,11 +1416,12 @@ class RealtimeClient: QuickSpec {
                     }
                 }
                 if channel.state != .attached {
+                    fail("Channel is not attached")
                     return
                 }
 
                 client.internal.onDisconnected()
-                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.disconnected))
+                expect(client.connection.state).to(equal(.disconnected))
 
                 // If we now send a message through the channel, it will be queued and the channel
                 // should register a listener in the connection's _internal_ event emitter.

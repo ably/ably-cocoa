@@ -1604,6 +1604,9 @@ class Auth : QuickSpec {
                     it("should added on the body request when auth method is POST") {
                         let clientOptions = ARTClientOptions()
                         clientOptions.authUrl = URL(string: "http://auth.ably.io")
+                        clientOptions.authParams = [
+                            URLQueryItem(name: "identifier", value: "123")
+                        ]
                         clientOptions.authMethod = "POST"
                         clientOptions.authHeaders = ["X-Header-1": "foo", "X-Header-2": "bar"]
                         let tokenParams = ARTTokenParams()
@@ -1613,17 +1616,24 @@ class Auth : QuickSpec {
                         let rest = ARTRest(options: clientOptions)
                         
                         let request = rest.auth.internal.buildRequest(clientOptions, with: tokenParams)
-                        
-                        let httpBodyJSON = try! JSONSerialization.jsonObject(with: request.httpBody ?? Data(), options: .mutableLeaves) as? NSDictionary
-                        
-                        expect(httpBodyJSON).toNot(beNil(), description: "HTTPBody is empty")
 
-                        let expectedJSON = ["capability": httpBodyJSON!["capability"]!, "ttl": httpBodyJSON!["ttl"]!]
-                        
-                        expect(httpBodyJSON) == expectedJSON as NSDictionary
+                        guard let httpBodyData = request.httpBody else {
+                            fail("Body is missing"); return
+                        }
+                        guard let httpBodyString = String(data: httpBodyData, encoding: .utf8) else {
+                            fail("Body should be a string"); return
+                        }
+
+                        let expectedFormEncoding = "capability=%7B%22cansubscribe%3A%2A%22%3A%5B%22subscribe%22%5D%7D&identifier=123&ttl=2000"
+
+                        expect(httpBodyString).to(equal(expectedFormEncoding))
+
+                        expect(request.value(forHTTPHeaderField: "Content-Type")).to(equal("application/x-www-form-urlencoded"))
+
+                        expect(request.value(forHTTPHeaderField: "Content-Length")).to(equal("89"))
 
                         for (header, expectedValue) in clientOptions.authHeaders! {
-                            if let value = request.allHTTPHeaderFields?[header] {
+                            if let value = request.value(forHTTPHeaderField: header) {
                                 expect(value).to(equal(expectedValue))
                             } else {
                                 fail("Missing header in request: \(header), expected: \(expectedValue)")
@@ -2977,7 +2987,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                // https://github.com/ably/ably-ios/issues/618
+                // https://github.com/ably/ably-cocoa/issues/618
                 it("authUrl returning TokenRequest decodes TTL as expected") {
                     let options = AblyTests.commonAppSetup()
 
@@ -3802,7 +3812,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                // https://github.com/ably/ably-ios/pull/508#discussion_r82577728
+                // https://github.com/ably/ably-cocoa/pull/508#discussion_r82577728
                 it("object has no timestamp value unless explicitly set") {
                     let params = ARTTokenParams()
                     expect(params.timestamp).to(beNil())
@@ -4063,7 +4073,11 @@ class Auth : QuickSpec {
                     it("fails to connect with reason 'invalid signature'") {
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.failed) { stateChange in
-                                expect(stateChange!.reason!.code).to(equal(40144))
+                                guard let reason = stateChange?.reason else {
+                                    fail("Reason error is nil"); done(); return
+                                }
+                                expect(reason.code).to(equal(40144))
+                                expect(reason.description).to(satisfyAnyOf(contain("invalid signature"), contain("signature verification failed")))
                                 done()
                             }
                             client.connect()
@@ -4109,7 +4123,11 @@ class Auth : QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.disconnected) { stateChange in
-                                expect(stateChange!.reason!.code).to(equal(40144))
+                                guard let reason = stateChange?.reason else {
+                                    fail("Reason error is nil"); done(); return
+                                }
+                                expect(reason.code).to(equal(40144))
+                                expect(reason.description).to(satisfyAnyOf(contain("invalid signature"), contain("signature verification failed")))
                                 done()
                             }
                             client.connect()
@@ -4206,7 +4224,11 @@ class Auth : QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.disconnected) { stateChange in
-                                expect(stateChange!.reason!.code).to(equal(40144))
+                                guard let reason = stateChange?.reason else {
+                                    fail("Reason error is nil"); done(); return
+                                }
+                                expect(reason.code).to(equal(40144))
+                                expect(reason.description).to(satisfyAnyOf(contain("invalid signature"), contain("signature verification failed")))
                                 done()
                             }
                             client.connect()

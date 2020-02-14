@@ -1,6 +1,5 @@
 //
 //  ARTWebSocketTransport.m
-//  ably-ios
 //
 //  Created by Jason Choy on 10/12/2014.
 //  Copyright (c) 2014 Ably. All rights reserved.
@@ -56,8 +55,8 @@ Class configuredWebsocketClass = nil;
 @synthesize delegate = _delegate;
 @synthesize stateEmitter = _stateEmitter;
 
-+ (void)setWebSocketClass:(Class)class {
-    configuredWebsocketClass = class;
++ (void)setWebSocketClass:(const Class)webSocketClass {
+    configuredWebsocketClass = webSocketClass;
 }
 
 - (instancetype)initWithRest:(ARTRestInternal *)rest options:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial {

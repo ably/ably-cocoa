@@ -103,7 +103,6 @@ class Push : QuickSpec {
                 rest.internal.storage = storage
                 
                 rest.internal.resetDeviceSingleton()
-                rest.push.internal.resetActivationStateMachineSingleton()
 
                 let stateMachine = rest.push.internal.activationMachine()
                 let testDeviceToken = "xxxx-xxxx-xxxx-xxxx-xxxx"

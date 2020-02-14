@@ -243,7 +243,7 @@ class RealtimeClientConnection: QuickSpec {
                             done()
                         case .connected:
                             if let transport = client.internal.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
-                                expect(query).to(haveParam("lib", withValue: "ios-1.1.15"))
+                                expect(query).to(haveParam("lib", withValue: "cocoa\(ARTDefault_variant)-1.1.18"))
                             }
                             else {
                                 XCTFail("MockTransport isn't working")
@@ -2102,7 +2102,7 @@ class RealtimeClientConnection: QuickSpec {
                     ARTDefault.setRealtimeRequestTimeout(0.1)
 
                     let client = ARTRealtime(options: options)
-                    client.internal.suspendImmediateReconnection = true
+                    client.internal.shouldImmediatelyReconnect = false
                     defer {
                         client.connection.off()
                         client.close()
@@ -2141,7 +2141,6 @@ class RealtimeClientConnection: QuickSpec {
                 // RTN14e
                 it("connection state has been in the DISCONNECTED state for more than the default connectionStateTtl should change the state to SUSPENDED") {
                     let options = AblyTests.commonAppSetup()
-                    // to not wait the defaul 15s before reconnecting
                     options.disconnectedRetryTimeout = 0.1
                     options.suspendedRetryTimeout = 0.5
                     options.autoConnect = false
@@ -2151,17 +2150,16 @@ class RealtimeClientConnection: QuickSpec {
                         // Force a timeout
                     }
 
-                    let previousConnectionStateTtl = ARTDefault.connectionStateTtl()
-                    defer { ARTDefault.setConnectionStateTtl(previousConnectionStateTtl) }
-                    ARTDefault.setConnectionStateTtl(expectedTime)
-
                     let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
                     defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
                     ARTDefault.setRealtimeRequestTimeout(0.1)
 
                     let client = ARTRealtime(options: options)
-                    client.internal.suspendImmediateReconnection = true
+                    client.internal.shouldImmediatelyReconnect = false
                     defer { client.dispose(); client.close() }
+
+                    let ttlHookToken = client.overrideConnectionStateTTL(0.3)
+                    defer { ttlHookToken.remove() }
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.on(.suspended) { stateChange in
@@ -2176,6 +2174,77 @@ class RealtimeClientConnection: QuickSpec {
                         }
                         client.connect()
                     }
+                }
+
+                // RTN14e - https://github.com/ably/ably-cocoa/issues/913
+                it("should change the state to SUSPENDED when the connection state has been in the DISCONNECTED state for more than the connectionStateTtl") {
+                    let options = AblyTests.commonAppSetup()
+                    options.disconnectedRetryTimeout = 0.5
+                    options.suspendedRetryTimeout = 2.0
+                    options.autoConnect = false
+
+                    let client = ARTRealtime(options: options)
+                    client.internal.setTransport(TestProxyTransport.self)
+                    client.internal.setReachabilityClass(TestReachability.self)
+                    defer {
+                        client.simulateRestoreInternetConnection()
+                        client.dispose()
+                        client.close()
+                    }
+
+                    let ttlHookToken = client.overrideConnectionStateTTL(3.0)
+                    defer { ttlHookToken.remove() }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.connected) { stateChange in
+                            expect(stateChange?.reason).to(beNil())
+                            done()
+                        }
+                        client.connect()
+                    }
+
+                    var events: [ARTRealtimeConnectionState] = []
+                    client.connection.on { stateChange in
+                        events.append(stateChange!.current)
+                    }
+                    client.simulateNoInternetConnection()
+
+                    expect(events).toEventually(equal([
+                        .disconnected,
+                        .connecting, //0.5 - 1
+                        .disconnected,
+                        .connecting, //1.0 - 2
+                        .disconnected,
+                        .connecting, //1.5 - 3
+                        .disconnected,
+                        .connecting, //2.0 - 4
+                        .disconnected,
+                        .connecting, //2.5 - 5
+                        .disconnected,
+                        .connecting, //3.0 - 6
+                        .suspended,
+                        .connecting,
+                        .suspended
+                    ]), timeout: testTimeout)
+
+                    events.removeAll()
+                    client.simulateRestoreInternetConnection(after: 7.0)
+
+                    expect(events).toEventually(equal([
+                        .connecting, //2.0 - 1
+                        .suspended,
+                        .connecting, //4.0 - 2
+                        .suspended,
+                        .connecting, //6.0 - 3
+                        .suspended,
+                        .connecting,
+                        .connected
+                    ]), timeout: testTimeout)
+
+                    client.connection.off()
+
+                    expect(client.connection.errorReason).to(beNil())
+                    expect(client.connection.state).to(equal(.connected))
                 }
 
                 it("on CLOSE the connection should stop connection retries") {
@@ -2199,7 +2268,7 @@ class RealtimeClientConnection: QuickSpec {
                     ARTDefault.setRealtimeRequestTimeout(0.1)
 
                     let client = ARTRealtime(options: options)
-                    client.internal.suspendImmediateReconnection = true
+                    client.internal.shouldImmediatelyReconnect = false
                     defer { client.dispose(); client.close() }
 
                     waitUntil(timeout: testTimeout) { done in
@@ -2394,7 +2463,7 @@ class RealtimeClientConnection: QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.connected) { stateChange in
-                                expect(stateChange!.reason!.message).to(equal("Injected error"))
+                                expect(stateChange?.reason?.message).to(equal("Injected error"))
                                 expect(client.connection.errorReason).to(beIdenticalTo(stateChange!.reason))
                                 let transport = client.internal.transport as! TestProxyTransport
                                 let connectedPM = transport.protocolMessagesReceived.filter{ $0.action == .connected }[0]
@@ -2732,7 +2801,7 @@ class RealtimeClientConnection: QuickSpec {
                     
                     it("uses a new connection") {
                         client = AblyTests.newRealtime(options)
-                        client.internal.suspendImmediateReconnection = true
+                        client.internal.shouldImmediatelyReconnect = false
                         client.connect()
                         defer { client.close() }
                         
@@ -2762,7 +2831,7 @@ class RealtimeClientConnection: QuickSpec {
                     // RTN15g3
                     it("reattaches to the same channels after a new connection has been established") {
                         client = AblyTests.newRealtime(options)
-                        client.internal.suspendImmediateReconnection = true
+                        client.internal.shouldImmediatelyReconnect = false
                         defer { client.close() }
                         let channelName = "test-reattach-after-ttl"
                         let channel = client.channels.get(channelName)
@@ -3106,14 +3175,14 @@ class RealtimeClientConnection: QuickSpec {
                     let client = AblyTests.newRealtime(options)
                     defer { client.dispose(); client.close() }
 
-                    var urlConnections = [NSURL]()
+                    var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.internal.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urlConnections.append(url)
                         if urlConnections.count == 1 {
-                            TestProxyTransport.network = nil
+                            TestProxyTransport.networkConnectEvent = nil
                         }
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
@@ -3178,15 +3247,15 @@ class RealtimeClientConnection: QuickSpec {
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
-                    TestProxyTransport.network = .hostUnreachable
-                    defer { TestProxyTransport.network = nil }
+                    TestProxyTransport.fakeNetworkResponse = .hostUnreachable
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
 
-                    var urlConnections = [NSURL]()
+                    var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.internal.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urlConnections.append(url)
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
 
@@ -3239,15 +3308,15 @@ class RealtimeClientConnection: QuickSpec {
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
-                    TestProxyTransport.network = .hostUnreachable
-                    defer { TestProxyTransport.network = nil }
+                    TestProxyTransport.fakeNetworkResponse = .hostUnreachable
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
 
-                    var urlConnections = [NSURL]()
+                    var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.internal.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urlConnections.append(url)
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
 
@@ -3283,17 +3352,17 @@ class RealtimeClientConnection: QuickSpec {
                     ARTDefault.setRealtimeRequestTimeout(1.0)
 
                     client.internal.setTransport(TestProxyTransport.self)
-                    TestProxyTransport.network = .hostUnreachable
-                    defer { TestProxyTransport.network = nil }
+                    TestProxyTransport.fakeNetworkResponse = .hostUnreachable
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
 
-                    var urlConnections = [NSURL]()
+                    var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.internal.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urlConnections.append(url)
                         if urlConnections.count == 1 {
-                            TestProxyTransport.network = nil
+                            TestProxyTransport.fakeNetworkResponse = nil
                         }
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
@@ -3331,17 +3400,17 @@ class RealtimeClientConnection: QuickSpec {
                     ARTDefault.setRealtimeRequestTimeout(1.0)
 
                     client.internal.setTransport(TestProxyTransport.self)
-                    TestProxyTransport.network = .hostUnreachable
-                    defer { TestProxyTransport.network = nil }
+                    TestProxyTransport.fakeNetworkResponse = .hostUnreachable
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
                     
-                    var urlConnections = [NSURL]()
+                    var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.internal.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urlConnections.append(url)
                         if urlConnections.count == 1 {
-                            TestProxyTransport.network = nil
+                            TestProxyTransport.fakeNetworkResponse = nil
                         }
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
@@ -3367,7 +3436,7 @@ class RealtimeClientConnection: QuickSpec {
 
                 // RTN17d
                 context("should use an alternative host when") {
-                    for caseTest: NetworkAnswer in [.hostUnreachable,
+                    for caseTest: FakeNetworkResponse in [.hostUnreachable,
                                                     .requestTimeout(timeout: 0.1),
                                                     .hostInternalError(code: 501)] {
                         it("\(caseTest)") {
@@ -3382,17 +3451,17 @@ class RealtimeClientConnection: QuickSpec {
                             ARTDefault.setRealtimeRequestTimeout(1.0)
 
                             client.internal.setTransport(TestProxyTransport.self)
-                            TestProxyTransport.network = caseTest
-                            defer { TestProxyTransport.network = nil }
+                            TestProxyTransport.fakeNetworkResponse = caseTest
+                            defer { TestProxyTransport.fakeNetworkResponse = nil }
 
-                            var urlConnections = [NSURL]()
+                            var urlConnections = [URL]()
                             TestProxyTransport.networkConnectEvent = { transport, url in
                                 if client.internal.transport !== transport {
                                     return
                                 }
-                                urlConnections.append(url as NSURL)
+                                urlConnections.append(url)
                                 if urlConnections.count == 1 {
-                                    TestProxyTransport.network = nil
+                                    TestProxyTransport.fakeNetworkResponse = nil
                                 }
                             }
                             defer { TestProxyTransport.networkConnectEvent = nil }
@@ -3457,15 +3526,15 @@ class RealtimeClientConnection: QuickSpec {
                     ARTDefault.setRealtimeRequestTimeout(1.0)
 
                     client.internal.setTransport(TestProxyTransport.self)
-                    TestProxyTransport.network = .host400BadRequest
-                    defer { TestProxyTransport.network = nil }
+                    TestProxyTransport.fakeNetworkResponse = .host400BadRequest
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
 
-                    var urlConnections = [NSURL]()
+                    var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.internal.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urlConnections.append(url)
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
 
@@ -3495,16 +3564,16 @@ class RealtimeClientConnection: QuickSpec {
                     ARTDefault.setRealtimeRequestTimeout(1.0)
 
                     client.internal.setTransport(TestProxyTransport.self)
-                    TestProxyTransport.network = .hostUnreachable
-                    defer { TestProxyTransport.network = nil }
+                    TestProxyTransport.fakeNetworkResponse = .hostUnreachable
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
 
-                    var urlConnections = [NSURL]()
+                    var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.internal.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
-                        TestProxyTransport.network = nil
+                        urlConnections.append(url)
+                        TestProxyTransport.fakeNetworkResponse = nil
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
 
@@ -3558,18 +3627,100 @@ class RealtimeClientConnection: QuickSpec {
                     client.internal.rest.httpExecutor = testHttpExecutor
 
                     client.internal.setTransport(TestProxyTransport.self)
-                    TestProxyTransport.network = .hostUnreachable
-                    defer { TestProxyTransport.network = nil }
+                    TestProxyTransport.fakeNetworkResponse = .hostUnreachable
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
 
-                    var urlConnections = [NSURL]()
+                    var urls = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.internal.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urls.append(url)
+                    }
+                    defer { TestProxyTransport.networkConnectEvent = nil }
+                    testHttpExecutor.afterRequest = { request, _ in
+                        urls.append(request.url!)
+                    }
+                    
+                    waitUntil(timeout: testTimeout * 1000) { done in
+                        // wss://[a-e].ably-realtime.com: when a timeout occurs
+                        client.connection.once(.disconnected) { error in
+                            done()
+                        }
+                        // wss://[a-e].ably-realtime.com: when a 401 occurs because of the `xxxx:xxxx` key
+                        client.connection.once(.failed) { error in
+                            done()
+                        }
+                        client.connect()
+                    }
+                    
+                    let extractHostname = { (url: URL) in
+                        NSRegularExpression.extract(url.absoluteString, pattern: "[a-e].ably-realtime.com")
+                    }
+
+                    var resultFallbackHosts = [String]()
+                    var gotInternetIsUpCheck = false
+                    for url in urls {
+                        if NSRegularExpression.match(url.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt") {
+                            gotInternetIsUpCheck = true
+                        } else if let fallbackHost = extractHostname(url) {
+                            if Optional(fallbackHost) == resultFallbackHosts.last {
+                                continue
+                            }
+                            // Host changed; should've had an internet check before.
+                            expect(gotInternetIsUpCheck).to(beTrue())
+                            gotInternetIsUpCheck = false
+                            resultFallbackHosts.append(fallbackHost)
+                        }
+                    }
+                    
+                    let expectedFallbackHosts = Array(expectedHostOrder.map({ ARTDefault.fallbackHosts()[$0] }))
+
+                    expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
+                }
+                
+                // RTN17c
+                it("doesn't try fallback host if Internet connection check fails") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    options.autoConnect = false
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("test")
+
+                    let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
+                    defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
+                    ARTDefault.setRealtimeRequestTimeout(1.0)
+
+                    let testHttpExecutor = TestProxyHTTPExecutor(options.logHandler)
+                    client.internal.rest.httpExecutor = testHttpExecutor
+
+                    client.internal.setTransport(TestProxyTransport.self)
+                    TestProxyTransport.fakeNetworkResponse = .hostUnreachable
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
+
+                    let extractHostname = { (url: URL) in
+                        NSRegularExpression.extract(url.absoluteString, pattern: "[a-e].ably-realtime.com")
+                    }
+
+                    TestProxyTransport.networkConnectEvent = { transport, url in
+                        if client.internal.transport !== transport {
+                            return
+                        }
+                        if extractHostname(url) != nil {
+                            fail("shouldn't try fallback host after failed connectivity check")
+                        }
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
 
+                    testHttpExecutor.beforeRequest = { request, _ in
+                        if NSRegularExpression.match(
+                            request.url!.absoluteString,
+                            pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt"
+                        ) {
+                            testHttpExecutor.simulateIncomingServerErrorOnNextRequest(500, description: "fake error")
+                        }
+                    }
+                    
                     waitUntil(timeout: testTimeout) { done in
                         // wss://[a-e].ably-realtime.com: when a timeout occurs
                         client.connection.once(.disconnected) { error in
@@ -3581,17 +3732,6 @@ class RealtimeClientConnection: QuickSpec {
                         }
                         client.connect()
                     }
-
-                    expect(NSRegularExpression.match(testHttpExecutor.requests[0].url!.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt")).to(beTrue())
-                    expect(urlConnections).to(haveCount(6)) // default + 5 fallbacks
-
-                    let extractHostname = { (url: NSURL) in
-                        NSRegularExpression.extract(url.absoluteString, pattern: "[a-e].ably-realtime.com")
-                    }
-                    let resultFallbackHosts = urlConnections.compactMap(extractHostname)
-                    let expectedFallbackHosts = Array(expectedHostOrder.map({ ARTDefault.fallbackHosts()[$0] }))
-
-                    expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
                 }
 
                 it("should retry custom fallback hosts in random order after checkin if an internet connection is available") {
@@ -3612,17 +3752,20 @@ class RealtimeClientConnection: QuickSpec {
                     client.internal.rest.httpExecutor = testHttpExecutor
                     
                     client.internal.setTransport(TestProxyTransport.self)
-                    TestProxyTransport.network = .hostUnreachable
-                    defer { TestProxyTransport.network = nil }
+                    TestProxyTransport.fakeNetworkResponse = .hostUnreachable
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
                     
-                    var urlConnections = [NSURL]()
+                    var urls = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.internal.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urls.append(url)
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
+                    testHttpExecutor.afterRequest = { request, _ in
+                        urls.append(request.url!)
+                    }
 
                     waitUntil(timeout: testTimeout) { done in
                         // wss://[a-e].ably-realtime.com: when a timeout occurs
@@ -3636,13 +3779,26 @@ class RealtimeClientConnection: QuickSpec {
                         client.connect()
                     }
 
-                    expect(NSRegularExpression.match(testHttpExecutor.requests[0].url!.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt")).to(beTrue())
-                    expect(urlConnections).to(haveCount(6)) // default + 5 provided fallbacks
-                    
-                    let extractHostname = { (url: NSURL) in
+                    let extractHostname = { (url: URL) in
                         NSRegularExpression.extract(url.absoluteString, pattern: "[f-j].ably-realtime.com")
                     }
-                    let resultFallbackHosts = urlConnections.compactMap(extractHostname)
+
+                    var resultFallbackHosts = [String]()
+                    var gotInternetIsUpCheck = false
+                    for url in urls {
+                        if NSRegularExpression.match(url.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt") {
+                            gotInternetIsUpCheck = true
+                        } else if let fallbackHost = extractHostname(url) {
+                            if Optional(fallbackHost) == resultFallbackHosts.last {
+                                continue
+                            }
+                            // Host changed; should've had an internet check before.
+                            expect(gotInternetIsUpCheck).to(beTrue())
+                            gotInternetIsUpCheck = false
+                            resultFallbackHosts.append(fallbackHost)
+                        }
+                    }
+
                     let expectedFallbackHosts = Array(expectedHostOrder.map({ fbHosts[$0] }))
                     
                     expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
@@ -3659,15 +3815,15 @@ class RealtimeClientConnection: QuickSpec {
                     client.internal.rest.httpExecutor = testHttpExecutor
                     
                     client.internal.setTransport(TestProxyTransport.self)
-                    TestProxyTransport.network = .hostUnreachable
-                    defer { TestProxyTransport.network = nil }
+                    TestProxyTransport.fakeNetworkResponse = .hostUnreachable
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
                     
-                    var urlConnections = [NSURL]()
+                    var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.internal.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urlConnections.append(url)
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
                     
@@ -3680,7 +3836,6 @@ class RealtimeClientConnection: QuickSpec {
                         }
                     }
                     
-                    expect(NSRegularExpression.match(testHttpExecutor.requests[0].url!.absoluteString, pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt")).to(beTrue())
                     expect(urlConnections).to(haveCount(1))
                 }
 
@@ -3694,17 +3849,17 @@ class RealtimeClientConnection: QuickSpec {
                     client.internal.rest.httpExecutor = testHttpExecutor
 
                     client.internal.setTransport(TestProxyTransport.self)
-                    TestProxyTransport.network = .hostUnreachable
-                    defer { TestProxyTransport.network = nil }
+                    TestProxyTransport.fakeNetworkResponse = .hostUnreachable
+                    defer { TestProxyTransport.fakeNetworkResponse = nil }
 
-                    var urlConnections = [NSURL]()
+                    var urlConnections = [URL]()
                     TestProxyTransport.networkConnectEvent = { transport, url in
                         if client.internal.transport !== transport {
                             return
                         }
-                        urlConnections.append(url as NSURL)
+                        urlConnections.append(url)
                         if urlConnections.count == 2 {
-                            TestProxyTransport.network = nil
+                            TestProxyTransport.fakeNetworkResponse = nil
                             (client.internal.transport as! TestProxyTransport).simulateTransportSuccess()
                         }
                     }
@@ -4286,7 +4441,7 @@ class RealtimeClientConnection: QuickSpec {
                 expect(client.connection.errorReason).to(beNil())
             }
 
-            // https://github.com/ably/ably-ios/issues/454
+            // https://github.com/ably/ably-cocoa/issues/454
             it("should not move to FAILED if received DISCONNECT with an error") {
                 let options = AblyTests.commonAppSetup()
                 let client = ARTRealtime(options: options)
