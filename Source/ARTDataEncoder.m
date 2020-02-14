@@ -150,14 +150,14 @@
             if ([data isKindOfClass:[NSString class]]) {
                 data = [[NSData alloc] initWithBase64EncodedString:(NSString *)data options:0];
             } else {
-                errorInfo = [ARTErrorInfo createWithCode:0 message:[NSString stringWithFormat:@"invalid data type for 'base64' decoding: '%@'", [data class]]];
+                errorInfo = [ARTErrorInfo createWithCode:40013 message:[NSString stringWithFormat:@"invalid data type for 'base64' decoding: '%@'", [data class]]];
             }
         } else if ([encoding isEqualToString:@""] || [encoding isEqualToString:@"utf-8"]) {
             if ([data isKindOfClass:[NSData class]]) { // E. g. when decrypted.
                 data = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
             }
             if (![data isKindOfClass:[NSString class]]) {
-                errorInfo = [ARTErrorInfo createWithCode:0 message:[NSString stringWithFormat:@"invalid data type for '%@' decoding: '%@'", encoding, [data class]]];
+                errorInfo = [ARTErrorInfo createWithCode:40013 message:[NSString stringWithFormat:@"invalid data type for '%@' decoding: '%@'", encoding, [data class]]];
             }
         } else if ([encoding isEqualToString:@"json"]) {
             if ([data isKindOfClass:[NSData class]]) { // E. g. when decrypted.
@@ -171,32 +171,32 @@
                     errorInfo = [ARTErrorInfo createFromNSError:error];
                 }
             } else if (![data isKindOfClass:[NSArray class]] && ![data isKindOfClass:[NSDictionary class]]) {
-                errorInfo = [ARTErrorInfo createWithCode:0 message:[NSString stringWithFormat:@"invalid data type for 'json' decoding: '%@'", [data class]]];
+                errorInfo = [ARTErrorInfo createWithCode:40013 message:[NSString stringWithFormat:@"invalid data type for 'json' decoding: '%@'", [data class]]];
             }
         } else if (_cipher && [encoding isEqualToString:[self cipherEncoding]] && [data isKindOfClass:[NSData class]]) {
             ARTStatus *status = [_cipher decrypt:data output:&data];
             if (status.state != ARTStateOk) {
-                errorInfo = status.errorInfo ? status.errorInfo : [ARTErrorInfo createWithCode:0 message:@"decrypt failed"];
+                errorInfo = status.errorInfo ? status.errorInfo : [ARTErrorInfo createWithCode:40013 message:@"decrypt failed"];
             }
         } else if ([encoding isEqualToString:@"vcdiff"]) {
-            NSError *error;
+            NSError *decodeError;
             if (_vcdiffDecoder) {
                 NSData *delta = data;
                 NSData *base = _lastMessageData;
-                data = [_vcdiffDecoder decode:delta base:base error:&error];
+                data = [_vcdiffDecoder decode:delta base:base error:&decodeError];
             }
             else {
-                errorInfo = [ARTErrorInfo createWithCode:0 message:@"VCDiffDecoder is missing"];
+                errorInfo = [ARTErrorInfo createWithCode:40018 message:@"VCDiffDecoder is missing"];
             }
 
-            if (error) {
-                errorInfo = [ARTErrorInfo createFromNSError:error];
+            if (decodeError) {
+                errorInfo = [ARTErrorInfo createWithCode:40018 message:decodeError.localizedDescription];
             }
             else if (!data) {
-                errorInfo = [ARTErrorInfo createWithCode:0 message:@"Data is nil"];
+                errorInfo = [ARTErrorInfo createWithCode:40018 message:@"Data is nil"];
             }
         } else {
-            errorInfo = [ARTErrorInfo createWithCode:0 message:[NSString stringWithFormat:@"unknown encoding: '%@'", encoding]];
+            errorInfo = [ARTErrorInfo createWithCode:40013 message:[NSString stringWithFormat:@"unknown encoding: '%@'", encoding]];
         }
 
         [self setLastMessageData:data];
