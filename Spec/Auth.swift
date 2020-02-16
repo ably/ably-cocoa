@@ -624,13 +624,12 @@ class Auth : QuickSpec {
                                 realtime.connect()
                             }
 
+                            expect(realtime.connection.state).toEventually(equal(ARTRealtimeConnectionState.disconnected), timeout: testTimeout)
                             guard let errorInfo = realtime.connection.errorReason else {
                                 fail("ErrorInfo is empty"); return
                             }
                             expect(errorInfo.code) == 80019
                             expect(errorInfo.message).to(contain("hostname could not be found"))
-
-                            expect(realtime.connection.state).toEventually(equal(ARTRealtimeConnectionState.disconnected), timeout: testTimeout)
                         }
 
                         // RSA4c3
