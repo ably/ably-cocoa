@@ -3001,8 +3001,8 @@ class RealtimeClientConnection: QuickSpec {
                         
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.failed) { stateChange in
+                                expect(stateChange?.previous).to(equal(ARTRealtimeConnectionState.connected))
                                 expect(stateChange?.reason?.code).to(equal(40142))
-                                expect(stateChange?.reason?.message).to(contain("Token expired"))
                                 done()
                             }
                             client.connect()
