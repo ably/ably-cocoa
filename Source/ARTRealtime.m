@@ -869,16 +869,25 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 - (void)onDisconnected:(ARTProtocolMessage *)message {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     [self.logger info:@"R:%p Realtime disconnected", self];
-    ARTErrorInfo *error = message.error;
-    if ([self shouldRenewToken:&error]) {
+    ARTErrorInfo * const error = message.error;
+    
+    if (
+        [self isTokenError:error]
+        && !_renewingToken // If already reconnecting, give up.
+    ) {
+        if (![self.auth tokenIsRenewable]) {
+            [self transition:ARTRealtimeFailed withErrorInfo:error];
+            return;
+        }
+
         [self transitionToDisconnectedOrSuspendedWithError:error];
         [self.connection setErrorReason:nil];
         _renewingToken = true;
         [self transition:ARTRealtimeConnecting withErrorInfo:nil];
+        return;
     }
-    else {
-        [self transitionToDisconnectedOrSuspendedWithError:error];
-    }
+
+    [self transitionToDisconnectedOrSuspendedWithError:error];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
@@ -920,10 +929,18 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         [self onChannelMessage:message];
     } else {
         ARTErrorInfo *error = message.error;
-        if ([self shouldRenewToken:&error]) {
+
+        if ([self isTokenError:error] && [self.auth tokenIsRenewable]) {
+            if (_renewingToken) {
+                // Already retrying; give up.
+                [self.connection setErrorReason:error];
+                [self transitionToDisconnectedOrSuspendedWithError:error];
+                return;
+            }
             [self transportReconnectWithRenewedToken];
             return;
         }
+
         [self.connection setId:nil];
         [self transition:ARTRealtimeFailed withErrorInfo:message.error];
     }
@@ -978,17 +995,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (BOOL)shouldRenewToken:(ARTErrorInfo **)errorPtr {
-ART_TRY_OR_MOVE_TO_FAILED_START(self) {
-    if (!_renewingToken && errorPtr && *errorPtr &&
-        (*errorPtr).statusCode == 401 && (*errorPtr).code >= 40140 && (*errorPtr).code < 40150) {
-        if ([self.auth tokenIsRenewable]) {
-            return YES;
-        }
-        *errorPtr = [ARTErrorInfo createWithCode:ARTStateRequestTokenFailed message:ARTAblyMessageNoMeansToRenewToken];
-    }
-    return NO;
-} ART_TRY_OR_MOVE_TO_FAILED_END
+- (BOOL)isTokenError:(nullable ARTErrorInfo *)error {
+    return error != nil && error.statusCode == 401 && error.code >= 40140 && error.code < 40150;
 }
 
 - (void)transportReconnectWithHost:(NSString *)host {
