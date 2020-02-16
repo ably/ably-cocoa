@@ -983,8 +983,8 @@ class Auth : QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             realtime.connection.once(.failed) { stateChange in
-                                expect(stateChange!.reason!.code).to(equal(40102))
-                                expect(stateChange!.reason!.description).to(contain("incompatible credentials"))
+                                expect(stateChange!.reason?.code).to(equal(40102))
+                                expect(stateChange!.reason?.description).to(contain("incompatible credentials"))
                                 done()
                             }
                             realtime.connect()
@@ -4172,8 +4172,8 @@ class Auth : QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.connected) { stateChange in
                                 client.connection.once(.disconnected) { stateChange in
-                                    expect(stateChange!.reason!.code).to(equal(40142))
-                                    expect(stateChange!.reason!.description).to(contain("Key/token status changed (expire)"))
+                                    expect(stateChange!.reason?.code).to(equal(40142))
+                                    expect(stateChange!.reason?.description).to(contain("Key/token status changed (expire)"))
                                     done()
                                 }
                             }
@@ -4281,7 +4281,7 @@ class Auth : QuickSpec {
                             originalConnectionID = client.connection.id!
 
                             client.connection.once(.disconnected) { stateChange in
-                                expect(stateChange!.reason!.code).to(equal(40142))
+                                expect(stateChange!.reason?.code).to(equal(40142))
 
                                 client.connection.once(.connected) { _ in
                                     expect(client.connection.id).to(equal(originalConnectionID))
