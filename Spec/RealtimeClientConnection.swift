@@ -3013,11 +3013,11 @@ class RealtimeClientConnection: QuickSpec {
                     it("should transition to disconnected when the token renewal fails and the error should be emitted") {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
-                        let tokenTtl = 5.0
+                        let tokenTtl = 3.0
                         let tokenDetails = getTestTokenDetails(key: options.key, capability: nil, ttl: tokenTtl)!
                         options.token = tokenDetails.token
                         options.authCallback = { tokenParams, callback in
-                            delay(1.0) {
+                            delay(0.1) {
                                 callback(tokenDetails, nil) // Return the same expired token again.
                             }
                         }
@@ -3029,30 +3029,27 @@ class RealtimeClientConnection: QuickSpec {
                             client.close()
                         }
 
-                        client.connect()
-                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
-
                         waitUntil(timeout: testTimeout) { done in
                             // Wait for token to expire
                             client.connection.once(.disconnected) { stateChange in
+                                expect(stateChange?.previous).to(equal(ARTRealtimeConnectionState.connected))
                                 guard let error = stateChange?.reason else {
                                     fail("Error is nil"); done(); return
                                 }
                                 expect(error.code) == 40142
-                                done()
-                            }
-                        }
-
-                        waitUntil(timeout: testTimeout) { done in
-                            // Renewal will lead to a failed connection
-                            client.connection.once(.failed) { stateChange in
-                                guard let error = stateChange?.reason else {
-                                    fail("Error is nil"); done(); return
+                            
+                                // Renewal will lead to another disconnection
+                                client.connection.once(.disconnected) { stateChange in
+                                    guard let error = stateChange?.reason else {
+                                        fail("Error is nil"); done(); return
+                                    }
+                                    expect(error.code) == 40142
+                                    expect(client.connection.errorReason).to(beIdenticalTo(error))
+                                    done()
                                 }
-                                expect(error.code) == 40142
-                                expect(client.connection.errorReason).to(beIdenticalTo(error))
-                                done()
                             }
+                            
+                            client.connect()
                         }
                     }
 
