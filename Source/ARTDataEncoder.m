@@ -8,8 +8,6 @@
 #import "ARTCrypto+Private.h"
 #import "ARTLog.h"
 #import "ARTDataEncoder.h"
-#import "ARTPlugin.h"
-#import "ARTPluginSet.h"
 #import "ARTDeltaCodec.h"
 
 @implementation ARTDataEncoderOutput
@@ -32,7 +30,7 @@
     NSData *_lastMessageData;
 }
 
-- (instancetype)initWithCipherParams:(ARTCipherParams *)params plugins:(NSSet<ARTPlugin *> *)plugins error:(NSError **)error {
+- (instancetype)initWithCipherParams:(ARTCipherParams *)params error:(NSError **)error {
     self = [super init];
     if (self) {
         if (params) {
@@ -47,10 +45,8 @@
                 return nil;
             }
         }
-        Class vcdiffPluginClass = [plugins pluginClassOf:ARTPluginTypeVCDiff];
-        if ([vcdiffPluginClass conformsToProtocol:@protocol(ARTVCDiffDecoder)]) {
-            _vcdiffDecoder = [[vcdiffPluginClass alloc] init];
-        }
+
+        _vcdiffDecoder = [[ARTDeltaCodec alloc] init];
     }
     return self;
 }

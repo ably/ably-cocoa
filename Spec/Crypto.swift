@@ -136,9 +136,9 @@ class Crypto : QuickSpec {
             for cryptoFixture in CryptoTest.fixtures {
                 context("with fixtures from \(cryptoFixture.fileName).json") {
                     let (key, iv, items) = AblyTests.loadCryptoTestData(cryptoFixture.fileName)
-                    let decoder = ARTDataEncoder.init(cipherParams: nil, plugins: nil, error: nil)
+                    let decoder = ARTDataEncoder.init(cipherParams: nil, error: nil)
                     let cipherParams = ARTCipherParams(algorithm: "aes", key: key as ARTCipherKeyCompatible, iv: iv)
-                    let encrypter = ARTDataEncoder.init(cipherParams: cipherParams, plugins: nil, error: nil)
+                    let encrypter = ARTDataEncoder.init(cipherParams: cipherParams, error: nil)
 
                     func extractMessage(_ fixture: AblyTests.CryptoTestItem.TestMessage) -> ARTMessage {
                         let msg = ARTMessage(name: fixture.name, data: fixture.data)
