@@ -67,8 +67,5 @@ FOUNDATION_EXPORT const unsigned char ablyVersionString[];
 #import <Ably/ARTDeviceStorage.h>
 #import <Ably/ARTLocalDevice.h>
 #import <Ably/ARTLocalDeviceStorage.h>
-#import <Ably/ARTPluginSet.h>
-#import <Ably/ARTPlugin.h>
-#import <Ably/ARTPluginType.h>
 #import <Ably/ARTVCDiffDecoder.h>
 #import <Ably/ARTDeltaCodec.h>

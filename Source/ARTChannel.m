@@ -30,10 +30,10 @@
         _queue = rest.queue;
         _options = options;
         NSError *error = nil;
-        _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:_options.cipher plugins:rest.options.plugins error:&error];
+        _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:_options.cipher error:&error];
         if (error != nil) {
             [_logger warn:@"creating ARTDataEncoder: %@", error];
-            _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:nil plugins:rest.options.plugins error:nil];
+            _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:nil error:nil];
         }
     }
     return self;
