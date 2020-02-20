@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTDataEncoder : NSObject 
 
-- (instancetype)initWithCipherParams:(ARTCipherParams *_Nullable)params plugins:(NSSet<ARTPlugin *> *_Nullable)plugins error:(NSError *_Nullable*_Nullable)error;
+- (instancetype)initWithCipherParams:(ARTCipherParams *_Nullable)params error:(NSError *_Nullable*_Nullable)error;
 - (ARTDataEncoderOutput *)encode:(id _Nullable)data;
 - (ARTDataEncoderOutput *)decode:(id _Nullable)data encoding:(NSString *_Nullable)encoding;
 
