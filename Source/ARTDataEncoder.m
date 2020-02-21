@@ -26,8 +26,8 @@
 
 @implementation ARTDataEncoder {
     id<ARTChannelCipher> _cipher;
-    id<ARTVCDiffDecoder> _vcdiffDecoder;
-    NSData *_lastMessageData;
+    ARTDeltaCodec *_deltaCodec;
+    NSString *_baseId;
 }
 
 - (instancetype)initWithCipherParams:(ARTCipherParams *)params error:(NSError **)error {
@@ -46,17 +46,18 @@
             }
         }
 
-        _vcdiffDecoder = [[ARTDeltaCodec alloc] init];
+        _deltaCodec = [[ARTDeltaCodec alloc] init];
     }
     return self;
 }
 
-- (void)setLastMessageData:(nullable id)data {
+- (void)setDeltaCodecBase:(nullable id)data identifier:(NSString *)identifier {
+    _baseId = identifier;
     if ([data isKindOfClass:[NSData class]]) {
-        _lastMessageData = data;
+        [_deltaCodec setBase:data withId:identifier];
     }
     else if ([data isKindOfClass:[NSString class]]) {
-        _lastMessageData = [data dataUsingEncoding:NSUTF8StringEncoding];
+        [_deltaCodec setBase:[data dataUsingEncoding:NSUTF8StringEncoding] withId:identifier];
     }
 }
 
@@ -133,8 +134,12 @@
 }
 
 - (ARTDataEncoderOutput *)decode:(id)data encoding:(NSString *)encoding {
+    return [self decode:data identifier:@"" encoding:encoding];
+}
+
+- (ARTDataEncoderOutput *)decode:(id)data identifier:(NSString *)identifier encoding:(NSString *)encoding {
     if (!data || !encoding ) {
-        [self setLastMessageData:data];
+        [self setDeltaCodecBase:data identifier:identifier];
         return [[ARTDataEncoderOutput alloc] initWithData:data encoding:encoding errorInfo:nil];
     }
     
@@ -181,16 +186,9 @@
             if (status.state != ARTStateOk) {
                 errorInfo = status.errorInfo ? status.errorInfo : [ARTErrorInfo createWithCode:40013 message:@"decrypt failed"];
             }
-        } else if ([encoding isEqualToString:@"vcdiff"]) {
+        } else if ([encoding isEqualToString:@"vcdiff"] && _deltaCodec) {
             NSError *decodeError;
-            if (_vcdiffDecoder) {
-                NSData *delta = data;
-                NSData *base = _lastMessageData;
-                data = [_vcdiffDecoder decode:delta base:base error:&decodeError];
-            }
-            else {
-                errorInfo = [ARTErrorInfo createWithCode:40018 message:@"VCDiffDecoder is missing"];
-            }
+            data = [_deltaCodec applyDelta:data deltaId:identifier baseId:_baseId error:&decodeError];
 
             if (decodeError) {
                 errorInfo = [ARTErrorInfo createWithCode:40018 message:decodeError.localizedDescription];
@@ -202,7 +200,7 @@
             errorInfo = [ARTErrorInfo createWithCode:40013 message:[NSString stringWithFormat:@"unknown encoding: '%@'", encoding]];
         }
 
-        [self setLastMessageData:data];
+        [self setDeltaCodecBase:data identifier:identifier];
 
         if (errorInfo == nil) {
             outputEncoding = [outputEncoding artRemoveLastEncoding];
