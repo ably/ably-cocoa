@@ -35,10 +35,10 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Contains the clientId assigned to the token if provided.
  */
-@property (nonatomic, readonly) NSString *clientId;
+@property (nonatomic, readonly, nullable) NSString *clientId;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithToken:(NSString *)token issued:(NSDate *)issued expires:(NSDate *)expires capability:(NSString *)capability clientId:(NSString *)clientId;
+- (instancetype)initWithToken:(NSString *)token issued:(NSDate *)issued expires:(NSDate *)expires capability:(NSString *)capability clientId:(nullable NSString *)clientId;
 
 - (NSData *)archive;
 + (nullable ARTDeviceIdentityTokenDetails *)unarchive:(NSData *)data;

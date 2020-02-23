@@ -227,15 +227,15 @@ dispatch_async(_queue, ^{
             [delegate ablyPushCustomRegister:error deviceDetails:local callback:^(ARTDeviceIdentityTokenDetails *identityTokenDetails, ARTErrorInfo *error) {
                 if (error) {
                     // Failed
-                    [self sendEvent:[ARTPushActivationEventUpdatingRegistrationFailed newWithError:error]];
+                    [self sendEvent:[ARTPushActivationEventSyncRegistrationFailed newWithError:error]];
                 }
                 else if (identityTokenDetails) {
                     // Success
-                    [self sendEvent:[ARTPushActivationEventRegistrationUpdated newWithIdentityTokenDetails:identityTokenDetails]];
+                    [self sendEvent:[ARTPushActivationEventRegistrationSynced newWithIdentityTokenDetails:identityTokenDetails]];
                 }
                 else {
                     ARTErrorInfo *missingIdentityTokenError = [ARTErrorInfo createWithCode:0 message:@"Device Identity Token Details is expected"];
-                    [self sendEvent:[ARTPushActivationEventUpdatingRegistrationFailed newWithError:missingIdentityTokenError]];
+                    [self sendEvent:[ARTPushActivationEventSyncRegistrationFailed newWithError:missingIdentityTokenError]];
                 }
             }];
         });
@@ -256,11 +256,73 @@ dispatch_async(_queue, ^{
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             [[self->_rest logger] error:@"%@: update device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
-            [self sendEvent:[ARTPushActivationEventUpdatingRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
+            [self sendEvent:[ARTPushActivationEventSyncRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
             return;
         }
-        [self sendEvent:[ARTPushActivationEventRegistrationUpdated new]];
+        [self sendEvent:[ARTPushActivationEventRegistrationSynced new]];
     }];
+    #endif
+}
+
+- (void)syncDevice {
+    #if TARGET_OS_IOS
+    ARTLocalDevice *const local = _rest.device_nosync;
+
+    __block id const delegate = self.delegate;
+
+    if (![delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
+        [NSException raise:@"ARTPushRegistererDelegate must be implemented on AppDelegate" format:@""];
+    }
+
+    // Custom register
+    SEL const customRegisterMethodSelector = @selector(ablyPushCustomRegister:deviceDetails:callback:);
+    if ([delegate respondsToSelector:customRegisterMethodSelector]) {
+        dispatch_async(_userQueue, ^{
+            [delegate ablyPushCustomRegister:nil deviceDetails:local callback:^(ARTDeviceIdentityTokenDetails *identityTokenDetails, ARTErrorInfo *error) {
+                if (error) {
+                    // Failed
+                    [self sendEvent:[ARTPushActivationEventSyncRegistrationFailed newWithError:error]];
+                }
+                else if (identityTokenDetails) {
+                    // Success
+                    [self sendEvent:[ARTPushActivationEventRegistrationSynced newWithIdentityTokenDetails:identityTokenDetails]];
+                }
+                else {
+                    ARTErrorInfo *const missingIdentityTokenError = [ARTErrorInfo createWithCode:0 message:@"Device Identity Token Details is expected"];
+                    [self sendEvent:[ARTPushActivationEventSyncRegistrationFailed newWithError:missingIdentityTokenError]];
+                }
+            }];
+        });
+        return;
+    }
+
+    void (^doDeviceSync)(void) = ^{
+        // Asynchronous HTTP request
+        NSString *const path = [@"/push/deviceRegistrations" stringByAppendingPathComponent:local.id];
+        NSMutableURLRequest *const request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:path]];
+        request.HTTPMethod = @"PUT";
+        request.HTTPBody = [[self->_rest defaultEncoder] encodeDeviceDetails:local error:nil];
+        [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
+
+        [[self->_rest logger] debug:__FILE__ line:__LINE__ message:@"%@: sync device with request %@", NSStringFromClass(self.class), request];
+        [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
+            if (error) {
+                [[self->_rest logger] error:@"%@: device registration failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+                [self sendEvent:[ARTPushActivationEventSyncRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
+                return;
+            }
+            [self sendEvent:[ARTPushActivationEventRegistrationSynced newWithIdentityTokenDetails:local.identityTokenDetails]];
+        }];
+    };
+
+    if (_rest.auth.method == ARTAuthMethodToken) {
+        [_rest.auth authorize:^(ARTTokenDetails *tokenDetails, NSError *error) {
+            doDeviceSync();
+        }];
+    }
+    else {
+        doDeviceSync();
+    }
     #endif
 }
 

@@ -1,9 +1,6 @@
 SHELL := /bin/bash
 .PHONY: help setup submodules
 
-RUBY := $(shell command -v ruby 2>/dev/null)
-HOMEBREW := $(shell command -v brew 2>/dev/null)
-
 default: help
 
 # Add the following 'help' target to your Makefile
@@ -12,7 +9,6 @@ default: help
 # COLORS
 GREEN  := $(shell tput -Txterm setaf 2)
 YELLOW := $(shell tput -Txterm setaf 3)
-WHITE  := $(shell tput -Txterm setaf 7)
 RESET  := $(shell tput -Txterm sgr0)
 
 ## ----- Helper functions ------
@@ -37,7 +33,6 @@ _var_%: FORCE
 ## ------ Commmands -----------
 
 TARGET_MAX_CHAR_NUM=20
-## Show help
 help:
 	@echo ''
 	@echo 'Usage:'
@@ -55,45 +50,14 @@ help:
 	{ lastLine = $$0 }' \
 	$(MAKEFILE_LIST)
 
-## Install dependencies.
-setup: \
-	submodules \
-	install_carthage \
-	update_carthage_dependencies \
-	install_fastlane
-
-## Update dependencies.
+## Update dependencies (Git submodules and Carthage)
 update: \
 	submodules \
-	update_carthage \
-	update_carthage_dependencies \
-	update_fastlane
-
-install_fastlane:
-	$(info Installing Fastlane…)
-
-	gem install fastlane -v 2.108.0
-
-update_fastlane:
-	$(info Updating Fastlane…)
-
-	gem update fastlane -v 2.108.0
-
-install_carthage:
-	$(info Installing Carthage…)
-
-	brew unlink carthage || true
-	brew install carthage
-	brew link --overwrite carthage
-
-update_carthage:
-	$(info Updating Carthage…)
-
-	brew upgrade carthage
+	update_carthage_dependencies
 
 ## -- Source Code Tasks --
 
-## Update git submodule's
+## Update Git submodules
 submodules:
 	$(info Updating submodules…)
 
@@ -133,25 +97,25 @@ carthage_clean:
 
 	rm -rf ~/Library/Caches/org.carthage.CarthageKit/dependencies/
 
-## [Carthage] Update dependencies
+## [Carthage] Update dependencies for all platforms
 update_carthage_dependencies:
 	$(info Updating Carthage dependencies for all platforms…)
 
 	carthage update
 
-## [Carthage] Update dependencies for iOS
+## [Carthage] Update dependencies for just iOS
 update_carthage_dependencies_ios:
 	$(info Updating Carthage dependencies for iOS…)
 
 	carthage update --platform iOS
 
-## [Carthage] Update dependencies for tvOS
+## [Carthage] Update dependencies for just tvOS
 update_carthage_dependencies_tvos:
 	$(info Updating Carthage dependencies for tvOS…)
 
 	carthage update --platform tvOS
 
-## [Carthage] Update dependencies for macOS
+## [Carthage] Update dependencies for just macOS
 update_carthage_dependencies_macos:
 	$(info Updating Carthage dependencies for macOS…)
 

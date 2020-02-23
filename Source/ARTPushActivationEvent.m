@@ -145,16 +145,19 @@ NSString *const ARTCoderIdentityTokenDetailsKey = @"identityTokenDetails";
 @implementation ARTPushActivationEventGotPushDeviceDetails
 @end
 
+@implementation ARTPushActivationEventGettingPushDeviceDetailsFailed
+@end
+
 @implementation ARTPushActivationEventGotDeviceRegistration
 @end
 
 @implementation ARTPushActivationEventGettingDeviceRegistrationFailed
 @end
 
-@implementation ARTPushActivationEventRegistrationUpdated
+@implementation ARTPushActivationEventRegistrationSynced
 @end
 
-@implementation ARTPushActivationEventUpdatingRegistrationFailed
+@implementation ARTPushActivationEventSyncRegistrationFailed
 @end
 
 @implementation ARTPushActivationEventDeregistered
