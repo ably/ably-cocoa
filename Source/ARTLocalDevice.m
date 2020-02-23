@@ -110,6 +110,9 @@ NSString *const ARTDevicePushTransportType = @"apns";
 - (void)setAndPersistIdentityTokenDetails:(ARTDeviceIdentityTokenDetails *)tokenDetails {
     [self.storage setObject:[tokenDetails archive] forKey:ARTDeviceIdentityTokenKey];
     _identityTokenDetails = tokenDetails;
+    if (self.clientId == nil) {
+        self.clientId = tokenDetails.clientId;
+    }
 }
 
 - (BOOL)isRegistered {

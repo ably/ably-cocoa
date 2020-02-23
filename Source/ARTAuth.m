@@ -23,6 +23,9 @@
 #import "ARTJsonEncoder.h"
 #import "ARTGCD.h"
 #import "ARTEventEmitter+Private.h"
+#import "ARTPushActivationStateMachine+Private.h"
+#import "ARTPushActivationEvent.h"
+#import "ARTPushActivationState.h"
 
 @implementation ARTAuth {
     ARTQueuedDealloc *_dealloc;
@@ -820,6 +823,11 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (clientId && ![clientId isEqualToString:@"*"]) {
         [_rest.device_nosync setClientId:clientId];
+        
+        ARTPushActivationStateMachine *const machine = _rest.push.activationMachine;
+        if (![machine.current_nosync isKindOfClass:[ARTPushActivationStateNotActivated class]]) {
+            [machine sendEvent:[[ARTPushActivationEventGotPushDeviceDetails alloc] init]];
+        }
     }
 } ART_TRY_OR_REPORT_CRASH_END
 }

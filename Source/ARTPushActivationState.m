@@ -14,6 +14,7 @@
 #import "ARTDevicePushDetails.h"
 #import "ARTLog.h"
 #import "ARTRest+Private.h"
+#import "ARTAuth+Private.h"
 #import "ARTHttp.h"
 
 @implementation ARTPushActivationState
@@ -102,6 +103,29 @@
 
 #pragma mark - Activation States
 
+ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, ARTPushActivationEvent *event) {
+    #if TARGET_OS_IOS
+    ARTLocalDevice *const local = machine.rest.device_nosync;
+
+    if (local.identityTokenDetails) {
+        // Already registered.
+        NSString *const instanceClientId = machine.rest.auth.clientId_nosync;
+        if (local.clientId != nil && instanceClientId && ![local.clientId isEqualToString:instanceClientId]) {
+            ARTErrorInfo *const error = [ARTErrorInfo createWithCode:61002 message:@"Activation failed: present clientId is not compatible with existing device registration"];
+            [machine sendEvent:[ARTPushActivationEventSyncRegistrationFailed newWithError:error]];
+        } else {
+            [machine syncDevice];
+        }
+        
+        return [ARTPushActivationStateWaitingForRegistrationSync newWithMachine:machine fromEvent:event];
+    } else if ([local deviceToken]) {
+        [machine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
+    }
+    #endif
+
+    return [ARTPushActivationStateWaitingForPushDeviceDetails newWithMachine:machine];
+}
+
 @implementation ARTPushActivationStateNotActivated
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
@@ -111,20 +135,7 @@
         return self;
     }
     else if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
-        #if TARGET_OS_IOS
-        ARTLocalDevice *local = self.machine.rest.device_nosync;
-
-        if (local.identityTokenDetails) {
-            // Already registered.
-            return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine];
-        }
-
-        if ([local deviceToken]) {
-            [self.machine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
-        }
-        #endif
-
-        return [ARTPushActivationStateWaitingForPushDeviceDetails newWithMachine:self.machine];
+        return validateAndSync(self.machine, event);
     }
     return nil;
 }
@@ -171,6 +182,10 @@
         [self.machine deviceRegistration:nil];
         return [ARTPushActivationStateWaitingForDeviceRegistration newWithMachine:self.machine];
     }
+    else if ([event isKindOfClass:[ARTPushActivationEventGettingPushDeviceDetailsFailed class]]) {
+        [self.machine callActivatedCallback:((ARTPushActivationEventGettingPushDeviceDetailsFailed *) event).error];
+        return [ARTPushActivationStateNotActivated newWithMachine:self.machine];
+    }
     return nil;
 }
 
@@ -190,14 +205,27 @@
     }
     else if ([event isKindOfClass:[ARTPushActivationEventGotPushDeviceDetails class]]) {
         [self.machine deviceUpdateRegistration:nil];
-        return [ARTPushActivationStateWaitingForRegistrationUpdate newWithMachine:self.machine];
+        return [ARTPushActivationStateWaitingForRegistrationSync newWithMachine:self.machine fromEvent:event];
     }
     return nil;
 }
 
 @end
 
-@implementation ARTPushActivationStateWaitingForRegistrationUpdate
+@implementation ARTPushActivationStateWaitingForRegistrationSync {
+    ARTPushActivationEvent *_fromEvent;
+}
+
+- (instancetype)initWithMachine:(ARTPushActivationStateMachine *)machine fromEvent:(ARTPushActivationEvent *)event {
+    if (self = [super initWithMachine:machine]) {
+        _fromEvent = event;
+    }
+    return self;
+}
+
++ (instancetype)newWithMachine:(ARTPushActivationStateMachine *)machine fromEvent:(ARTPushActivationEvent *)event {
+    return [[self alloc] initWithMachine:machine fromEvent:event];
+}
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
     [self logEventTransition:event file:__FILE__ line:__LINE__];
@@ -205,34 +233,44 @@
         [self.machine callActivatedCallback:nil];
         return self;
     }
-    else if ([event isKindOfClass:[ARTPushActivationEventRegistrationUpdated class]]) {
+    else if ([event isKindOfClass:[ARTPushActivationEventRegistrationSynced class]]) {
         #if TARGET_OS_IOS
-        ARTPushActivationEventRegistrationUpdated *registrationUpdatedEvent = (ARTPushActivationEventRegistrationUpdated *)event;
+        ARTPushActivationEventRegistrationSynced *registrationUpdatedEvent = (ARTPushActivationEventRegistrationSynced *)event;
         if (registrationUpdatedEvent.identityTokenDetails) {
             ARTLocalDevice *local = self.machine.rest.device_nosync;
             [local setAndPersistIdentityTokenDetails:registrationUpdatedEvent.identityTokenDetails];
         }
         #endif
-        [self.machine callActivatedCallback:nil];
+
+        if ([_fromEvent isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
+            [self.machine callActivatedCallback:nil];
+        }
+
         return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine];
     }
-    else if ([event isKindOfClass:[ARTPushActivationEventUpdatingRegistrationFailed class]]) {
-        [self.machine callUpdateFailedCallback:[(ARTPushActivationEventUpdatingRegistrationFailed *)event error]];
-        return [ARTPushActivationStateAfterRegistrationUpdateFailed newWithMachine:self.machine];
+    else if ([event isKindOfClass:[ARTPushActivationEventSyncRegistrationFailed class]]) {
+        ARTErrorInfo *const error = [(ARTPushActivationEventSyncRegistrationFailed *)event error];
+        if ([_fromEvent isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
+            [self.machine callActivatedCallback:error];
+        } else {
+            [self.machine callUpdateFailedCallback:error];
+        }
+
+        return [ARTPushActivationStateAfterRegistrationSyncFailed newWithMachine:self.machine];
     }
     return nil;
 }
 
 @end
 
-@implementation ARTPushActivationStateAfterRegistrationUpdateFailed
+@implementation ARTPushActivationStateAfterRegistrationSyncFailed
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
     [self logEventTransition:event file:__FILE__ line:__LINE__];
     if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]] ||
         [event isKindOfClass:[ARTPushActivationEventGotPushDeviceDetails class]]) {
-        [self.machine deviceUpdateRegistration:nil];
-        return [ARTPushActivationStateWaitingForRegistrationUpdate newWithMachine:self.machine];
+
+        return validateAndSync(self.machine, event);
     }
     else if ([event isKindOfClass:[ARTPushActivationEventCalledDeactivate class]]) {
         [self.machine deviceUnregistration:nil];

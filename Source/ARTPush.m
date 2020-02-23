@@ -155,7 +155,7 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error restInternal:(ARTRestInternal *)rest {
     [rest.logger error:@"ARTPush: device token not received (%@)", [error localizedDescription]];
-    [rest.push.activationMachine sendEvent:[ARTPushActivationEventGettingDeviceRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
+    [rest.push.activationMachine sendEvent:[ARTPushActivationEventGettingPushDeviceDetailsFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
 }
 
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error realtime:(ARTRealtime *)realtime {
