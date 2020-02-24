@@ -321,7 +321,9 @@ class NSURLSessionServerTrustSync: NSObject, URLSessionDelegate, URLSessionTaskD
         var requestCompleted = false
 
         let configuration = URLSessionConfiguration.default
-        let session = Foundation.URLSession(configuration:configuration, delegate:self, delegateQueue:OperationQueue.main)
+        let queue = OperationQueue()
+        queue.underlyingQueue = AblyTests.extraQueue
+        let session = Foundation.URLSession(configuration:configuration, delegate:self, delegateQueue:queue)
 
         let task = session.dataTask(with: request as URLRequest, completionHandler: { data, response, error in
             if let response = response as? HTTPURLResponse {
