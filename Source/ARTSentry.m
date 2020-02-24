@@ -16,7 +16,7 @@
 #import <KSCrashAblyFork/KSCrash.h>
 #import <KSCrashAblyFork/KSCrashInstallation+Private.h>
 #import <KSCrashAblyFork/KSCrashMonitorType.h>
-#import <KSCrashAblyFork/NSData+GZip.h>
+#import <KSCrashAblyFork/NSData+KSCrashGZip.h>
 
 NSString* ART_hexMemoryAddress(id addr) {
     if (addr && [addr isKindOfClass:[NSString class]]) {
@@ -347,7 +347,7 @@ NSString* ART_uuid() {
         return;
     }
 
-    bodyData = [bodyData gzippedWithCompressionLevel:-1 error:nil];
+    bodyData = [bodyData KSCrashGzippedWithCompressionLevel:-1 error:nil];
 
     NSURLComponents *urlComponents = [[NSURLComponents alloc] init];
     urlComponents.scheme = dnsUrl.scheme;

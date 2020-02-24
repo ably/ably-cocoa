@@ -36,6 +36,7 @@ iOS, tvOS and macOS Objective-C and Swift client library SDK for [Ably realtime 
 	- [Fetching the Ably service time](#fetching-the-ably-service-time)
 - [Support, feedback and troubleshooting](#support-feedback-and-troubleshooting)
 - [Contributing](#contributing)
+    - [Development Flow](#development-flow)
 - [Running tests](#running-tests)
 - [Release Process](#release-process)
 
@@ -653,6 +654,20 @@ In this repository the `master` branch contains the latest development version o
 7. Create a new Pull Request
 
 Releases of the Ably SDK built by the sources in this repository are tagged with their [semantic version](http://semver.org/) numbers.
+
+### Development Flow
+
+When you first clone the repository then you will need to run `make update` in order to
+bring in Git submodules and Carthage dependencies.
+
+Code can then be modified, built and tested by loading [Ably.xcodeproj](Ably.xcodeproj) in your Xcode IDE.
+
+The Xcode project relies upon dependencies resolved by Carthage.
+If you make changes to the [Cartfile](Cartfile) then you will need to run `make update_carthage_dependencies`
+from the command line and then do a clean rebuild in Xcode.
+
+Changes made to dependencies in the [Cartfile](Cartfile) need to be reflected in
+[Ably.podspec](Ably.podspec) and vice-versa.
 
 ## Running tests
 

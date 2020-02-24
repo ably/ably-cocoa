@@ -49,10 +49,19 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTPushActivationStateWaitingForNewPushDeviceDetails : ARTPushActivationPersistentState
 @end
 
-@interface ARTPushActivationStateWaitingForRegistrationUpdate : ARTPushActivationState
+@interface ARTPushActivationStateWaitingForRegistrationSync : ARTPushActivationState
+
+- (instancetype)initWithMachine:(ARTPushActivationStateMachine *)machine NS_UNAVAILABLE;
++ (instancetype)newWithMachine:(ARTPushActivationStateMachine *)machine NS_UNAVAILABLE;
+
+- (instancetype)initWithMachine:(ARTPushActivationStateMachine *)machine fromEvent:(ARTPushActivationEvent *)event;
++ (instancetype)newWithMachine:(ARTPushActivationStateMachine *)machine fromEvent:(ARTPushActivationEvent *)event;
+
+@property (atomic, strong) ARTPushActivationEvent *fromEvent;
+
 @end
 
-@interface ARTPushActivationStateAfterRegistrationUpdateFailed : ARTPushActivationPersistentState
+@interface ARTPushActivationStateAfterRegistrationSyncFailed : ARTPushActivationPersistentState
 @end
 
 @interface ARTPushActivationStateWaitingForDeregistration : ARTPushActivationState
