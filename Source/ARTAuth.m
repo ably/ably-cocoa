@@ -309,7 +309,13 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         if (self.tokenDetails.expires == nil) {
             return YES;
         }
-        else if (![self hasTimeOffset] || [self.tokenDetails.expires timeIntervalSinceDate:[self currentDate]] > 0) {
+        
+        // RSA4b1: Only check expiry client-side if local clock has been adjusted.
+        // If it hasn't, assume the token remains valid.
+        if (![self hasTimeOffset]) {
+            return YES;
+        }
+        if ([self.tokenDetails.expires timeIntervalSinceDate:[self currentDate]] > 0) {
             return YES;
         }
     }

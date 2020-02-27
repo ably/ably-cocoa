@@ -248,6 +248,40 @@ class Auth : QuickSpec {
                         }
                     }
                 }
+                
+                // RSA4b
+                it("on token error, reissues token and retries REST requests") {
+                    var authCallbackCalled = 0
+
+                    let options = AblyTests.commonAppSetup()
+                    options.authCallback = { _, callback in
+                        authCallbackCalled += 1
+                        getTestTokenDetails { token, err in
+                            callback(token, err)
+                        }
+                    }
+
+                    let rest = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+                    rest.internal.httpExecutor = testHTTPExecutor
+
+                    let channel = rest.channels.get("test")
+
+                    testHTTPExecutor.simulateIncomingServerErrorOnNextRequest(40141, description: "token revoked")
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish("message", data: nil) { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    // First request and a second attempt
+                    expect(testHTTPExecutor.requests).to(haveCount(2))
+                    
+                    // First token issue, and then reissue on token error.
+                    expect(authCallbackCalled).to(equal(2))
+                }
 
                 // RSA4b
                 it("in REST, if the token creation failed or the subsequent request with the new token failed due to a token error, then the request should result in an error") {
@@ -334,7 +368,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                // RSA4b
+                // RSA4b1
                 context("local token validity check") {
                     it("should be done if queryTime is true and local time is in sync with server") {
                         let options = AblyTests.commonAppSetup()
@@ -590,13 +624,12 @@ class Auth : QuickSpec {
                                 realtime.connect()
                             }
 
+                            expect(realtime.connection.state).toEventually(equal(ARTRealtimeConnectionState.disconnected), timeout: testTimeout)
                             guard let errorInfo = realtime.connection.errorReason else {
                                 fail("ErrorInfo is empty"); return
                             }
                             expect(errorInfo.code) == 80019
                             expect(errorInfo.message).to(contain("hostname could not be found"))
-
-                            expect(realtime.connection.state).toEventually(equal(ARTRealtimeConnectionState.disconnected), timeout: testTimeout)
                         }
 
                         // RSA4c3
@@ -950,8 +983,8 @@ class Auth : QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             realtime.connection.once(.failed) { stateChange in
-                                expect(stateChange!.reason!.code).to(equal(40102))
-                                expect(stateChange!.reason!.description).to(contain("incompatible credentials"))
+                                expect(stateChange!.reason?.code).to(equal(40102))
+                                expect(stateChange!.reason?.description).to(contain("incompatible credentials"))
                                 done()
                             }
                             realtime.connect()
@@ -4139,8 +4172,8 @@ class Auth : QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.connected) { stateChange in
                                 client.connection.once(.disconnected) { stateChange in
-                                    expect(stateChange!.reason!.code).to(equal(40142))
-                                    expect(stateChange!.reason!.description).to(contain("Key/token status changed (expire)"))
+                                    expect(stateChange!.reason?.code).to(equal(40142))
+                                    expect(stateChange!.reason?.description).to(contain("Key/token status changed (expire)"))
                                     done()
                                 }
                             }
@@ -4248,7 +4281,7 @@ class Auth : QuickSpec {
                             originalConnectionID = client.connection.id!
 
                             client.connection.once(.disconnected) { stateChange in
-                                expect(stateChange!.reason!.code).to(equal(40142))
+                                expect(stateChange!.reason?.code).to(equal(40142))
 
                                 client.connection.once(.connected) { _ in
                                     expect(client.connection.id).to(equal(originalConnectionID))
