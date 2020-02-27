@@ -571,7 +571,12 @@ class PushActivationStateMachine : QuickSpec {
 
                         stateMachine.send(ARTPushActivationEventCalledActivate())
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
-                        expect(activatedCallbackCalled).to(beTrue())
+                        if (!fromEvent.isKind(of: ARTPushActivationEventCalledActivate.self)) {                        expect(activatedCallbackCalled).to(beTrue())
+                            expect(stateMachine.pendingEvents).to(haveCount(0))
+                        } else {
+                            expect(activatedCallbackCalled).to(beFalse())
+                            expect(stateMachine.pendingEvents).to(haveCount(1))
+                        }
                     }
 
                     // RSH3e2

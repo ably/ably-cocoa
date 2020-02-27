@@ -229,7 +229,7 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
     [self logEventTransition:event file:__FILE__ line:__LINE__];
-    if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
+    if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]] && ![_fromEvent isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
         [self.machine callActivatedCallback:nil];
         return self;
     }
