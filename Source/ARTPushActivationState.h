@@ -67,4 +67,17 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTPushActivationStateWaitingForDeregistration : ARTPushActivationState
 @end
 
+// Deprecated states; kept around for persistence backwards-compatibility
+
+@interface ARTPushActivationDeprecatedPersistentState : ARTPushActivationPersistentState
+
+- (instancetype)initWithMachine:(ARTPushActivationStateMachine *)machine NS_UNAVAILABLE;
++ (instancetype)newWithMachine:(ARTPushActivationStateMachine *)machine NS_UNAVAILABLE;
+- (ARTPushActivationPersistentState *)migrate;
+
+@end
+
+@interface ARTPushActivationStateAfterRegistrationUpdateFailed : ARTPushActivationDeprecatedPersistentState
+@end
+
 NS_ASSUME_NONNULL_END

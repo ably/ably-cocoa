@@ -53,6 +53,17 @@ class PushActivationStateMachine : QuickSpec {
                 expect(storage.keysWritten).to(beEmpty())
             }
 
+            it("AfterRegistrationUpdateFailed state from persistence gets migrated to AfterRegistrationSyncFailed") {
+                let stateEncodedFromOldVersionBase64 = "YnBsaXN0MDDUAQIDBAUGBwpYJHZlcnNpb25ZJGFyY2hpdmVyVCR0b3BYJG9iamVjdHMSAAGGoF8QD05TS2V5ZWRBcmNoaXZlctEICVRyb290gAGjCwwPVSRudWxs0Q0OViRjbGFzc4AC0hAREhNaJGNsYXNzbmFtZVgkY2xhc3Nlc18QM0FSVFB1c2hBY3RpdmF0aW9uU3RhdGVBZnRlclJlZ2lzdHJhdGlvblVwZGF0ZUZhaWxlZKQUFRYXXxAzQVJUUHVzaEFjdGl2YXRpb25TdGF0ZUFmdGVyUmVnaXN0cmF0aW9uVXBkYXRlRmFpbGVkXxAgQVJUUHVzaEFjdGl2YXRpb25QZXJzaXN0ZW50U3RhdGVfEBZBUlRQdXNoQWN0aXZhdGlvblN0YXRlWE5TT2JqZWN0AAgAEQAaACQAKQAyADcASQBMAFEAUwBXAF0AYABnAGkAbgB5AIIAuAC9APMBFgEvAAAAAAAAAgEAAAAAAAAAGAAAAAAAAAAAAAAAAAAAATg="
+                let stateEncodedFromOldVersion = Data.init(base64Encoded: stateEncodedFromOldVersionBase64, options: .init())!
+
+                let storage = MockDeviceStorage()
+                storage.simulateOnNextRead(data: stateEncodedFromOldVersion, for: ARTPushActivationCurrentStateKey)
+                rest.internal.storage = storage
+                let stateMachine = ARTPushActivationStateMachine(rest.internal)
+                expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
+            }
+
             // RSH3a
             context("State NotActivated") {
 

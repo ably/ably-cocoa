@@ -304,3 +304,20 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
 }
 
 @end
+
+@implementation ARTPushActivationDeprecatedPersistentState
+
+- (ARTPushActivationPersistentState *)migrate {
+    NSAssert(false, @"must be implemented by subclass");
+    return nil;
+}
+
+@end
+
+@implementation ARTPushActivationStateAfterRegistrationUpdateFailed
+
+- (ARTPushActivationPersistentState *)migrate {
+    return [[ARTPushActivationStateAfterRegistrationSyncFailed alloc] initWithMachine:self.machine];
+}
+
+@end
