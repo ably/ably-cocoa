@@ -50,6 +50,9 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
         if (!_current) {
             _current = [[ARTPushActivationStateNotActivated alloc] initWithMachine:self];
         } else {
+            if ([_current isKindOfClass:[ARTPushActivationDeprecatedPersistentState class]]) {
+                _current = [((ARTPushActivationDeprecatedPersistentState *) _current) migrate];
+            }
             _current.machine = self;
         }
         NSData *pendingEventsData = [rest.storage objectForKey:ARTPushActivationPendingEventsKey];
