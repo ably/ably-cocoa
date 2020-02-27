@@ -1,6 +1,32 @@
 # Change Log
 
-## [1.1.18](https://github.com/ably/ably-cocoa/tree/HEAD)
+## [1.1.19](https://github.com/ably/ably-cocoa/tree/1.1.19)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.18...1.1.19)
+
+**Fixed bugs:**
+
+- Old push state AfterRegistrationUpdateFailed needs migration [\#993](https://github.com/ably/ably-cocoa/issues/993)
+
+**Closed issues:**
+
+- Auth token refresh misses when macOS is sleeping [\#984](https://github.com/ably/ably-cocoa/issues/984)
+
+**Merged pull requests:**
+
+- Push: Fix activate\(\) behavior while syncing device. [\#995](https://github.com/ably/ably-cocoa/pull/995) ([tcard](https://github.com/tcard))
+- Migrate persisted AfterRegistrationUpdateFailed to ...SyncFailed. [\#994](https://github.com/ably/ably-cocoa/pull/994) ([tcard](https://github.com/tcard))
+- Use tests dispatch queue, not main, to POST /apps. [\#991](https://github.com/ably/ably-cocoa/pull/991) ([tcard](https://github.com/tcard))
+- Update SocketRocket dependency [\#990](https://github.com/ably/ably-cocoa/pull/990) ([ricardopereira](https://github.com/ricardopereira))
+- Document development flow [\#989](https://github.com/ably/ably-cocoa/pull/989) ([QuintinWillison](https://github.com/QuintinWillison))
+- Second Attempt to Update KSCrash dependency [\#988](https://github.com/ably/ably-cocoa/pull/988) ([QuintinWillison](https://github.com/QuintinWillison))
+- Fix handling of token error when first connecting. [\#986](https://github.com/ably/ably-cocoa/pull/986) ([tcard](https://github.com/tcard))
+- Update KSCrash dependency [\#981](https://github.com/ably/ably-cocoa/pull/981) ([QuintinWillison](https://github.com/QuintinWillison))
+- Fix bad merge in README. [\#980](https://github.com/ably/ably-cocoa/pull/980) ([tcard](https://github.com/tcard))
+- Validate and sync when activating push for registered device [\#974](https://github.com/ably/ably-cocoa/pull/974) ([tcard](https://github.com/tcard))
+- Update ably-ios references to ably-cocoa [\#954](https://github.com/ably/ably-cocoa/pull/954) ([tcard](https://github.com/tcard))
+
+## [1.1.18](https://github.com/ably/ably-cocoa/tree/1.1.18)
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.17...1.1.18)
 
 **Fixed bugs:**
