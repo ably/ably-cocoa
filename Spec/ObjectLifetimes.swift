@@ -21,12 +21,14 @@ class ObjectLifetimes: QuickSpec {
                     var realtime: ARTRealtime? = ARTRealtime(options: options)
                     weak var internalRealtime: ARTRealtimeInternal? = realtime!.internal
                     weak var internalConn: ARTConnectionInternal? = realtime!.connection.internal
+                    weak var internalRest: ARTRestInternal? = realtime!.internal.rest
 
                     waitUntil(timeout: testTimeout) { done in
                         options.internalDispatchQueue.async {
                             realtime = nil // Schedule deallocation for later in this queue
                             expect(internalConn).toNot(beNil()) // Deallocation still hasn't happened.
                             expect(internalRealtime).toNot(beNil())
+                            expect(internalRest).toNot(beNil())
                             done()
                         }
                     }
@@ -37,6 +39,7 @@ class ObjectLifetimes: QuickSpec {
                         options.internalDispatchQueue.async {
                             expect(internalConn).to(beNil())
                             expect(internalRealtime).to(beNil())
+                            expect(internalRest).to(beNil())
                             done()
                         }
                     }
