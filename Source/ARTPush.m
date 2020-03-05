@@ -79,7 +79,7 @@ NSString *const ARTDeviceIdentityTokenKey = @"ARTDeviceIdentityToken";
 NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 
 @implementation ARTPushInternal {
-    ARTRestInternal *_rest;
+    __weak ARTRestInternal *_rest; // weak because rest owns self
     ARTLog *_logger;
     ARTPushActivationStateMachine *_activationMachine;
 }

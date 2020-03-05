@@ -43,7 +43,7 @@
 @end
 
 @implementation ARTPushAdminInternal {
-    ARTRestInternal *_rest;
+    __weak ARTRestInternal *_rest; // weak because rest owns self
     ARTLog *_logger;
     dispatch_queue_t _userQueue;
     dispatch_queue_t _queue;
