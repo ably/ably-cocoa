@@ -229,4 +229,6 @@ NSString *generateNonce(void);
 @interface NSURLSessionTask (ARTCancellable) <ARTCancellable>
 @end
 
+NSObject<ARTCancellable> *artCancellableFromCallback(void (^)(void));
+
 NS_ASSUME_NONNULL_END

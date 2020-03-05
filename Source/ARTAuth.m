@@ -391,6 +391,23 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     } else {
         void (^tokenDetailsFactory)(ARTTokenParams *, void(^)(ARTTokenDetails *_Nullable, NSError *_Nullable));
         if (replacedOptions.authCallback) {
+            // We're giving this callback to the user, and we don't control their code. If they were to hold on to
+            // this callback, they could introduce a leak, since the callback may hold strong references
+            // to Rest/Realtime.
+            //
+            // So we're going to apply the Fundamental Theorem of Software Engineering here and wrap the
+            // callback in another reference. Then, we pass a callback that calls this reference,
+            // and not the original callback. Then, we return a task that, if cancelled, sets that
+            // intermediate reference to nil, so that we lose our reference to the original callback
+            // and release any references it may hold to Rest/Realtime. Even if the user holds on to
+            // the callback we give to them, they would be then holding to a now-nil reference to the
+            // original callback.
+            __block void (^cancellableCallback)(ARTTokenDetails *, NSError *) = callback;
+
+            task = artCancellableFromCallback(^{
+                cancellableCallback = nil;
+            });
+
             void (^userCallback)(ARTTokenParams *, void(^)(id<ARTTokenDetailsCompatible>, NSError *)) = ^(ARTTokenParams *tokenParams, void(^callback)(id<ARTTokenDetailsCompatible>, NSError *)){
                 ART_EXITING_ABLY_CODE(self->_rest);
                 dispatch_async(self->_userQueue, ^{
@@ -402,11 +419,14 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
                 userCallback(tokenParams, ^(id<ARTTokenDetailsCompatible> tokenDetailsCompat, NSError *error) {
                     dispatch_async(self->_queue, ^{
                     ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
-                        if (error) {
-                            callback(nil, error);
-                        } else {
-                            [tokenDetailsCompat toTokenDetails:[self toAuth] callback:callback];
+                        if (cancellableCallback) {
+                            if (error) {
+                                callback(nil, error);
+                            } else {
+                                [tokenDetailsCompat toTokenDetails:[self toAuth] callback:callback];
+                            }
                         }
+                        [task cancel];
                     } ART_TRY_OR_REPORT_CRASH_END
                     });
                 });

@@ -308,3 +308,25 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
 }
 
 @end
+
+@interface ARTCancellableFromCallback : NSObject<ARTCancellable>
+@property (nonatomic, nonnull) void (^callback)(void);
+@end
+
+@implementation ARTCancellableFromCallback
+
+- (void) cancel {
+    if (_callback) {
+        _callback();
+        _callback = nil;
+    }
+}
+
+@end
+
+NSObject<ARTCancellable> *artCancellableFromCallback(void (^callback)(void)) {
+    ARTCancellableFromCallback *cancellable = [[ARTCancellableFromCallback alloc] init];
+    cancellable.callback = callback;
+    return cancellable;
+}
+
