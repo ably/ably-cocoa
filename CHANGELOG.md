@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.1.20](https://github.com/ably/ably-cocoa/tree/1.1.20)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.19...1.1.20)
+
+**Changes:**
+
+- Support build with Xcode 10 ([23b235c](https://github.com/ably/ably-cocoa/commit/23b235cac8908ba69096dd95f4e47ae3cae8a484)) - brings in [SocketRocket #5](https://github.com/ably-forks/SocketRocket/pull/5)
+
 ## [1.1.19](https://github.com/ably/ably-cocoa/tree/1.1.19)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.18...1.1.19)
