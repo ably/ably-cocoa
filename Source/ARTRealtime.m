@@ -169,6 +169,7 @@
     __weak ARTEventListener *_connectionRetryFromDisconnectedListener;
     __weak ARTEventListener *_connectingTimeoutListener;
     ARTScheduledBlockHandle *_authenitcatingTimeoutWork;
+    NSObject<ARTCancellable> *_authTask;
     ARTScheduledBlockHandle *_idleTimer;
     dispatch_queue_t _userQueue;
     dispatch_queue_t _queue;
@@ -960,6 +961,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     // Cancel auth scheduled work
     artDispatchCancel(_authenitcatingTimeoutWork);
     _authenitcatingTimeoutWork = nil;
+    [_authTask cancel];
+    _authTask = nil;
     // Idle timer
     [self stopIdleTimer];
     // Ping timer
@@ -976,6 +979,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     // Cancel auth scheduled work
     artDispatchCancel(_authenitcatingTimeoutWork);
     _authenitcatingTimeoutWork = nil;
+    [_authTask cancel];
+    _authTask = nil;
 
     ARTErrorInfo *error;
     if (self.auth.authorizing_nosync && (self.options.authUrl || self.options.authCallback)) {
@@ -1045,10 +1050,11 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
                 self.auth.delegate = nil;
             }
             @try {
-                [self.auth _authorize:nil options:options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
+                _authTask = [self.auth _authorize:nil options:options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
                     // Cancel scheduled work
                     artDispatchCancel(self->_authenitcatingTimeoutWork);
                     self->_authenitcatingTimeoutWork = nil;
+                    self->_authTask = nil;
 
                     // It's still valid?
                     switch (self.connection.state_nosync) {
