@@ -310,23 +310,72 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
 @end
 
 @interface ARTCancellableFromCallback : NSObject<ARTCancellable>
-@property (nonatomic, nonnull) void (^callback)(void);
++(instancetype)new NS_UNAVAILABLE;
+-(instancetype)init NS_UNAVAILABLE;
+-(instancetype)initWithCallback:(ARTCompletionHandler)callback;
+@property(nonatomic, readonly) ARTCompletionHandler wrapper;
 @end
 
-@implementation ARTCancellableFromCallback
+@implementation ARTCancellableFromCallback {
+    id _lock;
+    
+    // _callback will be nil once either cancel or invoke has been called on
+    // this instance.
+    volatile ARTCompletionHandler _callback;
+}
 
-- (void) cancel {
-    if (_callback) {
-        _callback();
+@synthesize wrapper = _wrapper;
+
+-(instancetype)initWithCallback:(const ARTCompletionHandler)callback {
+    if (!callback) {
+        [NSException raise:NSInternalInconsistencyException format:@"callback is nil."];
+    }
+    self = [super init];
+    if (!self) {
+        return nil;
+    }
+    
+    _lock = [NSObject new];
+    _callback = callback;
+    
+    __weak ARTCancellableFromCallback * _cancellable = self;
+    _wrapper = ^(const id result, NSError *const error) {
+        // _cancellable is a weak self so may, legitimately, be nil now.
+        ARTCancellableFromCallback *const cancellable = _cancellable;
+        [cancellable invokeWithResult:result error:error];
+    };
+    
+    return self;
+}
+
+-(void)cancel {
+    @synchronized (_lock) {
         _callback = nil;
+    }
+}
+
+-(void)invokeWithResult:(const id)result error:(NSError *const)error {
+    ARTCompletionHandler callback;
+    
+    @synchronized (_lock) {
+        callback = _callback;
+        _callback = nil;
+    }
+    
+    if (callback) {
+        _callback(result, error);
     }
 }
 
 @end
 
-NSObject<ARTCancellable> *artCancellableFromCallback(void (^callback)(void)) {
-    ARTCancellableFromCallback *cancellable = [[ARTCancellableFromCallback alloc] init];
-    cancellable.callback = callback;
+NSObject<ARTCancellable> * artCancellableFromCallback(const ARTCompletionHandler callback, ARTCompletionHandler *const wrapper) {
+    if (!wrapper) {
+        [NSException raise:NSInternalInconsistencyException format:@"wrapper is nil."];
+    }
+    
+    ARTCancellableFromCallback *const cancellable =
+        [[ARTCancellableFromCallback alloc] initWithCallback:callback];
+    *wrapper = cancellable.wrapper;
     return cancellable;
 }
-
