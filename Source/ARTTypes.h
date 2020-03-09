@@ -229,6 +229,24 @@ NSString *generateNonce(void);
 @interface NSURLSessionTask (ARTCancellable) <ARTCancellable>
 @end
 
-NSObject<ARTCancellable> *artCancellableFromCallback(void (^)(void));
+/**
+ Signature of a generic completion handler which, when called, will either
+ present with nil result or nil error, but never both nil.
+ */
+typedef void (^ARTCompletionHandler)(id result, NSError * error);
+
+/**
+ Wraps the given callback in an ARTCancellable, offering the following
+ protections:
+ 
+ 1) If the cancel method is called on the returned instance then the callback
+    will not be invoked.
+ 2) The callback will only ever be invoked once.
+ 
+ To make use of these benefits the caller needs to use the returned wrapper
+ to invoke the callback. The wrapper will only work for as long as the returned
+ instance remains allocated (i.e. has a strong reference to it somewhere).
+ */
+NSObject<ARTCancellable> * artCancellableFromCallback(ARTCompletionHandler callback, _Nonnull ARTCompletionHandler *_Nonnull wrapper);
 
 NS_ASSUME_NONNULL_END

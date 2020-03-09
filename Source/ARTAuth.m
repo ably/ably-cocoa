@@ -402,11 +402,14 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
             // and release any references it may hold to Rest/Realtime. Even if the user holds on to
             // the callback we give to them, they would be then holding to a now-nil reference to the
             // original callback.
-            __block void (^cancellableCallback)(ARTTokenDetails *, NSError *) = callback;
-
-            task = artCancellableFromCallback(^{
-                cancellableCallback = nil;
-            });
+            __weak void (^safeCallback)(id<ARTTokenDetailsCompatible> tokenDetailsCompat, NSError * error);
+            task = artCancellableFromCallback(^(const id<ARTTokenDetailsCompatible> tokenDetailsCompat, NSError *const error) {
+                if (error) {
+                    callback(nil, error);
+                } else {
+                    [tokenDetailsCompat toTokenDetails:[self toAuth] callback:callback];
+                }
+            }, &safeCallback);
 
             void (^userCallback)(ARTTokenParams *, void(^)(id<ARTTokenDetailsCompatible>, NSError *)) = ^(ARTTokenParams *tokenParams, void(^callback)(id<ARTTokenDetailsCompatible>, NSError *)){
                 ART_EXITING_ABLY_CODE(self->_rest);
@@ -419,12 +422,10 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
                 userCallback(tokenParams, ^(id<ARTTokenDetailsCompatible> tokenDetailsCompat, NSError *error) {
                     dispatch_async(self->_queue, ^{
                     ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
-                        if (cancellableCallback) {
-                            if (error) {
-                                callback(nil, error);
-                            } else {
-                                [tokenDetailsCompat toTokenDetails:[self toAuth] callback:callback];
-                            }
+                        // safeCallback is declared weak above so could be nil at this point.
+                        void (^const callback)(id<ARTTokenDetailsCompatible> tokenDetailsCompat, NSError * error) = safeCallback;
+                        if (callback) {
+                            callback(tokenDetailsCompat, error);
                         }
                         [task cancel];
                     } ART_TRY_OR_REPORT_CRASH_END
