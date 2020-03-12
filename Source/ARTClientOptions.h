@@ -119,6 +119,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (readwrite, assign, nonatomic) BOOL idempotentRestPublishing;
 
+/**
+ If enabled, every REST request to Ably includes a `request_id` query string parameter. This request ID remain the same if a request is retried to a fallback host.
+ */
+@property (readwrite, assign, nonatomic) BOOL addRequestIds;
+
 - (BOOL)isBasicAuth;
 - (NSURL *)restUrl;
 - (NSURL *)realtimeUrl;
