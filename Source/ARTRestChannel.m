@@ -327,7 +327,7 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
         [request setValue:self.rest.defaultEncoding forHTTPHeaderField:@"Content-Type"];
     }
 
-    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p C:%p (%@) post message %@", self->_rest, self, self.name, [[NSString alloc] initWithData:encodedMessage encoding:NSUTF8StringEncoding]];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p C:%p (ID:%@) (%@) post message %@", self->_rest, self, requestId, self.name, [[NSString alloc] initWithData:encodedMessage encoding:NSUTF8StringEncoding]];
     [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (callback) {
             ARTErrorInfo *errorInfo = error ? [ARTErrorInfo createFromNSError:error] : nil;
