@@ -307,14 +307,12 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
         }
     }
 
-    NSString *randomId = [NSUUID new].UUIDString;
-    NSString *requestId = [[randomId dataUsingEncoding:NSUTF8StringEncoding] base64EncodedStringWithOptions:0];
-
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:[self->_basePath stringByAppendingPathComponent:@"messages"]] resolvingAgainstBaseURL:YES];
     NSMutableArray<NSURLQueryItem *> *queryItems = [NSMutableArray new];
+    NSString *requestId = nil;
     if (self.rest.options.addRequestIds) {
         NSString *randomId = [NSUUID new].UUIDString;
-        NSString *requestId = [[randomId dataUsingEncoding:NSUTF8StringEncoding] base64EncodedStringWithOptions:0];
+        requestId = [[randomId dataUsingEncoding:NSUTF8StringEncoding] base64EncodedStringWithOptions:0];
         [queryItems addObject:[NSURLQueryItem queryItemWithName:@"request_id" value:requestId]];
     }
     components.queryItems = queryItems;
@@ -327,7 +325,13 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
         [request setValue:self.rest.defaultEncoding forHTTPHeaderField:@"Content-Type"];
     }
 
-    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p C:%p (%@) post message %@", self->_rest, self, self.name, [[NSString alloc] initWithData:encodedMessage encoding:NSUTF8StringEncoding]];
+    if (requestId) {
+        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p C:%p (ID:%@) (%@) post message %@", self->_rest, self, requestId, self.name, [[NSString alloc] initWithData:encodedMessage encoding:NSUTF8StringEncoding]];
+    }
+    else {
+        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p C:%p (%@) post message %@", self->_rest, self, self.name, [[NSString alloc] initWithData:encodedMessage encoding:NSUTF8StringEncoding]];
+    }
+
     [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (callback) {
             ARTErrorInfo *errorInfo = error ? [ARTErrorInfo createFromNSError:error] : nil;
