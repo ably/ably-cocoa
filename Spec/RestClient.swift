@@ -1738,6 +1738,43 @@ class RestClient: QuickSpec {
                     }
                 }
 
+                it("should remain the same if a request is retried to a fallback host") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    options.httpMaxRetryCount = 5
+                    options.addRequestIds = true
+                    options.logLevel = .debug
+
+                    let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+                    client.internal.httpExecutor = testHTTPExecutor
+                    testHTTPExecutor.http = MockHTTP(network: .hostUnreachable, logger: options.logHandler)
+
+                    var fallbackRequests: [URLRequest] = []
+                    testHTTPExecutor.afterRequest = { request, _ in
+                        if NSRegularExpression.match(request.url!.absoluteString, pattern: "//[a-e].ably-realtime.com") {
+                            fallbackRequests += [request]
+                        }
+                    }
+
+                    var requestId: String = ""
+                    let channel = client.channels.get("test")
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish(nil, data: "something") { error in
+                            guard let error = error else {
+                                fail("Expecting an error"); done(); return
+                            }
+                            guard let firstRequestId = extractURLQueryValue(testHTTPExecutor.requests.first?.url, key: "request_id") else {
+                                fail("First request attempt doesn't have the 'request_id'."); return
+                            }
+                            requestId = firstRequestId
+                            expect(error.message).to(contain(requestId))
+                            done()
+                        }
+                    }
+
+                    expect(fallbackRequests).to(allPass { extractURLQueryValue($0?.url, key: "request_id") == requestId })
+                }
+
             }
 
         } // RestClient
