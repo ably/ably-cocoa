@@ -21,6 +21,7 @@
 #import "ARTNSArray+ARTFunctional.h"
 #import "ARTPushChannel+Private.h"
 #import "ARTCrypto+Private.h"
+#import "ARTClientOptions.h"
 
 @implementation ARTRestChannel {
     ARTQueuedDealloc *_dealloc;
@@ -305,11 +306,23 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
             return;
         }
     }
-    
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:[self->_basePath stringByAppendingPathComponent:@"messages"]]];
+
+    NSString *randomId = [NSUUID new].UUIDString;
+    NSString *requestId = [[randomId dataUsingEncoding:NSUTF8StringEncoding] base64EncodedStringWithOptions:0];
+
+    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:[self->_basePath stringByAppendingPathComponent:@"messages"]] resolvingAgainstBaseURL:YES];
+    NSMutableArray<NSURLQueryItem *> *queryItems = [NSMutableArray new];
+    if (self.rest.options.addRequestIds) {
+        NSString *randomId = [NSUUID new].UUIDString;
+        NSString *requestId = [[randomId dataUsingEncoding:NSUTF8StringEncoding] base64EncodedStringWithOptions:0];
+        [queryItems addObject:[NSURLQueryItem queryItemWithName:@"request_id" value:requestId]];
+    }
+    components.queryItems = queryItems;
+
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
     request.HTTPMethod = @"POST";
     request.HTTPBody = encodedMessage;
-    
+
     if (self.rest.defaultEncoding) {
         [request setValue:self.rest.defaultEncoding forHTTPHeaderField:@"Content-Type"];
     }
