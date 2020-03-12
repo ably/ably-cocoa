@@ -13,6 +13,9 @@
 // Reverse-DNS style domain
 NSString *const ARTAblyErrorDomain = @"io.ably.cocoa";
 
+NSString *const ARTErrorInfoStatusCodeKey = @"ARTErrorInfoStatusCode";
+NSString *const ARTErrorInfoOriginalDomainKey = @"ARTErrorInfoOriginalDomain";
+
 NSString *const ARTFallbackIncompatibleOptionsException = @"ARTFallbackIncompatibleOptionsException";
 
 NSString *const ARTAblyMessageNoMeansToRenewToken = @"no means to renew the token is provided (either an API key, authCallback or authUrl)";
@@ -29,9 +32,9 @@ NSInteger getStatusFromCode(NSInteger code) {
 
 + (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message {
     if (message) {
-        return [[ARTErrorInfo alloc] initWithDomain:ARTAblyErrorDomain code:code userInfo:@{@"ARTErrorInfoStatusCode": [NSNumber numberWithInteger:status], NSLocalizedDescriptionKey:message}];
+        return [[ARTErrorInfo alloc] initWithDomain:ARTAblyErrorDomain code:code userInfo:@{ARTErrorInfoStatusCodeKey: [NSNumber numberWithInteger:status], NSLocalizedDescriptionKey:message}];
     }
-    return [[ARTErrorInfo alloc] initWithDomain:ARTAblyErrorDomain code:code userInfo:@{@"ARTErrorInfoStatusCode": [NSNumber numberWithInteger:status]}];
+    return [[ARTErrorInfo alloc] initWithDomain:ARTAblyErrorDomain code:code userInfo:@{ARTErrorInfoStatusCodeKey: [NSNumber numberWithInteger:status]}];
 }
 
 + (ARTErrorInfo *)createFromNSError:(NSError *)error {
@@ -42,7 +45,7 @@ NSInteger getStatusFromCode(NSInteger code) {
         return (ARTErrorInfo *)error;
     }
     NSMutableDictionary *userInfo = [error.userInfo mutableCopy];
-    [userInfo setValue:error.domain forKey:@"ARTErrorInfoOriginalDomain"];
+    [userInfo setValue:error.domain forKey:ARTErrorInfoOriginalDomainKey];
     return [[ARTErrorInfo alloc] initWithDomain:ARTAblyErrorDomain code:error.code userInfo:userInfo];
 }
 
@@ -59,7 +62,7 @@ NSInteger getStatusFromCode(NSInteger code) {
 }
 
 + (ARTErrorInfo *)wrap:(ARTErrorInfo *)error prepend:(NSString *)prepend {
-    return [ARTErrorInfo createWithCode:error.code status:error.statusCode message:[NSString stringWithFormat:@"%@%@", prepend, error.reason]];
+    return [ARTErrorInfo createWithCode:error.code status:error.statusCode message:[NSString stringWithFormat:@"%@%@", prepend, error.message]];
 }
 
 - (NSString *)message {
@@ -76,17 +79,17 @@ NSInteger getStatusFromCode(NSInteger code) {
         reason = (NSString *)self.userInfo[@"NSDebugDescription"];
     }
     if (!reason || [reason isEqualToString:@""]) {
-        reason = (NSString *)self.userInfo[@"ARTErrorInfoOriginalDomain"];
+        reason = (NSString *)self.userInfo[ARTErrorInfoOriginalDomainKey];
     }
     return reason;
 }
 
 - (NSInteger)statusCode {
-    return [(NSNumber *)self.userInfo[@"ARTErrorInfoStatusCode"] integerValue];
+    return [(NSNumber *)self.userInfo[ARTErrorInfoStatusCodeKey] integerValue];
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"ARTErrorInfo with code %ld, message: %@, reason: %@", (long)self.code, self.message, self.reason];
+    return [NSString stringWithFormat:@"Error %ld - %@ (reason: %@)", (long)self.code, self.message, self.reason];
 }
 
 @end

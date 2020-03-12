@@ -330,7 +330,13 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p C:%p (ID:%@) (%@) post message %@", self->_rest, self, requestId, self.name, [[NSString alloc] initWithData:encodedMessage encoding:NSUTF8StringEncoding]];
     [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (callback) {
-            ARTErrorInfo *errorInfo = error ? [ARTErrorInfo createFromNSError:error] : nil;
+            ARTErrorInfo *errorInfo;
+            if (self->_rest.options.addRequestIds) {
+                errorInfo = error ? [ARTErrorInfo wrap:[ARTErrorInfo createFromNSError:error] prepend:[NSString stringWithFormat:@"Request '%@' failed with ", request.URL]] : nil;
+            }
+            else {
+                errorInfo = error ? [ARTErrorInfo createFromNSError:error] : nil;
+            }
             callback(errorInfo);
         }
     }];
