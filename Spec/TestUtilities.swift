@@ -699,6 +699,20 @@ func extractBodyAsMessages(_ request: URLRequest?) -> Result<[NSDictionary]> {
     return Result.success(Box(httpBody.map{$0 as! NSDictionary}))
 }
 
+func extractURLQueryValue(_ url: URL?, key name: String) -> String? {
+    guard let query = url?.query else {
+        return nil
+    }
+    let queryItems = query.components(separatedBy: "&")
+    for item in queryItems {
+        let param = item.components(separatedBy: "=")
+        if param.first == name {
+            return param.last
+        }
+    }
+    return nil
+}
+
 enum FakeNetworkResponse {
     case noInternet
     case hostUnreachable
@@ -847,6 +861,10 @@ class MockHTTPExecutor: NSObject, ARTHTTPAuthenticatedExecutor {
 
     func simulateIncomingErrorOnNextRequest(_ error: NSError) {
         errorSimulator = error
+    }
+
+    func reset() {
+        requests.removeAll()
     }
 
 }
