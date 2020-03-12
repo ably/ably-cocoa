@@ -1699,6 +1699,49 @@ class RestClient: QuickSpec {
                 }
             }
 
+            // RSC7c
+            context("request IDs") {
+
+                it("should add 'request_id' query parameter") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    options.addRequestIds = true
+
+                    let restA = ARTRest(options: options)
+                    let mockHttpExecutor = MockHTTPExecutor()
+                    restA.internal.httpExecutor = mockHttpExecutor
+                    waitUntil(timeout: testTimeout) { done in
+                        restA.channels.get("foo").publish(nil, data: "something") { error in
+                            expect(error).to(beNil())
+                            guard let url = mockHttpExecutor.requests.first?.url else {
+                                fail("No requests found")
+                                return
+                            }
+                            expect(url.query).to(contain("request_id"))
+                            done()
+                        }
+                    }
+
+                    mockHttpExecutor.reset()
+
+                    options.addRequestIds = false
+                    let restB = ARTRest(options: options)
+                    restB.internal.httpExecutor = mockHttpExecutor
+                    waitUntil(timeout: testTimeout) { done in
+                        restB.channels.get("foo").publish(nil, data: "something") { error in
+                            expect(error).to(beNil())
+                            expect(mockHttpExecutor.requests).to(haveCount(1))
+                            guard let url = mockHttpExecutor.requests.first?.url else {
+                                fail("No requests found")
+                                return
+                            }
+                            expect(url.query).toNot(contain("request_id"))
+                            done()
+                        }
+                    }
+                }
+
+            }
+
         } // RestClient
     }
 }
