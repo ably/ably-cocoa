@@ -112,7 +112,7 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
         else {
             [self->_logger error:@"%@: save channel subscription failed with status code %ld", NSStringFromClass(self.class), (long)response.statusCode];
             NSString *plain = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-            callback([ARTErrorInfo createWithCode:response.statusCode*100 status:response.statusCode message:[plain shortString]]);
+            callback([ARTErrorInfo createWithCode:response.statusCode*100 status:response.statusCode message:[plain art_shortString]]);
         }
     }];
 } ART_TRY_OR_REPORT_CRASH_END
@@ -242,7 +242,7 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
         else {
             [self->_logger error:@"%@: remove channel subscription failed with status code %ld", NSStringFromClass(self.class), (long)response.statusCode];
             NSString *plain = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-            callback([ARTErrorInfo createWithCode:response.statusCode*100 status:response.statusCode message:[plain shortString]]);
+            callback([ARTErrorInfo createWithCode:response.statusCode*100 status:response.statusCode message:[plain art_shortString]]);
         }
     }];
 }

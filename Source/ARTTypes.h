@@ -201,13 +201,13 @@ NSString *generateNonce(void);
 @interface NSString (ARTJsonCompatible) <ARTJsonCompatible>
 @end
 
-@interface NSString (Utilities)
-- (NSString *)shortString;
-- (NSString *)base64Encoded;
+@interface NSString (ARTUtilities)
+- (NSString *)art_shortString NS_SWIFT_NAME(shortString());
+- (NSString *)art_base64Encoded NS_SWIFT_NAME(base64Encoded());
 @end
 
-@interface NSDate (Utilities)
-+ (NSDate *)dateWithMillisecondsSince1970:(uint64_t)msecs;
+@interface NSDate (ARTUtilities)
++ (NSDate *)art_dateWithMillisecondsSince1970:(uint64_t)msecs NS_SWIFT_NAME(date(withMillisecondsSince1970:));
 @end
 
 @interface NSDictionary (ARTJsonCompatible) <ARTJsonCompatible>

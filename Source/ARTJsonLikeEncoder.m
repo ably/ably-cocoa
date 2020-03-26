@@ -670,9 +670,9 @@
     NSDictionary *deviceIdentityTokenInput = input[@"deviceIdentityToken"];
     NSString *token = [deviceIdentityTokenInput artString:@"token"];
     NSNumber *issuedMsecs = [deviceIdentityTokenInput artNumber:@"issued"];
-    NSDate *issued = [NSDate dateWithMillisecondsSince1970:issuedMsecs.doubleValue];
+    NSDate *issued = [NSDate art_dateWithMillisecondsSince1970:issuedMsecs.doubleValue];
     NSNumber *expiresMsecs = [deviceIdentityTokenInput artNumber:@"expires"];
-    NSDate *expires = [NSDate dateWithMillisecondsSince1970:expiresMsecs.doubleValue];
+    NSDate *expires = [NSDate art_dateWithMillisecondsSince1970:expiresMsecs.doubleValue];
     NSString *capability = [deviceIdentityTokenInput artString:@"capability"];
     NSString *clientId = [deviceIdentityTokenInput artString:@"clientId"];
 

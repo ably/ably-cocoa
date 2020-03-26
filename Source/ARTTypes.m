@@ -283,27 +283,27 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
 
 @end
 
-#pragma mark - NSString (Utilities)
+#pragma mark - NSString (ARTUtilities)
 
-@implementation NSString (Utilities)
+@implementation NSString (ARTUtilities)
 
-- (NSString *)shortString {
+- (NSString *)art_shortString {
     NSRange stringRange = {0, MIN([self length], 1000)}; //1KB
     stringRange = [self rangeOfComposedCharacterSequencesForRange:stringRange];
     return [self substringWithRange:stringRange];
 }
 
-- (NSString *)base64Encoded {
+- (NSString *)art_base64Encoded {
     return encodeBase64(self);
 }
 
 @end
 
-#pragma mark - NSDate (Utilities)
+#pragma mark - NSDate (ARTUtilities)
 
-@implementation NSDate (Utilities)
+@implementation NSDate (ARTUtilities)
 
-+ (NSDate *)dateWithMillisecondsSince1970:(uint64_t)msecs {
++ (NSDate *)art_dateWithMillisecondsSince1970:(uint64_t)msecs {
     return [NSDate dateWithTimeIntervalSince1970:millisecondsToTimeInterval(msecs)];
 }
 
