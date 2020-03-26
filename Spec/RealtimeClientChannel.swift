@@ -496,6 +496,87 @@ class RealtimeClientChannel: QuickSpec {
                         }
                     }
 
+                    // TO3g
+                    it("should immediately fail if not in the connected state") {
+                        let options = AblyTests.commonAppSetup()
+                        options.queueMessages = false
+                        options.autoConnect = false
+                        let client = ARTRealtime(options: options)
+                        defer { client.dispose(); client.close() }
+                        let channel = client.channels.get("foo")
+                        waitUntil(timeout: testTimeout) { done in
+                            expect(client.connection.state).to(equal(.initialized))
+                            channel.publish(nil, data: "message") { error in
+                                expect(error?.code).to(equal(80010))
+                                expect(error?.message).to(contain("Invalid operation"))
+                                done()
+                            }
+                        }
+                        expect(channel.state).to(equal(.initialized))
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connect()
+                            expect(client.connection.state).to(equal(.connecting))
+                            channel.publish(nil, data: "message") { error in
+                                expect(error?.code).to(equal(80010))
+                                expect(error?.message).to(contain("Invalid operation"))
+                                done()
+                            }
+                        }
+                        expect(channel.state).toEventually(equal(.attached), timeout: testTimeout)
+                    }
+
+                    // TO3g and https://github.com/ably/ably-cocoa/issues/1004
+                    it("should keep the channels attached when client reconnected successfully and queue messages is disabled") {
+                        let options = AblyTests.commonAppSetup()
+                        options.queueMessages = false
+                        options.autoConnect = false
+                        let client = ARTRealtime(options: options)
+                        defer { client.dispose(); client.close() }
+                        client.internal.setTransport(TestProxyTransport.self)
+                        client.internal.setReachabilityClass(TestReachability.self)
+                        let channel = client.channels.get("foo")
+
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.connected) { _ in
+                                done()
+                            }
+                            client.connect()
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish(nil, data: "message") { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+
+                        expect(channel.state).to(equal(.attached))
+                        channel.on { stateChange in
+                            if stateChange?.current != .attached {
+                                fail("Channel state should not change")
+                            }
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.disconnected) { stateChange in
+                                expect(stateChange?.reason?.message).to(satisfyAnyOf(contain("unreachable host"), contain("network is down")))
+                                done()
+                            }
+                            client.simulateNoInternetConnection()
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.connected) { stateChange in
+                                expect(stateChange?.previous).to(equal(.connecting))
+                                done()
+                            }
+                            client.simulateRestoreInternetConnection()
+                        }
+
+                        channel.off()
+                        expect(channel.state).to(equal(.attached))
+                    }
+
                 }
 
                 // RTL3b
