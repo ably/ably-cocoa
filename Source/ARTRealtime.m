@@ -699,8 +699,29 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             break;
     }
 
+    // If there's a channels.release() going on waiting on this channel
+    // to detach, doing those operations on it here would fire its event listener and
+    // immediately remove the channel from the channels dictionary, thus
+    // invalidating the iterator and causing a crashing.
+    //
+    // So copy the channels and operate on them later, when we're done using the iterator.
+    NSMutableArray<ARTRealtimeChannelInternal *> * const channels = [[NSMutableArray alloc] init];
+    for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
+        [channels addObject:channel];
+    }
+
     if ([self shouldSendEvents]) {
         [self sendQueuedMessages];
+
+        // Channels
+        for (ARTRealtimeChannelInternal *channel in channels) {
+            if (stateChange.previous == ARTRealtimeInitialized ||
+                stateChange.previous == ARTRealtimeConnecting ||
+                stateChange.previous == ARTRealtimeDisconnected) {
+                // RTL4i
+                [channel _attach:nil];
+            }
+        }
     } else if (![self shouldQueueEvents]) {
         ARTStatus *channelStatus = status;
         if (!channelStatus) {
@@ -708,26 +729,9 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         }
         [self failQueuedMessages:channelStatus];
 
-        // If there's a channels.release() going on waiting on this channel
-        // to detach, doing those operations on it here would fire its event listener and
-        // immediately remove the channel from the channels dictionary, thus
-        // invalidating the iterator and causing a crashing.
-        //
-        // So copy the channels and operate on them later, when we're done using the iterator.
-        NSMutableArray<ARTRealtimeChannelInternal *> * const channels = [[NSMutableArray alloc] init];
-        for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
-            [channels addObject:channel];
-        }
-
+        // Channels
         for (ARTRealtimeChannelInternal *channel in channels) {
             switch (stateChange.current) {
-                case ARTRealtimeConnected:
-                    if (stateChange.previous == ARTRealtimeInitialized ||
-                        stateChange.previous == ARTRealtimeConnecting ||
-                        stateChange.previous == ARTRealtimeDisconnected) {
-                        [channel attach];
-                    }
-                    break;
                 case ARTRealtimeClosing:
                     //do nothing. Closed state is coming.
                     break;

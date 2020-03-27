@@ -1015,16 +1015,17 @@ class RealtimeClientChannel: QuickSpec {
                         defer { client.dispose(); client.close() }
 
                         let channel = client.channels.get("test")
-                        expect(client.connection.state).to(equal(ARTRealtimeConnectionState.initialized))
+                        expect(client.connection.state).to(equal(.initialized))
                         waitUntil(timeout: testTimeout) { done in
-                            channel.attach { error in
-                                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connected))
-                                expect(error).to(beNil())
+                            channel.on(.attached) { stateChange in
+                                expect(client.connection.state).to(equal(.connected))
+                                expect(stateChange?.reason).to(beNil())
                                 done()
                             }
 
                             client.connect()
                         }
+                        expect(channel.state).to(equal(.attached))
                     }
 
                     it("CONNECTING") {
