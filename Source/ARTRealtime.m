@@ -711,7 +711,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             channelStatus = stateChange.reason ? [ARTStatus state:ARTStateError info:stateChange.reason] : [self defaultError];
         }
         [self failQueuedMessages:channelStatus];
-        
+
         // If there's a channels.release() going on waiting on this channel
         // to detach, doing those operations on it here would fire its event listener and
         // immediately remove the channel from the channels dictionary, thus
@@ -722,19 +722,30 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
             [channels addObject:channel];
         }
-        
+
         for (ARTRealtimeChannelInternal *channel in channels) {
-            if (stateChange.current == ARTRealtimeClosing) {
-                //do nothing. Closed state is coming.
-            }
-            else if (stateChange.current == ARTRealtimeClosed) {
-                [channel detachChannel:[ARTStatus state:ARTStateOk]];
-            }
-            else if (stateChange.current == ARTRealtimeSuspended) {
-                [channel setSuspended:channelStatus];
-            }
-            else {
-                [channel setFailed:channelStatus];
+            switch (stateChange.current) {
+                case ARTRealtimeConnected:
+                    if (stateChange.previous == ARTRealtimeInitialized ||
+                        stateChange.previous == ARTRealtimeConnecting ||
+                        stateChange.previous == ARTRealtimeDisconnected) {
+                        [channel attach];
+                    }
+                    break;
+                case ARTRealtimeClosing:
+                    //do nothing. Closed state is coming.
+                    break;
+                case ARTRealtimeClosed:
+                    [channel detachChannel:[ARTStatus state:ARTStateOk]];
+                    break;
+                case ARTRealtimeSuspended:
+                    [channel setSuspended:channelStatus];
+                    break;
+                case ARTRealtimeFailed:
+                    [channel setFailed:channelStatus];
+                    break;
+                default:
+                    break;
             }
         }
     }
@@ -1250,11 +1261,10 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             [self.queuedMessages addObject:qm];
         }
     }
-    else {
-        // TODO review error code
-        if (ackCallback) {
-            ackCallback([ARTStatus state:ARTStateError]);
-        }
+    else if (ackCallback) {
+        ARTErrorInfo *error = self.connection.errorReason_nosync;
+        if (!error) error = [ARTErrorInfo createWithCode:90000 status:400 message:[NSString stringWithFormat:@"not possile to send message (state is %@)", ARTRealtimeConnectionStateToStr(self.connection.state_nosync)]];
+        ackCallback([ARTStatus state:ARTStateError info:error]);
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }

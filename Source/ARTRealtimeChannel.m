@@ -551,13 +551,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         case ARTRealtimeChannelDetached:
         case ARTRealtimeChannelAttaching:
         case ARTRealtimeChannelAttached: {
-            if (_realtime.connection.state_nosync == ARTRealtimeConnected) {
                 [self sendMessage:pm callback:cb];
-            }
-            else {
-                [self addToQueue:pm callback:queuedCallback];
-            }
-            break;
         }
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
