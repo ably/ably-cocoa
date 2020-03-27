@@ -532,7 +532,7 @@ class RealtimeClientPresence: QuickSpec {
                             let protocolError = AblyTests.newErrorProtocolMessage()
                             channel.presence.enterClient("user", data: nil) { error in
                                 expect(error).to(beIdenticalTo(protocolError.error))
-                                expect(channel.internal.queuedMessages).to(haveCount(0))
+                                expect(client.internal.queuedMessages).to(haveCount(0))
                                 done()
                             }
                             client.internal.rest.queue.async {
@@ -592,7 +592,7 @@ class RealtimeClientPresence: QuickSpec {
                             }
                             channel.presence.enterClient("user", data: nil) { error in
                                 expect(error).toNot(beNil())
-                                expect(channel.internal.queuedMessages).to(haveCount(0))
+                                expect(client.internal.queuedMessages).to(haveCount(0))
                                 done()
                             }
                         }
@@ -657,7 +657,7 @@ class RealtimeClientPresence: QuickSpec {
                         let partialDone = AblyTests.splitDone(2, done: done)
                         channel2.presence.enterClient("Client 2", data: nil) { error in
                             expect(error).to(beNil())
-                            expect(channel2.internal.queuedMessages).to(haveCount(0))
+                            expect(client2.internal.queuedMessages).to(haveCount(0))
                             expect(channel2.state).to(equal(ARTRealtimeChannelState.attached))
                             partialDone()
                         }
@@ -672,7 +672,7 @@ class RealtimeClientPresence: QuickSpec {
                             partialDone()
                         }
 
-                        expect(channel2.internal.queuedMessages).to(haveCount(1))
+                        expect(client2.internal.queuedMessages).to(haveCount(1))
                         expect(channel2.presence.syncComplete).to(beFalse())
                         expect(channel2.internal.presenceMap.members).to(haveCount(0))
                     }
@@ -1060,13 +1060,13 @@ class RealtimeClientPresence: QuickSpec {
                             let partialDone = AblyTests.splitDone(3, done: done)
                             channel.once(.attaching) { stateChange in
                                 expect(stateChange?.reason).to(beNil())
-                                expect(channel.internal.queuedMessages.count) == 1
+                                expect(client.internal.queuedMessages.count) == 1
                                 channel.internal.setSuspended(ARTStatus.state(.error, info: ARTErrorInfo.create(withCode: 1234, message: "unknown error")))
                                 partialDone()
                             }
                             channel.once(.suspended) { stateChange in
                                 // All queued presence messages will fail immediately
-                                expect(channel.internal.queuedMessages.count) == 0
+                                expect(client.internal.queuedMessages.count) == 0
                                 partialDone()
                             }
                             channel.presence.enterClient("tester", data: nil) { error in
@@ -3353,11 +3353,11 @@ class RealtimeClientPresence: QuickSpec {
                         channel.presence.enterClient("user", data: nil) { error in
                             expect(error).to(beNil())
                             expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connected))
-                            expect(channel.internal.queuedMessages).to(haveCount(0))
+                            expect(client.internal.queuedMessages).to(haveCount(0))
                             done()
                         }
                         expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connecting))
-                        expect(channel.internal.queuedMessages).to(haveCount(1))
+                        expect(client.internal.queuedMessages).to(haveCount(1))
                     }
                 }
 
@@ -3380,11 +3380,11 @@ class RealtimeClientPresence: QuickSpec {
                         channel.presence.enterClient("user", data: nil) { error in
                             expect(error).to(beNil())
                             expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connected))
-                            expect(channel.internal.queuedMessages).to(haveCount(0))
+                            expect(client.internal.queuedMessages).to(haveCount(0))
                             done()
                         }
                         expect(client.connection.state).to(equal(ARTRealtimeConnectionState.disconnected))
-                        expect(channel.internal.queuedMessages).to(haveCount(1))
+                        expect(client.internal.queuedMessages).to(haveCount(1))
                     }
                 }
 
@@ -3411,7 +3411,7 @@ class RealtimeClientPresence: QuickSpec {
                             expect(error).toNot(beNil())
                             done()
                         }
-                        expect(channel.internal.queuedMessages).to(haveCount(0))
+                        expect(client.internal.queuedMessages).to(haveCount(0))
                     }
                 }
 
@@ -3429,10 +3429,10 @@ class RealtimeClientPresence: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.enterClient("user", data: nil) { error in
                             expect(error).toNot(beNil())
-                            expect(channel.internal.queuedMessages).to(haveCount(0))
+                            expect(client.internal.queuedMessages).to(haveCount(0))
                             done()
                         }
-                        expect(channel.internal.queuedMessages).to(haveCount(0))
+                        expect(client.internal.queuedMessages).to(haveCount(0))
                     }
                 }
 
@@ -3461,10 +3461,10 @@ class RealtimeClientPresence: QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             channel.presence.enterClient("user", data: nil) { error in
                                 expect(error).toNot(beNil())
-                                expect(channel.internal.queuedMessages).to(haveCount(0))
+                                expect(client.internal.queuedMessages).to(haveCount(0))
                                 done()
                             }
-                            expect(channel.internal.queuedMessages).to(haveCount(0))
+                            expect(client.internal.queuedMessages).to(haveCount(0))
                         }
                     }
                 }

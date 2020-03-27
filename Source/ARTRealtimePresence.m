@@ -149,6 +149,7 @@
 @implementation ARTRealtimePresenceInternal {
     __weak ARTRealtimeChannelInternal *_channel; // weak because channel owns self
     dispatch_queue_t _userQueue;
+    NSMutableArray<ARTQueuedMessage *> *_pendingPresence;
 }
 
 - (instancetype)initWithChannel:(ARTRealtimeChannelInternal *)channel {
@@ -157,6 +158,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(channel.realtime) {
         _channel = channel;
         _userQueue = channel.realtime.rest.userQueue;
         _queue = channel.realtime.rest.queue;
+        _pendingPresence = [NSMutableArray array];
+        _lastPresenceAction = ARTPresenceAbsent;
     }
     return self;
 } ART_TRY_OR_MOVE_TO_FAILED_END
@@ -306,7 +309,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
     msg.data = data;
 
     msg.connectionId = _channel.realtime.connection.id_nosync;
-    [_channel publishPresence:msg callback:cb];
+    [self publishPresence:msg callback:cb];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
@@ -370,7 +373,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
     msg.data = data;
     msg.connectionId = _channel.realtime.connection.id_nosync;
 
-    [_channel publishPresence:msg callback:cb];
+    [self publishPresence:msg callback:cb];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
@@ -445,7 +448,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
     msg.data = data;
     msg.clientId = clientId;
     msg.connectionId = _channel.realtime.connection.id_nosync;
-    [_channel publishPresence:msg callback:cb];
+    [self publishPresence:msg callback:cb];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
@@ -569,11 +572,109 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self->_channel.realtime) {
 
 - (void)unsubscribe:(ARTPresenceAction)action listener:(ARTEventListener *)listener {
 dispatch_sync(_queue, ^{
-ART_TRY_OR_MOVE_TO_FAILED_START(self->_channel.realtime) {
+ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
     [self->_channel.presenceEventEmitter off:[ARTEvent newWithPresenceAction:action] listener:listener];
     [self->_channel.logger verbose:@"R:%p C:%p (%@) presence unsubscribe to action %@", self->_channel.realtime, self->_channel, self->_channel.name, ARTPresenceActionToStr(action)];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 });
+}
+
+- (void)addPendingPresence:(ARTProtocolMessage *)msg callback:(void (^)(ARTStatus *))cb {
+ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
+    ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg sentCallback:nil ackCallback:cb];
+    [_pendingPresence addObject:qm];
+} ART_TRY_OR_MOVE_TO_FAILED_END
+}
+
+- (void)publishPresence:(ARTPresenceMessage *)msg callback:(void (^)(ARTErrorInfo *))callback {
+ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
+    if (!msg.clientId && !_channel.realtime.auth.clientId_nosync) {
+        if (callback) callback([ARTErrorInfo createWithCode:ARTStateNoClientId message:@"attempted to publish presence message without clientId"]);
+        return;
+    }
+
+    if ([_channel exceedMaxSize:@[msg]]) {
+        if (callback) {
+            ARTErrorInfo *sizeError = [ARTErrorInfo createWithCode:40009
+                                                           message:@"maximum message length exceeded"];
+            callback(sizeError);
+        }
+        return;
+    }
+
+    _lastPresenceAction = msg.action;
+
+    if (msg.data && _channel.dataEncoder) {
+        ARTDataEncoderOutput *encoded = [_channel.dataEncoder encode:msg.data];
+        if (encoded.errorInfo) {
+            [_channel.logger warn:@"RT:%p C:%p (%@) error encoding presence message: %@", _channel.realtime, self, _channel.name, encoded.errorInfo];
+        }
+        msg.data = encoded.data;
+        msg.encoding = encoded.encoding;
+    }
+
+    ARTProtocolMessage *pm = [[ARTProtocolMessage alloc] init];
+    pm.action = ARTProtocolMessagePresence;
+    pm.channel = _channel.name;
+    pm.presence = @[msg];
+
+    ARTRealtimeChannelState channelState = _channel.state_nosync;
+    switch (channelState) {
+        case ARTRealtimeChannelInitialized:
+        case ARTRealtimeChannelDetached:
+            [_channel _attach:nil];
+        case ARTRealtimeChannelAttaching: {
+            [self addPendingPresence:pm callback:^(ARTStatus *status) {
+                if (callback) {
+                    callback(status.errorInfo);
+                }
+            }];
+            break;
+        }
+        case ARTRealtimeChannelAttached: {
+            [_channel sendMessage:pm callback:^(ARTStatus *status) {
+                if (callback) callback(status.errorInfo);
+            }];
+            break;
+        }
+        case ARTRealtimeChannelSuspended:
+        case ARTRealtimeChannelDetaching:
+        case ARTRealtimeChannelFailed: {
+            if (callback) {
+                ARTErrorInfo *invalidChannelError = [ARTErrorInfo createWithCode:90001 message:[NSString stringWithFormat:@"channel operation failed (invalid channel state: %@)", ARTRealtimeChannelStateToStr(channelState)]];
+                callback(invalidChannelError);
+            }
+            break;
+        }
+    }
+} ART_TRY_OR_MOVE_TO_FAILED_END
+}
+
+- (void)sendPendingPresence {
+    ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
+    NSArray *pendingPresence = _pendingPresence;
+    ARTRealtimeChannelState channelState = _channel.state_nosync;
+    _pendingPresence = [NSMutableArray array];
+    for (ARTQueuedMessage *qm in pendingPresence) {
+        if (qm.msg.action == ARTProtocolMessagePresence &&
+            channelState != ARTRealtimeChannelAttached) {
+            // Presence messages should only be sent when the channel is attached.
+            [_pendingPresence addObject:qm];
+            continue;
+        }
+        [_channel sendMessage:qm.msg callback:qm.ackCallback];
+    }
+} ART_TRY_OR_MOVE_TO_FAILED_END
+}
+
+- (void)failPendingPresence:(ARTStatus *)status {
+ART_TRY_OR_MOVE_TO_FAILED_START(_channel.realtime) {
+    NSArray *pendingPresence = _pendingPresence;
+    _pendingPresence = [NSMutableArray array];
+    for (ARTQueuedMessage *qm in pendingPresence) {
+        qm.ackCallback(status);
+    }
+} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 @end

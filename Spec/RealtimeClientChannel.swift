@@ -2097,7 +2097,7 @@ class RealtimeClientChannel: QuickSpec {
                                     expect(client.connection.state).to(equal(ARTRealtimeConnectionState.initialized))
                                     publish(done)
                                     client.connect()
-                                    expect(channel.internal.queuedMessages).to(haveCount(1))
+                                    expect(client.internal.queuedMessages).to(haveCount(1))
                                 }
                             }
 
@@ -2106,7 +2106,7 @@ class RealtimeClientChannel: QuickSpec {
                                     client.connect()
                                     expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connecting))
                                     publish(done)
-                                    expect(channel.internal.queuedMessages).to(haveCount(1))
+                                    expect(client.internal.queuedMessages).to(haveCount(1))
                                 }
                             }
 
@@ -2118,7 +2118,7 @@ class RealtimeClientChannel: QuickSpec {
                                 waitUntil(timeout: testTimeout) { done in
                                     expect(client.connection.state).to(equal(ARTRealtimeConnectionState.disconnected))
                                     publish(done)
-                                    expect(channel.internal.queuedMessages).to(haveCount(1))
+                                    expect(client.internal.queuedMessages).to(haveCount(1))
                                 }
                             }
                         }
@@ -2131,7 +2131,7 @@ class RealtimeClientChannel: QuickSpec {
                                 waitUntil(timeout: testTimeout) { done in
                                     expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
                                     publish(done)
-                                    expect(channel.internal.queuedMessages).to(haveCount(0))
+                                    expect(client.internal.queuedMessages).to(haveCount(0))
                                     expect((client.internal.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
                                 }
                             }
@@ -2144,7 +2144,7 @@ class RealtimeClientChannel: QuickSpec {
                                     channel.attach()
                                     expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
                                     publish(done)
-                                    expect(channel.internal.queuedMessages).to(haveCount(0))
+                                    expect(client.internal.queuedMessages).to(haveCount(0))
                                     expect((client.internal.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
                                 }
                             }
@@ -2178,7 +2178,7 @@ class RealtimeClientChannel: QuickSpec {
 
                                 waitUntil(timeout: testTimeout) { done in
                                     publish(done)
-                                    expect(channel.internal.queuedMessages).to(haveCount(1))
+                                    expect(client.internal.queuedMessages).to(haveCount(1))
                                 }
                             }
                         }

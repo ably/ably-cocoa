@@ -701,10 +701,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
     if ([self shouldSendEvents]) {
         [self sendQueuedMessages];
-        // For every Channel
-        for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
-            [channel sendQueuedMessages];
-        }
     } else if (![self shouldQueueEvents]) {
         ARTStatus *channelStatus = status;
         if (!channelStatus) {
