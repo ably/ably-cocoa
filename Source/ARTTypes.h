@@ -216,14 +216,14 @@ NSString *generateNonce(void);
 @interface NSURL (ARTLog)
 @end
 
-@interface NSDictionary (URLQueryItemAdditions)
-@property (nonatomic, readonly) NSArray<NSURLQueryItem *> *asURLQueryItems;
+@interface NSDictionary (ARTURLQueryItemAdditions)
+@property (nonatomic, readonly) NSArray<NSURLQueryItem *> *art_asURLQueryItems;
 @end
 
-@interface NSMutableArray (QueueAdditions)
-- (void)enqueue:(id)object;
-- (id)dequeue;
-- (id)peek;
+@interface NSMutableArray (ARTQueueAdditions)
+- (void)art_enqueue:(id)object;
+- (id)art_dequeue;
+- (id)art_peek;
 @end
 
 @interface NSURLSessionTask (ARTCancellable) <ARTCancellable>

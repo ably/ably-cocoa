@@ -158,7 +158,7 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
 dispatch_async(_queue, ^{
 ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"] resolvingAgainstBaseURL:NO];
-    components.queryItems = [params asURLQueryItems];
+    components.queryItems = [params art_asURLQueryItems];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
     request.HTTPMethod = @"GET";
 
@@ -219,7 +219,7 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
 
 - (void)_removeWhere:(NSDictionary<NSString *, NSString *> *)params callback:(void (^)(ARTErrorInfo *error))callback {
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"] resolvingAgainstBaseURL:NO];
-    components.queryItems = [params asURLQueryItems];
+    components.queryItems = [params art_asURLQueryItems];
     if (_rest.options.pushFullWait) {
         components.queryItems = [components.queryItems arrayByAddingObject:[NSURLQueryItem queryItemWithName:@"fullWait" value:@"true"]];
     }

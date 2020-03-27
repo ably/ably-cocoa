@@ -118,7 +118,7 @@ dispatch_async(_queue, ^{
     _current = maybeNext;
 
     while (true) {
-        ARTPushActivationEvent *pending = [_pendingEvents peek];
+        ARTPushActivationEvent *pending = [_pendingEvents art_peek];
         if (pending == nil) {
             break;
         }
@@ -127,7 +127,7 @@ dispatch_async(_queue, ^{
         if (maybeNext == nil) {
             break;
         }
-        [_pendingEvents dequeue];
+        [_pendingEvents art_dequeue];
 
         [_rest.logger debug:@"%@: transition: %@ -> %@", NSStringFromClass(self.class), NSStringFromClass(_current.class), NSStringFromClass(maybeNext.class)];
         if (self.transitions) self.transitions(event, _current, maybeNext);

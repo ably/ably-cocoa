@@ -301,7 +301,7 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     mutableParams[@"concatFilters"] = @"true";
 
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"] resolvingAgainstBaseURL:NO];
-    components.queryItems = [mutableParams asURLQueryItems];
+    components.queryItems = [mutableParams art_asURLQueryItems];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
     request.HTTPMethod = @"GET";
 

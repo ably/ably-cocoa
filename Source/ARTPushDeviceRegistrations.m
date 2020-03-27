@@ -197,7 +197,7 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
 dispatch_async(_queue, ^{
 ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/deviceRegistrations"] resolvingAgainstBaseURL:NO];
-    components.queryItems = [params asURLQueryItems];
+    components.queryItems = [params art_asURLQueryItems];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
     request.HTTPMethod = @"GET";
 
@@ -270,7 +270,7 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
 dispatch_async(_queue, ^{
 ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/deviceRegistrations"] resolvingAgainstBaseURL:NO];
-    components.queryItems = [params asURLQueryItems];
+    components.queryItems = [params art_asURLQueryItems];
     if (self->_rest.options.pushFullWait) {
         components.queryItems = [components.queryItems arrayByAddingObject:[NSURLQueryItem queryItemWithName:@"fullWait" value:@"true"]];
     }

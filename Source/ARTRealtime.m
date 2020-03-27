@@ -219,7 +219,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 - (void)auth:(ARTAuthInternal *)auth didAuthorize:(ARTTokenDetails *)tokenDetails completion:(void (^)(ARTAuthorizationState, ARTErrorInfo *_Nullable))completion {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     void (^waitForResponse)(void) = ^{
-        [self.pendingAuthorizations enqueue:^(ARTRealtimeConnectionState state, ARTErrorInfo *_Nullable error){
+        [self.pendingAuthorizations art_enqueue:^(ARTRealtimeConnectionState state, ARTErrorInfo *_Nullable error){
             switch (state) {
                 case ARTRealtimeConnected:
                     completion(ARTAuthorizationSucceeded, nil);
@@ -290,7 +290,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 }
 
 - (void)performPendingAuthorizationWithState:(ARTRealtimeConnectionState)state error:(nullable ARTErrorInfo *)error {
-    void (^pendingAuthorization)(ARTRealtimeConnectionState, ARTErrorInfo *_Nullable) = [self.pendingAuthorizations dequeue];
+    void (^pendingAuthorization)(ARTRealtimeConnectionState, ARTErrorInfo *_Nullable) = [self.pendingAuthorizations art_dequeue];
     if (!pendingAuthorization) {
         return;
     }

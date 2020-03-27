@@ -249,9 +249,9 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
     }
 }
 
-@implementation NSDictionary (URLQueryItemAdditions)
+@implementation NSDictionary (ARTURLQueryItemAdditions)
 
-- (NSArray<NSURLQueryItem *> *)asURLQueryItems {
+- (NSArray<NSURLQueryItem *> *)art_asURLQueryItems {
     NSMutableArray<NSURLQueryItem *> *items = [NSMutableArray new];
     for (id key in [self allKeys]) {
         id value = [self valueForKey:key];
@@ -264,20 +264,20 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
 
 @end
 
-@implementation NSMutableArray (QueueAdditions)
+@implementation NSMutableArray (ARTQueueAdditions)
 
-- (void)enqueue:(id)object {
+- (void)art_enqueue:(id)object {
     [self addObject:object];
 }
 
-- (id)dequeue {
+- (id)art_dequeue {
     id item = [self firstObject];
     if (item) [self removeObjectAtIndex:0];
     return item;
 
 }
 
-- (id)peek {
+- (id)art_peek {
     return [self firstObject];
 }
 
