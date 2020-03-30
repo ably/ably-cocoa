@@ -1,5 +1,14 @@
 # Change Log
 
+## [1.1.21](https://github.com/ably/ably-cocoa/tree/1.1.21)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.20...1.1.21)
+
+**Merged pull requests:**
+
+- Fix Objective-C namespace collisions [\#1006](https://github.com/ably/ably-cocoa/pull/1006) ([SlaunchaMan](https://github.com/SlaunchaMan))
+- Fix strong ref cycle: Rest.push and Rest.push.admin \<-\> Rest. [\#999](https://github.com/ably/ably-cocoa/pull/999) ([tcard](https://github.com/tcard))
+
 ## [1.1.20](https://github.com/ably/ably-cocoa/tree/1.1.20)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.19...1.1.20)
