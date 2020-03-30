@@ -681,9 +681,9 @@ For each release, the following needs to be done:
 * Create a new branch `release/x.x.x` (where `x.x.x` is the new version number) from the `master` branch
 * Run `make bump_[major|minor|patch]` to bump the new version number (creates a Git commit)
 * Run [`github_changelog_generator`](https://github.com/github-changelog-generator/github-changelog-generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). This may require some manual intervention, both in terms of how the command is run and how the change log file is modified. Your mileage may vary:
-    * The command you will need to run will look something like this: `github_changelog_generator -u ably -p ably-cocoa --since-tag 1.1.21`
-      - `--since-tag` will remove old releases from the `CHANGELOG.md`. You may need to add them back.
-    * Change the "Unreleased" heading and link with the current version number such as `v1.0.0`
+    * The command you will need to run will look something like this: `github_changelog_generator -u ably -p ably-cocoa --since-tag 1.1.21 --output delta.md`
+    * Using the command above, `--output delta.md` writes changes made after `--since-tag` to a new file
+    * The contents of that new file (`delta.md`) then need to be manually inserted at the top of the `CHANGELOG.md`, changing the "Unreleased" heading and linking with the current version numbers
     * Also ensure that the "Full Changelog" link points to the new version tag instead of the `HEAD`
     * Commit this change: `git add CHANGELOG.md && git commit -m "Update change log."`
 * Push both commits to origin: `git push -u origin release/x.x.x`
