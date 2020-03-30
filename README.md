@@ -18,7 +18,6 @@ iOS, tvOS and macOS Objective-C and Swift client library SDK for [Ably realtime 
 	- [Manual](#manual-installation)
 - [Thread-safety Acknowledgments](#thread-safety)
 - [Using the Realtime API](#using-the-realtime-api)
-	- [Introduction](#introduction)
 	- [Connection](#connection)
 	- [Subscribing to a channel](#subscribing-to-a-channel)
 	- [Publishing to a channel](#publishing-to-a-channel)
