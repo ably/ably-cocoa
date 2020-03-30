@@ -1306,6 +1306,7 @@ class RealtimeClientChannel: QuickSpec {
                         .failed: false,
                     ]
 
+                    // RTL4j1
                     it("should have correct AttachResume value") {
                         let client = ARTRealtime(options: AblyTests.commonAppSetup())
                         defer { client.dispose(); client.close() }
@@ -1343,7 +1344,57 @@ class RealtimeClientChannel: QuickSpec {
                             channel.detach()
                         }
                     }
+
+                    // RTL4j2
+                    it("should encode correctly the AttachResume flag") {
+                        let options = AblyTests.commonAppSetup()
+
+                        let client = ARTRealtime(options: options)
+                        defer { client.dispose(); client.close() }
+                        let channel = client.channels.get("foo")
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish("test", data: nil) { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+
+                        let channelOptions = ARTRealtimeChannelOptions()
+                        channelOptions.params = ["rewind": "1"]
+
+                        let client1 = ARTRealtime(options: options)
+                        defer { client1.dispose(); client1.close() }
+                        let channelWithAttachResume = client1.channels.get("foo", options: channelOptions)
+                        channelWithAttachResume.internal.attachResume = true
+                        waitUntil(timeout: testTimeout) { done in
+                            channelWithAttachResume.subscribe { message in
+                                fail("Should not receive the previously-published message")
+                            }
+                            channelWithAttachResume.attach { error in
+                                expect(error).to(beNil())
+                            }
+                            delay(2.0) {
+                                // Wait some seconds to confirm that the message is not received
+                                done()
+                            }
+                        }
+
+                        channelOptions.modes = [.subscribe]
+                        let client2 = ARTRealtime(options: options)
+                        defer { client2.dispose(); client2.close() }
+                        let channelWithoutAttachResume = client2.channels.get("foo", options: channelOptions)
+                        waitUntil(timeout: testTimeout) { done in
+                            channelWithoutAttachResume.subscribe { message in
+                                expect(message.name).to(equal("test"))
+                                done()
+                            }
+                            channelWithoutAttachResume.attach()
+                        }
+                    }
+
                 }
+
             }
 
             describe("detach") {
