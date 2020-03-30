@@ -451,7 +451,7 @@ ARTRealtime *client = [[ARTRealtime alloc] initWithOptions:clientOptions];
 
 ## Using the REST API
 
-### Introduction
+### Introduction
 
 All examples assume a client and/or channel has been created as follows:
 
