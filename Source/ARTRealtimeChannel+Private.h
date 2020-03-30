@@ -44,6 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTPresenceMessage *> *presenceEventEmitter;
 @property (readwrite, strong, nonatomic) ARTPresenceMap *presenceMap;
+@property (readwrite, assign, nonatomic) BOOL attachResume;
 
 - (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime andName:(NSString *)name withOptions:(ARTRealtimeChannelOptions *)options;
 + (instancetype)channelWithRealtime:(ARTRealtimeInternal *)realtime andName:(NSString *)name withOptions:(ARTRealtimeChannelOptions *)options;
