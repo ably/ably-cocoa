@@ -1388,6 +1388,50 @@ class RealtimeClientChannel: QuickSpec {
                         expect(lastAttach.flags & Int64(ARTProtocolMessageFlag.attachResume.rawValue)).to(beGreaterThan(0)) //true
                     }
 
+                    let attachResumeExpectedValues: [ARTRealtimeChannelState: Bool] = [
+                        .initialized: false,
+                        .attached: true,
+                        .detaching: false,
+                        .failed: false,
+                    ]
+
+                    it("should have correct AttachResume value") {
+                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                        defer { client.dispose(); client.close() }
+                        let channel = client.channels.get("foo")
+
+                        // Initialized
+                        expect(channel.internal.attachResume).to(equal(attachResumeExpectedValues[channel.state]))
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.once(.failed) { stateChange in
+                                done()
+                            }
+                            channel.internal.onError(AblyTests.newErrorProtocolMessage())
+                        }
+
+                        // Failed
+                        expect(channel.internal.attachResume).to(equal(attachResumeExpectedValues[channel.state]))
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.attach() { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+
+                        // Attached
+                        expect(channel.internal.attachResume).to(equal(attachResumeExpectedValues[channel.state]))
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.once(.detaching) { stateChange in
+                                // Detaching
+                                expect(channel.internal.attachResume).to(equal(attachResumeExpectedValues[channel.state]))
+                                done()
+                            }
+                            channel.detach()
+                        }
+                    }
                 }
             }
 
