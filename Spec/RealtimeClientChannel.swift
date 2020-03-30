@@ -1256,6 +1256,50 @@ class RealtimeClientChannel: QuickSpec {
                     }
                 }
 
+                // RTL4j
+                context("attach resume") {
+
+                    it("should pass attach resume flag in attach message") {
+                        let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
+                        defer { client.dispose(); client.close() }
+                        let channel = client.channels.get("foo")
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.attach() { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+
+                        guard let transport = client.internal.transport as? TestProxyTransport else {
+                            fail("Expecting TestProxyTransport"); return
+                        }
+
+                        let channelOptions = ARTRealtimeChannelOptions()
+                        channelOptions.modes = [.publish]
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.setOptions(channelOptions) { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+
+                        let attachMessages = transport.protocolMessagesSent.filter({ $0.action == .attach })
+                        expect(attachMessages).to(haveCount(2))
+
+                        guard let firstAttach = attachMessages.first else {
+                            fail("First ATTACH message is missing"); return
+                        }
+                        expect(firstAttach.flags).to(equal(0))
+
+                        guard let lastAttach = attachMessages.last else {
+                            fail("Last ATTACH message is missing"); return
+                        }
+                        expect(lastAttach.flags & Int64(ARTProtocolMessageFlag.attachResume.rawValue)).to(beGreaterThan(0)) //true
+                    }
+
+                }
             }
 
             describe("detach") {
