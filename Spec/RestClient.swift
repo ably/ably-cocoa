@@ -1728,6 +1728,7 @@ class RestClient: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         restB.channels.get("foo").publish(nil, data: "something") { error in
                             expect(error).to(beNil())
+                            expect(mockHttpExecutor.requests).to(haveCount(1))
                             guard let url = mockHttpExecutor.requests.first?.url else {
                                 fail("No requests found")
                                 return
