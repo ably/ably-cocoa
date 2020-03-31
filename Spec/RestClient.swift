@@ -1773,6 +1773,7 @@ class RestClient: QuickSpec {
                         }
                     }
 
+                    expect(fallbackRequests).toNot(beEmpty())
                     expect(fallbackRequests).to(allPass { extractURLQueryValue($0?.url, key: "request_id") == requestId })
                 }
 
