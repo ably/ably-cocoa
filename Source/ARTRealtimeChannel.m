@@ -829,6 +829,9 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
     ARTEventListener *channelRetryListener = nil;
     switch (state) {
+        case ARTRealtimeChannelAttached:
+            self.attachResume = true;
+            break;
         case ARTRealtimeChannelSuspended:
             [_attachedEventEmitter emit:nil with:status.errorInfo];
             if (self.realtime.shouldSendEvents) {
@@ -843,10 +846,14 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
                 }];
             }
             break;
+        case ARTRealtimeChannelDetaching:
+            self.attachResume = false;
+            break;
         case ARTRealtimeChannelDetached:
             [self.presenceMap failsSync:status.errorInfo];
             break;
         case ARTRealtimeChannelFailed:
+            self.attachResume = false;
             [_attachedEventEmitter emit:nil with:status.errorInfo];
             [_detachedEventEmitter emit:nil with:status.errorInfo];
             [self.presenceMap failsSync:status.errorInfo];
@@ -1265,6 +1272,10 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     attachMessage.channelSerial = channelSerial;
     attachMessage.params = self.options_nosync.params;
     attachMessage.flags = self.options_nosync.modes;
+
+    if (self.attachResume) {
+        attachMessage.flags = attachMessage.flags | ARTProtocolMessageFlagAttachResume;
+    }
 
     [self.realtime send:attachMessage sentCallback:^(ARTErrorInfo *error) {
         if (error) {

@@ -12,6 +12,7 @@ typedef NS_OPTIONS(NSUInteger, ARTProtocolMessageFlag) {
     ARTProtocolMessageFlagResumed = (1UL << 2),
     ARTProtocolMessageFlagHasLocalPresence = (1UL << 3),
     ARTProtocolMessageFlagTransient = (1UL << 4),
+    ARTProtocolMessageFlagAttachResume = (1UL << 5),
     ARTProtocolMessageFlagPresence = (1UL << 16),
     ARTProtocolMessageFlagPublish = (1UL << 17),
     ARTProtocolMessageFlagSubscribe = (1UL << 18),
