@@ -50,6 +50,7 @@ NSString *const ARTDefaultProduction = @"production";
     _internalDispatchQueue = dispatch_queue_create("io.ably.main", DISPATCH_QUEUE_SERIAL);
     _pushFullWait = false;
     _idempotentRestPublishing = [ARTClientOptions getDefaultIdempotentRestPublishingForVersion:[ARTDefault version]];
+    _addRequestIds = false;
     return self;
 }
 
@@ -129,6 +130,7 @@ NSString *const ARTDefaultProduction = @"production";
     options.internalDispatchQueue = self.internalDispatchQueue;
     options.pushFullWait = self.pushFullWait;
     options.idempotentRestPublishing = self.idempotentRestPublishing;
+    options.addRequestIds = self.addRequestIds;
 
     return options;
 }

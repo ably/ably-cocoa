@@ -21,6 +21,7 @@
 #import "ARTNSArray+ARTFunctional.h"
 #import "ARTPushChannel+Private.h"
 #import "ARTCrypto+Private.h"
+#import "ARTClientOptions.h"
 
 @implementation ARTRestChannel {
     ARTQueuedDealloc *_dealloc;
@@ -305,19 +306,41 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
             return;
         }
     }
-    
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:[self->_basePath stringByAppendingPathComponent:@"messages"]]];
+
+    NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:[self->_basePath stringByAppendingPathComponent:@"messages"]] resolvingAgainstBaseURL:YES];
+    NSMutableArray<NSURLQueryItem *> *queryItems = [NSMutableArray new];
+    NSString *requestId = nil;
+    if (self.rest.options.addRequestIds) {
+        NSString *randomId = [NSUUID new].UUIDString;
+        requestId = [[randomId dataUsingEncoding:NSUTF8StringEncoding] base64EncodedStringWithOptions:0];
+        [queryItems addObject:[NSURLQueryItem queryItemWithName:@"request_id" value:requestId]];
+    }
+    components.queryItems = queryItems;
+
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
     request.HTTPMethod = @"POST";
     request.HTTPBody = encodedMessage;
-    
+
     if (self.rest.defaultEncoding) {
         [request setValue:self.rest.defaultEncoding forHTTPHeaderField:@"Content-Type"];
     }
 
-    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p C:%p (%@) post message %@", self->_rest, self, self.name, [[NSString alloc] initWithData:encodedMessage encoding:NSUTF8StringEncoding]];
+    if (requestId) {
+        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p C:%p (ID:%@) (%@) post message %@", self->_rest, self, requestId, self.name, [[NSString alloc] initWithData:encodedMessage encoding:NSUTF8StringEncoding]];
+    }
+    else {
+        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p C:%p (%@) post message %@", self->_rest, self, self.name, [[NSString alloc] initWithData:encodedMessage encoding:NSUTF8StringEncoding]];
+    }
+
     [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (callback) {
-            ARTErrorInfo *errorInfo = error ? [ARTErrorInfo createFromNSError:error] : nil;
+            ARTErrorInfo *errorInfo;
+            if (self->_rest.options.addRequestIds) {
+                errorInfo = error ? [ARTErrorInfo wrap:[ARTErrorInfo createFromNSError:error] prepend:[NSString stringWithFormat:@"Request '%@' failed with ", request.URL]] : nil;
+            }
+            else {
+                errorInfo = error ? [ARTErrorInfo createFromNSError:error] : nil;
+            }
             callback(errorInfo);
         }
     }];
