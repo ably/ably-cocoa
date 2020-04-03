@@ -1331,9 +1331,13 @@ class RealtimeClient: QuickSpec {
             }
             
             it ("subscriber should receive messages in the same order in which they have been sent") {
-                let realtime1 = ARTRealtime(options: AblyTests.commonAppSetup())
-                let realtime2 = ARTRealtime(options: AblyTests.commonAppSetup())
-                defer { realtime1.dispose(); realtime1.close(); realtime2.dispose(); realtime2.close(); }
+                let options = AblyTests.commonAppSetup()
+                let realtime1 = ARTRealtime(options: options)
+                let realtime2 = ARTRealtime(options: options)
+                defer {
+                    realtime1.dispose(); realtime1.close();
+                    realtime2.dispose(); realtime2.close();
+                }
                 waitUntil(timeout: testTimeout) { done in
                     realtime1.connection.on(.connected) { _ in
                         done()

@@ -995,11 +995,14 @@ class RestClientChannel: QuickSpec {
             // RSP3
             context("get") {
                 it("should return presence fixture data") {
+                    let options = AblyTests.commonAppSetup()
+                    options.channelNamePrefix = nil
+                    client = ARTRest(options: options)
                     let key = appSetupJson["cipher"]["key"].string!
                     let cipherParams = ARTCipherParams.init(
                         algorithm: appSetupJson["cipher"]["algorithm"].string!,
                         key: key as ARTCipherKeyCompatible,
-                        iv: NSData(base64Encoded: appSetupJson["cipher"]["iv"].string!, options: NSData.Base64DecodingOptions.init(rawValue: 0))! as Data
+                        iv: Data(base64Encoded: appSetupJson["cipher"]["iv"].string!, options: Data.Base64DecodingOptions.init(rawValue: 0))!
                     )
                     let channel = client.channels.get("persisted:presence_fixtures", options: ARTChannelOptions(cipher: cipherParams))
                     var presenceMessages: [ARTPresenceMessage] = []
@@ -1007,6 +1010,9 @@ class RestClientChannel: QuickSpec {
                     channel.presence.get() { result, _ in
                         if let items = result?.items {
                             presenceMessages.append(contentsOf:items)
+                        }
+                        else {
+                            fail("expected items to not be empty")
                         }
                     }
 
