@@ -106,6 +106,7 @@ dispatch_async(_queue, ^{
     [_rest.logger debug:@"%@: handling event %@ from %@", NSStringFromClass(self.class), NSStringFromClass(event.class), NSStringFromClass(_current.class)];
     _lastHandledEvent = event;
 
+    if (self.onEvent) self.onEvent(event, _current);
     ARTPushActivationState *maybeNext = [_current transition:event];
 
     if (maybeNext == nil) {
