@@ -983,8 +983,8 @@ class Auth : QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             realtime.connection.once(.failed) { stateChange in
-                                expect(stateChange!.reason?.code).to(equal(40102))
-                                expect(stateChange!.reason?.description).to(contain("incompatible credentials"))
+                                expect(stateChange!.reason?.code).to(equal(40101))
+                                expect(stateChange!.reason?.description.lowercased()).to(contain("invalid clientid for credentials"))
                                 done()
                             }
                             realtime.connect()
