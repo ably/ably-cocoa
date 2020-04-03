@@ -11,6 +11,7 @@
 #import "ARTChannels+Private.h"
 #import "ARTRestChannel+Private.h"
 #import "ARTRest+Private.h"
+#import "ARTClientOptions+Private.h"
 
 @implementation ARTRestChannels {
     ARTQueuedDealloc *_dealloc;
@@ -66,7 +67,7 @@
 ART_TRY_OR_REPORT_CRASH_START(rest) {
     if (self = [super init]) {
         _rest = rest;
-        _channels = [[ARTChannels alloc] initWithDelegate:self dispatchQueue:_rest.queue];
+        _channels = [[ARTChannels alloc] initWithDelegate:self dispatchQueue:_rest.queue prefix:rest.options.channelNamePrefix];
     }
     return self;
 } ART_TRY_OR_REPORT_CRASH_END

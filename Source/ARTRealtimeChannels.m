@@ -12,6 +12,7 @@
 #import "ARTRealtimeChannel+Private.h"
 #import "ARTRealtime+Private.h"
 #import "ARTRealtimePresence+Private.h"
+#import "ARTClientOptions+Private.h"
 
 @implementation ARTRealtimeChannels {
     ARTQueuedDealloc *_dealloc;
@@ -74,7 +75,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
         _realtime = realtime;
         _userQueue = _realtime.rest.userQueue;
         _queue = _realtime.rest.queue;
-        _channels = [[ARTChannels alloc] initWithDelegate:self dispatchQueue:_queue];
+        _channels = [[ARTChannels alloc] initWithDelegate:self dispatchQueue:_queue prefix:_realtime.options.channelNamePrefix];
     }
     return self;
 } ART_TRY_OR_MOVE_TO_FAILED_END
@@ -101,7 +102,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
 }
 
 - (void)release:(NSString *)name callback:(void (^)(ARTErrorInfo * _Nullable))cb {
-    name = [ARTChannels addPrefix:name];
+    name = [_channels addPrefix:name];
 
     if (cb) {
         void (^userCallback)(ARTErrorInfo *error) = cb;

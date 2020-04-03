@@ -347,12 +347,10 @@ class PushChannel : QuickSpec {
                 it("should return a paginated result with PushChannelSubscription") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "tester"
+                    // Prevent channel name to be prefixed by test-*
+                    options.channelNamePrefix = nil
                     let rest = ARTRest(options: options)
                     rest.internal.storage = MockDeviceStorage()
-                    // Prevent channel name to be prefixed by test-*
-                    let originalChannelNamePrefix = ARTChannels_getChannelNamePrefix
-                    defer { ARTChannels_getChannelNamePrefix = originalChannelNamePrefix }
-                    ARTChannels_getChannelNamePrefix = nil
 
                     // Activate device
                     let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")

@@ -3004,11 +3004,9 @@ class RealtimeClientPresence: QuickSpec {
                     let channelName = NSUUID().uuidString
                     let clientId = NSUUID().uuidString
                     options.tokenDetails = getTestTokenDetails(clientId: clientId, capability: "{\"\(channelName)\":[\"presence\",\"publish\"]}")
-                    let client = ARTRealtime(options: options)
                     // Prevent channel name to be prefixed by test-*
-                    let originalChannelNamePrefix = ARTChannels_getChannelNamePrefix
-                    defer { ARTChannels_getChannelNamePrefix = originalChannelNamePrefix }
-                    ARTChannels_getChannelNamePrefix = nil
+                    options.channelNamePrefix = nil
+                    let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get(channelName)
                     waitUntil(timeout: testTimeout) { done in

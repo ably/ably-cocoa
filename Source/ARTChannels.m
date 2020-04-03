@@ -13,8 +13,6 @@
 #import "ARTChannelOptions.h"
 #import "ARTRestChannel.h"
 
-NSString* (^_Nullable ARTChannels_getChannelNamePrefix)(void);
-
 @interface ARTChannels() {
     __weak id<ARTChannelsDelegate> _delegate; // weak because delegates outlive their counterpart
     dispatch_queue_t _queue;
@@ -24,11 +22,12 @@ NSString* (^_Nullable ARTChannels_getChannelNamePrefix)(void);
 
 @implementation ARTChannels
 
-- (instancetype)initWithDelegate:(id)delegate dispatchQueue:(dispatch_queue_t)queue {
+- (instancetype)initWithDelegate:(id)delegate dispatchQueue:(dispatch_queue_t)queue prefix:(NSString *)prefix {
     if (self = [super init]) {
         _queue = queue;
         _channels = [[NSMutableDictionary alloc] init];
         _delegate = delegate;
+        _prefix = prefix;
     }
     return self;
 }
@@ -58,15 +57,15 @@ dispatch_sync(_queue, ^{
 }
 
 - (BOOL)_exists:(NSString *)name {
-    return self->_channels[[ARTChannels addPrefix:name]] != nil;
+    return self->_channels[[self addPrefix:name]] != nil;
 }
 
 - (id)get:(NSString *)name {
-    return [self getChannel:[ARTChannels addPrefix:name] options:nil];
+    return [self getChannel:[self addPrefix:name] options:nil];
 }
 
 - (id)get:(NSString *)name options:(ARTChannelOptions *)options {
-    return [self getChannel:[ARTChannels addPrefix:name] options:options];
+    return [self getChannel:[self addPrefix:name] options:options];
 }
 
 - (void)release:(NSString *)name {
@@ -76,7 +75,7 @@ dispatch_sync(_queue, ^{
 }
 
 - (void)_release:(NSString *)name {
-    [self->_channels removeObjectForKey:[ARTChannels addPrefix:name]];
+    [self->_channels removeObjectForKey:[self addPrefix:name]];
 }
 
 - (ARTRestChannel *)getChannel:(NSString *)name options:(ARTChannelOptions *)options {
@@ -89,7 +88,7 @@ dispatch_sync(_queue, ^{
 
 - (ARTChannel *)_getChannel:(NSString *)name options:(ARTChannelOptions *)options addPrefix:(BOOL)addPrefix {
     if (addPrefix) {
-        name = [ARTChannels addPrefix:name];
+        name = [self addPrefix:name];
     }
     ARTChannel *channel = [self _get:name];
     if (!channel) {
@@ -105,15 +104,13 @@ dispatch_sync(_queue, ^{
     return self->_channels[name];
 }
 
-+ (NSString *)addPrefix:(NSString *)name {
-    if (ARTChannels_getChannelNamePrefix) {
-        NSString *prefix = [NSString stringWithFormat:@"%@-", ARTChannels_getChannelNamePrefix()];
-        if (![name hasPrefix:prefix]) {
-            return [NSString stringWithFormat:@"%@-%@", ARTChannels_getChannelNamePrefix(), name];
+- (NSString *)addPrefix:(NSString *)name {
+    if (_prefix) {
+        if (![name hasPrefix:_prefix]) {
+            return [NSString stringWithFormat:@"%@-%@", _prefix, name];
         }
     }
     return name;
 }
 
 @end
-
