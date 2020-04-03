@@ -3458,7 +3458,7 @@ class Auth : QuickSpec {
                             expect(timeOffset).toNot(equal(0))
                             expect(rest.auth.internal.timeOffset).toNot(beNil())
                             let calculatedServerDate = currentDate.addingTimeInterval(timeOffset)
-                            expect(calculatedServerDate).to(beCloseTo(mockServerDate, within: 0.5))
+                            expect(calculatedServerDate).to(beCloseTo(mockServerDate, within: 0.9))
                             expect(serverTimeRequestCount) == 1
                             done()
                         })
@@ -3477,7 +3477,7 @@ class Auth : QuickSpec {
                             }
                             expect(timeOffset).toNot(equal(0))
                             let calculatedServerDate = currentDate.addingTimeInterval(timeOffset)
-                            expect(calculatedServerDate).to(beCloseTo(mockServerDate, within: 0.5))
+                            expect(calculatedServerDate).to(beCloseTo(mockServerDate, within: 0.9))
                             expect(serverTimeRequestCount) == 1
                             done()
                         }
