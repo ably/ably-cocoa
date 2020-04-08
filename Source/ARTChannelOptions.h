@@ -17,7 +17,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong, nullable) ARTCipherParams *cipher;
 
-
 - (instancetype)initWithCipher:(id<ARTCipherParamsCompatible> _Nullable)cipherParams;
 - (instancetype)initWithCipherKey:(id<ARTCipherKeyCompatible>)key;
 

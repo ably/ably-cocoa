@@ -45,12 +45,13 @@ class RealtimeClientChannels: QuickSpec {
 
                 // RTS3a
                 it("should create a new Channel if none exists or return the existing one") {
-                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    let options = AblyTests.commonAppSetup()
+                    let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
 
                     expect(client.channels.internal.collection).to(haveCount(0))
                     let channel = client.channels.get("test")
-                    expect(channel.name).to(equal("\(ARTChannels_getChannelNamePrefix!())-test"))
+                    expect(channel.name).to(equal("\(options.channelNamePrefix!)-test"))
 
                     expect(client.channels.internal.collection).to(haveCount(1))
                     expect(client.channels.get("test").internal).to(beIdenticalTo(channel.internal))

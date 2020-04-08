@@ -363,7 +363,7 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
     }
     
     if (callback) {
-        _callback(result, error);
+        callback(result, error);
     }
 }
 

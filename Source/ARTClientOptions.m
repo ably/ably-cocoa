@@ -128,17 +128,18 @@ NSString *const ARTDefaultProduction = @"production";
     options.internalDispatchQueue = self.internalDispatchQueue;
     options.pushFullWait = self.pushFullWait;
     options.idempotentRestPublishing = self.idempotentRestPublishing;
+    options.channelNamePrefix = self.channelNamePrefix;
 
     return options;
 }
 
 - (BOOL)isBasicAuth {
     return self.useTokenAuth == false &&
-    self.key != nil &&
-    self.token == nil &&
-    self.tokenDetails == nil &&
-    self.authUrl == nil &&
-    self.authCallback == nil;
+        self.key != nil &&
+        self.token == nil &&
+        self.tokenDetails == nil &&
+        self.authUrl == nil &&
+        self.authCallback == nil;
 }
 
 - (BOOL)hasCustomRestHost {

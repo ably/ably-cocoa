@@ -13,8 +13,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-extern NSString* (^_Nullable ARTChannels_getChannelNamePrefix)(void);
-
 @protocol ARTChannelsDelegate <NSObject>
 
 - (id)makeChannel:(NSString *)channel options:(nullable ARTChannelOptions *)options;
@@ -25,15 +23,16 @@ extern NSString* (^_Nullable ARTChannels_getChannelNamePrefix)(void);
 
 @property (nonatomic, readonly) NSMutableDictionary<NSString *, ChannelType> *channels;
 @property (readonly, getter=getNosyncIterable) id<NSFastEnumeration> nosyncIterable;
+@property (nonatomic, readonly) NSString *prefix;
 
-+ (NSString *)addPrefix:(NSString *)name;
+- (NSString *)addPrefix:(NSString *)name;
 
 - (BOOL)_exists:(NSString *)name;
 - (ChannelType)_get:(NSString *)name;
 - (ChannelType)_getChannel:(NSString *)name options:(ARTChannelOptions * _Nullable)options addPrefix:(BOOL)addPrefix;
 - (void)_release:(NSString *)name;
 
-- (instancetype)initWithDelegate:(id<ARTChannelsDelegate>)delegate dispatchQueue:(dispatch_queue_t)queue;
+- (instancetype)initWithDelegate:(id<ARTChannelsDelegate>)delegate dispatchQueue:(dispatch_queue_t)queue prefix:(nullable NSString *)prefix;
 
 @end
 

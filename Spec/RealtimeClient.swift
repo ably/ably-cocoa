@@ -698,43 +698,43 @@ class RealtimeClient: QuickSpec {
 
                 it("authorize call should complete with an error if the request fails") {
                     let options = AblyTests.clientOptions()
-                    options.autoConnect = false
                     let testToken = getTestToken()
                     options.token = testToken
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
-                    client.internal.setTransport(TestProxyTransport.self)
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.once(.connected) { stateChange in
                             expect(stateChange?.reason).to(beNil())
                             done()
                         }
-                        client.connect()
                     }
 
                     waitUntil(timeout: testTimeout) { done in
                         let tokenParams = ARTTokenParams()
                         tokenParams.clientId = "john"
 
+                        let simulatedError = NSError(domain: ARTAblyErrorDomain, code: 1234, userInfo: nil)
+
                         let authOptions = ARTAuthOptions()
                         authOptions.authCallback = { tokenParams, completion in
-                            getTestTokenDetails(clientId: "tester", completion: completion)
+                            DispatchQueue.main.async {
+                                completion(nil, simulatedError)
+                            }
                         }
 
                         client.auth.authorize(tokenParams, options: authOptions) { tokenDetails, error in
-                            guard let error = error as? ARTErrorInfo else {
-                                fail("ErrorInfo is nil"); done(); return
+                            guard let error = error else {
+                                fail("Error is nil"); done(); return
                             }
-                            expect((error ).code).to(equal(40102))
-                            expect(error.localizedDescription).to(contain("incompatible credentials"))
+                            expect(error as NSError).to(equal(simulatedError))
                             expect(tokenDetails).to(beNil())
                             done()
                         }
                     }
 
                     expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connected))
-                    expect(client.auth.tokenDetails!.token).to(equal(testToken))
+                    expect(client.auth.tokenDetails?.token).to(equal(testToken))
                 }
 
                 // RTC8a3
@@ -1331,9 +1331,13 @@ class RealtimeClient: QuickSpec {
             }
             
             it ("subscriber should receive messages in the same order in which they have been sent") {
-                let realtime1 = ARTRealtime(options: AblyTests.commonAppSetup())
-                let realtime2 = ARTRealtime(options: AblyTests.commonAppSetup())
-                defer { realtime1.dispose(); realtime1.close(); realtime2.dispose(); realtime2.close(); }
+                let options = AblyTests.commonAppSetup()
+                let realtime1 = ARTRealtime(options: options)
+                let realtime2 = ARTRealtime(options: options)
+                defer {
+                    realtime1.dispose(); realtime1.close();
+                    realtime2.dispose(); realtime2.close();
+                }
                 waitUntil(timeout: testTimeout) { done in
                     realtime1.connection.on(.connected) { _ in
                         done()

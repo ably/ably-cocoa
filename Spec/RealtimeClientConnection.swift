@@ -750,7 +750,7 @@ class RealtimeClientConnection: QuickSpec {
 
                     it("message failure") {
                         let options = AblyTests.commonAppSetup()
-                        options.token = getTestToken(key: options.key, capability: "{ \"\(ARTChannels_getChannelNamePrefix!())-test\":[\"subscribe\"] }")
+                        options.token = getTestToken(key: options.key, capability: "{ \"\(options.channelNamePrefix!)-test\":[\"subscribe\"] }")
                         options.autoConnect = false
                         let client = ARTRealtime(options: options)
                         client.internal.setTransport(TestProxyTransport.self)
@@ -2613,7 +2613,9 @@ class RealtimeClientConnection: QuickSpec {
                         options.tokenDetails = getTestTokenDetails(ttl: 5.0)
                         let client = AblyTests.newRealtime(options)
                         defer { client.dispose(); client.close() }
-                        let rest = ARTRest(options: AblyTests.clientOptions(key: options.key!))
+                        let restOptions = AblyTests.clientOptions(key: options.key!)
+                        restOptions.channelNamePrefix = options.channelNamePrefix
+                        let rest = ARTRest(options: restOptions)
 
                         let channel = client.channels.get("test")
                         waitUntil(timeout: testTimeout) { done in
@@ -4219,8 +4221,10 @@ class RealtimeClientConnection: QuickSpec {
                     guard let accessToken = authMessage.auth?.accessToken else {
                         fail("Missing accessToken from AUTH ProtocolMessage auth attribute"); return
                     }
-                    
-                    let rest = ARTRest(options: AblyTests.clientOptions(key: options.key!))
+
+                    let restOptions = AblyTests.clientOptions(key: options.key!)
+                    restOptions.channelNamePrefix = options.channelNamePrefix
+                    let rest = ARTRest(options: restOptions)
 
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(2, done: done)
@@ -4294,8 +4298,10 @@ class RealtimeClientConnection: QuickSpec {
 
                     expect(client.connection.id).to(equal(initialConnectionId))
                     expect(authorizeMethodCallCount) == 1
-                    
-                    let rest = ARTRest(options: AblyTests.clientOptions(key: options.key!))
+
+                    let restOptions = AblyTests.clientOptions(key: options.key!)
+                    restOptions.channelNamePrefix = options.channelNamePrefix
+                    let rest = ARTRest(options: restOptions)
 
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(2, done: done)
@@ -4591,7 +4597,8 @@ class RealtimeClientConnection: QuickSpec {
 
                 let jsonOptions = AblyTests.commonAppSetup()
                 jsonOptions.useBinaryProtocol = false
-                let msgpackOptions = AblyTests.commonAppSetup()
+                // Keep the same key and channel prefix
+                let msgpackOptions = jsonOptions.copy() as! ARTClientOptions
                 msgpackOptions.useBinaryProtocol = true
 
                 it("should send messages through raw JSON POST and retrieve equal messages through MsgPack and JSON") {

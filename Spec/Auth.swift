@@ -983,8 +983,8 @@ class Auth : QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             realtime.connection.once(.failed) { stateChange in
-                                expect(stateChange!.reason?.code).to(equal(40102))
-                                expect(stateChange!.reason?.description).to(contain("incompatible credentials"))
+                                expect(stateChange!.reason?.code).to(equal(40101))
+                                expect(stateChange!.reason?.description.lowercased()).to(contain("invalid clientid for credentials"))
                                 done()
                             }
                             realtime.connect()
@@ -3458,7 +3458,7 @@ class Auth : QuickSpec {
                             expect(timeOffset).toNot(equal(0))
                             expect(rest.auth.internal.timeOffset).toNot(beNil())
                             let calculatedServerDate = currentDate.addingTimeInterval(timeOffset)
-                            expect(calculatedServerDate).to(beCloseTo(mockServerDate, within: 0.5))
+                            expect(calculatedServerDate).to(beCloseTo(mockServerDate, within: 0.9))
                             expect(serverTimeRequestCount) == 1
                             done()
                         })
@@ -3477,7 +3477,7 @@ class Auth : QuickSpec {
                             }
                             expect(timeOffset).toNot(equal(0))
                             let calculatedServerDate = currentDate.addingTimeInterval(timeOffset)
-                            expect(calculatedServerDate).to(beCloseTo(mockServerDate, within: 0.5))
+                            expect(calculatedServerDate).to(beCloseTo(mockServerDate, within: 0.9))
                             expect(serverTimeRequestCount) == 1
                             done()
                         }
@@ -4318,12 +4318,10 @@ class Auth : QuickSpec {
                     let capability = "{\"\(channelName)\":[\"subscribe\"]}"
                     let options = AblyTests.clientOptions()
                     options.tokenDetails = ARTTokenDetails(token: getJWTToken(capability: capability)!)
+                    // Prevent channel name to be prefixed by test-*
+                    options.channelNamePrefix = nil
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
-
-                    let originalARTChannels_getChannelNamePrefix = ARTChannels_getChannelNamePrefix
-                    defer { ARTChannels_getChannelNamePrefix = originalARTChannels_getChannelNamePrefix }
-                    ARTChannels_getChannelNamePrefix = nil // Force that channel name is not changed.
 
                     waitUntil(timeout: testTimeout) { done in
                         client.channels.get(channelName).publish(messageName, data: nil, callback: { error in

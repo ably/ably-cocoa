@@ -335,10 +335,10 @@ class RestClientChannel: QuickSpec {
 
             // RSL1h, RSL6a2
             it("should provide an optional argument that allows the extras value to be specified") {
-                let client = ARTRest(options: AblyTests.commonAppSetup())
-                let originalARTChannels_getChannelNamePrefix = ARTChannels_getChannelNamePrefix
-                defer { ARTChannels_getChannelNamePrefix = originalARTChannels_getChannelNamePrefix }
-                ARTChannels_getChannelNamePrefix = nil // Force that channel name is not changed.
+                let options = AblyTests.commonAppSetup()
+                // Prevent channel name to be prefixed by test-*
+                options.channelNamePrefix = nil
+                let client = ARTRest(options: options)
                 let channel = client.channels.get("pushenabled:test")
                 let extras = ["notification": ["title": "Hello from Ably!"]] as ARTJsonCompatible
 
@@ -995,22 +995,24 @@ class RestClientChannel: QuickSpec {
             // RSP3
             context("get") {
                 it("should return presence fixture data") {
-                    let originalARTChannels_getChannelNamePrefix = ARTChannels_getChannelNamePrefix
-                    defer { ARTChannels_getChannelNamePrefix = originalARTChannels_getChannelNamePrefix }
-                    ARTChannels_getChannelNamePrefix = nil // Force that channel name is not changed.
-
+                    let options = AblyTests.commonAppSetup()
+                    options.channelNamePrefix = nil
+                    client = ARTRest(options: options)
                     let key = appSetupJson["cipher"]["key"].string!
                     let cipherParams = ARTCipherParams.init(
                         algorithm: appSetupJson["cipher"]["algorithm"].string!,
                         key: key as ARTCipherKeyCompatible,
-                        iv: NSData(base64Encoded: appSetupJson["cipher"]["iv"].string!, options: NSData.Base64DecodingOptions.init(rawValue: 0))! as Data
+                        iv: Data(base64Encoded: appSetupJson["cipher"]["iv"].string!, options: Data.Base64DecodingOptions.init(rawValue: 0))!
                     )
-                    let channel = client.channels.get("persisted:presence_fixtures", options:ARTChannelOptions.init(cipher: cipherParams))
+                    let channel = client.channels.get("persisted:presence_fixtures", options: ARTChannelOptions(cipher: cipherParams))
                     var presenceMessages: [ARTPresenceMessage] = []
 
                     channel.presence.get() { result, _ in
                         if let items = result?.items {
                             presenceMessages.append(contentsOf:items)
+                        }
+                        else {
+                            fail("expected items to not be empty")
                         }
                     }
 

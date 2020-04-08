@@ -172,8 +172,16 @@ class Push : QuickSpec {
                 let deviceTokenBase64 = "HYRXxPSQdt1pnxqtDAvc6PTTLH7N6okiBhYyLClJdmQ="
                 let deviceTokenData = Data(base64Encoded: deviceTokenBase64, options: [])!
                 let expectedDeviceToken = "1d8457c4f49076dd699f1aad0c0bdce8f4d32c7ecdea89220616322c29497664"
-                ARTPush.didRegisterForRemoteNotifications(withDeviceToken: deviceTokenData, rest: rest)
-                expect(storage.keysWritten.keys).toEventually(contain(["ARTDeviceToken"]), timeout: testTimeout)
+                defer { rest.push.internal.activationMachine().transitions = nil }
+                waitUntil(timeout: testTimeout) { done in
+                    rest.push.internal.activationMachine().onEvent = { event, _ in
+                        if event is ARTPushActivationEventGotPushDeviceDetails {
+                            done()
+                        }
+                    }
+                    ARTPush.didRegisterForRemoteNotifications(withDeviceToken: deviceTokenData, rest: rest)
+                }
+                expect(storage.keysWritten.keys).to(contain(["ARTDeviceToken"]))
                 expect(storage.keysWritten.at("ARTDeviceToken")?.value as? String).to(equal(expectedDeviceToken))
             }
 

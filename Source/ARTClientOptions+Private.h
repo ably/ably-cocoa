@@ -10,6 +10,8 @@
 
 @interface ARTClientOptions ()
 
+@property (nullable, strong, nonatomic) NSString *channelNamePrefix;
+
 + (void)setDefaultEnvironment:(NSString *_Nullable)environment;
 + (BOOL)getDefaultIdempotentRestPublishingForVersion:(NSString *_Nonnull)version;
 - (NSURLComponents *_Nonnull)restUrlComponents;
