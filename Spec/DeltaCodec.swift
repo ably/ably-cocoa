@@ -9,7 +9,7 @@
 import Ably
 import Quick
 import Nimble
-import DeltaCodec
+import AblyDeltaCodec
 
 class DeltaCodec: QuickSpec {
     override func spec() {
