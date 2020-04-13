@@ -4144,6 +4144,53 @@ class RealtimeClientChannel: QuickSpec {
 
                 }
 
+                // RTL17
+                it("should not emit messages to subscribers if the channel is in any state other than ATTACHED") {
+                    let options = AblyTests.commonAppSetup()
+                    let client = ARTRealtime(options: options)
+                    defer { client.close(); client.dispose() }
+                    let channel = client.channels.get("foo")
+
+                    let m1 = ARTMessage(name: "m1", data: "d1")
+                    let m2 = ARTMessage(name: "m2", data: "d2")
+
+                    var subscribeEmittedCount = 0
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+                        channel.once(.attached) { _ in
+                            channel.subscribe { message in
+                                expect(channel.state).to(equal(.attached))
+                                expect(message.name).to(equal(m1.name))
+                                subscribeEmittedCount += 1
+                                partialDone()
+                            }
+                            channel.publish([m1]) { error in
+                                expect(error).to(beNil())
+                                partialDone()
+                            }
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        let partialDone = AblyTests.splitDone(2, done: done)
+                        channel.subscribe { message in
+                            fail("not supposed to receive messages when channel state is \(channel.state)")
+                        }
+                        channel.detach()
+                        channel.publish([m2]) { error in
+                            expect(error).to(beNil())
+                            partialDone()
+                        }
+                        delay(3.0) {
+                            // Wait some seconds to see if the channel doesn't emit a message
+                            partialDone()
+                        }
+                    }
+
+                    channel.unsubscribe()
+                    expect(subscribeEmittedCount) == 1
+                }
+
             }
 
             context("crypto") {
