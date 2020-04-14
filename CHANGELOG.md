@@ -1,5 +1,18 @@
 # Change Log
 
+## [1.1.22](https://github.com/ably/ably-cocoa/tree/1.1.22)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.21...1.1.22)
+
+**Fixed bugs:**
+
+- Allow customers to subclass ARTLog [\#1011](https://github.com/ably/ably-cocoa/pull/1011) ([QuintinWillison](https://github.com/QuintinWillison))
+
+**Merged pull requests:**
+
+- Test suite: keep channel name prefix for current ClientOptions while calling 'setupOptions' and other improvements [\#1009](https://github.com/ably/ably-cocoa/pull/1009) ([ricardopereira](https://github.com/ricardopereira))
+- Avoid leak from user incorrectly holding to authCallback's callback. [\#1000](https://github.com/ably/ably-cocoa/pull/1000) ([tcard](https://github.com/tcard))
+
 ## [1.1.21](https://github.com/ably/ably-cocoa/tree/1.1.21)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.20...1.1.21)
