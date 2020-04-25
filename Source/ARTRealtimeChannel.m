@@ -310,6 +310,28 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
 dispatch_sync(_queue, ^{
 ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
+    if ([data isKindOfClass:[ARTMessage class]]) {
+        ARTMessage *message = (ARTMessage *)data;
+        if (message.clientId && self->_realtime.rest.auth.clientId_nosync && ![message.clientId isEqualToString:self->_realtime.rest.auth.clientId_nosync]) {
+            callback([ARTErrorInfo createWithCode:ARTStateMismatchedClientId message:@"attempted to publish message with an invalid clientId"]);
+            return;
+        }
+    }
+    else if ([data isKindOfClass:[NSArray class]]) {
+        NSArray<ARTMessage *> *messages = (NSArray *)data;
+        for (ARTMessage *message in messages) {
+            if (message.clientId && self->_realtime.rest.auth.clientId_nosync && ![message.clientId isEqualToString:self->_realtime.rest.auth.clientId_nosync]) {
+                callback([ARTErrorInfo createWithCode:ARTStateMismatchedClientId message:@"attempted to publish message with an invalid clientId"]);
+                return;
+            }
+        }
+    }
+
+    if (!self.realtime.connection.isActive_nosync) {
+        if (callback) callback([self.realtime.connection error_nosync]);
+        return;
+    }
+
     ARTProtocolMessage *msg = [[ARTProtocolMessage alloc] init];
     msg.action = ARTProtocolMessageMessage;
     msg.channel = self.name;
@@ -409,49 +431,12 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         case ARTRealtimeChannelDetached:
         case ARTRealtimeChannelAttaching:
         case ARTRealtimeChannelAttached: {
-            [self sendMessage:pm callback:cb];
+            [self.realtime send:pm sentCallback:nil ackCallback:^(ARTStatus *status) {
+                if (cb) cb(status);
+            }];
             break;
         }
     }
-} ART_TRY_OR_MOVE_TO_FAILED_END
-}
-
-- (void)sendMessage:(ARTProtocolMessage *)pm callback:(void (^)(ARTStatus *))cb {
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
-    NSString *oldConnectionId = self.realtime.connection.id_nosync;
-    ARTProtocolMessage *pmSent = (ARTProtocolMessage *)[pm copy];
-
-    __block BOOL connectionStateHasChanged = false;
-    __block ARTEventListener *listener = [self.realtime.internalEventEmitter on:^(ARTConnectionStateChange *stateChange) {
-        if (!(stateChange.current == ARTRealtimeClosed ||
-              stateChange.current == ARTRealtimeFailed ||
-              (stateChange.current == ARTRealtimeConnected && ![oldConnectionId isEqual:self.realtime.connection.id_nosync] /* connection state lost */))) {
-            // Ok
-            return;
-        }
-        connectionStateHasChanged = true;
-        [self.realtime.internalEventEmitter off:listener];
-        if (!cb) return;
-
-        if (stateChange.current == ARTRealtimeClosed && stateChange.reason == nil && pmSent.action == ARTProtocolMessageClose) {
-            // No ack/nack is expected.
-            cb([ARTStatus state:ARTStateOk]);
-            return;
-        }
-
-        ARTErrorInfo *reason = stateChange.reason ? stateChange.reason : [ARTErrorInfo createWithCode:0 message:@"connection broken before receiving publishing acknowledgment."];
-        cb([ARTStatus state:ARTStateError info:reason]);
-    }];
-
-    for (ARTMessage *msg in pm.messages) {
-        msg.connectionId = _realtime.connection.id_nosync;
-    }
-
-    [self.realtime send:pm sentCallback:nil ackCallback:^(ARTStatus *status) {
-        // New state change can occur before receiving publishing acknowledgment.
-        [self.realtime.internalEventEmitter off:listener];
-        if (cb && !connectionStateHasChanged) cb(status);
-    }];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 

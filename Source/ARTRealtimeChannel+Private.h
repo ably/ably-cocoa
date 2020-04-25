@@ -76,8 +76,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)onSync:(ARTProtocolMessage *)message;
 - (void)onError:(ARTProtocolMessage *)error;
 
-- (void)sendMessage:(ARTProtocolMessage *)pm callback:(void (^)(ARTStatus *))cb;
-
 - (void)setSuspended:(ARTStatus *)status;
 - (void)setFailed:(ARTStatus *)status;
 - (void)throwOnDisconnectedOrFailed;

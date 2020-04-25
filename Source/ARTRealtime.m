@@ -557,7 +557,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     ARTStatus *status = nil;
     ARTEventListener *stateChangeEventListener = nil;
 
-    [self.logger debug:@"R:%p realtime is transitioning from %tu - %@ to %tu - %@", self, stateChange.previous, ARTRealtimeConnectionStateToStr(stateChange.previous), stateChange.current, ARTRealtimeConnectionStateToStr(stateChange.current)];
+    [self.logger debug:@"RT:%p realtime is transitioning from %tu - %@ to %tu - %@", self, stateChange.previous, ARTRealtimeConnectionStateToStr(stateChange.previous), stateChange.current, ARTRealtimeConnectionStateToStr(stateChange.current)];
 
     switch (stateChange.current) {
         case ARTRealtimeConnecting: {
@@ -643,12 +643,14 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             _transport = nil;
             self.rest.prioritizedHost = nil;
             [self.auth cancelAuthorization:nil];
+            [self failPendingMessages:[ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:80017 message:@"connection broken before receiving publishing acknowledgment"]]];
             break;
         case ARTRealtimeFailed:
             status = [ARTStatus state:ARTStateConnectionFailed info:stateChange.reason];
             [self abortAndReleaseTransport:status];
             self.rest.prioritizedHost = nil;
             [self.auth cancelAuthorization:stateChange.reason];
+            [self failPendingMessages:[ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:80000 message:@"connection broken before receiving publishing acknowledgment"]]];
             break;
         case ARTRealtimeDisconnected: {
             [self closeAndReleaseTransport];
@@ -816,7 +818,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             _resuming = false;
         }
         else if (message.error) {
-            [self.logger warn:@"RT:%p connection \"%@\" has resumed with non-fatal error %@", self, message.connectionId, message.error.message];
+            [self.logger warn:@"RT:%p connection \"%@\" has resumed with non-fatal error \"%@\"", self, message.connectionId, message.error.message];
             // The error will be emitted on `transition`
         }
         else {
@@ -1207,14 +1209,18 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (void)sendImpl:(ARTProtocolMessage *)msg sentCallback:(void (^)(ARTErrorInfo *))sentCallback ackCallback:(void (^)(ARTStatus *))ackCallback {
+- (void)sendImpl:(ARTProtocolMessage *)pm sentCallback:(void (^)(ARTErrorInfo *))sentCallback ackCallback:(void (^)(ARTStatus *))ackCallback {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
-    if (msg.ackRequired) {
-        msg.msgSerial = [NSNumber numberWithLongLong:self.msgSerial];
+    if (pm.ackRequired) {
+        pm.msgSerial = [NSNumber numberWithLongLong:self.msgSerial];
+    }
+
+    for (ARTMessage *msg in pm.messages) {
+        msg.connectionId = self.connection.id_nosync;
     }
 
     NSError *error = nil;
-    NSData *data = [self.rest.defaultEncoder encodeProtocolMessage:msg error:&error];
+    NSData *data = [self.rest.defaultEncoder encodeProtocolMessage:pm error:&error];
 
     if (error) {
         ARTErrorInfo *e = [ARTErrorInfo createFromNSError:error];
@@ -1229,14 +1235,14 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         return;
     }
 
-    if (msg.ackRequired) {
+    if (pm.ackRequired) {
         self.msgSerial++;
-        ARTPendingMessage *pm = [[ARTPendingMessage alloc] initWithProtocolMessage:msg ackCallback:ackCallback];
-        [self.pendingMessages addObject:pm];
+        ARTPendingMessage *pendingMessage = [[ARTPendingMessage alloc] initWithProtocolMessage:pm ackCallback:ackCallback];
+        [self.pendingMessages addObject:pendingMessage];
     }
 
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p sending action %tu - %@", self, msg.action, ARTProtocolMessageActionToStr(msg.action)];
-    if ([self.transport send:data withSource:msg]) {
+    [self.logger debug:__FILE__ line:__LINE__ message:@"RT:%p sending action %tu - %@", self, pm.action, ARTProtocolMessageActionToStr(pm.action)];
+    if ([self.transport send:data withSource:pm]) {
         if (sentCallback) sentCallback(nil);
         // `ackCallback()` is called with ACK/NACK action
     }
@@ -1260,6 +1266,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg sentCallback:nil ackCallback:ackCallback];
             [self.queuedMessages addObject:qm];
         }
+        [self.logger debug:__FILE__ line:__LINE__ message:@"RT:%p protocol message with action '%lu - %@' has been queued", self, (unsigned long)msg.action, ARTProtocolMessageActionToStr(msg.action)];
     }
     else if (ackCallback) {
         ARTErrorInfo *error = self.connection.errorReason_nosync;
@@ -1272,6 +1279,9 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 - (void)resendPendingMessages {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     NSArray<ARTPendingMessage *> *pms = self.pendingMessages;
+    if (pms.count > 0) {
+        [self.logger debug:__FILE__ line:__LINE__ message:@"RT:%p resending messages waiting for acknowledgment", self];
+    }
     self.pendingMessages = [NSMutableArray array];
     for (ARTPendingMessage *pendingMessage in pms) {
         [self send:pendingMessage.msg sentCallback:nil ackCallback:^(ARTStatus *status) {

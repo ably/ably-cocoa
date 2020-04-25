@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong) dispatch_queue_t queue;
 @property (readwrite, assign, nonatomic) ARTPresenceAction lastPresenceAction;
+@property (readonly, nonatomic) NSMutableArray<ARTQueuedMessage *> *pendingPresence;
 
 @end
 
