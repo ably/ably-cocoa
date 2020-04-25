@@ -2748,7 +2748,7 @@ class RealtimeClientChannel: QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             channel.publish([ARTMessage(name: nil, data: "message", clientId: "tester")]) { error in
-                                expect(error!.message).to(contain("mismatched clientId"))
+                                expect(error?.code).to(equal(Int(ARTState.mismatchedClientId.rawValue)))
                                 done()
                             }
                         }

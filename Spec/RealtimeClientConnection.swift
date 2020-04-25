@@ -3316,14 +3316,9 @@ class RealtimeClientConnection: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(nil, data: "message") { error in
-                            guard let error = error else {
-                                fail("Error is nil"); done(); return
-                            }
-                            expect(error.message).to(contain("invalid channel state"))
-                            guard let reason = channel.errorReason else {
-                                fail("Reason is nil"); done(); return
-                            }
-                            expect(reason.message).to(contain("host unreachable"))
+                            expect(error?.code).to(equal(2))
+                            expect(error?.message).to(contain("host unreachable"))
+                            expect(error?.reason).to(contain(".FakeNetworkResponse"))
                             done()
                         }
                     }
