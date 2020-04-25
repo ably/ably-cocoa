@@ -1965,12 +1965,12 @@ class RealtimeClientChannel: QuickSpec {
                         it("INITIALIZED then the messages should be published immediately") {
                             let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
                             defer { client.dispose(); client.close() }
-                            let channel = client.channels.get("test")
                             waitUntil(timeout: testTimeout) { done in
                                 client.connection.once(.connected) { _ in
                                     done()
                                 }
                             }
+                            let channel = client.channels.get("test")
                             expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
                             expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connected))
 
@@ -2127,10 +2127,11 @@ class RealtimeClientChannel: QuickSpec {
                         context("should NOT be queued instead it should be published if the channel is") {
                             it("INITIALIZED") {
                                 client.connect()
+                                expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
+
                                 expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
 
                                 waitUntil(timeout: testTimeout) { done in
-                                    expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
                                     publish(done)
                                     expect(client.internal.queuedMessages).to(haveCount(0))
                                     expect((client.internal.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
@@ -2280,13 +2281,13 @@ class RealtimeClientChannel: QuickSpec {
                     it("publish should not trigger an implicit attach") {
                         let client = ARTRealtime(options: AblyTests.commonAppSetup())
                         defer { client.dispose(); client.close() }
+                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
                         let channel = client.channels.get("test")
                         waitUntil(timeout: testTimeout) { done in
                             let protocolError = AblyTests.newErrorProtocolMessage()
                             expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
                             channel.publish(nil, data: "message") { error in
                                 expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
-                                expect(error).to(beIdenticalTo(protocolError.error))
 
                                 channel.publish(nil, data: "message") { error in
                                     expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
@@ -3511,7 +3512,6 @@ class RealtimeClientChannel: QuickSpec {
                     it("the channel is in the SUSPENDED state, an attempt to reattach the channel should be made immediately by sending a new ATTACH message and the channel should transition to the ATTACHING state with the error emitted in the ChannelStateChange event") {
                         let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
                         defer { client.dispose(); client.close() }
-                        let channel = client.channels.get("foo")
 
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.connected) { stateChange in
@@ -3527,6 +3527,8 @@ class RealtimeClientChannel: QuickSpec {
                         let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
                         defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
                         ARTDefault.setRealtimeRequestTimeout(1.0)
+
+                        let channel = client.channels.get("foo")
 
                         // Timeout
                         transport.actionsIgnored += [.attached]

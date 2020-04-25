@@ -3277,7 +3277,6 @@ class RealtimeClientPresence: QuickSpec {
 
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
-                    let channel = client.channels.get("test")
 
                     var clientMembers: ARTRealtime?
                     defer { clientMembers?.dispose(); clientMembers?.close() }
@@ -3287,6 +3286,7 @@ class RealtimeClientPresence: QuickSpec {
                         }
                     }
 
+                    let channel = client.channels.get("test")
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(2, done: done)
                         channel.presence.get() { members, error in

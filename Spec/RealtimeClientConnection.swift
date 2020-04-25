@@ -3985,15 +3985,18 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN19b
-                it("should resent the ATTACH message if there are any pending channels") {
+                it("should resend the ATTACH message if there are any pending channels") {
                     let options = AblyTests.commonAppSetup()
                     let client = AblyTests.newRealtime(options)
                     defer { client.dispose(); client.close() }
-                    let channel = client.channels.get("test")
-                    let transport = client.internal.transport as! TestProxyTransport
 
                     expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
 
+                    guard let transport = client.internal.transport as? TestProxyTransport else {
+                        fail("TestProxyTransport is not setup"); return
+                    }
+                    
+                    let channel = client.channels.get("test")
                     waitUntil(timeout: testTimeout) { done in
                         transport.ignoreSends = true
                         channel.attach() { error in
