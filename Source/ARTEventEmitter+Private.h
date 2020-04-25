@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (ARTEventListener *)setTimer:(NSTimeInterval)timeoutDeadline onTimeout:(void (^)(void))timeoutBlock;
 - (void)startTimer;
 - (void)stopTimer;
+- (void)restartTimer;
 
 @end
 

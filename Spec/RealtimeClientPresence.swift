@@ -703,6 +703,9 @@ class RealtimeClientPresence: QuickSpec {
                             channel.once(.attaching) { stateChange in
                                 expect(stateChange?.reason).to(beNil())
                                 expect(channel.presence.internal.pendingPresence.count) == 1
+                                AblyTests.queue.async {
+                                    channel.internal.setSuspended(ARTStatus.state(.error, info: ARTErrorInfo.create(withCode: 1234, message: "unknown error")))
+                                }
                                 partialDone()
                             }
                             channel.once(.suspended) { stateChange in
@@ -736,7 +739,6 @@ class RealtimeClientPresence: QuickSpec {
                         options.clientId = "tester"
                         options.tokenDetails = getTestTokenDetails(key: options.key!, clientId: options.clientId, ttl: 5.0)
                         let client = AblyTests.newRealtime(options)
-                        let transport = client.internal.transport as! TestProxyTransport
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get(channelName)
                         waitUntil(timeout: testTimeout) { done in
@@ -2942,7 +2944,9 @@ class RealtimeClientPresence: QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             let error = AblyTests.newErrorProtocolMessage()
                             channel.once(.attaching) { _ in
-                                channel.internal.onError(error)
+                                AblyTests.queue.async {
+                                    channel.internal.onError(error)
+                                }
                             }
                             (client.internal.transport as! TestProxyTransport).actionsIgnored += [.attached]
                             //Call: enterClient, updateClient and leaveClient
@@ -2975,7 +2979,7 @@ class RealtimeClientPresence: QuickSpec {
 
                 waitUntil(timeout: testTimeout) { done in
                     channel.presence.get() { members, error in
-                        expect(members!.first!.data as? String).to(equal("browser"))
+                        expect(members?.first?.data as? String).to(equal("browser"))
                         done()
                     }
                 }
@@ -3079,9 +3083,19 @@ class RealtimeClientPresence: QuickSpec {
 
                 // RTP16c
                 let cases: [ARTRealtimeConnectionState:(ARTRealtime)->()] = [
-                    .suspended: { client in client.internal.onSuspended() },
-                    .closed: { client in client.close() },
-                    .failed: { client in client.internal.onError(AblyTests.newErrorProtocolMessage()) }
+                    .suspended: { client in
+                        AblyTests.queue.async {
+                            client.internal.onSuspended()
+                        }
+                    },
+                    .closed: { client in
+                        client.close()
+                    },
+                    .failed: { client in
+                        AblyTests.queue.async {
+                            client.internal.onError(AblyTests.newErrorProtocolMessage())
+                        }
+                    }
                 ]
                 for (connectionState, performMethod) in cases {
                     it("should result in an error if the connection state is \(connectionState)") {

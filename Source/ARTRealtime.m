@@ -1029,6 +1029,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     _renewingToken = true;
     [self resetTransportWithResumeKey:_transport.resumeKey connectionSerial:_transport.connectionSerial];
+    [_connectingTimeoutListener restartTimer];
     [self transportConnectForcingNewToken:true newConnection:true];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
@@ -1046,6 +1047,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
         if (!forceNewToken && [self.auth tokenRemainsValid]) {
             // Reuse token
+            [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p reusing token for auth", self];
             [self.transport connectWithToken:self.auth.tokenDetails.token];
         }
         else {

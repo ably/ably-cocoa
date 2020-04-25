@@ -149,6 +149,12 @@
     _timeoutBlock = nil;
 }
 
+- (void)restartTimer {
+    artDispatchCancel(_work);
+    _timerIsRunning = false;
+    [self startTimer];
+}
+
 @end
 
 #pragma mark - ARTEventEmitter

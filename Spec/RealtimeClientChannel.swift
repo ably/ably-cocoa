@@ -32,20 +32,23 @@ class RealtimeClientChannel: QuickSpec {
                 options.clientId = "Client 2"
                 let client2 = AblyTests.newRealtime(options)
                 defer { client2.dispose(); client2.close() }
-                let channel2 = client2.channels.get(channel1.name)
+                let channel2 = client2.channels.get("room")
 
                 channel2.subscribe("Client 1") { message in
                     expect(message.data as? String).to(equal("message"))
                 }
 
-                channel2.attach()
+                waitUntil(timeout: testTimeout) { done in
+                    channel2.on(.attached) { stateChange in
+                        expect(channel2.state).to(equal(ARTRealtimeChannelState.attached))
+                        done()
+                    }
+                    channel2.attach()
 
-                expect(channel2.presence.syncComplete).to(beFalse())
-
-                expect(channel1.internal.presenceMap.members).to(haveCount(1))
-                expect(channel2.internal.presenceMap.members).to(haveCount(0))
-
-                expect(channel2.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
+                    expect(channel2.presence.syncComplete).to(beFalse())
+                    expect(channel1.internal.presenceMap.members).to(haveCount(1))
+                    expect(channel2.internal.presenceMap.members).to(haveCount(0))
+                }
 
                 expect(channel2.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
 
@@ -289,17 +292,21 @@ class RealtimeClientChannel: QuickSpec {
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
-                    channel.on { stateChange in
-                        guard let stateChange = stateChange else {
-                            fail("ChannelStageChange is nil"); return
-                        }
-                        expect(stateChange.reason).to(beNil())
-                        expect(stateChange.current.rawValue).to(equal(channel.state.rawValue))
-                        expect(stateChange.previous.rawValue).toNot(equal(channel.state.rawValue))
-                    }
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.on { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ChannelStageChange is nil"); return
+                            }
+                            expect(stateChange.reason).to(beNil())
+                            expect(stateChange.current).to(equal(channel.state))
+                            expect(stateChange.previous).toNot(equal(channel.state))
 
-                    channel.attach()
-                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
+                            if stateChange.current == .attached {
+                                done()
+                            }
+                        }
+                        channel.attach()
+                    }
                     channel.off()
 
                     waitUntil(timeout: testTimeout) { done in
@@ -2296,7 +2303,9 @@ class RealtimeClientChannel: QuickSpec {
                                 }
                             }
                             expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
-                            channel.internal.onError(protocolError)
+                            AblyTests.queue.async {
+                                channel.internal.onError(protocolError)
+                            }
                         }
                     }
                 }
