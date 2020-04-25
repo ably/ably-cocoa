@@ -532,9 +532,10 @@ class RealtimeClientPresence: QuickSpec {
                             let protocolError = AblyTests.newErrorProtocolMessage()
                             channel.presence.enterClient("user", data: nil) { error in
                                 expect(error).to(beIdenticalTo(protocolError.error))
-                                expect(client.internal.queuedMessages).to(haveCount(0))
+                                expect(channel.presence.internal.pendingPresence).to(haveCount(0))
                                 done()
                             }
+                            expect(channel.presence.internal.pendingPresence).to(haveCount(1))
                             client.internal.rest.queue.async {
                                 channel.internal.onError(protocolError)
                             }
@@ -701,13 +702,12 @@ class RealtimeClientPresence: QuickSpec {
                             let partialDone = AblyTests.splitDone(3, done: done)
                             channel.once(.attaching) { stateChange in
                                 expect(stateChange?.reason).to(beNil())
-                                expect(client.internal.queuedMessages.count) == 1
-                                channel.internal.setSuspended(ARTStatus.state(.error, info: ARTErrorInfo.create(withCode: 1234, message: "unknown error")))
+                                expect(channel.presence.internal.pendingPresence.count) == 1
                                 partialDone()
                             }
                             channel.once(.suspended) { stateChange in
                                 // All queued presence messages will fail immediately
-                                expect(client.internal.queuedMessages.count) == 0
+                                expect(channel.presence.internal.pendingPresence.count) == 0
                                 partialDone()
                             }
                             channel.presence.enterClient("tester", data: nil) { error in
@@ -3057,23 +3057,23 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP16c
-                it("should result in an error if the connection state is INITIALIZED") {
+                it("should result in an error if the connection state is INITIALIZED and queueMessages has been explicitly set to false") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
+                    options.queueMessages = false
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
-                    expect(client.internal.options.queueMessages).to(beTrue())
 
                     expect(client.connection.state).to(equal(ARTRealtimeConnectionState.initialized))
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.enterClient("user", data: nil) { error in
-                            expect(error).toNot(beNil())
-                            expect(client.internal.queuedMessages).to(haveCount(0))
+                            expect(error?.code).to(equal(80010))
+                            expect(channel.presence.internal.pendingPresence).to(haveCount(0))
                             done()
                         }
-                        expect(client.internal.queuedMessages).to(haveCount(0))
+                        expect(channel.presence.internal.pendingPresence).to(haveCount(0))
                     }
                 }
 
