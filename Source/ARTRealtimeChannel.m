@@ -879,7 +879,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
             NSError *decodeError = nil;
             msg = [msg decodeWithEncoder:dataEncoder error:&decodeError];
             if (decodeError) {
-                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createFromNSError:decodeError] prepend:@"Failed to decode data: "];
+                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:40018 message:decodeError.localizedFailureReason] prepend:@"Failed to decode data: "];
                 [self.logger error:@"R:%p C:%p (%@) %@", _realtime, self, self.name, errorInfo.message];
                 _errorReason = errorInfo;
                 ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:self.state_nosync previous:self.state_nosync event:ARTChannelEventUpdate reason:errorInfo];
@@ -905,6 +905,8 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
         ++i;
     }
+
+    _lastPayloadProtocolMessageChannelSerial = pm.channelSerial;
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
@@ -916,10 +918,10 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     for (ARTPresenceMessage *p in message.presence) {
         ARTPresenceMessage *presence = p;
         if (presence.data && dataEncoder) {
-            NSError *error = nil;
-            presence = [p decodeWithEncoder:dataEncoder error:&error];
-            if (error != nil) {
-                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createFromNSError:error] prepend:@"Failed to decode data: "];
+            NSError *decodeError = nil;
+            presence = [p decodeWithEncoder:dataEncoder error:&decodeError];
+            if (decodeError != nil) {
+                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:40018 message:decodeError.localizedFailureReason] prepend:@"Failed to decode data: "];
                 [self.logger error:@"RT:%p C:%p (%@) %@", _realtime, self, self.name, errorInfo.message];
             }
         }
@@ -938,8 +940,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
 
         ++i;
     }
-
-    _lastPayloadProtocolMessageChannelSerial = pm.channelSerial;
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 

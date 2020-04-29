@@ -187,7 +187,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self->_channel.realtime) {
     switch (self->_channel.state_nosync) {
         case ARTRealtimeChannelDetached:
         case ARTRealtimeChannelFailed:
-            if (callback) callback(nil, [ARTErrorInfo createWithCode:90001 message:[NSString stringWithFormat:@"unable to return the list of current members (incompatible channel state: %@)", ARTRealtimeChannelStateToStr(_channel.state_nosync)]]);
+            if (callback) callback(nil, [ARTErrorInfo createWithCode:90001 message:[NSString stringWithFormat:@"unable to return the list of current members (incompatible channel state: %@)", ARTRealtimeChannelStateToStr(self->_channel.state_nosync)]]);
             return;
         case ARTRealtimeChannelSuspended:
             if (query && !query.waitForSync) {

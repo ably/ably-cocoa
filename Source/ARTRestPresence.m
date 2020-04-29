@@ -215,10 +215,10 @@ ART_TRY_OR_REPORT_CRASH_START(_channel.rest) {
     ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **errorPtr) {
         id<ARTEncoder> encoder = [self->_channel.rest.encoders objectForKey:response.MIMEType];
         return [[encoder decodePresenceMessages:data error:errorPtr] artMap:^(ARTPresenceMessage *message) {
-            NSError *error = nil;
-            message = [message decodeWithEncoder:self->_channel.dataEncoder error:&error];
-            if (error != nil) {
-                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createFromNSError:error] prepend:@"Failed to decode data: "];
+            NSError *decodeError = nil;
+            message = [message decodeWithEncoder:self->_channel.dataEncoder error:&decodeError];
+            if (decodeError != nil) {
+                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:40018 message:decodeError.localizedFailureReason] prepend:@"Failed to decode data: "];
                 [self->_channel.logger error:@"RS:%p %@", self->_channel.rest, errorInfo.message];
             }
             return message;
