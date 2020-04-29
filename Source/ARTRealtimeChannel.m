@@ -477,6 +477,9 @@ ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
         void (^userCallback)(ARTMessage *_Nonnull m) = cb;
         cb = ^(ARTMessage *_Nonnull m) {
             ART_EXITING_ABLY_CODE(self->_realtime.rest);
+            if (self.state_nosync != ARTRealtimeChannelAttached) { //RTL17
+                return;
+            }
             dispatch_async(self->_userQueue, ^{
                 userCallback(m);
             });
@@ -500,7 +503,9 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
         [self.logger warn:@"R:%p C:%p (%@) subscribe has been ignored (attempted to subscribe while channel is in FAILED state)", self->_realtime, self, self.name];
         return;
     }
-    [self _attach:onAttach];
+    if (self.state_nosync == ARTRealtimeChannelInitialized) { //RTL7c
+        [self _attach:onAttach];
+    }
     listener = [self.messagesEventEmitter on:cb];
     [self.logger verbose:@"R:%p C:%p (%@) subscribe to all events", self->_realtime, self, self.name];
 } ART_TRY_OR_MOVE_TO_FAILED_END
