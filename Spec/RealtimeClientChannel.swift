@@ -4326,11 +4326,18 @@ class RealtimeClientChannel: QuickSpec {
                 p.messages = [m]
                 let channel = client.channels.get(NSUUID().uuidString)
                 waitUntil(timeout: testTimeout) { done in
-                    channel.subscribe{ message in
+                    channel.attach { _ in
+                        done()
+                    }
+                }
+                waitUntil(timeout: testTimeout) { done in
+                    channel.subscribe { message in
                         expect(message.id).to(equal("protocolId:0"))
                         done()
                     }
-                    channel.internal.onMessage(p)
+                    AblyTests.queue.async {
+                        channel.internal.onMessage(p)
+                    }
                 }
             }
         }
