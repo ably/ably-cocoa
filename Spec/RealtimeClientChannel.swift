@@ -4072,7 +4072,6 @@ class RealtimeClientChannel: QuickSpec {
                         it("should send an ATTACH message with params & modes if the channel is attaching") {
                             let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
                             defer { client.dispose(); client.close() }
-                            let channel = client.channels.get("foo")
 
                             waitUntil(timeout: testTimeout) { done in
                                 client.connection.once(.connected) { _ in
@@ -4090,6 +4089,7 @@ class RealtimeClientChannel: QuickSpec {
                                 "delta": "vcdiff"
                             ]
 
+                            let channel = client.channels.get("foo")
                             waitUntil(timeout: testTimeout) { done in
                                 let partialDone = AblyTests.splitDone(3, done: done)
                                 channel.once(.attaching) { _ in
