@@ -111,6 +111,7 @@ class RealtimeClient: QuickSpec {
                             }
                         }
                     }
+                    client.connection.off()
 
                     // New connection
                     let newClient = ARTRealtime(options: options)
@@ -133,6 +134,7 @@ class RealtimeClient: QuickSpec {
                             }
                         }
                     }
+                    newClient.connection.off()
                 }
 
                 //RTC1d

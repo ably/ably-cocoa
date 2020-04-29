@@ -1253,8 +1253,9 @@ class RestClient: QuickSpec {
                 }
 
                 let transport = realtime.internal.transport as! TestProxyTransport
-                let object = AblyTests.msgpackToJSON(transport.rawDataSent.last!)
-                expect(object["messages"][0]["data"].string).to(equal("message"))
+                let jsonArray = transport.rawDataSent.map({ AblyTests.msgpackToJSON($0) })
+                let messageJson = jsonArray.filter({ item in item["action"] == 15 }).last!
+                expect(messageJson["messages"][0]["data"].string).to(equal("message"))
             }
 
             // RSC8b

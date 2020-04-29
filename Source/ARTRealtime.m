@@ -557,7 +557,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     ARTStatus *status = nil;
     ARTEventListener *stateChangeEventListener = nil;
 
-    [self.logger debug:@"R:%p realtime is transitioning from %tu - %@ to %tu - %@", self, stateChange.previous, ARTRealtimeConnectionStateToStr(stateChange.previous), stateChange.current, ARTRealtimeConnectionStateToStr(stateChange.current)];
+    [self.logger debug:@"RT:%p realtime is transitioning from %tu - %@ to %tu - %@", self, stateChange.previous, ARTRealtimeConnectionStateToStr(stateChange.previous), stateChange.current, ARTRealtimeConnectionStateToStr(stateChange.current)];
 
     switch (stateChange.current) {
         case ARTRealtimeConnecting: {
@@ -643,12 +643,14 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             _transport = nil;
             self.rest.prioritizedHost = nil;
             [self.auth cancelAuthorization:nil];
+            [self failPendingMessages:[ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:80017 message:@"connection broken before receiving publishing acknowledgment"]]];
             break;
         case ARTRealtimeFailed:
             status = [ARTStatus state:ARTStateConnectionFailed info:stateChange.reason];
             [self abortAndReleaseTransport:status];
             self.rest.prioritizedHost = nil;
             [self.auth cancelAuthorization:stateChange.reason];
+            [self failPendingMessages:[ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:80000 message:@"connection broken before receiving publishing acknowledgment"]]];
             break;
         case ARTRealtimeDisconnected: {
             [self closeAndReleaseTransport];
@@ -699,11 +701,28 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             break;
     }
 
+    // If there's a channels.release() going on waiting on this channel
+    // to detach, doing those operations on it here would fire its event listener and
+    // immediately remove the channel from the channels dictionary, thus
+    // invalidating the iterator and causing a crashing.
+    //
+    // So copy the channels and operate on them later, when we're done using the iterator.
+    NSMutableArray<ARTRealtimeChannelInternal *> * const channels = [[NSMutableArray alloc] init];
+    for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
+        [channels addObject:channel];
+    }
+
     if ([self shouldSendEvents]) {
         [self sendQueuedMessages];
-        // For every Channel
-        for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
-            [channel sendQueuedMessages];
+
+        // Channels
+        for (ARTRealtimeChannelInternal *channel in channels) {
+            if (stateChange.previous == ARTRealtimeInitialized ||
+                stateChange.previous == ARTRealtimeConnecting ||
+                stateChange.previous == ARTRealtimeDisconnected) {
+                // RTL4i
+                [channel _attach:nil];
+            }
         }
     } else if (![self shouldQueueEvents]) {
         ARTStatus *channelStatus = status;
@@ -711,30 +730,24 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             channelStatus = stateChange.reason ? [ARTStatus state:ARTStateError info:stateChange.reason] : [self defaultError];
         }
         [self failQueuedMessages:channelStatus];
-        
-        // If there's a channels.release() going on waiting on this channel
-        // to detach, doing those operations on it here would fire its event listener and
-        // immediately remove the channel from the channels dictionary, thus
-        // invalidating the iterator and causing a crashing.
-        //
-        // So copy the channels and operate on them later, when we're done using the iterator.
-        NSMutableArray<ARTRealtimeChannelInternal *> * const channels = [[NSMutableArray alloc] init];
-        for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
-            [channels addObject:channel];
-        }
-        
+
+        // Channels
         for (ARTRealtimeChannelInternal *channel in channels) {
-            if (stateChange.current == ARTRealtimeClosing) {
-                //do nothing. Closed state is coming.
-            }
-            else if (stateChange.current == ARTRealtimeClosed) {
-                [channel detachChannel:[ARTStatus state:ARTStateOk]];
-            }
-            else if (stateChange.current == ARTRealtimeSuspended) {
-                [channel setSuspended:channelStatus];
-            }
-            else {
-                [channel setFailed:channelStatus];
+            switch (stateChange.current) {
+                case ARTRealtimeClosing:
+                    //do nothing. Closed state is coming.
+                    break;
+                case ARTRealtimeClosed:
+                    [channel detachChannel:[ARTStatus state:ARTStateOk]];
+                    break;
+                case ARTRealtimeSuspended:
+                    [channel setSuspended:channelStatus];
+                    break;
+                case ARTRealtimeFailed:
+                    [channel setFailed:channelStatus];
+                    break;
+                default:
+                    break;
             }
         }
     }
@@ -805,7 +818,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             _resuming = false;
         }
         else if (message.error) {
-            [self.logger warn:@"RT:%p connection \"%@\" has resumed with non-fatal error %@", self, message.connectionId, message.error.message];
+            [self.logger warn:@"RT:%p connection \"%@\" has resumed with non-fatal error \"%@\"", self, message.connectionId, message.error.message];
             // The error will be emitted on `transition`
         }
         else {
@@ -1016,6 +1029,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     _renewingToken = true;
     [self resetTransportWithResumeKey:_transport.resumeKey connectionSerial:_transport.connectionSerial];
+    [_connectingTimeoutListener restartTimer];
     [self transportConnectForcingNewToken:true newConnection:true];
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
@@ -1033,6 +1047,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 
         if (!forceNewToken && [self.auth tokenRemainsValid]) {
             // Reuse token
+            [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p reusing token for auth", self];
             [self.transport connectWithToken:self.auth.tokenDetails.token];
         }
         else {
@@ -1196,14 +1211,18 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
-- (void)sendImpl:(ARTProtocolMessage *)msg sentCallback:(void (^)(ARTErrorInfo *))sentCallback ackCallback:(void (^)(ARTStatus *))ackCallback {
+- (void)sendImpl:(ARTProtocolMessage *)pm sentCallback:(void (^)(ARTErrorInfo *))sentCallback ackCallback:(void (^)(ARTStatus *))ackCallback {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
-    if (msg.ackRequired) {
-        msg.msgSerial = [NSNumber numberWithLongLong:self.msgSerial];
+    if (pm.ackRequired) {
+        pm.msgSerial = [NSNumber numberWithLongLong:self.msgSerial];
+    }
+
+    for (ARTMessage *msg in pm.messages) {
+        msg.connectionId = self.connection.id_nosync;
     }
 
     NSError *error = nil;
-    NSData *data = [self.rest.defaultEncoder encodeProtocolMessage:msg error:&error];
+    NSData *data = [self.rest.defaultEncoder encodeProtocolMessage:pm error:&error];
 
     if (error) {
         ARTErrorInfo *e = [ARTErrorInfo createFromNSError:error];
@@ -1218,14 +1237,14 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         return;
     }
 
-    if (msg.ackRequired) {
+    if (pm.ackRequired) {
         self.msgSerial++;
-        ARTPendingMessage *pm = [[ARTPendingMessage alloc] initWithProtocolMessage:msg ackCallback:ackCallback];
-        [self.pendingMessages addObject:pm];
+        ARTPendingMessage *pendingMessage = [[ARTPendingMessage alloc] initWithProtocolMessage:pm ackCallback:ackCallback];
+        [self.pendingMessages addObject:pendingMessage];
     }
 
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p sending action %tu - %@", self, msg.action, ARTProtocolMessageActionToStr(msg.action)];
-    if ([self.transport send:data withSource:msg]) {
+    [self.logger debug:__FILE__ line:__LINE__ message:@"RT:%p sending action %tu - %@", self, pm.action, ARTProtocolMessageActionToStr(pm.action)];
+    if ([self.transport send:data withSource:pm]) {
         if (sentCallback) sentCallback(nil);
         // `ackCallback()` is called with ACK/NACK action
     }
@@ -1249,12 +1268,12 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
             ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg sentCallback:nil ackCallback:ackCallback];
             [self.queuedMessages addObject:qm];
         }
+        [self.logger debug:__FILE__ line:__LINE__ message:@"RT:%p protocol message with action '%lu - %@' has been queued", self, (unsigned long)msg.action, ARTProtocolMessageActionToStr(msg.action)];
     }
-    else {
-        // TODO review error code
-        if (ackCallback) {
-            ackCallback([ARTStatus state:ARTStateError]);
-        }
+    else if (ackCallback) {
+        ARTErrorInfo *error = self.connection.errorReason_nosync;
+        if (!error) error = [ARTErrorInfo createWithCode:90000 status:400 message:[NSString stringWithFormat:@"not possile to send message (state is %@)", ARTRealtimeConnectionStateToStr(self.connection.state_nosync)]];
+        ackCallback([ARTStatus state:ARTStateError info:error]);
     }
 } ART_TRY_OR_MOVE_TO_FAILED_END
 }
@@ -1262,6 +1281,9 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
 - (void)resendPendingMessages {
 ART_TRY_OR_MOVE_TO_FAILED_START(self) {
     NSArray<ARTPendingMessage *> *pms = self.pendingMessages;
+    if (pms.count > 0) {
+        [self.logger debug:__FILE__ line:__LINE__ message:@"RT:%p resending messages waiting for acknowledgment", self];
+    }
     self.pendingMessages = [NSMutableArray array];
     for (ARTPendingMessage *pendingMessage in pms) {
         [self send:pendingMessage.msg sentCallback:nil ackCallback:^(ARTStatus *status) {

@@ -17,7 +17,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)_unsubscribe;
 - (BOOL)syncComplete_nosync;
 
+- (void)sendPendingPresence;
+- (void)failPendingPresence:(ARTStatus *)status;
+
 @property (nonatomic, strong) dispatch_queue_t queue;
+@property (readwrite, assign, nonatomic) ARTPresenceAction lastPresenceAction;
+@property (readonly, nonatomic) NSMutableArray<ARTQueuedMessage *> *pendingPresence;
 
 @end
 

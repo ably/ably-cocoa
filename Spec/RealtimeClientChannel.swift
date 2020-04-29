@@ -32,20 +32,23 @@ class RealtimeClientChannel: QuickSpec {
                 options.clientId = "Client 2"
                 let client2 = AblyTests.newRealtime(options)
                 defer { client2.dispose(); client2.close() }
-                let channel2 = client2.channels.get(channel1.name)
+                let channel2 = client2.channels.get("room")
 
                 channel2.subscribe("Client 1") { message in
                     expect(message.data as? String).to(equal("message"))
                 }
 
-                channel2.attach()
+                waitUntil(timeout: testTimeout) { done in
+                    channel2.on(.attached) { stateChange in
+                        expect(channel2.state).to(equal(ARTRealtimeChannelState.attached))
+                        done()
+                    }
+                    channel2.attach()
 
-                expect(channel2.presence.syncComplete).to(beFalse())
-
-                expect(channel1.internal.presenceMap.members).to(haveCount(1))
-                expect(channel2.internal.presenceMap.members).to(haveCount(0))
-
-                expect(channel2.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
+                    expect(channel2.presence.syncComplete).to(beFalse())
+                    expect(channel1.internal.presenceMap.members).to(haveCount(1))
+                    expect(channel2.internal.presenceMap.members).to(haveCount(0))
+                }
 
                 expect(channel2.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
 
@@ -289,17 +292,21 @@ class RealtimeClientChannel: QuickSpec {
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
-                    channel.on { stateChange in
-                        guard let stateChange = stateChange else {
-                            fail("ChannelStageChange is nil"); return
-                        }
-                        expect(stateChange.reason).to(beNil())
-                        expect(stateChange.current.rawValue).to(equal(channel.state.rawValue))
-                        expect(stateChange.previous.rawValue).toNot(equal(channel.state.rawValue))
-                    }
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.on { stateChange in
+                            guard let stateChange = stateChange else {
+                                fail("ChannelStageChange is nil"); return
+                            }
+                            expect(stateChange.reason).to(beNil())
+                            expect(stateChange.current).to(equal(channel.state))
+                            expect(stateChange.previous).toNot(equal(channel.state))
 
-                    channel.attach()
-                    expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
+                            if stateChange.current == .attached {
+                                done()
+                            }
+                        }
+                        channel.attach()
+                    }
                     channel.off()
 
                     waitUntil(timeout: testTimeout) { done in
@@ -494,6 +501,87 @@ class RealtimeClientChannel: QuickSpec {
                                 partialDone()
                             }
                         }
+                    }
+
+                    // TO3g
+                    it("should immediately fail if not in the connected state") {
+                        let options = AblyTests.commonAppSetup()
+                        options.queueMessages = false
+                        options.autoConnect = false
+                        let client = ARTRealtime(options: options)
+                        defer { client.dispose(); client.close() }
+                        let channel = client.channels.get("foo")
+                        waitUntil(timeout: testTimeout) { done in
+                            expect(client.connection.state).to(equal(.initialized))
+                            channel.publish(nil, data: "message") { error in
+                                expect(error?.code).to(equal(80010))
+                                expect(error?.message).to(contain("Invalid operation"))
+                                done()
+                            }
+                        }
+                        expect(channel.state).to(equal(.initialized))
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connect()
+                            expect(client.connection.state).to(equal(.connecting))
+                            channel.publish(nil, data: "message") { error in
+                                expect(error?.code).to(equal(80010))
+                                expect(error?.message).to(contain("Invalid operation"))
+                                done()
+                            }
+                        }
+                        expect(channel.state).toEventually(equal(.attached), timeout: testTimeout)
+                    }
+
+                    // TO3g and https://github.com/ably/ably-cocoa/issues/1004
+                    it("should keep the channels attached when client reconnected successfully and queue messages is disabled") {
+                        let options = AblyTests.commonAppSetup()
+                        options.queueMessages = false
+                        options.autoConnect = false
+                        let client = ARTRealtime(options: options)
+                        defer { client.dispose(); client.close() }
+                        client.internal.setTransport(TestProxyTransport.self)
+                        client.internal.setReachabilityClass(TestReachability.self)
+                        let channel = client.channels.get("foo")
+
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.connected) { _ in
+                                done()
+                            }
+                            client.connect()
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish(nil, data: "message") { error in
+                                expect(error).to(beNil())
+                                done()
+                            }
+                        }
+
+                        expect(channel.state).to(equal(.attached))
+                        channel.on { stateChange in
+                            if stateChange?.current != .attached {
+                                fail("Channel state should not change")
+                            }
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.disconnected) { stateChange in
+                                expect(stateChange?.reason?.message).to(satisfyAnyOf(contain("unreachable host"), contain("network is down")))
+                                done()
+                            }
+                            client.simulateNoInternetConnection()
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.connected) { stateChange in
+                                expect(stateChange?.previous).to(equal(.connecting))
+                                done()
+                            }
+                            client.simulateRestoreInternetConnection()
+                        }
+
+                        channel.off()
+                        expect(channel.state).to(equal(.attached))
                     }
 
                 }
@@ -934,16 +1022,17 @@ class RealtimeClientChannel: QuickSpec {
                         defer { client.dispose(); client.close() }
 
                         let channel = client.channels.get("test")
-                        expect(client.connection.state).to(equal(ARTRealtimeConnectionState.initialized))
+                        expect(client.connection.state).to(equal(.initialized))
                         waitUntil(timeout: testTimeout) { done in
-                            channel.attach { error in
-                                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connected))
-                                expect(error).to(beNil())
+                            channel.on(.attached) { stateChange in
+                                expect(client.connection.state).to(equal(.connected))
+                                expect(stateChange?.reason).to(beNil())
                                 done()
                             }
 
                             client.connect()
                         }
+                        expect(channel.state).to(equal(.attached))
                     }
 
                     it("CONNECTING") {
@@ -1883,12 +1972,12 @@ class RealtimeClientChannel: QuickSpec {
                         it("INITIALIZED then the messages should be published immediately") {
                             let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
                             defer { client.dispose(); client.close() }
-                            let channel = client.channels.get("test")
                             waitUntil(timeout: testTimeout) { done in
                                 client.connection.once(.connected) { _ in
                                     done()
                                 }
                             }
+                            let channel = client.channels.get("test")
                             expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
                             expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connected))
 
@@ -2016,7 +2105,7 @@ class RealtimeClientChannel: QuickSpec {
                                     expect(client.connection.state).to(equal(ARTRealtimeConnectionState.initialized))
                                     publish(done)
                                     client.connect()
-                                    expect(channel.internal.queuedMessages).to(haveCount(1))
+                                    expect(client.internal.queuedMessages).to(haveCount(1))
                                 }
                             }
 
@@ -2025,7 +2114,7 @@ class RealtimeClientChannel: QuickSpec {
                                     client.connect()
                                     expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connecting))
                                     publish(done)
-                                    expect(channel.internal.queuedMessages).to(haveCount(1))
+                                    expect(client.internal.queuedMessages).to(haveCount(1))
                                 }
                             }
 
@@ -2037,7 +2126,7 @@ class RealtimeClientChannel: QuickSpec {
                                 waitUntil(timeout: testTimeout) { done in
                                     expect(client.connection.state).to(equal(ARTRealtimeConnectionState.disconnected))
                                     publish(done)
-                                    expect(channel.internal.queuedMessages).to(haveCount(1))
+                                    expect(client.internal.queuedMessages).to(haveCount(1))
                                 }
                             }
                         }
@@ -2045,12 +2134,13 @@ class RealtimeClientChannel: QuickSpec {
                         context("should NOT be queued instead it should be published if the channel is") {
                             it("INITIALIZED") {
                                 client.connect()
+                                expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
+
                                 expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
 
                                 waitUntil(timeout: testTimeout) { done in
-                                    expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
                                     publish(done)
-                                    expect(channel.internal.queuedMessages).to(haveCount(0))
+                                    expect(client.internal.queuedMessages).to(haveCount(0))
                                     expect((client.internal.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
                                 }
                             }
@@ -2063,7 +2153,7 @@ class RealtimeClientChannel: QuickSpec {
                                     channel.attach()
                                     expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
                                     publish(done)
-                                    expect(channel.internal.queuedMessages).to(haveCount(0))
+                                    expect(client.internal.queuedMessages).to(haveCount(0))
                                     expect((client.internal.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
                                 }
                             }
@@ -2097,7 +2187,7 @@ class RealtimeClientChannel: QuickSpec {
 
                                 waitUntil(timeout: testTimeout) { done in
                                     publish(done)
-                                    expect(channel.internal.queuedMessages).to(haveCount(1))
+                                    expect(client.internal.queuedMessages).to(haveCount(1))
                                 }
                             }
                         }
@@ -2198,13 +2288,13 @@ class RealtimeClientChannel: QuickSpec {
                     it("publish should not trigger an implicit attach") {
                         let client = ARTRealtime(options: AblyTests.commonAppSetup())
                         defer { client.dispose(); client.close() }
+                        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
                         let channel = client.channels.get("test")
                         waitUntil(timeout: testTimeout) { done in
                             let protocolError = AblyTests.newErrorProtocolMessage()
                             expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
                             channel.publish(nil, data: "message") { error in
                                 expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
-                                expect(error).to(beIdenticalTo(protocolError.error))
 
                                 channel.publish(nil, data: "message") { error in
                                     expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
@@ -2213,7 +2303,9 @@ class RealtimeClientChannel: QuickSpec {
                                 }
                             }
                             expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
-                            channel.internal.onError(protocolError)
+                            AblyTests.queue.async {
+                                channel.internal.onError(protocolError)
+                            }
                         }
                     }
                 }
@@ -2656,7 +2748,7 @@ class RealtimeClientChannel: QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             channel.publish([ARTMessage(name: nil, data: "message", clientId: "tester")]) { error in
-                                expect(error!.message).to(contain("mismatched clientId"))
+                                expect(error?.code).to(equal(Int(ARTState.mismatchedClientId.rawValue)))
                                 done()
                             }
                         }
@@ -3429,7 +3521,6 @@ class RealtimeClientChannel: QuickSpec {
                     it("the channel is in the SUSPENDED state, an attempt to reattach the channel should be made immediately by sending a new ATTACH message and the channel should transition to the ATTACHING state with the error emitted in the ChannelStateChange event") {
                         let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
                         defer { client.dispose(); client.close() }
-                        let channel = client.channels.get("foo")
 
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.connected) { stateChange in
@@ -3445,6 +3536,8 @@ class RealtimeClientChannel: QuickSpec {
                         let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
                         defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
                         ARTDefault.setRealtimeRequestTimeout(1.0)
+
+                        let channel = client.channels.get("foo")
 
                         // Timeout
                         transport.actionsIgnored += [.attached]

@@ -30,8 +30,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)id_nosync;
 - (NSString *)key_nosync;
 - (int64_t)serial_nosync;
+- (BOOL)isActive_nosync;
 - (ARTRealtimeConnectionState)state_nosync;
-- (ARTErrorInfo *)errorReason_nosync;
+- (nullable ARTErrorInfo *)errorReason_nosync;
+- (nullable ARTErrorInfo *)error_nosync;
 - (NSString *)recoveryKey_nosync;
 
 @property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTConnectionStateChange *> *eventEmitter;

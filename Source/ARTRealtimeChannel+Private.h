@@ -35,15 +35,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, weak, nonatomic) ARTRealtimeInternal *realtime; // weak because realtime owns self
 @property (readonly, strong, nonatomic) ARTRestChannelInternal *restChannel;
-@property (readwrite, strong, nonatomic) NSMutableArray *queuedMessages;
 @property (readwrite, strong, nonatomic, nullable) NSString *attachSerial;
 @property (readonly, nullable, getter=getClientId) NSString *clientId;
 @property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTChannelStateChange *> *internalEventEmitter;
 @property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTChannelStateChange *> *statesEventEmitter;
 @property (readonly, strong, nonatomic) ARTEventEmitter<id<ARTEventIdentification>, ARTMessage *> *messagesEventEmitter;
+
 @property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTPresenceMessage *> *presenceEventEmitter;
 @property (readwrite, strong, nonatomic) ARTPresenceMap *presenceMap;
-@property (readwrite, assign, nonatomic) ARTPresenceAction lastPresenceAction;
 
 - (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options;
 + (instancetype)channelWithRealtime:(ARTRealtimeInternal *)realtime andName:(NSString *)name withOptions:(ARTChannelOptions *)options;
@@ -67,7 +66,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status;
 
 - (void)onChannelMessage:(ARTProtocolMessage *)message;
-- (void)publishPresence:(ARTPresenceMessage *)pm callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb;
 - (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(void (^)(ARTStatus *))cb;
 
 - (void)setAttached:(ARTProtocolMessage *)message;
@@ -77,10 +75,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)onPresence:(ARTProtocolMessage *)message;
 - (void)onSync:(ARTProtocolMessage *)message;
 - (void)onError:(ARTProtocolMessage *)error;
-
-- (void)sendQueuedMessages;
-- (void)failQueuedMessages:(ARTStatus *)status;
-- (void)sendMessage:(ARTProtocolMessage *)pm callback:(void (^)(ARTStatus *))cb;
 
 - (void)setSuspended:(ARTStatus *)status;
 - (void)setFailed:(ARTStatus *)status;

@@ -142,12 +142,12 @@ class Push : QuickSpec {
                             partialDone()
                         }
                         else if event is ARTPushActivationEventGotDeviceRegistration {
+                            stateMachine.transitions = nil
                             partialDone()
                         }
                     }
                     rest.push.activate()
                 }
-                stateMachine.transitions = nil
 
                 expect(rest.device.clientId) == expectedClientId
                 expect(rest.auth.clientId) == expectedClientId
