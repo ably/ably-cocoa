@@ -1,17 +1,44 @@
 # Change Log
 
+## [1.1.23](https://github.com/ably/ably-cocoa/tree/1.1.23)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.22...1.1.23)
+
+**Implemented enhancements:**
+
+- Remove queueing messages in a channel-level queue [\#894](https://github.com/ably/ably-cocoa/issues/894)
+
+**Fixed bugs:**
+
+- lib fails all the user's channels on transition to connecting/disconnected if queueMessages is disabled? [\#1004](https://github.com/ably/ably-cocoa/issues/1004)
+
+**Closed issues:**
+
+- Implement push spec update https://github.com/ably/docs/pull/710 [\#876](https://github.com/ably/ably-cocoa/issues/876)
+
+**Merged pull requests:**
+
+- Refine release procedure [\#1014](https://github.com/ably/ably-cocoa/pull/1014) ([QuintinWillison](https://github.com/QuintinWillison))
+- Fix 'queueMessages' expected behaviour [\#1005](https://github.com/ably/ably-cocoa/pull/1005) ([ricardopereira](https://github.com/ricardopereira))
+
 ## [1.1.22](https://github.com/ably/ably-cocoa/tree/1.1.22)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.21...1.1.22)
 
 **Fixed bugs:**
 
-- Allow customers to subclass ARTLog [\#1011](https://github.com/ably/ably-cocoa/pull/1011) ([QuintinWillison](https://github.com/QuintinWillison))
+- Custom logger not working? [\#1010](https://github.com/ably/ably-cocoa/issues/1010)
+
+**Closed issues:**
+
+- request\_id in REST requests [\#1001](https://github.com/ably/ably-cocoa/issues/1001)
+- Memory leak issues preventing destroying client [\#997](https://github.com/ably/ably-cocoa/issues/997)
 
 **Merged pull requests:**
 
 - Test suite: keep channel name prefix for current ClientOptions while calling 'setupOptions' and other improvements [\#1009](https://github.com/ably/ably-cocoa/pull/1009) ([ricardopereira](https://github.com/ricardopereira))
 - Avoid leak from user incorrectly holding to authCallback's callback. [\#1000](https://github.com/ably/ably-cocoa/pull/1000) ([tcard](https://github.com/tcard))
+- Allow customers to subclass ARTLog [\#1011](https://github.com/ably/ably-cocoa/pull/1011) ([QuintinWillison](https://github.com/QuintinWillison))
 
 ## [1.1.21](https://github.com/ably/ably-cocoa/tree/1.1.21)
 
