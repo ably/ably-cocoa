@@ -278,6 +278,30 @@ class AblyTests {
         return value
     }
 
+    class func wait(for expectations: [XCTestExpectation], timeout seconds: TimeInterval = testTimeout, file: Nimble.FileString = #file, line: UInt = #line) {
+        let result = XCTWaiter.wait(
+            for: expectations,
+            timeout: seconds,
+            enforceOrder: true
+        )
+
+        let title: String = "Waiter of expectations \(expectations.map({ $0.description }))"
+        switch result {
+        case .timedOut:
+            fail(title + " timed out (seconds: \(seconds)).", file: file, line: line)
+        case .invertedFulfillment:
+            fail(title + " shouldn't receive a fulfillment.", file: file, line: line)
+        case .interrupted:
+            fail(title + " got interrupted.", file: file, line: line)
+        case .incorrectOrder:
+            fail(title + " failed with incorrect order.", file: file, line: line)
+        case .completed:
+            break //completed successfully
+        default:
+            preconditionFailure("XCTWaiter.Result.\(String(describing: result)) not implemented")
+        }
+    }
+
     // MARK: Crypto
 
     struct CryptoTestItem {
