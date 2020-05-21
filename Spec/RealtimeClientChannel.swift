@@ -2195,15 +2195,22 @@ class RealtimeClientChannel: QuickSpec {
 
                     // RTL6c4
                     context("will result in an error if the") {
-                        let options = AblyTests.commonAppSetup()
-                        options.suspendedRetryTimeout = 0.3
-                        options.autoConnect = false
+                        var options: ARTClientOptions!
                         var client: ARTRealtime!
                         var channel: ARTRealtimeChannel!
 
                         let previousConnectionStateTtl = ARTDefault.connectionStateTtl()
 
+                        func setupDependencies() {
+                            if (options == nil) {
+                                options = AblyTests.commonAppSetup()
+                                options.suspendedRetryTimeout = 0.3
+                                options.autoConnect = false
+                            }
+                        }
+
                         beforeEach {
+                            setupDependencies()
                             ARTDefault.setConnectionStateTtl(0.3)
                             client = AblyTests.newRealtime(options)
                             channel = client.channels.get("test")
