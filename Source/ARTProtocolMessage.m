@@ -11,6 +11,7 @@
 #import "ARTStatus.h"
 #import "ARTConnectionDetails.h"
 #import "ARTNSString+ARTUtil.h"
+#import "ARTNSArray+ARTFunctional.h"
 
 @implementation ARTProtocolMessage
 
@@ -85,23 +86,48 @@
     return pm;
 }
 
- - (BOOL)mergeFrom:(ARTProtocolMessage *)other {
-     if (![other.channel isEqualToString:self.channel] || other.action != self.action) {
+ - (BOOL)mergeFrom:(ARTProtocolMessage *)src {
+     if (![src.channel isEqualToString:self.channel] || src.action != self.action) {
+         // RTL6d3
          return NO;
      }
-     if ([self mergeWouldExceedMaxSize:other.messages]) {
+     if ([self mergeWouldExceedMaxSize:src.messages]) {
+         // RTL6d1
          return NO;
      }
-     if ([self clientIdsAreDifferent:other.messages]) {
+     if ([self clientIdsAreDifferent:src.messages]) {
+         // RTL6d2
+         return NO;
+     }
+
+     NSArray *proposed = nil;
+     switch (self.action) {
+         // RTL6d4, RTL6d6
+         case ARTProtocolMessageMessage:
+             proposed = [self.messages arrayByAddingObjectsFromArray:src.messages];
+             break;
+         case ARTProtocolMessagePresence:
+             proposed = [self.presence arrayByAddingObjectsFromArray:src.presence];
+             break;
+         default:
+             proposed = nil;
+             return NO;
+     }
+
+     NSUInteger ids = [proposed artFilter:^BOOL(ARTMessage *message) {
+         return message.id != nil;
+     }].count;
+     if (ids > 0) {
+         // RTL6d7
          return NO;
      }
 
      switch (self.action) {
          case ARTProtocolMessageMessage:
-             self.messages = [self.messages arrayByAddingObjectsFromArray:other.messages];
+             self.messages = proposed;
              return YES;
          case ARTProtocolMessagePresence:
-             self.presence = [self.presence arrayByAddingObjectsFromArray:other.presence];
+             self.presence = proposed;
              return YES;
          default:
              return NO;
@@ -141,7 +167,6 @@
     }
     return totalSize > maxSize;
 }
-
 
 - (void)setConnectionSerial:(int64_t)connectionSerial {
     _connectionSerial =connectionSerial;

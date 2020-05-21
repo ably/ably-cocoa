@@ -1257,18 +1257,16 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self) {
         [self sendImpl:msg sentCallback:sentCallback ackCallback:ackCallback];
     }
     else if ([self shouldQueueEvents]) {
-        BOOL merged = NO;
-        for (ARTQueuedMessage *queuedMsg in self.queuedMessages) {
-            merged = [queuedMsg mergeFrom:msg sentCallback:nil ackCallback:ackCallback];
-            if (merged) {
-                break;
-            }
-        }
+        ARTQueuedMessage *lastQueuedMessage = self.queuedMessages.lastObject; //RTL6d5
+        BOOL merged = [lastQueuedMessage mergeFrom:msg sentCallback:nil ackCallback:ackCallback];
         if (!merged) {
             ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg sentCallback:nil ackCallback:ackCallback];
             [self.queuedMessages addObject:qm];
+            [self.logger debug:__FILE__ line:__LINE__ message:@"RT:%p (channel: %@) protocol message with action '%lu - %@' has been queued (%@)", self, msg.channel, (unsigned long)msg.action, ARTProtocolMessageActionToStr(msg.action), msg.messages];
         }
-        [self.logger debug:__FILE__ line:__LINE__ message:@"RT:%p protocol message with action '%lu - %@' has been queued", self, (unsigned long)msg.action, ARTProtocolMessageActionToStr(msg.action)];
+        else {
+            [self.logger verbose:__FILE__ line:__LINE__ message:@"RT:%p (channel: %@) message %@ has been bundled to %@", self, msg.channel, msg, lastQueuedMessage.msg];
+        }
     }
     else if (ackCallback) {
         ARTErrorInfo *error = self.connection.errorReason_nosync;
