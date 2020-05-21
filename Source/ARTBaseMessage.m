@@ -79,10 +79,18 @@
         }
         else if ([self.data isKindOfClass:[NSData class]]) {
             finalResult += [self.data length];
-        } else {
+        }
+        else {
             NSError *error = nil;
+            NSJSONWritingOptions options;
+            if (@available(iOS 13.0, *)) {
+                options = NSJSONWritingWithoutEscapingSlashes;
+            }
+            else {
+                options = 0; //no specific format
+            }
             NSData *jsonData = [NSJSONSerialization dataWithJSONObject:self.data
-                                                               options:NSJSONWritingPrettyPrinted
+                                                               options:options
                                                                  error:&error];
             if (!error) {
                 finalResult += [jsonData length];

@@ -27,7 +27,14 @@
 
 - (NSData *)encode:(id)obj error:(NSError **)error {
     @try {
-        return [NSJSONSerialization dataWithJSONObject:obj options:0 error:error];
+        NSJSONWritingOptions options;
+        if (@available(iOS 11.0, *)) {
+            options = NSJSONWritingSortedKeys;
+        }
+        else {
+            options = 0;
+        }
+        return [NSJSONSerialization dataWithJSONObject:obj options:options error:error];
     }
     @catch (NSException *exception) {
         if (error) {
