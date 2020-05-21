@@ -2474,6 +2474,112 @@ class RealtimeClientChannel: QuickSpec {
                         }
                     }
 
+                    it("should only bundle messages when it respects all of the constraints") {
+                        let defaultMaxMessageSize = ARTDefault.maxMessageSize()
+                        ARTDefault.setMaxMessageSize(256)
+                        defer { ARTDefault.setMaxMessageSize(defaultMaxMessageSize) }
+
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let client = ARTRealtime(options: options)
+                        defer { client.dispose(); client.close() }
+                        let channelOne = client.channels.get("bundlingOne")
+                        let channelTwo = client.channels.get("bundlingTwo")
+
+                        channelTwo.publish("2a", data: ["expectedBundle": 0])
+                        channelOne.publish("a", data: ["expectedBundle": 1])
+                        channelOne.publish([
+                            ARTMessage(name: "b", data: ["expectedBundle": 1]),
+                            ARTMessage(name: "c", data: ["expectedBundle": 1])
+                        ])
+                        channelOne.publish("d", data: ["expectedBundle": 1])
+                        channelTwo.publish("2b", data: ["expectedBundle": 2])
+                        channelOne.publish("e", data: ["expectedBundle": 3])
+                        channelOne.publish([ARTMessage(name: "f", data: ["expectedBundle": 3])])
+                        // RTL6d2
+                        channelOne.publish("g", data: ["expectedBundle": 4], clientId: "foo")
+                        channelOne.publish("h", data: ["expectedBundle": 4], clientId: "foo")
+                        channelOne.publish("i", data: ["expectedBundle": 5], clientId: "bar")
+                        channelOne.publish("j", data: ["expectedBundle": 6])
+                        // RTL6d1
+                        channelOne.publish("k", data: ["expectedBundle": 7, "moreData": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"])
+                        channelOne.publish("l", data: ["expectedBundle": 8])
+                        // RTL6d7
+                        channelOne.publish([ARTMessage(id: "bundle_m", name: "m", data: ["expectedBundle": 9])])
+                        channelOne.publish("z_last", data: ["expectedBundle": 10])
+
+                        let expectationMessageBundling = XCTestExpectation(description: "message-bundling")
+
+                        AblyTests.queue.async {
+                            let queue: [ARTQueuedMessage] = client.internal.queuedMessages as! [ARTQueuedMessage]
+                            for i in 0...10 {
+                                for message in queue[i].msg.messages! {
+                                    let decodedMessage = channelOne.internal.dataEncoder.decode(message.data, encoding: message.encoding)
+
+                                    guard let data = (decodedMessage.data as? [String: Any]) else {
+                                        fail("Unexpected data type"); continue
+                                    }
+
+                                    expect(data["expectedBundle"] as? Int).to(equal(i))
+                                }
+                            }
+
+                            expectationMessageBundling.fulfill()
+                        }
+
+                        AblyTests.wait(for: [expectationMessageBundling], timeout: testTimeout)
+
+                        let expectationMessageFinalOrder = XCTestExpectation(description: "final-order")
+
+                        // RTL6d6
+                        var currentName = ""
+                        channelOne.subscribe { message in
+                            expect(currentName) < message.name! //Check final ordering preserved
+                            currentName = message.name!
+                            if currentName == "z_last" {
+                                expectationMessageFinalOrder.fulfill()
+                            }
+                        }
+                        client.connect()
+
+                        AblyTests.wait(for: [expectationMessageFinalOrder], timeout: testTimeout)
+                    }
+
+                    it("should publish only once on multiple explicit publish requests for a given message with client-supplied ids") {
+                        let options = AblyTests.commonAppSetup()
+                        let client = ARTRealtime(options: options)
+                        defer { client.dispose(); client.close() }
+                        let channel = client.channels.get("idempotentRealtimePublishing")
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.once(.attached) { stateChange in
+                                expect(stateChange?.reason).to(beNil())
+                                done()
+                            }
+                        }
+
+                        let expectationEvent0 = XCTestExpectation(description: "event0")
+                        let expectationEnd = XCTestExpectation(description: "end")
+
+                        var event0Msgs: [ARTMessage] = []
+                        channel.subscribe("event0") { message in
+                            event0Msgs.append(message)
+                            expectationEvent0.fulfill()
+                        }
+
+                        channel.subscribe("end") { message in
+                            expect(event0Msgs).to(haveCount(1))
+                            expectationEnd.fulfill()
+                        }
+
+                        channel.publish([ARTMessage(id: "some_msg_id", name: "event0", data: "")])
+                        channel.publish([ARTMessage(id: "some_msg_id", name: "event0", data: "")])
+                        channel.publish([ARTMessage(id: "some_msg_id", name: "event0", data: "")])
+                        channel.publish("end", data: nil)
+
+                        AblyTests.wait(for: [expectationEvent0, expectationEnd])
+                    }
+
                 }
 
                 // RTL6e
