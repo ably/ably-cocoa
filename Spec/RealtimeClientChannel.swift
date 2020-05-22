@@ -2311,166 +2311,275 @@ class RealtimeClientChannel: QuickSpec {
                 }
 
                 // RTL6d
-                it("Messages are delivered using a single ProtocolMessage where possible by bundling in all messages for that channel") {
-                    let options = AblyTests.commonAppSetup()
-                    options.autoConnect = false
-                    let client = AblyTests.newRealtime(options)
-                    defer { client.dispose(); client.close() }
-                    let channel = client.channels.get("test")
+                context("message bundling") {
 
-                    // Test that the initially queued messages are sent together.
-
-                    let messagesSent = 3
-                    waitUntil(timeout: testTimeout) { done in
-                        let partialDone = AblyTests.splitDone(messagesSent, done: done)
-                        for i in 1...messagesSent {
-                            channel.publish("initial", data: "message\(i)") { error in
-                                expect(error).to(beNil())
-                                partialDone()
-                            }
-                        }
-                        client.connect()
-                    }
-
-                    let transport = client.internal.transport as! TestProxyTransport
-                    let protocolMessages = transport.protocolMessagesSent.filter{ $0.action == .message }
-                    expect(protocolMessages).to(haveCount(1))
-                    if protocolMessages.count != 1 {
-                        return
-                    }
-                    expect(protocolMessages[0].messages).to(haveCount(messagesSent))
-
-                    // Test that publishing an array of messages sends them together. 
-
-                    // TODO: limit the total number of messages bundled per ProtocolMessage
-                    let maxMessages = 50
-
-                    var messages = [ARTMessage]()
-                    for i in 1...maxMessages {
-                        messages.append(ARTMessage(name: "total number of messages", data: "message\(i)"))
-                    }
-                    waitUntil(timeout: testTimeout) { done in
-                        channel.publish(messages) { error in
-                            expect(error).to(beNil())
-                            let transport = client.internal.transport as! TestProxyTransport
-                            let protocolMessages = transport.protocolMessagesSent.filter{ $0.action == .message }
-                            expect(protocolMessages).to(haveCount(2))
-                            if protocolMessages.count != 2 {
-                                done(); return
-                            }
-                            expect(protocolMessages[1].messages).to(haveCount(maxMessages))
-                            done()
-                        }
-                    }
-                }
-                
-                // RTL6d1
-                it("The resulting ProtocolMessage must not exceed the maxMessageSize") {
-                    let options = AblyTests.commonAppSetup()
-                    options.autoConnect = false
-                    let client = AblyTests.newRealtime(options)
-                    defer { client.dispose(); client.close() }
-                    let channel = client.channels.get("test-maxMessageSize")
-                    // This amount of messages would be beyond maxMessageSize, if bundled together
-                    let messagesToBeSent = 2000
-
-                    // Call publish before connecting, so messages are queued
-                    waitUntil(timeout: testTimeout*6) { done in
-                        let partialDone = AblyTests.splitDone(messagesToBeSent, done: done)
-                        for i in 1...messagesToBeSent {
-                            channel.publish("initial initial\(i)", data: "message message\(i)") { error in
-                                expect(error).to(beNil())
-                                partialDone()
-                            }
-                        }
-                        client.connect()
-                    }
-
-                    let transport = client.internal.transport as! TestProxyTransport
-                    let protocolMessages = transport.protocolMessagesSent.filter{ $0.action == .message }
-                    // verify that messages are not bundled in a single protocol message
-                    expect(protocolMessages.count).to(beGreaterThan(1))
-                    // verify that all the messages have been sent
-                    let messagesSent = protocolMessages.compactMap{$0.messages?.count}.reduce(0, +)
-                    expect(messagesSent).to(equal(messagesToBeSent))
-                }
-                
-                //RTL6d2
-                context("Messages with differing clientId values must not be bundled together") {
-                    
-                    it("messages with different (non empty) clientIds are posted via different protocol messages") {
+                    it("Messages are delivered using a single ProtocolMessage where possible by bundling in all messages for that channel") {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
                         let client = AblyTests.newRealtime(options)
                         defer { client.dispose(); client.close() }
-                        let channel = client.channels.get("test-message-bundling-prevention")
-                        let clientIDs = ["client1", "client2", "client3"]
-                        
+                        let channel = client.channels.get("test")
+
+                        // Test that the initially queued messages are sent together.
+
+                        let messagesSent = 3
                         waitUntil(timeout: testTimeout) { done in
-                            let partialDone = AblyTests.splitDone(clientIDs.count, done: done)
-                            for (i, el) in clientIDs.enumerated() {
-                                channel.publish("name\(i)", data: "data\(i)", clientId: el) { error in
+                            let partialDone = AblyTests.splitDone(messagesSent, done: done)
+                            for i in 1...messagesSent {
+                                channel.publish("initial", data: "message\(i)") { error in
                                     expect(error).to(beNil())
                                     partialDone()
                                 }
                             }
                             client.connect()
                         }
-                        
+
                         let transport = client.internal.transport as! TestProxyTransport
                         let protocolMessages = transport.protocolMessagesSent.filter{ $0.action == .message }
-                        expect(protocolMessages.count).to(equal(clientIDs.count))
-                    }
-                    
-                    it("messages with mixed empty/non empty clientIds are posted via different protocol messages") {
-                        let options = AblyTests.commonAppSetup()
-                        options.autoConnect = false
-                        let client = AblyTests.newRealtime(options)
-                        defer { client.dispose(); client.close() }
-                        let channel = client.channels.get("test-message-bundling-prevention")
-                        
-                        waitUntil(timeout: testTimeout) { done in
-                            let partialDone = AblyTests.splitDone(2, done: done)
-                            channel.publish("name1", data: "data1", clientId: "clientID1") { error in
-                                expect(error).to(beNil())
-                                partialDone()
-                            }
-                            channel.publish("name2", data: "data2") { error in
-                                expect(error).to(beNil())
-                                partialDone()
-                            }
-                            client.connect()
+                        expect(protocolMessages).to(haveCount(1))
+                        if protocolMessages.count != 1 {
+                            return
                         }
-                        
-                        let transport = client.internal.transport as! TestProxyTransport
-                        let protocolMessages = transport.protocolMessagesSent.filter{ $0.action == .message }
-                        expect(protocolMessages.count).to(equal(2))
-                    }
-                    
-                    it("messages bundled by the user are posted in a single protocol message even if they have mixed clientIds") {
-                        let options = AblyTests.commonAppSetup()
-                        options.autoConnect = false
-                        let client = AblyTests.newRealtime(options)
-                        defer { client.dispose(); client.close() }
-                        let channel = client.channels.get("test-message-bundling-prevention")
+                        expect(protocolMessages[0].messages).to(haveCount(messagesSent))
+
+                        // Test that publishing an array of messages sends them together.
+
+                        // TODO: limit the total number of messages bundled per ProtocolMessage
+                        let maxMessages = 50
+
                         var messages = [ARTMessage]()
-                        for i in 1...3 {
-                            messages.append(ARTMessage(name: "name\(i)", data: "data\(i)", clientId: "clientId\(i)"))
+                        for i in 1...maxMessages {
+                            messages.append(ARTMessage(name: "total number of messages", data: "message\(i)"))
                         }
-                        
                         waitUntil(timeout: testTimeout) { done in
                             channel.publish(messages) { error in
                                 expect(error).to(beNil())
+                                let transport = client.internal.transport as! TestProxyTransport
+                                let protocolMessages = transport.protocolMessagesSent.filter{ $0.action == .message }
+                                expect(protocolMessages).to(haveCount(2))
+                                if protocolMessages.count != 2 {
+                                    done(); return
+                                }
+                                expect(protocolMessages[1].messages).to(haveCount(maxMessages))
                                 done()
+                            }
+                        }
+                    }
+
+                    // RTL6d1
+                    it("The resulting ProtocolMessage must not exceed the maxMessageSize") {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let client = AblyTests.newRealtime(options)
+                        defer { client.dispose(); client.close() }
+                        let channel = client.channels.get("test-maxMessageSize")
+                        // This amount of messages would be beyond maxMessageSize, if bundled together
+                        let messagesToBeSent = 2000
+
+                        // Call publish before connecting, so messages are queued
+                        waitUntil(timeout: testTimeout*6) { done in
+                            let partialDone = AblyTests.splitDone(messagesToBeSent, done: done)
+                            for i in 1...messagesToBeSent {
+                                channel.publish("initial initial\(i)", data: "message message\(i)") { error in
+                                    expect(error).to(beNil())
+                                    partialDone()
+                                }
                             }
                             client.connect()
                         }
-                        
+
                         let transport = client.internal.transport as! TestProxyTransport
                         let protocolMessages = transport.protocolMessagesSent.filter{ $0.action == .message }
-                        expect(protocolMessages.count).to(equal(1))
+                        // verify that messages are not bundled in a single protocol message
+                        expect(protocolMessages.count).to(beGreaterThan(1))
+                        // verify that all the messages have been sent
+                        let messagesSent = protocolMessages.compactMap{$0.messages?.count}.reduce(0, +)
+                        expect(messagesSent).to(equal(messagesToBeSent))
                     }
-                    
+
+                    // RTL6d2
+                    context("Messages with differing clientId values must not be bundled together") {
+
+                        it("messages with different (non empty) clientIds are posted via different protocol messages") {
+                            let options = AblyTests.commonAppSetup()
+                            options.autoConnect = false
+                            let client = AblyTests.newRealtime(options)
+                            defer { client.dispose(); client.close() }
+                            let channel = client.channels.get("test-message-bundling-prevention")
+                            let clientIDs = ["client1", "client2", "client3"]
+
+                            waitUntil(timeout: testTimeout) { done in
+                                let partialDone = AblyTests.splitDone(clientIDs.count, done: done)
+                                for (i, el) in clientIDs.enumerated() {
+                                    channel.publish("name\(i)", data: "data\(i)", clientId: el) { error in
+                                        expect(error).to(beNil())
+                                        partialDone()
+                                    }
+                                }
+                                client.connect()
+                            }
+
+                            let transport = client.internal.transport as! TestProxyTransport
+                            let protocolMessages = transport.protocolMessagesSent.filter{ $0.action == .message }
+                            expect(protocolMessages.count).to(equal(clientIDs.count))
+                        }
+
+                        it("messages with mixed empty/non empty clientIds are posted via different protocol messages") {
+                            let options = AblyTests.commonAppSetup()
+                            options.autoConnect = false
+                            let client = AblyTests.newRealtime(options)
+                            defer { client.dispose(); client.close() }
+                            let channel = client.channels.get("test-message-bundling-prevention")
+
+                            waitUntil(timeout: testTimeout) { done in
+                                let partialDone = AblyTests.splitDone(2, done: done)
+                                channel.publish("name1", data: "data1", clientId: "clientID1") { error in
+                                    expect(error).to(beNil())
+                                    partialDone()
+                                }
+                                channel.publish("name2", data: "data2") { error in
+                                    expect(error).to(beNil())
+                                    partialDone()
+                                }
+                                client.connect()
+                            }
+
+                            let transport = client.internal.transport as! TestProxyTransport
+                            let protocolMessages = transport.protocolMessagesSent.filter{ $0.action == .message }
+                            expect(protocolMessages.count).to(equal(2))
+                        }
+
+                        it("messages bundled by the user are posted in a single protocol message even if they have mixed clientIds") {
+                            let options = AblyTests.commonAppSetup()
+                            options.autoConnect = false
+                            let client = AblyTests.newRealtime(options)
+                            defer { client.dispose(); client.close() }
+                            let channel = client.channels.get("test-message-bundling-prevention")
+                            var messages = [ARTMessage]()
+                            for i in 1...3 {
+                                messages.append(ARTMessage(name: "name\(i)", data: "data\(i)", clientId: "clientId\(i)"))
+                            }
+
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.publish(messages) { error in
+                                    expect(error).to(beNil())
+                                    done()
+                                }
+                                client.connect()
+                            }
+
+                            let transport = client.internal.transport as! TestProxyTransport
+                            let protocolMessages = transport.protocolMessagesSent.filter{ $0.action == .message }
+                            expect(protocolMessages.count).to(equal(1))
+                        }
+                    }
+
+                    it("should only bundle messages when it respects all of the constraints") {
+                        let defaultMaxMessageSize = ARTDefault.maxMessageSize()
+                        ARTDefault.setMaxMessageSize(256)
+                        defer { ARTDefault.setMaxMessageSize(defaultMaxMessageSize) }
+
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let client = ARTRealtime(options: options)
+                        defer { client.dispose(); client.close() }
+                        let channelOne = client.channels.get("bundlingOne")
+                        let channelTwo = client.channels.get("bundlingTwo")
+
+                        channelTwo.publish("2a", data: ["expectedBundle": 0])
+                        channelOne.publish("a", data: ["expectedBundle": 1])
+                        channelOne.publish([
+                            ARTMessage(name: "b", data: ["expectedBundle": 1]),
+                            ARTMessage(name: "c", data: ["expectedBundle": 1])
+                        ])
+                        channelOne.publish("d", data: ["expectedBundle": 1])
+                        channelTwo.publish("2b", data: ["expectedBundle": 2])
+                        channelOne.publish("e", data: ["expectedBundle": 3])
+                        channelOne.publish([ARTMessage(name: "f", data: ["expectedBundle": 3])])
+                        // RTL6d2
+                        channelOne.publish("g", data: ["expectedBundle": 4], clientId: "foo")
+                        channelOne.publish("h", data: ["expectedBundle": 4], clientId: "foo")
+                        channelOne.publish("i", data: ["expectedBundle": 5], clientId: "bar")
+                        channelOne.publish("j", data: ["expectedBundle": 6])
+                        // RTL6d1
+                        channelOne.publish("k", data: ["expectedBundle": 7, "moreData": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"])
+                        channelOne.publish("l", data: ["expectedBundle": 8])
+                        // RTL6d7
+                        channelOne.publish([ARTMessage(id: "bundle_m", name: "m", data: ["expectedBundle": 9])])
+                        channelOne.publish("z_last", data: ["expectedBundle": 10])
+
+                        let expectationMessageBundling = XCTestExpectation(description: "message-bundling")
+
+                        AblyTests.queue.async {
+                            let queue: [ARTQueuedMessage] = client.internal.queuedMessages as! [ARTQueuedMessage]
+                            for i in 0...10 {
+                                for message in queue[i].msg.messages! {
+                                    let decodedMessage = channelOne.internal.dataEncoder.decode(message.data, encoding: message.encoding)
+
+                                    guard let data = (decodedMessage.data as? [String: Any]) else {
+                                        fail("Unexpected data type"); continue
+                                    }
+
+                                    expect(data["expectedBundle"] as? Int).to(equal(i))
+                                }
+                            }
+
+                            expectationMessageBundling.fulfill()
+                        }
+
+                        AblyTests.wait(for: [expectationMessageBundling], timeout: testTimeout)
+
+                        let expectationMessageFinalOrder = XCTestExpectation(description: "final-order")
+
+                        // RTL6d6
+                        var currentName = ""
+                        channelOne.subscribe { message in
+                            expect(currentName) < message.name! //Check final ordering preserved
+                            currentName = message.name!
+                            if currentName == "z_last" {
+                                expectationMessageFinalOrder.fulfill()
+                            }
+                        }
+                        client.connect()
+
+                        AblyTests.wait(for: [expectationMessageFinalOrder], timeout: testTimeout)
+                    }
+
+                    it("should publish only once on multiple explicit publish requests for a given message with client-supplied ids") {
+                        let options = AblyTests.commonAppSetup()
+                        let client = ARTRealtime(options: options)
+                        defer { client.dispose(); client.close() }
+                        let channel = client.channels.get("idempotentRealtimePublishing")
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.once(.attached) { stateChange in
+                                expect(stateChange?.reason).to(beNil())
+                                done()
+                            }
+                        }
+
+                        let expectationEvent0 = XCTestExpectation(description: "event0")
+                        let expectationEnd = XCTestExpectation(description: "end")
+
+                        var event0Msgs: [ARTMessage] = []
+                        channel.subscribe("event0") { message in
+                            event0Msgs.append(message)
+                            expectationEvent0.fulfill()
+                        }
+
+                        channel.subscribe("end") { message in
+                            expect(event0Msgs).to(haveCount(1))
+                            expectationEnd.fulfill()
+                        }
+
+                        channel.publish([ARTMessage(id: "some_msg_id", name: "event0", data: "")])
+                        channel.publish([ARTMessage(id: "some_msg_id", name: "event0", data: "")])
+                        channel.publish([ARTMessage(id: "some_msg_id", name: "event0", data: "")])
+                        channel.publish("end", data: nil)
+
+                        AblyTests.wait(for: [expectationEvent0, expectationEnd])
+                    }
+
                 }
 
                 // RTL6e

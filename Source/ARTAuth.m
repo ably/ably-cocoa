@@ -274,7 +274,14 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         // TokenParams take precedence over any configured authParams when a name conflict occurs
         NSDictionary *unitedParams = [params toDictionaryWithUnion:options.authParams];
         // When POST, use body of the POST request
-        NSData *bodyData = [NSJSONSerialization dataWithJSONObject:unitedParams options:0 error:nil];
+        NSJSONWritingOptions options;
+        if (@available(iOS 11.0, *)) {
+            options = NSJSONWritingSortedKeys;
+        }
+        else {
+            options = 0;
+        }
+        NSData *bodyData = [NSJSONSerialization dataWithJSONObject:unitedParams options:options error:nil];
         request.HTTPBody = bodyData;
         [request setValue:[_rest.defaultEncoder mimeType] forHTTPHeaderField:@"Content-Type"];
         [request setValue:[NSString stringWithFormat:@"%d", (unsigned int)bodyData.length] forHTTPHeaderField:@"Content-Length"];
