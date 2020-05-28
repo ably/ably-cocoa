@@ -231,7 +231,7 @@ client.connection.on { stateChange in
 }];
 ```
 
-You can also connect manually by setting the appropiate option.
+You can also connect manually by setting the appropriate option.
 
 **Swift**
 
