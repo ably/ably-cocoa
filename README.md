@@ -335,7 +335,7 @@ channelOptions.params = @{
 ARTRealtimeChannel *channel = [client.channels get:@"test" options:channelOptions];
 ```
 
-Beyond specifying channel options, the rest is transparent and requires no further changes to your application. The `message.data` instances that are delivered to your subscribe `EventListener` continue to contain the values that were originally published.
+Beyond specifying channel options, the rest is transparent and requires no further changes to your application. The `message.data` instances that are delivered to your subscription callback continue to contain the values that were originally published.
 
 If you would like to inspect the `ARTMessage` instances in order to identify whether the `data` they present was rendered from a delta message from Ably then you can see if `message.extras["delta"]["format"]` equals `"vcdiff"`.
 
