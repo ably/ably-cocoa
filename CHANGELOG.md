@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.2.0](https://github.com/ably/ably-cocoa/tree/1.2.0)
+
+Adds the capability to subscribe to a channel in delta mode.
+
+Subscribing to a channel in delta mode enables [delta compression](https://www.ably.io/documentation/realtime/channels/channel-parameters/deltas). This is a way for a client to subscribe to a channel so that message payloads sent contain only the difference (ie the delta) between the present message and the previous message on the channel.
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.23...1.2.0)
+
 ## [1.1.23](https://github.com/ably/ably-cocoa/tree/1.1.23)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.1.22...1.1.23)
