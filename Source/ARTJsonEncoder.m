@@ -28,7 +28,7 @@
 - (NSData *)encode:(id)obj error:(NSError **)error {
     @try {
         NSJSONWritingOptions options;
-        if (@available(iOS 11.0, *)) {
+        if (@available(macOS 10.13, iOS 11.0, tvOS 11.0, *)) {
             options = NSJSONWritingSortedKeys;
         }
         else {

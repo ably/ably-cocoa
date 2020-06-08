@@ -83,7 +83,7 @@
         else {
             NSError *error = nil;
             NSJSONWritingOptions options;
-            if (@available(iOS 13.0, *)) {
+            if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
                 options = NSJSONWritingWithoutEscapingSlashes;
             }
             else {

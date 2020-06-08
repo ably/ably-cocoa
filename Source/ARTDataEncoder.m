@@ -77,7 +77,7 @@
         // We will store the result, though, because if we're encrypting, then yes, we need to use the JSON-encoded
         // data before encrypting.
         NSJSONWritingOptions options;
-        if (@available(iOS 11.0, *)) {
+        if (@available(macOS 10.13, iOS 11.0, tvOS 11.0, *)) {
             options = NSJSONWritingSortedKeys;
         }
         else {
