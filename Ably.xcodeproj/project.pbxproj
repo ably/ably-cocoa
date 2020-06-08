@@ -132,9 +132,9 @@
 		D7093C9B219EE3E800723F17 /* SAMKeychain.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6AE2194A0B2008F54AD /* SAMKeychain.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093C9D219EE3E800723F17 /* ULID.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6AD2194A0B2008F54AD /* ULID.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093CA9219EFA8A00723F17 /* MockDeviceStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7093CA8219EFA8A00723F17 /* MockDeviceStorage.swift */; };
-		D70C36C3233E6831002FD6E3 /* ARTFormEncode.h in Headers */ = {isa = PBXBuildFile; fileRef = D70C36C1233E6831002FD6E3 /* ARTFormEncode.h */; };
-		D70C36C4233E6831002FD6E3 /* ARTFormEncode.h in Headers */ = {isa = PBXBuildFile; fileRef = D70C36C1233E6831002FD6E3 /* ARTFormEncode.h */; };
-		D70C36C5233E6831002FD6E3 /* ARTFormEncode.h in Headers */ = {isa = PBXBuildFile; fileRef = D70C36C1233E6831002FD6E3 /* ARTFormEncode.h */; };
+		D70C36C3233E6831002FD6E3 /* ARTFormEncode.h in Headers */ = {isa = PBXBuildFile; fileRef = D70C36C1233E6831002FD6E3 /* ARTFormEncode.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		D70C36C4233E6831002FD6E3 /* ARTFormEncode.h in Headers */ = {isa = PBXBuildFile; fileRef = D70C36C1233E6831002FD6E3 /* ARTFormEncode.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		D70C36C5233E6831002FD6E3 /* ARTFormEncode.h in Headers */ = {isa = PBXBuildFile; fileRef = D70C36C1233E6831002FD6E3 /* ARTFormEncode.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D70C36C6233E6831002FD6E3 /* ARTFormEncode.m in Sources */ = {isa = PBXBuildFile; fileRef = D70C36C2233E6831002FD6E3 /* ARTFormEncode.m */; };
 		D70C36C7233E6831002FD6E3 /* ARTFormEncode.m in Sources */ = {isa = PBXBuildFile; fileRef = D70C36C2233E6831002FD6E3 /* ARTFormEncode.m */; };
 		D70C36C8233E6831002FD6E3 /* ARTFormEncode.m in Sources */ = {isa = PBXBuildFile; fileRef = D70C36C2233E6831002FD6E3 /* ARTFormEncode.m */; };

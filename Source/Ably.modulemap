@@ -57,5 +57,6 @@ framework module Ably {
         header "ARTJsonLikeEncoder.h"
         header "ARTJsonEncoder.h"
         header "ARTMsgPackEncoder.h"
+        header "ARTFormEncode.h"
     }
 }
