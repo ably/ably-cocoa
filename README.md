@@ -231,7 +231,7 @@ client.connection.on { stateChange in
 }];
 ```
 
-You can also connect manually by setting the appropiate option.
+You can also connect manually by setting the appropriate option.
 
 **Swift**
 
@@ -306,6 +306,38 @@ channel.subscribe("myEvent") { message in
     NSLog(@"%@", message.data);
 }];
 ```
+
+### Subscribing to a channel in delta mode
+
+Subscribing to a channel in delta mode enables [delta compression](https://www.ably.io/documentation/realtime/channels/channel-parameters/deltas). This is a way for a client to subscribe to a channel so that message payloads sent contain only the difference (ie the delta) between the present message and the previous message on the channel.
+
+Request a Vcdiff formatted delta stream using channel options when you get the channel:
+ 
+**Swift**
+
+```swift
+let channelOptions = ARTRealtimeChannelOptions()
+channelOptions.params = [
+    "delta": "vcdiff"
+]
+
+let channel = client.channels.get("test", options: channelOptions)
+```
+
+**Objective-C**
+
+```objective-c
+ARTRealtimeChannelOptions *channelOptions = [[ARTRealtimeChannelOptions alloc] init];
+channelOptions.params = @{
+    @"delta": @"vcdiff"
+};
+
+ARTRealtimeChannel *channel = [client.channels get:@"test" options:channelOptions];
+```
+
+Beyond specifying channel options, the rest is transparent and requires no further changes to your application. The `message.data` instances that are delivered to your subscription callback continue to contain the values that were originally published.
+
+If you would like to inspect the `ARTMessage` instances in order to identify whether the `data` they present was rendered from a delta message from Ably then you can see if `message.extras["delta"]["format"]` equals `"vcdiff"`.
 
 ### Publishing to a channel
 
