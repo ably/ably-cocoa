@@ -1886,8 +1886,9 @@ class RealtimeClientPresence: QuickSpec {
                                 partialDone()
                             }
                         }
-                        
-                        channel.attach { _ in
+
+                        channel.attach { error in
+                            expect(error).to(beNil())
                             expect(channel.internal.presenceMap.syncInProgress).to(beTrue())
 
                             // Inject a fabricated Presence message
@@ -1903,6 +1904,7 @@ class RealtimeClientPresence: QuickSpec {
                         }
                     }
                     hook?.remove()
+                    channel.presence.unsubscribe()
                     
                     expect(channel.internal.presenceMap.syncInProgress).toEventually(beFalse(), timeout: testTimeout)
                     expect(channel.internal.presenceMap.members.filter{ _, presence in presence.action == .leave }).to(beEmpty())
