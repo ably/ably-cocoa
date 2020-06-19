@@ -1167,8 +1167,8 @@ class RestClient: QuickSpec {
                 context("should use an alternative host when") {
 
                     for caseTest: FakeNetworkResponse in [.hostUnreachable,
-                                                    .requestTimeout(timeout: 0.1),
-                                                    .hostInternalError(code: 501)] {
+                                                          .requestTimeout(timeout: 0.1),
+                                                          .hostInternalError(code: 501)] {
                         it("\(caseTest)") {
                             let options = ARTClientOptions(key: "xxxx:xxxx")
                             let client = ARTRest(options: options)
@@ -1177,12 +1177,15 @@ class RestClient: QuickSpec {
                             testHTTPExecutor.http = MockHTTP(network: caseTest, logger: options.logHandler)
                             let channel = client.channels.get("test")
 
+                            let lock = NSLock()
                             testHTTPExecutor.afterRequest = { _, callback in
+                                lock.lock()
                                 if testHTTPExecutor.requests.count == 2 {
                                     // Stop
                                     testHTTPExecutor.http = nil
                                     callback!(nil, nil, nil)
                                 }
+                                lock.unlock()
                             }
 
                             waitUntil(timeout: testTimeout) { done in
