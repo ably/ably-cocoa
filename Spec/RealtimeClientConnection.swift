@@ -2841,7 +2841,7 @@ class RealtimeClientConnection: QuickSpec {
                     it("uses a new connection") {
                         let options = AblyTests.commonAppSetup()
                         // We want this to be > than the sum of customTtlInterval and customIdleInterval
-                        options.disconnectedRetryTimeout = 5.0
+                        options.disconnectedRetryTimeout = 5.0 + customTtlInterval + customIdleInterval
                         client = AblyTests.newRealtime(options)
                         client.internal.shouldImmediatelyReconnect = false
                         client.connect()
