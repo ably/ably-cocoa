@@ -2833,15 +2833,15 @@ class RealtimeClientConnection: QuickSpec {
                 
                 // RTN15g RTN15g1
                 context("when connection (ttl + idle interval) period has passed since last activity") {
-                    let options = AblyTests.commonAppSetup()
-                    // We want this to be > than the sum of customTtlInterval and customIdleInterval
-                    options.disconnectedRetryTimeout = 5.0
                     var client: ARTRealtime!
                     var connectionId = ""
                     let customTtlInterval: TimeInterval = 0.1
                     let customIdleInterval: TimeInterval = 0.1
                     
                     it("uses a new connection") {
+                        let options = AblyTests.commonAppSetup()
+                        // We want this to be > than the sum of customTtlInterval and customIdleInterval
+                        options.disconnectedRetryTimeout = 5.0 + customTtlInterval + customIdleInterval
                         client = AblyTests.newRealtime(options)
                         client.internal.shouldImmediatelyReconnect = false
                         client.connect()
@@ -2872,6 +2872,9 @@ class RealtimeClientConnection: QuickSpec {
                     }
                     // RTN15g3
                     it("reattaches to the same channels after a new connection has been established") {
+                        let options = AblyTests.commonAppSetup()
+                        // We want this to be > than the sum of customTtlInterval and customIdleInterval
+                        options.disconnectedRetryTimeout = 5.0
                         client = AblyTests.newRealtime(options)
                         client.internal.shouldImmediatelyReconnect = false
                         defer { client.close() }
@@ -2909,11 +2912,11 @@ class RealtimeClientConnection: QuickSpec {
                 
                 // RTN15g2
                 context("when connection (ttl + idle interval) period has NOT passed since last activity") {
-                    let options = AblyTests.commonAppSetup()
                     var client: ARTRealtime!
                     var connectionId = ""
                     
                     it("uses the same connection") {
+                        let options = AblyTests.commonAppSetup()
                         client = AblyTests.newRealtime(options)
                         client.connect()
                         defer { client.close() }
@@ -4600,13 +4603,21 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
 
-                let jsonOptions = AblyTests.commonAppSetup()
-                jsonOptions.useBinaryProtocol = false
-                // Keep the same key and channel prefix
-                let msgpackOptions = jsonOptions.copy() as! ARTClientOptions
-                msgpackOptions.useBinaryProtocol = true
+                var jsonOptions: ARTClientOptions!
+                var msgpackOptions: ARTClientOptions!
+
+                func setupDependencies() {
+                    if (jsonOptions == nil) {
+                        jsonOptions = AblyTests.commonAppSetup()
+                        jsonOptions.useBinaryProtocol = false
+                        // Keep the same key and channel prefix
+                        msgpackOptions = jsonOptions.copy() as! ARTClientOptions
+                        msgpackOptions.useBinaryProtocol = true
+                    }
+                }
 
                 it("should send messages through raw JSON POST and retrieve equal messages through MsgPack and JSON") {
+                    setupDependencies()
                     let restPublishClient = ARTRest(options: jsonOptions)
                     let realtimeSubscribeClientMsgPack = AblyTests.newRealtime(msgpackOptions)
                     let realtimeSubscribeClientJSON = AblyTests.newRealtime(jsonOptions)
@@ -4657,6 +4668,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 it("should send messages through MsgPack and JSON and retrieve equal messages through raw JSON GET") {
+                    setupDependencies()
                     let restPublishClientMsgPack = ARTRest(options: msgpackOptions)
                     let restPublishClientJSON = ARTRest(options: jsonOptions)
                     let restRetrieveClient = ARTRest(options: jsonOptions)
