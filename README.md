@@ -116,7 +116,7 @@ And then install the dependency:
 Add this line to your application's Cartfile:
 
     # For Xcode 7.3 and newer
-    github "ably/ably-cocoa" ~> 1.1
+    github "ably/ably-cocoa" >= 1.2
 
 And then run `carthage update` to build the framework and drag the built Ably.framework into your Xcode project.
 
