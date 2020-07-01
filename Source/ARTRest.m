@@ -43,6 +43,8 @@
 #import "ARTHTTPPaginatedResponse+Private.h"
 #import <KSCrashAblyFork/KSCrash.h>
 
+static BOOL _aRestInstanceIsHandlingUncaughtExceptions = NO;
+
 @implementation ARTRest {
     ARTQueuedDealloc *_dealloc;
 }
@@ -727,21 +729,31 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
     };
 }
 
-BOOL ARTstartHandlingUncaughtExceptions(ARTRestInternal *self) {
-    if (!self || self->_handlingUncaughtExceptions) {
-        return false;
+-(BOOL)startHandlingUncaughtExceptions {
+    @synchronized ([ARTRest class]) {
+        if (_handlingUncaughtExceptions || _aRestInstanceIsHandlingUncaughtExceptions) {
+            // startHandlingUncaughtExceptions has either:
+            // 1. already been called for this instance; or
+            // 2. already been called for another instance
+            return false;
+        }
+        _aRestInstanceIsHandlingUncaughtExceptions = YES;
+        _handlingUncaughtExceptions = YES;
+        [ARTSentry setUserInfo:@"reportToAbly" value:[NSNumber numberWithBool:true]];
+        return true;
     }
-    self->_handlingUncaughtExceptions = true;
-    [ARTSentry setUserInfo:@"reportToAbly" value:[NSNumber numberWithBool:true]];
-    return true;
 }
 
-void ARTstopHandlingUncaughtExceptions(ARTRestInternal *self) {
-    if (!self) {
-        return;
+-(void)stopHandlingUncaughtExceptions {
+    @synchronized ([ARTRest class]) {
+        if (!_handlingUncaughtExceptions) {
+            // startHandlingUncaughtExceptions has not been called for this instance
+            return;
+        }
+        _aRestInstanceIsHandlingUncaughtExceptions = NO;
+        _handlingUncaughtExceptions = NO;
+        [ARTSentry setUserInfo:@"reportToAbly" value:[NSNumber numberWithBool:false]];
     }
-    self->_handlingUncaughtExceptions = false;
-    [ARTSentry setUserInfo:@"reportToAbly" value:[NSNumber numberWithBool:false]];
 }
 
 #if TARGET_OS_IOS
