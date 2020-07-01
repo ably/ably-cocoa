@@ -138,15 +138,10 @@
 
 @end
 
-@interface ARTRestInternal () {
-    __block NSUInteger _tokenErrorRetries;
-    BOOL _handlingUncaughtExceptions;
-}
-
-@end
-
 @implementation ARTRestInternal {
     ARTLog *_logger;
+    NSUInteger _tokenErrorRetries;
+    BOOL _handlingUncaughtExceptions;
 }
 
 @synthesize logger = _logger;
