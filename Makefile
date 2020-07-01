@@ -89,7 +89,9 @@ pod_lint:
 carthage_package:
 	$(info Building and archiving…)
 
-	carthage build --no-skip-current --archive
+	# https://github.com/Carthage/Carthage#archive-prebuilt-frameworks-into-one-zip-file
+	# From `carthage help build` we are told that `--archive` implies `--no-skip-current`.
+	carthage build --archive
 
 ## [Carthage] Clear Carthage caches. Helps with Carthage update issues
 carthage_clean:
