@@ -1,5 +1,21 @@
 # Change Log
 
+## [1.2.1](https://github.com/ably/ably-cocoa/tree/1.2.1)
+
+Fixes issues in our uncaught exception handling code:
+
+- **Fix** Data race in ARTstartHandlingUncaughtExceptions [\#1030](https://github.com/ably/ably-cocoa/issues/1030)
+- **Merge** Improve unhandled exception handling code [\#1056](https://github.com/ably/ably-cocoa/pull/1056) ([QuintinWillison](https://github.com/QuintinWillison))
+
+Also some improvements to our test suite:
+
+- **Fix** Flaky test: message receiving order [\#977](https://github.com/ably/ably-cocoa/issues/977)
+- **Merge** Test suite: fix lib version [\#1026](https://github.com/ably/ably-cocoa/pull/1026) ([ricardopereira](https://github.com/ricardopereira))
+- **Merge** Should not wait for AblyTest.options in 'context' scope [\#1023](https://github.com/ably/ably-cocoa/pull/1023) ([ricardopereira](https://github.com/ricardopereira))
+- **Merge** Fix 977 [\#1022](https://github.com/ably/ably-cocoa/pull/1022) ([ricardopereira](https://github.com/ricardopereira))
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.0...1.2.1)
+
 ## [1.2.0](https://github.com/ably/ably-cocoa/tree/1.2.0)
 
 Adds the capability to subscribe to a channel in delta mode.
