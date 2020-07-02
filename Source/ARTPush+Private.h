@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init:(ARTRestInternal *)rest;
 
 #if TARGET_OS_IOS
-- (ARTPushActivationStateMachine *)activationMachine;
+- (void)getActivationMachine:(void (^)(ARTPushActivationStateMachine *_Nonnull))block;
 #endif
 
 @end

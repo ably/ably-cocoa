@@ -785,11 +785,11 @@ dispatch_sync(_queue, ^{
 - (void)setLocalDeviceClientId_nosync:(NSString *)clientId {
     if (clientId && ![clientId isEqualToString:@"*"]) {
         [_rest.device_nosync setClientId:clientId];
-        
-        ARTPushActivationStateMachine *const machine = _rest.push.activationMachine;
-        if (![machine.current_nosync isKindOfClass:[ARTPushActivationStateNotActivated class]]) {
-            [machine sendEvent:[[ARTPushActivationEventGotPushDeviceDetails alloc] init]];
-        }
+        [_rest.push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
+            if (![stateMachine.current_nosync isKindOfClass:[ARTPushActivationStateNotActivated class]]) {
+                [stateMachine sendEvent:[[ARTPushActivationEventGotPushDeviceDetails alloc] init]];
+            }
+        }];
     }
 }
 #endif

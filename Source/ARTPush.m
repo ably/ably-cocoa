@@ -82,6 +82,7 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
     __weak ARTRestInternal *_rest; // weak because rest owns self
     ARTLog *_logger;
     ARTPushActivationStateMachine *_activationMachine;
+    NSLock *_activationMachineLock;
 }
 
 - (instancetype)init:(ARTRestInternal *)rest {
@@ -90,6 +91,8 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
         _logger = [rest logger];
         _admin = [[ARTPushAdminInternal alloc] initWithRest:rest];
         _activationMachine = nil;
+        _activationMachineLock = [[NSLock alloc] init];
+        _activationMachineLock.name = @"ActivationMachineLock";
     }
     return self;
 }
@@ -100,21 +103,28 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 
 #if TARGET_OS_IOS
 
-- (ARTPushActivationStateMachine *)activationMachine {
-    if (_activationMachine == nil) {
-        // -[UIApplication delegate] is an UI API call, so needs to be called from main thread.
-        __block id delegate = nil;
-        if ([NSThread isMainThread]) {
-            delegate = UIApplication.sharedApplication.delegate;
-        } else {
-            dispatch_sync(dispatch_get_main_queue(), ^{
-                delegate = UIApplication.sharedApplication.delegate;
-            });
-        }
-        
-        _activationMachine = [[ARTPushActivationStateMachine alloc] init:self->_rest delegate:delegate];
+- (void)getActivationMachine:(void (^)(ARTPushActivationStateMachine *_Nonnull))block {
+    if (!block) {
+        return;
     }
-    return _activationMachine;
+    [_activationMachineLock lock];
+    void (^callback)(ARTPushActivationStateMachine *const machine) = ^(ARTPushActivationStateMachine *machine) {
+        [self->_activationMachineLock unlock];
+        block(machine);
+    };
+    if (_activationMachine == nil) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            // -[UIApplication delegate] is an UI API call, so needs to be called from main thread.
+            id delegate = UIApplication.sharedApplication.delegate;
+            dispatch_async(self.queue, ^{
+                self->_activationMachine = [[ARTPushActivationStateMachine alloc] init:self->_rest delegate:delegate];
+                callback(self->_activationMachine);
+            });
+        });
+    }
+    else {
+        callback(_activationMachine);
+    }
 }
 
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceTokenData restInternal:(ARTRestInternal *)rest {
@@ -138,7 +148,9 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 
     [rest.device_nosync setAndPersistDeviceToken:deviceToken];
     [rest.logger debug:@"ARTPush: device token stored"];
-    [rest.push.activationMachine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
+    [rest.push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
+        [stateMachine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
+    }];
 }
 
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken realtime:(ARTRealtime *)realtime {
@@ -155,7 +167,9 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error restInternal:(ARTRestInternal *)rest {
     [rest.logger error:@"ARTPush: device token not received (%@)", [error localizedDescription]];
-    [rest.push.activationMachine sendEvent:[ARTPushActivationEventGettingPushDeviceDetailsFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
+    [rest.push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
+        [stateMachine sendEvent:[ARTPushActivationEventGettingPushDeviceDetailsFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
+    }];
 }
 
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error realtime:(ARTRealtime *)realtime {
@@ -171,11 +185,15 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 }
 
 - (void)activate {
-    [self.activationMachine sendEvent:[ARTPushActivationEventCalledActivate new]];
+    [self getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
+        [stateMachine sendEvent:[ARTPushActivationEventCalledActivate new]];
+    }];
 }
 
 - (void)deactivate {
-    [self.activationMachine sendEvent:[ARTPushActivationEventCalledDeactivate new]];
+    [self getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
+        [stateMachine sendEvent:[ARTPushActivationEventCalledDeactivate new]];
+    }];
 }
 
 #endif
