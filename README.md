@@ -105,7 +105,7 @@ You can install Ably for iOS and macOS through CocoaPods, Carthage or manually.
 Add this line to your application's Podfile:
 
     # For Xcode 7.3 and newer
-    pod 'Ably', '~> 1.1'
+    pod 'Ably', '=> 1.2'
 
 And then install the dependency:
 
@@ -116,7 +116,7 @@ And then install the dependency:
 Add this line to your application's Cartfile:
 
     # For Xcode 7.3 and newer
-    github "ably/ably-cocoa" ~> 1.1
+    github "ably/ably-cocoa" >= 1.2
 
 And then run `carthage update` to build the framework and drag the built Ably.framework into your Xcode project.
 
@@ -716,7 +716,7 @@ For each release, the following needs to be done:
 * Steps to perform *before* pushing a release tag up:
     1. Checkout `master` locally, pulling in changes from above using `git checkout master && git pull`
     2. Run `make update` to ensure Carthage dependencies are in sync
-    3. Generate the prebuilt framework for Carthage using `carthage build --no-skip-current --archive` (the output from this, `Ably.framework.zip`, will be attached to the release later on)
+    3. Generate the prebuilt framework for Carthage using `make carthage_package` (the output from this, `Ably.framework.zip`, will be attached to the release later on)
     4. Validate that the CocoaPods build should succeed using `pod lib lint`
 * If any fixes are needed (e.g. the lint fails with warnings) then either commit them to `master` branch now if they are simple warning fixes or perhaps consider raising a new PR if they are complex or likely to need review.
 * Create a tag for this version number using `git tag x.x.x`
