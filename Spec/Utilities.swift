@@ -201,7 +201,6 @@ class Utilities: QuickSpec {
             }
 
             context("EventEmitter") {
-                
 
                 var eventEmitter = ARTInternalEventEmitter<NSString, AnyObject>(queue: AblyTests.queue)
                 var receivedFoo1: Int?
@@ -212,7 +211,7 @@ class Utilities: QuickSpec {
                 var receivedAllOnce: Int?
                 weak var listenerFoo1: ARTEventListener?
                 weak var listenerAll: ARTEventListener?
-                
+
                 beforeEach {
                     eventEmitter = ARTInternalEventEmitter(queue: AblyTests.queue)
                     receivedFoo1 = nil
@@ -291,7 +290,7 @@ class Utilities: QuickSpec {
                         }).startTimer()
                         eventEmitter.off(listenerFoo1!)
                         waitUntil(timeout: 0.3) { done in
-                            delay(0.15) {
+                            AblyTests.queue.asyncAfter(deadline: .now() + 0.15) {
                                 done()
                             }
                         }
@@ -348,7 +347,7 @@ class Utilities: QuickSpec {
                         }).startTimer()
                         eventEmitter.off()
                         waitUntil(timeout: 0.3) { done in
-                            delay(0.15) {
+                            AblyTests.queue.asyncAfter(deadline: .now() + 0.15) {
                                 done()
                             }
                         }
@@ -360,15 +359,13 @@ class Utilities: QuickSpec {
                         weak var timer = listenerFoo1!.setTimer(0.2, onTimeout: {
                             fail("onTimeout callback shouldn't have been called")
                         })
-                        waitUntil(timeout: 0.4) { done in
-                            delay(0.1) {
-                                eventEmitter.emit("foo", with: 123 as AnyObject?)
-                                delay(0.15) {
-                                    expect(receivedFoo1).toNot(beNil())
-                                    done()
-                                }
-                            }
+                        waitUntil(timeout: 1) { done in
                             timer?.startTimer()
+                            eventEmitter.emit("foo", with: 123 as AnyObject?)
+                            AblyTests.queue.asyncAfter(deadline: .now() + 0.3) {
+                                expect(receivedFoo1).toNot(beNil())
+                                done()
+                            }
                         }
                     }
 
@@ -380,7 +377,7 @@ class Utilities: QuickSpec {
                             expect(NSDate()).to(beCloseTo(beforeEmitting.addingTimeInterval(0.3), within: 0.2))
                         }).startTimer()
                         waitUntil(timeout: 0.5) { done in
-                            delay(0.35) {
+                            AblyTests.queue.asyncAfter(deadline: .now() + 0.35) {
                                 expect(calledOnTimeout).to(beTrue())
                                 eventEmitter.emit("foo", with: 123 as AnyObject?)
                                 expect(receivedFoo1).to(beNil())
