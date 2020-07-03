@@ -103,28 +103,53 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 
 #if TARGET_OS_IOS
 
-- (void)getActivationMachine:(void (^)(ARTPushActivationStateMachine *_Nonnull))block {
+- (void)getActivationMachine:(void (^)(ARTPushActivationStateMachine *_Nullable))block {
     if (!block) {
         return;
     }
-    [_activationMachineLock lock];
-    void (^callback)(ARTPushActivationStateMachine *const machine) = ^(ARTPushActivationStateMachine *machine) {
+
+    if (![_activationMachineLock lockBeforeDate:[NSDate dateWithTimeIntervalSinceNow:60]]) {
+        block(nil);
+        return;
+    }
+
+    void (^callbackWithUnlock)(ARTPushActivationStateMachine *const machine) = ^(ARTPushActivationStateMachine *machine) {
         [self->_activationMachineLock unlock];
         block(machine);
     };
+
     if (_activationMachine == nil) {
         dispatch_async(dispatch_get_main_queue(), ^{
             // -[UIApplication delegate] is an UI API call, so needs to be called from main thread.
             id delegate = UIApplication.sharedApplication.delegate;
-            dispatch_async(self.queue, ^{
-                self->_activationMachine = [[ARTPushActivationStateMachine alloc] init:self->_rest delegate:delegate];
-                callback(self->_activationMachine);
-            });
+            [self createActivationStateMachine_async:delegate block:^(ARTPushActivationStateMachine *machine) {
+                callbackWithUnlock(machine);
+            }];
         });
     }
     else {
-        callback(_activationMachine);
+        callbackWithUnlock(_activationMachine);
     }
+}
+
+- (void)createActivationStateMachine_async:(id<UIApplicationDelegate>)applicationDelegate block:(void (^)(ARTPushActivationStateMachine *_Nonnull))block {
+    dispatch_async(self.queue, ^{
+        block([self createActivationStateMachine_nolock:applicationDelegate]);
+    });
+}
+
+- (ARTPushActivationStateMachine *)createActivationStateMachine_nolock:(id<UIApplicationDelegate>)applicationDelegate {
+    _activationMachine = [[ARTPushActivationStateMachine alloc] init:self->_rest delegate:applicationDelegate];
+    return _activationMachine;
+}
+
+- (nullable ARTPushActivationStateMachine *)activationMachine {
+    if ([_activationMachineLock tryLock]) {
+        ARTPushActivationStateMachine *const machine = _activationMachine;
+        [_activationMachineLock unlock];
+        return machine;
+    }
+    return nil;
 }
 
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceTokenData restInternal:(ARTRestInternal *)rest {
