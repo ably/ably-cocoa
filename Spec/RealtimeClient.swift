@@ -36,7 +36,11 @@ class RealtimeClient: QuickSpec {
                     channel.publish(nil, data: "message") { error in
                         expect(error).to(beNil())
                         let transport = client.internal.transport as! TestProxyTransport
-                        expect(transport.lastUrl!.query).to(haveParam("v", withValue: ARTDefault.version()))
+                                                
+                        // This test should not directly validate version against ARTDefault.version(), as
+                        // ultimately the version header has been derived from that value.
+                        expect(transport.lastUrl!.query).to(haveParam("v", withValue: "1.2"))
+                        
                         done()
                     }
                 }
