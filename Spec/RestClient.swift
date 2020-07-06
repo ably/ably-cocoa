@@ -27,7 +27,11 @@ class RestClient: QuickSpec {
                     channel.publish(nil, data: "message") { error in
                         expect(error).to(beNil())
                         let version = testHTTPExecutor.requests.first!.allHTTPHeaderFields?["X-Ably-Version"]
-                        expect(version).to(equal(ARTDefault.version()))
+                        
+                        // This test should not directly validate version against ARTDefault.version(), as
+                        // ultimately the version header has been derived from that value.
+                        expect(version).to(equal("1.2"))
+                        
                         done()
                     }
                 }
@@ -1304,7 +1308,11 @@ class RestClient: QuickSpec {
                             fail("X-Ably-Version header not found"); done()
                             return
                         }
-                        expect(headerAblyVersion) == ARTDefault.version()
+
+                        // This test should not directly validate version against ARTDefault.version(), as
+                        // ultimately the version header has been derived from that value.
+                        expect(headerAblyVersion).to(equal("1.2"))
+
                         done()
                     }
                 }

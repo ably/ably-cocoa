@@ -14,7 +14,7 @@
 
 NSString *const ARTDefault_restHost = @"rest.ably.io";
 NSString *const ARTDefault_realtimeHost = @"realtime.ably.io";
-NSString *const ARTDefault_version = @"1.1";
+NSString *const ARTDefault_version = @"1.2";
 NSString *const ARTDefault_ablyBundleId = @"io.ably.Ably";
 NSString *const ARTDefault_bundleVersionKey = @"CFBundleShortVersionString";
 NSString *const ARTDefault_bundleBuildNumberKey = @"CFBundleVersion";
