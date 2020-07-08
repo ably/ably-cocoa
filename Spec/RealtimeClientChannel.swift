@@ -4413,7 +4413,7 @@ class RealtimeClientChannel: QuickSpec {
                 transport.changeReceivedMessage = { protocolMessage in
                     if protocolMessage.action == .attached {
                         protocolMessage.action = .detached
-                        protocolMessage.error = ARTErrorInfo.create(withCode: 50000, status: 500, message: "Timeout waiting for master to become ready")
+                        protocolMessage.error = ARTErrorInfo.create(withCode: 50000, status: 500, message: "fake error message text")
                     }
                     return protocolMessage
                 }
