@@ -105,7 +105,7 @@ You can install Ably for iOS and macOS through CocoaPods, Carthage or manually.
 Add this line to your application's Podfile:
 
     # For Xcode 7.3 and newer
-    pod 'Ably', '=> 1.2'
+    pod 'Ably', '>= 1.2'
 
 And then install the dependency:
 
