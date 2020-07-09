@@ -102,6 +102,8 @@ You can install Ably for iOS and macOS through CocoaPods, Carthage or manually.
 
 ### Installing through [CocoaPods](https://cocoapods.org/)
 
+If you intend to use Swift, using `use_frameworks!` in your Podfile is recommended (this will create a Framework that can be used in Swift natively).
+
 Add this line to your application's Podfile:
 
     # For Xcode 7.3 and newer
