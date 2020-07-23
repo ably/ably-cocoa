@@ -6,7 +6,8 @@
 //  Copyright © 2019 Ably. All rights reserved.
 //
 //  Apple left a form encoder out for some reason.
-//  Code credit to @mxcl. Based from https://github.com/mxcl/OMGHTTPURLRQ/blob/master/Sources/OMGFormURLEncode.m
+//  Code credit to @mxcl. Based on:
+//  https://github.com/mxcl/OMGHTTPURLRQ/blob/a757e2a3043c5f031b23ef8dadf82a97856dbfab/Sources/OMGFormURLEncode.m
 //
 
 #import "ARTFormEncode.h"

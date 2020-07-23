@@ -1,6 +1,6 @@
 # [Ably](https://www.ably.io) iOS, tvOS and macOS Objective-C and Swift client library SDK
 
-[![Build Status](https://travis-ci.org/ably/ably-cocoa.svg?branch=master)](https://travis-ci.org/ably/ably-cocoa)
+[![Build Status](https://travis-ci.org/ably/ably-cocoa.svg?branch=main)](https://travis-ci.org/ably/ably-cocoa)
 [![CocoaPods Compatible](https://img.shields.io/cocoapods/v/Ably.svg)](https://img.shields.io/cocoapods/v/Ably.svg)
 [![Carthage Compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
 ![Platforms](https://img.shields.io/badge/platforms-iOS%20%7C%20tvOS%20%7C%20macOS-333333.svg)
@@ -666,11 +666,11 @@ You can also view the [community reported Github issues](https://github.com/ably
 
 ## Contributing
 
-In this repository the `master` branch contains the latest development version of the Ably SDK. All development (bug fixing, feature implementation, etc.) is done against the `master` branch, which you should branch from whenever you'd like to make modifications. Here's the steps to follow when contributing to this repository.
+In this repository the `main` branch contains the latest development version of the Ably SDK. All development (bug fixing, feature implementation, etc.) is done against the `main` branch, which you should branch from whenever you'd like to make modifications. Here's the steps to follow when contributing to this repository.
 
 1. Fork it
 2. Setup or update your machine by running `make setup|update`
-3. Create your feature branch from `master` (`git checkout master && git checkout -b my-new-feature-branch`)
+3. Create your feature branch from `main` (`git checkout main && git checkout -b my-new-feature-branch`)
 4. Commit your changes (`git commit -am 'Add some feature'`)
 5. Ensure you have added suitable tests and the test suite is passing
 6. Push to the branch (`git push origin my-new-feature-branch`)
@@ -702,7 +702,7 @@ Note: [Fastlane](https://fastlane.tools) should be installed.
 
 For each release, the following needs to be done:
 
-* Create a new branch `release/x.x.x` (where `x.x.x` is the new version number) from the `master` branch
+* Create a new branch `release/x.x.x` (where `x.x.x` is the new version number) from the `main` branch
 * Run `make bump_[major|minor|patch]` to bump the new version number (creates a Git commit)
 * Run [`github_changelog_generator`](https://github.com/github-changelog-generator/github-changelog-generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). This may require some manual intervention, both in terms of how the command is run and how the change log file is modified. Your mileage may vary:
     * The command you will need to run will look something like this: `github_changelog_generator -u ably -p ably-cocoa --since-tag 1.2.1 --output delta.md`
@@ -711,14 +711,14 @@ For each release, the following needs to be done:
     * Also ensure that the "Full Changelog" link points to the new version tag instead of the `HEAD`
     * Commit this change: `git add CHANGELOG.md && git commit -m "Update change log."`
 * Push both commits to origin: `git push -u origin release/x.x.x`
-* Make a pull request against `master` and await approval of reviewer(s)
+* Make a pull request against `main` and await approval of reviewer(s)
 * Once approved and/or any additional commits have been added, merge the PR (f you do this from Github's web interface then use the "Rebase and merge" option)
 * Steps to perform *before* pushing a release tag up:
-    1. Checkout `master` locally, pulling in changes from above using `git checkout master && git pull`
+    1. Checkout `main` locally, pulling in changes from above using `git checkout main && git pull`
     2. Run `make update` to ensure Carthage dependencies are in sync
     3. Generate the prebuilt framework for Carthage using `make carthage_package` (the output from this, `Ably.framework.zip`, will be attached to the release later on)
     4. Validate that the CocoaPods build should succeed using `pod lib lint`
-* If any fixes are needed (e.g. the lint fails with warnings) then either commit them to `master` branch now if they are simple warning fixes or perhaps consider raising a new PR if they are complex or likely to need review.
+* If any fixes are needed (e.g. the lint fails with warnings) then either commit them to `main` branch now if they are simple warning fixes or perhaps consider raising a new PR if they are complex or likely to need review.
 * Create a tag for this version number using `git tag x.x.x`
 * Push the tag using `git push origin x.x.x`
 * Release an update for CocoaPods using `pod trunk push Ably.podspec`. Details on this command, as well as instructions for adding other contributors as maintainers, are at [Getting setup with Trunk](https://guides.cocoapods.org/making/getting-setup-with-trunk.html) in the [CocoaPods Guides](https://guides.cocoapods.org/)

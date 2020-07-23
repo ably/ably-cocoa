@@ -746,7 +746,7 @@ Subscribing to a channel in delta mode enables [delta compression](https://www.a
 
 **Merged pull requests:**
 
-- 0.9 master [\#588](https://github.com/ably/ably-ios/pull/588) ([ricardopereira](https://github.com/ricardopereira))
+- 0.9 [\#588](https://github.com/ably/ably-ios/pull/588) ([ricardopereira](https://github.com/ricardopereira))
 
 ## [0.9.0](https://github.com/ably/ably-ios/tree/0.9.0) (2017-03-23)
 [Full Changelog](https://github.com/ably/ably-ios/compare/0.8.10...0.9.0)
