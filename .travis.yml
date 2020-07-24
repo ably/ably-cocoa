@@ -16,7 +16,7 @@ install:
   - bundle install
 before_script:
   - xcrun simctl erase all
-script:
+  - instruments -s devices
 script:
   - export ABLY_ENV="sandbox"
   - fastlane $LANE

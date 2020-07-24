@@ -5,7 +5,7 @@ platform :ios do
   lane :test_iOS14 do
     run_tests(
       scheme: "Ably-iOS-Tests",
-      devices: ["iPhone XS (14.0)"],
+      devices: ["iPhone 11 Pro (14.0)"],
       xcargs: { ABLY_ENV: ENV['ABLY_ENV'] }
     )
   end
@@ -13,7 +13,7 @@ platform :ios do
   lane :test_iOS13 do
     run_tests(
       scheme: "Ably-iOS-Tests",
-      devices: ["iPhone XS (13.6)"],
+      devices: ["iPhone 11 Pro (13.6)"],
       xcargs: { ABLY_ENV: ENV['ABLY_ENV'] }
     )
   end
