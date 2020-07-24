@@ -1745,7 +1745,7 @@ class RestClient: QuickSpec {
                                 fail("No requests found")
                                 return
                             }
-                            expect(url.query).toNot(contain("request_id"))
+                            expect(url.query).to(beNil())
                             done()
                         }
                     }

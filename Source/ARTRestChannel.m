@@ -315,7 +315,9 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
         requestId = [[randomId dataUsingEncoding:NSUTF8StringEncoding] base64EncodedStringWithOptions:0];
         [queryItems addObject:[NSURLQueryItem queryItemWithName:@"request_id" value:requestId]];
     }
-    components.queryItems = queryItems;
+    if (queryItems.count > 0) {
+        components.queryItems = queryItems;
+    }
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
     request.HTTPMethod = @"POST";
