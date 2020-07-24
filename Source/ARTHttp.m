@@ -47,16 +47,14 @@ Class configuredUrlSessionClass = nil;
 }
 
 - (NSObject<ARTCancellable> *)executeRequest:(NSMutableURLRequest *)request completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback {
-    [self.logger debug:@"%@ %@", request.HTTPMethod, request.URL.absoluteString];
-    [self.logger verbose:@"Headers %@", request.allHTTPHeaderFields];
+    [self.logger debug:@"--> %@ %@\n  Body: %@\n  Headers: %@", request.HTTPMethod, request.URL.absoluteString, [[NSString alloc] initWithData:request.HTTPBody encoding:NSUTF8StringEncoding], request.allHTTPHeaderFields];
 
     return [_urlSession get:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
         if (error) {
-            [self.logger error:@"%@ %@: error %@", request.HTTPMethod, request.URL.absoluteString, error];
+            [self.logger error:@"<-- %@ %@: error %@", request.HTTPMethod, request.URL.absoluteString, error];
         } else {
-            [self.logger debug:@"%@ %@: statusCode %ld", request.HTTPMethod, request.URL.absoluteString, (long)httpResponse.statusCode];
-            [self.logger verbose:@"Headers %@", httpResponse.allHeaderFields];
+            [self.logger debug:@"<-- %@ %@: statusCode %ld\n  Data: %@\n  Headers: %@\n", request.HTTPMethod, request.URL.absoluteString, (long)httpResponse.statusCode, [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding], httpResponse.allHeaderFields];
             NSString *headerErrorMessage = httpResponse.allHeaderFields[ARTHttpHeaderFieldErrorMessageKey];
             if (headerErrorMessage && ![headerErrorMessage isEqualToString:@""]) {
                 [self.logger warn:@"%@", headerErrorMessage];
