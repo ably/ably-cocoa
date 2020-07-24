@@ -2,10 +2,26 @@ default_platform(:ios)
 
 platform :ios do
 
+  lane :test_iOS14 do
+    run_tests(
+      scheme: "Ably-iOS-Tests",
+      devices: ["iPhone XS (14.0)"],
+      xcargs: { ABLY_ENV: ENV['ABLY_ENV'] }
+    )
+  end
+
+  lane :test_iOS13 do
+    run_tests(
+      scheme: "Ably-iOS-Tests",
+      devices: ["iPhone XS (13.6)"],
+      xcargs: { ABLY_ENV: ENV['ABLY_ENV'] }
+    )
+  end
+
   lane :test_iOS12 do
     run_tests(
       scheme: "Ably-iOS-Tests",
-      devices: ["iPhone XS (12.0)"],
+      devices: ["iPhone XS (12.4)"],
       xcargs: { ABLY_ENV: ENV['ABLY_ENV'] }
     )
   end
@@ -33,6 +49,14 @@ platform :ios do
       scheme: "Ably-iOS-Tests",
       devices: ["iPhone 6 (9.3)"],
       test_without_building: false,
+      xcargs: { ABLY_ENV: ENV['ABLY_ENV'] }
+    )
+  end
+
+  lane :test_tvOS13 do
+    run_tests(
+      scheme: "Ably-tvOS-Tests",
+      devices: ["Apple TV 4K"],
       xcargs: { ABLY_ENV: ENV['ABLY_ENV'] }
     )
   end
