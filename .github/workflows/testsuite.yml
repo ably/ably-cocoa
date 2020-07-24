@@ -1,0 +1,41 @@
+on:
+  push:
+    branches:    
+      - main
+name: Test Suite
+jobs:
+  iOS:
+    name: Unit Tests
+    runs-on: ${{ matrix.os }} ${{ matrix.version }}
+    strategy:
+      matrix:
+        os: [iOS]
+        version: [13]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - uses: actions/cache@v2
+        id: carthage-cache
+        with:
+          path: Carthage
+          key: ${{ runner.os }}-carthage-${{ hashFiles('**/Cartfile.resolved') }}
+          restore-keys: |
+                ${{ runner.os }}-carthage-
+
+      - name: Carthage
+        if: steps.carthage-cache.outputs.cache-hit != 'true'
+        run: |
+          carthage bootstrap --no-use-binaries --platform $platform --cache-builds
+          rm -rf ./Carthage/Build/$platform/*.dSYM
+          bundle install
+
+      - name: Build
+        run: |
+          export ABLY_ENV="sandbox"
+          fastlane $lane
+          bash ./Scripts/run_examples_tests.sh
+    env:
+      target: ably-${{ matrix.os }}
+      platform: ${{ matrix.os }}
+      lane: test_${{ matrix.os }}${{ matrix.version }}
