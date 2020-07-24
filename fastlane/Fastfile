@@ -21,7 +21,7 @@ platform :ios do
   lane :test_iOS12 do
     run_tests(
       scheme: "Ably-iOS-Tests",
-      devices: ["iPhone XS (12.4)"],
+      devices: ["iPhone Xs (12.4)"],
       xcargs: { ABLY_ENV: ENV['ABLY_ENV'] }
     )
   end
