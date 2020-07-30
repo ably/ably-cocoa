@@ -1179,13 +1179,16 @@ class RestClient: QuickSpec {
 
                             let lock = NSLock()
                             testHTTPExecutor.afterRequest = { _, callback in
-                                lock.lock()
+                                lock.lock(before: Date().addingTimeInterval(10))
                                 if testHTTPExecutor.requests.count == 2 {
                                     // Stop
                                     testHTTPExecutor.http = nil
                                     callback!(nil, nil, nil)
                                 }
                                 lock.unlock()
+                            }
+                            defer {
+                                testHTTPExecutor.afterRequest = nil
                             }
 
                             waitUntil(timeout: testTimeout) { done in
