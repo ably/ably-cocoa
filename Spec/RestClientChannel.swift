@@ -426,7 +426,7 @@ class RestClientChannel: QuickSpec {
 
                     // Current version
                     let options = AblyTests.clientOptions()
-                    expect(options.idempotentRestPublishing) == false
+                    expect(options.idempotentRestPublishing) == true
                 }
 
                 func assertMessagePayloadId(id: String?, expectedSerial: String) {
