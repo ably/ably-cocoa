@@ -32,8 +32,9 @@ jobs:
 
       - name: Build
         run: |
+          git submodule update --init --recursive
           export ABLY_ENV="sandbox"
-          fastlane $lane
+          FASTLANE_EXPLICIT_OPEN_SIMULATOR=2 fastlane $lane
           bash ./Scripts/run_examples_tests.sh
     env:
       target: ably-${{ matrix.os }}
