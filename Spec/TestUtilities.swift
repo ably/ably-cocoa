@@ -130,7 +130,7 @@ class AblyTests {
         return DispatchQueue.getSpecific(key: queueIdentityKey)?.label
     }
 
-    class func setupOptions(_ options: ARTClientOptions, forceNewApp: Bool = false, debug: Bool = false) -> ARTClientOptions {
+    class func setupOptions(_ options: ARTClientOptions, forceNewApp: Bool = false, debug: Bool = true) -> ARTClientOptions {
         options.channelNamePrefix = "test-\(setupOptionsCounter)"
         setupOptionsCounter += 1
 
@@ -177,12 +177,12 @@ class AblyTests {
         return AblyTests.setupOptions(AblyTests.jsonRestOptions, debug: debug)
     }
 
-    class func clientOptions(_ debug: Bool = false, key: String? = nil, requestToken: Bool = false) -> ARTClientOptions {
+    class func clientOptions(_ debug: Bool = true, key: String? = nil, requestToken: Bool = false) -> ARTClientOptions {
         let options = ARTClientOptions()
         options.environment = getEnvironment()
         options.logExceptionReportingUrl = nil
         if debug {
-            options.logLevel = .debug
+            options.logLevel = .verbose
         }
         if let key = key {
             options.key = key
