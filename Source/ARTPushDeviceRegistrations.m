@@ -75,7 +75,6 @@
     if (callback) {
         void (^userCallback)(ARTErrorInfo *error) = callback;
         callback = ^(ARTErrorInfo *error) {
-            ART_EXITING_ABLY_CODE(self->_rest);
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
@@ -89,7 +88,6 @@
     #endif
 
 dispatch_async(_queue, ^{
-ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:deviceDetails.id] resolvingAgainstBaseURL:NO];
     if (self->_rest.options.pushFullWait) {
         components.queryItems = @[[NSURLQueryItem queryItemWithName:@"fullWait" value:@"true"]];
@@ -124,7 +122,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
             callback([ARTErrorInfo createWithCode:response.statusCode*100 status:response.statusCode message:[plain art_shortString]]);
         }
     }];
-} ART_TRY_OR_REPORT_CRASH_END
 });
 }
 
@@ -132,7 +129,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     if (callback) {
         void (^userCallback)(ARTDeviceDetails *, ARTErrorInfo *error) = callback;
         callback = ^(ARTDeviceDetails *device, ARTErrorInfo *error) {
-            ART_EXITING_ABLY_CODE(self->_rest);
             dispatch_async(self->_userQueue, ^{
                 userCallback(device, error);
             });
@@ -146,7 +142,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     #endif
 
 dispatch_async(_queue, ^{
-ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:deviceId]];
     request.HTTPMethod = @"GET";
     [request setDeviceAuthentication:deviceId localDevice:local logger:self->_logger];
@@ -179,7 +174,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
             callback(nil, [ARTErrorInfo createWithCode:response.statusCode*100 status:response.statusCode message:[plain art_shortString]]);
         }
     }];
-} ART_TRY_OR_REPORT_CRASH_END
 });
 }
 
@@ -187,7 +181,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     if (callback) {
         void (^userCallback)(ARTPaginatedResult *, ARTErrorInfo *error) = callback;
         callback = ^(ARTPaginatedResult *result, ARTErrorInfo *error) {
-            ART_EXITING_ABLY_CODE(self->_rest);
             dispatch_async(self->_userQueue, ^{
                 userCallback(result, error);
             });
@@ -195,7 +188,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     }
 
 dispatch_async(_queue, ^{
-ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/deviceRegistrations"] resolvingAgainstBaseURL:NO];
     components.queryItems = [params art_asURLQueryItems];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
@@ -205,7 +197,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
         return [self->_rest.encoders[response.MIMEType] decodeDevicesDetails:data error:error];
     };
     [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
-} ART_TRY_OR_REPORT_CRASH_END
 });
 }
 
@@ -213,7 +204,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     if (callback) {
         void (^userCallback)(ARTErrorInfo *error) = callback;
         callback = ^(ARTErrorInfo *error) {
-            ART_EXITING_ABLY_CODE(self->_rest);
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
@@ -221,7 +211,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     }
 
 dispatch_async(_queue, ^{
-ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[[NSURL URLWithString:@"/push/deviceRegistrations"] URLByAppendingPathComponent:deviceId] resolvingAgainstBaseURL:NO];
         if (self->_rest.options.pushFullWait) {
         components.queryItems = @[[NSURLQueryItem queryItemWithName:@"fullWait" value:@"true"]];
@@ -246,7 +235,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
             callback([ARTErrorInfo createWithCode:response.statusCode*100 status:response.statusCode message:[plain art_shortString]]);
         }
     }];
-} ART_TRY_OR_REPORT_CRASH_END
 });
 }
 
@@ -254,7 +242,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     if (callback) {
         void (^userCallback)(ARTErrorInfo *error) = callback;
         callback = ^(ARTErrorInfo *error) {
-            ART_EXITING_ABLY_CODE(self->_rest);
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
@@ -268,7 +255,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     #endif
 
 dispatch_async(_queue, ^{
-ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/deviceRegistrations"] resolvingAgainstBaseURL:NO];
     components.queryItems = [params art_asURLQueryItems];
     if (self->_rest.options.pushFullWait) {
@@ -294,7 +280,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
             callback([ARTErrorInfo createWithCode:response.statusCode*100 status:response.statusCode message:[plain art_shortString]]);
         }
     }];
-} ART_TRY_OR_REPORT_CRASH_END
 });
 }
 

@@ -34,16 +34,12 @@
 #import "ARTGCD.h"
 #import "ARTLog+Private.h"
 #import "ARTRealtime+Private.h"
-#import "ARTSentry.h"
 #import "ARTPush.h"
 #import "ARTPush+Private.h"
 #import "ARTLocalDevice+Private.h"
 #import "ARTLocalDeviceStorage.h"
 #import "ARTNSMutableRequest+ARTRest.h"
 #import "ARTHTTPPaginatedResponse+Private.h"
-#import <KSCrashAblyFork/KSCrash.h>
-
-static BOOL _aRestInstanceIsHandlingUncaughtExceptions = NO;
 
 @implementation ARTRest {
     ARTQueuedDealloc *_dealloc;
@@ -143,15 +139,12 @@ static BOOL _aRestInstanceIsHandlingUncaughtExceptions = NO;
 @implementation ARTRestInternal {
     ARTLog *_logger;
     NSUInteger _tokenErrorRetries;
-    BOOL _handlingUncaughtExceptions;
 }
 
 @synthesize logger = _logger;
 
 - (instancetype)initWithOptions:(ARTClientOptions *)options {
-ART_TRY_OR_REPORT_CRASH_START(self) {
     return [self initWithOptions:options realtime:nil];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (instancetype)initWithOptions:(ARTClientOptions *)options realtime:(ARTRealtimeInternal *_Nullable)realtime {
@@ -173,7 +166,6 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
             _logger.logLevel = options.logLevel;
         }
 
-    ART_TRY_OR_REPORT_CRASH_START(self) {
         _queue = options.internalDispatchQueue;
         _userQueue = options.dispatchQueue;
         _storage = [ARTLocalDeviceStorage newWithLogger:_logger];
@@ -194,48 +186,25 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
         _auth = [[ARTAuthInternal alloc] init:self withOptions:_options];
         _push = [[ARTPushInternal alloc] init:self];
         _channels = [[ARTRestChannelsInternal alloc] initWithRest:self];
-        _handlingUncaughtExceptions = false;
 
         [self.logger verbose:__FILE__ line:__LINE__ message:@"RS:%p initialized", self];
-    } ART_TRY_OR_REPORT_CRASH_END
-
-        NSString *dns = self.options.logExceptionReportingUrl;
-        if (dns) {
-            static dispatch_once_t onceToken;
-            dispatch_once(&onceToken, ^{
-                [ARTSentry setTags:[self sentryTags]];
-                BOOL set = [ARTSentry setCrashHandler:dns];
-                if (set) {
-                    [self->_logger info:@"Ably client library exception reporting enabled. Unhandled failures will be automatically submitted to errors.ably.io to help improve our service. To find out more about this feature, see https://help.ably.io/exceptions"];
-                } else {
-                    [self->_logger debug:@"couldn't start crash handler"];
-                }
-            });
-        }
     }
     return self;
 }
 
 - (instancetype)initWithKey:(NSString *)key {
-ART_TRY_OR_REPORT_CRASH_START(self) {
     return [self initWithOptions:[[ARTClientOptions alloc] initWithKey:key]];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (instancetype)initWithToken:(NSString *)token {
-ART_TRY_OR_REPORT_CRASH_START(self) {
     return [self initWithOptions:[[ARTClientOptions alloc] initWithToken:token]];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)dealloc {
-ART_TRY_OR_REPORT_CRASH_START(self) {
     [self.logger verbose:__FILE__ line:__LINE__ message:@"RS:%p dealloc", self];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSString *)description {
-ART_TRY_OR_REPORT_CRASH_START(self) {
     NSString *info;
     if (self.options.token) {
         info = [NSString stringWithFormat:@"token: %@", self.options.token];
@@ -250,11 +219,9 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
         info = [NSString stringWithFormat:@"key: %@", self.options.key];
     }
     return [NSString stringWithFormat:@"%@ - \n\t %@;", [super description], info];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSObject<ARTCancellable> *)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback {
-ART_TRY_OR_REPORT_CRASH_START(self) {
     request.URL = [NSURL URLWithString:request.URL.relativeString relativeToURL:self.baseUrl];
     
     switch (authOption) {
@@ -272,17 +239,13 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
         case ARTAuthenticationUseBasic:
             return [self executeRequestWithAuthentication:request withMethod:ARTAuthMethodBasic completion:callback];
     }
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSObject<ARTCancellable> *)executeRequestWithAuthentication:(NSMutableURLRequest *)request withMethod:(ARTAuthMethod)method completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback {
-ART_TRY_OR_REPORT_CRASH_START(self) {
     return [self executeRequestWithAuthentication:request withMethod:method force:NO completion:callback];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSObject<ARTCancellable> *)executeRequestWithAuthentication:(NSMutableURLRequest *)request withMethod:(ARTAuthMethod)method force:(BOOL)force completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback {
-ART_TRY_OR_REPORT_CRASH_START(self) {
     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p calculating authorization %lu", self, (unsigned long)method];
     __block NSObject<ARTCancellable> *task;
 
@@ -317,17 +280,13 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
         }
     }
     return task;
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback {
-ART_TRY_OR_REPORT_CRASH_START(self) {
     return [self executeRequest:request completion:callback fallbacks:nil retries:0];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback fallbacks:(ARTFallback *)fallbacks retries:(NSUInteger)retries {
-ART_TRY_OR_REPORT_CRASH_START(self) {
     __block ARTFallback *blockFallbacks = fallbacks;
 
     if ([request isKindOfClass:[NSMutableURLRequest class]]) {
@@ -410,11 +369,9 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
     }];
 
     return task;
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (BOOL)shouldRenewToken:(NSError **)errorPtr {
-ART_TRY_OR_REPORT_CRASH_START(self) {
     if (errorPtr && *errorPtr &&
         (*errorPtr).code >= 40140 && (*errorPtr).code < 40150) {
         if ([self.auth tokenIsRenewable]) {
@@ -423,11 +380,9 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
         *errorPtr = (NSError *)[ARTErrorInfo createWithCode:ARTStateRequestTokenFailed message:ARTAblyMessageNoMeansToRenewToken];
     }
     return NO;
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (BOOL)shouldRetryWithFallback:(NSURLRequest *)request response:(NSHTTPURLResponse *)response error:(NSError *)error {
-ART_TRY_OR_REPORT_CRASH_START(self) {
     if (response.statusCode >= 500 && response.statusCode <= 504) {
         return YES;
     }
@@ -438,41 +393,33 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
         return YES;
     }
     return NO;
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSString *)currentHost {
-ART_TRY_OR_REPORT_CRASH_START(self) {
     if (_prioritizedHost) {
         // Test purpose only
         return _prioritizedHost;
     }
     return self.options.restHost;
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSString *)prepareBasicAuthorisationHeader:(NSString *)key {
-ART_TRY_OR_REPORT_CRASH_START(self) {
     // Include key Base64 encoded in an Authorization header (RFC7235)
     NSData *keyData = [key dataUsingEncoding:NSUTF8StringEncoding];
     NSString *keyBase64 = [keyData base64EncodedStringWithOptions:0];
     return [NSString stringWithFormat:@"Basic %@", keyBase64];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSString *)prepareTokenAuthorisationHeader:(NSString *)token {
-ART_TRY_OR_REPORT_CRASH_START(self) {
     NSData *tokenData = [token dataUsingEncoding:NSUTF8StringEncoding];
     NSString *tokenBase64 = [tokenData base64EncodedStringWithOptions:0];
     return [NSString stringWithFormat:@"Bearer %@", tokenBase64];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)time:(void(^)(NSDate *time, NSError *error))callback {
     if (callback) {
         void (^userCallback)(NSDate *time, NSError *error) = callback;
         callback = ^(NSDate *time, NSError *error) {
-            ART_EXITING_ABLY_CODE(self);
             dispatch_async(self->_userQueue, ^{
                 userCallback(time, error);
             });
@@ -484,7 +431,6 @@ dispatch_async(_queue, ^{
 }
 
 - (NSObject<ARTCancellable> *)_time:(void(^)(NSDate *time, NSError *error))callback {
-ART_TRY_OR_REPORT_CRASH_START(self) {
     NSURL *requestUrl = [NSURL URLWithString:@"/time" relativeToURL:self.baseUrl];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl];
     request.HTTPMethod = @"GET";
@@ -505,15 +451,12 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
             callback(time, decodeError);
         }
     }];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (BOOL)request:(NSString *)method path:(NSString *)path params:(nullable NSDictionary<NSString *, NSString *> *)params body:(nullable id)body headers:(nullable NSDictionary<NSString *, NSString *> *)headers callback:(void (^)(ARTHTTPPaginatedResponse *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr {
-ART_TRY_OR_REPORT_CRASH_START(self) {
     if (callback) {
         void (^userCallback)(ARTHTTPPaginatedResponse *, ARTErrorInfo *) = callback;
         callback = ^(ARTHTTPPaginatedResponse *r, ARTErrorInfo *e) {
-            ART_EXITING_ABLY_CODE(self);
             dispatch_async(self->_userQueue, ^{
                 userCallback(r, e);
             });
@@ -595,7 +538,6 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
         [ARTHTTPPaginatedResponse executePaginated:self withRequest:request  callback:callback];
     });
     return YES;
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSObject<ARTCancellable> *)internetIsUp:(void (^)(BOOL isUp)) cb {
@@ -614,17 +556,13 @@ ART_TRY_OR_REPORT_CRASH_START(self) {
 }
 
 - (BOOL)stats:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback {
-ART_TRY_OR_REPORT_CRASH_START(self) {
     return [self stats:[[ARTStatsQuery alloc] init] callback:callback error:nil];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (BOOL)stats:(ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult<ARTStats *> *, ARTErrorInfo *))callback error:(NSError **)errorPtr {
-ART_TRY_OR_REPORT_CRASH_START(self) {
     if (callback) {
         void (^userCallback)(ARTPaginatedResult<ARTStats *> *, ARTErrorInfo *) = callback;
         callback = ^(ARTPaginatedResult<ARTStats *> *r, ARTErrorInfo *e) {
-            ART_EXITING_ABLY_CODE(self);
             dispatch_async(self->_userQueue, ^{
                 userCallback(r, e);
             });
@@ -667,93 +605,19 @@ dispatch_async(_queue, ^{
     [ARTPaginatedResult executePaginated:self withRequest:request andResponseProcessor:responseProcessor callback:callback];
 });
     return YES;
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (id<ARTEncoder>)defaultEncoder {
-ART_TRY_OR_REPORT_CRASH_START(self) {
     return self.encoders[self.defaultEncoding];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSURL *)getBaseUrl {
-ART_TRY_OR_REPORT_CRASH_START(self) {
     NSURLComponents *components = [_options restUrlComponents];
     NSString *prioritizedHost = self.prioritizedHost; // Important to use the property, not the variable; it's atomic!
     if (prioritizedHost) { 
         components.host = prioritizedHost;
     }
     return components.URL;
-} ART_TRY_OR_REPORT_CRASH_END
-}
-
-- (void)onUncaughtException:(NSException *)e {
-    if ([e isKindOfClass:[ARTException class]]) {
-        @throw e;
-    }
-    if (_realtime) {
-        [_realtime onUncaughtException:e];
-        return;
-    }
-    [self reportUncaughtException:e];
-}
-
-- (void)reportUncaughtException:(NSException *_Nullable)e {
-    if (!_handlingUncaughtExceptions) {
-        @throw e;
-    }
-    NSLog(@"ARTRest: uncaught exception %@\n%@", e, [e callStackSymbols]);
-    [self forceReport:@"Uncaught exception" exception:e];
-}
-
-- (void)forceReport:(NSString *)message exception:(NSException *_Nullable)e {
-    NSString *dns = self.options.logExceptionReportingUrl;
-    if (!dns) {
-        return;
-    }
-    [ARTSentry report:message to:dns extra:[self sentryExtra] breadcrumbs:[self sentryBreadcrumbs] tags:[self sentryTags] exception:e];
-}
-
-- (NSDictionary *)sentryExtra {
-    return [KSCrash sharedInstance].userInfo[@"sentryExtra"];
-}
-
-- (NSArray<NSDictionary *> *)sentryBreadcrumbs {
-    return [ARTSentry flattenBreadcrumbs:[KSCrash sharedInstance].userInfo[@"sentryBreadcrumbs"]];
-}
-
-- (NSDictionary *)sentryTags {
-    return @{
-        @"appId": ART_orNull(self.auth.appId),
-        @"environment": self.options.environment ? self.options.environment : @"production",
-    };
-}
-
--(BOOL)startHandlingUncaughtExceptions {
-    @synchronized ([ARTRest class]) {
-        if (_handlingUncaughtExceptions || _aRestInstanceIsHandlingUncaughtExceptions) {
-            // startHandlingUncaughtExceptions has either:
-            // 1. already been called for this instance; or
-            // 2. already been called for another instance
-            return false;
-        }
-        _aRestInstanceIsHandlingUncaughtExceptions = YES;
-        _handlingUncaughtExceptions = YES;
-        [ARTSentry setUserInfo:@"reportToAbly" value:[NSNumber numberWithBool:true]];
-        return true;
-    }
-}
-
--(void)stopHandlingUncaughtExceptions {
-    @synchronized ([ARTRest class]) {
-        if (!_handlingUncaughtExceptions) {
-            // startHandlingUncaughtExceptions has not been called for this instance
-            return;
-        }
-        _aRestInstanceIsHandlingUncaughtExceptions = NO;
-        _handlingUncaughtExceptions = NO;
-        [ARTSentry setUserInfo:@"reportToAbly" value:[NSNumber numberWithBool:false]];
-    }
 }
 
 #if TARGET_OS_IOS

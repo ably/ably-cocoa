@@ -56,11 +56,9 @@
 }
 
 - (void)first:(void (^)(ARTHTTPPaginatedResponse *_Nullable result, ARTErrorInfo *_Nullable error))callback {
-ART_TRY_OR_REPORT_CRASH_START(self.rest) {
     if (callback) {
         void (^userCallback)(ARTHTTPPaginatedResponse *_Nullable result, ARTErrorInfo *_Nullable error) = callback;
         callback = ^(ARTHTTPPaginatedResponse *_Nullable result, ARTErrorInfo *_Nullable error) {
-            ART_EXITING_ABLY_CODE(self.rest);
             dispatch_async(self.userQueue, ^{
                 userCallback(result, error);
             });
@@ -68,15 +66,12 @@ ART_TRY_OR_REPORT_CRASH_START(self.rest) {
     }
 
     [self.class executePaginated:self.rest withRequest:self.relFirst callback:callback];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)next:(void (^)(ARTHTTPPaginatedResponse *_Nullable result, ARTErrorInfo *_Nullable error))callback {
-ART_TRY_OR_REPORT_CRASH_START(self.rest) {
     if (callback) {
         void (^userCallback)(ARTHTTPPaginatedResponse *_Nullable result, ARTErrorInfo *_Nullable error) = callback;
         callback = ^(ARTHTTPPaginatedResponse *_Nullable result, ARTErrorInfo *_Nullable error) {
-            ART_EXITING_ABLY_CODE(self.rest);
             dispatch_async(self.userQueue, ^{
                 userCallback(result, error);
             });
@@ -92,11 +87,9 @@ ART_TRY_OR_REPORT_CRASH_START(self.rest) {
     }
 
     [self.class executePaginated:self.rest withRequest:self.relNext callback:callback];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 + (void)executePaginated:(ARTRestInternal *)rest withRequest:(NSMutableURLRequest *)request callback:(void (^)(ARTHTTPPaginatedResponse *_Nullable result, ARTErrorInfo *_Nullable error))callback {
-ART_TRY_OR_REPORT_CRASH_START(rest) {
     [rest.logger debug:__FILE__ line:__LINE__ message:@"HTTP Paginated request: %@", request];
 
     [rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
@@ -131,7 +124,6 @@ ART_TRY_OR_REPORT_CRASH_START(rest) {
 
         callback(result, nil);
     }];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 @end

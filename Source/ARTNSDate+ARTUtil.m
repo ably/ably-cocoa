@@ -26,19 +26,4 @@
     return (NSInteger)round([self timeIntervalSince1970] * 1000.0);
 }
 
-- (NSString *)toSentryTimestamp {
-    return [[[self class] customDateFormatter] stringFromDate:self];
-}
-
-+ (NSDateFormatter *)customDateFormatter {
-    static dispatch_once_t onceToken;
-    static NSDateFormatter *customDateFormatter;
-    dispatch_once(&onceToken, ^{
-        customDateFormatter = [[NSDateFormatter alloc] init];
-        customDateFormatter.dateFormat = @"yyyy-MM-dd'T'HH:mm:ss'.'SS";
-        customDateFormatter.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
-    });
-    return customDateFormatter;
-}
-
 @end

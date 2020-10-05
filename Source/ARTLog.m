@@ -7,7 +7,6 @@
 
 #import "ARTLog+Private.h"
 #import "ARTNSDate+ARTUtil.h"
-#import "ARTSentry.h"
 
 static const char *logLevelName(ARTLogLevel level) {
     switch(level) {
@@ -30,42 +29,18 @@ static const char *logLevelName(ARTLogLevel level) {
 
 @implementation ARTLogLine
 
-- (id)initWithDate:(NSDate *)date level:(ARTLogLevel)level message:(NSString *)message breadcrumbsKey:(NSString *)breadcrumbsKey {
+- (id)initWithDate:(NSDate *)date level:(ARTLogLevel)level message:(NSString *)message {
     self = [self init];
     if (self) {
         _date = date;
         _level = level;
         _message = message;
-        _breadcrumbsKey = breadcrumbsKey;
     }
     return self;
 }
 
 - (NSString *)toString {
     return [NSString stringWithFormat:@"%s: %@", logLevelName(self.level), self.message];
-}
-
-- (NSDictionary *)toBreadcrumb {
-    NSString *level;
-    switch (_level) {
-        case ARTLogLevelError:
-            level = @"error";
-            break;
-        case ARTLogLevelWarn:
-            level = @"warn";
-            break;
-        case ARTLogLevelInfo:
-            level = @"info";
-            break;
-        default:
-            level = @"debug";
-    }
-    return @{
-        @"category": _breadcrumbsKey,
-        @"timestamp": [_date toSentryTimestamp],
-        @"level": level,
-        @"message": _message,
-    };
 }
 
 - (NSString *)description {
@@ -82,7 +57,6 @@ static const char *logLevelName(ARTLogLevel level) {
     _date = [decoder decodeObjectForKey:@"date"];
     _level = [[decoder decodeObjectForKey:@"level"] unsignedIntValue];
     _message = [decoder decodeObjectForKey:@"message"];
-    _breadcrumbsKey = [decoder decodeObjectForKey:@"breadcrumbsKey"];
     return self;
 }
 
@@ -90,7 +64,6 @@ static const char *logLevelName(ARTLogLevel level) {
     [encoder encodeObject:self.date forKey:@"date"];
     [encoder encodeObject:[NSNumber numberWithUnsignedInteger:self.level] forKey:@"level"];
     [encoder encodeObject:self.message forKey:@"message"];
-    [encoder encodeObject:self.breadcrumbsKey forKey:@"breadcrumbsKey"];
 }
 
 @end
@@ -100,7 +73,6 @@ static const char *logLevelName(ARTLogLevel level) {
     NSMutableArray<ARTLogLine *> *_history;
     NSUInteger _historyLines;
     dispatch_queue_t _queue;
-    BOOL _shouldSaveBreadcrumbs;
 }
 
 - (instancetype)init {
@@ -120,16 +92,14 @@ static const char *logLevelName(ARTLogLevel level) {
         }
         _history = [[NSMutableArray alloc] init];
         _historyLines = historyLines;
-        _breadcrumbsKey = @"logger";
         _queue = dispatch_queue_create("io.ably.log", DISPATCH_QUEUE_SERIAL);
-        _shouldSaveBreadcrumbs = ![[NSProcessInfo processInfo].environment valueForKey:@"ARTUnitTests"];
     }
     return self;
 }
 
 - (void)log:(NSString *const)message withLevel:(const ARTLogLevel)level {
     dispatch_sync(_queue, ^{
-        ARTLogLine *logLine = [[ARTLogLine alloc] initWithDate:[NSDate date] level:level message:message breadcrumbsKey:self->_breadcrumbsKey];
+        ARTLogLine *logLine = [[ARTLogLine alloc] initWithDate:[NSDate date] level:level message:message];
         if (level >= self.logLevel) {
             NSLog(@"%@", [logLine toString]);
             if (self->_captured) {
@@ -140,9 +110,6 @@ static const char *logLevelName(ARTLogLevel level) {
             [self->_history insertObject:logLine atIndex:0];
             if (self->_history.count > self->_historyLines) {
                 [self->_history removeLastObject];
-            }
-            if (self->_shouldSaveBreadcrumbs) {
-                [ARTSentry setBreadcrumbs:self->_breadcrumbsKey value:self->_history];
             }
         }
     });

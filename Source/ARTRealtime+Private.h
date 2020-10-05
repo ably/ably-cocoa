@@ -119,36 +119,6 @@ NS_ASSUME_NONNULL_BEGIN
 // Message sending
 - (void)send:(ARTProtocolMessage *)msg sentCallback:(nullable void (^)(ARTErrorInfo *_Nullable))sentCallback ackCallback:(nullable void (^)(ARTStatus *))ackCallback;
 
-- (void)onUncaughtException:(NSException *)e;
-- (NSDictionary *)sentryExtra;
-- (NSArray<NSDictionary *> *)sentryBreadcrumbs;
-
 @end
-
-#define ART_TRY_OR_MOVE_TO_FAILED_START(REALTIME) \
-	do {\
-        ARTRealtimeInternal *const __realtime = REALTIME; \
-        ARTRestInternal *const __rest = __realtime.rest; \
-        const BOOL __started = [__rest startHandlingUncaughtExceptions]; \
-        BOOL __caught = false; \
-        @try { \
-            do {
-
-#define ART_TRY_OR_MOVE_TO_FAILED_END \
-            } while(0); \
-        } \
-        @catch(NSException *const e) { \
-            __caught = true; \
-            if (!__started) { \
-                @throw e; \
-            } \
-            [__realtime onUncaughtException:e]; \
-        } \
-        @finally { \
-            if (!__caught && __started) { \
-                [__rest stopHandlingUncaughtExceptions]; \
-            } \
-        } \
-	} while(0);
 
 NS_ASSUME_NONNULL_END
