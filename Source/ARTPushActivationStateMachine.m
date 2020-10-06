@@ -34,11 +34,8 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
     dispatch_queue_t _userQueue;
 }
 
-- (instancetype)init:(ARTRestInternal *)rest {
-    return [self init:rest delegate:nil];
-}
-
-- (instancetype)init:(ARTRestInternal *)rest delegate:(id)delegate {
+- (instancetype)initWithRest:(ARTRestInternal *const)rest
+                    delegate:(const id<ARTPushRegistererDelegate, NSObject>)delegate {
     if (self = [super init]) {
         _rest = rest;
         _delegate = delegate;
@@ -150,15 +147,10 @@ dispatch_async(_queue, ^{
     #if TARGET_OS_IOS
     ARTLocalDevice *local = _rest.device_nosync;
 
-    __block id delegate = self.delegate;
-
-    if (![delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
-        [NSException raise:@"ARTPushRegistererDelegate must be implemented on AppDelegate" format:@""];
-    }
+    const id<ARTPushRegistererDelegate, NSObject> delegate = self.delegate;
 
     // Custom register
-    SEL customRegisterMethodSelector = @selector(ablyPushCustomRegister:deviceDetails:callback:);
-    if ([delegate respondsToSelector:customRegisterMethodSelector]) {
+    if ([delegate respondsToSelector:@selector(ablyPushCustomRegister:deviceDetails:callback:)]) {
         dispatch_async(_userQueue, ^{
             [delegate ablyPushCustomRegister:error deviceDetails:local callback:^(ARTDeviceIdentityTokenDetails *identityTokenDetails, ARTErrorInfo *error) {
                 if (error) {
@@ -218,15 +210,10 @@ dispatch_async(_queue, ^{
     #if TARGET_OS_IOS
     ARTLocalDevice *local = _rest.device_nosync;
 
-    __block id delegate = self.delegate;
-
-    if (![delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
-        [NSException raise:@"ARTPushRegistererDelegate must be implemented on AppDelegate" format:@""];
-    }
+    const id<ARTPushRegistererDelegate, NSObject> delegate = self.delegate;
 
     // Custom register
-    SEL customRegisterMethodSelector = @selector(ablyPushCustomRegister:deviceDetails:callback:);
-    if ([delegate respondsToSelector:customRegisterMethodSelector]) {
+    if ([delegate respondsToSelector:@selector(ablyPushCustomRegister:deviceDetails:callback:)]) {
         dispatch_async(_userQueue, ^{
             [delegate ablyPushCustomRegister:error deviceDetails:local callback:^(ARTDeviceIdentityTokenDetails *identityTokenDetails, ARTErrorInfo *error) {
                 if (error) {
@@ -272,15 +259,10 @@ dispatch_async(_queue, ^{
     #if TARGET_OS_IOS
     ARTLocalDevice *const local = _rest.device_nosync;
 
-    __block id const delegate = self.delegate;
-
-    if (![delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
-        [NSException raise:@"ARTPushRegistererDelegate must be implemented on AppDelegate" format:@""];
-    }
+    const id<ARTPushRegistererDelegate, NSObject> delegate = self.delegate;
 
     // Custom register
-    SEL const customRegisterMethodSelector = @selector(ablyPushCustomRegister:deviceDetails:callback:);
-    if ([delegate respondsToSelector:customRegisterMethodSelector]) {
+    if ([delegate respondsToSelector:@selector(ablyPushCustomRegister:deviceDetails:callback:)]) {
         dispatch_async(_userQueue, ^{
             [delegate ablyPushCustomRegister:nil deviceDetails:local callback:^(ARTDeviceIdentityTokenDetails *identityTokenDetails, ARTErrorInfo *error) {
                 if (error) {
@@ -375,12 +357,9 @@ dispatch_async(_queue, ^{
 - (void)callActivatedCallback:(ARTErrorInfo *)error {
     #if TARGET_OS_IOS
     dispatch_async(_userQueue, ^{
-        id delegate = self.delegate;
-        if ([delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
-            SEL activateCallbackMethodSelector = @selector(didActivateAblyPush:);
-            if ([delegate respondsToSelector:activateCallbackMethodSelector]) {
-                [delegate didActivateAblyPush:error];
-            }
+        const id<ARTPushRegistererDelegate, NSObject> delegate = self.delegate;
+        if ([delegate respondsToSelector:@selector(didActivateAblyPush:)]) {
+            [delegate didActivateAblyPush:error];
         }
     });
     #endif
@@ -389,12 +368,9 @@ dispatch_async(_queue, ^{
 - (void)callDeactivatedCallback:(ARTErrorInfo *)error {
     #if TARGET_OS_IOS
     dispatch_async(_userQueue, ^{
-        id delegate = self.delegate;
-        if ([delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
-            SEL deactivateCallbackMethodSelector = @selector(didDeactivateAblyPush:);
-            if ([delegate respondsToSelector:deactivateCallbackMethodSelector]) {
-                [delegate didDeactivateAblyPush:error];
-            }
+        const id<ARTPushRegistererDelegate, NSObject> delegate = self.delegate;
+        if ([delegate respondsToSelector:@selector(didDeactivateAblyPush:)]) {
+            [delegate didDeactivateAblyPush:error];
         }
     });
     #endif
@@ -403,12 +379,9 @@ dispatch_async(_queue, ^{
 - (void)callUpdateFailedCallback:(nullable ARTErrorInfo *)error {
     #if TARGET_OS_IOS
     dispatch_async(_userQueue, ^{
-        id delegate = self.delegate;
-        if ([delegate conformsToProtocol:@protocol(ARTPushRegistererDelegate)]) {
-            SEL updateFailedCallbackMethodSelector = @selector(didAblyPushRegistrationFail:);
-            if ([delegate respondsToSelector:updateFailedCallbackMethodSelector]) {
-                [delegate didAblyPushRegistrationFail:error];
-            }
+        const id<ARTPushRegistererDelegate, NSObject> delegate = self.delegate;
+        if ([delegate respondsToSelector:@selector(didAblyPushRegistrationFail:)]) {
+            [delegate didAblyPushRegistrationFail:error];
         }
     });
     #endif

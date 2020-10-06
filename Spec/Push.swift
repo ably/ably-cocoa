@@ -303,7 +303,7 @@ class Push : QuickSpec {
 
                 let storage = MockDeviceStorage(
                     startWith: ARTPushActivationStateWaitingForNewPushDeviceDetails(
-                        machine: ARTPushActivationStateMachine(rest.internal)
+                        machine: ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
                     )
                 )
                 realtime.internal.rest.storage = storage

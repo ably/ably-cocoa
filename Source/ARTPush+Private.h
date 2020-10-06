@@ -12,6 +12,7 @@
 
 @class ARTPushActivationStateMachine;
 @class ARTRestInternal;
+@protocol ARTPushRegistererDelegate;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -30,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) ARTPushActivationStateMachine *activationMachine;
 
 /// Create the _activationMachine manually with a custom delegate for internal testing.
-- (ARTPushActivationStateMachine *)createActivationStateMachineWithDelegate:(id)delegate;
+- (ARTPushActivationStateMachine *)createActivationStateMachineWithDelegate:(id<ARTPushRegistererDelegate, NSObject>)delegate;
 #endif
 
 @end
