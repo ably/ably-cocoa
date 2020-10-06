@@ -349,7 +349,6 @@
     if (cb) {
         void (^userCallback)(id _Nullable) = cb;
         cb = ^(id _Nullable v) {
-            ART_EXITING_ABLY_CODE(self->_rest);
             dispatch_async(self->_userQueue, ^{
                 userCallback(v);
             });
@@ -367,7 +366,6 @@ dispatch_sync(_queue, ^{
     if (cb) {
         void (^userCallback)(id _Nullable) = cb;
         cb = ^(id _Nullable v) {
-            ART_EXITING_ABLY_CODE(self->_rest);
             dispatch_async(self->_userQueue, ^{
                 userCallback(v);
             });
@@ -385,7 +383,6 @@ dispatch_sync(_queue, ^{
     if (cb) {
         void (^userCallback)(id _Nullable) = cb;
         cb = ^(id _Nullable v) {
-            ART_EXITING_ABLY_CODE(self->_rest);
             dispatch_async(self->_userQueue, ^{
                 userCallback(v);
             });
@@ -403,7 +400,6 @@ dispatch_sync(_queue, ^{
     if (cb) {
         void (^userCallback)(id _Nullable) = cb;
         cb = ^(id _Nullable v) {
-            ART_EXITING_ABLY_CODE(self->_rest);
             dispatch_async(self->_userQueue, ^{
                 userCallback(v);
             });

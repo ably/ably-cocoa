@@ -70,7 +70,6 @@
 }
 
 - (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime {
-ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
     if (self = [super init]) {
         _realtime = realtime;
         _userQueue = _realtime.rest.userQueue;
@@ -78,7 +77,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
         _channels = [[ARTChannels alloc] initWithDelegate:self dispatchQueue:_queue prefix:_realtime.options.channelNamePrefix];
     }
     return self;
-} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (id)makeChannel:(NSString *)name options:(ARTRealtimeChannelOptions *)options {
@@ -107,7 +105,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
     if (cb) {
         void (^userCallback)(ARTErrorInfo *error) = cb;
         cb = ^(ARTErrorInfo *error) {
-            ART_EXITING_ABLY_CODE(self->_realtime.rest);
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
@@ -115,7 +112,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
     }
 
 dispatch_sync(_queue, ^{
-ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
     if (![self->_channels _exists:name]) {
         if (cb) cb(nil);
         return;
@@ -138,7 +134,6 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
 
         if (cb) cb(errorInfo);
     }];
-} ART_TRY_OR_MOVE_TO_FAILED_END
 });
 }
 
@@ -147,9 +142,7 @@ ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
 }
 
 - (NSMutableDictionary *)getCollection {
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     return _channels.channels;
-} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (id<NSFastEnumeration>)getNosyncIterable {

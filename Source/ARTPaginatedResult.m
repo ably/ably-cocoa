@@ -72,11 +72,9 @@
 }
 
 - (void)first:(void (^)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (callback) {
         void (^userCallback)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) = callback;
         callback = ^(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) {
-            ART_EXITING_ABLY_CODE(self->_rest);
             dispatch_async(self->_userQueue, ^{
                 userCallback(result, error);
             });
@@ -84,15 +82,12 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     }
 
     [self.class executePaginated:_rest withRequest:_relFirst andResponseProcessor:_responseProcessor callback:callback];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)next:(void (^)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (callback) {
         void (^userCallback)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) = callback;
         callback = ^(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error) {
-            ART_EXITING_ABLY_CODE(self->_rest);
             dispatch_async(self->_userQueue, ^{
                 userCallback(result, error);
             });
@@ -107,11 +102,9 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         return;
     }
     [self.class executePaginated:_rest withRequest:_relNext andResponseProcessor:_responseProcessor callback:callback];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 + (void)executePaginated:(ARTRestInternal *)rest withRequest:(NSMutableURLRequest *)request andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor callback:(void (^)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
-ART_TRY_OR_REPORT_CRASH_START(rest) {
     [rest.logger debug:__FILE__ line:__LINE__ message:@"Paginated request: %@", request];
 
     [rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
@@ -145,7 +138,6 @@ ART_TRY_OR_REPORT_CRASH_START(rest) {
             callback(result, nil);
         }
     }];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 @end

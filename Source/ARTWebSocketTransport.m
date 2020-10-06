@@ -68,7 +68,6 @@ Class configuredWebsocketClass = nil;
         _encoder = rest.defaultEncoder;
         _logger = rest.logger;
         _protocolMessagesLogger = [[ARTLog alloc] initCapturingOutput:false historyLines:50];
-        _protocolMessagesLogger.breadcrumbsKey = @"protocolMessages";
         _options = [options copy];
         _resumeKey = resumeKey;
         _connectionSerial = connectionSerial;

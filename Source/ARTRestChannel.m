@@ -120,7 +120,6 @@ static const NSUInteger kIdempotentLibraryGeneratedIdLength = 9; //bytes
 @dynamic options;
 
 - (instancetype)initWithName:(NSString *)name withOptions:(ARTChannelOptions *)options andRest:(ARTRestInternal *)rest {
-ART_TRY_OR_REPORT_CRASH_START(rest) {
     if (self = [super initWithName:name andOptions:options rest:rest]) {
         _rest = rest;
         _queue = rest.queue;
@@ -129,50 +128,38 @@ ART_TRY_OR_REPORT_CRASH_START(rest) {
         [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p instantiating under '%@'", self, name];
     }
     return self;
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (ARTLog *)getLogger {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return _rest.logger;
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSString *)getBasePath {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return _basePath;
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (ARTRestPresenceInternal *)presence {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (!_presence) {
         _presence = [[ARTRestPresenceInternal alloc] initWithChannel:self];
     }
     return _presence;
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (ARTPushChannelInternal *)push {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (!_pushChannel) {
         _pushChannel = [[ARTPushChannelInternal alloc] init:self.rest withChannel:self];
     }
     return _pushChannel;
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)history:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, ARTErrorInfo *))callback {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     [self history:[[ARTDataQuery alloc] init] callback:callback error:nil];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (BOOL)history:(ARTDataQuery *)query callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *result, ARTErrorInfo *error))callback error:(NSError * __autoreleasing *)errorPtr {
     if (callback) {
         void (^userCallback)(__GENERIC(ARTPaginatedResult, ARTMessage *) *result, ARTErrorInfo *error) = callback;
         callback = ^(__GENERIC(ARTPaginatedResult, ARTMessage *) *result, ARTErrorInfo *error) {
-            ART_EXITING_ABLY_CODE(self->_rest);
             dispatch_async(self->_userQueue, ^{
                 userCallback(result, error);
             });
@@ -181,7 +168,6 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 
     __block BOOL ret;
 dispatch_sync(_queue, ^{
-ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     if (query.limit > 1000) {
         if (errorPtr) {
             *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
@@ -230,7 +216,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p C:%p (%@) stats request %@", self->_rest, self, self.name, request];
     [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
     ret = YES;
-} ART_TRY_OR_REPORT_CRASH_END
 });
     return ret;
 }
@@ -239,7 +224,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     if (callback) {
         void (^userCallback)(ARTErrorInfo *__art_nullable error) = callback;
         callback = ^(ARTErrorInfo *__art_nullable error) {
-            ART_EXITING_ABLY_CODE(self->_rest);
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
@@ -247,7 +231,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     }
 
 dispatch_async(_queue, ^{
-ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     NSData *encodedMessage = nil;
     
     if ([data isKindOfClass:[ARTMessage class]]) {
@@ -346,7 +329,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
             callback(errorInfo);
         }
     }];
-} ART_TRY_OR_REPORT_CRASH_END
 });
 }
 

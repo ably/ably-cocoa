@@ -7,7 +7,6 @@
 
 #import <Ably/ARTRest.h>
 #import <Ably/ARTHttp.h>
-#import <Ably/ARTSentry.h>
 #import "ARTRestChannels+Private.h"
 #import "ARTPush+Private.h"
 
@@ -66,16 +65,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable NSObject<ARTCancellable> *)internetIsUp:(void (^)(BOOL isUp))cb;
 
-- (void)onUncaughtException:(NSException *)e;
-- (void)reportUncaughtException:(NSException *_Nullable)exception;
-- (void)forceReport:(NSString *)message exception:(NSException *_Nullable)e;
-
 #if TARGET_OS_IOS
 - (void)resetDeviceSingleton;
 #endif
-
--(BOOL)startHandlingUncaughtExceptions;
--(void)stopHandlingUncaughtExceptions;
 
 @end
 
@@ -86,32 +78,5 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)internalAsync:(void (^)(ARTRestInternal *))use;
 
 @end
-
-#define ART_TRY_OR_REPORT_CRASH_START(REST) \
-	do { \
-        ARTRestInternal *const __rest = REST; \
-        const BOOL __started = [__rest startHandlingUncaughtExceptions]; \
-        BOOL __caught = false; \
-        @try { \
-            do {
-
-#define ART_TRY_OR_REPORT_CRASH_END \
-            } while(0); \
-        } \
-        @catch(NSException *const e) { \
-            __caught = true; \
-            if (!__started) { \
-                @throw e; \
-            } \
-            [__rest onUncaughtException:e]; \
-        } \
-        @finally { \
-            if (!__caught && __started) { \
-                [__rest stopHandlingUncaughtExceptions]; \
-            } \
-        } \
-	} while(0);
-
-#define ART_EXITING_ABLY_CODE(REST) [REST startHandlingUncaughtExceptions];
 
 NS_ASSUME_NONNULL_END

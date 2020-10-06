@@ -95,7 +95,6 @@
 }
 
 - (instancetype)init:(ARTRestInternal *)rest withOptions:(ARTClientOptions *)options {
-ART_TRY_OR_REPORT_CRASH_START(rest) {
     if (self = [super init]) {
         _rest = rest;
         _userQueue = rest.userQueue;
@@ -127,7 +126,6 @@ ART_TRY_OR_REPORT_CRASH_START(rest) {
         #endif
     }
     return self;
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)dealloc {
@@ -144,22 +142,17 @@ ART_TRY_OR_REPORT_CRASH_START(rest) {
 }
 
 - (void)didReceiveCurrentLocaleDidChangeNotification:(NSNotification *)notification {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p NSCurrentLocaleDidChangeNotification received", _rest];
     [self discardTimeOffset];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)didReceiveApplicationSignificantTimeChangeNotification:(NSNotification *)notification {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p UIApplicationSignificantTimeChangeNotification received", _rest];
     [self discardTimeOffset];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)validate:(ARTClientOptions *)options {
     // Only called from constructor, no need to synchronize.
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p validating %@", _rest, options];
     if ([options isBasicAuth]) {
         if (!options.tls) {
@@ -198,17 +191,13 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if ([options.clientId isEqual:@"*"]) {
         [ARTException raise:@"ARTAuthException" format:@"Invalid clientId: cannot contain only a wilcard \"*\"."];
     }
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (ARTAuthOptions *)mergeOptions:(ARTAuthOptions *)customOptions {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return customOptions ? [self.options mergeWith:customOptions] : self.options;
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)storeOptions:(ARTAuthOptions *)customOptions {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     self.options.key = customOptions.key;
     self.options.tokenDetails = [customOptions.tokenDetails copy];
     self.options.authCallback = [customOptions.authCallback copy];
@@ -218,24 +207,18 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     self.options.authParams = [customOptions.authParams copy];
     self.options.useTokenAuth = customOptions.useTokenAuth;
     self.options.queryTime = false;
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (ARTTokenParams *)mergeParams:(ARTTokenParams *)customParams {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return customParams ? customParams : [[ARTTokenParams alloc] initWithOptions:self.options];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)storeParams:(ARTTokenParams *)customOptions {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     _options.clientId = customOptions.clientId;
     _options.defaultTokenParams = customOptions;
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSURL *)buildURL:(ARTAuthOptions *)options withParams:(ARTTokenParams *)params {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSURLComponents *urlComponents = [NSURLComponents componentsWithURL:options.authUrl resolvingAgainstBaseURL:YES];
 
     if ([options isMethodGET]) {
@@ -261,11 +244,9 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
                                             stringByReplacingOccurrencesOfString:@"+" withString:@"%2B"]];
 
     return urlComponents.URL;
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSMutableURLRequest *)buildRequest:(ARTAuthOptions *)options withParams:(ARTTokenParams *)params {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSURL *url = [self buildURL:options withParams:params];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     request.HTTPMethod = options.authMethod;
@@ -290,23 +271,17 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     }
 
     return request;
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (BOOL)tokenIsRenewable {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return [self canRenewTokenAutomatically:self.options];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (BOOL)canRenewTokenAutomatically:(ARTAuthOptions *)options {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return options.authCallback || options.authUrl || options.key;
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (BOOL)tokenRemainsValid {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (self.tokenDetails && self.tokenDetails.token) {
         if (self.tokenDetails.expires == nil) {
             return YES;
@@ -322,7 +297,6 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         }
     }
     return NO;
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)requestToken:(void (^)(ARTTokenDetails *, NSError *))callback {
@@ -334,7 +308,6 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (callback) {
         void (^userCallback)(ARTTokenDetails *, NSError *) = callback;
         callback = ^(ARTTokenDetails *t, NSError *e) {
-            ART_EXITING_ABLY_CODE(self->_rest);
             dispatch_async(self->_userQueue, ^{
                 userCallback(t, e);
             });
@@ -342,9 +315,7 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     }
 
 dispatch_async(_queue, ^{
-ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     [self _requestToken:tokenParams withOptions:authOptions callback:callback];
-} ART_TRY_OR_REPORT_CRASH_END
 });
 }
 
@@ -414,7 +385,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
             }, &safeCallback);
 
             void (^userCallback)(ARTTokenParams *, void(^)(id<ARTTokenDetailsCompatible>, NSError *)) = ^(ARTTokenParams *tokenParams, void(^callback)(id<ARTTokenDetailsCompatible>, NSError *)){
-                ART_EXITING_ABLY_CODE(self->_rest);
                 dispatch_async(self->_userQueue, ^{
                     replacedOptions.authCallback(tokenParams, callback);
                 });
@@ -423,14 +393,12 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
             tokenDetailsFactory = ^(ARTTokenParams *tokenParams, void(^callback)(ARTTokenDetails *_Nullable, NSError *_Nullable)) {
                 userCallback(tokenParams, ^(id<ARTTokenDetailsCompatible> tokenDetailsCompat, NSError *error) {
                     dispatch_async(self->_queue, ^{
-                    ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
                         // safeCallback is declared weak above so could be nil at this point.
                         void (^const callback)(id<ARTTokenDetailsCompatible> tokenDetailsCompat, NSError * error) = safeCallback;
                         if (callback) {
                             callback(tokenDetailsCompat, error);
                         }
                         [task cancel];
-                    } ART_TRY_OR_REPORT_CRASH_END
                     });
                 });
             };
@@ -469,7 +437,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
 }
 
 - (void)handleAuthUrlResponse:(NSHTTPURLResponse *)response withData:(NSData *)data completion:(void (^)(ARTTokenDetails *, NSError *))callback {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     // The token retrieved is assumed by the library to be a token string if the response has Content-Type "text/plain", or taken to be a TokenRequest or TokenDetails object if the response has Content-Type "application/json"
     if ([response.MIMEType isEqualToString:@"application/json"]) {
         NSError *decodeError = nil;
@@ -501,11 +468,9 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     else {
         callback(nil, [NSError errorWithDomain:ARTAblyErrorDomain code:NSURLErrorCancelled userInfo:@{NSLocalizedDescriptionKey:@"authUrl: invalid MIME type"}]);
     }
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSObject<ARTCancellable> *)executeTokenRequest:(ARTTokenRequest *)tokenRequest callback:(void (^)(ARTTokenDetails *, NSError *))callback {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     id<ARTEncoder> encoder = _rest.defaultEncoder;
 
     NSURL *requestUrl = [NSURL URLWithString:[NSString stringWithFormat:@"/keys/%@/requestToken?format=%@", tokenRequest.keyName, [encoder formatAsString]]
@@ -536,17 +501,14 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
             }
         }
     }];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (BOOL)authorizing {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     __block NSInteger count;
     dispatch_sync(_queue, ^{
         count = self->_authorizationsCount;
     });
     return count > 0;
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (BOOL)authorizing_nosync {
@@ -554,16 +516,13 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 }
 
 - (void)authorize:(void (^)(ARTTokenDetails *, NSError *))callback {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     [self authorize:_options.defaultTokenParams options:_options callback:callback];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)authorize:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *, NSError *))callback {
     if (callback) {
         void (^userCallback)(ARTTokenDetails *, NSError *) = callback;
         callback = ^(ARTTokenDetails *t, NSError *e) {
-            ART_EXITING_ABLY_CODE(self->_rest);
             dispatch_async(self->_userQueue, ^{
                 userCallback(t, e);
             });
@@ -576,7 +535,6 @@ dispatch_async(_queue, ^{
 }
 
 - (nullable NSObject<ARTCancellable> *)_authorize:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *, NSError *))callback {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     ARTAuthOptions *replacedOptions = [authOptions copy] ? : [self.options copy];
     [self storeOptions:replacedOptions];
 
@@ -653,7 +611,6 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
     }];
 
     return task;
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)cancelAuthorization:(nullable ARTErrorInfo *)error {
@@ -662,16 +619,13 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 }
 
 - (void)createTokenRequest:(void (^)(ARTTokenRequest *, NSError *))callback {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     [self createTokenRequest:_tokenParams options:_options callback:callback];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)createTokenRequest:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)options callback:(void (^)(ARTTokenRequest *, NSError *))callback {
     if (callback) {
         void (^userCallback)(ARTTokenRequest *, NSError *) = callback;
         callback = ^(ARTTokenRequest *t, NSError *e) {
-            ART_EXITING_ABLY_CODE(self->_rest);
             dispatch_async(self->_userQueue, ^{
                 userCallback(t, e);
             });
@@ -684,7 +638,6 @@ dispatch_async(_queue, ^{
 }
 
 - (NSObject<ARTCancellable> *)_createTokenRequest:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)options callback:(void (^)(ARTTokenRequest *, NSError *))callback {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     ARTAuthOptions *replacedOptions = options ? : self.options;
     ARTTokenParams *currentTokenParams = tokenParams ? : [_tokenParams copy]; // copy since _tokenParams should be read-only
     currentTokenParams.timestamp = [self currentDate];
@@ -730,31 +683,24 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
             return nil;
         }
     }
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 // For mocking when testing.
 - (NSDate *)handleServerTime:(NSDate *)time {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return time;
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)setProtocolClientId:(NSString *)clientId {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     _protocolClientId = clientId;
     #if TARGET_OS_IOS
     [self setLocalDeviceClientId_nosync:_protocolClientId];
     #endif
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSString *)clientId {
     __block NSString *clientId;
 dispatch_sync(_queue, ^{
-ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     clientId = self.clientId_nosync;
-} ART_TRY_OR_REPORT_CRASH_END
 });
     return clientId;
 }
@@ -772,9 +718,7 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
 }
 
 - (NSDate *)currentDate {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return [[NSDate date] dateByAddingTimeInterval:_timeOffset.doubleValue];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (BOOL)hasTimeOffset {
@@ -799,35 +743,26 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
 
 // Called from NSNotificationCenter, so must put change in the queue.
 dispatch_sync(_queue, ^{
-ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     [self clearTimeOffset];
-} ART_TRY_OR_REPORT_CRASH_END
 });
 }
 
 - (void)setTokenDetails:(ARTTokenDetails *)tokenDetails {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     _tokenDetails = tokenDetails;
     #if TARGET_OS_IOS
     [self setLocalDeviceClientId_nosync:tokenDetails.clientId];
     #endif
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)setTimeOffset:(NSTimeInterval)offset {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     _timeOffset = @(offset);
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)clearTimeOffset; {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     _timeOffset = nil;
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (NSString *_Nullable)appId {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     NSString *s = nil;
     if (_options.key) {
         s = _options.key;
@@ -844,12 +779,10 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
         return nil;
     }
     return parts[0];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 #if TARGET_OS_IOS
 - (void)setLocalDeviceClientId_nosync:(NSString *)clientId {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     if (clientId && ![clientId isEqualToString:@"*"]) {
         [_rest.device_nosync setClientId:clientId];
         
@@ -858,7 +791,6 @@ ART_TRY_OR_REPORT_CRASH_START(_rest) {
             [machine sendEvent:[[ARTPushActivationEventGotPushDeviceDetails alloc] init]];
         }
     }
-} ART_TRY_OR_REPORT_CRASH_END
 }
 #endif
 

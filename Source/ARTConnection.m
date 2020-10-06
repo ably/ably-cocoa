@@ -10,7 +10,6 @@
 
 #import "ARTRealtime+Private.h"
 #import "ARTEventEmitter+Private.h"
-#import "ARTSentry.h"
 #import "ARTQueuedDealloc.h"
 
 @implementation ARTConnection {
@@ -111,7 +110,6 @@
 }
 
 - (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime {
-ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
     if (self = [super init]) {
         _eventEmitter = [[ARTPublicEventEmitter alloc] initWithRest:realtime.rest];
         _realtime = realtime;
@@ -119,25 +117,18 @@ ART_TRY_OR_MOVE_TO_FAILED_START(realtime) {
         _serial = -1;
     }
     return self;
-} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)connect {
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     [_realtime connect];
-} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)close {
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     [_realtime close];
-} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)ping:(void (^)(ARTErrorInfo *))cb {
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     [_realtime ping:cb];
-} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (NSString *)id {
@@ -225,50 +216,33 @@ dispatch_sync(_queue, ^{
 }
 
 - (void)setId:(NSString *)newId {
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     _id = newId;
-    [ARTSentry setExtras:@"connectionId" value:newId];
-} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)setKey:(NSString *)key {
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     _key = key;
-} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)setSerial:(int64_t)serial {
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     _serial = serial;
-    [ARTSentry setExtras:@"connectionSerial" value: [NSNumber numberWithLongLong:serial]];
-} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)setMaxMessageSize:(NSInteger)maxMessageSize {
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     _maxMessageSize = maxMessageSize;
-} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)setState:(ARTRealtimeConnectionState)state {
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     _state = state;
-    [ARTSentry setExtras:@"connectionState" value:ARTRealtimeConnectionStateToStr(state)];
-} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (void)setErrorReason:(ARTErrorInfo *_Nullable)errorReason {
-ART_TRY_OR_MOVE_TO_FAILED_START(_realtime) {
     _errorReason = errorReason;
-} ART_TRY_OR_MOVE_TO_FAILED_END
 }
 
 - (NSString *)recoveryKey {
     __block NSString *ret;
 dispatch_sync(_queue, ^{
-ART_TRY_OR_MOVE_TO_FAILED_START(self->_realtime) {
     ret = [self recoveryKey_nosync];
-} ART_TRY_OR_MOVE_TO_FAILED_END
 });
     return ret;
 }

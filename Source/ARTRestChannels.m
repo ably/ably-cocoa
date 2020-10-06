@@ -64,49 +64,35 @@
 }
 
 - (instancetype)initWithRest:(ARTRestInternal *)rest {
-ART_TRY_OR_REPORT_CRASH_START(rest) {
     if (self = [super init]) {
         _rest = rest;
         _channels = [[ARTChannels alloc] initWithDelegate:self dispatchQueue:_rest.queue prefix:rest.options.channelNamePrefix];
     }
     return self;
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (id)makeChannel:(NSString *)name options:(ARTChannelOptions *)options {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return [[ARTRestChannelInternal alloc] initWithName:name withOptions:options andRest:_rest];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (id<NSFastEnumeration>)copyIntoIteratorWithMapper:(ARTRestChannel *(^)(ARTRestChannelInternal *))mapper {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return [_channels copyIntoIteratorWithMapper:mapper];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (ARTRestChannelInternal *)get:(NSString *)name {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return [_channels get:name];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (ARTRestChannelInternal *)get:(NSString *)name options:(ARTChannelOptions *)options {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return [_channels get:name options:options];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (BOOL)exists:(NSString *)name {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     return [_channels exists:name];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (void)release:(NSString *)name {
-ART_TRY_OR_REPORT_CRASH_START(_rest) {
     [_channels release:name];
-} ART_TRY_OR_REPORT_CRASH_END
 }
 
 - (ARTRestChannelInternal *)_getChannel:(NSString *)name options:(ARTChannelOptions *)options addPrefix:(BOOL)addPrefix {

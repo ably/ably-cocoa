@@ -113,7 +113,6 @@ const NSUInteger ARTDefaultLimit = 100;
     if (callback) {
         void (^userCallback)(ARTErrorInfo *_Nullable error) = callback;
         callback = ^(ARTErrorInfo *_Nullable error) {
-            ART_EXITING_ABLY_CODE(self->_rest);
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
@@ -121,7 +120,6 @@ const NSUInteger ARTDefaultLimit = 100;
     }
 
 dispatch_async(_queue, ^{
-ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     ARTLocalDevice *device = [self getDevice:callback];
     if (![device isRegistered]) {
         return;
@@ -144,7 +142,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
         }
         if (callback) callback(error ? [ARTErrorInfo createFromNSError:error] : nil);
     }];
-} ART_TRY_OR_REPORT_CRASH_END
 });
 }
 
@@ -152,7 +149,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     if (callback) {
         void (^userCallback)(ARTErrorInfo *_Nullable error) = callback;
         callback = ^(ARTErrorInfo *_Nullable error) {
-            ART_EXITING_ABLY_CODE(self->_rest);
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
@@ -160,7 +156,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     }
 
 dispatch_async(_queue, ^{
-ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     NSString *clientId = [self getClientId:callback];
     if (!clientId) {
         return;
@@ -181,7 +176,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
         }
         if (callback) callback(error ? [ARTErrorInfo createFromNSError:error] : nil);
     }];
-} ART_TRY_OR_REPORT_CRASH_END
 });
 }
 
@@ -189,7 +183,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     if (callback) {
         void (^userCallback)(ARTErrorInfo *_Nullable error) = callback;
         callback = ^(ARTErrorInfo *_Nullable error) {
-            ART_EXITING_ABLY_CODE(self->_rest);
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
@@ -197,7 +190,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     }
 
 dispatch_async(_queue, ^{
-ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     ARTLocalDevice *device = [self getDevice:callback];
     if (![device isRegistered]) {
         return;
@@ -221,7 +213,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
         }
         if (callback) callback(error ? [ARTErrorInfo createFromNSError:error] : nil);
     }];
-} ART_TRY_OR_REPORT_CRASH_END
 });
 }
 
@@ -229,7 +220,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     if (callback) {
         void (^userCallback)(ARTErrorInfo *_Nullable error) = callback;
         callback = ^(ARTErrorInfo *_Nullable error) {
-            ART_EXITING_ABLY_CODE(self->_rest);
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
@@ -237,7 +227,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     }
 
 dispatch_async(_queue, ^{
-ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     NSString *clientId = [self getClientId:callback];
     if (!clientId) {
         return;
@@ -259,7 +248,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
         }
         if (callback) callback(error ? [ARTErrorInfo createFromNSError:error] : nil);
     }];
-} ART_TRY_OR_REPORT_CRASH_END
 });
 }
 
@@ -267,7 +255,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     if (callback) {
         void (^userCallback)(ARTPaginatedResult<ARTPushChannelSubscription *> *result, ARTErrorInfo *error) = callback;
         callback = ^(ARTPaginatedResult<ARTPushChannelSubscription *> *result, ARTErrorInfo *error) {
-            ART_EXITING_ABLY_CODE(self->_rest);
             dispatch_async(self->_userQueue, ^{
                 userCallback(result, error);
             });
@@ -276,7 +263,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
 
     __block BOOL ret;
 dispatch_sync(_queue, ^{
-ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
     NSMutableDictionary<NSString *, NSString *> *mutableParams = params ? [NSMutableDictionary dictionaryWithDictionary:params] : [[NSMutableDictionary alloc] init];
 
     if (!mutableParams[@"deviceId"] && !mutableParams[@"clientId"]) {
@@ -311,7 +297,6 @@ ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
 
     [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
     ret = YES;
-} ART_TRY_OR_REPORT_CRASH_END
 });
     return ret;
 }

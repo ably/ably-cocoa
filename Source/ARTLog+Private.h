@@ -7,18 +7,16 @@
 //
 
 #import <Ably/ARTLog.h>
-#import <Ably/ARTSentry.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTLogLine : NSObject <ARTSentryBreadcrumb>
+@interface ARTLogLine : NSObject
 
 @property(nonatomic, readonly, strong) NSDate *date;
 @property(nonatomic, readonly) ARTLogLevel level;
 @property(nonatomic, readonly, strong) NSString *message;
-@property(nonatomic, readonly) NSString *breadcrumbsKey;
 
-- (instancetype)initWithDate:(NSDate *)date level:(ARTLogLevel)level message:(NSString *)message breadcrumbsKey:(NSString *)breadcrumbsKey;
+- (instancetype)initWithDate:(NSDate *)date level:(ARTLogLevel)level message:(NSString *)message;
 
 - (NSString *)toString;
 
@@ -28,7 +26,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly) NSArray<ARTLogLine *> *captured;
 @property (readonly) NSArray<ARTLogLine *> *history;
-@property (readwrite) NSString *breadcrumbsKey;
 
 - (instancetype)initCapturingOutput:(BOOL)capturing;
 - (instancetype)initCapturingOutput:(BOOL)capturing historyLines:(NSUInteger)historyLines;

@@ -65,7 +65,6 @@
     if (callback) {
         void (^userCallback)(ARTErrorInfo *error) = callback;
         callback = ^(ARTErrorInfo *error) {
-            ART_EXITING_ABLY_CODE(self->_rest);
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
@@ -73,7 +72,6 @@
     }
 
     dispatch_async(_queue, ^{
-        ART_TRY_OR_REPORT_CRASH_START(self->_rest) {
             if (![[recipient allKeys] count]) {
                 if (callback) callback([ARTErrorInfo createWithCode:0 message:@"Recipient is missing"]);
                 return;
@@ -101,7 +99,6 @@
                 }
                 if (callback) callback(nil);
             }];
-        } ART_TRY_OR_REPORT_CRASH_END
     });
 }
 
