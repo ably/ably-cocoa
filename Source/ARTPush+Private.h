@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init:(ARTRestInternal *)rest;
 
 #if TARGET_OS_IOS
-- (void)getActivationMachine:(void (^)(ARTPushActivationStateMachine *_Nullable))block;
+- (void)getActivationMachine:(void (^)(ARTPushActivationStateMachine *))block;
 
 /// Direct access to _activationMachine var for internal testing.
 @property (nullable, readonly) ARTPushActivationStateMachine *activationMachine;

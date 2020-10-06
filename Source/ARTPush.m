@@ -103,9 +103,10 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 
 #if TARGET_OS_IOS
 
-- (void)getActivationMachine:(void (^)(ARTPushActivationStateMachine *_Nullable))block {
+- (void)getActivationMachine:(void (^)(ARTPushActivationStateMachine *const))block {
     if (!block) {
-        return;
+        [NSException raise:NSInvalidArgumentException
+                    format:@"block is nil."];
     }
 
     if (![_activationMachineLock lockBeforeDate:[NSDate dateWithTimeIntervalSinceNow:60]]) {
