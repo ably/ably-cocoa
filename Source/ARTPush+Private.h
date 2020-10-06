@@ -25,10 +25,10 @@ NS_ASSUME_NONNULL_BEGIN
 #if TARGET_OS_IOS
 - (void)getActivationMachine:(void (^)(ARTPushActivationStateMachine *_Nullable))block;
 
-/// Direct access to _activationMachine var for whitebox testing.
+/// Direct access to _activationMachine var for internal testing.
 @property (nullable, readonly) ARTPushActivationStateMachine *activationMachine;
 
-/// Create the _activationMachine manually with a custom delegate for whitebox testing.
+/// Create the _activationMachine manually with a custom delegate for internal testing.
 - (ARTPushActivationStateMachine *)createActivationStateMachine_nolock:(id)delegate;
 #endif
 

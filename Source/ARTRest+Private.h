@@ -18,7 +18,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// ARTRest private methods that are used internally and for whitebox testing
+/// ARTRest private methods that are used internally and for internal testing
 @interface ARTRestInternal : NSObject <ARTRestProtocol, ARTHTTPAuthenticatedExecutor>
 
 @property (nonatomic, strong, readonly) ARTRestChannelsInternal *channels;
