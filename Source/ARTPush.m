@@ -151,13 +151,21 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
     return _activationMachine;
 }
 
-- (nullable ARTPushActivationStateMachine *)activationMachine {
-    if ([_activationMachineLock tryLock]) {
-        ARTPushActivationStateMachine *const machine = _activationMachine;
-        [_activationMachineLock unlock];
-        return machine;
+- (ARTPushActivationStateMachine *)activationMachine {
+    if (![_activationMachineLock tryLock]) {
+        [NSException raise:NSInternalInconsistencyException
+                    format:@"Failed to immediately acquire lock for internal testing purposes."];
     }
-    return nil;
+    
+    ARTPushActivationStateMachine *const machine = _activationMachine;
+    if (!machine) {
+        [NSException raise:NSInternalInconsistencyException
+                    format:@"There is no activation machine for internal testing purposes."];
+    }
+    
+    [_activationMachineLock unlock];
+    
+    return machine;
 }
 
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceTokenData restInternal:(ARTRestInternal *)rest {

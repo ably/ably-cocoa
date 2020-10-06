@@ -26,7 +26,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)getActivationMachine:(void (^)(ARTPushActivationStateMachine *))block;
 
 /// Direct access to _activationMachine var for internal testing.
-@property (nullable, readonly) ARTPushActivationStateMachine *activationMachine;
+/// Throws an exception if there is no activation machine or it could not be locked immediately.
+@property (readonly) ARTPushActivationStateMachine *activationMachine;
 
 /// Create the _activationMachine manually with a custom delegate for internal testing.
 - (ARTPushActivationStateMachine *)createActivationStateMachineWithDelegate:(id)delegate;

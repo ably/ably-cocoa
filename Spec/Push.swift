@@ -34,9 +34,9 @@ class Push : QuickSpec {
 
             // RSH2a
             it("activate method should send a CalledActivate event to the state machine") {
-                defer { rest.push.internal.activationMachine!.transitions = nil }
+                defer { rest.push.internal.activationMachine.transitions = nil }
                 waitUntil(timeout: testTimeout) { done in
-                    rest.push.internal.activationMachine!.transitions = { event, _, _ in
+                    rest.push.internal.activationMachine.transitions = { event, _, _ in
                         if event is ARTPushActivationEventCalledActivate {
                             done()
                         }
@@ -47,9 +47,9 @@ class Push : QuickSpec {
 
             // RSH2b
             it("deactivate method should send a CalledDeactivate event to the state machine") {
-                defer { rest.push.internal.activationMachine!.transitions = nil }
+                defer { rest.push.internal.activationMachine.transitions = nil }
                 waitUntil(timeout: testTimeout) { done in
-                    rest.push.internal.activationMachine!.transitions = { event, _, _ in
+                    rest.push.internal.activationMachine.transitions = { event, _, _ in
                         if event is ARTPushActivationEventCalledDeactivate {
                             done()
                         }
@@ -60,7 +60,7 @@ class Push : QuickSpec {
 
             // RSH2c / RSH8g
             it("should handle GotPushDeviceDetails event when platform’s APIs sends the details for push notifications") {
-                let stateMachine = rest.push.internal.activationMachine!
+                let stateMachine = rest.push.internal.activationMachine
                 let testDeviceToken = "xxxx-xxxx-xxxx-xxxx-xxxx"
                 stateMachine.rest.device.setAndPersistDeviceToken(testDeviceToken)
                 let stateMachineDelegate = StateMachineDelegate()
@@ -82,7 +82,7 @@ class Push : QuickSpec {
             
             // RSH2d / RSH8h
             it("sends GettingPushDeviceDetailsFailed when push registration fails") {
-                let stateMachine = rest.push.internal.activationMachine!
+                let stateMachine = rest.push.internal.activationMachine
                 defer { stateMachine.transitions = nil }
                 waitUntil(timeout: testTimeout) { done in
                     stateMachine.transitions = { event, _, _ in
@@ -179,9 +179,9 @@ class Push : QuickSpec {
                 let deviceTokenBase64 = "HYRXxPSQdt1pnxqtDAvc6PTTLH7N6okiBhYyLClJdmQ="
                 let deviceTokenData = Data(base64Encoded: deviceTokenBase64, options: [])!
                 let expectedDeviceToken = "1d8457c4f49076dd699f1aad0c0bdce8f4d32c7ecdea89220616322c29497664"
-                defer { rest.push.internal.activationMachine!.transitions = nil }
+                defer { rest.push.internal.activationMachine.transitions = nil }
                 waitUntil(timeout: testTimeout) { done in
-                    rest.push.internal.activationMachine!.onEvent = { event, _ in
+                    rest.push.internal.activationMachine.onEvent = { event, _ in
                         if event is ARTPushActivationEventGotPushDeviceDetails {
                             done()
                         }
@@ -347,7 +347,7 @@ class Push : QuickSpec {
                         clientId: expectedClientId
                     )
                 }
-                rest.push.internal.activationMachine!.delegate = stateMachineDelegate
+                rest.push.internal.activationMachine.delegate = stateMachineDelegate
                                 
                 expect(rest.device.clientId).to(beNil())
                 
