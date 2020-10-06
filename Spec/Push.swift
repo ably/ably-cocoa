@@ -26,7 +26,7 @@ class Push : QuickSpec {
             storage = MockDeviceStorage()
             rest.internal.storage = storage
             stateMachineDelegate = StateMachineDelegate()
-            rest.push.internal.createActivationStateMachine_nolock(stateMachineDelegate!)
+            rest.push.internal.createActivationStateMachine(withDelegate: stateMachineDelegate!)
         }
 
         // RSH2

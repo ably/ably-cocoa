@@ -123,7 +123,8 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
         dispatch_async(dispatch_get_main_queue(), ^{
             // -[UIApplication delegate] is an UI API call, so needs to be called from main thread.
             id delegate = UIApplication.sharedApplication.delegate;
-            [self createActivationStateMachine_async:delegate block:^(ARTPushActivationStateMachine *machine) {
+            [self createActivationStateMachineWithDelegate:delegate
+                                         completionHandler:^(ARTPushActivationStateMachine *const machine) {
                 callbackWithUnlock(machine);
             }];
         });
@@ -133,14 +134,20 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
     }
 }
 
-- (void)createActivationStateMachine_async:(id<UIApplicationDelegate>)applicationDelegate block:(void (^)(ARTPushActivationStateMachine *_Nonnull))block {
+- (void)createActivationStateMachineWithDelegate:(const id<UIApplicationDelegate>)delegate
+                               completionHandler:(void (^const)(ARTPushActivationStateMachine *_Nonnull))block {
     dispatch_async(self.queue, ^{
-        block([self createActivationStateMachine_nolock:applicationDelegate]);
+        block([self createActivationStateMachineWithDelegate:delegate]);
     });
 }
 
-- (ARTPushActivationStateMachine *)createActivationStateMachine_nolock:(id<UIApplicationDelegate>)applicationDelegate {
-    _activationMachine = [[ARTPushActivationStateMachine alloc] init:self->_rest delegate:applicationDelegate];
+- (ARTPushActivationStateMachine *)createActivationStateMachineWithDelegate:(id<UIApplicationDelegate>)delegate {
+    if (_activationMachine) {
+        [NSException raise:NSInternalInconsistencyException
+                    format:@"_activationMachine already set."];
+    }
+    
+    _activationMachine = [[ARTPushActivationStateMachine alloc] init:self->_rest delegate:delegate];
     return _activationMachine;
 }
 

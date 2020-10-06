@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, readonly) ARTPushActivationStateMachine *activationMachine;
 
 /// Create the _activationMachine manually with a custom delegate for internal testing.
-- (ARTPushActivationStateMachine *)createActivationStateMachine_nolock:(id)delegate;
+- (ARTPushActivationStateMachine *)createActivationStateMachineWithDelegate:(id)delegate;
 #endif
 
 @end
