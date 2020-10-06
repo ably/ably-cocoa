@@ -66,7 +66,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-/// ARTRealtimeInternal private methods that are used for whitebox testing.
+/// ARTRealtimeInternal private methods that are used for internal testing.
 @interface ARTRealtimeInternal ()
 
 @property (readwrite, strong, nonatomic) ARTRestInternal *rest;

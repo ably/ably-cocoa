@@ -82,6 +82,7 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
     __weak ARTRestInternal *_rest; // weak because rest owns self
     ARTLog *_logger;
     ARTPushActivationStateMachine *_activationMachine;
+    NSLock *_activationMachineLock;
 }
 
 - (instancetype)init:(ARTRestInternal *)rest {
@@ -90,6 +91,8 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
         _logger = [rest logger];
         _admin = [[ARTPushAdminInternal alloc] initWithRest:rest];
         _activationMachine = nil;
+        _activationMachineLock = [[NSLock alloc] init];
+        _activationMachineLock.name = @"ActivationMachineLock";
     }
     return self;
 }
@@ -100,21 +103,69 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 
 #if TARGET_OS_IOS
 
-- (ARTPushActivationStateMachine *)activationMachine {
-    if (_activationMachine == nil) {
-        // -[UIApplication delegate] is an UI API call, so needs to be called from main thread.
-        __block id delegate = nil;
-        if ([NSThread isMainThread]) {
-            delegate = UIApplication.sharedApplication.delegate;
-        } else {
-            dispatch_sync(dispatch_get_main_queue(), ^{
-                delegate = UIApplication.sharedApplication.delegate;
-            });
-        }
-        
-        _activationMachine = [[ARTPushActivationStateMachine alloc] init:self->_rest delegate:delegate];
+- (void)getActivationMachine:(void (^)(ARTPushActivationStateMachine *const))block {
+    if (!block) {
+        [NSException raise:NSInvalidArgumentException
+                    format:@"block is nil."];
     }
+
+    if (![_activationMachineLock lockBeforeDate:[NSDate dateWithTimeIntervalSinceNow:60]]) {
+        block(nil);
+        return;
+    }
+
+    void (^callbackWithUnlock)(ARTPushActivationStateMachine *const machine) = ^(ARTPushActivationStateMachine *machine) {
+        [self->_activationMachineLock unlock];
+        block(machine);
+    };
+
+    if (_activationMachine == nil) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            // -[UIApplication delegate] is an UI API call, so needs to be called from main thread.
+            id delegate = UIApplication.sharedApplication.delegate;
+            [self createActivationStateMachineWithDelegate:delegate
+                                         completionHandler:^(ARTPushActivationStateMachine *const machine) {
+                callbackWithUnlock(machine);
+            }];
+        });
+    }
+    else {
+        callbackWithUnlock(_activationMachine);
+    }
+}
+
+- (void)createActivationStateMachineWithDelegate:(const id<UIApplicationDelegate>)delegate
+                               completionHandler:(void (^const)(ARTPushActivationStateMachine *_Nonnull))block {
+    dispatch_async(self.queue, ^{
+        block([self createActivationStateMachineWithDelegate:delegate]);
+    });
+}
+
+- (ARTPushActivationStateMachine *)createActivationStateMachineWithDelegate:(id<UIApplicationDelegate>)delegate {
+    if (_activationMachine) {
+        [NSException raise:NSInternalInconsistencyException
+                    format:@"_activationMachine already set."];
+    }
+    
+    _activationMachine = [[ARTPushActivationStateMachine alloc] init:self->_rest delegate:delegate];
     return _activationMachine;
+}
+
+- (ARTPushActivationStateMachine *)activationMachine {
+    if (![_activationMachineLock tryLock]) {
+        [NSException raise:NSInternalInconsistencyException
+                    format:@"Failed to immediately acquire lock for internal testing purposes."];
+    }
+    
+    ARTPushActivationStateMachine *const machine = _activationMachine;
+    if (!machine) {
+        [NSException raise:NSInternalInconsistencyException
+                    format:@"There is no activation machine for internal testing purposes."];
+    }
+    
+    [_activationMachineLock unlock];
+    
+    return machine;
 }
 
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceTokenData restInternal:(ARTRestInternal *)rest {
@@ -138,7 +189,9 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 
     [rest.device_nosync setAndPersistDeviceToken:deviceToken];
     [rest.logger debug:@"ARTPush: device token stored"];
-    [rest.push.activationMachine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
+    [rest.push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
+        [stateMachine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
+    }];
 }
 
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken realtime:(ARTRealtime *)realtime {
@@ -155,7 +208,9 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error restInternal:(ARTRestInternal *)rest {
     [rest.logger error:@"ARTPush: device token not received (%@)", [error localizedDescription]];
-    [rest.push.activationMachine sendEvent:[ARTPushActivationEventGettingPushDeviceDetailsFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
+    [rest.push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
+        [stateMachine sendEvent:[ARTPushActivationEventGettingPushDeviceDetailsFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
+    }];
 }
 
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error realtime:(ARTRealtime *)realtime {
@@ -171,11 +226,15 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 }
 
 - (void)activate {
-    [self.activationMachine sendEvent:[ARTPushActivationEventCalledActivate new]];
+    [self getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
+        [stateMachine sendEvent:[ARTPushActivationEventCalledActivate new]];
+    }];
 }
 
 - (void)deactivate {
-    [self.activationMachine sendEvent:[ARTPushActivationEventCalledDeactivate new]];
+    [self getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
+        [stateMachine sendEvent:[ARTPushActivationEventCalledDeactivate new]];
+    }];
 }
 
 #endif
