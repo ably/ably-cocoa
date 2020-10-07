@@ -43,7 +43,7 @@ iOS, tvOS and macOS Objective-C and Swift client library SDK for [Ably realtime 
 
 This SDK is compatible with projects that target:
 
-- iOS 8.0+
+- iOS 9.0+
 - tvOS 10.0+
 - macOS 10.11+
 
