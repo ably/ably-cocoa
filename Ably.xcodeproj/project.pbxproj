@@ -2172,7 +2172,7 @@
 				CLASSPREFIX = ART;
 				DefaultBuildSystemTypeForWorkspace = Original;
 				LastSwiftUpdateCheck = 1120;
-				LastUpgradeCheck = 1020;
+				LastUpgradeCheck = 1200;
 				ORGANIZATIONNAME = Ably;
 				TargetAttributes = {
 					856AAC891B6E304B00B07119 = {
