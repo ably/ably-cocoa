@@ -38,7 +38,7 @@ class CryptoTest {
 class Configuration : QuickConfiguration {
     override class func configure(_ configuration: Quick.Configuration!) {
         configuration.beforeSuite {
-            AsyncDefaults.Timeout = testTimeout
+            AsyncDefaults.timeout = testTimeout
         }
     }
 }
@@ -50,7 +50,7 @@ func pathForTestResource(_ resourcePath: String) -> String {
 
 let appSetupJson = JSON(parseJSON: try! String(contentsOfFile: pathForTestResource(testResourcesPath + "test-app-setup.json")))
 
-let testTimeout: TimeInterval = 10.0
+let testTimeout = DispatchTimeInterval.seconds(10)
 let testResourcesPath = "ably-common/test-resources/"
 let echoServerAddress = "https://echo.ably.io/createJWT"
 
@@ -267,7 +267,7 @@ class AblyTests {
         }
     }
 
-    class func waitFor<T>(timeout: TimeInterval, file: FileString = #file, line: UInt = #line, f: @escaping (@escaping (T?) -> Void) -> Void) -> T? {
+    class func waitFor<T>(timeout: DispatchTimeInterval, file: FileString = #file, line: UInt = #line, f: @escaping (@escaping (T?) -> Void) -> Void) -> T? {
         var value: T?
         waitUntil(timeout: timeout, file: file, line: line) { done in
             f() { v in
@@ -278,17 +278,17 @@ class AblyTests {
         return value
     }
 
-    class func wait(for expectations: [XCTestExpectation], timeout seconds: TimeInterval = testTimeout, file: Nimble.FileString = #file, line: UInt = #line) {
+    class func wait(for expectations: [XCTestExpectation], timeout dispatchInterval: DispatchTimeInterval = testTimeout, file: Nimble.FileString = #file, line: UInt = #line) {
         let result = XCTWaiter.wait(
             for: expectations,
-            timeout: seconds,
+            timeout: dispatchInterval.toTimeInterval(),
             enforceOrder: true
         )
 
         let title: String = "Waiter of expectations \(expectations.map({ $0.description }))"
         switch result {
         case .timedOut:
-            fail(title + " timed out (seconds: \(seconds)).", file: file, line: line)
+            fail(title + " timed out (\(dispatchInterval)).", file: file, line: line)
         case .invertedFulfillment:
             fail(title + " shouldn't receive a fulfillment.", file: file, line: line)
         case .interrupted:
@@ -1660,5 +1660,67 @@ extension ARTRealtime: ARTHasInternal {
     typealias Internal = ARTRealtimeInternal
     func unwrapAsync(_ use: @escaping (Internal) -> ()) {
         self.internalAsync(use)
+    }
+}
+
+extension DispatchTimeInterval {
+    /// Convert dispatch time interval to older style time interval for use with XCTest APIs.
+    func toTimeInterval() -> TimeInterval {
+        // Based on: https://stackoverflow.com/a/47716381/392847
+        switch self {
+        case .seconds(let value):
+            return Double(value)
+        case .milliseconds(let value):
+            return Double(value) * 0.001
+        case .microseconds(let value):
+            return Double(value) * 0.000001
+        case .nanoseconds(let value):
+            return Double(value) * 0.000000001
+        case .never:
+            return Double.greatestFiniteMagnitude;
+        @unknown default:
+            fatalError("Unhandled DispatchTimeInterval unit.")
+        }
+    }
+
+    /// Return a new dispatch time interval computed from this one, multipled by the supplied amount.
+    func multiplied(by multiplier: Double) -> DispatchTimeInterval {
+        switch self {
+        case .seconds(let value):
+            return .seconds(Int(Double(value) * multiplier))
+        case .milliseconds(let value):
+            return .milliseconds(Int(Double(value) * multiplier))
+        case .microseconds(let value):
+            return .microseconds(Int(Double(value) * multiplier))
+        case .nanoseconds(let value):
+            return .nanoseconds(Int(Double(value) * multiplier))
+        case .never:
+            return .never
+        @unknown default:
+            fatalError("Unhandled DispatchTimeInterval unit.")
+        }
+    }
+    
+    /// Return a new dispatch time interval computed from this one, incremented by the supplied amount, to no less than millisecond precision.
+    func incremented(by interval: TimeInterval) -> DispatchTimeInterval {
+        // interval is a TimeInterval which is a Double which is in SECONDS
+        switch self {
+        case .seconds(let value):
+            // rounding to millisecond precision, which is fine for the purposes of our test needs
+            return .milliseconds(Int(1000.0 * (Double(value) + interval)))
+        case .milliseconds(let value):
+            let millisecondIncrement = interval * 1000.0
+            return .milliseconds(Int(Double(value) + millisecondIncrement))
+        case .microseconds(let value):
+            let microsecondIncrement = interval * 1000000.0
+            return .microseconds(Int(Double(value) + microsecondIncrement))
+        case .nanoseconds(let value):
+            let nanosecondIncrement = interval * 1000000000.0
+            return .nanoseconds(Int(Double(value) + nanosecondIncrement))
+        case .never:
+            return .never
+        @unknown default:
+            fatalError("Unhandled DispatchTimeInterval unit.")
+        }
     }
 }

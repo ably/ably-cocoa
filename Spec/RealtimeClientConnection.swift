@@ -171,7 +171,7 @@ class RealtimeClientConnection: QuickSpec {
                         break
                     }
                 }
-                expect(connected).toEventually(beTrue(), timeout: 10.0, description: "Can't connect automatically")
+                expect(connected).toEventually(beTrue(), timeout: DispatchTimeInterval.seconds(10), description: "Can't connect automatically")
             }
 
             it("should connect manually") {
@@ -583,7 +583,7 @@ class RealtimeClientConnection: QuickSpec {
                 let numClients = 50
                 let numMessages = 5
                 let channelName = "chat"
-                let testTimeout = TimeInterval(60)
+                let testTimeout = DispatchTimeInterval.seconds(60)
 
                 defer {
                     for client in disposable {
@@ -1657,7 +1657,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     expect(start).toEventuallyNot(beNil(), timeout: testTimeout)
-                    expect(end).toEventuallyNot(beNil(), timeout: ARTDefault.realtimeRequestTimeout())
+                    expect(end).toEventuallyNot(beNil(), timeout: DispatchTimeInterval.milliseconds(Int(1000.0 * ARTDefault.realtimeRequestTimeout())))
 
                     if states.count != 2 {
                         fail("Invalid number of connection states. Expected CLOSING and CLOSE states")
@@ -1986,7 +1986,7 @@ class RealtimeClientConnection: QuickSpec {
                     defer { realtime.close() }
 
                     var hookToken: AspectToken?
-                    waitUntil(timeout: testTimeout*2) { done in
+                    waitUntil(timeout: testTimeout.multiplied(by: 2)) { done in
                         let partialDone = AblyTests.splitDone(2, done: done)
                         realtime.connection.once(.connected) { stateChange in
                             expect(stateChange?.reason).to(beNil())
@@ -3683,7 +3683,7 @@ class RealtimeClientConnection: QuickSpec {
                         urls.append(request.url!)
                     }
                     
-                    waitUntil(timeout: testTimeout * 1000) { done in
+                    waitUntil(timeout: testTimeout.multiplied(by: 1000)) { done in
                         // wss://[a-e].ably-realtime.com: when a timeout occurs
                         client.connection.once(.disconnected) { error in
                             done()
@@ -4143,8 +4143,8 @@ class RealtimeClientConnection: QuickSpec {
                     var client: ARTRealtime!
                     let options = AblyTests.commonAppSetup()
                     // Ensure it won't reconnect because of timeouts.
-                    options.disconnectedRetryTimeout = testTimeout + 10
-                    options.suspendedRetryTimeout = testTimeout + 10
+                    options.disconnectedRetryTimeout = testTimeout.incremented(by: 10).toTimeInterval()
+                    options.suspendedRetryTimeout = testTimeout.incremented(by: 10).toTimeInterval()
                     options.autoConnect = false
                     client = ARTRealtime(options: options)
                     client.internal.setReachabilityClass(TestReachability.self)

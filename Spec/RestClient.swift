@@ -536,7 +536,12 @@ class RestClient: QuickSpec {
                             options.key = client.internal.options.key
 
                             // Expired token
-                            options.tokenDetails = ARTTokenDetails(token: currentTokenDetails.token, expires: currentTokenDetails.expires!.addingTimeInterval(testTimeout), issued: currentTokenDetails.issued, capability: currentTokenDetails.capability, clientId: currentTokenDetails.clientId)
+                            options.tokenDetails = ARTTokenDetails(
+                                token: currentTokenDetails.token,
+                                expires: currentTokenDetails.expires!.addingTimeInterval(testTimeout.toTimeInterval()),
+                                issued: currentTokenDetails.issued,
+                                capability: currentTokenDetails.capability,
+                                clientId: currentTokenDetails.clientId)
 
                             options.authUrl = URL(string: "http://test-auth.ably.io")
                             value(options)
@@ -593,7 +598,12 @@ class RestClient: QuickSpec {
                             options.key = client.internal.options.key
 
                             // Expired token
-                            options.tokenDetails = ARTTokenDetails(token: currentTokenDetails.token, expires: currentTokenDetails.expires!.addingTimeInterval(testTimeout), issued: currentTokenDetails.issued, capability: currentTokenDetails.capability, clientId: currentTokenDetails.clientId)
+                            options.tokenDetails = ARTTokenDetails(
+                                token: currentTokenDetails.token,
+                                expires: currentTokenDetails.expires!.addingTimeInterval(testTimeout.toTimeInterval()),
+                                issued: currentTokenDetails.issued,
+                                capability: currentTokenDetails.capability,
+                                clientId: currentTokenDetails.clientId)
 
                             let rest = ARTRest(options: options)
                             testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)

@@ -2523,7 +2523,7 @@ class RealtimeClientChannel: QuickSpec {
                         let messagesToBeSent = 2000
 
                         // Call publish before connecting, so messages are queued
-                        waitUntil(timeout: testTimeout*6) { done in
+                        waitUntil(timeout: testTimeout.multiplied(by: 6)) { done in
                             let partialDone = AblyTests.splitDone(messagesToBeSent, done: done)
                             for i in 1...messagesToBeSent {
                                 channel.publish("initial initial\(i)", data: "message message\(i)") { error in

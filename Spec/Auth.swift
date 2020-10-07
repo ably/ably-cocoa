@@ -236,7 +236,7 @@ class Auth : QuickSpec {
 
                     let channel = realtime.channels.get("test")
 
-                    waitUntil(timeout: testTimeout*2) { done in
+                    waitUntil(timeout: testTimeout.multiplied(by: 2)) { done in
                         realtime.connect()
                         channel.publish("message", data: nil) { error in
                             guard let error = error else {
@@ -1273,7 +1273,7 @@ class Auth : QuickSpec {
                         client.internal.httpExecutor = testHTTPExecutor
                         
                         // TokenDetails
-                        waitUntil(timeout: 10) { done in
+                        waitUntil(timeout: testTimeout) { done in
                             // Token
                             client.auth.authorize(nil, options: nil) { token, error in
                                 expect(error).to(beNil())
