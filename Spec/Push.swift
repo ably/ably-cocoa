@@ -11,6 +11,13 @@ import Nimble
 import Quick
 
 class Push : QuickSpec {
+
+    struct TestDeviceToken {
+        static let tokenBase64 = "HYRXxPSQdt1pnxqtDAvc6PTTLH7N6okiBhYyLClJdmQ="
+        static let tokenData = Data(base64Encoded: tokenBase64, options: [])!
+        static let tokenString = tokenData.map { String(format: "%02x", $0) }.joined()
+    }
+
     override func spec() {
 
         var rest: ARTRest!
@@ -176,9 +183,7 @@ class Push : QuickSpec {
 
             // https://github.com/ably/ably-cocoa/issues/889
             it("should store the device token data as string") {
-                let deviceTokenBase64 = "HYRXxPSQdt1pnxqtDAvc6PTTLH7N6okiBhYyLClJdmQ="
-                let deviceTokenData = Data(base64Encoded: deviceTokenBase64, options: [])!
-                let expectedDeviceToken = "1d8457c4f49076dd699f1aad0c0bdce8f4d32c7ecdea89220616322c29497664"
+                let expectedDeviceToken = TestDeviceToken.tokenString
                 defer { rest.push.internal.activationMachine.transitions = nil }
                 waitUntil(timeout: testTimeout) { done in
                     rest.push.internal.activationMachine.onEvent = { event, _ in
@@ -186,7 +191,7 @@ class Push : QuickSpec {
                             done()
                         }
                     }
-                    ARTPush.didRegisterForRemoteNotifications(withDeviceToken: deviceTokenData, rest: rest)
+                    ARTPush.didRegisterForRemoteNotifications(withDeviceToken: TestDeviceToken.tokenData, rest: rest)
                 }
                 expect(storage.keysWritten.keys).to(contain(["ARTDeviceToken"]))
                 expect(storage.keysWritten.at("ARTDeviceToken")?.value as? String).to(equal(expectedDeviceToken))
@@ -194,9 +199,7 @@ class Push : QuickSpec {
 
             // https://github.com/ably/ably-cocoa/issues/888
             it("should not sync the local device dispatched in internal queue") {
-                let deviceTokenBase64 = "HYRXxPSQdt1pnxqtDAvc6PTTLH7N6okiBhYyLClJdmQ="
-                let deviceTokenData = Data(base64Encoded: deviceTokenBase64, options: [])!
-                expect { ARTPush.didRegisterForRemoteNotifications(withDeviceToken: deviceTokenData, rest: rest) }.toNot(raiseException())
+                expect { ARTPush.didRegisterForRemoteNotifications(withDeviceToken: TestDeviceToken.tokenData, rest: rest) }.toNot(raiseException())
             }
 
         }
@@ -363,6 +366,39 @@ class Push : QuickSpec {
                 
                 expect(rest.device.clientId).to(equal(expectedClientId))
             }
+        }
+
+        context("Registerer Delegate option") {
+
+            it("a successful activation should call the correct registerer delegate method") {
+                let options = AblyTests.commonAppSetup()
+                options.key = "xxxx:xxxx"
+                let pushRegistererDelegate = StateMachineDelegate()
+                options.pushRegistererDelegate = pushRegistererDelegate
+                let rest = ARTRest(options: options)
+                waitUntil(timeout: testTimeout) { done in
+                    pushRegistererDelegate.onDidActivateAblyPush = { _ in
+                        done()
+                    }
+                    pushRegistererDelegate.onDidDeactivateAblyPush = { _ in
+                        fail("should not be called")
+                    }
+                    rest.push.activate()
+                    ARTPush.didRegisterForRemoteNotifications(withDeviceToken: TestDeviceToken.tokenData, rest: rest)
+                }
+            }
+
+            it("registerer delegate should not hold a strong instance reference") {
+                let options = AblyTests.commonAppSetup()
+                options.key = "xxxx:xxxx"
+                var pushRegistererDelegate: StateMachineDelegate? = StateMachineDelegate()
+                options.pushRegistererDelegate = pushRegistererDelegate
+                let rest = ARTRest(options: options)
+                expect(rest.internal.options.pushRegistererDelegate).toNot(beNil())
+                pushRegistererDelegate = nil
+                expect(rest.internal.options.pushRegistererDelegate).to(beNil())
+            }
+
         }
     }
 }
