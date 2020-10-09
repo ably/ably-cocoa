@@ -11,6 +11,7 @@
 #import <Ably/ARTLog.h>
 
 @class ARTPlugin;
+@protocol ARTPushRegistererDelegate;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -123,6 +124,11 @@ NS_ASSUME_NONNULL_BEGIN
  If enabled, every REST request to Ably includes a `request_id` query string parameter. This request ID remain the same if a request is retried to a fallback host.
  */
 @property (readwrite, assign, nonatomic) BOOL addRequestIds;
+
+/**
+ The object that processes Push activation/deactivation-related actions.
+ */
+@property (nullable, weak, nonatomic) id<ARTPushRegistererDelegate, NSObject> pushRegistererDelegate;
 
 - (BOOL)isBasicAuth;
 - (NSURL *)restUrl;
