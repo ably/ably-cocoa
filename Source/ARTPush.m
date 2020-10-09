@@ -120,15 +120,15 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
     };
 
     if (_activationMachine == nil) {
-        id<ARTPushRegistererDelegate, NSObject> delegate = _rest.options.pushRegistererDelegate;
-        if (_rest && delegate) {
+        const id<ARTPushRegistererDelegate, NSObject> delegate = _rest.options.pushRegistererDelegate;
+        if (delegate) {
             callbackWithUnlock([self createActivationStateMachineWithDelegate:delegate]);
         }
         else {
             dispatch_async(dispatch_get_main_queue(), ^{
                 // -[UIApplication delegate] is an UI API call, so needs to be called from main thread.
-                id delegate = UIApplication.sharedApplication.delegate;
-                [self createActivationStateMachineWithDelegate:delegate
+                const id legacyDelegate = UIApplication.sharedApplication.delegate;
+                [self createActivationStateMachineWithDelegate:legacyDelegate
                                              completionHandler:^(ARTPushActivationStateMachine *const machine) {
                     callbackWithUnlock(machine);
                 }];
