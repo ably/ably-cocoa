@@ -120,15 +120,20 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
     };
 
     if (_activationMachine == nil) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            // -[UIApplication delegate] is an UI API call, so needs to be called from main thread.
-            id delegate = UIApplication.sharedApplication.delegate;
-            // TODO provide route for application to supply delegate other than via sharedApplication
-            [self createActivationStateMachineWithDelegate:delegate
-                                         completionHandler:^(ARTPushActivationStateMachine *const machine) {
-                callbackWithUnlock(machine);
-            }];
-        });
+        id<ARTPushRegistererDelegate, NSObject> delegate = _rest.options.pushRegistererDelegate;
+        if (_rest && delegate) {
+            callbackWithUnlock([self createActivationStateMachineWithDelegate:delegate]);
+        }
+        else {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                // -[UIApplication delegate] is an UI API call, so needs to be called from main thread.
+                id delegate = UIApplication.sharedApplication.delegate;
+                [self createActivationStateMachineWithDelegate:delegate
+                                             completionHandler:^(ARTPushActivationStateMachine *const machine) {
+                    callbackWithUnlock(machine);
+                }];
+            });
+        }
     }
     else {
         callbackWithUnlock(_activationMachine);
