@@ -358,7 +358,7 @@ class PushActivationStateMachine : QuickSpec {
                         guard let request = httpExecutor.requests.first else {
                             fail("should have a \"/push/deviceRegistrations\" request"); return
                         }
-                        guard let url = request.url else {
+                        guard request.url != nil else {
                             fail("should have a \"/push/deviceRegistrations\" URL"); return
                         }
                         guard let rawBody = request.httpBody else {

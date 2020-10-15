@@ -673,7 +673,7 @@ class Auth : QuickSpec {
 
                         // RSA4c1 & RSA4c2
                         it("if the connection is CONNECTING, then the connection attempt should be treated as unsuccessful") {
-                            var options = AblyTests.clientOptions()
+                            let options = AblyTests.clientOptions()
                             options.autoConnect = false
                             options.authUrl = URL(string: "http://echo.ably.io")! as URL
                             options.authParams = [NSURLQueryItem]() as [URLQueryItem]?
@@ -710,7 +710,7 @@ class Auth : QuickSpec {
 
                         // RSA4c3
                         it("if the connection is CONNECTED, then the connection should remain CONNECTED") {
-                            var options = AblyTests.clientOptions()
+                            let options = AblyTests.clientOptions()
                             options.authUrl = URL(string: "http://echo.ably.io")! as URL
                             options.authParams = [NSURLQueryItem]() as [URLQueryItem]?
                             options.authParams?.append(NSURLQueryItem(name: "type", value: "text") as URLQueryItem)
@@ -729,7 +729,6 @@ class Auth : QuickSpec {
                             }
 
                             // Token should renew and fail
-                            let invalidToken = String(token.reversed())
                             waitUntil(timeout: testTimeout) { done in
                                 realtime.unwrapAsync { realtime in
                                     realtime.options.authParams = [NSURLQueryItem]() as [URLQueryItem]?
@@ -3329,8 +3328,6 @@ class Auth : QuickSpec {
                     let rest = ARTRest(options: options)
 
                     let tokenParams = ARTTokenParams(clientId: options.clientId)
-                    let defaultTtl = tokenParams.ttl
-                    let defaultCapability = tokenParams.capability
 
                     // Defaults
                     waitUntil(timeout: testTimeout) { done in
@@ -3470,7 +3467,7 @@ class Auth : QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.authorize(nil, options: authOptions, callback: { tokenDetails, error in
                             expect(error).to(beNil())
-                            guard let tokenDetails = tokenDetails else {
+                            guard tokenDetails != nil else {
                                 fail("TokenDetails is nil"); done(); return
                             }
                             guard let timeOffset = rest.auth.internal.timeOffset?.doubleValue else {
@@ -3490,7 +3487,7 @@ class Auth : QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                             expect(error).to(beNil())
-                            guard let tokenDetails = tokenDetails else {
+                            guard tokenDetails != nil else {
                                 fail("TokenDetails is nil"); done(); return
                             }
                             guard let timeOffset = rest.auth.internal.timeOffset?.doubleValue else {
@@ -3579,7 +3576,7 @@ class Auth : QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                             expect(error).to(beNil())
-                            guard let tokenDetails = tokenDetails else {
+                            guard tokenDetails != nil else {
                                 fail("TokenDetails is nil"); done(); return
                             }
                             expect(rest.auth.internal.timeOffset).to(beNil())

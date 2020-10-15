@@ -354,7 +354,7 @@ class RestClientChannel: QuickSpec {
                             done(); return
                         }
 
-                        var query = ARTDataQuery()
+                        let query = ARTDataQuery()
                         query.limit = 1
 
                         try! channel.history(query) { messages, error in

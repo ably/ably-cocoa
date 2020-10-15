@@ -1394,6 +1394,7 @@ class RealtimeClient: QuickSpec {
                 }
 
                 var foo: Foo? = Foo()
+                expect(foo).toNot(beNil())
                 foo = nil
                 AblyManager.sharedClient.channels.get("foo").unsubscribe()
             }

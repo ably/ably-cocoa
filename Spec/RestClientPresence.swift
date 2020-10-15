@@ -98,7 +98,7 @@ class RestClientPresence: QuickSpec {
                     let client = ARTRest(options: options)
                     let channel = client.channels.get("test")
 
-                    var realtime = ARTRealtime(options: options)
+                    let realtime = ARTRealtime(options: options)
                     defer { realtime.close() }
                     let realtimeChannel = realtime.channels.get("test")
 
@@ -504,7 +504,7 @@ class RestClientPresence: QuickSpec {
                     channel.publish(nil, data: expectedData) { _ in done() }
                 }
 
-                var realtime = ARTRealtime(options: options)
+                let realtime = ARTRealtime(options: options)
                 defer { realtime.dispose(); realtime.close() }
                 waitUntil(timeout: testTimeout) { done in
                     let partialDone = AblyTests.splitDone(2, done: done)

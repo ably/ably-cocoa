@@ -836,7 +836,7 @@ class MockHTTPExecutor: NSObject, ARTHTTPAuthenticatedExecutor {
     func execute(_ request: NSMutableURLRequest, withAuthOption authOption: ARTAuthentication, completion callback: @escaping (HTTPURLResponse?, Data?, Error?) -> Void) -> (ARTCancellable & NSObjectProtocol)? {
         self.requests.append(request as URLRequest)
 
-        if var simulatedError = errorSimulator, var requestURL = request.url {
+        if let simulatedError = errorSimulator, var _ = request.url {
             defer { errorSimulator = nil }
             callback(nil, nil, simulatedError)
             return nil
@@ -849,7 +849,7 @@ class MockHTTPExecutor: NSObject, ARTHTTPAuthenticatedExecutor {
     func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) -> (ARTCancellable & NSObjectProtocol)? {
         self.requests.append(request)
         
-        if var simulatedError = errorSimulator, var requestURL = request.url {
+        if let simulatedError = errorSimulator, var _ = request.url {
             defer { errorSimulator = nil }
             callback?(nil, nil, simulatedError)
             return nil
@@ -903,7 +903,7 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
            performEvent(request, callback)
        }
 
-        if var simulatedError = errorSimulator, var requestURL = request.url {
+        if var simulatedError = errorSimulator, let requestURL = request.url {
             defer {
                 errorSimulator = nil
             }
@@ -1470,94 +1470,36 @@ extension ARTPresenceAction : CustomStringConvertible {
 
 /// A Nimble matcher that succeeds when two dates are quite the same.
 public func beCloseTo(_ expectedValue: Date) -> Predicate<Date> {
-    return Predicate.fromDeprecatedClosure { actualExpression, failureMessage in
-        failureMessage.postfixMessage = "equal <\(expectedValue)>"
-        guard let actualValue = try actualExpression.evaluate() else { return false }
-        return abs(actualValue.timeIntervalSince1970 - expectedValue.timeIntervalSince1970) < 0.5
+    let errorMessage = "be close to <\(expectedValue)> (within 0.5)"
+    return Predicate.simple(errorMessage) { actualExpression in
+        guard let actualValue = try actualExpression.evaluate() else {
+            return .fail
+        }
+        if abs(actualValue.timeIntervalSince1970 - expectedValue.timeIntervalSince1970) < 0.5 {
+            return .matches
+        }
+        return .doesNotMatch
     }
 }
 
 /// A Nimble matcher that succeeds when a param exists.
 public func haveParam(_ key: String, withValue expectedValue: String? = nil) -> Predicate<String> {
-    return Predicate.fromDeprecatedClosure { actualExpression, failureMessage in
-        failureMessage.postfixMessage = "param <\(key)=\(expectedValue ?? "nil")> exists"
-        guard let actualValue = try actualExpression.evaluate() else { return false }
+    let errorMessage = "param <\(key)=\(expectedValue ?? "nil")> exists"
+    return Predicate.simple(errorMessage) { actualExpression in
+        guard let actualValue = try actualExpression.evaluate() else {
+            return .fail
+        }
         let queryItems = actualValue.components(separatedBy: "&")
         for item in queryItems {
             let param = item.components(separatedBy: "=")
             if let currentKey = param.first, let currentValue = param.last, currentKey == key && currentValue == expectedValue {
-                return true
+                return .matches
             }
         }
-        return false
+        return .doesNotMatch
     }
 }
 
-/// A Nimble matcher that succeeds when all Keys from a Dictionary are valid.
-public func allKeysPass<U: Collection> (_ passFunc: @escaping (U.Key) -> Bool) -> Predicate<U> where U: ExpressibleByDictionaryLiteral, U.Iterator.Element == (U.Key, U.Value) {
-
-    let elementEvaluator: (Expression<U.Iterator.Element>, FailureMessage) throws -> Bool = {
-        expression, failureMessage in
-        failureMessage.postfixMessage = "pass a condition"
-        let value = try expression.evaluate()!
-        return passFunc(value.0)
-    }
-
-    return Predicate.fromDeprecatedClosure { actualExpression, failureMessage in
-        failureMessage.actualValue = nil
-        if let actualValue = try actualExpression.evaluate() {
-            for item in actualValue {
-                let exp = Expression(expression: { item }, location: actualExpression.location)
-                if try !elementEvaluator(exp, failureMessage) {
-                    failureMessage.postfixMessage =
-                        "all \(failureMessage.postfixMessage),"
-                        + " but failed first at element <\(item.0)>"
-                        + " in <\(actualValue.map({ $0.0 }))>"
-                    return false
-                }
-            }
-            failureMessage.postfixMessage = "all \(failureMessage.postfixMessage)"
-        } else {
-            failureMessage.postfixMessage = "all pass (use beNil() to match nils)"
-            return false
-        }
-
-        return true
-    }
-}
-
-/// A Nimble matcher that succeeds when all Values from a Dictionary are valid.
-public func allValuesPass<U: Collection> (_ passFunc: @escaping (U.Value) -> Bool) -> Predicate<U> where U: ExpressibleByDictionaryLiteral, U.Iterator.Element == (U.Key, U.Value) {
-
-    let elementEvaluator: (Expression<U.Iterator.Element>, FailureMessage) throws -> Bool = {
-        expression, failureMessage in
-        failureMessage.postfixMessage = "pass a condition"
-        let value = try expression.evaluate()!
-        return passFunc(value.1)
-    }
-
-    return Predicate.fromDeprecatedClosure { actualExpression, failureMessage in
-        failureMessage.actualValue = nil
-        if let actualValue = try actualExpression.evaluate() {
-            for item in actualValue {
-                let exp = Expression(expression: { item }, location: actualExpression.location)
-                if try !elementEvaluator(exp, failureMessage) {
-                    failureMessage.postfixMessage =
-                        "all \(failureMessage.postfixMessage),"
-                        + " but failed first at element <\(item.1)>"
-                        + " in <\(actualValue.map({ $0.1 }))>"
-                    return false
-                }
-            }
-            failureMessage.postfixMessage = "all \(failureMessage.postfixMessage)"
-        } else {
-            failureMessage.postfixMessage = "all pass (use beNil() to match nils)"
-            return false
-        }
-
-        return true
-    }
-}
 
 // http://stackoverflow.com/a/26502285/818420
 extension String {

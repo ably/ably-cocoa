@@ -116,6 +116,7 @@ class RealtimeClientPresence: QuickSpec {
                     transport.afterProcessingReceivedMessage = { protocolMessage in
                         if protocolMessage.action == .sync {
                             lastSyncSerial = protocolMessage.channelSerial
+                            expect(lastSyncSerial).toNot(beNil())
                             client.internal.onDisconnected()
                             partialDone()
                             transport.afterProcessingReceivedMessage = nil
@@ -3629,13 +3630,13 @@ class RealtimeClientPresence: QuickSpec {
                     let channelRealtime = realtime.channels.get("test")
 
                     var restPresenceHistoryMethodWasCalled = false
-                    
-                    var hookRest = channelRest.presence.internal.testSuite_injectIntoMethod(after: #selector(ARTRestPresenceInternal.history(_:callback:))) {
+
+                    let hookRest = channelRest.presence.internal.testSuite_injectIntoMethod(after: #selector(ARTRestPresenceInternal.history(_:callback:))) {
                         restPresenceHistoryMethodWasCalled = true
                     }
                     defer { hookRest.remove() }
 
-                    var hookRealtime = channelRealtime.presence.internal.testSuite_injectIntoMethod(after: #selector(ARTRestPresenceInternal.history(_:callback:))) {
+                    let hookRealtime = channelRealtime.presence.internal.testSuite_injectIntoMethod(after: #selector(ARTRestPresenceInternal.history(_:callback:))) {
                         restPresenceHistoryMethodWasCalled = true
                     }
                     defer { hookRealtime.remove() }
