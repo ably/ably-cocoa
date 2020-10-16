@@ -1,5 +1,45 @@
 # Change Log
 
+## [1.2.2](https://github.com/ably/ably-cocoa/tree/1.2.2)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.1...1.2.2)
+
+**Highlights**
+
+***Supports Build with Xcode 12***
+
+Fixes the Carthage build. Increases the minimum deployment target for iOS, from 8 to 9 (conflated in [\#1075](https://github.com/ably/ably-cocoa/pull/1075)).
+
+***New Push Notification Registration API for apps using the SwiftUI App Lifecycle***
+
+For new Swift-based apps created with Xcode 12, the default lifecycle is SwiftUI App.
+This means that the previous approach we supported of conforming to `ARTPushRegistererDelegate` on your `UIApplicationDelegate` no longer works.
+
+Going forward apps should use the `pushRegistererDelegate` property on client options to supply this delegate ([\#1075](https://github.com/ably/ably-cocoa/pull/1075)).
+
+***Reduced Dependencies***
+
+We've removed both KSCrash ([\#1073](https://github.com/ably/ably-cocoa/pull/1073)) and SAMKeychain ([\#1067](https://github.com/ably/ably-cocoa/pull/1067)).
+
+In Cocoa there is no effective way to catch selectively only those exceptions that occur within the library, and the attempt to do that using KCrash was interfering with app developers' own exception handling. Our advice is that app developers incorporate their own application-wide exception handling and crash reporting.
+
+**Fixed issues:**
+
+- Deadlock getting ARTRealtimeChannel between two dispatch\_sync \(ui queue vs ably main queue\) [\#1029](https://github.com/ably/ably-cocoa/issues/1029)
+- Push Notification Registration via `ARTPushRegistererDelegate` don't work in iOS 14 when instantiated via @UIApplicationDelegateAdaptor [\#1069](https://github.com/ably/ably-cocoa/issues/1069)
+- Conflict KSCrashAblyFork [\#1068](https://github.com/ably/ably-cocoa/issues/1068)
+
+**Merged pull requests:**
+
+- Support ARTPushRegistererDelegate on iOS 14 [\#1075](https://github.com/ably/ably-cocoa/pull/1075) ([QuintinWillison](https://github.com/QuintinWillison))
+- Remove KSCrash and unhandled exception handlers [\#1073](https://github.com/ably/ably-cocoa/pull/1073) ([QuintinWillison](https://github.com/QuintinWillison))
+- Remove SAMKeychain dependency and use internal solution [\#1067](https://github.com/ably/ably-cocoa/pull/1067) ([ricardopereira](https://github.com/ricardopereira))
+- Fix Push State Machine delegate syncing the main queue [\#1064](https://github.com/ably/ably-cocoa/pull/1064) ([ricardopereira](https://github.com/ricardopereira))
+- Add `use\_frameworks!` recommendation [\#1061](https://github.com/ably/ably-cocoa/pull/1061) ([kavalerov](https://github.com/kavalerov))
+- Correct CocoaPods instruction [\#1060](https://github.com/ably/ably-cocoa/pull/1060) ([kavalerov](https://github.com/kavalerov))
+- Bump protocol version to 1.2 [\#1058](https://github.com/ably/ably-cocoa/pull/1058) ([QuintinWillison](https://github.com/QuintinWillison))
+- Fix some `waitUntil` error "expects its completion closure to be only called once" [\#1028](https://github.com/ably/ably-cocoa/pull/1028) ([ricardopereira](https://github.com/ricardopereira))
+
 ## [1.2.1](https://github.com/ably/ably-cocoa/tree/1.2.1)
 
 Fixes issues in our uncaught exception handling code:
