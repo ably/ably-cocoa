@@ -17,6 +17,7 @@ iOS, tvOS and macOS Objective-C and Swift client library SDK for [Ably realtime 
 	- [Carthage](#installing-through-carthage)
 	- [Manual](#manual-installation)
 - [Thread-safety Acknowledgments](#thread-safety)
+- [Push Notifications](#push-notifications)
 - [Using the Realtime API](#using-the-realtime-api)
 	- [Connection](#connection)
 	- [Subscribing to a channel](#subscribing-to-a-channel)
@@ -53,31 +54,6 @@ We do not explicitly maintain compatibility with older platform versions; we no 
 
 If you find any issues with unsupported platform versions, please [raise an issue](https://github.com/ably/ably-cocoa/issues) in this repository or [contact Ably customer support](https://support.ably.io) for advice.
 
-##### macOS & tvOS
-
-Please be aware that Push Notifications are currently unsupported. You can only use the [Push Admin](https://www.ably.io/documentation/general/push/admin) functionalities, for example:
-
-```swift
-let recipient: [String: Any] = [
-    "clientId": "C04BC116-8004-4D78-A71F-8CA3122734DB"
-]
-let data: [String: Any] = [
-    "notification": [
-        "title": "Hello from Ably!",
-        "body": "Example push notification from Ably."
-    ],
-    "data": [
-        "foo": "bar",
-        "baz": "qux"
-    ]
-]
-realtime.push.admin.publish(recipient, data: data) { error in
-    print("Push published:", error ?? "nil")
-}
-```
-
-Demos available: [macOS](https://github.com/ably/demo-macos) and [tvOS](https://github.com/ably/demo-tvos).
-
 ## Known Limitations
 
 This client library is currently *not compatible* with some of the Ably features:
@@ -87,10 +63,6 @@ This client library is currently *not compatible* with some of the Ably features
 | [Custom transportParams](https://ably.io/documentation/realtime/usage#client-options) |
 | [Remember fallback host during failures](https://ably.io/documentation/realtime/usage#client-options) | 
 | [ErrorInfo URLs to help debug issues](https://ably.io/documentation/realtime/types#error-info) |
-
-### Concurrent push-receiving Ably instances
-
-Only one instance of `ARTRest` or `ARTRealtime` at a time must be [activated for receiving push notifications](https://www.ably.io/documentation/general/push/activate-subscribe). Having more than one activated instance at a time may have unexpected consequences.
 
 ## Documentation
 
@@ -124,8 +96,6 @@ And then run `carthage update` to build the framework and drag the built Ably.fr
 
 If you see, for example, a `dyld: Library not loaded: @rpath/SocketRocketAblyFork.framework/SocketRocketAblyFork` error, then most likely you forgot to add all the dependencies to your project. You have more detailed information [here](https://github.com/Carthage/Carthage#adding-frameworks-to-an-application).
 
-![Screenshot 2019-06-13 at 14 06 43](https://user-images.githubusercontent.com/3541185/59460334-c3634b80-8e16-11e9-81b3-de2378b2f384.png)
-
 ### Manual installation 
 
 1. Get the code from GitHub [from the release page](https://github.com/ably/ably-cocoa/releases/tag/1.2.1), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-cocoa.git`
@@ -145,6 +115,55 @@ All internal operations are dispatched to a single serial GCD queue. You can spe
 
 All calls to callbacks provided by the user are dispatched to the main queue by default.
 This allows you to react to Ably's output by doing UI operations directly. You can specify a different queue with `ARTClientOptions.dispatchQueue`. It shouldn't be the same queue as the `ARTClientOptions.internalDispatchQueue`, since that can lead to deadlocks.
+
+## Push Notifications
+
+If you haven’t yet, you should first check the detailed [documentation](https://www.ably.io/documentation/general/push).
+
+### Activation and device registration
+
+**`ARTPushRegistererDelegate`** is the interface for handling Push activation/deactivation-related actions. The activation process, by default, will check if the `UIApplication.sharedApplication.delegate` has the `ARTPushRegistererDelegate` implementation.
+
+Since version 1.2.2, there's a new way to pass the `ARTPushRegistererDelegate` implementation into the library. It must be used for new apps created with Xcode 12 and later, using the SwiftUI App Lifecycle. You can assign the delegate directly in the client options using the `pushRegistererDelegate` property, without relying on `UIApplicationDelegate`.
+
+Do not forget that `ARTPush` has two corresponding methods that you should call from yours [application(_:didRegisterForRemoteNotificationsWithDeviceToken:)](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1622958-application) and [application(_:didFailToRegisterForRemoteNotificationsWithError:)](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1622962-application), passing to them also an `ARTRest` or `ARTRealtime` instance, configured with the authentication setup and other options you need:
+
+```
+func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+    ARTPush.didRegisterForRemoteNotifications(withDeviceToken: deviceToken, rest: rest)
+}
+
+func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
+    ARTPush.didFailToRegisterForRemoteNotificationsWithError(error, rest: rest)
+}
+```
+
+Only one instance of `ARTRest` or `ARTRealtime` at a time must be [activated for receiving push notifications](https://www.ably.io/documentation/general/push/activate-subscribe). Having more than one activated instance at a time may have unexpected consequences.
+
+### macOS & tvOS
+
+Be aware that Push Notifications are currently unsupported for macOS and tvOS. You can only use the [Push Admin](https://www.ably.io/documentation/general/push/admin) functionalities, for example:
+
+```swift
+let recipient: [String: Any] = [
+    "clientId": "C04BC116-8004-4D78-A71F-8CA3122734DB"
+]
+let data: [String: Any] = [
+    "notification": [
+        "title": "Hello from Ably!",
+        "body": "Example push notification from Ably."
+    ],
+    "data": [
+        "foo": "bar",
+        "baz": "qux"
+    ]
+]
+realtime.push.admin.publish(recipient, data: data) { error in
+    print("Push published:", error ?? "nil")
+}
+```
+
+Available demos: [macOS](https://github.com/ably/demo-macos) and [tvOS](https://github.com/ably/demo-tvos).
 
 ## Using the Realtime API
 
