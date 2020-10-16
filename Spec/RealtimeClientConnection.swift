@@ -2,7 +2,7 @@
 //  RealtimeClient.connection.swift
 //  ably
 //
-//  Created by Ricardo Pereira on 03/11.2.25.
+//  Created by Ricardo Pereira on 03/11/2015.
 //  Copyright © 2015 Ably. All rights reserved.
 //
 
