@@ -149,7 +149,7 @@ class RealtimeClient: QuickSpec {
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
 
-                    waitUntil(timeout: testTimeout * 2) { done in
+                    waitUntil(timeout: testTimeout.multiplied(by: 2)) { done in
                         let partialDone = AblyTests.splitDone(2, done: done)
                         client.connection.once(.connecting) { _ in
                             guard let webSocketTransport = client.internal.transport as? ARTWebSocketTransport else {
@@ -333,7 +333,7 @@ class RealtimeClient: QuickSpec {
                 var start: NSDate?
                 var endInterval: UInt?
 
-                waitUntil(timeout: testTimeout + options.suspendedRetryTimeout) { done in
+                waitUntil(timeout: testTimeout.incremented(by: options.suspendedRetryTimeout)) { done in
                     client.connection.on { stateChange in
                         let stateChange = stateChange!
                         let state = stateChange.current
@@ -1394,6 +1394,7 @@ class RealtimeClient: QuickSpec {
                 }
 
                 var foo: Foo? = Foo()
+                expect(foo).toNot(beNil())
                 foo = nil
                 AblyManager.sharedClient.channels.get("foo").unsubscribe()
             }

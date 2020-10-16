@@ -89,6 +89,7 @@ class ObjectLifetimes: QuickSpec {
                     var client: ARTRealtime? = ARTRealtime(options: options)
                     
                     weak var weakClient = client!.internal
+                    expect(weakClient).toNot(beNil())
                     defer { client?.close() }
                     
                     waitUntil(timeout: testTimeout) { done in

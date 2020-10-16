@@ -120,34 +120,40 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
     };
 
     if (_activationMachine == nil) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            // -[UIApplication delegate] is an UI API call, so needs to be called from main thread.
-            id delegate = UIApplication.sharedApplication.delegate;
-            [self createActivationStateMachineWithDelegate:delegate
-                                         completionHandler:^(ARTPushActivationStateMachine *const machine) {
-                callbackWithUnlock(machine);
-            }];
-        });
+        const id<ARTPushRegistererDelegate, NSObject> delegate = _rest.options.pushRegistererDelegate;
+        if (delegate) {
+            callbackWithUnlock([self createActivationStateMachineWithDelegate:delegate]);
+        }
+        else {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                // -[UIApplication delegate] is an UI API call, so needs to be called from main thread.
+                const id legacyDelegate = UIApplication.sharedApplication.delegate;
+                [self createActivationStateMachineWithDelegate:legacyDelegate
+                                             completionHandler:^(ARTPushActivationStateMachine *const machine) {
+                    callbackWithUnlock(machine);
+                }];
+            });
+        }
     }
     else {
         callbackWithUnlock(_activationMachine);
     }
 }
 
-- (void)createActivationStateMachineWithDelegate:(const id<UIApplicationDelegate>)delegate
+- (void)createActivationStateMachineWithDelegate:(const id<ARTPushRegistererDelegate, NSObject>)delegate
                                completionHandler:(void (^const)(ARTPushActivationStateMachine *_Nonnull))block {
     dispatch_async(self.queue, ^{
         block([self createActivationStateMachineWithDelegate:delegate]);
     });
 }
 
-- (ARTPushActivationStateMachine *)createActivationStateMachineWithDelegate:(id<UIApplicationDelegate>)delegate {
+- (ARTPushActivationStateMachine *)createActivationStateMachineWithDelegate:(const id<ARTPushRegistererDelegate, NSObject>)delegate {
     if (_activationMachine) {
         [NSException raise:NSInternalInconsistencyException
                     format:@"_activationMachine already set."];
     }
     
-    _activationMachine = [[ARTPushActivationStateMachine alloc] init:self->_rest delegate:delegate];
+    _activationMachine = [[ARTPushActivationStateMachine alloc] initWithRest:self->_rest delegate:delegate];
     return _activationMachine;
 }
 

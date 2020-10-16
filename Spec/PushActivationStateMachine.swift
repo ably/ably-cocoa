@@ -30,7 +30,7 @@ class PushActivationStateMachine : QuickSpec {
             rest.internal.httpExecutor = httpExecutor
             storage = MockDeviceStorage()
             rest.internal.storage = storage
-            initialStateMachine = ARTPushActivationStateMachine(rest.internal)
+            initialStateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
         }
 
         afterEach {
@@ -46,7 +46,7 @@ class PushActivationStateMachine : QuickSpec {
             it("should read the current state from disk") {
                 let storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeviceRegistration(machine: initialStateMachine))
                 rest.internal.storage = storage
-                let stateMachine = ARTPushActivationStateMachine(rest.internal)
+                let stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
                 expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeviceRegistration.self))
                 expect(storage.keysRead).to(haveCount(2))
                 expect(storage.keysRead.filter({ $0.hasSuffix("CurrentState") })).to(haveCount(1))
@@ -60,7 +60,7 @@ class PushActivationStateMachine : QuickSpec {
                 let storage = MockDeviceStorage()
                 storage.simulateOnNextRead(data: stateEncodedFromOldVersion, for: ARTPushActivationCurrentStateKey)
                 rest.internal.storage = storage
-                let stateMachine = ARTPushActivationStateMachine(rest.internal)
+                let stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
                 expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
             }
 
@@ -70,7 +70,7 @@ class PushActivationStateMachine : QuickSpec {
                 beforeEach {
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateNotActivated(machine: initialStateMachine))
                     rest.internal.storage = storage
-                    stateMachine = ARTPushActivationStateMachine(rest.internal)
+                    stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
                 }
 
                 // RSH3a1
@@ -162,7 +162,7 @@ class PushActivationStateMachine : QuickSpec {
                 beforeEach {
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForPushDeviceDetails(machine: initialStateMachine))
                     rest.internal.storage = storage
-                    stateMachine = ARTPushActivationStateMachine(rest.internal)
+                    stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
                 }
 
                 // RSH3b1
@@ -358,7 +358,7 @@ class PushActivationStateMachine : QuickSpec {
                         guard let request = httpExecutor.requests.first else {
                             fail("should have a \"/push/deviceRegistrations\" request"); return
                         }
-                        guard let url = request.url else {
+                        guard request.url != nil else {
                             fail("should have a \"/push/deviceRegistrations\" URL"); return
                         }
                         guard let rawBody = request.httpBody else {
@@ -441,7 +441,7 @@ class PushActivationStateMachine : QuickSpec {
                     var registered = false
 
                     let delegate = StateMachineDelegateCustomCallbacks()
-                    stateMachine = ARTPushActivationStateMachine(rest.internal, delegate: delegate)
+                    stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: delegate)
                     delegate.onPushCustomRegister = { error, deviceDetails in
                         registered = true
                         return nil
@@ -457,7 +457,7 @@ class PushActivationStateMachine : QuickSpec {
                 beforeEach {
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeviceRegistration(machine: initialStateMachine))
                     rest.internal.storage = storage
-                    stateMachine = ARTPushActivationStateMachine(rest.internal)
+                    stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
                 }
 
                 // RSH3c1
@@ -524,7 +524,7 @@ class PushActivationStateMachine : QuickSpec {
                 beforeEach {
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForNewPushDeviceDetails(machine: initialStateMachine))
                     rest.internal.storage = storage
-                    stateMachine = ARTPushActivationStateMachine(rest.internal)
+                    stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
                 }
 
                 // RSH3d1
@@ -557,7 +557,7 @@ class PushActivationStateMachine : QuickSpec {
                     beforeEach {
                         storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForRegistrationSync(machine: initialStateMachine, from: fromEvent))
                         rest.internal.storage = storage
-                        stateMachine = ARTPushActivationStateMachine(rest.internal)
+                        stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
                         (stateMachine.current as! ARTPushActivationStateWaitingForRegistrationSync).fromEvent = fromEvent
                     }
 
@@ -652,7 +652,7 @@ class PushActivationStateMachine : QuickSpec {
                 beforeEach {
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateAfterRegistrationSyncFailed(machine: initialStateMachine))
                     rest.internal.storage = storage
-                    stateMachine = ARTPushActivationStateMachine(rest.internal)
+                    stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
                 }
 
                 // RSH3f1
@@ -678,7 +678,7 @@ class PushActivationStateMachine : QuickSpec {
                 beforeEach {
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeregistration(machine: initialStateMachine))
                     rest.internal.storage = storage
-                    stateMachine = ARTPushActivationStateMachine(rest.internal)
+                    stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
                 }
 
                 // RSH3g1
@@ -735,7 +735,7 @@ class PushActivationStateMachine : QuickSpec {
                 // Start with WaitingForDeregistration state
                 let storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeregistration(machine: initialStateMachine))
                 rest.internal.storage = storage
-                let stateMachine = ARTPushActivationStateMachine(rest.internal)
+                let stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
 
                 stateMachine.transitions = { event, from, to in
                     fail("Should not handle the CalledActivate event because it should be queued")
@@ -775,7 +775,7 @@ class PushActivationStateMachine : QuickSpec {
             it("event handling sould be atomic and sequential") {
                 let storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeregistration(machine: initialStateMachine))
                 rest.internal.storage = storage
-                let stateMachine = ARTPushActivationStateMachine(rest.internal)
+                let stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
                 stateMachine.send(ARTPushActivationEventCalledActivate())
                 DispatchQueue(label: "QueueA").sync {
                     stateMachine.send(ARTPushActivationEventDeregistered())
@@ -811,7 +811,7 @@ class PushActivationStateMachine : QuickSpec {
                     newOptions.clientId = "instanceClient"
                     let newRest = ARTRest(options: newOptions)
                     newRest.internal.storage = storage
-                    let stateMachine = ARTPushActivationStateMachine(newRest.internal)
+                    let stateMachine = ARTPushActivationStateMachine(rest: newRest.internal, delegate: StateMachineDelegate())
                     
                     storage.simulateOnNextRead(string: testDeviceId, for: ARTDeviceIdKey)
 

@@ -859,7 +859,6 @@ class RealtimeClientChannel: QuickSpec {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
 
-                    var errorInfo: ARTErrorInfo?
                     let channel = client.channels.get("test")
 
                     channel.attach { errorInfo in
@@ -1492,7 +1491,6 @@ class RealtimeClientChannel: QuickSpec {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
 
-                    var errorInfo: ARTErrorInfo?
                     let channel = client.channels.get("test")
 
                     expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
@@ -1973,6 +1971,7 @@ class RealtimeClientChannel: QuickSpec {
                                 let stateChange = stateChange!
                                 let state = stateChange.current
                                 let error = stateChange.reason
+                                expect(error).to(beNil())
                                 if state == .connected {
                                     let channel = client.channels.get("test")
                                     channel.on { stateChange in
@@ -2003,6 +2002,7 @@ class RealtimeClientChannel: QuickSpec {
                                 let stateChange = stateChange!
                                 let state = stateChange.current
                                 let error = stateChange.reason
+                                expect(error).to(beNil())
                                 if state == .connected {
                                     let channel = client.channels.get("test")
                                     channel.on { stateChange in
@@ -2523,7 +2523,7 @@ class RealtimeClientChannel: QuickSpec {
                         let messagesToBeSent = 2000
 
                         // Call publish before connecting, so messages are queued
-                        waitUntil(timeout: testTimeout*6) { done in
+                        waitUntil(timeout: testTimeout.multiplied(by: 6)) { done in
                             let partialDone = AblyTests.splitDone(messagesToBeSent, done: done)
                             for i in 1...messagesToBeSent {
                                 channel.publish("initial initial\(i)", data: "message message\(i)") { error in

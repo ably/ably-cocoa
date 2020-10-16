@@ -25,11 +25,11 @@ class MockDeviceStorage: NSObject, ARTDeviceStorage {
 
     func object(forKey key: String) -> Any? {
         keysRead.append(key)
-        if var data = simulateData[key] {
+        if let data = simulateData[key] {
             defer { simulateData.removeValue(forKey: key) }
             return data
         }
-        if var string = simulateString[key] {
+        if let string = simulateString[key] {
             defer { simulateString.removeValue(forKey: key) }
             return string
         }
@@ -42,7 +42,7 @@ class MockDeviceStorage: NSObject, ARTDeviceStorage {
 
     func secret(forDevice deviceId: ARTDeviceId) -> String? {
         keysRead.append(ARTDeviceSecretKey)
-        if var value = simulateString[ARTDeviceSecretKey] {
+        if let value = simulateString[ARTDeviceSecretKey] {
             defer { simulateString.removeValue(forKey: ARTDeviceSecretKey) }
             return value
         }

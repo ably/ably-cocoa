@@ -15,9 +15,9 @@ class Crypto : QuickSpec {
     override func spec() {
         describe("Crypto") {
             let key = "+/h4eHh4eHh4eHh4eHh4eA=="
-            let binaryKey = NSData(base64Encoded: key, options: NSData.Base64DecodingOptions.init(rawValue: 0))!
-            var longKey = NSMutableData(data: binaryKey as Data)
-            longKey.append(binaryKey as Data)
+            let binaryKey = Data(base64Encoded: key, options: .ignoreUnknownCharacters)!
+            let longKey = NSMutableData(data: binaryKey)
+            longKey.append(binaryKey)
 
             // RSE1
             context("getDefaultParams") {
@@ -74,7 +74,7 @@ class Crypto : QuickSpec {
                 // RSE1e
                 it("should check that keyLength is valid for algorithm") {
                     expect{ARTCrypto.getDefaultParams([
-                        "key": binaryKey.subdata(with: NSMakeRange(0, 10))
+                        "key": binaryKey.subdata(in: 0..<10)
                     ])}.to(raiseException())
                 }
 
@@ -117,7 +117,7 @@ class Crypto : QuickSpec {
                     var distinctOutputs = Set<NSData>()
                     var output: NSData?
 
-                    for i in 0..<3 {
+                    for _ in 0..<3 {
                         cipher.encrypt(data, output:&output)
                         distinctOutputs.insert(output!)
 

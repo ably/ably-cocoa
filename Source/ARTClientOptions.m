@@ -51,6 +51,7 @@ NSString *const ARTDefaultProduction = @"production";
     _pushFullWait = false;
     _idempotentRestPublishing = [ARTClientOptions getDefaultIdempotentRestPublishingForVersion:[ARTDefault version]];
     _addRequestIds = false;
+    _pushRegistererDelegate = nil;
     return self;
 }
 
@@ -132,6 +133,7 @@ NSString *const ARTDefaultProduction = @"production";
     options.idempotentRestPublishing = self.idempotentRestPublishing;
     options.channelNamePrefix = self.channelNamePrefix;
     options.addRequestIds = self.addRequestIds;
+    options.pushRegistererDelegate = self.pushRegistererDelegate;
 
     return options;
 }

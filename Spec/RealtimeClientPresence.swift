@@ -16,7 +16,7 @@ class RealtimeClientPresence: QuickSpec {
 
     override func setUp() {
         super.setUp()
-        AsyncDefaults.Timeout = testTimeout
+        AsyncDefaults.timeout = testTimeout
     }
 
     override func spec() {
@@ -116,6 +116,7 @@ class RealtimeClientPresence: QuickSpec {
                     transport.afterProcessingReceivedMessage = { protocolMessage in
                         if protocolMessage.action == .sync {
                             lastSyncSerial = protocolMessage.channelSerial
+                            expect(lastSyncSerial).toNot(beNil())
                             client.internal.onDisconnected()
                             partialDone()
                             transport.afterProcessingReceivedMessage = nil
@@ -127,7 +128,7 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 expect(channel.internal.presenceMap.members).toNot(haveCount(membersCount))
-                expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connecting), timeout: options.disconnectedRetryTimeout + 1.0)
+                expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connecting), timeout: DispatchTimeInterval.milliseconds(Int(1000.0 * (options.disconnectedRetryTimeout + 1.0))))
                 expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
 
                 // Client library requests a SYNC resume by sending a SYNC ProtocolMessage with the last received sync serial number
@@ -393,7 +394,7 @@ class RealtimeClientPresence: QuickSpec {
                         channel.presence.subscribe(.leave) { leave in
                             expect(leave.clientId?.hasPrefix("tester")).to(beTrue())
                             expect(leave.action).to(equal(ARTPresenceAction.leave))
-                            expect(leave.timestamp).to(beCloseTo(NSDate(), within: 0.5))
+                            expect(leave.timestamp).to(beCloseTo(Date(), within: 0.5))
                             expect(leave.id).to(beNil())
                             partialDone() //2 times
                         }
@@ -1467,7 +1468,7 @@ class RealtimeClientPresence: QuickSpec {
                                 fail("TestProxyTransport is not set"); return
                             }
 
-                            waitUntil(timeout: testTimeout*2) { done in
+                            waitUntil(timeout: testTimeout.multiplied(by: 2)) { done in
                                 transport.afterProcessingReceivedMessage = { protocolMessage in
                                     // Receive the first Sync message from Ably service
                                     if protocolMessage.action == .sync {
@@ -1686,7 +1687,7 @@ class RealtimeClientPresence: QuickSpec {
                             fail("TestProxyTransport is not set"); return
                         }
 
-                        waitUntil(timeout: testTimeout*2) { done in
+                        waitUntil(timeout: testTimeout.multiplied(by: 2)) { done in
                             let partialDone = AblyTests.splitDone(4, done: done)
                             channel.presence.subscribe(.leave) { leave in
                                 expect(leave.clientId).to(equal("user110"))
@@ -2785,7 +2786,7 @@ class RealtimeClientPresence: QuickSpec {
                             }
                         }
 
-                        waitUntil(timeout: 20) { done in
+                        waitUntil(timeout: DispatchTimeInterval.seconds(20)) { done in
                             channel.internal.presenceMap.onceSyncEnds { _ in
                                 // Synthesized leave
                                 expect(channel.internal.presenceMap.localMembers).to(beEmpty())
@@ -3629,13 +3630,13 @@ class RealtimeClientPresence: QuickSpec {
                     let channelRealtime = realtime.channels.get("test")
 
                     var restPresenceHistoryMethodWasCalled = false
-                    
-                    var hookRest = channelRest.presence.internal.testSuite_injectIntoMethod(after: #selector(ARTRestPresenceInternal.history(_:callback:))) {
+
+                    let hookRest = channelRest.presence.internal.testSuite_injectIntoMethod(after: #selector(ARTRestPresenceInternal.history(_:callback:))) {
                         restPresenceHistoryMethodWasCalled = true
                     }
                     defer { hookRest.remove() }
 
-                    var hookRealtime = channelRealtime.presence.internal.testSuite_injectIntoMethod(after: #selector(ARTRestPresenceInternal.history(_:callback:))) {
+                    let hookRealtime = channelRealtime.presence.internal.testSuite_injectIntoMethod(after: #selector(ARTRestPresenceInternal.history(_:callback:))) {
                         restPresenceHistoryMethodWasCalled = true
                     }
                     defer { hookRealtime.remove() }

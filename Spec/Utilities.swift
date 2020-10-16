@@ -289,8 +289,8 @@ class Utilities: QuickSpec {
                             fail("onTimeout callback shouldn't have been called")
                         }).startTimer()
                         eventEmitter.off(listenerFoo1!)
-                        waitUntil(timeout: 0.3) { done in
-                            AblyTests.queue.asyncAfter(deadline: .now() + 0.15) {
+                        waitUntil(timeout: DispatchTimeInterval.milliseconds(300)) { done in
+                            AblyTests.queue.asyncAfter(deadline: DispatchTime.now() + 0.3) {
                                 done()
                             }
                         }
@@ -346,7 +346,7 @@ class Utilities: QuickSpec {
                             fail("onTimeout callback shouldn't have been called")
                         }).startTimer()
                         eventEmitter.off()
-                        waitUntil(timeout: 0.3) { done in
+                        waitUntil(timeout: DispatchTimeInterval.milliseconds(300)) { done in
                             AblyTests.queue.asyncAfter(deadline: .now() + 0.15) {
                                 done()
                             }
@@ -359,7 +359,7 @@ class Utilities: QuickSpec {
                         weak var timer = listenerFoo1!.setTimer(0.2, onTimeout: {
                             fail("onTimeout callback shouldn't have been called")
                         })
-                        waitUntil(timeout: 1) { done in
+                        waitUntil(timeout: DispatchTimeInterval.seconds(1)) { done in
                             timer?.startTimer()
                             eventEmitter.emit("foo", with: 123 as AnyObject?)
                             AblyTests.queue.asyncAfter(deadline: .now() + 0.3) {
@@ -376,7 +376,7 @@ class Utilities: QuickSpec {
                             calledOnTimeout = true
                             expect(NSDate()).to(beCloseTo(beforeEmitting.addingTimeInterval(0.3), within: 0.2))
                         }).startTimer()
-                        waitUntil(timeout: 0.5) { done in
+                        waitUntil(timeout: DispatchTimeInterval.milliseconds(500)) { done in
                             AblyTests.queue.asyncAfter(deadline: .now() + 0.35) {
                                 expect(calledOnTimeout).to(beTrue())
                                 eventEmitter.emit("foo", with: 123 as AnyObject?)
