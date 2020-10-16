@@ -124,7 +124,7 @@ If you haven’t yet, you should first check the detailed [documentation](https:
 
 **`ARTPushRegistererDelegate`** is the interface for handling Push activation/deactivation-related actions. The activation process, by default, will check if the `UIApplication.sharedApplication.delegate` has the `ARTPushRegistererDelegate` implementation.
 
-Since version 1.2.2, there's a new preferable way to pass the `ARTPushRegistererDelegate` implementation into the library. You can assign the delegate directly in the client options using the `pushRegistererDelegate` property, without relying on `UIApplicationDelegate`.
+Since version 1.2.2, there's a new way to pass the `ARTPushRegistererDelegate` implementation into the library. It must be used for new apps created with Xcode 12 and later, using the SwiftUI App Lifecycle. You can assign the delegate directly in the client options using the `pushRegistererDelegate` property, without relying on `UIApplicationDelegate`.
 
 Do not forget that `ARTPush` has two corresponding methods that you should call from yours [application(_:didRegisterForRemoteNotificationsWithDeviceToken:)](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1622958-application) and [application(_:didFailToRegisterForRemoteNotificationsWithError:)](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1622962-application), passing to them also an `ARTRest` or `ARTRealtime` instance, configured with the authentication setup and other options you need:
 
