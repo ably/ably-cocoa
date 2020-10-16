@@ -8,9 +8,7 @@
 
 ***Supports Build with Xcode 12***
 
-Fixes the Carthage build.
-
-Also required an increase to the minimum deployment target for iOS, from 8 to 9 (conflated in [\#1075](https://github.com/ably/ably-cocoa/pull/1075)).
+Fixes the Carthage build. Increases the minimum deployment target for iOS, from 8 to 9 (conflated in [\#1075](https://github.com/ably/ably-cocoa/pull/1075)).
 
 ***New Push Notification Registration API for apps using the SwiftUI App Lifecycle***
 
@@ -24,7 +22,7 @@ Going forward apps should use the `pushRegistererDelegate` property on client op
 We've removed both KSCrash ([\#1073](https://github.com/ably/ably-cocoa/pull/1073)) and SAMKeychain ([\#1067](https://github.com/ably/ably-cocoa/pull/1067)).
 
 KSCrash, in particular, presented a heavy build burden and was causing issues for some users at runtime in respect of how it was catching unhandled exceptions and reporting them to Ably's Sentry service.
-The strategy for handling uncaught exceptions, include how to log or transmit them, should be selected and implement by the app developer, not a library dependency.
+The strategy for handling uncaught exceptions, including how to log or transmit them, should be selected and implement by the app developer, not a library dependency.
 
 **Fixed issues:**
 
