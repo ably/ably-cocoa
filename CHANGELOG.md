@@ -21,8 +21,7 @@ Going forward apps should use the `pushRegistererDelegate` property on client op
 
 We've removed both KSCrash ([\#1073](https://github.com/ably/ably-cocoa/pull/1073)) and SAMKeychain ([\#1067](https://github.com/ably/ably-cocoa/pull/1067)).
 
-KSCrash, in particular, presented a heavy build burden and was causing issues for some users at runtime in respect of how it was catching unhandled exceptions and reporting them to Ably's Sentry service.
-The strategy for handling uncaught exceptions, including how to log or transmit them, should be selected and implement by the app developer, not a library dependency.
+In Cocoa there is no effective way to catch selectively only those exceptions that occur within the library, and the attempt to do that using KCrash was interfering with app developers' own exception handling. Our advice is that app developers incorporate their own application-wide exception handling and crash reporting.
 
 **Fixed issues:**
 
