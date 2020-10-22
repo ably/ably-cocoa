@@ -247,9 +247,6 @@ dispatch_async(_queue, ^{
             callback([ARTErrorInfo createWithCode:ARTStateMismatchedClientId message:@"attempted to publish message with an invalid clientId"]);
             return;
         }
-        else {
-            message.clientId = self.rest.auth.clientId_nosync;
-        }
 
         NSError *encodeError = nil;
         encodedMessage = [self.rest.defaultEncoder encodeMessage:message error:&encodeError];

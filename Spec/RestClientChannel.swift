@@ -320,7 +320,7 @@ class RestClientChannel: QuickSpec {
             }
 
             // https://github.com/ably/ably-cocoa/issues/1074 and related with RSL1m
-            fit("should not fail sending a message with no clientId in the client options and credentials that can assume any clientId") {
+            it("should not fail sending a message with no clientId in the client options and credentials that can assume any clientId") {
                 let options = AblyTests.clientOptions()
                 options.authCallback = { _, callback in
                     getTestTokenDetails(clientId: "*") { token, error in
