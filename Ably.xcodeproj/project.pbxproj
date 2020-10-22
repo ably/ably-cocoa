@@ -18,6 +18,63 @@
 		1C6C18A41ADFDAB100AB79E4 /* ARTLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C6C18A21ADFDAB100AB79E4 /* ARTLog.m */; };
 		1CD8DC9F1B1C7315007EAF36 /* ARTDefault.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1CD8DCA01B1C7315007EAF36 /* ARTDefault.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CD8DC9E1B1C7315007EAF36 /* ARTDefault.m */; };
+		217D1829254222F500DFF07E /* ARTSRHash.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180425421FED00DFF07E /* ARTSRHash.m */; };
+		217D182A254222F500DFF07E /* ARTSRRandom.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180025421FED00DFF07E /* ARTSRRandom.m */; };
+		217D182B254222F500DFF07E /* ARTSRWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D181F25421FED00DFF07E /* ARTSRWebSocket.m */; };
+		217D182C254222F500DFF07E /* ARTSRProxyConnect.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D17F225421FED00DFF07E /* ARTSRProxyConnect.m */; };
+		217D182D254222F500DFF07E /* ARTSRSIMDHelpers.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180925421FED00DFF07E /* ARTSRSIMDHelpers.m */; };
+		217D182E254222F600DFF07E /* ARTSRRunLoopThread.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D17F425421FED00DFF07E /* ARTSRRunLoopThread.m */; };
+		217D182F254222F600DFF07E /* ARTSRIOConsumerPool.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D181325421FED00DFF07E /* ARTSRIOConsumerPool.m */; };
+		217D1830254222F600DFF07E /* ARTSRMutex.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180225421FED00DFF07E /* ARTSRMutex.m */; };
+		217D1831254222F600DFF07E /* ARTSRConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D181525421FED00DFF07E /* ARTSRConstants.m */; };
+		217D1832254222F600DFF07E /* ARTSRSecurityPolicy.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D181E25421FED00DFF07E /* ARTSRSecurityPolicy.m */; };
+		217D1833254222F600DFF07E /* ARTSRPinningSecurityPolicy.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D17F825421FED00DFF07E /* ARTSRPinningSecurityPolicy.m */; };
+		217D1834254222F600DFF07E /* ARTSRURLUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180C25421FED00DFF07E /* ARTSRURLUtilities.m */; };
+		217D1835254222F600DFF07E /* ARTSRIOConsumer.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D181225421FED00DFF07E /* ARTSRIOConsumer.m */; };
+		217D1836254222F600DFF07E /* ARTSRLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D17FF25421FED00DFF07E /* ARTSRLog.m */; };
+		217D1837254222F600DFF07E /* ARTSRError.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180E25421FED00DFF07E /* ARTSRError.m */; };
+		217D1838254222F600DFF07E /* NSRunLoop+ARTSRWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D181D25421FED00DFF07E /* NSRunLoop+ARTSRWebSocket.m */; };
+		217D1839254222F600DFF07E /* ARTSRHTTPConnectMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180D25421FED00DFF07E /* ARTSRHTTPConnectMessage.m */; };
+		217D183A254222F600DFF07E /* NSURLRequest+ARTSRWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D181725421FED00DFF07E /* NSURLRequest+ARTSRWebSocket.m */; };
+		217D183B254222F600DFF07E /* ARTSRDelegateController.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D17FC25421FED00DFF07E /* ARTSRDelegateController.m */; };
+		217D1840254222F700DFF07E /* ARTSRHash.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180425421FED00DFF07E /* ARTSRHash.m */; };
+		217D1841254222F700DFF07E /* ARTSRRandom.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180025421FED00DFF07E /* ARTSRRandom.m */; };
+		217D1842254222F700DFF07E /* ARTSRWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D181F25421FED00DFF07E /* ARTSRWebSocket.m */; };
+		217D1843254222F700DFF07E /* ARTSRProxyConnect.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D17F225421FED00DFF07E /* ARTSRProxyConnect.m */; };
+		217D1844254222F700DFF07E /* ARTSRSIMDHelpers.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180925421FED00DFF07E /* ARTSRSIMDHelpers.m */; };
+		217D1845254222F700DFF07E /* ARTSRRunLoopThread.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D17F425421FED00DFF07E /* ARTSRRunLoopThread.m */; };
+		217D1846254222F700DFF07E /* ARTSRIOConsumerPool.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D181325421FED00DFF07E /* ARTSRIOConsumerPool.m */; };
+		217D1847254222F700DFF07E /* ARTSRMutex.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180225421FED00DFF07E /* ARTSRMutex.m */; };
+		217D1848254222F700DFF07E /* ARTSRConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D181525421FED00DFF07E /* ARTSRConstants.m */; };
+		217D1849254222F700DFF07E /* ARTSRSecurityPolicy.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D181E25421FED00DFF07E /* ARTSRSecurityPolicy.m */; };
+		217D184A254222F700DFF07E /* ARTSRPinningSecurityPolicy.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D17F825421FED00DFF07E /* ARTSRPinningSecurityPolicy.m */; };
+		217D184B254222F700DFF07E /* ARTSRURLUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180C25421FED00DFF07E /* ARTSRURLUtilities.m */; };
+		217D184C254222F700DFF07E /* ARTSRIOConsumer.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D181225421FED00DFF07E /* ARTSRIOConsumer.m */; };
+		217D184D254222F700DFF07E /* ARTSRLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D17FF25421FED00DFF07E /* ARTSRLog.m */; };
+		217D184E254222F700DFF07E /* ARTSRError.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180E25421FED00DFF07E /* ARTSRError.m */; };
+		217D184F254222F700DFF07E /* NSRunLoop+ARTSRWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D181D25421FED00DFF07E /* NSRunLoop+ARTSRWebSocket.m */; };
+		217D1850254222F700DFF07E /* ARTSRHTTPConnectMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180D25421FED00DFF07E /* ARTSRHTTPConnectMessage.m */; };
+		217D1851254222F700DFF07E /* NSURLRequest+ARTSRWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D181725421FED00DFF07E /* NSURLRequest+ARTSRWebSocket.m */; };
+		217D1852254222F700DFF07E /* ARTSRDelegateController.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D17FC25421FED00DFF07E /* ARTSRDelegateController.m */; };
+		217D1857254222F900DFF07E /* ARTSRHash.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180425421FED00DFF07E /* ARTSRHash.m */; };
+		217D1858254222F900DFF07E /* ARTSRRandom.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180025421FED00DFF07E /* ARTSRRandom.m */; };
+		217D1859254222F900DFF07E /* ARTSRWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D181F25421FED00DFF07E /* ARTSRWebSocket.m */; };
+		217D185A254222F900DFF07E /* ARTSRProxyConnect.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D17F225421FED00DFF07E /* ARTSRProxyConnect.m */; };
+		217D185B254222F900DFF07E /* ARTSRSIMDHelpers.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180925421FED00DFF07E /* ARTSRSIMDHelpers.m */; };
+		217D185C254222F900DFF07E /* ARTSRRunLoopThread.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D17F425421FED00DFF07E /* ARTSRRunLoopThread.m */; };
+		217D185D254222F900DFF07E /* ARTSRIOConsumerPool.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D181325421FED00DFF07E /* ARTSRIOConsumerPool.m */; };
+		217D185E254222F900DFF07E /* ARTSRMutex.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180225421FED00DFF07E /* ARTSRMutex.m */; };
+		217D185F254222F900DFF07E /* ARTSRConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D181525421FED00DFF07E /* ARTSRConstants.m */; };
+		217D1860254222FA00DFF07E /* ARTSRSecurityPolicy.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D181E25421FED00DFF07E /* ARTSRSecurityPolicy.m */; };
+		217D1861254222FA00DFF07E /* ARTSRPinningSecurityPolicy.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D17F825421FED00DFF07E /* ARTSRPinningSecurityPolicy.m */; };
+		217D1862254222FA00DFF07E /* ARTSRURLUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180C25421FED00DFF07E /* ARTSRURLUtilities.m */; };
+		217D1863254222FA00DFF07E /* ARTSRIOConsumer.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D181225421FED00DFF07E /* ARTSRIOConsumer.m */; };
+		217D1864254222FA00DFF07E /* ARTSRLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D17FF25421FED00DFF07E /* ARTSRLog.m */; };
+		217D1865254222FA00DFF07E /* ARTSRError.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180E25421FED00DFF07E /* ARTSRError.m */; };
+		217D1866254222FA00DFF07E /* NSRunLoop+ARTSRWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D181D25421FED00DFF07E /* NSRunLoop+ARTSRWebSocket.m */; };
+		217D1867254222FA00DFF07E /* ARTSRHTTPConnectMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180D25421FED00DFF07E /* ARTSRHTTPConnectMessage.m */; };
+		217D1868254222FA00DFF07E /* NSURLRequest+ARTSRWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D181725421FED00DFF07E /* NSURLRequest+ARTSRWebSocket.m */; };
+		217D1869254222FA00DFF07E /* ARTSRDelegateController.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D17FC25421FED00DFF07E /* ARTSRDelegateController.m */; };
 		560579D924AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */; };
 		560579DA24AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */; };
 		560579DB24AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */; };
@@ -2490,27 +2547,36 @@
 			buildActionMask = 2147483647;
 			files = (
 				EB82F8521C59D30500661917 /* ARTDataEncoder.m in Sources */,
+				217D183A254222F600DFF07E /* NSURLRequest+ARTSRWebSocket.m in Sources */,
+				217D182B254222F500DFF07E /* ARTSRWebSocket.m in Sources */,
 				EB2D5A911CC941A700AD1A67 /* ARTRealtimeTransport.m in Sources */,
 				D746AE391BBC3201003ECEF8 /* ARTMessage.m in Sources */,
 				D7E0FEB9211DE94700659FAA /* ARTNSMutableRequest+ARTRest.m in Sources */,
 				D7B621991E4A762A00684474 /* ARTPushChannel.m in Sources */,
 				EB89D40B1C61C6EA007FA5B7 /* ARTRealtimeChannels.m in Sources */,
+				217D183B254222F600DFF07E /* ARTSRDelegateController.m in Sources */,
 				D746AE231BBB60EE003ECEF8 /* ARTChannel.m in Sources */,
 				D76F153C23DB010C00B5133C /* ARTRealtimeChannelOptions.m in Sources */,
 				D769E15421270F3400DC5CD1 /* ARTHTTPPaginatedResponse.m in Sources */,
 				D7DEAFD21E65926D00D23F24 /* ARTLocalDevice.m in Sources */,
 				EB2D84FD1CD769B800F23CDA /* ARTOSReachability.m in Sources */,
+				217D1829254222F500DFF07E /* ARTSRHash.m in Sources */,
 				D746AE481BBD6FE9003ECEF8 /* ARTQueuedMessage.m in Sources */,
+				217D1830254222F600DFF07E /* ARTSRMutex.m in Sources */,
 				D746AE3D1BBC5AE1003ECEF8 /* ARTRealtimeChannel.m in Sources */,
+				217D1837254222F600DFF07E /* ARTSRError.m in Sources */,
 				96A507A21A377AA50077CDF8 /* ARTPresenceMessage.m in Sources */,
 				D74CBC0F212F076000D090E4 /* ARTConstants.m in Sources */,
 				D7F1D3741BF4DE07001A4B5E /* ARTRestPresence.m in Sources */,
+				217D182E254222F600DFF07E /* ARTSRRunLoopThread.m in Sources */,
+				217D1832254222F600DFF07E /* ARTSRSecurityPolicy.m in Sources */,
 				D746AE541BBD85C5003ECEF8 /* ARTChannels.m in Sources */,
 				96BF61541A35B39C004CF2B3 /* ARTRest.m in Sources */,
 				D7D8F82C1BC2C706009718F2 /* ARTTokenRequest.m in Sources */,
 				D7D8F8261BC2C691009718F2 /* ARTTokenDetails.m in Sources */,
 				D75A3F1C1DDE5B62002A4AAD /* ARTGCD.m in Sources */,
 				1C2B0FFE1B136A6D00E3633C /* ARTPresenceMap.m in Sources */,
+				217D182A254222F500DFF07E /* ARTSRRandom.m in Sources */,
 				960D07941A45F1D800ED8C8C /* ARTCrypto.m in Sources */,
 				D777EEE52063A64E002EBA03 /* ARTNSMutableRequest+ARTPush.m in Sources */,
 				D7AE18CA1E5B40C900478D82 /* ARTPushAdmin.m in Sources */,
@@ -2519,16 +2585,21 @@
 				D785C42A1E549E33008FEC05 /* ARTPushChannelSubscription.m in Sources */,
 				D7B17EE41C07208B00A6958E /* ARTConnectionDetails.m in Sources */,
 				96BF61591A35B52C004CF2B3 /* ARTHttp.m in Sources */,
+				217D1833254222F600DFF07E /* ARTSRPinningSecurityPolicy.m in Sources */,
 				D3AD0EBE215E2FB000312105 /* ARTNSString+ARTUtil.m in Sources */,
 				D73692001DB788C40062C150 /* ARTAuthDetails.m in Sources */,
 				D71966EB1E5E006E000974DD /* ARTPushActivationState.m in Sources */,
 				1C578E201B3435CA00EF46EC /* ARTFallback.m in Sources */,
+				217D1831254222F600DFF07E /* ARTSRConstants.m in Sources */,
 				96A507B61A37881C0077CDF8 /* ARTNSDate+ARTUtil.m in Sources */,
+				217D182C254222F500DFF07E /* ARTSRProxyConnect.m in Sources */,
 				850BFB4D1B79323C009D0ADD /* ARTPaginatedResult.m in Sources */,
+				217D1836254222F600DFF07E /* ARTSRLog.m in Sources */,
 				EB9C530D1CD7BFF300.8.557 /* ARTJsonLikeEncoder.m in Sources */,
 				D746AE1F1BBB5207003ECEF8 /* ARTDataQuery.m in Sources */,
 				961343D91A42E0B7006DC822 /* ARTClientOptions.m in Sources */,
 				96BF615F1A35C1C8004CF2B3 /* ARTTypes.m in Sources */,
+				217D1838254222F600DFF07E /* NSRunLoop+ARTSRWebSocket.m in Sources */,
 				D7D8F82E1BC2C706009718F2 /* ARTTokenParams.m in Sources */,
 				D746AE411BBC5B14003ECEF8 /* ARTEventEmitter.m in Sources */,
 				96A507AE1A3780F60077CDF8 /* ARTJsonEncoder.m in Sources */,
@@ -2551,8 +2622,10 @@
 				D7B621951E4A6FE600684474 /* ARTDeviceDetails.m in Sources */,
 				D7588AF41BFF91B800BB8279 /* ARTURLSessionServerTrust.m in Sources */,
 				D74CBC04212EB58700D090E4 /* ARTNSHTTPURLResponse+ARTPaginated.m in Sources */,
+				217D1839254222F600DFF07E /* ARTSRHTTPConnectMessage.m in Sources */,
 				D746AE501BBD84E7003ECEF8 /* ARTChannelOptions.m in Sources */,
 				EB89D4051C61C1A4007FA5B7 /* ARTRestChannels.m in Sources */,
+				217D1834254222F600DFF07E /* ARTSRURLUtilities.m in Sources */,
 				D777EEE1206285CF002EBA03 /* ARTDeviceIdentityTokenDetails.m in Sources */,
 				D73B655823EF2B2900D459A6 /* ARTDeltaCodec.m in Sources */,
 				D768C6AD1E4B5B0200436011 /* ARTDevicePushDetails.m in Sources */,
@@ -2561,10 +2634,13 @@
 				EB1B540522F8DA05006A59AC /* ARTQueuedDealloc.m in Sources */,
 				D746AE291BBB61C9003ECEF8 /* ARTPresence.m in Sources */,
 				D70EECAD1FEAF331008A50CD /* ARTPendingMessage.m in Sources */,
+				217D182F254222F600DFF07E /* ARTSRIOConsumerPool.m in Sources */,
 				96A507BE1A3791490077CDF8 /* ARTRealtime.m in Sources */,
 				967A43221A39AEAF00E4CE23 /* ARTNSArray+ARTFunctional.m in Sources */,
+				217D1835254222F600DFF07E /* ARTSRIOConsumer.m in Sources */,
 				D71966EF1E5E0081000974DD /* ARTPushActivationEvent.m in Sources */,
 				96A507A61A377DE90077CDF8 /* ARTNSDictionary+ARTDictionaryUtil.m in Sources */,
+				217D182D254222F500DFF07E /* ARTSRSIMDHelpers.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2633,27 +2709,36 @@
 			buildActionMask = 2147483647;
 			files = (
 				D710D4EF21949C0D008F54AD /* ARTConnectionDetails.m in Sources */,
+				217D1851254222F700DFF07E /* NSURLRequest+ARTSRWebSocket.m in Sources */,
+				217D1842254222F700DFF07E /* ARTSRWebSocket.m in Sources */,
 				D710D4F021949C0D008F54AD /* ARTRealtimePresence.m in Sources */,
 				D710D4F321949C0D008F54AD /* ARTRealtimeChannels.m in Sources */,
 				D710D53521949C54008F54AD /* ARTDevicePushDetails.m in Sources */,
 				D710D62F21949E03008F54AD /* ARTDataQuery.m in Sources */,
 				D710D53121949C54008F54AD /* ARTPush.m in Sources */,
+				217D1852254222F700DFF07E /* ARTSRDelegateController.m in Sources */,
 				D710D5E021949D78008F54AD /* ARTStats.m in Sources */,
 				D76F153F23DB013000B5133C /* ARTRealtimeChannelOptions.m in Sources */,
 				D710D4F121949C0D008F54AD /* ARTQueuedMessage.m in Sources */,
 				D710D49521949AC2008F54AD /* ARTRest.m in Sources */,
 				D710D53921949C54008F54AD /* ARTNSMutableRequest+ARTPush.m in Sources */,
+				217D1840254222F700DFF07E /* ARTSRHash.m in Sources */,
 				D710D66D21949E78008F54AD /* ARTLog.m in Sources */,
+				217D1847254222F700DFF07E /* ARTSRMutex.m in Sources */,
 				D710D5D721949D78008F54AD /* ARTChannels.m in Sources */,
+				217D184E254222F700DFF07E /* ARTSRError.m in Sources */,
 				D710D4F221949C0D008F54AD /* ARTPendingMessage.m in Sources */,
 				D710D55F21949C97008F54AD /* ARTPushActivationState.m in Sources */,
 				D710D67221949E79008F54AD /* ARTGCD.m in Sources */,
+				217D1845254222F700DFF07E /* ARTSRRunLoopThread.m in Sources */,
+				217D1849254222F700DFF07E /* ARTSRSecurityPolicy.m in Sources */,
 				D710D63321949E03008F54AD /* ARTNSHTTPURLResponse+ARTPaginated.m in Sources */,
 				D710D5D021949D78008F54AD /* ARTAuthOptions.m in Sources */,
 				D710D5E221949D78008F54AD /* ARTTypes.m in Sources */,
 				D710D5DF21949D78008F54AD /* ARTDataEncoder.m in Sources */,
 				D710D4EE21949C0D008F54AD /* ARTConnection.m in Sources */,
 				D710D4C921949BAA008F54AD /* ARTWebSocketTransport.m in Sources */,
+				217D1841254222F700DFF07E /* ARTSRRandom.m in Sources */,
 				D710D5DD21949D78008F54AD /* ARTPresenceMessage.m in Sources */,
 				D710D63221949E03008F54AD /* ARTFallback.m in Sources */,
 				D710D5D221949D78008F54AD /* ARTTokenRequest.m in Sources */,
@@ -2662,16 +2747,21 @@
 				D710D53721949C54008F54AD /* ARTLocalDevice.m in Sources */,
 				D710D53621949C54008F54AD /* ARTDeviceIdentityTokenDetails.m in Sources */,
 				D710D4C821949BAA008F54AD /* ARTRealtimeTransport.m in Sources */,
+				217D184A254222F700DFF07E /* ARTSRPinningSecurityPolicy.m in Sources */,
 				D710D49821949ACA008F54AD /* ARTRestChannel.m in Sources */,
 				D710D5DE21949D78008F54AD /* ARTPresenceMap.m in Sources */,
 				D710D49A21949ACA008F54AD /* ARTRestPresence.m in Sources */,
 				D710D66E21949E78008F54AD /* ARTNSDate+ARTUtil.m in Sources */,
+				217D1848254222F700DFF07E /* ARTSRConstants.m in Sources */,
 				D710D57321949CC4008F54AD /* ARTPushAdmin.m in Sources */,
+				217D1843254222F700DFF07E /* ARTSRProxyConnect.m in Sources */,
 				D710D53421949C54008F54AD /* ARTDeviceDetails.m in Sources */,
+				217D184D254222F700DFF07E /* ARTSRLog.m in Sources */,
 				D710D66A21949E78008F54AD /* ARTJsonLikeEncoder.m in Sources */,
 				D710D57521949CC4008F54AD /* ARTPushChannelSubscriptions.m in Sources */,
 				D710D55E21949C97008F54AD /* ARTPushActivationStateMachine.m in Sources */,
 				D710D49C21949ACA008F54AD /* ARTNSMutableRequest+ARTRest.m in Sources */,
+				217D184F254222F700DFF07E /* NSRunLoop+ARTSRWebSocket.m in Sources */,
 				D710D66C21949E78008F54AD /* ARTMsgPackEncoder.m in Sources */,
 				D710D48621949A5B008F54AD /* ARTDefault.m in Sources */,
 				D710D5DB21949D78008F54AD /* ARTMessage.m in Sources */,
@@ -2694,8 +2784,10 @@
 				D710D48C21949A97008F54AD /* ARTConstants.m in Sources */,
 				D710D5DA21949D78008F54AD /* ARTBaseMessage.m in Sources */,
 				D710D63421949E03008F54AD /* ARTNSMutableURLRequest+ARTPaginated.m in Sources */,
+				217D1850254222F700DFF07E /* ARTSRHTTPConnectMessage.m in Sources */,
 				D710D57421949CC4008F54AD /* ARTPushDeviceRegistrations.m in Sources */,
 				D710D5D821949D78008F54AD /* ARTChannelOptions.m in Sources */,
+				217D184B254222F700DFF07E /* ARTSRURLUtilities.m in Sources */,
 				D73B655923EF2B2900D459A6 /* ARTDeltaCodec.m in Sources */,
 				D710D62D21949E03008F54AD /* ARTHttp.m in Sources */,
 				D710D63021949E03008F54AD /* ARTPaginatedResult.m in Sources */,
@@ -2704,10 +2796,13 @@
 				D710D53321949C54008F54AD /* ARTPushChannelSubscription.m in Sources */,
 				D710D67121949E79008F54AD /* ARTOSReachability.m in Sources */,
 				D710D56021949C97008F54AD /* ARTPushActivationEvent.m in Sources */,
+				217D1846254222F700DFF07E /* ARTSRIOConsumerPool.m in Sources */,
 				D710D66921949E78008F54AD /* ARTCrypto.m in Sources */,
 				D710D63121949E03008F54AD /* ARTHTTPPaginatedResponse.m in Sources */,
+				217D184C254222F700DFF07E /* ARTSRIOConsumer.m in Sources */,
 				D710D5DC21949D78008F54AD /* ARTPresence.m in Sources */,
 				D710D53821949C54008F54AD /* ARTLocalDeviceStorage.m in Sources */,
+				217D1844254222F700DFF07E /* ARTSRSIMDHelpers.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2716,27 +2811,36 @@
 			buildActionMask = 2147483647;
 			files = (
 				D710D4FF21949C0E008F54AD /* ARTConnectionDetails.m in Sources */,
+				217D1868254222FA00DFF07E /* NSURLRequest+ARTSRWebSocket.m in Sources */,
+				217D1859254222F900DFF07E /* ARTSRWebSocket.m in Sources */,
 				D710D50021949C0E008F54AD /* ARTRealtimePresence.m in Sources */,
 				D710D50321949C0E008F54AD /* ARTRealtimeChannels.m in Sources */,
 				D710D54721949C55008F54AD /* ARTDevicePushDetails.m in Sources */,
 				D710D63F21949E04008F54AD /* ARTDataQuery.m in Sources */,
 				D710D54321949C55008F54AD /* ARTPush.m in Sources */,
+				217D1869254222FA00DFF07E /* ARTSRDelegateController.m in Sources */,
 				D710D60621949D79008F54AD /* ARTStats.m in Sources */,
 				D76F154023DB013000B5133C /* ARTRealtimeChannelOptions.m in Sources */,
 				D710D50121949C0E008F54AD /* ARTQueuedMessage.m in Sources */,
 				D710D49721949AC3008F54AD /* ARTRest.m in Sources */,
 				D710D54B21949C55008F54AD /* ARTNSMutableRequest+ARTPush.m in Sources */,
+				217D1857254222F900DFF07E /* ARTSRHash.m in Sources */,
 				D710D65321949E77008F54AD /* ARTLog.m in Sources */,
+				217D185E254222F900DFF07E /* ARTSRMutex.m in Sources */,
 				D710D5FD21949D79008F54AD /* ARTChannels.m in Sources */,
+				217D1865254222FA00DFF07E /* ARTSRError.m in Sources */,
 				D710D50221949C0E008F54AD /* ARTPendingMessage.m in Sources */,
 				D710D56521949C98008F54AD /* ARTPushActivationState.m in Sources */,
 				D710D65821949E77008F54AD /* ARTGCD.m in Sources */,
+				217D185C254222F900DFF07E /* ARTSRRunLoopThread.m in Sources */,
+				217D1860254222FA00DFF07E /* ARTSRSecurityPolicy.m in Sources */,
 				D710D64321949E04008F54AD /* ARTNSHTTPURLResponse+ARTPaginated.m in Sources */,
 				D710D5F621949D79008F54AD /* ARTAuthOptions.m in Sources */,
 				D710D60821949D79008F54AD /* ARTTypes.m in Sources */,
 				D710D60521949D79008F54AD /* ARTDataEncoder.m in Sources */,
 				D710D4FE21949C0E008F54AD /* ARTConnection.m in Sources */,
 				D710D4CD21949BAB008F54AD /* ARTWebSocketTransport.m in Sources */,
+				217D1858254222F900DFF07E /* ARTSRRandom.m in Sources */,
 				D710D60321949D79008F54AD /* ARTPresenceMessage.m in Sources */,
 				D710D64221949E04008F54AD /* ARTFallback.m in Sources */,
 				D710D5F821949D79008F54AD /* ARTTokenRequest.m in Sources */,
@@ -2745,16 +2849,21 @@
 				D710D54921949C55008F54AD /* ARTLocalDevice.m in Sources */,
 				D710D54821949C55008F54AD /* ARTDeviceIdentityTokenDetails.m in Sources */,
 				D710D4CC21949BAB008F54AD /* ARTRealtimeTransport.m in Sources */,
+				217D1861254222FA00DFF07E /* ARTSRPinningSecurityPolicy.m in Sources */,
 				D710D4A221949ACB008F54AD /* ARTRestChannel.m in Sources */,
 				D710D60421949D79008F54AD /* ARTPresenceMap.m in Sources */,
 				D710D4A421949ACB008F54AD /* ARTRestPresence.m in Sources */,
 				D710D65421949E77008F54AD /* ARTNSDate+ARTUtil.m in Sources */,
+				217D185F254222F900DFF07E /* ARTSRConstants.m in Sources */,
 				D710D57921949CC5008F54AD /* ARTPushAdmin.m in Sources */,
+				217D185A254222F900DFF07E /* ARTSRProxyConnect.m in Sources */,
 				D710D54621949C55008F54AD /* ARTDeviceDetails.m in Sources */,
+				217D1864254222FA00DFF07E /* ARTSRLog.m in Sources */,
 				D710D65021949E77008F54AD /* ARTJsonLikeEncoder.m in Sources */,
 				D710D57B21949CC5008F54AD /* ARTPushChannelSubscriptions.m in Sources */,
 				D710D56421949C98008F54AD /* ARTPushActivationStateMachine.m in Sources */,
 				D710D4A621949ACB008F54AD /* ARTNSMutableRequest+ARTRest.m in Sources */,
+				217D1866254222FA00DFF07E /* NSRunLoop+ARTSRWebSocket.m in Sources */,
 				D710D65221949E77008F54AD /* ARTMsgPackEncoder.m in Sources */,
 				D710D48821949A5C008F54AD /* ARTDefault.m in Sources */,
 				D710D60121949D79008F54AD /* ARTMessage.m in Sources */,
@@ -2777,8 +2886,10 @@
 				D710D48E21949A98008F54AD /* ARTConstants.m in Sources */,
 				D710D60021949D79008F54AD /* ARTBaseMessage.m in Sources */,
 				D710D64421949E04008F54AD /* ARTNSMutableURLRequest+ARTPaginated.m in Sources */,
+				217D1867254222FA00DFF07E /* ARTSRHTTPConnectMessage.m in Sources */,
 				D710D57A21949CC5008F54AD /* ARTPushDeviceRegistrations.m in Sources */,
 				D710D5FE21949D79008F54AD /* ARTChannelOptions.m in Sources */,
+				217D1862254222FA00DFF07E /* ARTSRURLUtilities.m in Sources */,
 				D73B655A23EF2B2900D459A6 /* ARTDeltaCodec.m in Sources */,
 				D710D63D21949E04008F54AD /* ARTHttp.m in Sources */,
 				D710D64021949E04008F54AD /* ARTPaginatedResult.m in Sources */,
@@ -2787,10 +2898,13 @@
 				D710D54521949C55008F54AD /* ARTPushChannelSubscription.m in Sources */,
 				D710D65721949E77008F54AD /* ARTOSReachability.m in Sources */,
 				D710D56621949C98008F54AD /* ARTPushActivationEvent.m in Sources */,
+				217D185D254222F900DFF07E /* ARTSRIOConsumerPool.m in Sources */,
 				D710D64F21949E77008F54AD /* ARTCrypto.m in Sources */,
 				D710D64121949E04008F54AD /* ARTHTTPPaginatedResponse.m in Sources */,
+				217D1863254222FA00DFF07E /* ARTSRIOConsumer.m in Sources */,
 				D710D60221949D79008F54AD /* ARTPresence.m in Sources */,
 				D710D54A21949C55008F54AD /* ARTLocalDeviceStorage.m in Sources */,
+				217D185B254222F900DFF07E /* ARTSRSIMDHelpers.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
