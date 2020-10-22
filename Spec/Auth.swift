@@ -1103,7 +1103,7 @@ class Auth : QuickSpec {
             
             // RSA7
             context("clientId and authenticated clients") {
-                // RAS7a1
+                // RSA7a1
                 it("should use assigned clientId on all operations") {
                     let expectedClientId = "client_string"
                     let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
@@ -1124,16 +1124,21 @@ class Auth : QuickSpec {
                     
                     switch extractBodyAsMsgPack(testHTTPExecutor.requests.last) {
                     case .failure(let error):
-              XCTFail(error)
+                        XCTFail(error)
                     case .success(let httpBody):
-                        guard let requestedClientId = httpBody.unbox["clientId"] as? String else { XCTFail("No clientId field in .tTPBody"); return }
+                        guard
+                            let requestedClientId = httpBody.unbox["clientId"] as? String
+                        else {
+                            XCTFail("No clientId field in HTTPBody")
+                            return
+                        }
                         expect(requestedClientId).to(equal(expectedClientId))
                     }
                     
-                    // .oDO: add more operations
+                    // TODO: add more operations
                 }
                 
-                // .sA7a2
+                // RSA7a2
                 it("should obtain a token if clientId is assigned") {
                     let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                     options.clientId = "client_string"
