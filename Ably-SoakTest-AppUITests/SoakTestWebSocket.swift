@@ -7,7 +7,7 @@
 
 import Foundation
 import Ably.Private
-import SocketRocketAblyFork
+import SocketRocketAblyFork // TODO we can probably get rid of this and just introduce our own enum to replace SRReadyState, or figure out how to get it into Ably.Private
 
 class SoakTestWebSocket: NSObject, ARTWebSocket {
     var readyState: ARTSRReadyState

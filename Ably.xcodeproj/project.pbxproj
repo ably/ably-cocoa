@@ -18,6 +18,9 @@
 		1C6C18A41ADFDAB100AB79E4 /* ARTLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C6C18A21ADFDAB100AB79E4 /* ARTLog.m */; };
 		1CD8DC9F1B1C7315007EAF36 /* ARTDefault.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1CD8DCA01B1C7315007EAF36 /* ARTDefault.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CD8DC9E1B1C7315007EAF36 /* ARTDefault.m */; };
+		21447D3B254A2ECB00B3905A /* ARTSRWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 217D181B25421FED00DFF07E /* ARTSRWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		21447D40254A2ECE00B3905A /* ARTSRWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 217D181B25421FED00DFF07E /* ARTSRWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		21447D45254A2ED100B3905A /* ARTSRWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 217D181B25421FED00DFF07E /* ARTSRWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		217D1829254222F500DFF07E /* ARTSRHash.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180425421FED00DFF07E /* ARTSRHash.m */; };
 		217D182A254222F500DFF07E /* ARTSRRandom.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180025421FED00DFF07E /* ARTSRRandom.m */; };
 		217D182B254222F500DFF07E /* ARTSRWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D181F25421FED00DFF07E /* ARTSRWebSocket.m */; };
@@ -1875,6 +1878,7 @@
 				EB89D4091C61C5ED007FA5B7 /* ARTRealtimeChannels.h in Headers */,
 				96E408431A38939E00087F77 /* ARTProtocolMessage.h in Headers */,
 				D78D780921271FB10016808B /* ARTHTTPPaginatedResponse+Private.h in Headers */,
+				21447D3B254A2ECB00B3905A /* ARTSRWebSocket.h in Headers */,
 				EBB721CB2376B454001C3550 /* ARTURLSession.h in Headers */,
 				D746AE381BBC3201003ECEF8 /* ARTMessage.h in Headers */,
 				D746AE471BBD6FE9003ECEF8 /* ARTQueuedMessage.h in Headers */,
@@ -2002,6 +2006,7 @@
 				D710D68121949EB3008F54AD /* ARTReachability.h in Headers */,
 				D710D58921949D29008F54AD /* ARTBaseMessage.h in Headers */,
 				D710D55721949C8C008F54AD /* ARTPushActivationEvent.h in Headers */,
+				21447D40254A2ECE00B3905A /* ARTSRWebSocket.h in Headers */,
 				EBB721CC2376B454001C3550 /* ARTURLSession.h in Headers */,
 				D710D4CE21949BB2008F54AD /* ARTWebSocketTransport+Private.h in Headers */,
 				D710D56C21949CB9008F54AD /* ARTPushChannelSubscriptions.h in Headers */,
@@ -2129,6 +2134,7 @@
 				D710D68321949EB4008F54AD /* ARTReachability.h in Headers */,
 				D710D5AF21949D2A008F54AD /* ARTBaseMessage.h in Headers */,
 				D710D55D21949C8D008F54AD /* ARTPushActivationEvent.h in Headers */,
+				21447D45254A2ED100B3905A /* ARTSRWebSocket.h in Headers */,
 				EBB721CD2376B454001C3550 /* ARTURLSession.h in Headers */,
 				D710D4D021949BB3008F54AD /* ARTWebSocketTransport+Private.h in Headers */,
 				D710D57221949CBA008F54AD /* ARTPushChannelSubscriptions.h in Headers */,

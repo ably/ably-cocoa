@@ -58,5 +58,6 @@ framework module Ably {
         header "ARTJsonEncoder.h"
         header "ARTMsgPackEncoder.h"
         header "ARTFormEncode.h"
+        header "ARTSRWebSocket.h"
     }
 }
