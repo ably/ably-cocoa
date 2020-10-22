@@ -853,6 +853,47 @@
 		1C6C18A21ADFDAB100AB79E4 /* ARTLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTLog.m; sourceTree = "<group>"; };
 		1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTDefault.h; sourceTree = "<group>"; };
 		1CD8DC9E1B1C7315007EAF36 /* ARTDefault.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTDefault.m; sourceTree = "<group>"; };
+		217D17F125421FED00DFF07E /* ARTSRProxyConnect.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTSRProxyConnect.h; sourceTree = "<group>"; };
+		217D17F225421FED00DFF07E /* ARTSRProxyConnect.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRProxyConnect.m; sourceTree = "<group>"; };
+		217D17F425421FED00DFF07E /* ARTSRRunLoopThread.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRRunLoopThread.m; sourceTree = "<group>"; };
+		217D17F525421FED00DFF07E /* ARTSRRunLoopThread.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTSRRunLoopThread.h; sourceTree = "<group>"; };
+		217D17F725421FED00DFF07E /* ARTSRPinningSecurityPolicy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTSRPinningSecurityPolicy.h; sourceTree = "<group>"; };
+		217D17F825421FED00DFF07E /* ARTSRPinningSecurityPolicy.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRPinningSecurityPolicy.m; sourceTree = "<group>"; };
+		217D17F925421FED00DFF07E /* NSRunLoop+ARTSRWebSocketPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSRunLoop+ARTSRWebSocketPrivate.h"; sourceTree = "<group>"; };
+		217D17FB25421FED00DFF07E /* ARTSRDelegateController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTSRDelegateController.h; sourceTree = "<group>"; };
+		217D17FC25421FED00DFF07E /* ARTSRDelegateController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRDelegateController.m; sourceTree = "<group>"; };
+		217D17FD25421FED00DFF07E /* ARTSRConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTSRConstants.h; sourceTree = "<group>"; };
+		217D17FF25421FED00DFF07E /* ARTSRLog.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRLog.m; sourceTree = "<group>"; };
+		217D180025421FED00DFF07E /* ARTSRRandom.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRRandom.m; sourceTree = "<group>"; };
+		217D180125421FED00DFF07E /* ARTSRSIMDHelpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTSRSIMDHelpers.h; sourceTree = "<group>"; };
+		217D180225421FED00DFF07E /* ARTSRMutex.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRMutex.m; sourceTree = "<group>"; };
+		217D180325421FED00DFF07E /* ARTSRURLUtilities.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTSRURLUtilities.h; sourceTree = "<group>"; };
+		217D180425421FED00DFF07E /* ARTSRHash.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRHash.m; sourceTree = "<group>"; };
+		217D180525421FED00DFF07E /* ARTSRHTTPConnectMessage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTSRHTTPConnectMessage.h; sourceTree = "<group>"; };
+		217D180625421FED00DFF07E /* ARTSRError.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTSRError.h; sourceTree = "<group>"; };
+		217D180725421FED00DFF07E /* ARTSRLog.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTSRLog.h; sourceTree = "<group>"; };
+		217D180825421FED00DFF07E /* ARTSRMutex.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTSRMutex.h; sourceTree = "<group>"; };
+		217D180925421FED00DFF07E /* ARTSRSIMDHelpers.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRSIMDHelpers.m; sourceTree = "<group>"; };
+		217D180A25421FED00DFF07E /* ARTSRRandom.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTSRRandom.h; sourceTree = "<group>"; };
+		217D180B25421FED00DFF07E /* ARTSRHash.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTSRHash.h; sourceTree = "<group>"; };
+		217D180C25421FED00DFF07E /* ARTSRURLUtilities.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRURLUtilities.m; sourceTree = "<group>"; };
+		217D180D25421FED00DFF07E /* ARTSRHTTPConnectMessage.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRHTTPConnectMessage.m; sourceTree = "<group>"; };
+		217D180E25421FED00DFF07E /* ARTSRError.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRError.m; sourceTree = "<group>"; };
+		217D181025421FED00DFF07E /* ARTSRIOConsumerPool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTSRIOConsumerPool.h; sourceTree = "<group>"; };
+		217D181125421FED00DFF07E /* ARTSRIOConsumer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTSRIOConsumer.h; sourceTree = "<group>"; };
+		217D181225421FED00DFF07E /* ARTSRIOConsumer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRIOConsumer.m; sourceTree = "<group>"; };
+		217D181325421FED00DFF07E /* ARTSRIOConsumerPool.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRIOConsumerPool.m; sourceTree = "<group>"; };
+		217D181425421FED00DFF07E /* NSURLRequest+ARTSRWebSocketPrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSURLRequest+ARTSRWebSocketPrivate.h"; sourceTree = "<group>"; };
+		217D181525421FED00DFF07E /* ARTSRConstants.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRConstants.m; sourceTree = "<group>"; };
+		217D181625421FED00DFF07E /* NSRunLoop+ARTSRWebSocket.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSRunLoop+ARTSRWebSocket.h"; sourceTree = "<group>"; };
+		217D181725421FED00DFF07E /* NSURLRequest+ARTSRWebSocket.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSURLRequest+ARTSRWebSocket.m"; sourceTree = "<group>"; };
+		217D181A25421FED00DFF07E /* SocketRocketAblyFork.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SocketRocketAblyFork.h; sourceTree = "<group>"; };
+		217D181B25421FED00DFF07E /* ARTSRWebSocket.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTSRWebSocket.h; sourceTree = "<group>"; };
+		217D181C25421FED00DFF07E /* NSURLRequest+ARTSRWebSocket.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSURLRequest+ARTSRWebSocket.h"; sourceTree = "<group>"; };
+		217D181D25421FED00DFF07E /* NSRunLoop+ARTSRWebSocket.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSRunLoop+ARTSRWebSocket.m"; sourceTree = "<group>"; };
+		217D181E25421FED00DFF07E /* ARTSRSecurityPolicy.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRSecurityPolicy.m; sourceTree = "<group>"; };
+		217D181F25421FED00DFF07E /* ARTSRWebSocket.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRWebSocket.m; sourceTree = "<group>"; };
+		217D182025421FED00DFF07E /* ARTSRSecurityPolicy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTSRSecurityPolicy.h; sourceTree = "<group>"; };
 		3F3D07905A62187E022923A8 /* Pods.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARTDefaultTests.swift; sourceTree = "<group>"; };
 		56190953238C3D3200A862A6 /* CryptoTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CryptoTest.m; sourceTree = "<group>"; };
@@ -1212,6 +1253,111 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		217D17EE25421FC100DFF07E /* SocketRocket */ = {
+			isa = PBXGroup;
+			children = (
+				217D182025421FED00DFF07E /* ARTSRSecurityPolicy.h */,
+				217D181E25421FED00DFF07E /* ARTSRSecurityPolicy.m */,
+				217D181B25421FED00DFF07E /* ARTSRWebSocket.h */,
+				217D181F25421FED00DFF07E /* ARTSRWebSocket.m */,
+				217D17EF25421FED00DFF07E /* Internal */,
+				217D181625421FED00DFF07E /* NSRunLoop+ARTSRWebSocket.h */,
+				217D181D25421FED00DFF07E /* NSRunLoop+ARTSRWebSocket.m */,
+				217D181C25421FED00DFF07E /* NSURLRequest+ARTSRWebSocket.h */,
+				217D181725421FED00DFF07E /* NSURLRequest+ARTSRWebSocket.m */,
+				217D181A25421FED00DFF07E /* SocketRocketAblyFork.h */,
+			);
+			name = SocketRocket;
+			path = SocketRocket/SocketRocket;
+			sourceTree = "<group>";
+		};
+		217D17EF25421FED00DFF07E /* Internal */ = {
+			isa = PBXGroup;
+			children = (
+				217D17F025421FED00DFF07E /* Proxy */,
+				217D17F325421FED00DFF07E /* RunLoop */,
+				217D17F625421FED00DFF07E /* Security */,
+				217D17F925421FED00DFF07E /* NSRunLoop+ARTSRWebSocketPrivate.h */,
+				217D17FA25421FED00DFF07E /* Delegate */,
+				217D17FD25421FED00DFF07E /* ARTSRConstants.h */,
+				217D17FE25421FED00DFF07E /* Utilities */,
+				217D180F25421FED00DFF07E /* IOConsumer */,
+				217D181425421FED00DFF07E /* NSURLRequest+ARTSRWebSocketPrivate.h */,
+				217D181525421FED00DFF07E /* ARTSRConstants.m */,
+			);
+			path = Internal;
+			sourceTree = "<group>";
+		};
+		217D17F025421FED00DFF07E /* Proxy */ = {
+			isa = PBXGroup;
+			children = (
+				217D17F125421FED00DFF07E /* ARTSRProxyConnect.h */,
+				217D17F225421FED00DFF07E /* ARTSRProxyConnect.m */,
+			);
+			path = Proxy;
+			sourceTree = "<group>";
+		};
+		217D17F325421FED00DFF07E /* RunLoop */ = {
+			isa = PBXGroup;
+			children = (
+				217D17F425421FED00DFF07E /* ARTSRRunLoopThread.m */,
+				217D17F525421FED00DFF07E /* ARTSRRunLoopThread.h */,
+			);
+			path = RunLoop;
+			sourceTree = "<group>";
+		};
+		217D17F625421FED00DFF07E /* Security */ = {
+			isa = PBXGroup;
+			children = (
+				217D17F725421FED00DFF07E /* ARTSRPinningSecurityPolicy.h */,
+				217D17F825421FED00DFF07E /* ARTSRPinningSecurityPolicy.m */,
+			);
+			path = Security;
+			sourceTree = "<group>";
+		};
+		217D17FA25421FED00DFF07E /* Delegate */ = {
+			isa = PBXGroup;
+			children = (
+				217D17FB25421FED00DFF07E /* ARTSRDelegateController.h */,
+				217D17FC25421FED00DFF07E /* ARTSRDelegateController.m */,
+			);
+			path = Delegate;
+			sourceTree = "<group>";
+		};
+		217D17FE25421FED00DFF07E /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				217D17FF25421FED00DFF07E /* ARTSRLog.m */,
+				217D180025421FED00DFF07E /* ARTSRRandom.m */,
+				217D180125421FED00DFF07E /* ARTSRSIMDHelpers.h */,
+				217D180225421FED00DFF07E /* ARTSRMutex.m */,
+				217D180325421FED00DFF07E /* ARTSRURLUtilities.h */,
+				217D180425421FED00DFF07E /* ARTSRHash.m */,
+				217D180525421FED00DFF07E /* ARTSRHTTPConnectMessage.h */,
+				217D180625421FED00DFF07E /* ARTSRError.h */,
+				217D180725421FED00DFF07E /* ARTSRLog.h */,
+				217D180825421FED00DFF07E /* ARTSRMutex.h */,
+				217D180925421FED00DFF07E /* ARTSRSIMDHelpers.m */,
+				217D180A25421FED00DFF07E /* ARTSRRandom.h */,
+				217D180B25421FED00DFF07E /* ARTSRHash.h */,
+				217D180C25421FED00DFF07E /* ARTSRURLUtilities.m */,
+				217D180D25421FED00DFF07E /* ARTSRHTTPConnectMessage.m */,
+				217D180E25421FED00DFF07E /* ARTSRError.m */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+		217D180F25421FED00DFF07E /* IOConsumer */ = {
+			isa = PBXGroup;
+			children = (
+				217D181025421FED00DFF07E /* ARTSRIOConsumerPool.h */,
+				217D181125421FED00DFF07E /* ARTSRIOConsumer.h */,
+				217D181225421FED00DFF07E /* ARTSRIOConsumer.m */,
+				217D181325421FED00DFF07E /* ARTSRIOConsumerPool.m */,
+			);
+			path = IOConsumer;
+			sourceTree = "<group>";
+		};
 		856AAC8B1B6E304B00B07119 /* Spec */ = {
 			isa = PBXGroup;
 			children = (
@@ -1256,6 +1402,7 @@
 		96BF61271A35B2AB004CF2B3 = {
 			isa = PBXGroup;
 			children = (
+				217D17EE25421FC100DFF07E /* SocketRocket */,
 				D75B85F921BAF8F900FD8DD2 /* Ably.xcconfig */,
 				D7EE14F51F07964500C178D5 /* Version.xcconfig */,
 				96BF61331A35B2AB004CF2B3 /* Source */,
