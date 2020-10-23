@@ -1103,39 +1103,29 @@ class Auth : QuickSpec {
             
             // RSA7
             context("clientId and authenticated clients") {
-                // RSA7a1
-                it("should use assigned clientId on all operations") {
-                    let expectedClientId = "client_string"
-                    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
-                    options.clientId = expectedClientId
 
-                    let client = ARTRest(options: options)
+                // RSA7a1
+                it("should not pass clientId with published message") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "mary"
+                    let rest = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    client.internal.httpExecutor = testHTTPExecutor
-                    
+                    rest.internal.httpExecutor = testHTTPExecutor
+                    let channel = rest.channels.get("RSA7a1")
                     waitUntil(timeout: testTimeout) { done in
-                        client.channels.get("test").publish(nil, data: "message") { error in
-                            if let e = error {
-                                XCTFail((e ).description)
-                            }
+                        channel.publish("foo", data: nil) { error in
+                            expect(error).to(beNil())
                             done()
                         }
                     }
-                    
                     switch extractBodyAsMsgPack(testHTTPExecutor.requests.last) {
                     case .failure(let error):
-                        XCTFail(error)
+                        fail(error)
                     case .success(let httpBody):
-                        guard
-                            let requestedClientId = httpBody.unbox["clientId"] as? String
-                        else {
-                            XCTFail("No clientId field in HTTPBody")
-                            return
-                        }
-                        expect(requestedClientId).to(equal(expectedClientId))
+                        let message = httpBody.unbox
+                        expect(message["clientId"]).to(beNil())
+                        expect(message["name"] as? String).to(equal("foo"))
                     }
-                    
-                    // TODO: add more operations
                 }
                 
                 // RSA7a2
