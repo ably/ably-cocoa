@@ -589,12 +589,6 @@
 		D73B655823EF2B2900D459A6 /* ARTDeltaCodec.m in Sources */ = {isa = PBXBuildFile; fileRef = D73B655423EF2B2900D459A6 /* ARTDeltaCodec.m */; };
 		D73B655923EF2B2900D459A6 /* ARTDeltaCodec.m in Sources */ = {isa = PBXBuildFile; fileRef = D73B655423EF2B2900D459A6 /* ARTDeltaCodec.m */; };
 		D73B655A23EF2B2900D459A6 /* ARTDeltaCodec.m in Sources */ = {isa = PBXBuildFile; fileRef = D73B655423EF2B2900D459A6 /* ARTDeltaCodec.m */; };
-		D73BF70C22609E7F00579773 /* SocketRocketAblyFork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D73BF70B22609E7F00579773 /* SocketRocketAblyFork.framework */; };
-		D73BF70E22609E9500579773 /* SocketRocketAblyFork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D73BF70D22609E9500579773 /* SocketRocketAblyFork.framework */; };
-		D73BF71022609EB500579773 /* SocketRocketAblyFork.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D73BF70F22609EB500579773 /* SocketRocketAblyFork.framework */; };
-		D73BF71122609EDF00579773 /* SocketRocketAblyFork.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D73BF70B22609E7F00579773 /* SocketRocketAblyFork.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		D73BF71222609EF600579773 /* SocketRocketAblyFork.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D73BF70D22609E9500579773 /* SocketRocketAblyFork.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		D73BF71322609F0400579773 /* SocketRocketAblyFork.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D73BF70F22609EB500579773 /* SocketRocketAblyFork.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D746AE1D1BBB5207003ECEF8 /* ARTDataQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE1A1BBB5207003ECEF8 /* ARTDataQuery.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D746AE1E1BBB5207003ECEF8 /* ARTDataQuery+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE1B1BBB5207003ECEF8 /* ARTDataQuery+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D746AE1F1BBB5207003ECEF8 /* ARTDataQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = D746AE1C1BBB5207003ECEF8 /* ARTDataQuery.m */; };
@@ -842,7 +836,6 @@
 			dstSubfolderSpec = 10;
 			files = (
 				D798554C23EB993500946BE2 /* AblyDeltaCodec.framework in Copy Carthage Frameworks to Test bundle */,
-				D73BF71222609EF600579773 /* SocketRocketAblyFork.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C4B219EDCAB00723F17 /* ULID.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C49219EDC9B00723F17 /* msgpack.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C41219EDC5000723F17 /* SwiftyJSON.framework in Copy Carthage Frameworks to Test bundle */,
@@ -860,7 +853,6 @@
 			dstSubfolderSpec = 10;
 			files = (
 				D798554D23EB994000946BE2 /* AblyDeltaCodec.framework in Copy Carthage Frameworks to Test bundle */,
-				D73BF71322609F0400579773 /* SocketRocketAblyFork.framework in Copy Carthage Frameworks to Test bundle */,
 				D75B861721BB48E200FD8DD2 /* Aspects.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C92219EE3E800723F17 /* Nimble.framework in Copy Carthage Frameworks to Test bundle */,
 				D7093C93219EE3E800723F17 /* Quick.framework in Copy Carthage Frameworks to Test bundle */,
@@ -878,7 +870,6 @@
 			dstSubfolderSpec = 10;
 			files = (
 				D798554B23EB992C00946BE2 /* AblyDeltaCodec.framework in Copy Carthage Frameworks to Test bundle */,
-				D73BF71122609EDF00579773 /* SocketRocketAblyFork.framework in Copy Carthage Frameworks to Test bundle */,
 				D7EEE6B421A6E082000E8474 /* SwiftyJSON.framework in Copy Carthage Frameworks to Test bundle */,
 				D7EEE6B321A6E075000E8474 /* Quick.framework in Copy Carthage Frameworks to Test bundle */,
 				D7EEE6B221A6E070000E8474 /* Nimble.framework in Copy Carthage Frameworks to Test bundle */,
@@ -1243,7 +1234,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				D798553C23EB905B00946BE2 /* AblyDeltaCodec.framework in Frameworks */,
-				D73BF70C22609E7F00579773 /* SocketRocketAblyFork.framework in Frameworks */,
 				D736A0CA1F916553005ABE81 /* msgpack.framework in Frameworks */,
 				D77A0C961FFEEF0300711131 /* ULID.framework in Frameworks */,
 			);
@@ -1278,7 +1268,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				D798554023EB90A600946BE2 /* AblyDeltaCodec.framework in Frameworks */,
-				D73BF70E22609E9500579773 /* SocketRocketAblyFork.framework in Frameworks */,
 				D710D6A92194A09D008F54AD /* msgpack.framework in Frameworks */,
 				D710D6AB2194A09D008F54AD /* ULID.framework in Frameworks */,
 			);
@@ -1290,7 +1279,6 @@
 			files = (
 				D798554423EB90B100946BE2 /* AblyDeltaCodec.framework in Frameworks */,
 				D710D6B92194A1FD008F54AD /* msgpack.framework in Frameworks */,
-				D73BF71022609EB500579773 /* SocketRocketAblyFork.framework in Frameworks */,
 				D710D6B72194A1FD008F54AD /* ULID.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
