@@ -1,3 +1,6 @@
 [submodule "ably-common"]
 	path = ably-common
 	url = https://github.com/ably/ably-common.git
+[submodule "SocketRocket"]
+	path = SocketRocket
+	url = https://github.com/ably-forks/SocketRocket.git
