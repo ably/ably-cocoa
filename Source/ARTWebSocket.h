@@ -15,12 +15,12 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol ARTWebSocketDelegate;
 
 /**
- This protocol has the subset of SRWebSocket we actually use.
+ This protocol has the subset of ARTSRWebSocket we actually use.
  */
 @protocol ARTWebSocket <NSObject>
 
 @property (nonatomic, weak) id <ARTWebSocketDelegate> _Nullable delegate;
-@property (atomic, assign, readonly) SRReadyState readyState;
+@property (atomic, assign, readonly) ARTSRReadyState readyState;
 
 - (instancetype)initWithURLRequest:(NSURLRequest *)request;
 

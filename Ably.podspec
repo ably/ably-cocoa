@@ -19,7 +19,7 @@ Pod::Spec.new do |s|
   s.source_files      = 'Source/**/*.{h,m,swift}'
   s.private_header_files = 'Source/*+Private.h', 'Source/Private/*.h'
   s.module_map        = 'Source/Ably.modulemap'
-  s.dependency 'SocketRocketAblyFork', '0.5.2-ably-7'
+  s.dependency 'SocketRocketAblyFork', '0.5.2-ably-8'
   s.dependency 'msgpack', '0.3.1'
   s.dependency 'ULID', '1.1.0'
   s.dependency 'AblyDeltaCodec', '1.2.0'
