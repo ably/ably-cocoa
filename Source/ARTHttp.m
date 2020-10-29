@@ -47,22 +47,14 @@ Class configuredUrlSessionClass = nil;
 }
 
 - (NSObject<ARTCancellable> *)executeRequest:(NSMutableURLRequest *)request completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback {
-    NSString *requestBodyStr = [[NSString alloc] initWithData:request.HTTPBody encoding:NSUTF8StringEncoding];
-    if (!requestBodyStr) {
-        requestBodyStr = [request.HTTPBody base64EncodedStringWithOptions:NSDataBase64EncodingEndLineWithCarriageReturn];
-    }
-    [self.logger debug:@"--> %@ %@\n  Body: %@\n  Headers: %@", request.HTTPMethod, request.URL.absoluteString, requestBodyStr, request.allHTTPHeaderFields];
+    [self.logger debug:@"--> %@ %@\n  Body: %@\n  Headers: %@", request.HTTPMethod, request.URL.absoluteString, [self debugDescriptionOfBodyWithData:request.HTTPBody], request.allHTTPHeaderFields];
 
     return [_urlSession get:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
         if (error) {
             [self.logger error:@"<-- %@ %@: error %@", request.HTTPMethod, request.URL.absoluteString, error];
         } else {
-            NSString *responseDataStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-            if (!responseDataStr) {
-                responseDataStr = [data base64EncodedStringWithOptions:NSDataBase64EncodingEndLineWithCarriageReturn];
-            }
-            [self.logger debug:@"<-- %@ %@: statusCode %ld\n  Data: %@\n  Headers: %@\n", request.HTTPMethod, request.URL.absoluteString, (long)httpResponse.statusCode, responseDataStr, httpResponse.allHeaderFields];
+            [self.logger debug:@"<-- %@ %@: statusCode %ld\n  Data: %@\n  Headers: %@\n", request.HTTPMethod, request.URL.absoluteString, (long)httpResponse.statusCode, [self debugDescriptionOfBodyWithData:data], httpResponse.allHeaderFields];
             NSString *headerErrorMessage = httpResponse.allHeaderFields[ARTHttpHeaderFieldErrorMessageKey];
             if (headerErrorMessage && ![headerErrorMessage isEqualToString:@""]) {
                 [self.logger warn:@"%@", headerErrorMessage];
@@ -70,6 +62,17 @@ Class configuredUrlSessionClass = nil;
         }
         callback(httpResponse, data, error);
     }];
+}
+
+- (NSString *)debugDescriptionOfBodyWithData:(NSData *)data {
+    if (self.logger.logLevel <= ARTLogLevelDebug) {
+        NSString *requestBodyStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        if (!requestBodyStr) {
+            requestBodyStr = [data base64EncodedStringWithOptions:NSDataBase64EncodingEndLineWithCarriageReturn];
+        }
+        return requestBodyStr;
+    }
+    return nil;
 }
 
 @end
