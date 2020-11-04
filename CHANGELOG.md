@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.2.3](https://github.com/ably/ably-cocoa/tree/1.2.3)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.2...1.2.3)
+
+_Fixes issue:_ Publishing messages with `authCallback` is broken after upgrading from 1.1.16 to 1.2.1 [\#1074](https://github.com/ably/ably-cocoa/issues/1074).
+
+_Fixed by pull request:_ Fixes 40012 "Malformed message; invalid clientId" when message has no clientId and credentials can assume any clientId [\#1082](https://github.com/ably/ably-cocoa/pull/1082) ([ricardopereira](https://github.com/ricardopereira))
+
 ## [1.2.2](https://github.com/ably/ably-cocoa/tree/1.2.2)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.1...1.2.2)
