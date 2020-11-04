@@ -319,6 +319,34 @@ class RestClientChannel: QuickSpec {
 
             }
 
+            // https://github.com/ably/ably-cocoa/issues/1074 and related with RSL1m
+            it("should not fail sending a message with no clientId in the client options and credentials that can assume any clientId") {
+                let options = AblyTests.clientOptions()
+                options.authCallback = { _, callback in
+                    getTestTokenDetails(clientId: "*") { token, error in
+                        callback(token, error)
+                    }
+                }
+
+                let rest = ARTRest(options: options)
+                let channel = rest.channels.get("#1074")
+
+                waitUntil(timeout: testTimeout) { done in
+                    // The first attempt encodes the message before requesting auth credentials so there's no clientId
+                    channel.publish("first message", data: nil) { error in
+                        expect(error).to(beNil())
+                        done()
+                    }
+                }
+
+                waitUntil(timeout: testTimeout) { done in
+                    channel.publish("second message", data: nil) { error in
+                        expect(error).to(beNil())
+                        done()
+                    }
+                }
+            }
+
             // RSL1h
             it("should provide an optional argument that allows the clientId value to be specified") {
                 let options = AblyTests.commonAppSetup()
