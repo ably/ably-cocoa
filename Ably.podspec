@@ -6,9 +6,9 @@ Pod::Spec.new do |s|
                         iOS, tvOS and macOS Objective-C and Swift client library for ably.io, the realtime messaging service.
                         DESC
   s.homepage          = "https://www.ably.io"
-  s.license           = { :type => 'Apache 2.0', :file => 'LICENSE' }
+  s.license           = { :type => 'Apache 2.0', :file => 'LICENSE', :submodules => true }
   s.author            = { "Ably" => "support@ably.io" }
-  s.source            = { :git => "https://github.com/ably/ably-cocoa.git", :tag => s.version.to_s }
+  s.source            = { :git => "https://github.com/ably/ably-cocoa.git", :tag => s.version.to_s, :submodules => true }
   s.social_media_url  = 'https://twitter.com/ablyrealtime'
   s.documentation_url = "https://www.ably.io/documentation"
   s.ios.deployment_target = '9.0'
@@ -22,4 +22,5 @@ Pod::Spec.new do |s|
   s.dependency 'msgpack', '0.3.1'
   s.dependency 'ULID', '1.1.0'
   s.dependency 'AblyDeltaCodec', '1.2.0'
+  s.prepare_command   = 'Scripts/prepare-pod.sh'
 end
