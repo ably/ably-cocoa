@@ -995,7 +995,7 @@ class TestProxyTransport: ARTWebSocketTransport {
 
     private func setupFakeNetworkResponse(_ networkResponse: FakeNetworkResponse) {
         var hook: AspectToken?
-        hook = SRWebSocket.testSuite_replaceClassMethod(#selector(SRWebSocket.open)) {
+        hook = ARTSRWebSocket.testSuite_replaceClassMethod(#selector(ARTSRWebSocket.open)) {
             if TestProxyTransport.fakeNetworkResponse == nil {
                 return
             }
