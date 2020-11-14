@@ -763,6 +763,9 @@ dispatch_sync(_queue, ^{
 }
 
 - (void)detachChannel:(ARTStatus *)status {
+    if (self.state_nosync == ARTRealtimeChannelDetached) {
+        return;
+    }
     [self.presence failPendingPresence:status];
     [self transition:ARTRealtimeChannelDetached status:status];
 }
