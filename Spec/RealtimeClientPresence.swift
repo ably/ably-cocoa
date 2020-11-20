@@ -574,7 +574,9 @@ class RealtimeClientPresence: QuickSpec {
                                 expect(channel.internal.presenceMap.localMembers).to(beEmpty())
                                 done()
                             }
-                            channel.internal.onError(AblyTests.newErrorProtocolMessage())
+                            AblyTests.queue.async {
+                                channel.internal.onError(AblyTests.newErrorProtocolMessage())
+                            }
                         }
                     }
 
@@ -911,7 +913,9 @@ class RealtimeClientPresence: QuickSpec {
                                 done()
                             }) { _ in }
                         }) {_ in }
-                        channel.internal.onError(error)
+                        AblyTests.queue.async {
+                            channel.internal.onError(error)
+                        }
                     }
                 }
 
@@ -1101,9 +1105,15 @@ class RealtimeClientPresence: QuickSpec {
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
-                    channel.internal.onError(AblyTests.newErrorProtocolMessage())
+                    waitUntil(timeout: testTimeout) { done in
+                        AblyTests.queue.async {
+                            channel.internal.onError(AblyTests.newErrorProtocolMessage())
+                            done()
+                        }
+                    }
 
                     expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
+                        
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.enter(nil) { error in
@@ -1243,7 +1253,9 @@ class RealtimeClientPresence: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         let protocolError = AblyTests.newErrorProtocolMessage()
                         channel.once(.attaching) { _ in
-                            channel.internal.onError(protocolError)
+                            AblyTests.queue.async {
+                                channel.internal.onError(protocolError)
+                            }
                         }
                         (client.internal.transport as! TestProxyTransport).actionsIgnored += [.attached]
                         channel.presence.update("online") { error in
@@ -2009,7 +2021,9 @@ class RealtimeClientPresence: QuickSpec {
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
-                    channel.internal.onError(AblyTests.newErrorProtocolMessage())
+                    AblyTests.queue.async {
+                        channel.internal.onError(AblyTests.newErrorProtocolMessage())
+                    }
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.update(nil) { error in
@@ -2223,7 +2237,9 @@ class RealtimeClientPresence: QuickSpec {
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
-                    channel.internal.onError(AblyTests.newErrorProtocolMessage())
+                    AblyTests.queue.async {
+                        channel.internal.onError(AblyTests.newErrorProtocolMessage())
+                    }
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.enter("online") { error in
@@ -2323,7 +2339,9 @@ class RealtimeClientPresence: QuickSpec {
                         }
                     }
 
-                    channel.internal.onError(AblyTests.newErrorProtocolMessage())
+                    AblyTests.queue.async {
+                        channel.internal.onError(AblyTests.newErrorProtocolMessage())
+                    }
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.leave(nil) { error in
@@ -2395,7 +2413,9 @@ class RealtimeClientPresence: QuickSpec {
                     let channel = client.channels.get("test")
 
                     let protocolError = AblyTests.newErrorProtocolMessage()
-                    channel.internal.onError(protocolError)
+                    AblyTests.queue.async {
+                        channel.internal.onError(protocolError)
+                    }
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.subscribe(attachCallback: { error in
@@ -2423,7 +2443,9 @@ class RealtimeClientPresence: QuickSpec {
                         }, callback: { member in
                             fail("Should not be called")
                         })
-                        channel.internal.onError(error)
+                        AblyTests.queue.async {
+                            channel.internal.onError(error)
+                        }
                     }
                 }
 
@@ -2914,7 +2936,9 @@ class RealtimeClientPresence: QuickSpec {
                         let channel = client.channels.get("test")
 
                         let expectedErrorMessage = "Something has failed"
-                        channel.internal.onError(AblyTests.newErrorProtocolMessage(message: expectedErrorMessage))
+                        AblyTests.queue.async {
+                            channel.internal.onError(AblyTests.newErrorProtocolMessage(message: expectedErrorMessage))
+                        }
 
                         waitUntil(timeout: testTimeout) { done in
                             //Call: enterClient, updateClient and leaveClient
@@ -3199,7 +3223,9 @@ class RealtimeClientPresence: QuickSpec {
                     let channel = client.channels.get("test")
 
                     let pm = AblyTests.newErrorProtocolMessage()
-                    channel.internal.onError(pm)
+                    AblyTests.queue.async {
+                        channel.internal.onError(pm)
+                    }
 
                     guard let protocolError = pm.error else {
                         fail("Protocol error is empty"); return
@@ -3234,7 +3260,9 @@ class RealtimeClientPresence: QuickSpec {
                         }
                         (client.internal.transport as! TestProxyTransport).actionsIgnored += [.attached]
                         channel.once(.attaching) { _ in
-                            channel.internal.onError(pm)
+                            AblyTests.queue.async {
+                                channel.internal.onError(pm)
+                            }
                         }
                         channel.presence.get() { members, error in
                             guard let error = error else {
@@ -4019,7 +4047,9 @@ class RealtimeClientPresence: QuickSpec {
                                 expect(message.id).to(equal("protocolId:0"))
                                 done()
                             }
-                            channel.internal.onPresence(protocolMessage)
+                            AblyTests.queue.async {
+                                channel.internal.onPresence(protocolMessage)
+                            }
                         }
                         client.connect()
                     }
