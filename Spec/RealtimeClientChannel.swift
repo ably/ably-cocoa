@@ -282,7 +282,9 @@ class RealtimeClientChannel: QuickSpec {
                             expect(channel.errorReason).to(equal(pmError.error))
                             done()
                         }
-                        channel.internal.onError(pmError)
+                        AblyTests.queue.async {
+                            channel.internal.onError(pmError)
+                        }
                     }
                 }
 
@@ -319,7 +321,9 @@ class RealtimeClientChannel: QuickSpec {
                             expect(stateChange.previous).to(equal(ARTRealtimeChannelState.attached))
                             done()
                         }
-                        channel.internal.onError(AblyTests.newErrorProtocolMessage())
+                        AblyTests.queue.async {
+                            channel.internal.onError(AblyTests.newErrorProtocolMessage())
+                        }
                     }
                 }
 
@@ -1407,7 +1411,9 @@ class RealtimeClientChannel: QuickSpec {
                             channel.once(.failed) { stateChange in
                                 done()
                             }
-                            channel.internal.onError(AblyTests.newErrorProtocolMessage())
+                            AblyTests.queue.async {
+                                channel.internal.onError(AblyTests.newErrorProtocolMessage())
+                            }
                         }
 
                         // Failed
