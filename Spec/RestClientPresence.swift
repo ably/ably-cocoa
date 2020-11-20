@@ -33,12 +33,9 @@ class RestClientPresence: QuickSpec {
 
                     let expectedData = "online"
                     let expectedPattern = "^user(\\d+)$"
-                    waitUntil(timeout: testTimeout) { done in
-                        // Load 150 members (2 pages)
-                        disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 150, data:expectedData as AnyObject?, options: options) {
-                            done()
-                        }]
-                    }
+
+                    // Load 150 members (2 pages)
+                    disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 150, data:expectedData as AnyObject?, options: options)]
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.get { membersPage, error in
@@ -139,19 +136,11 @@ class RestClientPresence: QuickSpec {
                         }
                     }
 
-                    waitUntil(timeout: testTimeout) { done in
-                        // One connection
-                        disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 6, options: options) {
-                            done()
-                        }]
-                    }
+                    // One connection
+                    disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 6, options: options)]
 
-                    waitUntil(timeout: testTimeout) { done in
-                        // Another connection
-                        disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 3, startFrom: 7, options: options) {
-                            done()
-                        }]
-                    }
+                    // Another connection
+                    disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 3, startFrom: 7, options: options)]
 
                     let query = ARTRealtimePresenceQuery()
                     // Return all members from last connection (connectionId from the last connection)
@@ -190,11 +179,7 @@ class RestClientPresence: QuickSpec {
 
                     let expectedData = "online"
                     let expectedPattern = "^user(\\d+)$"
-                    waitUntil(timeout: testTimeout) { done in
-                        realtime = AblyTests.addMembersSequentiallyToChannel("test", members: 150, data: expectedData as AnyObject?, options: options) {
-                            done()
-                        }
-                    }
+                    realtime = AblyTests.addMembersSequentiallyToChannel("test", members: 150, data: expectedData as AnyObject?, options: options)
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.history { membersPage, error in
@@ -258,11 +243,7 @@ class RestClientPresence: QuickSpec {
                             }
                         }
 
-                        waitUntil(timeout: testTimeout) { done in
-                            disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 10, data:nil, options: options) {
-                                done()
-                            }]
-                        }
+                        disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 10, data:nil, options: options)]
 
                         let query = ARTDataQuery()
                         expect(query.direction).to(equal(ARTQueryDirection.backwards))
@@ -314,12 +295,7 @@ class RestClientPresence: QuickSpec {
 
                         var realtime: ARTRealtime!
                         defer { realtime.dispose(); realtime.close() }
-
-                        waitUntil(timeout: testTimeout) { done in
-                            realtime = AblyTests.addMembersSequentiallyToChannel("test", members: 1, options: options) {
-                                done()
-                            }
-                        }
+                        realtime = AblyTests.addMembersSequentiallyToChannel("test", members: 1, options: options)
 
                         let query = ARTDataQuery()
                         expect(query.limit).to(equal(100))
@@ -359,19 +335,11 @@ class RestClientPresence: QuickSpec {
                         }
                     }
 
-                    waitUntil(timeout: testTimeout) { done in
-                        // One connection
-                        disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 6, options: options) {
-                            done()
-                        }]
-                    }
+                    // One connection
+                    disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 6, options: options)]
 
-                    waitUntil(timeout: testTimeout) { done in
-                        // Another connection
-                        disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 3, startFrom: 7, options: options) {
-                            done()
-                        }]
-                    }
+                    // Another connection
+                    disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 3, startFrom: 7, options: options)]
 
                     let query = ARTRealtimePresenceQuery()
                     // Return all members from last connection (connectionId from the last connection)
@@ -418,11 +386,7 @@ class RestClientPresence: QuickSpec {
 
                         let query = ARTDataQuery()
 
-                        waitUntil(timeout: testTimeout) { done in
-                            disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 25, options: options) {
-                                done()
-                            }]
-                        }
+                        disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 25, options: options)]
 
                         waitUntil(timeout: testTimeout) { done in
                             client.time { time, error in
@@ -436,11 +400,7 @@ class RestClientPresence: QuickSpec {
                             delay(1.5) { done() }
                         }
 
-                        waitUntil(timeout: testTimeout) { done in
-                            disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 3, options: options) {
-                                done()
-                            }]
-                        }
+                        disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 3, options: options)]
 
                         waitUntil(timeout: testTimeout) { done in
                             client.time { time, error in
@@ -450,11 +410,7 @@ class RestClientPresence: QuickSpec {
                             }
                         }
 
-                        waitUntil(timeout: testTimeout) { done in
-                            disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 10, options: options) {
-                                done()
-                            }]
-                        }
+                        disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 10, options: options)]
 
                         waitUntil(timeout: testTimeout) { done in
                             expect {
