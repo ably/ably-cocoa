@@ -4470,12 +4470,56 @@ class Auth : QuickSpec {
                 }
             }
 
-            // https://github.com/ably/ably-cocoa/issues/849
-            it("should not force token auth when clientId is set") {
-                let options = AblyTests.commonAppSetup()
-                options.clientId = "foo"
-                expect(options.isBasicAuth()).to(beTrue())
+        }
+
+        // https://github.com/ably/ably-cocoa/issues/849
+        it("should not force token auth when clientId is set") {
+            let options = AblyTests.commonAppSetup()
+            options.clientId = "foo"
+            expect(options.isBasicAuth()).to(beTrue())
+        }
+
+        // https://github.com/ably/ably-cocoa/issues/1074
+        it("should accept authURL response with timestamp argument as string") {
+            var originalTokenRequest: ARTTokenRequest!
+            let tmpRest = ARTRest(options: AblyTests.commonAppSetup())
+            waitUntil(timeout: testTimeout) { done in
+                let tokenParams = ARTTokenParams()
+                tokenParams.clientId = "john"
+                tokenParams.capability = """
+                {"chat:*":["publish","subscribe","presence","history"]}
+                """
+                tokenParams.ttl = 43200
+                tmpRest.auth.createTokenRequest(tokenParams, options: nil) { tokenRequest, error in
+                    expect(error).to(beNil())
+                    originalTokenRequest = try! XCTUnwrap(tokenRequest)
+                    done()
+                }
+            }
+
+            let options = AblyTests.clientOptions()
+            options.authUrl = URL(string: "http://echo.ably.io/?type=json")
+            options.authMethod = "POST"
+            options.authParams = [
+                URLQueryItem(name: "keyName", value: originalTokenRequest.keyName),
+                URLQueryItem(name: "clientId", value: originalTokenRequest.clientId),
+                URLQueryItem(name: "nonce", value: originalTokenRequest.nonce),
+                URLQueryItem(name: "mac", value: originalTokenRequest.mac),
+                URLQueryItem(name: "ttl", value: String(originalTokenRequest.ttl!.intValue * 1000)),
+                URLQueryItem(name: "timestamp", value: String(dateToMilliseconds(originalTokenRequest.timestamp))),
+                URLQueryItem(name: "capability", value: originalTokenRequest.capability),
+            ]
+
+            let rest = ARTRest(options: options)
+            let channel = rest.channels.get("chat:one")
+
+            waitUntil(timeout: testTimeout) { done in
+                channel.publish("foo", data: nil) { error in
+                    expect(error).to(beNil())
+                    done()
+                }
             }
         }
+
     }
 }
