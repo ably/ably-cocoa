@@ -18,13 +18,16 @@
     return [self artTyped:[NSNumber class] key:key];
 }
 
-- (NSDate *)artDate:(id)key {
-    NSNumber *ms = [self artNumber:key];
-    if (ms) {
-        return [NSDate artDateFromNumberMs:ms];
-    } else {
-        return nil;
+- (NSDate *)artTimestamp:(id)key {
+    NSNumber *number = [self artNumber:key];
+    if (number) {
+        return [NSDate artDateFromNumberMs:number];
     }
+    NSString *string = [self artString:key];
+    if (string) {
+        return [NSDate artDateFromIntegerMs:[string longLongValue]];
+    }
+    return nil;
 }
 
 - (NSArray *)artArray:(id)key {
@@ -45,10 +48,14 @@
 
 - (NSInteger)artInteger:(id)key {
     NSNumber *number = [self artNumber:key];
-    if (!key) {
-        return -1;
+    if (number) {
+        return [number integerValue];
     }
-    return [number integerValue];
+    NSString *string = [self artString:key];
+    if (string) {
+        return [string integerValue];
+    }
+    return -1;
 }
 
 @end
