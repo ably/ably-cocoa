@@ -4479,7 +4479,7 @@ class Auth : QuickSpec {
             expect(options.isBasicAuth()).to(beTrue())
         }
 
-        // https://github.com/ably/ably-cocoa/issues/1074
+        // https://github.com/ably/ably-cocoa/issues/1093
         it("should accept authURL response with timestamp argument as string") {
             var originalTokenRequest: ARTTokenRequest!
             let tmpRest = ARTRest(options: AblyTests.commonAppSetup())
