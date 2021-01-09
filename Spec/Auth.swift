@@ -4470,12 +4470,65 @@ class Auth : QuickSpec {
                 }
             }
 
-            // https://github.com/ably/ably-cocoa/issues/849
-            it("should not force token auth when clientId is set") {
-                let options = AblyTests.commonAppSetup()
-                options.clientId = "foo"
-                expect(options.isBasicAuth()).to(beTrue())
-            }
         }
+
+        // https://github.com/ably/ably-cocoa/issues/849
+        it("should not force token auth when clientId is set") {
+            let options = AblyTests.commonAppSetup()
+            options.clientId = "foo"
+            expect(options.isBasicAuth()).to(beTrue())
+        }
+
+        // https://github.com/ably/ably-cocoa/issues/1093
+        it("should accept authURL response with timestamp argument as string") {
+            var originalTokenRequest: ARTTokenRequest!
+            let tmpRest = ARTRest(options: AblyTests.commonAppSetup())
+            waitUntil(timeout: testTimeout) { done in
+                let tokenParams = ARTTokenParams()
+                tokenParams.clientId = "john"
+                tokenParams.capability = """
+                {"chat:*":["publish","subscribe","presence","history"]}
+                """
+                tokenParams.ttl = 43200
+                tmpRest.auth.createTokenRequest(tokenParams, options: nil) { tokenRequest, error in
+                    expect(error).to(beNil())
+                    originalTokenRequest = try! XCTUnwrap(tokenRequest)
+                    done()
+                }
+            }
+            // "timestamp" as String
+            let tokenRequestJsonString = """
+                {"keyName":"\(originalTokenRequest.keyName)","timestamp":"\(String(dateToMilliseconds(originalTokenRequest.timestamp))))","clientId":"\(originalTokenRequest.clientId!)","nonce":"\(originalTokenRequest.nonce)","mac":"\(originalTokenRequest.mac)","ttl":"\(String(originalTokenRequest.ttl!.intValue * 1000)))","capability":"\(originalTokenRequest.capability!.replace("\"", withString: "\\\""))"}
+                """
+
+            let options = AblyTests.clientOptions()
+            options.authUrl = URL(string: "http://auth-test.ably.cocoa")
+
+            let rest = ARTRest(options: options)
+            expect(rest.auth.clientId).to(beNil())
+            #if TARGET_OS_IOS
+            expect(rest.device.clientId).to(beNil())
+            #endif
+            let testHttpExecutor = TestProxyHTTPExecutor(options.logHandler)
+            rest.internal.httpExecutor = testHttpExecutor
+            let channel = rest.channels.get("chat:one")
+
+            testHttpExecutor.simulateIncomingPayloadOnNextRequest(tokenRequestJsonString.data(using: .utf8)!)
+
+            waitUntil(timeout: testTimeout) { done in
+                channel.publish("foo", data: nil) { error in
+                    expect(error).to(beNil())
+                    done()
+                }
+            }
+
+            expect(testHttpExecutor.requests.at(0)?.url?.host).to(equal("auth-test.ably.cocoa"))
+            guard let tokenDetails = rest.internal.auth.tokenDetails else {
+                fail("Should have token details"); return
+            }
+            expect(tokenDetails.clientId).to(equal(originalTokenRequest.clientId))
+            expect(tokenDetails.token).toNot(beNil())
+        }
+
     }
 }
