@@ -323,7 +323,6 @@ dispatch_async(_queue, ^{
     // If options, params passed in, they're used instead of stored, don't merge them
     ARTAuthOptions *replacedOptions = authOptions ? authOptions : self.options;
     ARTTokenParams *currentTokenParams = [tokenParams ? tokenParams : _tokenParams copy];
-    currentTokenParams.timestamp = [self currentDate];
     __block NSObject<ARTCancellable> *task;
 
     if (![self canRenewTokenAutomatically:replacedOptions]) {
