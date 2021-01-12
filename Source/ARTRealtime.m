@@ -514,7 +514,10 @@ dispatch_async(_queue, ^{
 
     ARTEventListener *stateChangeEventListener = [self transitionSideEffects:stateChange];
 
-    [stateChangeEventListener startTimer];
+    // stateChangeEventListener may be nil if we're in a failed state
+    if (stateChangeEventListener != nil) {
+        [stateChangeEventListener startTimer];
+    }
 }
 
 - (ARTEventListener *)transitionSideEffects:(ARTConnectionStateChange *)stateChange {
