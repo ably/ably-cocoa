@@ -483,7 +483,10 @@ dispatch_async(_queue, ^{
 
     [_internalEventEmitter emit:[ARTEvent newWithConnectionEvent:(ARTRealtimeConnectionEvent)state] with:stateChange];
 
-    [stateChangeEventListener startTimer];
+    // stateChangeEventListener may be nil if we're in a failed state
+    if (stateChangeEventListener != nil) {
+        [stateChangeEventListener startTimer];
+    }
 }
 
 - (void)transitionToDisconnectedOrSuspended {
