@@ -1,0 +1,51 @@
+on:
+  pull_request:
+  push:
+    branches: [ $default-branch ]
+
+jobs:
+  check:
+    runs-on: macos-latest
+
+    strategy:
+      fail-fast: fast
+      matrix:
+        include:
+
+          - platform: iOS
+            lane: test_iOS12
+
+          - platform: iOS
+            lane: test_iOS11
+
+          - platform: tvOS
+            lane: test_tvOS12
+
+          - platform: macOS
+            lane: test_macOS
+
+    env:
+      LC_CTYPE: en_US.UTF-8
+      LANG: en_US.UTF-8
+      ABLY_ENV: sandbox
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Reset Simulators
+        run: xcrun simctl erase all
+      
+      - name: Install Dependencies
+        run: |
+          make update
+          bundle install
+      
+      - name: Run Tests
+        run: fastlane ${{ matrix.lane }}
+
+      - name: Run Examples Tests
+        working-directory: ./Examples/Tests
+        run: |
+          pod repo update
+          pod install
+          bundle exec fastlane scan -s Tests
