@@ -16,7 +16,7 @@ class RealtimeClientChannel: QuickSpec {
         describe("Channel") {
 
             // RTL1
-            it("should process all incoming messages and presence messages as soon as a Channel becomes attached") {
+            xit("should process all incoming messages and presence messages as soon as a Channel becomes attached") {
                 let options = AblyTests.commonAppSetup()
                 let client1 = AblyTests.newRealtime(options)
                 defer { client1.dispose(); client1.close() }

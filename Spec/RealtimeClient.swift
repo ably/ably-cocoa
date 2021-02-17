@@ -1452,7 +1452,7 @@ class RealtimeClient: QuickSpec {
                 }
             }
             
-            it("moves to DISCONNECTED on an unexpected normal WebSocket close") {
+            xit("moves to DISCONNECTED on an unexpected normal WebSocket close") {
                 let options = AblyTests.commonAppSetup()
                 let client = ARTRealtime(options: options)
                 defer { client.dispose(); client.close() }

@@ -1564,7 +1564,7 @@ class RealtimeClientConnection: QuickSpec {
             // RTN12
             context("close") {
                 // RTN12f
-                it("if CONNECTING, do the operation once CONNECTED") {
+                xit("if CONNECTING, do the operation once CONNECTED") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
@@ -2499,7 +2499,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     // RTN15c2
-                    it("CONNECTED ProtocolMessage with the same connectionId as the current client and an non-fatal error") {
+                    xit("CONNECTED ProtocolMessage with the same connectionId as the current client and an non-fatal error") {
                         let options = AblyTests.commonAppSetup()
                         let client = AblyTests.newRealtime(options)
                         defer { client.dispose(); client.close() }
@@ -3488,7 +3488,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN17d
-                context("should use an alternative host when") {
+                xcontext("should use an alternative host when") {
                     for caseTest: FakeNetworkResponse in [.hostUnreachable,
                                                     .requestTimeout(timeout: 0.1),
                                                     .hostInternalError(code: 501)] {
@@ -3538,7 +3538,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
 
-                context("should move to disconnected when there's no internet") {
+                xcontext("should move to disconnected when there's no internet") {
                     var errors: [(String, NSError)] = []
                     for code in [57, 50] {
                         errors.append(("with NSPOSIXErrorDomain with code \(code)", NSError(domain: "NSPOSIXErrorDomain", code: code, userInfo: [NSLocalizedDescriptionKey: "shouldn't matter"])))
@@ -3972,7 +3972,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
             }
 
-            context("Transport disconnected side effects") {
+            xcontext("Transport disconnected side effects") {
 
                 // RTN19a
                 it("should resend any ProtocolMessage that is awaiting a ACK/NACK") {
@@ -4151,7 +4151,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN20b
-                it("should immediately attempt to connect if the operating system indicates that the underlying internet connection is now available when DISCONNECTED or SUSPENDED") {
+                xit("should immediately attempt to connect if the operating system indicates that the underlying internet connection is now available when DISCONNECTED or SUSPENDED") {
                     var client: ARTRealtime!
                     let options = AblyTests.commonAppSetup()
                     // Ensure it won't reconnect because of timeouts.

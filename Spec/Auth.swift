@@ -4086,7 +4086,7 @@ class Auth : QuickSpec {
                 let options = AblyTests.clientOptions()
 
                 context("with valid credentials") {
-                    it("pulls stats successfully") {
+                    xit("pulls stats successfully") {
                         options.token = getJWTToken()
                         let client = AblyTests.newRealtime(options)
                         defer { client.dispose(); client.close() }
@@ -4247,7 +4247,7 @@ class Auth : QuickSpec {
                 let options = AblyTests.clientOptions()
 
                 context("with valid credentials") {
-                    it("pulls stats successfully") {
+                    xit("pulls stats successfully") {
                         options.authCallback = { tokenParams, completion in
                             let token = ARTTokenDetails(token: getJWTToken()!)
                             completion(token, nil)

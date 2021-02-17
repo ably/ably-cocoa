@@ -2674,7 +2674,7 @@ class RealtimeClientPresence: QuickSpec {
                 // RTP17b
                 context("events applied to presence map") {
 
-                    it("should be applied to ENTER, PRESENT or UPDATE events with a connectionId that matches the current client’s connectionId") {
+                    xit("should be applied to ENTER, PRESENT or UPDATE events with a connectionId that matches the current client’s connectionId") {
                         let options = AblyTests.commonAppSetup()
                         let client = ARTRealtime(options: options)
                         defer { client.dispose(); client.close() }
@@ -3739,7 +3739,7 @@ class RealtimeClientPresence: QuickSpec {
             context("history") {
 
                 // RTP12b
-                context("supports the param untilAttach") {
+                xcontext("supports the param untilAttach") {
 
                     it("should be false as default") {
                         let query = ARTRealtimeHistoryQuery()
