@@ -32,14 +32,27 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - uses: actions/cache@v2
+        id: carthage-cache
+        with:
+          path: Carthage
+          key: ${{ runner.os }}-carthage-${{ hashFiles('**/Cartfile.resolved') }}
+          restore-keys: |
+                ${{ runner.os }}-carthage-
+
       - name: Reset Simulators
         run: xcrun simctl erase all
-      
+
       - name: Install Dependencies
         run: |
-          make update
+          make submodules
           bundle install
-      
+
+      - name: Carthage
+        if: steps.carthage-cache.outputs.cache-hit != 'true'
+        run: |
+          make update_carthage_dependencies
+
       - name: Run Tests
         run: fastlane ${{ matrix.lane }}
 
