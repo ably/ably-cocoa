@@ -438,7 +438,7 @@ class RealtimeClientPresence: QuickSpec {
             context("subscribe") {
 
                 // RTP6a
-                it("with no arguments should subscribe a listener to all presence messages") {
+                xit("with no arguments should subscribe a listener to all presence messages") {
                     let options = AblyTests.commonAppSetup()
 
                     let client1 = ARTRealtime(options: options)
