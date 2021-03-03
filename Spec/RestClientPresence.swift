@@ -230,7 +230,7 @@ class RestClientPresence: QuickSpec {
                 context("query argument") {
 
                     // RSP4b2
-                    it("direction should change the order of the members") {
+                    xit("direction should change the order of the members") {
                         let options = AblyTests.commonAppSetup()
                         let client = ARTRest(options: options)
                         let channel = client.channels.get("test")
@@ -322,7 +322,7 @@ class RestClientPresence: QuickSpec {
                 }
 
                 // RSP3a3
-                it("connectionId should filter members by the provided connectionId") {
+                xit("connectionId should filter members by the provided connectionId") {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRest(options: options)
                     let channel = client.channels.get("test")

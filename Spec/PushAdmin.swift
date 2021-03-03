@@ -229,7 +229,7 @@ class PushAdmin : QuickSpec {
                 }
             }
 
-            it("should publish successfully") {
+            xit("should publish successfully") {
                 let options = AblyTests.commonAppSetup()
                 let realtime = ARTRealtime(options: options)
                 defer { realtime.dispose(); realtime.close() }
@@ -262,7 +262,7 @@ class PushAdmin : QuickSpec {
                 }
             }
 
-            it("should fail with a bad recipient") {
+            xit("should fail with a bad recipient") {
                 let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                 defer { realtime.dispose(); realtime.close() }
                 let channel = realtime.channels.get("pushenabled:push_admin_publish-bad-recipient")
@@ -289,7 +289,7 @@ class PushAdmin : QuickSpec {
                 }
             }
 
-            it("should fail with an empty recipient") {
+            xit("should fail with an empty recipient") {
                 let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                 defer { realtime.dispose(); realtime.close() }
                 let channel = realtime.channels.get("pushenabled:push_admin_publish-empty-recipient")

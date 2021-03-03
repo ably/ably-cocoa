@@ -155,7 +155,7 @@ class RestClientStats: QuickSpec {
                         expect(totalOutbound).to(equal(20 + 10 + 40))
                     }
                     
-                    it("should match month-level inbound and outbound fixture data (forwards)") {
+                    xit("should match month-level inbound and outbound fixture data (forwards)") {
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
                         query.end = calendar.date(byAdding: .month, value: 1, to: date, options: NSCalendar.Options(rawValue: 0))

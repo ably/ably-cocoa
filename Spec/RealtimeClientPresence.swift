@@ -710,7 +710,7 @@ class RealtimeClientPresence: QuickSpec {
                         }
                     }
 
-                    it("should maintain the PresenceMap and any members present before and after the sync should not emit presence events") {
+                    xit("should maintain the PresenceMap and any members present before and after the sync should not emit presence events") {
                         let options = AblyTests.commonAppSetup()
                         let channelName = NSUUID().uuidString
 
@@ -3630,7 +3630,7 @@ class RealtimeClientPresence: QuickSpec {
             context("history") {
 
                 // RTP12c, RTP12d
-                it("should return a PaginatedResult page") {
+                xit("should return a PaginatedResult page") {
                     let options = AblyTests.commonAppSetup()
 
                     var clientSecondary: ARTRealtime!
