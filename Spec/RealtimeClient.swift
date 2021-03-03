@@ -267,7 +267,7 @@ class RealtimeClient: QuickSpec {
                 }
 
                 // RTC5b
-                it("should accept all the same params as RestClient") {
+                xit("should accept all the same params as RestClient") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.close() }
                     var paginatedResult: ARTPaginatedResult<AnyObject>?
