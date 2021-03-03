@@ -1174,7 +1174,7 @@ class RestClient: QuickSpec {
                 }
 
                 // RSC15d
-                context("should use an alternative host when") {
+                xcontext("should use an alternative host when") {
 
                     for caseTest: FakeNetworkResponse in [.hostUnreachable,
                                                           .requestTimeout(timeout: 0.1),
