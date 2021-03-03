@@ -1585,7 +1585,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN12a
-                it("if CONNECTED, should send a CLOSE action, change state to CLOSING and receive a CLOSED action") {
+                xit("if CONNECTED, should send a CLOSE action, change state to CLOSING and receive a CLOSED action") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
