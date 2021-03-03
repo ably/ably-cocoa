@@ -3441,7 +3441,7 @@ class Auth : QuickSpec {
             // RSA10k
             context("server time offset") {
 
-                it("should obtain server time once and persist the offset from the local clock") {
+                xit("should obtain server time once and persist the offset from the local clock") {
                     let options = AblyTests.commonAppSetup()
                     let rest = ARTRest(options: options)
 
