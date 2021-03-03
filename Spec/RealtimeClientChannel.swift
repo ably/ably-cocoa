@@ -4211,7 +4211,7 @@ class RealtimeClientChannel: QuickSpec {
                             expect(attachedMessages).to(beEmpty())
                         }
 
-                        it("should fail if the attach moves to DETACHED") {
+                        xit("should fail if the attach moves to DETACHED") {
                             let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
                             defer { client.dispose(); client.close() }
                             let channel = client.channels.get("foo")
