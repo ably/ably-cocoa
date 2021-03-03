@@ -3675,7 +3675,7 @@ class RealtimeClientPresence: QuickSpec {
             context("history") {
 
                 // RTP12c, RTP12d
-                it("should return a PaginatedResult page") {
+                xit("should return a PaginatedResult page") {
                     let options = AblyTests.commonAppSetup()
 
                     var clientSecondary: ARTRealtime!
