@@ -171,7 +171,7 @@ class RestClientStats: QuickSpec {
                         expect(totalOutbound).to(equal(20 + 10 + 40))
                     }
                     
-                    it("should contain only one item when limit is 1 (backwards") {
+                    xit("should contain only one item when limit is 1 (backwards") {
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
                         query.end = date.addingTimeInterval(60) // 20XX-02-03:16:04
