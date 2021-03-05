@@ -1,6 +1,6 @@
 # [Ably](https://www.ably.io) iOS, tvOS and macOS Objective-C and Swift client library SDK
 
-[![Build Status](https://travis-ci.org/ably/ably-cocoa.svg?branch=main)](https://travis-ci.org/ably/ably-cocoa)
+[![.github/workflows/check.yml](https://github.com/ably/ably-cocoa/actions/workflows/check.yml/badge.svg)](https://github.com/ably/ably-cocoa/actions/workflows/check.yml)
 [![CocoaPods Compatible](https://img.shields.io/cocoapods/v/Ably.svg)](https://img.shields.io/cocoapods/v/Ably.svg)
 [![Carthage Compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
 
