@@ -91,7 +91,7 @@ carthage_package:
 
 	# https://github.com/Carthage/Carthage#archive-prebuilt-frameworks-into-one-zip-file
 	# From `carthage help build` we are told that `--archive` implies `--no-skip-current`.
-	./carthage-issue-3019-workaround.sh build --archive --no-use-binaries
+	carthage build --archive --no-use-binaries
 
 ## [Carthage] Clear Carthage caches. Helps with Carthage update issues
 carthage_clean:
@@ -103,25 +103,25 @@ carthage_clean:
 update_carthage_dependencies:
 	$(info Updating Carthage dependencies for all platforms…)
 
-	./carthage-issue-3019-workaround.sh update --no-use-binaries
+	carthage update --use-xcframeworks --no-use-binaries
 
 ## [Carthage] Update dependencies for just iOS
 update_carthage_dependencies_ios:
 	$(info Updating Carthage dependencies for iOS…)
 
-	./carthage-issue-3019-workaround.sh update --platform iOS --no-use-binaries
+	carthage update --use-xcframeworks --platform iOS --no-use-binaries
 
 ## [Carthage] Update dependencies for just tvOS
 update_carthage_dependencies_tvos:
 	$(info Updating Carthage dependencies for tvOS…)
 
-	./carthage-issue-3019-workaround.sh update --platform tvOS --no-use-binaries
+	carthage update --use-xcframeworks --platform tvOS --no-use-binaries
 
 ## [Carthage] Update dependencies for just macOS
 update_carthage_dependencies_macos:
 	$(info Updating Carthage dependencies for macOS…)
 
-	./carthage-issue-3019-workaround.sh update --platform macOS --no-use-binaries
+	carthage update --use-xcframeworks --platform macOS --no-use-binaries
 
 ## -- Version --
 
