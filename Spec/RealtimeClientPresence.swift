@@ -904,7 +904,7 @@ class RealtimeClientPresence: QuickSpec {
             context("subscribe") {
 
                 // RTP6b
-                it("with a single action argument") {
+                xit("with a single action argument") {
                     let options = AblyTests.commonAppSetup()
 
                     let client1 = ARTRealtime(options: options)
