@@ -438,7 +438,7 @@ class RealtimeClientPresence: QuickSpec {
             context("subscribe") {
 
                 // RTP6a
-                xit("with no arguments should subscribe a listener to all presence messages") {
+                it("with no arguments should subscribe a listener to all presence messages") {
                     let options = AblyTests.commonAppSetup()
 
                     let client1 = ARTRealtime(options: options)
@@ -710,7 +710,7 @@ class RealtimeClientPresence: QuickSpec {
                         }
                     }
 
-                    xit("should maintain the PresenceMap and any members present before and after the sync should not emit presence events") {
+                    it("should maintain the PresenceMap and any members present before and after the sync should not emit presence events") {
                         let options = AblyTests.commonAppSetup()
                         let channelName = NSUUID().uuidString
 
@@ -904,7 +904,7 @@ class RealtimeClientPresence: QuickSpec {
             context("subscribe") {
 
                 // RTP6b
-                xit("with a single action argument") {
+                it("with a single action argument") {
                     let options = AblyTests.commonAppSetup()
 
                     let client1 = ARTRealtime(options: options)
@@ -2644,7 +2644,7 @@ class RealtimeClientPresence: QuickSpec {
                 // RTP17b
                 context("events applied to presence map") {
 
-                    xit("should be applied to ENTER, PRESENT or UPDATE events with a connectionId that matches the current client’s connectionId") {
+                    it("should be applied to ENTER, PRESENT or UPDATE events with a connectionId that matches the current client’s connectionId") {
                         let options = AblyTests.commonAppSetup()
                         let client = ARTRealtime(options: options)
                         defer { client.dispose(); client.close() }
@@ -2667,7 +2667,9 @@ class RealtimeClientPresence: QuickSpec {
                             fail("connectionId is empty"); return
                         }
 
-                        expect(channel.internal.presenceMap.localMembers).to(haveCount(1))
+                        channel.internalSync { _internal in
+                            expect(_internal.presenceMap.localMembers).to(haveCount(1))
+                        }
 
                         let additionalMember = ARTPresenceMessage(
                             clientId: "two",
@@ -2684,6 +2686,10 @@ class RealtimeClientPresence: QuickSpec {
                         expect(client.connection.state).toEventually(equal(.suspended), timeout: testTimeout)
 
                         expect(channel.internal.presenceMap.localMembers).to(haveCount(2))
+                        
+                        channel.internalSync { _internal in
+                            expect(_internal.presenceMap.localMembers).to(haveCount(2))
+                        }
 
                         waitUntil(timeout: testTimeout) { done in
                             let partialDone = AblyTests.splitDone(2, done: done)
@@ -2722,13 +2728,14 @@ class RealtimeClientPresence: QuickSpec {
                             }
                         }
 
+                        expect(channel.presence.syncComplete).to(beFalse())
                         waitUntil(timeout: testTimeout) { done in
                             channel.presence.get { presences, error in
                                 expect(error).to(beNil())
                                 guard let presences = presences else {
                                     fail("Presences is nil"); done(); return
                                 }
-                                expect(channel.internal.presenceMap.syncComplete).to(beTrue())
+                                expect(channel.presence.syncComplete).to(beTrue())
                                 expect(presences).to(haveCount(2))
                                 expect(presences.map({$0.clientId})).to(contain(["one", "two"]))
                                 done()
@@ -2756,7 +2763,7 @@ class RealtimeClientPresence: QuickSpec {
                             }
                         }
 
-                        waitUntil(timeout: DispatchTimeInterval.seconds(20)) { done in
+                        waitUntil(timeout: .seconds(20)) { done in
                             channel.internal.presenceMap.onceSyncEnds { _ in
                                 // Synthesized leave
                                 expect(channel.internal.presenceMap.localMembers).to(beEmpty())
@@ -3630,7 +3637,7 @@ class RealtimeClientPresence: QuickSpec {
             context("history") {
 
                 // RTP12c, RTP12d
-                xit("should return a PaginatedResult page") {
+                it("should return a PaginatedResult page") {
                     let options = AblyTests.commonAppSetup()
 
                     var clientSecondary: ARTRealtime!
