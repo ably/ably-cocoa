@@ -367,7 +367,124 @@ class RestClientChannel: QuickSpec {
                 }
 
             }
-            
+
+            // RSL1m
+            context("Message clientId") {
+
+                // RSL1m1
+                it("publishing with no clientId when the clientId is set to some value in the client options should result in a message received with the clientId property set to that value") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "client-rest"
+                    let expectedClientId = options.clientId
+                    let rest = ARTRest(options: options)
+                    options.clientId = "client-realtime"
+                    let realtime = ARTRealtime(options: options)
+
+                    let subscriber = realtime.channels.get("ch1")
+                    waitUntil(timeout: testTimeout) { done in
+                        subscriber.once(.attached) { _ in
+                            done()
+                        }
+                    }
+
+                    let publisher = rest.channels.get("ch1")
+                    waitUntil(timeout: testTimeout) { done in
+                        subscriber.subscribe { message in
+                            expect(message.clientId).to(equal(expectedClientId))
+                            subscriber.unsubscribe()
+                            done()
+                        }
+                        publisher.publish("check clientId", data: nil) { error in
+                            expect(error).to(beNil())
+                        }
+                    }
+                }
+
+                // RSL1m2
+                it("publishing with a clientId set to the same value as the clientId in the client options should result in a message received with the clientId property set to that value") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "client-rest"
+                    let expectedClientId = options.clientId!
+                    let rest = ARTRest(options: options)
+                    options.clientId = "client-realtime"
+                    let realtime = ARTRealtime(options: options)
+
+                    let subscriber = realtime.channels.get("ch1")
+                    waitUntil(timeout: testTimeout) { done in
+                        subscriber.once(.attached) { _ in
+                            done()
+                        }
+                    }
+
+                    let publisher = rest.channels.get("ch1")
+                    waitUntil(timeout: testTimeout) { done in
+                        subscriber.subscribe { message in
+                            expect(message.clientId).to(equal(expectedClientId))
+                            subscriber.unsubscribe()
+                            done()
+                        }
+                        publisher.publish("check clientId", data: nil, clientId: expectedClientId) { error in
+                            expect(error).to(beNil())
+                        }
+                    }
+                }
+
+                // RSL1m3
+                it("publishing with a clientId set to a value from an unidentified client should result in a message received with the clientId property set to that value") {
+                    let expectedClientId = "client-rest"
+                    let options = AblyTests.commonAppSetup()
+                    let rest = ARTRest(options: options)
+                    let realtime = ARTRealtime(options: options)
+
+                    let subscriber = realtime.channels.get("ch1")
+                    waitUntil(timeout: testTimeout) { done in
+                        subscriber.once(.attached) { _ in
+                            done()
+                        }
+                    }
+
+                    let publisher = rest.channels.get("ch1")
+                    waitUntil(timeout: testTimeout) { done in
+                        subscriber.subscribe { message in
+                            expect(message.clientId).to(equal(expectedClientId))
+                            subscriber.unsubscribe()
+                            done()
+                        }
+                        publisher.publish("check clientId", data: nil, clientId: expectedClientId) { error in
+                            expect(error).to(beNil())
+                        }
+                    }
+                }
+
+                // RSL1m4
+                it("publishing with a clientId set to a different value from the clientId in the client options should result in a message being rejected by the server") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "client-rest"
+                    let rest = ARTRest(options: options)
+                    options.clientId = "client-realtime"
+                    let realtime = ARTRealtime(options: options)
+
+                    let subscriber = realtime.channels.get("ch1")
+                    waitUntil(timeout: testTimeout) { done in
+                        subscriber.once(.attached) { _ in
+                            done()
+                        }
+                    }
+
+                    let publisher = rest.channels.get("ch1")
+                    waitUntil(timeout: testTimeout) { done in
+                        subscriber.subscribe { message in
+                            fail("Should not receive the message")
+                        }
+                        publisher.publish("check clientId", data: nil, clientId: "foo") { error in
+                            expect(error?.code).to(equal(Int(ARTState.mismatchedClientId.rawValue)))
+                            done()
+                        }
+                    }
+                }
+
+            }
+
             // https://github.com/ably/ably-cocoa/issues/1074 and related with RSL1m
             it("should not fail sending a message with no clientId in the client options and credentials that can assume any clientId") {
                 let options = AblyTests.clientOptions()
