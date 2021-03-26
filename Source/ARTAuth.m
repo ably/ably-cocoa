@@ -273,6 +273,10 @@
     return request;
 }
 
+- (BOOL)isTokenAuth {
+    return self.tokenDetails != nil || self.authorizing_nosync;
+}
+
 - (BOOL)tokenIsRenewable {
     return [self canRenewTokenAutomatically:self.options];
 }

@@ -292,9 +292,12 @@
     if ([request isKindOfClass:[NSMutableURLRequest class]]) {
         NSMutableURLRequest *mutableRequest = (NSMutableURLRequest *)request;
         [mutableRequest setAcceptHeader:self.defaultEncoder encoders:self.encoders];
+        [mutableRequest setTimeoutInterval:_options.httpRequestTimeout];
         [mutableRequest setValue:[ARTDefault version] forHTTPHeaderField:@"X-Ably-Version"];
         [mutableRequest setValue:[ARTDefault libraryVersion] forHTTPHeaderField:@"X-Ably-Lib"];
-        [mutableRequest setTimeoutInterval:_options.httpRequestTimeout];
+        if (_options.clientId && !self.auth.isTokenAuth) {
+            [mutableRequest setValue:encodeBase64(_options.clientId) forHTTPHeaderField:@"X-Ably-ClientId"];
+        }
     }
 
     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p executing request %@", self, request];
