@@ -1957,7 +1957,7 @@ class Auth : QuickSpec {
                             }
                             expect(error).to(beNil())
                             expect(page.items).to(haveCount(1))
-                            expect((page.items[0] ).clientId).to(beNil())
+                            expect(page.items[0].clientId).to(beNil())
                             done()
                         }
                     }
