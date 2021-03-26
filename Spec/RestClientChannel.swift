@@ -319,6 +319,55 @@ class RestClientChannel: QuickSpec {
 
             }
 
+            // RSA7e
+            context("ClientOptions clientId") {
+
+                // RSA7e1
+                it("should include the clientId as a querystring parameter in realtime connection requests") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "john-doe"
+                    let client = AblyTests.newRealtime(options)
+                    defer { client.dispose(); client.close() }
+                    waitUntil(timeout: testTimeout) { done in
+                        client.channels.get("RSA7e1")
+                            .publish(nil, data: "foo") { error in
+                                expect(error).to(beNil())
+                                guard let connection = client.internal.transport as? TestProxyTransport else {
+                                    fail("No connection found")
+                                    return
+                                }
+                                expect(connection.lastUrl!.query).to(haveParam("clientId", withValue: options.clientId))
+                                done()
+                            }
+                    }
+                }
+
+                // RSA7e2
+                it("should include an X-Ably-ClientId header with value set to the clientId as Base64 encoded string in REST connection requests") {
+                    let options = AblyTests.commonAppSetup()
+                    options.clientId = "john-doe"
+                    let client = ARTRest(options: options)
+                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+                    client.internal.httpExecutor = testHTTPExecutor
+                    waitUntil(timeout: testTimeout) { done in
+                        client.channels.get("RSA7e1")
+                            .publish(nil, data: "foo") { error in
+                                expect(error).to(beNil())
+                                guard let request = testHTTPExecutor.requests.first else {
+                                    fail("No request found")
+                                    return
+                                }
+                                let clientIdBase64Encoded = options.clientId?
+                                    .data(using: .utf8)?
+                                    .base64EncodedString()
+                                expect(request.allHTTPHeaderFields?["X-Ably-ClientId"]).to(equal(clientIdBase64Encoded))
+                                done()
+                            }
+                    }
+                }
+
+            }
+            
             // https://github.com/ably/ably-cocoa/issues/1074 and related with RSL1m
             it("should not fail sending a message with no clientId in the client options and credentials that can assume any clientId") {
                 let options = AblyTests.clientOptions()
