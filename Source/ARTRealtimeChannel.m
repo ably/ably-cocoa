@@ -371,7 +371,7 @@ dispatch_sync(_queue, ^{
         };
     }
 
-    switch (self.state) {
+    switch (self.state_nosync) {
         case ARTRealtimeChannelInitialized:
         case ARTRealtimeChannelDetaching:
         case ARTRealtimeChannelDetached: {
@@ -396,11 +396,11 @@ dispatch_sync(_queue, ^{
         if (error) {
             [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) SYNC request failed with %@", self->_realtime, self, self.name, error];
             [self.presenceMap endSync];
-            callback(error);
+            if (callback) callback(error);
         }
         else {
             [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) SYNC requested with success", self->_realtime, self, self.name];
-            callback(nil);
+            if (callback) callback(nil);
         }
     } ackCallback:nil];
 }
