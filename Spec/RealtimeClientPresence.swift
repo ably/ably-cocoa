@@ -2692,40 +2692,39 @@ class RealtimeClientPresence: QuickSpec {
                         }
 
                         waitUntil(timeout: testTimeout) { done in
-                            let partialDone = AblyTests.splitDone(2, done: done)
+                            let partialDone = AblyTests.splitDone(3, done: done)
+
                             channel.once(.attached) { stateChange in
                                 expect(stateChange?.reason).to(beNil())
                                 partialDone()
                             }
-                            // Reconnect
-                            client.connect()
+
                             // Await Sync
                             channel.internal.presenceMap.onceSyncEnds { _ in
+                                // Should remove the "two" member that was added manually because the connectionId
+                                //doesn't match and it's not synthesized, it will be re-entered.
+                                expect(channel.internal.presenceMap.localMembers).to(haveCount(1))
+
                                 partialDone()
                             }
-                        }
 
-                        expect(channel.internal.presenceMap.syncComplete).toEventually(beTrue(), timeout: testTimeout)
-
-                        // Should remove the "two" member that was added manually because the connectionId
-                        //doesn't match and it's not synthesized, it will be re-entered.
-                        expect(channel.internal.presenceMap.localMembers).to(haveCount(1))
-
-                        waitUntil(timeout: testTimeout) { done in
-                            let partialDone = AblyTests.splitDone(2, done: done)
                             channel.presence.subscribe(.enter) { presence in
                                 expect(presence.clientId).to(equal("two"))
                                 channel.presence.unsubscribe()
                                 partialDone()
                             }
-                            if channel.internal.presenceMap.syncComplete {
-                                channel.internal.sync { error in
-                                    expect(error).to(beNil())
-                                    channel.internal.presenceMap.onceSyncEnds { _ in
-                                        partialDone()
-                                    }
-                                }
-                            }
+
+                            // Reconnect
+                            client.connect()
+                        }
+
+                        // Wait for server
+                        waitUntil(timeout: testTimeout) { done in
+                            delay(1, closure: done)
+                        }
+
+                        channel.internalAsync { _internal in
+                            _internal.sync()
                         }
 
                         expect(channel.presence.syncComplete).to(beFalse())
