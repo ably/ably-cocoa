@@ -165,6 +165,8 @@ class RestClient: QuickSpec {
 
             // RSC11
             context("endpoint") {
+
+                // RSC11a
                 it("should accept a custom host and send requests to the specified host") {
                     let options = ARTClientOptions(key: "fake:key")
                     options.restHost = "fake.ably.io"
@@ -189,7 +191,8 @@ class RestClient: QuickSpec {
 
                     expect(testHTTPExecutor.requests.first?.url?.host).toEventually(equal("fake.ably.io"), timeout: testTimeout)
                 }
-                
+
+                // RSC11b
                 it("should accept an environment when restHost is left unchanged") {
                     let options = ARTClientOptions(key: "fake:key")
                     options.environment = "myEnvironment"
@@ -225,6 +228,7 @@ class RestClient: QuickSpec {
                     expect(testHTTPExecutor.requests.first?.url?.scheme).toEventually(equal("http"), timeout: testTimeout)
                 }
 
+                // RSC11b
                 it("should not prepend the environment if environment is configured as @production@") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.environment = "production"
@@ -232,6 +236,7 @@ class RestClient: QuickSpec {
                     expect(client.internal.options.restHost).to(equal(ARTDefault.restHost()))
                     expect(client.internal.options.realtimeHost).to(equal(ARTDefault.realtimeHost()))
                 }
+
             }
 
             // RSC13
