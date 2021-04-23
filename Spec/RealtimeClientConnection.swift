@@ -3538,7 +3538,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
 
-                xcontext("should move to disconnected when there's no internet") {
+                context("should move to disconnected when there's no internet") {
                     var errors: [(String, NSError)] = []
                     for code in [57, 50] {
                         errors.append(("with NSPOSIXErrorDomain with code \(code)", NSError(domain: "NSPOSIXErrorDomain", code: code, userInfo: [NSLocalizedDescriptionKey: "shouldn't matter"])))
@@ -3691,9 +3691,9 @@ class RealtimeClientConnection: QuickSpec {
                         urls.append(url)
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
-                    testHttpExecutor.afterRequest = { request, _ in
+                    testHttpExecutor.setListenerAfterRequest({ request in
                         urls.append(request.url!)
-                    }
+                    })
                     
                     waitUntil(timeout: testTimeout.multiplied(by: 1000)) { done in
                         // wss://[a-e].ably-realtime.com: when a timeout occurs
@@ -3744,7 +3744,8 @@ class RealtimeClientConnection: QuickSpec {
                     defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
                     ARTDefault.setRealtimeRequestTimeout(1.0)
 
-                    let testHttpExecutor = TestProxyHTTPExecutor(options.logHandler)
+                    let mockHTTP = MockHTTP(logger: options.logHandler)
+                    let testHttpExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: options.logHandler)
                     client.internal.rest.httpExecutor = testHttpExecutor
 
                     client.internal.setTransport(TestProxyTransport.self)
@@ -3765,14 +3766,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
 
-                    testHttpExecutor.beforeRequest = { request, _ in
-                        if NSRegularExpression.match(
-                            request.url!.absoluteString,
-                            pattern: "//internet-up.ably-realtime.com/is-the-internet-up.txt"
-                        ) {
-                            testHttpExecutor.simulateIncomingServerErrorOnNextRequest(500, description: "fake error")
-                        }
-                    }
+                    mockHTTP.setNetworkState(network: .hostInternalError(code: 500), forHost: "internet-up.ably-realtime.com")
                     
                     waitUntil(timeout: testTimeout) { done in
                         // wss://[a-e].ably-realtime.com: when a timeout occurs
@@ -3816,9 +3810,9 @@ class RealtimeClientConnection: QuickSpec {
                         urls.append(url)
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
-                    testHttpExecutor.afterRequest = { request, _ in
+                    testHttpExecutor.setListenerAfterRequest({ request in
                         urls.append(request.url!)
-                    }
+                    })
 
                     waitUntil(timeout: testTimeout) { done in
                         // wss://[a-e].ably-realtime.com: when a timeout occurs

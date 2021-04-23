@@ -1585,10 +1585,10 @@ class RestClientChannel: QuickSpec {
                 let expectedMessage = ["something":1]
                 let expectedData = try! JSONSerialization.data(withJSONObject: expectedMessage, options: JSONSerialization.WritingOptions(rawValue: 0))
 
-                testHTTPExecutor.beforeProcessingDataResponse = { data in
+                testHTTPExecutor.setListenerProcessingDataResponse({ data in
                     let dataStr = String(data: data!, encoding: String.Encoding.utf8)!
                     return dataStr.replace("json/utf-8", withString: "invalid").data(using: String.Encoding.utf8)!
-                }
+                })
 
                 waitUntil(timeout: testTimeout) { done in
                     channel.publish(nil, data: expectedMessage) { error in
