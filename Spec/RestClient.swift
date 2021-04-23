@@ -1701,9 +1701,9 @@ class RestClient: QuickSpec {
                     let token = getTestToken()
                     options.httpRequestTimeout = 3 // short timeout to make it fail faster
                     options.authUrl = URL(string: "http://10.255.255.1")! as URL
-                    options.authParams = [NSURLQueryItem]() as [URLQueryItem]?
-                    options.authParams?.append(NSURLQueryItem(name: "type", value: "text") as URLQueryItem)
-                    options.authParams?.append(NSURLQueryItem(name: "body", value: token) as URLQueryItem)
+                    options.authParams = [URLQueryItem]()
+                    options.authParams?.append(URLQueryItem(name: "type", value: "text"))
+                    options.authParams?.append(URLQueryItem(name: "body", value: token))
 
                     let client = ARTRest(options: options)
                     waitUntil(timeout: testTimeout) { done in
