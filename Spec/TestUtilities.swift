@@ -893,36 +893,81 @@ class MockHTTPExecutor: NSObject, ARTHTTPAuthenticatedExecutor {
 /// Records each request and response for test purpose.
 class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
 
-    fileprivate var errorSimulator: ErrorSimulator?
+    typealias HTTPExecutorCallback = (HTTPURLResponse?, Data?, Error?) -> Void
 
-    var http: ARTHttp!
-    var _logger: ARTLog!
-    
+    private(set) var http: ARTHttp
+    private var _logger: ARTLog!
+
+    private var errorSimulator: ErrorSimulator?
+
+    private var _requests: [URLRequest] = []
+    var requests: [URLRequest] {
+        var result: [URLRequest] = []
+        http.queue.sync {
+            result = self._requests
+        }
+        return result
+    }
+
+    private var _responses: [HTTPURLResponse] = []
+    var responses: [HTTPURLResponse] {
+        var result: [HTTPURLResponse] = []
+        http.queue.sync {
+            result = self._responses
+        }
+        return result
+    }
+
+    var callbackBeforeRequest: ((URLRequest) -> Void)?
+    var callbackAfterRequest: ((URLRequest) -> Void)?
+    var callbackProcessingDataResponse: ((Data?) -> Data)?
+
     init(_ logger: ARTLog) {
         self._logger = logger
-        self.http = ARTHttp(AblyTests.queue, logger: _logger)
+        self.http = ARTHttp(AblyTests.queue, logger: logger)
+    }
+
+    init(http: ARTHttp, logger: ARTLog) {
+        self._logger = logger
+        self.http = http
     }
     
     func logger() -> ARTLog {
         return self._logger
     }
 
-    var requests: [URLRequest] = []
-    var responses: [HTTPURLResponse] = []
-
-    var beforeRequest: ((URLRequest, ((HTTPURLResponse?, Data?, NSError?) -> Void)?) -> Void)?
-    var afterRequest: ((URLRequest, ((HTTPURLResponse?, Data?, NSError?) -> Void)?) -> Void)?
-    var beforeProcessingDataResponse: ((Data?) -> (Data))?
-
-    public func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) -> (ARTCancellable & NSObjectProtocol)? {
-        guard let http = self.http else {
-            return nil
+    public func setHTTP(http: ARTHttp) {
+        self.http.queue.async {
+            self.http = http
         }
-        self.requests.append(request)
+    }
 
-        if let performEvent = beforeRequest {
-           performEvent(request, callback)
-       }
+    func setListenerAfterRequest(_ callback: ((URLRequest) -> Void)?) {
+        http.queue.sync {
+            self.callbackAfterRequest = callback
+        }
+    }
+
+    func setListenerBeforeRequest(_ callback: ((URLRequest) -> Void)?) {
+        http.queue.sync {
+            self.callbackBeforeRequest = callback
+        }
+    }
+
+    func setListenerProcessingDataResponse(_ callback: ((Data?) -> Data)?) {
+        http.queue.sync {
+            self.callbackProcessingDataResponse = callback
+        }
+    }
+
+    public func execute(_ request: URLRequest, completion callback: HTTPExecutorCallback? = nil) -> (ARTCancellable & NSObjectProtocol)? {
+        self._requests.append(request)
+
+        if let performEvent = callbackBeforeRequest {
+            DispatchQueue.main.async {
+                performEvent(request)
+            }
+        }
 
         if var simulatedError = errorSimulator, let requestURL = request.url {
             defer {
@@ -941,31 +986,48 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
 
         let task = http.execute(request, completion: { response, data, error in
             if let httpResponse = response {
-                self.responses.append(httpResponse)
+                DispatchQueue.main.async {
+                    self._responses.append(httpResponse)
+                }
             }
-            if let performEvent = self.beforeProcessingDataResponse {
-                callback?(response, performEvent(data), error as NSError?)
+            if let performEvent = self.callbackProcessingDataResponse {
+                DispatchQueue.main.async { [weak self] in
+                    let result = performEvent(data)
+                    self?.http.queue.async {
+                        callback?(response, result, error)
+                    }
+                }
             }
             else {
-                callback?(response, data, error as NSError?)
+                callback?(response, data, error)
             }
         })
-        if let performEvent = afterRequest {
-            performEvent(request, callback)
+
+        if let performEvent = callbackAfterRequest {
+            DispatchQueue.main.async {
+                performEvent(request)
+            }
         }
+
         return task
     }
 
     func simulateIncomingServerErrorOnNextRequest(_ errorValue: Int, description: String) {
-        errorSimulator = ErrorSimulator(value: errorValue, description: description, statusCode: 401, shouldPerformRequest: false, stubData: nil)
+        http.queue.sync {
+            errorSimulator = ErrorSimulator(value: errorValue, description: description, statusCode: 401, shouldPerformRequest: false, stubData: nil)
+        }
     }
 
     func simulateIncomingServerErrorOnNextRequest(_ error: ErrorSimulator) {
-        errorSimulator = error
+        http.queue.sync {
+            errorSimulator = error
+        }
     }
 
     func simulateIncomingPayloadOnNextRequest(_ data: Data) {
-        errorSimulator = ErrorSimulator(value: 0, description: "", statusCode: 200, shouldPerformRequest: false, stubData: data)
+        http.queue.sync {
+            errorSimulator = ErrorSimulator(value: 0, description: "", statusCode: 200, shouldPerformRequest: false, stubData: data)
+        }
     }
 
 }
