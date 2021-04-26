@@ -10,7 +10,7 @@ import Ably.Private
 import SocketRocketAblyFork
 
 class SoakTestWebSocket: NSObject, ARTWebSocket {
-    var readyState: SRReadyState
+    var readyState: ARTSRReadyState
     var queue: DispatchQueue!
     var delegate: ARTWebSocketDelegate?
 
@@ -60,7 +60,7 @@ class SoakTestWebSocket: NSObject, ARTWebSocket {
                 }
                 
                 self.doIfStillOpen(afterSecondsBetween: 3.0 ... 300.0) {
-                    let (code, clean) : (SRStatusCode, Bool) = [
+                    let (code, clean) : (ARTSRStatusCode, Bool) = [
                         (.codeAbnormal, false),
                         (.codeNormal, true),
                         (.codeGoingAway, true),

@@ -267,7 +267,7 @@ class RealtimeClient: QuickSpec {
                 }
 
                 // RTC5b
-                it("should accept all the same params as RestClient") {
+                xit("should accept all the same params as RestClient") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.close() }
                     var paginatedResult: ARTPaginatedResult<AnyObject>?
@@ -1452,7 +1452,7 @@ class RealtimeClient: QuickSpec {
                 }
             }
             
-            it("moves to DISCONNECTED on an unexpected normal WebSocket close") {
+            xit("moves to DISCONNECTED on an unexpected normal WebSocket close") {
                 let options = AblyTests.commonAppSetup()
                 let client = ARTRealtime(options: options)
                 defer { client.dispose(); client.close() }

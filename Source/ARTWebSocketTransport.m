@@ -36,9 +36,9 @@ enum {
     ARTWsTlsError = 1015
 };
 
-NSString *WebSocketStateToStr(SRReadyState state);
+NSString *WebSocketStateToStr(ARTSRReadyState state);
 
-@interface SRWebSocket () <ARTWebSocket>
+@interface ARTSRWebSocket () <ARTWebSocket>
 @end
 
 Class configuredWebsocketClass = nil;
@@ -86,7 +86,7 @@ Class configuredWebsocketClass = nil;
 }
 
 - (BOOL)send:(NSData *)data withSource:(id)decodedObject {
-    if (self.websocket.readyState == SR_OPEN) {
+    if (self.websocket.readyState == ARTSR_OPEN) {
         if ([decodedObject isKindOfClass:[ARTProtocolMessage class]]) {
             [_protocolMessagesLogger info:@"send %@", [decodedObject description]];
         }
@@ -203,7 +203,7 @@ Class configuredWebsocketClass = nil;
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
 
-    const Class websocketClass = configuredWebsocketClass ? configuredWebsocketClass : [SRWebSocket class];
+    const Class websocketClass = configuredWebsocketClass ? configuredWebsocketClass : [ARTSRWebSocket class];
     self.websocket = [[websocketClass alloc] initWithURLRequest:request];
     [self.websocket setDelegateDispatchQueue:_workQueue];
     self.websocket.delegate = self;
@@ -254,7 +254,7 @@ Class configuredWebsocketClass = nil;
 }
 
 - (ARTRealtimeTransportState)state {
-    if (self.websocket.readyState == SR_OPEN) {
+    if (self.websocket.readyState == ARTSR_OPEN) {
         return ARTRealtimeTransportStateOpened;
     }
     return _state;
@@ -264,7 +264,7 @@ Class configuredWebsocketClass = nil;
     _state = state;
 }
 
-#pragma mark - SRWebSocketDelegate
+#pragma mark - ARTSRWebSocketDelegate
 
 // All delegate methods from SocketRocket are called from rest's serial queue,
 // since we pass it as delegate queue on setupWebSocket. So we can safely
@@ -331,8 +331,8 @@ Class configuredWebsocketClass = nil;
         type = ARTRealtimeTransportErrorTypeHostUnreachable;
     } else if ([error.domain isEqualToString:@"NSPOSIXErrorDomain"] && (error.code == 57 || error.code == 50)) {
         type = ARTRealtimeTransportErrorTypeNoInternet;
-    } else if ([error.domain isEqualToString:SRWebSocketErrorDomain] && error.code == 2132) {
-        id status = error.userInfo[SRHTTPResponseErrorKey];
+    } else if ([error.domain isEqualToString:ARTSRWebSocketErrorDomain] && error.code == 2132) {
+        id status = error.userInfo[ARTSRHTTPResponseErrorKey];
         if (status) {
             return [[ARTRealtimeTransportError alloc] initWithError:error
                                                     badResponseCode:[(NSNumber *)status integerValue]
@@ -346,7 +346,7 @@ Class configuredWebsocketClass = nil;
 - (void)webSocket:(id<ARTWebSocket>)webSocket didReceiveMessage:(id)message {
     [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket did receive message", _delegate, self];
 
-    if (self.websocket.readyState == SR_CLOSED) {
+    if (self.websocket.readyState == ARTSR_CLOSED) {
         [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket is closed, message has been ignored", _delegate, self];
         return;
     }
@@ -383,15 +383,15 @@ Class configuredWebsocketClass = nil;
 
 @end
 
-NSString *WebSocketStateToStr(SRReadyState state) {
+NSString *WebSocketStateToStr(ARTSRReadyState state) {
     switch (state) {
-        case SR_CONNECTING:
+        case ARTSR_CONNECTING:
             return @"Connecting"; //0
-        case SR_OPEN:
+        case ARTSR_OPEN:
             return @"Open"; //1
-        case SR_CLOSING:
+        case ARTSR_CLOSING:
             return @"Closing"; //2
-        case SR_CLOSED:
+        case ARTSR_CLOSED:
             return @"Closed"; //3
     }
 }

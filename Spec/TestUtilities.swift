@@ -232,6 +232,27 @@ class AblyTests {
         return ProcessInfo.processInfo.globallyUniqueString
     }
 
+    class func addMembersSequentiallyToChannel(_ channelName: String, members: Int = 1, startFrom: Int = 1, data: AnyObject? = nil, options: ARTClientOptions) -> ARTRealtime {
+        let client = ARTRealtime(options: options)
+        let channel = client.channels.get(channelName)
+
+        waitUntil(timeout: testTimeout) { done in
+            channel.attach() { _ in
+                done()
+            }
+        }
+
+        for i in startFrom..<startFrom+members {
+            waitUntil(timeout: testTimeout) { done in
+                channel.presence.enterClient("user\(i)", data: data) { _ in
+                    done()
+                }
+            }
+        }
+
+        return client
+    }
+
     class func addMembersSequentiallyToChannel(_ channelName: String, members: Int = 1, startFrom: Int = 1, data: AnyObject? = nil, options: ARTClientOptions, done: @escaping ()->()) -> ARTRealtime {
         let client = ARTRealtime(options: options)
         let channel = client.channels.get(channelName)
@@ -995,7 +1016,7 @@ class TestProxyTransport: ARTWebSocketTransport {
 
     private func setupFakeNetworkResponse(_ networkResponse: FakeNetworkResponse) {
         var hook: AspectToken?
-        hook = SRWebSocket.testSuite_replaceClassMethod(#selector(SRWebSocket.open)) {
+        hook = ARTSRWebSocket.testSuite_replaceClassMethod(#selector(ARTSRWebSocket.open)) {
             if TestProxyTransport.fakeNetworkResponse == nil {
                 return
             }
