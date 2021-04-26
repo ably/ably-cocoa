@@ -273,6 +273,10 @@
     return request;
 }
 
+- (BOOL)isTokenAuth {
+    return self.tokenDetails != nil || self.authorizing_nosync;
+}
+
 - (BOOL)tokenIsRenewable {
     return [self canRenewTokenAutomatically:self.options];
 }
@@ -783,14 +787,15 @@ dispatch_sync(_queue, ^{
 
 #if TARGET_OS_IOS
 - (void)setLocalDeviceClientId_nosync:(NSString *)clientId {
-    if (clientId && ![clientId isEqualToString:@"*"]) {
-        [_rest.device_nosync setClientId:clientId];
-        [_rest.push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
-            if (![stateMachine.current_nosync isKindOfClass:[ARTPushActivationStateNotActivated class]]) {
-                [stateMachine sendEvent:[[ARTPushActivationEventGotPushDeviceDetails alloc] init]];
-            }
-        }];
+    if (clientId == nil || [clientId isEqualToString:@"*"] || [clientId isEqualToString:_rest.device_nosync.clientId]) {
+        return;
     }
+    [_rest.device_nosync setClientId:clientId];
+    [_rest.push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
+        if (![stateMachine.current_nosync isKindOfClass:[ARTPushActivationStateNotActivated class]]) {
+            [stateMachine sendEvent:[[ARTPushActivationEventGotPushDeviceDetails alloc] init]];
+        }
+    }];
 }
 #endif
 

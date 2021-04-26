@@ -53,31 +53,4 @@ platform :ios do
     )
   end
 
-  lane :soaktest do
-    scan(
-      scheme: 'Ably-SoakTest-App',
-      clean: true,                        # Recommended: This would ensure the build would not include unnecessary files
-      skip_detect_devices: true,          # Required
-      build_for_testing: true,            # Required
-      sdk: 'iphoneos',                    # Required
-      should_zip_build_products: true,    # Must be true to set the correct format for Firebase Test Lab,
-      xcargs: {
-        CODE_SIGN_IDENTITY: "iPhone Developer",
-        PROVISIONING_PROFILE: "f0f49cb2-b7ef-4997-af89-2e85ca66b16b"
-      }
-    )
-    firebase_test_lab_ios_xctest(
-      gcp_project: 'ably-cocoa-260210',   # Your Google Cloud project name
-      devices: [                          # Device(s) to run tests on
-        {
-          ios_model_id: 'iphonex',        # Device model ID, see gcloud command above
-          ios_version_id: '12.3',         # iOS version ID, see gcloud command above
-          locale: 'en_US',                # Optional: default to en_US if not set
-          orientation: 'portrait'         # Optional: default to portrait if not set
-        }
-      ],
-      timeout_sec: 30 * 60
-    )
-  end
-
 end

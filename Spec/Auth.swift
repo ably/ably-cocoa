@@ -1957,7 +1957,7 @@ class Auth : QuickSpec {
                             }
                             expect(error).to(beNil())
                             expect(page.items).to(haveCount(1))
-                            expect((page.items[0] ).clientId).to(beNil())
+                            expect(page.items[0].clientId).to(beNil())
                             done()
                         }
                     }
@@ -3441,7 +3441,7 @@ class Auth : QuickSpec {
             // RSA10k
             context("server time offset") {
 
-                it("should obtain server time once and persist the offset from the local clock") {
+                xit("should obtain server time once and persist the offset from the local clock") {
                     let options = AblyTests.commonAppSetup()
                     let rest = ARTRest(options: options)
 
@@ -4086,7 +4086,7 @@ class Auth : QuickSpec {
                 let options = AblyTests.clientOptions()
 
                 context("with valid credentials") {
-                    it("pulls stats successfully") {
+                    xit("pulls stats successfully") {
                         options.token = getJWTToken()
                         let client = AblyTests.newRealtime(options)
                         defer { client.dispose(); client.close() }
@@ -4247,7 +4247,7 @@ class Auth : QuickSpec {
                 let options = AblyTests.clientOptions()
 
                 context("with valid credentials") {
-                    it("pulls stats successfully") {
+                    xit("pulls stats successfully") {
                         options.authCallback = { tokenParams, completion in
                             let token = ARTTokenDetails(token: getJWTToken()!)
                             completion(token, nil)

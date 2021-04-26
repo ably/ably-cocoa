@@ -284,7 +284,7 @@ class Utilities: QuickSpec {
                         expect(receivedAll).to(equal(222))
                     }
 
-                    it("should remove the timeout") {
+                    xit("should remove the timeout") {
                         listenerFoo1!.setTimer(0.1, onTimeout: {
                             fail("onTimeout callback shouldn't have been called")
                         }).startTimer()

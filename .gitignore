@@ -58,8 +58,8 @@ xcodebuild.log
 test_output/
 
 # Fastlane
-Fastlane/report.xml
-Fastlane/test_output
-Fastlane/README.md
+fastlane/report.xml
+fastlane/test_output
+fastlane/README.md
 
 Examples/Tests/Podfile.lock
