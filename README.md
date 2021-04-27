@@ -144,7 +144,7 @@ Be aware that Push Notifications are currently unsupported for macOS and tvOS. Y
 
 ```swift
 let recipient: [String: Any] = [
-    "clientId": "C04BC116-8004-4D78-A71F-8CA31.2.44DB"
+    "clientId": "C04BC116-8004-4D78-A71F-8CA3122734DB"
 ]
 let data: [String: Any] = [
     "notification": [
