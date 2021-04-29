@@ -653,7 +653,8 @@ class RestClient: QuickSpec {
                         expect(client.internal.options.environment).toNot(beNil())
                         expect(client.internal.options.environment).toNot(equal("production"))
 
-                        let fallback = ARTFallback(options: client.internal.options)
+                        let hosts = ARTFallbackHosts.hosts(from: client.internal.options)
+                        let fallback = ARTFallback(fallbackHosts: hosts)
                         expect(fallback.hosts).to(haveCount(ARTDefault.fallbackHosts().count))
 
                         ARTDefault.fallbackHosts().forEach() {
@@ -673,7 +674,8 @@ class RestClient: QuickSpec {
                         expect(client.internal.options.restHost).toNot(equal(ARTDefault.restHost()))
                         expect(client.internal.options.realtimeHost).toNot(equal(ARTDefault.realtimeHost()))
 
-                        let fallback = ARTFallback(options: client.internal.options)
+                        let hosts = ARTFallbackHosts.hosts(from: client.internal.options)
+                        let fallback = ARTFallback(fallbackHosts: hosts)
                         expect(fallback.hosts).to(haveCount(ARTDefault.fallbackHosts().count))
 
                         ARTDefault.fallbackHosts().forEach() {
@@ -778,7 +780,7 @@ class RestClient: QuickSpec {
                         let requests = testHTTPExecutor.requests
                         expect(requests).to(haveCount(1))
                         let capturedURLs = requests.map { $0.url!.absoluteString }
-                        expect(NSRegularExpression.match(capturedURLs.at(0), pattern: "//rest.ably.io:999")).to(beTrue())
+                        expect(capturedURLs.at(0)).to(beginWith("http://rest.ably.io:999"))
                     }
 
                     // RSC15b1
@@ -802,7 +804,7 @@ class RestClient: QuickSpec {
                         let requests = testHTTPExecutor.requests
                         expect(requests).to(haveCount(1))
                         let capturedURLs = requests.map { $0.url!.absoluteString }
-                        expect(NSRegularExpression.match(capturedURLs.at(0), pattern: "//rest.ably.io:999")).to(beTrue())
+                        expect(capturedURLs.at(0)).to(beginWith("https://rest.ably.io:999"))
                     }
 
                     // RSC15b2
