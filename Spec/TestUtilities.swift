@@ -165,7 +165,7 @@ class AblyTests {
         
         let key = app["keys"][0]
         options.key = key["keyStr"].stringValue
-        options.dispatchQueue = userQueue
+        options.dispatchQueue = DispatchQueue.main
         options.internalDispatchQueue = queue
         if debug {
             options.logLevel = .verbose
@@ -190,7 +190,7 @@ class AblyTests {
         if requestToken {
             options.token = getTestToken()
         }
-        options.dispatchQueue = userQueue
+        options.dispatchQueue = DispatchQueue.main
         options.internalDispatchQueue = queue
         return options
     }
