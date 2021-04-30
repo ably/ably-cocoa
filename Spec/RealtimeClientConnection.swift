@@ -3548,6 +3548,7 @@ class RealtimeClientConnection: QuickSpec {
                     for (name, error) in errors {
                         it(name) {
                             let options = AblyTests.commonAppSetup()
+                            options.autoConnect = false
                             let client = AblyTests.newRealtime(options)
                             defer {
                                 client.dispose()
@@ -3555,15 +3556,29 @@ class RealtimeClientConnection: QuickSpec {
                             }
                             client.internal.setTransport(TestProxyTransport.self)
 
-                            expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+                            waitUntil(timeout: testTimeout) { done in
+                                client.connection.once(.connected) { _ in
+                                    done()
+                                }
+                                client.connect()
+                            }
 
-                            guard let wsTransport = client.internal.transport as? ARTWebSocketTransport else {
+                            var _transport: ARTWebSocketTransport?
+                            AblyTests.queue.sync {
+                                _transport = client.internal.transport as? ARTWebSocketTransport
+                            }
+
+                            guard let wsTransport = _transport else {
                                 fail("expected WS transport")
                                 return
                             }
 
-                            wsTransport.webSocket(wsTransport.websocket!, didFailWithError:error)
-                            expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.disconnected), timeout: testTimeout)
+                            waitUntil(timeout: testTimeout) { done in
+                                client.connection.once(.disconnected) { _ in
+                                    done()
+                                }
+                                wsTransport.webSocket(wsTransport.websocket!, didFailWithError:error)
+                            }
                         }
                     }
                 }
@@ -3659,9 +3674,9 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     expect(urlConnections).to(haveCount(3))
-                    expect(NSRegularExpression.match(urlConnections[0].absoluteString, pattern: "//realtime.ably.io")).to(beTrue())
-                    expect(NSRegularExpression.match(urlConnections[1].absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
-                    expect(NSRegularExpression.match(urlConnections[2].absoluteString, pattern: "//realtime.ably.io")).to(beTrue())
+                    expect(NSRegularExpression.match(urlConnections.at(0)?.absoluteString, pattern: "//realtime.ably.io")).to(beTrue())
+                    expect(NSRegularExpression.match(urlConnections.at(1)?.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+                    expect(NSRegularExpression.match(urlConnections.at(2)?.absoluteString, pattern: "//realtime.ably.io")).to(beTrue())
                 }
 
                 // RTN17c
@@ -3688,7 +3703,9 @@ class RealtimeClientConnection: QuickSpec {
                         if client.internal.transport !== transport {
                             return
                         }
-                        urls.append(url)
+                        DispatchQueue.main.async {
+                            urls.append(url)
+                        }
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
                     testHttpExecutor.setListenerAfterRequest({ request in
@@ -3807,9 +3824,12 @@ class RealtimeClientConnection: QuickSpec {
                         if client.internal.transport !== transport {
                             return
                         }
-                        urls.append(url)
+                        DispatchQueue.main.async {
+                            urls.append(url)
+                        }
                     }
                     defer { TestProxyTransport.networkConnectEvent = nil }
+
                     testHttpExecutor.setListenerAfterRequest({ request in
                         urls.append(request.url!)
                     })
@@ -3919,7 +3939,7 @@ class RealtimeClientConnection: QuickSpec {
 
                     expect(urlConnections).toEventually(haveCount(2), timeout: testTimeout)
 
-                    expect(NSRegularExpression.match(urlConnections[1].absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+                    expect(NSRegularExpression.match(urlConnections.at(1)?.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
 
                     waitUntil(timeout: testTimeout) { done in
                       client.time { _ , _  in
@@ -3928,7 +3948,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     let timeRequestUrl = testHttpExecutor.requests.last!.url!
-                    expect(timeRequestUrl.host).to(equal(urlConnections[1].host))
+                    expect(timeRequestUrl.host).to(equal(urlConnections.at(1)?.host))
                 }   
 
             }
