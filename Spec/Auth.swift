@@ -294,9 +294,9 @@ class Auth : QuickSpec {
 
                     let channel = rest.channels.get("test")
 
-                    testHTTPExecutor.afterRequest = { _ , _ in
+                    testHTTPExecutor.setListenerAfterRequest({ _ in
                         testHTTPExecutor.simulateIncomingServerErrorOnNextRequest(40141, description: "token revoked")
-                    }
+                    })
 
                     testHTTPExecutor.simulateIncomingServerErrorOnNextRequest(40141, description: "token revoked")
                     waitUntil(timeout: testTimeout) { done in

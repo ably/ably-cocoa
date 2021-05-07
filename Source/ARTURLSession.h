@@ -14,6 +14,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol ARTURLSession <NSObject>
 
+@property (readonly) dispatch_queue_t queue;
+
 - (instancetype)init:(dispatch_queue_t)queue;
 
 - (NSObject<ARTCancellable> *)get:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback;

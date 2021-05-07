@@ -19,10 +19,14 @@
 
 - (instancetype)init:(dispatch_queue_t)queue {
     if (self = [super init]) {
-        _session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:self delegateQueue:nil];
         _queue = queue;
+        _session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:self delegateQueue:nil];
     }
     return self;
+}
+
+- (dispatch_queue_t)queue {
+    return _queue;
 }
 
 - (void)finishTasksAndInvalidate {
@@ -37,18 +41,6 @@
     }];
     [task resume];
     return task;
-}
-
-- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition, NSURLCredential * _Nullable))completionHandler {
-    if (challenge.protectionSpace.serverTrust) {
-        completionHandler(NSURLSessionAuthChallengeUseCredential, [[NSURLCredential alloc] initWithTrust:challenge.protectionSpace.serverTrust]);
-    }
-    else if ([challenge.sender respondsToSelector:@selector(performDefaultHandlingForAuthenticationChallenge:)]) {
-        [challenge.sender performDefaultHandlingForAuthenticationChallenge:challenge];
-    }
-    else {
-        completionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge, nil);
-    }
 }
 
 @end
