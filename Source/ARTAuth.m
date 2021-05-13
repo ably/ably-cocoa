@@ -548,6 +548,7 @@ dispatch_async(_queue, ^{
     __weak id<ARTAuthDelegate> lastDelegate = self.delegate;
 
     NSString *authorizeId = [[NSUUID new] UUIDString];
+    __block BOOL hasBeenExplicitlyCanceled = false;
     // Request always a new token
     [self.logger verbose:@"RS:%p ARTAuthInternal [authorize.%@, delegate=%@]: requesting new token", _rest, authorizeId, lastDelegate ? @"YES" : @"NO"];
     NSObject<ARTCancellable> *task;
@@ -555,23 +556,35 @@ dispatch_async(_queue, ^{
     task = [self _requestToken:currentTokenParams withOptions:replacedOptions callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
         self->_authorizationsCount -= 1;
 
-        void (^successBlock)(void) = ^{
+        void (^successCallbackBlock)(void) = ^{
             [self.logger verbose:@"RS:%p ARTAuthInternal [authorize.%@]: success callback: %@", self->_rest, authorizeId, tokenDetails];
             if (callback) {
                 callback(tokenDetails, nil);
             }
         };
 
-        void (^failureBlock)(NSError *) = ^(NSError *error) {
+        void (^failureCallbackBlock)(NSError *) = ^(NSError *error) {
             [self.logger verbose:@"RS:%p ARTAuthInternal [authorize.%@]: failure callback: %@ with token details %@", self->_rest, authorizeId, error, tokenDetails];
             if (callback) {
                 callback(tokenDetails, error);
             }
         };
 
+        void (^canceledCallbackBlock)(void) = ^{
+            [self.logger verbose:@"RS:%p ARTAuthInternal [authorize.%@]: canceled callback", self->_rest, authorizeId];
+            if (callback) {
+                callback(nil, [ARTErrorInfo createWithCode:kCFURLErrorCancelled message:@"Authorization has been canceled"]);
+            }
+        };
+
         if (error) {
             [self.logger debug:@"RS:%p ARTAuthInternal [authorize.%@]: token request failed: %@", self->_rest, authorizeId, error];
-            failureBlock(error);
+            failureCallbackBlock(error);
+            return;
+        }
+
+        if (hasBeenExplicitlyCanceled) {
+            canceledCallbackBlock();
             return;
         }
 
@@ -581,36 +594,39 @@ dispatch_async(_queue, ^{
         self->_method = ARTAuthMethodToken;
 
         if (!tokenDetails) {
-            failureBlock([ARTErrorInfo createWithCode:0 message:@"Token details are empty"]);
+            failureCallbackBlock([ARTErrorInfo createWithCode:0 message:@"Token details are empty"]);
         }
         else if (lastDelegate) {
             [lastDelegate auth:self didAuthorize:tokenDetails completion:^(ARTAuthorizationState state, ARTErrorInfo *error) {
                 switch (state) {
                     case ARTAuthorizationSucceeded:
-                        successBlock();
+                        if (hasBeenExplicitlyCanceled) {
+                            canceledCallbackBlock();
+                            return;
+                        }
+                        successCallbackBlock();
                         [self setTokenDetails:tokenDetails];
                         break;
                     case ARTAuthorizationFailed:
                         [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p authorization failed with \"%@\" but the request token has already completed", self->_rest, error];
-                        failureBlock(error);
+                        failureCallbackBlock(error);
                         [self setTokenDetails:nil];
                         break;
                     case ARTAuthorizationCancelled: {
-                        NSError *cancelled = [ARTErrorInfo createWithCode:kCFURLErrorCancelled message:@"Authorization has been cancelled"];
                         [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p authorization cancelled but the request token has already completed", self->_rest];
-                        failureBlock(cancelled);
-                        [self setTokenDetails:tokenDetails];
+                        canceledCallbackBlock();
                         break;
                     }
                 }
             }];
         }
         else {
-            successBlock();
+            successCallbackBlock();
         }
     }];
 
     [_cancelationEventEmitter once:^(ARTErrorInfo * _Nullable error) {
+        hasBeenExplicitlyCanceled = true;
         [task cancel];
     }];
 
