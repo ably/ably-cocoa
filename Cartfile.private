@@ -1,4 +1,4 @@
 github "Quick/Quick" == 3.0.0
-github "Quick/Nimble" == 9.0.0
+github "Quick/Nimble" == 9.0.1
 github "whitesmith/Aspects" "1.4.2-ws1"
 github "SwiftyJSON/SwiftyJSON" == 4.3.0
