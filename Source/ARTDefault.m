@@ -19,6 +19,7 @@ NSString *const ARTDefault_ablyBundleId = @"io.ably.Ably";
 NSString *const ARTDefault_bundleVersionKey = @"CFBundleShortVersionString";
 NSString *const ARTDefault_bundleBuildNumberKey = @"CFBundleVersion";
 NSString *const ARTDefault_platform = @"cocoa";
+NSString *const ARTDefault_libName = @"ably-cocoa";
 NSString *const ARTDefault_variant =
     #if TARGET_OS_IOS
         @".ios"
@@ -107,6 +108,32 @@ static NSInteger _maxMessageSize = 65536;
 + (NSString *)bundleBuildNumber {
     NSDictionary *infoDictionary = [[NSBundle bundleForClass: [ARTDefault class]] infoDictionary];
     return infoDictionary[ARTDefault_bundleBuildNumberKey];
+}
+
++ (NSString *)osName {
+    return
+        #if TARGET_OS_IOS
+            @"iOS"
+        #elif TARGET_OS_TV
+            @"tvOS"
+        #elif TARGET_OS_WATCH
+            @"watchOS"
+        #elif TARGET_OS_OSX
+            @"macOS"
+        #else
+            @"Unknown"
+        #endif
+        ;
+}
+
++ (NSString *)osVersionString {
+    NSOperatingSystemVersion version = [[NSProcessInfo processInfo] operatingSystemVersion];
+    NSString *versionString = [NSString stringWithFormat:@"%@.%@.%@", @(version.majorVersion), @(version.minorVersion), @(version.patchVersion)];
+    return versionString;
+}
+
++ (NSString *)userAgent {
+    return [NSString stringWithFormat:@"%@/%@ %@/%@", ARTDefault_libName, [self bundleVersion], [self osName], [self osVersionString]];
 }
 
 @end
