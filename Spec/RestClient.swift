@@ -1276,8 +1276,10 @@ class RestClient: QuickSpec {
                 }
             }
             
-            // RSC7b
-            it("X-Ably-Lib: [lib][.optional variant]?-[version] should be included in all REST requests") {
+            // RSC7b (Deprecated in favor of RCS7d)
+
+            // RSC7d
+            it("Ably-Agent: The Agent library identifier is composed of a series of key[/value] entries joined by spaces") {
                 let options = AblyTests.commonAppSetup()
                 let client = ARTRest(options: options)
                 testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
@@ -1286,12 +1288,12 @@ class RestClient: QuickSpec {
                 waitUntil(timeout: testTimeout) { done in
                     channel.publish(nil, data: "message") { error in
                         expect(error).to(beNil())
-                        let headerLibVersion = testHTTPExecutor.requests.first!.allHTTPHeaderFields?["X-Ably-Lib"]
-                        let ablyBundleLibVersion = ARTDefault.libraryVersion()
-                        expect(headerLibVersion).to(equal(ablyBundleLibVersion))
+                        let headerUserAgent = testHTTPExecutor.requests.first!.allHTTPHeaderFields?["Ably-Agent"]
+                        let ablyUserAgent = ARTDefault.userAgent()
+                        expect(headerUserAgent).to(equal(ablyUserAgent))
                         
-                        let patternToMatch = "cocoa\(ARTDefault_variant)-1.2."
-                        let match = headerLibVersion?.hasPrefix(patternToMatch)
+                        let patternToMatch = "\(ARTDefault_libName)/1.2."
+                        let match = headerUserAgent?.hasPrefix(patternToMatch)
                         expect(match).to(beTrue())
                         
                         done()
