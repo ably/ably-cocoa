@@ -1288,12 +1288,12 @@ class RestClient: QuickSpec {
                 waitUntil(timeout: testTimeout) { done in
                     channel.publish(nil, data: "message") { error in
                         expect(error).to(beNil())
-                        let headerUserAgent = testHTTPExecutor.requests.first!.allHTTPHeaderFields?["Ably-Agent"]
-                        let ablyUserAgent = ARTDefault.userAgent()
-                        expect(headerUserAgent).to(equal(ablyUserAgent))
+                        let headerAgent = testHTTPExecutor.requests.first!.allHTTPHeaderFields?["Ably-Agent"]
+                        let ablyAgent = ARTDefault.agent()
+                        expect(headerAgent).to(equal(ablyAgent))
                         
                         let patternToMatch = "\(ARTDefault_libName)/1.2."
-                        let match = headerUserAgent?.hasPrefix(patternToMatch)
+                        let match = headerAgent?.hasPrefix(patternToMatch)
                         expect(match).to(beTrue())
                         
                         done()

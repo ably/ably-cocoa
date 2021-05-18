@@ -37,7 +37,7 @@
 
 + (NSString *)libraryVersion;
 
-+ (NSString *)userAgent;
++ (NSString *)agent;
 
 + (NSInteger)maxMessageSize;
 

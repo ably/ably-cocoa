@@ -132,7 +132,7 @@ static NSInteger _maxMessageSize = 65536;
     return versionString;
 }
 
-+ (NSString *)userAgent {
++ (NSString *)agent {
     return [NSString stringWithFormat:@"%@/%@ %@/%@", ARTDefault_libName, [self bundleVersion], [self osName], [self osVersionString]];
 }
 
