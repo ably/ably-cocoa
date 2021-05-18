@@ -10,6 +10,13 @@
 
 #import "Ably.h"
 
+// NSOperatingSystemVersion has NSInteger as version components for some reason, so mitigate it here.
+static UInt32 conformVersionComponent(const NSInteger component) {
+    if (component < 0) return 0;
+    UInt32 conformedValue = (UInt32)component;
+    return conformedValue;
+}
+
 @implementation ARTDefault
 
 NSString *const ARTDefault_restHost = @"rest.ably.io";
@@ -127,8 +134,15 @@ static NSInteger _maxMessageSize = 65536;
 }
 
 + (NSString *)osVersionString {
-    NSOperatingSystemVersion version = [[NSProcessInfo processInfo] operatingSystemVersion];
-    NSString *versionString = [NSString stringWithFormat:@"%@.%@.%@", @(version.majorVersion), @(version.minorVersion), @(version.patchVersion)];
+    static NSString *versionString;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSOperatingSystemVersion version = [[NSProcessInfo processInfo] operatingSystemVersion];
+        versionString = [NSString stringWithFormat:@"%u.%u.%u",
+                         conformVersionComponent(version.majorVersion),
+                         conformVersionComponent(version.minorVersion),
+                         conformVersionComponent(version.patchVersion)];
+    });
     return versionString;
 }
 
