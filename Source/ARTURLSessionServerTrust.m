@@ -21,11 +21,27 @@
     if (self = [super init]) {
         _queue = queue;
         NSURLSessionConfiguration *config = [NSURLSessionConfiguration ephemeralSessionConfiguration];
+#if TARGET_OS_IOS
         if (@available(iOS 13.0, *)) {
             config.TLSMinimumSupportedProtocolVersion = tls_protocol_version_TLSv12;
         } else {
             config.TLSMinimumSupportedProtocol = kTLSProtocol12;
         }
+#elif TARGET_OS_OSX
+        if (@available(macOS 10.15, *)) {
+            config.TLSMinimumSupportedProtocolVersion = tls_protocol_version_TLSv12;
+        } else {
+            config.TLSMinimumSupportedProtocol = kTLSProtocol12;
+        }
+#elif TARGET_OS_TV
+        if (@available(tvOS 13.0, *)) {
+            config.TLSMinimumSupportedProtocolVersion = tls_protocol_version_TLSv12;
+        } else {
+            config.TLSMinimumSupportedProtocol = kTLSProtocol12;
+        }
+#else
+        config.TLSMinimumSupportedProtocol = kTLSProtocol12;
+#endif
         _session = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:nil];
     }
     return self;
