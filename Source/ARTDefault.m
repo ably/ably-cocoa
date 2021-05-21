@@ -6,15 +6,34 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "ARTDefault+Private.h"
-
 #import "Ably.h"
+#import "ARTDefault+Private.h"
+#import <sys/utsname.h>
 
 // NSOperatingSystemVersion has NSInteger as version components for some reason, so mitigate it here.
 static UInt32 conformVersionComponent(const NSInteger component) {
     if (component < 0) return 0;
     UInt32 conformedValue = (UInt32)component;
     return conformedValue;
+}
+
+static NSString *canonizeStringAsUserAgentToken(NSString *_Nonnull inputString) {
+    NSMutableString *canonizedString = [NSMutableString string];
+    NSMutableCharacterSet *allowedSet = [NSMutableCharacterSet characterSetWithCharactersInString:@"!#$%&'*+-.^_`|~"];
+    [allowedSet formUnionWithCharacterSet:[NSCharacterSet alphanumericCharacterSet]];
+    NSScanner *scanner = [NSScanner scannerWithString:inputString];
+    do {
+        NSString *scannedString;
+        [scanner scanCharactersFromSet:allowedSet intoString:&scannedString];
+        [scanner scanCharactersFromSet:[allowedSet invertedSet] intoString:nil];
+        if ([scanner isAtEnd]) {
+            [canonizedString appendString:scannedString];
+            break;
+        } else {
+            [canonizedString appendFormat:@"%@-", scannedString];
+        }
+    } while (YES);
+    return canonizedString;
 }
 
 @implementation ARTDefault
@@ -146,8 +165,25 @@ static NSInteger _maxMessageSize = 65536;
     return versionString;
 }
 
++ (NSString *)deviceModel {
+    struct utsname systemInfo;
+    uname(&systemInfo);
+    return [NSString stringWithCString:systemInfo.machine encoding:NSUTF8StringEncoding];
+}
+
++ (NSString *)deviceModelToken {
+    static NSString *modelToken;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        modelToken = canonizeStringAsUserAgentToken([self deviceModel]);
+    });
+    return modelToken;
+}
+
 + (NSString *)agent {
-    return [NSString stringWithFormat:@"%@/%@ %@/%@", ARTDefault_libName, [self bundleVersion], [self osName], [self osVersionString]];
+    NSString* agentString = [NSString stringWithFormat:@"%@/%@ %@/%@ hw/%@",
+            ARTDefault_libName, [self bundleVersion], [self osName], [self osVersionString], [self deviceModelToken]];
+    return agentString;
 }
 
 @end
