@@ -11,17 +11,15 @@
 #import <sys/utsname.h>
 
 // NSOperatingSystemVersion has NSInteger as version components for some reason, so mitigate it here.
-static UInt32 conformVersionComponent(const NSInteger component) {
-    if (component < 0) return 0;
-    UInt32 conformedValue = (UInt32)component;
-    return conformedValue;
+static inline UInt32 conformVersionComponent(const NSInteger component) {
+    return (component < 0) ? 0 : (UInt32)component;
 }
 
-static NSString *canonizeStringAsUserAgentToken(NSString *_Nonnull inputString) {
-    NSMutableString *canonizedString = [NSMutableString string];
-    NSMutableCharacterSet *allowedSet = [NSMutableCharacterSet characterSetWithCharactersInString:@"!#$%&'*+-.^_`|~"];
+static NSString *canonizeStringAsAgentToken(NSString *const _Nonnull inputString) {
+    NSMutableString *const canonizedString = [NSMutableString string];
+    NSMutableCharacterSet *const allowedSet = [NSMutableCharacterSet characterSetWithCharactersInString:@"!#$%&'*+-.^_`|~"];
     [allowedSet formUnionWithCharacterSet:[NSCharacterSet alphanumericCharacterSet]];
-    NSScanner *scanner = [NSScanner scannerWithString:inputString];
+    NSScanner *const scanner = [NSScanner scannerWithString:inputString];
     do {
         NSString *scannedString;
         [scanner scanCharactersFromSet:allowedSet intoString:&scannedString];
@@ -167,7 +165,9 @@ static NSInteger _maxMessageSize = 65536;
 
 + (NSString *)deviceModel {
     struct utsname systemInfo;
-    uname(&systemInfo);
+    if (uname(&systemInfo) < 0) {
+        return @"Unknown";
+    }
     return [NSString stringWithCString:systemInfo.machine encoding:NSUTF8StringEncoding];
 }
 
@@ -175,15 +175,13 @@ static NSInteger _maxMessageSize = 65536;
     static NSString *modelToken;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        modelToken = canonizeStringAsUserAgentToken([self deviceModel]);
+        modelToken = canonizeStringAsAgentToken([self deviceModel]);
     });
     return modelToken;
 }
 
 + (NSString *)agent {
-    NSString* agentString = [NSString stringWithFormat:@"%@/%@ %@/%@ hw/%@",
-            ARTDefault_libName, [self bundleVersion], [self osName], [self osVersionString], [self deviceModelToken]];
-    return agentString;
+    return [NSString stringWithFormat:@"%@/%@ %@/%@ %@", ARTDefault_libName, [self bundleVersion], [self osName], [self osVersionString], [self deviceModelToken]];
 }
 
 @end
