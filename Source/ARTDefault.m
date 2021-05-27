@@ -145,7 +145,7 @@ static NSInteger _maxMessageSize = 65536;
         #elif TARGET_OS_OSX
             @"macOS"
         #else
-            @"Unknown"
+            nil
         #endif
         ;
 }
@@ -166,7 +166,7 @@ static NSInteger _maxMessageSize = 65536;
 + (NSString *)deviceModel {
     struct utsname systemInfo;
     if (uname(&systemInfo) < 0) {
-        return @"Unknown";
+        return nil;
     }
     return [NSString stringWithCString:systemInfo.machine encoding:NSUTF8StringEncoding];
 }
@@ -175,13 +175,23 @@ static NSInteger _maxMessageSize = 65536;
     static NSString *modelToken;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        modelToken = canonizeStringAsAgentToken([self deviceModel]);
+        NSString *deviceModel = [self deviceModel];
+        modelToken = deviceModel != nil ? canonizeStringAsAgentToken(deviceModel) : nil;
     });
     return modelToken;
 }
 
 + (NSString *)agent {
-    return [NSString stringWithFormat:@"%@/%@ %@/%@ %@", ARTDefault_libName, [self bundleVersion], [self osName], [self osVersionString], [self deviceModelToken]];
+    NSMutableString *agentString = [NSMutableString stringWithFormat:@"%@/%@", ARTDefault_libName, [self bundleVersion]];
+    NSString *osName = [self osName];
+    if (osName != nil) {
+        [agentString appendFormat:@" %@/%@", osName, [self osVersionString]];
+    }
+    NSString *deviceModelToken = [self deviceModelToken];
+    if (deviceModelToken != nil) {
+        [agentString appendFormat:@" %@", deviceModelToken];
+    }
+    return agentString;
 }
 
 @end
