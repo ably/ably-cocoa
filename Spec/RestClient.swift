@@ -896,9 +896,9 @@ class RestClient: QuickSpec {
                         return
                     }
 
-                    expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.absoluteString, pattern: "//\(ARTDefault.restHost()!)")).to(beTrue())
+                    expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.absoluteString, pattern: "//\(ARTDefault.restHost())")).to(beTrue())
                     expect(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
-                    expect(NSRegularExpression.match(testHTTPExecutor.requests[2].url!.absoluteString, pattern: "//\(ARTDefault.restHost()!)")).to(beTrue())
+                    expect(NSRegularExpression.match(testHTTPExecutor.requests[2].url!.absoluteString, pattern: "//\(ARTDefault.restHost())")).to(beTrue())
                 }
 
                 // RSC15e
@@ -956,7 +956,7 @@ class RestClient: QuickSpec {
 
                     it("default fallback hosts should match @[a-e].ably-realtime.com@") {
                         let defaultFallbackHosts = ARTDefault.fallbackHosts()
-                        defaultFallbackHosts?.forEach { host in
+                        defaultFallbackHosts.forEach { host in
                             expect(host).to(match("[a-e].ably-realtime.com"))
                         }
                         expect(defaultFallbackHosts).to(haveCount(5))

@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface ARTDefault : NSObject
 
 + (NSArray<NSString *> *)fallbackHosts;
@@ -42,3 +44,5 @@
 + (NSInteger)maxMessageSize;
 
 @end
+
+NS_ASSUME_NONNULL_END
