@@ -1894,8 +1894,10 @@ class RealtimeClientPresence: QuickSpec {
                         }
                     }
 
-                    expect(channel.internal.presenceMap.members.filter{ _, presence in presence.action == .present }).to(haveCount(1))
-                    expect(channel.internal.presenceMap.members.filter{ _, presence in presence.action == .enter }).to(beEmpty())
+                    channel.internalSync { _internal in
+                        expect(_internal.presenceMap.members.filter{ _, presence in presence.action == .present }).to(haveCount(1))
+                        expect(_internal.presenceMap.members.filter{ _, presence in presence.action == .enter }).to(beEmpty())
+                    }
                 }
 
             }
