@@ -15,14 +15,17 @@ static inline UInt32 conformVersionComponent(const NSInteger component) {
     return (component < 0) ? 0 : (UInt32)component;
 }
 
-static NSString *canonizeStringAsAgentToken(NSString *const _Nonnull inputString) {
+NSString *canonizeStringAsAgentToken(NSString *const inputString) {
     NSMutableString *const canonizedString = [NSMutableString string];
-    NSMutableCharacterSet *const allowedSet = [NSMutableCharacterSet characterSetWithCharactersInString:@"!#$%&'*+-.^_`|~"];
+    NSMutableCharacterSet *const allowedSet = [NSMutableCharacterSet characterSetWithCharactersInString:@"!#$%&'*+.^_`|~"]; // `-` is allowed character, but it will be inserted anyways, so it's not included here, which greatly simplifies algorithm
     [allowedSet formUnionWithCharacterSet:[NSCharacterSet alphanumericCharacterSet]];
     NSScanner *const scanner = [NSScanner scannerWithString:inputString];
     do {
         NSString *scannedString;
         [scanner scanCharactersFromSet:allowedSet intoString:&scannedString];
+        if (scannedString == nil) {
+            return @"";
+        }
         [scanner scanCharactersFromSet:[allowedSet invertedSet] intoString:nil];
         if ([scanner isAtEnd]) {
             [canonizedString appendString:scannedString];
