@@ -1797,6 +1797,7 @@ class RealtimeClientPresence: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         transport.afterProcessingReceivedMessage = { protocolMessage in
                             if protocolMessage.action == .sync {
+                                transport.afterProcessingReceivedMessage = nil
                                 done()
                             }
                         }
@@ -1815,8 +1816,11 @@ class RealtimeClientPresence: QuickSpec {
                         }
                         clientMembers?.channels.get(channelName).presence.leaveClient("user11", data: nil)
                     }
+                    channel.presence.unsubscribe()
 
-                    expect(channel.internal.presenceMap.members.filter{ _, presence in presence.memberKey() == user11MemberKey }).to(beEmpty())
+                    channel.internalSync { _internal in
+                        expect(_internal.presenceMap.members.filter{ _, presence in presence.memberKey() == user11MemberKey }).to(beEmpty())
+                    }
                 }
 
                 // RTP2f
