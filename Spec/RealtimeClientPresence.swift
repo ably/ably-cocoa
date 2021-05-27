@@ -689,8 +689,8 @@ class RealtimeClientPresence: QuickSpec {
                             channel.once(.attaching) { stateChange in
                                 expect(stateChange?.reason).to(beNil())
                                 expect(channel.presence.internal.pendingPresence.count) == 1
-                                AblyTests.queue.async {
-                                    channel.internal.setSuspended(ARTStatus.state(.error, info: ARTErrorInfo.create(withCode: 1234, message: "unknown error")))
+                                channel.internalAsync { _internal in
+                                    _internal.setSuspended(ARTStatus.state(.error, info: ARTErrorInfo.create(withCode: 1234, message: "unknown error")))
                                 }
                                 partialDone()
                             }
@@ -750,8 +750,10 @@ class RealtimeClientPresence: QuickSpec {
                                 partialDone()
                             }
                             channel.once(.suspended) { stateChange in
-                                expect(channel.internal.presenceMap.members).to(haveCount(4))
-                                expect(channel.internal.presenceMap.localMembers).to(haveCount(1))
+                                channel.internalSync { _internal in
+                                    expect(_internal.presenceMap.members).to(haveCount(4))
+                                    expect(_internal.presenceMap.localMembers).to(haveCount(1))
+                                }
                                 partialDone()
                             }
                             channel.once(.attached) { stateChange in
@@ -762,7 +764,9 @@ class RealtimeClientPresence: QuickSpec {
                                 }
                                 partialDone()
                             }
-                            channel.internal.setSuspended(ARTStatus.state(.ok))
+                            channel.internalAsync { _internal in
+                                _internal.setSuspended(ARTStatus.state(.ok))
+                            }
                         }
 
                         channel.presence.unsubscribe()
@@ -774,10 +778,13 @@ class RealtimeClientPresence: QuickSpec {
                                 }
                                 expect(members).to(haveCount(3))
                                 expect(members).to(allPass({ (member: ARTPresenceMessage?) in member!.action != .absent }))
-                                expect(channel.internal.presenceMap.members).to(haveCount(3))
-                                expect(channel.internal.presenceMap.localMembers).to(beEmpty())
                                 done()
                             }
+                        }
+
+                        channel.internalSync { _internal in
+                            expect(_internal.presenceMap.members).to(haveCount(3))
+                            expect(_internal.presenceMap.localMembers).to(beEmpty())
                         }
                     }
 
