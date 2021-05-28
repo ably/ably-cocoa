@@ -105,15 +105,16 @@ class RealtimeClientPresence: QuickSpec {
                     guard let transport = client.internal.transport as? TestProxyTransport else {
                         fail("TestProxyTransport is not set"); return
                     }
-                    transport.afterProcessingReceivedMessage = { protocolMessage in
+                    transport.setBeforeIncomingMessageModifier({ protocolMessage in
                         if protocolMessage.action == .sync {
                             lastSyncSerial = protocolMessage.channelSerial
                             expect(lastSyncSerial).toNot(beNil())
                             client.internal.onDisconnected()
                             partialDone()
-                            transport.afterProcessingReceivedMessage = nil
+                            transport.setBeforeIncomingMessageModifier(nil)
                         }
-                    }
+                        return protocolMessage
+                    })
                     channel.attach() { _ in
                         partialDone()
                     }
@@ -373,12 +374,12 @@ class RealtimeClientPresence: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(4, done: done)
-                        transport.afterProcessingReceivedMessage = { protocolMessage in
+                        transport.setListenerAfterProcessingIncomingMessage({ protocolMessage in
                             if protocolMessage.action == .attached {
                                 expect(protocolMessage.hasPresence).to(beFalse())
                                 partialDone()
                             }
-                        }
+                        })
                         channel.presence.subscribe(.leave) { leave in
                             expect(leave.clientId?.hasPrefix("tester")).to(beTrue())
                             expect(leave.action).to(equal(ARTPresenceAction.leave))
@@ -1451,10 +1452,9 @@ class RealtimeClientPresence: QuickSpec {
                             }
 
                             waitUntil(timeout: testTimeout.multiplied(by: 2)) { done in
-                                transport.afterProcessingReceivedMessage = { protocolMessage in
+                                transport.setAfterIncomingMessageModifier({ protocolMessage in
                                     // Receive the first Sync message from Ably service
                                     if protocolMessage.action == .sync {
-
                                         // Inject a fabricated Presence message
                                         let presenceMessage = ARTProtocolMessage()
                                         presenceMessage.action = .presence
@@ -1473,7 +1473,7 @@ class RealtimeClientPresence: QuickSpec {
                                         endSyncMessage.connectionSerial = protocolMessage.connectionSerial + 2
                                         endSyncMessage.timestamp = Date()
 
-                                        transport.afterProcessingReceivedMessage = nil
+                                        transport.setAfterIncomingMessageModifier(nil)
                                         transport.receive(endSyncMessage)
 
                                         // Stop the next sync message from Ably service because we already injected the end of the sync
@@ -1481,7 +1481,8 @@ class RealtimeClientPresence: QuickSpec {
 
                                         done()
                                     }
-                                }
+                                    return protocolMessage
+                                })
                                 channelSubscribed.attach()
                             }
 
@@ -1531,10 +1532,9 @@ class RealtimeClientPresence: QuickSpec {
                         }
 
                         waitUntil(timeout: testTimeout) { done in
-                            transport.afterProcessingReceivedMessage = { protocolMessage in
+                            transport.setAfterIncomingMessageModifier({ protocolMessage in
                                 // Receive the first Sync message from Ably service
                                 if protocolMessage.action == .sync {
-
                                     // Inject a fabricated Presence message
                                     let presenceMessage = ARTProtocolMessage()
                                     presenceMessage.action = .presence
@@ -1553,7 +1553,7 @@ class RealtimeClientPresence: QuickSpec {
                                     endSyncMessage.connectionSerial = protocolMessage.connectionSerial + 2
                                     endSyncMessage.timestamp = Date()
 
-                                    transport.afterProcessingReceivedMessage = nil
+                                    transport.setAfterIncomingMessageModifier(nil)
                                     transport.receive(endSyncMessage)
 
                                     // Stop the next sync message from Ably service because we already injected the end of the sync
@@ -1561,7 +1561,8 @@ class RealtimeClientPresence: QuickSpec {
 
                                     done()
                                 }
-                            }
+                                return protocolMessage
+                            })
                             channelSubscribed.attach()
                         }
 
@@ -1615,7 +1616,7 @@ class RealtimeClientPresence: QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             let partialDone = AblyTests.splitDone(3, done: done)
-                            transport.beforeProcessingReceivedMessage = { protocolMessage in
+                            transport.setBeforeIncomingMessageModifier({ protocolMessage in
                                 if protocolMessage.action == .sync {
                                     let injectLeave = ARTPresenceMessage()
                                     injectLeave.action = .leave
@@ -1623,10 +1624,11 @@ class RealtimeClientPresence: QuickSpec {
                                     injectLeave.clientId = "user110"
                                     injectLeave.timestamp = timeBeforeSync as Date
                                     protocolMessage.presence?.append(injectLeave)
-                                    transport.beforeProcessingReceivedMessage = nil
+                                    transport.setBeforeIncomingMessageModifier(nil)
                                     partialDone()
                                 }
-                            }
+                                return protocolMessage
+                            })
                             channel.internal.presenceMap.testSuite_injectIntoMethod(after: #selector(ARTPresenceMap.endSync)) {
                                 expect(channel.internal.presenceMap.syncInProgress).to(beFalse())
                                 expect(channel.internal.presenceMap.members).to(haveCount(120))
@@ -1665,7 +1667,7 @@ class RealtimeClientPresence: QuickSpec {
                                 expect(leave.clientId).to(equal("user110"))
                                 partialDone()
                             }
-                            transport.beforeProcessingReceivedMessage = { protocolMessage in
+                            transport.setBeforeIncomingMessageModifier({ protocolMessage in
                                 if protocolMessage.action == .sync {
                                     let injectLeave = ARTPresenceMessage()
                                     injectLeave.action = .leave
@@ -1673,10 +1675,11 @@ class RealtimeClientPresence: QuickSpec {
                                     injectLeave.clientId = "user110"
                                     injectLeave.timestamp = (Date()) + 1
                                     protocolMessage.presence?.append(injectLeave)
-                                    transport.beforeProcessingReceivedMessage = nil
+                                    transport.setBeforeIncomingMessageModifier(nil)
                                     partialDone()
                                 }
-                            }
+                                return protocolMessage
+                            })
                             channel.internal.presenceMap.testSuite_injectIntoMethod(after: #selector(ARTPresenceMap.endSync)) {
                                 expect(channel.internal.presenceMap.syncInProgress).to(beFalse())
                                 expect(channel.internal.presenceMap.members).to(haveCount(119))
@@ -1788,11 +1791,11 @@ class RealtimeClientPresence: QuickSpec {
                         fail("TestProxyTransport is not set"); return
                     }
                     waitUntil(timeout: testTimeout) { done in
-                        transport.afterProcessingReceivedMessage = { protocolMessage in
+                        transport.setListenerAfterProcessingIncomingMessage({ protocolMessage in
                             if protocolMessage.action == .sync {
                                 done()
                             }
-                        }
+                        })
                     }
 
                     expect(channel.internal.presenceMap.syncInProgress).toEventually(beFalse(), timeout: testTimeout)
@@ -2063,12 +2066,11 @@ class RealtimeClientPresence: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         let sentError = ARTErrorInfo.create(withCode: 0, message: "test error")
                         let transport = client.internal.transport as! TestProxyTransport
-                        transport.replaceAcksWithNacks(sentError) { doneReplacing in
-                            channel.presence.leave("offline") { error in
-                                expect(error).to(beIdenticalTo(sentError))
-                                doneReplacing()
-                                done()
-                            }
+                        transport.enableReplaceAcksWithNacks(with: sentError)
+                        channel.presence.leave("offline") { error in
+                            expect(error).to(beIdenticalTo(sentError))
+                            transport.disableReplaceAcksWithNacks()
+                            done()
                         }
                     }
                 }
@@ -3374,7 +3376,7 @@ class RealtimeClientPresence: QuickSpec {
                             channel.attach() { error in
                                 expect(error).to(beNil())
                                 let transport = client.internal.transport as! TestProxyTransport
-                                transport.beforeProcessingReceivedMessage = { protocolMessage in
+                                transport.setListenerBeforeProcessingIncomingMessage({ protocolMessage in
                                     if protocolMessage.action == .sync {
                                         expect(protocolMessage.presence!.count).to(equal(100))
                                         channel.presence.get(query) { members, error in
@@ -3382,15 +3384,15 @@ class RealtimeClientPresence: QuickSpec {
                                             expect(members).to(haveCount(150))
                                             done()
                                         }
-                                        transport.beforeProcessingReceivedMessage = nil
+                                        transport.setListenerBeforeProcessingIncomingMessage(nil)
                                     }
-                                }
+                                })
                             }
                         }
                     }
 
                     // RTP11c1
-                    it("waitForSync is false, should return immediately the known set of presence members") {
+                    fit("waitForSync is false, should return immediately the known set of presence members") {
                         let options = AblyTests.commonAppSetup()
                         var clientSecondary: ARTRealtime!
                         defer { clientSecondary.dispose(); clientSecondary.close() }
@@ -3407,13 +3409,13 @@ class RealtimeClientPresence: QuickSpec {
                             channel.attach() { error in
                                 expect(error).to(beNil())
                                 let transport = client.internal.transport as! TestProxyTransport
-                                transport.beforeProcessingReceivedMessage = { message in
+                                transport.setListenerBeforeProcessingIncomingMessage({ message in
                                     if message.action == .sync {
                                         // Ignore next SYNC so that the sync process never finishes.
                                         transport.actionsIgnored += [.sync]
                                         done()
                                     }
-                                }
+                                })
                             }
                         }
                         
@@ -3512,10 +3514,9 @@ class RealtimeClientPresence: QuickSpec {
                         }
 
                         waitUntil(timeout: testTimeout) { done in
-                            transport.afterProcessingReceivedMessage = { protocolMessage in
+                            transport.setAfterIncomingMessageModifier({ protocolMessage in
                                 // Receive the first Sync message from Ably service
                                 if protocolMessage.action == .sync {
-
                                     // Inject a fabricated Presence message
                                     let presenceMessage = ARTProtocolMessage()
                                     presenceMessage.action = .presence
@@ -3534,7 +3535,7 @@ class RealtimeClientPresence: QuickSpec {
                                     endSyncMessage.connectionSerial = protocolMessage.connectionSerial + 2
                                     endSyncMessage.timestamp = Date()
 
-                                    transport.afterProcessingReceivedMessage = nil
+                                    transport.setAfterIncomingMessageModifier(nil)
                                     transport.receive(endSyncMessage)
 
                                     // Stop the next sync message from Ably service because we already injected the end of the sync
@@ -3542,7 +3543,8 @@ class RealtimeClientPresence: QuickSpec {
 
                                     done()
                                 }
-                            }
+                                return protocolMessage
+                            })
                             channelSubscribed.attach()
                         }
 
@@ -3709,11 +3711,11 @@ class RealtimeClientPresence: QuickSpec {
                 expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
 
                 let transport = client.internal.transport as! TestProxyTransport
-                transport.beforeProcessingReceivedMessage = { protocolMessage in
+                transport.setListenerBeforeProcessingIncomingMessage({ protocolMessage in
                     if protocolMessage.action == .sync {
                         expect(channel.presence.internal.syncComplete_nosync()).to(beFalse())
                     }
-                }
+                })
 
                 expect(channel.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
                 expect(transport.protocolMessagesReceived.filter({ $0.action == .sync })).to(haveCount(3))
