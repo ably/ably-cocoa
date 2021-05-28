@@ -50,6 +50,7 @@ framework module Ably {
         header "ARTNSMutableRequest+ARTPush.h"
         header "ARTNSMutableRequest+ARTRest.h"
         header "ARTHTTPPaginatedResponse+Private.h"
+        header "ARTHttp+Private.h"
         header "ARTNSHTTPURLResponse+ARTPaginated.h"
         header "ARTNSMutableURLRequest+ARTPaginated.h"
         header "ARTNSDate+ARTUtil.h"

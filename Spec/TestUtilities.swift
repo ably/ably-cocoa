@@ -164,7 +164,7 @@ class AblyTests {
         
         let key = app["keys"][0]
         options.key = key["keyStr"].stringValue
-        options.dispatchQueue = userQueue
+        options.dispatchQueue = DispatchQueue.main
         options.internalDispatchQueue = queue
         if debug {
             options.logLevel = .verbose
@@ -189,7 +189,7 @@ class AblyTests {
         if requestToken {
             options.token = getTestToken()
         }
-        options.dispatchQueue = userQueue
+        options.dispatchQueue = DispatchQueue.main
         options.internalDispatchQueue = queue
         return options
     }
@@ -773,31 +773,86 @@ enum FakeNetworkResponse {
 
 class MockHTTP: ARTHttp {
 
-    let network: FakeNetworkResponse
+    enum Rule {
+        case host(name: String)
+        case resetAfter(numberOfRequests: Int)
+    }
 
-    init(network: FakeNetworkResponse, logger: ARTLog) {
-        self.network = network
+    private var networkState: FakeNetworkResponse?
+    private var rule: Rule?
+    private var count: Int = 0
+
+    init(logger: ARTLog) {
         super.init(AblyTests.queue, logger: logger)
     }
 
+    func setNetworkState(network: FakeNetworkResponse, resetAfter numberOfRequests: Int) {
+        queue.async {
+            self.networkState = network
+            self.rule = .resetAfter(numberOfRequests: numberOfRequests)
+            self.count = numberOfRequests
+        }
+    }
+
+    func setNetworkState(network: FakeNetworkResponse) {
+        queue.async {
+            self.networkState = network
+            self.rule = nil
+        }
+    }
+
+    func setNetworkState(network: FakeNetworkResponse, forHost host: String) {
+        queue.async {
+            self.networkState = network
+            self.rule = .host(name: host)
+        }
+    }
+
     override public func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) -> (ARTCancellable & NSObjectProtocol)? {
-        AblyTests.queue.async { // Delay to simulate asynchronicity.
-            switch self.network {
-            case .noInternet:
-                callback?(nil, nil, NSError(domain: NSURLErrorDomain, code: -1009, userInfo: [NSLocalizedDescriptionKey: "The Internet connection appears to be offline."]))
-            case .hostUnreachable:
-                callback?(nil, nil, NSError(domain: NSURLErrorDomain, code: -1003, userInfo: [NSLocalizedDescriptionKey: "A server with the specified hostname could not be found."]))
-            case .requestTimeout(let timeout):
-                delay(timeout) {
-                    callback?(nil, nil, NSError(domain: NSURLErrorDomain, code: -1001, userInfo: [NSLocalizedDescriptionKey: "The request timed out."]))
+        queue.async {
+            switch self.rule {
+            case .none:
+                self.performRequest(state: self.networkState, requestCallback: callback)
+            case .host(let name):
+                if request.url?.host == name {
+                    self.performRequest(state: self.networkState, requestCallback: callback)
                 }
-            case .hostInternalError(let code):
-                callback?(HTTPURLResponse(url: URL(string: "http://ios.test.suite")!, statusCode: code, httpVersion: nil, headerFields: nil), nil, nil)
-            case .host400BadRequest:
-                callback?(HTTPURLResponse(url: URL(string: "http://ios.test.suite")!, statusCode: 400, httpVersion: nil, headerFields: nil), nil, nil)
+                else {
+                    self.performRequest(state: nil, requestCallback: callback)
+                }
+            case .resetAfter:
+                self.count -= 1
+                self.performRequest(state: self.networkState, requestCallback: callback)
+
+                if self.count == 0 {
+                    self.networkState = nil
+                    self.rule = nil
+                }
+                else if self.count < 0 {
+                    fatalError("Out of sync")
+                }
             }
         }
         return nil
+    }
+
+    func performRequest(state: FakeNetworkResponse?, requestCallback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) {
+        switch state {
+        case .none:
+            requestCallback?(nil, nil, nil)
+        case .noInternet:
+            requestCallback?(nil, nil, NSError(domain: NSURLErrorDomain, code: -1009, userInfo: [NSLocalizedDescriptionKey: "The Internet connection appears to be offline."]))
+        case .hostUnreachable:
+            requestCallback?(nil, nil, NSError(domain: NSURLErrorDomain, code: -1003, userInfo: [NSLocalizedDescriptionKey: "A server with the specified hostname could not be found."]))
+        case .requestTimeout(let timeout):
+            self.queue.asyncAfter(deadline: .now() + timeout) {
+                requestCallback?(nil, nil, NSError(domain: NSURLErrorDomain, code: -1001, userInfo: [NSLocalizedDescriptionKey: "The request timed out."]))
+            }
+        case .hostInternalError(let code):
+            requestCallback?(HTTPURLResponse(url: URL(string: "http://cocoa.test.suite")!, statusCode: code, httpVersion: nil, headerFields: nil), nil, nil)
+        case .host400BadRequest:
+            requestCallback?(HTTPURLResponse(url: URL(string: "http://cocoa.test.suite")!, statusCode: 400, httpVersion: nil, headerFields: nil), nil, nil)
+        }
     }
 
 }
@@ -892,36 +947,81 @@ class MockHTTPExecutor: NSObject, ARTHTTPAuthenticatedExecutor {
 /// Records each request and response for test purpose.
 class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
 
-    fileprivate var errorSimulator: ErrorSimulator?
+    typealias HTTPExecutorCallback = (HTTPURLResponse?, Data?, Error?) -> Void
 
-    var http: ARTHttp!
-    var _logger: ARTLog!
-    
+    private(set) var http: ARTHttp
+    private var _logger: ARTLog!
+
+    private var errorSimulator: ErrorSimulator?
+
+    private var _requests: [URLRequest] = []
+    var requests: [URLRequest] {
+        var result: [URLRequest] = []
+        http.queue.sync {
+            result = self._requests
+        }
+        return result
+    }
+
+    private var _responses: [HTTPURLResponse] = []
+    var responses: [HTTPURLResponse] {
+        var result: [HTTPURLResponse] = []
+        http.queue.sync {
+            result = self._responses
+        }
+        return result
+    }
+
+    var callbackBeforeRequest: ((URLRequest) -> Void)?
+    var callbackAfterRequest: ((URLRequest) -> Void)?
+    var callbackProcessingDataResponse: ((Data?) -> Data)?
+
     init(_ logger: ARTLog) {
         self._logger = logger
-        self.http = ARTHttp(AblyTests.queue, logger: _logger)
+        self.http = ARTHttp(AblyTests.queue, logger: logger)
+    }
+
+    init(http: ARTHttp, logger: ARTLog) {
+        self._logger = logger
+        self.http = http
     }
     
     func logger() -> ARTLog {
         return self._logger
     }
 
-    var requests: [URLRequest] = []
-    var responses: [HTTPURLResponse] = []
-
-    var beforeRequest: ((URLRequest, ((HTTPURLResponse?, Data?, NSError?) -> Void)?) -> Void)?
-    var afterRequest: ((URLRequest, ((HTTPURLResponse?, Data?, NSError?) -> Void)?) -> Void)?
-    var beforeProcessingDataResponse: ((Data?) -> (Data))?
-
-    public func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) -> (ARTCancellable & NSObjectProtocol)? {
-        guard let http = self.http else {
-            return nil
+    public func setHTTP(http: ARTHttp) {
+        self.http.queue.async {
+            self.http = http
         }
-        self.requests.append(request)
+    }
 
-        if let performEvent = beforeRequest {
-           performEvent(request, callback)
-       }
+    func setListenerAfterRequest(_ callback: ((URLRequest) -> Void)?) {
+        http.queue.sync {
+            self.callbackAfterRequest = callback
+        }
+    }
+
+    func setListenerBeforeRequest(_ callback: ((URLRequest) -> Void)?) {
+        http.queue.sync {
+            self.callbackBeforeRequest = callback
+        }
+    }
+
+    func setListenerProcessingDataResponse(_ callback: ((Data?) -> Data)?) {
+        http.queue.sync {
+            self.callbackProcessingDataResponse = callback
+        }
+    }
+
+    public func execute(_ request: URLRequest, completion callback: HTTPExecutorCallback? = nil) -> (ARTCancellable & NSObjectProtocol)? {
+        self._requests.append(request)
+
+        if let performEvent = callbackBeforeRequest {
+            DispatchQueue.main.async {
+                performEvent(request)
+            }
+        }
 
         if var simulatedError = errorSimulator, let requestURL = request.url {
             defer {
@@ -940,31 +1040,48 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
 
         let task = http.execute(request, completion: { response, data, error in
             if let httpResponse = response {
-                self.responses.append(httpResponse)
+                DispatchQueue.main.async {
+                    self._responses.append(httpResponse)
+                }
             }
-            if let performEvent = self.beforeProcessingDataResponse {
-                callback?(response, performEvent(data), error as NSError?)
+            if let performEvent = self.callbackProcessingDataResponse {
+                DispatchQueue.main.async { [weak self] in
+                    let result = performEvent(data)
+                    self?.http.queue.async {
+                        callback?(response, result, error)
+                    }
+                }
             }
             else {
-                callback?(response, data, error as NSError?)
+                callback?(response, data, error)
             }
         })
-        if let performEvent = afterRequest {
-            performEvent(request, callback)
+
+        if let performEvent = callbackAfterRequest {
+            DispatchQueue.main.async {
+                performEvent(request)
+            }
         }
+
         return task
     }
 
     func simulateIncomingServerErrorOnNextRequest(_ errorValue: Int, description: String) {
-        errorSimulator = ErrorSimulator(value: errorValue, description: description, statusCode: 401, shouldPerformRequest: false, stubData: nil)
+        http.queue.sync {
+            errorSimulator = ErrorSimulator(value: errorValue, description: description, statusCode: 401, shouldPerformRequest: false, stubData: nil)
+        }
     }
 
     func simulateIncomingServerErrorOnNextRequest(_ error: ErrorSimulator) {
-        errorSimulator = error
+        http.queue.sync {
+            errorSimulator = error
+        }
     }
 
     func simulateIncomingPayloadOnNextRequest(_ data: Data) {
-        errorSimulator = ErrorSimulator(value: 0, description: "", statusCode: 200, shouldPerformRequest: false, stubData: data)
+        http.queue.sync {
+            errorSimulator = ErrorSimulator(value: 0, description: "", statusCode: 200, shouldPerformRequest: false, stubData: data)
+        }
     }
 
 }

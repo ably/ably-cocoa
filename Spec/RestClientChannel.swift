@@ -190,135 +190,6 @@ class RestClientChannel: QuickSpec {
                 }
             }
 
-            // RSL1g
-            context("Identified clients with a clientId") {
-
-                // RSL1g1
-                context("when publishing a Message with the clientId attribute set to null") {
-
-                    // RSL1g1a, RSL1g1b
-                    it("should be unnecessary to set clientId of the Message before publishing") {
-                        let options = AblyTests.commonAppSetup()
-                        options.clientId = "john"
-                        options.useTokenAuth = true
-                        let client = ARTRest(options: options)
-                        let channel = client.channels.get("test")
-
-                        waitUntil(timeout: testTimeout) { done in
-                            let message = ARTMessage(name: nil, data: "message")
-                            expect(message.clientId).to(beNil())
-
-                            channel.publish([message]) { error in
-                                expect(error).to(beNil())
-                                channel.history { page, error in
-                                    expect(error).to(beNil())
-                                    guard let page = page else {
-                                        fail("Page is empty"); done(); return
-                                    }
-                                    guard let item = page.items.first else {
-                                        fail("First item does not exist"); done(); return
-                                    }
-                                    expect(item.clientId).to(equal("john"))
-                                    done()
-                                }
-                            }
-                        }
-                    }
-
-                }
-
-                // RSL1g2
-                it("when publishing a Message with the clientId attribute set to the identified client’s clientId") {
-                    let options = AblyTests.commonAppSetup()
-                    options.clientId = "john"
-                    let client = ARTRest(options: options)
-                    let channel = client.channels.get("test")
-
-                    waitUntil(timeout: testTimeout) { done in
-                        let message = ARTMessage(name: nil, data: "message", clientId: options.clientId!)
-                        channel.publish([message]) { error in
-                            expect(error).to(beNil())
-                            channel.history { page, error in
-                                expect(error).to(beNil())
-                                guard let page = page else {
-                                    fail("Page is empty"); done(); return
-                                }
-                                guard let item = page.items.first else {
-                                    fail("First item does not exist"); done(); return
-                                }
-                                expect(item.clientId).to(equal("john"))
-                                done()
-                            }
-                        }
-                    }
-                }
-
-                // RSL1g3
-                it("when publishing a Message with a different clientId attribute value to the identified client’s clientId") {
-                    let options = AblyTests.commonAppSetup()
-                    options.clientId = "john"
-                    let client = ARTRest(options: options)
-                    client.internal.httpExecutor = testHTTPExecutor
-                    let channel = client.channels.get("test")
-
-                    // Reject before the message is sent to the server
-                    let hook = channel.testSuite_injectIntoMethod(before: #selector(ARTChannel.publish(_:callback:))) {
-                        testHTTPExecutor.http = nil
-                    }
-
-                    waitUntil(timeout: testTimeout) { done in
-                        let message = ARTMessage(name: nil, data: "message", clientId: "tester")
-                        channel.publish([message]) { error in
-                            expect(error!.code).to(equal(Int(ARTState.mismatchedClientId.rawValue)))
-                            done()
-                        }
-                    }
-
-                    hook.remove()
-                    testHTTPExecutor.http = ARTHttp(AblyTests.queue, logger: options.logHandler)
-
-                    // Remains available
-                    waitUntil(timeout: testTimeout) { done in
-                        channel.publish(nil, data: "message") { error in
-                            expect(error).to(beNil())
-                            done()
-                        }
-                    }
-                }
-
-                // RSL1g4
-                it("when publishing a Message with an explicit clientId that is incompatible with the identified client’s clientId") {
-                    let options = AblyTests.commonAppSetup()
-                    options.clientId = "john"
-                    let client = ARTRest(options: options)
-                    client.internal.httpExecutor = testHTTPExecutor
-                    let channel = client.channels.get("test")
-
-                    // Reject before the message is sent to the server
-                    channel.testSuite_injectIntoMethod(before: #selector(ARTChannel.publish(_:callback:))) {
-                        testHTTPExecutor.http = nil
-                    }
-
-                    waitUntil(timeout: testTimeout) { done in
-                        let message = ARTMessage(name: nil, data: "message", clientId: "tester")
-                        channel.publish([message]) { error in
-                            expect(error!.code).to(equal(Int(ARTState.mismatchedClientId.rawValue)))
-
-                            testHTTPExecutor.http = ARTHttp(AblyTests.queue, logger: options.logHandler)
-                            channel.history { page, error in
-                                expect(error).to(beNil())
-                                guard let page = page else {
-                                    fail("Page is empty"); done(); return
-                                }
-                                expect(page.items).to(haveCount(0))
-                                done()
-                            }
-                        }
-                    }
-                }
-
-            }
-
             // RSA7e
             context("ClientOptions clientId") {
 
@@ -1585,10 +1456,10 @@ class RestClientChannel: QuickSpec {
                 let expectedMessage = ["something":1]
                 let expectedData = try! JSONSerialization.data(withJSONObject: expectedMessage, options: JSONSerialization.WritingOptions(rawValue: 0))
 
-                testHTTPExecutor.beforeProcessingDataResponse = { data in
+                testHTTPExecutor.setListenerProcessingDataResponse({ data in
                     let dataStr = String(data: data!, encoding: String.Encoding.utf8)!
                     return dataStr.replace("json/utf-8", withString: "invalid").data(using: String.Encoding.utf8)!
-                }
+                })
 
                 waitUntil(timeout: testTimeout) { done in
                     channel.publish(nil, data: expectedMessage) { error in

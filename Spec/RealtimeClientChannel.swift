@@ -253,6 +253,44 @@ class RealtimeClientChannel: QuickSpec {
                     }
                 }
 
+                // RTL2g + https://github.com/ably/ably-cocoa/issues/1088
+                it("should not emit detached event on an already detached channel") {
+                    let options = AblyTests.commonAppSetup()
+                    options.logLevel = .debug
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("foo")
+
+                    channel.on { change in
+                        expect(change!.current).toNot(equal(change!.previous))
+                    }
+                    defer {
+                        channel.off()
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach() { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.detach() { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+
+                    waitUntil(timeout: testTimeout) { done in
+                        client.connection.once(.closed) { change in
+                            expect(change!.reason).to(beNil())
+                            done()
+                        }
+                        client.close()
+                    }
+                }
+
                 // RTL2b
                 it("state attribute should be the current state of the channel") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())

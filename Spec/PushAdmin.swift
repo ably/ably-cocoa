@@ -115,6 +115,7 @@ class PushAdmin : QuickSpec {
         super.setUp()
         let options = AblyTests.commonAppSetup()
         options.pushFullWait = true
+        options.dispatchQueue = AblyTests.userQueue
         let rest = ARTRest(options: options)
         rest.internal.storage = MockDeviceStorage()
         let group = DispatchGroup()
@@ -144,7 +145,9 @@ class PushAdmin : QuickSpec {
     }
 
     override class func tearDown() {
-        let rest = ARTRest(options: AblyTests.commonAppSetup())
+        let options = AblyTests.commonAppSetup()
+        options.dispatchQueue = AblyTests.userQueue
+        let rest = ARTRest(options: options)
         rest.internal.storage = MockDeviceStorage()
         let group = DispatchGroup()
 

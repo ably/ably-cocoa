@@ -1,5 +1,20 @@
 # Change Log
 
+## [1.2.4](https://github.com/ably/ably-cocoa/tree/1.2.4)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.3...1.2.4)
+
+**Fixed bugs:**
+
+- Common crash related to websocket failing with error [\#1083](https://github.com/ably/ably-cocoa/issues/1083), fixed by adding a `nil`-pointer check in [\#1098](https://github.com/ably/ably-cocoa/pull/1098) ([mikepulaski](https://github.com/mikepulaski))
+- Fix of `RSH3a2a1` implementation when the clientId doesn't change [\#1107](https://github.com/ably/ably-cocoa/pull/1107) ([ricardopereira](https://github.com/ricardopereira))
+- [not conforming to `RTL2g`] `realtime#close` emits detached event on an already detached channel [\#1088](https://github.com/ably/ably-cocoa/issues/1088), fixed by [\#1091](https://github.com/ably/ably-cocoa/pull/1091) ([ricardopereira](https://github.com/ricardopereira))
+
+**Enhancements:**
+
+- Compliance with `RSL1m1` spec - Message should fill `clientId`, if unavailable, from Rest/Realtime instance [\#1108](https://github.com/ably/ably-cocoa/issues/1108), implemented by adding `X-Ably-ClientId` header to REST requests in [\#1110](https://github.com/ably/ably-cocoa/pull/1110) ([ricardopereira](https://github.com/ricardopereira))
+- Update SocketRocket dependency to 0.5.2-ably-8 [\#1087](https://github.com/ably/ably-cocoa/pull/1087) ([lawrence-forooghian](https://github.com/lawrence-forooghian))
+
 ## [1.2.3](https://github.com/ably/ably-cocoa/tree/1.2.3)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.2...1.2.3)

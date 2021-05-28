@@ -5,7 +5,7 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "ARTHttp.h"
+#import "ARTHttp+Private.h"
 #import "ARTURLSessionServerTrust.h"
 #import "ARTConstants.h"
 
@@ -21,7 +21,6 @@ Class configuredUrlSessionClass = nil;
 
 @implementation ARTHttp {
     ARTLog *_logger;
-    _Nullable dispatch_queue_t _queue;
 }
 
 + (void)setURLSessionClass:(const Class)urlSessionClass {
@@ -40,6 +39,10 @@ Class configuredUrlSessionClass = nil;
 
 - (ARTLog *)logger {
     return _logger;
+}
+
+- (dispatch_queue_t)queue {
+    return _urlSession.queue;
 }
 
 - (void)dealloc {
