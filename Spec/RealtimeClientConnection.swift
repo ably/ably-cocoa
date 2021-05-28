@@ -1570,7 +1570,7 @@ class RealtimeClientConnection: QuickSpec {
             // RTN12
             context("close") {
                 // RTN12f
-                xit("if CONNECTING, do the operation once CONNECTED") {
+                it("if CONNECTING, do the operation once CONNECTED") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
@@ -1591,7 +1591,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN12a
-                xit("if CONNECTED, should send a CLOSE action, change state to CLOSING and receive a CLOSED action") {
+                it("if CONNECTED, should send a CLOSE action, change state to CLOSING and receive a CLOSED action") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
@@ -2505,7 +2505,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     // RTN15c2
-                    xit("CONNECTED ProtocolMessage with the same connectionId as the current client and an non-fatal error") {
+                    it("CONNECTED ProtocolMessage with the same connectionId as the current client and an non-fatal error") {
                         let options = AblyTests.commonAppSetup()
                         let client = AblyTests.newRealtime(options)
                         defer { client.dispose(); client.close() }
@@ -4174,7 +4174,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN20b
-                xit("should immediately attempt to connect if the operating system indicates that the underlying internet connection is now available when DISCONNECTED or SUSPENDED") {
+                it("should immediately attempt to connect if the operating system indicates that the underlying internet connection is now available when DISCONNECTED or SUSPENDED") {
                     var client: ARTRealtime!
                     let options = AblyTests.commonAppSetup()
                     // Ensure it won't reconnect because of timeouts.

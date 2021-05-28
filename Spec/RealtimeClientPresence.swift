@@ -3392,7 +3392,7 @@ class RealtimeClientPresence: QuickSpec {
                     }
 
                     // RTP11c1
-                    fit("waitForSync is false, should return immediately the known set of presence members") {
+                    it("waitForSync is false, should return immediately the known set of presence members") {
                         let options = AblyTests.commonAppSetup()
                         var clientSecondary: ARTRealtime!
                         defer { clientSecondary.dispose(); clientSecondary.close() }
