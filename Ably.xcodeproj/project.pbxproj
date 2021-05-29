@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -84,6 +84,30 @@
 		56190954238C3D3200A862A6 /* CryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 56190953238C3D3200A862A6 /* CryptoTest.m */; };
 		56190955238C3D3200A862A6 /* CryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 56190953238C3D3200A862A6 /* CryptoTest.m */; };
 		56190956238C3D3200A862A6 /* CryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 56190953238C3D3200A862A6 /* CryptoTest.m */; };
+		8412FDE52661AC37001FE9E6 /* AblyDeltaCodec.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE12661AC37001FE9E6 /* AblyDeltaCodec.xcframework */; };
+		8412FDE62661AC37001FE9E6 /* AblyDeltaCodec.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE12661AC37001FE9E6 /* AblyDeltaCodec.xcframework */; };
+		8412FDE72661AC37001FE9E6 /* AblyDeltaCodec.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE12661AC37001FE9E6 /* AblyDeltaCodec.xcframework */; };
+		8412FDE82661AC37001FE9E6 /* ULID.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE22661AC37001FE9E6 /* ULID.xcframework */; };
+		8412FDE92661AC37001FE9E6 /* ULID.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE22661AC37001FE9E6 /* ULID.xcframework */; };
+		8412FDEA2661AC37001FE9E6 /* ULID.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE22661AC37001FE9E6 /* ULID.xcframework */; };
+		8412FDEB2661AC37001FE9E6 /* msgpack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE32661AC37001FE9E6 /* msgpack.xcframework */; };
+		8412FDEC2661AC37001FE9E6 /* msgpack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE32661AC37001FE9E6 /* msgpack.xcframework */; };
+		8412FDED2661AC37001FE9E6 /* msgpack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE32661AC37001FE9E6 /* msgpack.xcframework */; };
+		8412FDEE2661AC37001FE9E6 /* SocketRocketAblyFork.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE42661AC37001FE9E6 /* SocketRocketAblyFork.xcframework */; };
+		8412FDEF2661AC37001FE9E6 /* SocketRocketAblyFork.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE42661AC37001FE9E6 /* SocketRocketAblyFork.xcframework */; };
+		8412FDF02661AC37001FE9E6 /* SocketRocketAblyFork.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE42661AC37001FE9E6 /* SocketRocketAblyFork.xcframework */; };
+		8412FDF52661AC7B001FE9E6 /* Aspects.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF12661AC7A001FE9E6 /* Aspects.xcframework */; };
+		8412FDF62661AC7B001FE9E6 /* Aspects.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF12661AC7A001FE9E6 /* Aspects.xcframework */; };
+		8412FDF72661AC7B001FE9E6 /* Aspects.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF12661AC7A001FE9E6 /* Aspects.xcframework */; };
+		8412FDF82661AC7B001FE9E6 /* SwiftyJSON.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF22661AC7B001FE9E6 /* SwiftyJSON.xcframework */; };
+		8412FDF92661AC7B001FE9E6 /* SwiftyJSON.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF22661AC7B001FE9E6 /* SwiftyJSON.xcframework */; };
+		8412FDFA2661AC7B001FE9E6 /* SwiftyJSON.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF22661AC7B001FE9E6 /* SwiftyJSON.xcframework */; };
+		8412FDFB2661AC7B001FE9E6 /* Quick.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF32661AC7B001FE9E6 /* Quick.xcframework */; };
+		8412FDFC2661AC7B001FE9E6 /* Quick.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF32661AC7B001FE9E6 /* Quick.xcframework */; };
+		8412FDFD2661AC7B001FE9E6 /* Quick.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF32661AC7B001FE9E6 /* Quick.xcframework */; };
+		8412FDFE2661AC7B001FE9E6 /* Nimble.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF42661AC7B001FE9E6 /* Nimble.xcframework */; };
+		8412FDFF2661AC7B001FE9E6 /* Nimble.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF42661AC7B001FE9E6 /* Nimble.xcframework */; };
+		8412FE002661AC7B001FE9E6 /* Nimble.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF42661AC7B001FE9E6 /* Nimble.xcframework */; };
 		850BFB4C1B79323C009D0ADD /* ARTPaginatedResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 850BFB4A1B79323C009D0ADD /* ARTPaginatedResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		850BFB4D1B79323C009D0ADD /* ARTPaginatedResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 850BFB4B1B79323C009D0ADD /* ARTPaginatedResult.m */; };
 		851674EF1B7BA5CD00D35169 /* Stats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 851674EE1B7BA5CD00D35169 /* Stats.swift */; };
@@ -127,7 +151,6 @@
 		96E408441A38939E00087F77 /* ARTProtocolMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 96E408421A38939E00087F77 /* ARTProtocolMessage.m */; };
 		96E408471A3895E800087F77 /* ARTWebSocketTransport.h in Headers */ = {isa = PBXBuildFile; fileRef = 96E408451A3895E800087F77 /* ARTWebSocketTransport.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		96E408481A3895E800087F77 /* ARTWebSocketTransport.m in Sources */ = {isa = PBXBuildFile; fileRef = 96E408461A3895E800087F77 /* ARTWebSocketTransport.m */; };
-		D38D22F220FDFD9900194B40 /* ULID.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D77A0C951FFEEF0300711131 /* ULID.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D3AD0EBD215E2FB000312105 /* ARTNSString+ARTUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = D3AD0EBB215E2FB000312105 /* ARTNSString+ARTUtil.h */; };
 		D3AD0EBE215E2FB000312105 /* ARTNSString+ARTUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = D3AD0EBC215E2FB000312105 /* ARTNSString+ARTUtil.m */; };
 		D7093C0F219E2DB200723F17 /* Ably.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D45B219495E2008F54AD /* Ably.framework */; };
@@ -150,16 +173,6 @@
 		D7093C29219E466E00723F17 /* Stats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 851674EE1B7BA5CD00D35169 /* Stats.swift */; };
 		D7093C2A219E466E00723F17 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1AE0CD1C5C3A4900D62250 /* Utilities.swift */; };
 		D7093C2B219E466E00723F17 /* Crypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB7913A71C6E54C3000ABF9B /* Crypto.swift */; };
-		D7093C33219ED41A00723F17 /* Nimble.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7093C30219ED41A00723F17 /* Nimble.framework */; };
-		D7093C34219ED41A00723F17 /* Aspects.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7093C31219ED41A00723F17 /* Aspects.framework */; };
-		D7093C35219ED41A00723F17 /* Quick.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7093C32219ED41A00723F17 /* Quick.framework */; };
-		D7093C3C219EDC0900723F17 /* Nimble.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D7093C30219ED41A00723F17 /* Nimble.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		D7093C3D219EDC1800723F17 /* Aspects.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D7093C31219ED41A00723F17 /* Aspects.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		D7093C3E219EDC1800723F17 /* Quick.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D7093C32219ED41A00723F17 /* Quick.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		D7093C40219EDC3C00723F17 /* SwiftyJSON.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7093C3F219EDC3C00723F17 /* SwiftyJSON.framework */; };
-		D7093C41219EDC5000723F17 /* SwiftyJSON.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D7093C3F219EDC3C00723F17 /* SwiftyJSON.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		D7093C49219EDC9B00723F17 /* msgpack.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6A42194A09D008F54AD /* msgpack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		D7093C4B219EDCAB00723F17 /* ULID.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6A62194A09D008F54AD /* ULID.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093C5B219EDE3200723F17 /* ably-common in Resources */ = {isa = PBXBuildFile; fileRef = 856AAC9A1B6E326E00B07119 /* ably-common */; };
 		D7093C65219EE1AE00723F17 /* Ably.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D475219495FC008F54AD /* Ably.framework */; };
 		D7093C70219EE25400723F17 /* TestUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 856AAC961B6E30C800B07119 /* TestUtilities.swift */; };
@@ -182,14 +195,6 @@
 		D7093C81219EE26400723F17 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1AE0CD1C5C3A4900D62250 /* Utilities.swift */; };
 		D7093C82219EE26400723F17 /* Crypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB7913A71C6E54C3000ABF9B /* Crypto.swift */; };
 		D7093C87219EE28100723F17 /* ably-common in Resources */ = {isa = PBXBuildFile; fileRef = 856AAC9A1B6E326E00B07119 /* ably-common */; };
-		D7093C8B219EE3C900723F17 /* Quick.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7093C88219EE3C900723F17 /* Quick.framework */; };
-		D7093C8C219EE3C900723F17 /* Nimble.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7093C89219EE3C900723F17 /* Nimble.framework */; };
-		D7093C8D219EE3C900723F17 /* SwiftyJSON.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7093C8A219EE3C900723F17 /* SwiftyJSON.framework */; };
-		D7093C92219EE3E800723F17 /* Nimble.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D7093C89219EE3C900723F17 /* Nimble.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		D7093C93219EE3E800723F17 /* Quick.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D7093C88219EE3C900723F17 /* Quick.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		D7093C94219EE3E800723F17 /* SwiftyJSON.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D7093C8A219EE3C900723F17 /* SwiftyJSON.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		D7093C98219EE3E800723F17 /* msgpack.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6B82194A1FD008F54AD /* msgpack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		D7093C9D219EE3E800723F17 /* ULID.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D710D6AD2194A0B2008F54AD /* ULID.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7093CA9219EFA8A00723F17 /* MockDeviceStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7093CA8219EFA8A00723F17 /* MockDeviceStorage.swift */; };
 		D70C36C3233E6831002FD6E3 /* ARTFormEncode.h in Headers */ = {isa = PBXBuildFile; fileRef = D70C36C1233E6831002FD6E3 /* ARTFormEncode.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D70C36C4233E6831002FD6E3 /* ARTFormEncode.h in Headers */ = {isa = PBXBuildFile; fileRef = D70C36C1233E6831002FD6E3 /* ARTFormEncode.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -564,10 +569,6 @@
 		D710D69E21949F00008F54AD /* ARTLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 1C6C18A11ADFDAB100AB79E4 /* ARTLog.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D710D69F21949F0D008F54AD /* ARTJsonLikeEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = EB9C530A1CD7BEB100.8.557 /* ARTJsonLikeEncoder.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D710D6A121949F0E008F54AD /* ARTJsonLikeEncoder.h in Headers */ = {isa = PBXBuildFile; fileRef = EB9C530A1CD7BEB100.8.557 /* ARTJsonLikeEncoder.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		D710D6A92194A09D008F54AD /* msgpack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6A42194A09D008F54AD /* msgpack.framework */; };
-		D710D6AB2194A09D008F54AD /* ULID.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6A62194A09D008F54AD /* ULID.framework */; };
-		D710D6B72194A1FD008F54AD /* ULID.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6AD2194A0B2008F54AD /* ULID.framework */; };
-		D710D6B92194A1FD008F54AD /* msgpack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D6B82194A1FD008F54AD /* msgpack.framework */; };
 		D714A63E1C74D4B2002F2CA0 /* NSObject+TestSuite.swift in Sources */ = {isa = PBXBuildFile; fileRef = D714A63D1C74D4B2002F2CA0 /* NSObject+TestSuite.swift */; };
 		D71966E41E5DF360000974DD /* ARTPushActivationStateMachine.h in Headers */ = {isa = PBXBuildFile; fileRef = D71966E21E5DF360000974DD /* ARTPushActivationStateMachine.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D71966E51E5DF360000974DD /* ARTPushActivationStateMachine.m in Sources */ = {isa = PBXBuildFile; fileRef = D71966E31E5DF360000974DD /* ARTPushActivationStateMachine.m */; };
@@ -581,8 +582,6 @@
 		D72C67DF201AB74000978EBB /* ARTPushActivationStateMachine+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D72C67DE201AB74000978EBB /* ARTPushActivationStateMachine+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D73691FF1DB788C40062C150 /* ARTAuthDetails.h in Headers */ = {isa = PBXBuildFile; fileRef = D73691FD1DB788C40062C150 /* ARTAuthDetails.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D73692001DB788C40062C150 /* ARTAuthDetails.m in Sources */ = {isa = PBXBuildFile; fileRef = D73691FE1DB788C40062C150 /* ARTAuthDetails.m */; };
-		D736A0CA1F916553005ABE81 /* msgpack.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D736A0C71F916553005ABE81 /* msgpack.framework */; };
-		D736A1241F9178B0005ABE81 /* msgpack.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D736A0C71F916553005ABE81 /* msgpack.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D73B655523EF2B2900D459A6 /* ARTDeltaCodec.h in Headers */ = {isa = PBXBuildFile; fileRef = D73B655323EF2B2900D459A6 /* ARTDeltaCodec.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D73B655623EF2B2900D459A6 /* ARTDeltaCodec.h in Headers */ = {isa = PBXBuildFile; fileRef = D73B655323EF2B2900D459A6 /* ARTDeltaCodec.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D73B655723EF2B2900D459A6 /* ARTDeltaCodec.h in Headers */ = {isa = PBXBuildFile; fileRef = D73B655323EF2B2900D459A6 /* ARTDeltaCodec.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -627,8 +626,6 @@
 		D7588AF41BFF91B800BB8279 /* ARTURLSessionServerTrust.m in Sources */ = {isa = PBXBuildFile; fileRef = D7588AF21BFF91B800BB8279 /* ARTURLSessionServerTrust.m */; };
 		D75A3F1B1DDE5B62002A4AAD /* ARTGCD.h in Headers */ = {isa = PBXBuildFile; fileRef = D75A3F191DDE5B62002A4AAD /* ARTGCD.h */; };
 		D75A3F1C1DDE5B62002A4AAD /* ARTGCD.m in Sources */ = {isa = PBXBuildFile; fileRef = D75A3F1A1DDE5B62002A4AAD /* ARTGCD.m */; };
-		D75B861621BB48C900FD8DD2 /* Aspects.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D75B861521BB48C900FD8DD2 /* Aspects.framework */; };
-		D75B861721BB48E200FD8DD2 /* Aspects.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D75B861521BB48C900FD8DD2 /* Aspects.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D75F49C4205ACFEC003DE04F /* ARTDeviceStorage.h in Headers */ = {isa = PBXBuildFile; fileRef = D75F49C2205ACFEC003DE04F /* ARTDeviceStorage.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D768C6AC1E4B5B0200436011 /* ARTDevicePushDetails.h in Headers */ = {isa = PBXBuildFile; fileRef = D768C6AA1E4B5B0200436011 /* ARTDevicePushDetails.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D768C6AD1E4B5B0200436011 /* ARTDevicePushDetails.m in Sources */ = {isa = PBXBuildFile; fileRef = D768C6AB1E4B5B0200436011 /* ARTDevicePushDetails.m */; };
@@ -646,21 +643,14 @@
 		D777EEE42063A64E002EBA03 /* ARTNSMutableRequest+ARTPush.h in Headers */ = {isa = PBXBuildFile; fileRef = D777EEE22063A64E002EBA03 /* ARTNSMutableRequest+ARTPush.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D777EEE52063A64E002EBA03 /* ARTNSMutableRequest+ARTPush.m in Sources */ = {isa = PBXBuildFile; fileRef = D777EEE32063A64E002EBA03 /* ARTNSMutableRequest+ARTPush.m */; };
 		D777EEE820650ADF002EBA03 /* PushChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D777EEE620650A85002EBA03 /* PushChannel.swift */; };
-		D77A0C961FFEEF0300711131 /* ULID.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D77A0C951FFEEF0300711131 /* ULID.framework */; };
 		D77F02A81DAF8099001B3FF9 /* ARTFallback+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D77F02A71DAF8099001B3FF9 /* ARTFallback+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D780846E1C68B3E50083009D /* NSObject+TestSuite.m in Sources */ = {isa = PBXBuildFile; fileRef = D780846D1C68B3E50083009D /* NSObject+TestSuite.m */; };
 		D785C4291E549E33008FEC05 /* ARTPushChannelSubscription.h in Headers */ = {isa = PBXBuildFile; fileRef = D785C4271E549E33008FEC05 /* ARTPushChannelSubscription.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D785C42A1E549E33008FEC05 /* ARTPushChannelSubscription.m in Sources */ = {isa = PBXBuildFile; fileRef = D785C4281E549E33008FEC05 /* ARTPushChannelSubscription.m */; };
 		D78D780921271FB10016808B /* ARTHTTPPaginatedResponse+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D78D780821271FB10016808B /* ARTHTTPPaginatedResponse+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		D798553C23EB905B00946BE2 /* AblyDeltaCodec.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D798553B23EB905B00946BE2 /* AblyDeltaCodec.framework */; };
-		D798554023EB90A600946BE2 /* AblyDeltaCodec.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D798553F23EB90A600946BE2 /* AblyDeltaCodec.framework */; };
-		D798554423EB90B100946BE2 /* AblyDeltaCodec.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D798554323EB90B100946BE2 /* AblyDeltaCodec.framework */; };
 		D798554823EB96C000946BE2 /* DeltaCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = D798554723EB96C000946BE2 /* DeltaCodec.swift */; };
 		D798554923EB96C000946BE2 /* DeltaCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = D798554723EB96C000946BE2 /* DeltaCodec.swift */; };
 		D798554A23EB96C000946BE2 /* DeltaCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = D798554723EB96C000946BE2 /* DeltaCodec.swift */; };
-		D798554B23EB992C00946BE2 /* AblyDeltaCodec.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D798553B23EB905B00946BE2 /* AblyDeltaCodec.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		D798554C23EB993500946BE2 /* AblyDeltaCodec.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D798553F23EB90A600946BE2 /* AblyDeltaCodec.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		D798554D23EB994000946BE2 /* AblyDeltaCodec.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D798554323EB90B100946BE2 /* AblyDeltaCodec.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D798556023ECCDAF00946BE2 /* ARTVCDiffDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = D798555E23ECCDAF00946BE2 /* ARTVCDiffDecoder.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D798556123ECCDAF00946BE2 /* ARTVCDiffDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = D798555E23ECCDAF00946BE2 /* ARTVCDiffDecoder.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D798556223ECCDAF00946BE2 /* ARTVCDiffDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = D798555E23ECCDAF00946BE2 /* ARTVCDiffDecoder.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -708,14 +698,6 @@
 		D7E0FEB9211DE94700659FAA /* ARTNSMutableRequest+ARTRest.m in Sources */ = {isa = PBXBuildFile; fileRef = D7E0FEB7211DE94700659FAA /* ARTNSMutableRequest+ARTRest.m */; };
 		D7EBE5A31BE8391E0086E675 /* RealtimeClientConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7EBE5A21BE8391E0086E675 /* RealtimeClientConnection.swift */; };
 		D7EBE5A41BE9F6900086E675 /* ARTConnection.h in Headers */ = {isa = PBXBuildFile; fileRef = D7D29B401BE3DD0600374295 /* ARTConnection.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		D7EEE6AA21A6E048000E8474 /* Aspects.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7093C8E219EE3D800723F17 /* Aspects.framework */; };
-		D7EEE6AE21A6E048000E8474 /* SwiftyJSON.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7EEE6AB21A6E048000E8474 /* SwiftyJSON.framework */; };
-		D7EEE6AF21A6E048000E8474 /* Nimble.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7EEE6AC21A6E048000E8474 /* Nimble.framework */; };
-		D7EEE6B021A6E048000E8474 /* Quick.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7EEE6AD21A6E048000E8474 /* Quick.framework */; };
-		D7EEE6B121A6E068000E8474 /* Aspects.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D7093C8E219EE3D800723F17 /* Aspects.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		D7EEE6B221A6E070000E8474 /* Nimble.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D7EEE6AC21A6E048000E8474 /* Nimble.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		D7EEE6B321A6E075000E8474 /* Quick.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D7EEE6AD21A6E048000E8474 /* Quick.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		D7EEE6B421A6E082000E8474 /* SwiftyJSON.framework in Copy Carthage Frameworks to Test bundle */ = {isa = PBXBuildFile; fileRef = D7EEE6AB21A6E048000E8474 /* SwiftyJSON.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D7F1D3731BF4DE07001A4B5E /* ARTRestPresence.h in Headers */ = {isa = PBXBuildFile; fileRef = D7F1D3711BF4DE07001A4B5E /* ARTRestPresence.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D7F1D3741BF4DE07001A4B5E /* ARTRestPresence.m in Sources */ = {isa = PBXBuildFile; fileRef = D7F1D3721BF4DE07001A4B5E /* ARTRestPresence.m */; };
 		D7F1D3771BF4DE72001A4B5E /* ARTRealtimePresence.h in Headers */ = {isa = PBXBuildFile; fileRef = D7F1D3751BF4DE72001A4B5E /* ARTRealtimePresence.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -838,13 +820,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				D798554C23EB993500946BE2 /* AblyDeltaCodec.framework in Copy Carthage Frameworks to Test bundle */,
-				D7093C4B219EDCAB00723F17 /* ULID.framework in Copy Carthage Frameworks to Test bundle */,
-				D7093C49219EDC9B00723F17 /* msgpack.framework in Copy Carthage Frameworks to Test bundle */,
-				D7093C41219EDC5000723F17 /* SwiftyJSON.framework in Copy Carthage Frameworks to Test bundle */,
-				D7093C3D219EDC1800723F17 /* Aspects.framework in Copy Carthage Frameworks to Test bundle */,
-				D7093C3E219EDC1800723F17 /* Quick.framework in Copy Carthage Frameworks to Test bundle */,
-				D7093C3C219EDC0900723F17 /* Nimble.framework in Copy Carthage Frameworks to Test bundle */,
 			);
 			name = "Copy Carthage Frameworks to Test bundle";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -855,13 +830,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				D798554D23EB994000946BE2 /* AblyDeltaCodec.framework in Copy Carthage Frameworks to Test bundle */,
-				D75B861721BB48E200FD8DD2 /* Aspects.framework in Copy Carthage Frameworks to Test bundle */,
-				D7093C92219EE3E800723F17 /* Nimble.framework in Copy Carthage Frameworks to Test bundle */,
-				D7093C93219EE3E800723F17 /* Quick.framework in Copy Carthage Frameworks to Test bundle */,
-				D7093C94219EE3E800723F17 /* SwiftyJSON.framework in Copy Carthage Frameworks to Test bundle */,
-				D7093C98219EE3E800723F17 /* msgpack.framework in Copy Carthage Frameworks to Test bundle */,
-				D7093C9D219EE3E800723F17 /* ULID.framework in Copy Carthage Frameworks to Test bundle */,
 			);
 			name = "Copy Carthage Frameworks to Test bundle";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -872,13 +840,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				D798554B23EB992C00946BE2 /* AblyDeltaCodec.framework in Copy Carthage Frameworks to Test bundle */,
-				D7EEE6B421A6E082000E8474 /* SwiftyJSON.framework in Copy Carthage Frameworks to Test bundle */,
-				D7EEE6B321A6E075000E8474 /* Quick.framework in Copy Carthage Frameworks to Test bundle */,
-				D7EEE6B221A6E070000E8474 /* Nimble.framework in Copy Carthage Frameworks to Test bundle */,
-				D7EEE6B121A6E068000E8474 /* Aspects.framework in Copy Carthage Frameworks to Test bundle */,
-				D38D22F220FDFD9900194B40 /* ULID.framework in Copy Carthage Frameworks to Test bundle */,
-				D736A1241F9178B0005ABE81 /* msgpack.framework in Copy Carthage Frameworks to Test bundle */,
 			);
 			name = "Copy Carthage Frameworks to Test bundle";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -948,9 +909,16 @@
 		217D181E25421FED00DFF07E /* ARTSRSecurityPolicy.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRSecurityPolicy.m; sourceTree = "<group>"; };
 		217D181F25421FED00DFF07E /* ARTSRWebSocket.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRWebSocket.m; sourceTree = "<group>"; };
 		217D182025421FED00DFF07E /* ARTSRSecurityPolicy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTSRSecurityPolicy.h; sourceTree = "<group>"; };
-		3F3D07905A62187E022923A8 /* Pods.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARTDefaultTests.swift; sourceTree = "<group>"; };
 		56190953238C3D3200A862A6 /* CryptoTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CryptoTest.m; sourceTree = "<group>"; };
+		8412FDE12661AC37001FE9E6 /* AblyDeltaCodec.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = AblyDeltaCodec.xcframework; path = Carthage/Build/AblyDeltaCodec.xcframework; sourceTree = "<group>"; };
+		8412FDE22661AC37001FE9E6 /* ULID.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = ULID.xcframework; path = Carthage/Build/ULID.xcframework; sourceTree = "<group>"; };
+		8412FDE32661AC37001FE9E6 /* msgpack.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = msgpack.xcframework; path = Carthage/Build/msgpack.xcframework; sourceTree = "<group>"; };
+		8412FDE42661AC37001FE9E6 /* SocketRocketAblyFork.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SocketRocketAblyFork.xcframework; path = Carthage/Build/SocketRocketAblyFork.xcframework; sourceTree = "<group>"; };
+		8412FDF12661AC7A001FE9E6 /* Aspects.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Aspects.xcframework; path = Carthage/Build/Aspects.xcframework; sourceTree = "<group>"; };
+		8412FDF22661AC7B001FE9E6 /* SwiftyJSON.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SwiftyJSON.xcframework; path = Carthage/Build/SwiftyJSON.xcframework; sourceTree = "<group>"; };
+		8412FDF32661AC7B001FE9E6 /* Quick.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Quick.xcframework; path = Carthage/Build/Quick.xcframework; sourceTree = "<group>"; };
+		8412FDF42661AC7B001FE9E6 /* Nimble.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Nimble.xcframework; path = Carthage/Build/Nimble.xcframework; sourceTree = "<group>"; };
 		850BFB4A1B79323C009D0ADD /* ARTPaginatedResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPaginatedResult.h; sourceTree = "<group>"; };
 		850BFB4B1B79323C009D0ADD /* ARTPaginatedResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPaginatedResult.m; sourceTree = "<group>"; };
 		851674EE1B7BA5CD00D35169 /* Stats.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Stats.swift; sourceTree = "<group>"; };
@@ -1004,16 +972,8 @@
 		D3AD0EBC215E2FB000312105 /* ARTNSString+ARTUtil.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = "ARTNSString+ARTUtil.m"; path = "Private/ARTNSString+ARTUtil.m"; sourceTree = "<group>"; };
 		D7093C0A219E2DB200723F17 /* Ably-macOS-Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Ably-macOS-Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D7093C0E219E2DB200723F17 /* Info-macOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-macOS.plist"; sourceTree = "<group>"; };
-		D7093C30219ED41A00723F17 /* Nimble.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Nimble.framework; path = Carthage/Build/Mac/Nimble.framework; sourceTree = "<group>"; };
-		D7093C31219ED41A00723F17 /* Aspects.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Aspects.framework; path = Carthage/Build/Mac/Aspects.framework; sourceTree = "<group>"; };
-		D7093C32219ED41A00723F17 /* Quick.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quick.framework; path = Carthage/Build/Mac/Quick.framework; sourceTree = "<group>"; };
-		D7093C3F219EDC3C00723F17 /* SwiftyJSON.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftyJSON.framework; path = Carthage/Build/Mac/SwiftyJSON.framework; sourceTree = "<group>"; };
 		D7093C60219EE1AE00723F17 /* Ably-tvOS-Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Ably-tvOS-Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D7093C64219EE1AE00723F17 /* Info-tvOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-tvOS.plist"; sourceTree = "<group>"; };
-		D7093C88219EE3C900723F17 /* Quick.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quick.framework; path = Carthage/Build/tvOS/Quick.framework; sourceTree = "<group>"; };
-		D7093C89219EE3C900723F17 /* Nimble.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Nimble.framework; path = Carthage/Build/tvOS/Nimble.framework; sourceTree = "<group>"; };
-		D7093C8A219EE3C900723F17 /* SwiftyJSON.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftyJSON.framework; path = Carthage/Build/tvOS/SwiftyJSON.framework; sourceTree = "<group>"; };
-		D7093C8E219EE3D800723F17 /* Aspects.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Aspects.framework; path = Carthage/Build/iOS/Aspects.framework; sourceTree = "<group>"; };
 		D7093CA8219EFA8A00723F17 /* MockDeviceStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDeviceStorage.swift; sourceTree = "<group>"; };
 		D70C36C1233E6831002FD6E3 /* ARTFormEncode.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTFormEncode.h; sourceTree = "<group>"; };
 		D70C36C2233E6831002FD6E3 /* ARTFormEncode.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTFormEncode.m; sourceTree = "<group>"; };
@@ -1025,10 +985,6 @@
 		D710D45E219495E2008F54AD /* Info-macOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-macOS.plist"; sourceTree = "<group>"; };
 		D710D475219495FC008F54AD /* Ably.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Ably.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D710D478219495FC008F54AD /* Info-tvOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-tvOS.plist"; sourceTree = "<group>"; };
-		D710D6A42194A09D008F54AD /* msgpack.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = msgpack.framework; path = Carthage/Build/Mac/msgpack.framework; sourceTree = "<group>"; };
-		D710D6A62194A09D008F54AD /* ULID.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ULID.framework; path = Carthage/Build/Mac/ULID.framework; sourceTree = "<group>"; };
-		D710D6AD2194A0B2008F54AD /* ULID.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ULID.framework; path = Carthage/Build/tvOS/ULID.framework; sourceTree = "<group>"; };
-		D710D6B82194A1FD008F54AD /* msgpack.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = msgpack.framework; path = Carthage/Build/tvOS/msgpack.framework; sourceTree = "<group>"; };
 		D714A63D1C74D4B2002F2CA0 /* NSObject+TestSuite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSObject+TestSuite.swift"; sourceTree = "<group>"; };
 		D714A63F1C75F0C5002F2CA0 /* ARTWebSocketTransport+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTWebSocketTransport+Private.h"; sourceTree = "<group>"; };
 		D71966E21E5DF360000974DD /* ARTPushActivationStateMachine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPushActivationStateMachine.h; sourceTree = "<group>"; };
@@ -1043,12 +999,8 @@
 		D72C67DE201AB74000978EBB /* ARTPushActivationStateMachine+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTPushActivationStateMachine+Private.h"; sourceTree = "<group>"; };
 		D73691FD1DB788C40062C150 /* ARTAuthDetails.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTAuthDetails.h; sourceTree = "<group>"; };
 		D73691FE1DB788C40062C150 /* ARTAuthDetails.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTAuthDetails.m; sourceTree = "<group>"; };
-		D736A0C71F916553005ABE81 /* msgpack.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = msgpack.framework; path = Carthage/Build/iOS/msgpack.framework; sourceTree = "<group>"; };
 		D73B655323EF2B2900D459A6 /* ARTDeltaCodec.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTDeltaCodec.h; sourceTree = "<group>"; };
 		D73B655423EF2B2900D459A6 /* ARTDeltaCodec.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTDeltaCodec.m; sourceTree = "<group>"; };
-		D73BF70B22609E7F00579773 /* SocketRocketAblyFork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SocketRocketAblyFork.framework; path = Carthage/Build/iOS/SocketRocketAblyFork.framework; sourceTree = "<group>"; };
-		D73BF70D22609E9500579773 /* SocketRocketAblyFork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SocketRocketAblyFork.framework; path = Carthage/Build/Mac/SocketRocketAblyFork.framework; sourceTree = "<group>"; };
-		D73BF70F22609EB500579773 /* SocketRocketAblyFork.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SocketRocketAblyFork.framework; path = Carthage/Build/tvOS/SocketRocketAblyFork.framework; sourceTree = "<group>"; };
 		D746AE1A1BBB5207003ECEF8 /* ARTDataQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTDataQuery.h; sourceTree = "<group>"; };
 		D746AE1B1BBB5207003ECEF8 /* ARTDataQuery+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTDataQuery+Private.h"; sourceTree = "<group>"; };
 		D746AE1C1BBB5207003ECEF8 /* ARTDataQuery.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTDataQuery.m; sourceTree = "<group>"; };
@@ -1089,7 +1041,6 @@
 		D75A3F191DDE5B62002A4AAD /* ARTGCD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTGCD.h; path = Private/ARTGCD.h; sourceTree = "<group>"; };
 		D75A3F1A1DDE5B62002A4AAD /* ARTGCD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ARTGCD.m; path = Private/ARTGCD.m; sourceTree = "<group>"; };
 		D75B85F921BAF8F900FD8DD2 /* Ably.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Ably.xcconfig; sourceTree = "<group>"; };
-		D75B861521BB48C900FD8DD2 /* Aspects.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Aspects.framework; path = Carthage/Build/tvOS/Aspects.framework; sourceTree = "<group>"; };
 		D75F49C2205ACFEC003DE04F /* ARTDeviceStorage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTDeviceStorage.h; sourceTree = "<group>"; };
 		D768C6AA1E4B5B0200436011 /* ARTDevicePushDetails.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTDevicePushDetails.h; sourceTree = "<group>"; };
 		D768C6AB1E4B5B0200436011 /* ARTDevicePushDetails.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTDevicePushDetails.m; sourceTree = "<group>"; };
@@ -1103,16 +1054,12 @@
 		D777EEE22063A64E002EBA03 /* ARTNSMutableRequest+ARTPush.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ARTNSMutableRequest+ARTPush.h"; sourceTree = "<group>"; };
 		D777EEE32063A64E002EBA03 /* ARTNSMutableRequest+ARTPush.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "ARTNSMutableRequest+ARTPush.m"; sourceTree = "<group>"; };
 		D777EEE620650A85002EBA03 /* PushChannel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushChannel.swift; sourceTree = "<group>"; };
-		D77A0C951FFEEF0300711131 /* ULID.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ULID.framework; path = Carthage/Build/iOS/ULID.framework; sourceTree = "<group>"; };
 		D77F02A71DAF8099001B3FF9 /* ARTFallback+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTFallback+Private.h"; sourceTree = "<group>"; };
 		D780846C1C68B3E50083009D /* NSObject+TestSuite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+TestSuite.h"; sourceTree = "<group>"; };
 		D780846D1C68B3E50083009D /* NSObject+TestSuite.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+TestSuite.m"; sourceTree = "<group>"; };
 		D785C4271E549E33008FEC05 /* ARTPushChannelSubscription.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPushChannelSubscription.h; sourceTree = "<group>"; };
 		D785C4281E549E33008FEC05 /* ARTPushChannelSubscription.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPushChannelSubscription.m; sourceTree = "<group>"; };
 		D78D780821271FB10016808B /* ARTHTTPPaginatedResponse+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTHTTPPaginatedResponse+Private.h"; sourceTree = "<group>"; };
-		D798553B23EB905B00946BE2 /* AblyDeltaCodec.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AblyDeltaCodec.framework; path = Carthage/Build/iOS/AblyDeltaCodec.framework; sourceTree = "<group>"; };
-		D798553F23EB90A600946BE2 /* AblyDeltaCodec.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AblyDeltaCodec.framework; path = Carthage/Build/Mac/AblyDeltaCodec.framework; sourceTree = "<group>"; };
-		D798554323EB90B100946BE2 /* AblyDeltaCodec.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AblyDeltaCodec.framework; path = Carthage/Build/tvOS/AblyDeltaCodec.framework; sourceTree = "<group>"; };
 		D798554723EB96C000946BE2 /* DeltaCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeltaCodec.swift; sourceTree = "<group>"; };
 		D798555E23ECCDAF00946BE2 /* ARTVCDiffDecoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTVCDiffDecoder.h; sourceTree = "<group>"; };
 		D7AE18C71E5B40C900478D82 /* ARTPushAdmin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPushAdmin.h; sourceTree = "<group>"; };
@@ -1156,9 +1103,6 @@
 		D7E0FEB7211DE94700659FAA /* ARTNSMutableRequest+ARTRest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "ARTNSMutableRequest+ARTRest.m"; sourceTree = "<group>"; };
 		D7EBE5A21BE8391E0086E675 /* RealtimeClientConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealtimeClientConnection.swift; sourceTree = "<group>"; };
 		D7EE14F51F07964500C178D5 /* Version.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Version.xcconfig; sourceTree = "<group>"; };
-		D7EEE6AB21A6E048000E8474 /* SwiftyJSON.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftyJSON.framework; path = Carthage/Build/iOS/SwiftyJSON.framework; sourceTree = "<group>"; };
-		D7EEE6AC21A6E048000E8474 /* Nimble.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Nimble.framework; path = Carthage/Build/iOS/Nimble.framework; sourceTree = "<group>"; };
-		D7EEE6AD21A6E048000E8474 /* Quick.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quick.framework; path = Carthage/Build/iOS/Quick.framework; sourceTree = "<group>"; };
 		D7F1D3711BF4DE07001A4B5E /* ARTRestPresence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTRestPresence.h; sourceTree = "<group>"; };
 		D7F1D3721BF4DE07001A4B5E /* ARTRestPresence.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRestPresence.m; sourceTree = "<group>"; };
 		D7F1D3751BF4DE72001A4B5E /* ARTRealtimePresence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTRealtimePresence.h; sourceTree = "<group>"; };
@@ -1225,11 +1169,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8412FDF82661AC7B001FE9E6 /* SwiftyJSON.xcframework in Frameworks */,
+				8412FDFE2661AC7B001FE9E6 /* Nimble.xcframework in Frameworks */,
+				8412FDFB2661AC7B001FE9E6 /* Quick.xcframework in Frameworks */,
 				D70F277D2261046A00956251 /* Ably.framework in Frameworks */,
-				D7EEE6AA21A6E048000E8474 /* Aspects.framework in Frameworks */,
-				D7EEE6B021A6E048000E8474 /* Quick.framework in Frameworks */,
-				D7EEE6AF21A6E048000E8474 /* Nimble.framework in Frameworks */,
-				D7EEE6AE21A6E048000E8474 /* SwiftyJSON.framework in Frameworks */,
+				8412FDF52661AC7B001FE9E6 /* Aspects.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1237,9 +1181,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D798553C23EB905B00946BE2 /* AblyDeltaCodec.framework in Frameworks */,
-				D736A0CA1F916553005ABE81 /* msgpack.framework in Frameworks */,
-				D77A0C961FFEEF0300711131 /* ULID.framework in Frameworks */,
+				8412FDEE2661AC37001FE9E6 /* SocketRocketAblyFork.xcframework in Frameworks */,
+				8412FDE52661AC37001FE9E6 /* AblyDeltaCodec.xcframework in Frameworks */,
+				8412FDEB2661AC37001FE9E6 /* msgpack.xcframework in Frameworks */,
+				8412FDE82661AC37001FE9E6 /* ULID.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1247,11 +1192,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8412FDF92661AC7B001FE9E6 /* SwiftyJSON.xcframework in Frameworks */,
+				8412FDFF2661AC7B001FE9E6 /* Nimble.xcframework in Frameworks */,
+				8412FDFC2661AC7B001FE9E6 /* Quick.xcframework in Frameworks */,
 				D7093C0F219E2DB200723F17 /* Ably.framework in Frameworks */,
-				D7093C34219ED41A00723F17 /* Aspects.framework in Frameworks */,
-				D7093C35219ED41A00723F17 /* Quick.framework in Frameworks */,
-				D7093C33219ED41A00723F17 /* Nimble.framework in Frameworks */,
-				D7093C40219EDC3C00723F17 /* SwiftyJSON.framework in Frameworks */,
+				8412FDF62661AC7B001FE9E6 /* Aspects.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1259,11 +1204,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8412FDFA2661AC7B001FE9E6 /* SwiftyJSON.xcframework in Frameworks */,
+				8412FE002661AC7B001FE9E6 /* Nimble.xcframework in Frameworks */,
+				8412FDFD2661AC7B001FE9E6 /* Quick.xcframework in Frameworks */,
 				D7093C65219EE1AE00723F17 /* Ably.framework in Frameworks */,
-				D75B861621BB48C900FD8DD2 /* Aspects.framework in Frameworks */,
-				D7093C8B219EE3C900723F17 /* Quick.framework in Frameworks */,
-				D7093C8C219EE3C900723F17 /* Nimble.framework in Frameworks */,
-				D7093C8D219EE3C900723F17 /* SwiftyJSON.framework in Frameworks */,
+				8412FDF72661AC7B001FE9E6 /* Aspects.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1271,9 +1216,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D798554023EB90A600946BE2 /* AblyDeltaCodec.framework in Frameworks */,
-				D710D6A92194A09D008F54AD /* msgpack.framework in Frameworks */,
-				D710D6AB2194A09D008F54AD /* ULID.framework in Frameworks */,
+				8412FDEF2661AC37001FE9E6 /* SocketRocketAblyFork.xcframework in Frameworks */,
+				8412FDE62661AC37001FE9E6 /* AblyDeltaCodec.xcframework in Frameworks */,
+				8412FDEC2661AC37001FE9E6 /* msgpack.xcframework in Frameworks */,
+				8412FDE92661AC37001FE9E6 /* ULID.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1281,9 +1227,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D798554423EB90B100946BE2 /* AblyDeltaCodec.framework in Frameworks */,
-				D710D6B92194A1FD008F54AD /* msgpack.framework in Frameworks */,
-				D710D6B72194A1FD008F54AD /* ULID.framework in Frameworks */,
+				8412FDF02661AC37001FE9E6 /* SocketRocketAblyFork.xcframework in Frameworks */,
+				8412FDE72661AC37001FE9E6 /* AblyDeltaCodec.xcframework in Frameworks */,
+				8412FDED2661AC37001FE9E6 /* msgpack.xcframework in Frameworks */,
+				8412FDEA2661AC37001FE9E6 /* ULID.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1799,31 +1746,14 @@
 		FAFEC5BB8312EB69E84C28D4 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				D798553B23EB905B00946BE2 /* AblyDeltaCodec.framework */,
-				D798553F23EB90A600946BE2 /* AblyDeltaCodec.framework */,
-				D798554323EB90B100946BE2 /* AblyDeltaCodec.framework */,
-				D73BF70B22609E7F00579773 /* SocketRocketAblyFork.framework */,
-				D73BF70D22609E9500579773 /* SocketRocketAblyFork.framework */,
-				D73BF70F22609EB500579773 /* SocketRocketAblyFork.framework */,
-				D75B861521BB48C900FD8DD2 /* Aspects.framework */,
-				D7EEE6AC21A6E048000E8474 /* Nimble.framework */,
-				D7EEE6AD21A6E048000E8474 /* Quick.framework */,
-				D7EEE6AB21A6E048000E8474 /* SwiftyJSON.framework */,
-				D7093C8E219EE3D800723F17 /* Aspects.framework */,
-				D7093C3F219EDC3C00723F17 /* SwiftyJSON.framework */,
-				D7093C89219EE3C900723F17 /* Nimble.framework */,
-				D7093C88219EE3C900723F17 /* Quick.framework */,
-				D7093C8A219EE3C900723F17 /* SwiftyJSON.framework */,
-				D7093C31219ED41A00723F17 /* Aspects.framework */,
-				D7093C30219ED41A00723F17 /* Nimble.framework */,
-				D7093C32219ED41A00723F17 /* Quick.framework */,
-				D710D6B82194A1FD008F54AD /* msgpack.framework */,
-				D710D6AD2194A0B2008F54AD /* ULID.framework */,
-				D710D6A42194A09D008F54AD /* msgpack.framework */,
-				D77A0C951FFEEF0300711131 /* ULID.framework */,
-				D736A0C71F916553005ABE81 /* msgpack.framework */,
-				D710D6A62194A09D008F54AD /* ULID.framework */,
-				3F3D07905A62187E022923A8 /* Pods.framework */,
+				8412FDE12661AC37001FE9E6 /* AblyDeltaCodec.xcframework */,
+				8412FDE32661AC37001FE9E6 /* msgpack.xcframework */,
+				8412FDE42661AC37001FE9E6 /* SocketRocketAblyFork.xcframework */,
+				8412FDE22661AC37001FE9E6 /* ULID.xcframework */,
+				8412FDF12661AC7A001FE9E6 /* Aspects.xcframework */,
+				8412FDF42661AC7B001FE9E6 /* Nimble.xcframework */,
+				8412FDF32661AC7B001FE9E6 /* Quick.xcframework */,
+				8412FDF22661AC7B001FE9E6 /* SwiftyJSON.xcframework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -2998,7 +2928,11 @@
 				);
 				INFOPLIST_FILE = "Spec/Info-iOS.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D TEST_SUITE -D TARGET_OS_IOS -D TARGET_OS_IPHONE -D TARGET_OS_MAC";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = "Ably-iOS-Tests";
@@ -3027,7 +2961,11 @@
 				);
 				INFOPLIST_FILE = "Spec/Info-iOS.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D TEST_SUITE -D TARGET_OS_IOS -D TARGET_OS_IPHONE -D TARGET_OS_MAC";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = "Ably-iOS-Tests";
@@ -3144,7 +3082,8 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -3166,7 +3105,11 @@
 				HEADER_SEARCH_PATHS = "$(SRCROOT)/include";
 				INFOPLIST_FILE = "Source/Info-iOS.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MACH_O_TYPE = mh_dylib;
 				MODULEMAP_FILE = Source/Ably.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
@@ -3190,7 +3133,11 @@
 				HEADER_SEARCH_PATHS = "$(SRCROOT)/include";
 				INFOPLIST_FILE = "Source/Info-iOS.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MACH_O_TYPE = mh_dylib;
 				MODULEMAP_FILE = Source/Ably.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
@@ -3220,7 +3167,11 @@
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = "Spec/Info-macOS.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -3255,7 +3206,11 @@
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = "Spec/Info-macOS.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				MTL_FAST_MATH = YES;
 				OTHER_SWIFT_FLAGS = "-D TARGET_OS_OSX -D TARGET_OS_MAC";
@@ -3286,7 +3241,11 @@
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = "Spec/Info-tvOS.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				OTHER_SWIFT_FLAGS = "-D TARGET_OS_TV -D TARGET_OS_IPHONE -D TARGET_OS_MAC";
@@ -3321,7 +3280,11 @@
 				);
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = "Spec/Info-tvOS.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MTL_FAST_MATH = YES;
 				OTHER_SWIFT_FLAGS = "-D TARGET_OS_TV -D TARGET_OS_IPHONE -D TARGET_OS_MAC";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.Ably-tvOS-Tests";
@@ -3358,7 +3321,11 @@
 				HEADER_SEARCH_PATHS = "$(SRCROOT)/include";
 				INFOPLIST_FILE = "Source/Info-macOS.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MODULEMAP_FILE = Source/Ably.modulemap;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -3395,7 +3362,11 @@
 				HEADER_SEARCH_PATHS = "$(SRCROOT)/include";
 				INFOPLIST_FILE = "Source/Info-macOS.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MODULEMAP_FILE = Source/Ably.modulemap;
 				MTL_FAST_MATH = YES;
@@ -3428,7 +3399,11 @@
 				HEADER_SEARCH_PATHS = "$(SRCROOT)/include";
 				INFOPLIST_FILE = "Source/Info-tvOS.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MODULEMAP_FILE = Source/Ably.modulemap;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -3464,7 +3439,11 @@
 				HEADER_SEARCH_PATHS = "$(SRCROOT)/include";
 				INFOPLIST_FILE = "Source/Info-tvOS.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MODULEMAP_FILE = Source/Ably.modulemap;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = io.ably.Ably;
@@ -3495,7 +3474,10 @@
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = "Ably-SoakTest-App/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.3;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = "ably.io.Ably-SoakTest-App";
@@ -3528,7 +3510,10 @@
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = "Ably-SoakTest-App/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.3;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = "ably.io.Ably-SoakTest-App";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -3559,7 +3544,11 @@
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = "Ably-SoakTest-AppUITests/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = "ably.io.Ably-SoakTest-AppUITests";
@@ -3596,7 +3585,11 @@
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = "Ably-SoakTest-AppUITests/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = "ably.io.Ably-SoakTest-AppUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
