@@ -2514,7 +2514,9 @@ class RealtimeClientConnection: QuickSpec {
                         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
 
                         let expectedConnectionId = client.connection.id
-                        client.internal.onDisconnected()
+                        client.internalAsync { _internal in
+                            _internal.onDisconnected()
+                        }
 
                         channel.attach()
                         channel.publish(nil, data: "queued message")
