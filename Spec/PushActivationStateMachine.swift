@@ -96,7 +96,7 @@ class PushActivationStateMachine : QuickSpec {
                     context("local device") {
                         it("should have a generated id") {
                             rest.internal.resetDeviceSingleton()
-                            expect(rest.device.id.lengthOfBytes(using: .utf8)) == 36
+                            expect(rest.device.id.count) == 36
                         }
                         it("should have a generated secret") {
                             guard let deviceSecret = rest.device.secret else {
