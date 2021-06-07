@@ -15,9 +15,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTDeviceDetails : NSObject
 
-/**
- Device identity generated using random data.
- */
 @property (nonatomic) ARTDeviceId *id;
 
 /**
