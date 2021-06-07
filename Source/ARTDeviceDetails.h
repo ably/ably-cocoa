@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTDeviceDetails : NSObject
 
 /**
- Device identity generated using random data. It's an ULID string (Universally Unique Lexicographically Sortable Identifier).
+ Device identity generated using random data.
  */
 @property (nonatomic) ARTDeviceId *id;
 
