@@ -7,6 +7,7 @@
 
 ## Build generated
 build/
+.build/
 DerivedData
 
 ## Various settings
@@ -63,3 +64,5 @@ fastlane/test_output
 fastlane/README.md
 
 Examples/Tests/Podfile.lock
+
+.DS_Store
