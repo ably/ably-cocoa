@@ -141,10 +141,7 @@
     
     __weak ARTEventListener *weakSelf = self;
     _work = artDispatchScheduled(_timeoutDeadline, [_eventHandler queue], ^{
-        ARTEventListener *strongSelf = weakSelf;
-        if (strongSelf != nil) {
-            [strongSelf timeout];
-        }
+        [weakSelf timeout];
     });
 }
 
