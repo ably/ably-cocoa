@@ -16,7 +16,6 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(name: "ULID", url: "https://github.com/whitesmith/ulid", from: "1.2.0"),
         .package(name: "msgpack", url: "https://github.com/rvi/msgpack-objective-C", from: "0.4.0"),
         .package(name: "AblyDeltaCodec", url: "https://github.com/ably/delta-codec-cocoa", .branch("main"))
     ],
@@ -24,7 +23,6 @@ let package = Package(
         .target(
             name: "Ably",
             dependencies: [
-                .byName(name: "ULID"),
                 .byName(name: "msgpack"),
                 .byName(name: "AblyDeltaCodec")
             ],
