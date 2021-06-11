@@ -26,7 +26,8 @@ let package = Package(
                 .byName(name: "msgpack"),
                 .byName(name: "AblyDeltaCodec")
             ],
-            path: "Source"
+            path: "Source",
+            exclude: ["Info-tvOS.plist", "Info-macOS.plist", "Info-iOS.plist"]
         )
     ]
 )
