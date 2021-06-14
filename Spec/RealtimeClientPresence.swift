@@ -181,7 +181,12 @@ class RealtimeClientPresence: QuickSpec {
                                 return
                             }
                             expect(channel.presence.syncComplete).to(beFalse())
+                            var aClientHasLeft = false;
                             channel.presence.subscribe(.leave) { _ in
+                                if (aClientHasLeft) {
+                                    return
+                                }
+                                aClientHasLeft = true;
                                 done()
                             }
                         }
