@@ -3,7 +3,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "ably-cocoa",
+    name: "Ably",
     platforms: [
         .macOS(.v10_11),
         .iOS(.v9),
