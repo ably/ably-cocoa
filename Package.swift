@@ -10,17 +10,9 @@ let package = Package(
         .tvOS(.v10)
     ],
     products: [
-        .executable(
-            name: "Example",
-            targets: ["Example"]
-        ),
         .library(
             name: "Ably",
             targets: ["Ably"]
-        ),
-        .library(
-            name: "SocketRocket",
-            targets: ["SocketRocket"]
         )
     ],
     dependencies: [
@@ -28,13 +20,6 @@ let package = Package(
         .package(name: "AblyDeltaCodec", url: "https://github.com/ably/delta-codec-cocoa", .branch("main"))
     ],
     targets: [
-        .target(
-            name: "Example",
-            dependencies: [
-            "Ably",
-            "SocketRocket"
-            ]
-        ),
         .target(
             name: "Ably",
             dependencies: [
