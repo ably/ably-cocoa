@@ -3,9 +3,9 @@
 import PackageDescription
 
 let package = Package(
-    name: "ably-cocoa",
+    name: "Ably",
     platforms: [
-        .macOS(.v10_10),
+        .macOS(.v10_11),
         .iOS(.v9),
         .tvOS(.v10)
     ],
@@ -26,8 +26,30 @@ let package = Package(
                 .byName(name: "msgpack"),
                 .byName(name: "AblyDeltaCodec")
             ],
-            path: "Source",
-            exclude: ["Info-tvOS.plist", "Info-macOS.plist", "Info-iOS.plist"]
+            path: ".",
+            exclude: [
+                "Info-tvOS.plist",
+                "Info-macOS.plist",
+                "Info-iOS.plist",
+                "Ably-SoakTest-App",
+                "Ably-SoakTest-AppUITests",
+                "Spec",
+                "Products",
+                "Scripts",
+                "fastlane",
+                "Examples",
+                "Carthage"
+            ],
+            sources: [
+                "Source",
+                "SocketRocket"
+            ],
+            publicHeadersPath: "Source/include",
+            cSettings: [
+                .headerSearchPath("Source/include"),
+                .headerSearchPath("SocketRocket/**")
+            ]
         )
     ]
 )
+

@@ -1,0 +1,6 @@
+framework module Ably {
+    umbrella header "Ably/Ably.h"
+
+    export *
+    module * { export * }
+}
