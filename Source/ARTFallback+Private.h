@@ -6,7 +6,7 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
-#include <Ably/ARTFallback.h>
+#include "ARTFallback.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

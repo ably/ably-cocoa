@@ -6,8 +6,8 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
-#include <Ably/ARTEventEmitter.h>
-#include <Ably/ARTRest+Private.h>
+#include "ARTEventEmitter.h"
+#include "ARTRest+Private.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
