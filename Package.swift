@@ -11,8 +11,16 @@ let package = Package(
     ],
     products: [
         .library(
+            name: "Example",
+            targets: ["Example"]
+        ),
+        .library(
             name: "Ably",
             targets: ["Ably"]
+        ),
+        .library(
+            name: "SocketRocket",
+            targets: ["SocketRocket"]
         )
     ],
     dependencies: [
@@ -21,22 +29,28 @@ let package = Package(
     ],
     targets: [
         .target(
+            name: "Example",
+            dependencies: [
+            "Ably",
+            "SocketRocket"
+            ]
+        ),
+        .target(
             name: "Ably",
             dependencies: [
                 .byName(name: "msgpack"),
                 .byName(name: "AblyDeltaCodec"),
                 "SocketRocket"
             ],
-            exclude: ["Info-tvOS.plist", "Info-macOS.plist", "Info-iOS.plist"]
+            cSettings: [
+                .headerSearchPath("**"),
+            ]
         ),
         .target(name: "SocketRocket",
                 dependencies: [],
                 cSettings: [
-                    .headerSearchPath("Sources/SocketRocket/Internal/Delegate/"),
-                    .headerSearchPath("Sources/SocketRocket/Internal/Proxy/"),
-                    .headerSearchPath("Sources/SocketRocket/Internal/"),
-                    .headerSearchPath("Sources/SocketRocket/**")
-                            ]
-               )
+                    .headerSearchPath("**"),
+                ]
+        )
     ]
 )
