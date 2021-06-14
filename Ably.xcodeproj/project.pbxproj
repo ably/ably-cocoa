@@ -686,6 +686,29 @@
 		D7D8F82D1BC2C706009718F2 /* ARTTokenParams.h in Headers */ = {isa = PBXBuildFile; fileRef = D7D8F8291BC2C706009718F2 /* ARTTokenParams.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D7D8F82E1BC2C706009718F2 /* ARTTokenParams.m in Sources */ = {isa = PBXBuildFile; fileRef = D7D8F82A1BC2C706009718F2 /* ARTTokenParams.m */; };
 		D7DC8AF11C6AA0C8005AF165 /* ARTDefault+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D7DC8AF01C6A9FFC005AF165 /* ARTDefault+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		D7DEA1C925DEB30800EBEC75 /* SocketRocketAblyFork.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1C525DEB30800EBEC75 /* SocketRocketAblyFork.xcframework */; };
+		D7DEA1CA25DEB30800EBEC75 /* AblyDeltaCodec.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1C625DEB30800EBEC75 /* AblyDeltaCodec.xcframework */; };
+		D7DEA1CC25DEB30800EBEC75 /* msgpack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1C825DEB30800EBEC75 /* msgpack.xcframework */; };
+		D7DEA1D425DEB31000EBEC75 /* AblyDeltaCodec.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1C625DEB30800EBEC75 /* AblyDeltaCodec.xcframework */; };
+		D7DEA1D525DEB31000EBEC75 /* msgpack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1C825DEB30800EBEC75 /* msgpack.xcframework */; };
+		D7DEA1D625DEB31000EBEC75 /* SocketRocketAblyFork.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1C525DEB30800EBEC75 /* SocketRocketAblyFork.xcframework */; };
+		D7DEA1D725DEB31000EBEC75 /* ULID.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1C725DEB30800EBEC75 /* ULID.xcframework */; };
+		D7DEA1DF25DEB31400EBEC75 /* AblyDeltaCodec.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1C625DEB30800EBEC75 /* AblyDeltaCodec.xcframework */; };
+		D7DEA1E025DEB31400EBEC75 /* msgpack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1C825DEB30800EBEC75 /* msgpack.xcframework */; };
+		D7DEA1E125DEB31400EBEC75 /* SocketRocketAblyFork.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1C525DEB30800EBEC75 /* SocketRocketAblyFork.xcframework */; };
+		D7DEA1E225DEB31400EBEC75 /* ULID.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1C725DEB30800EBEC75 /* ULID.xcframework */; };
+		D7DEA1EE25DEB32600EBEC75 /* SwiftyJSON.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1EA25DEB32600EBEC75 /* SwiftyJSON.xcframework */; };
+		D7DEA1EF25DEB32600EBEC75 /* Quick.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1EB25DEB32600EBEC75 /* Quick.xcframework */; };
+		D7DEA1F025DEB32600EBEC75 /* Aspects.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1EC25DEB32600EBEC75 /* Aspects.xcframework */; };
+		D7DEA1F125DEB32600EBEC75 /* Nimble.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1ED25DEB32600EBEC75 /* Nimble.xcframework */; };
+		D7DEA20025DEB32A00EBEC75 /* Aspects.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1EC25DEB32600EBEC75 /* Aspects.xcframework */; };
+		D7DEA20125DEB32A00EBEC75 /* Nimble.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1ED25DEB32600EBEC75 /* Nimble.xcframework */; };
+		D7DEA20225DEB32A00EBEC75 /* Quick.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1EB25DEB32600EBEC75 /* Quick.xcframework */; };
+		D7DEA20325DEB32A00EBEC75 /* SwiftyJSON.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1EA25DEB32600EBEC75 /* SwiftyJSON.xcframework */; };
+		D7DEA20425DEB32F00EBEC75 /* Aspects.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1EC25DEB32600EBEC75 /* Aspects.xcframework */; };
+		D7DEA20525DEB32F00EBEC75 /* Nimble.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1ED25DEB32600EBEC75 /* Nimble.xcframework */; };
+		D7DEA20625DEB32F00EBEC75 /* Quick.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1EB25DEB32600EBEC75 /* Quick.xcframework */; };
+		D7DEA20725DEB32F00EBEC75 /* SwiftyJSON.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1EA25DEB32600EBEC75 /* SwiftyJSON.xcframework */; };
 		D7DEAFD11E65926D00D23F24 /* ARTLocalDevice.h in Headers */ = {isa = PBXBuildFile; fileRef = D7DEAFCF1E65926D00D23F24 /* ARTLocalDevice.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D7DEAFD21E65926D00D23F24 /* ARTLocalDevice.m in Sources */ = {isa = PBXBuildFile; fileRef = D7DEAFD01E65926D00D23F24 /* ARTLocalDevice.m */; };
 		D7DF73851EA600240013CD36 /* PushActivationStateMachine.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7DF73831EA5FE620013CD36 /* PushActivationStateMachine.swift */; };
@@ -1177,10 +1200,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8412FDEE2661AC37001FE9E6 /* SocketRocketAblyFork.xcframework in Frameworks */,
-				8412FDE52661AC37001FE9E6 /* AblyDeltaCodec.xcframework in Frameworks */,
-				8412FDEB2661AC37001FE9E6 /* msgpack.xcframework in Frameworks */,
-				8412FDE82661AC37001FE9E6 /* ULID.xcframework in Frameworks */,
+				D7DEA1C925DEB30800EBEC75 /* SocketRocketAblyFork.xcframework in Frameworks */,
+				D7DEA1CA25DEB30800EBEC75 /* AblyDeltaCodec.xcframework in Frameworks */,
+				D7DEA1CC25DEB30800EBEC75 /* msgpack.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
