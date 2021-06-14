@@ -5,12 +5,12 @@ import PackageDescription
 let package = Package(
     name: "ably-cocoa",
     platforms: [
-        .macOS(.v10_10),
+        .macOS(.v10_11),
         .iOS(.v9),
         .tvOS(.v10)
     ],
     products: [
-        .library(
+        .executable(
             name: "Example",
             targets: ["Example"]
         ),
