@@ -8,13 +8,13 @@
 
 #import <Foundation/Foundation.h>
 
-#import <Ably/ARTTypes.h>
-#import <Ably/ARTLog.h>
-#import <Ably/ARTRestChannel.h>
-#import <Ably/ARTPresenceMessage.h>
-#import <Ably/ARTEventEmitter.h>
-#import <Ably/ARTRealtimePresence.h>
-#import <Ably/ARTDataQuery.h>
+#import "ARTTypes.h"
+#import "ARTLog.h"
+#import "ARTRestChannel.h"
+#import "ARTPresenceMessage.h"
+#import "ARTEventEmitter.h"
+#import "ARTRealtimePresence.h"
+#import "ARTDataQuery.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

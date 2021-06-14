@@ -8,9 +8,9 @@
 
 #import <Foundation/Foundation.h>
 
-#import <Ably/ARTTypes.h>
-#import <Ably/ARTDataEncoder.h>
-#import <Ably/ARTLog.h>
+#import "ARTTypes.h"
+#import "ARTDataEncoder.h"
+#import "ARTLog.h"
 
 @class ARTRest;
 @class ARTChannelOptions;

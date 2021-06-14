@@ -6,8 +6,8 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
-#import <Ably/ARTPresence.h>
-#import <Ably/ARTChannel.h>
+#import "ARTPresence.h"
+#import "ARTChannel.h"
 
 @interface ARTPresenceQuery ()
 

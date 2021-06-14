@@ -8,8 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
-#import <Ably/ARTTypes.h>
-#import <Ably/ARTCrypto.h>
+#import "ARTTypes.h"
+#import "ARTCrypto.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

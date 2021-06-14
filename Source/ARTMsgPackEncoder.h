@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import <Ably/ARTJsonLikeEncoder.h>
+#import "ARTJsonLikeEncoder.h"
 
 @interface ARTMsgPackEncoder : NSObject <ARTJsonLikeEncoderDelegate>
 

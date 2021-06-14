@@ -7,11 +7,11 @@
 
 #import <Foundation/Foundation.h>
 
-#import <Ably/ARTTypes.h>
-#import <Ably/ARTLog.h>
-#import <Ably/ARTRealtimeChannels.h>
-#import <Ably/ARTEventEmitter.h>
-#import <Ably/ARTConnection.h>
+#import "ARTTypes.h"
+#import "ARTLog.h"
+#import "ARTRealtimeChannels.h"
+#import "ARTEventEmitter.h"
+#import "ARTConnection.h"
 
 @class ARTStatus;
 @class ARTMessage;

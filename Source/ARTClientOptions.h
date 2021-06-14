@@ -7,8 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
-#import <Ably/ARTAuthOptions.h>
-#import <Ably/ARTLog.h>
+#import "ARTAuthOptions.h"
+#import "ARTLog.h"
 
 @class ARTPlugin;
 @protocol ARTPushRegistererDelegate;

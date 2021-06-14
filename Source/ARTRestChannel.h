@@ -7,8 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
-#import <Ably/ARTChannel.h>
-#import <Ably/ARTLog.h>
+#import "ARTChannel.h"
+#import "ARTLog.h"
 
 @class ARTRest;
 @class ARTRestPresence;

@@ -7,9 +7,9 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <Ably/ARTTypes.h>
-#import <Ably/ARTPushDeviceRegistrations.h>
-#import <Ably/ARTPushChannelSubscriptions.h>
+#import "ARTTypes.h"
+#import "ARTPushDeviceRegistrations.h"
+#import "ARTPushChannelSubscriptions.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

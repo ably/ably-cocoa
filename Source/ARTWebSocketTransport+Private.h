@@ -6,12 +6,12 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
-#import <Ably/ARTWebSocketTransport.h>
-#import <Ably/CompatibilityMacros.h>
-#import <Ably/ARTSRWebSocket.h>
-#import <Ably/ARTEncoder.h>
-#import <Ably/ARTAuth.h>
-#import <Ably/ARTWebSocket.h>
+#import "ARTWebSocketTransport.h"
+#import "CompatibilityMacros.h"
+#import "ARTSRWebSocket.h"
+#import "ARTEncoder.h"
+#import "ARTAuth.h"
+#import "ARTWebSocket.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

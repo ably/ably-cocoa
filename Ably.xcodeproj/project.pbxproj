@@ -207,8 +207,6 @@
 		D70EECAC1FEAF331008A50CD /* ARTPendingMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = D70EECAA1FEAF331008A50CD /* ARTPendingMessage.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D70EECAD1FEAF331008A50CD /* ARTPendingMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = D70EECAB1FEAF331008A50CD /* ARTPendingMessage.m */; };
 		D70F277D2261046A00956251 /* Ably.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 96BF61311A35B2AB004CF2B3 /* Ably.framework */; };
-		D710D47D21949A27008F54AD /* Ably.h in Headers */ = {isa = PBXBuildFile; fileRef = D7534C311D79E5C20054C182 /* Ably.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		D710D47F21949A28008F54AD /* Ably.h in Headers */ = {isa = PBXBuildFile; fileRef = D7534C311D79E5C20054C182 /* Ably.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D710D48021949A42008F54AD /* ARTDefault.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D710D48221949A43008F54AD /* ARTDefault.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D710D48321949A4E008F54AD /* ARTDefault+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D7DC8AF01C6A9FFC005AF165 /* ARTDefault+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -621,7 +619,6 @@
 		D74CBC0E212F076000D090E4 /* ARTConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = D74CBC0C212F076000D090E4 /* ARTConstants.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D74CBC0F212F076000D090E4 /* ARTConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = D74CBC0D212F076000D090E4 /* ARTConstants.m */; };
 		D74EFAEB1C4D09B500CFF98E /* RealtimeClientChannel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D74EFAEA1C4D09B500CFF98E /* RealtimeClientChannel.swift */; };
-		D7534C321D79E5C20054C182 /* Ably.h in Headers */ = {isa = PBXBuildFile; fileRef = D7534C311D79E5C20054C182 /* Ably.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D7588AF31BFF91B800BB8279 /* ARTURLSessionServerTrust.h in Headers */ = {isa = PBXBuildFile; fileRef = D7588AF11BFF91B800BB8279 /* ARTURLSessionServerTrust.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D7588AF41BFF91B800BB8279 /* ARTURLSessionServerTrust.m in Sources */ = {isa = PBXBuildFile; fileRef = D7588AF21BFF91B800BB8279 /* ARTURLSessionServerTrust.m */; };
 		D75A3F1B1DDE5B62002A4AAD /* ARTGCD.h in Headers */ = {isa = PBXBuildFile; fileRef = D75A3F191DDE5B62002A4AAD /* ARTGCD.h */; };
@@ -930,7 +927,6 @@
 		856AAC981B6E312F00B07119 /* RestClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestClient.swift; sourceTree = "<group>"; };
 		856AAC9A1B6E326E00B07119 /* ably-common */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "ably-common"; sourceTree = SOURCE_ROOT; };
 		85B2C2181B6FE8DE00EA5254 /* CompatibilityMacros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CompatibilityMacros.h; sourceTree = "<group>"; };
-		85F0A60C1B6D03B700EFF45A /* Ably.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = Ably.modulemap; sourceTree = "<group>"; };
 		960D07911A45F1D800ED8C8C /* ARTCrypto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTCrypto.h; sourceTree = "<group>"; };
 		960D07921A45F1D800ED8C8C /* ARTCrypto.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTCrypto.m; sourceTree = "<group>"; };
 		960D07951A46FFC300ED8C8C /* ARTRest+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTRest+Private.h"; sourceTree = "<group>"; };
@@ -1036,7 +1032,6 @@
 		D74CBC0C212F076000D090E4 /* ARTConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTConstants.h; sourceTree = "<group>"; };
 		D74CBC0D212F076000D090E4 /* ARTConstants.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTConstants.m; sourceTree = "<group>"; };
 		D74EFAEA1C4D09B500CFF98E /* RealtimeClientChannel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealtimeClientChannel.swift; sourceTree = "<group>"; };
-		D7534C311D79E5C20054C182 /* Ably.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Ably.h; sourceTree = "<group>"; };
 		D7588AF11BFF91B800BB8279 /* ARTURLSessionServerTrust.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTURLSessionServerTrust.h; sourceTree = "<group>"; };
 		D7588AF21BFF91B800BB8279 /* ARTURLSessionServerTrust.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTURLSessionServerTrust.m; sourceTree = "<group>"; };
 		D75A3F191DDE5B62002A4AAD /* ARTGCD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTGCD.h; path = Private/ARTGCD.h; sourceTree = "<group>"; };
@@ -1435,7 +1430,6 @@
 		96BF61331A35B2AB004CF2B3 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				D7534C311D79E5C20054C182 /* Ably.h */,
 				85B2C2181B6FE8DE00EA5254 /* CompatibilityMacros.h */,
 				1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */,
 				D7DC8AF01C6A9FFC005AF165 /* ARTDefault+Private.h */,
@@ -1456,7 +1450,6 @@
 		96BF61341A35B2AB004CF2B3 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				85F0A60C1B6D03B700EFF45A /* Ably.modulemap */,
 				1C118A5B1AE63D89006AD19E /* Info-iOS.plist */,
 				D710D45E219495E2008F54AD /* Info-macOS.plist */,
 				D710D478219495FC008F54AD /* Info-tvOS.plist */,
@@ -1774,7 +1767,6 @@
 				D72C67DF201AB74000978EBB /* ARTPushActivationStateMachine+Private.h in Headers */,
 				D7DC8AF11C6AA0C8005AF165 /* ARTDefault+Private.h in Headers */,
 				961343D81A42E0B7006DC822 /* ARTClientOptions.h in Headers */,
-				D7534C321D79E5C20054C182 /* Ably.h in Headers */,
 				D777EEE0206285CF002EBA03 /* ARTDeviceIdentityTokenDetails.h in Headers */,
 				96BF615E1A35C1C8004CF2B3 /* ARTTypes.h in Headers */,
 				EB503C881C7E4A090053AF00 /* ARTClientOptions+Private.h in Headers */,
@@ -1983,7 +1975,6 @@
 				D710D54D21949C66008F54AD /* ARTLocalDevice+Private.h in Headers */,
 				D710D4D421949BF9008F54AD /* ARTRealtime.h in Headers */,
 				D710D58821949D29008F54AD /* ARTProtocolMessage.h in Headers */,
-				D710D47D21949A27008F54AD /* Ably.h in Headers */,
 				EB1B53FE22F8D91C006A59AC /* ARTQueuedDealloc.h in Headers */,
 				D710D56A21949CB9008F54AD /* ARTPushAdmin.h in Headers */,
 				D710D48321949A4E008F54AD /* ARTDefault+Private.h in Headers */,
@@ -2112,7 +2103,6 @@
 				D710D55321949C67008F54AD /* ARTLocalDevice+Private.h in Headers */,
 				D710D4E421949BFB008F54AD /* ARTRealtime.h in Headers */,
 				D710D5AE21949D2A008F54AD /* ARTProtocolMessage.h in Headers */,
-				D710D47F21949A28008F54AD /* Ably.h in Headers */,
 				EB1B53FF22F8D91C006A59AC /* ARTQueuedDealloc.h in Headers */,
 				D710D57021949CBA008F54AD /* ARTPushAdmin.h in Headers */,
 				D710D48521949A4F008F54AD /* ARTDefault+Private.h in Headers */,
@@ -3113,11 +3103,12 @@
 					"@loader_path/Frameworks",
 				);
 				MACH_O_TYPE = mh_dylib;
-				MODULEMAP_FILE = Source/Ably.modulemap;
+				MODULEMAP_FILE = Source/include/Ably.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = Ably;
 				PROVISIONING_PROFILE_SPECIFIER = "ably-cocoa-soak-test";
 				SWIFT_VERSION = 5.0;
+				USER_HEADER_SEARCH_PATHS = Source/include;
 			};
 			name = Debug;
 		};
@@ -3141,11 +3132,12 @@
 					"@loader_path/Frameworks",
 				);
 				MACH_O_TYPE = mh_dylib;
-				MODULEMAP_FILE = Source/Ably.modulemap;
+				MODULEMAP_FILE = Source/include/Ably.modulemap;
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = Ably;
 				PROVISIONING_PROFILE_SPECIFIER = "ably-cocoa-soak-test";
 				SWIFT_VERSION = 5.0;
+				USER_HEADER_SEARCH_PATHS = Source/include;
 			};
 			name = Release;
 		};
@@ -3329,13 +3321,14 @@
 					"@loader_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
-				MODULEMAP_FILE = Source/Ably.modulemap;
+				MODULEMAP_FILE = Source/include/Ably.modulemap;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = io.ably.Ably;
 				PRODUCT_NAME = Ably;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
+				USER_HEADER_SEARCH_PATHS = Source/include;
 			};
 			name = Debug;
 		};
@@ -3370,12 +3363,13 @@
 					"@loader_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
-				MODULEMAP_FILE = Source/Ably.modulemap;
+				MODULEMAP_FILE = Source/include/Ably.modulemap;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = io.ably.Ably;
 				PRODUCT_NAME = Ably;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
+				USER_HEADER_SEARCH_PATHS = Source/include;
 			};
 			name = Release;
 		};
@@ -3406,7 +3400,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MODULEMAP_FILE = Source/Ably.modulemap;
+				MODULEMAP_FILE = Source/include/Ably.modulemap;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = io.ably.Ably;
@@ -3415,6 +3409,7 @@
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 10.0;
+				USER_HEADER_SEARCH_PATHS = Source/include;
 			};
 			name = Debug;
 		};
@@ -3446,7 +3441,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MODULEMAP_FILE = Source/Ably.modulemap;
+				MODULEMAP_FILE = Source/include/Ably.modulemap;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = io.ably.Ably;
 				PRODUCT_NAME = Ably;
@@ -3454,6 +3449,7 @@
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 10.0;
+				USER_HEADER_SEARCH_PATHS = Source/include;
 			};
 			name = Release;
 		};

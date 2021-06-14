@@ -8,8 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
-#import <Ably/ARTPresence.h>
-#import <Ably/ARTDataQuery.h>
+#import "ARTPresence.h"
+#import "ARTDataQuery.h"
 
 @class ARTRestChannel;
 
