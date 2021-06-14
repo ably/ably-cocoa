@@ -13,7 +13,7 @@ let package = Package(
         .library(
             name: "Ably",
             targets: ["Ably"]
-        ),
+        )
     ],
     dependencies: [
         .package(name: "msgpack", url: "https://github.com/rvi/msgpack-objective-C", from: "0.4.0"),
@@ -24,10 +24,19 @@ let package = Package(
             name: "Ably",
             dependencies: [
                 .byName(name: "msgpack"),
-                .byName(name: "AblyDeltaCodec")
+                .byName(name: "AblyDeltaCodec"),
+                "SocketRocket"
             ],
-            path: "Source",
             exclude: ["Info-tvOS.plist", "Info-macOS.plist", "Info-iOS.plist"]
-        )
+        ),
+        .target(name: "SocketRocket",
+                dependencies: [],
+                cSettings: [
+                    .headerSearchPath("Sources/SocketRocket/Internal/Delegate/"),
+                    .headerSearchPath("Sources/SocketRocket/Internal/Proxy/"),
+                    .headerSearchPath("Sources/SocketRocket/Internal/"),
+                    .headerSearchPath("Sources/SocketRocket/**")
+                            ]
+               )
     ]
 )

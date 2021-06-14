@@ -1,0 +1,11 @@
+module SocketRocket {
+    umbrella header "SocketRocket.h"
+
+    export *
+    module * { export * }
+
+// TODO try a Private module and explicitly list them in here?
+//    explicit module Private {
+//
+//    }
+}
