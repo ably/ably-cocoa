@@ -44,7 +44,7 @@ let package = Package(
                 "Source",
                 "SocketRocket"
             ],
-            publicHeadersPath: "Sources/**",
+            publicHeadersPath: "Source/include",
             cSettings: [
                 .headerSearchPath("Source/**"),
                 .headerSearchPath("SocketRocket/**")
