@@ -2,7 +2,7 @@
   "object": {
     "pins": [
       {
-        "package": "AblyDeltaCodec",
+        "package": "delta-codec-cocoa",
         "repositoryURL": "https://github.com/ably/delta-codec-cocoa",
         "state": {
           "branch": "main",
@@ -11,21 +11,12 @@
         }
       },
       {
-        "package": "msgpack",
+        "package": "msgpack-objective-C",
         "repositoryURL": "https://github.com/rvi/msgpack-objective-C",
         "state": {
           "branch": null,
           "revision": "3e36b48e04ecd756cb927bd5f5b9bf6d45e475f9",
           "version": "0.4.0"
-        }
-      },
-      {
-        "package": "ULID",
-        "repositoryURL": "https://github.com/whitesmith/ulid",
-        "state": {
-          "branch": null,
-          "revision": "6ae5b79f2958566d309acbb619824884038b8a43",
-          "version": "1.2.0"
         }
       }
     ]

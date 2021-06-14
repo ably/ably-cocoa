@@ -13,13 +13,18 @@ let package = Package(
         .library(
             name: "Ably",
             targets: ["Ably"]
-        )
+        ),
+        .executable(name: "UseAbly", targets: ["UseAbly"])
     ],
     dependencies: [
         .package(name: "msgpack", url: "https://github.com/rvi/msgpack-objective-C", from: "0.4.0"),
         .package(name: "AblyDeltaCodec", url: "https://github.com/ably/delta-codec-cocoa", .branch("main"))
     ],
     targets: [
+        .executableTarget(
+            name: "UseAbly",
+            dependencies: ["Ably"]
+        ),
         .target(
             name: "Ably",
             dependencies: [
@@ -29,6 +34,7 @@ let package = Package(
             ],
             cSettings: [
                 .headerSearchPath("**"),
+                .headerSearchPath("Internal"),
             ]
         ),
         .target(name: "SocketRocket",
