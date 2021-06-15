@@ -69,16 +69,8 @@ let package = Package(
             publicHeadersPath: "Source/include",
             cSettings: [
                 .headerSearchPath("include"),
-                .headerSearchPath("Source"),
-                .headerSearchPath("Source/Private"),
-                .headerSearchPath("SocketRocket/SocketRocket"),
-                .headerSearchPath("SocketRocket/SocketRocket/Internal"),
-                .headerSearchPath("SocketRocket/SocketRocket/Internal/RunLoop"),
-                .headerSearchPath("SocketRocket/SocketRocket/Internal/Security"),
-                .headerSearchPath("SocketRocket/SocketRocket/Internal/Delegate"),
-                .headerSearchPath("SocketRocket/SocketRocket/Internal/IOConsumer"),
-                .headerSearchPath("SocketRocket/SocketRocket/Internal/Utilities"),
-                .headerSearchPath("SocketRocket/SocketRocket/Internal/Proxy")
+                .headerSearchPath("Source/**"),
+                .headerSearchPath("SocketRocket/**")
             ]
         )
     ]
