@@ -1,5 +1,5 @@
 framework module Ably {
-    umbrella header "Ably/Ably/Ably.h"
+    umbrella header "Ably/Ably.h"
 
     export *
     module * { export * }
