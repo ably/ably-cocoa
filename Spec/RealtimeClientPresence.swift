@@ -959,8 +959,9 @@ class RealtimeClientPresence: QuickSpec {
             // RTP8
             context("enter") {
 
+                // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
                 // RTP8b
-                it("optionally a callback can be provided that is called for success") {
+                xit("optionally a callback can be provided that is called for success") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "john"
 
@@ -1659,7 +1660,8 @@ class RealtimeClientPresence: QuickSpec {
                         }
                     }
 
-                    it("accept members where message have arrived after the SYNC") {
+                    // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
+                    xit("accept members where message have arrived after the SYNC") {
                         let options = AblyTests.commonAppSetup()
                         let channelName = NSUUID().uuidString
                         var clientMembers: ARTRealtime?
