@@ -1197,8 +1197,9 @@ class RealtimeClientPresence: QuickSpec {
             // RTP9
             context("update") {
 
+                // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
                 // RTP9b
-                it("should enter current client into the channel if the client was not already entered") {
+                xit("should enter current client into the channel if the client was not already entered") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "john"
                     let client = ARTRealtime(options: options)
@@ -1605,7 +1606,8 @@ class RealtimeClientPresence: QuickSpec {
                 // RTP2c
                 context("all presence messages from a SYNC must also be compared for newness in the same way as they would from a PRESENCE") {
 
-                    it("discard members where messages have arrived before the SYNC") {
+                    // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
+                    xit("discard members where messages have arrived before the SYNC") {
                         let options = AblyTests.commonAppSetup()
                         let timeBeforeSync = NSDate()
                         let channelName = NSUUID().uuidString
@@ -1732,8 +1734,9 @@ class RealtimeClientPresence: QuickSpec {
                     expect(channel.internal.presenceMap.members.filter{ _, presence in presence.action == .enter }).to(beEmpty())
                 }
 
+                // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
                 // RTP2d
-                it("if action of UPDATE arrives, it should be added to the presence map with the action set to PRESENT") {
+                xit("if action of UPDATE arrives, it should be added to the presence map with the action set to PRESENT") {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
