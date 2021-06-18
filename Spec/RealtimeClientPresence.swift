@@ -236,8 +236,9 @@ class RealtimeClientPresence: QuickSpec {
                     }
                 }
 
+                // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
                 // RTP18c, RTP18b
-                it("when a SYNC is sent with no channelSerial attribute then the sync data is entirely contained within that ProtocolMessage") {
+                xit("when a SYNC is sent with no channelSerial attribute then the sync data is entirely contained within that ProtocolMessage") {
                     let options = AblyTests.commonAppSetup()
                     let client = AblyTests.newRealtime(options)
                     defer { client.dispose(); client.close() }
@@ -254,8 +255,7 @@ class RealtimeClientPresence: QuickSpec {
                         fail("TestProxyTransport is not set"); return
                     }
 
-//                    // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
-//                    expect(channel.internal.presenceMap.syncInProgress).to(beFalse())
+                    expect(channel.internal.presenceMap.syncInProgress).to(beFalse())
                     expect(channel.internal.presenceMap.members).to(beEmpty())
 
                     waitUntil(timeout: testTimeout) { done in
