@@ -9,7 +9,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import <SocketRocketAblyFork/ARTSRWebSocket.h>
+#import "ARTSRWebSocket.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

@@ -1,4 +1,4 @@
-// swift-tools-version:5.3.0
+// swift-tools-version:5.4.0
 
 import PackageDescription
 
@@ -17,7 +17,7 @@ let package = Package(
     ],
     dependencies: [
         .package(name: "msgpack", url: "https://github.com/rvi/msgpack-objective-C", from: "0.4.0"),
-        .package(name: "AblyDeltaCodec", url: "https://github.com/ably/delta-codec-cocoa", from: "1.3.0")
+        .package(name: "AblyDeltaCodec", url: "https://github.com/ably/delta-codec-cocoa", .branch("main"))
     ],
     targets: [
         .target(
@@ -53,10 +53,6 @@ let package = Package(
                 "Version.xcconfig",
                 "ably-common/protocol/README.md"
             ],
-            sources: [
-                "Source",
-                "SocketRocket"
-            ],
             resources: [
                 .copy("COPYRIGHT"),
                 .copy("CHANGELOG.md"),
@@ -66,11 +62,11 @@ let package = Package(
                 .copy("ably-common/protocol/errors.json"),
                 .copy("ably-common/protocol/errorsHelp.json")
             ],
-            publicHeadersPath: "Source/include",
             cSettings: [
                 .headerSearchPath("include"),
+                .headerSearchPath("PrivateHeaders"),
                 .headerSearchPath("Source/**"),
-                .headerSearchPath("SocketRocket/**")
+                .headerSearchPath("SocketRocket/SocketRocket/**")
             ]
         )
     ]

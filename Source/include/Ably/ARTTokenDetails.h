@@ -1,1 +1,0 @@
-../../../Source/ARTTokenDetails.h
