@@ -2706,6 +2706,7 @@ class RealtimeClientConnection: QuickSpec {
 
                 }
 
+                // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
                 // RTN15d
                 xit("should recover from disconnection and messages should be delivered once the connection is resumed") {
                     let options = AblyTests.commonAppSetup()
