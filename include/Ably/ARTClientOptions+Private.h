@@ -1,1 +1,1 @@
-../../../Source/ARTClientOptions+Private.h
+../../Source/ARTClientOptions+Private.h

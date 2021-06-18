@@ -1,1 +1,1 @@
-../../../Source/Private/ARTNSArray+ARTFunctional.h
+../../Source/Private/ARTNSArray+ARTFunctional.h

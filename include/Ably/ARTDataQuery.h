@@ -1,1 +1,1 @@
-../../../Source/ARTDataQuery.h
+../../Source/ARTDataQuery.h

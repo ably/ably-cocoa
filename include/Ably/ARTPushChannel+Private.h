@@ -1,1 +1,1 @@
-../../../Source/ARTPushChannel+Private.h
+../../Source/ARTPushChannel+Private.h

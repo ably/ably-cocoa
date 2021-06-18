@@ -1,1 +1,1 @@
-../../../SocketRocket/SocketRocket/Internal/Utilities/ARTSRLog.h
+../../SocketRocket/SocketRocket/Internal/Utilities/ARTSRLog.h

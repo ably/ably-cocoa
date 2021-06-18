@@ -1,1 +1,1 @@
-../../../SocketRocket/SocketRocket/Internal/Security/ARTSRPinningSecurityPolicy.h
+../../SocketRocket/SocketRocket/Internal/Security/ARTSRPinningSecurityPolicy.h

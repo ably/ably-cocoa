@@ -1,1 +1,1 @@
-../../../SocketRocket/SocketRocket/Internal/NSURLRequest+ARTSRWebSocketPrivate.h
+../../SocketRocket/SocketRocket/Internal/NSURLRequest+ARTSRWebSocketPrivate.h

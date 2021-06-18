@@ -1,1 +1,1 @@
-../../../Source/ARTConnectionDetails+Private.h
+../../Source/ARTConnectionDetails+Private.h

@@ -1,1 +1,1 @@
-../../../Source/ARTPushActivationEvent.h
+../../Source/ARTPushActivationEvent.h

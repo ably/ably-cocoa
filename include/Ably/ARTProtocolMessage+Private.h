@@ -1,1 +1,1 @@
-../../../Source/ARTProtocolMessage+Private.h
+../../Source/ARTProtocolMessage+Private.h

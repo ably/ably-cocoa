@@ -1,1 +1,1 @@
-../../../SocketRocket/SocketRocket/Internal/Utilities/ARTSRHTTPConnectMessage.h
+../../SocketRocket/SocketRocket/Internal/Utilities/ARTSRHTTPConnectMessage.h

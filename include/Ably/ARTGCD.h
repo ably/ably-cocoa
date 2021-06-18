@@ -1,1 +1,1 @@
-../../../Source/Private/ARTGCD.h
+../../Source/Private/ARTGCD.h

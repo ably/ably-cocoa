@@ -1,1 +1,1 @@
-../../../Source/ARTRestChannel.h
+../../Source/ARTRestChannel.h

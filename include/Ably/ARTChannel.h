@@ -1,1 +1,1 @@
-../../../Source/ARTChannel.h
+../../Source/ARTChannel.h

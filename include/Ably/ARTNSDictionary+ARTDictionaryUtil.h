@@ -1,1 +1,1 @@
-../../../Source/Private/ARTNSDictionary+ARTDictionaryUtil.h
+../../Source/Private/ARTNSDictionary+ARTDictionaryUtil.h

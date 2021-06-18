@@ -1,1 +1,1 @@
-../../../Source/ARTHTTPPaginatedResponse.h
+../../Source/ARTHTTPPaginatedResponse.h

@@ -1,1 +1,1 @@
-../../../Source/ARTRestChannel+Private.h
+../../Source/ARTRestChannel+Private.h

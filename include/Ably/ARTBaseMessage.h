@@ -1,1 +1,1 @@
-../../../Source/ARTBaseMessage.h
+../../Source/ARTBaseMessage.h

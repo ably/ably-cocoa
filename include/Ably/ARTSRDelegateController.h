@@ -1,1 +1,1 @@
-../../../SocketRocket/SocketRocket/Internal/Delegate/ARTSRDelegateController.h
+../../SocketRocket/SocketRocket/Internal/Delegate/ARTSRDelegateController.h

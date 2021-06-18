@@ -1,1 +1,1 @@
-../../../Source/ARTDataQuery+Private.h
+../../Source/ARTDataQuery+Private.h

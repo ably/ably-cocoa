@@ -1,1 +1,1 @@
-../../../Source/ARTPushActivationStateMachine+Private.h
+../../Source/ARTPushActivationStateMachine+Private.h

@@ -1,1 +1,1 @@
-../../../Source/ARTPushChannelSubscriptions.h
+../../Source/ARTPushChannelSubscriptions.h

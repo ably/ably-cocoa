@@ -1,1 +1,1 @@
-../../../Source/ARTAuthOptions+Private.h
+../../Source/ARTAuthOptions+Private.h

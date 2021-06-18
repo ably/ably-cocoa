@@ -1,1 +1,1 @@
-../../../SocketRocket/SocketRocket/Internal/ARTSRConstants.h
+../../SocketRocket/SocketRocket/Internal/ARTSRConstants.h

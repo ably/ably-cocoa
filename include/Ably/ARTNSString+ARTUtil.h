@@ -1,1 +1,1 @@
-../../../Source/Private/ARTNSString+ARTUtil.h
+../../Source/Private/ARTNSString+ARTUtil.h

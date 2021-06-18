@@ -1,1 +1,1 @@
-../../../Source/ARTDevicePushDetails.h
+../../Source/ARTDevicePushDetails.h

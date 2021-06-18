@@ -1,1 +1,1 @@
-../../../Source/ARTDeviceDetails.h
+../../Source/ARTDeviceDetails.h

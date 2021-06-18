@@ -1,1 +1,1 @@
-../../../Source/ARTDeviceIdentityTokenDetails.h
+../../Source/ARTDeviceIdentityTokenDetails.h

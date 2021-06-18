@@ -1,1 +1,1 @@
-../../../Source/ARTPush+Private.h
+../../Source/ARTPush+Private.h

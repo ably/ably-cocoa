@@ -1,1 +1,1 @@
-../../../Source/ARTPaginatedResult+Private.h
+../../Source/ARTPaginatedResult+Private.h

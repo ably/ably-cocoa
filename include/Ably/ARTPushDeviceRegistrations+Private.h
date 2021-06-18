@@ -1,1 +1,1 @@
-../../../Source/ARTPushDeviceRegistrations+Private.h
+../../Source/ARTPushDeviceRegistrations+Private.h

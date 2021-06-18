@@ -1,1 +1,1 @@
-../../../Source/ARTAuthDetails.h
+../../Source/ARTAuthDetails.h

@@ -1,1 +1,1 @@
-../../../SocketRocket/SocketRocket/Internal/Utilities/ARTSRError.h
+../../SocketRocket/SocketRocket/Internal/Utilities/ARTSRError.h
