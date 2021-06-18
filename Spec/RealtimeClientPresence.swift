@@ -636,8 +636,9 @@ class RealtimeClientPresence: QuickSpec {
 
                 }
 
+                // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
                 // RTP5b
-                it("if a channel enters the ATTACHED state then all queued presence messages will be sent immediately and a presence SYNC may be initiated") {
+                xit("if a channel enters the ATTACHED state then all queued presence messages will be sent immediately and a presence SYNC may be initiated") {
                     let options = AblyTests.commonAppSetup()
                     let client1 = AblyTests.newRealtime(options)
                     defer { client1.dispose(); client1.close() }
@@ -983,8 +984,9 @@ class RealtimeClientPresence: QuickSpec {
                     }
                 }
 
+                // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
                 // RTP8b
-                it("optionally a callback can be provided that is called for failure") {
+                xit("optionally a callback can be provided that is called for failure") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "john"
 
@@ -2490,8 +2492,9 @@ class RealtimeClientPresence: QuickSpec {
 
             }
 
+            // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
             // RTP17
-            context("private and internal PresenceMap containing only members that match the current connectionId") {
+            xcontext("private and internal PresenceMap containing only members that match the current connectionId") {
 
                 it("any ENTER, PRESENT, UPDATE or LEAVE event that matches the current connectionId should be applied to this object") {
                     let options = AblyTests.commonAppSetup()
