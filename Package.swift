@@ -64,6 +64,7 @@ let package = Package(
             ],
             cSettings: [
                 .headerSearchPath("include"),
+                .headerSearchPath("PrivateHeaders"),
                 .headerSearchPath("Source/**"),
                 .headerSearchPath("SocketRocket/SocketRocket/**")
             ]
