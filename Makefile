@@ -144,9 +144,3 @@ bump_major:
 	$(info Bumping version Major type…)
 
 	Scripts/set-version.sh `Scripts/get-version.sh | awk -F. '{$$(NF-2) = $$(NF-2) + 1;} 1' | sed 's/ /./g' | awk -F. '{$$(NF-1) = 0;} 1' | sed 's/ /./g' | awk -F. '{$$(NF) = 0;} 1' | sed 's/ /./g' `
-
-## [Swift Package Manager] Create symlinked headers and .modulemap in `Source/include`
-spm_create_module:
-	$(info Generating symlinks for header files and modulemap)
-
-	Scripts/create-module.sh
