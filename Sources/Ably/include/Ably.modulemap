@@ -5,6 +5,13 @@ framework module Ably {
     module * { export * }
 
     explicit module Private {
+        header "ARTNSString+ARTUtil.h"
+        header "ARTNSArray+ARTFunctional.h"
+        header "ARTOSReachability.h"
+        header "ARTPendingMessage.h"
+        header "CompatibilityMacros.h"
+        header "ARTNSDictionary+ARTDictionaryUtil.h"
+        header "ARTGCD.h"
         header "ARTConstants.h"
         header "ARTReachability.h"
         header "ARTAuth+Private.h"
