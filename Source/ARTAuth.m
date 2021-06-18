@@ -206,7 +206,7 @@
     self.options.authMethod = customOptions.authMethod;
     self.options.authParams = [customOptions.authParams copy];
     self.options.useTokenAuth = customOptions.useTokenAuth;
-    self.options.queryTime = false;
+    self.options.queryTime = NO;
 }
 
 - (ARTTokenParams *)mergeParams:(ARTTokenParams *)customParams {
@@ -310,7 +310,7 @@
 
 - (void)requestToken:(ARTTokenParams *)tokenParams withOptions:(ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *, NSError *))callback {
     if (callback) {
-        void (^userCallback)(ARTTokenDetails *, NSError *) = callback;
+        void (^const userCallback)(ARTTokenDetails *, NSError *) = callback;
         callback = ^(ARTTokenDetails *t, NSError *e) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(t, e);
@@ -335,7 +335,7 @@ dispatch_async(_queue, ^{
         return nil;
     }
 
-    void (^checkerCallback)(ARTTokenDetails *_Nullable, NSError *_Nullable) = ^(ARTTokenDetails *tokenDetails, NSError *error) {
+    void (^const checkerCallback)(ARTTokenDetails *_Nullable, NSError *_Nullable) = ^(ARTTokenDetails *tokenDetails, NSError *error) {
         if (error) {
             if (error.code == NSURLErrorTimedOut) {
                 ARTErrorInfo *ablyError = [ARTErrorInfo createWithCode:40170 message:@"Error in requesting auth token"];
@@ -388,7 +388,7 @@ dispatch_async(_queue, ^{
                 }
             }, &safeCallback);
 
-            void (^userCallback)(ARTTokenParams *, void(^)(id<ARTTokenDetailsCompatible>, NSError *)) = ^(ARTTokenParams *tokenParams, void(^callback)(id<ARTTokenDetailsCompatible>, NSError *)){
+            void (^const userCallback)(ARTTokenParams *, void(^)(id<ARTTokenDetailsCompatible>, NSError *)) = ^(ARTTokenParams *tokenParams, void(^callback)(id<ARTTokenDetailsCompatible>, NSError *)){
                 dispatch_async(self->_userQueue, ^{
                     replacedOptions.authCallback(tokenParams, callback);
                 });
@@ -548,7 +548,7 @@ dispatch_async(_queue, ^{
     __weak id<ARTAuthDelegate> lastDelegate = self.delegate;
 
     NSString *authorizeId = [[NSUUID new] UUIDString];
-    __block BOOL hasBeenExplicitlyCanceled = false;
+    __block BOOL hasBeenExplicitlyCanceled = NO;
     // Request always a new token
     [self.logger verbose:@"RS:%p ARTAuthInternal [authorize.%@, delegate=%@]: requesting new token", _rest, authorizeId, lastDelegate ? @"YES" : @"NO"];
     NSObject<ARTCancellable> *task;
@@ -556,21 +556,21 @@ dispatch_async(_queue, ^{
     task = [self _requestToken:currentTokenParams withOptions:replacedOptions callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
         self->_authorizationsCount -= 1;
 
-        void (^successCallbackBlock)(void) = ^{
+        void (^const successCallbackBlock)(void) = ^{
             [self.logger verbose:@"RS:%p ARTAuthInternal [authorize.%@]: success callback: %@", self->_rest, authorizeId, tokenDetails];
             if (callback) {
                 callback(tokenDetails, nil);
             }
         };
-
-        void (^failureCallbackBlock)(NSError *) = ^(NSError *error) {
+        
+        void (^const failureCallbackBlock)(NSError *) = ^(NSError *error) {
             [self.logger verbose:@"RS:%p ARTAuthInternal [authorize.%@]: failure callback: %@ with token details %@", self->_rest, authorizeId, error, tokenDetails];
             if (callback) {
                 callback(tokenDetails, error);
             }
         };
 
-        void (^canceledCallbackBlock)(void) = ^{
+        void (^const canceledCallbackBlock)(void) = ^{
             [self.logger verbose:@"RS:%p ARTAuthInternal [authorize.%@]: canceled callback", self->_rest, authorizeId];
             if (callback) {
                 callback(nil, [ARTErrorInfo createWithCode:kCFURLErrorCancelled message:@"Authorization has been canceled"]);
@@ -626,7 +626,7 @@ dispatch_async(_queue, ^{
     }];
 
     [_cancelationEventEmitter once:^(ARTErrorInfo * _Nullable error) {
-        hasBeenExplicitlyCanceled = true;
+        hasBeenExplicitlyCanceled = YES;
         [task cancel];
     }];
 

@@ -63,3 +63,5 @@ fastlane/test_output
 fastlane/README.md
 
 Examples/Tests/Podfile.lock
+
+.DS_Store
