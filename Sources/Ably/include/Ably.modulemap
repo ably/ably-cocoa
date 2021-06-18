@@ -6,7 +6,6 @@ framework module Ably {
 
     explicit module Private {
         header "ARTConstants.h"
-        header "ARTReachability.h"
         header "ARTAuth+Private.h"
         header "ARTAuthOptions+Private.h"
         header "ARTBaseMessage+Private.h"
