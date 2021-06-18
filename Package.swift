@@ -53,10 +53,6 @@ let package = Package(
                 "Version.xcconfig",
                 "ably-common/protocol/README.md"
             ],
-            sources: [
-                "Source",
-                "SocketRocket"
-            ],
             resources: [
                 .copy("COPYRIGHT"),
                 .copy("CHANGELOG.md"),
@@ -66,11 +62,11 @@ let package = Package(
                 .copy("ably-common/protocol/errors.json"),
                 .copy("ably-common/protocol/errorsHelp.json")
             ],
-            publicHeadersPath: "Source/include",
+//            publicHeadersPath: "include",
             cSettings: [
                 .headerSearchPath("include"),
                 .headerSearchPath("Source/**"),
-                .headerSearchPath("SocketRocket/**")
+                .headerSearchPath("SocketRocket/SocketRocket/**")
             ]
         )
     ]
