@@ -28,8 +28,7 @@ let package = Package(
                 "SocketRocket"
             ],
             cSettings: [
-                .headerSearchPath("**"),
-                .headerSearchPath("Internal"),
+                .headerSearchPath("**")
             ]
         ),
         .target(name: "SocketRocket",
