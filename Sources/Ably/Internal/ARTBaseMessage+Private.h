@@ -7,9 +7,9 @@
 //
 
 #import "CompatibilityMacros.h"
-#import "ARTBaseMessage.h"
-#import "ARTDataEncoder.h"
-#import "ARTStatus.h"
+#import "Ably/ARTBaseMessage.h"
+#import "Ably/ARTDataEncoder.h"
+#import "Ably/ARTStatus.h"
 
 ART_ASSUME_NONNULL_BEGIN
 

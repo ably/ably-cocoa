@@ -6,9 +6,9 @@
 //  Copyright © 2017 Ably. All rights reserved.
 //
 
-#import "ARTRestChannels.h"
-#import "ARTQueuedDealloc.h"
-#import "ARTRestChannel+Private.h"
+#import "Ably/ARTRestChannels.h"
+#import "Ably/ARTQueuedDealloc.h"
+#import "Ably/ARTRestChannel+Private.h"
 
 @class ARTRestChannel;
 @class ARTRestInternal;

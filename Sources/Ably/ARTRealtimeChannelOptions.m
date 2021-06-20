@@ -6,7 +6,7 @@
 //  Copyright © 2020 Ably. All rights reserved.
 //
 
-#import "ARTRealtimeChannelOptions.h"
+#import "Ably/ARTRealtimeChannelOptions.h"
 
 @implementation ARTRealtimeChannelOptions
 

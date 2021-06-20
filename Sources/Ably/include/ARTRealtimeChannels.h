@@ -6,9 +6,9 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
-#import "ARTChannels.h"
-#import "ARTRealtimeChannel.h"
-#import "ARTRealtime.h"
+#import "Ably/ARTChannels.h"
+#import "Ably/ARTRealtimeChannel.h"
+#import "Ably/ARTRealtime.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

@@ -7,8 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ARTTypes.h"
-#import "ARTClientOptions.h"
+#import "Ably/ARTTypes.h"
+#import "Ably/ARTClientOptions.h"
 
 @class ARTTokenRequest;
 

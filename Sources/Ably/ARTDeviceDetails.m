@@ -6,8 +6,8 @@
 //  Copyright © 2017 Ably. All rights reserved.
 //
 
-#import "ARTDeviceDetails.h"
-#import "ARTDevicePushDetails.h"
+#import "Ably/ARTDeviceDetails.h"
+#import "Ably/ARTDevicePushDetails.h"
 
 @implementation ARTDeviceDetails
 

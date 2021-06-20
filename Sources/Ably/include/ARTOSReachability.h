@@ -6,7 +6,7 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
-#import "ARTReachability.h"
+#import "Ably/ARTReachability.h"
 
 @interface ARTOSReachability : NSObject  <ARTReachability>
 @end

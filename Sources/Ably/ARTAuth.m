@@ -5,28 +5,28 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "ARTAuth+Private.h"
+#import "Ably/ARTAuth+Private.h"
 
 #if TARGET_OS_IPHONE
 #import <UIKit/UIKit.h>
 #endif
 
-#import "ARTRest+Private.h"
-#import "ARTHttp.h"
-#import "ARTClientOptions.h"
-#import "ARTAuthOptions.h"
-#import "ARTTokenDetails.h"
-#import "ARTTokenParams+Private.h"
-#import "ARTTokenRequest.h"
-#import "ARTEncoder.h"
-#import "ARTStatus.h"
-#import "ARTJsonEncoder.h"
-#import "ARTGCD.h"
-#import "ARTEventEmitter+Private.h"
-#import "ARTPushActivationStateMachine+Private.h"
-#import "ARTPushActivationEvent.h"
-#import "ARTPushActivationState.h"
-#import "ARTFormEncode.h"
+#import "Ably/ARTRest+Private.h"
+#import "Ably/ARTHttp.h"
+#import "Ably/ARTClientOptions.h"
+#import "Ably/ARTAuthOptions.h"
+#import "Ably/ARTTokenDetails.h"
+#import "Ably/ARTTokenParams+Private.h"
+#import "Ably/ARTTokenRequest.h"
+#import "Ably/ARTEncoder.h"
+#import "Ably/ARTStatus.h"
+#import "Ably/ARTJsonEncoder.h"
+#import "Ably/ARTGCD.h"
+#import "Ably/ARTEventEmitter+Private.h"
+#import "Ably/ARTPushActivationStateMachine+Private.h"
+#import "Ably/ARTPushActivationEvent.h"
+#import "Ably/ARTPushActivationState.h"
+#import "Ably/ARTFormEncode.h"
 
 @implementation ARTAuth {
     ARTQueuedDealloc *_dealloc;

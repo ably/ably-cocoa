@@ -5,17 +5,17 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "ARTRealtime.h"
-#import "ARTEventEmitter.h"
-#import "ARTTypes.h"
-#import "ARTQueuedMessage.h"
-#import "ARTPendingMessage.h"
-#import "ARTProtocolMessage.h"
-#import "ARTReachability.h"
+#import "Ably/ARTRealtime.h"
+#import "Ably/ARTEventEmitter.h"
+#import "Ably/ARTTypes.h"
+#import "Ably/ARTQueuedMessage.h"
+#import "Ably/ARTPendingMessage.h"
+#import "Ably/ARTProtocolMessage.h"
+#import "Ably/ARTReachability.h"
 
-#import "ARTRealtimeTransport.h"
-#import "ARTAuth+Private.h"
-#import "ARTRest+Private.h"
+#import "Ably/ARTRealtimeTransport.h"
+#import "Ably/ARTAuth+Private.h"
+#import "Ably/ARTRest+Private.h"
 
 @class ARTRestInternal;
 @class ARTErrorInfo;

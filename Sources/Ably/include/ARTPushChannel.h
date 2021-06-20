@@ -7,9 +7,9 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ARTPush.h"
-#import "ARTHttp.h"
-#import "ARTChannel.h"
+#import "Ably/ARTPush.h"
+#import "Ably/ARTHttp.h"
+#import "Ably/ARTChannel.h"
 
 @class ARTPushChannelSubscription;
 @class ARTPaginatedResult;

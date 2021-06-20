@@ -6,12 +6,12 @@
 //  Copyright © 2018 Ably. All rights reserved.
 //
 
-#import "ARTNSMutableRequest+ARTPush.h"
+#import "Ably/ARTNSMutableRequest+ARTPush.h"
 
-#import "ARTLog.h"
-#import "ARTDeviceDetails.h"
-#import "ARTDeviceIdentityTokenDetails.h"
-#import "ARTLocalDevice.h"
+#import "Ably/ARTLog.h"
+#import "Ably/ARTDeviceDetails.h"
+#import "Ably/ARTDeviceIdentityTokenDetails.h"
+#import "Ably/ARTLocalDevice.h"
 
 @implementation NSMutableURLRequest (ARTPush)
 

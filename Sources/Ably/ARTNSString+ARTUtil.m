@@ -6,7 +6,7 @@
 //  Copyright © 2018 Ably. All rights reserved.
 //
 
-#import "ARTNSString+ARTUtil.h"
+#import "Ably/ARTNSString+ARTUtil.h"
 
 @implementation NSString (ARTUtil)
 

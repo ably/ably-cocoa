@@ -7,8 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ARTStatus.h"
-#import "ARTEventEmitter.h"
+#import "Ably/ARTStatus.h"
+#import "Ably/ARTEventEmitter.h"
 
 @class ARTStatus;
 @class ARTHttpResponse;

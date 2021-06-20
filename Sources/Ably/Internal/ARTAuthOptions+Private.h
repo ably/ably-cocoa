@@ -6,7 +6,7 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
-#import "ARTAuthOptions.h"
+#import "Ably/ARTAuthOptions.h"
 #import <CompatibilityMacros.h>
 
 NS_ASSUME_NONNULL_BEGIN

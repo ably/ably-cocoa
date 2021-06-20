@@ -6,7 +6,7 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
-#import "ARTMsgPackEncoder.h"
+#import "Ably/ARTMsgPackEncoder.h"
 #import <msgpack/MessagePack.h>
 
 @implementation ARTMsgPackEncoder

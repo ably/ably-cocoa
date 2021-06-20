@@ -6,7 +6,7 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
-#import "ARTAuthDetails.h"
+#import "Ably/ARTAuthDetails.h"
 
 @implementation ARTAuthDetails
 

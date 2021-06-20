@@ -6,7 +6,7 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
-#import "ARTLog.h"
+#import "Ably/ARTLog.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

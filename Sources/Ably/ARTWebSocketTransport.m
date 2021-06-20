@@ -7,19 +7,19 @@
 
 #import "ARTWebSocketTransport+Private.h"
 
-#import "ARTRest.h"
-#import "ARTRest+Private.h"
-#import "ARTProtocolMessage.h"
-#import "ARTClientOptions.h"
-#import "ARTTokenParams.h"
-#import "ARTTokenDetails.h"
-#import "ARTStatus.h"
-#import "ARTEncoder.h"
-#import "ARTDefault.h"
-#import "ARTRealtimeTransport.h"
-#import "ARTGCD.h"
-#import "ARTLog+Private.h"
-#import "ARTEventEmitter+Private.h"
+#import "Ably/ARTRest.h"
+#import "Ably/ARTRest+Private.h"
+#import "Ably/ARTProtocolMessage.h"
+#import "Ably/ARTClientOptions.h"
+#import "Ably/ARTTokenParams.h"
+#import "Ably/ARTTokenDetails.h"
+#import "Ably/ARTStatus.h"
+#import "Ably/ARTEncoder.h"
+#import "Ably/ARTDefault.h"
+#import "Ably/ARTRealtimeTransport.h"
+#import "Ably/ARTGCD.h"
+#import "Ably/ARTLog+Private.h"
+#import "Ably/ARTEventEmitter+Private.h"
 
 enum {
     ARTWsNeverConnected = -1,

@@ -8,9 +8,9 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ARTTypes.h"
-#import "ARTPresenceMessage.h"
-#import "ARTPaginatedResult.h"
+#import "Ably/ARTTypes.h"
+#import "Ably/ARTPresenceMessage.h"
+#import "Ably/ARTPaginatedResult.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

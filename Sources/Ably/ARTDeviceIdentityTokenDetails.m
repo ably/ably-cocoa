@@ -6,7 +6,7 @@
 //  Copyright © 2018 Ably. All rights reserved.
 //
 
-#import "ARTDeviceIdentityTokenDetails.h"
+#import "Ably/ARTDeviceIdentityTokenDetails.h"
 
 NSString *const ARTCoderTokenKey = @"token";
 NSString *const ARTCoderIssuedKey = @"issued";

@@ -6,7 +6,7 @@
 //  Copyright © 2018 Ably. All rights reserved.
 //
 
-#import "ARTNSMutableURLRequest+ARTPaginated.h"
+#import "Ably/ARTNSMutableURLRequest+ARTPaginated.h"
 
 @implementation NSMutableURLRequest (ARTPaginated)
 

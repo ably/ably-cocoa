@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 г. Ably. All rights reserved.
 //
 
-#import "ARTPresence.h"
+#import "Ably/ARTPresence.h"
 
 @implementation ARTPresence
 

@@ -6,9 +6,9 @@
 //  Copyright © 2017 Ably. All rights reserved.
 //
 
-#import "ARTLocalDeviceStorage.h"
-#import "ARTLog.h"
-#import "ARTLocalDevice+Private.h"
+#import "Ably/ARTLocalDeviceStorage.h"
+#import "Ably/ARTLog.h"
+#import "Ably/ARTLocalDevice+Private.h"
 
 @implementation ARTLocalDeviceStorage {
     ARTLog *_logger;

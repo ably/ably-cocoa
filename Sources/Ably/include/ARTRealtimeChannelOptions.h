@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ARTChannelOptions.h"
+#import "Ably/ARTChannelOptions.h"
 
 /**
  ARTChannelMode bitmask matching the ARTProtocolMessageFlag.

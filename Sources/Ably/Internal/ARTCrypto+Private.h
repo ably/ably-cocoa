@@ -6,8 +6,8 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
-#import "ARTCrypto.h"
-#import "ARTLog.h"
+#import "Ably/ARTCrypto.h"
+#import "Ably/ARTLog.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

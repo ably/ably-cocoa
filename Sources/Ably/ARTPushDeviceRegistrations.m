@@ -6,18 +6,18 @@
 //  Copyright © 2017 Ably. All rights reserved.
 //
 
-#import "ARTPushDeviceRegistrations+Private.h"
-#import "ARTHttp.h"
-#import "ARTLog.h"
-#import "ARTPaginatedResult+Private.h"
-#import "ARTDeviceDetails.h"
-#import "ARTDevicePushDetails.h"
-#import "ARTDeviceIdentityTokenDetails.h"
-#import "ARTClientOptions.h"
-#import "ARTEncoder.h"
-#import "ARTRest+Private.h"
-#import "ARTLocalDevice.h"
-#import "ARTNSMutableRequest+ARTPush.h"
+#import "Ably/ARTPushDeviceRegistrations+Private.h"
+#import "Ably/ARTHttp.h"
+#import "Ably/ARTLog.h"
+#import "Ably/ARTPaginatedResult+Private.h"
+#import "Ably/ARTDeviceDetails.h"
+#import "Ably/ARTDevicePushDetails.h"
+#import "Ably/ARTDeviceIdentityTokenDetails.h"
+#import "Ably/ARTClientOptions.h"
+#import "Ably/ARTEncoder.h"
+#import "Ably/ARTRest+Private.h"
+#import "Ably/ARTLocalDevice.h"
+#import "Ably/ARTNSMutableRequest+ARTPush.h"
 
 @implementation ARTPushDeviceRegistrations {
     ARTQueuedDealloc *_dealloc;

@@ -7,8 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ARTTypes.h"
-#import "ARTStatus.h"
+#import "Ably/ARTTypes.h"
+#import "Ably/ARTStatus.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

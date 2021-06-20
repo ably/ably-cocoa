@@ -6,9 +6,9 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "ARTChannelOptions.h"
+#import "Ably/ARTChannelOptions.h"
 
-#import "ARTEncoder.h"
+#import "Ably/ARTEncoder.h"
 
 @implementation ARTChannelOptions
 

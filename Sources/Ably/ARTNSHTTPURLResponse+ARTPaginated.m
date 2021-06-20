@@ -6,7 +6,7 @@
 //  Copyright © 2018 Ably. All rights reserved.
 //
 
-#import "ARTNSHTTPURLResponse+ARTPaginated.h"
+#import "Ably/ARTNSHTTPURLResponse+ARTPaginated.h"
 
 @implementation NSHTTPURLResponse (ARTPaginated)
 

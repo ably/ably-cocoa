@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "ARTDefault+Private.h"
+#import "Ably/ARTDefault+Private.h"
 
 #import "Ably.h"
 

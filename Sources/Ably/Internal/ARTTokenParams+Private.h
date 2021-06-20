@@ -6,7 +6,7 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
-#import "ARTTokenParams.h"
+#import "Ably/ARTTokenParams.h"
 
 @interface ARTTokenParams (Private)
 

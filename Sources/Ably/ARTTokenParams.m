@@ -5,14 +5,14 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "ARTTokenParams+Private.h"
+#import "Ably/ARTTokenParams+Private.h"
 
 #include <CommonCrypto/CommonDigest.h>
 #include <CommonCrypto/CommonHMAC.h>
 
-#import "ARTDefault.h"
-#import "ARTEncoder.h"
-#import "ARTTokenRequest.h"
+#import "Ably/ARTDefault.h"
+#import "Ably/ARTEncoder.h"
+#import "Ably/ARTTokenRequest.h"
 
 @implementation ARTTokenParams
 

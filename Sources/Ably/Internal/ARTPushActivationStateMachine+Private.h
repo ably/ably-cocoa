@@ -5,7 +5,7 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "ARTPushActivationStateMachine.h"
+#import "Ably/ARTPushActivationStateMachine.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ARTQueuedMessage.h"
+#import "Ably/ARTQueuedMessage.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

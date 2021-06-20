@@ -6,9 +6,9 @@
 //  Copyright (c) 2015 г. Ably. All rights reserved.
 //
 
-#import "ARTHTTPPaginatedResponse.h"
+#import "Ably/ARTHTTPPaginatedResponse.h"
 
-#import "ARTPaginatedResult+Private.h"
+#import "Ably/ARTPaginatedResult+Private.h"
 
 @class ARTRestInternal;
 

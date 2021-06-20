@@ -6,9 +6,9 @@
 //  Copyright © 2017 Ably. All rights reserved.
 //
 
-#import "ARTPush.h"
-#import "ARTPushAdmin+Private.h"
-#import "ARTQueuedDealloc.h"
+#import "Ably/ARTPush.h"
+#import "Ably/ARTPushAdmin+Private.h"
+#import "Ably/ARTQueuedDealloc.h"
 
 @class ARTPushActivationStateMachine;
 @class ARTRestInternal;

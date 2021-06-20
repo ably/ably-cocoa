@@ -6,9 +6,9 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "ARTAuth.h"
-#import "ARTEventEmitter.h"
-#import "ARTQueuedDealloc.h"
+#import "Ably/ARTAuth.h"
+#import "Ably/ARTEventEmitter.h"
+#import "Ably/ARTQueuedDealloc.h"
 
 @class ARTRestInternal;
 

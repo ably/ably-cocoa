@@ -6,13 +6,13 @@
 //  Copyright © 2017 Ably. All rights reserved.
 //
 
-#import "ARTLocalDevice+Private.h"
-#import "ARTDevicePushDetails.h"
-#import "ARTPush.h"
-#import "ARTEncoder.h"
-#import "ARTDeviceStorage.h"
-#import "ARTDeviceIdentityTokenDetails.h"
-#import "ARTCrypto+Private.h"
+#import "Ably/ARTLocalDevice+Private.h"
+#import "Ably/ARTDevicePushDetails.h"
+#import "Ably/ARTPush.h"
+#import "Ably/ARTEncoder.h"
+#import "Ably/ARTDeviceStorage.h"
+#import "Ably/ARTDeviceIdentityTokenDetails.h"
+#import "Ably/ARTCrypto+Private.h"
 
 NSString *const ARTDevicePlatform = @"ios";
 

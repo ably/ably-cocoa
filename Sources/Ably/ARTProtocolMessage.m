@@ -5,13 +5,13 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "ARTDefault.h"
-#import "ARTProtocolMessage.h"
-#import "ARTProtocolMessage+Private.h"
-#import "ARTStatus.h"
-#import "ARTConnectionDetails.h"
-#import "ARTNSString+ARTUtil.h"
-#import "ARTNSArray+ARTFunctional.h"
+#import "Ably/ARTDefault.h"
+#import "Ably/ARTProtocolMessage.h"
+#import "Ably/ARTProtocolMessage+Private.h"
+#import "Ably/ARTStatus.h"
+#import "Ably/ARTConnectionDetails.h"
+#import "Ably/ARTNSString+ARTUtil.h"
+#import "Ably/ARTNSArray+ARTFunctional.h"
 
 @implementation ARTProtocolMessage
 

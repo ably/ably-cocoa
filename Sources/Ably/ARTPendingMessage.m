@@ -6,7 +6,7 @@
 //  Copyright © 2017 Ably. All rights reserved.
 //
 
-#import "ARTPendingMessage.h"
+#import "Ably/ARTPendingMessage.h"
 
 @implementation ARTPendingMessage
 

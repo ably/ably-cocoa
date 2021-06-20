@@ -6,11 +6,11 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "ARTPresenceMap.h"
-#import "ARTPresenceMessage.h"
-#import "ARTPresenceMessage+Private.h"
-#import "ARTEventEmitter+Private.h"
-#import "ARTLog.h"
+#import "Ably/ARTPresenceMap.h"
+#import "Ably/ARTPresenceMessage.h"
+#import "Ably/ARTPresenceMessage+Private.h"
+#import "Ably/ARTEventEmitter+Private.h"
+#import "Ably/ARTLog.h"
 
 typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
     ARTPresenceSyncInitialized,

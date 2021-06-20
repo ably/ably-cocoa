@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 г. Ably. All rights reserved.
 //
 
-#import "ARTPaginatedResult.h"
+#import "Ably/ARTPaginatedResult.h"
 
 @class ARTRestInternal;
 

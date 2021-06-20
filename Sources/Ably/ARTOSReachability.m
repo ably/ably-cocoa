@@ -14,7 +14,7 @@
 #import <SystemConfiguration/SystemConfiguration.h>
 #import <netinet/in.h>
 
-#import "ARTOSReachability.h"
+#import "Ably/ARTOSReachability.h"
 
 NSNotificationName const kARTOSReachabilityNetworkIsReachableNotification = @"ARTOSReachabilityNetworkIsReachableNotification";
 NSNotificationName const kARTOSReachabilityNetworkIsDownNotification = @"ARTOSReachabilityNetworkIsDownNotification";

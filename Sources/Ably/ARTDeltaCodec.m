@@ -6,7 +6,7 @@
 //  Copyright © 2020 Ably. All rights reserved.
 //
 
-#import "ARTDeltaCodec.h"
+#import "Ably/ARTDeltaCodec.h"
 
 @implementation ARTDeltaCodec (ARTDeltaCodec_VCDiffDecoder)
 

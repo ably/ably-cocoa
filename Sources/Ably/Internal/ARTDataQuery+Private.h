@@ -6,8 +6,8 @@
 //  Copyright (c) 2015 г. Ably. All rights reserved.
 //
 
-#import "ARTDataQuery.h"
-#import "ARTRealtimeChannel+Private.h"
+#import "Ably/ARTDataQuery.h"
+#import "Ably/ARTRealtimeChannel+Private.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

@@ -6,7 +6,7 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
-#import "ARTGCD.h"
+#import "Ably/ARTGCD.h"
 
 @interface ARTScheduledBlockHandle ()
 

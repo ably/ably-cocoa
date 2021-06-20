@@ -7,8 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ARTMessage.h"
-#import "ARTPresenceMessage.h"
+#import "Ably/ARTMessage.h"
+#import "Ably/ARTPresenceMessage.h"
 
 @class ARTConnectionDetails;
 @class ARTAuthDetails;

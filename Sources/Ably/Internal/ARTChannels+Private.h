@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "ARTChannels.h"
+#import "Ably/ARTChannels.h"
 
 @class ARTRestChannel;
 @class ARTChannelOptions;

@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ARTDeviceStorage.h"
+#import "Ably/ARTDeviceStorage.h"
 
 @class ARTLog;
 

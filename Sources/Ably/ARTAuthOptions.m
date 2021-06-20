@@ -5,8 +5,8 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "ARTAuthOptions+Private.h"
-#import "ARTTokenDetails.h"
+#import "Ably/ARTAuthOptions+Private.h"
+#import "Ably/ARTTokenDetails.h"
 
 @implementation ARTAuthOptions
 

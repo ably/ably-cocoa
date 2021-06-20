@@ -5,10 +5,10 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "ARTTokenRequest.h"
-#import "ARTTokenParams.h"
-#import "ARTAuth+Private.h"
-#import "ARTDefault.h"
+#import "Ably/ARTTokenRequest.h"
+#import "Ably/ARTTokenParams.h"
+#import "Ably/ARTAuth+Private.h"
+#import "Ably/ARTDefault.h"
 
 @implementation ARTTokenRequest
 

@@ -6,17 +6,17 @@
 //  Copyright (c) 2015 г. Ably. All rights reserved.
 //
 
-#import "ARTChannel+Private.h"
+#import "Ably/ARTChannel+Private.h"
 
-#import "ARTDataEncoder.h"
-#import "ARTMessage.h"
-#import "ARTChannelOptions.h"
-#import "ARTNSArray+ARTFunctional.h"
-#import "ARTBaseMessage+Private.h"
-#import "ARTDataQuery.h"
-#import "ARTRest+Private.h"
-#import "ARTDefault.h"
-#import "ARTClientOptions+Private.h"
+#import "Ably/ARTDataEncoder.h"
+#import "Ably/ARTMessage.h"
+#import "Ably/ARTChannelOptions.h"
+#import "Ably/ARTNSArray+ARTFunctional.h"
+#import "Ably/ARTBaseMessage+Private.h"
+#import "Ably/ARTDataQuery.h"
+#import "Ably/ARTRest+Private.h"
+#import "Ably/ARTDefault.h"
+#import "Ably/ARTClientOptions+Private.h"
 
 @implementation ARTChannel {
     dispatch_queue_t _queue;

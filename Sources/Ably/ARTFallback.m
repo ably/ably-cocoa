@@ -6,12 +6,12 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "ARTFallback+Private.h"
+#import "Ably/ARTFallback+Private.h"
 
-#import "ARTDefault.h"
-#import "ARTStatus.h"
-#import "ARTHttp.h"
-#import "ARTClientOptions.h"
+#import "Ably/ARTDefault.h"
+#import "Ably/ARTStatus.h"
+#import "Ably/ARTHttp.h"
+#import "Ably/ARTClientOptions.h"
 
 void (^ARTFallback_shuffleArray)(NSMutableArray *) = ^void(NSMutableArray *a) {
     for (NSUInteger i = a.count; i > 1; i--) {

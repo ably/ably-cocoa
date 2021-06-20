@@ -7,11 +7,11 @@
 //
 @import SocketRocket;
 
-#import "ARTWebSocketTransport.h"
+#import "Ably/ARTWebSocketTransport.h"
 #import "CompatibilityMacros.h"
-#import "ARTEncoder.h"
-#import "ARTAuth.h"
-#import "ARTWebSocket.h"
+#import "Ably/ARTEncoder.h"
+#import "Ably/ARTAuth.h"
+#import "Ably/ARTWebSocket.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

@@ -5,8 +5,8 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "ARTBaseMessage.h"
-#import "ARTEventEmitter.h"
+#import "Ably/ARTBaseMessage.h"
+#import "Ably/ARTEventEmitter.h"
 
 /// Presence action type
 typedef NS_ENUM(NSUInteger, ARTPresenceAction) {

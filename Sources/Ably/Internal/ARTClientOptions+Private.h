@@ -6,7 +6,7 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
-#import "ARTClientOptions.h"
+#import "Ably/ARTClientOptions.h"
 
 @interface ARTClientOptions ()
 

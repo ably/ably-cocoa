@@ -6,12 +6,12 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "ARTEventEmitter+Private.h"
+#import "Ably/ARTEventEmitter+Private.h"
 
-#import "ARTRealtime.h"
-#import "ARTRealtime+Private.h"
-#import "ARTRealtimeChannel.h"
-#import "ARTGCD.h"
+#import "Ably/ARTRealtime.h"
+#import "Ably/ARTRealtime+Private.h"
+#import "Ably/ARTRealtimeChannel.h"
+#import "Ably/ARTGCD.h"
 
 @implementation NSMutableArray (AsSet)
 

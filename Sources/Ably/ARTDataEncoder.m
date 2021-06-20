@@ -5,10 +5,10 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "ARTCrypto+Private.h"
-#import "ARTLog.h"
-#import "ARTDataEncoder.h"
-#import "ARTDeltaCodec.h"
+#import "Ably/ARTCrypto+Private.h"
+#import "Ably/ARTLog.h"
+#import "Ably/ARTDataEncoder.h"
+#import "Ably/ARTDeltaCodec.h"
 
 @implementation ARTDataEncoderOutput
 

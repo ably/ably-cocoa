@@ -6,7 +6,7 @@
 //  Copyright © 2015 Ably. All rights reserved.
 //
 
-#import "ARTConnectionDetails+Private.h"
+#import "Ably/ARTConnectionDetails+Private.h"
 
 @implementation ARTConnectionDetails
 

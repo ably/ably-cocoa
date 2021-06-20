@@ -6,7 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "ARTLog.h"
+#import "Ably/ARTLog.h"
 
 @protocol ARTRealtimeTransport;
 

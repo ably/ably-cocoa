@@ -6,25 +6,25 @@
 //  Copyright © 2017 Ably. All rights reserved.
 //
 
-#import "ARTPush+Private.h"
-#import "ARTDeviceDetails.h"
-#import "ARTDevicePushDetails.h"
-#import "ARTRest+Private.h"
-#import "ARTLog.h"
-#import "ARTJsonEncoder.h"
-#import "ARTJsonLikeEncoder.h"
-#import "ARTEventEmitter.h"
+#import "Ably/ARTPush+Private.h"
+#import "Ably/ARTDeviceDetails.h"
+#import "Ably/ARTDevicePushDetails.h"
+#import "Ably/ARTRest+Private.h"
+#import "Ably/ARTLog.h"
+#import "Ably/ARTJsonEncoder.h"
+#import "Ably/ARTJsonLikeEncoder.h"
+#import "Ably/ARTEventEmitter.h"
 #if TARGET_OS_IOS
 #import <UIKit/UIKit.h>
-#import "ARTPushActivationStateMachine+Private.h"
+#import "Ably/ARTPushActivationStateMachine+Private.h"
 #endif
-#import "ARTPushAdmin.h"
-#import "ARTPushActivationEvent.h"
-#import "ARTClientOptions+Private.h"
-#import "ARTPushAdmin+Private.h"
-#import "ARTLocalDevice+Private.h"
-#import "ARTDeviceStorage.h"
-#import "ARTRealtime+Private.h"
+#import "Ably/ARTPushAdmin.h"
+#import "Ably/ARTPushActivationEvent.h"
+#import "Ably/ARTClientOptions+Private.h"
+#import "Ably/ARTPushAdmin+Private.h"
+#import "Ably/ARTLocalDevice+Private.h"
+#import "Ably/ARTDeviceStorage.h"
+#import "Ably/ARTRealtime+Private.h"
 
 @implementation ARTPush {
     ARTQueuedDealloc *_dealloc;

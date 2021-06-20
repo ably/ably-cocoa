@@ -6,8 +6,8 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
-#import "ARTRealtimePresence.h"
-#import "ARTRealtimeChannel+Private.h"
+#import "Ably/ARTRealtimePresence.h"
+#import "Ably/ARTRealtimeChannel+Private.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
