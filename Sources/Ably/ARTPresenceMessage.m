@@ -5,7 +5,7 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "Ably/ARTPresenceMessage+Private.h"
+#import "ARTPresenceMessage+Private.h"
 
 NSString *const ARTPresenceMessageException = @"ARTPresenceMessageException";
 NSString *const ARTAblyMessageInvalidPresenceId = @"Received presence message id is invalid %@";

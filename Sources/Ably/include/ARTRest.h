@@ -7,10 +7,10 @@
 
 #import <Foundation/Foundation.h>
 
-#import "Ably/ARTTypes.h"
-#import "Ably/ARTLog.h"
-#import "Ably/ARTRestChannels.h"
-#import "Ably/ARTLocalDevice.h"
+#import "ARTTypes.h"
+#import "ARTLog.h"
+#import "ARTRestChannels.h"
+#import "ARTLocalDevice.h"
 
 @protocol ARTHTTPExecutor;
 

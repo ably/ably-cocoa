@@ -5,13 +5,13 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "Ably/ARTClientOptions+Private.h"
-#import "Ably/ARTAuthOptions+Private.h"
+#import "ARTClientOptions+Private.h"
+#import "ARTAuthOptions+Private.h"
 
-#import "Ably/ARTDefault.h"
-#import "Ably/ARTStatus.h"
-#import "Ably/ARTTokenParams.h"
-#import "Ably/ARTDeltaCodec.h"
+#import "ARTDefault.h"
+#import "ARTStatus.h"
+#import "ARTTokenParams.h"
+#import "ARTDeltaCodec.h"
 
 NSString *ARTDefaultEnvironment = nil;
 NSString *const ARTDefaultProduction = @"production";

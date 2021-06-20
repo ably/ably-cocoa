@@ -6,18 +6,18 @@
 //  Copyright © 2015 Ably. All rights reserved.
 //
 
-#import "Ably/ARTRealtimePresence+Private.h"
+#import "ARTRealtimePresence+Private.h"
 
-#import "Ably/ARTRealtime+Private.h"
-#import "Ably/ARTChannel+Private.h"
-#import "Ably/ARTRealtimeChannel+Private.h"
-#import "Ably/ARTPresenceMap.h"
-#import "Ably/ARTPresenceMessage.h"
-#import "Ably/ARTStatus.h"
-#import "Ably/ARTPresence+Private.h"
-#import "Ably/ARTDataQuery+Private.h"
-#import "Ably/ARTConnection+Private.h"
-#import "Ably/ARTNSArray+ARTFunctional.h"
+#import "ARTRealtime+Private.h"
+#import "ARTChannel+Private.h"
+#import "ARTRealtimeChannel+Private.h"
+#import "ARTPresenceMap.h"
+#import "ARTPresenceMessage.h"
+#import "ARTStatus.h"
+#import "ARTPresence+Private.h"
+#import "ARTDataQuery+Private.h"
+#import "ARTConnection+Private.h"
+#import "ARTNSArray+ARTFunctional.h"
 
 #pragma mark - ARTRealtimePresenceQuery
 

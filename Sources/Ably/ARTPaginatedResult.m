@@ -6,13 +6,13 @@
 //  Copyright (c) 2015 г. Ably. All rights reserved.
 //
 
-#import "Ably/ARTPaginatedResult+Private.h"
+#import "ARTPaginatedResult+Private.h"
 
-#import "Ably/ARTHttp.h"
-#import "Ably/ARTAuth.h"
-#import "Ably/ARTRest+Private.h"
-#import "Ably/ARTNSMutableURLRequest+ARTPaginated.h"
-#import "Ably/ARTNSHTTPURLResponse+ARTPaginated.h"
+#import "ARTHttp.h"
+#import "ARTAuth.h"
+#import "ARTRest+Private.h"
+#import "ARTNSMutableURLRequest+ARTPaginated.h"
+#import "ARTNSHTTPURLResponse+ARTPaginated.h"
 
 @implementation ARTPaginatedResult {
     ARTRestInternal *_rest;

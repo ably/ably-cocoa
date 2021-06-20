@@ -5,10 +5,10 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "Ably/ARTRest.h"
-#import "Ably/ARTHttp.h"
-#import "Ably/ARTRestChannels+Private.h"
-#import "Ably/ARTPush+Private.h"
+#import "ARTRest.h"
+#import "ARTHttp.h"
+#import "ARTRestChannels+Private.h"
+#import "ARTPush+Private.h"
 
 @protocol ARTEncoder;
 @protocol ARTHTTPExecutor;

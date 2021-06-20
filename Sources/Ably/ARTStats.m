@@ -5,8 +5,8 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "Ably/ARTStats.h"
-#import "Ably/ARTDataQuery+Private.h"
+#import "ARTStats.h"
+#import "ARTDataQuery+Private.h"
 
 @implementation ARTStatsQuery
 

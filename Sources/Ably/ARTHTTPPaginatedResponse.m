@@ -6,16 +6,16 @@
 //  Copyright © 2018 Ably. All rights reserved.
 //
 
-#import "Ably/ARTHTTPPaginatedResponse+Private.h"
+#import "ARTHTTPPaginatedResponse+Private.h"
 
-#import "Ably/ARTHttp.h"
-#import "Ably/ARTAuth.h"
-#import "Ably/ARTRest+Private.h"
-#import "Ably/ARTPaginatedResult+Private.h"
-#import "Ably/ARTNSMutableURLRequest+ARTPaginated.h"
-#import "Ably/ARTNSHTTPURLResponse+ARTPaginated.h"
-#import "Ably/ARTEncoder.h"
-#import "Ably/ARTConstants.h"
+#import "ARTHttp.h"
+#import "ARTAuth.h"
+#import "ARTRest+Private.h"
+#import "ARTPaginatedResult+Private.h"
+#import "ARTNSMutableURLRequest+ARTPaginated.h"
+#import "ARTNSHTTPURLResponse+ARTPaginated.h"
+#import "ARTEncoder.h"
+#import "ARTConstants.h"
 
 @implementation ARTHTTPPaginatedResponse
 

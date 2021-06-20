@@ -5,7 +5,7 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "Ably/ARTJsonEncoder.h"
+#import "ARTJsonEncoder.h"
 
 @implementation ARTJsonEncoder
 

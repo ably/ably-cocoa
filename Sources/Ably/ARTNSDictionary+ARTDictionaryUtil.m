@@ -5,8 +5,8 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "Ably/ARTNSDictionary+ARTDictionaryUtil.h"
-#import "Ably/ARTNSDate+ARTUtil.h"
+#import "ARTNSDictionary+ARTDictionaryUtil.h"
+#import "ARTNSDate+ARTUtil.h"
 
 @implementation NSDictionary (ARTDictionaryUtil)
 

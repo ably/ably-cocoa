@@ -5,7 +5,7 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "Ably/ARTNSArray+ARTFunctional.h"
+#import "ARTNSArray+ARTFunctional.h"
 
 @implementation NSArray (ARTFunctional)
 

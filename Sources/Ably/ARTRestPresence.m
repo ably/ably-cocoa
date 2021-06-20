@@ -6,20 +6,20 @@
 //  Copyright © 2015 Ably. All rights reserved.
 //
 
-#import "Ably/ARTRestPresence+Private.h"
+#import "ARTRestPresence+Private.h"
 
-#import "Ably/ARTPresence+Private.h"
-#import "Ably/ARTRest+Private.h"
-#import "Ably/ARTRestChannel+Private.h"
-#import "Ably/ARTPaginatedResult+Private.h"
-#import "Ably/ARTDataQuery+Private.h"
-#import "Ably/ARTJsonEncoder.h"
-#import "Ably/ARTNSArray+ARTFunctional.h"
-#import "Ably/ARTChannel+Private.h"
-#import "Ably/ARTBaseMessage+Private.h"
+#import "ARTPresence+Private.h"
+#import "ARTRest+Private.h"
+#import "ARTRestChannel+Private.h"
+#import "ARTPaginatedResult+Private.h"
+#import "ARTDataQuery+Private.h"
+#import "ARTJsonEncoder.h"
+#import "ARTNSArray+ARTFunctional.h"
+#import "ARTChannel+Private.h"
+#import "ARTBaseMessage+Private.h"
 
-#import "Ably/ARTChannel.h"
-#import "Ably/ARTDataQuery.h"
+#import "ARTChannel.h"
+#import "ARTDataQuery.h"
 
 @implementation ARTPresenceQuery
 

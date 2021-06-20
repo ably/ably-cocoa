@@ -6,9 +6,9 @@
 //  Copyright © 2018 Ably. All rights reserved.
 //
 
-#import "Ably/ARTNSMutableRequest+ARTRest.h"
+#import "ARTNSMutableRequest+ARTRest.h"
 
-#import "Ably/ARTEncoder.h"
+#import "ARTEncoder.h"
 
 @implementation NSMutableURLRequest (ARTRest)
 

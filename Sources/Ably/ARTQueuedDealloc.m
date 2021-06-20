@@ -6,7 +6,7 @@
 //  Copyright © 2019 Ably. All rights reserved.
 //
 
-#import "Ably/ARTQueuedDealloc.h"
+#import "ARTQueuedDealloc.h"
 
 @implementation ARTQueuedDealloc {
     id _ref;

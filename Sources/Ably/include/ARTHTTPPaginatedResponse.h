@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "Ably/ARTPaginatedResult.h"
+#import "ARTPaginatedResult.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

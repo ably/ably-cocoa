@@ -6,8 +6,8 @@
 //  Copyright (c) 2015 г. Ably. All rights reserved.
 //
 
-#import "Ably/ARTDataQuery+Private.h"
-#import "Ably/ARTRealtimeChannel+Private.h"
+#import "ARTDataQuery+Private.h"
+#import "ARTRealtimeChannel+Private.h"
 
 @implementation ARTDataQuery
 

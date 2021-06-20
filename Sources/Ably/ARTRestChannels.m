@@ -7,11 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "Ably/ARTRestChannels+Private.h"
-#import "Ably/ARTChannels+Private.h"
-#import "Ably/ARTRestChannel+Private.h"
-#import "Ably/ARTRest+Private.h"
-#import "Ably/ARTClientOptions+Private.h"
+#import "ARTRestChannels+Private.h"
+#import "ARTChannels+Private.h"
+#import "ARTRestChannel+Private.h"
+#import "ARTRest+Private.h"
+#import "ARTClientOptions+Private.h"
 
 @implementation ARTRestChannels {
     ARTQueuedDealloc *_dealloc;

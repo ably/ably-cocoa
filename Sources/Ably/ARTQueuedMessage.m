@@ -6,10 +6,10 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "Ably/ARTQueuedMessage.h"
+#import "ARTQueuedMessage.h"
 
-#import "Ably/ARTProtocolMessage.h"
-#import "Ably/ARTProtocolMessage+Private.h"
+#import "ARTProtocolMessage.h"
+#import "ARTProtocolMessage+Private.h"
 
 @implementation ARTQueuedMessage
 

@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "Ably/ARTStatus.h"
+#import "ARTStatus.h"
 
 // Reverse-DNS style domain
 NSString *const ARTAblyErrorDomain = @"io.ably.cocoa";

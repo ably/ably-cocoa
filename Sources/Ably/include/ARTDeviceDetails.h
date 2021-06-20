@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "Ably/ARTPush.h"
+#import "ARTPush.h"
 
 @class ARTDevicePushDetails;
 

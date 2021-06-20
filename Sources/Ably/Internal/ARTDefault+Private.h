@@ -6,7 +6,7 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
-#import "Ably/ARTDefault.h"
+#import "ARTDefault.h"
 
 extern NSString *const ARTDefault_variant;
 

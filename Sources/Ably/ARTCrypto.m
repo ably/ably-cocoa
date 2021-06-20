@@ -5,7 +5,7 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "Ably/ARTCrypto+Private.h"
+#import "ARTCrypto+Private.h"
 
 #import <CommonCrypto/CommonCrypto.h>
 

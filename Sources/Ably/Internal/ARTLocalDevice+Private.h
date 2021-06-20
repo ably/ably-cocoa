@@ -6,7 +6,7 @@
 //  Copyright © 2017 Ably. All rights reserved.
 //
 
-#import "Ably/ARTRest.h"
+#import "ARTRest.h"
 
 @protocol ARTDeviceStorage;
 

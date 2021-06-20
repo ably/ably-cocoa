@@ -9,12 +9,12 @@
 #ifndef ARTJsonLikeEncoder_h
 #define ARTJsonLikeEncoder_h
 
-#import "Ably/ARTRest+Private.h"
-#import "Ably/ARTEncoder.h"
-#import "Ably/ARTTokenDetails.h"
-#import "Ably/ARTTokenRequest.h"
-#import "Ably/ARTAuthDetails.h"
-#import "Ably/ARTStats.h"
+#import "ARTRest+Private.h"
+#import "ARTEncoder.h"
+#import "ARTTokenDetails.h"
+#import "ARTTokenRequest.h"
+#import "ARTAuthDetails.h"
+#import "ARTStats.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

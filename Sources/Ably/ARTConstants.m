@@ -6,7 +6,7 @@
 //  Copyright © 2018 Ably. All rights reserved.
 //
 
-#import "Ably/ARTConstants.h"
+#import "ARTConstants.h"
 
 NSString *const ARTHttpHeaderFieldErrorCodeKey = @"x-ably-errorcode";
 NSString *const ARTHttpHeaderFieldErrorMessageKey = @"x-ably-errormessage";

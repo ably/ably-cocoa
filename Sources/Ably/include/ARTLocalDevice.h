@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "Ably/ARTDeviceDetails.h"
+#import "ARTDeviceDetails.h"
 
 @class ARTDeviceIdentityTokenDetails;
 

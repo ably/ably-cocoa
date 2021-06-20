@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "Ably/ARTMessage.h"
+#import "ARTMessage.h"
 
 @implementation ARTMessage
 

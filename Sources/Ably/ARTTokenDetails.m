@@ -5,7 +5,7 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "Ably/ARTTokenDetails.h"
+#import "ARTTokenDetails.h"
 
 @implementation ARTTokenDetails
 

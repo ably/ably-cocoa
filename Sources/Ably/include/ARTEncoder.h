@@ -6,7 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "Ably/ARTTypes.h"
+#import "ARTTypes.h"
 
 @class ARTMessage;
 @class ARTPresenceMessage;

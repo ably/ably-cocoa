@@ -6,7 +6,7 @@
 //  Copyright © 2021 Ably. All rights reserved.
 //
 
-#import "Ably/ARTHttp.h"
+#import "ARTHttp.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

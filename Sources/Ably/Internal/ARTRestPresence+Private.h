@@ -6,8 +6,8 @@
 //  Copyright © 2016 Ably. All rights reserved.
 //
 
-#import "Ably/ARTRestPresence.h"
-#import "Ably/ARTQueuedDealloc.h"
+#import "ARTRestPresence.h"
+#import "ARTQueuedDealloc.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

@@ -9,8 +9,8 @@
 #ifndef ARTPushChannelSubscriptions_Private_h
 #define ARTPushChannelSubscriptions_Private_h
 
-#import "Ably/ARTPushChannelSubscriptions.h"
-#import "Ably/ARTQueuedDealloc.h"
+#import "ARTPushChannelSubscriptions.h"
+#import "ARTQueuedDealloc.h"
 
 @class ARTRestInternal;
 

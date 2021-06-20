@@ -10,7 +10,7 @@
 //  https://github.com/mxcl/OMGHTTPURLRQ/blob/a757e2a3043c5f031b23ef8dadf82a97856dbfab/Sources/OMGFormURLEncode.m
 //
 
-#import "Ably/ARTFormEncode.h"
+#import "ARTFormEncode.h"
 
 static inline NSString *enc(id in, NSString *ignore) {
     NSMutableCharacterSet *allowedSet = [NSMutableCharacterSet characterSetWithCharactersInString:ignore];

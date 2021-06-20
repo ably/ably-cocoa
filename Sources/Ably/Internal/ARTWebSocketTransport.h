@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "Ably/ARTRealtimeTransport.h"
+#import "ARTRealtimeTransport.h"
 
 @class ARTClientOptions;
 @class ARTRest;

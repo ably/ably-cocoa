@@ -5,23 +5,23 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "Ably/ARTRestChannel+Private.h"
+#import "ARTRestChannel+Private.h"
 
-#import "Ably/ARTRest+Private.h"
-#import "Ably/ARTRestPresence+Private.h"
-#import "Ably/ARTChannel+Private.h"
-#import "Ably/ARTChannelOptions.h"
-#import "Ably/ARTMessage.h"
-#import "Ably/ARTBaseMessage+Private.h"
-#import "Ably/ARTPaginatedResult+Private.h"
-#import "Ably/ARTDataQuery+Private.h"
-#import "Ably/ARTJsonEncoder.h"
-#import "Ably/ARTAuth+Private.h"
-#import "Ably/ARTTokenDetails.h"
-#import "Ably/ARTNSArray+ARTFunctional.h"
-#import "Ably/ARTPushChannel+Private.h"
-#import "Ably/ARTCrypto+Private.h"
-#import "Ably/ARTClientOptions.h"
+#import "ARTRest+Private.h"
+#import "ARTRestPresence+Private.h"
+#import "ARTChannel+Private.h"
+#import "ARTChannelOptions.h"
+#import "ARTMessage.h"
+#import "ARTBaseMessage+Private.h"
+#import "ARTPaginatedResult+Private.h"
+#import "ARTDataQuery+Private.h"
+#import "ARTJsonEncoder.h"
+#import "ARTAuth+Private.h"
+#import "ARTTokenDetails.h"
+#import "ARTNSArray+ARTFunctional.h"
+#import "ARTPushChannel+Private.h"
+#import "ARTCrypto+Private.h"
+#import "ARTClientOptions.h"
 
 @implementation ARTRestChannel {
     ARTQueuedDealloc *_dealloc;

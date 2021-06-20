@@ -5,9 +5,9 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "Ably/ARTBaseMessage+Private.h"
-#import "Ably/ARTLog.h"
-#import "Ably/ARTStatus.h"
+#import "ARTBaseMessage+Private.h"
+#import "ARTLog.h"
+#import "ARTStatus.h"
 
 @implementation ARTBaseMessage
 

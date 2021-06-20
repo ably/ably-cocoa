@@ -6,10 +6,10 @@
 //  Copyright © 2017 Ably. All rights reserved.
 //
 
-#import "Ably/ARTPushAdmin.h"
-#import "Ably/ARTPushDeviceRegistrations+Private.h"
-#import "Ably/ARTPushChannelSubscriptions+Private.h"
-#import "Ably/ARTQueuedDealloc.h"
+#import "ARTPushAdmin.h"
+#import "ARTPushDeviceRegistrations+Private.h"
+#import "ARTPushChannelSubscriptions+Private.h"
+#import "ARTQueuedDealloc.h"
 
 @class ARTRestInternal;
 

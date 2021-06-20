@@ -6,11 +6,11 @@
 //  Copyright © 2015 Ably. All rights reserved.
 //
 
-#import "Ably/ARTConnection+Private.h"
+#import "ARTConnection+Private.h"
 
-#import "Ably/ARTRealtime+Private.h"
-#import "Ably/ARTEventEmitter+Private.h"
-#import "Ably/ARTQueuedDealloc.h"
+#import "ARTRealtime+Private.h"
+#import "ARTEventEmitter+Private.h"
+#import "ARTQueuedDealloc.h"
 
 @implementation ARTConnection {
     ARTQueuedDealloc *_dealloc;

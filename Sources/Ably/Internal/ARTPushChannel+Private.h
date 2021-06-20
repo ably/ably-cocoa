@@ -9,8 +9,8 @@
 #ifndef ARTPushChannel_Private_h
 #define ARTPushChannel_Private_h
 
-#import "Ably/ARTPushChannel.h"
-#import "Ably/ARTQueuedDealloc.h"
+#import "ARTPushChannel.h"
+#import "ARTQueuedDealloc.h"
 
 @class ARTRestInternal;
 

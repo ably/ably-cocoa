@@ -6,8 +6,8 @@
 //  Copyright (c) 2015 г. Ably. All rights reserved.
 //
 
-#import "Ably/ARTChannel.h"
-#import "Ably/ARTLog.h"
+#import "ARTChannel.h"
+#import "ARTLog.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

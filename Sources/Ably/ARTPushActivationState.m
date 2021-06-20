@@ -6,16 +6,16 @@
 //  Copyright © 2017 Ably. All rights reserved.
 //
 
-#import "Ably/ARTPushActivationState.h"
-#import "Ably/ARTPushActivationStateMachine+Private.h"
-#import "Ably/ARTPushActivationEvent.h"
-#import "Ably/ARTLocalDevice+Private.h"
-#import "Ably/ARTDeviceStorage.h"
-#import "Ably/ARTDevicePushDetails.h"
-#import "Ably/ARTLog.h"
-#import "Ably/ARTRest+Private.h"
-#import "Ably/ARTAuth+Private.h"
-#import "Ably/ARTHttp.h"
+#import "ARTPushActivationState.h"
+#import "ARTPushActivationStateMachine+Private.h"
+#import "ARTPushActivationEvent.h"
+#import "ARTLocalDevice+Private.h"
+#import "ARTDeviceStorage.h"
+#import "ARTDevicePushDetails.h"
+#import "ARTLog.h"
+#import "ARTRest+Private.h"
+#import "ARTAuth+Private.h"
+#import "ARTHttp.h"
 
 @implementation ARTPushActivationState
 

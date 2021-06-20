@@ -6,9 +6,9 @@
 //  Copyright © 2017 Ably. All rights reserved.
 //
 
-#import "Ably/ARTPushActivationEvent.h"
-#import "Ably/ARTTypes.h"
-#import "Ably/ARTDeviceIdentityTokenDetails.h"
+#import "ARTPushActivationEvent.h"
+#import "ARTTypes.h"
+#import "ARTDeviceIdentityTokenDetails.h"
 
 NSString *const ARTCoderErrorKey = @"error";
 NSString *const ARTCoderIdentityTokenDetailsKey = @"identityTokenDetails";

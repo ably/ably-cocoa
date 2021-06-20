@@ -7,8 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
-#import "Ably/ARTStatus.h"
-#import "Ably/ARTCrypto.h"
+#import "ARTStatus.h"
+#import "ARTCrypto.h"
 
 @class ARTCipherParams;
 @class ARTPlugin;

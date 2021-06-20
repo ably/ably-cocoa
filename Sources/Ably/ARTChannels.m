@@ -6,12 +6,12 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "Ably/ARTChannels+Private.h"
+#import "ARTChannels+Private.h"
 
-#import "Ably/ARTRest+Private.h"
-#import "Ably/ARTChannel+Private.h"
-#import "Ably/ARTChannelOptions.h"
-#import "Ably/ARTRestChannel.h"
+#import "ARTRest+Private.h"
+#import "ARTChannel+Private.h"
+#import "ARTChannelOptions.h"
+#import "ARTRestChannel.h"
 
 @interface ARTChannels() {
     __weak id<ARTChannelsDelegate> _delegate; // weak because delegates outlive their counterpart

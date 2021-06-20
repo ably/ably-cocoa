@@ -5,8 +5,8 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "Ably/ARTLog+Private.h"
-#import "Ably/ARTNSDate+ARTUtil.h"
+#import "ARTLog+Private.h"
+#import "ARTNSDate+ARTUtil.h"
 
 static const char *logLevelName(ARTLogLevel level) {
     switch(level) {

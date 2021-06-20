@@ -5,7 +5,7 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "Ably/ARTTypes.h"
+#import "ARTTypes.h"
 
 // MARK: Global helper functions
 

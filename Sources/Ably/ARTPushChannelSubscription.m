@@ -6,7 +6,7 @@
 //  Copyright © 2017 Ably. All rights reserved.
 //
 
-#import "Ably/ARTPushChannelSubscription.h"
+#import "ARTPushChannelSubscription.h"
 
 @implementation ARTPushChannelSubscription
 

@@ -6,17 +6,17 @@
 //  Copyright © 2017 Ably. All rights reserved.
 //
 
-#import "Ably/ARTPushChannel+Private.h"
-#import "Ably/ARTHttp.h"
-#import "Ably/ARTLog.h"
-#import "Ably/ARTJsonLikeEncoder.h"
-#import "Ably/ARTRest+Private.h"
-#import "Ably/ARTClientOptions.h"
-#import "Ably/ARTPaginatedResult+Private.h"
-#import "Ably/ARTPushChannelSubscription.h"
-#import "Ably/ARTChannel+Private.h"
-#import "Ably/ARTLocalDevice+Private.h"
-#import "Ably/ARTNSMutableRequest+ARTPush.h"
+#import "ARTPushChannel+Private.h"
+#import "ARTHttp.h"
+#import "ARTLog.h"
+#import "ARTJsonLikeEncoder.h"
+#import "ARTRest+Private.h"
+#import "ARTClientOptions.h"
+#import "ARTPaginatedResult+Private.h"
+#import "ARTPushChannelSubscription.h"
+#import "ARTChannel+Private.h"
+#import "ARTLocalDevice+Private.h"
+#import "ARTNSMutableRequest+ARTPush.h"
 
 @implementation ARTPushChannel {
     ARTQueuedDealloc *_dealloc;

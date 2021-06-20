@@ -6,7 +6,7 @@
 //  Copyright © 2015 Ably. All rights reserved.
 //
 
-#import "Ably/ARTURLSessionServerTrust.h"
+#import "ARTURLSessionServerTrust.h"
 
 @interface ARTURLSessionServerTrust() {
     NSURLSession *_session;

@@ -5,9 +5,9 @@
 //  Copyright (c) 2014 Ably. All rights reserved.
 //
 
-#import "Ably/ARTHttp+Private.h"
-#import "Ably/ARTURLSessionServerTrust.h"
-#import "Ably/ARTConstants.h"
+#import "ARTHttp+Private.h"
+#import "ARTURLSessionServerTrust.h"
+#import "ARTConstants.h"
 
 @interface ARTHttp ()
 

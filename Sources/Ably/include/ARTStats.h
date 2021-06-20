@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "Ably/ARTDataQuery.h"
+#import "ARTDataQuery.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

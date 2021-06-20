@@ -6,14 +6,14 @@
 //  Copyright © 2017 Ably. All rights reserved.
 //
 
-#import "Ably/ARTPushAdmin.h"
-#import "Ably/ARTHttp.h"
-#import "Ably/ARTRest+Private.h"
-#import "Ably/ARTPushDeviceRegistrations+Private.h"
-#import "Ably/ARTPushChannelSubscriptions+Private.h"
-#import "Ably/ARTLog.h"
-#import "Ably/ARTJsonEncoder.h"
-#import "Ably/ARTJsonLikeEncoder.h"
+#import "ARTPushAdmin.h"
+#import "ARTHttp.h"
+#import "ARTRest+Private.h"
+#import "ARTPushDeviceRegistrations+Private.h"
+#import "ARTPushChannelSubscriptions+Private.h"
+#import "ARTLog.h"
+#import "ARTJsonEncoder.h"
+#import "ARTJsonLikeEncoder.h"
 
 @implementation ARTPushAdmin {
     ARTQueuedDealloc *_dealloc;

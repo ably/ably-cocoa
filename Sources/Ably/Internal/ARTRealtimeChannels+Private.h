@@ -6,9 +6,9 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "Ably/ARTRealtimeChannels.h"
-#import "Ably/ARTRealtime+Private.h"
-#import "Ably/ARTQueuedDealloc.h"
+#import "ARTRealtimeChannels.h"
+#import "ARTRealtime+Private.h"
+#import "ARTQueuedDealloc.h"
 
 @class ARTRealtimeChannelInternal;
 

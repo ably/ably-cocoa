@@ -8,10 +8,10 @@
 
 #import <Foundation/Foundation.h>
 
-#import "Ably/ARTRestPresence.h"
-#import "Ably/ARTDataQuery.h"
-#import "Ably/ARTEventEmitter.h"
-#import "Ably/ARTRealtimeChannel.h"
+#import "ARTRestPresence.h"
+#import "ARTDataQuery.h"
+#import "ARTEventEmitter.h"
+#import "ARTRealtimeChannel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

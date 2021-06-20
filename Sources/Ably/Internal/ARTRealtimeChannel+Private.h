@@ -6,13 +6,13 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
-#import "Ably/ARTRestChannel+Private.h"
-#import "Ably/ARTRealtimeChannel.h"
-#import "Ably/ARTPresenceMap.h"
-#import "Ably/ARTEventEmitter.h"
-#import "Ably/ARTRealtime+Private.h"
-#import "Ably/ARTQueuedDealloc.h"
-#import "Ably/ARTPushChannel+Private.h"
+#import "ARTRestChannel+Private.h"
+#import "ARTRealtimeChannel.h"
+#import "ARTPresenceMap.h"
+#import "ARTEventEmitter.h"
+#import "ARTRealtime+Private.h"
+#import "ARTQueuedDealloc.h"
+#import "ARTPushChannel+Private.h"
 
 @class ARTProtocolMessage;
 @class ARTRealtimePresenceInternal;

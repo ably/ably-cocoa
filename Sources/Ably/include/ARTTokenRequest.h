@@ -7,9 +7,9 @@
 
 #import <Foundation/Foundation.h>
 
-#import "Ably/ARTTypes.h"
-#import "Ably/ARTTokenParams.h"
-#import "Ably/ARTAuthOptions.h"
+#import "ARTTypes.h"
+#import "ARTTokenParams.h"
+#import "ARTAuthOptions.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
