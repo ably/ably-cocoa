@@ -2706,8 +2706,9 @@ class RealtimeClientConnection: QuickSpec {
 
                 }
 
+                // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
                 // RTN15d
-                it("should recover from disconnection and messages should be delivered once the connection is resumed") {
+                xit("should recover from disconnection and messages should be delivered once the connection is resumed") {
                     let options = AblyTests.commonAppSetup()
 
                     let client1 = ARTRealtime(options: options)
@@ -3133,8 +3134,10 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
 
+                
+                // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
                 // RTN16b
-                it("Connection#recoveryKey should be composed with the connection key and latest serial received and msgSerial") {
+                xit("Connection#recoveryKey should be composed with the connection key and latest serial received and msgSerial") {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
