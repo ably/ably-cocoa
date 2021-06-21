@@ -12,7 +12,7 @@ let package = Package(
     products: [
         .library(
             name: "ably-cocoa",
-            targets: ["ably-cocoa"]
+            targets: ["Ably"]
         ),
     ],
     dependencies: [
@@ -21,7 +21,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "ably-cocoa",
+            name: "Ably",
             dependencies: [
                 .byName(name: "msgpack"),
                 .byName(name: "AblyDeltaCodec")
