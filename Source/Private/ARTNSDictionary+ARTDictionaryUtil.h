@@ -11,7 +11,7 @@
 
 - (NSString *)artString:(id)key;
 - (NSNumber *)artNumber:(id)key;
-- (NSDate *)artDate:(id)key;
+- (NSDate *)artTimestamp:(id)key;
 - (NSArray *)artArray:(id)key;
 - (NSDictionary *)artDictionary:(id)key;
 - (NSInteger)artInteger:(id)key;

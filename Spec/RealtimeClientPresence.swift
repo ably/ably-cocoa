@@ -26,7 +26,8 @@ class RealtimeClientPresence: QuickSpec {
             context("ProtocolMessage bit flag") {
                 let channelName = NSUUID().uuidString
 
-                it("when no members are present") {
+                // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
+                xit("when no members are present") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
@@ -85,8 +86,9 @@ class RealtimeClientPresence: QuickSpec {
 
             }
 
+            // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
             // RTP3
-            it("should complete the SYNC operation when the connection is disconnected unexpectedly") {
+            xit("should complete the SYNC operation when the connection is disconnected unexpectedly") {
                 let membersCount = 110
 
                 let options = AblyTests.commonAppSetup()
@@ -128,12 +130,11 @@ class RealtimeClientPresence: QuickSpec {
                     fail("TestProxyTransport is not set"); return
                 }
 
-                // FIXME or not, regarding https://github.com/ably/docs/issues/349
-                //let syncSentProtocolMessages = transport.protocolMessagesSent.filter({ $0.action == .sync })
-                //guard let syncSentMessage = syncSentProtocolMessages.last, syncSentProtocolMessages.count == 1 else {
-                //    fail("Should send one SYNC protocol message"); return
-                //}
-                //expect(syncSentMessage.channelSerial).to(equal(lastSyncSerial))
+                let syncSentProtocolMessages = transport.protocolMessagesSent.filter({ $0.action == .sync })
+                guard let syncSentMessage = syncSentProtocolMessages.last, syncSentProtocolMessages.count == 1 else {
+                    fail("Should send one SYNC protocol message"); return
+                }
+                expect(syncSentMessage.channelSerial).to(equal(lastSyncSerial))
 
                 expect(transport.protocolMessagesReceived.filter{ $0.action == .sync }).toEventually(haveCount(2), timeout: testTimeout)
 
@@ -152,8 +153,9 @@ class RealtimeClientPresence: QuickSpec {
             // RTP18
             context("realtime system reserves the right to initiate a sync of the presence members at any point once a channel is attached") {
 
+                // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
                 // RTP18a, RTP18b
-                it("should do a new sync whenever a SYNC ProtocolMessage is received with a channel attribute and a new sync sequence identifier in the channelSerial attribute") {
+                xit("should do a new sync whenever a SYNC ProtocolMessage is received with a channel attribute and a new sync sequence identifier in the channelSerial attribute") {
                     let options = AblyTests.commonAppSetup()
                     let client = AblyTests.newRealtime(options)
                     defer { client.dispose(); client.close() }
@@ -179,7 +181,12 @@ class RealtimeClientPresence: QuickSpec {
                                 return
                             }
                             expect(channel.presence.syncComplete).to(beFalse())
+                            var aClientHasLeft = false;
                             channel.presence.subscribe(.leave) { _ in
+                                if (aClientHasLeft) {
+                                    return
+                                }
+                                aClientHasLeft = true;
                                 done()
                             }
                         }
@@ -229,8 +236,9 @@ class RealtimeClientPresence: QuickSpec {
                     }
                 }
 
+                // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
                 // RTP18c, RTP18b
-                it("when a SYNC is sent with no channelSerial attribute then the sync data is entirely contained within that ProtocolMessage") {
+                xit("when a SYNC is sent with no channelSerial attribute then the sync data is entirely contained within that ProtocolMessage") {
                     let options = AblyTests.commonAppSetup()
                     let client = AblyTests.newRealtime(options)
                     defer { client.dispose(); client.close() }
@@ -251,7 +259,12 @@ class RealtimeClientPresence: QuickSpec {
                     expect(channel.internal.presenceMap.members).to(beEmpty())
 
                     waitUntil(timeout: testTimeout) { done in
+                        var aClientHasLeft = false;
                         channel.presence.subscribe(.leave) { error in
+                            if (aClientHasLeft) {
+                                return
+                            }
+                            aClientHasLeft = true;
                             done()
                         }
 
@@ -355,8 +368,9 @@ class RealtimeClientPresence: QuickSpec {
                     }
                 }
 
+                // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
                 // RTP19a
-                it("should emit a LEAVE event for each existing member if the PresenceMap has existing members when an ATTACHED message is received without a HAS_PRESENCE flag") {
+                xit("should emit a LEAVE event for each existing member if the PresenceMap has existing members when an ATTACHED message is received without a HAS_PRESENCE flag") {
                     let options = AblyTests.commonAppSetup()
                     let client = AblyTests.newRealtime(options)
                     defer { client.dispose(); client.close() }
@@ -622,8 +636,9 @@ class RealtimeClientPresence: QuickSpec {
 
                 }
 
+                // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
                 // RTP5b
-                it("if a channel enters the ATTACHED state then all queued presence messages will be sent immediately and a presence SYNC may be initiated") {
+                xit("if a channel enters the ATTACHED state then all queued presence messages will be sent immediately and a presence SYNC may be initiated") {
                     let options = AblyTests.commonAppSetup()
                     let client1 = AblyTests.newRealtime(options)
                     defer { client1.dispose(); client1.close() }
@@ -944,8 +959,9 @@ class RealtimeClientPresence: QuickSpec {
             // RTP8
             context("enter") {
 
+                // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
                 // RTP8b
-                it("optionally a callback can be provided that is called for success") {
+                xit("optionally a callback can be provided that is called for success") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "john"
 
@@ -969,8 +985,9 @@ class RealtimeClientPresence: QuickSpec {
                     }
                 }
 
+                // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
                 // RTP8b
-                it("optionally a callback can be provided that is called for failure") {
+                xit("optionally a callback can be provided that is called for failure") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "john"
 
@@ -1181,8 +1198,9 @@ class RealtimeClientPresence: QuickSpec {
             // RTP9
             context("update") {
 
+                // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
                 // RTP9b
-                it("should enter current client into the channel if the client was not already entered") {
+                xit("should enter current client into the channel if the client was not already entered") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "john"
                     let client = ARTRealtime(options: options)
@@ -1365,11 +1383,12 @@ class RealtimeClientPresence: QuickSpec {
                 }
             }
 
+            // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
             // RTP2
             context("PresenceMap") {
 
                 // RTP2a
-                it("all incoming presence messages must be compared for newness with the matching member already in the PresenceMap") {
+                xit("all incoming presence messages must be compared for newness with the matching member already in the PresenceMap") {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
@@ -1588,7 +1607,8 @@ class RealtimeClientPresence: QuickSpec {
                 // RTP2c
                 context("all presence messages from a SYNC must also be compared for newness in the same way as they would from a PRESENCE") {
 
-                    it("discard members where messages have arrived before the SYNC") {
+                    // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
+                    xit("discard members where messages have arrived before the SYNC") {
                         let options = AblyTests.commonAppSetup()
                         let timeBeforeSync = NSDate()
                         let channelName = NSUUID().uuidString
@@ -1640,7 +1660,8 @@ class RealtimeClientPresence: QuickSpec {
                         }
                     }
 
-                    it("accept members where message have arrived after the SYNC") {
+                    // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
+                    xit("accept members where message have arrived after the SYNC") {
                         let options = AblyTests.commonAppSetup()
                         let channelName = NSUUID().uuidString
                         var clientMembers: ARTRealtime?
@@ -1715,8 +1736,9 @@ class RealtimeClientPresence: QuickSpec {
                     expect(channel.internal.presenceMap.members.filter{ _, presence in presence.action == .enter }).to(beEmpty())
                 }
 
+                // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
                 // RTP2d
-                it("if action of UPDATE arrives, it should be added to the presence map with the action set to PRESENT") {
+                xit("if action of UPDATE arrives, it should be added to the presence map with the action set to PRESENT") {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
@@ -2475,8 +2497,9 @@ class RealtimeClientPresence: QuickSpec {
 
             }
 
+            // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
             // RTP17
-            context("private and internal PresenceMap containing only members that match the current connectionId") {
+            xcontext("private and internal PresenceMap containing only members that match the current connectionId") {
 
                 it("any ENTER, PRESENT, UPDATE or LEAVE event that matches the current connectionId should be applied to this object") {
                     let options = AblyTests.commonAppSetup()
@@ -3100,9 +3123,10 @@ class RealtimeClientPresence: QuickSpec {
                         expect(ARTRealtimePresenceQuery().waitForSync).to(beTrue())
                     }
                 }
-
+                
+                // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
                 // RTP11a
-                it("should return a list of current members on the channel") {
+                xit("should return a list of current members on the channel") {
                     let options = AblyTests.commonAppSetup()
 
                     var disposable = [ARTRealtime]()

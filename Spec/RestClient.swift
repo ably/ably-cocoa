@@ -1323,7 +1323,7 @@ class RestClient: QuickSpec {
             it("background behaviour") {
                 let options = AblyTests.commonAppSetup()
                 waitUntil(timeout: testTimeout) { done in
-                  URLSession.shared.dataTask(with: URL(string:"https://ably.io")! as URL) { _ , _ , _  in
+                  URLSession.shared.dataTask(with: URL(string:"https://ably.io")!) { _ , _ , _  in
                         let rest = ARTRest(options: options)
                     rest.channels.get("foo").history { _ , _  in
                             done()
@@ -1334,10 +1334,10 @@ class RestClient: QuickSpec {
 
             // https://github.com/ably/ably-cocoa/issues/589
             it("client should handle error messages in plaintext and HTML format") {
-                let request = NSURLRequest(url: URL(string: "https://www.example.com")! as URL)
+                let request = URLRequest(url: URL(string: "https://www.example.com")!)
                 waitUntil(timeout: testTimeout) { done in
                     let rest = ARTRest(key: "xxxx:xxxx")
-                    rest.internal.execute(request as URLRequest, completion: { response, data, error in
+                    rest.internal.execute(request, completion: { response, data, error in
                         guard let contentType = response?.allHeaderFields["Content-Type"] as? String else {
                             fail("Response should have a Content-Type"); done(); return
                         }
@@ -1642,7 +1642,7 @@ class RestClient: QuickSpec {
                     let options = AblyTests.commonAppSetup()
                     let token = getTestToken()
                     options.httpRequestTimeout = 3 // short timeout to make it fail faster
-                    options.authUrl = URL(string: "http://10.255.255.1")! as URL
+                    options.authUrl = URL(string: "http://10.255.255.1")!
                     options.authParams = [URLQueryItem]()
                     options.authParams?.append(URLQueryItem(name: "type", value: "text"))
                     options.authParams?.append(URLQueryItem(name: "body", value: token))
