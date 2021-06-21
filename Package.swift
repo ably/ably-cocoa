@@ -63,8 +63,8 @@ let package = Package(
                 .copy("ably-common/protocol/errorsHelp.json")
             ],
             cSettings: [
-                .headerSearchPath("include"),
-                .headerSearchPath("PrivateHeaders"),
+                .headerSearchPath("include/**"),
+                .headerSearchPath("PrivateHeaders/**"),
                 .headerSearchPath("Source/**"),
                 .headerSearchPath("SocketRocket/SocketRocket/**")
             ]
