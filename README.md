@@ -73,7 +73,7 @@ You can install Ably for iOS and macOS through Package Manager, CocoaPods, Carth
 ## Installation
 
 ### Installing through [Swift Package Manager](https://swift.org/package-manager/)
-- [x] To install the `ably-cocoa` package in your **Xcode Project**: @2021-06-21 08:37:30
+- To install the `ably-cocoa` package in your **Xcode Project**: 
     - Paste `https://github.com/ably/ably-cocoa` in the *Swift Packages* search box. ( *Xcode project*  &rarr;  *Swift Packages..* . &rarr; `+` button)
     - Select the `Ably` SDK for your target.
     - [This apple guide](https://developer.apple.com/documentation/swift_packages/adding_package_dependencies_to_your_app) explains the steps in more detail.
