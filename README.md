@@ -68,8 +68,19 @@ Visit [ably.io/documentation](https://www.ably.io/documentation) for a complete 
 
 ## Installation Guide
 
-You can install Ably for iOS and macOS through CocoaPods, Carthage or manually.
+You can install Ably for iOS and macOS through Package Manager, CocoaPods, Carthage or manually.
 
+## Installation
+
+### Installing through [Swift Package Manager](https://swift.org/package-manager/)
+- [x] To install the `ably-cocoa` package in your **Xcode Project**: @2021-06-21 08:37:30
+    - Paste `https://github.com/ably/ably-cocoa` in the *Swift Packages* search box. ( *Xcode project*  &rarr;  *Swift Packages..* . &rarr; `+` button)
+    - Select the `Ably` SDK for your target.
+    - [This apple guide](https://developer.apple.com/documentation/swift_packages/adding_package_dependencies_to_your_app) explains the steps in more detail.
+- To install the `ably-cocoa` package in another **Swift Package**, then add the following to your `Package.Swift`:
+```swift
+ .package(url: "https://github.com/ably/ably-cocoa", from: "1.3.0"),
+```
 ### Installing through [CocoaPods](https://cocoapods.org/)
 
 If you intend to use Swift, using `use_frameworks!` in your Podfile is recommended (this will create a Framework that can be used in Swift natively).
