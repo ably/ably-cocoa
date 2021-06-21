@@ -3,7 +3,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "Ably",
+    name: "ably-cocoa",
     platforms: [
         .macOS(.v10_11),
         .iOS(.v9),
@@ -11,8 +11,8 @@ let package = Package(
     ],
     products: [
         .library(
-            name: "Ably",
-            targets: ["Ably"]
+            name: "ably-cocoa",
+            targets: ["ably-cocoa"]
         ),
     ],
     dependencies: [
@@ -21,7 +21,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "Ably",
+            name: "ably-cocoa",
             dependencies: [
                 .byName(name: "msgpack"),
                 .byName(name: "AblyDeltaCodec")
