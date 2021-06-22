@@ -25,7 +25,13 @@ let package = Package(
             path: "SocketRocket/SocketRocket",
             publicHeadersPath: ".",
             cSettings: [
-                .headerSearchPath("**")
+                .headerSearchPath("Internal"),
+                .headerSearchPath("Internal/Security"),
+                .headerSearchPath("Internal/Proxy"),
+                .headerSearchPath("Internal/Utilities"),
+                .headerSearchPath("Internal/RunLoop"),
+                .headerSearchPath("Internal/Delegate"),
+                .headerSearchPath("Internal/IOConsumer")
             ]
         ),
         .target(
@@ -36,9 +42,15 @@ let package = Package(
                 .byName(name: "AblyDeltaCodec")
             ],
             path: "Source",
+            exclude: [
+                "Info-iOS.plist",
+                "Info-tvOS.plist",
+                "Info-macOS.plist"
+            ],
             publicHeadersPath: "include",
             cSettings: [
-                .headerSearchPath("PrivateHeaders/**"),
+                .headerSearchPath("PrivateHeaders"),
+                .headerSearchPath("PrivateHeaders/Ably"),
                 .headerSearchPath("include/Ably")
             ]
         )
