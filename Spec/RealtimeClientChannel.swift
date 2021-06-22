@@ -2664,7 +2664,9 @@ class RealtimeClientChannel: QuickSpec {
                         }
                     }
 
-                    it("should only bundle messages when it respects all of the constraints") {
+                    
+                    // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
+                    xit("should only bundle messages when it respects all of the constraints") {
                         let defaultMaxMessageSize = ARTDefault.maxMessageSize()
                         ARTDefault.setMaxMessageSize(256)
                         defer { ARTDefault.setMaxMessageSize(defaultMaxMessageSize) }
