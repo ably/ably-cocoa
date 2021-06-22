@@ -11,7 +11,7 @@ let package = Package(
     ],
     products: [
         .library(
-            name: "ably-cocoa",
+            name: "Ably",
             targets: ["Ably"]
         ),
     ],
