@@ -23,10 +23,9 @@ let package = Package(
         .target(
             name: "SocketRocket",
             path: "SocketRocket/SocketRocket",
-            publicHeadersPath: "include",
+            publicHeadersPath: ".",
             cSettings: [
-                .headerSearchPath("PrivateHeaders"),
-                .headerSearchPath("include")
+                .headerSearchPath("**")
             ]
         ),
         .target(
