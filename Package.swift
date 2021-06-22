@@ -21,52 +21,26 @@ let package = Package(
     ],
     targets: [
         .target(
+            name: "SocketRocket",
+            path: "SocketRocket/SocketRocket",
+            publicHeadersPath: "include",
+            cSettings: [
+                .headerSearchPath("PrivateHeaders"),
+                .headerSearchPath("include")
+            ]
+        ),
+        .target(
             name: "Ably",
             dependencies: [
+                "SocketRocket",
                 .byName(name: "msgpack"),
                 .byName(name: "AblyDeltaCodec")
             ],
-            path: ".",
-            exclude: [
-                "Info-tvOS.plist",
-                "Info-macOS.plist",
-                "Info-iOS.plist",
-                "Ably-SoakTest-App",
-                "Ably-SoakTest-AppUITests",
-                "Spec",
-                "Products",
-                "Scripts",
-                "fastlane",
-                "Examples",
-                "Carthage",
-                "include/SocketRocketAblyFork",
-                "Makefile",
-                "test-resources",
-                "ably-common/test-resources",
-                "Ably.xcconfig",
-                "Cartfile",
-                "Cartfile.private",
-                "Cartfile.resolved",
-                "Gemfile",
-                "Gemfile.lock",
-                "Ably.podspec",
-                "Version.xcconfig",
-                "ably-common/protocol/README.md"
-            ],
-            resources: [
-                .copy("COPYRIGHT"),
-                .copy("CHANGELOG.md"),
-                .copy("README.md"),
-                .copy("MAINTAINERS.md"),
-                .copy("LICENSE"),
-                .copy("ably-common/protocol/errors.json"),
-                .copy("ably-common/protocol/errorsHelp.json")
-            ],
+            path: "Source",
+            publicHeadersPath: "include",
             cSettings: [
-                .headerSearchPath("include/**"),
                 .headerSearchPath("PrivateHeaders/**"),
-                .headerSearchPath("Source/**"),
-                .headerSearchPath("SocketRocket/SocketRocket/**")
+                .headerSearchPath("include/Ably")
             ]
         )
     ]
