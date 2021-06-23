@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
 /**
- This method converts values passed on init (BOOL, NSNumber, NSString) to NSSString
+ This method converts values passed on init (BOOL, NSNumber, NSString) to NSString
  @return NSString
  @throws NSException when value passed on init can't be reconized
  */
