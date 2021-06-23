@@ -14,6 +14,12 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTStringifiable : NSObject
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
+
+/**
+ This method converts values passed on init (BOOL, NSNumber, NSString) to NSSString
+ @return NSString
+ @throws NSException when value passed on init can't be reconized
+ */
 - (nonnull NSString*)convert;
 
 + (nonnull ARTStringifiable*)withString:(nonnull NSString *)value;
