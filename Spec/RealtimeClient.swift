@@ -1274,8 +1274,9 @@ class RealtimeClient: QuickSpec {
                 }
             }
 
+            // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
             // https://github.com/ably/ably-cocoa/issues/577
-            it("background behaviour") {
+            xit("background behaviour") {
                 waitUntil(timeout: testTimeout) { done in
                   URLSession.shared.dataTask(with: URL(string:"https://ably.io")!) { _ , _ , _  in
                         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
