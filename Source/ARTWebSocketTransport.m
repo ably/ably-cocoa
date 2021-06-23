@@ -20,6 +20,7 @@
 #import "ARTGCD.h"
 #import "ARTLog+Private.h"
 #import "ARTEventEmitter+Private.h"
+#import "NSURLQueryItem+Stringifiable.h"
 
 enum {
     ARTWsNeverConnected = -1,
@@ -141,8 +142,8 @@ Class configuredWebsocketClass = nil;
 }
 
 - (NSURL *)setupWebSocket:(__GENERIC(NSArray, NSURLQueryItem *) *)params withOptions:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial {
-    NSArray *queryItems = params;
-
+    __block NSArray *queryItems = params;
+    
     // ClientID
     if (options.clientId) {
         NSURLQueryItem *clientIdParam = [NSURLQueryItem queryItemWithName:@"clientId" value:options.clientId];
@@ -194,6 +195,22 @@ Class configuredWebsocketClass = nil;
     NSURLQueryItem *libParam = [NSURLQueryItem queryItemWithName:@"lib" value:[ARTDefault libraryVersion]];
     queryItems = [queryItems arrayByAddingObject:libParam];
 
+    // Transport Params
+    if (options.transportParams != nil) {
+        /**
+         Remove the same, previously  set values aka overwrite previous values for the same keys
+         */
+        NSPredicate *predicateKeyName = [NSPredicate predicateWithFormat:@"name IN %@", [options.transportParams allKeys]];
+        NSMutableArray *mutableQueryItems = [queryItems mutableCopy];
+        NSArray *filteredObjects = [queryItems filteredArrayUsingPredicate:predicateKeyName];
+        [mutableQueryItems removeObjectsInArray:filteredObjects];
+        queryItems = mutableQueryItems;
+        
+        [options.transportParams enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, ARTStringifiable * _Nonnull obj, BOOL * _Nonnull stop) {
+            queryItems = [queryItems arrayByAddingObject:[NSURLQueryItem itemWithName:key value:obj]];
+        }];
+    }
+    
     // URL
     NSURLComponents *urlComponents = [NSURLComponents componentsWithString:@"/"];
     urlComponents.queryItems = queryItems;

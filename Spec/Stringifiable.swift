@@ -41,6 +41,24 @@ class Stringifiable: QuickSpec {
                     )
                 }
                 
+                it("as integer that is not treated as bool [false]") {
+                    expect {
+                        ARTStringifiable(number: NSNumber(value: 0)).convert()
+                    }
+                    .to(
+                        equal("0")
+                    )
+                }
+                
+                it("as integer that is not treated as bool [true]") {
+                    expect {
+                        ARTStringifiable(number: NSNumber(value: 1)).convert()
+                    }
+                    .to(
+                        equal("1")
+                    )
+                }
+                
                 it("as number [Int]") {
                     expect {
                         ARTStringifiable(number: NSNumber(value: 12)).convert()
@@ -50,12 +68,30 @@ class Stringifiable: QuickSpec {
                     )
                 }
                 
-                it("as number [Float]") {
+                it("as number [Float 1 decimal digit]") {
+                    expect {
+                        ARTStringifiable(number: NSNumber(value: 0.1)).convert()
+                    }
+                    .to(
+                        equal("0.1")
+                    )
+                }
+                
+                it("as number [Float 2 decimal digits]") {
                     expect {
                         ARTStringifiable(number: NSNumber(value: 0.12)).convert()
                     }
                     .to(
                         equal("0.12")
+                    )
+                }
+                
+                it("as number [Float 4 decimal digits]") {
+                    expect {
+                        ARTStringifiable(number: NSNumber(value: 0.1234)).convert()
+                    }
+                    .to(
+                        equal("0.1234")
                     )
                 }
             }
