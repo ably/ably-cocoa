@@ -15,5 +15,6 @@
 - (nonnull instancetype)initWithBool:(BOOL)value;
 
 @property(nonnull, nonatomic, strong) id value;
+@property(nonatomic) BOOL isBooleanValue;
 
 @end
