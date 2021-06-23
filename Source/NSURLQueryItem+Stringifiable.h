@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSURLQueryItem (ARTNSURLQueryItem_Stringifiable)
 
-+ (nonnull NSURLQueryItem*)itemWithName:(nonnull NSString *)name value:(nonnull ARTStringifiable *)value;
++ (NSURLQueryItem*)itemWithName:(NSString *)name value:(ARTStringifiable *)value;
 
 @end
 

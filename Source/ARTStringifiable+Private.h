@@ -10,9 +10,9 @@
 
 @interface ARTStringifiable()
 
-- (_Nonnull instancetype)initWithString:(nonnull NSString *)value;
-- (_Nonnull instancetype)initWithNumber:(nonnull NSNumber *)value;
-- (_Nonnull instancetype)initWithBool:(BOOL)value;
+- (nonnull instancetype)initWithString:(nonnull NSString *)value;
+- (nonnull instancetype)initWithNumber:(nonnull NSNumber *)value;
+- (nonnull instancetype)initWithBool:(BOOL)value;
 
 @property(nonnull, nonatomic, strong) id value;
 

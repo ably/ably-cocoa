@@ -19,7 +19,7 @@ class Stringifiable: QuickSpec {
                         ARTStringifiable(string: "Lorem Ipsum").convert()
                     )
                     .to(
-                        equal("Lorem%20Ipsum")
+                        equal("Lorem Ipsum")
                     )
                 }
                 

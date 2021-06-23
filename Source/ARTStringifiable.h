@@ -20,11 +20,11 @@ NS_ASSUME_NONNULL_BEGIN
  @return NSString
  @throws NSException when value passed on init can't be reconized
  */
-- (nonnull NSString*)convert;
+- (NSString*)convert;
 
-+ (nonnull ARTStringifiable*)withString:(nonnull NSString *)value;
-+ (nonnull ARTStringifiable*)withNumber:(nonnull NSNumber *)value;
-+ (nonnull ARTStringifiable*)withBool:(BOOL)value;
++ (ARTStringifiable*)withString:(NSString *)value;
++ (ARTStringifiable*)withNumber:(NSNumber *)value;
++ (ARTStringifiable*)withBool:(BOOL)value;
 
 @end
 
