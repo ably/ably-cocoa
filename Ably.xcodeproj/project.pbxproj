@@ -607,7 +607,6 @@
 		D7DC8AF11C6AA0C8005AF165 /* ARTDefault+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D7DC8AF01C6A9FFC005AF165 /* ARTDefault+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D7DEA1C925DEB30800EBEC75 /* SocketRocketAblyFork.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1C525DEB30800EBEC75 /* SocketRocketAblyFork.xcframework */; };
 		D7DEA1CA25DEB30800EBEC75 /* AblyDeltaCodec.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1C625DEB30800EBEC75 /* AblyDeltaCodec.xcframework */; };
-		D7DEA1CB25DEB30800EBEC75 /* ULID.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1C725DEB30800EBEC75 /* ULID.xcframework */; };
 		D7DEA1CC25DEB30800EBEC75 /* msgpack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1C825DEB30800EBEC75 /* msgpack.xcframework */; };
 		D7DEA1D425DEB31000EBEC75 /* AblyDeltaCodec.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1C625DEB30800EBEC75 /* AblyDeltaCodec.xcframework */; };
 		D7DEA1D525DEB31000EBEC75 /* msgpack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1C825DEB30800EBEC75 /* msgpack.xcframework */; };
@@ -1052,7 +1051,6 @@
 			files = (
 				D7DEA1C925DEB30800EBEC75 /* SocketRocketAblyFork.xcframework in Frameworks */,
 				D7DEA1CA25DEB30800EBEC75 /* AblyDeltaCodec.xcframework in Frameworks */,
-				D7DEA1CB25DEB30800EBEC75 /* ULID.xcframework in Frameworks */,
 				D7DEA1CC25DEB30800EBEC75 /* msgpack.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
