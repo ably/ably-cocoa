@@ -87,9 +87,6 @@
 		8412FDE52661AC37001FE9E6 /* AblyDeltaCodec.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE12661AC37001FE9E6 /* AblyDeltaCodec.xcframework */; };
 		8412FDE62661AC37001FE9E6 /* AblyDeltaCodec.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE12661AC37001FE9E6 /* AblyDeltaCodec.xcframework */; };
 		8412FDE72661AC37001FE9E6 /* AblyDeltaCodec.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE12661AC37001FE9E6 /* AblyDeltaCodec.xcframework */; };
-		8412FDE82661AC37001FE9E6 /* ULID.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE22661AC37001FE9E6 /* ULID.xcframework */; };
-		8412FDE92661AC37001FE9E6 /* ULID.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE22661AC37001FE9E6 /* ULID.xcframework */; };
-		8412FDEA2661AC37001FE9E6 /* ULID.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE22661AC37001FE9E6 /* ULID.xcframework */; };
 		8412FDEB2661AC37001FE9E6 /* msgpack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE32661AC37001FE9E6 /* msgpack.xcframework */; };
 		8412FDEC2661AC37001FE9E6 /* msgpack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE32661AC37001FE9E6 /* msgpack.xcframework */; };
 		8412FDED2661AC37001FE9E6 /* msgpack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE32661AC37001FE9E6 /* msgpack.xcframework */; };
@@ -912,7 +909,6 @@
 		560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARTDefaultTests.swift; sourceTree = "<group>"; };
 		56190953238C3D3200A862A6 /* CryptoTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CryptoTest.m; sourceTree = "<group>"; };
 		8412FDE12661AC37001FE9E6 /* AblyDeltaCodec.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = AblyDeltaCodec.xcframework; path = Carthage/Build/AblyDeltaCodec.xcframework; sourceTree = "<group>"; };
-		8412FDE22661AC37001FE9E6 /* ULID.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = ULID.xcframework; path = Carthage/Build/ULID.xcframework; sourceTree = "<group>"; };
 		8412FDE32661AC37001FE9E6 /* msgpack.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = msgpack.xcframework; path = Carthage/Build/msgpack.xcframework; sourceTree = "<group>"; };
 		8412FDE42661AC37001FE9E6 /* SocketRocketAblyFork.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SocketRocketAblyFork.xcframework; path = Carthage/Build/SocketRocketAblyFork.xcframework; sourceTree = "<group>"; };
 		8412FDF12661AC7A001FE9E6 /* Aspects.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Aspects.xcframework; path = Carthage/Build/Aspects.xcframework; sourceTree = "<group>"; };
@@ -1184,7 +1180,6 @@
 				8412FDEE2661AC37001FE9E6 /* SocketRocketAblyFork.xcframework in Frameworks */,
 				8412FDE52661AC37001FE9E6 /* AblyDeltaCodec.xcframework in Frameworks */,
 				8412FDEB2661AC37001FE9E6 /* msgpack.xcframework in Frameworks */,
-				8412FDE82661AC37001FE9E6 /* ULID.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1219,7 +1214,6 @@
 				8412FDEF2661AC37001FE9E6 /* SocketRocketAblyFork.xcframework in Frameworks */,
 				8412FDE62661AC37001FE9E6 /* AblyDeltaCodec.xcframework in Frameworks */,
 				8412FDEC2661AC37001FE9E6 /* msgpack.xcframework in Frameworks */,
-				8412FDE92661AC37001FE9E6 /* ULID.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1230,7 +1224,6 @@
 				8412FDF02661AC37001FE9E6 /* SocketRocketAblyFork.xcframework in Frameworks */,
 				8412FDE72661AC37001FE9E6 /* AblyDeltaCodec.xcframework in Frameworks */,
 				8412FDED2661AC37001FE9E6 /* msgpack.xcframework in Frameworks */,
-				8412FDEA2661AC37001FE9E6 /* ULID.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1749,7 +1742,6 @@
 				8412FDE12661AC37001FE9E6 /* AblyDeltaCodec.xcframework */,
 				8412FDE32661AC37001FE9E6 /* msgpack.xcframework */,
 				8412FDE42661AC37001FE9E6 /* SocketRocketAblyFork.xcframework */,
-				8412FDE22661AC37001FE9E6 /* ULID.xcframework */,
 				8412FDF12661AC7A001FE9E6 /* Aspects.xcframework */,
 				8412FDF42661AC7B001FE9E6 /* Nimble.xcframework */,
 				8412FDF32661AC7B001FE9E6 /* Quick.xcframework */,
