@@ -14,7 +14,4 @@
 - (nonnull instancetype)initWithNumber:(nonnull NSNumber *)value;
 - (nonnull instancetype)initWithBool:(BOOL)value;
 
-@property(nonnull, nonatomic, strong) id value;
-@property(nonatomic) BOOL isBooleanValue;
-
 @end

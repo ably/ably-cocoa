@@ -16,7 +16,7 @@ class Stringifiable: QuickSpec {
             context("type conversion") {
                 it("as string") {
                     expect(
-                        ARTStringifiable(string: "Lorem Ipsum").convert()
+                        ARTStringifiable(string: "Lorem Ipsum").stringValue
                     )
                     .to(
                         equal("Lorem Ipsum")
@@ -25,7 +25,7 @@ class Stringifiable: QuickSpec {
                 
                 it("as bool [true]") {
                     expect {
-                        ARTStringifiable(bool: true).convert()
+                        ARTStringifiable(bool: true).stringValue
                     }
                     .to(
                         equal("true")
@@ -34,7 +34,7 @@ class Stringifiable: QuickSpec {
                 
                 it("as bool [false]") {
                     expect {
-                        ARTStringifiable(bool: false).convert()
+                        ARTStringifiable(bool: false).stringValue
                     }
                     .to(
                         equal("false")
@@ -43,7 +43,7 @@ class Stringifiable: QuickSpec {
                 
                 it("as integer that is not treated as bool [false]") {
                     expect {
-                        ARTStringifiable(number: NSNumber(value: 0)).convert()
+                        ARTStringifiable(number: NSNumber(value: 0)).stringValue
                     }
                     .to(
                         equal("0")
@@ -52,7 +52,7 @@ class Stringifiable: QuickSpec {
                 
                 it("as integer that is not treated as bool [true]") {
                     expect {
-                        ARTStringifiable(number: NSNumber(value: 1)).convert()
+                        ARTStringifiable(number: NSNumber(value: 1)).stringValue
                     }
                     .to(
                         equal("1")
@@ -61,7 +61,7 @@ class Stringifiable: QuickSpec {
                 
                 it("as number [Int]") {
                     expect {
-                        ARTStringifiable(number: NSNumber(value: 12)).convert()
+                        ARTStringifiable(number: NSNumber(value: 12)).stringValue
                     }
                     .to(
                         equal("12")
@@ -70,7 +70,7 @@ class Stringifiable: QuickSpec {
                 
                 it("as number [Float 1 decimal digit]") {
                     expect {
-                        ARTStringifiable(number: NSNumber(value: 0.1)).convert()
+                        ARTStringifiable(number: NSNumber(value: 0.1)).stringValue
                     }
                     .to(
                         equal("0.1")
@@ -79,7 +79,7 @@ class Stringifiable: QuickSpec {
                 
                 it("as number [Float 2 decimal digits]") {
                     expect {
-                        ARTStringifiable(number: NSNumber(value: 0.12)).convert()
+                        ARTStringifiable(number: NSNumber(value: 0.12)).stringValue
                     }
                     .to(
                         equal("0.12")
@@ -88,7 +88,7 @@ class Stringifiable: QuickSpec {
                 
                 it("as number [Float 4 decimal digits]") {
                     expect {
-                        ARTStringifiable(number: NSNumber(value: 0.1234)).convert()
+                        ARTStringifiable(number: NSNumber(value: 0.1234)).stringValue
                     }
                     .to(
                         equal("0.1234")
