@@ -84,18 +84,10 @@
 		56190954238C3D3200A862A6 /* CryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 56190953238C3D3200A862A6 /* CryptoTest.m */; };
 		56190955238C3D3200A862A6 /* CryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 56190953238C3D3200A862A6 /* CryptoTest.m */; };
 		56190956238C3D3200A862A6 /* CryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 56190953238C3D3200A862A6 /* CryptoTest.m */; };
-		8412FDE52661AC37001FE9E6 /* AblyDeltaCodec.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE12661AC37001FE9E6 /* AblyDeltaCodec.xcframework */; };
 		8412FDE62661AC37001FE9E6 /* AblyDeltaCodec.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE12661AC37001FE9E6 /* AblyDeltaCodec.xcframework */; };
 		8412FDE72661AC37001FE9E6 /* AblyDeltaCodec.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE12661AC37001FE9E6 /* AblyDeltaCodec.xcframework */; };
-		8412FDE82661AC37001FE9E6 /* ULID.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE22661AC37001FE9E6 /* ULID.xcframework */; };
-		8412FDE92661AC37001FE9E6 /* ULID.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE22661AC37001FE9E6 /* ULID.xcframework */; };
-		8412FDEA2661AC37001FE9E6 /* ULID.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE22661AC37001FE9E6 /* ULID.xcframework */; };
-		8412FDEB2661AC37001FE9E6 /* msgpack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE32661AC37001FE9E6 /* msgpack.xcframework */; };
 		8412FDEC2661AC37001FE9E6 /* msgpack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE32661AC37001FE9E6 /* msgpack.xcframework */; };
 		8412FDED2661AC37001FE9E6 /* msgpack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE32661AC37001FE9E6 /* msgpack.xcframework */; };
-		8412FDEE2661AC37001FE9E6 /* SocketRocketAblyFork.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE42661AC37001FE9E6 /* SocketRocketAblyFork.xcframework */; };
-		8412FDEF2661AC37001FE9E6 /* SocketRocketAblyFork.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE42661AC37001FE9E6 /* SocketRocketAblyFork.xcframework */; };
-		8412FDF02661AC37001FE9E6 /* SocketRocketAblyFork.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE42661AC37001FE9E6 /* SocketRocketAblyFork.xcframework */; };
 		8412FDF52661AC7B001FE9E6 /* Aspects.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF12661AC7A001FE9E6 /* Aspects.xcframework */; };
 		8412FDF62661AC7B001FE9E6 /* Aspects.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF12661AC7A001FE9E6 /* Aspects.xcframework */; };
 		8412FDF72661AC7B001FE9E6 /* Aspects.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF12661AC7A001FE9E6 /* Aspects.xcframework */; };
@@ -1182,9 +1174,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D7DEA1C925DEB30800EBEC75 /* SocketRocketAblyFork.xcframework in Frameworks */,
-				D7DEA1CA25DEB30800EBEC75 /* AblyDeltaCodec.xcframework in Frameworks */,
-				D7DEA1CC25DEB30800EBEC75 /* msgpack.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1216,10 +1205,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8412FDEF2661AC37001FE9E6 /* SocketRocketAblyFork.xcframework in Frameworks */,
 				8412FDE62661AC37001FE9E6 /* AblyDeltaCodec.xcframework in Frameworks */,
 				8412FDEC2661AC37001FE9E6 /* msgpack.xcframework in Frameworks */,
-				8412FDE92661AC37001FE9E6 /* ULID.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1227,10 +1214,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8412FDF02661AC37001FE9E6 /* SocketRocketAblyFork.xcframework in Frameworks */,
 				8412FDE72661AC37001FE9E6 /* AblyDeltaCodec.xcframework in Frameworks */,
 				8412FDED2661AC37001FE9E6 /* msgpack.xcframework in Frameworks */,
-				8412FDEA2661AC37001FE9E6 /* ULID.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
