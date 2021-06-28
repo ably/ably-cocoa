@@ -101,7 +101,13 @@ Add this line to your application's Cartfile:
     # For Xcode 7.3 and newer
     github "ably/ably-cocoa" >= 1.2
 
-And then run `carthage update` to build the framework and drag the built Ably.framework into your Xcode project.
+And then run `carthage update --use-xcframeworks --platform iOS --no-use-binaries` to build the framework and drag the built (in `[PROJECT_ROOT]/Carthage/Build`)
+
+- `Ably.xcframework` 
+- `AblyDeltaCodec.xcframework`
+- `msgpack.xcframework`
+
+into your Xcode project.
 
 If you see, for example, a `dyld: Library not loaded: @rpath/AblyDeltaCodec.framework/AblyDeltaCodec` error, then most likely you forgot to add all the dependencies to your project. You have more detailed information [here](https://github.com/Carthage/Carthage#adding-frameworks-to-an-application).
 
