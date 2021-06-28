@@ -101,7 +101,13 @@ Add this line to your application's Cartfile:
     # For Xcode 7.3 and newer
     github "ably/ably-cocoa" >= 1.2
 
-And then run `carthage update --use-xcframeworks --platform iOS --no-use-binaries` to build the framework and drag the built (in `[PROJECT_ROOT]/Carthage/Build`)
+And then run  
+
+- for **iOS**: `carthage update --use-xcframeworks --platform iOS --no-use-binaries`
+- for **macOS**: `carthage update --use-xcframeworks --platform macOS --no-use-binaries`
+- for **tvOS**: `carthage update --use-xcframeworks --platform tvOS --no-use-binaries`
+
+to build the framework and drag the built (in `[PROJECT_ROOT]/Carthage/Build`)
 
 - `Ably.xcframework` 
 - `AblyDeltaCodec.xcframework`
