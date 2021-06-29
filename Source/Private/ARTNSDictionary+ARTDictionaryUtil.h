@@ -15,7 +15,6 @@
 - (NSArray *)artArray:(id)key;
 - (NSDictionary *)artDictionary:(id)key;
 - (NSInteger)artInteger:(id)key;
-- (NSDictionary<NSString *, NSURLQueryItem *> *)dictionaryByAddingQueryItem:(NSURLQueryItem *)queryItem;
 
 - (id)artTyped:(Class)cls key:(id)key;
 

@@ -58,11 +58,4 @@
     return 0;
 }
 
-- (NSDictionary<NSString *,NSURLQueryItem *> *)dictionaryByAddingQueryItem:(NSURLQueryItem *)queryItem {
-    NSMutableDictionary *mutableCopy = [self mutableCopy];
-    mutableCopy[queryItem.name] = queryItem;
-    
-    return mutableCopy;
-}
-
 @end

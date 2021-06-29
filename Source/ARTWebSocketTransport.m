@@ -21,7 +21,8 @@
 #import "ARTLog+Private.h"
 #import "ARTEventEmitter+Private.h"
 #import "NSURLQueryItem+Stringifiable.h"
-#import "ARTNSDictionary+ARTDictionaryUtil.h"
+#import "ARTNSMutableDictionary+ARTDictionaryUtil.h"
+#import "ARTStringifiable.h"
 
 enum {
     ARTWsNeverConnected = -1,
@@ -143,21 +144,18 @@ Class configuredWebsocketClass = nil;
 }
 
 - (NSURL *)setupWebSocket:(NSDictionary<NSString *, NSURLQueryItem *> *)params withOptions:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial {
-    __block NSDictionary<NSString*, NSURLQueryItem*> *queryItems = [params mutableCopy];
+    __block NSMutableDictionary<NSString*, NSURLQueryItem*> *queryItems = [params mutableCopy];
     
     // ClientID
     if (options.clientId) {
-        NSURLQueryItem *clientIdParam = [NSURLQueryItem queryItemWithName:@"clientId" value:options.clientId];
-        queryItems = [queryItems dictionaryByAddingQueryItem:clientIdParam];
+        [queryItems addValueAsURLQueryItem:options.clientId forKey:@"clientId"];
     }
 
     // Echo
-    NSURLQueryItem *echoParam = [NSURLQueryItem queryItemWithName:@"echo" value:options.echoMessages ? @"true" : @"false"];
-    queryItems = [queryItems dictionaryByAddingQueryItem:echoParam];
+    [queryItems addValueAsURLQueryItem:options.echoMessages ? @"true" : @"false" forKey:@"echo"];
 
     // Format: MsgPack, JSON
-    NSURLQueryItem *formatParam = [NSURLQueryItem queryItemWithName:@"format" value:[_encoder formatAsString]];
-    queryItems = [queryItems dictionaryByAddingQueryItem:formatParam];
+    [queryItems addValueAsURLQueryItem:[_encoder formatAsString] forKey:@"format"];
 
     if (options.recover) {
         NSArray *recoverParts = [options.recover componentsSeparatedByString:@":"];
@@ -166,11 +164,8 @@ Class configuredWebsocketClass = nil;
             NSString *serial = [recoverParts objectAtIndex:1];
             [self.logger info:@"R:%p WS:%p ARTWebSocketTransport: attempting recovery of connection %@", _delegate, self, key];
 
-            NSURLQueryItem *recoverParam = [NSURLQueryItem queryItemWithName:@"recover" value:key];
-            queryItems = [queryItems dictionaryByAddingQueryItem:recoverParam];
-
-            NSURLQueryItem *connectionSerialParam = [NSURLQueryItem queryItemWithName:@"connectionSerial" value:serial];
-            queryItems = [queryItems dictionaryByAddingQueryItem:connectionSerialParam];
+            [queryItems addValueAsURLQueryItem:key forKey:@"recover"];
+            [queryItems addValueAsURLQueryItem:serial forKey:@"connectionSerial"];
 
             int64_t msgSerial = [[recoverParts lastObject] longLongValue];
             if (msgSerial) {
@@ -182,24 +177,19 @@ Class configuredWebsocketClass = nil;
         }
     }
     else if (resumeKey != nil && connectionSerial != nil) {
-        NSURLQueryItem *resumeKeyParam = [NSURLQueryItem queryItemWithName:@"resume" value:resumeKey];
-        queryItems = [queryItems dictionaryByAddingQueryItem:resumeKeyParam];
-
-        NSURLQueryItem *connectionSerialParam = [NSURLQueryItem queryItemWithName:@"connectionSerial" value:[NSString stringWithFormat:@"%lld", (long long)[connectionSerial integerValue]]];
-        queryItems = [queryItems dictionaryByAddingQueryItem:connectionSerialParam];
+        [queryItems addValueAsURLQueryItem:resumeKey forKey:@"resume"];
+        [queryItems addValueAsURLQueryItem:[NSString stringWithFormat:@"%lld", (long long)[connectionSerial integerValue]] forKey:@"connectionSerial"];
     }
 
-    NSURLQueryItem *versionParam = [NSURLQueryItem queryItemWithName:@"v" value:[ARTDefault version]];
-    queryItems = [queryItems dictionaryByAddingQueryItem:versionParam];
+    [queryItems addValueAsURLQueryItem:[ARTDefault version] forKey:@"v"];
     
     // Lib
-    NSURLQueryItem *libParam = [NSURLQueryItem queryItemWithName:@"lib" value:[ARTDefault libraryVersion]];
-    queryItems = [queryItems dictionaryByAddingQueryItem:libParam];
+    [queryItems addValueAsURLQueryItem:[ARTDefault libraryVersion] forKey:@"lib"];
 
     // Transport Params
     if (options.transportParams != nil) {
         [options.transportParams enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, ARTStringifiable * _Nonnull obj, BOOL * _Nonnull stop) {
-            queryItems = [queryItems dictionaryByAddingQueryItem:[NSURLQueryItem itemWithName:key value:obj]];
+            [queryItems addValueAsURLQueryItem:obj.stringValue forKey:key];
         }];
     }
     
