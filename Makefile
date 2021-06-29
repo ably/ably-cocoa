@@ -91,7 +91,7 @@ carthage_package:
 
 	# https://github.com/Carthage/Carthage#archive-prebuilt-frameworks-into-one-zip-file
 	# From `carthage help build` we are told that `--archive` implies `--no-skip-current`.
-	carthage build --archive --no-use-binaries
+	carthage build --archive --no-use-binaries --platform $(platform)
 	# Add LICENSE files (ours and SocketRocket’s).
 	./Scripts/add-licenses-to-carthage-output.sh
 

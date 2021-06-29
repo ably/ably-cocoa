@@ -757,7 +757,7 @@ For each release, the following needs to be done:
 * Steps to perform *before* pushing a release tag up:
     1. Checkout `main` locally, pulling in changes from above using `git checkout main && git pull`
     2. Run `make update` to ensure Carthage dependencies are in sync
-    3. Generate the prebuilt framework for Carthage using `make carthage_package` (the output from this, `Ably.framework.zip`, will be attached to the release later on)
+    3. Generate the prebuilt framework for Carthage using `make carthage_package platform=[iOS|macOS|tvOS]` (the output from this, `Ably.framework.zip`, will be attached to the release later on)
     4. Validate that the CocoaPods build should succeed using `pod lib lint`
 * If any fixes are needed (e.g. the lint fails with warnings) then either commit them to `main` branch now if they are simple warning fixes or perhaps consider raising a new PR if they are complex or likely to need review.
 * Create a tag for this version number using `git tag x.x.x`
