@@ -10,18 +10,21 @@ import XCTest
 class GCDTest: XCTestCase {
     func testScheduledBlockHandleDerefsBlockAfterInvoke() {
         let invokedExpectation = self.expectation(description: "scheduled block invoked")
-        let obj = NSObject()
-
-        var scheduledBlock = artDispatchScheduled(0, .main) {
-            _ = obj
+        
+        var object = NSObject()
+        weak var weakObject = object
+        
+        var scheduledBlock = artDispatchScheduled(0, .main) { [object] in
+            _ = object
             invokedExpectation.fulfill()
         }
 
+        _ = scheduledBlock
+        
         waitForExpectations(timeout: 2, handler: nil)
-
-        _ = scheduledBlock // silence warning
         scheduledBlock = nil
 
-        XCTAssertEqual(CFGetRetainCount(obj), 1)
+        object = NSObject()
+        XCTAssertNil(weakObject)
     }
 }
