@@ -1745,7 +1745,7 @@ class RestClient: QuickSpec {
                     expect(fallbackRequests).to(allPass { extractURLQueryValue($0?.url, key: "request_id") == requestId })
                 }
                 
-                it("ErroInfo should has `requestId` property") {
+                it("ErrorInfo should have `requestId` property") {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.addRequestIds = true
 
