@@ -16,7 +16,7 @@ NSString *const ARTAblyErrorDomain = @"io.ably.cocoa";
 
 NSString *const ARTErrorInfoStatusCodeKey = @"ARTErrorInfoStatusCode";
 NSString *const ARTErrorInfoOriginalDomainKey = @"ARTErrorInfoOriginalDomain";
-NSString *const ARTErrorInfoRequestIdKey = @"request_id";
+NSString *const ARTErrorInfoRequestIdKey = @"ARTErrorInfoRequestId";
 
 NSString *const ARTFallbackIncompatibleOptionsException = @"ARTFallbackIncompatibleOptionsException";
 

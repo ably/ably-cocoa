@@ -51,6 +51,8 @@ typedef CF_ENUM(NSUInteger, ARTClientCodeError) {
 
 NS_ASSUME_NONNULL_BEGIN
 
+FOUNDATION_EXPORT NSString *const ARTErrorInfoRequestIdKey;
+
 FOUNDATION_EXPORT NSString *const ARTAblyErrorDomain;
 
 /**

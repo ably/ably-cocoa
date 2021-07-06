@@ -7,6 +7,7 @@
 //
 
 #import "ARTNSError+ARTUtils.h"
+#import "ARTStatus.h"
 
 @implementation NSError (ARTUtils)
 
@@ -16,13 +17,13 @@
     }
     
     NSMutableDictionary *mutableInfo = [NSMutableDictionary dictionaryWithDictionary:self.userInfo];
-    mutableInfo[@"request_id"] = requestId;
+    mutableInfo[ARTErrorInfoRequestIdKey] = requestId;
     
     return [NSError errorWithDomain:self.domain code:self.code userInfo:mutableInfo];
 }
 
 - (NSString *)requestId {
-    return self.userInfo[@"request_id"];
+    return self.userInfo[ARTErrorInfoRequestIdKey];
 }
 
 @end
