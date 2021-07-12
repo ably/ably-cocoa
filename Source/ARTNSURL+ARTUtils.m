@@ -10,7 +10,7 @@
 
 @implementation NSURL (ARTUtils)
 
-+ (NSURL *)URLWith:(NSURL *)url host:(NSString *)host {
++ (NSURL *)copyFromURL:(NSURL *)url withHost:(NSString *)host {
     NSURLComponents *components = [NSURLComponents componentsWithURL:url resolvingAgainstBaseURL:YES];
     components.host = host;
     

@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NSURL (ARTUtils)
 
-+ (nullable NSURL *)URLWith:(NSURL *)url host:(NSString *)host;
++ (nullable NSURL *)copyFromURL:(NSURL *)url withHost:(NSString *)host;
 
 @end
 

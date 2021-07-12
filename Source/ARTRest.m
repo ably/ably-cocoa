@@ -360,7 +360,7 @@
                     
                     NSMutableURLRequest *newRequest = [request copy];
                     [newRequest setValue:host forHTTPHeaderField:@"Host"];
-                    newRequest.URL = [NSURL URLWith:request.URL host:host];
+                    newRequest.URL = [NSURL copyFromURL:request.URL withHost:host];
                     task = [self executeRequest:newRequest completion:callback fallbacks:blockFallbacks retries:retries + 1];
                     
                     return;
