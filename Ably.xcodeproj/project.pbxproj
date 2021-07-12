@@ -611,11 +611,9 @@
 		D7DEA1D425DEB31000EBEC75 /* AblyDeltaCodec.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1C625DEB30800EBEC75 /* AblyDeltaCodec.xcframework */; };
 		D7DEA1D525DEB31000EBEC75 /* msgpack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1C825DEB30800EBEC75 /* msgpack.xcframework */; };
 		D7DEA1D625DEB31000EBEC75 /* SocketRocketAblyFork.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1C525DEB30800EBEC75 /* SocketRocketAblyFork.xcframework */; };
-		D7DEA1D725DEB31000EBEC75 /* ULID.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1C725DEB30800EBEC75 /* ULID.xcframework */; };
 		D7DEA1DF25DEB31400EBEC75 /* AblyDeltaCodec.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1C625DEB30800EBEC75 /* AblyDeltaCodec.xcframework */; };
 		D7DEA1E025DEB31400EBEC75 /* msgpack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1C825DEB30800EBEC75 /* msgpack.xcframework */; };
 		D7DEA1E125DEB31400EBEC75 /* SocketRocketAblyFork.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1C525DEB30800EBEC75 /* SocketRocketAblyFork.xcframework */; };
-		D7DEA1E225DEB31400EBEC75 /* ULID.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1C725DEB30800EBEC75 /* ULID.xcframework */; };
 		D7DEA1EE25DEB32600EBEC75 /* SwiftyJSON.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1EA25DEB32600EBEC75 /* SwiftyJSON.xcframework */; };
 		D7DEA1EF25DEB32600EBEC75 /* Quick.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1EB25DEB32600EBEC75 /* Quick.xcframework */; };
 		D7DEA1F025DEB32600EBEC75 /* Aspects.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7DEA1EC25DEB32600EBEC75 /* Aspects.xcframework */; };
@@ -956,7 +954,6 @@
 		D7DC8AF01C6A9FFC005AF165 /* ARTDefault+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ARTDefault+Private.h"; sourceTree = "<group>"; };
 		D7DEA1C525DEB30800EBEC75 /* SocketRocketAblyFork.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SocketRocketAblyFork.xcframework; path = Carthage/Build/SocketRocketAblyFork.xcframework; sourceTree = "<group>"; };
 		D7DEA1C625DEB30800EBEC75 /* AblyDeltaCodec.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = AblyDeltaCodec.xcframework; path = Carthage/Build/AblyDeltaCodec.xcframework; sourceTree = "<group>"; };
-		D7DEA1C725DEB30800EBEC75 /* ULID.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = ULID.xcframework; path = Carthage/Build/ULID.xcframework; sourceTree = "<group>"; };
 		D7DEA1C825DEB30800EBEC75 /* msgpack.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = msgpack.xcframework; path = Carthage/Build/msgpack.xcframework; sourceTree = "<group>"; };
 		D7DEA1EA25DEB32600EBEC75 /* SwiftyJSON.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SwiftyJSON.xcframework; path = Carthage/Build/SwiftyJSON.xcframework; sourceTree = "<group>"; };
 		D7DEA1EB25DEB32600EBEC75 /* Quick.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Quick.xcframework; path = Carthage/Build/Quick.xcframework; sourceTree = "<group>"; };
@@ -1086,7 +1083,6 @@
 				D7DEA1D425DEB31000EBEC75 /* AblyDeltaCodec.xcframework in Frameworks */,
 				D7DEA1D525DEB31000EBEC75 /* msgpack.xcframework in Frameworks */,
 				D7DEA1D625DEB31000EBEC75 /* SocketRocketAblyFork.xcframework in Frameworks */,
-				D7DEA1D725DEB31000EBEC75 /* ULID.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1097,7 +1093,6 @@
 				D7DEA1DF25DEB31400EBEC75 /* AblyDeltaCodec.xcframework in Frameworks */,
 				D7DEA1E025DEB31400EBEC75 /* msgpack.xcframework in Frameworks */,
 				D7DEA1E125DEB31400EBEC75 /* SocketRocketAblyFork.xcframework in Frameworks */,
-				D7DEA1E225DEB31400EBEC75 /* ULID.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1514,7 +1509,6 @@
 				D7DEA1C625DEB30800EBEC75 /* AblyDeltaCodec.xcframework */,
 				D7DEA1C825DEB30800EBEC75 /* msgpack.xcframework */,
 				D7DEA1C525DEB30800EBEC75 /* SocketRocketAblyFork.xcframework */,
-				D7DEA1C725DEB30800EBEC75 /* ULID.xcframework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
