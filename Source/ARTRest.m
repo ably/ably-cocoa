@@ -396,7 +396,7 @@
             if ([error isKindOfClass:[ARTErrorInfo class]]) {
                 callback(response, data, error);
             } else {
-                callback(response, data, [error errorWithRequestId:requestId]);
+                callback(response, data, [NSError copyFromError:error withRequestId:requestId]);
             }
             
         }

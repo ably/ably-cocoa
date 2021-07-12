@@ -14,10 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, readonly) NSString *requestId;
 
-/**
- if `requestId` is nil, pointer to this instance is returned. If `requestId` is NOT nil, pointer to new instance of NSError is returned
- */
-- (NSError *)errorWithRequestId:(nullable NSString *)requestId;
++ (NSError *)copyFromError:(NSError *)error withRequestId:(nullable NSString *)requestId;
 
 @end
 
