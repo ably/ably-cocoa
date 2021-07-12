@@ -289,7 +289,7 @@
 }
 
 /**
- originalRequestId is used only for fallback requests. It should never be used to execute request by yourself, it's passed from wiithin below method.
+ originalRequestId is used only for fallback requests. It should never be used to execute request by yourself, it's passed from within below method.
  */
 - (NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request
                                   completion:(CompletionBlock)callback
