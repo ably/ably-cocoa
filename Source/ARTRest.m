@@ -41,6 +41,7 @@
 #import "ARTNSMutableRequest+ARTRest.h"
 #import "ARTHTTPPaginatedResponse+Private.h"
 #import "ARTNSMutableURLRequest+ARTUtil.h"
+#import "ARTTime.h"
 
 @implementation ARTRest {
     ARTQueuedDealloc *_dealloc;
@@ -288,6 +289,8 @@
 }
 
 - (NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback fallbacks:(ARTFallback *)fallbacks retries:(NSUInteger)retries {
+    
+    [ARTTime timeSinceBoot];
     __block ARTFallback *blockFallbacks = fallbacks;
 
     if ([request isKindOfClass:[NSMutableURLRequest class]]) {
@@ -301,9 +304,9 @@
         }
         
         // RSC15f - reset the successed fallback host on fallbackRetryTimeout expiration
-        // modify swap URLRequest host from fallback to default
+        // change URLRequest host from `fallback host` to `default host`
         //
-        if (self.currentFallbackHost && self.fallbackRetryExpiration < CFAbsoluteTimeGetCurrent()) {
+        if (self.currentFallbackHost != nil && self.fallbackRetryExpiration < [ARTTime timeSinceBoot]) {
             [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p fallbackRetryExpiration ids expired, reset `prioritizedHost` and `currentFallbackHost`", self];
             
             self.currentFallbackHost = nil;
@@ -655,8 +658,8 @@ dispatch_async(_queue, ^{
     }
     
     _currentFallbackHost = value;
-        
-    _fallbackRetryExpiration = CFAbsoluteTimeGetCurrent() + [ARTDefault fallbackRetryTimeout];
+
+    _fallbackRetryExpiration = [ARTTime timeSinceBoot] + [ARTDefault fallbackRetryTimeout];
 }
 
 #if TARGET_OS_IOS
