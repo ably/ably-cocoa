@@ -74,8 +74,8 @@ jobs:
       - name: Swift Package Manager - Installation Test
         working-directory: ./
         run:  |
-          echo git branch --show-current
-          echo pwd
+          echo Current Branch: $(git branch --show-current)
+          echo Current Path: $(pwd)
           export PACKAGE_URL=$(pwd)
           export PACKAGE_BRANCH_NAME=$(git branch --show-current) 
           swift test --package-path Examples/SPM 
