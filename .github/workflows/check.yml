@@ -78,7 +78,7 @@ jobs:
         run:  |
           echo 'Current Branch: ' $GITHUB_HEAD_REF
           echo Current Path: $(pwd)
-          export PACKAGE_URL=$(pwd)
+          export PACKAGE_URL=file://$(pwd)
           export PACKAGE_BRANCH_NAME=$GITHUB_HEAD_REF
           rm Examples/SPM/Package.resolved
           swift test --package-path Examples/SPM -v
