@@ -70,9 +70,7 @@ jobs:
           pod repo update
           pod install
           bundle exec fastlane scan -s Tests
-
-      # extract branch name
-      
+                
       - name: Swift Package Manager - Installation Test
         working-directory: ./
         run:  |
