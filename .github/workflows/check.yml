@@ -75,7 +75,7 @@ jobs:
         working-directory: ./
         run:  |
           echo Current Branch: $(git branch --show-current)
-          echo Current Path: $(pwd)
+          echo Current Path: ${GITHUB_REF##*/}
           export PACKAGE_URL=$(pwd)
-          export PACKAGE_BRANCH_NAME=$(git branch --show-current) 
+          export PACKAGE_BRANCH_NAME=${GITHUB_REF##*/}
           swift test --package-path Examples/SPM 
