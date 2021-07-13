@@ -77,7 +77,7 @@ jobs:
         working-directory: ./
         run:  |
           echo 'Current Branch: ' $GITHUB_HEAD_REF
-          evho 'Current Revision (SHA)' $GITHUB_SHA
+          echo 'Current Revision (SHA):' $GITHUB_SHA
           echo Current Path: $(pwd)
           export PACKAGE_URL=file://$(pwd)
           export PACKAGE_BRANCH_NAME=$GITHUB_HEAD_REF
