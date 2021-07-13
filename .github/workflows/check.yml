@@ -80,4 +80,4 @@ jobs:
           echo Current Path: $(pwd)
           export PACKAGE_URL=$(pwd)
           export PACKAGE_BRANCH_NAME=$GITHUB_HEAD_REF
-          swift test --package-path Examples/SPM 
+          swift test --package-path Examples/SPM -v
