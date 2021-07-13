@@ -5,8 +5,8 @@
         "package": "ably-cocoa",
         "repositoryURL": "/Users/lukaszszyszkowski/@projekty_ios/ably-cocoa",
         "state": {
-          "branch": "feature/SPM-rc",
-          "revision": "005453222d4c512682a9347f48541a948fdb012b",
+          "branch": null,
+          "revision": "b6e554b07a0b4fe13011106f33d0826092c219aa",
           "version": null
         }
       },

@@ -77,8 +77,10 @@ jobs:
         working-directory: ./
         run:  |
           echo 'Current Branch: ' $GITHUB_HEAD_REF
+          evho 'Current Revision (SHA)' $GITHUB_SHA
           echo Current Path: $(pwd)
           export PACKAGE_URL=file://$(pwd)
           export PACKAGE_BRANCH_NAME=$GITHUB_HEAD_REF
+          export PACKAGE_REVISION=$GITHUB_SHA
           rm Examples/SPM/Package.resolved
           swift test --package-path Examples/SPM -v

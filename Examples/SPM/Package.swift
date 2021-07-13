@@ -13,7 +13,7 @@ func env(_ name: String) -> String? {
     }
 }
 
-guard let packageURL = env("PACKAGE_URL"), let branchName = env("PACKAGE_BRANCH_NAME") else {
+guard let packageURL = env("PACKAGE_URL"), let revision = env("PACKAGE_REVISION") else {
     exit(0)
 }
 
@@ -24,7 +24,7 @@ let package = Package(
         .macOS(.v10_11)
     ],
     dependencies: [
-        .package(name:"ably-cocoa", url: packageURL, .branch(branchName))
+        .package(name:"ably-cocoa", url: packageURL, .revision(revision))
     ],
     targets: [
         .target(
