@@ -8,22 +8,22 @@ jobs:
   check:
     runs-on: macos-10.15
 
-    # strategy:
-    #   fail-fast: false
-    #   matrix:
-    #     include:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
 
-    #       - platform: iOS
-    #         lane: test_iOS12
+          - platform: iOS
+            lane: test_iOS12
 
-    #       - platform: iOS
-    #         lane: test_iOS11
+          - platform: iOS
+            lane: test_iOS11
 
-    #       - platform: tvOS
-    #         lane: test_tvOS12
+          - platform: tvOS
+            lane: test_tvOS12
 
-    #       - platform: macOS
-    #         lane: test_macOS
+          - platform: macOS
+            lane: test_macOS
 
     env:
       LC_CTYPE: en_US.UTF-8
@@ -41,35 +41,35 @@ jobs:
           restore-keys: |
                 ${{ runner.os }}-carthage-
 
-    #   - name: Reset Simulators
-    #     run: xcrun simctl erase all
+      - name: Reset Simulators
+        run: xcrun simctl erase all
 
-    #   - name: Install Dependencies
-    #     run: |
-    #       make submodules
-    #       bundle install
+      - name: Install Dependencies
+        run: |
+          make submodules
+          bundle install
 
-    #   - name: Carthage
-    #     if: steps.carthage-cache.outputs.cache-hit != 'true'
-    #     run: |
-    #       make update_carthage_dependencies
+      - name: Carthage
+        if: steps.carthage-cache.outputs.cache-hit != 'true'
+        run: |
+          make update_carthage_dependencies
 
-    #   - name: Run Tests
-    #     run: fastlane ${{ matrix.lane }}
+      - name: Run Tests
+        run: fastlane ${{ matrix.lane }}
       
       # This is the script specified as the pod’s prepare_command in its Podspec.
       # It would be run automatically for a normal CocoaPods install, but it doesn’t
       # get run when the dependency is specified with the :path option. So we run it
       # manually.
-#       - name: Prepare Pod
-#         run: Scripts/prepare-pod.sh
+      - name: Prepare Pod
+        run: Scripts/prepare-pod.sh
 
-#       - name: Run Examples Tests
-#         working-directory: ./Examples/Tests
-#         run: |
-#           pod repo update
-#           pod install
-#           bundle exec fastlane scan -s Tests
+      - name: Run Examples Tests
+        working-directory: ./Examples/Tests
+        run: |
+          pod repo update
+          pod install
+          bundle exec fastlane scan -s Tests
 
       - name: Swift Package Manager - Installation Test
         working-directory: ./
