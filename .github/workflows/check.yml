@@ -61,19 +61,19 @@ jobs:
       # It would be run automatically for a normal CocoaPods install, but it doesn’t
       # get run when the dependency is specified with the :path option. So we run it
       # manually.
-    #   - name: Prepare Pod
-    #     run: Scripts/prepare-pod.sh
+#       - name: Prepare Pod
+#         run: Scripts/prepare-pod.sh
 
-    #   - name: Run Examples Tests
-    #     working-directory: ./Examples/Tests
-    #     run: |
-    #       pod repo update
-    #       pod install
-    #       bundle exec fastlane scan -s Tests
+#       - name: Run Examples Tests
+#         working-directory: ./Examples/Tests
+#         run: |
+#           pod repo update
+#           pod install
+#           bundle exec fastlane scan -s Tests
 
       - name: Swift Package Manager - Installation Test
         working-directory: ./
         run:  |
-         export PACKAGE_URL=$(pwd)
-         export PACKAGE_BRANCH_NAME=$(git branch --show-current) 
-         swift test --package-path Examples/SPM 
+          export PACKAGE_URL=$(pwd)
+          export PACKAGE_BRANCH_NAME=$(git branch --show-current) 
+          swift test --package-path Examples/SPM 
