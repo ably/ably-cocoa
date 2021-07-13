@@ -71,10 +71,10 @@ jobs:
     #       pod install
     #       bundle exec fastlane scan -s Tests
       - name: Step that prints name of pull request's base branch
-        run: |
+        run:  |
           echo "Pull request's base branch is: ${BASE_BRANCH}"
         env:
-        BASE_BRANCH: ${{ github.base_ref }}
+          BASE_BRANCH: ${{ github.base_ref }}
         if: github.event_name == 'pull_request'
 
       - name: Swift Package Manager - Installation Test
