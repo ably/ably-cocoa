@@ -1793,7 +1793,7 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP2e
-                it("if a SYNC is not in progress, then when a presence message with an action of LEAVE arrives, that memberKey should be deleted from the presence map, if present") {
+                xit("if a SYNC is not in progress, then when a presence message with an action of LEAVE arrives, that memberKey should be deleted from the presence map, if present") {
                     let options = AblyTests.commonAppSetup()
 
                     var clientMembers: ARTRealtime?
@@ -1835,7 +1835,7 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP2f
-                it("if a SYNC is in progress, then when a presence message with an action of LEAVE arrives, it should be stored in the presence map with the action set to ABSENT") {
+                xit("if a SYNC is in progress, then when a presence message with an action of LEAVE arrives, it should be stored in the presence map with the action set to ABSENT") {
                     let options = AblyTests.commonAppSetup()
                     let channelName = NSUUID().uuidString
 
