@@ -10,7 +10,7 @@
 
 @implementation NSMutableURLRequest (ARTUtils)
 
--(void)appendQueryItem:(NSURLQueryItem *)item {
+- (void)appendQueryItem:(NSURLQueryItem *)item {
     NSURLComponents *components = [NSURLComponents componentsWithURL:self.URL resolvingAgainstBaseURL:YES];
     if(components == nil) {
         return;
