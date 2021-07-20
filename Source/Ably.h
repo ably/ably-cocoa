@@ -71,4 +71,3 @@ FOUNDATION_EXPORT const unsigned char ablyVersionString[];
 #import <Ably/ARTDeltaCodec.h>
 #import <Ably/CompatibilityMacros.h>
 #import <Ably/ARTPendingMessage.h>
-
