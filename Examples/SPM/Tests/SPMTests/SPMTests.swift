@@ -5,5 +5,6 @@
         func ablyInitTest() {
             let clientOptions = ARTClientOptions()
             let _ = ARTRest(options: clientOptions)
+            let _ = ARTRealtime(options: clientOptions)
         }
     }

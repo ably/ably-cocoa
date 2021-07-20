@@ -4,6 +4,11 @@
 import PackageDescription
 import Darwin.C
 
+// Setup ENV variables when using with Xcode IDE
+//
+//setenv("PACKAGE_URL", "", 1)
+//setenv("PACKAGE_REVISION", "", 1)
+
 func env(_ name: String) -> String? {
     if let envPointer = getenv(name) {
         return String(cString: envPointer)
