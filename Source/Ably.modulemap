@@ -67,5 +67,6 @@ framework module Ably {
         header "NSURLRequest+ARTSRWebSocket.h"
         header "ARTSRSecurityPolicy.h"
         header "ARTNSDictionary+ARTDictionaryUtil.h"
+        header "NSRunLoop+ARTSRWebSocket.h"
     }
 }
