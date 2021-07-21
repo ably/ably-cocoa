@@ -72,3 +72,4 @@ FOUNDATION_EXPORT const unsigned char ablyVersionString[];
 #import <Ably/CompatibilityMacros.h>
 #import <Ably/ARTPendingMessage.h>
 #import <Ably/ARTStringifiable.h>
+#import <Ably/ARTNSMutableDictionary+ARTDictionaryUtil.h>
