@@ -80,5 +80,4 @@ jobs:
           export PACKAGE_URL=file://$(pwd)
           export PACKAGE_BRANCH_NAME=$GITHUB_HEAD_REF
           export PACKAGE_REVISION=$GITHUB_SHA
-          rm Examples/SPM/Package.resolved
           swift test --package-path Examples/SPM -v
