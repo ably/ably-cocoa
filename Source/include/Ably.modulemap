@@ -61,5 +61,7 @@ framework module Ably {
         header "Ably/ARTFormEncode.h"
         header "Ably/ARTSRWebSocket.h"
         header "Ably/ARTStringifiable+Private.h"
+        header "Ably/ARTNSMutableDictionary+ARTDictionaryUtil.h"
+        header "Ably/NSURLQueryItem+Stringifiable.h"
     }
 }

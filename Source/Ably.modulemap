@@ -71,5 +71,6 @@ framework module Ably {
         header "ARTSRSecurityPolicy.h"
         header "ARTStringifiable.h"
         header "ARTNSMutableDictionary+ARTDictionaryUtil.h"
+        header "NSURLQueryItem+Stringifiable.h"
     }
 }
