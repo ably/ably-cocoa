@@ -304,7 +304,7 @@ class RealtimeClientPresence: QuickSpec {
             // RTP19
             context("PresenceMap has existing members when a SYNC is started") {
 
-                it("should ensure that members no longer present on the channel are removed from the local PresenceMap once the sync is complete") {
+                xit("should ensure that members no longer present on the channel are removed from the local PresenceMap once the sync is complete") {
                     let options = AblyTests.commonAppSetup()
                     let channelName = NSUUID().uuidString
                     var clientMembers: ARTRealtime?
@@ -540,7 +540,7 @@ class RealtimeClientPresence: QuickSpec {
                         }
                     }
 
-                    it("should clear the PresenceMap including local members and does not emit any presence events") {
+                    xit("should clear the PresenceMap including local members and does not emit any presence events") {
                         let client = ARTRealtime(options: AblyTests.commonAppSetup())
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
