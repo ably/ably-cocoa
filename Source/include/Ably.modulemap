@@ -60,5 +60,6 @@ framework module Ably {
         header "Ably/ARTMsgPackEncoder.h"
         header "Ably/ARTFormEncode.h"
         header "Ably/ARTSRWebSocket.h"
+        header "Ably/ARTStringifiable+Private.h"
     }
 }
