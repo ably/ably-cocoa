@@ -60,13 +60,13 @@ framework module Ably {
         header "ARTMsgPackEncoder.h"
         header "ARTFormEncode.h"
         header "ARTSRWebSocket.h"
-        header "ARTNSString+ARTUtil.h"
         header "ARTGCD.h"
-        header "ARTOSReachability.h"
         header "ARTNSArray+ARTFunctional.h"
-        header "NSURLRequest+ARTSRWebSocket.h"
-        header "ARTSRSecurityPolicy.h"
         header "ARTNSDictionary+ARTDictionaryUtil.h"
+        header "ARTNSString+ARTUtil.h"
+        header "ARTOSReachability.h"
+        header "NSURLRequest+ARTSRWebSocket.h"
         header "NSRunLoop+ARTSRWebSocket.h"
+        header "ARTSRSecurityPolicy.h"
     }
 }
