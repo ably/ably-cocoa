@@ -49,6 +49,8 @@ let package = Package(
             ],
             publicHeadersPath: "include",
             cSettings: [
+                .headerSearchPath("."),
+                .headerSearchPath("Private"),
                 .headerSearchPath("PrivateHeaders/Ably"),
                 .headerSearchPath("include/Ably")
             ]
