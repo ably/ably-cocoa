@@ -1714,7 +1714,7 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP2d
-                it("if action of ENTER arrives, it should be added to the presence map with the action set to PRESENT") {
+                xit("if action of ENTER arrives, it should be added to the presence map with the action set to PRESENT") {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
@@ -1898,7 +1898,7 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP2g
-                it("any incoming presence message that passes the newness check should be emitted on the Presence object, with an event name set to its original action") {
+                xit("any incoming presence message that passes the newness check should be emitted on the Presence object, with an event name set to its original action") {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
