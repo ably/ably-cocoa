@@ -1898,7 +1898,7 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP2g
-                it("any incoming presence message that passes the newness check should be emitted on the Presence object, with an event name set to its original action") {
+                xit("any incoming presence message that passes the newness check should be emitted on the Presence object, with an event name set to its original action") {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
