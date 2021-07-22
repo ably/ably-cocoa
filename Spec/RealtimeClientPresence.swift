@@ -1169,7 +1169,7 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP9a
-                it("should update the data for the present member with null") {
+                xit("should update the data for the present member with null") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "john"
                     let client = ARTRealtime(options: options)
