@@ -18,7 +18,6 @@ Pod::Spec.new do |s|
   s.swift_version           = '5.0'
   s.source_files            = 'Source/**/*.{h,m,swift}', 'SocketRocket/SocketRocket/**/*.{h,m}'
   s.private_header_files    = 'Source/*+Private.h', 'SocketRocket/SocketRocket/internal/**/*.h'
-  s.exclude_files           = 'SocketRocket/SocketRocket/ARTSRWebSocket.h'
   s.module_map              = 'Source/Ably.modulemap'
   s.dependency 'msgpack', '0.3.1'
   s.dependency 'AblyDeltaCodec', '1.2.0'
