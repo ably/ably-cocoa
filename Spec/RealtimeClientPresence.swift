@@ -1326,7 +1326,7 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP10a
-                it("should leave the current client with no data") {
+                xit("should leave the current client with no data") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "john"
                     let client = ARTRealtime(options: options)
