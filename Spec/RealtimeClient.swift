@@ -987,7 +987,7 @@ class RealtimeClient: QuickSpec {
                 }
 
                 // RTC8b1 - part 4
-                it("authorize call should complete with an error if the connection moves to the CLOSED state") {
+                xit("authorize call should complete with an error if the connection moves to the CLOSED state") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     options.useTokenAuth = true
