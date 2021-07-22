@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, readonly) NSString *requestId;
 
-+ (NSError *)copyFromError:(NSError *)error withRequestId:(nullable NSString *)requestId;
++ (nullable NSError *)copyFromError:(NSError *)error withRequestId:(nullable NSString *)requestId;
 
 @end
 

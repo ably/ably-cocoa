@@ -11,7 +11,11 @@
 
 @implementation NSError (ARTUtils)
 
-+ (NSError *)copyFromError:(NSError *)error withRequestId:(nullable NSString *)requestId {
++ (nullable NSError *)copyFromError:(NSError *)error withRequestId:(nullable NSString *)requestId {
+    if (error == nil) {
+        return nil;
+    }
+    
     NSMutableDictionary *mutableInfo = [NSMutableDictionary dictionaryWithDictionary:error.userInfo];
     mutableInfo[ARTErrorInfoRequestIdKey] = requestId;
     
