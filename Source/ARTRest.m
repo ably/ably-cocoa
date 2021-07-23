@@ -40,7 +40,9 @@
 #import "ARTLocalDeviceStorage.h"
 #import "ARTNSMutableRequest+ARTRest.h"
 #import "ARTHTTPPaginatedResponse+Private.h"
-#import "ARTNSMutableURLRequest+ARTUtil.h"
+#import "ARTNSError+ARTUtils.h"
+#import "ARTNSMutableURLRequest+ARTUtils.h"
+#import "ARTNSURL+ARTUtils.h"
 #import "ARTTime.h"
 
 @implementation ARTRest {
@@ -223,7 +225,7 @@
     return [NSString stringWithFormat:@"%@ - \n\t %@;", [super description], info];
 }
 
-- (NSObject<ARTCancellable> *)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback {
+- (NSObject<ARTCancellable> *)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(CompletionBlock)callback {
     request.URL = [NSURL URLWithString:request.URL.relativeString relativeToURL:self.baseUrl];
     
     switch (authOption) {
@@ -284,15 +286,22 @@
     return task;
 }
 
-- (NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback {
-    return [self executeRequest:request completion:callback fallbacks:nil retries:0];
+- (NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request completion:(CompletionBlock)callback {
+    return [self executeRequest:request completion:callback fallbacks:nil retries:0 originalRequestId:nil];
 }
 
-- (NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback fallbacks:(ARTFallback *)fallbacks retries:(NSUInteger)retries {
+/**
+ originalRequestId is used only for fallback requests. It should never be used to execute request by yourself, it's passed from within below method.
+ */
+- (NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request
+                                  completion:(CompletionBlock)callback
+                                   fallbacks:(ARTFallback *)fallbacks
+                                     retries:(NSUInteger)retries
+                           originalRequestId:(nullable NSString *)originalRequestId {
     
-    [ARTTime timeSinceBoot];
+    NSString *requestId = nil;
     __block ARTFallback *blockFallbacks = fallbacks;
-
+    
     if ([request isKindOfClass:[NSMutableURLRequest class]]) {
         NSMutableURLRequest *mutableRequest = (NSMutableURLRequest *)request;
         [mutableRequest setAcceptHeader:self.defaultEncoder encoders:self.encoders];
@@ -301,6 +310,17 @@
         [mutableRequest setValue:[ARTDefault agent] forHTTPHeaderField:@"Ably-Agent"];
         if (_options.clientId && !self.auth.isTokenAuth) {
             [mutableRequest setValue:encodeBase64(_options.clientId) forHTTPHeaderField:@"X-Ably-ClientId"];
+        }
+        
+        if (_options.addRequestIds) {
+            if (fallbacks != nil) {
+                requestId = originalRequestId;
+            } else {
+                NSString *randomId = [NSUUID new].UUIDString;
+                requestId = [[randomId dataUsingEncoding:NSUTF8StringEncoding] base64EncodedStringWithOptions:0];
+            }
+            
+            [mutableRequest appendQueryItem:[NSURLQueryItem queryItemWithName:@"request_id" value:requestId]];
         }
         
         // RSC15f - reset the successed fallback host on fallbackRetryTimeout expiration
@@ -334,7 +354,7 @@
             if (!validContentType) {
                 NSString *plain = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
                 // Construct artificial error
-                error = [ARTErrorInfo createWithCode:response.statusCode * 100 status:response.statusCode message:[plain art_shortString]];
+                error = [ARTErrorInfo createWithCode:response.statusCode * 100 status:response.statusCode message:[plain art_shortString] requestId:requestId];
                 data = nil; // Discard data; format is unreliable.
                 [self.logger error:@"Request %@ failed with %@", request, error];
             }
@@ -361,7 +381,11 @@
             }
             if (!error) {
                 // Return error with HTTP StatusCode if ARTErrorStatusCode does not exist
-                error = [ARTErrorInfo createWithCode:response.statusCode*100 status:response.statusCode message:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
+                error = [ARTErrorInfo
+                         createWithCode:response.statusCode*100
+                         status:response.statusCode
+                         message:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]
+                         requestId:requestId];
             }
             
         } else {
@@ -380,19 +404,25 @@
                 NSString *host = [blockFallbacks popFallbackHost];
                 if (host != nil) {
                     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p host is down; retrying request at %@", self, host];
+                    
                     self.currentFallbackHost = host;
                     NSMutableURLRequest *newRequest = [request copy];
-                    NSURL *url = request.URL;
-                    NSString *urlStr = [NSString stringWithFormat:@"%@://%@:%@%@?%@", url.scheme, host, url.port, url.path, (url.query ? url.query : @"")];
-                    newRequest.URL = [NSURL URLWithString:urlStr];
-                    task = [self executeRequest:newRequest completion:callback fallbacks:blockFallbacks retries:retries + 1];
+                    [newRequest setValue:host forHTTPHeaderField:@"Host"];
+                    newRequest.URL = [NSURL copyFromURL:request.URL withHost:host];
+                    task = [self executeRequest:newRequest completion:callback fallbacks:blockFallbacks retries:retries + 1 originalRequestId:originalRequestId];
+                    
                     return;
                 }
             }
         }
         if (callback) {
             // Error object that indicates why the request failed
-            callback(response, data, error);
+            if ([error isKindOfClass:[ARTErrorInfo class]]) {
+                callback(response, data, error);
+            } else {
+                callback(response, data, [NSError copyFromError:error withRequestId:requestId]);
+            }
+            
         }
     }];
 

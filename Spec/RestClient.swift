@@ -1110,10 +1110,42 @@ class RestClient: QuickSpec {
                         let extractHostname = { (request: URLRequest) in
                             NSRegularExpression.extract(request.url!.absoluteString, pattern: "[f-j].ably-realtime.com")
                         }
+                        
                         let resultFallbackHosts = testHTTPExecutor.requests.compactMap(extractHostname)
                         let expectedFallbackHosts = expectedHostOrder.map { _fallbackHosts[$0] }
-                        
+                
                         expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
+                    }
+                    
+                    it("all fallback requests headers should contain `Host` header with fallback host address") {
+                        let options = ARTClientOptions(key: "xxxx:xxxx")
+                        options.httpMaxRetryCount = 10
+                        options.fallbackHosts = _fallbackHosts
+                        
+                        let client = ARTRest(options: options)
+                        let mockHTTP = MockHTTP(logger: options.logHandler)
+                        testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: options.logHandler)
+                        client.internal.httpExecutor = testHTTPExecutor
+                        mockHTTP.setNetworkState(network: .hostUnreachable)
+                        let channel = client.channels.get("test")
+                        
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish(nil, data: "nil") { _ in
+                                done()
+                            }
+                        }
+                        
+                        expect(testHTTPExecutor.requests).to(haveCount(ARTDefault.fallbackHosts().count + 1))
+                        
+                        let fallbackRequests = testHTTPExecutor.requests.filter {
+                            NSRegularExpression.match($0.url!.absoluteString, pattern: "[f-j].ably-realtime.com")
+                        }
+                        
+                        let fallbackRequestsWithHostHeader = fallbackRequests.filter {
+                            $0.allHTTPHeaderFields!["Host"] == $0.url?.host
+                        }
+                                            
+                        expect(fallbackRequests.count).to(be(fallbackRequestsWithHostHeader.count))
                     }
                     
                     it("if an empty array of fallback hosts is provided, then fallback host functionality is disabled") {
@@ -1471,7 +1503,7 @@ class RestClient: QuickSpec {
                     })
                 }
             }
-
+            
             // RSC19
             context("request") {
 
@@ -1863,6 +1895,24 @@ class RestClient: QuickSpec {
 
                     expect(fallbackRequests).toNot(beEmpty())
                     expect(fallbackRequests).to(allPass { extractURLQueryValue($0?.url, key: "request_id") == requestId })
+                }
+                
+                it("ErrorInfo should have `requestId` property") {
+                    let options = ARTClientOptions(key: "xxxx:xxxx")
+                    options.addRequestIds = true
+
+                    let rest = ARTRest(options: options)
+                    let mockHttpExecutor = MockHTTPExecutor()
+                    mockHttpExecutor.simulateIncomingErrorOnNextRequest(NSError(domain: "ably-test", code: 40013, userInfo: ["Message":"Ably test message"]))
+                    rest.internal.httpExecutor = mockHttpExecutor
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        rest.channels.get("foo").publish(nil, data: "something") { error in
+                            expect(error).toNot(beNil())
+                            expect(error?.requestId).toNot(beNil())
+                            done()
+                        }
+                    }
                 }
 
             }
