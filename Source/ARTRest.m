@@ -41,8 +41,8 @@
 #import "ARTNSMutableRequest+ARTRest.h"
 #import "ARTHTTPPaginatedResponse+Private.h"
 #import "ARTNSError+ARTUtils.h"
-#import "ARTTime.h"
 #import "ARTNSMutableURLRequest+ARTUtils.h"
+#import "ARTTime.h"
 
 @implementation ARTRest {
     ARTQueuedDealloc *_dealloc;
