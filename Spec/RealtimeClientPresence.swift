@@ -1714,7 +1714,7 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP2d
-                it("if action of ENTER arrives, it should be added to the presence map with the action set to PRESENT") {
+                xit("if action of ENTER arrives, it should be added to the presence map with the action set to PRESENT") {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
