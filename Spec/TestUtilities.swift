@@ -1176,7 +1176,7 @@ class TestProxyTransport: ARTWebSocketTransport {
         }
     }
 
-    override func setupWebSocket(_ params: [URLQueryItem], with options: ARTClientOptions, resumeKey: String?, connectionSerial: NSNumber?) -> URL {
+    override func setupWebSocket(_ params: [String: URLQueryItem], with options: ARTClientOptions, resumeKey: String?, connectionSerial: NSNumber?) -> URL {
         let url = super.setupWebSocket(params, with: options, resumeKey: resumeKey, connectionSerial: connectionSerial)
         lastUrl = url
         return url
@@ -1363,7 +1363,7 @@ extension Data {
     }
 
     var toUTF8String: String {
-        return NSString(data: self, encoding: String.Encoding.utf8.rawValue)! as String
+        return String(data: self, encoding: .utf8)!
     }
 
     var bytes: [UInt8]{

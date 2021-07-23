@@ -2706,8 +2706,9 @@ class RealtimeClientConnection: QuickSpec {
 
                 }
 
+                // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
                 // RTN15d
-                it("should recover from disconnection and messages should be delivered once the connection is resumed") {
+                xit("should recover from disconnection and messages should be delivered once the connection is resumed") {
                     let options = AblyTests.commonAppSetup()
 
                     let client1 = ARTRealtime(options: options)
@@ -3133,8 +3134,10 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
 
+                
+                // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
                 // RTN16b
-                it("Connection#recoveryKey should be composed with the connection key and latest serial received and msgSerial") {
+                xit("Connection#recoveryKey should be composed with the connection key and latest serial received and msgSerial") {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
@@ -4586,7 +4589,7 @@ class RealtimeClientConnection: QuickSpec {
                                 done()
                             }
 
-                            let request = NSMutableURLRequest(url: URL(string: "/channels/\(channel.name)/messages")! as URL)
+                            let request = NSMutableURLRequest(url: URL(string: "/channels/\(channel.name)/messages")!)
                             request.httpMethod = "POST"
                             request.httpBody = try! fixtureMessage.rawData()
                             request.allHTTPHeaderFields = [
@@ -4614,7 +4617,7 @@ class RealtimeClientConnection: QuickSpec {
                                     return
                                 }
 
-                                let request = NSMutableURLRequest(url: URL(string: "/channels/\(channel.name)/messages?limit=1")! as URL)
+                                let request = NSMutableURLRequest(url: URL(string: "/channels/\(channel.name)/messages?limit=1")!)
                                 request.httpMethod = "GET"
                                 request.allHTTPHeaderFields = ["Accept" : "application/json"]
                                 client.internal.rest.execute(request, withAuthOption: .on, completion: { _, data, err in
@@ -4681,7 +4684,7 @@ class RealtimeClientConnection: QuickSpec {
                                 partlyDone()
                             }
 
-                            let request = NSMutableURLRequest(url: URL(string: "/channels/\(realtimeSubscribeChannelMsgPack.name)/messages")! as URL)
+                            let request = NSMutableURLRequest(url: URL(string: "/channels/\(realtimeSubscribeChannelMsgPack.name)/messages")!)
                             request.httpMethod = "POST"
                             request.httpBody = try! fixtureMessage.rawData()
                             request.allHTTPHeaderFields = [
@@ -4727,7 +4730,7 @@ class RealtimeClientConnection: QuickSpec {
                             }
 
                             waitUntil(timeout: testTimeout) { done in
-                                let request = NSMutableURLRequest(url: URL(string: "/channels/\(restPublishChannel.name)/messages?limit=1")! as URL)
+                                let request = NSMutableURLRequest(url: URL(string: "/channels/\(restPublishChannel.name)/messages?limit=1")!)
                                 request.httpMethod = "GET"
                                 request.allHTTPHeaderFields = ["Accept" : "application/json"]
                                 restRetrieveClient.internal.execute(request, withAuthOption: .on, completion: { _, data, err in

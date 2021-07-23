@@ -64,4 +64,6 @@ fastlane/README.md
 
 Examples/Tests/Podfile.lock
 
-.build/
+# AppCode
+.build
+.idea

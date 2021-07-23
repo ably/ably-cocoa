@@ -183,6 +183,45 @@ class RealtimeClient: QuickSpec {
                     expect(oldRestHost).to(equal("\(getEnvironment())-rest.ably.io"))
                     expect(oldRealtimeHost).to(equal("\(getEnvironment())-realtime.ably.io"))
                 }
+                
+                //RTC1f
+                it("url should contains transport params") {
+                    let options = AblyTests.commonAppSetup()
+                    options.transportParams = [
+                        "tpBool": .init(bool: true),
+                        "tpInt": .init(number: .init(value: 12)),
+                        "tpFloat": .init(number: .init(value: 12.12)),
+                        "tpString": .init(string: "Lorem ipsum"),
+                        "v": .init(string: "v12.34")
+                    ]
+                    
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+
+                    waitUntil(timeout: testTimeout.multiplied(by: 2)) { done in
+                        client.connection.once(.connecting) { _ in
+                            guard let webSocketTransport = client.internal.transport as? ARTWebSocketTransport else {
+                                fail("Transport should be of type ARTWebSocketTransport"); done()
+                                return
+                            }
+                            let absoluteString = webSocketTransport.websocketURL?.absoluteString
+                            
+                            expect(webSocketTransport.websocketURL).toNot(beNil())
+                            expect(absoluteString?.contains("tpBool=true")).to(beTrue())
+                            expect(absoluteString?.contains("tpInt=12")).to(beTrue())
+                            expect(absoluteString?.contains("tpFloat=12.12")).to(beTrue())
+                            expect(absoluteString?.contains("tpString=Lorem%20ipsum")).to(beTrue())
+                    
+                            /**
+                             Test that replacing query string default values in ARTClientOptions works properly
+                             */
+                            expect(absoluteString?.components(separatedBy: "v=").count).to(be(2))
+                            
+                            done()
+                        }
+                        client.connect()
+                    }
+                }
             }
 
             // RTC2
@@ -948,7 +987,7 @@ class RealtimeClient: QuickSpec {
                 }
 
                 // RTC8b1 - part 4
-                it("authorize call should complete with an error if the connection moves to the CLOSED state") {
+                xit("authorize call should complete with an error if the connection moves to the CLOSED state") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     options.useTokenAuth = true
@@ -1235,10 +1274,11 @@ class RealtimeClient: QuickSpec {
                 }
             }
 
+            // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
             // https://github.com/ably/ably-cocoa/issues/577
-            it("background behaviour") {
+            xit("background behaviour") {
                 waitUntil(timeout: testTimeout) { done in
-                  URLSession.shared.dataTask(with: URL(string:"https://ably.io")! as URL) { _ , _ , _  in
+                  URLSession.shared.dataTask(with: URL(string:"https://ably.io")!) { _ , _ , _  in
                         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                         realtime.channels.get("foo").attach { error in
                             expect(error).to(beNil())

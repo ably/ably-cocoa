@@ -254,7 +254,7 @@ class RestClientStats: QuickSpec {
                         expect((firstPageAgain.items)[0].inbound.all.messages.data).to(equal(7000))
                     }
                     
-                    it("should be paginated according to the limit (fowards)") {
+                    xit("should be paginated according to the limit (fowards)") {
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
                         query.end = date.addingTimeInterval(120) // 20XX-02-03:16:05

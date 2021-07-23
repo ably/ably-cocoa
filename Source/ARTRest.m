@@ -40,6 +40,10 @@
 #import "ARTLocalDeviceStorage.h"
 #import "ARTNSMutableRequest+ARTRest.h"
 #import "ARTHTTPPaginatedResponse+Private.h"
+#import "ARTNSError+ARTUtils.h"
+#import "ARTNSMutableURLRequest+ARTUtils.h"
+#import "ARTNSURL+ARTUtils.h"
+#import "ARTTime.h"
 
 @implementation ARTRest {
     ARTQueuedDealloc *_dealloc;
@@ -221,7 +225,7 @@
     return [NSString stringWithFormat:@"%@ - \n\t %@;", [super description], info];
 }
 
-- (NSObject<ARTCancellable> *)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback {
+- (NSObject<ARTCancellable> *)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(CompletionBlock)callback {
     request.URL = [NSURL URLWithString:request.URL.relativeString relativeToURL:self.baseUrl];
     
     switch (authOption) {
@@ -282,13 +286,22 @@
     return task;
 }
 
-- (NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback {
-    return [self executeRequest:request completion:callback fallbacks:nil retries:0];
+- (NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request completion:(CompletionBlock)callback {
+    return [self executeRequest:request completion:callback fallbacks:nil retries:0 originalRequestId:nil];
 }
 
-- (NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback fallbacks:(ARTFallback *)fallbacks retries:(NSUInteger)retries {
+/**
+ originalRequestId is used only for fallback requests. It should never be used to execute request by yourself, it's passed from within below method.
+ */
+- (NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request
+                                  completion:(CompletionBlock)callback
+                                   fallbacks:(ARTFallback *)fallbacks
+                                     retries:(NSUInteger)retries
+                           originalRequestId:(nullable NSString *)originalRequestId {
+    
+    NSString *requestId = nil;
     __block ARTFallback *blockFallbacks = fallbacks;
-
+    
     if ([request isKindOfClass:[NSMutableURLRequest class]]) {
         NSMutableURLRequest *mutableRequest = (NSMutableURLRequest *)request;
         [mutableRequest setAcceptHeader:self.defaultEncoder encoders:self.encoders];
@@ -298,7 +311,30 @@
         if (_options.clientId && !self.auth.isTokenAuth) {
             [mutableRequest setValue:encodeBase64(_options.clientId) forHTTPHeaderField:@"X-Ably-ClientId"];
         }
+        
+        if (_options.addRequestIds) {
+            if (fallbacks != nil) {
+                requestId = originalRequestId;
+            } else {
+                NSString *randomId = [NSUUID new].UUIDString;
+                requestId = [[randomId dataUsingEncoding:NSUTF8StringEncoding] base64EncodedStringWithOptions:0];
+            }
+            
+            [mutableRequest appendQueryItem:[NSURLQueryItem queryItemWithName:@"request_id" value:requestId]];
+        }
+        
+        // RSC15f - reset the successed fallback host on fallbackRetryTimeout expiration
+        // change URLRequest host from `fallback host` to `default host`
+        //
+        if (self.currentFallbackHost != nil && self.fallbackRetryExpiration < [ARTTime timeSinceBoot]) {
+            [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p fallbackRetryExpiration ids expired, reset `prioritizedHost` and `currentFallbackHost`", self];
+            
+            self.currentFallbackHost = nil;
+            self.prioritizedHost = nil;
+            [mutableRequest replaceHostWith:_options.restHost];
+        }
     }
+
 
     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p executing request %@", self, request];
     __block NSObject<ARTCancellable> *task;
@@ -318,7 +354,7 @@
             if (!validContentType) {
                 NSString *plain = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
                 // Construct artificial error
-                error = [ARTErrorInfo createWithCode:response.statusCode * 100 status:response.statusCode message:[plain art_shortString]];
+                error = [ARTErrorInfo createWithCode:response.statusCode * 100 status:response.statusCode message:[plain art_shortString] requestId:requestId];
                 data = nil; // Discard data; format is unreliable.
                 [self.logger error:@"Request %@ failed with %@", request, error];
             }
@@ -345,9 +381,21 @@
             }
             if (!error) {
                 // Return error with HTTP StatusCode if ARTErrorStatusCode does not exist
-                error = [ARTErrorInfo createWithCode:response.statusCode*100 status:response.statusCode message:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
+                error = [ARTErrorInfo
+                         createWithCode:response.statusCode*100
+                         status:response.statusCode
+                         message:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]
+                         requestId:requestId];
+            }
+            
+        } else {
+            // Response Status Code < 400 and no errors
+            if (error == nil && self.currentFallbackHost != nil) {
+                [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p switching `prioritizedHost` to fallback host %@", self, self.currentFallbackHost];
+                self.prioritizedHost = self.currentFallbackHost;
             }
         }
+        
         if (retries < self->_options.httpMaxRetryCount && [self shouldRetryWithFallback:request response:response error:error]) {
             if (!blockFallbacks && [ARTFallback restShouldFallback:request.URL withOptions:self->_options]) {
                 blockFallbacks = [[ARTFallback alloc] initWithOptions:self->_options];
@@ -356,18 +404,25 @@
                 NSString *host = [blockFallbacks popFallbackHost];
                 if (host != nil) {
                     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p host is down; retrying request at %@", self, host];
+                    
+                    self.currentFallbackHost = host;
                     NSMutableURLRequest *newRequest = [request copy];
-                    NSURL *url = request.URL;
-                    NSString *urlStr = [NSString stringWithFormat:@"%@://%@:%@%@?%@", url.scheme, host, url.port, url.path, (url.query ? url.query : @"")];
-                    newRequest.URL = [NSURL URLWithString:urlStr];
-                    task = [self executeRequest:newRequest completion:callback fallbacks:blockFallbacks retries:retries + 1];
+                    [newRequest setValue:host forHTTPHeaderField:@"Host"];
+                    newRequest.URL = [NSURL copyFromURL:request.URL withHost:host];
+                    task = [self executeRequest:newRequest completion:callback fallbacks:blockFallbacks retries:retries + 1 originalRequestId:originalRequestId];
+                    
                     return;
                 }
             }
         }
         if (callback) {
             // Error object that indicates why the request failed
-            callback(response, data, error);
+            if ([error isKindOfClass:[ARTErrorInfo class]]) {
+                callback(response, data, error);
+            } else {
+                callback(response, data, [NSError copyFromError:error withRequestId:requestId]);
+            }
+            
         }
     }];
 
@@ -621,6 +676,20 @@ dispatch_async(_queue, ^{
         components.host = prioritizedHost;
     }
     return components.URL;
+}
+
+- (void)setCurrentFallbackHost:(NSString *)value {
+    if (value == nil) {
+        _fallbackRetryExpiration = 0.0;
+    }
+    
+    if ([_currentFallbackHost isEqual:value]) {
+        return;
+    }
+    
+    _currentFallbackHost = value;
+
+    _fallbackRetryExpiration = [ARTTime timeSinceBoot] + [ARTDefault fallbackRetryTimeout];
 }
 
 #if TARGET_OS_IOS
