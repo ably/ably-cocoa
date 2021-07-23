@@ -42,6 +42,7 @@
 #import "ARTHTTPPaginatedResponse+Private.h"
 #import "ARTNSError+ARTUtils.h"
 #import "ARTNSMutableURLRequest+ARTUtils.h"
+#import "ARTNSURL+ARTUtils.h"
 #import "ARTTime.h"
 
 @implementation ARTRest {
@@ -403,12 +404,13 @@
                 NSString *host = [blockFallbacks popFallbackHost];
                 if (host != nil) {
                     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p host is down; retrying request at %@", self, host];
+                    
                     self.currentFallbackHost = host;
                     NSMutableURLRequest *newRequest = [request copy];
-                    NSURL *url = request.URL;
-                    NSString *urlStr = [NSString stringWithFormat:@"%@://%@:%@%@?%@", url.scheme, host, url.port, url.path, (url.query ? url.query : @"")];
-                    newRequest.URL = [NSURL URLWithString:urlStr];
-                    task = [self executeRequest:newRequest completion:callback fallbacks:blockFallbacks retries:retries + 1 originalRequestId:requestId];
+                    [newRequest setValue:host forHTTPHeaderField:@"Host"];
+                    newRequest.URL = [NSURL copyFromURL:request.URL withHost:host];
+                    task = [self executeRequest:newRequest completion:callback fallbacks:blockFallbacks retries:retries + 1 originalRequestId:originalRequestId];
+                    
                     return;
                 }
             }
