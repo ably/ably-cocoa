@@ -26,4 +26,13 @@
     }
 }
 
+- (void)replaceHostWith:(NSString *)host {
+    NSURLComponents *components = [NSURLComponents componentsWithURL:self.URL resolvingAgainstBaseURL:YES];
+    components.host = host;
+    
+    if(components != nil) {
+        self.URL = components.URL;
+    }
+}
+
 @end
