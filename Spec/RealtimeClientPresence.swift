@@ -801,7 +801,7 @@ class RealtimeClientPresence: QuickSpec {
             }
 
             // RTP8
-            context("enter") {
+            xcontext("enter") {
 
                 // RTP8a
                 it("should enter the current client, optionally with the data provided") {
@@ -3747,7 +3747,7 @@ class RealtimeClientPresence: QuickSpec {
             context("enterClient") {
 
                 // RTP14a, RTP14b, RTP14c, RTP14d
-                it("enters into presence on a channel on behalf of another clientId") {
+                xit("enters into presence on a channel on behalf of another clientId") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
