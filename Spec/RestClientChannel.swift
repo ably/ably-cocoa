@@ -1054,7 +1054,7 @@ class RestClientChannel: QuickSpec {
         }
 
         // RSL3, RSP1
-        describe("presence") {
+        xdescribe("presence") {
             let presenceFixtures = appSetupJson["post_apps"]["channels"][0]["presence"]
 
             // RSP3
