@@ -40,6 +40,7 @@
 #import "ARTLocalDeviceStorage.h"
 #import "ARTNSMutableRequest+ARTRest.h"
 #import "ARTHTTPPaginatedResponse+Private.h"
+#import "ARTNSURL+ARTUtils.h"
 #import "ARTNSMutableURLRequest+ARTUtil.h"
 #import "ARTTime.h"
 
@@ -380,12 +381,13 @@
                 NSString *host = [blockFallbacks popFallbackHost];
                 if (host != nil) {
                     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p host is down; retrying request at %@", self, host];
+                    
                     self.currentFallbackHost = host;
                     NSMutableURLRequest *newRequest = [request copy];
-                    NSURL *url = request.URL;
-                    NSString *urlStr = [NSString stringWithFormat:@"%@://%@:%@%@?%@", url.scheme, host, url.port, url.path, (url.query ? url.query : @"")];
-                    newRequest.URL = [NSURL URLWithString:urlStr];
+                    [newRequest setValue:host forHTTPHeaderField:@"Host"];
+                    newRequest.URL = [NSURL copyFromURL:request.URL withHost:host];
                     task = [self executeRequest:newRequest completion:callback fallbacks:blockFallbacks retries:retries + 1];
+                    
                     return;
                 }
             }
