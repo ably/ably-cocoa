@@ -467,18 +467,17 @@ class PublishTestMessage {
         }
 
         client.connection.on { stateChange in
-            let stateChange = stateChange!
             let state = stateChange.current
             if state == .connected {
                 let channel = client.channels.get("test")
                 channel.on { stateChange in
-                    switch stateChange!.current {
+                    switch stateChange.current {
                     case .attached:
                         channel.publish(nil, data: "message") { errorInfo in
                             complete(errorInfo)
                         }
                     case .failed:
-                        complete(stateChange!.reason)
+                        complete(stateChange.reason)
                     default:
                         break
                     }

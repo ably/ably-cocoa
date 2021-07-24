@@ -702,7 +702,7 @@ class RealtimeClientPresence: QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             let partialDone = AblyTests.splitDone(3, done: done)
                             channel.once(.attaching) { stateChange in
-                                expect(stateChange?.reason).to(beNil())
+                                expect(stateChange.reason).to(beNil())
                                 expect(channel.presence.internal.pendingPresence.count) == 1
                                 AblyTests.queue.async {
                                     channel.internal.setSuspended(ARTStatus.state(.error, info: ARTErrorInfo.create(withCode: 1234, message: "unknown error")))
@@ -770,7 +770,7 @@ class RealtimeClientPresence: QuickSpec {
                                 partialDone()
                             }
                             channel.once(.attached) { stateChange in
-                                expect(stateChange?.reason).to(beNil())
+                                expect(stateChange.reason).to(beNil())
                                 channel.presence.leave(nil) { error in
                                     expect(error).to(beNil())
                                     partialDone()
@@ -2711,7 +2711,7 @@ class RealtimeClientPresence: QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             let partialDone = AblyTests.splitDone(2, done: done)
                             channel.once(.attached) { stateChange in
-                                expect(stateChange?.reason).to(beNil())
+                                expect(stateChange.reason).to(beNil())
                                 partialDone()
                             }
                             // Reconnect
