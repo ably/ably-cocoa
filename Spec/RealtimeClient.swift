@@ -1266,7 +1266,7 @@ class RealtimeClient: QuickSpec {
                 }
 
                 waitUntil(timeout: testTimeout) { done in
-                    transport.beforeProcessingReceivedMessage = { pm in
+                    transport.setListenerBeforeProcessingIncomingMessage({ pm in
                         if pm.action == .ack, let msgSerial = pm.msgSerial {
                             switch msgSerial.intValue {
                             case 0:
@@ -1279,7 +1279,7 @@ class RealtimeClient: QuickSpec {
                                 pm.msgSerial = 0
                             }
                         }
-                    }
+                    })
 
                     let partialDone = AblyTests.splitDone(4, done: done)
                     channel.publish("test1", data: nil) { error in
