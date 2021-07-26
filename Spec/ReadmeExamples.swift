@@ -32,7 +32,6 @@ class ReadmeExamples : QuickSpec {
             defer { client.close() }
 
             client.connection.on { stateChange in
-                let stateChange = stateChange!
                 switch stateChange.current {
                 case .connected:
                     print("connected!")
@@ -99,7 +98,7 @@ class ReadmeExamples : QuickSpec {
             defer { client.close() }
 
             client.connection.on { stateChange in
-                if stateChange!.current == .connected {
+                if stateChange.current == .connected {
                     let channel = client.channels.get("test")
 
                     channel.presence.enter("john.doe") { errorInfo in
