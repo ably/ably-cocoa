@@ -329,7 +329,7 @@ class Auth : QuickSpec {
                             fail("Should not reach Failed state"); done(); return
                         }
                         realtime.connection.once(.disconnected) { stateChange in
-                            guard let errorInfo = stateChange?.reason else {
+                            guard let errorInfo = stateChange.reason else {
                                 fail("ErrorInfo is nil"); done(); return
                             }
                             expect(errorInfo.message).to(contain("server with the specified hostname could not be found"))
@@ -355,7 +355,7 @@ class Auth : QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         realtime.connection.once(.failed) { stateChange in
-                            guard let errorInfo = stateChange?.reason else {
+                            guard let errorInfo = stateChange.reason else {
                                 fail("ErrorInfo is nil"); done(); return
                             }
                             expect(errorInfo.message).to(contain("No application found with id"))
@@ -473,8 +473,8 @@ class Auth : QuickSpec {
                     
                     waitUntil(timeout: testTimeout) { done in
                         realtime.connection.once(.failed) { stateChange in
-                            expect(stateChange?.reason?.code).to(equal(40300))
-                            expect(stateChange?.reason?.statusCode).to(equal(403))
+                            expect(stateChange.reason?.code).to(equal(80019))
+                            expect(stateChange.reason?.statusCode).to(equal(403))
                             done()
                         }
                         realtime.connect()
@@ -496,8 +496,8 @@ class Auth : QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         realtime.connection.once(.failed) { stateChange in
                             expect(authCallbackHasBeenInvoked).to(beTrue())
-                            expect(stateChange?.reason?.code).to(equal(40300))
-                            expect(stateChange?.reason?.statusCode).to(equal(403))
+                            expect(stateChange.reason?.code).to(equal(80019))
+                            expect(stateChange.reason?.statusCode).to(equal(403))
                             done()
                         }
                         realtime.connect()
@@ -539,9 +539,6 @@ class Auth : QuickSpec {
 
                             waitUntil(timeout: testTimeout) { done in
                                 realtime.connection.once(.disconnected) { stateChange in
-                                    guard let stateChange = stateChange else {
-                                        fail("ConnectionStateChange is nil"); done(); return
-                                    }
                                     expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.connecting))
                                     guard let errorInfo = stateChange.reason else {
                                         fail("ErrorInfo is nil"); done(); return
@@ -573,7 +570,7 @@ class Auth : QuickSpec {
 
                             waitUntil(timeout: testTimeout) { done in
                                 realtime.connection.once(.connected) { stateChange in
-                                    expect(stateChange?.reason).to(beNil())
+                                    expect(stateChange.reason).to(beNil())
                                     done()
                                 }
                             }
@@ -611,9 +608,6 @@ class Auth : QuickSpec {
 
                             waitUntil(timeout: testTimeout) { done in
                                 realtime.connection.once(.disconnected) { stateChange in
-                                    guard let stateChange = stateChange else {
-                                        fail("ConnectionStateChange is nil"); done(); return
-                                    }
                                     expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.connecting))
                                     guard let errorInfo = stateChange.reason else {
                                         fail("ErrorInfo is nil"); done(); return
@@ -643,7 +637,7 @@ class Auth : QuickSpec {
 
                             waitUntil(timeout: testTimeout) { done in
                                 realtime.connection.once(.connected) { stateChange in
-                                    expect(stateChange?.reason).to(beNil())
+                                    expect(stateChange.reason).to(beNil())
                                     done()
                                 }
                             }
@@ -686,9 +680,6 @@ class Auth : QuickSpec {
 
                             waitUntil(timeout: testTimeout) { done in
                                 realtime.connection.once(.disconnected) { stateChange in
-                                    guard let stateChange = stateChange else {
-                                        fail("ConnectionStateChange is nil"); done(); return
-                                    }
                                     expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.connecting))
                                     guard let errorInfo = stateChange.reason else {
                                         fail("ErrorInfo is nil"); done(); return
@@ -723,7 +714,7 @@ class Auth : QuickSpec {
 
                             waitUntil(timeout: testTimeout) { done in
                                 realtime.connection.once(.connected) { stateChange in
-                                    expect(stateChange?.reason).to(beNil())
+                                    expect(stateChange.reason).to(beNil())
                                     done()
                                 }
                             }
@@ -740,9 +731,6 @@ class Auth : QuickSpec {
                             }
 
                             realtime.connection.on() { stateChange in
-                                guard let stateChange = stateChange else {
-                                    fail("ConnectionStateChange should not be nil"); return
-                                }
                                 if stateChange.current != .connected {
                                     fail("Connection should remain connected")
                                 }
@@ -782,9 +770,6 @@ class Auth : QuickSpec {
 
                             waitUntil(timeout: testTimeout) { done in
                                 realtime.connection.once(.disconnected) { stateChange in
-                                    guard let stateChange = stateChange else {
-                                        fail("ConnectionStateChange is nil"); done(); return
-                                    }
                                     guard let errorInfo = stateChange.reason else {
                                         fail("ErrorInfo is nil"); done(); return
                                     }
@@ -816,7 +801,7 @@ class Auth : QuickSpec {
 
                             waitUntil(timeout: testTimeout) { done in
                                 realtime.connection.once(.connected) { stateChange in
-                                    expect(stateChange?.reason).to(beNil())
+                                    expect(stateChange.reason).to(beNil())
                                     done()
                                 }
                                 realtime.connect()
@@ -904,7 +889,6 @@ class Auth : QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.on { stateChange in
-                                let stateChange = stateChange!
                                 let state = stateChange.current
                                 let error = stateChange.reason
                                 if state == .connected && error == nil {
@@ -982,8 +966,8 @@ class Auth : QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             realtime.connection.once(.failed) { stateChange in
-                                expect(stateChange!.reason?.code).to(equal(40101))
-                                expect(stateChange!.reason?.description.lowercased()).to(contain("invalid clientid for credentials"))
+                                expect(stateChange.reason?.code).to(equal(40101))
+                                expect(stateChange.reason?.description.lowercased()).to(contain("invalid clientid for credentials"))
                                 done()
                             }
                             realtime.connect()
@@ -1204,7 +1188,7 @@ class Auth : QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             realtime.connection.once(.connected) { stateChange in
-                                expect(stateChange!.reason).to(beNil())
+                                expect(stateChange.reason).to(beNil())
                                 expect(realtime.auth.clientId).to(beNil())
                                 done()
                             }
@@ -1232,11 +1216,11 @@ class Auth : QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             realtime.connection.once(.connecting) { stateChange in
-                                expect(stateChange!.reason).to(beNil())
+                                expect(stateChange.reason).to(beNil())
                                 expect(realtime.auth.clientId).to(beNil())
                             }
                             realtime.connection.once(.connected) { stateChange in
-                                expect(stateChange!.reason).to(beNil())
+                                expect(stateChange.reason).to(beNil())
                                 expect(realtime.auth.clientId).to(equal("tester"))
                                 done()
                             }
@@ -1298,7 +1282,7 @@ class Auth : QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             realtime.connection.once(.connected) { stateChange in
-                                expect(stateChange!.reason).to(beNil())
+                                expect(stateChange.reason).to(beNil())
                                 expect(realtime.auth.clientId).to(equal("john"))
 
                                 let transport = realtime.internal.transport as! TestProxyTransport
@@ -3910,7 +3894,7 @@ class Auth : QuickSpec {
 
                 waitUntil(timeout: testTimeout) { done in
                     realtime.connection.on(.connected) { stateChange in
-                        expect(stateChange?.reason).to(beNil())
+                        expect(stateChange.reason).to(beNil())
                         done()
                     }
                 }
@@ -4109,7 +4093,7 @@ class Auth : QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.failed) { stateChange in
-                                guard let reason = stateChange?.reason else {
+                                guard let reason = stateChange.reason else {
                                     fail("Reason error is nil"); done(); return
                                 }
                                 expect(reason.code).to(equal(40144))
@@ -4170,7 +4154,7 @@ class Auth : QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.disconnected) { stateChange in
-                                guard let reason = stateChange?.reason else {
+                                guard let reason = stateChange.reason else {
                                     fail("Reason error is nil"); done(); return
                                 }
                                 expect(reason.code).to(equal(40144))
@@ -4198,8 +4182,8 @@ class Auth : QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.connected) { stateChange in
                                 client.connection.once(.disconnected) { stateChange in
-                                    expect(stateChange!.reason?.code).to(equal(40142))
-                                    expect(stateChange!.reason?.description).to(contain("Key/token status changed (expire)"))
+                                    expect(stateChange.reason?.code).to(equal(40142))
+                                    expect(stateChange.reason?.description).to(contain("Key/token status changed (expire)"))
                                     done()
                                 }
                             }
@@ -4275,7 +4259,7 @@ class Auth : QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.disconnected) { stateChange in
-                                guard let reason = stateChange?.reason else {
+                                guard let reason = stateChange.reason else {
                                     fail("Reason error is nil"); done(); return
                                 }
                                 expect(reason.code).to(equal(40144))
@@ -4309,7 +4293,7 @@ class Auth : QuickSpec {
                             originalConnectionID = client.connection.id!
 
                             client.connection.once(.disconnected) { stateChange in
-                                expect(stateChange!.reason?.code).to(equal(40142))
+                                expect(stateChange.reason?.code).to(equal(40142))
 
                                 client.connection.once(.connected) { _ in
                                     expect(client.connection.id).to(equal(originalConnectionID))

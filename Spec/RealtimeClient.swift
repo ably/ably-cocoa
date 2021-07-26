@@ -57,7 +57,6 @@ class RealtimeClient: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.on { stateChange in
-                            let stateChange = stateChange!
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {
@@ -98,7 +97,6 @@ class RealtimeClient: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.on { stateChange in
-                            let stateChange = stateChange!
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {
@@ -123,7 +121,6 @@ class RealtimeClient: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         newClient.connection.on { stateChange in
-                            let stateChange = stateChange!
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {
@@ -183,6 +180,45 @@ class RealtimeClient: QuickSpec {
                     expect(oldRestHost).to(equal("\(getEnvironment())-rest.ably.io"))
                     expect(oldRealtimeHost).to(equal("\(getEnvironment())-realtime.ably.io"))
                 }
+                
+                //RTC1f
+                it("url should contains transport params") {
+                    let options = AblyTests.commonAppSetup()
+                    options.transportParams = [
+                        "tpBool": .init(bool: true),
+                        "tpInt": .init(number: .init(value: 12)),
+                        "tpFloat": .init(number: .init(value: 12.12)),
+                        "tpString": .init(string: "Lorem ipsum"),
+                        "v": .init(string: "v12.34")
+                    ]
+                    
+                    let client = ARTRealtime(options: options)
+                    defer { client.dispose(); client.close() }
+
+                    waitUntil(timeout: testTimeout.multiplied(by: 2)) { done in
+                        client.connection.once(.connecting) { _ in
+                            guard let webSocketTransport = client.internal.transport as? ARTWebSocketTransport else {
+                                fail("Transport should be of type ARTWebSocketTransport"); done()
+                                return
+                            }
+                            let absoluteString = webSocketTransport.websocketURL?.absoluteString
+                            
+                            expect(webSocketTransport.websocketURL).toNot(beNil())
+                            expect(absoluteString?.contains("tpBool=true")).to(beTrue())
+                            expect(absoluteString?.contains("tpInt=12")).to(beTrue())
+                            expect(absoluteString?.contains("tpFloat=12.12")).to(beTrue())
+                            expect(absoluteString?.contains("tpString=Lorem%20ipsum")).to(beTrue())
+                    
+                            /**
+                             Test that replacing query string default values in ARTClientOptions works properly
+                             */
+                            expect(absoluteString?.components(separatedBy: "v=").count).to(be(2))
+                            
+                            done()
+                        }
+                        client.connect()
+                    }
+                }
             }
 
             // RTC2
@@ -227,7 +263,6 @@ class RealtimeClient: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.on { stateChange in
-                            let stateChange = stateChange!
                             let state = stateChange.current
                             let errorInfo = stateChange.reason
                             switch state {
@@ -340,7 +375,6 @@ class RealtimeClient: QuickSpec {
 
                 waitUntil(timeout: testTimeout.incremented(by: options.suspendedRetryTimeout)) { done in
                     client.connection.on { stateChange in
-                        let stateChange = stateChange!
                         let state = stateChange.current
                         let errorInfo = stateChange.reason
                         switch state {
@@ -390,7 +424,7 @@ class RealtimeClient: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.once(.connected) { stateChange in
-                            expect(stateChange?.reason).to(beNil())
+                            expect(stateChange.reason).to(beNil())
                             done()
                         }
                         client.connect()
@@ -447,7 +481,7 @@ class RealtimeClient: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.once(.connected) { stateChange in
-                            expect(stateChange?.reason).to(beNil())
+                            expect(stateChange.reason).to(beNil())
                             done()
                         }
                         client.connect()
@@ -461,9 +495,6 @@ class RealtimeClient: QuickSpec {
                         }
 
                         client.connection.once(.update) { stateChange in
-                            guard let stateChange = stateChange else {
-                                fail("ConnectionStateChange is nil"); partialDone(); return
-                            }
                             expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.connected))
                             expect(stateChange.reason).to(beNil())
 
@@ -510,7 +541,7 @@ class RealtimeClient: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.once(.connected) { stateChange in
-                            expect(stateChange?.reason).to(beNil())
+                            expect(stateChange.reason).to(beNil())
                             done()
                         }
                         client.connect()
@@ -519,7 +550,7 @@ class RealtimeClient: QuickSpec {
                     let channel = client.channels.get("foo")
                     waitUntil(timeout: testTimeout) { done in
                         channel.once(.failed) { stateChange in
-                            guard let error = stateChange?.reason else {
+                            guard let error = stateChange.reason else {
                                 fail("Error is nil"); done(); return
                             }
                             expect(error.message).to(contain("Channel denied access based on given capability"))
@@ -532,9 +563,6 @@ class RealtimeClient: QuickSpec {
                         let partialDone = AblyTests.splitDone(2, done: done)
 
                         client.connection.once(.update) { stateChange in
-                            guard let stateChange = stateChange else {
-                                fail("ConnectionStateChange is nil"); partialDone(); return
-                            }
                             expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.connected))
                             expect(stateChange.reason).to(beNil())
                             partialDone()
@@ -583,7 +611,7 @@ class RealtimeClient: QuickSpec {
                             fail("Should not reach Failed state"); done(); return
                         }
                         channel.once(.attached) { stateChange in
-                            expect(stateChange?.reason).to(beNil())
+                            expect(stateChange.reason).to(beNil())
                             done()
                         }
                         channel.attach()
@@ -615,7 +643,7 @@ class RealtimeClient: QuickSpec {
                         let partialDone = AblyTests.splitDone(2, done: done)
 
                         channel.once(.failed) { stateChange in
-                            guard let error = stateChange?.reason else {
+                            guard let error = stateChange.reason else {
                                 fail("ErrorInfo is nil"); partialDone(); return
                             }
                             expect(error).to(beIdenticalTo(channel.errorReason))
@@ -665,7 +693,7 @@ class RealtimeClient: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.once(.connected) { stateChange in
-                            expect(stateChange?.reason).to(beNil())
+                            expect(stateChange.reason).to(beNil())
                             done()
                         }
                         client.connect()
@@ -678,9 +706,6 @@ class RealtimeClient: QuickSpec {
                         let partialDone = AblyTests.splitDone(2, done: done)
 
                         client.connection.once(.failed) { stateChange in
-                            guard let stateChange = stateChange else {
-                                fail("ConnectionStateChange is nil"); partialDone(); return
-                            }
                             expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.connected))
                             expect(stateChange.reason).toNot(beNil())
                             connectionError = stateChange.reason
@@ -716,7 +741,7 @@ class RealtimeClient: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.once(.connected) { stateChange in
-                            expect(stateChange?.reason).to(beNil())
+                            expect(stateChange.reason).to(beNil())
                             done()
                         }
                     }
@@ -759,7 +784,7 @@ class RealtimeClient: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.once(.connected) { stateChange in
-                            expect(stateChange?.reason).to(beNil())
+                            expect(stateChange.reason).to(beNil())
                             done()
                         }
                         client.connect()
@@ -805,7 +830,7 @@ class RealtimeClient: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.once(.connecting) { stateChange in
-                            expect(stateChange?.reason).to(beNil())
+                            expect(stateChange.reason).to(beNil())
 
                             let authOptions = ARTAuthOptions()
                             authOptions.key = AblyTests.commonAppSetup().key
@@ -871,7 +896,7 @@ class RealtimeClient: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.once(.connected) { stateChange in
-                            expect(stateChange?.reason).to(beNil())
+                            expect(stateChange.reason).to(beNil())
                             done()
                         }
                         client.connect()
@@ -889,7 +914,7 @@ class RealtimeClient: QuickSpec {
                         let partialDone = AblyTests.splitDone(2, done: done)
 
                         client.connection.once(.failed) { stateChange in
-                            guard let error = stateChange?.reason else {
+                            guard let error = stateChange.reason else {
                                 fail("ErrorInfo is nil"); partialDone(); return
                             }
                             expect(error.message).to(contain("Fail test"))
@@ -921,7 +946,7 @@ class RealtimeClient: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.once(.connected) { stateChange in
-                            expect(stateChange?.reason).to(beNil())
+                            expect(stateChange.reason).to(beNil())
                             done()
                         }
                         client.connect()
@@ -953,7 +978,7 @@ class RealtimeClient: QuickSpec {
                 }
 
                 // RTC8b1 - part 4
-                it("authorize call should complete with an error if the connection moves to the CLOSED state") {
+                xit("authorize call should complete with an error if the connection moves to the CLOSED state") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     options.useTokenAuth = true
@@ -962,7 +987,7 @@ class RealtimeClient: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.once(.connected) { stateChange in
-                            expect(stateChange?.reason).to(beNil())
+                            expect(stateChange.reason).to(beNil())
                             done()
                         }
                         client.connect()
@@ -1007,7 +1032,7 @@ class RealtimeClient: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.once(.connected) { stateChange in
-                            expect(stateChange?.reason).to(beNil())
+                            expect(stateChange.reason).to(beNil())
                             done()
                         }
                         client.connect()
@@ -1020,18 +1045,12 @@ class RealtimeClient: QuickSpec {
                         let partialDone = AblyTests.splitDone(3, done: done)
 
                         client.connection.once(.connecting) { stateChange in
-                            guard let stateChange = stateChange else {
-                                fail("ConnectionStateChange is nil"); partialDone(); return
-                            }
                             expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.suspended))
                             expect(stateChange.reason).to(beNil())
                             partialDone()
                         }
 
                         client.connection.once(.connected) { stateChange in
-                            guard let stateChange = stateChange else {
-                                fail("ConnectionStateChange is nil"); partialDone(); return
-                            }
                             expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.connecting))
                             expect(stateChange.reason).to(beNil())
                             partialDone()
@@ -1068,7 +1087,7 @@ class RealtimeClient: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.once(.connected) { stateChange in
-                            expect(stateChange?.reason).to(beNil())
+                            expect(stateChange.reason).to(beNil())
                             done()
                         }
                         client.connect()
@@ -1081,18 +1100,12 @@ class RealtimeClient: QuickSpec {
                         let partialDone = AblyTests.splitDone(3, done: done)
 
                         client.connection.once(.connecting) { stateChange in
-                            guard let stateChange = stateChange else {
-                                fail("ConnectionStateChange is nil"); partialDone(); return
-                            }
                             expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.closed))
                             expect(stateChange.reason).to(beNil())
                             partialDone()
                         }
 
                         client.connection.once(.connected) { stateChange in
-                            guard let stateChange = stateChange else {
-                                fail("ConnectionStateChange is nil"); partialDone(); return
-                            }
                             expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.connecting))
                             expect(stateChange.reason).to(beNil())
                             partialDone()
@@ -1129,7 +1142,7 @@ class RealtimeClient: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.once(.connected) { stateChange in
-                            expect(stateChange?.reason).to(beNil())
+                            expect(stateChange.reason).to(beNil())
                             done()
                         }
                         client.connect()
@@ -1142,18 +1155,12 @@ class RealtimeClient: QuickSpec {
                         let partialDone = AblyTests.splitDone(3, done: done)
 
                         client.connection.once(.connecting) { stateChange in
-                            guard let stateChange = stateChange else {
-                                fail("ConnectionStateChange is nil"); partialDone(); return
-                            }
                             expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.disconnected))
                             expect(stateChange.reason).to(beNil())
                             partialDone()
                         }
 
                         client.connection.once(.connected) { stateChange in
-                            guard let stateChange = stateChange else {
-                                fail("ConnectionStateChange is nil"); partialDone(); return
-                            }
                             expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.connecting))
                             expect(stateChange.reason).to(beNil())
                             partialDone()
@@ -1190,7 +1197,7 @@ class RealtimeClient: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.once(.connected) { stateChange in
-                            expect(stateChange?.reason).to(beNil())
+                            expect(stateChange.reason).to(beNil())
                             done()
                         }
                         client.connect()
@@ -1203,18 +1210,12 @@ class RealtimeClient: QuickSpec {
                         let partialDone = AblyTests.splitDone(3, done: done)
 
                         client.connection.once(.connecting) { stateChange in
-                            guard let stateChange = stateChange else {
-                                fail("ConnectionStateChange is nil"); partialDone(); return
-                            }
                             expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.failed))
                             expect(stateChange.reason).to(beNil())
                             partialDone()
                         }
 
                         client.connection.once(.connected) { stateChange in
-                            guard let stateChange = stateChange else {
-                                fail("ConnectionStateChange is nil"); partialDone(); return
-                            }
                             expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.connecting))
                             expect(stateChange.reason).to(beNil())
                             partialDone()
