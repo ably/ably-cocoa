@@ -305,7 +305,7 @@ class RealtimeClientPresence: QuickSpec {
             // RTP19
             context("PresenceMap has existing members when a SYNC is started") {
 
-                it("should ensure that members no longer present on the channel are removed from the local PresenceMap once the sync is complete") {
+                xit("should ensure that members no longer present on the channel are removed from the local PresenceMap once the sync is complete") {
                     let options = AblyTests.commonAppSetup()
                     let channelName = NSUUID().uuidString
                     var clientMembers: ARTRealtime?
@@ -541,7 +541,7 @@ class RealtimeClientPresence: QuickSpec {
                         }
                     }
 
-                    it("should clear the PresenceMap including local members and does not emit any presence events") {
+                    xit("should clear the PresenceMap including local members and does not emit any presence events") {
                         let client = ARTRealtime(options: AblyTests.commonAppSetup())
                         defer { client.dispose(); client.close() }
                         let channel = client.channels.get("test")
@@ -1327,7 +1327,7 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP10a
-                it("should leave the current client with no data") {
+                xit("should leave the current client with no data") {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "john"
                     let client = ARTRealtime(options: options)
@@ -1354,7 +1354,7 @@ class RealtimeClientPresence: QuickSpec {
             }
 
             // RTP2
-            it("should be used a PresenceMap to maintain a list of members") {
+            xit("should be used a PresenceMap to maintain a list of members") {
                 let options = AblyTests.commonAppSetup()
                 var clientSecondary: ARTRealtime!
                 defer { clientSecondary.dispose(); clientSecondary.close() }
@@ -1838,7 +1838,7 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP2f
-                it("if a SYNC is in progress, then when a presence message with an action of LEAVE arrives, it should be stored in the presence map with the action set to ABSENT") {
+                xit("if a SYNC is in progress, then when a presence message with an action of LEAVE arrives, it should be stored in the presence map with the action set to ABSENT") {
                     let options = AblyTests.commonAppSetup()
                     let channelName = NSUUID().uuidString
 

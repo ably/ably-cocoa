@@ -2599,7 +2599,7 @@ class RealtimeClientConnection: QuickSpec {
                         expect(channel.errorReason).to(beIdenticalTo(protocolError.error))
                     }
 
-                    it("should resume the connection after an auth renewal") {
+                    xit("should resume the connection after an auth renewal") {
                         let options = AblyTests.commonAppSetup()
                         options.tokenDetails = getTestTokenDetails(ttl: 5.0)
                         let client = AblyTests.newRealtime(options)
@@ -2826,7 +2826,7 @@ class RealtimeClientConnection: QuickSpec {
                     let customTtlInterval: TimeInterval = 0.1
                     let customIdleInterval: TimeInterval = 0.1
                     
-                    it("uses a new connection") {
+                    xit("uses a new connection") {
                         let options = AblyTests.commonAppSetup()
                         // We want this to be > than the sum of customTtlInterval and customIdleInterval
                         options.disconnectedRetryTimeout = 5.0 + customTtlInterval + customIdleInterval
@@ -2933,7 +2933,7 @@ class RealtimeClientConnection: QuickSpec {
                 // RTN15h
                 context("DISCONNECTED message contains a token error") {
 
-                    it("if the token is renewable then error should not be emitted") {
+                    xit("if the token is renewable then error should not be emitted") {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
                         options.authCallback = { tokenParams, callback in
@@ -3009,7 +3009,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     // RTN15h2
-                    it("should transition to disconnected when the token renewal fails and the error should be emitted") {
+                    xit("should transition to disconnected when the token renewal fails and the error should be emitted") {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
                         let tokenTtl = 3.0
@@ -3163,7 +3163,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN16c
-                it("Connection#recoveryKey should become becomes null when a connection is explicitly CLOSED or CLOSED") {
+                xit("Connection#recoveryKey should become becomes null when a connection is explicitly CLOSED or CLOSED") {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
@@ -4525,7 +4525,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // https://github.com/ably/wiki/issues/22
-                it("should encode and decode fixture messages as expected") {
+                xit("should encode and decode fixture messages as expected") {
                     let options = AblyTests.commonAppSetup()
                     options.useBinaryProtocol = false
                     let client = AblyTests.newRealtime(options)
@@ -4608,7 +4608,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
 
-                it("should send messages through raw JSON POST and retrieve equal messages through MsgPack and JSON") {
+                xit("should send messages through raw JSON POST and retrieve equal messages through MsgPack and JSON") {
                     setupDependencies()
                     let restPublishClient = ARTRest(options: jsonOptions)
                     let realtimeSubscribeClientMsgPack = AblyTests.newRealtime(msgpackOptions)
@@ -4659,7 +4659,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
 
-                it("should send messages through MsgPack and JSON and retrieve equal messages through raw JSON GET") {
+                xit("should send messages through MsgPack and JSON and retrieve equal messages through raw JSON GET") {
                     setupDependencies()
                     let restPublishClientMsgPack = ARTRest(options: msgpackOptions)
                     let restPublishClientJSON = ARTRest(options: jsonOptions)
