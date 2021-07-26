@@ -3710,12 +3710,14 @@ class Auth : QuickSpec {
                     }
 
                     var tokenDetailsLast: ARTTokenDetails?
+                    var didCancelAuthorization = false
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(2, done: done)
                         let callback: (ARTTokenDetails?, Error?) -> Void = { tokenDetails, error in
                             if let error = error {
                                 if (error as NSError).code == URLError.cancelled.rawValue {
                                     expect(tokenDetails).to(beNil())
+                                    didCancelAuthorization = true
                                 }
                                 else {
                                     fail(error.localizedDescription); partialDone(); return
@@ -3732,6 +3734,7 @@ class Auth : QuickSpec {
                         realtime.auth.authorize(callback)
                     }
 
+                    expect(didCancelAuthorization).to(be(true))
                     expect(realtime.auth.tokenDetails).to(beIdenticalTo(tokenDetailsLast))
                     expect(realtime.auth.tokenDetails?.token).to(equal(tokenDetailsLast?.token))
 
