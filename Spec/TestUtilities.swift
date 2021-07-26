@@ -467,18 +467,17 @@ class PublishTestMessage {
         }
 
         client.connection.on { stateChange in
-            let stateChange = stateChange!
             let state = stateChange.current
             if state == .connected {
                 let channel = client.channels.get("test")
                 channel.on { stateChange in
-                    switch stateChange!.current {
+                    switch stateChange.current {
                     case .attached:
                         channel.publish(nil, data: "message") { errorInfo in
                             complete(errorInfo)
                         }
                     case .failed:
-                        complete(stateChange!.reason)
+                        complete(stateChange.reason)
                     default:
                         break
                     }
@@ -1176,7 +1175,7 @@ class TestProxyTransport: ARTWebSocketTransport {
         }
     }
 
-    override func setupWebSocket(_ params: [URLQueryItem], with options: ARTClientOptions, resumeKey: String?, connectionSerial: NSNumber?) -> URL {
+    override func setupWebSocket(_ params: [String: URLQueryItem], with options: ARTClientOptions, resumeKey: String?, connectionSerial: NSNumber?) -> URL {
         let url = super.setupWebSocket(params, with: options, resumeKey: resumeKey, connectionSerial: connectionSerial)
         lastUrl = url
         return url

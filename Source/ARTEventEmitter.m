@@ -138,8 +138,10 @@
         NSAssert(false, @"timer is already running");
     }
     _timerIsRunning = true;
+    
+    __weak ARTEventListener *weakSelf = self;
     _work = artDispatchScheduled(_timeoutDeadline, [_eventHandler queue], ^{
-        [self timeout];
+        [weakSelf timeout];
     });
 }
 
@@ -147,6 +149,7 @@
     artDispatchCancel(_work);
     _timerIsRunning = false;
     _timeoutBlock = nil;
+    _work = nil;
 }
 
 - (void)restartTimer {
@@ -177,7 +180,7 @@
     return self;
 }
 
-- (ARTEventListener *)on:(id<ARTEventIdentification>)event callback:(void (^)(id __art_nonnull))cb {
+- (ARTEventListener *)on:(id<ARTEventIdentification>)event callback:(void (^)(id))cb {
     NSString *eventId = [NSString stringWithFormat:@"%p-%@", self, [event identification]];
     __block ARTEventListener *listener;
     id<NSObject> observerToken = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
@@ -191,7 +194,7 @@
     return listener;
 }
 
-- (ARTEventListener *)once:(id<ARTEventIdentification>)event callback:(void (^)(id __art_nonnull))cb {
+- (ARTEventListener *)once:(id<ARTEventIdentification>)event callback:(void (^)(id))cb {
     NSString *eventId = [NSString stringWithFormat:@"%p-%@", self, [event identification]];
     __block ARTEventListener *listener;
     __weak typeof(self) weakSelf = self; // weak to avoid a warning, but strong should be safe too since the cycle is broken when the notification fires or the token is cancelled
@@ -208,7 +211,7 @@
     return listener;
 }
 
-- (ARTEventListener *)on:(void (^)(id __art_nonnull))cb {
+- (ARTEventListener *)on:(void (^)(id))cb {
     NSString *eventId = [NSString stringWithFormat:@"%p", self];
     __block ARTEventListener *listener;
     id<NSObject> observerToken = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
@@ -222,7 +225,7 @@
     return listener;
 }
 
-- (ARTEventListener *)once:(void (^)(id __art_nonnull))cb {
+- (ARTEventListener *)once:(void (^)(id))cb {
     NSString *eventId = [NSString stringWithFormat:@"%p", self];
     __block ARTEventListener *listener;
     __weak typeof(self) weakSelf = self; // weak to avoid a warning, but strong should be safe too since the cycle is broken when the notification fires or the token is cancelled
