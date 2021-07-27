@@ -54,9 +54,18 @@ jobs:
         run: |
           make update_carthage_dependencies
 
-      - name: Run Tests
-        run: fastlane ${{ matrix.lane }}
-      
+      - name: Run Tests iOS11
+        run: fastlane test_iOS11
+
+      - name: Run Tests iOS12
+        run: fastlane test_iOS12
+
+      - name: Run Tests tvOS12
+        run: fastlane test_tvOS12
+
+      - name: Run Tests macOS
+        run: fastlane test_macOS
+
       # This is the script specified as the pod’s prepare_command in its Podspec.
       # It would be run automatically for a normal CocoaPods install, but it doesn’t
       # get run when the dependency is specified with the :path option. So we run it
