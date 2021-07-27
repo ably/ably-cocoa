@@ -8,8 +8,8 @@ jobs:
   check:
     runs-on: macos-10.15
 
-    strategy:
-      fail-fast: false
+    # strategy:
+    #   fail-fast: false
     #   matrix:
     #     include:
 
