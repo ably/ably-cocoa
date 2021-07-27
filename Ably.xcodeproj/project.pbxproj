@@ -1464,6 +1464,7 @@
 				D7C1B8761BBEA81A0087B55F /* Auth.swift */,
 				EB7913A71C6E54C3000ABF9B /* Crypto.swift */,
 				D798554723EB96C000946BE2 /* DeltaCodec.swift */,
+				D5A22171266F526600C87C42 /* GCDTest.swift */,
 				D7093CA8219EFA8A00723F17 /* MockDeviceStorage.swift */,
 				D714A63D1C74D4B2002F2CA0 /* NSObject+TestSuite.swift */,
 				EB1B53F822F85CE4006A59AC /* ObjectLifetimes.swift */,
@@ -1487,7 +1488,6 @@
 				D520C4DD2680A1E3000012B2 /* Stringifiable.swift */,
 				856AAC961B6E30C800B07119 /* TestUtilities.swift */,
 				EB1AE0CD1C5C3A4900D62250 /* Utilities.swift */,
-				D5A22171266F526600C87C42 /* GCDTest.swift */,
 			);
 			path = Spec;
 			sourceTree = "<group>";
