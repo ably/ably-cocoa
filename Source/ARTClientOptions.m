@@ -207,7 +207,7 @@ NSString *ARTDefaultEnvironment = nil;
 }
 
 - (BOOL)isProductionEnvironment {
-    return [self.environment.lowercaseString isEqualToString:ARTDefaultProduction];
+    return [[self.environment lowercaseString] isEqualToString:[ARTDefaultProduction lowercaseString]];
 }
 
 - (BOOL)hasEnvironment {
