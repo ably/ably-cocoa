@@ -129,7 +129,7 @@ class AblyTests {
         return DispatchQueue.getSpecific(key: queueIdentityKey)?.label
     }
 
-    class func setupOptions(_ options: ARTClientOptions, forceNewApp: Bool = false, debug: Bool = true) -> ARTClientOptions {
+    class func setupOptions(_ options: ARTClientOptions, forceNewApp: Bool = false, debug: Bool = false) -> ARTClientOptions {
         options.channelNamePrefix = "test-\(setupOptionsCounter)"
         setupOptionsCounter += 1
 
@@ -167,7 +167,6 @@ class AblyTests {
         options.dispatchQueue = DispatchQueue.main
         options.internalDispatchQueue = queue
         if debug {
-            print("[Options.Key] \(key["keyStr"].stringValue)")
             options.logLevel = .verbose
         }
         return options

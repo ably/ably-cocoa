@@ -18,8 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTClientOptions : ARTAuthOptions
 
-@property (readwrite, strong, nonatomic, getter=getRestHost) NSString *restHost;
-@property (readwrite, strong, nonatomic, getter=getRealtimeHost) NSString *realtimeHost;
+@property (readwrite, strong, nonatomic) NSString *restHost;
+@property (readwrite, strong, nonatomic) NSString *realtimeHost;
 
 @property (nonatomic, assign) NSInteger port;
 @property (nonatomic, assign) NSInteger tlsPort;

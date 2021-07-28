@@ -60,8 +60,8 @@ NSString *ARTDefaultEnvironment = nil;
     return [NSString stringWithFormat:@"%@\n\t clientId: %@;", [super description], self.clientId];
 }
 
-- (NSString*)getRestHost {
-    if (_restHost) {
+- (NSString*)restHost {
+    if (_restHost != nil) {
         return _restHost;
     }
     if ([_environment isEqualToString:ARTDefaultProduction]) {
@@ -70,8 +70,8 @@ NSString *ARTDefaultEnvironment = nil;
     return self.hasEnvironment ? [self host:[ARTDefault restHost] forEnvironment:_environment] : [ARTDefault restHost];
 }
 
-- (NSString*)getRealtimeHost {
-    if (_realtimeHost) {
+- (NSString*)realtimeHost {
+    if (_realtimeHost != nil) {
         return _realtimeHost;
     }
     if ([_environment isEqualToString:ARTDefaultProduction]) {
@@ -218,7 +218,7 @@ NSString *ARTDefaultEnvironment = nil;
 }
 
 - (NSString *)host:(NSString *)host forEnvironment:(NSString *)environment {
-    return [NSString stringWithFormat:@"%@-%@", environment, host]
+    return [NSString stringWithFormat:@"%@-%@", environment, host];
 }
 
 @end
