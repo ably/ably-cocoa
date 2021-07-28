@@ -13,6 +13,7 @@
 #import "ARTTokenParams.h"
 #import "ARTDeltaCodec.h"
 #import "ARTStringifiable.h"
+#import "ARTNSString+ARTUtil.h"
 
 NSString *ARTDefaultEnvironment = nil;
 
@@ -210,7 +211,7 @@ NSString *ARTDefaultEnvironment = nil;
 }
 
 - (BOOL)hasEnvironment {
-    return self.environment && ![[self.environment stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] isEqualToString:@""];
+    return self.environment != nil && [self.environment isNotEmptyString];
 }
 
 - (BOOL)hasEnvironmentDifferentThanProduction {
