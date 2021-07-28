@@ -67,7 +67,7 @@ NSString *ARTDefaultEnvironment = nil;
     if ([_environment isEqualToString:ARTDefaultProduction]) {
         return [ARTDefault restHost];
     }
-    return self.hasEnvironment ? [NSString stringWithFormat:@"%@-%@", _environment, [ARTDefault restHost]] : [ARTDefault restHost];
+    return self.hasEnvironment ? [self host:[ARTDefault restHost] forEnvironment:_environment] : [ARTDefault restHost];
 }
 
 - (NSString*)getRealtimeHost {
@@ -77,7 +77,8 @@ NSString *ARTDefaultEnvironment = nil;
     if ([_environment isEqualToString:ARTDefaultProduction]) {
         return [ARTDefault realtimeHost];
     }
-    return self.hasEnvironment ? [NSString stringWithFormat:@"%@-%@", _environment, [ARTDefault realtimeHost]] : [ARTDefault realtimeHost];
+    
+    return self.hasEnvironment ? [self host:[ARTDefault realtimeHost] forEnvironment:_environment] : [ARTDefault realtimeHost];
 }
 
 - (NSURLComponents *)restUrlComponents {
@@ -214,6 +215,10 @@ NSString *ARTDefaultEnvironment = nil;
 
 - (BOOL)hasEnvironmentDifferentThanProduction {
     return self.hasEnvironment && !self.isProductionEnvironment;
+}
+
+- (NSString *)host:(NSString *)host forEnvironment:(NSString *)environment {
+    return [NSString stringWithFormat:@"%@-%@", environment, host]
 }
 
 @end
