@@ -59,6 +59,12 @@
     });
 }
 
+- (void)internalSync:(void (^)(ARTRealtimeInternal * _Nonnull))use {
+    dispatch_sync(_internal.queue, ^{
+        use(self->_internal);
+    });
+}
+
 - (ARTConnection *)connection {
     return [[ARTConnection alloc] initWithInternal:_internal.connection queuedDealloc:_dealloc];
 }
@@ -179,7 +185,7 @@
     self = [super init];
     if (self) {
         NSAssert(options, @"ARTRealtime: No options provided");
-
+        
         _rest = [[ARTRestInternal alloc] initWithOptions:options realtime:self];
         _userQueue = _rest.userQueue;
         _queue = _rest.queue;
@@ -199,13 +205,13 @@
         _connectionStateTtl = [ARTDefault connectionStateTtl];
         _shouldImmediatelyReconnect = true;
         self.auth.delegate = self;
-
+        
         [self.connection setState:ARTRealtimeInitialized];
-
+        
         [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p initialized with RS:%p", self, _rest];
-
+        
         self.rest.prioritizedHost = nil;
-
+        
         if (options.autoConnect) {
             [self _connect];
         }
@@ -242,7 +248,7 @@
             }
         }];
     };
-
+    
     void (^haltCurrentConnectionAndReconnect)(void) = ^{
         // Halt the current connection and reconnect with the most recent token
         [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p halt current connection and reconnect with %@", self.rest, tokenDetails];
@@ -252,7 +258,7 @@
         [self cancelAllPendingAuthorizations];
         waitForResponse();
     };
-
+    
     switch (self.connection.state_nosync) {
         case ARTRealtimeConnected: {
             // Update (send AUTH message)
@@ -370,14 +376,14 @@
 
 - (void)dealloc {
     [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p dealloc", self];
-
+    
     self.rest.prioritizedHost = nil;
 }
 
 - (void)connect {
-dispatch_sync(_queue, ^{
-    [self _connect];
-});
+    dispatch_sync(_queue, ^{
+        [self _connect];
+    });
 }
 
 - (void)_connect {
@@ -389,34 +395,34 @@ dispatch_sync(_queue, ^{
 }
 
 - (void)close {
-dispatch_sync(_queue, ^{
-    [self _close];
-});
+    dispatch_sync(_queue, ^{
+        [self _close];
+    });
 }
 
 - (void)_close {
     [_reachability off];
     [self cancelTimers];
-
+    
     switch (self.connection.state_nosync) {
-    case ARTRealtimeInitialized:
-    case ARTRealtimeClosing:
-    case ARTRealtimeClosed:
-    case ARTRealtimeFailed:
-        return;
-    case ARTRealtimeConnecting: {
-        [_internalEventEmitter once:^(ARTConnectionStateChange *change) {
-            [self _close];
-        }];
-        return;
-    }
-    case ARTRealtimeDisconnected:
-    case ARTRealtimeSuspended:
-        [self transition:ARTRealtimeClosed];
-        break;
-    case ARTRealtimeConnected:
-        [self transition:ARTRealtimeClosing];
-        break;
+        case ARTRealtimeInitialized:
+        case ARTRealtimeClosing:
+        case ARTRealtimeClosed:
+        case ARTRealtimeFailed:
+            return;
+        case ARTRealtimeConnecting: {
+            [_internalEventEmitter once:^(ARTConnectionStateChange *change) {
+                [self _close];
+            }];
+            return;
+        }
+        case ARTRealtimeDisconnected:
+        case ARTRealtimeSuspended:
+            [self transition:ARTRealtimeClosed];
+            break;
+        case ARTRealtimeConnected:
+            [self transition:ARTRealtimeClosing];
+            break;
     }
 }
 
@@ -433,32 +439,32 @@ dispatch_sync(_queue, ^{
             });
         };
     }
-
-dispatch_async(_queue, ^{
-    switch (self.connection.state_nosync) {
-    case ARTRealtimeInitialized:
-    case ARTRealtimeSuspended:
-    case ARTRealtimeClosing:
-    case ARTRealtimeClosed:
-    case ARTRealtimeFailed:
-        cb([ARTErrorInfo createWithCode:0 status:ARTStateConnectionFailed message:[NSString stringWithFormat:@"Can't ping a %@ connection", ARTRealtimeConnectionStateToStr(self.connection.state_nosync)]]);
-        return;
-    case ARTRealtimeConnecting:
-    case ARTRealtimeDisconnected:
-    case ARTRealtimeConnected:
-        if (![self shouldSendEvents]) {
-            [self->_connectedEventEmitter once:^(NSNull *n) {
-                [self ping:cb];
-            }];
-            return;
+    
+    dispatch_async(_queue, ^{
+        switch (self.connection.state_nosync) {
+            case ARTRealtimeInitialized:
+            case ARTRealtimeSuspended:
+            case ARTRealtimeClosing:
+            case ARTRealtimeClosed:
+            case ARTRealtimeFailed:
+                cb([ARTErrorInfo createWithCode:0 status:ARTStateConnectionFailed message:[NSString stringWithFormat:@"Can't ping a %@ connection", ARTRealtimeConnectionStateToStr(self.connection.state_nosync)]]);
+                return;
+            case ARTRealtimeConnecting:
+            case ARTRealtimeDisconnected:
+            case ARTRealtimeConnected:
+                if (![self shouldSendEvents]) {
+                    [self->_connectedEventEmitter once:^(NSNull *n) {
+                        [self ping:cb];
+                    }];
+                    return;
+                }
+                [[[self->_pingEventEmitter once:cb] setTimer:[ARTDefault realtimeRequestTimeout] onTimeout:^{
+                    [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p ping timed out", self];
+                    cb([ARTErrorInfo createWithCode:ARTCodeErrorConnectionTimedOut status:ARTStateConnectionFailed message:@"timed out"]);
+                }] startTimer];
+                [self.transport sendPing];
         }
-        [[[self->_pingEventEmitter once:cb] setTimer:[ARTDefault realtimeRequestTimeout] onTimeout:^{
-            [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p ping timed out", self];
-            cb([ARTErrorInfo createWithCode:ARTCodeErrorConnectionTimedOut status:ARTStateConnectionFailed message:@"timed out"]);
-        }] startTimer];
-        [self.transport sendPing];
-    }
-});
+    });
 }
 
 - (BOOL)stats:(void (^)(ARTPaginatedResult<ARTStats *> *, ARTErrorInfo *))callback {
@@ -475,15 +481,15 @@ dispatch_async(_queue, ^{
 
 - (void)transition:(ARTRealtimeConnectionState)state withErrorInfo:(ARTErrorInfo *)errorInfo {
     [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p realtime state transitions to %tu - %@", self, state, ARTRealtimeConnectionStateToStr(state)];
-
+    
     ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:state previous:self.connection.state_nosync event:(ARTRealtimeConnectionEvent)state reason:errorInfo retryIn:0];
     [self.connection setState:state];
     [self.connection setErrorReason:errorInfo];
-
+    
     ARTEventListener *stateChangeEventListener = [self transitionSideEffects:stateChange];
-
+    
     [_internalEventEmitter emit:[ARTEvent newWithConnectionEvent:(ARTRealtimeConnectionEvent)state] with:stateChange];
-
+    
     // stateChangeEventListener may be nil if we're in a failed state
     if (stateChangeEventListener != nil) {
         [stateChangeEventListener startTimer];
@@ -505,16 +511,16 @@ dispatch_async(_queue, ^{
 
 - (void)updateWithErrorInfo:(nullable ARTErrorInfo *)errorInfo {
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p update requested", self];
-
+    
     if (self.connection.state_nosync != ARTRealtimeConnected) {
         [self.logger warn:@"R:%p update ignored because connection is not connected", self];
         return;
     }
-
+    
     ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:self.connection.state_nosync previous:self.connection.state_nosync event:ARTRealtimeConnectionEventUpdate reason:errorInfo retryIn:0];
-
+    
     ARTEventListener *stateChangeEventListener = [self transitionSideEffects:stateChange];
-
+    
     // stateChangeEventListener may be nil if we're in a failed state
     if (stateChangeEventListener != nil) {
         [stateChangeEventListener startTimer];
@@ -524,12 +530,12 @@ dispatch_async(_queue, ^{
 - (ARTEventListener *)transitionSideEffects:(ARTConnectionStateChange *)stateChange {
     ARTStatus *status = nil;
     ARTEventListener *stateChangeEventListener = nil;
-
+    
     [self.logger debug:@"RT:%p realtime is transitioning from %tu - %@ to %tu - %@", self, stateChange.previous, ARTRealtimeConnectionStateToStr(stateChange.previous), stateChange.current, ARTRealtimeConnectionStateToStr(stateChange.current)];
-
+    
     switch (stateChange.current) {
         case ARTRealtimeConnecting: {
-
+            
             // RTN15g We want to enforce a new connection also when there hasn't been activity for longer than (idle interval + TTL)
             if (stateChange.previous == ARTRealtimeDisconnected || stateChange.previous == ARTRealtimeSuspended) {
                 NSTimeInterval intervalSinceLast = [[NSDate date] timeIntervalSinceDate:_lastActivity];
@@ -539,16 +545,16 @@ dispatch_async(_queue, ^{
                     [self.connection setSerial:0];
                 }
             }
-
+            
             stateChangeEventListener = [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
                 [self onConnectionTimeOut];
             }];
             _connectingTimeoutListener = stateChangeEventListener;
-
+            
             if (!_reachability) {
                 _reachability = [[_reachabilityClass alloc] initWithLogger:self.logger queue:_queue];
             }
-
+            
             if (!_transport) {
                 NSString *resumeKey = nil;
                 NSNumber *connectionSerial = nil;
@@ -562,7 +568,7 @@ dispatch_async(_queue, ^{
                 [self setTransportWithResumeKey:resumeKey connectionSerial:connectionSerial];
                 [self transportConnectForcingNewToken:_renewingToken newConnection:true];
             }
-
+            
             if (self.connection.state_nosync != ARTRealtimeFailed &&
                 self.connection.state_nosync != ARTRealtimeClosed &&
                 self.connection.state_nosync != ARTRealtimeDisconnected) {
@@ -668,7 +674,7 @@ dispatch_async(_queue, ^{
         case ARTRealtimeInitialized:
             break;
     }
-
+    
     // If there's a channels.release() going on waiting on this channel
     // to detach, doing those operations on it here would fire its event listener and
     // immediately remove the channel from the channels dictionary, thus
@@ -679,10 +685,10 @@ dispatch_async(_queue, ^{
     for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
         [channels addObject:channel];
     }
-
+    
     if ([self shouldSendEvents]) {
         [self sendQueuedMessages];
-
+        
         // Channels
         for (ARTRealtimeChannelInternal *channel in channels) {
             if (stateChange.previous == ARTRealtimeInitialized ||
@@ -698,7 +704,7 @@ dispatch_async(_queue, ^{
             channelStatus = stateChange.reason ? [ARTStatus state:ARTStateError info:stateChange.reason] : [self defaultError];
         }
         [self failQueuedMessages:channelStatus];
-
+        
         // Channels
         for (ARTRealtimeChannelInternal *channel in channels) {
             switch (stateChange.current) {
@@ -719,11 +725,11 @@ dispatch_async(_queue, ^{
             }
         }
     }
-
+    
     [self.connection emit:stateChange.event with:stateChange];
-
+    
     [self performPendingAuthorizationWithState:stateChange.current error:stateChange.reason];
-
+    
     return stateChangeEventListener;
 }
 
@@ -769,8 +775,8 @@ dispatch_async(_queue, ^{
 }
 
 - (void)onConnected:(ARTProtocolMessage *)message {
-   _renewingToken = false;
-
+    _renewingToken = false;
+    
     // Resuming
     if (_resuming) {
         if (![message.connectionId isEqualToString:self.connection.id_nosync]) {
@@ -788,7 +794,7 @@ dispatch_async(_queue, ^{
         else {
             [self.logger debug:@"RT:%p connection \"%@\" has reconnected and resumed successfully", self, message.connectionId];
         }
-
+        
         for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
             if (channel.presenceMap.syncInProgress) {
                 // FIXME or not, regarding https://github.com/ably/docs/issues/349
@@ -796,7 +802,7 @@ dispatch_async(_queue, ^{
             }
         }
     }
-
+    
     switch (self.connection.state_nosync) {
         case ARTRealtimeConnecting: {
             // If there's no previous connectionId, then don't reset the msgSerial
@@ -809,12 +815,12 @@ dispatch_async(_queue, ^{
                 self.msgSerial = 0;
                 self.pendingMessageStartSerial = 0;
             }
-
+            
             [self.connection setId:message.connectionId];
             [self.connection setKey:message.connectionKey];
             [self.connection setMaxMessageSize:message.connectionDetails.maxMessageSize];
             [self.connection setSerial:message.connectionSerial];
-
+            
             if (message.connectionDetails && message.connectionDetails.connectionStateTtl) {
                 _connectionStateTtl = message.connectionDetails.connectionStateTtl;
             }
@@ -833,7 +839,7 @@ dispatch_async(_queue, ^{
         default:
             break;
     }
-
+    
     _resuming = false;
 }
 
@@ -848,19 +854,19 @@ dispatch_async(_queue, ^{
     if (
         [self isTokenError:error]
         && !_renewingToken // If already reconnecting, give up.
-    ) {
+        ) {
         if (![self.auth tokenIsRenewable]) {
             [self transition:ARTRealtimeFailed withErrorInfo:error];
             return;
         }
-
+        
         [self transitionToDisconnectedOrSuspendedWithError:error];
         [self.connection setErrorReason:nil];
         _renewingToken = true;
         [self transition:ARTRealtimeConnecting withErrorInfo:nil];
         return;
     }
-
+    
     [self transitionToDisconnectedOrSuspendedWithError:error];
 }
 
@@ -897,7 +903,7 @@ dispatch_async(_queue, ^{
         [self onChannelMessage:message];
     } else {
         ARTErrorInfo *error = message.error;
-
+        
         if ([self isTokenError:error] && [self.auth tokenIsRenewable]) {
             if (_renewingToken) {
                 // Already retrying; give up.
@@ -908,7 +914,7 @@ dispatch_async(_queue, ^{
             [self transportReconnectWithRenewedToken];
             return;
         }
-
+        
         [self.connection setId:nil];
         [self transition:ARTRealtimeFailed withErrorInfo:message.error];
     }
@@ -944,7 +950,7 @@ dispatch_async(_queue, ^{
     _authenitcatingTimeoutWork = nil;
     [_authTask cancel];
     _authTask = nil;
-
+    
     ARTErrorInfo *error;
     if (self.auth.authorizing_nosync && (self.options.authUrl || self.options.authCallback)) {
         error = [ARTErrorInfo createWithCode:ARTCodeErrorAuthConfiguredProviderFailure status:ARTStateConnectionFailed message:@"timed out"];
@@ -988,7 +994,7 @@ dispatch_async(_queue, ^{
     else {
         // Token
         [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p connecting with token auth; authorising (timeout of %f)", self, [ARTDefault realtimeRequestTimeout]];
-
+        
         if (!forceNewToken && [self.auth tokenRemainsValid]) {
             // Reuse token
             [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p reusing token for auth", self];
@@ -997,12 +1003,12 @@ dispatch_async(_queue, ^{
         else {
             // New Token
             [self.auth setTokenDetails:nil];
-
+            
             // Schedule timeout handler
             _authenitcatingTimeoutWork = artDispatchScheduled([ARTDefault realtimeRequestTimeout], _rest.queue, ^{
                 [self onConnectionTimeOut];
             });
-
+            
             id<ARTAuthDelegate> delegate = self.auth.delegate;
             if (newConnection) {
                 // Deactivate use of `ARTAuthDelegate`: `authorize` should complete without waiting for a CONNECTED state.
@@ -1014,7 +1020,7 @@ dispatch_async(_queue, ^{
                     artDispatchCancel(self->_authenitcatingTimeoutWork);
                     self->_authenitcatingTimeoutWork = nil;
                     self->_authTask = nil;
-
+                    
                     // It's still valid?
                     switch (self.connection.state_nosync) {
                         case ARTRealtimeClosing:
@@ -1023,13 +1029,13 @@ dispatch_async(_queue, ^{
                         default:
                             break;
                     }
-
+                    
                     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p authorized: %@ error: %@", self, tokenDetails, error];
                     if (error) {
                         [self handleTokenAuthError:error];
                         return;
                     }
-
+                    
                     if (forceNewToken && newConnection) {
                         [self resetTransportWithResumeKey:self->_transport.resumeKey connectionSerial:self->_transport.connectionSerial];
                     }
@@ -1047,21 +1053,28 @@ dispatch_async(_queue, ^{
 
 - (void)handleTokenAuthError:(NSError *)error {
     [self.logger error:@"R:%p token auth failed with %@", self, error.description];
-    if (error.code == 40102 /*incompatible credentials*/ || error.code == 40300 /*auth fails with a 403 (RSA4d)*/) {
+    if (error.code == 40102 /*incompatible credentials*/) {
         // RSA15c
         [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:error]];
     }
     else if (self.options.authUrl || self.options.authCallback) {
-        ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTCodeErrorAuthConfiguredProviderFailure status:ARTStateConnectionFailed message:error.description];
-        switch (self.connection.state_nosync) {
-            case ARTRealtimeConnected:
-                // RSA4c3
-                [self.connection setErrorReason:errorInfo];
-                break;
-            default:
-                // RSA4c
-                [self transitionToDisconnectedOrSuspendedWithError:errorInfo];
-                break;
+        if (error.code == 40300 /* RSA4d */) {
+            ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTCodeErrorAuthConfiguredProviderFailure
+                                                            status:error.artStatusCode
+                                                           message:error.description];
+            [self transition:ARTRealtimeFailed withErrorInfo:errorInfo];
+        } else {
+            ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTCodeErrorAuthConfiguredProviderFailure status:ARTStateConnectionFailed message:error.description];
+            switch (self.connection.state_nosync) {
+                case ARTRealtimeConnected:
+                    // RSA4c3
+                    [self.connection setErrorReason:errorInfo];
+                    break;
+                default:
+                    // RSA4c
+                    [self transitionToDisconnectedOrSuspendedWithError:errorInfo];
+                    break;
+            }
         }
     }
     else {
@@ -1136,14 +1149,14 @@ dispatch_async(_queue, ^{
     if (pm.ackRequired) {
         pm.msgSerial = [NSNumber numberWithLongLong:self.msgSerial];
     }
-
+    
     for (ARTMessage *msg in pm.messages) {
         msg.connectionId = self.connection.id_nosync;
     }
-
+    
     NSError *error = nil;
     NSData *data = [self.rest.defaultEncoder encodeProtocolMessage:pm error:&error];
-
+    
     if (error) {
         ARTErrorInfo *e = [ARTErrorInfo createFromNSError:error];
         if (sentCallback) sentCallback(e);
@@ -1156,13 +1169,13 @@ dispatch_async(_queue, ^{
         if (ackCallback) ackCallback([ARTStatus state:ARTStateError info:e]);
         return;
     }
-
+    
     if (pm.ackRequired) {
         self.msgSerial++;
         ARTPendingMessage *pendingMessage = [[ARTPendingMessage alloc] initWithProtocolMessage:pm ackCallback:ackCallback];
         [self.pendingMessages addObject:pendingMessage];
     }
-
+    
     [self.logger debug:__FILE__ line:__LINE__ message:@"RT:%p sending action %tu - %@", self, pm.action, ARTProtocolMessageActionToStr(pm.action)];
     if ([self.transport send:data withSource:pm]) {
         if (sentCallback) sentCallback(nil);
@@ -1217,7 +1230,7 @@ dispatch_async(_queue, ^{
 - (void)sendQueuedMessages {
     NSArray *qms = self.queuedMessages;
     self.queuedMessages = [NSMutableArray array];
-
+    
     for (ARTQueuedMessage *message in qms) {
         [self sendImpl:message.msg sentCallback:message.sentCallback ackCallback:message.ackCallback];
     }
@@ -1239,7 +1252,7 @@ dispatch_async(_queue, ^{
     NSArray *ackMessages = nil;
     [self.logger verbose:@"R:%p ACK: msgSerial=%lld, count=%d", self, serial, count];
     [self.logger verbose:@"R:%p ACK (before processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
-
+    
     if (serial < self.pendingMessageStartSerial) {
         // This is an error condition and shouldn't happen but
         // we can handle it gracefully by only processing the
@@ -1247,7 +1260,7 @@ dispatch_async(_queue, ^{
         count -= (int)(self.pendingMessageStartSerial - serial);
         serial = self.pendingMessageStartSerial;
     }
-
+    
     if (serial > self.pendingMessageStartSerial) {
         // This counts as a nack of the messages earlier than serial,
         // as well as an ack
@@ -1266,7 +1279,7 @@ dispatch_async(_queue, ^{
         [self.pendingMessages removeObjectsInRange:nackRange];
         self.pendingMessageStartSerial = serial;
     }
-
+    
     if (serial == self.pendingMessageStartSerial) {
         NSRange ackRange;
         if (count > self.pendingMessages.count) {
@@ -1281,15 +1294,15 @@ dispatch_async(_queue, ^{
         [self.pendingMessages removeObjectsInRange:ackRange];
         self.pendingMessageStartSerial += count;
     }
-
+    
     for (ARTPendingMessage *msg in nackMessages) {
         msg.ackCallback([ARTStatus state:ARTStateError info:message.error]);
     }
-
+    
     for (ARTPendingMessage *msg in ackMessages) {
         msg.ackCallback([ARTStatus state:ARTStateOk]);
     }
-
+    
     [self.logger verbose:@"R:%p ACK (after processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
 }
 
@@ -1298,14 +1311,14 @@ dispatch_async(_queue, ^{
     int count = message.count;
     [self.logger verbose:@"R:%p NACK: msgSerial=%lld, count=%d", self, serial, count];
     [self.logger verbose:@"R:%p NACK (before processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
-
+    
     if (serial != self.pendingMessageStartSerial) {
         // This is an error condition and it shouldn't happen but
         // we can handle it gracefully by only processing the
         // relevant portion of the response
         count -= (int)(self.pendingMessageStartSerial - serial);
     }
-
+    
     NSRange nackRange;
     if (count > self.pendingMessages.count) {
         [self.logger error:@"R:%p NACK: count response is greater than the total of pending messages", self];
@@ -1315,15 +1328,15 @@ dispatch_async(_queue, ^{
     else {
         nackRange = NSMakeRange(0, count);
     }
-
+    
     NSArray *nackMessages = [self.pendingMessages subarrayWithRange:nackRange];
     [self.pendingMessages removeObjectsInRange:nackRange];
     self.pendingMessageStartSerial += count;
-
+    
     for (ARTPendingMessage *msg in nackMessages) {
         msg.ackCallback([ARTStatus state:ARTStateError info:message.error]);
     }
-
+    
     [self.logger verbose:@"R:%p NACK (after processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
 }
 
@@ -1335,7 +1348,7 @@ dispatch_async(_queue, ^{
                 [self transition:ARTRealtimeDisconnected withErrorInfo:[ARTErrorInfo createWithCode:0 message:@"no Internet connection"]];
                 return;
             }
-
+            
             [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p host is down; retrying realtime connection at %@", self, host];
             self.rest.prioritizedHost = host;
             [self transportReconnectWithHost:host];
@@ -1352,7 +1365,7 @@ dispatch_async(_queue, ^{
         (error.type == ARTRealtimeTransportErrorTypeBadResponse && error.badResponseCode >= 500 && error.badResponseCode <= 504) ||
         error.type == ARTRealtimeTransportErrorTypeHostUnreachable ||
         error.type == ARTRealtimeTransportErrorTypeTimeout
-    ) {
+        ) {
         return YES;
     }
     return NO;
@@ -1370,10 +1383,10 @@ dispatch_async(_queue, ^{
         return;
     }
     artDispatchCancel(_idleTimer);
-
+    
     _idleTimer = artDispatchScheduled([ARTDefault realtimeRequestTimeout] + self.maxIdleInterval, _rest.queue, ^{
         [self.logger error:@"R:%p No activity seen from realtime in %f seconds; assuming connection has dropped", self, [[NSDate date] timeIntervalSinceDate:self->_lastActivity]];
-
+        
         ARTErrorInfo *idleTimerExpired = [ARTErrorInfo createWithCode:80003 status:408 message:@"Idle timer expired"];
         [self transitionToDisconnectedOrSuspendedWithError:idleTimerExpired];
     });
@@ -1396,33 +1409,33 @@ dispatch_async(_queue, ^{
 
 - (void)realtimeTransport:(id)transport didReceiveMessage:(ARTProtocolMessage *)message {
     [self onActivity];
-
+    
     if (!message) {
         // Invalid data
         return;
     }
-
+    
     if (transport != self.transport) {
         // Old connection
         return;
     }
-
+    
     if (self.connection.state_nosync == ARTRealtimeDisconnected) {
         // Already disconnected
         return;
     }
-
+    
     [self.logger verbose:@"R:%p did receive Protocol Message %@ (connection state is %@)", self, ARTProtocolMessageActionToStr(message.action), ARTRealtimeConnectionStateToStr(self.connection.state_nosync)];
-
+    
     if (message.error) {
         [self.logger verbose:@"R:%p Protocol Message with error %@", self, message.error];
     }
-
+    
     NSAssert(transport == self.transport, @"Unexpected transport");
     if (message.hasConnectionSerial) {
         [self.connection setSerial:message.connectionSerial];
     }
-
+    
     switch (message.action) {
         case ARTProtocolMessageHeartbeat:
             [self onHeartbeat];
@@ -1469,7 +1482,7 @@ dispatch_async(_queue, ^{
         // Old connection
         return;
     }
-
+    
     if (self.connection.state_nosync == ARTRealtimeClosing) {
         // Close succeeded. Nothing more to do.
         [self transition:ARTRealtimeClosed];
@@ -1484,7 +1497,7 @@ dispatch_async(_queue, ^{
         // Old connection
         return;
     }
-
+    
     if (self.connection.state_nosync == ARTRealtimeClosing) {
         [self transition:ARTRealtimeClosed];
     } else {
@@ -1497,9 +1510,9 @@ dispatch_async(_queue, ^{
         // Old connection
         return;
     }
-
+    
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p realtime transport failed: %@", self, transportError];
-
+    
     if ([self shouldRetryWithFallback:transportError]) {
         [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p host is down; can retry with fallback host", self];
         if (!_fallbacks && [transportError.url.host isEqualToString:[ARTDefault realtimeHost]]) {
@@ -1515,7 +1528,7 @@ dispatch_async(_queue, ^{
             return;
         }
     }
-
+    
     switch (transportError.type) {
         case ARTRealtimeTransportErrorTypeBadResponse:
         case ARTRealtimeTransportErrorTypeOther:
@@ -1533,7 +1546,7 @@ dispatch_async(_queue, ^{
         // Old connection
         return;
     }
-
+    
     [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createWithCode:ARTClientCodeErrorTransport message:@"Transport never connected"]];
 }
 
@@ -1542,7 +1555,7 @@ dispatch_async(_queue, ^{
         // Old connection
         return;
     }
-
+    
     if (error && error.type == ARTRealtimeTransportErrorTypeRefused) {
         [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createWithCode:ARTClientCodeErrorTransport message:[NSString stringWithFormat:@"Connection refused using %@", error.url]]];
     }
@@ -1559,7 +1572,7 @@ dispatch_async(_queue, ^{
         // Old connection
         return;
     }
-
+    
     [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createWithCode:ARTClientCodeErrorTransport message:@"Transport too big"]];
 }
 
@@ -1568,7 +1581,7 @@ dispatch_async(_queue, ^{
         // Old connection
         return;
     }
-
+    
     self.msgSerial = msgSerial;
 }
 

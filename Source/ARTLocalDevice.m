@@ -13,7 +13,6 @@
 #import "ARTDeviceStorage.h"
 #import "ARTDeviceIdentityTokenDetails.h"
 #import "ARTCrypto+Private.h"
-#import <ULID/ULID.h>
 
 NSString *const ARTDevicePlatform = @"ios";
 
@@ -85,7 +84,7 @@ NSString *const ARTDevicePushTransportType = @"apns";
 }
 
 + (NSString *)generateId {
-    return [[ULID new] ulidString];
+    return [NSUUID new].UUIDString;
 }
 
 + (NSString *)generateSecret {

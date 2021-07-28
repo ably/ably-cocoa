@@ -99,7 +99,7 @@ class DeltaCodec: QuickSpec {
                         fail("TestProxyTransport is not be assigned"); return
                     }
 
-                    transport.changeReceivedMessage = { protocolMessage in
+                    transport.setBeforeIncomingMessageModifier({ protocolMessage in
                         if protocolMessage.action == .message,
                             let thirdMessage = protocolMessage.messages?.filter({ $0.name == "2" }).first {
                             thirdMessage.extras = [
@@ -108,10 +108,10 @@ class DeltaCodec: QuickSpec {
                                     "from": "foo:1:0"
                                 ]
                             ] as NSDictionary
-                            transport.changeReceivedMessage = nil
+                            transport.setBeforeIncomingMessageModifier(nil)
                         }
                         return protocolMessage
-                    }
+                    })
 
                     var receivedMessages: [ARTMessage] = []
                     channel.subscribe { message in
@@ -126,7 +126,7 @@ class DeltaCodec: QuickSpec {
                         let partialDone = AblyTests.splitDone(2, done: done)
                         channel.once(.attaching) { stateChange in
                             expect(receivedMessages).to(haveCount(testData.count - 3)) //messages discarded
-                            expect(stateChange?.reason?.code).to(equal(40018))
+                            expect(stateChange.reason?.code).to(equal(40018))
                             partialDone()
                         }
                         channel.once(.attached) { stateChange in
@@ -157,14 +157,14 @@ class DeltaCodec: QuickSpec {
                         fail("TestProxyTransport is not be assigned"); return
                     }
 
-                    transport.changeReceivedMessage = { protocolMessage in
+                    transport.setBeforeIncomingMessageModifier({ protocolMessage in
                         if protocolMessage.action == .message,
                             let thirdMessage = protocolMessage.messages?.filter({ $0.name == "2" }).first {
                             thirdMessage.data = Data() //invalid delta
-                            transport.changeReceivedMessage = nil
+                            transport.setBeforeIncomingMessageModifier(nil)
                         }
                         return protocolMessage
-                    }
+                    })
 
                     var receivedMessages: [ARTMessage] = []
                     channel.subscribe { message in
@@ -179,7 +179,7 @@ class DeltaCodec: QuickSpec {
                         let partialDone = AblyTests.splitDone(2, done: done)
                         channel.once(.attaching) { stateChange in
                             expect(receivedMessages).to(haveCount(testData.count - 3)) //messages discarded
-                            guard let errorReason = stateChange?.reason else {
+                            guard let errorReason = stateChange.reason else {
                                 fail("Reason should not be empty"); partialDone(); return
                             }
                             expect(errorReason.code).to(equal(40018))

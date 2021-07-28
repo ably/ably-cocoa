@@ -36,6 +36,7 @@ NSString *const ARTDefault_variant =
     ;
 
 static NSTimeInterval _realtimeRequestTimeout = 10.0;
+static NSTimeInterval _fallbackRetryTimeout = 600.0; // TO3l10
 static NSTimeInterval _connectionStateTtl = 60.0;
 static NSInteger _maxMessageSize = 65536;
 
@@ -83,6 +84,10 @@ static NSInteger _maxMessageSize = 65536;
     return 60 * 60;
 }
 
++ (NSTimeInterval)fallbackRetryTimeout {
+    return _fallbackRetryTimeout;
+}
+
 + (NSTimeInterval)connectionStateTtl {
     return _connectionStateTtl;
 }
@@ -110,6 +115,12 @@ static NSInteger _maxMessageSize = 65536;
 + (void)setMaxMessageSize:(NSInteger)value {
     @synchronized (self) {
         _maxMessageSize = value;
+    }
+}
+
++ (void)setFallbackRetryTimeout:(NSTimeInterval)value {
+    @synchronized (self) {
+        _fallbackRetryTimeout = value;
     }
 }
 
