@@ -49,7 +49,7 @@ func pathForTestResource(_ resourcePath: String) -> String {
 
 let appSetupJson = JSON(parseJSON: try! String(contentsOfFile: pathForTestResource(testResourcesPath + "test-app-setup.json")))
 
-let testTimeout = DispatchTimeInterval.seconds(10)
+let testTimeout = DispatchTimeInterval.seconds(20)
 let testResourcesPath = "ably-common/test-resources/"
 let echoServerAddress = "https://echo.ably.io/createJWT"
 
@@ -129,7 +129,7 @@ class AblyTests {
         return DispatchQueue.getSpecific(key: queueIdentityKey)?.label
     }
 
-    class func setupOptions(_ options: ARTClientOptions, forceNewApp: Bool = false, debug: Bool = false) -> ARTClientOptions {
+    class func setupOptions(_ options: ARTClientOptions, forceNewApp: Bool = false, debug: Bool = true) -> ARTClientOptions {
         options.channelNamePrefix = "test-\(setupOptionsCounter)"
         setupOptionsCounter += 1
 
@@ -167,6 +167,7 @@ class AblyTests {
         options.dispatchQueue = DispatchQueue.main
         options.internalDispatchQueue = queue
         if debug {
+            print("[Options.Key] \(key["keyStr"].stringValue)")
             options.logLevel = .verbose
         }
         return options
