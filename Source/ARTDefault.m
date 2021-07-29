@@ -8,6 +8,7 @@
 
 #import "Ably.h"
 #import "ARTDefault+Private.h"
+#import "ARTNSArray+ARTFunctional.h"
 #import <sys/utsname.h>
 
 // NSOperatingSystemVersion has NSInteger as version components for some reason, so mitigate it here.
@@ -39,6 +40,8 @@ NSString *canonizeStringAsAgentToken(NSString *const inputString) {
 
 @implementation ARTDefault
 
+NSString *const ARTDefaultProduction = @"production";
+
 NSString *const ARTDefault_restHost = @"rest.ably.io";
 NSString *const ARTDefault_realtimeHost = @"realtime.ably.io";
 NSString *const ARTDefault_version = @"1.2";
@@ -66,8 +69,22 @@ static NSTimeInterval _fallbackRetryTimeout = 600.0; // TO3l10
 static NSTimeInterval _connectionStateTtl = 60.0;
 static NSInteger _maxMessageSize = 65536;
 
++ (NSArray*)fallbackHostsWithEnvironment:(NSString *)environment {
+    NSArray<NSString *> * fallbacks = @[@"a", @"b", @"c", @"d", @"e"];
+    NSString *prefix = @"";
+    NSString *suffix = @"";
+    if (environment && ![[environment stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] isEqualToString:@""] && ![environment isEqualToString:ARTDefaultProduction]) {
+        prefix = [NSString stringWithFormat:@"%@-", environment];
+        suffix = @"-fallback";
+    }
+    
+    return [fallbacks artMap:^NSString *(NSString * fallback) {
+        return [NSString stringWithFormat:@"%@%@%@.ably-realtime.com", prefix, fallback, suffix];
+    }];
+}
+
 + (NSArray*)fallbackHosts {
-    return @[@"a.ably-realtime.com", @"b.ably-realtime.com", @"c.ably-realtime.com", @"d.ably-realtime.com", @"e.ably-realtime.com"];
+    return [self fallbackHostsWithEnvironment:nil];
 }
 
 + (NSString*)restHost {

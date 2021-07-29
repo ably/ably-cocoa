@@ -35,11 +35,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
-- (ARTEventListener *)on:(EventType)event callback:(void (^)(ItemType _Nullable))cb;
-- (ARTEventListener *)on:(void (^)(ItemType _Nullable))cb;
+- (ARTEventListener *)on:(EventType)event callback:(void (^)(ItemType))cb;
+- (ARTEventListener *)on:(void (^)(ItemType))cb;
 
-- (ARTEventListener *)once:(EventType)event callback:(void (^)(ItemType _Nullable))cb;
-- (ARTEventListener *)once:(void (^)(ItemType _Nullable))cb;
+- (ARTEventListener *)once:(EventType)event callback:(void (^)(ItemType))cb;
+- (ARTEventListener *)once:(void (^)(ItemType))cb;
 
 - (void)off:(EventType)event listener:(ARTEventListener *)listener;
 - (void)off:(ARTEventListener *)listener;
@@ -51,11 +51,11 @@ NS_ASSUME_NONNULL_BEGIN
 // This way you can automatically "implement the EventEmitter pattern" for a class
 // as the spec says. It's supposed to be used together with ART_EMBED_IMPLEMENTATION_EVENT_EMITTER
 // in the implementation of the class.
-#define ART_EMBED_INTERFACE_EVENT_EMITTER(EventType, ItemType) - (ARTEventListener *)on:(EventType)event callback:(void (^)(ItemType _Nullable))cb;\
-- (ARTEventListener *)on:(void (^)(ItemType _Nullable))cb;\
+#define ART_EMBED_INTERFACE_EVENT_EMITTER(EventType, ItemType) - (ARTEventListener *)on:(EventType)event callback:(void (^)(ItemType))cb;\
+- (ARTEventListener *)on:(void (^)(ItemType))cb;\
 \
-- (ARTEventListener *)once:(EventType)event callback:(void (^)(ItemType _Nullable))cb;\
-- (ARTEventListener *)once:(void (^)(ItemType _Nullable))cb;\
+- (ARTEventListener *)once:(EventType)event callback:(void (^)(ItemType))cb;\
+- (ARTEventListener *)once:(void (^)(ItemType))cb;\
 \
 - (void)off:(EventType)event listener:(ARTEventListener *)listener;\
 - (void)off:(ARTEventListener *)listener;\
@@ -63,21 +63,21 @@ NS_ASSUME_NONNULL_BEGIN
 
 // This macro adds methods to a class implementation that just bridge calls to an internal
 // instance variable, which must be called _eventEmitter, of type ARTEventEmitter *.
-// It's supposed to be used together with ART_EMBED_IMPLEMENTATION_EVENT_EMITTER in the
+// It's supposed to be used together with ART_EMBED_INTERFACE_EVENT_EMITTER in the
 // header file of the class.
-#define ART_EMBED_IMPLEMENTATION_EVENT_EMITTER(EventType, ItemType) - (ARTEventListener *)on:(EventType)event callback:(void (^)(ItemType _Nullable))cb {\
+#define ART_EMBED_IMPLEMENTATION_EVENT_EMITTER(EventType, ItemType) - (ARTEventListener *)on:(EventType)event callback:(void (^)(ItemType))cb {\
 return [_eventEmitter on:event callback:cb];\
 }\
 \
-- (ARTEventListener *)on:(void (^)(ItemType _Nullable))cb {\
+- (ARTEventListener *)on:(void (^)(ItemType))cb {\
 return [_eventEmitter on:cb];\
 }\
 \
-- (ARTEventListener *)once:(EventType)event callback:(void (^)(ItemType _Nullable))cb {\
+- (ARTEventListener *)once:(EventType)event callback:(void (^)(ItemType))cb {\
 return [_eventEmitter once:event callback:cb];\
 }\
 \
-- (ARTEventListener *)once:(void (^)(ItemType _Nullable))cb {\
+- (ARTEventListener *)once:(void (^)(ItemType))cb {\
 return [_eventEmitter once:cb];\
 }\
 \

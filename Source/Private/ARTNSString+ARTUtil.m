@@ -17,4 +17,12 @@
     return aString;
 }
 
+- (BOOL)isEmptyString {
+    return [[self stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] isEqualToString:@""];
+}
+
+- (BOOL)isNotEmptyString {
+    return ![self isEmptyString];
+}
+
 @end
