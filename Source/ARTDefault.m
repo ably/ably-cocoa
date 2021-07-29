@@ -16,28 +16,6 @@ static inline UInt32 conformVersionComponent(const NSInteger component) {
     return (component < 0) ? 0 : (UInt32)component;
 }
 
-NSString *canonizeStringAsAgentToken(NSString *const inputString) {
-    NSMutableString *const canonizedString = [NSMutableString string];
-    NSMutableCharacterSet *const allowedSet = [NSMutableCharacterSet characterSetWithCharactersInString:@"!#$%&'*+.^_`|~"]; // `-` is allowed character, but it will be inserted anyways, so it's not included here, which greatly simplifies algorithm
-    [allowedSet formUnionWithCharacterSet:[NSCharacterSet alphanumericCharacterSet]];
-    NSScanner *const scanner = [NSScanner scannerWithString:inputString];
-    do {
-        NSString *scannedString;
-        [scanner scanCharactersFromSet:allowedSet intoString:&scannedString];
-        if (scannedString == nil) {
-            return @"";
-        }
-        [scanner scanCharactersFromSet:[allowedSet invertedSet] intoString:nil];
-        if ([scanner isAtEnd]) {
-            [canonizedString appendString:scannedString];
-            break;
-        } else {
-            [canonizedString appendFormat:@"%@-", scannedString];
-        }
-    } while (YES);
-    return canonizedString;
-}
-
 @implementation ARTDefault
 
 NSString *const ARTDefaultProduction = @"production";
@@ -202,25 +180,11 @@ static NSInteger _maxMessageSize = 65536;
     return [NSString stringWithCString:systemInfo.machine encoding:NSUTF8StringEncoding];
 }
 
-+ (NSString *)deviceModelToken {
-    static NSString *modelToken;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        NSString *deviceModel = [self deviceModel];
-        modelToken = deviceModel != nil ? canonizeStringAsAgentToken(deviceModel) : nil;
-    });
-    return modelToken;
-}
-
 + (NSString *)agent {
     NSMutableString *agentString = [NSMutableString stringWithFormat:@"%@/%@", ARTDefault_libraryName, [self bundleVersion]];
     NSString *osName = [self osName];
     if (osName != nil) {
         [agentString appendFormat:@" %@/%@", osName, [self osVersionString]];
-    }
-    NSString *deviceModelToken = [self deviceModelToken];
-    if (deviceModelToken != nil) {
-        [agentString appendFormat:@" %@", deviceModelToken];
     }
     return agentString;
 }

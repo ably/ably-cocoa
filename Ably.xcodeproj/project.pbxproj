@@ -84,9 +84,6 @@
 		56190954238C3D3200A862A6 /* CryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 56190953238C3D3200A862A6 /* CryptoTest.m */; };
 		56190955238C3D3200A862A6 /* CryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 56190953238C3D3200A862A6 /* CryptoTest.m */; };
 		56190956238C3D3200A862A6 /* CryptoTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 56190953238C3D3200A862A6 /* CryptoTest.m */; };
-		84AECD7B26AAD5BC00C0ADF6 /* Default.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84AECD7A26AAD5BC00C0ADF6 /* Default.swift */; };
-		84AECD7C26AAD5BC00C0ADF6 /* Default.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84AECD7A26AAD5BC00C0ADF6 /* Default.swift */; };
-		84AECD7D26AAD5BC00C0ADF6 /* Default.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84AECD7A26AAD5BC00C0ADF6 /* Default.swift */; };
 		8412FDE72661AC37001FE9E6 /* AblyDeltaCodec.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE12661AC37001FE9E6 /* AblyDeltaCodec.xcframework */; };
 		8412FDED2661AC37001FE9E6 /* msgpack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE32661AC37001FE9E6 /* msgpack.xcframework */; };
 		8412FDF52661AC7B001FE9E6 /* Aspects.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF12661AC7A001FE9E6 /* Aspects.xcframework */; };
@@ -1002,7 +999,6 @@
 		217D182025421FED00DFF07E /* ARTSRSecurityPolicy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTSRSecurityPolicy.h; sourceTree = "<group>"; };
 		560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARTDefaultTests.swift; sourceTree = "<group>"; };
 		56190953238C3D3200A862A6 /* CryptoTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CryptoTest.m; sourceTree = "<group>"; };
-		84AECD7A26AAD5BC00C0ADF6 /* Default.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Default.swift; sourceTree = "<group>"; };
 		8412FDE12661AC37001FE9E6 /* AblyDeltaCodec.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = AblyDeltaCodec.xcframework; path = Carthage/Build/AblyDeltaCodec.xcframework; sourceTree = "<group>"; };
 		8412FDE32661AC37001FE9E6 /* msgpack.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = msgpack.xcframework; path = Carthage/Build/msgpack.xcframework; sourceTree = "<group>"; };
 		8412FDF12661AC7A001FE9E6 /* Aspects.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Aspects.xcframework; path = Carthage/Build/Aspects.xcframework; sourceTree = "<group>"; };
@@ -1475,7 +1471,6 @@
 				560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */,
 				D7C1B8761BBEA81A0087B55F /* Auth.swift */,
 				EB7913A71C6E54C3000ABF9B /* Crypto.swift */,
-				84AECD7A26AAD5BC00C0ADF6 /* Default.swift */,
 				D798554723EB96C000946BE2 /* DeltaCodec.swift */,
 				D7093CA8219EFA8A00723F17 /* MockDeviceStorage.swift */,
 				D714A63D1C74D4B2002F2CA0 /* NSObject+TestSuite.swift */,
@@ -2621,7 +2616,6 @@
 				EB1B53F922F85CE4006A59AC /* ObjectLifetimes.swift in Sources */,
 				D7DF73851EA600240013CD36 /* PushActivationStateMachine.swift in Sources */,
 				D7FC1ECB209CEA2E001E4153 /* Push.swift in Sources */,
-				84AECD7B26AAD5BC00C0ADF6 /* Default.swift in Sources */,
 				D714A63E1C74D4B2002F2CA0 /* NSObject+TestSuite.swift in Sources */,
 				856AAC971B6E30C800B07119 /* TestUtilities.swift in Sources */,
 				D72768211C9C19040022F8B2 /* RestClientPresence.swift in Sources */,
@@ -2774,7 +2768,6 @@
 				D7093C1A219E465C00723F17 /* NSObject+TestSuite.m in Sources */,
 				D7093C1E219E466900723F17 /* RestClient.swift in Sources */,
 				D7093C2B219E466E00723F17 /* Crypto.swift in Sources */,
-				84AECD7C26AAD5BC00C0ADF6 /* Default.swift in Sources */,
 				D7093C20219E466E00723F17 /* RestClientChannel.swift in Sources */,
 				EB1B53FA22F85CE4006A59AC /* ObjectLifetimes.swift in Sources */,
 				D7093C2A219E466E00723F17 /* Utilities.swift in Sources */,
@@ -2797,7 +2790,6 @@
 				D7093C7F219EE26400723F17 /* RealtimeClientPresence.swift in Sources */,
 				D7093C73219EE26000723F17 /* ReadmeExamples.swift in Sources */,
 				560579DB24AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */,
-				84AECD7D26AAD5BC00C0ADF6 /* Default.swift in Sources */,
 				D7093C71219EE25800723F17 /* NSObject+TestSuite.m in Sources */,
 				D7093C70219EE25400723F17 /* TestUtilities.swift in Sources */,
 				D7093C80219EE26400723F17 /* Stats.swift in Sources */,

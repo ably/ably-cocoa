@@ -10,8 +10,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-NSString *canonizeStringAsAgentToken(NSString *const inputString);
-
 @interface ARTDefault : NSObject
 
 + (NSArray<NSString *> *)fallbackHosts;
