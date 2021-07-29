@@ -1822,7 +1822,6 @@ class RealtimeClientPresence: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         transport.setListenerAfterProcessingIncomingMessage({ protocolMessage in
                             if protocolMessage.action == .sync {
-                                transport.afterProcessingReceivedMessage = nil
                                 done()
                             }
                         })
