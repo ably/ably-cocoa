@@ -12,6 +12,9 @@
 
 @implementation ARTTime
 
+static int maxRetry = 5;
+static int retryCount = 0;
+
 struct timeval bootTime;
 struct timeval currentTime;
 struct timezone timeZone;
@@ -41,6 +44,14 @@ struct timezone timeZone;
          */
         timeSinceBoot += (currentTime.tv_usec - bootTime.tv_usec) / 1000000.0;
     }
+    
+    if (timeSinceBoot == 0.0 && retryCount < maxRetry) {
+        retryCount += 1;
+        
+        return [ARTTime timeSinceBoot];
+    }
+    
+    retryCount = 0;
     
     return timeSinceBoot;
 }

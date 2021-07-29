@@ -49,7 +49,7 @@ func pathForTestResource(_ resourcePath: String) -> String {
 
 let appSetupJson = JSON(parseJSON: try! String(contentsOfFile: pathForTestResource(testResourcesPath + "test-app-setup.json")))
 
-let testTimeout = DispatchTimeInterval.seconds(10)
+let testTimeout = DispatchTimeInterval.seconds(20)
 let testResourcesPath = "ably-common/test-resources/"
 let echoServerAddress = "https://echo.ably.io/createJWT"
 
