@@ -1600,11 +1600,7 @@ class RestClient: QuickSpec {
                         let headerAgent = testHTTPExecutor.requests.first!.allHTTPHeaderFields?["Ably-Agent"]
                         let ablyAgent = ARTDefault.agent()
                         expect(headerAgent).to(equal(ablyAgent))
-                        
-                        let patternToMatch = "\(ARTDefault_libraryName)/1.2."
-                        let match = headerAgent?.hasPrefix(patternToMatch)
-                        expect(match).to(beTrue())
-
+                        expect(headerAgent!.hasPrefix("ably-cocoa/1.2.")).to(beTrue())
                         done()
                     }
                 }
