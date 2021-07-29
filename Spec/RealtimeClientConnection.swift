@@ -3763,7 +3763,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
 
-                it("should retry custom fallback hosts in random order after checkin if an internet connection is available") {
+                xit("should retry custom fallback hosts in random order after checkin if an internet connection is available") {
                     let fbHosts = ["f.ably-realtime.com", "g.ably-realtime.com", "h.ably-realtime.com", "i.ably-realtime.com", "j.ably-realtime.com"]
                     
                     let options = ARTClientOptions(key: "xxxx:xxxx")
