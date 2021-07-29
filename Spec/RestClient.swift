@@ -1601,7 +1601,7 @@ class RestClient: QuickSpec {
                         let ablyAgent = ARTDefault.agent()
                         expect(headerAgent).to(equal(ablyAgent))
                         
-                        let patternToMatch = "\(ARTDefault_libName)/1.2."
+                        let patternToMatch = "\(ARTDefault_libraryName)/1.2."
                         let match = headerAgent?.hasPrefix(patternToMatch)
                         expect(match).to(beTrue())
 

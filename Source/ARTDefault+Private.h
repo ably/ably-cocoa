@@ -9,7 +9,7 @@
 #import <Ably/ARTDefault.h>
 
 extern NSString *const ARTDefaultProduction;
-extern NSString *const ARTDefault_libName;
+extern NSString *const ARTDefault_libraryName;
 extern NSString *const ARTDefault_variant;
 
 @interface ARTDefault (Private)

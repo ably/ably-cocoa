@@ -49,7 +49,7 @@ NSString *const ARTDefault_ablyBundleId = @"io.ably.Ably";
 NSString *const ARTDefault_bundleVersionKey = @"CFBundleShortVersionString";
 NSString *const ARTDefault_bundleBuildNumberKey = @"CFBundleVersion";
 NSString *const ARTDefault_platform = @"cocoa";
-NSString *const ARTDefault_libName = @"ably-cocoa";
+NSString *const ARTDefault_libraryName = @"ably-cocoa";
 NSString *const ARTDefault_variant =
     #if TARGET_OS_IOS
         @".ios"
@@ -213,7 +213,7 @@ static NSInteger _maxMessageSize = 65536;
 }
 
 + (NSString *)agent {
-    NSMutableString *agentString = [NSMutableString stringWithFormat:@"%@/%@", ARTDefault_libName, [self bundleVersion]];
+    NSMutableString *agentString = [NSMutableString stringWithFormat:@"%@/%@", ARTDefault_libraryName, [self bundleVersion]];
     NSString *osName = [self osName];
     if (osName != nil) {
         [agentString appendFormat:@" %@/%@", osName, [self osVersionString]];
