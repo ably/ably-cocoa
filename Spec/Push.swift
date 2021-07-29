@@ -285,24 +285,27 @@ class Push : QuickSpec {
             
             // RSH8e
             it("authentication on registered device sends a GotPushDeviceDetails with new clientID") {
-                let testToken = "testDeviceToken"
-                let testIdentity = ARTDeviceIdentityTokenDetails(
+                let testDeviceToken = "testDeviceToken"
+                let testDeviceIdentity = ARTDeviceIdentityTokenDetails(
                     token: "123456",
                     issued: Date(),
                     expires: Date.distantFuture,
                     capability: "",
                     clientId: ""
                 )
+                let expectedClient = "testClient"
 
                 let options = ARTClientOptions(key: "fake:key")
                 options.autoConnect = false
                 options.authCallback = { _, callback in
                     delay(0.1) {
-                        callback(ARTTokenDetails(token: "fake:token", expires: nil, issued: nil, capability: nil, clientId: "testClient"), nil)
+                        callback(ARTTokenDetails(token: "fake:token", expires: nil, issued: nil, capability: nil, clientId: expectedClient), nil)
                     }
                 }
 
                 let realtime = ARTRealtime(options: options)
+                let mockHttpExecutor = MockHTTPExecutor()
+                realtime.internal.rest.httpExecutor = mockHttpExecutor
 
                 let storage = MockDeviceStorage(
                     startWith: ARTPushActivationStateWaitingForNewPushDeviceDetails(
@@ -321,8 +324,10 @@ class Push : QuickSpec {
                 let delegate = StateMachineDelegate()
                 stateMachine.delegate = delegate
 
-                storage.simulateOnNextRead(string: testToken, for: ARTDeviceTokenKey)
-                storage.simulateOnNextRead(data: testIdentity.archive(), for: ARTDeviceIdentityTokenKey)
+                storage.simulateOnNextRead(string: testDeviceToken, for: ARTDeviceTokenKey)
+                storage.simulateOnNextRead(data: testDeviceIdentity.archive(), for: ARTDeviceIdentityTokenKey)
+
+                expect(realtime.device.clientId).to(beNil())
 
                 waitUntil(timeout: testTimeout) { done in
                     stateMachine.transitions = { event, _, _ in
@@ -333,7 +338,20 @@ class Push : QuickSpec {
                     realtime.auth.authorize { _, _ in }
                 }
 
-                expect(realtime.device.clientId).to(equal("testClient"))
+                expect(realtime.device.clientId).to(equal(expectedClient))
+
+                let expectation = XCTestExpectation(description: "Consecutive Authorization")
+                expectation.isInverted = true
+                stateMachine.transitions = { event, _, _ in
+                    if event is ARTPushActivationEventGotPushDeviceDetails {
+                        fail("GotPushDeviceDetails should only be emitted when clientId is different from the present identified client")
+                    }
+                }
+                realtime.auth.authorize { _, _ in }
+                self.wait(for: [expectation], timeout: 3.0)
+
+                expect(mockHttpExecutor.requests.filter({ $0.url?.pathComponents.contains("deviceRegistrations") == true })).to(haveCount(1))
+                expect(realtime.device.clientId).to(equal(expectedClient))
             }
 
             // RSH8f

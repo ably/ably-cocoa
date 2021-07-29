@@ -11,6 +11,7 @@
 @interface ARTDefault : NSObject
 
 + (NSArray<NSString *> *)fallbackHosts;
++ (NSArray<NSString *> *)fallbackHostsWithEnvironment:(NSString *)environment;
 + (NSString*)restHost;
 + (NSString*)realtimeHost;
 + (int)port;
@@ -38,5 +39,10 @@
 + (NSString *)libraryVersion;
 
 + (NSInteger)maxMessageSize;
+
+/**
+ The period in seconds before HTTP requests are retried against the default endpoint
+ */
++ (NSTimeInterval)fallbackRetryTimeout;
 
 @end

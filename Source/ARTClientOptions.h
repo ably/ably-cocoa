@@ -11,14 +11,15 @@
 #import <Ably/ARTLog.h>
 
 @class ARTPlugin;
+@class ARTStringifiable;
 @protocol ARTPushRegistererDelegate;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTClientOptions : ARTAuthOptions
 
-@property (readwrite, strong, nonatomic, getter=getRestHost) NSString *restHost;
-@property (readwrite, strong, nonatomic, getter=getRealtimeHost) NSString *realtimeHost;
+@property (readwrite, strong, nonatomic) NSString *restHost;
+@property (readwrite, strong, nonatomic) NSString *realtimeHost;
 
 @property (nonatomic, assign) NSInteger port;
 @property (nonatomic, assign) NSInteger tlsPort;
@@ -88,7 +89,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Optionally allows the default fallback hosts `[a-e].ably-realtime.com` to be used when `environment` is not production or a custom realtime or REST host endpoint is being used. It is never valid to configure `fallbackHost` and set `fallbackHostsUseDefault` to `true`.
  */
-@property (assign, nonatomic) BOOL fallbackHostsUseDefault;
+@property (assign, nonatomic) BOOL fallbackHostsUseDefault DEPRECATED_MSG_ATTRIBUTE("Future library releases will ignore any supplied value.");
 
 /**
  Report uncaught exceptions to Ably, together with the last lines of the logger. This helps Ably fix bugs. Set to nil to disable.
@@ -126,6 +127,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) BOOL addRequestIds;
 
 /**
+ Additional parameters to be sent in the querystring when initiating a realtime connection. Keys are Strings, values are Stringifiable (a value that can be coerced to a string in order to be sent as a querystring parameter. Supported values should be at least strings, numbers, and booleans, with booleans stringified as true and false. If this is unidiomatic to the language, the implementer may consider this as equivalent to String).
+ 
+ Note:  If a key in transportParams is one the library sends by default (for example, v or heartbeats), the value in transportParams takes precedence.
+ */
+@property (nonatomic, copy, nullable) NSDictionary<NSString *, ARTStringifiable *> *transportParams;
+
+/**
  The object that processes Push activation/deactivation-related actions.
  */
 @property (nullable, weak, nonatomic) id<ARTPushRegistererDelegate, NSObject> pushRegistererDelegate;
@@ -133,10 +141,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)isBasicAuth;
 - (NSURL *)restUrl;
 - (NSURL *)realtimeUrl;
-- (BOOL)hasCustomRestHost;
-- (BOOL)hasDefaultRestHost;
-- (BOOL)hasCustomRealtimeHost;
-- (BOOL)hasDefaultRealtimeHost;
 
 @end
 

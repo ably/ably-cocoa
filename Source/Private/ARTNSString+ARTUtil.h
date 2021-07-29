@@ -13,5 +13,7 @@
 @interface NSString (ARTUtil)
 
 + (NSString *)nilToEmpty:(NSString*)aString;
+- (BOOL)isEmptyString;
+- (BOOL)isNotEmptyString;
 
 @end

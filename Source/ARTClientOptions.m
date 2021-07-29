@@ -8,13 +8,14 @@
 #import "ARTClientOptions+Private.h"
 #import "ARTAuthOptions+Private.h"
 
-#import "ARTDefault.h"
+#import "ARTDefault+Private.h"
 #import "ARTStatus.h"
 #import "ARTTokenParams.h"
 #import "ARTDeltaCodec.h"
+#import "ARTStringifiable.h"
+#import "ARTNSString+ARTUtil.h"
 
 NSString *ARTDefaultEnvironment = nil;
-NSString *const ARTDefaultProduction = @"production";
 
 @interface ARTClientOptions ()
 
@@ -52,6 +53,7 @@ NSString *const ARTDefaultProduction = @"production";
     _idempotentRestPublishing = [ARTClientOptions getDefaultIdempotentRestPublishingForVersion:[ARTDefault version]];
     _addRequestIds = false;
     _pushRegistererDelegate = nil;
+    
     return self;
 }
 
@@ -59,24 +61,25 @@ NSString *const ARTDefaultProduction = @"production";
     return [NSString stringWithFormat:@"%@\n\t clientId: %@;", [super description], self.clientId];
 }
 
-- (NSString*)getRestHost {
-    if (_restHost) {
+- (NSString*)restHost {
+    if (_restHost != nil) {
         return _restHost;
     }
     if ([_environment isEqualToString:ARTDefaultProduction]) {
         return [ARTDefault restHost];
     }
-    return _environment ? [NSString stringWithFormat:@"%@-%@", _environment, [ARTDefault restHost]] : [ARTDefault restHost];
+    return self.hasEnvironment ? [self host:[ARTDefault restHost] forEnvironment:_environment] : [ARTDefault restHost];
 }
 
-- (NSString*)getRealtimeHost {
-    if (_realtimeHost) {
+- (NSString*)realtimeHost {
+    if (_realtimeHost != nil) {
         return _realtimeHost;
     }
     if ([_environment isEqualToString:ARTDefaultProduction]) {
         return [ARTDefault realtimeHost];
     }
-    return _environment ? [NSString stringWithFormat:@"%@-%@", _environment, [ARTDefault realtimeHost]] : [ARTDefault realtimeHost];
+    
+    return self.hasEnvironment ? [self host:[ARTDefault realtimeHost] forEnvironment:_environment] : [ARTDefault realtimeHost];
 }
 
 - (NSURLComponents *)restUrlComponents {
@@ -134,6 +137,7 @@ NSString *const ARTDefaultProduction = @"production";
     options.channelNamePrefix = self.channelNamePrefix;
     options.addRequestIds = self.addRequestIds;
     options.pushRegistererDelegate = self.pushRegistererDelegate;
+    options.transportParams = self.transportParams;
 
     return options;
 }
@@ -148,7 +152,7 @@ NSString *const ARTDefaultProduction = @"production";
 }
 
 - (BOOL)hasCustomRestHost {
-    return (_restHost && ![_restHost isEqualToString:[ARTDefault restHost]]) || _environment;
+    return (_restHost && ![_restHost isEqualToString:[ARTDefault restHost]]) || (self.hasEnvironment && !self.isProductionEnvironment);
 }
 
 - (BOOL)hasDefaultRestHost {
@@ -156,14 +160,22 @@ NSString *const ARTDefaultProduction = @"production";
 }
 
 - (BOOL)hasCustomRealtimeHost {
-    return (_realtimeHost && ![_realtimeHost isEqualToString:[ARTDefault realtimeHost]]) || _environment;
+    return (_realtimeHost && ![_realtimeHost isEqualToString:[ARTDefault realtimeHost]]) || (self.hasEnvironment && !self.isProductionEnvironment);
 }
 
 - (BOOL)hasDefaultRealtimeHost {
     return ![self hasCustomRealtimeHost];
 }
 
-- (void)setFallbackHosts:(art_nullable __GENERIC(NSArray, NSString *) *)value {
+- (BOOL)hasCustomPort {
+    return self.port && self.port != [ARTDefault port];
+}
+
+- (BOOL)hasCustomTlsPort {
+    return self.tlsPort && self.tlsPort != [ARTDefault tlsPort];
+}
+
+- (void)setFallbackHosts:(nullable NSArray<NSString *> *)value {
     if (_fallbackHostsUseDefault) {
         [ARTException raise:ARTFallbackIncompatibleOptionsException format:@"Could not setup custom fallback hosts because it is currently configured to use default fallback hosts."];
     }
@@ -192,6 +204,22 @@ NSString *const ARTDefaultProduction = @"production";
     else {
         return true;
     }
+}
+
+- (BOOL)isProductionEnvironment {
+    return [[self.environment lowercaseString] isEqualToString:[ARTDefaultProduction lowercaseString]];
+}
+
+- (BOOL)hasEnvironment {
+    return self.environment != nil && [self.environment isNotEmptyString];
+}
+
+- (BOOL)hasEnvironmentDifferentThanProduction {
+    return self.hasEnvironment && !self.isProductionEnvironment;
+}
+
+- (NSString *)host:(NSString *)host forEnvironment:(NSString *)environment {
+    return [NSString stringWithFormat:@"%@-%@", environment, host];
 }
 
 @end

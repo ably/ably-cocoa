@@ -1,10 +1,8 @@
 # [Ably](https://www.ably.io) iOS, tvOS and macOS Objective-C and Swift client library SDK
 
-[![Build Status](https://travis-ci.org/ably/ably-cocoa.svg?branch=main)](https://travis-ci.org/ably/ably-cocoa)
+[![.github/workflows/check.yml](https://github.com/ably/ably-cocoa/actions/workflows/check.yml/badge.svg)](https://github.com/ably/ably-cocoa/actions/workflows/check.yml)
 [![CocoaPods Compatible](https://img.shields.io/cocoapods/v/Ably.svg)](https://img.shields.io/cocoapods/v/Ably.svg)
 [![Carthage Compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
-![Platforms](https://img.shields.io/badge/platforms-iOS%20%7C%20tvOS%20%7C%20macOS-333333.svg)
-![Languages](https://img.shields.io/badge/languages-Swift%20%7C%20ObjC-333333.svg)
 
 iOS, tvOS and macOS Objective-C and Swift client library SDK for [Ably realtime messaging service](https://www.ably.io), written in Objective-C. This library currently targets the [Ably client library features spec](https://www.ably.io/documentation/client-lib-development-guide/features/) Version 1.2. You can jump to the '[Known Limitations](#known-limitations)' section to see the features this client library does not yet support or [view our client library SDKs feature support matrix](https://www.ably.io/download/sdk-feature-support-matrix) to see the list of all the available features.
 
@@ -70,8 +68,19 @@ Visit [ably.io/documentation](https://www.ably.io/documentation) for a complete 
 
 ## Installation Guide
 
-You can install Ably for iOS and macOS through CocoaPods, Carthage or manually.
+You can install Ably for iOS and macOS through Package Manager, CocoaPods, Carthage or manually.
 
+## Installation
+
+### Installing through [Swift Package Manager](https://swift.org/package-manager/)
+- To install the `ably-cocoa` package in your **Xcode Project**: 
+    - Paste `https://github.com/ably/ably-cocoa` in the *Swift Packages* search box. ( *Xcode project*  &rarr;  *Swift Packages..* . &rarr; `+` button)
+    - Select the `Ably` SDK for your target.
+    - [This apple guide](https://developer.apple.com/documentation/swift_packages/adding_package_dependencies_to_your_app) explains the steps in more detail.
+- To install the `ably-cocoa` package in another **Swift Package**, then add the following to your `Package.Swift`:
+```swift
+ .package(url: "https://github.com/ably/ably-cocoa", from: "1.3.0"),
+```
 ### Installing through [CocoaPods](https://cocoapods.org/)
 
 If you intend to use Swift, using `use_frameworks!` in your Podfile is recommended (this will create a Framework that can be used in Swift natively).
@@ -92,16 +101,30 @@ Add this line to your application's Cartfile:
     # For Xcode 7.3 and newer
     github "ably/ably-cocoa" >= 1.2
 
-And then run `carthage update` to build the framework and drag the built Ably.framework into your Xcode project.
+And then run  
 
-If you see, for example, a `dyld: Library not loaded: @rpath/SocketRocketAblyFork.framework/SocketRocketAblyFork` error, then most likely you forgot to add all the dependencies to your project. You have more detailed information [here](https://github.com/Carthage/Carthage#adding-frameworks-to-an-application).
+- for **iOS**: `carthage update --use-xcframeworks --platform iOS --no-use-binaries`
+- for **macOS**: `carthage update --use-xcframeworks --platform macOS --no-use-binaries`
+- for **tvOS**: `carthage update --use-xcframeworks --platform tvOS --no-use-binaries`
+
+to build the framework and drag the built (in `[PROJECT_ROOT]/Carthage/Build`)
+
+- `Ably.xcframework` 
+- `AblyDeltaCodec.xcframework`
+- `msgpack.xcframework`
+
+into your Xcode project.
+
+If you see, for example, a `dyld: Library not loaded: @rpath/AblyDeltaCodec.framework/AblyDeltaCodec` error, then most likely you forgot to add all the dependencies to your project. You have more detailed information [here](https://github.com/Carthage/Carthage#adding-frameworks-to-an-application).
+
+*NOTE:*
+*For **macOS** target you have to select `Do Not Embed` for `Ably.xcframework` in `General` tab for your target, and make sure the `Ably.xcframework` is on the `Link Binary With Libraries` list in `Build Phases` tab.*
 
 ### Manual installation 
 
-1. Get the code from GitHub [from the release page](https://github.com/ably/ably-cocoa/releases/tag/1.2.3), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-cocoa.git`
+1. Get the code from GitHub [from the release page](https://github.com/ably/ably-cocoa/releases/tag/1.2.4), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-cocoa.git`
 2. Drag the directory `ably-cocoa/ably-cocoa` into your project as a group.
-3. Ably depends on our [SocketRocket Fork](https://github.com/ably-forks/SocketRocket) 0.5.2; get it [from the releases page](https://github.com/ably-forks/SocketRocket/releases/tag/0.5.2-ably-2) and follow [its manual installation instructions](https://github.com/ably-forks/SocketRocket/#installing).
-4. Ably also depends on our [MessagePack Fork](https://github.com/ably-forks/msgpack-objective-C) 0.2.0; get it [from the releases page](https://github.com/ably-forks/msgpack-objective-C/releases/tag/0.2.0-ably-1) and link it into your project.
+3. Ably depends on our [MessagePack Fork](https://github.com/ably-forks/msgpack-objective-C) 0.2.0; get it [from the releases page](https://github.com/ably-forks/msgpack-objective-C/releases/tag/0.2.0-ably-1) and link it into your project.
 
 ## Thread-safety
 
@@ -124,7 +147,7 @@ If you haven’t yet, you should first check the detailed [documentation](https:
 
 **`ARTPushRegistererDelegate`** is the interface for handling Push activation/deactivation-related actions. The activation process, by default, will check if the `UIApplication.sharedApplication.delegate` has the `ARTPushRegistererDelegate` implementation.
 
-Since version 1.2.3, there's a new way to pass the `ARTPushRegistererDelegate` implementation into the library. It must be used for new apps created with Xcode 12 and later, using the SwiftUI App Lifecycle. You can assign the delegate directly in the client options using the `pushRegistererDelegate` property, without relying on `UIApplicationDelegate`.
+Since version 1.2.4, there's a new way to pass the `ARTPushRegistererDelegate` implementation into the library. It must be used for new apps created with Xcode 12 and later, using the SwiftUI App Lifecycle. You can assign the delegate directly in the client options using the `pushRegistererDelegate` property, without relying on `UIApplicationDelegate`.
 
 Do not forget that `ARTPush` has two corresponding methods that you should call from yours [application(_:didRegisterForRemoteNotificationsWithDeviceToken:)](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1622958-application) and [application(_:didFailToRegisterForRemoteNotificationsWithError:)](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1622962-application), passing to them also an `ARTRest` or `ARTRealtime` instance, configured with the authentication setup and other options you need:
 
@@ -689,13 +712,14 @@ You can also view the [community reported Github issues](https://github.com/ably
 
 In this repository the `main` branch contains the latest development version of the Ably SDK. All development (bug fixing, feature implementation, etc.) is done against the `main` branch, which you should branch from whenever you'd like to make modifications. Here's the steps to follow when contributing to this repository.
 
-1. Fork it
-2. Setup or update your machine by running `make setup|update`
-3. Create your feature branch from `main` (`git checkout main && git checkout -b my-new-feature-branch`)
-4. Commit your changes (`git commit -am 'Add some feature'`)
-5. Ensure you have added suitable tests and the test suite is passing
-6. Push to the branch (`git push origin my-new-feature-branch`)
-7. Create a new Pull Request
+ - Fork it
+ - Install carthage: `brew install carthage`
+ - Setup or update your machine by running `make update`
+ - Create your feature branch from `main` (`git checkout main && git checkout -b my-new-feature-branch`)
+ - Commit your changes (`git commit -am 'Add some feature'`)
+ - Ensure you have added suitable tests and the test suite is passing
+ - Push to the branch (`git push origin my-new-feature-branch`)
+ - Create a new Pull Request
 
 Releases of the Ably SDK built by the sources in this repository are tagged with their [semantic version](http://semver.org/) numbers.
 
@@ -726,7 +750,7 @@ For each release, the following needs to be done:
 * Create a new branch `release/x.x.x` (where `x.x.x` is the new version number) from the `main` branch
 * Run `make bump_[major|minor|patch]` to bump the new version number (creates a Git commit)
 * Run [`github_changelog_generator`](https://github.com/github-changelog-generator/github-changelog-generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). This may require some manual intervention, both in terms of how the command is run and how the change log file is modified. Your mileage may vary:
-    * The command you will need to run will look something like this: `github_changelog_generator -u ably -p ably-cocoa --since-tag 1.2.3 --output delta.md`
+    * The command you will need to run will look something like this: `github_changelog_generator -u ably -p ably-cocoa --since-tag 1.2.4 --output delta.md`
     * Using the command above, `--output delta.md` writes changes made after `--since-tag` to a new file
     * The contents of that new file (`delta.md`) then need to be manually inserted at the top of the `CHANGELOG.md`, changing the "Unreleased" heading and linking with the current version numbers
     * Also ensure that the "Full Changelog" link points to the new version tag instead of the `HEAD`
@@ -737,7 +761,7 @@ For each release, the following needs to be done:
 * Steps to perform *before* pushing a release tag up:
     1. Checkout `main` locally, pulling in changes from above using `git checkout main && git pull`
     2. Run `make update` to ensure Carthage dependencies are in sync
-    3. Generate the prebuilt framework for Carthage using `make carthage_package` (the output from this, `Ably.framework.zip`, will be attached to the release later on)
+    3. Generate the prebuilt framework for Carthage using `make carthage_package platform=[iOS|macOS|tvOS]` (the output from this, `Ably.framework.zip`, will be attached to the release later on)
     4. Validate that the CocoaPods build should succeed using `pod lib lint`
 * If any fixes are needed (e.g. the lint fails with warnings) then either commit them to `main` branch now if they are simple warning fixes or perhaps consider raising a new PR if they are complex or likely to need review.
 * Create a tag for this version number using `git tag x.x.x`

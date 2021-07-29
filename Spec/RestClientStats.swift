@@ -155,7 +155,7 @@ class RestClientStats: QuickSpec {
                         expect(totalOutbound).to(equal(20 + 10 + 40))
                     }
                     
-                    it("should match month-level inbound and outbound fixture data (forwards)") {
+                    xit("should match month-level inbound and outbound fixture data (forwards)") {
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
                         query.end = calendar.date(byAdding: .month, value: 1, to: date, options: NSCalendar.Options(rawValue: 0))
@@ -171,7 +171,7 @@ class RestClientStats: QuickSpec {
                         expect(totalOutbound).to(equal(20 + 10 + 40))
                     }
                     
-                    it("should contain only one item when limit is 1 (backwards") {
+                    xit("should contain only one item when limit is 1 (backwards") {
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
                         query.end = date.addingTimeInterval(60) // 20XX-02-03:16:04
@@ -254,7 +254,7 @@ class RestClientStats: QuickSpec {
                         expect((firstPageAgain.items)[0].inbound.all.messages.data).to(equal(7000))
                     }
                     
-                    it("should be paginated according to the limit (fowards)") {
+                    xit("should be paginated according to the limit (fowards)") {
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
                         query.end = date.addingTimeInterval(120) // 20XX-02-03:16:05

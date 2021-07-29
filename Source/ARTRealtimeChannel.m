@@ -39,6 +39,18 @@
     ARTQueuedDealloc *_dealloc;
 }
 
+- (void)internalAsync:(void (^)(ARTRealtimeChannelInternal * _Nonnull))use {
+    dispatch_async(_internal.queue, ^{
+        use(self->_internal);
+    });
+}
+
+- (void)internalSync:(void (^)(ARTRealtimeChannelInternal * _Nonnull))use {
+    dispatch_sync(_internal.queue, ^{
+        use(self->_internal);
+    });
+}
+
 - (instancetype)initWithInternal:(ARTRealtimeChannelInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc {
     self = [super init];
     if (self) {
@@ -763,6 +775,9 @@ dispatch_sync(_queue, ^{
 }
 
 - (void)detachChannel:(ARTStatus *)status {
+    if (self.state_nosync == ARTRealtimeChannelDetached) {
+        return;
+    }
     [self.presence failPendingPresence:status];
     [self transition:ARTRealtimeChannelDetached status:status];
 }

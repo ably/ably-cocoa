@@ -40,6 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly, strong) ARTClientOptions *options;
 @property (nonatomic, readonly, assign) ARTAuthMethod method;
+@property (readonly) BOOL isTokenAuth;
 
 @property (nonatomic, strong) ARTLog *logger;
 

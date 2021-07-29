@@ -276,7 +276,7 @@
     message.clientId = [input artString:@"clientId"];
     message.data = [input objectForKey:@"data"];
     message.encoding = [input artString:@"encoding"];;
-    message.timestamp = [input artDate:@"timestamp"];
+    message.timestamp = [input artTimestamp:@"timestamp"];
     message.connectionId = [input artString:@"connectionId"];
     message.extras = [input objectForKey:@"extras"];
     
@@ -344,7 +344,7 @@
     message.data = [input objectForKey:@"data"];
     message.encoding = [input artString:@"encoding"];
     message.clientId = [input artString:@"clientId"];
-    message.timestamp = [input artDate:@"timestamp"];
+    message.timestamp = [input artTimestamp:@"timestamp"];
     
     int action = [[input artNumber:@"action"] intValue];
     
@@ -600,9 +600,12 @@
 
     ARTTokenParams *params = [[ARTTokenParams alloc] initWithClientId:[input artString:@"clientId"]
                                                                 nonce:[input artString:@"nonce"]];
-    params.ttl = [NSNumber numberWithDouble:millisecondsToTimeInterval([input artInteger:@"ttl"])];
+    NSInteger millisecondsTtl = [input artInteger:@"ttl"];
+    if (millisecondsTtl) {
+        params.ttl = [NSNumber numberWithDouble:millisecondsToTimeInterval(millisecondsTtl)];
+    }
     params.capability = [input artString:@"capability"];
-    params.timestamp = [input artDate:@"timestamp"];
+    params.timestamp = [input artTimestamp:@"timestamp"];
 
     return [[ARTTokenRequest alloc] initWithTokenParams:params
                                                 keyName:[input artString:@"keyName"]
@@ -638,7 +641,6 @@
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
 
     dictionary[@"id"] = deviceDetails.id;
-    dictionary[@"deviceSecret"] = deviceDetails.secret;
     dictionary[@"platform"] = deviceDetails.platform;
     dictionary[@"formFactor"] = deviceDetails.formFactor;
 
@@ -733,7 +735,7 @@
     }
     message.id = [input artString:@"id"];
     message.msgSerial = [input artNumber:@"msgSerial"];
-    message.timestamp = [input artDate:@"timestamp"];
+    message.timestamp = [input artTimestamp:@"timestamp"];
     message.messages = [self messagesFromArray:[input objectForKey:@"messages"]];
     message.presence = [self presenceMessagesFromArray:[input objectForKey:@"presence"]];
     message.connectionKey = [input artString:@"connectionKey"];
