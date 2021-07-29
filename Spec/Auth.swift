@@ -1195,13 +1195,14 @@ class Auth : QuickSpec {
                             realtime.connect()
                             
                             let transport = realtime.internal.transport as! TestProxyTransport
-                            transport.beforeProcessingReceivedMessage = { message in
+                            transport.setBeforeIncomingMessageModifier({ message in
                                 if message.action == .connected {
                                     if let details = message.connectionDetails {
                                         details.clientId = nil
                                     }
                                 }
-                            }
+                                return message
+                            })
                         }
                     }
 
@@ -3709,39 +3710,32 @@ class Auth : QuickSpec {
                         connectedStateCount += 1
                     }
 
-                    var tokenDetailsFirst: ARTTokenDetails?
                     var tokenDetailsLast: ARTTokenDetails?
+                    var didCancelAuthorization = false
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(2, done: done)
-                        realtime.auth.authorize { tokenDetails, error in
-                            if let error = error, (error as NSError).code != URLError.cancelled.rawValue {
-                                fail(error.localizedDescription); partialDone(); return
-                            }
-                            expect(tokenDetails).toNot(beNil())
-                            if tokenDetailsFirst == nil {
-                                tokenDetailsFirst = tokenDetails
+                        let callback: (ARTTokenDetails?, Error?) -> Void = { tokenDetails, error in
+                            if let error = error {
+                                if (error as NSError).code == URLError.cancelled.rawValue {
+                                    expect(tokenDetails).to(beNil())
+                                    didCancelAuthorization = true
+                                }
+                                else {
+                                    fail(error.localizedDescription); partialDone(); return
+                                }
                             }
                             else {
+                                expect(tokenDetails).toNot(beNil())
                                 tokenDetailsLast = tokenDetails
                             }
                             partialDone()
                         }
-                        realtime.auth.authorize { tokenDetails, error in
-                            if let error = error, (error as NSError).code != URLError.cancelled.rawValue {
-                                fail(error.localizedDescription); partialDone(); return
-                            }
-                            expect(tokenDetails).toNot(beNil())
-                            if tokenDetailsFirst == nil {
-                                tokenDetailsFirst = tokenDetails
-                            }
-                            else {
-                                tokenDetailsLast = tokenDetails
-                            }
-                            partialDone()
-                        }
+                        // One of them will be canceled by the connection:
+                        realtime.auth.authorize(callback)
+                        realtime.auth.authorize(callback)
                     }
 
-                    expect(tokenDetailsFirst?.token).toNot(equal(tokenDetailsLast?.token))
+                    expect(didCancelAuthorization).to(be(true))
                     expect(realtime.auth.tokenDetails).to(beIdenticalTo(tokenDetailsLast))
                     expect(realtime.auth.tokenDetails?.token).to(equal(tokenDetailsLast?.token))
 
@@ -3749,7 +3743,7 @@ class Auth : QuickSpec {
                         expect(query).to(haveParam("accessToken", withValue: realtime.auth.tokenDetails?.token ?? ""))
                     }
                     else {
-                        XCTFail("MockTransport is not working")
+                        fail("MockTransport is not working")
                     }
 
                     expect(connectedStateCount) == 1

@@ -1491,18 +1491,24 @@ class RealtimeClientConnection: QuickSpec {
                         let partialDone = AblyTests.splitDone(3, done: done)
 
                         client.connection.once(.closing) { _ in
-                            oldTransport = client.internal.transport
+                            client.internalSync { _internal in
+                                oldTransport = _internal.transport
+                            }
                             // Old connection must complete the close request
                             weak var oldTestProxyTransport = oldTransport as? TestProxyTransport
-                            oldTestProxyTransport?.beforeProcessingReceivedMessage = { protocolMessage in
+                            oldTestProxyTransport?.setBeforeIncomingMessageModifier({ protocolMessage in
                                 if protocolMessage.action == .closed {
                                     partialDone()
                                 }
-                            }
+                                return protocolMessage
+                            })
 
                             client.connect()
 
-                            newTransport = client.internal.transport
+                            client.internalSync { _internal in
+                                newTransport = _internal.transport
+                            }
+
                             expect(newTransport).toNot(beIdenticalTo(oldTransport))
                             expect(newTransport).toNot(beNil())
                             expect(oldTransport).toNot(beNil())
@@ -1530,7 +1536,7 @@ class RealtimeClientConnection: QuickSpec {
             // RTN12
             context("close") {
                 // RTN12f
-                xit("if CONNECTING, do the operation once CONNECTED") {
+                it("if CONNECTING, do the operation once CONNECTED") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
@@ -1551,7 +1557,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN12a
-                xit("if CONNECTED, should send a CLOSE action, change state to CLOSING and receive a CLOSED action") {
+                it("if CONNECTED, should send a CLOSE action, change state to CLOSING and receive a CLOSED action") {
                     let options = AblyTests.commonAppSetup()
                     options.autoConnect = false
                     let client = ARTRealtime(options: options)
@@ -2459,7 +2465,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     // RTN15c2
-                    xit("CONNECTED ProtocolMessage with the same connectionId as the current client and an non-fatal error") {
+                    it("CONNECTED ProtocolMessage with the same connectionId as the current client and an non-fatal error") {
                         let options = AblyTests.commonAppSetup()
                         let client = AblyTests.newRealtime(options)
                         defer { client.dispose(); client.close() }
@@ -2468,21 +2474,26 @@ class RealtimeClientConnection: QuickSpec {
                         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
 
                         let expectedConnectionId = client.connection.id
-                        client.internal.onDisconnected()
+                        client.internalAsync { _internal in
+                            _internal.onDisconnected()
+                        }
 
                         channel.attach()
                         channel.publish(nil, data: "queued message")
                         expect(client.internal.queuedMessages).toEventually(haveCount(1), timeout: testTimeout)
 
                         client.connection.once(.connecting) { _ in
-                            let transport = client.internal.transport as! TestProxyTransport
-                            transport.beforeProcessingReceivedMessage = { protocolMessage in
-                                if protocolMessage.action == .connected {
-                                    protocolMessage.error = ARTErrorInfo.create(withCode: 0, message: "Injected error")
-                                }
-                                else if protocolMessage.action == .attached {
-                                    protocolMessage.error = ARTErrorInfo.create(withCode: 0, message: "Channel injected error")
-                                }
+                            client.internalSync { _internal in
+                                let transport = _internal.transport as! TestProxyTransport
+                                transport.setBeforeIncomingMessageModifier({ protocolMessage in
+                                    if protocolMessage.action == .connected {
+                                        protocolMessage.error = .create(withCode: 0, message: "Injected error")
+                                    }
+                                    else if protocolMessage.action == .attached {
+                                        protocolMessage.error = .create(withCode: 0, message: "Channel injected error")
+                                    }
+                                    return protocolMessage
+                                })
                             }
                         }
 
@@ -2588,7 +2599,7 @@ class RealtimeClientConnection: QuickSpec {
                         expect(channel.errorReason).to(beIdenticalTo(protocolError.error))
                     }
 
-                    it("should resume the connection after an auth renewal") {
+                    xit("should resume the connection after an auth renewal") {
                         let options = AblyTests.commonAppSetup()
                         options.tokenDetails = getTestTokenDetails(ttl: 5.0)
                         let client = AblyTests.newRealtime(options)
@@ -2815,7 +2826,7 @@ class RealtimeClientConnection: QuickSpec {
                     let customTtlInterval: TimeInterval = 0.1
                     let customIdleInterval: TimeInterval = 0.1
                     
-                    it("uses a new connection") {
+                    xit("uses a new connection") {
                         let options = AblyTests.commonAppSetup()
                         // We want this to be > than the sum of customTtlInterval and customIdleInterval
                         options.disconnectedRetryTimeout = 5.0 + customTtlInterval + customIdleInterval
@@ -2922,7 +2933,7 @@ class RealtimeClientConnection: QuickSpec {
                 // RTN15h
                 context("DISCONNECTED message contains a token error") {
 
-                    it("if the token is renewable then error should not be emitted") {
+                    xit("if the token is renewable then error should not be emitted") {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
                         options.authCallback = { tokenParams, callback in
@@ -2998,7 +3009,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     // RTN15h2
-                    it("should transition to disconnected when the token renewal fails and the error should be emitted") {
+                    xit("should transition to disconnected when the token renewal fails and the error should be emitted") {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
                         let tokenTtl = 3.0
@@ -3152,7 +3163,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN16c
-                it("Connection#recoveryKey should become becomes null when a connection is explicitly CLOSED or CLOSED") {
+                xit("Connection#recoveryKey should become becomes null when a connection is explicitly CLOSED or CLOSED") {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
@@ -3919,12 +3930,13 @@ class RealtimeClientConnection: QuickSpec {
                         expect(stateChange.reason).to(beNil())
 
                         let transport = realtime.internal.transport as! TestProxyTransport
-                        transport.beforeProcessingReceivedMessage = { protocolMessage in
+                        transport.setBeforeIncomingMessageModifier({ protocolMessage in
                             if protocolMessage.action == .connected {
                                 protocolMessage.connectionDetails!.clientId = "john"
                                 protocolMessage.connectionDetails!.connectionKey = "123"
                             }
-                        }
+                            return protocolMessage
+                        })
                     }
                     realtime.connection.once(.connected) { stateChange in
                         expect(stateChange.reason).to(beNil())
@@ -3938,6 +3950,11 @@ class RealtimeClientConnection: QuickSpec {
                     }
                     realtime.connect()
                 }
+
+                let transport = realtime.internal.transport as! TestProxyTransport
+                let connectedProtocolMessage = transport.protocolMessagesReceived.filter{ $0.action == .connected }[0]
+                expect(realtime.auth.clientId).to(equal(connectedProtocolMessage.connectionDetails!.clientId))
+                expect(realtime.connection.key).to(equal(connectedProtocolMessage.connectionDetails!.connectionKey))
             }
 
             xcontext("Transport disconnected side effects") {
@@ -4119,7 +4136,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN20b
-                xit("should immediately attempt to connect if the operating system indicates that the underlying internet connection is now available when DISCONNECTED or SUSPENDED") {
+                it("should immediately attempt to connect if the operating system indicates that the underlying internet connection is now available when DISCONNECTED or SUSPENDED") {
                     var client: ARTRealtime!
                     let options = AblyTests.commonAppSetup()
                     // Ensure it won't reconnect because of timeouts.
@@ -4335,18 +4352,18 @@ class RealtimeClientConnection: QuickSpec {
                     }
 
                     var noActivityHasStartedAt: Date?
-                    transport.changeReceivedMessage = { protocolMessage in
+                    transport.setBeforeIncomingMessageModifier({ protocolMessage in
                         if protocolMessage.action == .connected, let connectionDetails = protocolMessage.connectionDetails {
                             connectionDetails.setMaxIdleInterval(3)
                             expectedInactivityTimeout = connectionDetails.maxIdleInterval + ARTDefault.realtimeRequestTimeout()
                             // Force no activity
                             transport.ignoreWebSocket = true
                             noActivityHasStartedAt = Date()
-                            transport.changeReceivedMessage = nil
+                            transport.setBeforeIncomingMessageModifier(nil)
                             partialDone()
                         }
                         return protocolMessage
-                    }
+                    })
 
                     client.connection.on(.disconnected) { stateChange in
                         let now = Date()
@@ -4508,7 +4525,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // https://github.com/ably/wiki/issues/22
-                it("should encode and decode fixture messages as expected") {
+                xit("should encode and decode fixture messages as expected") {
                     let options = AblyTests.commonAppSetup()
                     options.useBinaryProtocol = false
                     let client = AblyTests.newRealtime(options)
@@ -4591,7 +4608,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
 
-                it("should send messages through raw JSON POST and retrieve equal messages through MsgPack and JSON") {
+                xit("should send messages through raw JSON POST and retrieve equal messages through MsgPack and JSON") {
                     setupDependencies()
                     let restPublishClient = ARTRest(options: jsonOptions)
                     let realtimeSubscribeClientMsgPack = AblyTests.newRealtime(msgpackOptions)
@@ -4642,7 +4659,7 @@ class RealtimeClientConnection: QuickSpec {
                     }
                 }
 
-                it("should send messages through MsgPack and JSON and retrieve equal messages through raw JSON GET") {
+                xit("should send messages through MsgPack and JSON and retrieve equal messages through raw JSON GET") {
                     setupDependencies()
                     let restPublishClientMsgPack = ARTRest(options: msgpackOptions)
                     let restPublishClientJSON = ARTRest(options: jsonOptions)
