@@ -1063,7 +1063,7 @@ class RealtimeClientChannel: QuickSpec {
                         }
                     }
 
-                    it("DISCONNECTED") {
+                    xit("DISCONNECTED") {
                         let options = AblyTests.commonAppSetup()
                         let client = ARTRealtime(options: options)
                         defer { client.dispose(); client.close() }
