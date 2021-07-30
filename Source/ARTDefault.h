@@ -40,7 +40,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSString *)libraryVersion;
 
-+ (NSString *)agent;
++ (NSString *)libraryAgent;
+
++ (NSString *)platformAgent;
 
 + (NSInteger)maxMessageSize;
 

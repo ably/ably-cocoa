@@ -180,13 +180,18 @@ static NSInteger _maxMessageSize = 65536;
     return [NSString stringWithCString:systemInfo.machine encoding:NSUTF8StringEncoding];
 }
 
-+ (NSString *)agent {
-    NSMutableString *agentString = [NSMutableString stringWithFormat:@"%@/%@", ARTDefault_libraryName, [self bundleVersion]];
++ (NSString *)libraryAgent {
+    NSMutableString *agent = [NSMutableString stringWithFormat:@"%@/%@", ARTDefault_libraryName, [self bundleVersion]];
+    return agent;
+}
+
++ (NSString *)platformAgent {
+    NSMutableString *agent = [NSMutableString string];
     NSString *osName = [self osName];
     if (osName != nil) {
-        [agentString appendFormat:@" %@/%@", osName, [self osVersionString]];
+        [agent appendFormat:@"%@/%@", osName, [self osVersionString]];
     }
-    return agentString;
+    return agent;
 }
 
 @end

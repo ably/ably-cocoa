@@ -1588,7 +1588,7 @@ class RestClient: QuickSpec {
             // RSC7b (Deprecated in favor of RCS7d)
 
             // RSC7d
-            it("Ably-Agent: The Agent library identifier is composed of a series of key[/value] entries joined by spaces") {
+            it("The Agent library identifier is composed of a series of key[/value] entries joined by spaces") {
                 let options = AblyTests.commonAppSetup()
                 let client = ARTRest(options: options)
                 testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
@@ -1598,7 +1598,7 @@ class RestClient: QuickSpec {
                     channel.publish(nil, data: "message") { error in
                         expect(error).to(beNil())
                         let headerAgent = testHTTPExecutor.requests.first!.allHTTPHeaderFields?["Ably-Agent"]
-                        let ablyAgent = ARTDefault.agent()
+                        let ablyAgent = options.agents()
                         expect(headerAgent).to(equal(ablyAgent))
                         expect(headerAgent!.hasPrefix("ably-cocoa/1.2.")).to(beTrue())
                         done()
