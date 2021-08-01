@@ -295,18 +295,17 @@
 }
 
 - (NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request completion:(URLRequestCallback)callback {
-    return [self executeRequest:request completion:callback fallbacks:nil retries:0 originalRequestId:nil];
+    return [self executeRequest:request fallbacks:nil retries:0 originalRequestId:nil completion:callback];
 }
 
 /**
  originalRequestId is used only for fallback requests. It should never be used to execute request by yourself, it's passed from within below method.
  */
 - (NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request
-                                  completion:(URLRequestCallback)callback
                                    fallbacks:(ARTFallback *)fallbacks
                                      retries:(NSUInteger)retries
-                           originalRequestId:(nullable NSString *)originalRequestId {
-    
+                           originalRequestId:(nullable NSString *)originalRequestId
+                                  completion:(URLRequestCallback)callback {
     NSString *requestId = nil;
     __block ARTFallback *blockFallbacks = fallbacks;
     
@@ -418,8 +417,11 @@
                     NSMutableURLRequest *newRequest = [request copy];
                     [newRequest setValue:host forHTTPHeaderField:@"Host"];
                     newRequest.URL = [NSURL copyFromURL:request.URL withHost:host];
-                    task = [self executeRequest:newRequest completion:callback fallbacks:blockFallbacks retries:retries + 1 originalRequestId:originalRequestId];
-                    
+                    task = [self executeRequest:newRequest
+                                      fallbacks:blockFallbacks
+                                        retries:retries + 1
+                              originalRequestId:originalRequestId
+                                     completion:callback];
                     return;
                 }
             }
