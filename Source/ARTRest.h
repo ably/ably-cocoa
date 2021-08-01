@@ -24,6 +24,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef void (^URLRequestCallback)(NSHTTPURLResponse * _Nullable, NSData * _Nullable, NSError * _Nullable);
+
 @protocol ARTRestProtocol
 
 - (instancetype)init NS_UNAVAILABLE;

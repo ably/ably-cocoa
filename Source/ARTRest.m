@@ -226,7 +226,9 @@
     return [NSString stringWithFormat:@"%@ - \n\t %@;", [super description], info];
 }
 
-- (NSObject<ARTCancellable> *)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(CompletionBlock)callback {
+- (NSObject<ARTCancellable> *)executeRequest:(NSMutableURLRequest *)request
+                              withAuthOption:(ARTAuthentication)authOption
+                                  completion:(URLRequestCallback)callback {
     request.URL = [NSURL URLWithString:request.URL.relativeString relativeToURL:self.baseUrl];
     
     switch (authOption) {
@@ -246,11 +248,16 @@
     }
 }
 
-- (NSObject<ARTCancellable> *)executeRequestWithAuthentication:(NSMutableURLRequest *)request withMethod:(ARTAuthMethod)method completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback {
+- (NSObject<ARTCancellable> *)executeRequestWithAuthentication:(NSMutableURLRequest *)request
+                                                    withMethod:(ARTAuthMethod)method
+                                                    completion:(URLRequestCallback)callback {
     return [self executeRequestWithAuthentication:request withMethod:method force:NO completion:callback];
 }
 
-- (NSObject<ARTCancellable> *)executeRequestWithAuthentication:(NSMutableURLRequest *)request withMethod:(ARTAuthMethod)method force:(BOOL)force completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback {
+- (NSObject<ARTCancellable> *)executeRequestWithAuthentication:(NSMutableURLRequest *)request
+                                                    withMethod:(ARTAuthMethod)method
+                                                         force:(BOOL)force
+                                                    completion:(URLRequestCallback)callback {
     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p calculating authorization %lu", self, (unsigned long)method];
     __block NSObject<ARTCancellable> *task;
 
@@ -287,7 +294,7 @@
     return task;
 }
 
-- (NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request completion:(CompletionBlock)callback {
+- (NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request completion:(URLRequestCallback)callback {
     return [self executeRequest:request completion:callback fallbacks:nil retries:0 originalRequestId:nil];
 }
 
@@ -295,7 +302,7 @@
  originalRequestId is used only for fallback requests. It should never be used to execute request by yourself, it's passed from within below method.
  */
 - (NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request
-                                  completion:(CompletionBlock)callback
+                                  completion:(URLRequestCallback)callback
                                    fallbacks:(ARTFallback *)fallbacks
                                      retries:(NSUInteger)retries
                            originalRequestId:(nullable NSString *)originalRequestId {
