@@ -18,6 +18,7 @@
 @class ARTTokenParams;
 @class ARTTokenRequest;
 @class ARTTokenDetails;
+@class ARTHTTPPaginatedResponse;
 @class ARTPaginatedResult<ItemType>;
 @class ARTStats;
 
@@ -234,6 +235,9 @@ NSString *generateNonce(void);
  present with nil result or nil error, but never both nil.
  */
 typedef void (^ARTCompletionHandler)(id result, NSError * error);
+
+typedef void (^URLRequestCallback)(NSHTTPURLResponse * _Nullable, NSData * _Nullable, NSError * _Nullable);
+typedef void (^ARTHTTPPaginatedCallback)(ARTHTTPPaginatedResponse *_Nullable, ARTErrorInfo *_Nullable);
 
 /**
  Wraps the given callback in an ARTCancellable, offering the following

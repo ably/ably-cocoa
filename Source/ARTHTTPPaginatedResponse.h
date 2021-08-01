@@ -29,8 +29,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// Returns a dictionary containing all the HTTP header fields of the response header.
 @property (nonatomic, readonly) NSDictionary<NSString *, NSString *> *headers;
 
-- (void)first:(void (^)(ARTHTTPPaginatedResponse * _Nullable, ARTErrorInfo * _Nullable))callback;
-- (void)next:(void (^)(ARTHTTPPaginatedResponse * _Nullable, ARTErrorInfo * _Nullable))callback;
+- (void)first:(ARTHTTPPaginatedCallback)callback;
+- (void)next:(ARTHTTPPaginatedCallback)callback;
 
 @end
 

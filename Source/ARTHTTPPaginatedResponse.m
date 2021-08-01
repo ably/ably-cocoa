@@ -55,7 +55,7 @@
     return _response.allHeaderFields;
 }
 
-- (void)first:(void (^)(ARTHTTPPaginatedResponse *_Nullable result, ARTErrorInfo *_Nullable error))callback {
+- (void)first:(ARTHTTPPaginatedCallback)callback {
     if (callback) {
         void (^userCallback)(ARTHTTPPaginatedResponse *_Nullable result, ARTErrorInfo *_Nullable error) = callback;
         callback = ^(ARTHTTPPaginatedResponse *_Nullable result, ARTErrorInfo *_Nullable error) {
@@ -68,7 +68,7 @@
     [self.class executePaginated:self.rest withRequest:self.relFirst callback:callback];
 }
 
-- (void)next:(void (^)(ARTHTTPPaginatedResponse *_Nullable result, ARTErrorInfo *_Nullable error))callback {
+- (void)next:(ARTHTTPPaginatedCallback)callback {
     if (callback) {
         void (^userCallback)(ARTHTTPPaginatedResponse *_Nullable result, ARTErrorInfo *_Nullable error) = callback;
         callback = ^(ARTHTTPPaginatedResponse *_Nullable result, ARTErrorInfo *_Nullable error) {
@@ -89,7 +89,9 @@
     [self.class executePaginated:self.rest withRequest:self.relNext callback:callback];
 }
 
-+ (void)executePaginated:(ARTRestInternal *)rest withRequest:(NSMutableURLRequest *)request callback:(void (^)(ARTHTTPPaginatedResponse *_Nullable result, ARTErrorInfo *_Nullable error))callback {
++ (void)executePaginated:(ARTRestInternal *)rest
+             withRequest:(NSMutableURLRequest *)request
+                callback:(ARTHTTPPaginatedCallback)callback {
     [rest.logger debug:__FILE__ line:__LINE__ message:@"HTTP Paginated request: %@", request];
 
     [rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {

@@ -24,8 +24,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef void (^URLRequestCallback)(NSHTTPURLResponse * _Nullable, NSData * _Nullable, NSError * _Nullable);
-
 @protocol ARTRestProtocol
 
 - (instancetype)init NS_UNAVAILABLE;
@@ -45,10 +43,19 @@ typedef void (^URLRequestCallback)(NSHTTPURLResponse * _Nullable, NSData * _Null
 
 - (void)time:(void (^)(NSDate *_Nullable, NSError *_Nullable))callback;
 
-- (BOOL)request:(NSString *)method path:(NSString *)path params:(nullable NSDictionary<NSString *, NSString *> *)params body:(nullable id)body headers:(nullable NSDictionary<NSString *, NSString *> *)headers callback:(void (^)(ARTHTTPPaginatedResponse *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr;
+- (BOOL)request:(NSString *)method
+           path:(NSString *)path
+         params:(nullable NSDictionary<NSString *, NSString *> *)params
+           body:(nullable id)body
+        headers:(nullable NSDictionary<NSString *, NSString *> *)headers
+       callback:(ARTHTTPPaginatedCallback)callback
+          error:(NSError *_Nullable *_Nullable)errorPtr;
 
 - (BOOL)stats:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback;
-- (BOOL)stats:(nullable ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr;
+
+- (BOOL)stats:(nullable ARTStatsQuery *)query
+     callback:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback
+        error:(NSError *_Nullable *_Nullable)errorPtr;
 
 #if TARGET_OS_IOS
 @property (readonly) ARTLocalDevice *device;

@@ -55,6 +55,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) int fallbackCount;
 
 - (instancetype)initWithOptions:(ARTClientOptions *)options realtime:(ARTRealtimeInternal *_Nullable)realtime;
+
 - (nullable NSObject<ARTCancellable> *)_time:(void (^)(NSDate *_Nullable, NSError *_Nullable))callback;
 
 // MARK: ARTHTTPExecutor
@@ -63,7 +64,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 // MARK: Internal
 
-- (nullable NSObject<ARTCancellable> *)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(URLRequestCallback)callback;
+- (nullable NSObject<ARTCancellable> *)executeRequest:(NSMutableURLRequest *)request
+                                       withAuthOption:(ARTAuthentication)authOption
+                                           completion:(URLRequestCallback)callback;
 
 - (nullable NSObject<ARTCancellable> *)internetIsUp:(void (^)(BOOL isUp))cb;
 

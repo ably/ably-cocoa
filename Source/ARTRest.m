@@ -103,7 +103,13 @@
     [_internal time:callback];
 }
 
-- (BOOL)request:(NSString *)method path:(NSString *)path params:(nullable NSDictionary<NSString *, NSString *> *)params body:(nullable id)body headers:(nullable NSDictionary<NSString *, NSString *> *)headers callback:(void (^)(ARTHTTPPaginatedResponse *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr {
+- (BOOL)request:(NSString *)method
+           path:(NSString *)path
+         params:(nullable NSDictionary<NSString *, NSString *> *)params
+           body:(nullable id)body
+        headers:(nullable NSDictionary<NSString *, NSString *> *)headers
+       callback:(ARTHTTPPaginatedCallback)callback
+          error:(NSError *_Nullable *_Nullable)errorPtr {
     return [_internal request:(NSString *)method path:path params:params body:body headers:headers callback:callback error:errorPtr];
 }
 
@@ -497,9 +503,9 @@
             });
         };
     }
-dispatch_async(_queue, ^{
-    [self _time:callback];
-});
+    dispatch_async(_queue, ^{
+        [self _time:callback];
+    });
 }
 
 - (NSObject<ARTCancellable> *)_time:(void(^)(NSDate *time, NSError *error))callback {
@@ -525,7 +531,13 @@ dispatch_async(_queue, ^{
     }];
 }
 
-- (BOOL)request:(NSString *)method path:(NSString *)path params:(nullable NSDictionary<NSString *, NSString *> *)params body:(nullable id)body headers:(nullable NSDictionary<NSString *, NSString *> *)headers callback:(void (^)(ARTHTTPPaginatedResponse *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr {
+- (BOOL)request:(NSString *)method
+           path:(NSString *)path
+         params:(nullable NSDictionary<NSString *, NSString *> *)params
+           body:(nullable id)body
+        headers:(nullable NSDictionary<NSString *, NSString *> *)headers
+       callback:(ARTHTTPPaginatedCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr {
+    
     if (callback) {
         void (^userCallback)(ARTHTTPPaginatedResponse *, ARTErrorInfo *) = callback;
         callback = ^(ARTHTTPPaginatedResponse *r, ARTErrorInfo *e) {
