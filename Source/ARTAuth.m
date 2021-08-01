@@ -254,7 +254,7 @@
     // HTTP Header Fields
     if ([options isMethodPOST]) {
         // TokenParams take precedence over any configured authParams when a name conflict occurs
-        NSDictionary<NSString *, NSString *> *const unitedParams =
+        NSStringDictionary *const unitedParams =
             [params toDictionaryWithUnion:options.authParams];
         NSString *const encodedParametersString = ARTFormEncode(unitedParams);
         NSData *const formData = [encodedParametersString dataUsingEncoding:NSUTF8StringEncoding];

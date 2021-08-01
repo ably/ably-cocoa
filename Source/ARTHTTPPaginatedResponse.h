@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, readonly) NSString *errorMessage;
 
 /// Returns a dictionary containing all the HTTP header fields of the response header.
-@property (nonatomic, readonly) NSDictionary<NSString *, NSString *> *headers;
+@property (nonatomic, readonly) NSStringDictionary *headers;
 
 - (void)first:(ARTHTTPPaginatedCallback)callback;
 - (void)next:(ARTHTTPPaginatedCallback)callback;

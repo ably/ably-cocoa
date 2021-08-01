@@ -230,6 +230,10 @@ NSString *generateNonce(void);
 @interface NSURLSessionTask (ARTCancellable) <ARTCancellable>
 @end
 
+#pragma mark - Typedefs
+
+typedef NSDictionary<NSString *, NSString *> NSStringDictionary;
+
 /**
  Signature of a generic completion handler which, when called, will either
  present with nil result or nil error, but never both nil.
@@ -238,6 +242,8 @@ typedef void (^ARTCompletionHandler)(id result, NSError * error);
 
 typedef void (^URLRequestCallback)(NSHTTPURLResponse * _Nullable, NSData * _Nullable, NSError * _Nullable);
 typedef void (^ARTHTTPPaginatedCallback)(ARTHTTPPaginatedResponse *_Nullable, ARTErrorInfo *_Nullable);
+
+#pragma mark - Functions
 
 /**
  Wraps the given callback in an ARTCancellable, offering the following

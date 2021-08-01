@@ -63,7 +63,9 @@
     [_internal unsubscribeClient:callback];
 }
 
-- (BOOL)listSubscriptions:(NSDictionary<NSString *, NSString *> *)params callback:(void(^)(ARTPaginatedResult<ARTPushChannelSubscription *> *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr {
+- (BOOL)listSubscriptions:(NSStringDictionary *)params
+                 callback:(void(^)(ARTPaginatedResult<ARTPushChannelSubscription *> *_Nullable, ARTErrorInfo *_Nullable))callback
+                    error:(NSError *_Nullable *_Nullable)errorPtr {
     return [_internal listSubscriptions:params callback:callback error:errorPtr];
 }
 
@@ -251,7 +253,9 @@ dispatch_async(_queue, ^{
 });
 }
 
-- (BOOL)listSubscriptions:(NSDictionary<NSString *, NSString *> *)params callback:(void(^)(ARTPaginatedResult<ARTPushChannelSubscription *> *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError * __autoreleasing *)errorPtr {
+- (BOOL)listSubscriptions:(NSStringDictionary *)params
+                 callback:(void(^)(ARTPaginatedResult<ARTPushChannelSubscription *> *_Nullable, ARTErrorInfo *_Nullable))callback
+                    error:(NSError * __autoreleasing *)errorPtr {
     if (callback) {
         void (^userCallback)(ARTPaginatedResult<ARTPushChannelSubscription *> *result, ARTErrorInfo *error) = callback;
         callback = ^(ARTPaginatedResult<ARTPushChannelSubscription *> *result, ARTErrorInfo *error) {

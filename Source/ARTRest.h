@@ -45,9 +45,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)request:(NSString *)method
            path:(NSString *)path
-         params:(nullable NSDictionary<NSString *, NSString *> *)params
+         params:(nullable NSStringDictionary *)params
            body:(nullable id)body
-        headers:(nullable NSDictionary<NSString *, NSString *> *)headers
+        headers:(nullable NSStringDictionary *)headers
        callback:(ARTHTTPPaginatedCallback)callback
           error:(NSError *_Nullable *_Nullable)errorPtr;
 

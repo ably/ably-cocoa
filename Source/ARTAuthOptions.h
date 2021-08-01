@@ -60,7 +60,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Headers to be included in any request made by the library to the authURL.
  */
-@property (nonatomic, copy, nullable) NSDictionary<NSString *, NSString *> *authHeaders;
+@property (nonatomic, copy, nullable) NSStringDictionary *authHeaders;
 
 /**
  Additional params to be included in any request made by the library to the authUrl, either as query params in the case of GET or in the body in the case of POST.
