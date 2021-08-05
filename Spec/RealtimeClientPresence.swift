@@ -48,7 +48,7 @@ class RealtimeClientPresence: QuickSpec {
                     expect(channel.internal.presenceMap.syncComplete).to(beFalse())
                 }
 
-                it("when members are present") {
+                xit("when members are present") {
                     let options = AblyTests.commonAppSetup()
 
                     var disposable = [ARTRealtime]()
@@ -3401,7 +3401,7 @@ class RealtimeClientPresence: QuickSpec {
                 context("Query (set of params)") {
 
                     // RTP11c1
-                    it("waitForSync is true, should wait until SYNC is complete before returning a list of members") {
+                    xit("waitForSync is true, should wait until SYNC is complete before returning a list of members") {
                         let options = AblyTests.commonAppSetup()
                         var clientSecondary: ARTRealtime!
                         defer { clientSecondary.dispose(); clientSecondary.close() }
