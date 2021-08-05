@@ -235,12 +235,12 @@ NSString *generateNonce(void);
 typedef NSDictionary<NSString *, NSString *> NSStringDictionary;
 
 /**
- Signature of a generic completion handler which, when called, will either
- present with nil result or nil error, but never both nil.
+ Signatures of completion handlers to improve readability and maintainability in properties and method parameters.
+ Either result/response or error can be nil but not both.
  */
-typedef void (^ARTCompletionHandler)(id result, NSError * error);
-typedef void (^ARTURLRequestCallback)(NSHTTPURLResponse * _Nullable, NSData * _Nullable, NSError * _Nullable);
-typedef void (^ARTHTTPPaginatedCallback)(ARTHTTPPaginatedResponse *_Nullable, ARTErrorInfo *_Nullable);
+typedef void (^ARTCompletionHandler)(id _Nullable result, NSError *_Nullable error);
+typedef void (^ARTURLRequestCallback)(NSHTTPURLResponse *_Nullable response, NSData *_Nullable data, NSError *_Nullable error);
+typedef void (^ARTHTTPPaginatedCallback)(ARTHTTPPaginatedResponse *_Nullable response, ARTErrorInfo *_Nullable error);
 
 #pragma mark - Functions
 
