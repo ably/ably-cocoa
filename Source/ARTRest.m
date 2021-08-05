@@ -234,7 +234,7 @@
 
 - (NSObject<ARTCancellable> *)executeRequest:(NSMutableURLRequest *)request
                               withAuthOption:(ARTAuthentication)authOption
-                                  completion:(URLRequestCallback)callback {
+                                  completion:(ARTURLRequestCallback)callback {
     request.URL = [NSURL URLWithString:request.URL.relativeString relativeToURL:self.baseUrl];
     
     switch (authOption) {
@@ -256,14 +256,14 @@
 
 - (NSObject<ARTCancellable> *)executeRequestWithAuthentication:(NSMutableURLRequest *)request
                                                     withMethod:(ARTAuthMethod)method
-                                                    completion:(URLRequestCallback)callback {
+                                                    completion:(ARTURLRequestCallback)callback {
     return [self executeRequestWithAuthentication:request withMethod:method force:NO completion:callback];
 }
 
 - (NSObject<ARTCancellable> *)executeRequestWithAuthentication:(NSMutableURLRequest *)request
                                                     withMethod:(ARTAuthMethod)method
                                                          force:(BOOL)force
-                                                    completion:(URLRequestCallback)callback {
+                                                    completion:(ARTURLRequestCallback)callback {
     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p calculating authorization %lu", self, (unsigned long)method];
     __block NSObject<ARTCancellable> *task;
 
@@ -300,7 +300,7 @@
     return task;
 }
 
-- (NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request completion:(URLRequestCallback)callback {
+- (NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request completion:(ARTURLRequestCallback)callback {
     return [self executeRequest:request fallbacks:nil retries:0 originalRequestId:nil completion:callback];
 }
 
@@ -311,7 +311,7 @@
                                    fallbacks:(ARTFallback *)fallbacks
                                      retries:(NSUInteger)retries
                            originalRequestId:(nullable NSString *)originalRequestId
-                                  completion:(URLRequestCallback)callback {
+                                  completion:(ARTURLRequestCallback)callback {
     NSString *requestId = nil;
     __block ARTFallback *blockFallbacks = fallbacks;
     

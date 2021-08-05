@@ -239,8 +239,7 @@ typedef NSDictionary<NSString *, NSString *> NSStringDictionary;
  present with nil result or nil error, but never both nil.
  */
 typedef void (^ARTCompletionHandler)(id result, NSError * error);
-
-typedef void (^URLRequestCallback)(NSHTTPURLResponse * _Nullable, NSData * _Nullable, NSError * _Nullable);
+typedef void (^ARTURLRequestCallback)(NSHTTPURLResponse * _Nullable, NSData * _Nullable, NSError * _Nullable);
 typedef void (^ARTHTTPPaginatedCallback)(ARTHTTPPaginatedResponse *_Nullable, ARTErrorInfo *_Nullable);
 
 #pragma mark - Functions
