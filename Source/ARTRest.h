@@ -51,10 +51,10 @@ NS_ASSUME_NONNULL_BEGIN
        callback:(ARTHTTPPaginatedCallback)callback
           error:(NSError *_Nullable *_Nullable)errorPtr;
 
-- (BOOL)stats:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback;
+- (BOOL)stats:(ARTPaginatedStatsCallback)callback;
 
 - (BOOL)stats:(nullable ARTStatsQuery *)query
-     callback:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback
+     callback:(ARTPaginatedStatsCallback)callback
         error:(NSError *_Nullable *_Nullable)errorPtr;
 
 #if TARGET_OS_IOS

@@ -113,11 +113,11 @@
     return [_internal request:(NSString *)method path:path params:params body:body headers:headers callback:callback error:errorPtr];
 }
 
-- (BOOL)stats:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback {
+- (BOOL)stats:(ARTPaginatedStatsCallback)callback {
     return [_internal stats:callback];
 }
 
-- (BOOL)stats:(nullable ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr {
+- (BOOL)stats:(nullable ARTStatsQuery *)query callback:(ARTPaginatedStatsCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr {
     return [_internal stats:query callback:callback error:errorPtr];
 }
 
@@ -536,7 +536,8 @@
          params:(nullable NSStringDictionary *)params
            body:(nullable id)body
         headers:(nullable NSStringDictionary *)headers
-       callback:(ARTHTTPPaginatedCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr {
+       callback:(ARTHTTPPaginatedCallback)callback
+          error:(NSError **)errorPtr {
     
     if (callback) {
         void (^userCallback)(ARTHTTPPaginatedResponse *, ARTErrorInfo *) = callback;
@@ -639,13 +640,13 @@
     }];
 }
 
-- (BOOL)stats:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback {
+- (BOOL)stats:(ARTPaginatedStatsCallback)callback {
     return [self stats:[[ARTStatsQuery alloc] init] callback:callback error:nil];
 }
 
-- (BOOL)stats:(ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult<ARTStats *> *, ARTErrorInfo *))callback error:(NSError **)errorPtr {
+- (BOOL)stats:(ARTStatsQuery *)query callback:(ARTPaginatedStatsCallback)callback error:(NSError **)errorPtr {
     if (callback) {
-        void (^userCallback)(ARTPaginatedResult<ARTStats *> *, ARTErrorInfo *) = callback;
+        ARTPaginatedStatsCallback userCallback = callback;
         callback = ^(ARTPaginatedResult<ARTStats *> *r, ARTErrorInfo *e) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(r, e);

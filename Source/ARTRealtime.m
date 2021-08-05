@@ -142,11 +142,11 @@
     [_internal ping:cb];
 }
 
-- (BOOL)stats:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback {
+- (BOOL)stats:(ARTPaginatedStatsCallback)callback {
     return [_internal stats:callback];
 }
 
-- (BOOL)stats:(nullable ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr {
+- (BOOL)stats:(nullable ARTStatsQuery *)query callback:(ARTPaginatedStatsCallback)callback error:(NSError **)errorPtr {
     return [_internal stats:query callback:callback error:errorPtr];
 }
 
@@ -467,11 +467,11 @@
     });
 }
 
-- (BOOL)stats:(void (^)(ARTPaginatedResult<ARTStats *> *, ARTErrorInfo *))callback {
+- (BOOL)stats:(ARTPaginatedStatsCallback)callback {
     return [self stats:[[ARTStatsQuery alloc] init] callback:callback error:nil];
 }
 
-- (BOOL)stats:(ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult<ARTStats *> *, ARTErrorInfo *))callback error:(NSError **)errorPtr {
+- (BOOL)stats:(ARTStatsQuery *)query callback:(ARTPaginatedStatsCallback)callback error:(NSError **)errorPtr {
     return [self.rest stats:query callback:callback error:errorPtr];
 }
 

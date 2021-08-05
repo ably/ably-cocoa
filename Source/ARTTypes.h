@@ -241,6 +241,7 @@ typedef NSDictionary<NSString *, NSString *> NSStringDictionary;
 typedef void (^ARTCompletionHandler)(id _Nullable result, NSError *_Nullable error);
 typedef void (^ARTURLRequestCallback)(NSHTTPURLResponse *_Nullable response, NSData *_Nullable data, NSError *_Nullable error);
 typedef void (^ARTHTTPPaginatedCallback)(ARTHTTPPaginatedResponse *_Nullable response, ARTErrorInfo *_Nullable error);
+typedef void (^ARTPaginatedStatsCallback)(ARTPaginatedResult<ARTStats *> *_Nullable response, ARTErrorInfo *_Nullable error);
 
 #pragma mark - Functions
 
