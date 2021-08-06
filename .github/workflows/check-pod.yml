@@ -14,8 +14,8 @@ jobs:
       # unzip commands included as proof-of-life for the Carthage output.
       - run: |
           ruby --version
-          carthage version
-          pod --version --verbose
+          echo -n "carthage version: " && carthage version
+          echo -n "pod version: " && pod --version --verbose
           make --version
           make update
           make carthage_package
