@@ -1,5 +1,55 @@
 # Change Log
 
+## [1.2.5](https://github.com/ably/ably-cocoa/tree/1.2.5)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.4...1.2.5)
+
+**Implemented enhancements:**
+
+- Add transportParams to ClientOptions [\#1112](https://github.com/ably/ably-cocoa/issues/1112)
+- Implement RSC7d \(Ably-Agent header\) [\#1111](https://github.com/ably/ably-cocoa/issues/1111)
+- Defaults: Generate environment fallbacks [\#1066](https://github.com/ably/ably-cocoa/issues/1066)
+- Make `stateChange` nonnull? [\#1017](https://github.com/ably/ably-cocoa/issues/1017)
+- Compile SocketRocket with main library [\#805](https://github.com/ably/ably-cocoa/issues/805)
+
+**Fixed bugs:**
+
+- Memory leaks in the Realtime client [\#1129](https://github.com/ably/ably-cocoa/issues/1129)
+- Token based authentication always results in 40101 Request mac does not match [\#1093](https://github.com/ably/ably-cocoa/issues/1093)
+- Potentially insecure usage of the NSURLSession API [\#1079](https://github.com/ably/ably-cocoa/issues/1079)
+- Incorrect import reference? [\#1072](https://github.com/ably/ably-cocoa/issues/1072)
+
+**Closed issues:**
+
+- Expose `device` property in `ARTRealtime.h` [\#1154](https://github.com/ably/ably-cocoa/issues/1154)
+- Remove `ULID` dependency \(replace usage with `NSUUID`\) [\#1127](https://github.com/ably/ably-cocoa/issues/1127)
+- Implement ErrorInfo URLs to help debug issues [\#1125](https://github.com/ably/ably-cocoa/issues/1125)
+- Carthage build for Nimble framework with deprecated linker flag -lswiftXCTest [\#1123](https://github.com/ably/ably-cocoa/issues/1123)
+- Implement RSC15j \(fallback host header\) [\#1116](https://github.com/ably/ably-cocoa/issues/1116)
+- Implement RSC15f \(successful fallback host\) [\#1115](https://github.com/ably/ably-cocoa/issues/1115)
+- In last version, connecting to server takes too long time on old devices [\#1102](https://github.com/ably/ably-cocoa/issues/1102)
+- Fail connection immediately if authorize\(\) called and 403 returned [\#1078](https://github.com/ably/ably-cocoa/issues/1078)
+
+**Merged pull requests:**
+
+- Fix for potentially insecure usage of the NSURLSession API [\#1158](https://github.com/ably/ably-cocoa/pull/1158) ([maratal](https://github.com/maratal))
+- 1017 state change nonnull [\#1156](https://github.com/ably/ably-cocoa/pull/1156) ([maratal](https://github.com/maratal))
+- xcbkptlist removed [\#1155](https://github.com/ably/ably-cocoa/pull/1155) ([maratal](https://github.com/maratal))
+- Move deviceSecret into ARTLocalDevice [\#1153](https://github.com/ably/ably-cocoa/pull/1153) ([ben-xD](https://github.com/ben-xD))
+- Remove references to ULID in xcodeproj [\#1152](https://github.com/ably/ably-cocoa/pull/1152) ([maratal](https://github.com/maratal))
+- Store succeed fallback host as default for 10 minutes \(RSC15f\) [\#1150](https://github.com/ably/ably-cocoa/pull/1150) ([lukasz-szyszkowski](https://github.com/lukasz-szyszkowski))
+- Fix/1078 fail immediately on 403 [\#1149](https://github.com/ably/ably-cocoa/pull/1149) ([maratal](https://github.com/maratal))
+- \(RSC15j\) Add `Host` header for fallback hosts. [\#1148](https://github.com/ably/ably-cocoa/pull/1148) ([lukasz-szyszkowski](https://github.com/lukasz-szyszkowski))
+- Extending ErrorInfo with `href` and `requestId` [\#1147](https://github.com/ably/ably-cocoa/pull/1147) ([lukasz-szyszkowski](https://github.com/lukasz-szyszkowski))
+- Add transport params to client options \(RTC1f\) [\#1142](https://github.com/ably/ably-cocoa/pull/1142) ([lukasz-szyszkowski](https://github.com/lukasz-szyszkowski))
+- Swift Package Manager support [\#1136](https://github.com/ably/ably-cocoa/pull/1136) ([lukasz-szyszkowski](https://github.com/lukasz-szyszkowski))
+- Real time client memory leaks fixes [\#1130](https://github.com/ably/ably-cocoa/pull/1130) ([lukasz-szyszkowski](https://github.com/lukasz-szyszkowski))
+- Remove ULID dependency and replace usage with NSUUID [\#1128](https://github.com/ably/ably-cocoa/pull/1128) ([ben-xD](https://github.com/ben-xD))
+- Fix for deprecated linker flag for Nimble framework  [\#1124](https://github.com/ably/ably-cocoa/pull/1124) ([lukasz-szyszkowski](https://github.com/lukasz-szyszkowski))
+- Ably-Agent Header [\#1119](https://github.com/ably/ably-cocoa/pull/1119) ([maratal](https://github.com/maratal))
+- Environment fallback hosts [\#1113](https://github.com/ably/ably-cocoa/pull/1113) ([ricardopereira](https://github.com/ricardopereira))
+- Accept authURL response with timestamp argument as string [\#1097](https://github.com/ably/ably-cocoa/pull/1097) ([ricardopereira](https://github.com/ricardopereira))
+
 ## [1.2.4](https://github.com/ably/ably-cocoa/tree/1.2.4)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.3...1.2.4)
