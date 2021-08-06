@@ -46,7 +46,7 @@ This SDK is compatible with projects that target:
 
 - iOS 9.0+
 - tvOS 10.0+
-- macOS 10.11+
+- macOS 10.12+
 
 We maintain compatibility and explicitly support these platform versions, including performing CI testing on all library revisions.
 
