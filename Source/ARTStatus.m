@@ -124,7 +124,7 @@ NSInteger getStatusFromCode(NSInteger code) {
         return nil;
     }
     
-    return [@"https://help.ably.io/error/" stringByAppendingFormat:@"%ld", self.statusCode];
+    return [@"https://help.ably.io/error/" stringByAppendingFormat:@"%lld", (long long)self.statusCode];
 }
 
 - (NSString *)requestId {
