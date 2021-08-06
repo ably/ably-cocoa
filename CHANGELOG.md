@@ -2,6 +2,11 @@
 
 ## [1.2.5](https://github.com/ably/ably-cocoa/tree/1.2.5)
 
+This release makes **breaking changes** to runtime device support requirements:
+
+- **iOS 10.0** or higher is now required (previously it was 9.0)
+- **macOS 10.11** or higher is now required (previously it was 10.10)
+
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.4...1.2.5)
 
 **Implemented enhancements:**
