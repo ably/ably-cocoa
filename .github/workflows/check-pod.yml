@@ -1,0 +1,22 @@
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  check:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      # Run the steps we document in the Release Process.
+      # unzip commands included as proof-of-life for the Carthage output.
+      - run: |
+          make update
+          make carthage_package
+          unzip -l Ably.framework.zip
+          unzip -l Ably.framework.zip | grep 'Mac/Ably.framework'
+          unzip -l Ably.framework.zip | grep 'tvOS/Ably.framework'
+          unzip -l Ably.framework.zip | grep 'iOS/Ably.framework'
+          pod lib lint
