@@ -86,7 +86,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 
 @implementation ARTSRWebSocket {
     ARTSRMutex _kvoLock;
-    os_unfair_lock_t _propertyLock;
+    os_unfair_lock _propertyLock;
 
     dispatch_queue_t _workQueue;
     NSMutableArray<ARTSRIOConsumer *> *_consumers;
@@ -161,7 +161,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 
     _readyState = ARTSR_CONNECTING;
 
-    _propertyLock = OS_SPINLOCK_INIT;
+    _propertyLock = OS_UNFAIR_LOCK_INIT;
     _kvoLock = ARTSRMutexInitRecursive();
     _workQueue = dispatch_queue_create(NULL, DISPATCH_QUEUE_SERIAL);
 
@@ -283,9 +283,9 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
         ARTSRMutexLock(_kvoLock);
         if (_readyState != readyState) {
             [self willChangeValueForKey:@"readyState"];
-            os_unfair_lock_lock(_propertyLock);
+            os_unfair_lock_lock(&_propertyLock);
             _readyState = readyState;
-            os_unfair_lock_unlock(_propertyLock);
+            os_unfair_lock_unlock(&_propertyLock);
             [self didChangeValueForKey:@"readyState"];
         }
     }
@@ -297,9 +297,9 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 - (ARTSRReadyState)readyState
 {
     ARTSRReadyState state = 0;
-    os_unfair_lock_lock(_propertyLock);
+    os_unfair_lock_lock(&_propertyLock);
     state = _readyState;
-    os_unfair_lock_unlock(_propertyLock);
+    os_unfair_lock_unlock(&_propertyLock);
     return state;
 }
 
