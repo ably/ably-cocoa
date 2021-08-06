@@ -308,7 +308,7 @@
         [mutableRequest setAcceptHeader:self.defaultEncoder encoders:self.encoders];
         [mutableRequest setTimeoutInterval:_options.httpRequestTimeout];
         [mutableRequest setValue:[ARTDefault version] forHTTPHeaderField:@"X-Ably-Version"];
-        [mutableRequest setValue:[ARTDefault libraryVersion] forHTTPHeaderField:@"X-Ably-Lib"];
+        [mutableRequest setValue:[_options agents] forHTTPHeaderField:@"Ably-Agent"];
         if (_options.clientId && !self.auth.isTokenAuth) {
             [mutableRequest setValue:encodeBase64(_options.clientId) forHTTPHeaderField:@"X-Ably-ClientId"];
         }

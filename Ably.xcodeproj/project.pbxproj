@@ -98,6 +98,9 @@
 		8412FDFE2661AC7B001FE9E6 /* Nimble.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF42661AC7B001FE9E6 /* Nimble.xcframework */; };
 		8412FDFF2661AC7B001FE9E6 /* Nimble.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF42661AC7B001FE9E6 /* Nimble.xcframework */; };
 		8412FE002661AC7B001FE9E6 /* Nimble.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF42661AC7B001FE9E6 /* Nimble.xcframework */; };
+		84569FA626B46F4E00457CF5 /* ClientOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84569FA226B46ADC00457CF5 /* ClientOptions.swift */; };
+		84569FA726B46F4F00457CF5 /* ClientOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84569FA226B46ADC00457CF5 /* ClientOptions.swift */; };
+		84569FA826B46F5100457CF5 /* ClientOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84569FA226B46ADC00457CF5 /* ClientOptions.swift */; };
 		850BFB4C1B79323C009D0ADD /* ARTPaginatedResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 850BFB4A1B79323C009D0ADD /* ARTPaginatedResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		850BFB4D1B79323C009D0ADD /* ARTPaginatedResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 850BFB4B1B79323C009D0ADD /* ARTPaginatedResult.m */; };
 		851674EF1B7BA5CD00D35169 /* Stats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 851674EE1B7BA5CD00D35169 /* Stats.swift */; };
@@ -1005,6 +1008,7 @@
 		8412FDF22661AC7B001FE9E6 /* SwiftyJSON.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SwiftyJSON.xcframework; path = Carthage/Build/SwiftyJSON.xcframework; sourceTree = "<group>"; };
 		8412FDF32661AC7B001FE9E6 /* Quick.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Quick.xcframework; path = Carthage/Build/Quick.xcframework; sourceTree = "<group>"; };
 		8412FDF42661AC7B001FE9E6 /* Nimble.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Nimble.xcframework; path = Carthage/Build/Nimble.xcframework; sourceTree = "<group>"; };
+		84569FA226B46ADC00457CF5 /* ClientOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientOptions.swift; sourceTree = "<group>"; };
 		850BFB4A1B79323C009D0ADD /* ARTPaginatedResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPaginatedResult.h; sourceTree = "<group>"; };
 		850BFB4B1B79323C009D0ADD /* ARTPaginatedResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPaginatedResult.m; sourceTree = "<group>"; };
 		851674EE1B7BA5CD00D35169 /* Stats.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Stats.swift; sourceTree = "<group>"; };
@@ -1470,6 +1474,7 @@
 				D7093C64219EE1AE00723F17 /* Info-tvOS.plist */,
 				560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */,
 				D7C1B8761BBEA81A0087B55F /* Auth.swift */,
+				84569FA226B46ADC00457CF5 /* ClientOptions.swift */,
 				EB7913A71C6E54C3000ABF9B /* Crypto.swift */,
 				D798554723EB96C000946BE2 /* DeltaCodec.swift */,
 				D7093CA8219EFA8A00723F17 /* MockDeviceStorage.swift */,
@@ -2620,6 +2625,7 @@
 				856AAC971B6E30C800B07119 /* TestUtilities.swift in Sources */,
 				D72768211C9C19040022F8B2 /* RestClientPresence.swift in Sources */,
 				D780846E1C68B3E50083009D /* NSObject+TestSuite.m in Sources */,
+				84569FA626B46F4E00457CF5 /* ClientOptions.swift in Sources */,
 				D7093CA9219EFA8A00723F17 /* MockDeviceStorage.swift in Sources */,
 				D7CEF1321C8DD3BC004FB242 /* RealtimeClientPresence.swift in Sources */,
 				853ED7C41B7A1A3C006F1C6F /* RestClientStats.swift in Sources */,
@@ -2772,6 +2778,7 @@
 				EB1B53FA22F85CE4006A59AC /* ObjectLifetimes.swift in Sources */,
 				D7093C2A219E466E00723F17 /* Utilities.swift in Sources */,
 				D798554923EB96C000946BE2 /* DeltaCodec.swift in Sources */,
+				84569FA726B46F4F00457CF5 /* ClientOptions.swift in Sources */,
 				D7093C21219E466E00723F17 /* RestClientChannels.swift in Sources */,
 				D7093C26219E466E00723F17 /* RealtimeClientChannel.swift in Sources */,
 				D7093C22219E466E00723F17 /* RestClientPresence.swift in Sources */,
@@ -2792,6 +2799,7 @@
 				560579DB24AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */,
 				D7093C71219EE25800723F17 /* NSObject+TestSuite.m in Sources */,
 				D7093C70219EE25400723F17 /* TestUtilities.swift in Sources */,
+				84569FA826B46F5100457CF5 /* ClientOptions.swift in Sources */,
 				D7093C80219EE26400723F17 /* Stats.swift in Sources */,
 				D7093C77219EE26400723F17 /* RestClientChannel.swift in Sources */,
 				D520C4E32680A1FC000012B2 /* Stringifiable.swift in Sources */,

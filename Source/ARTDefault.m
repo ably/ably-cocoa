@@ -6,8 +6,15 @@
 //  Copyright (c) 2015 Ably. All rights reserved.
 //
 
+#import "Ably.h"
 #import "ARTDefault+Private.h"
 #import "ARTNSArray+ARTFunctional.h"
+#import <sys/utsname.h>
+
+// NSOperatingSystemVersion has NSInteger as version components for some reason, so mitigate it here.
+static inline UInt32 conformVersionComponent(const NSInteger component) {
+    return (component < 0) ? 0 : (UInt32)component;
+}
 
 @implementation ARTDefault
 
@@ -20,6 +27,7 @@ NSString *const ARTDefault_ablyBundleId = @"io.ably.Ably";
 NSString *const ARTDefault_bundleVersionKey = @"CFBundleShortVersionString";
 NSString *const ARTDefault_bundleBuildNumberKey = @"CFBundleVersion";
 NSString *const ARTDefault_platform = @"cocoa";
+NSString *const ARTDefault_libraryName = @"ably-cocoa";
 NSString *const ARTDefault_variant =
     #if TARGET_OS_IOS
         @".ios"
@@ -133,6 +141,57 @@ static NSInteger _maxMessageSize = 65536;
 + (NSString *)bundleBuildNumber {
     NSDictionary *infoDictionary = [[NSBundle bundleForClass: [ARTDefault class]] infoDictionary];
     return infoDictionary[ARTDefault_bundleBuildNumberKey];
+}
+
++ (NSString *)osName {
+    return
+        #if TARGET_OS_IOS
+            @"iOS"
+        #elif TARGET_OS_TV
+            @"tvOS"
+        #elif TARGET_OS_WATCH
+            @"watchOS"
+        #elif TARGET_OS_OSX
+            @"macOS"
+        #else
+            nil
+        #endif
+        ;
+}
+
++ (NSString *)osVersionString {
+    static NSString *versionString;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSOperatingSystemVersion version = [[NSProcessInfo processInfo] operatingSystemVersion];
+        versionString = [NSString stringWithFormat:@"%u.%u.%u",
+                         conformVersionComponent(version.majorVersion),
+                         conformVersionComponent(version.minorVersion),
+                         conformVersionComponent(version.patchVersion)];
+    });
+    return versionString;
+}
+
++ (NSString *)deviceModel {
+    struct utsname systemInfo;
+    if (uname(&systemInfo) < 0) {
+        return nil;
+    }
+    return [NSString stringWithCString:systemInfo.machine encoding:NSUTF8StringEncoding];
+}
+
++ (NSString *)libraryAgent {
+    NSMutableString *agent = [NSMutableString stringWithFormat:@"%@/%@", ARTDefault_libraryName, [self bundleVersion]];
+    return agent;
+}
+
++ (NSString *)platformAgent {
+    NSMutableString *agent = [NSMutableString string];
+    NSString *osName = [self osName];
+    if (osName != nil) {
+        [agent appendFormat:@"%@/%@", osName, [self osVersionString]];
+    }
+    return agent;
 }
 
 @end
