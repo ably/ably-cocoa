@@ -13,6 +13,10 @@ jobs:
       # Run the steps we document in the Release Process.
       # unzip commands included as proof-of-life for the Carthage output.
       - run: |
+          ruby --version
+          carthage version
+          pod --version --verbose
+          make --version
           make update
           make carthage_package
           unzip -l Ably.framework.zip
