@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTDefault : NSObject
 
 + (NSArray<NSString *> *)fallbackHosts;
-+ (NSArray<NSString *> *)fallbackHostsWithEnvironment:(NSString *)environment;
++ (NSArray<NSString *> *)fallbackHostsWithEnvironment:(NSString *_Nullable)environment;
 + (NSString*)restHost;
 + (NSString*)realtimeHost;
 + (int)port;
