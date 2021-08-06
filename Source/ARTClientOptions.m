@@ -129,7 +129,12 @@ NSString *ARTDefaultEnvironment = nil;
     options.httpOpenTimeout = self.httpOpenTimeout;
     options.httpRequestTimeout = self.httpRequestTimeout;
     options->_fallbackHosts = self.fallbackHosts; //ignore setter
+    
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     options->_fallbackHostsUseDefault = self.fallbackHostsUseDefault; //ignore setter
+#pragma clang diagnostic pop
+
     options.httpRequestTimeout = self.httpRequestTimeout;
     options.logExceptionReportingUrl = self.logExceptionReportingUrl;
     options.dispatchQueue = self.dispatchQueue;
