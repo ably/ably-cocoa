@@ -44,7 +44,7 @@ This is an iOS, tvOS and macOS Objective-C and Swift client library SDK for Ably
 
 This SDK is compatible with projects that target:
 
-- iOS 9.0+
+- iOS 10.0+
 - tvOS 10.0+
 - macOS 10.12+
 
