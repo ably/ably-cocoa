@@ -184,7 +184,7 @@ Class configuredWebsocketClass = nil;
     [queryItems addValueAsURLQueryItem:[ARTDefault version] forKey:@"v"];
     
     // Lib
-    [queryItems addValueAsURLQueryItem:[ARTDefault libraryVersion] forKey:@"lib"];
+    [queryItems addValueAsURLQueryItem:[options agents] forKey:@"agent"];
 
     // Transport Params
     if (options.transportParams != nil) {
