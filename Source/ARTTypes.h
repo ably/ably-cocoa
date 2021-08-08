@@ -21,6 +21,7 @@
 @class ARTHTTPPaginatedResponse;
 @class ARTPaginatedResult<ItemType>;
 @class ARTStats;
+@protocol ARTTokenDetailsCompatible;
 
 // More context
 typedef NSDictionary<NSString *, id> ARTJsonObject;
@@ -242,6 +243,9 @@ typedef void (^ARTCompletionHandler)(id _Nullable result, NSError *_Nullable err
 typedef void (^ARTURLRequestCallback)(NSHTTPURLResponse *_Nullable response, NSData *_Nullable data, NSError *_Nullable error);
 typedef void (^ARTHTTPPaginatedCallback)(ARTHTTPPaginatedResponse *_Nullable response, ARTErrorInfo *_Nullable error);
 typedef void (^ARTPaginatedStatsCallback)(ARTPaginatedResult<ARTStats *> *_Nullable response, ARTErrorInfo *_Nullable error);
+typedef void (^ARTTokenDetailsCallback)(ARTTokenDetails *_Nullable response, NSError *_Nullable error);
+typedef void (^ARTTokenDetailsCompatibleCallback)(id<ARTTokenDetailsCompatible> _Nullable result, NSError *_Nullable error);
+typedef void (^ARTAuthCallback)(ARTTokenParams *params, ARTTokenDetailsCompatibleCallback callback);
 
 #pragma mark - Functions
 

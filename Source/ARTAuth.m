@@ -55,25 +55,28 @@
     return _internal.tokenDetails;
 }
 
-- (void)requestToken:(nullable ARTTokenParams *)tokenParams withOptions:(nullable ARTAuthOptions *)authOptions
-            callback:(void (^)(ARTTokenDetails *_Nullable, NSError *_Nullable))callback {
+- (void)requestToken:(nullable ARTTokenParams *)tokenParams
+         withOptions:(nullable ARTAuthOptions *)authOptions
+            callback:(ARTTokenDetailsCallback)callback {
     [_internal requestToken:tokenParams withOptions:authOptions callback:callback];
 }
 
-- (void)requestToken:(void (^)(ARTTokenDetails *_Nullable, NSError *_Nullable))callback {
+- (void)requestToken:(ARTTokenDetailsCallback)callback {
     [_internal requestToken:callback];
 }
 
-- (void)authorize:(nullable ARTTokenParams *)tokenParams options:(nullable ARTAuthOptions *)authOptions
-         callback:(void (^)(ARTTokenDetails *_Nullable, NSError *_Nullable))callback {
+- (void)authorize:(nullable ARTTokenParams *)tokenParams
+          options:(nullable ARTAuthOptions *)authOptions
+         callback:(ARTTokenDetailsCallback)callback {
     [_internal authorize:tokenParams options:authOptions callback:callback];
 }
 
-- (void)authorize:(void (^)(ARTTokenDetails *_Nullable, NSError *_Nullable))callback {
+- (void)authorize:(ARTTokenDetailsCallback)callback {
     [_internal authorize:callback];
 }
 
-- (void)createTokenRequest:(nullable ARTTokenParams *)tokenParams options:(nullable ARTAuthOptions *)options
+- (void)createTokenRequest:(nullable ARTTokenParams *)tokenParams
+                   options:(nullable ARTAuthOptions *)options
                   callback:(void (^)(ARTTokenRequest *_Nullable tokenRequest, NSError *_Nullable error))callback {
     [_internal createTokenRequest:tokenParams options:options callback:callback];
 }
@@ -303,14 +306,16 @@
     return NO;
 }
 
-- (void)requestToken:(void (^)(ARTTokenDetails *, NSError *))callback {
+- (void)requestToken:(ARTTokenDetailsCallback)callback {
     // If the object arguments are omitted, the client library configured defaults are used
     [self requestToken:_tokenParams withOptions:_options callback:callback];
 }
 
-- (void)requestToken:(ARTTokenParams *)tokenParams withOptions:(ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *, NSError *))callback {
+- (void)requestToken:(ARTTokenParams *)tokenParams
+         withOptions:(ARTAuthOptions *)authOptions
+            callback:(ARTTokenDetailsCallback)callback {
     if (callback) {
-        void (^const userCallback)(ARTTokenDetails *, NSError *) = callback;
+        const ARTTokenDetailsCallback userCallback = callback;
         callback = ^(ARTTokenDetails *t, NSError *e) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(t, e);
@@ -323,7 +328,9 @@ dispatch_async(_queue, ^{
 });
 }
 
-- (NSObject<ARTCancellable> *)_requestToken:(ARTTokenParams *)tokenParams withOptions:(ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *, NSError *))callback {
+- (NSObject<ARTCancellable> *)_requestToken:(ARTTokenParams *)tokenParams
+                                withOptions:(ARTAuthOptions *)authOptions
+                                   callback:(ARTTokenDetailsCallback)callback {
     // If options, params passed in, they're used instead of stored, don't merge them
     ARTAuthOptions *replacedOptions = authOptions ? authOptions : self.options;
     ARTTokenParams *currentTokenParams = [tokenParams ? tokenParams : _tokenParams copy];
@@ -333,8 +340,8 @@ dispatch_async(_queue, ^{
         callback(nil, [ARTErrorInfo createWithCode:ARTStateRequestTokenFailed message:ARTAblyMessageNoMeansToRenewToken]);
         return nil;
     }
-
-    void (^const checkerCallback)(ARTTokenDetails *_Nullable, NSError *_Nullable) = ^(ARTTokenDetails *tokenDetails, NSError *error) {
+    
+    const ARTTokenDetailsCallback checkerCallback = ^(ARTTokenDetails *tokenDetails, NSError *error) {
         if (error) {
             if (error.code == NSURLErrorTimedOut) {
                 ARTErrorInfo *ablyError = [ARTErrorInfo createWithCode:40170 message:@"Error in requesting auth token"];
@@ -365,7 +372,7 @@ dispatch_async(_queue, ^{
             }
         }];
     } else {
-        void (^tokenDetailsFactory)(ARTTokenParams *, void(^)(ARTTokenDetails *_Nullable, NSError *_Nullable));
+        void (^tokenDetailsFactory)(ARTTokenParams *, ARTTokenDetailsCallback);
         if (replacedOptions.authCallback) {
             // We're giving this callback to the user, and we don't control their code. If they were to hold on to
             // this callback, they could introduce a leak, since the callback may hold strong references
@@ -378,7 +385,7 @@ dispatch_async(_queue, ^{
             // and release any references it may hold to Rest/Realtime. Even if the user holds on to
             // the callback we give to them, they would be then holding to a now-nil reference to the
             // original callback.
-            __weak void (^safeCallback)(id<ARTTokenDetailsCompatible> tokenDetailsCompat, NSError * error);
+            __weak ARTTokenDetailsCompatibleCallback safeCallback;
             task = artCancellableFromCallback(^(const id<ARTTokenDetailsCompatible> tokenDetailsCompat, NSError *const error) {
                 if (error) {
                     callback(nil, error);
@@ -386,18 +393,18 @@ dispatch_async(_queue, ^{
                     [tokenDetailsCompat toTokenDetails:[self toAuth] callback:callback];
                 }
             }, &safeCallback);
-
-            void (^const userCallback)(ARTTokenParams *, void(^)(id<ARTTokenDetailsCompatible>, NSError *)) = ^(ARTTokenParams *tokenParams, void(^callback)(id<ARTTokenDetailsCompatible>, NSError *)){
+            
+            const ARTAuthCallback userCallback = ^(ARTTokenParams *tokenParams, ARTTokenDetailsCompatibleCallback callback) {
                 dispatch_async(self->_userQueue, ^{
                     replacedOptions.authCallback(tokenParams, callback);
                 });
             };
-
-            tokenDetailsFactory = ^(ARTTokenParams *tokenParams, void(^callback)(ARTTokenDetails *_Nullable, NSError *_Nullable)) {
+            
+            tokenDetailsFactory = ^(ARTTokenParams *tokenParams, ARTTokenDetailsCallback callback) {
                 userCallback(tokenParams, ^(id<ARTTokenDetailsCompatible> tokenDetailsCompat, NSError *error) {
                     dispatch_async(self->_queue, ^{
                         // safeCallback is declared weak above so could be nil at this point.
-                        void (^const callback)(id<ARTTokenDetailsCompatible> tokenDetailsCompat, NSError * error) = safeCallback;
+                        ARTTokenDetailsCompatibleCallback callback = safeCallback;
                         if (callback) {
                             callback(tokenDetailsCompat, error);
                         }
@@ -407,7 +414,7 @@ dispatch_async(_queue, ^{
             };
             [self.logger debug:@"RS:%p ARTAuth: using authCallback", _rest];
         } else {
-            tokenDetailsFactory = ^(ARTTokenParams *tokenParams, void(^callback)(ARTTokenDetails *_Nullable, NSError *_Nullable)) {
+            tokenDetailsFactory = ^(ARTTokenParams *tokenParams, ARTTokenDetailsCallback callback) {
                 // Create a TokenRequest and execute it
                 NSObject<ARTCancellable> *timeTask;
                 timeTask = [self _createTokenRequest:currentTokenParams options:replacedOptions callback:^(ARTTokenRequest *tokenRequest, NSError *error) {
@@ -439,7 +446,9 @@ dispatch_async(_queue, ^{
     return [[ARTAuth alloc] initWithInternal:self queuedDealloc:dealloc];
 }
 
-- (void)handleAuthUrlResponse:(NSHTTPURLResponse *)response withData:(NSData *)data completion:(void (^)(ARTTokenDetails *, NSError *))callback {
+- (void)handleAuthUrlResponse:(NSHTTPURLResponse *)response
+                     withData:(NSData *)data
+                   completion:(ARTTokenDetailsCallback)callback {
     // The token retrieved is assumed by the library to be a token string if the response has Content-Type "text/plain", or taken to be a TokenRequest or TokenDetails object if the response has Content-Type "application/json"
     if ([response.MIMEType isEqualToString:@"application/json"]) {
         NSError *decodeError = nil;
@@ -473,7 +482,8 @@ dispatch_async(_queue, ^{
     }
 }
 
-- (NSObject<ARTCancellable> *)executeTokenRequest:(ARTTokenRequest *)tokenRequest callback:(void (^)(ARTTokenDetails *, NSError *))callback {
+- (NSObject<ARTCancellable> *)executeTokenRequest:(ARTTokenRequest *)tokenRequest
+                                         callback:(ARTTokenDetailsCallback)callback {
     id<ARTEncoder> encoder = _rest.defaultEncoder;
 
     NSURL *requestUrl = [NSURL URLWithString:[NSString stringWithFormat:@"/keys/%@/requestToken?format=%@", tokenRequest.keyName, [encoder formatAsString]]
@@ -518,13 +528,15 @@ dispatch_async(_queue, ^{
     return _authorizationsCount > 0;
 }
 
-- (void)authorize:(void (^)(ARTTokenDetails *, NSError *))callback {
+- (void)authorize:(ARTTokenDetailsCallback)callback {
     [self authorize:_options.defaultTokenParams options:_options callback:callback];
 }
 
-- (void)authorize:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *, NSError *))callback {
+- (void)authorize:(ARTTokenParams *)tokenParams
+          options:(ARTAuthOptions *)authOptions
+         callback:(ARTTokenDetailsCallback)callback {
     if (callback) {
-        void (^userCallback)(ARTTokenDetails *, NSError *) = callback;
+        ARTTokenDetailsCallback userCallback = callback;
         callback = ^(ARTTokenDetails *t, NSError *e) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(t, e);
@@ -537,7 +549,9 @@ dispatch_async(_queue, ^{
 });
 }
 
-- (nullable NSObject<ARTCancellable> *)_authorize:(ARTTokenParams *)tokenParams options:(ARTAuthOptions *)authOptions callback:(void (^)(ARTTokenDetails *, NSError *))callback {
+- (nullable NSObject<ARTCancellable> *)_authorize:(ARTTokenParams *)tokenParams
+                                          options:(ARTAuthOptions *)authOptions
+                                         callback:(ARTTokenDetailsCallback)callback {
     ARTAuthOptions *replacedOptions = [authOptions copy] ? : [self.options copy];
     [self storeOptions:replacedOptions];
 

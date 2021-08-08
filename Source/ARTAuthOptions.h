@@ -9,17 +9,17 @@
 
 #import <Ably/ARTTypes.h>
 
-@class ARTTokenDetails;
 @class ARTAuth;
+@class ARTTokenDetails;
+
+NS_ASSUME_NONNULL_BEGIN
 
 @protocol ARTTokenDetailsCompatible <NSObject>
-- (void)toTokenDetails:(ARTAuth *_Nonnull)auth callback:(void (^_Nonnull)(ARTTokenDetails *_Nullable, NSError *_Nullable))callback;
+- (void)toTokenDetails:(ARTAuth *)auth callback:(ARTTokenDetailsCallback)callback;
 @end
 
 @interface NSString (ARTTokenDetailsCompatible) <ARTTokenDetailsCompatible>
 @end
-
-NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTAuthOptions : NSObject<NSCopying>
 
@@ -43,7 +43,7 @@ NS_ASSUME_NONNULL_BEGIN
  
  This enables a client to obtain token requests from another entity, so tokens can be renewed without the client requiring access to keys.
  */
-@property (nonatomic, copy, nullable) void (^authCallback)(ARTTokenParams *, void(^)(id<ARTTokenDetailsCompatible> _Nullable, NSError *_Nullable));
+@property (nonatomic, copy, nullable) ARTAuthCallback authCallback;
 
 /**
  A URL to queryto obtain a signed token request.
