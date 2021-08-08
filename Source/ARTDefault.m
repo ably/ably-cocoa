@@ -164,10 +164,10 @@ static NSInteger _maxMessageSize = 65536;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         NSOperatingSystemVersion version = [[NSProcessInfo processInfo] operatingSystemVersion];
-        versionString = [NSString stringWithFormat:@"%u.%u.%u",
-                         conformVersionComponent(version.majorVersion),
-                         conformVersionComponent(version.minorVersion),
-                         conformVersionComponent(version.patchVersion)];
+        versionString = [NSString stringWithFormat:@"%lu.%lu.%lu",
+             (unsigned long)conformVersionComponent(version.majorVersion),
+             (unsigned long)conformVersionComponent(version.minorVersion),
+             (unsigned long)conformVersionComponent(version.patchVersion)];
     });
     return versionString;
 }
