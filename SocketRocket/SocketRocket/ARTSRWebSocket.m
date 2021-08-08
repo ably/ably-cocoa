@@ -20,6 +20,7 @@
 #endif
 
 #import <libkern/OSAtomic.h>
+@import Darwin.os.lock;
 
 #import "ARTSRDelegateController.h"
 #import "ARTSRIOConsumer.h"
@@ -85,7 +86,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 
 @implementation ARTSRWebSocket {
     ARTSRMutex _kvoLock;
-    OSSpinLock _propertyLock;
+    os_unfair_lock _propertyLock;
 
     dispatch_queue_t _workQueue;
     NSMutableArray<ARTSRIOConsumer *> *_consumers;
@@ -160,7 +161,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 
     _readyState = ARTSR_CONNECTING;
 
-    _propertyLock = OS_SPINLOCK_INIT;
+    _propertyLock = OS_UNFAIR_LOCK_INIT;
     _kvoLock = ARTSRMutexInitRecursive();
     _workQueue = dispatch_queue_create(NULL, DISPATCH_QUEUE_SERIAL);
 
@@ -282,9 +283,9 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
         ARTSRMutexLock(_kvoLock);
         if (_readyState != readyState) {
             [self willChangeValueForKey:@"readyState"];
-            OSSpinLockLock(&_propertyLock);
+            os_unfair_lock_lock(&_propertyLock);
             _readyState = readyState;
-            OSSpinLockUnlock(&_propertyLock);
+            os_unfair_lock_unlock(&_propertyLock);
             [self didChangeValueForKey:@"readyState"];
         }
     }
@@ -296,9 +297,9 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 - (ARTSRReadyState)readyState
 {
     ARTSRReadyState state = 0;
-    OSSpinLockLock(&_propertyLock);
+    os_unfair_lock_lock(&_propertyLock);
     state = _readyState;
-    OSSpinLockUnlock(&_propertyLock);
+    os_unfair_lock_unlock(&_propertyLock);
     return state;
 }
 
