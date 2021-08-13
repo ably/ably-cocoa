@@ -118,7 +118,7 @@
 
 - (BOOL)get:(ARTPresenceQuery *)query callback:(ARTPaginatedPresenceCallback)callback error:(NSError **)errorPtr {
     if (callback) {
-        void (^userCallback)(ARTPaginatedResult<ARTPresenceMessage *> *, ARTErrorInfo *) = callback;
+        ARTPaginatedPresenceCallback userCallback = callback;
         callback = ^(ARTPaginatedResult<ARTPresenceMessage *> *m, ARTErrorInfo *e) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(m, e);
