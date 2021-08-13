@@ -20,6 +20,6 @@ Pod::Spec.new do |s|
   s.private_header_files    = 'Source/*+Private.h', 'SocketRocket/SocketRocket/internal/**/*.h'
   s.exclude_files           = 'Source/include/', 'Source/PrivateHeaders/'
   s.module_map              = 'Source/Ably.modulemap'
-  s.dependency 'msgpack', '0.3.1'
-  s.dependency 'AblyDeltaCodec', '1.2.0'
+  s.dependency 'msgpack', '0.4.0'
+  s.dependency 'AblyDeltaCodec', '1.3.1'
 end
