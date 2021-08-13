@@ -55,8 +55,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)unsubscribe:(ARTEventListener *)listener;
 - (void)unsubscribe:(ARTPresenceAction)action listener:(ARTEventListener *)listener;
 
-- (void)history:(void(^)(ARTPaginatedResult<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback;
-- (BOOL)history:(ARTRealtimeHistoryQuery *_Nullable)query callback:(void(^)(ARTPaginatedResult<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback error:(NSError *_Nullable *_Nullable)errorPtr;
+- (void)history:(ARTPaginatedPresenceCallback)callback;
+- (BOOL)history:(ARTRealtimeHistoryQuery *_Nullable)query callback:(ARTPaginatedPresenceCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
 @end
 

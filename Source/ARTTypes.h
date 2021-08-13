@@ -240,12 +240,14 @@ typedef NSDictionary<NSString *, NSString *> NSStringDictionary;
  Either result/response or error can be nil but not both.
  */
 typedef void (^ARTCompletionHandler)(id _Nullable result, NSError *_Nullable error);
-typedef void (^ARTURLRequestCallback)(NSHTTPURLResponse *_Nullable response, NSData *_Nullable data, NSError *_Nullable error);
-typedef void (^ARTHTTPPaginatedCallback)(ARTHTTPPaginatedResponse *_Nullable response, ARTErrorInfo *_Nullable error);
-typedef void (^ARTPaginatedStatsCallback)(ARTPaginatedResult<ARTStats *> *_Nullable response, ARTErrorInfo *_Nullable error);
-typedef void (^ARTTokenDetailsCallback)(ARTTokenDetails *_Nullable response, NSError *_Nullable error);
+typedef void (^ARTURLRequestCallback)(NSHTTPURLResponse *_Nullable result, NSData *_Nullable data, NSError *_Nullable error);
+typedef void (^ARTTokenDetailsCallback)(ARTTokenDetails *_Nullable result, NSError *_Nullable error);
 typedef void (^ARTTokenDetailsCompatibleCallback)(id<ARTTokenDetailsCompatible> _Nullable result, NSError *_Nullable error);
 typedef void (^ARTAuthCallback)(ARTTokenParams *params, ARTTokenDetailsCompatibleCallback callback);
+
+typedef void (^ARTHTTPPaginatedCallback)(ARTHTTPPaginatedResponse *_Nullable response, ARTErrorInfo *_Nullable error);
+typedef void (^ARTPaginatedStatsCallback)(ARTPaginatedResult<ARTStats *> *_Nullable result, ARTErrorInfo *_Nullable error);
+typedef void (^ARTPaginatedPresenceCallback)(ARTPaginatedResult<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error);
 
 #pragma mark - Functions
 
