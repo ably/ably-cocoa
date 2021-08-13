@@ -31,7 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)unsubscribeClient:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback;
 
 - (BOOL)listSubscriptions:(NSStringDictionary *)params
-                 callback:(void(^)(ARTPaginatedResult<ARTPushChannelSubscription *> *_Nullable, ARTErrorInfo *_Nullable))callback
+                 callback:(ARTPaginatedPushChannelCallback)callback
                     error:(NSError *_Nullable *_Nullable)errorPtr;
 
 @end

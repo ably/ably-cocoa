@@ -21,6 +21,7 @@
 @class ARTHTTPPaginatedResponse;
 @class ARTPaginatedResult<ItemType>;
 @class ARTStats;
+@class ARTPushChannelSubscription;
 @protocol ARTTokenDetailsCompatible;
 
 // More context
@@ -248,6 +249,8 @@ typedef void (^ARTAuthCallback)(ARTTokenParams *params, ARTTokenDetailsCompatibl
 typedef void (^ARTHTTPPaginatedCallback)(ARTHTTPPaginatedResponse *_Nullable response, ARTErrorInfo *_Nullable error);
 typedef void (^ARTPaginatedStatsCallback)(ARTPaginatedResult<ARTStats *> *_Nullable result, ARTErrorInfo *_Nullable error);
 typedef void (^ARTPaginatedPresenceCallback)(ARTPaginatedResult<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error);
+typedef void (^ARTPaginatedPushChannelCallback)(ARTPaginatedResult<ARTPushChannelSubscription *> *_Nullable result, ARTErrorInfo *_Nullable error);
+
 
 #pragma mark - Functions
 

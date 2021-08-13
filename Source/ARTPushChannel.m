@@ -64,7 +64,7 @@
 }
 
 - (BOOL)listSubscriptions:(NSStringDictionary *)params
-                 callback:(void(^)(ARTPaginatedResult<ARTPushChannelSubscription *> *_Nullable, ARTErrorInfo *_Nullable))callback
+                 callback:(ARTPaginatedPushChannelCallback)callback
                     error:(NSError *_Nullable *_Nullable)errorPtr {
     return [_internal listSubscriptions:params callback:callback error:errorPtr];
 }
@@ -254,10 +254,10 @@ dispatch_async(_queue, ^{
 }
 
 - (BOOL)listSubscriptions:(NSStringDictionary *)params
-                 callback:(void(^)(ARTPaginatedResult<ARTPushChannelSubscription *> *_Nullable, ARTErrorInfo *_Nullable))callback
+                 callback:(ARTPaginatedPushChannelCallback)callback
                     error:(NSError * __autoreleasing *)errorPtr {
     if (callback) {
-        void (^userCallback)(ARTPaginatedResult<ARTPushChannelSubscription *> *result, ARTErrorInfo *error) = callback;
+        ARTPaginatedPushChannelCallback userCallback = callback;
         callback = ^(ARTPaginatedResult<ARTPushChannelSubscription *> *result, ARTErrorInfo *error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(result, error);

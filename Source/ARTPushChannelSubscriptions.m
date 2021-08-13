@@ -39,7 +39,7 @@
     [_internal listChannels:callback];
 }
 
-- (void)list:(NSStringDictionary *)params callback:(void (^)(ARTPaginatedResult<ARTPushChannelSubscription *> *_Nullable,  ARTErrorInfo *_Nullable))callback {
+- (void)list:(NSStringDictionary *)params callback:(ARTPaginatedPushChannelCallback)callback {
     [_internal list:params callback:callback];
 }
 
@@ -138,7 +138,7 @@ dispatch_async(_queue, ^{
 });
 }
 
-- (void)list:(NSStringDictionary *)params callback:(void (^)(ARTPaginatedResult<ARTPushChannelSubscription *> *result, ARTErrorInfo *error))callback {
+- (void)list:(NSStringDictionary *)params callback:(ARTPaginatedPushChannelCallback)callback {
     if (callback) {
         void (^userCallback)(ARTPaginatedResult *, ARTErrorInfo *error) = callback;
         callback = ^(ARTPaginatedResult *result, ARTErrorInfo *error) {
