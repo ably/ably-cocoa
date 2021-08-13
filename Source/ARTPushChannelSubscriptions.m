@@ -35,7 +35,7 @@
     [_internal save:channelSubscription callback:callback];
 }
 
-- (void)listChannels:(void (^)(ARTPaginatedResult<NSString *> *_Nullable,  ARTErrorInfo *_Nullable))callback {
+- (void)listChannels:(ARTPaginatedTextCallback)callback {
     [_internal listChannels:callback];
 }
 
@@ -116,7 +116,7 @@ dispatch_async(_queue, ^{
 });
 }
 
-- (void)listChannels:(void (^)(ARTPaginatedResult<NSString *> * _Nullable, ARTErrorInfo *error))callback {
+- (void)listChannels:(ARTPaginatedTextCallback)callback {
     if (callback) {
         void (^userCallback)(ARTPaginatedResult *, ARTErrorInfo *error) = callback;
         callback = ^(ARTPaginatedResult *result, ARTErrorInfo *error) {

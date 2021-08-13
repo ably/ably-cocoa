@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)save:(ARTPushChannelSubscription *)channelSubscription callback:(void (^)(ARTErrorInfo *_Nullable))callback;
 
-- (void)listChannels:(void (^)(ARTPaginatedResult<NSString *> *_Nullable,  ARTErrorInfo *_Nullable))callback;
+- (void)listChannels:(ARTPaginatedTextCallback)callback;
 
 - (void)list:(NSStringDictionary *)params callback:(ARTPaginatedPushChannelCallback)callback;
 
