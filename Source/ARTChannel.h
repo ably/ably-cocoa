@@ -41,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)publish:(NSArray<ARTMessage *> *)messages;
 - (void)publish:(NSArray<ARTMessage *> *)messages callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback;
 
-- (void)history:(void(^)(ARTPaginatedResult<ARTMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback;
+- (void)history:(ARTPaginatedMessagesCallback)callback;
 
 @end
 
