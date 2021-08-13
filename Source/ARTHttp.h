@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol ARTHTTPExecutor
 
 - (ARTLog *)logger;
-- (nullable NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request completion:(nullable void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback;
+- (nullable NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request completion:(nullable ARTURLRequestCallback)callback;
 
 @end
 
@@ -30,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (id<ARTEncoder>)defaultEncoder;
 
-- (nullable NSObject<ARTCancellable> *)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData * _Nullable, NSError * _Nullable))callback;
+- (nullable NSObject<ARTCancellable> *)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(ARTURLRequestCallback)callback;
 
 @end
 
