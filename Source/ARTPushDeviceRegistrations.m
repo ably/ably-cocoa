@@ -40,7 +40,7 @@
     [_internal get:deviceId callback:callback];
 }
 
-- (void)list:(NSStringDictionary *)params callback:(void (^)(ARTPaginatedResult<ARTDeviceDetails *> *_Nullable,  ARTErrorInfo *_Nullable))callback {
+- (void)list:(NSStringDictionary *)params callback:(ARTPaginatedDeviceDetailsCallback)callback {
     [_internal list:params callback:callback];
 }
 
@@ -177,7 +177,7 @@ dispatch_async(_queue, ^{
 });
 }
 
-- (void)list:(NSStringDictionary *)params callback:(void (^)(ARTPaginatedResult<ARTDeviceDetails *> *result, ARTErrorInfo *error))callback {
+- (void)list:(NSStringDictionary *)params callback:(ARTPaginatedDeviceDetailsCallback)callback {
     if (callback) {
         void (^userCallback)(ARTPaginatedResult *, ARTErrorInfo *error) = callback;
         callback = ^(ARTPaginatedResult *result, ARTErrorInfo *error) {

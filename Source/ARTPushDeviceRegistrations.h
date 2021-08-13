@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)get:(ARTDeviceId *)deviceId callback:(void (^)(ARTDeviceDetails *_Nullable,  ARTErrorInfo *_Nullable))callback;
 
-- (void)list:(NSStringDictionary *)params callback:(void (^)(ARTPaginatedResult<ARTDeviceDetails *> *_Nullable,  ARTErrorInfo *_Nullable))callback;
+- (void)list:(NSStringDictionary *)params callback:(ARTPaginatedDeviceDetailsCallback)callback;
 
 - (void)remove:(NSString *)deviceId callback:(void (^)(ARTErrorInfo *_Nullable))callback;
 - (void)removeWhere:(NSStringDictionary *)params callback:(void (^)(ARTErrorInfo *_Nullable))callback;
