@@ -19,11 +19,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonatomic) NSMutableArray *sentCallbacks;
 @property (readonly, strong, nonatomic) NSMutableArray *ackCallbacks;
 
-- (instancetype)initWithProtocolMessage:(ARTProtocolMessage *)msg sentCallback:(nullable void (^)(ARTErrorInfo *_Nullable))sentCallback ackCallback:(nullable void (^)(ARTStatus *))ackCallback;
+- (instancetype)initWithProtocolMessage:(ARTProtocolMessage *)msg sentCallback:(nullable ARTCallback)sentCallback ackCallback:(nullable void (^)(ARTStatus *))ackCallback;
 
-- (BOOL)mergeFrom:(ARTProtocolMessage *)msg sentCallback:(nullable void (^)(ARTErrorInfo *_Nullable))sentCallback ackCallback:(nullable void (^)(ARTStatus *))ackCallback;
+- (BOOL)mergeFrom:(ARTProtocolMessage *)msg sentCallback:(nullable ARTCallback)sentCallback ackCallback:(nullable void (^)(ARTStatus *))ackCallback;
 
-- (void (^)(ARTErrorInfo *))sentCallback;
+- (ARTCallback)sentCallback;
 - (void (^)(ARTStatus *))ackCallback;
 
 @end

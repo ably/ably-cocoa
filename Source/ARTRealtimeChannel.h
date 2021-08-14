@@ -31,15 +31,15 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nullable, getter=getOptions) ARTRealtimeChannelOptions *options;
 
 - (void)attach;
-- (void)attach:(nullable void (^)(ARTErrorInfo *_Nullable))callback;
+- (void)attach:(nullable ARTCallback)callback;
 
 - (void)detach;
-- (void)detach:(nullable void (^)(ARTErrorInfo *_Nullable))callback;
+- (void)detach:(nullable ARTCallback)callback;
 
 - (ARTEventListener *_Nullable)subscribe:(void (^)(ARTMessage *message))callback;
-- (ARTEventListener *_Nullable)subscribeWithAttachCallback:(nullable void (^)(ARTErrorInfo *_Nullable))onAttach callback:(void (^)(ARTMessage *message))cb;
+- (ARTEventListener *_Nullable)subscribeWithAttachCallback:(nullable ARTCallback)onAttach callback:(void (^)(ARTMessage *message))cb;
 - (ARTEventListener *_Nullable)subscribe:(NSString *)name callback:(void (^)(ARTMessage *message))cb;
-- (ARTEventListener *_Nullable)subscribe:(NSString *)name onAttach:(nullable void (^)(ARTErrorInfo *_Nullable))onAttach callback:(void (^)(ARTMessage *message))cb;
+- (ARTEventListener *_Nullable)subscribe:(NSString *)name onAttach:(nullable ARTCallback)onAttach callback:(void (^)(ARTMessage *message))cb;
 
 - (void)unsubscribe;
 - (void)unsubscribe:(ARTEventListener *_Nullable)listener;
@@ -47,7 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)history:(ARTRealtimeHistoryQuery *_Nullable)query callback:(ARTPaginatedMessagesCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
-- (void)setOptions:(ARTRealtimeChannelOptions *_Nullable)options callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb;
+- (void)setOptions:(ARTRealtimeChannelOptions *_Nullable)options callback:(nullable ARTCallback)cb;
 
 ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
 

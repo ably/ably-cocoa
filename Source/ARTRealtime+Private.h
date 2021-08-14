@@ -118,7 +118,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setReachabilityClass:(Class _Nullable)reachabilityClass;
 
 // Message sending
-- (void)send:(ARTProtocolMessage *)msg sentCallback:(nullable void (^)(ARTErrorInfo *_Nullable))sentCallback ackCallback:(nullable void (^)(ARTStatus *))ackCallback;
+- (void)send:(ARTProtocolMessage *)msg sentCallback:(nullable ARTCallback)sentCallback ackCallback:(nullable void (^)(ARTStatus *))ackCallback;
 
 @end
 

@@ -255,6 +255,8 @@ typedef void (^ARTPaginatedMessagesCallback)(ARTPaginatedResult<ARTMessage *> *_
 typedef void (^ARTPaginatedDeviceDetailsCallback)(ARTPaginatedResult<ARTDeviceDetails *> *_Nullable result, ARTErrorInfo *_Nullable error);
 typedef void (^ARTPaginatedTextCallback)(ARTPaginatedResult<NSString *> *_Nullable result, ARTErrorInfo *_Nullable error);
 
+typedef void (^ARTCallback)(ARTErrorInfo *_Nullable error);
+
 #pragma mark - Functions
 
 /**

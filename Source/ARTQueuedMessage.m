@@ -13,7 +13,7 @@
 
 @implementation ARTQueuedMessage
 
-- (instancetype)initWithProtocolMessage:(ARTProtocolMessage *)msg sentCallback:(void (^)(ARTErrorInfo *))sentCallback ackCallback:(void (^)(ARTStatus *))ackCallback {
+- (instancetype)initWithProtocolMessage:(ARTProtocolMessage *)msg sentCallback:(ARTCallback)sentCallback ackCallback:(void (^)(ARTStatus *))ackCallback {
     self = [super init];
     if (self) {
         _msg = msg;
@@ -33,7 +33,7 @@
     return [self.msg description];
 }
 
-- (BOOL)mergeFrom:(ARTProtocolMessage *)msg sentCallback:(void (^)(ARTErrorInfo *))sentCallback ackCallback:(void (^)(ARTStatus *))ackCallback {
+- (BOOL)mergeFrom:(ARTProtocolMessage *)msg sentCallback:(ARTCallback)sentCallback ackCallback:(void (^)(ARTStatus *))ackCallback {
     if ([self.msg mergeFrom:msg]) {
         if (sentCallback) {
             [self.sentCallbacks addObject:sentCallback];
@@ -46,9 +46,9 @@
     return NO;
 }
 
-- (void (^)(ARTErrorInfo *))sentCallback {
+- (ARTCallback)sentCallback {
     return ^(ARTErrorInfo *error) {
-        for (void (^cb)(ARTErrorInfo *) in self.sentCallbacks) {
+        for (ARTCallback cb in self.sentCallbacks) {
             cb(error);
         }
     };

@@ -65,7 +65,7 @@
     [self publish:name data:data callback:nil];
 }
 
-- (void)publish:(art_nullable NSString *)name data:(art_nullable id)data callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback {
+- (void)publish:(art_nullable NSString *)name data:(art_nullable id)data callback:(art_nullable ARTCallback)callback {
     [self publish:name data:data extras:nil callback:callback];
 }
 
@@ -73,7 +73,7 @@
     [self publish:name data:data extras:extras callback:nil];
 }
 
-- (void)publish:(art_nullable NSString *)name data:(art_nullable id)data extras:(id<ARTJsonCompatible>)extras callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback {
+- (void)publish:(art_nullable NSString *)name data:(art_nullable id)data extras:(id<ARTJsonCompatible>)extras callback:(art_nullable ARTCallback)callback {
     [self publish:name message:[[ARTMessage alloc] initWithName:name data:data] extras:extras callback:callback];
 }
 
@@ -85,15 +85,15 @@
     [self publish:name data:data clientId:clientId extras:extras callback:nil];
 }
 
-- (void)publish:(NSString *)name data:(id)data clientId:(NSString *)clientId callback:(void (^)(ARTErrorInfo * _Nullable))callback {
+- (void)publish:(NSString *)name data:(id)data clientId:(NSString *)clientId callback:(ARTCallback)callback {
     [self publish:name data:data clientId:(NSString *)clientId extras:nil callback:callback];
 }
 
-- (void)publish:(NSString *)name data:(id)data clientId:(NSString *)clientId extras:(id<ARTJsonCompatible>)extras callback:(void (^)(ARTErrorInfo * _Nullable))callback {
+- (void)publish:(NSString *)name data:(id)data clientId:(NSString *)clientId extras:(id<ARTJsonCompatible>)extras callback:(ARTCallback)callback {
     [self publish:name message:[[ARTMessage alloc] initWithName:name data:data clientId:clientId] extras:extras callback:callback];
 }
 
-- (void)publish:(NSString *)name message:(ARTMessage *)message extras:(id<ARTJsonCompatible>)extras callback:(void (^)(ARTErrorInfo * _Nullable))callback {
+- (void)publish:(NSString *)name message:(ARTMessage *)message extras:(id<ARTJsonCompatible>)extras callback:(ARTCallback)callback {
     NSError *error = nil;
     message.extras = extras;
     ARTMessage *messagesWithDataEncoded = [self encodeMessageIfNeeded:message error:&error];
@@ -119,7 +119,7 @@
     [self publish:messages callback:nil];
 }
 
-- (void)publish:(__GENERIC(NSArray, ARTMessage *) *)messages callback:(art_nullable void (^)(ARTErrorInfo *__art_nullable error))callback {
+- (void)publish:(__GENERIC(NSArray, ARTMessage *) *)messages callback:(art_nullable ARTCallback)callback {
     NSError *error = nil;
 
     NSMutableArray<ARTMessage *> *messagesWithDataEncoded = [NSMutableArray new];
@@ -171,7 +171,7 @@
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
 }
 
-- (void)internalPostMessages:(id)data callback:(void (^)(ARTErrorInfo *__art_nullable error))callback {
+- (void)internalPostMessages:(id)data callback:(ARTCallback)callback {
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
 }
 

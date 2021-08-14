@@ -138,7 +138,7 @@
     [_internal time:cb];
 }
 
-- (void)ping:(void (^)(ARTErrorInfo *_Nullable))cb {
+- (void)ping:(ARTCallback)cb {
     [_internal ping:cb];
 }
 
@@ -430,9 +430,9 @@
     [self.rest time:cb];
 }
 
-- (void)ping:(void (^)(ARTErrorInfo *)) cb {
+- (void)ping:(ARTCallback) cb {
     if (cb) {
-        void (^userCallback)(ARTErrorInfo *_Nullable error) = cb;
+        ARTCallback userCallback = cb;
         cb = ^(ARTErrorInfo *_Nullable error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
@@ -1145,7 +1145,7 @@
     return [self shouldQueueEvents] || [self shouldSendEvents];
 }
 
-- (void)sendImpl:(ARTProtocolMessage *)pm sentCallback:(void (^)(ARTErrorInfo *))sentCallback ackCallback:(void (^)(ARTStatus *))ackCallback {
+- (void)sendImpl:(ARTProtocolMessage *)pm sentCallback:(ARTCallback)sentCallback ackCallback:(void (^)(ARTStatus *))ackCallback {
     if (pm.ackRequired) {
         pm.msgSerial = [NSNumber numberWithLongLong:self.msgSerial];
     }
@@ -1183,7 +1183,7 @@
     }
 }
 
-- (void)send:(ARTProtocolMessage *)msg sentCallback:(void (^)(ARTErrorInfo *))sentCallback ackCallback:(void (^)(ARTStatus *))ackCallback {
+- (void)send:(ARTProtocolMessage *)msg sentCallback:(ARTCallback)sentCallback ackCallback:(void (^)(ARTStatus *))ackCallback {
     if ([self shouldSendEvents]) {
         [self sendImpl:msg sentCallback:sentCallback ackCallback:ackCallback];
     }

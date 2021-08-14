@@ -203,7 +203,7 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
     [_syncEventEmitter once:[ARTEvent newWithPresenceSyncState:ARTPresenceSyncEnded] callback:callback];
 }
 
-- (void)onceSyncFails:(void (^)(ARTErrorInfo *))callback {
+- (void)onceSyncFails:(ARTCallback)callback {
     [_syncEventEmitter once:[ARTEvent newWithPresenceSyncState:ARTPresenceSyncFailed] callback:callback];
 }
 

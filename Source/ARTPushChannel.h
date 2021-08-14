@@ -21,14 +21,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init NS_UNAVAILABLE;
 
 - (void)subscribeDevice;
-- (void)subscribeDevice:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback;
+- (void)subscribeDevice:(nullable ARTCallback)callback;
 - (void)subscribeClient;
-- (void)subscribeClient:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback;
+- (void)subscribeClient:(nullable ARTCallback)callback;
 
 - (void)unsubscribeDevice;
-- (void)unsubscribeDevice:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback;
+- (void)unsubscribeDevice:(nullable ARTCallback)callback;
 - (void)unsubscribeClient;
-- (void)unsubscribeClient:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback;
+- (void)unsubscribeClient:(nullable ARTCallback)callback;
 
 - (BOOL)listSubscriptions:(NSStringDictionary *)params
                  callback:(ARTPaginatedPushChannelCallback)callback

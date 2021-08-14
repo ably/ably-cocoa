@@ -28,7 +28,7 @@
     return self;
 }
 
-- (void)publish:(ARTPushRecipient *)recipient data:(ARTJsonObject *)data callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback {
+- (void)publish:(ARTPushRecipient *)recipient data:(ARTJsonObject *)data callback:(nullable ARTCallback)callback {
     [_internal publish:recipient data:data callback:callback];
 }
 
@@ -61,9 +61,9 @@
     return self;
 }
 
-- (void)publish:(ARTPushRecipient *)recipient data:(ARTJsonObject *)data callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback {
+- (void)publish:(ARTPushRecipient *)recipient data:(ARTJsonObject *)data callback:(nullable ARTCallback)callback {
     if (callback) {
-        void (^userCallback)(ARTErrorInfo *error) = callback;
+        ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);

@@ -48,7 +48,7 @@
  Optional method.
  If you want to deactivate devices from your server, then you should implement this method (including the `ablyPushCustomRegister:deviceDetails:callback` method) where the network request completion should call the callback argument to continue with the registration process.
  */
-- (void)ablyPushCustomDeregister:(nullable ARTErrorInfo *)error deviceId:(nonnull ARTDeviceId *)deviceId callback:(void (^ _Nullable)(ARTErrorInfo * _Nullable))callback;
+- (void)ablyPushCustomDeregister:(nullable ARTErrorInfo *)error deviceId:(nonnull ARTDeviceId *)deviceId callback:(ARTCallback)callback;
 
 @end
 

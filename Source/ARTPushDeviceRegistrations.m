@@ -32,7 +32,7 @@
     return self;
 }
 
-- (void)save:(ARTDeviceDetails *)deviceDetails callback:(void (^)(ARTErrorInfo *_Nullable))callback {
+- (void)save:(ARTDeviceDetails *)deviceDetails callback:(ARTCallback)callback {
     [_internal save:deviceDetails callback:callback];
 }
 
@@ -44,11 +44,11 @@
     [_internal list:params callback:callback];
 }
 
-- (void)remove:(NSString *)deviceId callback:(void (^)(ARTErrorInfo *_Nullable))callback {
+- (void)remove:(NSString *)deviceId callback:(ARTCallback)callback {
     [_internal remove:deviceId callback:callback];
 }
 
-- (void)removeWhere:(NSStringDictionary *)params callback:(void (^)(ARTErrorInfo *_Nullable))callback {
+- (void)removeWhere:(NSStringDictionary *)params callback:(ARTCallback)callback {
     [_internal removeWhere:params callback:callback];
 }
 
@@ -71,9 +71,9 @@
     return self;
 }
 
-- (void)save:(ARTDeviceDetails *)deviceDetails callback:(void (^)(ARTErrorInfo *error))callback {
+- (void)save:(ARTDeviceDetails *)deviceDetails callback:(ARTCallback)callback {
     if (callback) {
-        void (^userCallback)(ARTErrorInfo *error) = callback;
+        ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
@@ -200,9 +200,9 @@ dispatch_async(_queue, ^{
 });
 }
 
-- (void)remove:(NSString *)deviceId callback:(void (^)(ARTErrorInfo *error))callback {
+- (void)remove:(NSString *)deviceId callback:(ARTCallback)callback {
     if (callback) {
-        void (^userCallback)(ARTErrorInfo *error) = callback;
+        ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
@@ -238,9 +238,9 @@ dispatch_async(_queue, ^{
 });
 }
 
-- (void)removeWhere:(NSStringDictionary *)params callback:(void (^)(ARTErrorInfo *error))callback {
+- (void)removeWhere:(NSStringDictionary *)params callback:(ARTCallback)callback {
     if (callback) {
-        void (^userCallback)(ARTErrorInfo *error) = callback;
+        ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);

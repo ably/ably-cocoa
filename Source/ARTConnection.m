@@ -93,7 +93,7 @@
     return [_internal once:event callback:cb];
 }
 
-- (void)ping:(nonnull void (^)(ARTErrorInfo * _Nullable))cb {
+- (void)ping:(nonnull ARTCallback)cb {
     [_internal ping:cb];
 }
 
@@ -127,7 +127,7 @@
     [_realtime close];
 }
 
-- (void)ping:(void (^)(ARTErrorInfo *))cb {
+- (void)ping:(ARTCallback)cb {
     [_realtime ping:cb];
 }
 

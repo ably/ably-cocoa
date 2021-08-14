@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 // Swift ignores Objective-C generics and thinks this is returning an id, failing to compile.
 // Thus, we can't make ARTRealtimeChannels inherit from ARTChannels; we have to compose them instead.
 - (BOOL)exists:(NSString *)name;
-- (void)release:(NSString *)name callback:(nullable void (^)(ARTErrorInfo *_Nullable))errorInfo;
+- (void)release:(NSString *)name callback:(nullable ARTCallback)errorInfo;
 - (void)release:(NSString *)name;
 
 @end

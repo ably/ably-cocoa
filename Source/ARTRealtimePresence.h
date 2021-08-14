@@ -29,27 +29,27 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)get:(ARTRealtimePresenceQuery *)query callback:(void (^)(NSArray<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback;
 
 - (void)enter:(id _Nullable)data;
-- (void)enter:(id _Nullable)data callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb;
+- (void)enter:(id _Nullable)data callback:(nullable ARTCallback)cb;
 
 - (void)update:(id _Nullable)data;
-- (void)update:(id _Nullable)data callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb;
+- (void)update:(id _Nullable)data callback:(nullable ARTCallback)cb;
 
 - (void)leave:(id _Nullable)data;
-- (void)leave:(id _Nullable)data callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb;
+- (void)leave:(id _Nullable)data callback:(nullable ARTCallback)cb;
 
 - (void)enterClient:(NSString *)clientId data:(id _Nullable)data;
-- (void)enterClient:(NSString *)clientId data:(id _Nullable)data callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb;
+- (void)enterClient:(NSString *)clientId data:(id _Nullable)data callback:(nullable ARTCallback)cb;
 
 - (void)updateClient:(NSString *)clientId data:(id _Nullable)data;
-- (void)updateClient:(NSString *)clientId data:(id _Nullable)data callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb;
+- (void)updateClient:(NSString *)clientId data:(id _Nullable)data callback:(nullable ARTCallback)cb;
 
 - (void)leaveClient:(NSString *)clientId data:(id _Nullable)data;
-- (void)leaveClient:(NSString *)clientId data:(id _Nullable)data callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb;
+- (void)leaveClient:(NSString *)clientId data:(id _Nullable)data callback:(nullable ARTCallback)cb;
 
 - (ARTEventListener *_Nullable)subscribe:(void (^)(ARTPresenceMessage *message))callback;
-- (ARTEventListener *_Nullable)subscribeWithAttachCallback:(nullable void (^)(ARTErrorInfo *_Nullable))onAttach callback:(void (^)(ARTPresenceMessage *message))cb;
+- (ARTEventListener *_Nullable)subscribeWithAttachCallback:(nullable ARTCallback)onAttach callback:(void (^)(ARTPresenceMessage *message))cb;
 - (ARTEventListener *_Nullable)subscribe:(ARTPresenceAction)action callback:(void (^)(ARTPresenceMessage *message))cb;
-- (ARTEventListener *_Nullable)subscribe:(ARTPresenceAction)action onAttach:(nullable void (^)(ARTErrorInfo *_Nullable))onAttach callback:(void (^)(ARTPresenceMessage *message))cb;
+- (ARTEventListener *_Nullable)subscribe:(ARTPresenceAction)action onAttach:(nullable ARTCallback)onAttach callback:(void (^)(ARTPresenceMessage *message))cb;
 
 - (void)unsubscribe;
 - (void)unsubscribe:(ARTEventListener *)listener;

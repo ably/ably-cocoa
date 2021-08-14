@@ -35,7 +35,7 @@
     [_internal subscribeDevice];
 }
 
-- (void)subscribeDevice:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback {
+- (void)subscribeDevice:(ARTCallback)callback {
     [_internal subscribeDevice:callback];
 }
 
@@ -43,7 +43,7 @@
     [_internal subscribeClient];
 }
 
-- (void)subscribeClient:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback {
+- (void)subscribeClient:(ARTCallback)callback {
     [_internal subscribeClient:callback];
 }
 
@@ -51,7 +51,7 @@
     [_internal unsubscribeDevice];
 }
 
-- (void)unsubscribeDevice:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback {
+- (void)unsubscribeDevice:(ARTCallback)callback {
     [_internal unsubscribeDevice:callback];
 }
 
@@ -59,7 +59,7 @@
     [_internal unsubscribeClient];
 }
 
-- (void)unsubscribeClient:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback {
+- (void)unsubscribeClient:(ARTCallback)callback {
     [_internal unsubscribeClient:callback];
 }
 
@@ -111,9 +111,9 @@ const NSUInteger ARTDefaultLimit = 100;
     [self unsubscribeClient:nil];
 }
 
-- (void)subscribeDevice:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback {
+- (void)subscribeDevice:(ARTCallback)callback {
     if (callback) {
-        void (^userCallback)(ARTErrorInfo *_Nullable error) = callback;
+        ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *_Nullable error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
@@ -147,9 +147,9 @@ dispatch_async(_queue, ^{
 });
 }
 
-- (void)subscribeClient:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback {
+- (void)subscribeClient:(ARTCallback)callback {
     if (callback) {
-        void (^userCallback)(ARTErrorInfo *_Nullable error) = callback;
+        ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *_Nullable error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
@@ -181,9 +181,9 @@ dispatch_async(_queue, ^{
 });
 }
 
-- (void)unsubscribeDevice:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback {
+- (void)unsubscribeDevice:(ARTCallback)callback {
     if (callback) {
-        void (^userCallback)(ARTErrorInfo *_Nullable error) = callback;
+        ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *_Nullable error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
@@ -218,9 +218,9 @@ dispatch_async(_queue, ^{
 });
 }
 
-- (void)unsubscribeClient:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback {
+- (void)unsubscribeClient:(ARTCallback)callback {
     if (callback) {
-        void (^userCallback)(ARTErrorInfo *_Nullable error) = callback;
+        ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *_Nullable error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
@@ -305,7 +305,7 @@ dispatch_sync(_queue, ^{
     return ret;
 }
 
-- (ARTLocalDevice *)getDevice:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback {
+- (ARTLocalDevice *)getDevice:(ARTCallback)callback {
     #if TARGET_OS_IOS
     ARTLocalDevice *device = [_rest device_nosync];
     #else
@@ -317,7 +317,7 @@ dispatch_sync(_queue, ^{
     return device;
 }
 
-- (NSString *)getClientId:(void(^_Nullable)(ARTErrorInfo *_Nullable))callback {
+- (NSString *)getClientId:(ARTCallback)callback {
     ARTLocalDevice *device = [self getDevice:callback];
     if (![device isRegistered]) {
         return nil;
