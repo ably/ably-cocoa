@@ -41,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithKey:(NSString *)key;
 - (instancetype)initWithToken:(NSString *)tokenId;
 
-- (void)time:(void (^)(NSDate *_Nullable, NSError *_Nullable))callback;
+- (void)time:(ARTDateTimeCallback)callback;
 
 - (BOOL)request:(NSString *)method
            path:(NSString *)path

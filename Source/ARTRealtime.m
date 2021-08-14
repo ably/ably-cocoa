@@ -134,7 +134,7 @@
     return [[ARTRealtime alloc] initWithToken:tokenId];
 }
 
-- (void)time:(void (^)(NSDate *_Nullable, NSError *_Nullable))cb {
+- (void)time:(ARTDateTimeCallback)cb {
     [_internal time:cb];
 }
 
@@ -426,7 +426,7 @@
     }
 }
 
-- (void)time:(void(^)(NSDate *time, NSError *error))cb {
+- (void)time:(ARTDateTimeCallback)cb {
     [self.rest time:cb];
 }
 

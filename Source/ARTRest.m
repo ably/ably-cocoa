@@ -99,7 +99,7 @@
     return [[ARTRest alloc] initWithToken:tokenId];
 }
 
-- (void)time:(void (^)(NSDate *_Nullable, NSError *_Nullable))callback {
+- (void)time:(ARTDateTimeCallback)callback {
     [_internal time:callback];
 }
 
@@ -494,9 +494,9 @@
     return [NSString stringWithFormat:@"Bearer %@", tokenBase64];
 }
 
-- (void)time:(void(^)(NSDate *time, NSError *error))callback {
+- (void)time:(ARTDateTimeCallback)callback {
     if (callback) {
-        void (^userCallback)(NSDate *time, NSError *error) = callback;
+        ARTDateTimeCallback userCallback = callback;
         callback = ^(NSDate *time, NSError *error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(time, error);
@@ -508,7 +508,7 @@
     });
 }
 
-- (NSObject<ARTCancellable> *)_time:(void(^)(NSDate *time, NSError *error))callback {
+- (NSObject<ARTCancellable> *)_time:(ARTDateTimeCallback)callback {
     NSURL *requestUrl = [NSURL URLWithString:@"/time" relativeToURL:self.baseUrl];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl];
     request.HTTPMethod = @"GET";

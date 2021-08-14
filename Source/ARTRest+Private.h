@@ -56,7 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithOptions:(ARTClientOptions *)options realtime:(ARTRealtimeInternal *_Nullable)realtime;
 
-- (nullable NSObject<ARTCancellable> *)_time:(void (^)(NSDate *_Nullable, NSError *_Nullable))callback;
+- (nullable NSObject<ARTCancellable> *)_time:(ARTDateTimeCallback)callback;
 
 // MARK: ARTHTTPExecutor
 
