@@ -1155,11 +1155,11 @@ dispatch_sync(_queue, ^{
     return self.realtime.auth.clientId_nosync;
 }
 
-- (void)history:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, ARTErrorInfo *))callback {
+- (void)history:(ARTPaginatedMessagesCallback)callback {
     [self history:[[ARTRealtimeHistoryQuery alloc] init] callback:callback error:nil];
 }
 
-- (BOOL)history:(ARTRealtimeHistoryQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, ARTErrorInfo *))callback error:(NSError **)errorPtr {
+- (BOOL)history:(ARTRealtimeHistoryQuery *)query callback:(ARTPaginatedMessagesCallback)callback error:(NSError **)errorPtr {
     query.realtimeChannel = self;
     return [_restChannel history:query callback:callback error:errorPtr];
 }
