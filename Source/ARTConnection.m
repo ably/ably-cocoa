@@ -77,19 +77,19 @@
     [_internal off:event listener:listener];
 }
 
-- (nonnull ARTEventListener *)on:(nonnull void (^)(ARTConnectionStateChange * _Nullable))cb {
+- (nonnull ARTEventListener *)on:(nonnull ARTConnectionStateCallback)cb {
     return [_internal on:cb];
 }
 
-- (nonnull ARTEventListener *)on:(ARTRealtimeConnectionEvent)event callback:(nonnull void (^)(ARTConnectionStateChange * _Nullable))cb {
+- (nonnull ARTEventListener *)on:(ARTRealtimeConnectionEvent)event callback:(nonnull ARTConnectionStateCallback)cb {
     return [_internal on:event callback:cb];
 }
 
-- (nonnull ARTEventListener *)once:(nonnull void (^)(ARTConnectionStateChange * _Nullable))cb {
+- (nonnull ARTEventListener *)once:(nonnull ARTConnectionStateCallback)cb {
     return [_internal once:cb];
 }
 
-- (nonnull ARTEventListener *)once:(ARTRealtimeConnectionEvent)event callback:(nonnull void (^)(ARTConnectionStateChange * _Nullable))cb {
+- (nonnull ARTEventListener *)once:(ARTRealtimeConnectionEvent)event callback:(nonnull ARTConnectionStateCallback)cb {
     return [_internal once:event callback:cb];
 }
 
@@ -264,19 +264,19 @@ dispatch_sync(_queue, ^{
     }
 }
 
-- (ARTEventListener *)on:(ARTRealtimeConnectionEvent)event callback:(void (^)(ARTConnectionStateChange *))cb {
+- (ARTEventListener *)on:(ARTRealtimeConnectionEvent)event callback:(ARTConnectionStateCallback)cb {
     return [_eventEmitter on:[ARTEvent newWithConnectionEvent:event] callback:cb];
 }
 
-- (ARTEventListener *)on:(void (^)(ARTConnectionStateChange *))cb {
+- (ARTEventListener *)on:(ARTConnectionStateCallback)cb {
     return [_eventEmitter on:cb];
 }
 
-- (ARTEventListener *)once:(ARTRealtimeConnectionEvent)event callback:(void (^)(ARTConnectionStateChange *))cb {
+- (ARTEventListener *)once:(ARTRealtimeConnectionEvent)event callback:(ARTConnectionStateCallback)cb {
     return [_eventEmitter once:[ARTEvent newWithConnectionEvent:event] callback:cb];
 }
 
-- (ARTEventListener *)once:(void (^)(ARTConnectionStateChange *))cb {
+- (ARTEventListener *)once:(ARTConnectionStateCallback)cb {
     return [_eventEmitter once:cb];
 }
 
