@@ -249,6 +249,8 @@ typedef void (^ARTMessageCallback)(ARTMessage *message);
 typedef void (^ARTChannelStateCallback)(ARTChannelStateChange *stateChange);
 typedef void (^ARTConnectionStateCallback)(ARTConnectionStateChange *stateChange);
 typedef void (^ARTPresenceMessageCallback)(ARTPresenceMessage *message);
+typedef void (^ARTPresenceMessagesCallback)(NSArray<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error);
+
 typedef void (^ARTStatusCallback)(ARTStatus *status);
 typedef void (^ARTURLRequestCallback)(NSHTTPURLResponse *_Nullable result, NSData *_Nullable data, NSError *_Nullable error);
 typedef void (^ARTTokenDetailsCallback)(ARTTokenDetails *_Nullable result, NSError *_Nullable error);

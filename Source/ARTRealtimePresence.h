@@ -25,8 +25,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly) BOOL syncComplete;
 
-- (void)get:(void (^)(NSArray<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback;
-- (void)get:(ARTRealtimePresenceQuery *)query callback:(void (^)(NSArray<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback;
+- (void)get:(ARTPresenceMessagesCallback)callback;
+- (void)get:(ARTRealtimePresenceQuery *)query callback:(ARTPresenceMessagesCallback)callback;
 
 - (void)enter:(id _Nullable)data;
 - (void)enter:(id _Nullable)data callback:(nullable ARTCallback)cb;

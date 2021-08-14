@@ -50,11 +50,11 @@
     return _internal.syncComplete;
 }
 
-- (void)get:(void (^)(NSArray<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
+- (void)get:(ARTPresenceMessagesCallback)callback {
     [_internal get:callback];
 }
 
-- (void)get:(ARTRealtimePresenceQuery *)query callback:(void (^)(NSArray<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
+- (void)get:(ARTRealtimePresenceQuery *)query callback:(ARTPresenceMessagesCallback)callback {
     [_internal get:query callback:callback];
 }
 
@@ -163,13 +163,13 @@
     return self;
 }
 
-- (void)get:(void (^)(NSArray<ARTPresenceMessage *> *, ARTErrorInfo *))callback {
+- (void)get:(ARTPresenceMessagesCallback)callback {
     [self get:[[ARTRealtimePresenceQuery alloc] init] callback:callback];
 }
 
-- (void)get:(ARTRealtimePresenceQuery *)query callback:(void (^)(NSArray<ARTPresenceMessage *> *, ARTErrorInfo *))callback {
+- (void)get:(ARTRealtimePresenceQuery *)query callback:(ARTPresenceMessagesCallback)callback {
     if (callback) {
-        void (^userCallback)(NSArray<ARTPresenceMessage *> *, ARTErrorInfo *) = callback;
+        ARTPresenceMessagesCallback userCallback = callback;
         callback = ^(NSArray<ARTPresenceMessage *> *m, ARTErrorInfo *e) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(m, e);
