@@ -180,15 +180,15 @@
     return [_internal history:query callback:callback error:errorPtr];
 }
 
-- (ARTEventListener *)on:(void (^)(ARTChannelStateChange * _Nullable))cb {
+- (ARTEventListener *)on:(ARTChannelStateCallback)cb {
     return [_internal on:cb];
 }
 
-- (ARTEventListener *)once:(ARTChannelEvent)event callback:(void (^)(ARTChannelStateChange * _Nullable))cb {
+- (ARTEventListener *)once:(ARTChannelEvent)event callback:(ARTChannelStateCallback)cb {
     return [_internal once:event callback:cb];
 }
 
-- (ARTEventListener *)once:(void (^)(ARTChannelStateChange * _Nullable))cb {
+- (ARTEventListener *)once:(ARTChannelStateCallback)cb {
     return [_internal once:cb];
 }
 
@@ -204,7 +204,7 @@
     [_internal off];
 }
 
-- (nonnull ARTEventListener *)on:(ARTChannelEvent)event callback:(nonnull void (^)(ARTChannelStateChange * _Nullable))cb {
+- (nonnull ARTEventListener *)on:(ARTChannelEvent)event callback:(nonnull ARTChannelStateCallback)cb {
     return [_internal on:event callback:cb];
 }
 
@@ -558,19 +558,19 @@ dispatch_sync(_queue, ^{
 });
 }
 
-- (ARTEventListener *)on:(ARTChannelEvent)event callback:(void (^)(ARTChannelStateChange *))cb {
+- (ARTEventListener *)on:(ARTChannelEvent)event callback:(ARTChannelStateCallback)cb {
     return [self.statesEventEmitter on:[ARTEvent newWithChannelEvent:event] callback:cb];
 }
 
-- (ARTEventListener *)on:(void (^)(ARTChannelStateChange *))cb {
+- (ARTEventListener *)on:(ARTChannelStateCallback)cb {
     return [self.statesEventEmitter on:cb];
 }
 
-- (ARTEventListener *)once:(ARTChannelEvent)event callback:(void (^)(ARTChannelStateChange *))cb {
+- (ARTEventListener *)once:(ARTChannelEvent)event callback:(ARTChannelStateCallback)cb {
     return [self.statesEventEmitter once:[ARTEvent newWithChannelEvent:event] callback:cb];
 }
 
-- (ARTEventListener *)once:(void (^)(ARTChannelStateChange *))cb {
+- (ARTEventListener *)once:(ARTChannelStateCallback)cb {
     return [self.statesEventEmitter once:cb];
 }
 
