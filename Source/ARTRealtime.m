@@ -1145,7 +1145,7 @@
     return [self shouldQueueEvents] || [self shouldSendEvents];
 }
 
-- (void)sendImpl:(ARTProtocolMessage *)pm sentCallback:(ARTCallback)sentCallback ackCallback:(void (^)(ARTStatus *))ackCallback {
+- (void)sendImpl:(ARTProtocolMessage *)pm sentCallback:(ARTCallback)sentCallback ackCallback:(ARTStatusCallback)ackCallback {
     if (pm.ackRequired) {
         pm.msgSerial = [NSNumber numberWithLongLong:self.msgSerial];
     }
@@ -1183,7 +1183,7 @@
     }
 }
 
-- (void)send:(ARTProtocolMessage *)msg sentCallback:(ARTCallback)sentCallback ackCallback:(void (^)(ARTStatus *))ackCallback {
+- (void)send:(ARTProtocolMessage *)msg sentCallback:(ARTCallback)sentCallback ackCallback:(ARTStatusCallback)ackCallback {
     if ([self shouldSendEvents]) {
         [self sendImpl:msg sentCallback:sentCallback ackCallback:ackCallback];
     }

@@ -502,7 +502,7 @@ dispatch_sync(_queue, ^{
 });
 }
 
-- (void)addPendingPresence:(ARTProtocolMessage *)msg callback:(void (^)(ARTStatus *))cb {
+- (void)addPendingPresence:(ARTProtocolMessage *)msg callback:(ARTStatusCallback)cb {
     ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg sentCallback:nil ackCallback:cb];
     [_pendingPresence addObject:qm];
 }

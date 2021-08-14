@@ -242,6 +242,9 @@ typedef NSDictionary<NSString *, NSString *> NSStringDictionary;
  Either result/response or error can be nil but not both.
  */
 typedef void (^ARTCompletionHandler)(id _Nullable result, NSError *_Nullable error);
+typedef void (^ARTCallback)(ARTErrorInfo *_Nullable error);
+
+typedef void (^ARTStatusCallback)(ARTStatus *status);
 typedef void (^ARTURLRequestCallback)(NSHTTPURLResponse *_Nullable result, NSData *_Nullable data, NSError *_Nullable error);
 typedef void (^ARTTokenDetailsCallback)(ARTTokenDetails *_Nullable result, NSError *_Nullable error);
 typedef void (^ARTTokenDetailsCompatibleCallback)(id<ARTTokenDetailsCompatible> _Nullable result, NSError *_Nullable error);
@@ -254,8 +257,6 @@ typedef void (^ARTPaginatedPushChannelCallback)(ARTPaginatedResult<ARTPushChanne
 typedef void (^ARTPaginatedMessagesCallback)(ARTPaginatedResult<ARTMessage *> *_Nullable result, ARTErrorInfo *_Nullable error);
 typedef void (^ARTPaginatedDeviceDetailsCallback)(ARTPaginatedResult<ARTDeviceDetails *> *_Nullable result, ARTErrorInfo *_Nullable error);
 typedef void (^ARTPaginatedTextCallback)(ARTPaginatedResult<NSString *> *_Nullable result, ARTErrorInfo *_Nullable error);
-
-typedef void (^ARTCallback)(ARTErrorInfo *_Nullable error);
 
 #pragma mark - Functions
 

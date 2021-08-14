@@ -68,7 +68,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status;
 
 - (void)onChannelMessage:(ARTProtocolMessage *)message;
-- (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(void (^)(ARTStatus *))cb;
+- (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(ARTStatusCallback)cb;
 
 - (void)setAttached:(ARTProtocolMessage *)message;
 - (void)setDetached:(ARTProtocolMessage *)message;

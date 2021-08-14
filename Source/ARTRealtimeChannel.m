@@ -423,7 +423,7 @@ dispatch_sync(_queue, ^{
     } ackCallback:nil];
 }
 
-- (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(void (^)(ARTStatus *))cb {
+- (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(ARTStatusCallback)cb {
     switch (self.state_nosync) {
         case ARTRealtimeChannelSuspended:
         case ARTRealtimeChannelFailed: {
