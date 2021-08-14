@@ -241,7 +241,7 @@ typedef NSDictionary<NSString *, NSString *> NSStringDictionary;
  Signatures of completion handlers to improve readability and maintainability in properties and method parameters.
  Either result/response or error can be nil but not both.
  */
-typedef void (^ARTCompletionHandler)(id _Nullable result, NSError *_Nullable error);
+typedef void (^ARTResultCallback)(id _Nullable result, NSError *_Nullable error);
 typedef void (^ARTCallback)(ARTErrorInfo *_Nullable error);
 
 typedef void (^ARTStatusCallback)(ARTStatus *status);
@@ -272,6 +272,6 @@ typedef void (^ARTPaginatedTextCallback)(ARTPaginatedResult<NSString *> *_Nullab
  to invoke the callback. The wrapper will only work for as long as the returned
  instance remains allocated (i.e. has a strong reference to it somewhere).
  */
-NSObject<ARTCancellable> * artCancellableFromCallback(ARTCompletionHandler callback, _Nonnull ARTCompletionHandler *_Nonnull wrapper);
+NSObject<ARTCancellable> * artCancellableFromCallback(ARTResultCallback callback, _Nonnull ARTResultCallback *_Nonnull wrapper);
 
 NS_ASSUME_NONNULL_END
