@@ -46,10 +46,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)leaveClient:(NSString *)clientId data:(id _Nullable)data;
 - (void)leaveClient:(NSString *)clientId data:(id _Nullable)data callback:(nullable ARTCallback)cb;
 
-- (ARTEventListener *_Nullable)subscribe:(void (^)(ARTPresenceMessage *message))callback;
-- (ARTEventListener *_Nullable)subscribeWithAttachCallback:(nullable ARTCallback)onAttach callback:(void (^)(ARTPresenceMessage *message))cb;
-- (ARTEventListener *_Nullable)subscribe:(ARTPresenceAction)action callback:(void (^)(ARTPresenceMessage *message))cb;
-- (ARTEventListener *_Nullable)subscribe:(ARTPresenceAction)action onAttach:(nullable ARTCallback)onAttach callback:(void (^)(ARTPresenceMessage *message))cb;
+- (ARTEventListener *_Nullable)subscribe:(ARTPresenceMessageCallback)callback;
+- (ARTEventListener *_Nullable)subscribeWithAttachCallback:(nullable ARTCallback)onAttach callback:(ARTPresenceMessageCallback)cb;
+- (ARTEventListener *_Nullable)subscribe:(ARTPresenceAction)action callback:(ARTPresenceMessageCallback)cb;
+- (ARTEventListener *_Nullable)subscribe:(ARTPresenceAction)action onAttach:(nullable ARTCallback)onAttach callback:(ARTPresenceMessageCallback)cb;
 
 - (void)unsubscribe;
 - (void)unsubscribe:(ARTEventListener *)listener;

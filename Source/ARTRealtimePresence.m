@@ -106,19 +106,19 @@
     [_internal leaveClient:clientId data:data callback:cb];
 }
 
-- (ARTEventListener *_Nullable)subscribe:(void (^)(ARTPresenceMessage *message))callback {
+- (ARTEventListener *_Nullable)subscribe:(ARTPresenceMessageCallback)callback {
     return [_internal subscribe:callback];
 }
 
-- (ARTEventListener *_Nullable)subscribeWithAttachCallback:(nullable ARTCallback)onAttach callback:(void (^)(ARTPresenceMessage *message))cb {
+- (ARTEventListener *_Nullable)subscribeWithAttachCallback:(nullable ARTCallback)onAttach callback:(ARTPresenceMessageCallback)cb {
     return [_internal subscribeWithAttachCallback:onAttach callback:cb];
 }
 
-- (ARTEventListener *_Nullable)subscribe:(ARTPresenceAction)action callback:(void (^)(ARTPresenceMessage *message))cb {
+- (ARTEventListener *_Nullable)subscribe:(ARTPresenceAction)action callback:(ARTPresenceMessageCallback)cb {
     return [_internal subscribe:action callback:cb];
 }
 
-- (ARTEventListener *_Nullable)subscribe:(ARTPresenceAction)action onAttach:(nullable ARTCallback)onAttach callback:(void (^)(ARTPresenceMessage *message))cb {
+- (ARTEventListener *_Nullable)subscribe:(ARTPresenceAction)action onAttach:(nullable ARTCallback)onAttach callback:(ARTPresenceMessageCallback)cb {
     return [_internal subscribe:action onAttach:onAttach callback:cb];
 }
 
@@ -407,13 +407,13 @@ dispatch_sync(_queue, ^{
     return _channel.presenceMap.syncComplete;
 }
 
-- (ARTEventListener *)subscribe:(void (^)(ARTPresenceMessage * _Nonnull))callback {
+- (ARTEventListener *)subscribe:(ARTPresenceMessageCallback)callback {
     return [self subscribeWithAttachCallback:nil callback:callback];
 }
 
-- (ARTEventListener *)subscribeWithAttachCallback:(ARTCallback)onAttach callback:(void (^)(ARTPresenceMessage * _Nonnull))cb {
+- (ARTEventListener *)subscribeWithAttachCallback:(ARTCallback)onAttach callback:(ARTPresenceMessageCallback)cb {
     if (cb) {
-        void (^userCallback)(ARTPresenceMessage *_Nullable m) = cb;
+        ARTPresenceMessageCallback userCallback = cb;
         cb = ^(ARTPresenceMessage *_Nullable m) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(m);
@@ -442,13 +442,13 @@ dispatch_sync(_queue, ^{
     return listener;
 }
 
-- (ARTEventListener *)subscribe:(ARTPresenceAction)action callback:(void (^)(ARTPresenceMessage * _Nonnull))cb {
+- (ARTEventListener *)subscribe:(ARTPresenceAction)action callback:(ARTPresenceMessageCallback)cb {
     return [self subscribe:action onAttach:nil callback:cb];
 }
 
-- (ARTEventListener *)subscribe:(ARTPresenceAction)action onAttach:(ARTCallback)onAttach callback:(void (^)(ARTPresenceMessage * _Nonnull))cb {
+- (ARTEventListener *)subscribe:(ARTPresenceAction)action onAttach:(ARTCallback)onAttach callback:(ARTPresenceMessageCallback)cb {
     if (cb) {
-        void (^userCallback)(ARTPresenceMessage *_Nullable m) = cb;
+        ARTPresenceMessageCallback userCallback = cb;
         cb = ^(ARTPresenceMessage *_Nullable m) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(m);
