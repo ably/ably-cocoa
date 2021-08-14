@@ -148,19 +148,19 @@
     [_internal detach:callback];
 }
 
-- (ARTEventListener *_Nullable)subscribe:(void (^)(ARTMessage *message))callback {
+- (ARTEventListener *_Nullable)subscribe:(ARTMessageCallback)callback {
     return [_internal subscribe:callback];
 }
 
-- (ARTEventListener *_Nullable)subscribeWithAttachCallback:(nullable ARTCallback)onAttach callback:(void (^)(ARTMessage *message))cb {
+- (ARTEventListener *_Nullable)subscribeWithAttachCallback:(nullable ARTCallback)onAttach callback:(ARTMessageCallback)cb {
     return [_internal subscribeWithAttachCallback:onAttach callback:cb];
 }
 
-- (ARTEventListener *_Nullable)subscribe:(NSString *)name callback:(void (^)(ARTMessage *message))cb {
+- (ARTEventListener *_Nullable)subscribe:(NSString *)name callback:(ARTMessageCallback)cb {
     return [_internal subscribe:name callback:cb];
 }
 
-- (ARTEventListener *_Nullable)subscribe:(NSString *)name onAttach:(nullable ARTCallback)onAttach callback:(void (^)(ARTMessage *message))cb {
+- (ARTEventListener *_Nullable)subscribe:(NSString *)name onAttach:(nullable ARTCallback)onAttach callback:(ARTMessageCallback)cb {
     return [_internal subscribe:name onAttach:onAttach callback:cb];
 }
 
@@ -456,13 +456,13 @@ dispatch_sync(_queue, ^{
     }
 }
 
-- (ARTEventListener *)subscribe:(void (^)(ARTMessage * _Nonnull))callback {
+- (ARTEventListener *)subscribe:(ARTMessageCallback)callback {
     return [self subscribeWithAttachCallback:nil callback:callback];
 }
 
-- (ARTEventListener *)subscribeWithAttachCallback:(ARTCallback)onAttach callback:(void (^)(ARTMessage * _Nonnull))cb {
+- (ARTEventListener *)subscribeWithAttachCallback:(ARTCallback)onAttach callback:(ARTMessageCallback)cb {
     if (cb) {
-        void (^userCallback)(ARTMessage *_Nonnull m) = cb;
+        ARTMessageCallback userCallback = cb;
         cb = ^(ARTMessage *_Nonnull m) {
             if (self.state_nosync != ARTRealtimeChannelAttached) { //RTL17
                 return;
@@ -497,13 +497,13 @@ dispatch_sync(_queue, ^{
     return listener;
 }
 
-- (ARTEventListener *)subscribe:(NSString *)name callback:(void (^)(ARTMessage * _Nonnull))cb {
+- (ARTEventListener *)subscribe:(NSString *)name callback:(ARTMessageCallback)cb {
     return [self subscribe:name onAttach:nil callback:cb];
 }
 
-- (ARTEventListener *)subscribe:(NSString *)name onAttach:(ARTCallback)onAttach callback:(void (^)(ARTMessage * _Nonnull))cb {
+- (ARTEventListener *)subscribe:(NSString *)name onAttach:(ARTCallback)onAttach callback:(ARTMessageCallback)cb {
     if (cb) {
-        void (^userCallback)(ARTMessage *_Nonnull m) = cb;
+        ARTMessageCallback userCallback = cb;
         cb = ^(ARTMessage *_Nonnull m) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(m);

@@ -36,10 +36,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)detach;
 - (void)detach:(nullable ARTCallback)callback;
 
-- (ARTEventListener *_Nullable)subscribe:(void (^)(ARTMessage *message))callback;
-- (ARTEventListener *_Nullable)subscribeWithAttachCallback:(nullable ARTCallback)onAttach callback:(void (^)(ARTMessage *message))cb;
-- (ARTEventListener *_Nullable)subscribe:(NSString *)name callback:(void (^)(ARTMessage *message))cb;
-- (ARTEventListener *_Nullable)subscribe:(NSString *)name onAttach:(nullable ARTCallback)onAttach callback:(void (^)(ARTMessage *message))cb;
+- (ARTEventListener *_Nullable)subscribe:(ARTMessageCallback)callback;
+- (ARTEventListener *_Nullable)subscribeWithAttachCallback:(nullable ARTCallback)onAttach callback:(ARTMessageCallback)cb;
+- (ARTEventListener *_Nullable)subscribe:(NSString *)name callback:(ARTMessageCallback)cb;
+- (ARTEventListener *_Nullable)subscribe:(NSString *)name onAttach:(nullable ARTCallback)onAttach callback:(ARTMessageCallback)cb;
 
 - (void)unsubscribe;
 - (void)unsubscribe:(ARTEventListener *_Nullable)listener;

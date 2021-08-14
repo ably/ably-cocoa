@@ -245,6 +245,7 @@ typedef void (^ARTCallback)(ARTErrorInfo *_Nullable error);
 typedef void (^ARTResultCallback)(id _Nullable result, NSError *_Nullable error);
 typedef void (^ARTDateTimeCallback)(NSDate *_Nullable result, NSError *_Nullable error);
 
+typedef void (^ARTMessageCallback)(ARTMessage *message);
 typedef void (^ARTStatusCallback)(ARTStatus *status);
 typedef void (^ARTURLRequestCallback)(NSHTTPURLResponse *_Nullable result, NSData *_Nullable data, NSError *_Nullable error);
 typedef void (^ARTTokenDetailsCallback)(ARTTokenDetails *_Nullable result, NSError *_Nullable error);
