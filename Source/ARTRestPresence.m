@@ -108,11 +108,11 @@
     return self;
 }
 
-- (void)get:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, ARTErrorInfo *error))callback {
+- (void)get:(ARTPaginatedPresenceCallback)callback {
     [self get:[[ARTPresenceQuery alloc] init] callback:callback error:nil];
 }
 
-- (BOOL)get:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, ARTErrorInfo *error))callback error:(NSError **)errorPtr {
+- (BOOL)get:(ARTPaginatedPresenceCallback)callback error:(NSError **)errorPtr {
     return [self get:[[ARTPresenceQuery alloc] init] callback:callback error:errorPtr];
 }
 
@@ -157,11 +157,11 @@ dispatch_async(_queue, ^{
     return YES;
 }
 
-- (void)history:(void (^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *, ARTErrorInfo *))callback {
+- (void)history:(ARTPaginatedPresenceCallback)callback {
     [self history:[[ARTDataQuery alloc] init] callback:callback error:nil];
 }
 
-- (BOOL)history:(ARTDataQuery *)query callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, ARTErrorInfo *error))callback error:(NSError **)errorPtr {
+- (BOOL)history:(ARTDataQuery *)query callback:(ARTPaginatedPresenceCallback)callback error:(NSError **)errorPtr {
     if (callback) {
         void (^userCallback)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, ARTErrorInfo *error) = callback;
         callback = ^(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, ARTErrorInfo *error) {
