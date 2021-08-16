@@ -4,10 +4,6 @@
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.5...1.2.6)
 
-**Implemented enhancements:**
-
-- Swift Package Manager support [\#819](https://github.com/ably/ably-cocoa/issues/819)
-
 **Merged pull requests:**
 
 - Update AblyDeltaCodec dependency to 1.3.1 [\#1165](https://github.com/ably/ably-cocoa/pull/1165) ([ben-xD](https://github.com/ben-xD))
