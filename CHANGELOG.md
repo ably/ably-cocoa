@@ -1,5 +1,13 @@
 # Change Log
 
+## [v1.2.6](https://github.com/ably/ably-cocoa/tree/1.2.6)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.5...1.2.6)
+
+**Merged pull requests:**
+
+- Update AblyDeltaCodec dependency to 1.3.1 [\#1165](https://github.com/ably/ably-cocoa/pull/1165) ([ben-xD](https://github.com/ben-xD))
+
 ## [1.2.5](https://github.com/ably/ably-cocoa/tree/1.2.5)
 
 This release makes **breaking changes** to runtime device support requirements:
