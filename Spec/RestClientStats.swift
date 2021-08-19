@@ -99,7 +99,7 @@ class RestClientStats: QuickSpec {
                         statsOptions = postTestStats(statsFixtures)
                     }
                     
-                    it("should match minute-level inbound and outbound fixture data (forwards)") {
+                    xit("should match minute-level inbound and outbound fixture data (forwards)") {
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
                         query.start = date
