@@ -143,13 +143,11 @@ This allows you to react to Ably's output by doing UI operations directly. You c
 
 ## Push Notifications
 
-If you haven’t yet, you should first check the detailed [documentation](https://www.ably.io/documentation/general/push).
+If you haven’t yet, you should first check the detailed [documentation](https://www.ably.io/documentation/general/push). An [example app for push notifications](https://github.com/ably/push-example-ios) is also available.
 
 ### Activation and device registration
 
-**`ARTPushRegistererDelegate`** is the interface for handling Push activation/deactivation-related actions. The activation process, by default, will check if the `UIApplication.sharedApplication.delegate` has the `ARTPushRegistererDelegate` implementation.
-
-Since version 1.2.4, there's a new way to pass the `ARTPushRegistererDelegate` implementation into the library. It must be used for new apps created with Xcode 12 and later, using the SwiftUI App Lifecycle. You can assign the delegate directly in the client options using the `pushRegistererDelegate` property, without relying on `UIApplicationDelegate`.
+**`ARTPushRegistererDelegate`** is the interface for handling Push activation/deactivation-related actions. The activation process, by default, will check if the `UIApplication.sharedApplication.delegate` conforms to `ARTPushRegistererDelegate`. Therefore, specifying the `ARTPushRegistererDelegate` is optional, but recommended. You can do this by setting the `ARTClientOptions#pushRegistererDelegate` property. You must set the `ARTClientOptions#pushRegistererDelegate` delegate property in SwiftUI applications.
 
 Do not forget that `ARTPush` has two corresponding methods that you should call from yours [application(_:didRegisterForRemoteNotificationsWithDeviceToken:)](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1622958-application) and [application(_:didFailToRegisterForRemoteNotificationsWithError:)](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1622962-application), passing to them also an `ARTRest` or `ARTRealtime` instance, configured with the authentication setup and other options you need:
 
