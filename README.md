@@ -147,7 +147,9 @@ If you haven’t yet, you should first check the detailed [documentation](https:
 
 ### Activation and device registration
 
-**`ARTPushRegistererDelegate`** is the interface for handling Push activation/deactivation-related actions. The activation process, by default, will check if the `UIApplication.sharedApplication.delegate` conforms to `ARTPushRegistererDelegate`. Therefore, specifying the `ARTPushRegistererDelegate` is optional, but recommended. You can do this by setting the `ARTClientOptions#pushRegistererDelegate` property. You must set the `ARTClientOptions#pushRegistererDelegate` delegate property in SwiftUI applications.
+For more information, see [Push Notifications - Device activation and subscription](https://ably.com/documentation/general/push/activate-subscribe).
+
+**`ARTPushRegistererDelegate`** defines 3 delegate methods to handle the outcome of push activation, deactivation and update events. By default, the Ably SDK will check if `UIApplication.sharedApplication.delegate` conforms to `ARTPushRegistererDelegate`, and call the delegate methods when appropriate. Therefore, specifying the `ARTPushRegistererDelegate` is optional. To use a different class implementing `ARTPushRegistererDelegate`, you must provide this class to Ably, by setting the `ARTClientOptions#pushRegistererDelegate` delegate. In SwiftUI applications, you must set the `ARTClientOptions#pushRegistererDelegate` delegate property.
 
 Do not forget that `ARTPush` has two corresponding methods that you should call from yours [application(_:didRegisterForRemoteNotificationsWithDeviceToken:)](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1622958-application) and [application(_:didFailToRegisterForRemoteNotificationsWithError:)](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1622962-application), passing to them also an `ARTRest` or `ARTRealtime` instance, configured with the authentication setup and other options you need:
 
