@@ -47,7 +47,7 @@ NSString *const ARTDevicePushTransportType = @"apns";
     ARTLocalDevice *device = [[ARTLocalDevice alloc] initWithClientId:clientId storage:storage];
     device.platform = ARTDevicePlatform;
     #if TARGET_OS_IOS
-    switch (UI_USER_INTERFACE_IDIOM()) {
+    switch ([[UIDevice currentDevice] userInterfaceIdiom]) {
         case UIUserInterfaceIdiomPad:
             device.formFactor = @"tablet";
         case UIUserInterfaceIdiomCarPlay:
