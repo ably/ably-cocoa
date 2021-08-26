@@ -285,6 +285,30 @@ dispatch_sync(_queue, ^{
     return _state;
 }
 
+- (NSString *)stateString_nosync {
+    switch (self.state_nosync) {
+        case ARTRealtimeChannelInitialized: return @"initialized";
+        case ARTRealtimeChannelAttaching: return @"attaching";
+        case ARTRealtimeChannelAttached: return @"attached";
+        case ARTRealtimeChannelDetaching: return @"detaching";
+        case ARTRealtimeChannelDetached: return @"detached";
+        case ARTRealtimeChannelSuspended: return @"suspended";
+        case ARTRealtimeChannelFailed: return @"failed";
+    }
+    return nil;
+}
+
+- (BOOL)canBeReattached {
+    switch (self.state_nosync) {
+        case ARTRealtimeChannelAttaching:
+        case ARTRealtimeChannelAttached:
+        case ARTRealtimeChannelSuspended:
+            return YES;
+        default:
+            return NO;
+    }
+}
+
 - (ARTErrorInfo *)errorReason_nosync {
     return _errorReason;
 }
@@ -954,21 +978,12 @@ dispatch_sync(_queue, ^{
 }
 
 - (void)reattachWithReason:(ARTErrorInfo *)reason callback:(void (^)(ARTErrorInfo *))callback {
-    switch (self.state_nosync) {
-        case ARTRealtimeChannelAttached:
-            [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) attached and will reattach", _realtime, self, self.name];
-            break;
-        case ARTRealtimeChannelSuspended:
-            [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) suspended and will reattach", _realtime, self, self.name];
-            break;
-        case ARTRealtimeChannelAttaching:
-            [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) already attaching", _realtime, self, self.name];
-            if (callback) [_attachedEventEmitter once:callback];
-            return;
-        default:
-            break;
+    if ([self canBeReattached]) {
+        [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) %@ and will reattach", _realtime, self, self.name, self.stateString_nosync];
+        [self internalAttach:callback withReason:reason];
+    } else {
+        [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) %@ should not reattach", _realtime, self, self.name, self.stateString_nosync];
     }
-    [self internalAttach:callback withReason:reason];
 }
 
 - (void)internalAttach:(void (^)(ARTErrorInfo *))callback withReason:(ARTErrorInfo *)reason {
