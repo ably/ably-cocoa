@@ -15,6 +15,8 @@
 @class ARTDeviceDetails;
 @class ARTDeviceIdentityTokenDetails;
 
+NS_ASSUME_NONNULL_BEGIN
+
 #pragma mark ARTPushRegisterer interface
 
 #if TARGET_OS_IOS
@@ -42,13 +44,13 @@
  Optional method.
  If you want to activate devices from your server, then you should implement this method (including the `ablyPushCustomDeregister:deviceId:callback` method) where the network request completion should call the callback argument to continue with the registration process.
  */
-- (void)ablyPushCustomRegister:(nullable ARTErrorInfo *)error deviceDetails:(nonnull ARTDeviceDetails *)deviceDetails callback:(void (^ _Nonnull)(ARTDeviceIdentityTokenDetails * _Nullable, ARTErrorInfo * _Nullable))callback;
+- (void)ablyPushCustomRegister:(ARTErrorInfo * _Nullable)error deviceDetails:(ARTDeviceDetails *)deviceDetails callback:(void (^)(ARTDeviceIdentityTokenDetails * _Nullable, ARTErrorInfo * _Nullable))callback;
 
 /**
  Optional method.
  If you want to deactivate devices from your server, then you should implement this method (including the `ablyPushCustomRegister:deviceDetails:callback` method) where the network request completion should call the callback argument to continue with the registration process.
  */
-- (void)ablyPushCustomDeregister:(nullable ARTErrorInfo *)error deviceId:(nonnull ARTDeviceId *)deviceId callback:(ARTCallback)callback;
+- (void)ablyPushCustomDeregister:(ARTErrorInfo * _Nullable)error deviceId:(ARTDeviceId *)deviceId callback:(ARTCallback)callback;
 
 @end
 
@@ -56,8 +58,6 @@
 
 
 #pragma mark ARTPush type
-
-NS_ASSUME_NONNULL_BEGIN
 
 @protocol ARTPushProtocol
 
