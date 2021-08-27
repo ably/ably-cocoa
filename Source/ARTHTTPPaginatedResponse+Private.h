@@ -18,9 +18,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong) NSHTTPURLResponse *response;
 
-+ (void)executePaginated:(ARTRestInternal *)rest withRequest:(NSMutableURLRequest *)request andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor callback:(void (^)(ARTPaginatedResult * _Nullable, ARTErrorInfo * _Nullable))callback UNAVAILABLE_ATTRIBUTE;
++ (void)executePaginated:(ARTRestInternal *)rest
+             withRequest:(NSMutableURLRequest *)request
+    andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor
+                callback:(void (^)(ARTPaginatedResult * _Nullable, ARTErrorInfo * _Nullable))callback UNAVAILABLE_ATTRIBUTE;
 
-+ (void)executePaginated:(ARTRestInternal *)rest withRequest:(NSMutableURLRequest *)request callback:(void (^)(ARTHTTPPaginatedResponse *_Nullable result, ARTErrorInfo *_Nullable error))callback;
++ (void)executePaginated:(ARTRestInternal *)rest
+             withRequest:(NSMutableURLRequest *)request
+                callback:(ARTHTTPPaginatedCallback)callback;
 
 @end
 

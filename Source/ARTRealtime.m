@@ -134,19 +134,19 @@
     return [[ARTRealtime alloc] initWithToken:tokenId];
 }
 
-- (void)time:(void (^)(NSDate *_Nullable, NSError *_Nullable))cb {
+- (void)time:(ARTDateTimeCallback)cb {
     [_internal time:cb];
 }
 
-- (void)ping:(void (^)(ARTErrorInfo *_Nullable))cb {
+- (void)ping:(ARTCallback)cb {
     [_internal ping:cb];
 }
 
-- (BOOL)stats:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback {
+- (BOOL)stats:(ARTPaginatedStatsCallback)callback {
     return [_internal stats:callback];
 }
 
-- (BOOL)stats:(nullable ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr {
+- (BOOL)stats:(nullable ARTStatsQuery *)query callback:(ARTPaginatedStatsCallback)callback error:(NSError **)errorPtr {
     return [_internal stats:query callback:callback error:errorPtr];
 }
 
@@ -426,13 +426,13 @@
     }
 }
 
-- (void)time:(void(^)(NSDate *time, NSError *error))cb {
+- (void)time:(ARTDateTimeCallback)cb {
     [self.rest time:cb];
 }
 
-- (void)ping:(void (^)(ARTErrorInfo *)) cb {
+- (void)ping:(ARTCallback) cb {
     if (cb) {
-        void (^userCallback)(ARTErrorInfo *_Nullable error) = cb;
+        ARTCallback userCallback = cb;
         cb = ^(ARTErrorInfo *_Nullable error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
@@ -467,11 +467,11 @@
     });
 }
 
-- (BOOL)stats:(void (^)(ARTPaginatedResult<ARTStats *> *, ARTErrorInfo *))callback {
+- (BOOL)stats:(ARTPaginatedStatsCallback)callback {
     return [self stats:[[ARTStatsQuery alloc] init] callback:callback error:nil];
 }
 
-- (BOOL)stats:(ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult<ARTStats *> *, ARTErrorInfo *))callback error:(NSError **)errorPtr {
+- (BOOL)stats:(ARTStatsQuery *)query callback:(ARTPaginatedStatsCallback)callback error:(NSError **)errorPtr {
     return [self.rest stats:query callback:callback error:errorPtr];
 }
 
@@ -1145,7 +1145,7 @@
     return [self shouldQueueEvents] || [self shouldSendEvents];
 }
 
-- (void)sendImpl:(ARTProtocolMessage *)pm sentCallback:(void (^)(ARTErrorInfo *))sentCallback ackCallback:(void (^)(ARTStatus *))ackCallback {
+- (void)sendImpl:(ARTProtocolMessage *)pm sentCallback:(ARTCallback)sentCallback ackCallback:(ARTStatusCallback)ackCallback {
     if (pm.ackRequired) {
         pm.msgSerial = [NSNumber numberWithLongLong:self.msgSerial];
     }
@@ -1183,7 +1183,7 @@
     }
 }
 
-- (void)send:(ARTProtocolMessage *)msg sentCallback:(void (^)(ARTErrorInfo *))sentCallback ackCallback:(void (^)(ARTStatus *))ackCallback {
+- (void)send:(ARTProtocolMessage *)msg sentCallback:(ARTCallback)sentCallback ackCallback:(ARTStatusCallback)ackCallback {
     if ([self shouldSendEvents]) {
         [self sendImpl:msg sentCallback:sentCallback ackCallback:ackCallback];
     }

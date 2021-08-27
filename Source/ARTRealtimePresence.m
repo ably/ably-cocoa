@@ -50,11 +50,11 @@
     return _internal.syncComplete;
 }
 
-- (void)get:(void (^)(NSArray<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
+- (void)get:(ARTPresenceMessagesCallback)callback {
     [_internal get:callback];
 }
 
-- (void)get:(ARTRealtimePresenceQuery *)query callback:(void (^)(NSArray<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
+- (void)get:(ARTRealtimePresenceQuery *)query callback:(ARTPresenceMessagesCallback)callback {
     [_internal get:query callback:callback];
 }
 
@@ -62,7 +62,7 @@
     [_internal enter:data];
 }
 
-- (void)enter:(id _Nullable)data callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb {
+- (void)enter:(id _Nullable)data callback:(nullable ARTCallback)cb {
     [_internal enter:data callback:cb];
 }
 
@@ -70,7 +70,7 @@
     [_internal update:data];
 }
 
-- (void)update:(id _Nullable)data callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb {
+- (void)update:(id _Nullable)data callback:(nullable ARTCallback)cb {
     [_internal update:data callback:cb];
 }
 
@@ -78,7 +78,7 @@
     [_internal leave:data];
 }
 
-- (void)leave:(id _Nullable)data callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb {
+- (void)leave:(id _Nullable)data callback:(nullable ARTCallback)cb {
     [_internal leave:data callback:cb];
 }
 
@@ -86,7 +86,7 @@
     [_internal enterClient:clientId data:data];
 }
 
-- (void)enterClient:(NSString *)clientId data:(id _Nullable)data callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb {
+- (void)enterClient:(NSString *)clientId data:(id _Nullable)data callback:(nullable ARTCallback)cb {
     [_internal enterClient:clientId data:data callback:cb];
 }
 
@@ -94,7 +94,7 @@
     [_internal updateClient:clientId data:data];
 }
 
-- (void)updateClient:(NSString *)clientId data:(id _Nullable)data callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb {
+- (void)updateClient:(NSString *)clientId data:(id _Nullable)data callback:(nullable ARTCallback)cb {
     [_internal updateClient:clientId data:data callback:cb];
 }
 
@@ -102,23 +102,23 @@
     [_internal leaveClient:clientId data:data];
 }
 
-- (void)leaveClient:(NSString *)clientId data:(id _Nullable)data callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb {
+- (void)leaveClient:(NSString *)clientId data:(id _Nullable)data callback:(nullable ARTCallback)cb {
     [_internal leaveClient:clientId data:data callback:cb];
 }
 
-- (ARTEventListener *_Nullable)subscribe:(void (^)(ARTPresenceMessage *message))callback {
+- (ARTEventListener *_Nullable)subscribe:(ARTPresenceMessageCallback)callback {
     return [_internal subscribe:callback];
 }
 
-- (ARTEventListener *_Nullable)subscribeWithAttachCallback:(nullable void (^)(ARTErrorInfo *_Nullable))onAttach callback:(void (^)(ARTPresenceMessage *message))cb {
+- (ARTEventListener *_Nullable)subscribeWithAttachCallback:(nullable ARTCallback)onAttach callback:(ARTPresenceMessageCallback)cb {
     return [_internal subscribeWithAttachCallback:onAttach callback:cb];
 }
 
-- (ARTEventListener *_Nullable)subscribe:(ARTPresenceAction)action callback:(void (^)(ARTPresenceMessage *message))cb {
+- (ARTEventListener *_Nullable)subscribe:(ARTPresenceAction)action callback:(ARTPresenceMessageCallback)cb {
     return [_internal subscribe:action callback:cb];
 }
 
-- (ARTEventListener *_Nullable)subscribe:(ARTPresenceAction)action onAttach:(nullable void (^)(ARTErrorInfo *_Nullable))onAttach callback:(void (^)(ARTPresenceMessage *message))cb {
+- (ARTEventListener *_Nullable)subscribe:(ARTPresenceAction)action onAttach:(nullable ARTCallback)onAttach callback:(ARTPresenceMessageCallback)cb {
     return [_internal subscribe:action onAttach:onAttach callback:cb];
 }
 
@@ -134,11 +134,11 @@
     [_internal unsubscribe:action listener:listener];
 }
 
-- (void)history:(void(^)(ARTPaginatedResult<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
+- (void)history:(ARTPaginatedPresenceCallback)callback {
     [_internal history:callback];
 }
 
-- (BOOL)history:(ARTRealtimeHistoryQuery *_Nullable)query callback:(void(^)(ARTPaginatedResult<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback error:(NSError *_Nullable *_Nullable)errorPtr {
+- (BOOL)history:(ARTRealtimeHistoryQuery *_Nullable)query callback:(ARTPaginatedPresenceCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr {
     return [_internal history:query callback:callback error:errorPtr];
 }
 
@@ -163,13 +163,13 @@
     return self;
 }
 
-- (void)get:(void (^)(NSArray<ARTPresenceMessage *> *, ARTErrorInfo *))callback {
+- (void)get:(ARTPresenceMessagesCallback)callback {
     [self get:[[ARTRealtimePresenceQuery alloc] init] callback:callback];
 }
 
-- (void)get:(ARTRealtimePresenceQuery *)query callback:(void (^)(NSArray<ARTPresenceMessage *> *, ARTErrorInfo *))callback {
+- (void)get:(ARTRealtimePresenceQuery *)query callback:(ARTPresenceMessagesCallback)callback {
     if (callback) {
-        void (^userCallback)(NSArray<ARTPresenceMessage *> *, ARTErrorInfo *) = callback;
+        ARTPresenceMessagesCallback userCallback = callback;
         callback = ^(NSArray<ARTPresenceMessage *> *m, ARTErrorInfo *e) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(m, e);
@@ -224,11 +224,11 @@ dispatch_async(_queue, ^{
 });
 }
 
-- (void)history:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> *, ARTErrorInfo *))callback {
+- (void)history:(ARTPaginatedPresenceCallback)callback {
     [self history:[[ARTRealtimeHistoryQuery alloc] init] callback:callback error:nil];
 }
 
-- (BOOL)history:(ARTRealtimeHistoryQuery *)query callback:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> *, ARTErrorInfo *))callback error:(NSError **)errorPtr {
+- (BOOL)history:(ARTRealtimeHistoryQuery *)query callback:(ARTPaginatedPresenceCallback)callback error:(NSError **)errorPtr {
     query.realtimeChannel = _channel;
     @try {
         return [_channel.restChannel.presence history:query callback:callback error:errorPtr];
@@ -245,9 +245,9 @@ dispatch_async(_queue, ^{
     [self enter:data callback:nil];
 }
 
-- (void)enter:(id)data callback:(void (^)(ARTErrorInfo *))cb {
+- (void)enter:(id)data callback:(ARTCallback)cb {
     if (cb) {
-        void (^userCallback)(ARTErrorInfo *_Nullable error) = cb;
+        ARTCallback userCallback = cb;
         cb = ^(ARTErrorInfo *_Nullable error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
@@ -264,9 +264,9 @@ dispatch_async(_queue, ^{
     [self enterClient:clientId data:data callback:nil];
 }
 
-- (void)enterClient:(NSString *)clientId data:(id)data callback:(void (^)(ARTErrorInfo *))cb {
+- (void)enterClient:(NSString *)clientId data:(id)data callback:(ARTCallback)cb {
     if (cb) {
-        void (^userCallback)(ARTErrorInfo *_Nullable error) = cb;
+        ARTCallback userCallback = cb;
         cb = ^(ARTErrorInfo *_Nullable error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
@@ -283,9 +283,9 @@ dispatch_async(_queue, ^{
     [self update:data callback:nil];
 }
 
-- (void)update:(id)data callback:(void (^)(ARTErrorInfo * _Nullable))cb {
+- (void)update:(id)data callback:(ARTCallback)cb {
     if (cb) {
-        void (^userCallback)(ARTErrorInfo *_Nullable error) = cb;
+        ARTCallback userCallback = cb;
         cb = ^(ARTErrorInfo *_Nullable error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
@@ -302,9 +302,9 @@ dispatch_async(_queue, ^{
     [self updateClient:clientId data:data callback:nil];
 }
 
-- (void)updateClient:(NSString *)clientId data:(id)data callback:(void (^)(ARTErrorInfo * _Nullable))cb {
+- (void)updateClient:(NSString *)clientId data:(id)data callback:(ARTCallback)cb {
     if (cb) {
-        void (^userCallback)(ARTErrorInfo *_Nullable error) = cb;
+        ARTCallback userCallback = cb;
         cb = ^(ARTErrorInfo *_Nullable error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
@@ -317,7 +317,7 @@ dispatch_async(_queue, ^{
 });
 }
 
-- (void)enterOrUpdateAfterChecks:(ARTPresenceAction)action clientId:(NSString *_Nullable)clientId data:(id)data callback:(void (^)(ARTErrorInfo *))cb {
+- (void)enterOrUpdateAfterChecks:(ARTPresenceAction)action clientId:(NSString *_Nullable)clientId data:(id)data callback:(ARTCallback)cb {
     switch (_channel.state_nosync) {
         case ARTRealtimeChannelDetached:
         case ARTRealtimeChannelFailed: {
@@ -344,9 +344,9 @@ dispatch_async(_queue, ^{
     [self leave:data callback:nil];
 }
 
-- (void)leave:(id)data callback:(void (^)(ARTErrorInfo * _Nullable))cb {
+- (void)leave:(id)data callback:(ARTCallback)cb {
     if (cb) {
-        void (^userCallback)(ARTErrorInfo *_Nullable error) = cb;
+        ARTCallback userCallback = cb;
         cb = ^(ARTErrorInfo *_Nullable error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
@@ -371,9 +371,9 @@ dispatch_sync(_queue, ^{
     [self leaveClient:clientId data:data callback:nil];
 }
 
-- (void)leaveClient:(NSString *)clientId data:(id)data callback:(void (^)(ARTErrorInfo * _Nullable))cb {
+- (void)leaveClient:(NSString *)clientId data:(id)data callback:(ARTCallback)cb {
     if (cb) {
-        void (^userCallback)(ARTErrorInfo *_Nullable error) = cb;
+        ARTCallback userCallback = cb;
         cb = ^(ARTErrorInfo *_Nullable error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
@@ -386,7 +386,7 @@ dispatch_sync(_queue, ^{
 });
 }
 
-- (void)leaveAfterChecks:(NSString *_Nullable)clientId data:(id)data callback:(void (^)(ARTErrorInfo *))cb {
+- (void)leaveAfterChecks:(NSString *_Nullable)clientId data:(id)data callback:(ARTCallback)cb {
     ARTPresenceMessage *msg = [[ARTPresenceMessage alloc] init];
     msg.action = ARTPresenceLeave;
     msg.data = data;
@@ -407,13 +407,13 @@ dispatch_sync(_queue, ^{
     return _channel.presenceMap.syncComplete;
 }
 
-- (ARTEventListener *)subscribe:(void (^)(ARTPresenceMessage * _Nonnull))callback {
+- (ARTEventListener *)subscribe:(ARTPresenceMessageCallback)callback {
     return [self subscribeWithAttachCallback:nil callback:callback];
 }
 
-- (ARTEventListener *)subscribeWithAttachCallback:(void (^)(ARTErrorInfo * _Nullable))onAttach callback:(void (^)(ARTPresenceMessage * _Nonnull))cb {
+- (ARTEventListener *)subscribeWithAttachCallback:(ARTCallback)onAttach callback:(ARTPresenceMessageCallback)cb {
     if (cb) {
-        void (^userCallback)(ARTPresenceMessage *_Nullable m) = cb;
+        ARTPresenceMessageCallback userCallback = cb;
         cb = ^(ARTPresenceMessage *_Nullable m) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(m);
@@ -421,7 +421,7 @@ dispatch_sync(_queue, ^{
         };
     }
     if (onAttach) {
-        void (^userOnAttach)(ARTErrorInfo *_Nullable m) = onAttach;
+        ARTCallback userOnAttach = onAttach;
         onAttach = ^(ARTErrorInfo *_Nullable m) {
             dispatch_async(self->_userQueue, ^{
                 userOnAttach(m);
@@ -442,13 +442,13 @@ dispatch_sync(_queue, ^{
     return listener;
 }
 
-- (ARTEventListener *)subscribe:(ARTPresenceAction)action callback:(void (^)(ARTPresenceMessage * _Nonnull))cb {
+- (ARTEventListener *)subscribe:(ARTPresenceAction)action callback:(ARTPresenceMessageCallback)cb {
     return [self subscribe:action onAttach:nil callback:cb];
 }
 
-- (ARTEventListener *)subscribe:(ARTPresenceAction)action onAttach:(void (^)(ARTErrorInfo * _Nullable))onAttach callback:(void (^)(ARTPresenceMessage * _Nonnull))cb {
+- (ARTEventListener *)subscribe:(ARTPresenceAction)action onAttach:(ARTCallback)onAttach callback:(ARTPresenceMessageCallback)cb {
     if (cb) {
-        void (^userCallback)(ARTPresenceMessage *_Nullable m) = cb;
+        ARTPresenceMessageCallback userCallback = cb;
         cb = ^(ARTPresenceMessage *_Nullable m) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(m);
@@ -456,7 +456,7 @@ dispatch_sync(_queue, ^{
         };
     }
     if (onAttach) {
-        void (^userOnAttach)(ARTErrorInfo *_Nullable m) = onAttach;
+        ARTCallback userOnAttach = onAttach;
         onAttach = ^(ARTErrorInfo *_Nullable m) {
             dispatch_async(self->_userQueue, ^{
                 userOnAttach(m);
@@ -502,12 +502,12 @@ dispatch_sync(_queue, ^{
 });
 }
 
-- (void)addPendingPresence:(ARTProtocolMessage *)msg callback:(void (^)(ARTStatus *))cb {
+- (void)addPendingPresence:(ARTProtocolMessage *)msg callback:(ARTStatusCallback)cb {
     ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg sentCallback:nil ackCallback:cb];
     [_pendingPresence addObject:qm];
 }
 
-- (void)publishPresence:(ARTPresenceMessage *)msg callback:(void (^)(ARTErrorInfo *))callback {
+- (void)publishPresence:(ARTPresenceMessage *)msg callback:(ARTCallback)callback {
     if (!msg.clientId && !_channel.realtime.auth.clientId_nosync) {
         if (callback) callback([ARTErrorInfo createWithCode:ARTStateNoClientId message:@"attempted to publish presence message without clientId"]);
         return;

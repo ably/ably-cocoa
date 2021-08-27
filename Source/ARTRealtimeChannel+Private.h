@@ -51,10 +51,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (bool)isLastChannelSerial:(NSString *)channelSerial;
 
-- (void)reattachWithReason:(nullable ARTErrorInfo *)reason callback:(nullable void (^)(ARTErrorInfo *))callback;
+- (void)reattachWithReason:(nullable ARTErrorInfo *)reason callback:(nullable ARTCallback)callback;
 
-- (void)_attach:(void (^_Nullable)(ARTErrorInfo * _Nullable))callback;
-- (void)_detach:(void (^_Nullable)(ARTErrorInfo * _Nullable))callback;
+- (void)_attach:(nullable ARTCallback)callback;
+- (void)_detach:(nullable ARTCallback)callback;
 
 - (void)_unsubscribe;
 - (void)off_nosync;
@@ -68,7 +68,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status;
 
 - (void)onChannelMessage:(ARTProtocolMessage *)message;
-- (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(void (^)(ARTStatus *))cb;
+- (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(ARTStatusCallback)cb;
 
 - (void)setAttached:(ARTProtocolMessage *)message;
 - (void)setDetached:(ARTProtocolMessage *)message;
@@ -86,7 +86,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)detachChannel:(ARTStatus *)status;
 
 - (void)sync;
-- (void)sync:(nullable void (^)(ARTErrorInfo *_Nullable))callback;
+- (void)sync:(nullable ARTCallback)callback;
 - (void)requestContinueSync;
 
 @end

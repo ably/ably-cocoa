@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)connect;
 - (void)close;
-- (void)ping:(void (^)(ARTErrorInfo *_Nullable))cb;
+- (void)ping:(ARTCallback)cb;
 
 ART_EMBED_INTERFACE_EVENT_EMITTER(ARTRealtimeConnectionEvent, ARTConnectionStateChange *)
 

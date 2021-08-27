@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTPresence : NSObject
 
-- (void)history:(void(^)(ARTPaginatedResult<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback;
+- (void)history:(ARTPaginatedPresenceCallback)callback;
 
 @end
 
