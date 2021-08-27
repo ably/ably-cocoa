@@ -117,7 +117,7 @@
     return tokenParams;
 }
 
-- (NSDictionary<NSString *, NSString *> *)toDictionaryWithUnion:(NSArray<NSURLQueryItem *> *const)items {
+- (NSStringDictionary *)toDictionaryWithUnion:(NSArray<NSURLQueryItem *> *const)items {
     NSMutableDictionary<NSString *, NSString *> *const tokenParams = [self toDictionary];
     BOOL add = YES;
     

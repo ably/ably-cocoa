@@ -50,11 +50,15 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) BOOL authorizing;
 @property (readonly) BOOL authorizing_nosync;
 
-- (nullable NSObject<ARTCancellable> *)_authorize:(nullable ARTTokenParams *)tokenParams options:(nullable ARTAuthOptions *)authOptions
-         callback:(void (^)(ARTTokenDetails *_Nullable, NSError *_Nullable))callback;
+- (nullable NSObject<ARTCancellable> *)_authorize:(nullable ARTTokenParams *)tokenParams
+                                          options:(nullable ARTAuthOptions *)authOptions
+                                         callback:(ARTTokenDetailsCallback)callback;
+
 - (void)cancelAuthorization:(nullable ARTErrorInfo *)error;
 
-- (nullable NSObject<ARTCancellable> *)_requestToken:(ARTTokenParams *_Nullable)tokenParams withOptions:(ARTAuthOptions *_Nullable)authOptions callback:(void (^)(ARTTokenDetails *_Nullable, NSError *_Nullable))callback;
+- (nullable NSObject<ARTCancellable> *)_requestToken:(ARTTokenParams *_Nullable)tokenParams
+                                         withOptions:(ARTAuthOptions *_Nullable)authOptions
+                                            callback:(ARTTokenDetailsCallback)callback;
 
 @end
 

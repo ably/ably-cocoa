@@ -31,23 +31,23 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nullable, getter=getOptions) ARTRealtimeChannelOptions *options;
 
 - (void)attach;
-- (void)attach:(nullable void (^)(ARTErrorInfo *_Nullable))callback;
+- (void)attach:(nullable ARTCallback)callback;
 
 - (void)detach;
-- (void)detach:(nullable void (^)(ARTErrorInfo *_Nullable))callback;
+- (void)detach:(nullable ARTCallback)callback;
 
-- (ARTEventListener *_Nullable)subscribe:(void (^)(ARTMessage *message))callback;
-- (ARTEventListener *_Nullable)subscribeWithAttachCallback:(nullable void (^)(ARTErrorInfo *_Nullable))onAttach callback:(void (^)(ARTMessage *message))cb;
-- (ARTEventListener *_Nullable)subscribe:(NSString *)name callback:(void (^)(ARTMessage *message))cb;
-- (ARTEventListener *_Nullable)subscribe:(NSString *)name onAttach:(nullable void (^)(ARTErrorInfo *_Nullable))onAttach callback:(void (^)(ARTMessage *message))cb;
+- (ARTEventListener *_Nullable)subscribe:(ARTMessageCallback)callback;
+- (ARTEventListener *_Nullable)subscribeWithAttachCallback:(nullable ARTCallback)onAttach callback:(ARTMessageCallback)cb;
+- (ARTEventListener *_Nullable)subscribe:(NSString *)name callback:(ARTMessageCallback)cb;
+- (ARTEventListener *_Nullable)subscribe:(NSString *)name onAttach:(nullable ARTCallback)onAttach callback:(ARTMessageCallback)cb;
 
 - (void)unsubscribe;
 - (void)unsubscribe:(ARTEventListener *_Nullable)listener;
 - (void)unsubscribe:(NSString *)name listener:(ARTEventListener *_Nullable)listener;
 
-- (BOOL)history:(ARTRealtimeHistoryQuery *_Nullable)query callback:(void(^)(ARTPaginatedResult<ARTMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback error:(NSError *_Nullable *_Nullable)errorPtr;
+- (BOOL)history:(ARTRealtimeHistoryQuery *_Nullable)query callback:(ARTPaginatedMessagesCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
-- (void)setOptions:(ARTRealtimeChannelOptions *_Nullable)options callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb;
+- (void)setOptions:(ARTRealtimeChannelOptions *_Nullable)options callback:(nullable ARTCallback)cb;
 
 ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
 

@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "ARTTypes.h"
 
 @class ARTPresenceMap;
 @class ARTPresenceMessage;
@@ -52,7 +53,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)failsSync:(ARTErrorInfo *)error;
 
 - (void)onceSyncEnds:(void (^)(NSArray<ARTPresenceMessage *> *))callback;
-- (void)onceSyncFails:(void (^)(ARTErrorInfo *))callback;
+- (void)onceSyncFails:(ARTCallback)callback;
 
 - (void)internalAdd:(ARTPresenceMessage *)message;
 - (void)internalAdd:(ARTPresenceMessage *)message withSessionId:(NSUInteger)sessionId;

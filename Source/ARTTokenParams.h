@@ -49,7 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSMutableArray<NSURLQueryItem *> *)toArray;
 - (NSArray<NSURLQueryItem *> *)toArrayWithUnion:(NSArray *)items;
-- (NSDictionary<NSString *, NSString *> *)toDictionaryWithUnion:(NSArray<NSURLQueryItem *> *)items;
+- (NSStringDictionary *)toDictionaryWithUnion:(NSArray<NSURLQueryItem *> *)items;
 
 @end
 

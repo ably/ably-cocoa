@@ -58,11 +58,11 @@ Instance the Ably library using a key only. This is simply a convenience constru
 - (instancetype)initWithKey:(NSString *)key;
 - (instancetype)initWithToken:(NSString *)token;
 
-- (void)time:(void (^)(NSDate *_Nullable, NSError *_Nullable))cb;
-- (void)ping:(void (^)(ARTErrorInfo *_Nullable))cb;
+- (void)time:(ARTDateTimeCallback)cb;
+- (void)ping:(ARTCallback)cb;
 
-- (BOOL)stats:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback;
-- (BOOL)stats:(nullable ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr;
+- (BOOL)stats:(ARTPaginatedStatsCallback)callback;
+- (BOOL)stats:(nullable ARTStatsQuery *)query callback:(ARTPaginatedStatsCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
 - (void)connect;
 - (void)close;

@@ -64,7 +64,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) int64_t flags;
 @property (nullable, readwrite, nonatomic) ARTConnectionDetails *connectionDetails;
 @property (nullable, nonatomic) ARTAuthDetails *auth;
-@property (nonatomic, strong, nullable) NSDictionary<NSString *, NSString *> *params;
+@property (nonatomic, strong, nullable) NSStringDictionary *params;
 
 @end
 

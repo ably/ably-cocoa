@@ -49,7 +49,7 @@
     return _internal.name;
 }
 
-- (BOOL)history:(nullable ARTDataQuery *)query callback:(void(^)(ARTPaginatedResult<ARTMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback error:(NSError *_Nullable *_Nullable)errorPtr {
+- (BOOL)history:(nullable ARTDataQuery *)query callback:(ARTPaginatedMessagesCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr {
     return [_internal history:query callback:callback error:errorPtr];
 }
 
@@ -57,7 +57,7 @@
     [_internal publish:name data:data];
 }
 
-- (void)publish:(nullable NSString *)name data:(nullable id)data callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback {
+- (void)publish:(nullable NSString *)name data:(nullable id)data callback:(nullable ARTCallback)callback {
     [_internal publish:name data:data callback:callback];
 }
 
@@ -65,7 +65,7 @@
     [_internal publish:name data:data clientId:clientId];
 }
 
-- (void)publish:(nullable NSString *)name data:(nullable id)data clientId:(NSString *)clientId callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback {
+- (void)publish:(nullable NSString *)name data:(nullable id)data clientId:(NSString *)clientId callback:(nullable ARTCallback)callback {
     [_internal publish:name data:data clientId:clientId callback:callback];
 }
 
@@ -73,7 +73,7 @@
     [_internal publish:name data:data extras:extras];
 }
 
-- (void)publish:(nullable NSString *)name data:(nullable id)data extras:(nullable id<ARTJsonCompatible>)extras callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback {
+- (void)publish:(nullable NSString *)name data:(nullable id)data extras:(nullable id<ARTJsonCompatible>)extras callback:(nullable ARTCallback)callback {
     [_internal publish:name data:data extras:extras callback:callback];
 }
 
@@ -81,7 +81,7 @@
     [_internal publish:name data:data clientId:clientId extras:extras];
 }
 
-- (void)publish:(nullable NSString *)name data:(nullable id)data clientId:(NSString *)clientId extras:(nullable id<ARTJsonCompatible>)extras callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback {
+- (void)publish:(nullable NSString *)name data:(nullable id)data clientId:(NSString *)clientId extras:(nullable id<ARTJsonCompatible>)extras callback:(nullable ARTCallback)callback {
     [_internal publish:name data:data clientId:clientId extras:extras callback:callback];
 }
 
@@ -89,11 +89,11 @@
     [_internal publish:messages];
 }
 
-- (void)publish:(NSArray<ARTMessage *> *)messages callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback {
+- (void)publish:(NSArray<ARTMessage *> *)messages callback:(nullable ARTCallback)callback {
     [_internal publish:messages callback:callback];
 }
 
-- (void)history:(void(^)(ARTPaginatedResult<ARTMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
+- (void)history:(ARTPaginatedMessagesCallback)callback {
     [_internal history:callback];
 }
 
@@ -153,11 +153,11 @@ static const NSUInteger kIdempotentLibraryGeneratedIdLength = 9; //bytes
     return _pushChannel;
 }
 
-- (void)history:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, ARTErrorInfo *))callback {
+- (void)history:(ARTPaginatedMessagesCallback)callback {
     [self history:[[ARTDataQuery alloc] init] callback:callback error:nil];
 }
 
-- (BOOL)history:(ARTDataQuery *)query callback:(void(^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *result, ARTErrorInfo *error))callback error:(NSError * __autoreleasing *)errorPtr {
+- (BOOL)history:(ARTDataQuery *)query callback:(ARTPaginatedMessagesCallback)callback error:(NSError * __autoreleasing *)errorPtr {
     if (callback) {
         void (^userCallback)(__GENERIC(ARTPaginatedResult, ARTMessage *) *result, ARTErrorInfo *error) = callback;
         callback = ^(__GENERIC(ARTPaginatedResult, ARTMessage *) *result, ARTErrorInfo *error) {
@@ -221,9 +221,9 @@ dispatch_sync(_queue, ^{
     return ret;
 }
 
-- (void)internalPostMessages:(id)data callback:(void (^)(ARTErrorInfo *__art_nullable error))callback {
+- (void)internalPostMessages:(id)data callback:(ARTCallback)callback {
     if (callback) {
-        void (^userCallback)(ARTErrorInfo *__art_nullable error) = callback;
+        ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *__art_nullable error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);

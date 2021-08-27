@@ -41,12 +41,21 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithKey:(NSString *)key;
 - (instancetype)initWithToken:(NSString *)tokenId;
 
-- (void)time:(void (^)(NSDate *_Nullable, NSError *_Nullable))callback;
+- (void)time:(ARTDateTimeCallback)callback;
 
-- (BOOL)request:(NSString *)method path:(NSString *)path params:(nullable NSDictionary<NSString *, NSString *> *)params body:(nullable id)body headers:(nullable NSDictionary<NSString *, NSString *> *)headers callback:(void (^)(ARTHTTPPaginatedResponse *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr;
+- (BOOL)request:(NSString *)method
+           path:(NSString *)path
+         params:(nullable NSStringDictionary *)params
+           body:(nullable id)body
+        headers:(nullable NSStringDictionary *)headers
+       callback:(ARTHTTPPaginatedCallback)callback
+          error:(NSError *_Nullable *_Nullable)errorPtr;
 
-- (BOOL)stats:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback;
-- (BOOL)stats:(nullable ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr;
+- (BOOL)stats:(ARTPaginatedStatsCallback)callback;
+
+- (BOOL)stats:(nullable ARTStatsQuery *)query
+     callback:(ARTPaginatedStatsCallback)callback
+        error:(NSError *_Nullable *_Nullable)errorPtr;
 
 #if TARGET_OS_IOS
 @property (readonly) ARTLocalDevice *device;

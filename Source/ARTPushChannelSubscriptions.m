@@ -31,23 +31,23 @@
     return self;
 }
 
-- (void)save:(ARTPushChannelSubscription *)channelSubscription callback:(void (^)(ARTErrorInfo *_Nullable))callback {
+- (void)save:(ARTPushChannelSubscription *)channelSubscription callback:(ARTCallback)callback {
     [_internal save:channelSubscription callback:callback];
 }
 
-- (void)listChannels:(void (^)(ARTPaginatedResult<NSString *> *_Nullable,  ARTErrorInfo *_Nullable))callback {
+- (void)listChannels:(ARTPaginatedTextCallback)callback {
     [_internal listChannels:callback];
 }
 
-- (void)list:(NSDictionary<NSString *, NSString *> *)params callback:(void (^)(ARTPaginatedResult<ARTPushChannelSubscription *> *_Nullable,  ARTErrorInfo *_Nullable))callback {
+- (void)list:(NSStringDictionary *)params callback:(ARTPaginatedPushChannelCallback)callback {
     [_internal list:params callback:callback];
 }
 
-- (void)remove:(ARTPushChannelSubscription *)subscription callback:(void (^)(ARTErrorInfo *_Nullable))callback {
+- (void)remove:(ARTPushChannelSubscription *)subscription callback:(ARTCallback)callback {
     [_internal remove:subscription callback:callback];
 }
 
-- (void)removeWhere:(NSDictionary<NSString *, NSString *> *)params callback:(void (^)(ARTErrorInfo *_Nullable))callback {
+- (void)removeWhere:(NSStringDictionary *)params callback:(ARTCallback)callback {
     [_internal removeWhere:params callback:callback];
 }
 
@@ -70,9 +70,9 @@
     return self;
 }
 
-- (void)save:(ARTPushChannelSubscription *)channelSubscription callback:(void (^)(ARTErrorInfo *error))callback {
+- (void)save:(ARTPushChannelSubscription *)channelSubscription callback:(ARTCallback)callback {
     if (callback) {
-        void (^userCallback)(ARTErrorInfo *error) = callback;
+        ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
@@ -116,7 +116,7 @@ dispatch_async(_queue, ^{
 });
 }
 
-- (void)listChannels:(void (^)(ARTPaginatedResult<NSString *> * _Nullable, ARTErrorInfo *error))callback {
+- (void)listChannels:(ARTPaginatedTextCallback)callback {
     if (callback) {
         void (^userCallback)(ARTPaginatedResult *, ARTErrorInfo *error) = callback;
         callback = ^(ARTPaginatedResult *result, ARTErrorInfo *error) {
@@ -138,7 +138,7 @@ dispatch_async(_queue, ^{
 });
 }
 
-- (void)list:(NSDictionary<NSString *, NSString *> *)params callback:(void (^)(ARTPaginatedResult<ARTPushChannelSubscription *> *result, ARTErrorInfo *error))callback {
+- (void)list:(NSStringDictionary *)params callback:(ARTPaginatedPushChannelCallback)callback {
     if (callback) {
         void (^userCallback)(ARTPaginatedResult *, ARTErrorInfo *error) = callback;
         callback = ^(ARTPaginatedResult *result, ARTErrorInfo *error) {
@@ -161,9 +161,9 @@ dispatch_async(_queue, ^{
 });
 }
 
-- (void)remove:(ARTPushChannelSubscription *)subscription callback:(void (^)(ARTErrorInfo *_Nullable))callback {
+- (void)remove:(ARTPushChannelSubscription *)subscription callback:(ARTCallback)callback {
     if (callback) {
-        void (^userCallback)(ARTErrorInfo *error) = callback;
+        ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
@@ -187,9 +187,9 @@ dispatch_async(_queue, ^{
 });
 }
 
-- (void)removeWhere:(NSDictionary<NSString *, NSString *> *)params callback:(void (^)(ARTErrorInfo *error))callback {
+- (void)removeWhere:(NSStringDictionary *)params callback:(ARTCallback)callback {
     if (callback) {
-        void (^userCallback)(ARTErrorInfo *error) = callback;
+        ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
@@ -202,7 +202,7 @@ dispatch_async(_queue, ^{
 });
 }
 
-- (void)_removeWhere:(NSDictionary<NSString *, NSString *> *)params callback:(void (^)(ARTErrorInfo *error))callback {
+- (void)_removeWhere:(NSStringDictionary *)params callback:(ARTCallback)callback {
     NSURLComponents *components = [[NSURLComponents alloc] initWithURL:[NSURL URLWithString:@"/push/channelSubscriptions"] resolvingAgainstBaseURL:NO];
     components.queryItems = [params art_asURLQueryItems];
     if (_rest.options.pushFullWait) {

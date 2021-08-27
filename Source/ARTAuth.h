@@ -42,16 +42,22 @@ NS_ASSUME_NONNULL_BEGIN
  - Parameter authOptions: Authentication options (optional).
  - Parameter callback: Completion callback (ARTTokenDetails, NSError).
  */
-- (void)requestToken:(nullable ARTTokenParams *)tokenParams withOptions:(nullable ARTAuthOptions *)authOptions
-            callback:(void (^)(ARTTokenDetails *_Nullable, NSError *_Nullable))callback;
-- (void)requestToken:(void (^)(ARTTokenDetails *_Nullable, NSError *_Nullable))callback;
+- (void)requestToken:(nullable ARTTokenParams *)tokenParams
+         withOptions:(nullable ARTAuthOptions *)authOptions
+            callback:(ARTTokenDetailsCallback)callback;
 
-- (void)authorize:(nullable ARTTokenParams *)tokenParams options:(nullable ARTAuthOptions *)authOptions
-         callback:(void (^)(ARTTokenDetails *_Nullable, NSError *_Nullable))callback;
-- (void)authorize:(void (^)(ARTTokenDetails *_Nullable, NSError *_Nullable))callback;
+- (void)requestToken:(ARTTokenDetailsCallback)callback;
 
-- (void)createTokenRequest:(nullable ARTTokenParams *)tokenParams options:(nullable ARTAuthOptions *)options
+- (void)authorize:(nullable ARTTokenParams *)tokenParams
+          options:(nullable ARTAuthOptions *)authOptions
+         callback:(ARTTokenDetailsCallback)callback;
+
+- (void)authorize:(ARTTokenDetailsCallback)callback;
+
+- (void)createTokenRequest:(nullable ARTTokenParams *)tokenParams
+                   options:(nullable ARTAuthOptions *)options
                   callback:(void (^)(ARTTokenRequest *_Nullable tokenRequest, NSError *_Nullable error))callback;
+
 - (void)createTokenRequest:(void (^)(ARTTokenRequest *_Nullable tokenRequest, NSError *_Nullable error))callback;
 
 @end

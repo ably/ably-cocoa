@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init:(dispatch_queue_t)queue;
 
-- (NSObject<ARTCancellable> *)get:(NSURLRequest *)request completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback;
+- (NSObject<ARTCancellable> *)get:(NSURLRequest *)request completion:(ARTURLRequestCallback)callback;
 
 - (void)finishTasksAndInvalidate;
 

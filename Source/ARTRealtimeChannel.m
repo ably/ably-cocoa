@@ -88,7 +88,7 @@
     [_internal publish:name data:data];
 }
 
-- (void)publish:(nullable NSString *)name data:(nullable id)data callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback {
+- (void)publish:(nullable NSString *)name data:(nullable id)data callback:(nullable ARTCallback)callback {
     [_internal publish:name data:data callback:callback];
 }
 
@@ -96,7 +96,7 @@
     [_internal publish:name data:data clientId:clientId];
 }
 
-- (void)publish:(nullable NSString *)name data:(nullable id)data clientId:(NSString *)clientId callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback {
+- (void)publish:(nullable NSString *)name data:(nullable id)data clientId:(NSString *)clientId callback:(nullable ARTCallback)callback {
     [_internal publish:name data:data clientId:clientId callback:callback];
 }
 
@@ -104,7 +104,7 @@
     [_internal publish:name data:data extras:extras];
 }
 
-- (void)publish:(nullable NSString *)name data:(nullable id)data extras:(nullable id<ARTJsonCompatible>)extras callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback {
+- (void)publish:(nullable NSString *)name data:(nullable id)data extras:(nullable id<ARTJsonCompatible>)extras callback:(nullable ARTCallback)callback {
     [_internal publish:name data:data extras:extras callback:callback];
 }
 
@@ -112,7 +112,7 @@
     [_internal publish:name data:data clientId:clientId extras:extras];
 }
 
-- (void)publish:(nullable NSString *)name data:(nullable id)data clientId:(NSString *)clientId extras:(nullable id<ARTJsonCompatible>)extras callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback {
+- (void)publish:(nullable NSString *)name data:(nullable id)data clientId:(NSString *)clientId extras:(nullable id<ARTJsonCompatible>)extras callback:(nullable ARTCallback)callback {
     [_internal publish:name data:data clientId:clientId extras:extras callback:callback];
 }
 
@@ -120,11 +120,11 @@
     [_internal publish:messages];
 }
 
-- (void)publish:(NSArray<ARTMessage *> *)messages callback:(nullable void (^)(ARTErrorInfo *_Nullable error))callback {
+- (void)publish:(NSArray<ARTMessage *> *)messages callback:(nullable ARTCallback)callback {
     [_internal publish:messages callback:callback];
 }
 
-- (void)history:(void(^)(ARTPaginatedResult<ARTMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
+- (void)history:(ARTPaginatedMessagesCallback)callback {
     [_internal history:callback];
 }
 
@@ -136,7 +136,7 @@
     [_internal attach];
 }
 
-- (void)attach:(nullable void (^)(ARTErrorInfo *_Nullable))callback {
+- (void)attach:(nullable ARTCallback)callback {
     [_internal attach:callback];
 }
 
@@ -144,23 +144,23 @@
     [_internal detach];
 }
 
-- (void)detach:(nullable void (^)(ARTErrorInfo *_Nullable))callback {
+- (void)detach:(nullable ARTCallback)callback {
     [_internal detach:callback];
 }
 
-- (ARTEventListener *_Nullable)subscribe:(void (^)(ARTMessage *message))callback {
+- (ARTEventListener *_Nullable)subscribe:(ARTMessageCallback)callback {
     return [_internal subscribe:callback];
 }
 
-- (ARTEventListener *_Nullable)subscribeWithAttachCallback:(nullable void (^)(ARTErrorInfo *_Nullable))onAttach callback:(void (^)(ARTMessage *message))cb {
+- (ARTEventListener *_Nullable)subscribeWithAttachCallback:(nullable ARTCallback)onAttach callback:(ARTMessageCallback)cb {
     return [_internal subscribeWithAttachCallback:onAttach callback:cb];
 }
 
-- (ARTEventListener *_Nullable)subscribe:(NSString *)name callback:(void (^)(ARTMessage *message))cb {
+- (ARTEventListener *_Nullable)subscribe:(NSString *)name callback:(ARTMessageCallback)cb {
     return [_internal subscribe:name callback:cb];
 }
 
-- (ARTEventListener *_Nullable)subscribe:(NSString *)name onAttach:(nullable void (^)(ARTErrorInfo *_Nullable))onAttach callback:(void (^)(ARTMessage *message))cb {
+- (ARTEventListener *_Nullable)subscribe:(NSString *)name onAttach:(nullable ARTCallback)onAttach callback:(ARTMessageCallback)cb {
     return [_internal subscribe:name onAttach:onAttach callback:cb];
 }
 
@@ -176,19 +176,19 @@
     [_internal unsubscribe:name listener:listener];
 }
 
-- (BOOL)history:(ARTRealtimeHistoryQuery *_Nullable)query callback:(void(^)(ARTPaginatedResult<ARTMessage *> *_Nullable result, ARTErrorInfo *_Nullable error))callback error:(NSError *_Nullable *_Nullable)errorPtr {
+- (BOOL)history:(ARTRealtimeHistoryQuery *_Nullable)query callback:(ARTPaginatedMessagesCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr {
     return [_internal history:query callback:callback error:errorPtr];
 }
 
-- (ARTEventListener *)on:(void (^)(ARTChannelStateChange * _Nullable))cb {
+- (ARTEventListener *)on:(ARTChannelStateCallback)cb {
     return [_internal on:cb];
 }
 
-- (ARTEventListener *)once:(ARTChannelEvent)event callback:(void (^)(ARTChannelStateChange * _Nullable))cb {
+- (ARTEventListener *)once:(ARTChannelEvent)event callback:(ARTChannelStateCallback)cb {
     return [_internal once:event callback:cb];
 }
 
-- (ARTEventListener *)once:(void (^)(ARTChannelStateChange * _Nullable))cb {
+- (ARTEventListener *)once:(ARTChannelStateCallback)cb {
     return [_internal once:cb];
 }
 
@@ -204,7 +204,7 @@
     [_internal off];
 }
 
-- (nonnull ARTEventListener *)on:(ARTChannelEvent)event callback:(nonnull void (^)(ARTChannelStateChange * _Nullable))cb {
+- (nonnull ARTEventListener *)on:(ARTChannelEvent)event callback:(nonnull ARTChannelStateCallback)cb {
     return [_internal on:event callback:cb];
 }
 
@@ -212,7 +212,7 @@
     return [_internal getOptions];
 }
 
-- (void)setOptions:(ARTRealtimeChannelOptions *_Nullable)options callback:(nullable void (^)(ARTErrorInfo *_Nullable))cb {
+- (void)setOptions:(ARTRealtimeChannelOptions *_Nullable)options callback:(nullable ARTCallback)cb {
     [_internal setOptions:options callback:cb];
 }
 
@@ -309,9 +309,9 @@ dispatch_sync(_queue, ^{
 }
 #endif
 
-- (void)internalPostMessages:(id)data callback:(void (^)(ARTErrorInfo *__art_nullable error))callback {
+- (void)internalPostMessages:(id)data callback:(ARTCallback)callback {
     if (callback) {
-        void (^userCallback)(ARTErrorInfo *__art_nullable error) = callback;
+        ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *__art_nullable error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
@@ -361,9 +361,9 @@ dispatch_sync(_queue, ^{
     [self sync:nil];
 }
 
-- (void)sync:(void (^)(ARTErrorInfo *__art_nullable error))callback {
+- (void)sync:(ARTCallback)callback {
     if (callback) {
-        void (^userCallback)(ARTErrorInfo *__art_nullable error) = callback;
+        ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *__art_nullable error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
@@ -423,7 +423,7 @@ dispatch_sync(_queue, ^{
     } ackCallback:nil];
 }
 
-- (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(void (^)(ARTStatus *))cb {
+- (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(ARTStatusCallback)cb {
     switch (self.state_nosync) {
         case ARTRealtimeChannelSuspended:
         case ARTRealtimeChannelFailed: {
@@ -456,13 +456,13 @@ dispatch_sync(_queue, ^{
     }
 }
 
-- (ARTEventListener *)subscribe:(void (^)(ARTMessage * _Nonnull))callback {
+- (ARTEventListener *)subscribe:(ARTMessageCallback)callback {
     return [self subscribeWithAttachCallback:nil callback:callback];
 }
 
-- (ARTEventListener *)subscribeWithAttachCallback:(void (^)(ARTErrorInfo * _Nullable))onAttach callback:(void (^)(ARTMessage * _Nonnull))cb {
+- (ARTEventListener *)subscribeWithAttachCallback:(ARTCallback)onAttach callback:(ARTMessageCallback)cb {
     if (cb) {
-        void (^userCallback)(ARTMessage *_Nonnull m) = cb;
+        ARTMessageCallback userCallback = cb;
         cb = ^(ARTMessage *_Nonnull m) {
             if (self.state_nosync != ARTRealtimeChannelAttached) { //RTL17
                 return;
@@ -473,7 +473,7 @@ dispatch_sync(_queue, ^{
         };
     }
     if (onAttach) {
-        void (^userOnAttach)(ARTErrorInfo *_Nullable m) = onAttach;
+        ARTCallback userOnAttach = onAttach;
         onAttach = ^(ARTErrorInfo *_Nullable e) {
             dispatch_async(self->_userQueue, ^{
                 userOnAttach(e);
@@ -497,13 +497,13 @@ dispatch_sync(_queue, ^{
     return listener;
 }
 
-- (ARTEventListener *)subscribe:(NSString *)name callback:(void (^)(ARTMessage * _Nonnull))cb {
+- (ARTEventListener *)subscribe:(NSString *)name callback:(ARTMessageCallback)cb {
     return [self subscribe:name onAttach:nil callback:cb];
 }
 
-- (ARTEventListener *)subscribe:(NSString *)name onAttach:(void (^)(ARTErrorInfo * _Nullable))onAttach callback:(void (^)(ARTMessage * _Nonnull))cb {
+- (ARTEventListener *)subscribe:(NSString *)name onAttach:(ARTCallback)onAttach callback:(ARTMessageCallback)cb {
     if (cb) {
-        void (^userCallback)(ARTMessage *_Nonnull m) = cb;
+        ARTMessageCallback userCallback = cb;
         cb = ^(ARTMessage *_Nonnull m) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(m);
@@ -511,7 +511,7 @@ dispatch_sync(_queue, ^{
         };
     }
     if (onAttach) {
-        void (^userOnAttach)(ARTErrorInfo *_Nullable m) = onAttach;
+        ARTCallback userOnAttach = onAttach;
         onAttach = ^(ARTErrorInfo *_Nullable e) {
             dispatch_async(self->_userQueue, ^{
                 userOnAttach(e);
@@ -558,19 +558,19 @@ dispatch_sync(_queue, ^{
 });
 }
 
-- (ARTEventListener *)on:(ARTChannelEvent)event callback:(void (^)(ARTChannelStateChange *))cb {
+- (ARTEventListener *)on:(ARTChannelEvent)event callback:(ARTChannelStateCallback)cb {
     return [self.statesEventEmitter on:[ARTEvent newWithChannelEvent:event] callback:cb];
 }
 
-- (ARTEventListener *)on:(void (^)(ARTChannelStateChange *))cb {
+- (ARTEventListener *)on:(ARTChannelStateCallback)cb {
     return [self.statesEventEmitter on:cb];
 }
 
-- (ARTEventListener *)once:(ARTChannelEvent)event callback:(void (^)(ARTChannelStateChange *))cb {
+- (ARTEventListener *)once:(ARTChannelEvent)event callback:(ARTChannelStateCallback)cb {
     return [self.statesEventEmitter once:[ARTEvent newWithChannelEvent:event] callback:cb];
 }
 
-- (ARTEventListener *)once:(void (^)(ARTChannelStateChange *))cb {
+- (ARTEventListener *)once:(ARTChannelStateCallback)cb {
     return [self.statesEventEmitter once:cb];
 }
 
@@ -923,9 +923,9 @@ dispatch_sync(_queue, ^{
     [self attach:nil];
 }
 
-- (void)attach:(void (^)(ARTErrorInfo *))callback {
+- (void)attach:(ARTCallback)callback {
     if (callback) {
-        void (^userCallback)(ARTErrorInfo *__art_nullable error) = callback;
+        ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *__art_nullable error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
@@ -937,7 +937,7 @@ dispatch_sync(_queue, ^{
 });
 }
 
-- (void)_attach:(void (^)(ARTErrorInfo *__art_nullable))callback {
+- (void)_attach:(ARTCallback)callback {
     switch (self.state_nosync) {
         case ARTRealtimeChannelAttaching:
             [self.realtime.logger verbose:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) already attaching", _realtime, self, self.name];
@@ -953,7 +953,7 @@ dispatch_sync(_queue, ^{
     [self internalAttach:callback withReason:nil];
 }
 
-- (void)reattachWithReason:(ARTErrorInfo *)reason callback:(void (^)(ARTErrorInfo *))callback {
+- (void)reattachWithReason:(ARTErrorInfo *)reason callback:(ARTCallback)callback {
     switch (self.state_nosync) {
         case ARTRealtimeChannelAttached:
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) attached and will reattach", _realtime, self, self.name];
@@ -971,15 +971,15 @@ dispatch_sync(_queue, ^{
     [self internalAttach:callback withReason:reason];
 }
 
-- (void)internalAttach:(void (^)(ARTErrorInfo *))callback withReason:(ARTErrorInfo *)reason {
+- (void)internalAttach:(ARTCallback)callback withReason:(ARTErrorInfo *)reason {
     [self internalAttach:callback reason:reason storeErrorInfo:false channelSerial:nil];
 }
 
-- (void)internalAttach:(void (^)(ARTErrorInfo *))callback channelSerial:(NSString *)channelSerial reason:(ARTErrorInfo *)reason {
+- (void)internalAttach:(ARTCallback)callback channelSerial:(NSString *)channelSerial reason:(ARTErrorInfo *)reason {
     [self internalAttach:callback reason:reason storeErrorInfo:false channelSerial:channelSerial];
 }
 
-- (void)internalAttach:(void (^)(ARTErrorInfo *))callback reason:(ARTErrorInfo *)reason storeErrorInfo:(BOOL)storeErrorInfo channelSerial:(NSString *)channelSerial {
+- (void)internalAttach:(ARTCallback)callback reason:(ARTErrorInfo *)reason storeErrorInfo:(BOOL)storeErrorInfo channelSerial:(NSString *)channelSerial {
     switch (self.state_nosync) {
         case ARTRealtimeChannelDetaching: {
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) attach after the completion of Detaching", _realtime, self, self.name];
@@ -1009,7 +1009,7 @@ dispatch_sync(_queue, ^{
     [self attachAfterChecks:callback channelSerial:channelSerial];
 }
 
-- (void)attachAfterChecks:(void (^)(ARTErrorInfo * _Nullable))callback channelSerial:(NSString *)channelSerial {
+- (void)attachAfterChecks:(ARTCallback)callback channelSerial:(NSString *)channelSerial {
     ARTProtocolMessage *attachMessage = [[ARTProtocolMessage alloc] init];
     attachMessage.action = ARTProtocolMessageAttach;
     attachMessage.channel = self.name;
@@ -1045,9 +1045,9 @@ dispatch_sync(_queue, ^{
     }
 }
 
-- (void)detach:(void (^)(ARTErrorInfo * _Nullable))callback {
+- (void)detach:(ARTCallback)callback {
     if (callback) {
-        void (^userCallback)(ARTErrorInfo *__art_nullable error) = callback;
+        ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *__art_nullable error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
@@ -1059,7 +1059,7 @@ dispatch_sync(_queue, ^{
 });
 }
 
-- (void)_detach:(void (^)(ARTErrorInfo * _Nullable))callback {
+- (void)_detach:(ARTCallback)callback {
     switch (self.state_nosync) {
         case ARTRealtimeChannelInitialized:
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) can't detach when not attached", _realtime, self, self.name];
@@ -1110,7 +1110,7 @@ dispatch_sync(_queue, ^{
     [self detachAfterChecks:callback];
 }
 
-- (void)detachAfterChecks:(void (^)(ARTErrorInfo * _Nullable))callback {
+- (void)detachAfterChecks:(ARTCallback)callback {
     ARTProtocolMessage *detachMessage = [[ARTProtocolMessage alloc] init];
     detachMessage.action = ARTProtocolMessageDetach;
     detachMessage.channel = self.name;
@@ -1155,11 +1155,11 @@ dispatch_sync(_queue, ^{
     return self.realtime.auth.clientId_nosync;
 }
 
-- (void)history:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, ARTErrorInfo *))callback {
+- (void)history:(ARTPaginatedMessagesCallback)callback {
     [self history:[[ARTRealtimeHistoryQuery alloc] init] callback:callback error:nil];
 }
 
-- (BOOL)history:(ARTRealtimeHistoryQuery *)query callback:(void (^)(__GENERIC(ARTPaginatedResult, ARTMessage *) *, ARTErrorInfo *))callback error:(NSError **)errorPtr {
+- (BOOL)history:(ARTRealtimeHistoryQuery *)query callback:(ARTPaginatedMessagesCallback)callback error:(NSError **)errorPtr {
     query.realtimeChannel = self;
     return [_restChannel history:query callback:callback error:errorPtr];
 }
@@ -1220,9 +1220,9 @@ dispatch_sync(_queue, ^{
     return (ARTRealtimeChannelOptions *)[self options_nosync];
 }
 
-- (void)setOptions:(ARTRealtimeChannelOptions *_Nullable)options callback:(nullable void (^)(ARTErrorInfo *_Nullable))callback {
+- (void)setOptions:(ARTRealtimeChannelOptions *_Nullable)options callback:(nullable ARTCallback)callback {
     if (callback) {
-        void (^userCallback)(ARTErrorInfo *_Nullable error) = callback;
+        ARTCallback userCallback = callback;
         callback = ^(ARTErrorInfo *_Nullable error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
@@ -1234,7 +1234,7 @@ dispatch_sync(_queue, ^{
     });
 }
 
-- (void)setOptions_nosync:(ARTRealtimeChannelOptions *_Nullable)options callback:(nullable void (^)(ARTErrorInfo *_Nullable))callback {
+- (void)setOptions_nosync:(ARTRealtimeChannelOptions *_Nullable)options callback:(nullable ARTCallback)callback {
     [self setOptions_nosync:options];
 
     if (!options.modes && !options.params) {
