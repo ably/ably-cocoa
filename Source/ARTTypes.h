@@ -18,8 +18,12 @@
 @class ARTTokenParams;
 @class ARTTokenRequest;
 @class ARTTokenDetails;
+@class ARTHTTPPaginatedResponse;
 @class ARTPaginatedResult<ItemType>;
 @class ARTStats;
+@class ARTPushChannelSubscription;
+@class ARTDeviceDetails;
+@protocol ARTTokenDetailsCompatible;
 
 // More context
 typedef NSDictionary<NSString *, id> ARTJsonObject;
@@ -229,11 +233,39 @@ NSString *generateNonce(void);
 @interface NSURLSessionTask (ARTCancellable) <ARTCancellable>
 @end
 
+#pragma mark - Typedefs
+
+typedef NSDictionary<NSString *, NSString *> NSStringDictionary;
+
 /**
- Signature of a generic completion handler which, when called, will either
- present with nil result or nil error, but never both nil.
+ Signatures of completion handlers to improve readability and maintainability in properties and method parameters.
+ Either result/response or error can be nil but not both.
  */
-typedef void (^ARTCompletionHandler)(id result, NSError * error);
+typedef void (^ARTCallback)(ARTErrorInfo *_Nullable error);
+typedef void (^ARTResultCallback)(id _Nullable result, NSError *_Nullable error);
+typedef void (^ARTDateTimeCallback)(NSDate *_Nullable result, NSError *_Nullable error);
+
+typedef void (^ARTMessageCallback)(ARTMessage *message);
+typedef void (^ARTChannelStateCallback)(ARTChannelStateChange *stateChange);
+typedef void (^ARTConnectionStateCallback)(ARTConnectionStateChange *stateChange);
+typedef void (^ARTPresenceMessageCallback)(ARTPresenceMessage *message);
+typedef void (^ARTPresenceMessagesCallback)(NSArray<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error);
+
+typedef void (^ARTStatusCallback)(ARTStatus *status);
+typedef void (^ARTURLRequestCallback)(NSHTTPURLResponse *_Nullable result, NSData *_Nullable data, NSError *_Nullable error);
+typedef void (^ARTTokenDetailsCallback)(ARTTokenDetails *_Nullable result, NSError *_Nullable error);
+typedef void (^ARTTokenDetailsCompatibleCallback)(id<ARTTokenDetailsCompatible> _Nullable result, NSError *_Nullable error);
+typedef void (^ARTAuthCallback)(ARTTokenParams *params, ARTTokenDetailsCompatibleCallback callback);
+
+typedef void (^ARTHTTPPaginatedCallback)(ARTHTTPPaginatedResponse *_Nullable response, ARTErrorInfo *_Nullable error);
+typedef void (^ARTPaginatedStatsCallback)(ARTPaginatedResult<ARTStats *> *_Nullable result, ARTErrorInfo *_Nullable error);
+typedef void (^ARTPaginatedPresenceCallback)(ARTPaginatedResult<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error);
+typedef void (^ARTPaginatedPushChannelCallback)(ARTPaginatedResult<ARTPushChannelSubscription *> *_Nullable result, ARTErrorInfo *_Nullable error);
+typedef void (^ARTPaginatedMessagesCallback)(ARTPaginatedResult<ARTMessage *> *_Nullable result, ARTErrorInfo *_Nullable error);
+typedef void (^ARTPaginatedDeviceDetailsCallback)(ARTPaginatedResult<ARTDeviceDetails *> *_Nullable result, ARTErrorInfo *_Nullable error);
+typedef void (^ARTPaginatedTextCallback)(ARTPaginatedResult<NSString *> *_Nullable result, ARTErrorInfo *_Nullable error);
+
+#pragma mark - Functions
 
 /**
  Wraps the given callback in an ARTCancellable, offering the following
@@ -247,6 +279,6 @@ typedef void (^ARTCompletionHandler)(id result, NSError * error);
  to invoke the callback. The wrapper will only work for as long as the returned
  instance remains allocated (i.e. has a strong reference to it somewhere).
  */
-NSObject<ARTCancellable> * artCancellableFromCallback(ARTCompletionHandler callback, _Nonnull ARTCompletionHandler *_Nonnull wrapper);
+NSObject<ARTCancellable> * artCancellableFromCallback(ARTResultCallback callback, _Nonnull ARTResultCallback *_Nonnull wrapper);
 
 NS_ASSUME_NONNULL_END

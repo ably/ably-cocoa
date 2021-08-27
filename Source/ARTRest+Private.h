@@ -21,8 +21,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// ARTRest private methods that are used internally and for internal testing
 @interface ARTRestInternal : NSObject <ARTRestProtocol, ARTHTTPAuthenticatedExecutor>
 
-typedef void (^CompletionBlock)(NSHTTPURLResponse * _Nullable, NSData * _Nullable, NSError * _Nullable);
-
 @property (nonatomic, strong, readonly) ARTRestChannelsInternal *channels;
 @property (nonatomic, strong, readonly) ARTAuthInternal *auth;
 @property (nonatomic, strong, readonly) ARTPushInternal *push;
@@ -57,15 +55,18 @@ typedef void (^CompletionBlock)(NSHTTPURLResponse * _Nullable, NSData * _Nullabl
 @property (readwrite, assign, nonatomic) int fallbackCount;
 
 - (instancetype)initWithOptions:(ARTClientOptions *)options realtime:(ARTRealtimeInternal *_Nullable)realtime;
-- (nullable NSObject<ARTCancellable> *)_time:(void (^)(NSDate *_Nullable, NSError *_Nullable))callback;
+
+- (nullable NSObject<ARTCancellable> *)_time:(ARTDateTimeCallback)callback;
 
 // MARK: ARTHTTPExecutor
 
-- (nullable NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request completion:(nullable CompletionBlock)callback;
+- (nullable NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request completion:(nullable ARTURLRequestCallback)callback;
 
 // MARK: Internal
 
-- (nullable NSObject<ARTCancellable> *)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(CompletionBlock)callback;
+- (nullable NSObject<ARTCancellable> *)executeRequest:(NSMutableURLRequest *)request
+                                       withAuthOption:(ARTAuthentication)authOption
+                                           completion:(ARTURLRequestCallback)callback;
 
 - (nullable NSObject<ARTCancellable> *)internetIsUp:(void (^)(BOOL isUp))cb;
 

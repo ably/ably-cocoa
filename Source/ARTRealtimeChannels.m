@@ -39,7 +39,7 @@
     return [[ARTRealtimeChannel alloc] initWithInternal:[_internal get:(NSString *)name options:options] queuedDealloc:_dealloc];
 }
 
-- (void)release:(NSString *)name callback:(nullable void (^)(ARTErrorInfo *_Nullable))errorInfo {
+- (void)release:(NSString *)name callback:(nullable ARTCallback)errorInfo {
     [_internal release:(NSString *)name callback:errorInfo];
 }
 
@@ -99,11 +99,11 @@
     return [_channels exists:name];
 }
 
-- (void)release:(NSString *)name callback:(void (^)(ARTErrorInfo * _Nullable))cb {
+- (void)release:(NSString *)name callback:(ARTCallback)cb {
     name = [_channels addPrefix:name];
 
     if (cb) {
-        void (^userCallback)(ARTErrorInfo *error) = cb;
+        ARTCallback userCallback = cb;
         cb = ^(ARTErrorInfo *error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);

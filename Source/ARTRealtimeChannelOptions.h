@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtimeChannelOptions : ARTChannelOptions
 
-@property (nonatomic, strong, nullable) NSDictionary<NSString *, NSString *> *params;
+@property (nonatomic, strong, nullable) NSStringDictionary *params;
 @property (nonatomic, assign) ARTChannelMode modes;
 
 @end

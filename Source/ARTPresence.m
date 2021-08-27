@@ -10,7 +10,7 @@
 
 @implementation ARTPresence
 
-- (void)history:(void (^)(ARTPaginatedResult<ARTPresenceMessage *> *, ARTErrorInfo *))callback {
+- (void)history:(ARTPaginatedPresenceCallback)callback {
     NSAssert(false, @"-[%@ %@] should always be overriden.", self.class, NSStringFromSelector(_cmd));
 }
 

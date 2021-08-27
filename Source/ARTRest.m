@@ -99,19 +99,25 @@
     return [[ARTRest alloc] initWithToken:tokenId];
 }
 
-- (void)time:(void (^)(NSDate *_Nullable, NSError *_Nullable))callback {
+- (void)time:(ARTDateTimeCallback)callback {
     [_internal time:callback];
 }
 
-- (BOOL)request:(NSString *)method path:(NSString *)path params:(nullable NSDictionary<NSString *, NSString *> *)params body:(nullable id)body headers:(nullable NSDictionary<NSString *, NSString *> *)headers callback:(void (^)(ARTHTTPPaginatedResponse *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr {
+- (BOOL)request:(NSString *)method
+           path:(NSString *)path
+         params:(nullable NSStringDictionary *)params
+           body:(nullable id)body
+        headers:(nullable NSStringDictionary *)headers
+       callback:(ARTHTTPPaginatedCallback)callback
+          error:(NSError *_Nullable *_Nullable)errorPtr {
     return [_internal request:(NSString *)method path:path params:params body:body headers:headers callback:callback error:errorPtr];
 }
 
-- (BOOL)stats:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback {
+- (BOOL)stats:(ARTPaginatedStatsCallback)callback {
     return [_internal stats:callback];
 }
 
-- (BOOL)stats:(nullable ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr {
+- (BOOL)stats:(nullable ARTStatsQuery *)query callback:(ARTPaginatedStatsCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr {
     return [_internal stats:query callback:callback error:errorPtr];
 }
 
@@ -226,7 +232,9 @@
     return [NSString stringWithFormat:@"%@ - \n\t %@;", [super description], info];
 }
 
-- (NSObject<ARTCancellable> *)executeRequest:(NSMutableURLRequest *)request withAuthOption:(ARTAuthentication)authOption completion:(CompletionBlock)callback {
+- (NSObject<ARTCancellable> *)executeRequest:(NSMutableURLRequest *)request
+                              withAuthOption:(ARTAuthentication)authOption
+                                  completion:(ARTURLRequestCallback)callback {
     request.URL = [NSURL URLWithString:request.URL.relativeString relativeToURL:self.baseUrl];
     
     switch (authOption) {
@@ -246,11 +254,16 @@
     }
 }
 
-- (NSObject<ARTCancellable> *)executeRequestWithAuthentication:(NSMutableURLRequest *)request withMethod:(ARTAuthMethod)method completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback {
+- (NSObject<ARTCancellable> *)executeRequestWithAuthentication:(NSMutableURLRequest *)request
+                                                    withMethod:(ARTAuthMethod)method
+                                                    completion:(ARTURLRequestCallback)callback {
     return [self executeRequestWithAuthentication:request withMethod:method force:NO completion:callback];
 }
 
-- (NSObject<ARTCancellable> *)executeRequestWithAuthentication:(NSMutableURLRequest *)request withMethod:(ARTAuthMethod)method force:(BOOL)force completion:(void (^)(NSHTTPURLResponse *_Nullable, NSData *_Nullable, NSError *_Nullable))callback {
+- (NSObject<ARTCancellable> *)executeRequestWithAuthentication:(NSMutableURLRequest *)request
+                                                    withMethod:(ARTAuthMethod)method
+                                                         force:(BOOL)force
+                                                    completion:(ARTURLRequestCallback)callback {
     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p calculating authorization %lu", self, (unsigned long)method];
     __block NSObject<ARTCancellable> *task;
 
@@ -287,19 +300,18 @@
     return task;
 }
 
-- (NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request completion:(CompletionBlock)callback {
-    return [self executeRequest:request completion:callback fallbacks:nil retries:0 originalRequestId:nil];
+- (NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request completion:(ARTURLRequestCallback)callback {
+    return [self executeRequest:request fallbacks:nil retries:0 originalRequestId:nil completion:callback];
 }
 
 /**
  originalRequestId is used only for fallback requests. It should never be used to execute request by yourself, it's passed from within below method.
  */
 - (NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request
-                                  completion:(CompletionBlock)callback
                                    fallbacks:(ARTFallback *)fallbacks
                                      retries:(NSUInteger)retries
-                           originalRequestId:(nullable NSString *)originalRequestId {
-    
+                           originalRequestId:(nullable NSString *)originalRequestId
+                                  completion:(ARTURLRequestCallback)callback {
     NSString *requestId = nil;
     __block ARTFallback *blockFallbacks = fallbacks;
     
@@ -411,8 +423,11 @@
                     NSMutableURLRequest *newRequest = [request copy];
                     [newRequest setValue:host forHTTPHeaderField:@"Host"];
                     newRequest.URL = [NSURL copyFromURL:request.URL withHost:host];
-                    task = [self executeRequest:newRequest completion:callback fallbacks:blockFallbacks retries:retries + 1 originalRequestId:originalRequestId];
-                    
+                    task = [self executeRequest:newRequest
+                                      fallbacks:blockFallbacks
+                                        retries:retries + 1
+                              originalRequestId:originalRequestId
+                                     completion:callback];
                     return;
                 }
             }
@@ -479,21 +494,21 @@
     return [NSString stringWithFormat:@"Bearer %@", tokenBase64];
 }
 
-- (void)time:(void(^)(NSDate *time, NSError *error))callback {
+- (void)time:(ARTDateTimeCallback)callback {
     if (callback) {
-        void (^userCallback)(NSDate *time, NSError *error) = callback;
+        ARTDateTimeCallback userCallback = callback;
         callback = ^(NSDate *time, NSError *error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(time, error);
             });
         };
     }
-dispatch_async(_queue, ^{
-    [self _time:callback];
-});
+    dispatch_async(_queue, ^{
+        [self _time:callback];
+    });
 }
 
-- (NSObject<ARTCancellable> *)_time:(void(^)(NSDate *time, NSError *error))callback {
+- (NSObject<ARTCancellable> *)_time:(ARTDateTimeCallback)callback {
     NSURL *requestUrl = [NSURL URLWithString:@"/time" relativeToURL:self.baseUrl];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl];
     request.HTTPMethod = @"GET";
@@ -516,7 +531,14 @@ dispatch_async(_queue, ^{
     }];
 }
 
-- (BOOL)request:(NSString *)method path:(NSString *)path params:(nullable NSDictionary<NSString *, NSString *> *)params body:(nullable id)body headers:(nullable NSDictionary<NSString *, NSString *> *)headers callback:(void (^)(ARTHTTPPaginatedResponse *_Nullable, ARTErrorInfo *_Nullable))callback error:(NSError *_Nullable *_Nullable)errorPtr {
+- (BOOL)request:(NSString *)method
+           path:(NSString *)path
+         params:(nullable NSStringDictionary *)params
+           body:(nullable id)body
+        headers:(nullable NSStringDictionary *)headers
+       callback:(ARTHTTPPaginatedCallback)callback
+          error:(NSError **)errorPtr {
+    
     if (callback) {
         void (^userCallback)(ARTHTTPPaginatedResponse *, ARTErrorInfo *) = callback;
         callback = ^(ARTHTTPPaginatedResponse *r, ARTErrorInfo *e) {
@@ -618,13 +640,13 @@ dispatch_async(_queue, ^{
     }];
 }
 
-- (BOOL)stats:(void (^)(ARTPaginatedResult<ARTStats *> *_Nullable, ARTErrorInfo *_Nullable))callback {
+- (BOOL)stats:(ARTPaginatedStatsCallback)callback {
     return [self stats:[[ARTStatsQuery alloc] init] callback:callback error:nil];
 }
 
-- (BOOL)stats:(ARTStatsQuery *)query callback:(void (^)(ARTPaginatedResult<ARTStats *> *, ARTErrorInfo *))callback error:(NSError **)errorPtr {
+- (BOOL)stats:(ARTStatsQuery *)query callback:(ARTPaginatedStatsCallback)callback error:(NSError **)errorPtr {
     if (callback) {
-        void (^userCallback)(ARTPaginatedResult<ARTStats *> *, ARTErrorInfo *) = callback;
+        ARTPaginatedStatsCallback userCallback = callback;
         callback = ^(ARTPaginatedResult<ARTStats *> *r, ARTErrorInfo *e) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(r, e);
