@@ -369,6 +369,56 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
 
 @end
 
+@implementation NSObject (ARTArchive)
+
+- (nullable NSData *)art_archive {
+#if TARGET_OS_MACCATALYST // if (@available(iOS 13.0, macCatalyst 13.0, ... doesn't help
+    NSError *error;
+    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self requiringSecureCoding:false error:&error];
+    if (error) {
+        NSLog(@"ARTDeviceIdentityTokenDetails Archive failed: %@", error);
+    }
+    return data;
+#else
+    if (@available(macOS 10.13, iOS 11, tvOS 11, *)) {
+        NSError *error;
+        NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self requiringSecureCoding:false error:&error];
+        if (error) {
+            NSLog(@"ARTDeviceIdentityTokenDetails Archive failed: %@", error);
+        }
+        return data;
+    }
+    else {
+        return [NSKeyedArchiver archivedDataWithRootObject:self];
+    }
+#endif
+}
+
++ (nullable id)art_unarchive:(NSData *)data {
+#if TARGET_OS_MACCATALYST
+    NSError *error;
+    id result = [NSKeyedUnarchiver unarchivedObjectOfClass:[self class] fromData:data error:&error];
+    if (error) {
+        NSLog(@"ARTDeviceIdentityTokenDetails Unarchive failed: %@", error);
+    }
+    return result;
+#else
+    if (@available(macOS 10.13, iOS 11, tvOS 11, *)) {
+        NSError *error;
+        id result = [NSKeyedUnarchiver unarchivedObjectOfClass:[self class] fromData:data error:&error];
+        if (error) {
+            NSLog(@"ARTDeviceIdentityTokenDetails Unarchive failed: %@", error);
+        }
+        return result;
+    }
+    else {
+        return [NSKeyedUnarchiver unarchiveObjectWithData:data];
+    }
+#endif
+}
+
+@end
+
 NSObject<ARTCancellable> * artCancellableFromCallback(const ARTResultCallback callback, ARTResultCallback *const wrapper) {
     if (!wrapper) {
         [NSException raise:NSInternalInconsistencyException format:@"wrapper is nil."];

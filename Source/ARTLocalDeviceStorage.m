@@ -75,9 +75,9 @@
     [dictionary setObject:(__bridge id)kSecClassGenericPassword forKey:(__bridge id)kSecClass];
     [dictionary setObject:serviceName forKey:(__bridge id)kSecAttrService];
     [dictionary setObject:account forKey:(__bridge id)kSecAttrAccount];
-    #if TARGET_OS_IPHONE
-    [dictionary setObject:(__bridge id)kSecAttrAccessibleAlwaysThisDeviceOnly forKey:(__bridge id)kSecAttrAccessible];
-    #endif
+#if TARGET_OS_IPHONE
+    [dictionary setObject:(__bridge id)kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly forKey:(__bridge id)kSecAttrAccessible];
+#endif
     return dictionary;
 }
 

@@ -230,6 +230,11 @@ NSString *generateNonce(void);
 - (id)art_peek;
 @end
 
+@interface NSObject (ARTArchive)
+- (nullable NSData *)art_archive;
++ (nullable id)art_unarchive:(NSData *)data;
+@end
+
 @interface NSURLSessionTask (ARTCancellable) <ARTCancellable>
 @end
 

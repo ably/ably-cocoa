@@ -70,9 +70,6 @@ extern NSString *_Nullable ARTSRStreamNetworkServiceTypeFromURLRequest(NSURLRequ
             break;
         case NSURLNetworkServiceTypeResponsiveData:
             break;
-        case NSURLNetworkServiceTypeVoIP:
-            networkServiceType = NSStreamNetworkServiceTypeVoIP;
-            break;
         case NSURLNetworkServiceTypeVideo:
             networkServiceType = NSStreamNetworkServiceTypeVideo;
             break;
@@ -82,6 +79,12 @@ extern NSString *_Nullable ARTSRStreamNetworkServiceTypeFromURLRequest(NSURLRequ
         case NSURLNetworkServiceTypeVoice:
             networkServiceType = NSStreamNetworkServiceTypeVoice;
             break;
+
+#if !TARGET_OS_MACCATALYST
+        case NSURLNetworkServiceTypeVoIP:
+            networkServiceType = NSStreamNetworkServiceTypeVoIP;
+            break;
+#endif
 
 #if _ARTSR_XCODE_VERSION_11_OR_LATER
         case NSURLNetworkServiceTypeAVStreaming:

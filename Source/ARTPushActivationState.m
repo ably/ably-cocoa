@@ -64,34 +64,11 @@
 #pragma mark - Archive/Unarchive
 
 - (NSData *)archive {
-    if (@available(macOS 10.13, iOS 11, tvOS 11, *)) {
-        NSError *error;
-        NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self requiringSecureCoding:false error:&error];
-        if (error) {
-            NSLog(@"ARTPushActivationState Archive failed: %@", error);
-        }
-        return data;
-    }
-    else {
-        return [NSKeyedArchiver archivedDataWithRootObject:self];
-    }
+    return [self art_archive];
 }
 
 + (ARTPushActivationState *)unarchive:(NSData *)data {
-    if (!data) {
-        return nil;
-    }
-    if (@available(macOS 10.13, iOS 11, tvOS 11, *)) {
-        NSError *error;
-        ARTPushActivationState *result = [NSKeyedUnarchiver unarchivedObjectOfClass:[self class] fromData:data error:&error];
-        if (error) {
-            NSLog(@"ARTPushActivationState Unarchive failed: %@", error);
-        }
-        return result;
-    }
-    else {
-        return [NSKeyedUnarchiver unarchiveObjectWithData:data];
-    }
+    return [NSObject art_unarchive:data];
 }
 
 @end
