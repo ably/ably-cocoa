@@ -285,19 +285,6 @@ dispatch_sync(_queue, ^{
     return _state;
 }
 
-- (NSString *)stateString_nosync {
-    switch (self.state_nosync) {
-        case ARTRealtimeChannelInitialized: return @"initialized";
-        case ARTRealtimeChannelAttaching: return @"attaching";
-        case ARTRealtimeChannelAttached: return @"attached";
-        case ARTRealtimeChannelDetaching: return @"detaching";
-        case ARTRealtimeChannelDetached: return @"detached";
-        case ARTRealtimeChannelSuspended: return @"suspended";
-        case ARTRealtimeChannelFailed: return @"failed";
-    }
-    return nil;
-}
-
 - (BOOL)canBeReattached {
     switch (self.state_nosync) {
         case ARTRealtimeChannelAttaching:
@@ -979,10 +966,10 @@ dispatch_sync(_queue, ^{
 
 - (void)reattachWithReason:(ARTErrorInfo *)reason callback:(ARTCallback)callback {
     if ([self canBeReattached]) {
-        [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) %@ and will reattach", _realtime, self, self.name, self.stateString_nosync];
+        [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) %@ and will reattach", _realtime, self, self.name, ARTRealtimeChannelStateToStr(self.state_nosync)];
         [self internalAttach:callback withReason:reason];
     } else {
-        [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) %@ should not reattach", _realtime, self, self.name, self.stateString_nosync];
+        [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) %@ should not reattach", _realtime, self, self.name, ARTRealtimeChannelStateToStr(self.state_nosync)];
     }
 }
 
