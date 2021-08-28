@@ -6,6 +6,7 @@
 //  Copyright © 2018 Ably. All rights reserved.
 //
 
+#import "ARTTypes.h"
 #import "ARTDeviceIdentityTokenDetails.h"
 
 NSString *const ARTCoderTokenKey = @"token";
@@ -72,34 +73,11 @@ NSString *const ARTCoderClientIdKey = @"clientId";
 #pragma mark - Archive/Unarchive
 
 - (NSData *)archive {
-    if (@available(macOS 10.13, iOS 11, tvOS 11, *)) {
-        NSError *error;
-        NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self requiringSecureCoding:false error:&error];
-        if (error) {
-            NSLog(@"ARTDeviceIdentityTokenDetails Archive failed: %@", error);
-        }
-        return data;
-    }
-    else {
-        return [NSKeyedArchiver archivedDataWithRootObject:self];
-    }
+    return [self art_archive];
 }
 
 + (ARTDeviceIdentityTokenDetails *)unarchive:(NSData *)data {
-    if (!data) {
-        return nil;
-    }
-    if (@available(macOS 10.13, iOS 11, tvOS 11, *)) {
-        NSError *error;
-        ARTDeviceIdentityTokenDetails *result = [NSKeyedUnarchiver unarchivedObjectOfClass:[self class] fromData:data error:&error];
-        if (error) {
-            NSLog(@"ARTDeviceIdentityTokenDetails Unarchive failed: %@", error);
-        }
-        return result;
-    }
-    else {
-        return [NSKeyedUnarchiver unarchiveObjectWithData:data];
-    }
+    return [NSObject art_unarchive:data];
 }
 
 @end

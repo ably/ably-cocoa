@@ -237,11 +237,15 @@
     __weak typeof(self) wself = self;
     NSURLRequest *request = [NSURLRequest requestWithURL:PACurl];
     NSURLSessionConfiguration *config = [NSURLSessionConfiguration ephemeralSessionConfiguration];
+#if TARGET_OS_MACCATALYST // if (@available(iOS 13.0, macCatalyst 13.0, ... doesn't help
+    config.TLSMinimumSupportedProtocolVersion = tls_protocol_version_TLSv12;
+#else
     if (@available(iOS 13.0, macOS 10.15, tvOS 13.0, *)) {
         config.TLSMinimumSupportedProtocolVersion = tls_protocol_version_TLSv12;
     } else {
         config.TLSMinimumSupportedProtocol = kTLSProtocol12;
     }
+#endif
     NSURLSession *session = [NSURLSession sessionWithConfiguration:config delegate:nil delegateQueue:nil];
     [[session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
         __strong typeof(wself) sself = wself;
