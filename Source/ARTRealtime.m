@@ -779,7 +779,7 @@
     
     // Resuming
     if (_resuming) {
-        if (![message.connectionId isEqualToString:self.connection.id_nosync]) {
+        if (![message.connectionId isEqualToString:self.connection.id_nosync]) { // RTN15c3
             [self.logger warn:@"RT:%p connection \"%@\" has reconnected, but resume failed. Reattaching any attached channels", self, message.connectionId];
             // Reattach all channels
             for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
