@@ -101,6 +101,9 @@
 		84569FA626B46F4E00457CF5 /* ClientOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84569FA226B46ADC00457CF5 /* ClientOptions.swift */; };
 		84569FA726B46F4F00457CF5 /* ClientOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84569FA226B46ADC00457CF5 /* ClientOptions.swift */; };
 		84569FA826B46F5100457CF5 /* ClientOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84569FA226B46ADC00457CF5 /* ClientOptions.swift */; };
+		848ED97326E50D0F0087E800 /* ObjcppTest.mm in Sources */ = {isa = PBXBuildFile; fileRef = 848ED97226E50D0F0087E800 /* ObjcppTest.mm */; settings = {COMPILER_FLAGS = "-fmodules"; }; };
+		848ED97426E50D0F0087E800 /* ObjcppTest.mm in Sources */ = {isa = PBXBuildFile; fileRef = 848ED97226E50D0F0087E800 /* ObjcppTest.mm */; settings = {COMPILER_FLAGS = "-fmodules"; }; };
+		848ED97526E50D0F0087E800 /* ObjcppTest.mm in Sources */ = {isa = PBXBuildFile; fileRef = 848ED97226E50D0F0087E800 /* ObjcppTest.mm */; settings = {COMPILER_FLAGS = "-fmodules"; }; };
 		850BFB4C1B79323C009D0ADD /* ARTPaginatedResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 850BFB4A1B79323C009D0ADD /* ARTPaginatedResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		850BFB4D1B79323C009D0ADD /* ARTPaginatedResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 850BFB4B1B79323C009D0ADD /* ARTPaginatedResult.m */; };
 		851674EF1B7BA5CD00D35169 /* Stats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 851674EE1B7BA5CD00D35169 /* Stats.swift */; };
@@ -1009,6 +1012,7 @@
 		8412FDF32661AC7B001FE9E6 /* Quick.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Quick.xcframework; path = Carthage/Build/Quick.xcframework; sourceTree = "<group>"; };
 		8412FDF42661AC7B001FE9E6 /* Nimble.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Nimble.xcframework; path = Carthage/Build/Nimble.xcframework; sourceTree = "<group>"; };
 		84569FA226B46ADC00457CF5 /* ClientOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientOptions.swift; sourceTree = "<group>"; };
+		848ED97226E50D0F0087E800 /* ObjcppTest.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ObjcppTest.mm; sourceTree = "<group>"; };
 		850BFB4A1B79323C009D0ADD /* ARTPaginatedResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPaginatedResult.h; sourceTree = "<group>"; };
 		850BFB4B1B79323C009D0ADD /* ARTPaginatedResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPaginatedResult.m; sourceTree = "<group>"; };
 		851674EE1B7BA5CD00D35169 /* Stats.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Stats.swift; sourceTree = "<group>"; };
@@ -1468,6 +1472,7 @@
 				856AAC951B6E30C800B07119 /* AblySpec-Bridging-Header.h */,
 				D780846C1C68B3E50083009D /* NSObject+TestSuite.h */,
 				56190953238C3D3200A862A6 /* CryptoTest.m */,
+				848ED97226E50D0F0087E800 /* ObjcppTest.mm */,
 				D780846D1C68B3E50083009D /* NSObject+TestSuite.m */,
 				856AAC8E1B6E304B00B07119 /* Info-iOS.plist */,
 				D7093C0E219E2DB200723F17 /* Info-macOS.plist */,
@@ -2632,6 +2637,7 @@
 				D74EFAEB1C4D09B500CFF98E /* RealtimeClientChannel.swift in Sources */,
 				851674EF1B7BA5CD00D35169 /* Stats.swift in Sources */,
 				EB1AE0CE1C5C3A4900D62250 /* Utilities.swift in Sources */,
+				848ED97326E50D0F0087E800 /* ObjcppTest.mm in Sources */,
 				D798554823EB96C000946BE2 /* DeltaCodec.swift in Sources */,
 				D74CBC0B212EC22800D090E4 /* RestPaginated.swift in Sources */,
 				D72304701BB72CED00F1ABDA /* RealtimeClient.swift in Sources */,
@@ -2768,6 +2774,7 @@
 				560579DA24AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */,
 				D7093C1C219E466400723F17 /* ReadmeExamples.swift in Sources */,
 				D7093C27219E466E00723F17 /* RealtimeClientChannels.swift in Sources */,
+				848ED97426E50D0F0087E800 /* ObjcppTest.mm in Sources */,
 				D7093C28219E466E00723F17 /* RealtimeClientPresence.swift in Sources */,
 				D7093C24219E466E00723F17 /* RealtimeClient.swift in Sources */,
 				D7093C1F219E466E00723F17 /* RestClientStats.swift in Sources */,
@@ -2794,6 +2801,7 @@
 			files = (
 				D7093C75219EE26400723F17 /* RestClient.swift in Sources */,
 				D7093C7D219EE26400723F17 /* RealtimeClientChannel.swift in Sources */,
+				848ED97526E50D0F0087E800 /* ObjcppTest.mm in Sources */,
 				D7093C7F219EE26400723F17 /* RealtimeClientPresence.swift in Sources */,
 				D7093C73219EE26000723F17 /* ReadmeExamples.swift in Sources */,
 				560579DB24AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */,
