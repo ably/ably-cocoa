@@ -153,9 +153,46 @@ static NSString *statsUnitToString(ARTStatsGranularity unit) {
 
 @end
 
+@implementation ARTStatsPushCount
+
+- (instancetype)initWithSucceeded:(NSUInteger)succeeded
+                          invalid:(NSUInteger)invalid
+                        attempted:(NSUInteger)attempted
+                           failed:(NSUInteger)failed
+                         messages:(NSUInteger)messages
+                           direct:(NSUInteger)direct {
+    self = [super init];
+    if (self) {
+        _succeeded = succeeded;
+        _invalid = invalid;
+        _attempted = attempted;
+        _failed = failed;
+        _messages = messages;
+        _direct = direct;
+    }
+    return self;
+}
+
++ (instancetype)empty {
+    return [[ARTStatsPushCount alloc] initWithSucceeded:0 invalid:0 attempted:0 failed:0 messages:0 direct:0];
+}
+
+@end
+
 @implementation ARTStats
 
-- (instancetype)initWithAll:(ARTStatsMessageTypes *)all inbound:(ARTStatsMessageTraffic *)inbound outbound:(ARTStatsMessageTraffic *)outbound persisted:(ARTStatsMessageTypes *)persisted connections:(ARTStatsConnectionTypes *)connections channels:(ARTStatsResourceCount *)channels apiRequests:(ARTStatsRequestCount *)apiRequests tokenRequests:(ARTStatsRequestCount *)tokenRequests intervalId:(NSString *)intervalId {
+- (instancetype)initWithAll:(ARTStatsMessageTypes *)all
+                    inbound:(ARTStatsMessageTraffic *)inbound
+                   outbound:(ARTStatsMessageTraffic *)outbound
+                  persisted:(ARTStatsMessageTypes *)persisted
+                connections:(ARTStatsConnectionTypes *)connections
+                   channels:(ARTStatsResourceCount *)channels
+                apiRequests:(ARTStatsRequestCount *)apiRequests
+              tokenRequests:(ARTStatsRequestCount *)tokenRequests
+                     pushes:(ARTStatsPushCount *)pushes
+                 inProgress:(NSString *)inProgress
+                      count:(NSUInteger)count
+                 intervalId:(NSString *)intervalId {
     self = [super init];
     if (self) {
         _all = all;
@@ -166,6 +203,9 @@ static NSString *statsUnitToString(ARTStatsGranularity unit) {
         _channels = channels;
         _apiRequests = apiRequests;
         _tokenRequests = tokenRequests;
+        _pushes = pushes;
+        _inProgress = inProgress;
+        _count = count;
         _intervalId = intervalId;
     }
     return self;
@@ -179,7 +219,7 @@ static NSString *statsUnitToString(ARTStatsGranularity unit) {
     return formats;
 }
 
-+ (NSDate *)fromIntervalId:(NSString *)intervalId {
++ (NSDate *)dateFromIntervalId:(NSString *)intervalId {
     for (NSString *format in [ARTStats intervalFormatString]) {
         if ([format length] == [intervalId length]) {
             NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
@@ -213,7 +253,19 @@ static NSString *statsUnitToString(ARTStatsGranularity unit) {
 }
 
 - (NSDate *)intervalTime {
-    return [[self class] fromIntervalId:self.intervalId];
+    return [[self class] dateFromIntervalId:self.intervalId];
+}
+
+- (NSDate *)dateFromInProgress {
+    for (NSString *format in [ARTStats intervalFormatString]) {
+        if ([format length] == [_inProgress length]) {
+            NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+            formatter.dateFormat = format;
+            formatter.timeZone = [NSTimeZone timeZoneWithName:@"UTC"];
+            return [formatter dateFromString:_inProgress];
+        }
+    }
+    @throw [ARTException exceptionWithName:NSInvalidArgumentException reason:@"invalid inProgress" userInfo:nil];
 }
 
 @end
