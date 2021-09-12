@@ -16,6 +16,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/**
+ ARTClientOptions is used in the AblyRealtime constructor’s options argument.
+ */
 @interface ARTClientOptions : ARTAuthOptions
 
 @property (readwrite, strong, nonatomic) NSString *restHost;

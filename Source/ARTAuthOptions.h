@@ -21,6 +21,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface NSString (ARTTokenDetailsCompatible) <ARTTokenDetailsCompatible>
 @end
 
+/**
+ ARTAuthOptions is used when making authentication requests. These options will supplement or override the corresponding options given when the library was instantiated.
+ */
 @interface ARTAuthOptions : NSObject<NSCopying>
 
 /**

@@ -11,6 +11,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/**
+ ARTStatsGranularity is an enum specifying the granularity of a ARTStats interval.
+ */
 typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
     ARTStatsGranularityMinute,
     ARTStatsGranularityHour,
@@ -118,6 +121,9 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 
 @end
 
+/**
+ A Stats object represents an application’s statistics for the specified interval and time period. Ably aggregates statistics globally for all accounts and applications, and makes these available both through our statistics API as well as your application dashboard.
+ */
 @interface ARTStats : NSObject
 
 + (NSDate *)fromIntervalId:(NSString *)intervalId;

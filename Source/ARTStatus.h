@@ -66,7 +66,7 @@ FOUNDATION_EXPORT NSString *const ARTFallbackIncompatibleOptionsException;
 FOUNDATION_EXPORT NSString *const ARTAblyMessageNoMeansToRenewToken;
 
 /**
- Ably client error class
+ An ErrorInfo is a type encapsulating error information containing an Ably-specific error code and generic status code.
  */
 @interface ARTErrorInfo : NSError
 
