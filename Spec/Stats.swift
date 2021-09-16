@@ -176,6 +176,88 @@ class Stats: QuickSpec {
                     expect(stats?.intervalTime()).to(equal(expected))
                 }
             }
+            
+            context("push") {
+                let data: JSON = [
+                    [ "push":
+                        [
+                            "messages": 10,
+                            "notifications": [
+                                "invalid": 1,
+                                "attempted": 2,
+                                "successful": 3,
+                                "failed": 4
+                            ],
+                            "directPublishes": 5
+                        ]
+                    ]
+                ]
+                let rawData = try! data.rawData()
+                let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
+                let subject = stats?.pushes
+
+                it("should return a ARTStatsPushCount object") {
+                    expect(subject).to(beAnInstanceOf(ARTStatsPushCount.self))
+                }
+
+                it("should return value for messages count") {
+                    expect(subject?.messages).to(equal(10))
+                }
+
+                it("should return value for invalid notifications") {
+                    expect(subject?.invalid).to(equal(1))
+                }
+
+                it("should return value for attempted notifications") {
+                    expect(subject?.attempted).to(equal(2))
+                }
+
+                it("should return value for successful notifications") {
+                    expect(subject?.succeeded).to(equal(3))
+                }
+
+                it("should return value for failed notifications") {
+                    expect(subject?.failed).to(equal(4))
+                }
+
+                it("should return value for directPublishes") {
+                    expect(subject?.direct).to(equal(5))
+                }
+            }
+
+            context("inProgress") {
+                let data: JSON = [
+                    [ "inProgress": "2004-02-01:05:06" ]
+                ]
+                let rawData = try! data.rawData()
+                let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
+
+                it("should return a Date object representing the last sub-interval included in this statistic") {
+                    let dateComponents = NSDateComponents()
+                    dateComponents.year = 2004
+                    dateComponents.month = 2
+                    dateComponents.day = 1
+                    dateComponents.hour = 5
+                    dateComponents.minute = 6
+                    dateComponents.timeZone = NSTimeZone(name: "UTC") as TimeZone?
+
+                    let expected = NSCalendar(identifier: NSCalendar.Identifier.gregorian)?.date(from: dateComponents as DateComponents)
+
+                    expect(stats?.dateFromInProgress()).to(equal(expected))
+                }
+            }
+            
+            context("count") {
+                let data: JSON = [
+                    [ "count": 55 ]
+                ]
+                let rawData = try! data.rawData()
+                let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
+
+                it("should return value for number of lower-level stats") {
+                    expect(stats?.count).to(equal(55))
+                }
+            }
         }
     }
 }
