@@ -36,6 +36,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - ARTRealtime
 
+/**
+ The protocol upon which the top level object ``ARTRealtime`` is implemented.
+ */
 @protocol ARTRealtimeProtocol <NSObject>
 
 #if TARGET_OS_IOS
@@ -46,14 +49,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init NS_UNAVAILABLE;
 
 /**
- Instance the Ably library with the given options.
- :param options: see ARTClientOptions for options
+ Instantiates the Ably library with the given options.
+ :param options: see ``ARTClientOptions`` for options
  */
 - (instancetype)initWithOptions:(ARTClientOptions *)options;
 
 /** 
-Instance the Ably library using a key only. This is simply a convenience constructor for the simplest case of instancing the library with a key for basic authentication and no other options.
-:param key; String key (obtained from application dashboard)
+ Instance the Ably library using a key only. This is simply a convenience constructor for the simplest case of instancing the library with a key for basic authentication and no other options.
+ :param key; String key (obtained from application dashboard)
 */
 - (instancetype)initWithKey:(NSString *)key;
 - (instancetype)initWithToken:(NSString *)token;
@@ -69,6 +72,11 @@ Instance the Ably library using a key only. This is simply a convenience constru
 
 @end
 
+/**
+ The top-level class to be instanced for the Ably Realtime library.
+ The Ably Realtime library will open and maintain a connection to the Ably realtime servers as soon as it is instantiated.
+ The ``ARTConnection`` object provides a straightforward API to monitor and manage connection state.
+ */
 @interface ARTRealtime : NSObject <ARTRealtimeProtocol>
 
 @property (readonly) ARTConnection *connection;
