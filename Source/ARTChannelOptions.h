@@ -14,7 +14,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- Channel options are used for setting channel parameters and configuring encryption.
+ ARTChannelOptions are used for setting channel parameters and configuring encryption.
  */
 @interface ARTChannelOptions : NSObject
 

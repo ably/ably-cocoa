@@ -17,7 +17,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- ARTClientOptions is used in the AblyRealtime constructor’s options argument.
+ ARTClientOptions is used in the ``ARTRealtime`` object constructor’s argument.
  */
 @interface ARTClientOptions : ARTAuthOptions
 

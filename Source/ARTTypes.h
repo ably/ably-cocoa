@@ -161,7 +161,8 @@ NSString *generateNonce(void);
 #pragma mark - ARTConnectionStateChange
 
 /**
- A ARTConnectionStateChange is a type encapsulating state change information emitted by the Connection object. See Connection#on to register a listener for one or more events.
+ ARTConnectionStateChange is a type encapsulating state change information emitted by the ``ARTConnection`` object.
+ See ``ARTConnection/on`` to register a listener for one or more events.
  */
 @interface ARTConnectionStateChange : NSObject
 
