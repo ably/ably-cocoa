@@ -1,1 +1,0 @@
-../../../Source/ARTConnectionDetails.h

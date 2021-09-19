@@ -1,1 +1,0 @@
-../../../Source/ARTDeviceDetails.h
