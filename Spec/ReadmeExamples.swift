@@ -2,7 +2,6 @@
 //  ReadmeExamples.swift
 //
 //
-//  Created by Toni Cárdenas on 9/2/16.
 //
 //
 

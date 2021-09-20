@@ -2,8 +2,6 @@
 //  Utilities.swift
 //  ably
 //
-//  Created by Toni Cárdenas on 30/1/16.
-//  Copyright © 2016 Ably. All rights reserved.
 //
 
 import Ably

@@ -2,8 +2,6 @@
 //  Stringifiable.swift
 //  Ably
 //
-//  Created by Łukasz Szyszkowski on 21/06/2021.
-//  Copyright © 2021 Ably. All rights reserved.
 //
 
 import Ably

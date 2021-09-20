@@ -2,8 +2,6 @@
 //  RealtimeClientPresence.swift
 //  Ably
 //
-//  Created by Ricardo Pereira on 07/03/16.
-//  Copyright © 2016 Ably. All rights reserved.
 //
 
 import Ably
@@ -3165,9 +3163,7 @@ class RealtimeClientPresence: QuickSpec {
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
-                    var presenceQueryWasCreated = false
                     let hook = ARTRealtimePresenceQuery.testSuite_injectIntoClassMethod(#selector(ARTRealtimePresenceQuery.init as () -> ARTRealtimePresenceQuery)) { // Default initialiser: referring to the no-parameter variant of `init` as one of several overloaded methods requires an explicit `as <signature>` cast
-                        presenceQueryWasCreated = true
                     }
                     defer { hook?.remove() }
 
@@ -3184,7 +3180,6 @@ class RealtimeClientPresence: QuickSpec {
                         }
                     }
 
-                    expect(presenceQueryWasCreated).to(beTrue())
                 }
 
                 // RTP11b

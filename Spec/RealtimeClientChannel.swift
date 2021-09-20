@@ -2,8 +2,6 @@
 //  RealtimeClient.channel.swift
 //  ably
 //
-//  Created by Ricardo Pereira on 18/01/16.
-//  Copyright © 2016 Ably. All rights reserved.
 //
 
 import Ably
