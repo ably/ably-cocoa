@@ -2,8 +2,6 @@
 //  ARTRestPresence.h
 //  ably
 //
-//  Created by Ricardo Pereira on 12/11/15.
-//  Copyright © 2015 Ably. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>

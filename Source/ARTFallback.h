@@ -2,8 +2,6 @@
 //  ARTFallback.h
 //  ably
 //
-//  Created by vic on 19/06/2015.
-//  Copyright (c) 2015 Ably. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>

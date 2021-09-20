@@ -2,8 +2,6 @@
 //  NSURL+ARTUtils.m
 //  Ably
 //
-//  Created by Łukasz Szyszkowski on 07/07/2021.
-//  Copyright © 2021 Ably. All rights reserved.
 //
 
 #import "ARTNSURL+ARTUtils.h"

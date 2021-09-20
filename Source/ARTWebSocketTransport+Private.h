@@ -2,8 +2,6 @@
 //  ARTWebSocketTransport+Private.h
 //  ably
 //
-//  Created by Ricardo Pereira on 17/2/16.
-//  Copyright © 2016 Ably. All rights reserved.
 //
 
 #import <Ably/ARTWebSocketTransport.h>

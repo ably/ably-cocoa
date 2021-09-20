@@ -2,8 +2,6 @@
 //  ARTAuth+Private.h
 //  ably
 //
-//  Created by Ricardo Pereira on 03/10/2015.
-//  Copyright (c) 2015 Ably. All rights reserved.
 //
 
 #import <Ably/ARTAuth.h>

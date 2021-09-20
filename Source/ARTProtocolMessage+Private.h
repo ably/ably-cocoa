@@ -1,8 +1,6 @@
 //
 //  ARTProtocolMessage+Private.h
 //
-//  Created by Toni Cárdenas on 26/01/2016.
-//  Copyright (c) 2014 Ably. All rights reserved.
 //
 
 /// ARTProtocolMessageFlag bitmask

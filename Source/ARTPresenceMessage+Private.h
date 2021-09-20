@@ -2,8 +2,6 @@
 //  ARTPresenceMessage+Private.h
 //  Ably
 //
-//  Created by Ricardo Pereira on 1/2/17.
-//  Copyright © 2017 Ably. All rights reserved.
 //
 
 #import <Ably/ARTPresenceMessage.h>

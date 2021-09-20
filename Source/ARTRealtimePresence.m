@@ -2,8 +2,6 @@
 //  ARTRealtimePresence.m
 //  ably
 //
-//  Created by Ricardo Pereira on 12/11/15.
-//  Copyright © 2015 Ably. All rights reserved.
 //
 
 #import "ARTRealtimePresence+Private.h"

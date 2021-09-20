@@ -2,8 +2,6 @@
 //  ARTPushChannelSubscriptions.m
 //  Ably
 //
-//  Created by Ricardo Pereira on 20/02/2017.
-//  Copyright © 2017 Ably. All rights reserved.
 //
 
 #import "ARTPushChannelSubscriptions+Private.h"
@@ -99,7 +97,6 @@ dispatch_async(_queue, ^{
 
     [self->_logger debug:__FILE__ line:__LINE__ message:@"save channel subscription with request %@", request];
     [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
-        if (response.statusCode == 200 /*Ok*/ || response.statusCode == 201 /*Created*/) {
             [self->_logger debug:__FILE__ line:__LINE__ message:@"channel subscription saved successfully"];
             callback(nil);
         }

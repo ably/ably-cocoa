@@ -2,8 +2,6 @@
 //  ARTDeviceIdentityToken.m
 //  Ably
 //
-//  Created by Ricardo Pereira on 21/03/2018.
-//  Copyright © 2018 Ably. All rights reserved.
 //
 
 #import "ARTTypes.h"

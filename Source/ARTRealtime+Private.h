@@ -1,8 +1,6 @@
 //
 //  ARTRealtime+Private.h
 //
-//  Created by vic on 24/03/2015.
-//  Copyright (c) 2015 Ably. All rights reserved.
 //
 
 #import <Ably/ARTRealtime.h>

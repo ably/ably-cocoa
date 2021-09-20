@@ -2,8 +2,6 @@
 //  ARTFormEncode.h
 //  Ably
 //
-//  Created by Ricardo Pereira on 27/09/2019.
-//  Copyright © 2019 Ably. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>

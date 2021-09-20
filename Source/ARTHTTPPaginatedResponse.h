@@ -2,8 +2,6 @@
 //  ARTHTTPPaginatedResponse.h
 //  Ably
 //
-//  Created by Ricardo Pereira on 17/08/2018.
-//  Copyright © 2018 Ably. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>

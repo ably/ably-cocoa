@@ -2,8 +2,6 @@
 //
 //  ARTRealtimeChannels+Private.h
 //
-//  Created by Ricardo Pereira on 07/03/2016.
-//  Copyright (c) 2015 Ably. All rights reserved.
 //
 
 #import <Ably/ARTRealtimeChannels.h>

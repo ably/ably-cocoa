@@ -2,8 +2,6 @@
 //  NSMutableURLRequest+ARTUtils.m
 //  Ably
 //
-//  Created by Łukasz Szyszkowski on 05/07/2021.
-//  Copyright © 2021 Ably. All rights reserved.
 //
 
 #import "ARTNSMutableURLRequest+ARTUtils.h"

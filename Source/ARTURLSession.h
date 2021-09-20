@@ -2,7 +2,6 @@
 //  ARTURLSession.h
 //  Ably
 //
-//  Copyright © 2019 Ably. All rights reserved.
 //
 
 #ifndef ARTURLSession_h

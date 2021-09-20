@@ -2,8 +2,6 @@
 //  ARTPushActivationState.m
 //  Ably
 //
-//  Created by Ricardo Pereira on 22/02/2017.
-//  Copyright © 2017 Ably. All rights reserved.
 //
 
 #import "ARTPushActivationState.h"

@@ -2,8 +2,6 @@
 //  ARTFallbackHosts.m
 //  Ably
 //
-//  Created by Ricardo Pereira on 29/04/2021.
-//  Copyright © 2021 Ably. All rights reserved.
 //
 
 #import "ARTFallbackHosts.h"
