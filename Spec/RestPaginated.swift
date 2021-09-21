@@ -1,9 +1,3 @@
-//
-//  RestPaginated.swift
-//  Ably
-//
-//
-
 import Ably
 import Nimble
 import Quick

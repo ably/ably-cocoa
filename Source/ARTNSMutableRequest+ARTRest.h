@@ -1,9 +1,3 @@
-//
-//  ARTNSMutableRequest+ARTRest.h
-//  Ably
-//
-//
-
 #import <Foundation/Foundation.h>
 
 @protocol ARTEncoder;

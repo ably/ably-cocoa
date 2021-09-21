@@ -1,9 +1,3 @@
-//
-//  ARTRealtimeTransport.m
-//  ably
-//
-//
-
 #import <Foundation/Foundation.h>
 #import "ARTRealtimeTransport.h"
 

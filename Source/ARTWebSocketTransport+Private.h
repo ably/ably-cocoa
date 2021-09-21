@@ -1,9 +1,3 @@
-//
-//  ARTWebSocketTransport+Private.h
-//  ably
-//
-//
-
 #import <Ably/ARTWebSocketTransport.h>
 #import <Ably/CompatibilityMacros.h>
 #import <Ably/ARTSRWebSocket.h>

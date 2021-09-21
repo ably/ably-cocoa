@@ -1,9 +1,3 @@
-//
-//  ARTPushAdmin.h
-//  Ably
-//
-//
-
 #import <Foundation/Foundation.h>
 #import <Ably/ARTTypes.h>
 #import <Ably/ARTPushDeviceRegistrations.h>

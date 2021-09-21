@@ -1,9 +1,3 @@
-//
-//  ARTJsonLikeEncoder.m
-//  Ably
-//
-//
-
 #import <Foundation/Foundation.h>
 
 #import "ARTJsonLikeEncoder.h"

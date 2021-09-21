@@ -1,9 +1,3 @@
-//
-//  NSError+ARTUtils.m
-//  Ably
-//
-//
-
 #import "ARTNSError+ARTUtils.h"
 #import "ARTStatus.h"
 

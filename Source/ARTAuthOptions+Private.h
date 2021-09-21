@@ -1,9 +1,3 @@
-//
-//  ARTAuthOptions+Private.h
-//  Ably
-//
-//
-
 #import <Ably/ARTAuthOptions.h>
 #import <Ably/CompatibilityMacros.h>
 

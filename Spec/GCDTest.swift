@@ -1,8 +1,3 @@
-//
-//  GCDTest.swift
-//  Ably
-//
-//
 import XCTest
 
 class GCDTest: XCTestCase {

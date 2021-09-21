@@ -1,8 +1,3 @@
-//
-//  ARTLog.m
-//
-//
-
 #import "ARTLog+Private.h"
 #import "ARTNSDate+ARTUtil.h"
 

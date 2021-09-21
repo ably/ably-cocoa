@@ -1,9 +1,3 @@
-//
-//  TestUtilities.swift
-//  ably
-//
-//
-
 import Ably
 import Foundation
 import XCTest

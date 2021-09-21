@@ -1,9 +1,3 @@
-//
-//  ARTChannels.h
-//  ably
-//
-//
-
 #import <Foundation/Foundation.h>
 
 @class ARTRest;

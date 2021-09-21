@@ -1,9 +1,3 @@
-//
-//  ARTRestPresence+Private.h
-//  ably
-//
-//
-
 #import <Ably/ARTRestPresence.h>
 #import "ARTQueuedDealloc.h"
 

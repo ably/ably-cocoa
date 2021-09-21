@@ -1,9 +1,3 @@
-//
-//  ARTPaginatedResult.m
-//  ably
-//
-//
-
 #import "ARTPaginatedResult+Private.h"
 
 #import "ARTHttp.h"

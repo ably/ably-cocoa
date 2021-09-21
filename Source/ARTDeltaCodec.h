@@ -1,9 +1,3 @@
-//
-//  ARTDeltaCodec.h
-//  Ably
-//
-//
-
 #import <Ably/ARTVCDiffDecoder.h>
 #import <AblyDeltaCodec/AblyDeltaCodec.h>
 

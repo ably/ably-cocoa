@@ -1,9 +1,3 @@
-//
-//  ARTMessage.h
-//  ably
-//
-//
-
 #import <Foundation/Foundation.h>
 
 #import <Ably/ARTBaseMessage.h>

@@ -1,9 +1,3 @@
-//
-//  ARTHttp+Private.h
-//  Ably
-//
-//
-
 #import <Ably/ARTHttp.h>
 
 NS_ASSUME_NONNULL_BEGIN

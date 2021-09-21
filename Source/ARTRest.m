@@ -1,8 +1,3 @@
-//
-//  ARTRest.m
-//
-//
-
 #import "ARTRest+Private.h"
 
 #import "ARTChannel+Private.h"

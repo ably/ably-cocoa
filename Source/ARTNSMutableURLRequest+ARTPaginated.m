@@ -1,9 +1,3 @@
-//
-//  ARTNSMutableURLRequest+ARTPaginated.m
-//  Ably
-//
-//
-
 #import "ARTNSMutableURLRequest+ARTPaginated.h"
 
 @implementation NSMutableURLRequest (ARTPaginated)

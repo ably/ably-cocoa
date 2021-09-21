@@ -1,8 +1,3 @@
-//
-//  ARTProtocolMessage.m
-//
-//
-
 #import "ARTDefault.h"
 #import "ARTProtocolMessage.h"
 #import "ARTProtocolMessage+Private.h"

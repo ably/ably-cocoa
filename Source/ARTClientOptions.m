@@ -1,8 +1,3 @@
-//
-//  ARTClientOptions.m
-//
-//
-
 #import "ARTClientOptions+Private.h"
 #import "ARTAuthOptions+Private.h"
 

@@ -1,9 +1,3 @@
-//
-//  ARTDevicePushDetails.m
-//  Ably
-//
-//
-
 #import "ARTDevicePushDetails.h"
 #import "ARTPush.h"
 

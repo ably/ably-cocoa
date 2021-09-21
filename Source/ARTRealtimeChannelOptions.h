@@ -1,9 +1,3 @@
-//
-//  ARTRealtimeChannelOptions.h
-//  Ably-iOS
-//
-//
-
 #import <Foundation/Foundation.h>
 
 #import <Ably/ARTChannelOptions.h>

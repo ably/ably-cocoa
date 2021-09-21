@@ -1,9 +1,3 @@
-//
-//  ARTConnection.m
-//  ably
-//
-//
-
 #import "ARTConnection+Private.h"
 
 #import "ARTRealtime+Private.h"

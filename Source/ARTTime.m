@@ -1,9 +1,3 @@
-//
-//  ARTTime.m
-//  Ably
-//
-//
-
 #import "ARTTime.h"
 #include <sys/types.h>
 #include <sys/sysctl.h>

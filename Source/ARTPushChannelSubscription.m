@@ -1,9 +1,3 @@
-//
-//  ARTPushChannelSubscription.m
-//  Ably
-//
-//
-
 #import "ARTPushChannelSubscription.h"
 
 @implementation ARTPushChannelSubscription

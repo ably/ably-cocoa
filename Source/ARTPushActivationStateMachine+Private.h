@@ -1,8 +1,3 @@
-//
-//  ARTPushActivationStateMachine+Private.h
-//
-//
-
 #import <Ably/ARTPushActivationStateMachine.h>
 
 NS_ASSUME_NONNULL_BEGIN

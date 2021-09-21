@@ -1,9 +1,3 @@
-//
-//  ARTPushActivationEvent.m
-//  Ably
-//
-//
-
 #import "ARTPushActivationEvent.h"
 #import "ARTTypes.h"
 #import "ARTDeviceIdentityTokenDetails.h"

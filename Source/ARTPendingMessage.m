@@ -1,9 +1,3 @@
-//
-//  ARTPendingMessage.m
-//  Ably
-//
-//
-
 #import "ARTPendingMessage.h"
 
 @implementation ARTPendingMessage

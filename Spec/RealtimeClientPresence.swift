@@ -1,9 +1,3 @@
-//
-//  RealtimeClientPresence.swift
-//  Ably
-//
-//
-
 import Ably
 import Quick
 import Nimble

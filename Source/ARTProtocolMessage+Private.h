@@ -1,8 +1,3 @@
-//
-//  ARTProtocolMessage+Private.h
-//
-//
-
 /// ARTProtocolMessageFlag bitmask
 typedef NS_OPTIONS(NSUInteger, ARTProtocolMessageFlag) {
     ARTProtocolMessageFlagHasPresence = (1UL << 0),

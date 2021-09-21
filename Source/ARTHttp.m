@@ -1,8 +1,3 @@
-//
-//  ARTHttp.m
-//
-//
-
 #import "ARTHttp+Private.h"
 #import "ARTURLSessionServerTrust.h"
 #import "ARTConstants.h"

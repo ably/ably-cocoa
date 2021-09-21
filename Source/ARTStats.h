@@ -1,8 +1,3 @@
-//
-//  ARTStats.h
-//
-//
-
 #import <Foundation/Foundation.h>
 
 #import <Ably/ARTDataQuery.h>

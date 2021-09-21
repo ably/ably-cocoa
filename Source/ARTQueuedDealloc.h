@@ -1,9 +1,3 @@
-//
-//  ARTQueuedDealloc.h
-//  Ably
-//
-//
-
 #ifndef ARTQueuedDealloc_h
 #define ARTQueuedDealloc_h
 

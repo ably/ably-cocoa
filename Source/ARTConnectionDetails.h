@@ -1,9 +1,3 @@
-//
-//  ARTConnectionDetails.h
-//  ably
-//
-//
-
 #import <Foundation/Foundation.h>
 
 @class ARTProtocolMessage;

@@ -1,9 +1,3 @@
-//
-//  NSString+ARTNSString.m
-//  Ably
-//
-//
-
 #import "ARTNSString+ARTUtil.h"
 
 @implementation NSString (ARTUtil)

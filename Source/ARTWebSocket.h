@@ -1,9 +1,3 @@
-//
-//  ARTWebSocket.h
-//  Ably
-//
-//
-
 #ifndef ARTWebSocket_h
 #define ARTWebSocket_h
 

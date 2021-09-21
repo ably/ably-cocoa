@@ -1,8 +1,3 @@
-//
-//  ARTCrypto.h
-//
-//
-
 #import <Foundation/Foundation.h>
 
 #import <Ably/ARTTypes.h>

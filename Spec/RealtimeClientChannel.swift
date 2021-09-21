@@ -1,9 +1,3 @@
-//
-//  RealtimeClient.channel.swift
-//  ably
-//
-//
-
 import Ably
 import Quick
 import Nimble

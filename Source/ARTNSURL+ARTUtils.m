@@ -1,9 +1,3 @@
-//
-//  NSURL+ARTUtils.m
-//  Ably
-//
-//
-
 #import "ARTNSURL+ARTUtils.h"
 
 @implementation NSURL (ARTUtils)

@@ -1,9 +1,3 @@
-//
-//  ARTNSMutableRequest+ARTRest.m
-//  Ably
-//
-//
-
 #import "ARTNSMutableRequest+ARTRest.h"
 
 #import "ARTEncoder.h"

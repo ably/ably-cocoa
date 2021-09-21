@@ -1,9 +1,3 @@
-//
-//  ARTMsgPackEncoder.h
-//  ably
-//
-//
-
 #import <Foundation/Foundation.h>
 
 #import <Ably/ARTJsonLikeEncoder.h>

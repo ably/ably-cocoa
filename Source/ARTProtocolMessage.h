@@ -1,8 +1,3 @@
-//
-//  ARTProtocolMessage.h
-//
-//
-
 #import <Foundation/Foundation.h>
 
 #import <Ably/ARTMessage.h>

@@ -1,8 +1,3 @@
-//
-//  ARTRealtime+Private.h
-//
-//
-
 #import <Ably/ARTRealtime.h>
 #import <Ably/ARTEventEmitter.h>
 #import <Ably/ARTTypes.h>

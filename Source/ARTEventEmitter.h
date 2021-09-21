@@ -1,9 +1,3 @@
-//
-//  ARTEventEmitter.h
-//  ably
-//
-//
-
 #import <Foundation/Foundation.h>
 
 @class ARTRealtime;

@@ -1,9 +1,3 @@
-//
-//  ARTFallback.m
-//  ably
-//
-//
-
 #import "ARTFallback+Private.h"
 
 #import "ARTDefault+Private.h"

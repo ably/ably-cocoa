@@ -1,8 +1,3 @@
-//
-//  ARTRealtimeTransport.h
-//
-//
-
 #import <Foundation/Foundation.h>
 #import <Ably/ARTLog.h>
 

@@ -1,9 +1,3 @@
-//
-//  ARTCrypto+Private.h
-//  ably
-//
-//
-
 #import <Ably/ARTCrypto.h>
 #import <Ably/ARTLog.h>
 

@@ -1,8 +1,3 @@
-//
-//  ARTTokenRequest.m
-//
-//
-
 #import "ARTTokenRequest.h"
 #import "ARTTokenParams.h"
 #import "ARTAuth+Private.h"

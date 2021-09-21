@@ -1,9 +1,3 @@
-//
-//  ARTRealtimeChannels.h
-//  ably
-//
-//
-
 #import <Ably/ARTChannels.h>
 #import <Ably/ARTRealtimeChannel.h>
 #import <Ably/ARTRealtime.h>

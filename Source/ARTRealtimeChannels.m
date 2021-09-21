@@ -1,9 +1,3 @@
-//
-//  ARTRealtimeChannels.m
-//  ably
-//
-//
-
 #import <Foundation/Foundation.h>
 #import "ARTRealtimeChannels+Private.h"
 #import "ARTChannels+Private.h"

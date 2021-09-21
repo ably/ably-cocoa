@@ -1,9 +1,3 @@
-//
-//  ARTDeltaCodec.m
-//  Ably
-//
-//
-
 #import "ARTDeltaCodec.h"
 
 @implementation ARTDeltaCodec (ARTDeltaCodec_VCDiffDecoder)

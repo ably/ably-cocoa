@@ -1,9 +1,3 @@
-//
-//  ARTNSHTTPURLResponse+ARTPaginated.m
-//  Ably
-//
-//
-
 #import "ARTNSHTTPURLResponse+ARTPaginated.h"
 
 @implementation NSHTTPURLResponse (ARTPaginated)

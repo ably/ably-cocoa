@@ -1,9 +1,3 @@
-//
-//  ARTLocalDevice.m
-//  Ably
-//
-//
-
 #import "ARTLocalDevice+Private.h"
 #import "ARTDevicePushDetails.h"
 #import "ARTPush.h"

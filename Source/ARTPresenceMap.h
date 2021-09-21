@@ -1,9 +1,3 @@
-//
-//  ARTPresenceMap.h
-//  ably
-//
-//
-
 #import <Foundation/Foundation.h>
 #import "ARTTypes.h"
 

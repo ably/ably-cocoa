@@ -1,9 +1,3 @@
-//
-//  ARTRealtimePresence.m
-//  ably
-//
-//
-
 #import "ARTRealtimePresence+Private.h"
 
 #import "ARTRealtime+Private.h"

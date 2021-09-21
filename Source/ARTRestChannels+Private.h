@@ -1,9 +1,3 @@
-//
-//  ARTRestChannels+Private.h
-//  Ably
-//
-//
-
 #import <Ably/ARTRestChannels.h>
 #import "ARTQueuedDealloc.h"
 #import "ARTRestChannel+Private.h"

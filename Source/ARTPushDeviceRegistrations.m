@@ -1,9 +1,3 @@
-//
-//  ARTPushDeviceRegistrations.m
-//  Ably
-//
-//
-
 #import "ARTPushDeviceRegistrations+Private.h"
 #import "ARTHttp.h"
 #import "ARTLog.h"

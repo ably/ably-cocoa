@@ -1,8 +1,3 @@
-//
-//  ARTAuth.m
-//
-//
-
 #import "ARTAuth+Private.h"
 
 #if TARGET_OS_IPHONE

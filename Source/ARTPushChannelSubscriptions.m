@@ -1,8 +1,3 @@
-//
-//  ARTPushChannelSubscriptions.m
-//  Ably
-//
-
 #import "ARTPushChannelSubscriptions+Private.h"
 #import "ARTHttp.h"
 #import "ARTLog.h"

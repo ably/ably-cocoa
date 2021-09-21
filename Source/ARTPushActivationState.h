@@ -1,9 +1,3 @@
-//
-//  ARTPushActivationState.h
-//  Ably
-//
-//
-
 #import <Foundation/Foundation.h>
 
 @class ARTPushActivationStateMachine;

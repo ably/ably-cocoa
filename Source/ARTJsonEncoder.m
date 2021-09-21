@@ -1,8 +1,3 @@
-//
-//  ARTJsonEncoder.m
-//
-//
-
 #import "ARTJsonEncoder.h"
 
 @implementation ARTJsonEncoder

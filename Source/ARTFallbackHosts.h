@@ -1,9 +1,3 @@
-//
-//  ARTFallbackHosts.h
-//  Ably
-//
-//
-
 #import <Foundation/Foundation.h>
 
 @class ARTClientOptions;

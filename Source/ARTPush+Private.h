@@ -1,9 +1,3 @@
-//
-//  ARTPush+Private.h
-//  Ably
-//
-//
-
 #import <Ably/ARTPush.h>
 #import <Ably/ARTPushAdmin+Private.h>
 #import "ARTQueuedDealloc.h"

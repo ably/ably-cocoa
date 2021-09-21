@@ -1,9 +1,3 @@
-//
-//  ARTDeviceIdentityToken.m
-//  Ably
-//
-//
-
 #import "ARTTypes.h"
 #import "ARTDeviceIdentityTokenDetails.h"
 

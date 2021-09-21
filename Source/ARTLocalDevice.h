@@ -1,9 +1,3 @@
-//
-//  ARTLocalDevice.h
-//  Ably
-//
-//
-
 #import <Foundation/Foundation.h>
 #import <Ably/ARTDeviceDetails.h>
 

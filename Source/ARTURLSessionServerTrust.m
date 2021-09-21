@@ -1,9 +1,3 @@
-//
-//  ARTURLSessionServerTrust.m
-//  ably
-//
-//
-
 #import "ARTURLSessionServerTrust.h"
 
 @interface ARTURLSessionServerTrust() {

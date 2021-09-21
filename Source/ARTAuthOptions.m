@@ -1,8 +1,3 @@
-//
-//  ARTAuthOptions.m
-//
-//
-
 #import "ARTAuthOptions+Private.h"
 #import "ARTTokenDetails.h"
 

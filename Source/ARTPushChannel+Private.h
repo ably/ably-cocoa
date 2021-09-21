@@ -1,9 +1,3 @@
-//
-//  ARTPushChannel+Private.h
-//  Ably
-//
-//
-
 #ifndef ARTPushChannel_Private_h
 #define ARTPushChannel_Private_h
 

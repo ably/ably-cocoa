@@ -1,9 +1,3 @@
-//
-//  ARTDefault+Private.h
-//  ably
-//
-//
-
 #import <Ably/ARTDefault.h>
 
 extern NSString *const ARTDefaultProduction;

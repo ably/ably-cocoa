@@ -1,8 +1,3 @@
-//
-//  ARTCrypto.m
-//
-//
-
 #import "ARTCrypto+Private.h"
 
 #import <CommonCrypto/CommonCrypto.h>

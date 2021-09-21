@@ -1,9 +1,3 @@
-//
-//  ARTAuthDetails.m
-//  Ably
-//
-//
-
 #import "ARTAuthDetails.h"
 
 @implementation ARTAuthDetails

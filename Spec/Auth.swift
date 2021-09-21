@@ -1,9 +1,3 @@
-//
-//  Auth.swift
-//  ably
-//
-//
-
 import Ably
 import Ably.Private
 import Nimble

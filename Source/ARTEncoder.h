@@ -1,8 +1,3 @@
-//
-//  ARTEncoder.h
-//
-//
-
 #import <Foundation/Foundation.h>
 #import "ARTTypes.h"
 

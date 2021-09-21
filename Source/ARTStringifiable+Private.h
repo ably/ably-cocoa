@@ -1,9 +1,3 @@
-//
-//  ARTStringifiable+Private.h
-//  Ably
-//
-//
-
 #import <Foundation/Foundation.h>
 
 @interface ARTStringifiable()

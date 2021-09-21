@@ -1,9 +1,3 @@
-//
-//  ARTRealtimePresence+Private.h
-//  ably
-//
-//
-
 #import <Ably/ARTRealtimePresence.h>
 #import <Ably/ARTRealtimeChannel+Private.h>
 

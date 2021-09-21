@@ -1,9 +1,3 @@
-//
-//  ARTChannel+Private.h
-//  ably
-//
-//
-
 #import <Ably/ARTChannel.h>
 #import <Ably/ARTLog.h>
 

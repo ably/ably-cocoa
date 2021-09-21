@@ -1,9 +1,3 @@
-//
-//  ARTPendingMessage.h
-//  Ably
-//
-//
-
 #import <Foundation/Foundation.h>
 #import <Ably/ARTQueuedMessage.h>
 

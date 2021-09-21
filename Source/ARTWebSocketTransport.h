@@ -1,8 +1,3 @@
-//
-//  ARTWebSocketTransport.h
-//
-//
-
 #import <Foundation/Foundation.h>
 
 #import <Ably/ARTRealtimeTransport.h>

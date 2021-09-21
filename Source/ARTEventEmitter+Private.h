@@ -1,9 +1,3 @@
-//
-//  ARTEventEmitter+Private.h
-//  ably
-//
-//
-
 #include <Ably/ARTEventEmitter.h>
 #include <Ably/ARTRest+Private.h>
 

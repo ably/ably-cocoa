@@ -1,9 +1,3 @@
-//
-//  ARTConnectionDetails+Private.h
-//  Ably
-//
-//
-
 #import <Ably/ARTConnectionDetails.h>
 
 NS_ASSUME_NONNULL_BEGIN

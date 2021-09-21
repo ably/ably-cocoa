@@ -1,8 +1,3 @@
-//
-//  NSDictionary+ARTDictionaryUtil.m
-//
-//
-
 #import "ARTNSDictionary+ARTDictionaryUtil.h"
 #import "ARTNSDate+ARTUtil.h"
 

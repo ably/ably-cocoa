@@ -1,9 +1,3 @@
-//
-//  ARTDefault.m
-//  ably
-//
-//
-
 #import "Ably.h"
 #import "ARTDefault+Private.h"
 #import "ARTNSArray+ARTFunctional.h"

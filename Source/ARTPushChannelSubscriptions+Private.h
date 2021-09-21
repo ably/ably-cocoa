@@ -1,9 +1,3 @@
-//
-//  ARTPushChannelSubscriptions+Private.h
-//  Ably
-//
-//
-
 #ifndef ARTPushChannelSubscriptions_Private_h
 #define ARTPushChannelSubscriptions_Private_h
 

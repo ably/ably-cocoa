@@ -1,9 +1,3 @@
-//
-//  ARTPresenceMessage+Private.h
-//  Ably
-//
-//
-
 #import <Ably/ARTPresenceMessage.h>
 
 @interface ARTPresenceMessage ()

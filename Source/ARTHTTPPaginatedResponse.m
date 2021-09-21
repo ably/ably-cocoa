@@ -1,9 +1,3 @@
-//
-//  ARTHTTPPaginatedResponse.m
-//  Ably
-//
-//
-
 #import "ARTHTTPPaginatedResponse+Private.h"
 
 #import "ARTHttp.h"

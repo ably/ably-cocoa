@@ -1,9 +1,3 @@
-//
-//  ARTURLSession.h
-//  Ably
-//
-//
-
 #ifndef ARTURLSession_h
 #define ARTURLSession_h
 

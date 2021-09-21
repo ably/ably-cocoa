@@ -1,9 +1,3 @@
-//
-//  ARTReachability.h
-//  Ably
-//
-//
-
 #import <Ably/ARTLog.h>
 
 NS_ASSUME_NONNULL_BEGIN

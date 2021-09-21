@@ -1,9 +1,3 @@
-//
-//  ARTAuth+Private.h
-//  ably
-//
-//
-
 #import <Ably/ARTAuth.h>
 #import <Ably/ARTEventEmitter.h>
 #import "ARTQueuedDealloc.h"

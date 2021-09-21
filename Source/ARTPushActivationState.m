@@ -1,9 +1,3 @@
-//
-//  ARTPushActivationState.m
-//  Ably
-//
-//
-
 #import "ARTPushActivationState.h"
 #import "ARTPushActivationStateMachine+Private.h"
 #import "ARTPushActivationEvent.h"

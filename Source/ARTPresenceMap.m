@@ -1,9 +1,3 @@
-//
-//  ARTPresenceMap.m
-//  ably
-//
-//
-
 #import "ARTPresenceMap.h"
 #import "ARTPresenceMessage.h"
 #import "ARTPresenceMessage+Private.h"

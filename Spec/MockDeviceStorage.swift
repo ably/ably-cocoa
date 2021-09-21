@@ -1,9 +1,3 @@
-//
-//  MockDeviceStorage.swift
-//  AblySpec
-//
-//
-
 import Ably
 
 class MockDeviceStorage: NSObject, ARTDeviceStorage {

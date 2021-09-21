@@ -1,9 +1,3 @@
-//
-//  ARTPresence.m
-//  ably
-//
-//
-
 #import "ARTPresence.h"
 
 @implementation ARTPresence

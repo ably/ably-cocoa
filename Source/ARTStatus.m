@@ -1,9 +1,3 @@
-//
-//  ARTStatus.m
-//  ably
-//
-//
-
 #import <Foundation/Foundation.h>
 
 #import "ARTStatus.h"

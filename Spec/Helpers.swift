@@ -1,9 +1,3 @@
-//
-//  FunctionHelpers.swift
-//  Ably
-//
-//
-
 import Foundation
 import Runes
 

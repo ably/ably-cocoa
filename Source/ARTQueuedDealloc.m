@@ -1,9 +1,3 @@
-//
-//  ARTExposed.m
-//  Ably
-//
-//
-
 #import "ARTQueuedDealloc.h"
 
 @implementation ARTQueuedDealloc {

@@ -1,9 +1,3 @@
-//
-//  ARTHTTPPaginatedResponse.h
-//  Ably
-//
-//
-
 #import <Foundation/Foundation.h>
 
 #import <Ably/ARTPaginatedResult.h>

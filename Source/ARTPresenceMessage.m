@@ -1,8 +1,3 @@
-//
-//  ARTPresenceMessage.m
-//
-//
-
 #import "ARTPresenceMessage+Private.h"
 
 NSString *const ARTPresenceMessageException = @"ARTPresenceMessageException";

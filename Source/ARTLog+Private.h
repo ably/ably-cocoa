@@ -1,9 +1,3 @@
-//
-//  ARTLog+Private.h
-//  ably
-//
-//
-
 #import <Ably/ARTLog.h>
 
 NS_ASSUME_NONNULL_BEGIN

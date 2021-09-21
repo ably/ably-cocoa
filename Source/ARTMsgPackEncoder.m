@@ -1,9 +1,3 @@
-//
-//  ARTMsgPackEncoder.m
-//  Ably
-//
-//
-
 #import "ARTMsgPackEncoder.h"
 #import <msgpack/MessagePack.h>
 

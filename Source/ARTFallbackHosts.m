@@ -1,9 +1,3 @@
-//
-//  ARTFallbackHosts.m
-//  Ably
-//
-//
-
 #import "ARTFallbackHosts.h"
 
 #import "ARTDefault+Private.h"

@@ -1,8 +1,3 @@
-//
-//  NSDate+ARTUtil.m
-//
-//
-
 #import "ARTNSDate+ARTUtil.h"
 
 @implementation NSDate (ARTUtil)

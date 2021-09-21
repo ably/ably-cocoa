@@ -1,9 +1,3 @@
-//
-//  ARTHTTPPaginatedResponse+Private.h
-//  Ably
-//
-//
-
 #import <Ably/ARTHTTPPaginatedResponse.h>
 
 #import <Ably/ARTPaginatedResult+Private.h>

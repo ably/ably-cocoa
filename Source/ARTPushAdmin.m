@@ -1,9 +1,3 @@
-//
-//  ARTPushAdmin.m
-//  Ably
-//
-//
-
 #import "ARTPushAdmin.h"
 #import "ARTHttp.h"
 #import "ARTRest+Private.h"

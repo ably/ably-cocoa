@@ -1,9 +1,3 @@
-//
-//  ARTPushAdmin+Private.h
-//  Ably
-//
-//
-
 #import <Ably/ARTPushAdmin.h>
 #import <Ably/ARTPushDeviceRegistrations+Private.h>
 #import <Ably/ARTPushChannelSubscriptions+Private.h>

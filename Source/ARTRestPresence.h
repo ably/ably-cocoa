@@ -1,9 +1,3 @@
-//
-//  ARTRestPresence.h
-//  ably
-//
-//
-
 #import <Foundation/Foundation.h>
 
 #import <Ably/ARTPresence.h>

@@ -1,9 +1,3 @@
-//
-//  ARTTokenParams+Private.h
-//  ably
-//
-//
-
 #import <Ably/ARTTokenParams.h>
 
 @interface ARTTokenParams (Private)

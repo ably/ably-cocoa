@@ -1,8 +1,3 @@
-//
-//  ARTBaseMessage.m
-//
-//
-
 #import "ARTBaseMessage+Private.h"
 #import "ARTLog.h"
 #import "ARTStatus.h"

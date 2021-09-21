@@ -1,9 +1,3 @@
-//
-//  ARTConstants.m
-//  Ably
-//
-//
-
 #import "ARTConstants.h"
 
 NSString *const ARTHttpHeaderFieldErrorCodeKey = @"x-ably-errorcode";

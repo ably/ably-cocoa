@@ -1,9 +1,3 @@
-//
-//  ARTLocalDevice+Private.h
-//  Ably
-//
-//
-
 #import <Ably/ARTRest.h>
 
 @protocol ARTDeviceStorage;

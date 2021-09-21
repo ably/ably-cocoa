@@ -1,9 +1,3 @@
-//
-//  ARTEventEmitter.m
-//  ably
-//
-//
-
 #import "ARTEventEmitter+Private.h"
 
 #import "ARTRealtime.h"

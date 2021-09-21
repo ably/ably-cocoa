@@ -1,8 +1,3 @@
-//
-//  ARTTypes.m
-//
-//
-
 #import "ARTTypes.h"
 
 // MARK: Global helper functions

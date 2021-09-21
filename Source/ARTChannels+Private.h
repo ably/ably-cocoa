@@ -1,9 +1,3 @@
-//
-//  ARTChannels+Private.h
-//  ably
-//
-//
-
 #import <Ably/ARTChannels.h>
 
 @class ARTRestChannel;

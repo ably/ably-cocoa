@@ -1,8 +1,3 @@
-//
-//  ARTTokenParams.h
-//
-//
-
 #import "ARTTokenParams+Private.h"
 
 #include <CommonCrypto/CommonDigest.h>

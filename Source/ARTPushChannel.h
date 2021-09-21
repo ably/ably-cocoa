@@ -1,9 +1,3 @@
-//
-//  ARTPushChannel.h
-//  Ably
-//
-//
-
 #import <Foundation/Foundation.h>
 #import <Ably/ARTPush.h>
 #import <Ably/ARTHttp.h>

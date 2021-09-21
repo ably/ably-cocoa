@@ -1,9 +1,3 @@
-//
-//  NSObject+TestSuite.swift
-//  ably
-//
-//
-
 import Aspects
 
 extension NSObject {

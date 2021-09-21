@@ -1,9 +1,3 @@
-//
-//  CompatibilityMacros.h
-//  ably
-//
-//
-
 #ifndef CompatibilityMacros_h
 #define CompatibilityMacros_h
 

@@ -1,10 +1,3 @@
-//
-//  ReadmeExamples.swift
-//
-//
-//
-//
-
 import Ably
 import Foundation
 import Quick

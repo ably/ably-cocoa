@@ -1,9 +1,3 @@
-//
-//  ARTPaginatedResult+Private.h
-//  ably
-//
-//
-
 #import <Ably/ARTPaginatedResult.h>
 
 @class ARTRestInternal;

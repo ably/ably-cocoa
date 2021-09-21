@@ -1,8 +1,3 @@
-//
-//  ARTClientOptions.h
-//
-//
-
 #import <Foundation/Foundation.h>
 
 #import <Ably/ARTAuthOptions.h>

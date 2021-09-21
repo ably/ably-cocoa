@@ -1,9 +1,3 @@
-//
-//  RestClient.swift
-//  ably
-//
-//
-
 import Ably
 import Nimble
 import Quick

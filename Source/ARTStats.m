@@ -1,8 +1,3 @@
-//
-//  ARTStats.m
-//
-//
-
 #import "ARTStats.h"
 #import "ARTDataQuery+Private.h"
 

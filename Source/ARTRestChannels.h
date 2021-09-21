@@ -1,9 +1,3 @@
-//
-//  ARTRestChannels.h
-//  ably
-//
-//
-
 #import <Ably/ARTChannels.h>
 #import <Ably/ARTRestChannel.h>
 #import <Ably/ARTRest.h>

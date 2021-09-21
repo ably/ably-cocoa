@@ -1,9 +1,3 @@
-//
-//  NSString+ARTNSString.h
-//  Ably
-//
-//
-
 #import <Foundation/Foundation.h>
 
 #define NSStringFromBOOL(aBOOL) ((aBOOL) ? @"YES" : @"NO")

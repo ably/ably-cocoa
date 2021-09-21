@@ -1,9 +1,3 @@
-//
-//  ARTPushDeviceRegistrations+Private.h
-//  Ably
-//
-//
-
 #ifndef ARTPushDeviceRegistrations_Private_h
 #define ARTPushDeviceRegistrations_Private_h
 

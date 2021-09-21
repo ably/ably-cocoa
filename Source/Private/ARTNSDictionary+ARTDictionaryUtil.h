@@ -1,8 +1,3 @@
-//
-//  NSDictionary+ARTDictionaryUtil.h
-//
-//
-
 #import <Foundation/Foundation.h>
 
 @interface NSDictionary (ARTDictionaryUtil)

@@ -1,9 +1,3 @@
-//
-//  NSURLQueryItem+ARTNSURLQueryItem_Stringifiable.m
-//  Ably
-//
-//
-
 #import "NSURLQueryItem+Stringifiable.h"
 #import "ARTStringifiable.h"
 

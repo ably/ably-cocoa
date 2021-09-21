@@ -1,9 +1,3 @@
-//
-//  ARTJsonLikeEncoder.h
-//  Ably
-//
-//
-
 #ifndef ARTJsonLikeEncoder_h
 #define ARTJsonLikeEncoder_h
 

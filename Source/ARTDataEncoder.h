@@ -1,8 +1,3 @@
-//
-//  ARTDataEncoder.h
-//
-//
-
 #import <Foundation/Foundation.h>
 
 #import <Ably/ARTStatus.h>

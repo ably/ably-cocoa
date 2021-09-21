@@ -1,8 +1,3 @@
-//
-//  NSArray+ARTFunctional.h
-//
-//
-
 #import <Foundation/Foundation.h>
 
 @interface NSArray (ARTFunctional)

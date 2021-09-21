@@ -1,10 +1,4 @@
 //
-//  ObjcppTest.mm
-//  Ably
-//
-//  Created by Marat Al on 05.09.2021.
-//  Copyright © 2021 Ably. All rights reserved.
-//
 
 /*
  This file is needed to check if C++ compiler is able to work with Ably Cocoa.

@@ -1,8 +1,3 @@
-//
-//  ARTWebSocketTransport.m
-//
-//
-
 #import "ARTWebSocketTransport+Private.h"
 
 #import "ARTRest.h"

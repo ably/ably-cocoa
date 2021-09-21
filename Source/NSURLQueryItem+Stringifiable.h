@@ -1,9 +1,3 @@
-//
-//  NSURLQueryItem+ARTNSURLQueryItem_Stringifiable.h
-//  Ably
-//
-//
-
 #import <Foundation/Foundation.h>
 @class ARTStringifiable;
 

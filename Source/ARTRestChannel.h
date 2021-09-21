@@ -1,8 +1,3 @@
-//
-//  ARTRestChannel.h
-//
-//
-
 #import <Foundation/Foundation.h>
 
 #import <Ably/ARTChannel.h>

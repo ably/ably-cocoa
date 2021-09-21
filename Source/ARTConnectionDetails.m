@@ -1,9 +1,3 @@
-//
-//  ARTConnectionDetails.m
-//  ably
-//
-//
-
 #import "ARTConnectionDetails+Private.h"
 
 @implementation ARTConnectionDetails

@@ -1,5 +1,3 @@
-//  Copyright © 2019 Ably. All rights reserved.
-
 @import XCTest;
 #import <Ably/ARTCrypto.h>
 #import <Ably/ARTCrypto+Private.h>

@@ -1,9 +1,3 @@
-//
-//  ARTRealtimeChannel.m
-//  ably
-//
-//
-
 #import "ARTRealtimeChannel+Private.h"
 #import "ARTChannel+Private.h"
 #import "ARTDataQuery+Private.h"

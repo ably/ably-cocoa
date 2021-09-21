@@ -1,9 +1,3 @@
-//
-//  ARTLocalDeviceStorage.m
-//  Ably
-//
-//
-
 #import "ARTLocalDeviceStorage.h"
 #import "ARTLog.h"
 #import "ARTLocalDevice+Private.h"

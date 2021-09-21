@@ -1,9 +1,3 @@
-//
-//  ARTChannelOptions.m
-//  ably
-//
-//
-
 #import "ARTChannelOptions.h"
 
 #import "ARTEncoder.h"

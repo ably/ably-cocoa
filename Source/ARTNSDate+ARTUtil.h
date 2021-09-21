@@ -1,8 +1,3 @@
-//
-//  ARTNSDate+ARTUtil.h
-//
-//
-
 #import <Foundation/Foundation.h>
 
 @interface NSDate (ARTUtil)

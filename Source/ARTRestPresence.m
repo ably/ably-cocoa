@@ -1,9 +1,3 @@
-//
-//  ARTRestPresence.m
-//  ably
-//
-//
-
 #import "ARTRestPresence+Private.h"
 
 #import "ARTPresence+Private.h"

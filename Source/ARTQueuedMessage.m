@@ -1,9 +1,3 @@
-//
-//  ARTQueuedMessage.m
-//  ably
-//
-//
-
 #import "ARTQueuedMessage.h"
 
 #import "ARTProtocolMessage.h"

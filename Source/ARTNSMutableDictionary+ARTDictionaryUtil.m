@@ -1,9 +1,3 @@
-//
-//  NSMutableDictionary+ARTNSMutableDictionary_ARTDictionaryUtil.m
-//  Ably
-//
-//
-
 #import "ARTNSMutableDictionary+ARTDictionaryUtil.h"
 
 @implementation NSMutableDictionary (ARTDictionaryUtil)

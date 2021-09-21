@@ -1,9 +1,3 @@
-//
-//  ARTChannel.m
-//  ably
-//
-//
-
 #import "ARTChannel+Private.h"
 
 #import "ARTDataEncoder.h"

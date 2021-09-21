@@ -1,9 +1,3 @@
-//
-//  ARTChannels.m
-//  ably
-//
-//
-
 #import "ARTChannels+Private.h"
 
 #import "ARTRest+Private.h"

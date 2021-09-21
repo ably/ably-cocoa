@@ -1,9 +1,3 @@
-//
-//  ARTStringifiable.m
-//  Ably
-//
-//
-
 #import "ARTStringifiable.h"
 #import "ARTStringifiable+Private.h"
 

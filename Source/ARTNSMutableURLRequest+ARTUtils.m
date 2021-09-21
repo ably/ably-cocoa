@@ -1,9 +1,3 @@
-//
-//  NSMutableURLRequest+ARTUtils.m
-//  Ably
-//
-//
-
 #import "ARTNSMutableURLRequest+ARTUtils.h"
 
 @implementation NSMutableURLRequest (ARTUtils)

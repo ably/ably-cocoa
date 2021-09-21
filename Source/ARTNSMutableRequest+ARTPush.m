@@ -1,9 +1,3 @@
-//
-//  ARTNSMutableRequest+ARTPush.m
-//  Ably
-//
-//
-
 #import "ARTNSMutableRequest+ARTPush.h"
 
 #import "ARTLog.h"

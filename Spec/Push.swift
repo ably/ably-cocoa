@@ -1,9 +1,3 @@
-//
-//  Push.swift
-//  AblySpec
-//
-//
-
 import Ably
 import Nimble
 import Quick

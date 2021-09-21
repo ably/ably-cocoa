@@ -1,9 +1,3 @@
-//
-//  Ably.h
-//  Ably
-//
-//
-
 #import <Foundation/Foundation.h>
 
 //! Project version number for ably-ios.

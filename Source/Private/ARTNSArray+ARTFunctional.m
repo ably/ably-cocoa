@@ -1,8 +1,3 @@
-//
-//  NSArray+ARTFunctional.m
-//
-//
-
 #import "ARTNSArray+ARTFunctional.h"
 
 @implementation NSArray (ARTFunctional)

@@ -1,9 +1,3 @@
-//
-//  ARTPresence+Private.h
-//  ably
-//
-//
-
 #import <Ably/ARTPresence.h>
 #import <Ably/ARTChannel.h>
 

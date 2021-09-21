@@ -1,9 +1,3 @@
-//
-//  ARTGCD.m
-//  Ably
-//
-//
-
 #import "ARTGCD.h"
 
 @implementation ARTScheduledBlockHandle {

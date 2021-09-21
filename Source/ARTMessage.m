@@ -1,9 +1,3 @@
-//
-//  ARTMessage.m
-//  ably
-//
-//
-
 #import "ARTMessage.h"
 
 @implementation ARTMessage

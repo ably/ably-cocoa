@@ -1,8 +1,3 @@
-//
-//  ARTPresenceMessage.h
-//
-//
-
 #import <Ably/ARTBaseMessage.h>
 #import <Ably/ARTEventEmitter.h>
 

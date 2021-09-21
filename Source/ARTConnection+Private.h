@@ -1,9 +1,3 @@
-//
-//  ARTConnection+Private.h
-//  ably
-//
-//
-
 #import <Ably/ARTConnection.h>
 #import <Ably/ARTEventEmitter.h>
 #import <Ably/ARTTypes.h>

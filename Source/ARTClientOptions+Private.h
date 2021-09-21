@@ -1,9 +1,3 @@
-//
-//  ARTClientOptions+Private.h
-//  ably
-//
-//
-
 #import <Ably/ARTClientOptions.h>
 
 @interface ARTClientOptions ()

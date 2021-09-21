@@ -1,9 +1,3 @@
-//
-//  ARTBaseMessage+Private.h
-//  ably
-//
-//
-
 #import <Ably/CompatibilityMacros.h>
 #import <Ably/ARTBaseMessage.h>
 #import <Ably/ARTDataEncoder.h>

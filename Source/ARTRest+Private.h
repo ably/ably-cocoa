@@ -1,8 +1,3 @@
-//
-//  ARTRest+Private.h
-//
-//
-
 #import <Ably/ARTRest.h>
 #import <Ably/ARTHttp.h>
 #import "ARTRestChannels+Private.h"

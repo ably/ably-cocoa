@@ -1,8 +1,3 @@
-//
-//  ARTTokenDetails.m
-//
-//
-
 #import "ARTTokenDetails.h"
 
 @implementation ARTTokenDetails

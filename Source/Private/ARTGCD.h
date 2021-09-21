@@ -1,9 +1,3 @@
-//
-//  ARTGCD.h
-//  Ably
-//
-//
-
 #import <Foundation/Foundation.h>
 
 @interface ARTScheduledBlockHandle : NSObject
