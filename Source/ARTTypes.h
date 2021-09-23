@@ -48,6 +48,9 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
 
 #pragma mark - ARTRealtimeConnectionState
 
+/**
+ ARTRealtimeConnectionState is an enum representing all the Realtime Connection states.
+ */
 typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
     ARTRealtimeInitialized,
     ARTRealtimeConnecting,
@@ -64,6 +67,9 @@ NSString *_Nonnull ARTRealtimeConnectionStateToStr(ARTRealtimeConnectionState st
 
 #pragma mark - ARTRealtimeConnectionEvent
 
+/**
+ ARTRealtimeConnectionEvent is an enum representing all the events that can be emitted be the Connection; either a Realtime Connection state or an Update event.
+ */
 typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionEvent) {
     ARTRealtimeConnectionEventInitialized,
     ARTRealtimeConnectionEventConnecting,
@@ -81,6 +87,9 @@ NSString *_Nonnull ARTRealtimeConnectionEventToStr(ARTRealtimeConnectionEvent ev
 
 #pragma mark - ARTRealtimeChannelState
 
+/**
+ ARTRealtimeChannelState is an enum representing all the Realtime Channel states.
+ */
 typedef NS_ENUM(NSUInteger, ARTRealtimeChannelState) {
     ARTRealtimeChannelInitialized,
     ARTRealtimeChannelAttaching,
@@ -96,6 +105,9 @@ NSString *_Nonnull ARTRealtimeChannelStateToStr(ARTRealtimeChannelState state);
 
 #pragma mark - ARTChannelEvent
 
+/**
+ ARTChannelEvent is the enum emitted as the event in ARTRealtimeChannel.on; either a ChannelState or an Update event.
+ */
 typedef NS_ENUM(NSUInteger, ARTChannelEvent) {
     ARTChannelEventInitialized,
     ARTChannelEventAttaching,
@@ -148,6 +160,10 @@ NSString *generateNonce(void);
 
 #pragma mark - ARTConnectionStateChange
 
+/**
+ ARTConnectionStateChange is a type encapsulating state change information emitted by the ``ARTConnection`` object.
+ See ``ARTConnection/on`` to register a listener for one or more events.
+ */
 @interface ARTConnectionStateChange : NSObject
 
 - (instancetype)initWithCurrent:(ARTRealtimeConnectionState)current

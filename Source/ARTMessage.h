@@ -13,6 +13,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// ARTMessage represents an individual message that is sent to or received from Ably.
 @interface ARTMessage : ARTBaseMessage
 
 /// The event name, if available

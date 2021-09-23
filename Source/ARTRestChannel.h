@@ -26,6 +26,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+/**
+ ARTRestChannel object provides a straightforward API for publishing messages and retrieving message history from a channel.
+ */
 @interface ARTRestChannel : NSObject <ARTRestChannelProtocol>
 
 @property (readonly) ARTRestPresence *presence;

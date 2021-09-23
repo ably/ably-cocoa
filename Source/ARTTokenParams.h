@@ -15,7 +15,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- Type that provided parameters of a token request.
+ ARTTokenParams is used in the parameters of token authentication requests, corresponding to the desired attributes of the Ably Token.
  */
 @interface ARTTokenParams : NSObject<NSCopying>
 

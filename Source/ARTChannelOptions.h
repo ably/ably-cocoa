@@ -13,6 +13,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/**
+ ARTChannelOptions are used for setting channel parameters and configuring encryption.
+ */
 @interface ARTChannelOptions : NSObject
 
 @property (nonatomic, strong, nullable) ARTCipherParams *cipher;

@@ -14,7 +14,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- Type containing the token request details.
+ ARTTokenRequest is a type containing parameters for an Ably token request. Ably tokens are requested using ``ARTAuth/requestToken``.
  */
 @interface ARTTokenRequest : NSObject
 

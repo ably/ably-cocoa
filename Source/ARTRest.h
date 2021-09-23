@@ -30,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  Instance the Ably library with the given options.
- :param options: see ARTClientOptions for options
+ :param options: see ``ARTClientOptions`` for options
  */
 - (instancetype)initWithOptions:(ARTClientOptions *)options;
 
@@ -63,6 +63,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+/**
+ ARTRest object offers a simple stateless API to interact directly with Ably’s REST API.
+ */
 @interface ARTRest : NSObject <ARTRestProtocol>
 
 @property (readonly) ARTRestChannels *channels;

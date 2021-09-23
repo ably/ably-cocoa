@@ -12,6 +12,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/**
+ ARTHTTPPaginatedResponse is a superset of ``ARTPaginatedResult``, which is a type that represents a page of results plus metadata indicating the relative queries available to it. ARTHTTPPaginatedResponse additionally carries information about the response to an HTTP request. It is used when making custom HTTP requests.
+ */
 @interface ARTHTTPPaginatedResponse : ARTPaginatedResult<NSDictionary *>
 
 /// Return the HTTP status code of the response

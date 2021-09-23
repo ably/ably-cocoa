@@ -33,6 +33,10 @@ ART_EMBED_INTERFACE_EVENT_EMITTER(ARTRealtimeConnectionEvent, ARTConnectionState
 
 @end
 
+/**
+ * ARTConnection represens the connection associated with an ``ARTRealtime`` instance.
+ * It exposes the lifecycle and parameters of the realtime connection.
+ */
 @interface ARTConnection: NSObject <ARTConnectionProtocol>
 
 @end

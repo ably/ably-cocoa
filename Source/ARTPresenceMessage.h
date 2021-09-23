@@ -8,7 +8,9 @@
 #import <Ably/ARTBaseMessage.h>
 #import <Ably/ARTEventEmitter.h>
 
-/// Presence action type
+/**
+ ARTPresenceAction represents all actions an ``ARTPresenceMessage`` can indicate.
+ */
 typedef NS_ENUM(NSUInteger, ARTPresenceAction) {
     ARTPresenceAbsent,
     ARTPresencePresent,
@@ -21,7 +23,9 @@ NSString *_Nonnull ARTPresenceActionToStr(ARTPresenceAction action);
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// List of members present on a channel
+/**
+ ARTPresenceMessage represents an individual presence update that is sent to or received from Ably.
+ */
 @interface ARTPresenceMessage : ARTBaseMessage
 
 @property (readwrite, assign, nonatomic) ARTPresenceAction action;
