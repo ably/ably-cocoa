@@ -802,7 +802,10 @@
                                 channels:[self statsResourceCountFromDictionary:[input objectForKey:@"channels"]]
                              apiRequests:[self statsRequestCountFromDictionary:[input objectForKey:@"apiRequests"]]
                            tokenRequests:[self statsRequestCountFromDictionary:[input objectForKey:@"tokenRequests"]]
-                                intervalId:input[@"intervalId"]];
+                                  pushes:[self statsPushCountFromDictionary:[input objectForKey:@"push"]]
+                              inProgress:[input artString:@"inProgress"]
+                                   count:[[input artNumber:@"count"] unsignedIntegerValue]
+                              intervalId:[input artString:@"intervalId"]];
 }
 
 - (ARTStatsMessageTypes *)statsMessageTypesFromDictionary:(NSDictionary *)input {
@@ -907,6 +910,29 @@
     return [[ARTStatsRequestCount alloc] initWithSucceeded:succeeded.doubleValue
                                                     failed:failed.doubleValue
                                                    refused:refused.doubleValue];
+}
+
+- (ARTStatsPushCount *)statsPushCountFromDictionary:(NSDictionary *)input {
+    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: statsPushCountFromDictionary %@", _rest, [_delegate formatAsString], input];
+    if (![input isKindOfClass:[NSDictionary class]]) {
+        return [ARTStatsPushCount empty];
+    }
+    
+    NSNumber *messages = [input artNumber:@"messages"];
+    NSNumber *direct = [input artNumber:@"directPublishes"];
+    
+    NSDictionary *notifications = input[@"notifications"];
+    NSNumber *succeeded = [notifications artNumber:@"successful"];
+    NSNumber *invalid = [notifications artNumber:@"invalid"];
+    NSNumber *attempted = [notifications artNumber:@"attempted"];
+    NSNumber *failed = [notifications artNumber:@"failed"];
+    
+    return [[ARTStatsPushCount alloc] initWithSucceeded:succeeded.integerValue
+                                                invalid:invalid.integerValue
+                                              attempted:attempted.integerValue
+                                                 failed:failed.integerValue
+                                               messages:messages.integerValue
+                                                 direct:direct.integerValue];
 }
 
 - (void)writeData:(id)data encoding:(NSString *)encoding toDictionary:(NSMutableDictionary *)output {

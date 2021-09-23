@@ -121,12 +121,34 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 
 @end
 
+@interface ARTStatsPushCount : NSObject
+
+@property (readonly, assign, nonatomic) NSUInteger succeeded;
+@property (readonly, assign, nonatomic) NSUInteger invalid;
+@property (readonly, assign, nonatomic) NSUInteger attempted;
+@property (readonly, assign, nonatomic) NSUInteger failed;
+
+@property (readonly, assign, nonatomic) NSUInteger messages;
+@property (readonly, assign, nonatomic) NSUInteger direct;
+
+- (instancetype)init UNAVAILABLE_ATTRIBUTE;
+- (instancetype)initWithSucceeded:(NSUInteger)succeeded
+                          invalid:(NSUInteger)invalid
+                        attempted:(NSUInteger)attempted
+                           failed:(NSUInteger)failed
+                         messages:(NSUInteger)messages
+                           direct:(NSUInteger)direct;
+
++ (instancetype)empty;
+
+@end
+
 /**
  ARTStats object represents an application’s statistics for the specified interval and time period. Ably aggregates statistics globally for all accounts and applications, and makes these available both through our statistics API as well as your application dashboard.
  */
 @interface ARTStats : NSObject
 
-+ (NSDate *)fromIntervalId:(NSString *)intervalId;
++ (NSDate *)dateFromIntervalId:(NSString *)intervalId;
 + (ARTStatsGranularity)granularityFromIntervalId:(NSString *)intervalId;
 + (NSString *)toIntervalId:(NSDate *)time granularity:(ARTStatsGranularity)granularity;
 
@@ -138,6 +160,9 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 @property (readonly, strong, nonatomic) ARTStatsResourceCount *channels;
 @property (readonly, strong, nonatomic) ARTStatsRequestCount *apiRequests;
 @property (readonly, strong, nonatomic) ARTStatsRequestCount *tokenRequests;
+@property (readonly, strong, nonatomic) ARTStatsPushCount *pushes;
+@property (readonly, strong, nonatomic) NSString *inProgress;
+@property (readonly, assign, nonatomic) NSUInteger count;
 @property (readonly, strong, nonatomic) NSString *intervalId;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
@@ -149,10 +174,14 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
                    channels:(ARTStatsResourceCount *)channels
                 apiRequests:(ARTStatsRequestCount *)apiRequests
               tokenRequests:(ARTStatsRequestCount *)tokenRequests
+                     pushes:(ARTStatsPushCount *)pushes
+                 inProgress:(NSString *)inProgress
+                      count:(NSUInteger)count
                  intervalId:(NSString *)intervalId;
 
 - (NSDate *)intervalTime;
 - (ARTStatsGranularity)intervalGranularity;
+- (NSDate *)dateFromInProgress;
 
 @end
 
