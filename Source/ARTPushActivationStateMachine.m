@@ -57,13 +57,10 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
         if (!_pendingEvents) {
             _pendingEvents = [NSMutableArray array];
         }
-
-        // Due to bug #966, old versions of the library might have led us to an illegal
-        // persisted state: we have a deviceToken, but the persisted push state is WaitingForPushDeviceDetails.
-        // So we need to re-emit the GotPushDeviceDetails event that led us there.
-        if ([_current isKindOfClass:[ARTPushActivationStateWaitingForPushDeviceDetails class]] && rest.device_nosync.deviceToken != nil) {
-            [rest.logger debug:@"ARTPush: re-emitting stored device details for stuck state machine"];
-            [self handleEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
+        
+        if ([_current isKindOfClass:[ARTPushActivationStateWaitingForDeviceRegistration class]]) {
+            [rest.logger debug:@"ARTPush: re-submitting device registration request for stuck state machine"];
+            [self deviceRegistration:nil];
         }
     }
     return self;
