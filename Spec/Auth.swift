@@ -966,8 +966,7 @@ class Auth : QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             realtime.connection.once(.failed) { stateChange in
-                                expect(stateChange.reason?.code).to(equal(40101))
-                                expect(stateChange.reason?.description.lowercased()).to(contain("invalid clientid for credentials"))
+                                expect(stateChange.reason?.code).to(equal(ARTErrorCode.invalidCredentials.intValue))
                                 done()
                             }
                             realtime.connect()
@@ -982,8 +981,7 @@ class Auth : QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             rest.auth.requestToken(ARTTokenParams(clientId: "wrong"), with: nil) { tokenDetails, error in
                                 let error = error as! ARTErrorInfo
-                                expect(error.code).to(equal(40102))
-                                expect(error.localizedDescription).to(contain("incompatible credentials"))
+                                expect(error.code).to(equal(ARTErrorCode.incompatibleCredentials.intValue))
                                 expect(tokenDetails).to(beNil())
                                 done()
                             }
@@ -3906,7 +3904,7 @@ class Auth : QuickSpec {
                         guard let error = error else {
                             fail("Error is nil"); done(); return
                         }
-                        expect((error as! ARTErrorInfo).code) == 40102
+                        expect((error as! ARTErrorInfo).code) == ARTErrorCode.incompatibleCredentials.intValue
                         expect(tokenDetails).to(beNil())
                         done()
                     }

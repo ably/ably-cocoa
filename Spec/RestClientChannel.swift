@@ -450,8 +450,7 @@ class RestClientChannel: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(messages) { error in
-                            expect(error?.code).to(equal(40009))
-                            expect(error?.message).to(contain("maximum message length exceeded"))
+                            expect(error?.code).to(equal(ARTErrorCode.maxMessageLengthExceeded.intValue))
                             done()
                         }
                     }
@@ -465,8 +464,7 @@ class RestClientChannel: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(name, data: nil, extras: nil) { error in
-                            expect(error?.code).to(equal(40009))
-                            expect(error?.message).to(contain("maximum message length exceeded"))
+                            expect(error?.code).to(equal(ARTErrorCode.maxMessageLengthExceeded.intValue))
                             done()
                         }
                     }

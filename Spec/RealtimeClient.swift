@@ -1499,8 +1499,7 @@ class RealtimeClient: QuickSpec {
                     // Wait for connected so that maxMessageSize is loaded from connection details
                     client.connection.once(.connected) { _ in
                         channel.publish(messages, callback: { err in
-                            expect(err?.code).to(equal(40009))
-                            expect(err?.message).to(contain("maximum message length exceeded"))
+                            expect(err?.code).to(equal(ARTErrorCode.maxMessageLengthExceeded.intValue))
                             done()
                         })
                     }
@@ -1516,8 +1515,7 @@ class RealtimeClient: QuickSpec {
                 waitUntil(timeout: testTimeout, action: { done in
                     client.connection.once(.connected) { _ in
                         channel.presence.enter(presenceData, callback: { err in
-                            expect(err?.code).to(equal(40009))
-                            expect(err?.message).to(contain("maximum message length exceeded"))
+                            expect(err?.code).to(equal(ARTErrorCode.maxMessageLengthExceeded.intValue))
                             done()
                         })
                     }
@@ -1533,8 +1531,7 @@ class RealtimeClient: QuickSpec {
                 waitUntil(timeout: testTimeout, action: { done in
                     client.connection.once(.connected) { _ in
                         channel.presence.leave(presenceData, callback: { err in
-                            expect(err?.code).to(equal(40009))
-                            expect(err?.message).to(contain("maximum message length exceeded"))
+                            expect(err?.code).to(equal(ARTErrorCode.maxMessageLengthExceeded.intValue))
                             done()
                         })
                     }
@@ -1550,8 +1547,7 @@ class RealtimeClient: QuickSpec {
                 waitUntil(timeout: testTimeout, action: { done in
                     client.connection.once(.connected) { _ in
                         channel.presence.update(presenceData, callback: { err in
-                            expect(err?.code).to(equal(40009))
-                            expect(err?.message).to(contain("maximum message length exceeded"))
+                            expect(err?.code).to(equal(ARTErrorCode.maxMessageLengthExceeded.intValue))
                             done()
                         })
                     }
@@ -1567,8 +1563,7 @@ class RealtimeClient: QuickSpec {
                 waitUntil(timeout: testTimeout, action: { done in
                     client.connection.once(.connected) { _ in
                         channel.presence.updateClient(clientId, data: presenceData, callback: { err in
-                            expect(err?.code).to(equal(40009))
-                            expect(err?.message).to(contain("maximum message length exceeded"))
+                            expect(err?.code).to(equal(ARTErrorCode.maxMessageLengthExceeded.intValue))
                             done()
                         })
                     }
@@ -1584,8 +1579,7 @@ class RealtimeClient: QuickSpec {
                 waitUntil(timeout: testTimeout, action: { done in
                     client.connection.once(.connected) { _ in
                         channel.presence.leaveClient(clientId, data: presenceData, callback: { err in
-                            expect(err?.code).to(equal(40009))
-                            expect(err?.message).to(contain("maximum message length exceeded"))
+                            expect(err?.code).to(equal(ARTErrorCode.maxMessageLengthExceeded.intValue))
                             done()
                         })
                     }

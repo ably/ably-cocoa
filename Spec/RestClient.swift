@@ -59,7 +59,7 @@ class RestClient: QuickSpec {
 
                     let publishTask = publishTestMessage(client, failOnError: false)
 
-                    expect(publishTask.error?.code).toEventually(equal(40005), timeout:testTimeout)
+                    expect(publishTask.error?.code).toEventually(equal(ARTErrorCode.invalidCredential.intValue), timeout:testTimeout)
                 }
 
                 it("should accept a token") {
@@ -96,7 +96,7 @@ class RestClient: QuickSpec {
 
                     let publishTask = publishTestMessage(client, failOnError: false)
 
-                    expect(publishTask.error?.code).toEventually(equal(40005), timeout: testTimeout)
+                    expect(publishTask.error?.code).toEventually(equal(ARTErrorCode.invalidCredential.intValue), timeout: testTimeout)
                 }
             }
 
@@ -2058,7 +2058,7 @@ class RestClient: QuickSpec {
 
                     let rest = ARTRest(options: options)
                     let mockHttpExecutor = MockHTTPExecutor()
-                    mockHttpExecutor.simulateIncomingErrorOnNextRequest(NSError(domain: "ably-test", code: 40013, userInfo: ["Message":"Ably test message"]))
+                    mockHttpExecutor.simulateIncomingErrorOnNextRequest(NSError(domain: "ably-test", code: ARTErrorCode.invalidMessageDataOrEncoding.intValue, userInfo: ["Message":"Ably test message"]))
                     rest.internal.httpExecutor = mockHttpExecutor
                     
                     waitUntil(timeout: testTimeout) { done in

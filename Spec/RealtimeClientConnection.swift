@@ -991,7 +991,7 @@ class RealtimeClientConnection: QuickSpec {
                                 }
                             }
                             channel.presence.enterClient("invalid", data: nil) { error in
-                                expect(error?.code).to(equal(40012)) //mismatched clientId
+                                expect(error?.code).to(equal(ARTErrorCode.invalidClientId.intValue))
                                 partialDone()
                             }
                         }
@@ -1021,7 +1021,7 @@ class RealtimeClientConnection: QuickSpec {
                                 }
                             }
                             channel.presence.enterClient("invalid", data: nil) { error in
-                                expect(error?.code).to(equal(40012)) //mismatched clientId
+                                expect(error?.code).to(equal(ARTErrorCode.invalidClientId.intValue))
                                 partialDone()
                             }
                         }
