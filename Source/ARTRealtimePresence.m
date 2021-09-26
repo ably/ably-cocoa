@@ -520,8 +520,8 @@ dispatch_sync(_queue, ^{
 
     if ([_channel exceedMaxSize:@[msg]]) {
         if (callback) {
-            ARTErrorInfo *sizeError = [ARTErrorInfo createWithCode:40009
-                                                           message:@"maximum message length exceeded"];
+            ARTErrorInfo *sizeError = [ARTErrorInfo createWithCode:ARTErrorMaxMessageLengthExceeded
+                                                           message:@"Maximum message length exceeded."];
             callback(sizeError);
         }
         return;

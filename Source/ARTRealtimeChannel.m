@@ -386,7 +386,8 @@ dispatch_sync(_queue, ^{
         case ARTRealtimeChannelInitialized:
         case ARTRealtimeChannelDetaching:
         case ARTRealtimeChannelDetached: {
-            ARTErrorInfo *error = [ARTErrorInfo createWithCode:40000 message:@"unable to sync to channel; not attached"];
+            ARTErrorInfo *error = [ARTErrorInfo createWithCode:ARTErrorBadRequest
+                                                       message:@"Unable to sync to channel; not attached."];
             [self.logger logWithError:error];
             if (callback) callback(error);
             return;
@@ -816,7 +817,7 @@ dispatch_sync(_queue, ^{
         else {
             NSString *const deltaFrom = [[extras objectForKey:@"delta"] objectForKey:@"from"];
             if (deltaFrom && _lastPayloadMessageId && ![deltaFrom isEqualToString:_lastPayloadMessageId]) {
-                ARTErrorInfo *incompatibleIdError = [ARTErrorInfo createWithCode:40018 message:[NSString stringWithFormat:@"previous id '%@' is incompatible with message delta %@", _lastPayloadMessageId, firstMessage]];
+                ARTErrorInfo *incompatibleIdError = [ARTErrorInfo createWithCode:ARTErrorUnableToDecodeMessage message:[NSString stringWithFormat:@"previous id '%@' is incompatible with message delta %@", _lastPayloadMessageId, firstMessage]];
                 [self.logger error:@"R:%p C:%p (%@) %@", _realtime, self, self.name, incompatibleIdError.message];
                 for (int j = i + 1; j < pm.messages.count; j++) {
                     [self.logger verbose:@"R:%p C:%p (%@) message skipped %@", _realtime, self, self.name, pm.messages[j]];
@@ -835,13 +836,13 @@ dispatch_sync(_queue, ^{
             NSError *decodeError = nil;
             msg = [msg decodeWithEncoder:dataEncoder error:&decodeError];
             if (decodeError) {
-                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:40018 message:decodeError.localizedFailureReason] prepend:@"Failed to decode data: "];
+                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:ARTErrorUnableToDecodeMessage message:decodeError.localizedFailureReason] prepend:@"Failed to decode data: "];
                 [self.logger error:@"R:%p C:%p (%@) %@", _realtime, self, self.name, errorInfo.message];
                 _errorReason = errorInfo;
                 ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:self.state_nosync previous:self.state_nosync event:ARTChannelEventUpdate reason:errorInfo];
                 [self emit:stateChange.event with:stateChange];
 
-                if (decodeError.code == 40018) {
+                if (decodeError.code == ARTErrorUnableToDecodeMessage) {
                     [self startDecodeFailureRecoveryWithChannelSerial:_lastPayloadProtocolMessageChannelSerial error:errorInfo];
                     return;
                 }
@@ -875,7 +876,7 @@ dispatch_sync(_queue, ^{
             NSError *decodeError = nil;
             presence = [p decodeWithEncoder:dataEncoder error:&decodeError];
             if (decodeError != nil) {
-                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:40018 message:decodeError.localizedFailureReason] prepend:@"Failed to decode data: "];
+                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:ARTErrorUnableToDecodeMessage message:decodeError.localizedFailureReason] prepend:@"Failed to decode data: "];
                 [self.logger error:@"RT:%p C:%p (%@) %@", _realtime, self, self.name, errorInfo.message];
             }
         }

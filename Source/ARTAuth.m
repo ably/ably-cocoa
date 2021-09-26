@@ -352,7 +352,7 @@ dispatch_async(_queue, ^{
             return;
         }
         if (self.clientId_nosync && tokenDetails.clientId && ![tokenDetails.clientId isEqualToString:@"*"] && ![self.clientId_nosync isEqual:tokenDetails.clientId]) {
-            if (callback) callback(nil, [ARTErrorInfo createWithCode:40102 message:@"incompatible credentials"]);
+            if (callback) callback(nil, [ARTErrorInfo createWithCode:ARTErrorIncompatibleCredentials message:@"incompatible credentials"]);
             return;
         }
         callback(tokenDetails, nil);

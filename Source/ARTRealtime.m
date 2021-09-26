@@ -1053,7 +1053,7 @@
 
 - (void)handleTokenAuthError:(NSError *)error {
     [self.logger error:@"R:%p token auth failed with %@", self, error.description];
-    if (error.code == 40102 /*incompatible credentials*/) {
+    if (error.code == ARTErrorIncompatibleCredentials) {
         // RSA15c
         [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:error]];
     }

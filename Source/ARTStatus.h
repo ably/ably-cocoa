@@ -75,6 +75,8 @@ typedef CF_ENUM(NSUInteger, ARTErrorCode) {
     ARTErrorKeyRevoked = 40131,
     ARTErrorKeyExpired = 40132,
     ARTErrorKeyDisabled = 40133,
+    
+    // FIXME: check hard coded errors
     ARTErrorTokenErrorUnspecified = 40140,
     ARTErrorTokenRevoked = 40141,
     ARTErrorTokenExpired = 40142,

@@ -207,7 +207,7 @@ dispatch_sync(_queue, ^{
             NSError *decodeError = nil;
             message = [message decodeWithEncoder:self.dataEncoder error:&decodeError];
             if (decodeError != nil) {
-                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:40018 message:decodeError.localizedFailureReason] prepend:@"Failed to decode data: "];
+                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:ARTErrorUnableToDecodeMessage message:decodeError.localizedFailureReason] prepend:@"Failed to decode data: "];
                 [self.logger error:@"RS:%p C:%p (%@) %@", self->_rest, self, self.name, errorInfo.message];
             }
             return message;
