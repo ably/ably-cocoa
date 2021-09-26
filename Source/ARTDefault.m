@@ -181,7 +181,7 @@ static NSInteger _maxMessageSize = 65536;
 }
 
 + (NSString *)libraryAgent {
-    NSMutableString *agent = [NSMutableString stringWithFormat:@"%@/%@", ARTDefault_libraryName, [self bundleVersion]];
+    NSMutableString *agent = [NSMutableString stringWithFormat:@"%@/%@", ARTDefault_libraryName, ARTDefault_version];
     return agent;
 }
 
