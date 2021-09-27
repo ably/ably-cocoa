@@ -691,7 +691,7 @@ class RestClientChannel: QuickSpec {
                     client.internal.options.fallbackHostsUseDefault = true
 
                     let forceRetryError = ErrorSimulator(
-                        value: 50000,
+                        value: ARTErrorCode.internalError.intValue,
                         description: "force retry",
                         statusCode: 500,
                         shouldPerformRequest: true,

@@ -647,7 +647,7 @@ class RealtimeClient: QuickSpec {
                                 fail("ErrorInfo is nil"); partialDone(); return
                             }
                             expect(error).to(beIdenticalTo(channel.errorReason))
-                            expect((error ).code).to(equal(40160))
+                            expect(error.code).to(equal(ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue))
 
                             guard let transport = client.internal.transport as? TestProxyTransport else {
                                 fail("TestProxyTransport is not set"); partialDone(); return
@@ -660,7 +660,7 @@ class RealtimeClient: QuickSpec {
                                 fail("Missing ERROR protocol message"); partialDone(); return
                             }
                             expect(errorMessage.channel).to(contain("test"))
-                            expect(errorMessage.error?.code).to(equal((error ).code))
+                            expect(errorMessage.error?.code).to(equal(error.code))
                             partialDone()
                         }
 

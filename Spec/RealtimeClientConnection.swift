@@ -1149,7 +1149,7 @@ class RealtimeClientConnection: QuickSpec {
                                 guard let error = error else {
                                     fail("Error is nil"); return
                                 }
-                                expect(error.code) == 80008
+                                expect(error.code) == ARTErrorCode.unableToRecoverConnectionExpired.intValue
                                 expect(error.message).to(contain("Unable to recover connection"))
                                 partialDone()
                             }
@@ -1922,7 +1922,7 @@ class RealtimeClientConnection: QuickSpec {
                             guard let reason = stateChange.reason else {
                                 fail("Token error is missing"); done(); return
                             }
-                            expect(reason.code) == 40142
+                            expect(reason.code) == ARTErrorCode.tokenExpired.intValue
 
                             client.connection.on { stateChange in
                                 let state = stateChange.current
@@ -1978,7 +1978,7 @@ class RealtimeClientConnection: QuickSpec {
                             guard let message = arg0 as? ARTProtocolMessage, let error = message.error else {
                                 fail("Expecting a protocol message with Token error"); partialDone(); return
                             }
-                            expect(error.code).to(equal(40142)) //Token expired
+                            expect(error.code).to(equal(ARTErrorCode.tokenExpired.intValue))
                             partialDone()
                         }
                         realtime.connect()
@@ -2019,7 +2019,7 @@ class RealtimeClientConnection: QuickSpec {
                             guard let reason = stateChange.reason else {
                                 fail("Reason is nil"); done(); return;
                             }
-                            expect(reason.code).to(equal(40142))
+                            expect(reason.code).to(equal(ARTErrorCode.tokenExpired.intValue))
                             expect(reason.statusCode).to(equal(401))
                             expect(reason.message).to(contain("Key/token status changed (expire)"))
                             partialDone()
@@ -2062,7 +2062,7 @@ class RealtimeClientConnection: QuickSpec {
                                 guard let errorInfo = errorInfo else {
                                     fail("ErrorInfo is nil"); done(); return
                                 }
-                                expect(errorInfo.code).to(equal(40142))
+                                expect(errorInfo.code).to(equal(ARTErrorCode.tokenExpired.intValue))
                                 done()
                             default:
                                 break
@@ -2079,7 +2079,7 @@ class RealtimeClientConnection: QuickSpec {
                         return
                     }
 
-                    expect(failures[0].error!.code).to(equal(40142))
+                    expect(failures[0].error!.code).to(equal(ARTErrorCode.tokenExpired.intValue))
                 }
 
                 // RTN14c
@@ -2551,7 +2551,7 @@ class RealtimeClientConnection: QuickSpec {
                                 guard let error = stateChange.reason else {
                                     fail("Connection resume failed and error should be propagated to the channel"); done(); return
                                 }
-                                expect(error.code).to(equal(80008))
+                                expect(error.code).to(equal(ARTErrorCode.unableToRecoverConnectionExpired.intValue))
                                 expect(error.message).to(contain("Unable to recover connection"))
                                 expect(client.connection.errorReason).to(beIdenticalTo(stateChange.reason))
                                 partialDone()
@@ -2635,7 +2635,7 @@ class RealtimeClientConnection: QuickSpec {
                                 guard let error = stateChange.reason else {
                                     fail("Error is nil"); done(); return
                                 }
-                                expect(error.code) == 40142
+                                expect(error.code) == ARTErrorCode.tokenExpired.intValue
                                 done()
                             }
                         }
@@ -2961,7 +2961,7 @@ class RealtimeClientConnection: QuickSpec {
                                 guard let error = stateChange.reason else {
                                     fail("Error is nil"); done(); return
                                 }
-                                expect(error.code) == 40142
+                                expect(error.code) == ARTErrorCode.tokenExpired.intValue
                                 done()
                             }
                         }
@@ -3003,7 +3003,7 @@ class RealtimeClientConnection: QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.failed) { stateChange in
                                 expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.connected))
-                                expect(stateChange.reason?.code).to(equal(40142))
+                                expect(stateChange.reason?.code).to(equal(ARTErrorCode.tokenExpired.intValue))
                                 done()
                             }
                             client.connect()
@@ -3037,14 +3037,14 @@ class RealtimeClientConnection: QuickSpec {
                                 guard let error = stateChange.reason else {
                                     fail("Error is nil"); done(); return
                                 }
-                                expect(error.code) == 40142
+                                expect(error.code) == ARTErrorCode.tokenExpired.intValue
                             
                                 // Renewal will lead to another disconnection
                                 client.connection.once(.disconnected) { stateChange in
                                     guard let error = stateChange.reason else {
                                         fail("Error is nil"); done(); return
                                     }
-                                    expect(error.code) == 40142
+                                    expect(error.code) == ARTErrorCode.tokenExpired.intValue
                                     expect(client.connection.errorReason).to(beIdenticalTo(error))
                                     done()
                                 }
@@ -4294,7 +4294,7 @@ class RealtimeClientConnection: QuickSpec {
                             guard let error = stateChange.reason else {
                                 fail("Error is nil"); done(); return
                             }
-                            expect(error.code) == 40142
+                            expect(error.code) == ARTErrorCode.tokenExpired.intValue
                             done()
                         }
                     }
