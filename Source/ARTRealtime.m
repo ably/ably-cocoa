@@ -617,14 +617,14 @@
             _transport = nil;
             self.rest.prioritizedHost = nil;
             [self.auth cancelAuthorization:nil];
-            [self failPendingMessages:[ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:80017 message:@"connection broken before receiving publishing acknowledgment"]]];
+            [self failPendingMessages:[ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:ARTErrorConnectionClosed message:@"connection broken before receiving publishing acknowledgment"]]];
             break;
         case ARTRealtimeFailed:
             status = [ARTStatus state:ARTStateConnectionFailed info:stateChange.reason];
             [self abortAndReleaseTransport:status];
             self.rest.prioritizedHost = nil;
             [self.auth cancelAuthorization:stateChange.reason];
-            [self failPendingMessages:[ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:80000 message:@"connection broken before receiving publishing acknowledgment"]]];
+            [self failPendingMessages:[ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:ARTErrorConnectionFailed message:@"connection broken before receiving publishing acknowledgment"]]];
             break;
         case ARTRealtimeDisconnected: {
             [self closeAndReleaseTransport];
@@ -969,7 +969,7 @@
 }
 
 - (BOOL)isTokenError:(nullable ARTErrorInfo *)error {
-    return error != nil && error.statusCode == 401 && error.code >= 40140 && error.code < 40150;
+    return error != nil && error.statusCode == 401 && error.code >= ARTErrorTokenErrorUnspecified && error.code < ARTErrorConnectionLimitsExceeded;
 }
 
 - (void)transportReconnectWithHost:(NSString *)host {
@@ -1058,7 +1058,7 @@
         [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:error]];
     }
     else if (self.options.authUrl || self.options.authCallback) {
-        if (error.code == 40300 /* RSA4d */) {
+        if (error.code == ARTErrorForbidden /* RSA4d */) {
             ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTErrorAuthConfiguredProviderFailure
                                                             status:error.artStatusCode
                                                            message:error.description];
@@ -1201,7 +1201,7 @@
     }
     else if (ackCallback) {
         ARTErrorInfo *error = self.connection.errorReason_nosync;
-        if (!error) error = [ARTErrorInfo createWithCode:90000 status:400 message:[NSString stringWithFormat:@"not possile to send message (state is %@)", ARTRealtimeConnectionStateToStr(self.connection.state_nosync)]];
+        if (!error) error = [ARTErrorInfo createWithCode:ARTErrorChannelOperationFailed status:400 message:[NSString stringWithFormat:@"not possile to send message (state is %@)", ARTRealtimeConnectionStateToStr(self.connection.state_nosync)]];
         ackCallback([ARTStatus state:ARTStateError info:error]);
     }
 }
@@ -1387,7 +1387,7 @@
     _idleTimer = artDispatchScheduled([ARTDefault realtimeRequestTimeout] + self.maxIdleInterval, _rest.queue, ^{
         [self.logger error:@"R:%p No activity seen from realtime in %f seconds; assuming connection has dropped", self, [[NSDate date] timeIntervalSinceDate:self->_lastActivity]];
         
-        ARTErrorInfo *idleTimerExpired = [ARTErrorInfo createWithCode:80003 status:408 message:@"Idle timer expired"];
+        ARTErrorInfo *idleTimerExpired = [ARTErrorInfo createWithCode:ARTErrorDisconnected status:408 message:@"Idle timer expired"];
         [self transitionToDisconnectedOrSuspendedWithError:idleTimerExpired];
     });
 }

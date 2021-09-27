@@ -448,7 +448,7 @@
 
 - (BOOL)shouldRenewToken:(NSError **)errorPtr {
     if (errorPtr && *errorPtr &&
-        (*errorPtr).code >= 40140 && (*errorPtr).code < 40150) {
+        (*errorPtr).code >= ARTErrorTokenErrorUnspecified && (*errorPtr).code < ARTErrorConnectionLimitsExceeded) {
         if ([self.auth tokenIsRenewable]) {
             return YES;
         }

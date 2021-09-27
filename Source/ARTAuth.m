@@ -344,7 +344,7 @@ dispatch_async(_queue, ^{
     const ARTTokenDetailsCallback checkerCallback = ^(ARTTokenDetails *tokenDetails, NSError *error) {
         if (error) {
             if (error.code == NSURLErrorTimedOut) {
-                ARTErrorInfo *ablyError = [ARTErrorInfo createWithCode:40170 message:@"Error in requesting auth token"];
+                ARTErrorInfo *ablyError = [ARTErrorInfo createWithCode:ARTErrorErrorFromClientTokenCallback message:@"Error in requesting auth token"];
                 callback(nil, ablyError);
                 return;
             }

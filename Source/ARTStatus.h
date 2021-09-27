@@ -75,8 +75,6 @@ typedef CF_ENUM(NSUInteger, ARTErrorCode) {
     ARTErrorKeyRevoked = 40131,
     ARTErrorKeyExpired = 40132,
     ARTErrorKeyDisabled = 40133,
-    
-    // FIXME: check hard coded errors
     ARTErrorTokenErrorUnspecified = 40140,
     ARTErrorTokenRevoked = 40141,
     ARTErrorTokenExpired = 40142,
@@ -138,7 +136,7 @@ typedef CF_ENUM(NSUInteger, ARTErrorCode) {
     ARTErrorInvalidConnectionIdRemoteNotFound = 80005,
     ARTErrorUnableToRecoverConnectionMessagesExpired = 80006,
     ARTErrorUnableToRecoverConnectionMessageLimitExceeded = 80007,
-    ARTErrorUnableToRecoverConnectionConnectionExpired = 80008,
+    ARTErrorUnableToRecoverConnectionExpired = 80008,
     ARTErrorConnectionNotEstablishedNoTransportHandle = 80009,
     ARTErrorInvalidTransportHandle = 80010,
     ARTErrorUnableToRecoverConnectionIncompatibleAuthParams = 80011,

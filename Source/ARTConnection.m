@@ -177,17 +177,17 @@ dispatch_sync(_queue, ^{
     }
     switch (self.state_nosync) {
         case ARTRealtimeDisconnected:
-            return [ARTErrorInfo createWithCode:80003 status:400 message:@"Connection to server temporarily unavailable"];
+            return [ARTErrorInfo createWithCode:ARTErrorDisconnected status:400 message:@"Connection to server temporarily unavailable"];
         case ARTRealtimeSuspended:
-            return [ARTErrorInfo createWithCode:80002 status:400 message:@"Connection to server unavailable"];
+            return [ARTErrorInfo createWithCode:ARTErrorConnectionSuspended status:400 message:@"Connection to server unavailable"];
         case ARTRealtimeFailed:
-            return [ARTErrorInfo createWithCode:80000 status:400 message:@"Connection failed or disconnected by server"];
+            return [ARTErrorInfo createWithCode:ARTErrorConnectionFailed status:400 message:@"Connection failed or disconnected by server"];
         case ARTRealtimeClosing:
-            return [ARTErrorInfo createWithCode:80017 status:400 message:@"Connection closing"];
+            return [ARTErrorInfo createWithCode:ARTErrorConnectionClosed status:400 message:@"Connection closing"];
         case ARTRealtimeClosed:
-            return [ARTErrorInfo createWithCode:80003 status:400 message:@"Connection closed"];
+            return [ARTErrorInfo createWithCode:ARTErrorDisconnected status:400 message:@"Connection closed"];
         default:
-            return [ARTErrorInfo createWithCode:80010 status:400 message:[NSString stringWithFormat:@"Invalid operation (connection state is %lu - %@)", (unsigned long)self.state_nosync, ARTRealtimeConnectionStateToStr(self.state_nosync)]];
+            return [ARTErrorInfo createWithCode:ARTErrorInvalidTransportHandle status:400 message:[NSString stringWithFormat:@"Invalid operation (connection state is %lu - %@)", (unsigned long)self.state_nosync, ARTRealtimeConnectionStateToStr(self.state_nosync)]];
     }
 }
 

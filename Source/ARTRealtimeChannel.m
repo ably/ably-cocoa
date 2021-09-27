@@ -440,7 +440,7 @@ dispatch_sync(_queue, ^{
         case ARTRealtimeChannelSuspended:
         case ARTRealtimeChannelFailed: {
             if (cb) {
-                ARTStatus *statusInvalidChannelState = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:90001 message:[NSString stringWithFormat:@"channel operation failed (invalid channel state: %@)", ARTRealtimeChannelStateToStr(self.state_nosync)]]];
+                ARTStatus *statusInvalidChannelState = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:ARTErrorChannelOperationFailedInvalidState message:[NSString stringWithFormat:@"channel operation failed (invalid channel state: %@)", ARTRealtimeChannelStateToStr(self.state_nosync)]]];
                 cb(statusInvalidChannelState);
             }
             break;
@@ -999,7 +999,7 @@ dispatch_sync(_queue, ^{
 
     if (![self.realtime isActive]) {
         [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) can't attach when not in an active state", _realtime, self, self.name];
-        if (callback) callback([ARTErrorInfo createWithCode:90000 message:@"Can't attach when not in an active state"]);
+        if (callback) callback([ARTErrorInfo createWithCode:ARTErrorChannelOperationFailed message:@"Can't attach when not in an active state"]);
         return;
     }
 
@@ -1094,7 +1094,7 @@ dispatch_sync(_queue, ^{
             return;
         case ARTRealtimeChannelFailed:
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) can't detach when in a failed state", _realtime, self, self.name];
-            if (callback) callback([ARTErrorInfo createWithCode:90000 message:@"can't detach when in a failed state"]);
+            if (callback) callback([ARTErrorInfo createWithCode:ARTErrorChannelOperationFailed message:@"can't detach when in a failed state"]);
             return;
         default:
             break;
@@ -1102,7 +1102,7 @@ dispatch_sync(_queue, ^{
 
     if (![self.realtime isActive]) {
         [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) can't detach when not in an active state", _realtime, self, self.name];
-        if (callback) callback([ARTErrorInfo createWithCode:90000 message:@"Can't detach when not in an active state"]);
+        if (callback) callback([ARTErrorInfo createWithCode:ARTErrorChannelOperationFailed message:@"Can't detach when not in an active state"]);
         return;
     }
 
@@ -1142,7 +1142,7 @@ dispatch_sync(_queue, ^{
     }
 
     if (self.presenceMap.syncInProgress) {
-        [self.presenceMap failsSync:[ARTErrorInfo createWithCode:90000 message:@"channel is being DETACHED"]];
+        [self.presenceMap failsSync:[ARTErrorInfo createWithCode:ARTErrorChannelOperationFailed message:@"channel is being DETACHED"]];
     }
 }
 
@@ -1196,7 +1196,7 @@ dispatch_sync(_queue, ^{
 - (void)map:(ARTPresenceMap *)map shouldReenterLocalMember:(ARTPresenceMessage *)presence {
     [self.presence enterClient:presence.clientId data:presence.data callback:^(ARTErrorInfo *error) {
         NSString *message = [NSString stringWithFormat:@"Re-entering member \"%@\" as failed with code %ld (%@)", presence.clientId, (long)error.code, error.message];
-        ARTErrorInfo *reenterError = [ARTErrorInfo createWithCode:91004 message:message];
+        ARTErrorInfo *reenterError = [ARTErrorInfo createWithCode:ARTErrorUnableToAutomaticallyReEnterPresenceChannel message:message];
         ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:self.state_nosync previous:self.state_nosync event:ARTChannelEventUpdate reason:reenterError resumed:true];
         [self emit:stateChange.event with:stateChange];
     }];
