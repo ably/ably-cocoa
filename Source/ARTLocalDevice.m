@@ -110,4 +110,19 @@ NSString *const ARTDevicePushTransportType = @"apns";
     return _identityTokenDetails != nil;
 }
 
+- (void)clearStorage {
+    for (NSString *key in @[ ARTDeviceIdKey, ARTDeviceTokenKey, ARTDeviceIdentityTokenKey ]) {
+        [self.storage setObject:nil forKey:key];
+    }
+}
+
+- (void)reset {
+    self.id = @"";
+    self.secret = nil;
+    self.clientId = nil;
+    _identityTokenDetails = nil;
+    [self.push.recipient removeAllObjects];
+    [self clearStorage];
+}
+
 @end
