@@ -1,10 +1,3 @@
-//
-//  NSDictionary+ARTDictionaryUtil.m
-//
-//  Created by Jason Choy on 09/12/2014.
-//  Copyright (c) 2014 Ably. All rights reserved.
-//
-
 #import "ARTNSDictionary+ARTDictionaryUtil.h"
 #import "ARTNSDate+ARTUtil.h"
 

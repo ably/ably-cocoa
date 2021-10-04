@@ -1,10 +1,3 @@
-//
-//  ARTWebSocket.h
-//  Ably
-//
-//  Copyright © 2019 Ably. All rights reserved.
-//
-
 #ifndef ARTWebSocket_h
 #define ARTWebSocket_h
 

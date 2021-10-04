@@ -1,11 +1,3 @@
-//
-//  RestClientChannel.swift
-//  ably
-//
-//  Created by Yavor Georgiev on 23.08.15.
-//  Copyright (c) 2015 г. Ably. All rights reserved.
-//
-
 import Ably
 import Nimble
 import Quick

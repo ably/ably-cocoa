@@ -1,11 +1,3 @@
-//
-//  ARTNSMutableRequest+ARTPush.h
-//  Ably
-//
-//  Created by Ricardo Pereira on 22/03/2018.
-//  Copyright © 2018 Ably. All rights reserved.
-//
-
 #import <Foundation/Foundation.h>
 
 #import <Ably/ARTTypes.h>

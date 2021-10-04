@@ -1,10 +1,3 @@
-//
-//  ARTProtocolMessage.h
-//
-//  Created by Jason Choy on 10/12/2014.
-//  Copyright (c) 2014 Ably. All rights reserved.
-//
-
 #import <Foundation/Foundation.h>
 
 #import <Ably/ARTMessage.h>

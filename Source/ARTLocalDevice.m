@@ -1,11 +1,3 @@
-//
-//  ARTLocalDevice.m
-//  Ably
-//
-//  Created by Ricardo Pereira on 28/02/2017.
-//  Copyright © 2017 Ably. All rights reserved.
-//
-
 #import "ARTLocalDevice+Private.h"
 #import "ARTDevicePushDetails.h"
 #import "ARTPush.h"

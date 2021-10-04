@@ -1,11 +1,3 @@
-//
-//  FunctionHelpers.swift
-//  Ably
-//
-//  Created by Ricardo Pereira on 01/09/2015.
-//  Copyright (c) 2015 Ricardo Pereira. All rights reserved.
-//
-
 import Foundation
 import Runes
 

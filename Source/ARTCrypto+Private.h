@@ -1,11 +1,3 @@
-//
-//  ARTCrypto+Private.h
-//  ably
-//
-//  Created by Toni Cárdenas on 19/2/16.
-//  Copyright © 2016 Ably. All rights reserved.
-//
-
 #import <Ably/ARTCrypto.h>
 #import <Ably/ARTLog.h>
 

@@ -1,11 +1,3 @@
-//
-//  ARTMsgPackEncoder.m
-//  Ably
-//
-//  Created by Toni Cárdenas on 21/3/16.
-//  Copyright © 2016 Ably. All rights reserved.
-//
-
 #import "ARTMsgPackEncoder.h"
 #import <msgpack/MessagePack.h>
 

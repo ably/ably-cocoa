@@ -1,10 +1,3 @@
-//
-//  ARTPushActivationStateMachine+Private.h
-//
-//  Created by Ricardo Pereira on 26/01/2018.
-//  Copyright (c) 2014 Ably. All rights reserved.
-//
-
 #import <Ably/ARTPushActivationStateMachine.h>
 
 NS_ASSUME_NONNULL_BEGIN

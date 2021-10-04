@@ -1,11 +1,3 @@
-//
-//  ARTQueuedDealloc.h
-//  Ably
-//
-//  Created by Toni Cárdenas on 05/08/2019.
-//  Copyright © 2019 Ably. All rights reserved.
-//
-
 #ifndef ARTQueuedDealloc_h
 #define ARTQueuedDealloc_h
 

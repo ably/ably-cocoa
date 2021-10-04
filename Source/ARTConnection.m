@@ -1,11 +1,3 @@
-//
-//  ARTConnection.m
-//  ably
-//
-//  Created by Ricardo Pereira on 30/10/2015.
-//  Copyright © 2015 Ably. All rights reserved.
-//
-
 #import "ARTConnection+Private.h"
 
 #import "ARTRealtime+Private.h"

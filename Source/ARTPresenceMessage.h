@@ -1,10 +1,3 @@
-//
-//  ARTPresenceMessage.h
-//
-//  Created by Jason Choy on 09/12/2014.
-//  Copyright (c) 2014 Ably. All rights reserved.
-//
-
 #import <Ably/ARTBaseMessage.h>
 #import <Ably/ARTEventEmitter.h>
 

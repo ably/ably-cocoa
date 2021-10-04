@@ -1,11 +1,3 @@
-//
-//  ARTAuthDetails.m
-//  Ably
-//
-//  Created by Ricardo Pereira on 19/10/2016.
-//  Copyright © 2016 Ably. All rights reserved.
-//
-
 #import "ARTAuthDetails.h"
 
 @implementation ARTAuthDetails

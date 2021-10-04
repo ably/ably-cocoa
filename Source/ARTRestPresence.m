@@ -1,11 +1,3 @@
-//
-//  ARTRestPresence.m
-//  ably
-//
-//  Created by Ricardo Pereira on 12/11/15.
-//  Copyright © 2015 Ably. All rights reserved.
-//
-
 #import "ARTRestPresence+Private.h"
 
 #import "ARTPresence+Private.h"
