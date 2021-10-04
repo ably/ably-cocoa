@@ -197,7 +197,7 @@ dispatch_async(_queue, ^{
             NSError *decodeError = nil;
             message = [message decodeWithEncoder:self->_channel.dataEncoder error:&decodeError];
             if (decodeError != nil) {
-                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:40018 message:decodeError.localizedFailureReason] prepend:@"Failed to decode data: "];
+                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:ARTErrorUnableToDecodeMessage message:decodeError.localizedFailureReason] prepend:@"Failed to decode data: "];
                 [self->_channel.logger error:@"RS:%p %@", self->_channel.rest, errorInfo.message];
             }
             return message;

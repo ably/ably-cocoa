@@ -118,7 +118,7 @@ class DeltaCodec: QuickSpec {
                         let partialDone = AblyTests.splitDone(2, done: done)
                         channel.once(.attaching) { stateChange in
                             expect(receivedMessages).to(haveCount(testData.count - 3)) //messages discarded
-                            expect(stateChange.reason?.code).to(equal(40018))
+                            expect(stateChange.reason?.code).to(equal(ARTErrorCode.unableToDecodeMessage.intValue))
                             partialDone()
                         }
                         channel.once(.attached) { stateChange in
@@ -174,8 +174,7 @@ class DeltaCodec: QuickSpec {
                             guard let errorReason = stateChange.reason else {
                                 fail("Reason should not be empty"); partialDone(); return
                             }
-                            expect(errorReason.code).to(equal(40018))
-                            expect(errorReason.message.lowercased()).to(contain("failed to decode data"))
+                            expect(errorReason.code).to(equal(ARTErrorCode.unableToDecodeMessage.intValue))
                             partialDone()
                         }
                         channel.once(.attached) { stateChange in

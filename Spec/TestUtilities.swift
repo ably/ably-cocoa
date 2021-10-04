@@ -1890,3 +1890,10 @@ extension DispatchTimeInterval {
         }
     }
 }
+
+extension ARTErrorCode {
+    
+    var intValue: NSInteger {
+        return NSInteger(rawValue)
+    }
+}

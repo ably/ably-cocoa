@@ -378,7 +378,8 @@ dispatch_sync(_queue, ^{
         case ARTRealtimeChannelInitialized:
         case ARTRealtimeChannelDetaching:
         case ARTRealtimeChannelDetached: {
-            ARTErrorInfo *error = [ARTErrorInfo createWithCode:40000 message:@"unable to sync to channel; not attached"];
+            ARTErrorInfo *error = [ARTErrorInfo createWithCode:ARTErrorBadRequest
+                                                       message:@"Unable to sync to channel; not attached."];
             [self.logger logWithError:error];
             if (callback) callback(error);
             return;
@@ -431,7 +432,7 @@ dispatch_sync(_queue, ^{
         case ARTRealtimeChannelSuspended:
         case ARTRealtimeChannelFailed: {
             if (cb) {
-                ARTStatus *statusInvalidChannelState = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:90001 message:[NSString stringWithFormat:@"channel operation failed (invalid channel state: %@)", ARTRealtimeChannelStateToStr(self.state_nosync)]]];
+                ARTStatus *statusInvalidChannelState = [ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:ARTErrorChannelOperationFailedInvalidState message:[NSString stringWithFormat:@"channel operation failed (invalid channel state: %@)", ARTRealtimeChannelStateToStr(self.state_nosync)]]];
                 cb(statusInvalidChannelState);
             }
             break;
@@ -808,7 +809,7 @@ dispatch_sync(_queue, ^{
         else {
             NSString *const deltaFrom = [[extras objectForKey:@"delta"] objectForKey:@"from"];
             if (deltaFrom && _lastPayloadMessageId && ![deltaFrom isEqualToString:_lastPayloadMessageId]) {
-                ARTErrorInfo *incompatibleIdError = [ARTErrorInfo createWithCode:40018 message:[NSString stringWithFormat:@"previous id '%@' is incompatible with message delta %@", _lastPayloadMessageId, firstMessage]];
+                ARTErrorInfo *incompatibleIdError = [ARTErrorInfo createWithCode:ARTErrorUnableToDecodeMessage message:[NSString stringWithFormat:@"previous id '%@' is incompatible with message delta %@", _lastPayloadMessageId, firstMessage]];
                 [self.logger error:@"R:%p C:%p (%@) %@", _realtime, self, self.name, incompatibleIdError.message];
                 for (int j = i + 1; j < pm.messages.count; j++) {
                     [self.logger verbose:@"R:%p C:%p (%@) message skipped %@", _realtime, self, self.name, pm.messages[j]];
@@ -827,13 +828,13 @@ dispatch_sync(_queue, ^{
             NSError *decodeError = nil;
             msg = [msg decodeWithEncoder:dataEncoder error:&decodeError];
             if (decodeError) {
-                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:40018 message:decodeError.localizedFailureReason] prepend:@"Failed to decode data: "];
+                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:ARTErrorUnableToDecodeMessage message:decodeError.localizedFailureReason] prepend:@"Failed to decode data: "];
                 [self.logger error:@"R:%p C:%p (%@) %@", _realtime, self, self.name, errorInfo.message];
                 _errorReason = errorInfo;
                 ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:self.state_nosync previous:self.state_nosync event:ARTChannelEventUpdate reason:errorInfo];
                 [self emit:stateChange.event with:stateChange];
 
-                if (decodeError.code == 40018) {
+                if (decodeError.code == ARTErrorUnableToDecodeMessage) {
                     [self startDecodeFailureRecoveryWithChannelSerial:_lastPayloadProtocolMessageChannelSerial error:errorInfo];
                     return;
                 }
@@ -867,7 +868,7 @@ dispatch_sync(_queue, ^{
             NSError *decodeError = nil;
             presence = [p decodeWithEncoder:dataEncoder error:&decodeError];
             if (decodeError != nil) {
-                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:40018 message:decodeError.localizedFailureReason] prepend:@"Failed to decode data: "];
+                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:ARTErrorUnableToDecodeMessage message:decodeError.localizedFailureReason] prepend:@"Failed to decode data: "];
                 [self.logger error:@"RT:%p C:%p (%@) %@", _realtime, self, self.name, errorInfo.message];
             }
         }
@@ -990,7 +991,7 @@ dispatch_sync(_queue, ^{
 
     if (![self.realtime isActive]) {
         [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) can't attach when not in an active state", _realtime, self, self.name];
-        if (callback) callback([ARTErrorInfo createWithCode:90000 message:@"Can't attach when not in an active state"]);
+        if (callback) callback([ARTErrorInfo createWithCode:ARTErrorChannelOperationFailed message:@"Can't attach when not in an active state"]);
         return;
     }
 
@@ -1085,7 +1086,7 @@ dispatch_sync(_queue, ^{
             return;
         case ARTRealtimeChannelFailed:
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) can't detach when in a failed state", _realtime, self, self.name];
-            if (callback) callback([ARTErrorInfo createWithCode:90000 message:@"can't detach when in a failed state"]);
+            if (callback) callback([ARTErrorInfo createWithCode:ARTErrorChannelOperationFailed message:@"can't detach when in a failed state"]);
             return;
         default:
             break;
@@ -1093,7 +1094,7 @@ dispatch_sync(_queue, ^{
 
     if (![self.realtime isActive]) {
         [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) can't detach when not in an active state", _realtime, self, self.name];
-        if (callback) callback([ARTErrorInfo createWithCode:90000 message:@"Can't detach when not in an active state"]);
+        if (callback) callback([ARTErrorInfo createWithCode:ARTErrorChannelOperationFailed message:@"Can't detach when not in an active state"]);
         return;
     }
 
@@ -1133,7 +1134,7 @@ dispatch_sync(_queue, ^{
     }
 
     if (self.presenceMap.syncInProgress) {
-        [self.presenceMap failsSync:[ARTErrorInfo createWithCode:90000 message:@"channel is being DETACHED"]];
+        [self.presenceMap failsSync:[ARTErrorInfo createWithCode:ARTErrorChannelOperationFailed message:@"channel is being DETACHED"]];
     }
 }
 
@@ -1187,7 +1188,7 @@ dispatch_sync(_queue, ^{
 - (void)map:(ARTPresenceMap *)map shouldReenterLocalMember:(ARTPresenceMessage *)presence {
     [self.presence enterClient:presence.clientId data:presence.data callback:^(ARTErrorInfo *error) {
         NSString *message = [NSString stringWithFormat:@"Re-entering member \"%@\" as failed with code %ld (%@)", presence.clientId, (long)error.code, error.message];
-        ARTErrorInfo *reenterError = [ARTErrorInfo createWithCode:91004 message:message];
+        ARTErrorInfo *reenterError = [ARTErrorInfo createWithCode:ARTErrorUnableToAutomaticallyReEnterPresenceChannel message:message];
         ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:self.state_nosync previous:self.state_nosync event:ARTChannelEventUpdate reason:reenterError resumed:true];
         [self emit:stateChange.event with:stateChange];
     }];

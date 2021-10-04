@@ -221,7 +221,7 @@
         [_logger error:@"ARTJsonLikeEncoder<%@>: clientId and deviceId are both present or both nil", [_delegate formatAsString]];
         if (error) {
             *error = [NSError errorWithDomain:ARTAblyErrorDomain
-                                         code:ARTCodeErrorAPIInconsistency
+                                         code:ARTErrorIncompatibleCredentials
                                      userInfo:@{ NSLocalizedDescriptionKey: @"clientId and deviceId are both present or both nil"}];
         }
         return nil;
