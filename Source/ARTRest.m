@@ -1,10 +1,3 @@
-//
-//  ARTRest.m
-//
-//  Created by Jason Choy on 08/12/2014.
-//  Copyright (c) 2014 Ably. All rights reserved.
-//
-
 #import "ARTRest+Private.h"
 
 #import "ARTChannel+Private.h"
@@ -448,7 +441,7 @@
 
 - (BOOL)shouldRenewToken:(NSError **)errorPtr {
     if (errorPtr && *errorPtr &&
-        (*errorPtr).code >= 40140 && (*errorPtr).code < 40150) {
+        (*errorPtr).code >= ARTErrorTokenErrorUnspecified && (*errorPtr).code < ARTErrorConnectionLimitsExceeded) {
         if ([self.auth tokenIsRenewable]) {
             return YES;
         }

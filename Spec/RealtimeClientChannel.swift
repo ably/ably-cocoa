@@ -1,11 +1,3 @@
-//
-//  RealtimeClient.channel.swift
-//  ably
-//
-//  Created by Ricardo Pereira on 18/01/16.
-//  Copyright © 2016 Ably. All rights reserved.
-//
-
 import Ably
 import Quick
 import Nimble
@@ -169,7 +161,7 @@ class RealtimeClientChannel: QuickSpec {
                                     fail("Reason is nil"); done(); return
                                 }
                                 expect(stateChange.event).to(equal(ARTChannelEvent.failed))
-                                expect(reason.code) == 40160
+                                expect(reason.code) == ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue
                                 expect(stateChange.previous).to(equal(ARTRealtimeChannelState.attaching))
                                 done()
                             default:
@@ -369,7 +361,7 @@ class RealtimeClientChannel: QuickSpec {
                             guard let error = stateChange.reason else {
                                 fail("Error is nil"); done(); return
                             }
-                            expect(error.code) == 40142
+                            expect(error.code) == ARTErrorCode.tokenExpired.intValue
 
                             channel.on { stateChange in
                                 if (stateChange.current == .attached) {
@@ -526,7 +518,7 @@ class RealtimeClientChannel: QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             expect(client.connection.state).to(equal(.initialized))
                             channel.publish(nil, data: "message") { error in
-                                expect(error?.code).to(equal(80010))
+                                expect(error?.code).to(equal(ARTErrorCode.invalidTransportHandle.intValue))
                                 expect(error?.message).to(contain("Invalid operation"))
                                 done()
                             }
@@ -536,7 +528,7 @@ class RealtimeClientChannel: QuickSpec {
                             client.connect()
                             expect(client.connection.state).to(equal(.connecting))
                             channel.publish(nil, data: "message") { error in
-                                expect(error?.code).to(equal(80010))
+                                expect(error?.code).to(equal(ARTErrorCode.invalidTransportHandle.intValue))
                                 expect(error?.message).to(contain("Invalid operation"))
                                 done()
                             }
@@ -805,7 +797,7 @@ class RealtimeClientChannel: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         client.connection.once(.connected) { stateChange in
-                            expect(stateChange.reason?.code).to(equal(80008)) //didn't resumed
+                            expect(stateChange.reason?.code).to(equal(ARTErrorCode.unableToRecoverConnectionExpired.intValue)) //didn't resumed
                             done()
                         }
                         client.simulateRestoreInternetConnection(after: 1.0)
@@ -902,20 +894,20 @@ class RealtimeClientChannel: QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(2, done: done)
                         channel.once(.failed) { stateChange in
-                            expect(stateChange.reason?.code) == 40160
+                            expect(stateChange.reason?.code) == ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue
                             partialDone()
                         }
                         channel.attach { error in
                             guard let error = error else {
                                 fail("Error is nil"); partialDone(); return
                             }
-                            expect((error ).code) == 40160
+                            expect(error.code) == ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue
                             partialDone()
                         }
                     }
 
                     expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
-                    expect(channel.errorReason?.code) == 40160
+                    expect(channel.errorReason?.code) == ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue
                 }
 
                 // RTL4g
@@ -1122,12 +1114,12 @@ class RealtimeClientChannel: QuickSpec {
                             guard let error = stateChange.reason else {
                                 fail("Reason error is nil"); done(); return
                             }
-                            expect((error ).code).to(equal(40160))
+                            expect(error.code).to(equal(ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue))
                             done()
                         }
                     }
 
-                    expect(channel.errorReason!.code).to(equal(40160))
+                    expect(channel.errorReason!.code).to(equal(ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue))
                     expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
                 }
 
@@ -1605,7 +1597,7 @@ class RealtimeClientChannel: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.detach() { errorInfo in
-                            expect(errorInfo!.code).to(equal(90000))
+                            expect(errorInfo!.code).to(equal(ARTErrorCode.channelOperationFailed.intValue))
                             done()
                         }
                     }
@@ -1983,7 +1975,7 @@ class RealtimeClientChannel: QuickSpec {
                                                     XCTFail("ErrorInfo is nil"); done(); return
                                                 }
                                                 // Unable to perform channel operation
-                                                expect(errorInfo.code).to(equal(40160))
+                                                expect(errorInfo.code).to(equal(ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue))
                                                 done()
                                             }
                                         }
@@ -3014,8 +3006,7 @@ class RealtimeClientChannel: QuickSpec {
                         let message = ARTMessage(name: nil, data: "message", clientId: "tester")
                         waitUntil(timeout: testTimeout) { done in
                             channel.publish([message]) { error in
-                                expect(error!.code).to(equal(40012))
-                                expect(error!.message).to(contain("mismatched clientId"))
+                                expect(error!.code).to(equal(ARTErrorCode.invalidClientId.intValue))
                                 done()
                             }
                         }
@@ -4143,12 +4134,12 @@ class RealtimeClientChannel: QuickSpec {
                             waitUntil(timeout: testTimeout) { done in
                                 let partialDone = AblyTests.splitDone(2, done: done)
                                 channel.once(.failed) { stateChange in
-                                    expect(stateChange.reason?.code).to(equal(40160))
+                                    expect(stateChange.reason?.code).to(equal(ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue))
                                     partialDone()
                                 }
                                 channel.attach()
                                 channel.setOptions(channelOptions) { error in
-                                    expect(error?.code).to(equal(40160))
+                                    expect(error?.code).to(equal(ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue))
                                     partialDone()
                                 }
                             }
@@ -4192,7 +4183,7 @@ class RealtimeClientChannel: QuickSpec {
                             transport.setBeforeIncomingMessageModifier({ protocolMessage in
                                 if protocolMessage.action == .attached {
                                     protocolMessage.action = .detached
-                                    protocolMessage.error = .create(withCode: 50000, status: 500, message: "internal error")
+                                    protocolMessage.error = .create(withCode: ARTErrorCode.internalError.intValue, status: 500, message: "internal error")
                                     transport.setBeforeIncomingMessageModifier(nil)
                                 }
                                 return protocolMessage
@@ -4204,7 +4195,7 @@ class RealtimeClientChannel: QuickSpec {
                                     partialDone()
                                 }
                                 channel.setOptions(channelOptions) { error in
-                                    expect(error?.code).to(equal(50000))
+                                    expect(error?.code).to(equal(ARTErrorCode.internalError.intValue))
                                     partialDone()
                                 }
                             }
@@ -4376,7 +4367,7 @@ class RealtimeClientChannel: QuickSpec {
                 transport.setBeforeIncomingMessageModifier({ protocolMessage in
                     if protocolMessage.action == .attached {
                         protocolMessage.action = .detached
-                        protocolMessage.error = ARTErrorInfo.create(withCode: 50000, status: 500, message: "fake error message text")
+                        protocolMessage.error = ARTErrorInfo.create(withCode: ARTErrorCode.internalError.intValue, status: 500, message: "fake error message text")
                     }
                     return protocolMessage
                 })

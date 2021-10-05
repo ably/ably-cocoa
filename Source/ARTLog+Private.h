@@ -1,11 +1,3 @@
-//
-//  ARTLog+Private.h
-//  ably
-//
-//  Created by Toni Cárdenas on 25/2/16.
-//  Copyright © 2016 Ably. All rights reserved.
-//
-
 #import <Ably/ARTLog.h>
 
 NS_ASSUME_NONNULL_BEGIN

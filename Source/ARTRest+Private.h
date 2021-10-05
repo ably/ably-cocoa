@@ -1,10 +1,3 @@
-//
-//  ARTRest+Private.h
-//
-//  Created by Jason Choy on 21/12/2014.
-//  Copyright (c) 2014 Ably. All rights reserved.
-//
-
 #import <Ably/ARTRest.h>
 #import <Ably/ARTHttp.h>
 #import "ARTRestChannels+Private.h"

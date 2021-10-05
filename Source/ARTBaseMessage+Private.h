@@ -1,11 +1,3 @@
-//
-//  ARTBaseMessage+Private.h
-//  ably
-//
-//  Created by Toni Cárdenas on 29/1/16.
-//  Copyright © 2016 Ably. All rights reserved.
-//
-
 #import <Ably/CompatibilityMacros.h>
 #import <Ably/ARTBaseMessage.h>
 #import <Ably/ARTDataEncoder.h>

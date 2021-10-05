@@ -1,9 +1,6 @@
-
 //
 //  ARTRealtime.m
 //
-//  Created by Jason Choy on 09/12/2014.
-//  Copyright (c) 2014 Ably. All rights reserved.
 //
 
 #import "ARTRealtime+Private.h"
@@ -460,7 +457,7 @@
                 }
                 [[[self->_pingEventEmitter once:cb] setTimer:[ARTDefault realtimeRequestTimeout] onTimeout:^{
                     [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p ping timed out", self];
-                    cb([ARTErrorInfo createWithCode:ARTCodeErrorConnectionTimedOut status:ARTStateConnectionFailed message:@"timed out"]);
+                    cb([ARTErrorInfo createWithCode:ARTErrorConnectionTimedOut status:ARTStateConnectionFailed message:@"timed out"]);
                 }] startTimer];
                 [self.transport sendPing];
         }
@@ -617,14 +614,14 @@
             _transport = nil;
             self.rest.prioritizedHost = nil;
             [self.auth cancelAuthorization:nil];
-            [self failPendingMessages:[ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:80017 message:@"connection broken before receiving publishing acknowledgment"]]];
+            [self failPendingMessages:[ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:ARTErrorConnectionClosed message:@"connection broken before receiving publishing acknowledgment"]]];
             break;
         case ARTRealtimeFailed:
             status = [ARTStatus state:ARTStateConnectionFailed info:stateChange.reason];
             [self abortAndReleaseTransport:status];
             self.rest.prioritizedHost = nil;
             [self.auth cancelAuthorization:stateChange.reason];
-            [self failPendingMessages:[ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:80000 message:@"connection broken before receiving publishing acknowledgment"]]];
+            [self failPendingMessages:[ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:ARTErrorConnectionFailed message:@"connection broken before receiving publishing acknowledgment"]]];
             break;
         case ARTRealtimeDisconnected: {
             [self closeAndReleaseTransport];
@@ -953,10 +950,10 @@
     
     ARTErrorInfo *error;
     if (self.auth.authorizing_nosync && (self.options.authUrl || self.options.authCallback)) {
-        error = [ARTErrorInfo createWithCode:ARTCodeErrorAuthConfiguredProviderFailure status:ARTStateConnectionFailed message:@"timed out"];
+        error = [ARTErrorInfo createWithCode:ARTErrorAuthConfiguredProviderFailure status:ARTStateConnectionFailed message:@"timed out"];
     }
     else {
-        error = [ARTErrorInfo createWithCode:ARTCodeErrorConnectionTimedOut status:ARTStateConnectionFailed message:@"timed out"];
+        error = [ARTErrorInfo createWithCode:ARTErrorConnectionTimedOut status:ARTStateConnectionFailed message:@"timed out"];
     }
     switch (self.connection.state_nosync) {
         case ARTRealtimeConnected:
@@ -969,7 +966,7 @@
 }
 
 - (BOOL)isTokenError:(nullable ARTErrorInfo *)error {
-    return error != nil && error.statusCode == 401 && error.code >= 40140 && error.code < 40150;
+    return error != nil && error.statusCode == 401 && error.code >= ARTErrorTokenErrorUnspecified && error.code < ARTErrorConnectionLimitsExceeded;
 }
 
 - (void)transportReconnectWithHost:(NSString *)host {
@@ -1053,18 +1050,18 @@
 
 - (void)handleTokenAuthError:(NSError *)error {
     [self.logger error:@"R:%p token auth failed with %@", self, error.description];
-    if (error.code == 40102 /*incompatible credentials*/) {
+    if (error.code == ARTErrorIncompatibleCredentials) {
         // RSA15c
         [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:error]];
     }
     else if (self.options.authUrl || self.options.authCallback) {
-        if (error.code == 40300 /* RSA4d */) {
-            ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTCodeErrorAuthConfiguredProviderFailure
+        if (error.code == ARTErrorForbidden /* RSA4d */) {
+            ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTErrorAuthConfiguredProviderFailure
                                                             status:error.artStatusCode
                                                            message:error.description];
             [self transition:ARTRealtimeFailed withErrorInfo:errorInfo];
         } else {
-            ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTCodeErrorAuthConfiguredProviderFailure status:ARTStateConnectionFailed message:error.description];
+            ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTErrorAuthConfiguredProviderFailure status:ARTStateConnectionFailed message:error.description];
             switch (self.connection.state_nosync) {
                 case ARTRealtimeConnected:
                     // RSA4c3
@@ -1201,7 +1198,7 @@
     }
     else if (ackCallback) {
         ARTErrorInfo *error = self.connection.errorReason_nosync;
-        if (!error) error = [ARTErrorInfo createWithCode:90000 status:400 message:[NSString stringWithFormat:@"not possile to send message (state is %@)", ARTRealtimeConnectionStateToStr(self.connection.state_nosync)]];
+        if (!error) error = [ARTErrorInfo createWithCode:ARTErrorChannelOperationFailed status:400 message:[NSString stringWithFormat:@"not possile to send message (state is %@)", ARTRealtimeConnectionStateToStr(self.connection.state_nosync)]];
         ackCallback([ARTStatus state:ARTStateError info:error]);
     }
 }
@@ -1387,7 +1384,7 @@
     _idleTimer = artDispatchScheduled([ARTDefault realtimeRequestTimeout] + self.maxIdleInterval, _rest.queue, ^{
         [self.logger error:@"R:%p No activity seen from realtime in %f seconds; assuming connection has dropped", self, [[NSDate date] timeIntervalSinceDate:self->_lastActivity]];
         
-        ARTErrorInfo *idleTimerExpired = [ARTErrorInfo createWithCode:80003 status:408 message:@"Idle timer expired"];
+        ARTErrorInfo *idleTimerExpired = [ARTErrorInfo createWithCode:ARTErrorDisconnected status:408 message:@"Idle timer expired"];
         [self transitionToDisconnectedOrSuspendedWithError:idleTimerExpired];
     });
 }

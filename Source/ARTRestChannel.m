@@ -1,10 +1,3 @@
-//
-//  ARTRestChannel.m
-//
-//  Created by Ricardo Pereira on 05/10/2015.
-//  Copyright (c) 2015 Ably. All rights reserved.
-//
-
 #import "ARTRestChannel+Private.h"
 
 #import "ARTRest+Private.h"
@@ -207,7 +200,7 @@ dispatch_sync(_queue, ^{
             NSError *decodeError = nil;
             message = [message decodeWithEncoder:self.dataEncoder error:&decodeError];
             if (decodeError != nil) {
-                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:40018 message:decodeError.localizedFailureReason] prepend:@"Failed to decode data: "];
+                ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:ARTErrorUnableToDecodeMessage message:decodeError.localizedFailureReason] prepend:@"Failed to decode data: "];
                 [self.logger error:@"RS:%p C:%p (%@) %@", self->_rest, self, self.name, errorInfo.message];
             }
             return message;

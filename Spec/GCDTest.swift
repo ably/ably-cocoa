@@ -1,10 +1,3 @@
-//
-//  GCDTest.swift
-//  Ably
-//
-//  Created by Mikey on 12/01/2021.
-//  Copyright © 2021 Ably. All rights reserved.
-//
 import XCTest
 
 class GCDTest: XCTestCase {

@@ -1,11 +1,3 @@
-//
-//  Crypto.swift
-//  ably
-//
-//  Created by Toni Cárdenas on 12/2/16.
-//  Copyright © 2016 Ably. All rights reserved.
-//
-
 import Ably
 import Nimble
 import Quick

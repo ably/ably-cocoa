@@ -1,10 +1,4 @@
 //
-//  NSObject+TestSuite.m
-//  ably
-//
-//  Created by Ricardo Pereira on 08/02/16.
-//  Copyright © 2016 Ably. All rights reserved.
-//
 
 #import "NSObject+TestSuite.h"
 #import <Aspects/Aspects.h>

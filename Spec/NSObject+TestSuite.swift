@@ -1,11 +1,3 @@
-//
-//  NSObject+TestSuite.swift
-//  ably
-//
-//  Created by Ricardo Pereira on 17/02/16.
-//  Copyright © 2016 Ably. All rights reserved.
-//
-
 import Aspects
 
 extension NSObject {

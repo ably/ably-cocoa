@@ -1,11 +1,3 @@
-//
-//  ARTPush+Private.h
-//  Ably
-//
-//  Created by Toni Cárdenas on 07/04/2017.
-//  Copyright © 2017 Ably. All rights reserved.
-//
-
 #import <Ably/ARTPush.h>
 #import <Ably/ARTPushAdmin+Private.h>
 #import "ARTQueuedDealloc.h"

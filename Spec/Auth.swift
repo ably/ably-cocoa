@@ -1,11 +1,3 @@
-//
-//  Auth.swift
-//  ably
-//
-//  Created by Yavor Georgiev on 28.08.15.
-//  Copyright (c) 2015 г. Ably. All rights reserved.
-//
-
 import Ably
 import Ably.Private
 import Nimble
@@ -203,7 +195,7 @@ class Auth : QuickSpec {
 
                     let channel = rest.channels.get("test")
 
-                    testHTTPExecutor.simulateIncomingServerErrorOnNextRequest(40141, description: "token revoked")
+                    testHTTPExecutor.simulateIncomingServerErrorOnNextRequest(ARTErrorCode.tokenRevoked.intValue, description: "token revoked")
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish("message", data: nil) { error in
                             guard let error = error else {
@@ -242,7 +234,7 @@ class Auth : QuickSpec {
                             guard let error = error else {
                                 fail("Error is nil"); done(); return
                             }
-                            expect(error.code).to(equal(40142))
+                            expect(error.code).to(equal(ARTErrorCode.tokenExpired.intValue))
                             expect(realtime.connection.state).to(equal(ARTRealtimeConnectionState.failed))
                             done()
                         }
@@ -267,7 +259,7 @@ class Auth : QuickSpec {
 
                     let channel = rest.channels.get("test")
 
-                    testHTTPExecutor.simulateIncomingServerErrorOnNextRequest(40141, description: "token revoked")
+                    testHTTPExecutor.simulateIncomingServerErrorOnNextRequest(ARTErrorCode.tokenRevoked.intValue, description: "token revoked")
                     
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish("message", data: nil) { error in
@@ -295,16 +287,16 @@ class Auth : QuickSpec {
                     let channel = rest.channels.get("test")
 
                     testHTTPExecutor.setListenerAfterRequest({ _ in
-                        testHTTPExecutor.simulateIncomingServerErrorOnNextRequest(40141, description: "token revoked")
+                        testHTTPExecutor.simulateIncomingServerErrorOnNextRequest(ARTErrorCode.tokenRevoked.intValue, description: "token revoked")
                     })
 
-                    testHTTPExecutor.simulateIncomingServerErrorOnNextRequest(40141, description: "token revoked")
+                    testHTTPExecutor.simulateIncomingServerErrorOnNextRequest(ARTErrorCode.tokenRevoked.intValue, description: "token revoked")
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish("message", data: nil) { error in
                             guard let error = error else {
                                 fail("Error is nil"); done(); return
                             }
-                            expect(error.code).to(equal(40141))
+                            expect(error.code).to(equal(ARTErrorCode.tokenRevoked.intValue))
                             done()
                         }
                     }
@@ -456,7 +448,7 @@ class Auth : QuickSpec {
                                 guard let response = proxyHTTPExecutor.responses.first else {
                                     fail("Response is nil"); done(); return
                                 }
-                                expect(response.value(forHTTPHeaderField: "X-Ably-Errorcode")).to(equal("40142"))
+                                expect(response.value(forHTTPHeaderField: "X-Ably-Errorcode")).to(equal("\(ARTErrorCode.tokenExpired.intValue)"))
                                 done()
                             }
                         }
@@ -473,7 +465,7 @@ class Auth : QuickSpec {
                     
                     waitUntil(timeout: testTimeout) { done in
                         realtime.connection.once(.failed) { stateChange in
-                            expect(stateChange.reason?.code).to(equal(80019))
+                            expect(stateChange.reason?.code).to(equal(ARTErrorCode.authConfiguredProviderFailure.intValue))
                             expect(stateChange.reason?.statusCode).to(equal(403))
                             done()
                         }
@@ -488,7 +480,7 @@ class Auth : QuickSpec {
                     var authCallbackHasBeenInvoked = false
                     options.authCallback = { tokenParams, completion in
                         authCallbackHasBeenInvoked = true
-                        completion(nil, ARTErrorInfo(domain: "io.ably.cocoa", code: 40300, userInfo: ["ARTErrorInfoStatusCode": 403]))
+                        completion(nil, ARTErrorInfo(domain: "io.ably.cocoa", code: ARTErrorCode.forbidden.intValue, userInfo: ["ARTErrorInfoStatusCode": 403]))
                     }
                     let realtime = ARTRealtime(options: options)
                     defer { realtime.dispose(); realtime.close() }
@@ -496,7 +488,7 @@ class Auth : QuickSpec {
                     waitUntil(timeout: testTimeout) { done in
                         realtime.connection.once(.failed) { stateChange in
                             expect(authCallbackHasBeenInvoked).to(beTrue())
-                            expect(stateChange.reason?.code).to(equal(80019))
+                            expect(stateChange.reason?.code).to(equal(ARTErrorCode.authConfiguredProviderFailure.intValue))
                             expect(stateChange.reason?.statusCode).to(equal(403))
                             done()
                         }
@@ -543,7 +535,7 @@ class Auth : QuickSpec {
                                     guard let errorInfo = stateChange.reason else {
                                         fail("ErrorInfo is nil"); done(); return
                                     }
-                                    expect(errorInfo.code) == 80019
+                                    expect(errorInfo.code) == ARTErrorCode.authConfiguredProviderFailure.intValue
                                     done()
                                 }
                                 realtime.connect()
@@ -552,7 +544,7 @@ class Auth : QuickSpec {
                             guard let errorInfo = realtime.connection.errorReason else {
                                 fail("ErrorInfo is empty"); return
                             }
-                            expect(errorInfo.code) == 80019
+                            expect(errorInfo.code) == ARTErrorCode.authConfiguredProviderFailure.intValue
                             expect(errorInfo.message).to(contain("body param is required"))
                         }
 
@@ -587,7 +579,7 @@ class Auth : QuickSpec {
                             guard let errorInfo = realtime.connection.errorReason else {
                                 fail("ErrorInfo is empty"); return
                             }
-                            expect(errorInfo.code) == 80019
+                            expect(errorInfo.code) == ARTErrorCode.authConfiguredProviderFailure.intValue
                             expect(errorInfo.message).to(contain("body param is required"))
 
                             expect(realtime.connection.state).to(equal(ARTRealtimeConnectionState.connected))
@@ -612,7 +604,7 @@ class Auth : QuickSpec {
                                     guard let errorInfo = stateChange.reason else {
                                         fail("ErrorInfo is nil"); done(); return
                                     }
-                                    expect(errorInfo.code) == 80019
+                                    expect(errorInfo.code) == ARTErrorCode.authConfiguredProviderFailure.intValue
                                     done()
                                 }
                                 realtime.connect()
@@ -622,7 +614,7 @@ class Auth : QuickSpec {
                             guard let errorInfo = realtime.connection.errorReason else {
                                 fail("ErrorInfo is empty"); return
                             }
-                            expect(errorInfo.code) == 80019
+                            expect(errorInfo.code) == ARTErrorCode.authConfiguredProviderFailure.intValue
                             expect(errorInfo.message).to(contain("hostname could not be found"))
                         }
 
@@ -656,7 +648,7 @@ class Auth : QuickSpec {
                             guard let errorInfo = realtime.connection.errorReason else {
                                 fail("ErrorInfo is empty"); return
                             }
-                            expect(errorInfo.code) == 80019
+                            expect(errorInfo.code) == ARTErrorCode.authConfiguredProviderFailure.intValue
                             expect(errorInfo.message).to(contain("hostname could not be found"))
 
                             expect(realtime.connection.state).to(equal(ARTRealtimeConnectionState.connected))
@@ -684,7 +676,7 @@ class Auth : QuickSpec {
                                     guard let errorInfo = stateChange.reason else {
                                         fail("ErrorInfo is nil"); done(); return
                                     }
-                                    expect(errorInfo.code) == 80019
+                                    expect(errorInfo.code) == ARTErrorCode.authConfiguredProviderFailure.intValue
                                     done()
                                 }
                                 realtime.connect()
@@ -693,7 +685,7 @@ class Auth : QuickSpec {
                             guard let errorInfo = realtime.connection.errorReason else {
                                 fail("ErrorInfo is empty"); return
                             }
-                            expect(errorInfo.code) == 80019
+                            expect(errorInfo.code) == ARTErrorCode.authConfiguredProviderFailure.intValue
                             expect(errorInfo.message).to(contain("content response cannot be used for token request"))
 
                             expect(realtime.connection.state).toEventually(equal(ARTRealtimeConnectionState.disconnected), timeout: testTimeout)
@@ -745,7 +737,7 @@ class Auth : QuickSpec {
                             guard let errorInfo = realtime.connection.errorReason else {
                                 fail("ErrorInfo is empty"); return
                             }
-                            expect(errorInfo.code) == 80019
+                            expect(errorInfo.code) == ARTErrorCode.authConfiguredProviderFailure.intValue
                             expect(errorInfo.message).to(contain("content response cannot be used for token request"))
 
                             expect(realtime.connection.state).to(equal(ARTRealtimeConnectionState.connected))
@@ -773,7 +765,7 @@ class Auth : QuickSpec {
                                     guard let errorInfo = stateChange.reason else {
                                         fail("ErrorInfo is nil"); done(); return
                                     }
-                                    expect(errorInfo.code) == 80019
+                                    expect(errorInfo.code) == ARTErrorCode.authConfiguredProviderFailure.intValue
                                     done()
                                 }
                                 realtime.connect()
@@ -782,7 +774,7 @@ class Auth : QuickSpec {
                             guard let errorInfo = realtime.connection.errorReason else {
                                 fail("ErrorInfo is empty"); return
                             }
-                            expect(errorInfo.code) == 80019
+                            expect(errorInfo.code) == ARTErrorCode.authConfiguredProviderFailure.intValue
                             expect(errorInfo.message).to(contain("timed out"))
 
                             expect(realtime.connection.state).toEventually(equal(ARTRealtimeConnectionState.disconnected), timeout: testTimeout)
@@ -830,7 +822,7 @@ class Auth : QuickSpec {
                             guard let errorInfo = realtime.connection.errorReason else {
                                 fail("ErrorInfo is empty"); return
                             }
-                            expect(errorInfo.code) == 80019
+                            expect(errorInfo.code) == ARTErrorCode.authConfiguredProviderFailure.intValue
                             expect(errorInfo.message).to(contain("timed out"))
 
                             expect(realtime.connection.state).to(equal(ARTRealtimeConnectionState.connected))
@@ -966,8 +958,7 @@ class Auth : QuickSpec {
 
                         waitUntil(timeout: testTimeout) { done in
                             realtime.connection.once(.failed) { stateChange in
-                                expect(stateChange.reason?.code).to(equal(40101))
-                                expect(stateChange.reason?.description.lowercased()).to(contain("invalid clientid for credentials"))
+                                expect(stateChange.reason?.code).to(equal(ARTErrorCode.invalidCredentials.intValue))
                                 done()
                             }
                             realtime.connect()
@@ -982,8 +973,7 @@ class Auth : QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             rest.auth.requestToken(ARTTokenParams(clientId: "wrong"), with: nil) { tokenDetails, error in
                                 let error = error as! ARTErrorInfo
-                                expect(error.code).to(equal(40102))
-                                expect(error.localizedDescription).to(contain("incompatible credentials"))
+                                expect(error.code).to(equal(ARTErrorCode.incompatibleCredentials.intValue))
                                 expect(tokenDetails).to(beNil())
                                 done()
                             }
@@ -3315,7 +3305,7 @@ class Auth : QuickSpec {
                             guard let error = error else {
                                 fail("Error is nil"); done(); return
                             }
-                            expect((error as! ARTErrorInfo).code).to(equal(40400))
+                            expect((error as! ARTErrorInfo).code).to(equal(ARTErrorCode.notFound.intValue))
                             expect(tokenDetails).to(beNil())
                             done()
                         }
@@ -3850,7 +3840,7 @@ class Auth : QuickSpec {
                         guard let error = error else {
                             fail("Error is nil"); done(); return
                         }
-                        expect(error.code) == 40160
+                        expect(error.code) == ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue
                         done()
                     }
                 }
@@ -3906,7 +3896,7 @@ class Auth : QuickSpec {
                         guard let error = error else {
                             fail("Error is nil"); done(); return
                         }
-                        expect((error as! ARTErrorInfo).code) == 40102
+                        expect((error as! ARTErrorInfo).code) == ARTErrorCode.incompatibleCredentials.intValue
                         expect(tokenDetails).to(beNil())
                         done()
                     }
@@ -4090,7 +4080,7 @@ class Auth : QuickSpec {
                                 guard let reason = stateChange.reason else {
                                     fail("Reason error is nil"); done(); return
                                 }
-                                expect(reason.code).to(equal(40144))
+                                expect(reason.code).to(equal(ARTErrorCode.invalidJwtFormat.intValue))
                                 expect(reason.description).to(satisfyAnyOf(contain("invalid signature"), contain("signature verification failed")))
                                 done()
                             }
@@ -4151,7 +4141,7 @@ class Auth : QuickSpec {
                                 guard let reason = stateChange.reason else {
                                     fail("Reason error is nil"); done(); return
                                 }
-                                expect(reason.code).to(equal(40144))
+                                expect(reason.code).to(equal(ARTErrorCode.invalidJwtFormat.intValue))
                                 expect(reason.description).to(satisfyAnyOf(contain("invalid signature"), contain("signature verification failed")))
                                 done()
                             }
@@ -4176,7 +4166,7 @@ class Auth : QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             client.connection.once(.connected) { stateChange in
                                 client.connection.once(.disconnected) { stateChange in
-                                    expect(stateChange.reason?.code).to(equal(40142))
+                                    expect(stateChange.reason?.code).to(equal(ARTErrorCode.tokenExpired.intValue))
                                     expect(stateChange.reason?.description).to(contain("Key/token status changed (expire)"))
                                     done()
                                 }
@@ -4256,7 +4246,7 @@ class Auth : QuickSpec {
                                 guard let reason = stateChange.reason else {
                                     fail("Reason error is nil"); done(); return
                                 }
-                                expect(reason.code).to(equal(40144))
+                                expect(reason.code).to(equal(ARTErrorCode.invalidJwtFormat.intValue))
                                 expect(reason.description).to(satisfyAnyOf(contain("invalid signature"), contain("signature verification failed")))
                                 done()
                             }
@@ -4287,7 +4277,7 @@ class Auth : QuickSpec {
                             originalConnectionID = client.connection.id!
 
                             client.connection.once(.disconnected) { stateChange in
-                                expect(stateChange.reason?.code).to(equal(40142))
+                                expect(stateChange.reason?.code).to(equal(ARTErrorCode.tokenExpired.intValue))
 
                                 client.connection.once(.connected) { _ in
                                     expect(client.connection.id).to(equal(originalConnectionID))
@@ -4331,7 +4321,7 @@ class Auth : QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         client.channels.get(channelName).publish(messageName, data: nil, callback: { error in
-                            expect(error?.code).to(equal(40160))
+                            expect(error?.code).to(equal(ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue))
                             expect(error?.message).to(contain("permission denied"))
                             done()
                         })

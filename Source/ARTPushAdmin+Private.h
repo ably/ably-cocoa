@@ -1,11 +1,3 @@
-//
-//  ARTPushAdmin+Private.h
-//  Ably
-//
-//  Created by Toni Cárdenas on 07/04/2017.
-//  Copyright © 2017 Ably. All rights reserved.
-//
-
 #import <Ably/ARTPushAdmin.h>
 #import <Ably/ARTPushDeviceRegistrations+Private.h>
 #import <Ably/ARTPushChannelSubscriptions+Private.h>

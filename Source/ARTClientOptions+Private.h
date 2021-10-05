@@ -1,11 +1,3 @@
-//
-//  ARTClientOptions+Private.h
-//  ably
-//
-//  Created by Toni Cárdenas on 24/2/16.
-//  Copyright © 2016 Ably. All rights reserved.
-//
-
 #import <Ably/ARTClientOptions.h>
 
 @interface ARTClientOptions ()

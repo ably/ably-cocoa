@@ -1,11 +1,3 @@
-//
-//  RestClient.swift
-//  ably
-//
-//  Created by Yavor Georgiev on 2.08.15.
-//  Copyright © 2015 г. Ably. All rights reserved.
-//
-
 import Ably
 import Nimble
 import Quick
@@ -59,7 +51,7 @@ class RestClient: QuickSpec {
 
                     let publishTask = publishTestMessage(client, failOnError: false)
 
-                    expect(publishTask.error?.code).toEventually(equal(40005), timeout:testTimeout)
+                    expect(publishTask.error?.code).toEventually(equal(ARTErrorCode.invalidCredential.intValue), timeout:testTimeout)
                 }
 
                 it("should accept a token") {
@@ -96,7 +88,7 @@ class RestClient: QuickSpec {
 
                     let publishTask = publishTestMessage(client, failOnError: false)
 
-                    expect(publishTask.error?.code).toEventually(equal(40005), timeout: testTimeout)
+                    expect(publishTask.error?.code).toEventually(equal(ARTErrorCode.invalidCredential.intValue), timeout: testTimeout)
                 }
             }
 
@@ -439,7 +431,7 @@ class RestClient: QuickSpec {
                                 fail("X-Ably-Errorcode not found"); done();
                                 return
                             }
-                            expect(Int(headerErrorCode)).to(equal(40142))
+                            expect(Int(headerErrorCode)).to(equal(ARTErrorCode.tokenExpired.intValue))
 
                             // Different token
                             expect(auth.tokenDetails!.token).toNot(equal(options.token))
@@ -463,14 +455,14 @@ class RestClient: QuickSpec {
                             fail("Error is empty"); done();
                             return
                         }
-                        expect(errorCode).to(equal(40160))
+                        expect(errorCode).to(equal(ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue))
                         expect(result).to(beNil())
 
                         guard let headerErrorCode = testHTTPExecutor.responses.first?.value(forHTTPHeaderField: "X-Ably-Errorcode") else {
                             fail("X-Ably-Errorcode not found"); done();
                             return
                         }
-                        expect(Int(headerErrorCode)).to(equal(40160))
+                        expect(Int(headerErrorCode)).to(equal(ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue))
                         done()
                     }
                 }
@@ -570,8 +562,8 @@ class RestClient: QuickSpec {
                                     fail("expected X-Ably-Errorcode header in request")
                                     return
                                 }
-                                expect(Int(errorCode)).to(beGreaterThanOrEqualTo(40140))
-                                expect(Int(errorCode)).to(beLessThan(40150))
+                                expect(Int(errorCode)).to(beGreaterThanOrEqualTo(ARTErrorCode.tokenErrorUnspecified.intValue))
+                                expect(Int(errorCode)).to(beLessThan(ARTErrorCode.connectionLimitsExceeded.intValue))
                                 expect(error).toNot(beNil())
                                 done()
                             }
@@ -624,8 +616,8 @@ class RestClient: QuickSpec {
                                         fail("expected X-Ably-Errorcode header in request")
                                         return
                                     }
-                                    expect(Int(errorCode)).to(beGreaterThanOrEqualTo(40140))
-                                    expect(Int(errorCode)).to(beLessThan(40150))
+                                    expect(Int(errorCode)).to(beGreaterThanOrEqualTo(ARTErrorCode.tokenErrorUnspecified.intValue))
+                                    expect(Int(errorCode)).to(beLessThan(ARTErrorCode.connectionLimitsExceeded.intValue))
                                     expect(error).to(beNil())
                                     expect(rest.auth.tokenDetails!.token).toNot(equal(currentTokenDetails.token))
                                     done()
@@ -1918,10 +1910,10 @@ class RestClient: QuickSpec {
                                     expect(paginatedResponse.isLast) == true
                                     expect(paginatedResponse.statusCode) == 404
                                     expect(paginatedResponse.success) == false
-                                    expect(paginatedResponse.errorCode) == 40400
+                                    expect(paginatedResponse.errorCode) == ARTErrorCode.notFound.intValue
                                     expect(paginatedResponse.errorMessage).to(contain("Could not find path"))
                                     expect(paginatedResponse.headers).toNot(beEmpty())
-                                    expect(paginatedResponse.headers["X-Ably-Errorcode"] as? String).to(equal("40400"))
+                                    expect(paginatedResponse.headers["X-Ably-Errorcode"] as? String).to(equal("\(ARTErrorCode.notFound.intValue)"))
                                     done()
                                 }
                             }
@@ -1937,7 +1929,7 @@ class RestClient: QuickSpec {
                         }
 
                         expect(response.statusCode) == 404
-                        expect(response.value(forHTTPHeaderField: "X-Ably-Errorcode")).to(equal("40400"))
+                        expect(response.value(forHTTPHeaderField: "X-Ably-Errorcode")).to(equal("\(ARTErrorCode.notFound.intValue)"))
                     }
                 }
 
@@ -1964,7 +1956,7 @@ class RestClient: QuickSpec {
                                 return
                             }
                             expect(error.statusCode).to(equal(401))
-                            expect(error.code).to(equal(40170))
+                            expect(error.code).to(equal(ARTErrorCode.errorFromClientTokenCallback.intValue))
                             expect(error.message).to(contain("Error in requesting auth token"))
                             done()
                         }
@@ -2058,7 +2050,7 @@ class RestClient: QuickSpec {
 
                     let rest = ARTRest(options: options)
                     let mockHttpExecutor = MockHTTPExecutor()
-                    mockHttpExecutor.simulateIncomingErrorOnNextRequest(NSError(domain: "ably-test", code: 40013, userInfo: ["Message":"Ably test message"]))
+                    mockHttpExecutor.simulateIncomingErrorOnNextRequest(NSError(domain: "ably-test", code: ARTErrorCode.invalidMessageDataOrEncoding.intValue, userInfo: ["Message":"Ably test message"]))
                     rest.internal.httpExecutor = mockHttpExecutor
                     
                     waitUntil(timeout: testTimeout) { done in

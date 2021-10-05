@@ -1,11 +1,3 @@
-//
-//  ARTJsonLikeEncoder.m
-//  Ably
-//
-//  Created by Toni Cárdenas on 2/5/16.
-//  Copyright © 2016 Ably. All rights reserved.
-//
-
 #import <Foundation/Foundation.h>
 
 #import "ARTJsonLikeEncoder.h"
@@ -229,7 +221,7 @@
         [_logger error:@"ARTJsonLikeEncoder<%@>: clientId and deviceId are both present or both nil", [_delegate formatAsString]];
         if (error) {
             *error = [NSError errorWithDomain:ARTAblyErrorDomain
-                                         code:ARTCodeErrorAPIInconsistency
+                                         code:ARTErrorIncompatibleCredentials
                                      userInfo:@{ NSLocalizedDescriptionKey: @"clientId and deviceId are both present or both nil"}];
         }
         return nil;

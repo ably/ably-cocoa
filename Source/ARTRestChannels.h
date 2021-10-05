@@ -1,11 +1,3 @@
-//
-//  ARTRestChannels.h
-//  ably
-//
-//  Created by Toni Cárdenas on 3/2/16.
-//  Copyright © 2016 Ably. All rights reserved.
-//
-
 #import <Ably/ARTChannels.h>
 #import <Ably/ARTRestChannel.h>
 #import <Ably/ARTRest.h>

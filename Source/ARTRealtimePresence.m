@@ -1,11 +1,3 @@
-//
-//  ARTRealtimePresence.m
-//  ably
-//
-//  Created by Ricardo Pereira on 12/11/15.
-//  Copyright © 2015 Ably. All rights reserved.
-//
-
 #import "ARTRealtimePresence+Private.h"
 
 #import "ARTRealtime+Private.h"
@@ -181,14 +173,14 @@ dispatch_async(_queue, ^{
     switch (self->_channel.state_nosync) {
         case ARTRealtimeChannelDetached:
         case ARTRealtimeChannelFailed:
-            if (callback) callback(nil, [ARTErrorInfo createWithCode:90001 message:[NSString stringWithFormat:@"unable to return the list of current members (incompatible channel state: %@)", ARTRealtimeChannelStateToStr(self->_channel.state_nosync)]]);
+            if (callback) callback(nil, [ARTErrorInfo createWithCode:ARTErrorChannelOperationFailedInvalidState message:[NSString stringWithFormat:@"unable to return the list of current members (incompatible channel state: %@)", ARTRealtimeChannelStateToStr(self->_channel.state_nosync)]]);
             return;
         case ARTRealtimeChannelSuspended:
             if (query && !query.waitForSync) {
                 if (callback) callback(self->_channel.presenceMap.members.allValues, nil);
                 return;
             }
-            if (callback) callback(nil, [ARTErrorInfo createWithCode:91005 message:@"presence state is out of sync due to the channel being SUSPENDED"]);
+            if (callback) callback(nil, [ARTErrorInfo createWithCode:ARTErrorPresenceStateIsOutOfSync message:@"presence state is out of sync due to the channel being SUSPENDED"]);
             return;
         default:
             break;
@@ -322,7 +314,7 @@ dispatch_async(_queue, ^{
         case ARTRealtimeChannelDetached:
         case ARTRealtimeChannelFailed: {
             if (cb) {
-                ARTErrorInfo *channelError = [ARTErrorInfo createWithCode:90001 message:[NSString stringWithFormat:@"unable to enter presence channel (incompatible channel state: %@)", ARTRealtimeChannelStateToStr(_channel.state_nosync)]];
+                ARTErrorInfo *channelError = [ARTErrorInfo createWithCode:ARTErrorChannelOperationFailedInvalidState message:[NSString stringWithFormat:@"unable to enter presence channel (incompatible channel state: %@)", ARTRealtimeChannelStateToStr(_channel.state_nosync)]];
                 cb(channelError);
             }
             return;
@@ -432,7 +424,7 @@ dispatch_sync(_queue, ^{
     __block ARTEventListener *listener = nil;
 dispatch_sync(_queue, ^{
     if (self->_channel.state_nosync == ARTRealtimeChannelFailed) {
-        if (onAttach) onAttach([ARTErrorInfo createWithCode:90001 message:@"attempted to subscribe while channel is in Failed state."]);
+        if (onAttach) onAttach([ARTErrorInfo createWithCode:ARTErrorChannelOperationFailedInvalidState message:@"attempted to subscribe while channel is in Failed state."]);
         return;
     }
     [self->_channel _attach:onAttach];
@@ -467,7 +459,7 @@ dispatch_sync(_queue, ^{
     __block ARTEventListener *listener = nil;
 dispatch_sync(_queue, ^{
     if (self->_channel.state_nosync == ARTRealtimeChannelFailed) {
-        if (onAttach) onAttach([ARTErrorInfo createWithCode:90001 message:@"attempted to subscribe while channel is in Failed state."]);
+        if (onAttach) onAttach([ARTErrorInfo createWithCode:ARTErrorChannelOperationFailedInvalidState message:@"attempted to subscribe while channel is in Failed state."]);
         return;
     }
     [self->_channel _attach:onAttach];
@@ -520,8 +512,8 @@ dispatch_sync(_queue, ^{
 
     if ([_channel exceedMaxSize:@[msg]]) {
         if (callback) {
-            ARTErrorInfo *sizeError = [ARTErrorInfo createWithCode:40009
-                                                           message:@"maximum message length exceeded"];
+            ARTErrorInfo *sizeError = [ARTErrorInfo createWithCode:ARTErrorMaxMessageLengthExceeded
+                                                           message:@"Maximum message length exceeded."];
             callback(sizeError);
         }
         return;
@@ -566,7 +558,7 @@ dispatch_sync(_queue, ^{
         case ARTRealtimeChannelDetaching:
         case ARTRealtimeChannelFailed: {
             if (callback) {
-                ARTErrorInfo *invalidChannelError = [ARTErrorInfo createWithCode:90001 message:[NSString stringWithFormat:@"channel operation failed (invalid channel state: %@)", ARTRealtimeChannelStateToStr(channelState)]];
+                ARTErrorInfo *invalidChannelError = [ARTErrorInfo createWithCode:ARTErrorChannelOperationFailedInvalidState message:[NSString stringWithFormat:@"channel operation failed (invalid channel state: %@)", ARTRealtimeChannelStateToStr(channelState)]];
                 callback(invalidChannelError);
             }
             break;

@@ -1,10 +1,3 @@
-//
-//  ARTTokenParams.h
-//
-//  Created by Ricardo Pereira on 05/10/2015.
-//  Copyright (c) 2015 Ably. All rights reserved.
-//
-
 #import "ARTTokenParams+Private.h"
 
 #include <CommonCrypto/CommonDigest.h>

@@ -1,11 +1,3 @@
-//
-//  ARTTime.m
-//  Ably
-//
-//  Created by Łukasz Szyszkowski on 12/07/2021.
-//  Copyright © 2021 Ably. All rights reserved.
-//
-
 #import "ARTTime.h"
 #include <sys/types.h>
 #include <sys/sysctl.h>

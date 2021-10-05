@@ -1,11 +1,3 @@
-//
-//  CompatibilityMacros.h
-//  ably
-//
-//  Created by Yavor Georgiev on 1.08.15.
-//  Copyright © 2015 г. Ably. All rights reserved.
-//
-
 #ifndef CompatibilityMacros_h
 #define CompatibilityMacros_h
 

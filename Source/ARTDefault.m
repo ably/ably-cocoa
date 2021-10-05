@@ -1,11 +1,3 @@
-//
-//  ARTDefault.m
-//  ably
-//
-//  Created by vic on 01/06/2015.
-//  Copyright (c) 2015 Ably. All rights reserved.
-//
-
 #import "Ably.h"
 #import "ARTDefault+Private.h"
 #import "ARTNSArray+ARTFunctional.h"

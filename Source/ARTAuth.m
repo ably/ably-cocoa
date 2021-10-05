@@ -1,10 +1,3 @@
-//
-//  ARTAuth.m
-//
-//  Created by Jason Choy on 08/12/2014.
-//  Copyright (c) 2014 Ably. All rights reserved.
-//
-
 #import "ARTAuth+Private.h"
 
 #if TARGET_OS_IPHONE
@@ -344,7 +337,7 @@ dispatch_async(_queue, ^{
     const ARTTokenDetailsCallback checkerCallback = ^(ARTTokenDetails *tokenDetails, NSError *error) {
         if (error) {
             if (error.code == NSURLErrorTimedOut) {
-                ARTErrorInfo *ablyError = [ARTErrorInfo createWithCode:40170 message:@"Error in requesting auth token"];
+                ARTErrorInfo *ablyError = [ARTErrorInfo createWithCode:ARTErrorErrorFromClientTokenCallback message:@"Error in requesting auth token"];
                 callback(nil, ablyError);
                 return;
             }
@@ -352,7 +345,7 @@ dispatch_async(_queue, ^{
             return;
         }
         if (self.clientId_nosync && tokenDetails.clientId && ![tokenDetails.clientId isEqualToString:@"*"] && ![self.clientId_nosync isEqual:tokenDetails.clientId]) {
-            if (callback) callback(nil, [ARTErrorInfo createWithCode:40102 message:@"incompatible credentials"]);
+            if (callback) callback(nil, [ARTErrorInfo createWithCode:ARTErrorIncompatibleCredentials message:@"incompatible credentials"]);
             return;
         }
         callback(tokenDetails, nil);

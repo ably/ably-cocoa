@@ -1,11 +1,3 @@
-//
-//  RestClientPresence.swift
-//  Ably
-//
-//  Created by Ricardo Pereira on 18/03/16.
-//  Copyright © 2016 Ably. All rights reserved.
-//
-
 import Ably
 import Quick
 import Nimble

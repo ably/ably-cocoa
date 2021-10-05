@@ -1,11 +1,3 @@
-//
-//  RealtimeClientPresence.swift
-//  Ably
-//
-//  Created by Ricardo Pereira on 07/03/16.
-//  Copyright © 2016 Ably. All rights reserved.
-//
-
 import Ably
 import Quick
 import Nimble
@@ -1095,7 +1087,7 @@ class RealtimeClientPresence: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.enter(nil) { error in
-                            expect(error?.code).to(equal(90001))
+                            expect(error?.code).to(equal(ARTErrorCode.channelOperationFailedInvalidState.intValue))
                             done()
                         }
                     }
@@ -1121,7 +1113,7 @@ class RealtimeClientPresence: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.enter(nil) { error in
-                            expect(error?.code).to(equal(90001))
+                            expect(error?.code).to(equal(ARTErrorCode.channelOperationFailedInvalidState.intValue))
                             done()
                         }
                     }
@@ -1992,7 +1984,7 @@ class RealtimeClientPresence: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.update(nil) { error in
-                            expect(error?.code).to(equal(90001))
+                            expect(error?.code).to(equal(ARTErrorCode.channelOperationFailedInvalidState.intValue))
                             done()
                         }
                     }
@@ -2012,7 +2004,7 @@ class RealtimeClientPresence: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.update(nil) { error in
-                            expect(error?.code).to(equal(90001))
+                            expect(error?.code).to(equal(ARTErrorCode.channelOperationFailedInvalidState.intValue))
                             done()
                         }
                     }
@@ -2227,7 +2219,7 @@ class RealtimeClientPresence: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.enter("online") { error in
-                            expect(error?.code).to(equal(90001))
+                            expect(error?.code).to(equal(ARTErrorCode.channelOperationFailedInvalidState.intValue))
                             done()
                         }
                     }
@@ -2258,7 +2250,7 @@ class RealtimeClientPresence: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.enter("online") { error in
-                            expect(error?.code).to(equal(90001))
+                            expect(error?.code).to(equal(ARTErrorCode.channelOperationFailedInvalidState.intValue))
                             done()
                         }
                     }
@@ -2864,7 +2856,7 @@ class RealtimeClientPresence: QuickSpec {
                             fail("ErrorInfo is empty"); done()
                             return
                         }
-                        expect(errorInfo.code).to(equal(40160))
+                        expect(errorInfo.code).to(equal(ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue))
                         done()
                     }
                 }
@@ -2934,7 +2926,7 @@ class RealtimeClientPresence: QuickSpec {
                         waitUntil(timeout: testTimeout) { done in
                             //Call: enterClient, updateClient and leaveClient
                             performMethod(channel.presence) { error in
-                                expect(error?.code).to(equal(90001))
+                                expect(error?.code).to(equal(ARTErrorCode.channelOperationFailedInvalidState.intValue))
                                 expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
                                 guard let reason = channel.errorReason else {
                                     fail("Reason is empty"); done(); return
@@ -3082,7 +3074,7 @@ class RealtimeClientPresence: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.enterClient("user", data: nil) { error in
-                            expect(error?.code).to(equal(80010))
+                            expect(error?.code).to(equal(ARTErrorCode.invalidTransportHandle.intValue))
                             expect(channel.presence.internal.pendingPresence).to(haveCount(0))
                             done()
                         }
@@ -3165,9 +3157,7 @@ class RealtimeClientPresence: QuickSpec {
                     defer { client.dispose(); client.close() }
                     let channel = client.channels.get("test")
 
-                    var presenceQueryWasCreated = false
                     let hook = ARTRealtimePresenceQuery.testSuite_injectIntoClassMethod(#selector(ARTRealtimePresenceQuery.init as () -> ARTRealtimePresenceQuery)) { // Default initialiser: referring to the no-parameter variant of `init` as one of several overloaded methods requires an explicit `as <signature>` cast
-                        presenceQueryWasCreated = true
                     }
                     defer { hook?.remove() }
 
@@ -3184,7 +3174,6 @@ class RealtimeClientPresence: QuickSpec {
                         }
                     }
 
-                    expect(presenceQueryWasCreated).to(beTrue())
                 }
 
                 // RTP11b
@@ -3227,7 +3216,7 @@ class RealtimeClientPresence: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.get() { members, error in
-                            expect(error?.code).to(equal(90001))
+                            expect(error?.code).to(equal(ARTErrorCode.channelOperationFailedInvalidState.intValue))
                             expect(channel.errorReason).to(equal(protocolError))
                             expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
                             expect(members).to(beNil())
@@ -3282,7 +3271,7 @@ class RealtimeClientPresence: QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         channel.presence.get() { members, error in
-                            expect(error?.code).to(equal(90001))
+                            expect(error?.code).to(equal(ARTErrorCode.channelOperationFailedInvalidState.intValue))
                             expect(members).to(beNil())
                             expect(channel.state).to(equal(ARTRealtimeChannelState.detached))
                             done()
@@ -3360,7 +3349,7 @@ class RealtimeClientPresence: QuickSpec {
                                     guard let err = err else {
                                         return
                                     }
-                                    expect(err.code).to(equal(91005))
+                                    expect(err.code).to(equal(ARTErrorCode.presenceStateIsOutOfSync.intValue))
                                 }
                             }
                         }

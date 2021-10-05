@@ -1,10 +1,3 @@
-//
-//  ARTCrypto.m
-//
-//  Created by Jason Choy on 20/12/2014.
-//  Copyright (c) 2014 Ably. All rights reserved.
-//
-
 #import "ARTCrypto+Private.h"
 
 #import <CommonCrypto/CommonCrypto.h>

@@ -1,11 +1,3 @@
-//
-//  ARTPushChannelSubscription.m
-//  Ably
-//
-//  Created by Ricardo Pereira on 15/02/2017.
-//  Copyright © 2017 Ably. All rights reserved.
-//
-
 #import "ARTPushChannelSubscription.h"
 
 @implementation ARTPushChannelSubscription

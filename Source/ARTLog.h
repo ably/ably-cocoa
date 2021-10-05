@@ -1,10 +1,3 @@
-//
-//  ARTLog.h
-//
-//  Created by vic on 16/04/2015.
-//  Copyright (c) 2015 Ably. All rights reserved.
-//
-
 #import <Foundation/Foundation.h>
 
 #import <Ably/ARTTypes.h>

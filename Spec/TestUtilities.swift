@@ -1,11 +1,3 @@
-//
-//  TestUtilities.swift
-//  ably
-//
-//  Created by Yavor Georgiev on 2.08.15.
-//  Copyright © 2015 г. Ably. All rights reserved.
-//
-
 import Ably
 import Foundation
 import XCTest
@@ -1896,5 +1888,12 @@ extension DispatchTimeInterval {
         @unknown default:
             fatalError("Unhandled DispatchTimeInterval unit.")
         }
+    }
+}
+
+extension ARTErrorCode {
+    
+    var intValue: NSInteger {
+        return NSInteger(rawValue)
     }
 }

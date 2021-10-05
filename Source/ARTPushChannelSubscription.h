@@ -1,11 +1,3 @@
-//
-//  ARTPushChannelSubscription.h
-//  Ably
-//
-//  Created by Ricardo Pereira on 15/02/2017.
-//  Copyright © 2017 Ably. All rights reserved.
-//
-
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN

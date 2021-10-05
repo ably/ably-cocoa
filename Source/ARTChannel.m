@@ -1,11 +1,3 @@
-//
-//  ARTChannel.m
-//  ably
-//
-//  Created by Yavor Georgiev on 20.08.15.
-//  Copyright (c) 2015 г. Ably. All rights reserved.
-//
-
 #import "ARTChannel+Private.h"
 
 #import "ARTDataEncoder.h"
@@ -104,8 +96,8 @@
     
     // Checked after encoding, so that the client can receive callback with encoding errors
     if ([self exceedMaxSize:@[message]]) {
-        ARTErrorInfo *sizeError = [ARTErrorInfo createWithCode:40009
-                                                       message:@"maximum message length exceeded"];
+        ARTErrorInfo *sizeError = [ARTErrorInfo createWithCode:ARTErrorMaxMessageLengthExceeded
+                                                       message:@"Maximum message length exceeded."];
         if (callback) {
             callback(sizeError);
         }
@@ -133,8 +125,8 @@
     
     // Checked after encoding, so that the client can receive callback with encoding errors
     if ([self exceedMaxSize:messages]) {
-        ARTErrorInfo *sizeError = [ARTErrorInfo createWithCode:40009
-                                                       message:@"maximum message length exceeded"];
+        ARTErrorInfo *sizeError = [ARTErrorInfo createWithCode:ARTErrorMaxMessageLengthExceeded
+                                                       message:@"Maximum message length exceeded."];
         if (callback) {
             callback(sizeError);
         }

@@ -1,11 +1,3 @@
-//
-//  NSURLQueryItem+ARTNSURLQueryItem_Stringifiable.h
-//  Ably
-//
-//  Created by Łukasz Szyszkowski on 23/06/2021.
-//  Copyright © 2021 Ably. All rights reserved.
-//
-
 #import <Foundation/Foundation.h>
 @class ARTStringifiable;
 

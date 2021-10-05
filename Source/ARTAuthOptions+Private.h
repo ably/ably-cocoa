@@ -1,11 +1,3 @@
-//
-//  ARTAuthOptions+Private.h
-//  Ably
-//
-//  Created by Ricardo Pereira on 24/3/16.
-//  Copyright © 2016 Ably. All rights reserved.
-//
-
 #import <Ably/ARTAuthOptions.h>
 #import <Ably/CompatibilityMacros.h>
 
