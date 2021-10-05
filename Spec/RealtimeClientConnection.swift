@@ -221,7 +221,7 @@ class RealtimeClientConnection: QuickSpec {
             // RTN2g (Deprecated in favor of RCS7d)
 
             // RSC7d
-            it("Library and version param `lib` should include the `Ably-Agent` header value") {
+            it("Library and version param `agent` should include the `Ably-Agent` header value") {
                 let options = AblyTests.commonAppSetup()
                 options.autoConnect = false
                 
@@ -239,7 +239,7 @@ class RealtimeClientConnection: QuickSpec {
                             done()
                         case .connected:
                             if let transport = client.internal.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
-                                expect(query).to(haveParam("agent", hasPrefix: "ably-cocoa/1.2"))
+                                expect(query).to(haveParam("agent", hasPrefix: "ably-cocoa/1.2.6"))
                             }
                             else {
                                 XCTFail("MockTransport isn't working")

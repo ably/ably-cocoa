@@ -1592,7 +1592,7 @@ class RestClient: QuickSpec {
                         let headerAgent = testHTTPExecutor.requests.first!.allHTTPHeaderFields?["Ably-Agent"]
                         let ablyAgent = options.agents()
                         expect(headerAgent).to(equal(ablyAgent))
-                        expect(headerAgent!.hasPrefix("ably-cocoa/1.2")).to(beTrue())
+                        expect(headerAgent!.hasPrefix("ably-cocoa/1.2.6")).to(beTrue())
                         done()
                     }
                 }

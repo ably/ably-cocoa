@@ -174,7 +174,7 @@ Class configuredWebsocketClass = nil;
         [queryItems addValueAsURLQueryItem:[NSString stringWithFormat:@"%lld", (long long)[connectionSerial integerValue]] forKey:@"connectionSerial"];
     }
 
-    [queryItems addValueAsURLQueryItem:[ARTDefault version] forKey:@"v"];
+    [queryItems addValueAsURLQueryItem:[ARTDefault apiVersion] forKey:@"v"];
     
     // Lib
     [queryItems addValueAsURLQueryItem:[options agents] forKey:@"agent"];

@@ -8,13 +8,13 @@ static inline UInt32 conformVersionComponent(const NSInteger component) {
     return (component < 0) ? 0 : (UInt32)component;
 }
 
-@implementation ARTDefault
+NSString *const ARTDefault_apiVersion = @"1.2";
+NSString *const ARTDefault_libraryVersion = @"1.2.6";
 
 NSString *const ARTDefaultProduction = @"production";
 
 NSString *const ARTDefault_restHost = @"rest.ably.io";
 NSString *const ARTDefault_realtimeHost = @"realtime.ably.io";
-NSString *const ARTDefault_version = @"1.2";
 NSString *const ARTDefault_ablyBundleId = @"io.ably.Ably";
 NSString *const ARTDefault_bundleVersionKey = @"CFBundleShortVersionString";
 NSString *const ARTDefault_bundleBuildNumberKey = @"CFBundleVersion";
@@ -38,6 +38,16 @@ static NSTimeInterval _realtimeRequestTimeout = 10.0;
 static NSTimeInterval _fallbackRetryTimeout = 600.0; // TO3l10
 static NSTimeInterval _connectionStateTtl = 60.0;
 static NSInteger _maxMessageSize = 65536;
+
+@implementation ARTDefault
+
++ (NSString *)apiVersion {
+    return ARTDefault_apiVersion;
+}
+
++ (NSString *)libraryVersion {
+    return ARTDefault_libraryVersion;
+}
 
 + (NSArray*)fallbackHostsWithEnvironment:(NSString *)environment {
     NSArray<NSString *> * fallbacks = @[@"a", @"b", @"c", @"d", @"e"];
@@ -63,10 +73,6 @@ static NSInteger _maxMessageSize = 65536;
 
 + (NSString*)realtimeHost {
     return ARTDefault_realtimeHost;
-}
-
-+ (NSString *)version {
-    return ARTDefault_version;
 }
 
 + (int)port {
@@ -121,10 +127,6 @@ static NSInteger _maxMessageSize = 65536;
     }
 }
 
-+ (NSString *)libraryVersion {
-    return [NSString stringWithFormat:@"%@%@-%@", ARTDefault_platform, ARTDefault_variant, [self bundleVersion]];
-}
-
 + (NSString *)bundleVersion {
     NSDictionary *infoDictionary = [[NSBundle bundleForClass: [ARTDefault class]] infoDictionary];
     return infoDictionary[ARTDefault_bundleVersionKey];
@@ -173,7 +175,7 @@ static NSInteger _maxMessageSize = 65536;
 }
 
 + (NSString *)libraryAgent {
-    NSMutableString *agent = [NSMutableString stringWithFormat:@"%@/%@", ARTDefault_libraryName, ARTDefault_version];
+    NSMutableString *agent = [NSMutableString stringWithFormat:@"%@/%@", ARTDefault_libraryName, ARTDefault_libraryVersion];
     return agent;
 }
 
