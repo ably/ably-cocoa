@@ -61,6 +61,10 @@
     [_internal deactivate];
 }
 
+- (void)getState:(nonnull ARTPushStateCallback)callback {
+    [_internal getState:callback];
+}
+
 #endif
 
 @end
@@ -232,6 +236,16 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
 - (void)deactivate {
     [self getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
         [stateMachine sendEvent:[ARTPushActivationEventCalledDeactivate new]];
+    }];
+}
+
+- (void)getState:(nonnull ARTPushStateCallback)callback {
+    [_admin.deviceRegistrations get:_rest.device.id callback:^(ARTDeviceDetails *device, ARTErrorInfo *error) {
+        if (error != nil) {
+            callback(nil, error);
+            return;
+        }
+        callback(device.push, nil);
     }];
 }
 

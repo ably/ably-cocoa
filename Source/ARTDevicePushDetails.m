@@ -20,8 +20,35 @@
     return push;
 }
 
+- (NSString *)stateString {
+    switch (_state) {
+        case ARTPushStateActive:
+            return @"Active";
+        case ARTPushStateFailing:
+            return @"Failing";
+        case ARTPushStateFailed:
+            return @"Failed";
+        default:
+            return @"Unknown";
+    }
+}
+
++ (ARTPushState)stateFromString:(NSString *)string {
+    string = string.lowercaseString;
+    if ([string isEqualToString:@"active"]) {
+        return ARTPushStateActive;
+    }
+    else if ([string isEqualToString:@"failing"]) {
+        return ARTPushStateFailing;
+    }
+    else if ([string isEqualToString:@"failed"]) {
+        return ARTPushStateFailed;
+    }
+    return ARTPushStateUnknown;
+}
+
 - (NSString *)description {
-    return [NSString stringWithFormat:@"%@ - \n\t recipient: %@; \n\t state: %@; \n\t errorReason: %@;", [super description], self.recipient, self.state, self.errorReason];
+    return [NSString stringWithFormat:@"%@ - \n\t recipient: %@; \n\t state: %@; \n\t errorReason: %@;", [super description], self.recipient, self.stateString, self.errorReason];
 }
 
 @end

@@ -1,4 +1,4 @@
-#import <Foundation/Foundation.h>
+#import <Ably/ARTTypes.h>
 
 @class ARTErrorInfo;
 
@@ -6,11 +6,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTDevicePushDetails : NSObject
 
-@property (nonatomic) NSMutableDictionary<NSString *, NSString *> *recipient;
-@property (nullable, nonatomic) NSString *state;
+@property (nonatomic) ARTPushState state;
 @property (nullable, nonatomic) ARTErrorInfo *errorReason;
+@property (nonatomic) NSMutableDictionary<NSString *, NSString *> *recipient;
 
 - (instancetype)init;
+
+- (NSString *)stateString;
+
++ (ARTPushState)stateFromString:(NSString *)string;
 
 @end
 

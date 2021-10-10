@@ -16,6 +16,7 @@
 @class ARTStats;
 @class ARTPushChannelSubscription;
 @class ARTDeviceDetails;
+@class ARTDevicePushDetails;
 @protocol ARTTokenDetailsCompatible;
 
 // More context
@@ -38,6 +39,12 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
     ARTAuthMethodToken
 };
 
+typedef NS_ENUM(NSUInteger, ARTPushState) {
+    ARTPushStateUnknown,
+    ARTPushStateActive,
+    ARTPushStateFailing,
+    ARTPushStateFailed
+};
 
 #pragma mark - ARTRealtimeConnectionState
 
@@ -278,6 +285,8 @@ typedef void (^ARTPaginatedPushChannelCallback)(ARTPaginatedResult<ARTPushChanne
 typedef void (^ARTPaginatedMessagesCallback)(ARTPaginatedResult<ARTMessage *> *_Nullable result, ARTErrorInfo *_Nullable error);
 typedef void (^ARTPaginatedDeviceDetailsCallback)(ARTPaginatedResult<ARTDeviceDetails *> *_Nullable result, ARTErrorInfo *_Nullable error);
 typedef void (^ARTPaginatedTextCallback)(ARTPaginatedResult<NSString *> *_Nullable result, ARTErrorInfo *_Nullable error);
+
+typedef void (^ARTPushStateCallback)(ARTDevicePushDetails *_Nullable details, ARTErrorInfo *_Nullable error);
 
 #pragma mark - Functions
 
