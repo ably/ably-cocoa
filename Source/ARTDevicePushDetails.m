@@ -24,13 +24,13 @@
 - (NSString *)stateString {
     switch (_state) {
         case ARTPushStateActive:
-            return @"Active";
+            return @"ARTPushStateActive";
         case ARTPushStateFailing:
-            return @"Failing";
+            return @"ARTPushStateFailing";
         case ARTPushStateFailed:
-            return @"Failed";
+            return @"ARTPushStateFailed";
         default:
-            return @"Unknown";
+            return @"ARTPushStateUnknown";
     }
 }
 
