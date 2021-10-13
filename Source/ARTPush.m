@@ -61,8 +61,8 @@
     [_internal deactivate];
 }
 
-- (void)getState:(nonnull ARTPushStateCallback)callback {
-    [_internal getState:callback];
+- (void)getDevicePushDetails:(nonnull ARTPushStateCallback)callback {
+    [_internal getDevicePushDetails:callback];
 }
 
 #endif
@@ -239,7 +239,7 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
     }];
 }
 
-- (void)getState:(nonnull ARTPushStateCallback)callback {
+- (void)getDevicePushDetails:(nonnull ARTPushStateCallback)callback {
     [_admin.deviceRegistrations get:_rest.device.id callback:^(ARTDeviceDetails *device, ARTErrorInfo *error) {
         if (error != nil) {
             callback(nil, error);

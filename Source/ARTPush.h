@@ -75,7 +75,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)deactivate;
 
-- (void)getState:(ARTPushStateCallback)callback;
+- (void)getDevicePushDetails:(ARTPushStateCallback)callback;
 
 #endif
 
