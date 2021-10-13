@@ -101,6 +101,9 @@
 		84569FA626B46F4E00457CF5 /* ClientOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84569FA226B46ADC00457CF5 /* ClientOptions.swift */; };
 		84569FA726B46F4F00457CF5 /* ClientOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84569FA226B46ADC00457CF5 /* ClientOptions.swift */; };
 		84569FA826B46F5100457CF5 /* ClientOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84569FA226B46ADC00457CF5 /* ClientOptions.swift */; };
+		8489D2F127176BA3009C6A54 /* ARTDevicePushDetails+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 8489D2F027176BA3009C6A54 /* ARTDevicePushDetails+Private.h */; };
+		8489D2F227176BA3009C6A54 /* ARTDevicePushDetails+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 8489D2F027176BA3009C6A54 /* ARTDevicePushDetails+Private.h */; };
+		8489D2F327176BA3009C6A54 /* ARTDevicePushDetails+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 8489D2F027176BA3009C6A54 /* ARTDevicePushDetails+Private.h */; };
 		848ED97326E50D0F0087E800 /* ObjcppTest.mm in Sources */ = {isa = PBXBuildFile; fileRef = 848ED97226E50D0F0087E800 /* ObjcppTest.mm */; settings = {COMPILER_FLAGS = "-fmodules"; }; };
 		848ED97426E50D0F0087E800 /* ObjcppTest.mm in Sources */ = {isa = PBXBuildFile; fileRef = 848ED97226E50D0F0087E800 /* ObjcppTest.mm */; settings = {COMPILER_FLAGS = "-fmodules"; }; };
 		848ED97526E50D0F0087E800 /* ObjcppTest.mm in Sources */ = {isa = PBXBuildFile; fileRef = 848ED97226E50D0F0087E800 /* ObjcppTest.mm */; settings = {COMPILER_FLAGS = "-fmodules"; }; };
@@ -1012,6 +1015,7 @@
 		8412FDF32661AC7B001FE9E6 /* Quick.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Quick.xcframework; path = Carthage/Build/Quick.xcframework; sourceTree = "<group>"; };
 		8412FDF42661AC7B001FE9E6 /* Nimble.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Nimble.xcframework; path = Carthage/Build/Nimble.xcframework; sourceTree = "<group>"; };
 		84569FA226B46ADC00457CF5 /* ClientOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientOptions.swift; sourceTree = "<group>"; };
+		8489D2F027176BA3009C6A54 /* ARTDevicePushDetails+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTDevicePushDetails+Private.h"; sourceTree = "<group>"; };
 		848ED97226E50D0F0087E800 /* ObjcppTest.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ObjcppTest.mm; sourceTree = "<group>"; };
 		850BFB4A1B79323C009D0ADD /* ARTPaginatedResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPaginatedResult.h; sourceTree = "<group>"; };
 		850BFB4B1B79323C009D0ADD /* ARTPaginatedResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPaginatedResult.m; sourceTree = "<group>"; };
@@ -1831,6 +1835,7 @@
 				D7B621921E4A6FE600684474 /* ARTDeviceDetails.h */,
 				D7B621931E4A6FE600684474 /* ARTDeviceDetails.m */,
 				D768C6AA1E4B5B0200436011 /* ARTDevicePushDetails.h */,
+				8489D2F027176BA3009C6A54 /* ARTDevicePushDetails+Private.h */,
 				D768C6AB1E4B5B0200436011 /* ARTDevicePushDetails.m */,
 				D777EEDE206285CF002EBA03 /* ARTDeviceIdentityTokenDetails.h */,
 				D777EEDF206285CF002EBA03 /* ARTDeviceIdentityTokenDetails.m */,
@@ -1960,6 +1965,7 @@
 				D7D5A69C1CA40C350071BD6D /* ARTConnectionDetails+Private.h in Headers */,
 				D75F49C4205ACFEC003DE04F /* ARTDeviceStorage.h in Headers */,
 				D7B621901E4A6E0200684474 /* ARTPush.h in Headers */,
+				8489D2F127176BA3009C6A54 /* ARTDevicePushDetails+Private.h in Headers */,
 				96E408471A3895E800087F77 /* ARTWebSocketTransport.h in Headers */,
 				EB503C8A1C7F1FE40053AF00 /* ARTLog+Private.h in Headers */,
 				96E4083F1A3892C700087F77 /* ARTRealtimeTransport.h in Headers */,
@@ -2154,6 +2160,7 @@
 				D710D61F21949DEC008F54AD /* ARTNSHTTPURLResponse+ARTPaginated.h in Headers */,
 				D710D69F21949F0D008F54AD /* ARTJsonLikeEncoder.h in Headers */,
 				D710D4A721949ADF008F54AD /* ARTRestChannel.h in Headers */,
+				8489D2F227176BA3009C6A54 /* ARTDevicePushDetails+Private.h in Headers */,
 				D710D64721949E61008F54AD /* ARTLog+Private.h in Headers */,
 				D710D57C21949CC8008F54AD /* ARTPushAdmin+Private.h in Headers */,
 				D710D61B21949DEC008F54AD /* ARTDataQuery+Private.h in Headers */,
@@ -2292,6 +2299,7 @@
 				D710D5B321949D2A008F54AD /* ARTPresenceMap.h in Headers */,
 				D710D57121949CBA008F54AD /* ARTPushDeviceRegistrations.h in Headers */,
 				D710D62C21949DED008F54AD /* ARTNSMutableURLRequest+ARTPaginated.h in Headers */,
+				8489D2F327176BA3009C6A54 /* ARTDevicePushDetails+Private.h in Headers */,
 				D710D4B221949AF9008F54AD /* ARTAuth.h in Headers */,
 				D710D5B121949D2A008F54AD /* ARTPresence.h in Headers */,
 				D710D4E921949BFB008F54AD /* ARTQueuedMessage.h in Headers */,
