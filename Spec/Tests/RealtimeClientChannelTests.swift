@@ -3,7 +3,7 @@ import Quick
 import Nimble
 import Aspects
 
-class RealtimeClientChannel: QuickSpec {
+class RealtimeClientChannelTests: QuickSpec {
     override func spec() {
         describe("Channel") {
 

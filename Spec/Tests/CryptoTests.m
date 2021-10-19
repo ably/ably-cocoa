@@ -2,10 +2,10 @@
 #import <Ably/ARTCrypto.h>
 #import <Ably/ARTCrypto+Private.h>
 
-@interface CryptoTest : XCTestCase
+@interface CryptoTests : XCTestCase
 @end
 
-@implementation CryptoTest
+@implementation CryptoTests
 
 /**
  Test encryption and decryption using a 256 bit key and varying lengths of data.

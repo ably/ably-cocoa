@@ -4,7 +4,7 @@ import Nimble
 import Foundation
 import Aspects
 
-class RealtimeClientPresence: QuickSpec {
+class RealtimeClientPresenceTests: QuickSpec {
 
     override func setUp() {
         super.setUp()

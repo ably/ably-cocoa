@@ -3,7 +3,7 @@ import Nimble
 import Quick
 import Foundation
 
-class Utilities: QuickSpec {
+class UtilitiesTests: QuickSpec {
     override func spec() {
         describe("Utilities") {
 

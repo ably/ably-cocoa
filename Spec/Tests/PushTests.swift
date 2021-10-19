@@ -2,7 +2,7 @@ import Ably
 import Nimble
 import Quick
 
-class Push : QuickSpec {
+class PushTests : QuickSpec {
 
     struct TestDeviceToken {
         static let tokenBase64 = "HYRXxPSQdt1pnxqtDAvc6PTTLH7N6okiBhYyLClJdmQ="

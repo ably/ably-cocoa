@@ -2,7 +2,7 @@ import Ably
 import Quick
 import Nimble
 
-class Stringifiable: QuickSpec {
+class StringifiableTests: QuickSpec {
     override func spec() {
         describe("Stringifiable") {
             context("type conversion") {

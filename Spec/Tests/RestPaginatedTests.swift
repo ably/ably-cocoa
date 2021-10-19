@@ -3,7 +3,7 @@ import Nimble
 import Quick
 import SwiftyJSON
 
-class RestPaginated : QuickSpec {
+class RestPaginatedTests : QuickSpec {
     override func spec() {
         describe("RestPaginated") {
 

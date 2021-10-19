@@ -18,10 +18,10 @@ void AblyVersionTestWrapper::printVersionInfo() {
 };
 
 
-@interface ObjcppTest : XCTestCase
+@interface ObjcppTests : XCTestCase
 @end
 
-@implementation ObjcppTest
+@implementation ObjcppTests
 
 - (void)testPrintVersionInfo {
     AblyVersionTestWrapper::printVersionInfo();

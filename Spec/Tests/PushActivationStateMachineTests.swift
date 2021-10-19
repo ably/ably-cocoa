@@ -2,7 +2,7 @@ import Ably
 import Nimble
 import Quick
 
-class PushActivationStateMachine : QuickSpec {
+class PushActivationStateMachineTests : QuickSpec {
     override func spec() {
 
         var rest: ARTRest!

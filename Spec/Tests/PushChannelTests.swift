@@ -2,7 +2,7 @@ import Ably
 import Nimble
 import Quick
 
-class PushChannel : QuickSpec {
+class PushChannelTests : QuickSpec {
     override func spec() {
 
         var rest: ARTRest!

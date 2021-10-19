@@ -2,7 +2,7 @@ import Ably
 import Quick
 import Nimble
 
-class ObjectLifetimes: QuickSpec {
+class ObjectLifetimesTests: QuickSpec {
     override func spec() {
         describe("ObjectLifetimes") {
             let options = ARTClientOptions(key: "fake:key")

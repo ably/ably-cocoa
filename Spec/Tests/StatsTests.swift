@@ -4,7 +4,7 @@ import Quick
 import SwiftyJSON
 import Foundation
 
-class Stats: QuickSpec {
+class StatsTests: QuickSpec {
     override func spec() {
         describe("Stats") {
             let encoder = ARTJsonLikeEncoder()

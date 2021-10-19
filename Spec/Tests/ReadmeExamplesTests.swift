@@ -5,7 +5,7 @@ import Nimble
 
 // This file is to be kept in sync with the examples in README.md, to make sure they are kept valid.
 
-class ReadmeExamples : QuickSpec {
+class ReadmeExamplesTests : QuickSpec {
     override func spec() {
 
         it("testMakeKeyInstance") {

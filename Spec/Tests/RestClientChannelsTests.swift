@@ -18,7 +18,7 @@ private func beAChannel(named expectedValue: String) -> Predicate<ARTChannel> {
     }
 }
 
-class RestClientChannels: QuickSpec {
+class RestClientChannelsTests: QuickSpec {
     override func spec() {
         var client: ARTRest!
         var channelName: String!

@@ -2,7 +2,7 @@ import Ably
 import Nimble
 import Quick
 
-class RestClient: QuickSpec {
+class RestClientTests: QuickSpec {
     override func spec() {
 
         var testHTTPExecutor: TestProxyHTTPExecutor!

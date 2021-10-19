@@ -43,7 +43,7 @@ private func queryStats(_ client: ARTRest, _ query: ARTStatsQuery, file: FileStr
     return stats!
 }
 
-class RestClientStats: QuickSpec {
+class RestClientStatsTests: QuickSpec {
     override func spec() {
         describe("RestClient") {
             // RSC6

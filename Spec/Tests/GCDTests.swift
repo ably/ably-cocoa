@@ -1,6 +1,6 @@
 import XCTest
 
-class GCDTest: XCTestCase {
+class GCDTests: XCTestCase {
     func testScheduledBlockHandleDerefsBlockAfterInvoke() {
         let invokedExpectation = self.expectation(description: "scheduled block invoked")
         

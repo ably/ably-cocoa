@@ -2,7 +2,7 @@ import Ably
 import Nimble
 import Quick
 
-class PushAdmin : QuickSpec {
+class PushAdminTests : QuickSpec {
 
     private static var deviceDetails: ARTDeviceDetails = {
         let deviceDetails = ARTDeviceDetails(id: "testDeviceDetails")
@@ -78,21 +78,21 @@ class PushAdmin : QuickSpec {
         subscriptionBarClientB,
     ]
 
-    private lazy var deviceDetails: ARTDeviceDetails = PushAdmin.deviceDetails
-    private lazy var deviceDetails1ClientA: ARTDeviceDetails = PushAdmin.deviceDetails1ClientA
-    private lazy var deviceDetails2ClientA: ARTDeviceDetails = PushAdmin.deviceDetails2ClientA
-    private lazy var deviceDetails3ClientB: ARTDeviceDetails = PushAdmin.deviceDetails3ClientB
+    private lazy var deviceDetails: ARTDeviceDetails = PushAdminTests.deviceDetails
+    private lazy var deviceDetails1ClientA: ARTDeviceDetails = PushAdminTests.deviceDetails1ClientA
+    private lazy var deviceDetails2ClientA: ARTDeviceDetails = PushAdminTests.deviceDetails2ClientA
+    private lazy var deviceDetails3ClientB: ARTDeviceDetails = PushAdminTests.deviceDetails3ClientB
 
-    private lazy var allDeviceDetails: [ARTDeviceDetails] = PushAdmin.allDeviceDetails
+    private lazy var allDeviceDetails: [ARTDeviceDetails] = PushAdminTests.allDeviceDetails
 
-    private lazy var subscriptionFooDevice1: ARTPushChannelSubscription = PushAdmin.subscriptionFooDevice1
-    private lazy var subscriptionFooDevice2: ARTPushChannelSubscription = PushAdmin.subscriptionFooDevice2
-    private lazy var subscriptionBarDevice2: ARTPushChannelSubscription = PushAdmin.subscriptionBarDevice2
-    private lazy var subscriptionFooClientA: ARTPushChannelSubscription = PushAdmin.subscriptionFooClientA
-    private lazy var subscriptionFooClientB: ARTPushChannelSubscription = PushAdmin.subscriptionFooClientB
-    private lazy var subscriptionBarClientB: ARTPushChannelSubscription = PushAdmin.subscriptionBarClientB
+    private lazy var subscriptionFooDevice1: ARTPushChannelSubscription = PushAdminTests.subscriptionFooDevice1
+    private lazy var subscriptionFooDevice2: ARTPushChannelSubscription = PushAdminTests.subscriptionFooDevice2
+    private lazy var subscriptionBarDevice2: ARTPushChannelSubscription = PushAdminTests.subscriptionBarDevice2
+    private lazy var subscriptionFooClientA: ARTPushChannelSubscription = PushAdminTests.subscriptionFooClientA
+    private lazy var subscriptionFooClientB: ARTPushChannelSubscription = PushAdminTests.subscriptionFooClientB
+    private lazy var subscriptionBarClientB: ARTPushChannelSubscription = PushAdminTests.subscriptionBarClientB
 
-    private lazy var allSubscriptions: [ARTPushChannelSubscription] = PushAdmin.allSubscriptions
+    private lazy var allSubscriptions: [ARTPushChannelSubscription] = PushAdminTests.allSubscriptions
 
     private lazy var allSubscriptionsChannels: [String] = {
         var seen = Set<String>()

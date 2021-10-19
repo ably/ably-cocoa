@@ -9,7 +9,7 @@ extension ARTRealtimeChannels: Sequence {
     }
 }
 
-class RealtimeClientChannels: QuickSpec {
+class RealtimeClientChannelsTests: QuickSpec {
     override func spec() {
         describe("Channels") {
 

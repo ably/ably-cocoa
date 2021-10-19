@@ -4,7 +4,7 @@ import Nimble
 import Quick
 import Aspects
 
-class Auth : QuickSpec {
+class AuthTests : QuickSpec {
     override func spec() {
         
         struct ExpectedTokenParams {

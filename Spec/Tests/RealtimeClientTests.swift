@@ -2,7 +2,7 @@ import Ably
 import Quick
 import Nimble
 
-class RealtimeClient: QuickSpec {
+class RealtimeClientTests: QuickSpec {
 
     func checkError(_ errorInfo: ARTErrorInfo?, withAlternative message: String) {
         if let error = errorInfo {

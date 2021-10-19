@@ -12,7 +12,7 @@ func countChannels(_ channels: ARTRealtimeChannels) -> Int {
     return i
 }
 
-class RealtimeClientConnection: QuickSpec {
+class RealtimeClientConnectionTests: QuickSpec {
 
     override func spec() {
         describe("Connection") {

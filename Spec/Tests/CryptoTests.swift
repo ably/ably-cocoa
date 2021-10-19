@@ -3,7 +3,7 @@ import Nimble
 import Quick
 import SwiftyJSON
 
-class Crypto : QuickSpec {    
+class CryptoTests : QuickSpec {    
     override func spec() {
         describe("Crypto") {
             let key = "+/h4eHh4eHh4eHh4eHh4eA=="

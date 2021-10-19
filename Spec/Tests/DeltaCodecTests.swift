@@ -3,7 +3,7 @@ import Quick
 import Nimble
 import AblyDeltaCodec
 
-class DeltaCodec: QuickSpec {
+class DeltaCodecTests: QuickSpec {
     override func spec() {
         describe("DeltaCodec") {
 

@@ -4,7 +4,7 @@ import Quick
 import Foundation
 import SwiftyJSON
 
-class RestClientChannel: QuickSpec {
+class RestClientChannelTests: QuickSpec {
     override func spec() {
         var client: ARTRest!
         var channel: ARTRestChannel!

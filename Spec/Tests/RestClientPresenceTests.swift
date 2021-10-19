@@ -2,7 +2,7 @@ import Ably
 import Quick
 import Nimble
 
-class RestClientPresence: QuickSpec {
+class RestClientPresenceTests: QuickSpec {
     override func spec() {
         describe("Presence") {
 
