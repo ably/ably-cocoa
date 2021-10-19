@@ -1360,6 +1360,53 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		2112292E271F3E2C001DA94D /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				56190953238C3D3200A862A6 /* CryptoTest.m */,
+				848ED97226E50D0F0087E800 /* ObjcppTest.mm */,
+				560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */,
+				D7C1B8761BBEA81A0087B55F /* Auth.swift */,
+				84569FA226B46ADC00457CF5 /* ClientOptions.swift */,
+				EB7913A71C6E54C3000ABF9B /* Crypto.swift */,
+				D798554723EB96C000946BE2 /* DeltaCodec.swift */,
+				EB1B53F822F85CE4006A59AC /* ObjectLifetimes.swift */,
+				D7FC1ECA209CEA2E001E4153 /* Push.swift */,
+				D7DF73831EA5FE620013CD36 /* PushActivationStateMachine.swift */,
+				D74A17B61FA0D81A006D27B5 /* PushAdmin.swift */,
+				D777EEE620650A85002EBA03 /* PushChannel.swift */,
+				EBAB9A6E1C69702800AF036B /* ReadmeExamples.swift */,
+				D723046F1BB72CED00F1ABDA /* RealtimeClient.swift */,
+				D74EFAEA1C4D09B500CFF98E /* RealtimeClientChannel.swift */,
+				D71D30031C5F7B2F002115B0 /* RealtimeClientChannels.swift */,
+				D7EBE5A21BE8391E0086E675 /* RealtimeClientConnection.swift */,
+				D7CEF1311C8DD3BC004FB242 /* RealtimeClientPresence.swift */,
+				856AAC981B6E312F00B07119 /* RestClient.swift */,
+				D746AE2A1BBB625E003ECEF8 /* RestClientChannel.swift */,
+				D746AE2B1BBB625E003ECEF8 /* RestClientChannels.swift */,
+				D72768201C9C19040022F8B2 /* RestClientPresence.swift */,
+				853ED7C31B7A1A3C006F1C6F /* RestClientStats.swift */,
+				D74CBC09212EC02C00D090E4 /* RestPaginated.swift */,
+				851674EE1B7BA5CD00D35169 /* Stats.swift */,
+				D520C4DD2680A1E3000012B2 /* Stringifiable.swift */,
+				EB1AE0CD1C5C3A4900D62250 /* Utilities.swift */,
+				D5A22171266F526600C87C42 /* GCDTest.swift */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		2112292F271F3E94001DA94D /* Test Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				D780846C1C68B3E50083009D /* NSObject+TestSuite.h */,
+				D780846D1C68B3E50083009D /* NSObject+TestSuite.m */,
+				D714A63D1C74D4B2002F2CA0 /* NSObject+TestSuite.swift */,
+				856AAC961B6E30C800B07119 /* TestUtilities.swift */,
+				D7093CA8219EFA8A00723F17 /* MockDeviceStorage.swift */,
+			);
+			path = "Test Utilities";
+			sourceTree = "<group>";
+		};
 		217D17EE25421FC100DFF07E /* SocketRocket */ = {
 			isa = PBXGroup;
 			children = (
@@ -1468,44 +1515,13 @@
 		856AAC8B1B6E304B00B07119 /* Spec */ = {
 			isa = PBXGroup;
 			children = (
+				2112292E271F3E2C001DA94D /* Tests */,
+				2112292F271F3E94001DA94D /* Test Utilities */,
 				856AAC9A1B6E326E00B07119 /* ably-common */,
 				856AAC951B6E30C800B07119 /* AblySpec-Bridging-Header.h */,
-				D780846C1C68B3E50083009D /* NSObject+TestSuite.h */,
-				56190953238C3D3200A862A6 /* CryptoTest.m */,
-				848ED97226E50D0F0087E800 /* ObjcppTest.mm */,
-				D780846D1C68B3E50083009D /* NSObject+TestSuite.m */,
 				856AAC8E1B6E304B00B07119 /* Info-iOS.plist */,
 				D7093C0E219E2DB200723F17 /* Info-macOS.plist */,
 				D7093C64219EE1AE00723F17 /* Info-tvOS.plist */,
-				560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */,
-				D7C1B8761BBEA81A0087B55F /* Auth.swift */,
-				84569FA226B46ADC00457CF5 /* ClientOptions.swift */,
-				EB7913A71C6E54C3000ABF9B /* Crypto.swift */,
-				D798554723EB96C000946BE2 /* DeltaCodec.swift */,
-				D7093CA8219EFA8A00723F17 /* MockDeviceStorage.swift */,
-				D714A63D1C74D4B2002F2CA0 /* NSObject+TestSuite.swift */,
-				EB1B53F822F85CE4006A59AC /* ObjectLifetimes.swift */,
-				D7FC1ECA209CEA2E001E4153 /* Push.swift */,
-				D7DF73831EA5FE620013CD36 /* PushActivationStateMachine.swift */,
-				D74A17B61FA0D81A006D27B5 /* PushAdmin.swift */,
-				D777EEE620650A85002EBA03 /* PushChannel.swift */,
-				EBAB9A6E1C69702800AF036B /* ReadmeExamples.swift */,
-				D723046F1BB72CED00F1ABDA /* RealtimeClient.swift */,
-				D74EFAEA1C4D09B500CFF98E /* RealtimeClientChannel.swift */,
-				D71D30031C5F7B2F002115B0 /* RealtimeClientChannels.swift */,
-				D7EBE5A21BE8391E0086E675 /* RealtimeClientConnection.swift */,
-				D7CEF1311C8DD3BC004FB242 /* RealtimeClientPresence.swift */,
-				856AAC981B6E312F00B07119 /* RestClient.swift */,
-				D746AE2A1BBB625E003ECEF8 /* RestClientChannel.swift */,
-				D746AE2B1BBB625E003ECEF8 /* RestClientChannels.swift */,
-				D72768201C9C19040022F8B2 /* RestClientPresence.swift */,
-				853ED7C31B7A1A3C006F1C6F /* RestClientStats.swift */,
-				D74CBC09212EC02C00D090E4 /* RestPaginated.swift */,
-				851674EE1B7BA5CD00D35169 /* Stats.swift */,
-				D520C4DD2680A1E3000012B2 /* Stringifiable.swift */,
-				856AAC961B6E30C800B07119 /* TestUtilities.swift */,
-				EB1AE0CD1C5C3A4900D62250 /* Utilities.swift */,
-				D5A22171266F526600C87C42 /* GCDTest.swift */,
 			);
 			path = Spec;
 			sourceTree = "<group>";
