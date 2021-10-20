@@ -70,7 +70,14 @@ jobs:
           pod repo update
           pod install
           bundle exec fastlane scan -s Tests
-                
+      
+      - name: Xcodebuild Logs Artifact
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: xcodebuild-logs
+          path: ~/Library/Developer/Xcode/DerivedData/*/Logs
+      
       - name: Swift Package Manager - Installation Test
         working-directory: ./
         run:  |
