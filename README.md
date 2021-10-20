@@ -715,7 +715,8 @@ You can also view the [community reported Github issues](https://github.com/ably
 In this repository the `main` branch contains the latest development version of the Ably SDK. All development (bug fixing, feature implementation, etc.) is done against the `main` branch, which you should branch from whenever you'd like to make modifications. Here's the steps to follow when contributing to this repository.
 
  - Fork it
- - Install carthage: `brew install carthage`
+ - Install Carthage: `brew install carthage`
+ - Install gems: `bundle install`
  - Setup or update your machine by running `make update`
  - Create your feature branch from `main` (`git checkout main && git checkout -b my-new-feature-branch`)
  - Commit your changes (`git commit -am 'Add some feature'`)
@@ -739,11 +740,9 @@ from the command line and then do a clean rebuild in Xcode.
 Changes made to dependencies in the [Cartfile](Cartfile) need to be reflected in
 [Ably.podspec](Ably.podspec) and vice-versa.
 
-## Running tests
+### Running tests
 
 To run tests use `make test_[iOS|tvOS|macOS]`.
-
-Note: [Fastlane](https://fastlane.tools) should be installed.
 
 ## Release Process
 
