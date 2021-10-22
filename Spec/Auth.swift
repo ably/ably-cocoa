@@ -135,7 +135,7 @@ class Auth : QuickSpec {
                         return
                     }
 
-                    let expectedAuthorization = "Bearer \(encodeBase64(currentToken))"
+                    let expectedAuthorization = "Bearer \(currentToken)"
                     
                     guard let request = testHTTPExecutor.requests.first else {
                         fail("No request found")
