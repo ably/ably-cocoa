@@ -241,7 +241,7 @@ NSString *generateNonce(void);
 
 @interface NSObject (ARTArchive)
 - (nullable NSData *)art_archive;
-+ (nullable id)art_unarchive:(NSData *)data;
++ (nullable id)art_unarchiveWithAllowedClass:(Class)cls fromData:(NSData *)data;
 @end
 
 @interface NSURLSessionTask (ARTCancellable) <ARTCancellable>
