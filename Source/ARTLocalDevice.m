@@ -117,7 +117,7 @@ NSString *const ARTDevicePushTransportType = @"apns";
 }
 
 - (void)reset {
-    self.id = @"";
+    self.id = nil;
     self.secret = nil;
     self.clientId = nil;
     _identityTokenDetails = nil;
