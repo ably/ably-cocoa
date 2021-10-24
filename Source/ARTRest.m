@@ -482,9 +482,8 @@
 }
 
 - (NSString *)prepareTokenAuthorisationHeader:(NSString *)token {
-    NSData *tokenData = [token dataUsingEncoding:NSUTF8StringEncoding];
-    NSString *tokenBase64 = [tokenData base64EncodedStringWithOptions:0];
-    return [NSString stringWithFormat:@"Bearer %@", tokenBase64];
+    // RSA3b: For REST requests, the token string is *optionally* Base64-encoded
+    return [NSString stringWithFormat:@"Bearer %@", token];
 }
 
 - (void)time:(ARTDateTimeCallback)callback {
