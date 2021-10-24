@@ -159,20 +159,14 @@
         _realtime = realtime;
         _options = [options copy];
 
-        if (options.logHandler) {
-            _logger = options.logHandler;
-        }
-        else {
-            _logger = [[ARTLog alloc] init];
-        }
-
+        _logger = options.logHandler ?: [[ARTLog alloc] init];
         if (options.logLevel != ARTLogLevelNone) {
             _logger.logLevel = options.logLevel;
         }
 
         _queue = options.internalDispatchQueue;
         _userQueue = options.dispatchQueue;
-        _storage = [ARTLocalDeviceStorage newWithLogger:_logger];
+        _storage = options.storage ?: [ARTLocalDeviceStorage newWithLogger:_logger];
         _http = [[ARTHttp alloc] init:_queue logger:_logger];
         [_logger verbose:__FILE__ line:__LINE__ message:@"RS:%p %p alloc HTTP", self, _http];
         _httpExecutor = _http;

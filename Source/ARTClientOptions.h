@@ -5,6 +5,7 @@
 
 @class ARTPlugin;
 @class ARTStringifiable;
+@protocol ARTDeviceStorage;
 @protocol ARTPushRegistererDelegate;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -134,6 +135,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nullable, weak, nonatomic) id<ARTPushRegistererDelegate, NSObject> pushRegistererDelegate;
 
+/**
+ Custom local device storage. In the case nothing is provided then a default implementation using `ARTLocalDeviceStorage` is used.
+ */
+@property (nullable, nonatomic) id<ARTDeviceStorage> storage;
+
 - (BOOL)isBasicAuth;
 - (NSURL *)restUrl;
 - (NSURL *)realtimeUrl;
@@ -152,7 +158,6 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  All agents added with `addAgent:version:` method plus `[ARTDefault libraryAgent]` and `[ARTDefault platformAgent]`.
  */
-
 - (NSString *)agents;
 
 @end
