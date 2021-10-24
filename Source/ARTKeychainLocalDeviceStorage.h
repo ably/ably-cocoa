@@ -1,11 +1,10 @@
-#import <Foundation/Foundation.h>
-#import <Ably/ARTDeviceStorage.h>
+#import <Ably/ARTDefaultLocalDeviceStorage.h>
 
 @class ARTLog;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTKeychainLocalDeviceStorage : NSObject<ARTDeviceStorage>
+@interface ARTKeychainLocalDeviceStorage : ARTDefaultLocalDeviceStorage
 
 - (instancetype)initWithLogger:(ARTLog *)logger;
 
