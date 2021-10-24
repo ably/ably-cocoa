@@ -140,8 +140,9 @@ class PushAdmin : QuickSpec {
         let group = DispatchGroup()
 
         for device in allDeviceDetails {
+            guard let deviceId = device.id else { continue; }
             group.enter()
-            rest.push.admin.deviceRegistrations.remove(device.id) { _ in
+            rest.push.admin.deviceRegistrations.remove(deviceId) { _ in
                 group.leave()
             }
         }
@@ -387,8 +388,9 @@ class PushAdmin : QuickSpec {
                         realtime.internal.rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
                         defer { realtime.internal.rest.device.setAndPersistIdentityTokenDetails(nil) }
 
+                        expect(localDevice.id).toNot(beNil())
                         waitUntil(timeout: testTimeout) { done in
-                            realtime.push.admin.deviceRegistrations.get(localDevice.id) { device, error in
+                            realtime.push.admin.deviceRegistrations.get(localDevice.id!) { device, error in
                                 done()
                             }
                         }
@@ -407,8 +409,9 @@ class PushAdmin : QuickSpec {
                         defer { realtime.dispose(); realtime.close() }
                         realtime.internal.rest.httpExecutor = mockHttpExecutor
 
+                        expect(localDevice.id).toNot(beNil())
                         waitUntil(timeout: testTimeout) { done in
-                            realtime.push.admin.deviceRegistrations.get(localDevice.id) { device, error in
+                            realtime.push.admin.deviceRegistrations.get(localDevice.id!) { device, error in
                                 done()
                             }
                         }
@@ -495,8 +498,9 @@ class PushAdmin : QuickSpec {
                     let realtime = ARTRealtime(options: options)
                     defer { realtime.dispose(); realtime.close() }
                     realtime.internal.rest.httpExecutor = mockHttpExecutor
+                    expect(self.deviceDetails.id).toNot(beNil())
                     waitUntil(timeout: testTimeout) { done in
-                        realtime.push.admin.deviceRegistrations.remove(self.deviceDetails.id) { error in
+                        realtime.push.admin.deviceRegistrations.remove(self.deviceDetails.id!) { error in
                             expect(error).to(beNil())
                             done()
                         }
@@ -759,7 +763,8 @@ class PushAdmin : QuickSpec {
                         realtime.internal.rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
                         defer { realtime.internal.rest.device.setAndPersistIdentityTokenDetails(nil) }
 
-                        let subscription = ARTPushChannelSubscription(deviceId: localDevice.id, channel: quxChannelName)
+                        expect(localDevice.id).toNot(beNil())
+                        let subscription = ARTPushChannelSubscription(deviceId: localDevice.id!, channel: quxChannelName)
 
                         waitUntil(timeout: testTimeout) { done in
                             realtime.push.admin.channelSubscriptions.save(subscription) { error in
@@ -782,7 +787,8 @@ class PushAdmin : QuickSpec {
                         defer { realtime.dispose(); realtime.close() }
                         realtime.internal.rest.httpExecutor = mockHttpExecutor
 
-                        let subscription = ARTPushChannelSubscription(deviceId: localDevice.id, channel: quxChannelName)
+                        expect(localDevice.id).toNot(beNil())
+                        let subscription = ARTPushChannelSubscription(deviceId: localDevice.id!, channel: quxChannelName)
 
                         waitUntil(timeout: testTimeout) { done in
                             realtime.push.admin.channelSubscriptions.save(subscription) { error in
@@ -896,7 +902,8 @@ class PushAdmin : QuickSpec {
                         realtime.internal.rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
                         defer { realtime.internal.rest.device.setAndPersistIdentityTokenDetails(nil) }
 
-                        let subscription = ARTPushChannelSubscription(deviceId: localDevice.id, channel: quxChannelName)
+                        expect(localDevice.id).toNot(beNil())
+                        let subscription = ARTPushChannelSubscription(deviceId: localDevice.id!, channel: quxChannelName)
 
                         waitUntil(timeout: testTimeout) { done in
                             realtime.push.admin.channelSubscriptions.remove(subscription) { error in
@@ -919,7 +926,8 @@ class PushAdmin : QuickSpec {
                         defer { realtime.dispose(); realtime.close() }
                         realtime.internal.rest.httpExecutor = mockHttpExecutor
 
-                        let subscription = ARTPushChannelSubscription(deviceId: localDevice.id, channel: quxChannelName)
+                        expect(localDevice.id).toNot(beNil())
+                        let subscription = ARTPushChannelSubscription(deviceId: localDevice.id!, channel: quxChannelName)
 
                         waitUntil(timeout: testTimeout) { done in
                             realtime.push.admin.channelSubscriptions.remove(subscription) { error in

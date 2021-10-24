@@ -88,7 +88,8 @@ class PushActivationStateMachine : QuickSpec {
                     context("local device") {
                         it("should have a generated id") {
                             rest.internal.resetDeviceSingleton()
-                            expect(rest.device.id.count) == 36
+                            expect(rest.device.id).toNot(beNil())
+                            expect(rest.device.id!.count) == 36
                         }
                         it("should have a generated secret") {
                             guard let deviceSecret = rest.device.secret else {
@@ -984,8 +985,12 @@ class PushActivationStateMachine : QuickSpec {
             it("should fire Deregistered event and include DeviceSecret HTTP header") {
                 let delegate = StateMachineDelegate()
                 stateMachine.delegate = delegate
-                let deviceId = rest.device.id
-                let deviceSecret = rest.device.secret
+                
+                expect(rest.device.id).toNot(beNil())
+                expect(rest.device.secret).toNot(beNil())
+                
+                let deviceId = rest.device.id!
+                let deviceSecret = rest.device.secret!
                 
                 waitUntil(timeout: testTimeout) { done in
                     let partialDone = AblyTests.splitDone(2, done: done)
@@ -1029,7 +1034,9 @@ class PushActivationStateMachine : QuickSpec {
                     capability: "",
                     clientId: ""
                 )
-                let deviceId = rest.device.id
+                
+                expect(rest.device.id).toNot(beNil())
+                let deviceId = rest.device.id!
                 
                 expect(rest.device.identityTokenDetails).to(beNil())
                 rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
@@ -1094,7 +1101,8 @@ class PushActivationStateMachine : QuickSpec {
 
                 expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
                 expect(httpExecutor.requests.count) == 1
-                let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(rest.device.id)" })
+                expect(rest.device.id).toNot(beNil())
+                let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(rest.device.id!)" })
                 expect(requests).to(haveCount(1))
                 guard let request = httpExecutor.requests.first else {
                     fail("should have a \"/push/deviceRegistrations\" request"); return
