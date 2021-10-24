@@ -1,8 +1,8 @@
-#import "ARTLocalDeviceStorage.h"
 #import "ARTLog.h"
 #import "ARTLocalDevice+Private.h"
+#import "ARTKeychainLocalDeviceStorage.h"
 
-@implementation ARTLocalDeviceStorage {
+@implementation ARTKeychainLocalDeviceStorage {
     ARTLog *_logger;
 }
 

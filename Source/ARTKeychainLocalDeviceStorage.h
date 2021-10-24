@@ -5,7 +5,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTLocalDeviceStorage : NSObject<ARTDeviceStorage>
+@interface ARTKeychainLocalDeviceStorage : NSObject<ARTDeviceStorage>
 
 - (instancetype)initWithLogger:(ARTLog *)logger;
 

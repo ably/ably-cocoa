@@ -31,7 +31,7 @@
 #import "ARTPush.h"
 #import "ARTPush+Private.h"
 #import "ARTLocalDevice+Private.h"
-#import "ARTLocalDeviceStorage.h"
+#import "ARTKeychainLocalDeviceStorage.h"
 #import "ARTNSMutableRequest+ARTRest.h"
 #import "ARTHTTPPaginatedResponse+Private.h"
 #import "ARTNSError+ARTUtils.h"
@@ -166,7 +166,7 @@
 
         _queue = options.internalDispatchQueue;
         _userQueue = options.dispatchQueue;
-        _storage = options.storage ?: [ARTLocalDeviceStorage newWithLogger:_logger];
+        _storage = options.storage ?: [ARTKeychainLocalDeviceStorage newWithLogger:_logger];
         _http = [[ARTHttp alloc] init:_queue logger:_logger];
         [_logger verbose:__FILE__ line:__LINE__ message:@"RS:%p %p alloc HTTP", self, _http];
         _httpExecutor = _http;
