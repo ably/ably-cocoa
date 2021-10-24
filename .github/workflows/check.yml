@@ -55,7 +55,7 @@ jobs:
           make update_carthage_dependencies
 
       - name: Run Tests
-        run: fastlane ${{ matrix.lane }}
+        run: bundle exec fastlane ${{ matrix.lane }}
       
       # This is the script specified as the pod’s prepare_command in its Podspec.
       # It would be run automatically for a normal CocoaPods install, but it doesn’t
@@ -70,7 +70,14 @@ jobs:
           pod repo update
           pod install
           bundle exec fastlane scan -s Tests
-                
+      
+      - name: Xcodebuild Logs Artifact
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: xcodebuild-logs
+          path: ~/Library/Developer/Xcode/DerivedData/*/Logs
+      
       - name: Swift Package Manager - Installation Test
         working-directory: ./
         run:  |

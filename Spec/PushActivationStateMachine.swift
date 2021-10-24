@@ -884,7 +884,7 @@ class PushActivationStateMachine : QuickSpec {
                             stateMachine.send(ARTPushActivationEventCalledActivate())
                         }
                         
-                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(testDeviceId)" })
+                        let requests = httpExecutor.requests.compactMap({ $0.url?.path }).filter({ $0 == "/push/deviceRegistrations/\(rest.device.id)" })
                         expect(requests).to(haveCount(1))
                         guard let request = httpExecutor.requests.first else {
                             fail("should have a \"/push/deviceRegistrations/:deviceId\" request"); return
