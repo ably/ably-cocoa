@@ -369,7 +369,7 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
     NSError *error;
     NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self requiringSecureCoding:false error:&error];
     if (error) {
-        NSLog(@"ARTDeviceIdentityTokenDetails Archive failed: %@", error);
+        NSLog(@"%@ archive failed: %@", [self class], error);
     }
     return data;
 #else
@@ -377,7 +377,7 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
         NSError *error;
         NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self requiringSecureCoding:false error:&error];
         if (error) {
-            NSLog(@"ARTDeviceIdentityTokenDetails Archive failed: %@", error);
+            NSLog(@"%@ archive failed: %@", [self class], error);
         }
         return data;
     }
