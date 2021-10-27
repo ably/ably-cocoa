@@ -17,14 +17,6 @@
     return [[self alloc] initWithLogger:logger];
 }
 
-- (nullable id)objectForKey:(NSString *)key {
-    return [NSUserDefaults.standardUserDefaults objectForKey:key];
-}
-
-- (void)setObject:(nullable id)value forKey:(NSString *)key {
-    [NSUserDefaults.standardUserDefaults setObject:value forKey:key];
-}
-
 - (NSString *)secretForDevice:(ARTDeviceId *)deviceId {
     NSError *error = nil;
     NSString *value = [self keychainGetPasswordForService:ARTDeviceSecretKey account:(NSString *)deviceId error:&error];
