@@ -601,13 +601,15 @@
         [request addValue:value forHTTPHeaderField:key];
     }];
 
-    NSError *encodeError = nil;
-    NSData *bodyData = [self.defaultEncoder encode:body error:&encodeError];
+    if (body != nil) {
+        NSError *encodeError = nil;
+        NSData *bodyData = [self.defaultEncoder encode:body error:&encodeError];
 
-    request.HTTPBody = bodyData;
-    [request setValue:[self.defaultEncoder mimeType] forHTTPHeaderField:@"Content-Type"];
-    if ([[method lowercaseString] isEqualToString:@"post"]) {
-        [request setValue:[NSString stringWithFormat:@"%d", (unsigned int)bodyData.length] forHTTPHeaderField:@"Content-Length"];
+        request.HTTPBody = bodyData;
+        [request setValue:[self.defaultEncoder mimeType] forHTTPHeaderField:@"Content-Type"];
+        if ([[method lowercaseString] isEqualToString:@"post"]) {
+            [request setValue:[NSString stringWithFormat:@"%d", (unsigned int)bodyData.length] forHTTPHeaderField:@"Content-Length"];
+        }
     }
 
     [request setAcceptHeader:self.defaultEncoder encoders:self.encoders];
