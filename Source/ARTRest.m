@@ -284,7 +284,7 @@
                     return;
                 }
                 NSString *authorization = [self prepareTokenAuthorisationHeader:tokenDetails.token];
-                [self.logger verbose:@"RS:%p ARTRestInternal reissuing token: authorization bearer in Base64 %@", self, authorization];
+                [self.logger verbose:@"RS:%p ARTRestInternal reissuing token: authorization bearer %@", self, authorization];
                 [request setValue:authorization forHTTPHeaderField:@"Authorization"];
                 task = [self executeRequest:request completion:callback];
             }];
