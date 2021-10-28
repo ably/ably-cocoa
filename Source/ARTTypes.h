@@ -235,8 +235,8 @@ NSString *generateNonce(void);
 
 @interface NSMutableArray (ARTQueueAdditions)
 - (void)art_enqueue:(id)object;
-- (id)art_dequeue;
-- (id)art_peek;
+- (nullable id)art_dequeue;
+- (nullable id)art_peek;
 @end
 
 @interface NSObject (ARTArchive)

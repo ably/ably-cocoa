@@ -265,9 +265,10 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
 
 - (id)art_dequeue {
     id item = [self firstObject];
-    if (item) [self removeObjectAtIndex:0];
+    if (item) {
+        [self removeObjectAtIndex:0];
+    }
     return item;
-
 }
 
 - (id)art_peek {
