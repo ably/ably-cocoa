@@ -418,9 +418,6 @@
     
     for (ARTMessage *message in messages) {
         NSDictionary *item = [self messageToDictionary:message];
-        if (!(item)) {
-            return nil;
-        }
         [output addObject:item];
     }
     
@@ -457,9 +454,6 @@
     
     for (ARTPresenceMessage *message in messages) {
         NSDictionary *item = [self presenceMessageToDictionary:message];
-        if (!(item)) {
-            return nil;
-        }
         [output addObject:item];
     }
     return output;
