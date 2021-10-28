@@ -426,13 +426,15 @@
             }
         }
         if (callback) {
-            // Error object that indicates why the request failed
-            if ([error isKindOfClass:[ARTErrorInfo class]]) {
-                callback(response, data, error);
+            if (error != nil) {
+                if ([error isKindOfClass:[ARTErrorInfo class]]) {
+                    callback(response, data, error);
+                } else {
+                    callback(response, data, [NSError copyFromError:error withRequestId:requestId]);
+                }
             } else {
-                callback(response, data, [NSError copyFromError:error withRequestId:requestId]);
+                callback(response, data, nil);
             }
-            
         }
     }];
 
