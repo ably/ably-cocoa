@@ -48,7 +48,7 @@ NSString *const ARTAblyMessageInvalidPresenceId = @"Received presence message id
 }
 
 - (NSArray<NSString *> *)parseId {
-    if (!self.id) {
+    if (self.id == nil) {
         return nil;
     }
     NSArray<NSString *> *idParts = [self.id componentsSeparatedByCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@":"]];
