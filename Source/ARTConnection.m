@@ -245,12 +245,7 @@ dispatch_sync(_queue, ^{
         case ARTRealtimeConnected:
         case ARTRealtimeDisconnected:
         case ARTRealtimeSuspended: {
-            NSString *recStr = self.key_nosync;
-            if (recStr == nil) {
-                return nil;
-            }
-            NSString *str = [recStr stringByAppendingString:[NSString stringWithFormat:@":%ld:%ld", (long)self.serial_nosync, (long)_realtime.msgSerial]];
-            return str;
+            return [self.key_nosync stringByAppendingString:[NSString stringWithFormat:@":%ld:%ld", (long)self.serial_nosync, (long)_realtime.msgSerial]];
         } default:
             return nil;
     }
