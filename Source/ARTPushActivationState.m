@@ -60,7 +60,7 @@
 }
 
 + (ARTPushActivationState *)unarchive:(NSData *)data {
-    return [NSObject art_unarchiveWithAllowedClass:[self class] fromData:data];
+    return [[self class] art_unarchiveFromData:data];
 }
 
 @end

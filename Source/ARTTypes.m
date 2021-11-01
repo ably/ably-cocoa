@@ -387,8 +387,8 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
 #endif
 }
 
-+ (nullable id)art_unarchiveWithAllowedClass:(Class)cls fromData:(NSData *)data {
-    NSSet* allowedTypes = [NSSet setWithArray:@[ [NSArray class], [NSDictionary class], cls]];
++ (nullable id)art_unarchiveFromData:(NSData *)data {
+    NSSet* allowedTypes = [NSSet setWithArray:@[ [NSArray class], [NSDictionary class], [self class]]];
 #if TARGET_OS_MACCATALYST
     NSError *error;
     id result = [NSKeyedUnarchiver unarchivedObjectOfClasses:allowedTypes fromData:data error:&error];
@@ -401,7 +401,7 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
         NSError *error;
         id result = [NSKeyedUnarchiver unarchivedObjectOfClasses:allowedTypes fromData:data error:&error];
         if (error) {
-            NSLog(@"%@ unarchive failed: %@", cls, error);
+            NSLog(@"%@ unarchive failed: %@", [self class], error);
         }
         return result;
     }

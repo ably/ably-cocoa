@@ -13,7 +13,7 @@
 @end
 
 @implementation ARTArchiveTests
-    
+
 - (void)test_art_unarchivedObjectOfClass_for_state_machine_states {
     
     ARTRest* rest = [[ARTRest alloc] initWithKey:@"xxxx:xxxx"];
@@ -27,7 +27,7 @@
     
     NSData* data = [initialStates art_archive];
     
-    NSArray* unarchivedStates = [NSObject art_unarchiveWithAllowedClass:[ARTPushActivationState class] fromData:data];
+    NSArray* unarchivedStates = [ARTPushActivationState art_unarchiveFromData:data];
     
     XCTAssert([unarchivedStates[0] isKindOfClass:[ARTPushActivationStateNotActivated class]]);
     XCTAssert([unarchivedStates[1] isKindOfClass:[ARTPushActivationStateWaitingForPushDeviceDetails class]]);
