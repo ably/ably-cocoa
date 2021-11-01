@@ -388,10 +388,6 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
 }
 
 + (nullable id)art_unarchiveWithAllowedClass:(Class)cls fromData:(NSData *)data {
-    if (data == nil) {
-        NSLog(@"%@ unarchive abortion due to data is NULL", cls);
-        return nil;
-    }
     NSSet* allowedTypes = [NSSet setWithArray:@[ [NSArray class], [NSDictionary class], cls]];
 #if TARGET_OS_MACCATALYST
     NSError *error;
