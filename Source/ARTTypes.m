@@ -393,7 +393,7 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
     NSError *error;
     id result = [NSKeyedUnarchiver unarchivedObjectOfClasses:allowedTypes fromData:data error:&error];
     if (error) {
-        NSLog(@"%@ unarchive failed: %@", cls, error);
+        NSLog(@"%@ unarchive failed: %@", self, error);
     }
     return result;
 #else
