@@ -10,6 +10,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong) NSHTTPURLResponse *response;
 
+- (instancetype)initWithResponse:(NSHTTPURLResponse *)response
+                           items:(NSArray *)items
+                            rest:(ARTRestInternal *)rest
+                        relFirst:(NSMutableURLRequest *)relFirst
+                      relCurrent:(NSMutableURLRequest *)relCurrent
+                         relNext:(NSMutableURLRequest *)relNext
+               responseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor;
+
 + (void)executePaginated:(ARTRestInternal *)rest
              withRequest:(NSMutableURLRequest *)request
     andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor

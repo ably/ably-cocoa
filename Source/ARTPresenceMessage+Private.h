@@ -9,7 +9,7 @@
  */
 - (BOOL)isSynthesized;
 
-- (nonnull NSArray<NSString *> *)parseId;
+- (NSArray<NSString *> *)parseId;
 - (NSInteger)msgSerialFromId;
 - (NSInteger)indexFromId;
 

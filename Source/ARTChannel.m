@@ -111,15 +111,18 @@
     [self publish:messages callback:nil];
 }
 
-- (void)publish:(__GENERIC(NSArray, ARTMessage *) *)messages callback:(art_nullable ARTCallback)callback {
+- (void)publish:(__GENERIC(NSArray, ARTMessage *) *)messages callback:(nullable ARTCallback)callback {
     NSError *error = nil;
 
     NSMutableArray<ARTMessage *> *messagesWithDataEncoded = [NSMutableArray new];
     for (ARTMessage *message in messages) {
         [messagesWithDataEncoded addObject:[self encodeMessageIfNeeded:message error:&error]];
     }
+    
     if (error) {
-        callback([ARTErrorInfo createFromNSError:error]);
+        if (callback) {
+            callback([ARTErrorInfo createFromNSError:error]);
+        }
         return;
     }
     
