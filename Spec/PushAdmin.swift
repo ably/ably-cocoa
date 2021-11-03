@@ -4,7 +4,7 @@ import Quick
 
 class PushAdmin : QuickSpec {
 
-    private static var deviceDetails: ARTDeviceDetails = {
+    private static let deviceDetails: ARTDeviceDetails = {
         let deviceDetails = ARTDeviceDetails(id: "testDeviceDetails")
         deviceDetails.platform = "ios"
         deviceDetails.formFactor = "phone"
@@ -16,7 +16,7 @@ class PushAdmin : QuickSpec {
         return deviceDetails
     }()
 
-    private static var deviceDetails1ClientA: ARTDeviceDetails = {
+    private static let deviceDetails1ClientA: ARTDeviceDetails = {
         let deviceDetails = ARTDeviceDetails(id: "deviceDetails1ClientA")
         deviceDetails.platform = "android"
         deviceDetails.formFactor = "tablet"
@@ -29,7 +29,7 @@ class PushAdmin : QuickSpec {
         return deviceDetails
     }()
 
-    private static var deviceDetails2ClientA: ARTDeviceDetails = {
+    private static let deviceDetails2ClientA: ARTDeviceDetails = {
         let deviceDetails = ARTDeviceDetails(id: "deviceDetails2ClientA")
         deviceDetails.platform = "android"
         deviceDetails.formFactor = "tablet"
@@ -42,7 +42,7 @@ class PushAdmin : QuickSpec {
         return deviceDetails
     }()
 
-    private static var deviceDetails3ClientB: ARTDeviceDetails = {
+    private static let deviceDetails3ClientB: ARTDeviceDetails = {
         let deviceDetails = ARTDeviceDetails(id: "deviceDetails3ClientB")
         deviceDetails.platform = "android"
         deviceDetails.formFactor = "tablet"
@@ -55,21 +55,21 @@ class PushAdmin : QuickSpec {
         return deviceDetails
     }()
 
-    private static var allDeviceDetails: [ARTDeviceDetails] = [
+    private static let allDeviceDetails: [ARTDeviceDetails] = [
         deviceDetails,
         deviceDetails1ClientA,
         deviceDetails2ClientA,
         deviceDetails3ClientB,
     ]
 
-    private static var subscriptionFooDevice1 = ARTPushChannelSubscription(deviceId: "deviceDetails1ClientA", channel: "pushenabled:foo")
-    private static var subscriptionFooDevice2 = ARTPushChannelSubscription(deviceId: "deviceDetails2ClientA", channel: "pushenabled:foo")
-    private static var subscriptionBarDevice2 = ARTPushChannelSubscription(deviceId: "deviceDetails2ClientA", channel: "pushenabled:bar")
-    private static var subscriptionFooClientA = ARTPushChannelSubscription(clientId: "clientA", channel: "pushenabled:foo")
-    private static var subscriptionFooClientB = ARTPushChannelSubscription(clientId: "clientB", channel: "pushenabled:foo")
-    private static var subscriptionBarClientB = ARTPushChannelSubscription(clientId: "clientB", channel: "pushenabled:bar")
+    private static let subscriptionFooDevice1 = ARTPushChannelSubscription(deviceId: "deviceDetails1ClientA", channel: "pushenabled:foo")
+    private static let subscriptionFooDevice2 = ARTPushChannelSubscription(deviceId: "deviceDetails2ClientA", channel: "pushenabled:foo")
+    private static let subscriptionBarDevice2 = ARTPushChannelSubscription(deviceId: "deviceDetails2ClientA", channel: "pushenabled:bar")
+    private static let subscriptionFooClientA = ARTPushChannelSubscription(clientId: "clientA", channel: "pushenabled:foo")
+    private static let subscriptionFooClientB = ARTPushChannelSubscription(clientId: "clientB", channel: "pushenabled:foo")
+    private static let subscriptionBarClientB = ARTPushChannelSubscription(clientId: "clientB", channel: "pushenabled:bar")
 
-    private static var allSubscriptions: [ARTPushChannelSubscription] = [
+    private static let allSubscriptions: [ARTPushChannelSubscription] = [
         subscriptionFooDevice1,
         subscriptionFooDevice2,
         subscriptionBarDevice2,
@@ -78,7 +78,7 @@ class PushAdmin : QuickSpec {
         subscriptionBarClientB,
     ]
 
-    private static var allSubscriptionsChannels: [String] = {
+    private static let allSubscriptionsChannels: [String] = {
         var seen = Set<String>()
         return allSubscriptions.filter({ seen.insert($0.channel).inserted }).map({ $0.channel })
     }()
