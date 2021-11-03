@@ -78,23 +78,7 @@ class PushAdmin : QuickSpec {
         subscriptionBarClientB,
     ]
 
-    private lazy var deviceDetails: ARTDeviceDetails = PushAdmin.deviceDetails
-    private lazy var deviceDetails1ClientA: ARTDeviceDetails = PushAdmin.deviceDetails1ClientA
-    private lazy var deviceDetails2ClientA: ARTDeviceDetails = PushAdmin.deviceDetails2ClientA
-    private lazy var deviceDetails3ClientB: ARTDeviceDetails = PushAdmin.deviceDetails3ClientB
-
-    private lazy var allDeviceDetails: [ARTDeviceDetails] = PushAdmin.allDeviceDetails
-
-    private lazy var subscriptionFooDevice1: ARTPushChannelSubscription = PushAdmin.subscriptionFooDevice1
-    private lazy var subscriptionFooDevice2: ARTPushChannelSubscription = PushAdmin.subscriptionFooDevice2
-    private lazy var subscriptionBarDevice2: ARTPushChannelSubscription = PushAdmin.subscriptionBarDevice2
-    private lazy var subscriptionFooClientA: ARTPushChannelSubscription = PushAdmin.subscriptionFooClientA
-    private lazy var subscriptionFooClientB: ARTPushChannelSubscription = PushAdmin.subscriptionFooClientB
-    private lazy var subscriptionBarClientB: ARTPushChannelSubscription = PushAdmin.subscriptionBarClientB
-
-    private lazy var allSubscriptions: [ARTPushChannelSubscription] = PushAdmin.allSubscriptions
-
-    private lazy var allSubscriptionsChannels: [String] = {
+    private static var allSubscriptionsChannels: [String] = {
         var seen = Set<String>()
         return allSubscriptions.filter({ seen.insert($0.channel).inserted }).map({ $0.channel })
     }()
@@ -346,7 +330,7 @@ class PushAdmin : QuickSpec {
                             guard let device = device else {
                                 fail("Device is missing"); done(); return;
                             }
-                            expect(device).to(equal(self.deviceDetails))
+                            expect(device).to(equal(PushAdmin.deviceDetails))
                             expect(error).to(beNil())
                             done()
                         }
@@ -441,7 +425,7 @@ class PushAdmin : QuickSpec {
                     }
                 }
 
-                it("should list devices by client id") { [allDeviceDetails] in
+                it("should list devices by client id") {
                     let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { realtime.dispose(); realtime.close() }
                     waitUntil(timeout: testTimeout) { done in
@@ -449,14 +433,14 @@ class PushAdmin : QuickSpec {
                             guard let result = result else {
                                 fail("PaginatedResult should not be empty"); done(); return
                             }
-                            expect(result.items.count) == allDeviceDetails.filter({ $0.clientId == "clientA" }).count
+                            expect(result.items.count) == PushAdmin.allDeviceDetails.filter({ $0.clientId == "clientA" }).count
                             expect(error).to(beNil())
                             done()
                         }
                     }
                 }
 
-                it("should list devices sorted") { [allDeviceDetails] in
+                it("should list devices sorted") {
                     let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { realtime.dispose(); realtime.close() }
                     waitUntil(timeout: testTimeout) { done in
@@ -464,7 +448,7 @@ class PushAdmin : QuickSpec {
                             guard let result = result else {
                                 fail("PaginatedResult should not be empty"); done(); return
                             }
-                            expect(result.items.count) == allDeviceDetails.count
+                            expect(result.items.count) == PushAdmin.allDeviceDetails.count
                             expect(error).to(beNil())
                             done()
                         }
@@ -496,7 +480,7 @@ class PushAdmin : QuickSpec {
                     defer { realtime.dispose(); realtime.close() }
                     realtime.internal.rest.httpExecutor = mockHttpExecutor
                     waitUntil(timeout: testTimeout) { done in
-                        realtime.push.admin.deviceRegistrations.remove(self.deviceDetails.id) { error in
+                        realtime.push.admin.deviceRegistrations.remove(PushAdmin.deviceDetails.id) { error in
                             expect(error).to(beNil())
                             done()
                         }
@@ -522,7 +506,7 @@ class PushAdmin : QuickSpec {
                     defer { realtime.dispose(); realtime.close() }
                     realtime.internal.rest.httpExecutor = mockHttpExecutor
                     waitUntil(timeout: testTimeout) { done in
-                        realtime.push.admin.deviceRegistrations.save(self.deviceDetails) { error in
+                        realtime.push.admin.deviceRegistrations.save(PushAdmin.deviceDetails) { error in
                             expect(error).to(beNil())
                             done()
                         }
@@ -602,7 +586,7 @@ class PushAdmin : QuickSpec {
             }
 
             // RSH1b5
-            context("removeWhere") { [allDeviceDetails] in
+            context("removeWhere") {
                 it("should unregister a device") {
                     let options = AblyTests.commonAppSetup()
                     options.pushFullWait = true
@@ -613,7 +597,7 @@ class PushAdmin : QuickSpec {
                         "clientId": "clientA"
                     ]
 
-                    let expectedRemoved = allDeviceDetails.filter({ $0.clientId == "clientA" })
+                    let expectedRemoved = PushAdmin.allDeviceDetails.filter({ $0.clientId == "clientA" })
 
                     waitUntil(timeout: testTimeout) { done in
                         realtime.push.admin.deviceRegistrations.list(params) { result, error in
@@ -669,11 +653,11 @@ class PushAdmin : QuickSpec {
 
                     waitUntil(timeout: testTimeout) { done in
                         let partialDone = AblyTests.splitDone(2, done: done)
-                        realtime.push.admin.channelSubscriptions.save(self.subscriptionFooDevice2) { error in
+                        realtime.push.admin.channelSubscriptions.save(PushAdmin.subscriptionFooDevice2) { error in
                             expect(error).to(beNil())
                             partialDone()
                         }
-                        realtime.push.admin.channelSubscriptions.save(self.subscriptionBarDevice2) { error in
+                        realtime.push.admin.channelSubscriptions.save(PushAdmin.subscriptionBarDevice2) { error in
                             expect(error).to(beNil())
                             partialDone()
                         }
@@ -824,7 +808,7 @@ class PushAdmin : QuickSpec {
             }
 
             // RSH1c2
-            context("listChannels") { [allSubscriptionsChannels] in
+            context("listChannels") {
                 it("should receive a list of subscriptions") {
                     let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { realtime.dispose(); realtime.close() }
@@ -834,7 +818,7 @@ class PushAdmin : QuickSpec {
                             guard let result = result else {
                                 fail("PaginatedResult should not be empty"); done(); return
                             }
-                            expect(result.items as [String]).to(contain(allSubscriptionsChannels + [subscription.channel]))
+                            expect(result.items as [String]).to(contain(PushAdmin.allSubscriptionsChannels + [subscription.channel]))
                             done()
                         }
                     }
@@ -952,8 +936,8 @@ class PushAdmin : QuickSpec {
                     ]
 
                     let expectedRemoved = [
-                        self.subscriptionFooClientB,
-                        self.subscriptionBarClientB
+                        PushAdmin.subscriptionFooClientB,
+                        PushAdmin.subscriptionBarClientB
                     ]
 
                     waitUntil(timeout: testTimeout) { done in
@@ -1008,7 +992,7 @@ class PushAdmin : QuickSpec {
                     ]
 
                     let expectedRemoved = [
-                        self.subscriptionFooClientB,
+                        PushAdmin.subscriptionFooClientB,
                     ]
 
                     waitUntil(timeout: testTimeout) { done in
@@ -1052,8 +1036,8 @@ class PushAdmin : QuickSpec {
                     ]
 
                     let expectedRemoved = [
-                        self.subscriptionFooDevice2,
-                        self.subscriptionBarDevice2,
+                        PushAdmin.subscriptionFooDevice2,
+                        PushAdmin.subscriptionBarDevice2,
                     ]
 
                     waitUntil(timeout: testTimeout) { done in
