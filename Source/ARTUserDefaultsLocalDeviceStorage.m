@@ -1,8 +1,8 @@
 #import "ARTLog.h"
 #import "ARTLocalDevice+Private.h"
-#import "ARTDefaultLocalDeviceStorage.h"
+#import "ARTUserDefaultsLocalDeviceStorage.h"
 
-@implementation ARTDefaultLocalDeviceStorage
+@implementation ARTUserDefaultsLocalDeviceStorage
 
 - (nullable id)objectForKey:(NSString *)key {
     return [NSUserDefaults.standardUserDefaults objectForKey:key];

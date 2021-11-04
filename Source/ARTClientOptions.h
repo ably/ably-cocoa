@@ -136,7 +136,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, weak, nonatomic) id<ARTPushRegistererDelegate, NSObject> pushRegistererDelegate;
 
 /**
- Custom local device storage. In the case nothing is provided then a default implementation using `ARTDefaultLocalDeviceStorage` is used.
+ Custom local device storage. In the case nothing is provided then a default implementation using `ARTUserDefaultsLocalDeviceStorage` is used.
  */
 @property (nullable, nonatomic) id<ARTDeviceStorage> storage;
 
