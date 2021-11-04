@@ -19,7 +19,7 @@
 
 - (NSString *)secretForDevice:(ARTDeviceId *)deviceId {
     NSError *error = nil;
-    NSString *value = [self keychainGetPasswordForService:ARTDeviceSecretKey account:(NSString *)deviceId error:&error];
+    NSString *value = [self.class keychainGetPasswordForService:ARTDeviceSecretKey account:(NSString *)deviceId error:&error];
 
     if ([error code] == errSecItemNotFound) {
         [_logger debug:__FILE__ line:__LINE__ message:@"Device Secret not found"];
@@ -34,7 +34,7 @@
 - (void)setSecret:(NSString *)value forDevice:(ARTDeviceId *)deviceId {
     NSError *error = nil;
     if (value == nil) {
-        [self keychainDeletePasswordForService:ARTDeviceSecretKey account:(NSString *)deviceId error:&error];
+        [self.class keychainDeletePasswordForService:ARTDeviceSecretKey account:(NSString *)deviceId error:&error];
 
         if ([error code] == errSecItemNotFound) {
             [_logger warn:@"Device Secret can't be deleted because it doesn't exist"];
@@ -44,7 +44,7 @@
         }
     }
     else {
-        [self keychainSetPassword:value forService:ARTDeviceSecretKey account:(NSString *)deviceId error:&error];
+        [self.class keychainSetPassword:value forService:ARTDeviceSecretKey account:(NSString *)deviceId error:&error];
 
         if (error) {
             [_logger error:@"Device Secret couldn't be updated (%@)", [error localizedDescription]];
@@ -52,9 +52,13 @@
     }
 }
 
+@end
+
 #pragma mark - Keychain
 
-- (nonnull NSMutableDictionary *)newKeychainQueryForService:(nonnull NSString *)serviceName account:(nonnull NSString *)account {
+@implementation ARTKeychainLocalDeviceStorage (Sec)
+
++ (nonnull NSMutableDictionary *)newKeychainQueryForService:(nonnull NSString *)serviceName account:(nonnull NSString *)account {
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionaryWithCapacity:3];
     [dictionary setObject:(__bridge id)kSecClassGenericPassword forKey:(__bridge id)kSecClass];
     [dictionary setObject:serviceName forKey:(__bridge id)kSecAttrService];
@@ -65,7 +69,7 @@
     return dictionary;
 }
 
-- (nonnull NSError *)keychainErrorWithCode:(OSStatus)status {
++ (nonnull NSError *)keychainErrorWithCode:(OSStatus)status {
     NSString *message = nil;
     #if TARGET_OS_IPHONE
     switch (status) {
@@ -119,7 +123,7 @@
     return [NSError errorWithDomain:[NSString stringWithFormat:@"%@.%@", ARTAblyErrorDomain, @"Keychain"] code:status userInfo:userInfo];
 }
 
-- (nullable NSString *)keychainGetPasswordForService:(nonnull NSString *)serviceName account:(nonnull NSString *)account error:(NSError *__autoreleasing *)error {
++ (nullable NSString *)keychainGetPasswordForService:(NSString *)serviceName account:(NSString *)account error:(NSError *__autoreleasing *)error {
     NSMutableDictionary *query = [self newKeychainQueryForService:serviceName account:account];
 
     [query setObject:@YES forKey:(__bridge id)kSecReturnData];
@@ -142,7 +146,7 @@
     return nil;
 }
 
-- (BOOL)keychainDeletePasswordForService:(NSString *)serviceName account:(NSString *)account error:(NSError *__autoreleasing *)error {
++ (BOOL)keychainDeletePasswordForService:(NSString *)serviceName account:(NSString *)account error:(NSError *__autoreleasing *)error {
     NSMutableDictionary *query = [self newKeychainQueryForService:serviceName account:account];
     OSStatus status;
     #if TARGET_OS_IPHONE
@@ -164,7 +168,7 @@
     return (status == errSecSuccess);
 }
 
-- (BOOL)keychainSetPassword:(NSString *)password forService:(NSString *)serviceName account:(NSString *)account error:(NSError *__autoreleasing *)error {
++ (BOOL)keychainSetPassword:(NSString *)password forService:(NSString *)serviceName account:(NSString *)account error:(NSError *__autoreleasing *)error {
     NSMutableDictionary *query = nil;
     NSMutableDictionary *searchQuery = [self newKeychainQueryForService:serviceName account:account];
     NSData *passwordData = [password dataUsingEncoding:NSUTF8StringEncoding];

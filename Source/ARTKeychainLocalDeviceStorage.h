@@ -16,4 +16,31 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+/**
+ Class methods for manipulating securely stored data in a keychain
+ */
+@interface ARTKeychainLocalDeviceStorage (Sec)
+
+/**
+ Gets password from a keychain for a particular service name and account
+ */
++ (nullable NSString *)keychainGetPasswordForService:(NSString *)serviceName
+                                             account:(NSString *)account
+                                               error:(NSError *__autoreleasing *)error;
+/**
+ Deletes password from a keychain for a particular service name and account
+ */
++ (BOOL)keychainDeletePasswordForService:(NSString *)serviceName
+                                 account:(NSString *)account
+                                   error:(NSError *__autoreleasing *)error;
+/**
+ Stores password in a keychain for a particular service name and account
+ */
++ (BOOL)keychainSetPassword:(NSString *)password
+                 forService:(NSString *)serviceName
+                    account:(NSString *)account
+                      error:(NSError *__autoreleasing *)error;
+
+@end
+
 NS_ASSUME_NONNULL_END
