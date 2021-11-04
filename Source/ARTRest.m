@@ -420,13 +420,15 @@
             }
         }
         if (callback) {
-            // Error object that indicates why the request failed
-            if ([error isKindOfClass:[ARTErrorInfo class]]) {
-                callback(response, data, error);
+            if (error != nil) {
+                if ([error isKindOfClass:[ARTErrorInfo class]]) {
+                    callback(response, data, error);
+                } else {
+                    callback(response, data, [NSError copyFromError:error withRequestId:requestId]);
+                }
             } else {
-                callback(response, data, [NSError copyFromError:error withRequestId:requestId]);
+                callback(response, data, nil);
             }
-            
         }
     }];
 
@@ -593,13 +595,15 @@
         [request addValue:value forHTTPHeaderField:key];
     }];
 
-    NSError *encodeError = nil;
-    NSData *bodyData = [self.defaultEncoder encode:body error:&encodeError];
+    if (body != nil) {
+        NSError *encodeError = nil;
+        NSData *bodyData = [self.defaultEncoder encode:body error:&encodeError];
 
-    request.HTTPBody = bodyData;
-    [request setValue:[self.defaultEncoder mimeType] forHTTPHeaderField:@"Content-Type"];
-    if ([[method lowercaseString] isEqualToString:@"post"]) {
-        [request setValue:[NSString stringWithFormat:@"%d", (unsigned int)bodyData.length] forHTTPHeaderField:@"Content-Length"];
+        request.HTTPBody = bodyData;
+        [request setValue:[self.defaultEncoder mimeType] forHTTPHeaderField:@"Content-Type"];
+        if ([[method lowercaseString] isEqualToString:@"post"]) {
+            [request setValue:[NSString stringWithFormat:@"%d", (unsigned int)bodyData.length] forHTTPHeaderField:@"Content-Length"];
+        }
     }
 
     [request setAcceptHeader:self.defaultEncoder encoders:self.encoders];

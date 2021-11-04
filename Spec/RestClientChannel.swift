@@ -402,7 +402,7 @@ class RestClientChannel: QuickSpec {
                 expect((client.internal.encoders["application/json"] as! ARTJsonLikeEncoder).message(from: [
                     "data": "foo",
                     "extras": ["notification": ["title": "Hello from Ably!"]]
-                ]).extras == extras).to(beTrue())
+                ])?.extras == extras).to(beTrue())
 
                 waitUntil(timeout: testTimeout) { done in
                     channel.publish("name", data: "some data", extras: extras) { error in
