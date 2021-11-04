@@ -159,7 +159,13 @@
         _realtime = realtime;
         _options = [options copy];
 
-        _logger = options.logHandler ?: [[ARTLog alloc] init];
+        if (options.logHandler) {
+            _logger = options.logHandler;
+        }
+        else {
+            _logger = [[ARTLog alloc] init];
+        }
+
         if (options.logLevel != ARTLogLevelNone) {
             _logger.logLevel = options.logLevel;
         }
