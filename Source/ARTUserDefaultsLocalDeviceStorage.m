@@ -1,6 +1,7 @@
 #import "ARTLog.h"
 #import "ARTLocalDevice+Private.h"
 #import "ARTUserDefaultsLocalDeviceStorage.h"
+#import "ARTKeychainLocalDeviceStorage.h"
 
 @implementation ARTUserDefaultsLocalDeviceStorage
 
@@ -13,7 +14,14 @@
 }
 
 - (NSString *)secretForDevice:(ARTDeviceId *)deviceId {
-    return [self objectForKey:deviceId];
+    NSString *value = [self objectForKey:deviceId];
+    if (value == nil) { // probably a migration from a previous keychain (as a default) storage
+        value = [ARTKeychainLocalDeviceStorage keychainGetPasswordForService:ARTDeviceSecretKey account:deviceId error:nil];
+        if (value != nil) {
+            [self setSecret:value forDevice:deviceId];
+        }
+    }
+    return value;
 }
 
 - (void)setSecret:(NSString *)value forDevice:(ARTDeviceId *)deviceId {
