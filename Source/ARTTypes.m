@@ -370,7 +370,7 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
     NSError *error;
     NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self requiringSecureCoding:false error:&error];
     if (error) {
-        NSLog(@"ARTDeviceIdentityTokenDetails Archive failed: %@", error);
+        NSLog(@"%@ archive failed: %@", [self class], error);
     }
     return data;
 #else
@@ -378,7 +378,7 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
         NSError *error;
         NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self requiringSecureCoding:false error:&error];
         if (error) {
-            NSLog(@"ARTDeviceIdentityTokenDetails Archive failed: %@", error);
+            NSLog(@"%@ archive failed: %@", [self class], error);
         }
         return data;
     }
@@ -388,20 +388,21 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
 #endif
 }
 
-+ (nullable id)art_unarchive:(NSData *)data {
++ (nullable id)art_unarchiveFromData:(NSData *)data {
+    NSSet* allowedTypes = [NSSet setWithArray:@[ [NSArray class], [NSDictionary class], self]];
 #if TARGET_OS_MACCATALYST
     NSError *error;
-    id result = [NSKeyedUnarchiver unarchivedObjectOfClass:[self class] fromData:data error:&error];
+    id result = [NSKeyedUnarchiver unarchivedObjectOfClasses:allowedTypes fromData:data error:&error];
     if (error) {
-        NSLog(@"ARTDeviceIdentityTokenDetails Unarchive failed: %@", error);
+        NSLog(@"%@ unarchive failed: %@", self, error);
     }
     return result;
 #else
     if (@available(macOS 10.13, iOS 11, tvOS 11, *)) {
         NSError *error;
-        id result = [NSKeyedUnarchiver unarchivedObjectOfClass:[self class] fromData:data error:&error];
+        id result = [NSKeyedUnarchiver unarchivedObjectOfClasses:allowedTypes fromData:data error:&error];
         if (error) {
-            NSLog(@"ARTDeviceIdentityTokenDetails Unarchive failed: %@", error);
+            NSLog(@"%@ unarchive failed: %@", self, error);
         }
         return result;
     }
