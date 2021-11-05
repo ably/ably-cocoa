@@ -55,13 +55,15 @@
 }
 
 - (void)recreateDataEncoderWith:(ARTCipherParams*)cipher {
-    NSError *error = nil;
-    _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:cipher error:&error];
-    
-    if (error != nil) {
-        [_logger warn:@"creating ARTDataEncoder: %@", error];
-        _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:nil error:nil];
-    }
+    dispatch_barrier_async(_queue, ^{
+        NSError *error = nil;
+        self->_dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:cipher error:&error];
+        
+        if (error != nil) {
+            [self->_logger warn:@"creating ARTDataEncoder: %@", error];
+            self->_dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:nil error:nil];
+        }
+    });
 }
 
 - (void)publish:(NSString *)name data:(id)data {
