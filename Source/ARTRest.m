@@ -39,6 +39,20 @@
 #import "ARTNSURL+ARTUtils.h"
 #import "ARTTime.h"
 
+@implementation ARTHttpMethods
+
++ (NSString *)GET { return @"GET"; }
+
++ (NSString *)PATCH { return @"PATCH"; }
+
++ (NSString *)PUT { return @"PUT"; }
+
++ (NSString *)POST { return @"POST"; }
+
++ (NSString *)DELETE { return @"DELETE"; }
+
+@end
+
 @implementation ARTRest {
     ARTQueuedDealloc *_dealloc;
 }
@@ -103,7 +117,51 @@
         headers:(nullable NSStringDictionary *)headers
        callback:(ARTHTTPPaginatedCallback)callback
           error:(NSError *_Nullable *_Nullable)errorPtr {
-    return [_internal request:(NSString *)method path:path params:params body:body headers:headers callback:callback error:errorPtr];
+    return [_internal request:method path:path params:params body:body headers:headers callback:callback error:errorPtr];
+}
+
+- (BOOL)GET:(NSString *)path
+     params:(nullable NSStringDictionary *)params
+    headers:(nullable NSStringDictionary *)headers
+   callback:(ARTHTTPPaginatedCallback)callback
+      error:(NSError *_Nullable *_Nullable)errorPtr {
+    return [_internal GET:path params:params headers:headers callback:callback error:errorPtr];
+}
+
+- (BOOL)PATCH:(NSString *)path
+       params:(nullable NSStringDictionary *)params
+         body:(nullable id)body
+      headers:(nullable NSStringDictionary *)headers
+     callback:(ARTHTTPPaginatedCallback)callback
+        error:(NSError *_Nullable *_Nullable)errorPtr {
+    return [_internal PATCH:path params:params body:body headers:headers callback:callback error:errorPtr];
+}
+
+- (BOOL)PUT:(NSString *)path
+     params:(nullable NSStringDictionary *)params
+       body:(nullable id)body
+    headers:(nullable NSStringDictionary *)headers
+   callback:(ARTHTTPPaginatedCallback)callback
+      error:(NSError *_Nullable *_Nullable)errorPtr {
+    return [_internal PUT:path params:params body:body headers:headers callback:callback error:errorPtr];
+}
+
+- (BOOL)POST:(NSString *)path
+      params:(nullable NSStringDictionary *)params
+        body:(nullable id)body
+     headers:(nullable NSStringDictionary *)headers
+    callback:(ARTHTTPPaginatedCallback)callback
+       error:(NSError *_Nullable *_Nullable)errorPtr {
+    return [_internal POST:path params:params body:body headers:headers callback:callback error:errorPtr];
+}
+
+- (BOOL)DELETE:(NSString *)path
+        params:(nullable NSStringDictionary *)params
+          body:(nullable id)body
+       headers:(nullable NSStringDictionary *)headers
+      callback:(ARTHTTPPaginatedCallback)callback
+         error:(NSError *_Nullable *_Nullable)errorPtr {
+    return [_internal DELETE:path params:params body:body headers:headers callback:callback error:errorPtr];
 }
 
 - (BOOL)stats:(ARTPaginatedStatsCallback)callback {
@@ -619,6 +677,50 @@
         [ARTHTTPPaginatedResponse executePaginated:self withRequest:request  callback:callback];
     });
     return YES;
+}
+
+- (BOOL)GET:(NSString *)path
+     params:(nullable NSStringDictionary *)params
+    headers:(nullable NSStringDictionary *)headers
+   callback:(ARTHTTPPaginatedCallback)callback
+      error:(NSError *_Nullable *_Nullable)errorPtr {
+    return [self request:ARTHttpMethods.GET path:path params:params body:nil headers:headers callback:callback error:errorPtr];
+}
+
+- (BOOL)PATCH:(NSString *)path
+       params:(nullable NSStringDictionary *)params
+         body:(nullable id)body
+      headers:(nullable NSStringDictionary *)headers
+     callback:(ARTHTTPPaginatedCallback)callback
+        error:(NSError *_Nullable *_Nullable)errorPtr {
+    return [self request:ARTHttpMethods.PATCH path:path params:params body:body headers:headers callback:callback error:errorPtr];
+}
+
+- (BOOL)PUT:(NSString *)path
+     params:(nullable NSStringDictionary *)params
+       body:(nullable id)body
+    headers:(nullable NSStringDictionary *)headers
+   callback:(ARTHTTPPaginatedCallback)callback
+      error:(NSError *_Nullable *_Nullable)errorPtr {
+    return [self request:ARTHttpMethods.PUT path:path params:params body:body headers:headers callback:callback error:errorPtr];
+}
+
+- (BOOL)POST:(NSString *)path
+      params:(nullable NSStringDictionary *)params
+        body:(nullable id)body
+     headers:(nullable NSStringDictionary *)headers
+    callback:(ARTHTTPPaginatedCallback)callback
+       error:(NSError *_Nullable *_Nullable)errorPtr {
+    return [self request:ARTHttpMethods.POST path:path params:params body:body headers:headers callback:callback error:errorPtr];
+}
+
+- (BOOL)DELETE:(NSString *)path
+        params:(nullable NSStringDictionary *)params
+          body:(nullable id)body
+       headers:(nullable NSStringDictionary *)headers
+      callback:(ARTHTTPPaginatedCallback)callback
+         error:(NSError *_Nullable *_Nullable)errorPtr {
+    return [self request:ARTHttpMethods.DELETE path:path params:params body:body headers:headers callback:callback error:errorPtr];
 }
 
 - (NSObject<ARTCancellable> *)internetIsUp:(void (^)(BOOL isUp)) cb {

@@ -17,6 +17,16 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@interface ARTHttpMethods : NSObject
+
+@property (class, readonly) NSString *GET;
+@property (class, readonly) NSString *PATCH;
+@property (class, readonly) NSString *PUT;
+@property (class, readonly) NSString *POST;
+@property (class, readonly) NSString *DELETE;
+
+@end
+
 @protocol ARTRestProtocol
 
 - (instancetype)init NS_UNAVAILABLE;
@@ -43,6 +53,40 @@ NS_ASSUME_NONNULL_BEGIN
         headers:(nullable NSStringDictionary *)headers
        callback:(ARTHTTPPaginatedCallback)callback
           error:(NSError *_Nullable *_Nullable)errorPtr;
+
+- (BOOL)GET:(NSString *)path
+     params:(nullable NSStringDictionary *)params
+    headers:(nullable NSStringDictionary *)headers
+   callback:(ARTHTTPPaginatedCallback)callback
+      error:(NSError *_Nullable *_Nullable)errorPtr;
+
+- (BOOL)PATCH:(NSString *)path
+       params:(nullable NSStringDictionary *)params
+         body:(nullable id)body
+      headers:(nullable NSStringDictionary *)headers
+     callback:(ARTHTTPPaginatedCallback)callback
+        error:(NSError *_Nullable *_Nullable)errorPtr;
+
+- (BOOL)PUT:(NSString *)path
+     params:(nullable NSStringDictionary *)params
+       body:(nullable id)body
+    headers:(nullable NSStringDictionary *)headers
+   callback:(ARTHTTPPaginatedCallback)callback
+      error:(NSError *_Nullable *_Nullable)errorPtr;
+
+- (BOOL)POST:(NSString *)path
+      params:(nullable NSStringDictionary *)params
+        body:(nullable id)body
+     headers:(nullable NSStringDictionary *)headers
+    callback:(ARTHTTPPaginatedCallback)callback
+       error:(NSError *_Nullable *_Nullable)errorPtr;
+
+- (BOOL)DELETE:(NSString *)path
+        params:(nullable NSStringDictionary *)params
+          body:(nullable id)body
+       headers:(nullable NSStringDictionary *)headers
+      callback:(ARTHTTPPaginatedCallback)callback
+         error:(NSError *_Nullable *_Nullable)errorPtr;
 
 - (BOOL)stats:(ARTPaginatedStatsCallback)callback;
 
