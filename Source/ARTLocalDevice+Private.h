@@ -7,7 +7,7 @@ NS_ASSUME_NONNULL_BEGIN
 extern NSString *const ARTDeviceIdKey;
 extern NSString *const ARTDeviceSecretKey;
 extern NSString *const ARTDeviceIdentityTokenKey;
-extern NSString *const ARTDeviceTokenKey;
+extern NSString *const ARTAPNSDeviceTokenKey;
 
 @interface ARTLocalDevice ()
 
