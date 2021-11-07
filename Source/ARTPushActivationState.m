@@ -87,7 +87,7 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
         }
         
         return [ARTPushActivationStateWaitingForRegistrationSync newWithMachine:machine fromEvent:event];
-    } else if ([local deviceToken]) {
+    } else if ([local apnsDeviceToken]) {
         [machine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
     }
     #endif

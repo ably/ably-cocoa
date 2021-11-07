@@ -185,7 +185,7 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
         return;
     }
 
-    [rest.device_nosync setAndPersistDeviceToken:deviceToken];
+    [rest.device_nosync setAndPersistAPNSDeviceToken:deviceToken];
     [rest.logger debug:@"ARTPush: device token stored"];
     [rest.push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
         [stateMachine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
