@@ -61,13 +61,13 @@ class Push : QuickSpec {
             it("should handle GotPushDeviceDetails event when platform’s APIs sends the details for push notifications") {
                 let stateMachine = rest.push.internal.activationMachine
                 let testDeviceToken = "xxxx-xxxx-xxxx-xxxx-xxxx"
-                stateMachine.rest.device.setAndPersistDeviceToken(testDeviceToken)
+                stateMachine.rest.device.setAndPersistAPNSDeviceToken(testDeviceToken)
                 let stateMachineDelegate = StateMachineDelegate()
                 stateMachine.delegate = stateMachineDelegate
                 defer {
                     stateMachine.transitions = nil
                     stateMachine.delegate = nil
-                    stateMachine.rest.device.setAndPersistDeviceToken(nil)
+                    stateMachine.rest.device.setAndPersistAPNSDeviceToken(nil)
                 }
                 waitUntil(timeout: testTimeout) { done in
                     stateMachine.transitions = { event, _, _ in
@@ -129,13 +129,13 @@ class Push : QuickSpec {
                 }
 
                 let testDeviceToken = "xxxx-xxxx-xxxx-xxxx-xxxx"
-                stateMachine.rest.device.setAndPersistDeviceToken(testDeviceToken)
+                stateMachine.rest.device.setAndPersistAPNSDeviceToken(testDeviceToken)
                 let stateMachineDelegate = StateMachineDelegate()
                 stateMachine.delegate = stateMachineDelegate
                 defer {
                     stateMachine.transitions = nil
                     stateMachine.delegate = nil
-                    stateMachine.rest.device.setAndPersistDeviceToken(nil)
+                    stateMachine.rest.device.setAndPersistAPNSDeviceToken(nil)
                 }
 
                 expect(rest.device.clientId).to(beNil())
@@ -221,7 +221,7 @@ class Push : QuickSpec {
 
                 let device = rest.device
                 
-                expect(device.deviceToken()).to(equal(testToken))
+                expect(device.apnsDeviceToken()).to(equal(testToken))
                 expect(device.identityTokenDetails?.token).to(equal(testIdentity.token))
             }
             
