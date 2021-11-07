@@ -185,8 +185,8 @@ class Push : QuickSpec {
                     }
                     ARTPush.didRegisterForRemoteNotifications(withDeviceToken: TestDeviceToken.tokenData, rest: rest)
                 }
-                expect(storage.keysWritten.keys).to(contain(["ARTDeviceToken"]))
-                expect(storage.keysWritten.at("ARTDeviceToken")?.value as? String).to(equal(expectedDeviceToken))
+                expect(storage.keysWritten.keys).to(contain(["ARTAPNSDeviceToken"]))
+                expect(storage.keysWritten.at("ARTAPNSDeviceToken")?.value as? String).to(equal(expectedDeviceToken))
             }
 
             // https://github.com/ably/ably-cocoa/issues/888
@@ -216,7 +216,7 @@ class Push : QuickSpec {
 
                 let rest = ARTRest(key: "fake:key")
                 rest.internal.storage = storage
-                storage.simulateOnNextRead(string: testToken, for: ARTDeviceTokenKey)
+                storage.simulateOnNextRead(string: testToken, for: ARTAPNSDeviceTokenKey)
                 storage.simulateOnNextRead(data: testIdentity.archive(), for: ARTDeviceIdentityTokenKey)
 
                 let device = rest.device
@@ -316,7 +316,7 @@ class Push : QuickSpec {
                 let delegate = StateMachineDelegate()
                 stateMachine.delegate = delegate
 
-                storage.simulateOnNextRead(string: testDeviceToken, for: ARTDeviceTokenKey)
+                storage.simulateOnNextRead(string: testDeviceToken, for: ARTAPNSDeviceTokenKey)
                 storage.simulateOnNextRead(data: testDeviceIdentity.archive(), for: ARTDeviceIdentityTokenKey)
 
                 expect(realtime.device.clientId).to(beNil())
