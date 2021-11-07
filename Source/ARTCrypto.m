@@ -77,7 +77,7 @@
         } else if (self.keyLength != 128 && self.keyLength != 256) {
             errorMsg = [NSString stringWithFormat:@"invalid key length for AES algorithm: %d", (int)self.keyLength];
         } else {
-            *algorithm = kCCAlgorithmAES128;
+            *algorithm = kCCAlgorithmAES;
         }
     } else if (NSOrderedSame == [self.algorithm compare:@"DES" options:NSCaseInsensitiveSearch]) {
         *algorithm = kCCAlgorithmDES;
@@ -255,7 +255,7 @@
 - (NSString *)cipherName {
     NSString *algo = nil;
     switch (self.algorithm) {
-        case kCCAlgorithmAES128:
+        case kCCAlgorithmAES:
             algo = @"aes-128";
             break;
         case kCCAlgorithmDES:
