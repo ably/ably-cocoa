@@ -3151,76 +3151,80 @@ class RealtimeClientChannel: QuickSpec {
 
                 // RTL7d
                 context("should deliver the message even if there is an error while decoding") {
-                    
                     /*
                      This test makes a deep assumption about the content of these two files,
                      specifically the format of the first message in the items array.
                      */
-                    for cryptoFixtureFileName in ["crypto-data-128", "crypto-data-256"] {
-                        it("using \(cryptoFixtureFileName) ") {
-                            let options = AblyTests.commonAppSetup()
-                            options.autoConnect = false
-                            options.logHandler = ARTLog(capturingOutput: true)
-                            let client = ARTRealtime(options: options)
-                            client.internal.setTransport(TestProxyTransport.self)
-                            client.connect()
-                            defer { client.dispose(); client.close() }
-
-                            let (keyData, ivData, messages) = AblyTests.loadCryptoTestData(cryptoFixtureFileName)
-                            let testMessage = messages[0]
-
-                            let cipherParams = ARTCipherParams(algorithm: "aes", key: keyData as ARTCipherKeyCompatible, iv: ivData)
-                            let channelOptions = ARTRealtimeChannelOptions(cipher: cipherParams)
-                            let channel = client.channels.get("test", options: channelOptions)
-
-                            let transport = client.internal.transport as! TestProxyTransport
-
-                            transport.setListenerBeforeProcessingOutgoingMessage({ protocolMessage in
-                                if protocolMessage.action == .message {
-                                    expect(protocolMessage.messages![0].data as? String).to(equal(testMessage.encrypted.data))
-                                    expect(protocolMessage.messages![0].encoding).to(equal(testMessage.encrypted.encoding))
-                                }
-                            })
-
-                            transport.setBeforeIncomingMessageModifier({ protocolMessage in
-                                if protocolMessage.action == .message {
-                                    expect(protocolMessage.messages![0].data as? NSObject).to(equal(AblyTests.base64ToData(testMessage.encrypted.data) as NSObject?))
-                                    expect(protocolMessage.messages![0].encoding).to(equal("utf-8/cipher+aes-\(cryptoFixtureFileName.suffix(3))-cbc"))
-                                    
-                                    // Force an error decoding a message
-                                    protocolMessage.messages![0].encoding = "bad_encoding_type"
-                                }
-                                return protocolMessage
-                            })
-
-                            waitUntil(timeout: testTimeout) { done in
-                                let partlyDone = AblyTests.splitDone(2, done: done)
-
-                                channel.subscribe(testMessage.encoded.name) { message in
-                                    expect(message.data as? NSObject).to(equal(AblyTests.base64ToData(testMessage.encrypted.data) as NSObject?))
-
-                                    let logs = options.logHandler.captured
-                                    let line = logs.reduce("") { $0 + "; " + $1.toString() } //Reduce in one line
-
-                                    expect(line).to(contain("Failed to decode data: unknown encoding: 'bad_encoding_type'"))
-
-                                    partlyDone()
-                                }
-
-                                channel.on(.update) { stateChange in
-                                    guard let error = stateChange.reason else {
-                                        return
-                                    }
-                                    expect(error.message).to(contain("Failed to decode data: unknown encoding: 'bad_encoding_type'"))
-                                    expect(error).to(beIdenticalTo(channel.errorReason))
-                                    partlyDone()
-                                }
-
-                                channel.publish(testMessage.encoded.name, data: testMessage.encoded.data)
+                    func testHandlesDecodingErrorInFixture(_ cryptoFixtureFileName: String) {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        options.logHandler = ARTLog(capturingOutput: true)
+                        let client = ARTRealtime(options: options)
+                        client.internal.setTransport(TestProxyTransport.self)
+                        client.connect()
+                        defer { client.dispose(); client.close() }
+                        
+                        let (keyData, ivData, messages) = AblyTests.loadCryptoTestData(cryptoFixtureFileName)
+                        let testMessage = messages[0]
+                        
+                        let cipherParams = ARTCipherParams(algorithm: "aes", key: keyData as ARTCipherKeyCompatible, iv: ivData)
+                        let channelOptions = ARTRealtimeChannelOptions(cipher: cipherParams)
+                        let channel = client.channels.get("test", options: channelOptions)
+                        
+                        let transport = client.internal.transport as! TestProxyTransport
+                        
+                        transport.setListenerBeforeProcessingOutgoingMessage({ protocolMessage in
+                            if protocolMessage.action == .message {
+                                expect(protocolMessage.messages![0].data as? String).to(equal(testMessage.encrypted.data))
+                                expect(protocolMessage.messages![0].encoding).to(equal(testMessage.encrypted.encoding))
                             }
+                        })
+                        
+                        transport.setBeforeIncomingMessageModifier({ protocolMessage in
+                            if protocolMessage.action == .message {
+                                expect(protocolMessage.messages![0].data as? NSObject).to(equal(AblyTests.base64ToData(testMessage.encrypted.data) as NSObject?))
+                                expect(protocolMessage.messages![0].encoding).to(equal("utf-8/cipher+aes-\(cryptoFixtureFileName.suffix(3))-cbc"))
+                                
+                                // Force an error decoding a message
+                                protocolMessage.messages![0].encoding = "bad_encoding_type"
+                            }
+                            return protocolMessage
+                        })
+                        
+                        waitUntil(timeout: testTimeout) { done in
+                            let partlyDone = AblyTests.splitDone(2, done: done)
+                            
+                            channel.subscribe(testMessage.encoded.name) { message in
+                                expect(message.data as? NSObject).to(equal(AblyTests.base64ToData(testMessage.encrypted.data) as NSObject?))
+                                
+                                let logs = options.logHandler.captured
+                                let line = logs.reduce("") { $0 + "; " + $1.toString() } //Reduce in one line
+                                
+                                expect(line).to(contain("Failed to decode data: unknown encoding: 'bad_encoding_type'"))
+                                
+                                partlyDone()
+                            }
+                            
+                            channel.on(.update) { stateChange in
+                                guard let error = stateChange.reason else {
+                                    return
+                                }
+                                expect(error.message).to(contain("Failed to decode data: unknown encoding: 'bad_encoding_type'"))
+                                expect(error).to(beIdenticalTo(channel.errorReason))
+                                partlyDone()
+                            }
+                            
+                            channel.publish(testMessage.encoded.name, data: testMessage.encoded.data)
                         }
                     }
-
+                    
+                    it("using crypto-data-128") {
+                        testHandlesDecodingErrorInFixture("crypto-data-128")
+                    }
+                    
+                    it("using crypto-data-256") {
+                        testHandlesDecodingErrorInFixture("crypto-data-256")
+                    }
                 }
 
                 context("message cannot be decoded or decrypted") {
