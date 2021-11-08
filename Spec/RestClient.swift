@@ -1385,44 +1385,51 @@ class RestClient: QuickSpec {
                 // RSC15f
                 context("should store successful fallback host as default host") {
                     
-                    for caseTest: FakeNetworkResponse in [.hostUnreachable,
-                                                          .requestTimeout(timeout: 0.1),
-                                                          .hostInternalError(code: 501)] {
-                        it("\(caseTest)") {
-                            let options = ARTClientOptions(key: "xxxx:xxxx")
-                            let client = ARTRest(options: options)
-                            let mockHTTP = MockHTTP(logger: options.logHandler)
-                            testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: options.logHandler)
-                            client.internal.httpExecutor = testHTTPExecutor
-                            mockHTTP.setNetworkState(network: caseTest, resetAfter: 1)
-                            let channel = client.channels.get("test")
+                    func testStoresSuccessfulFallbackHostAsDefaultHost(_ caseTest: FakeNetworkResponse) {
+                        let options = ARTClientOptions(key: "xxxx:xxxx")
+                        let client = ARTRest(options: options)
+                        let mockHTTP = MockHTTP(logger: options.logHandler)
+                        testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: options.logHandler)
+                        client.internal.httpExecutor = testHTTPExecutor
+                        mockHTTP.setNetworkState(network: caseTest, resetAfter: 1)
+                        let channel = client.channels.get("test")
 
-                            waitUntil(timeout: testTimeout) { done in
-                                channel.publish(nil, data: "nil") { _ in
-                                    done()
-                                }
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish(nil, data: "nil") { _ in
+                                done()
                             }
-
-                            expect(testHTTPExecutor.requests).to(haveCount(2))
-                            expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.host, pattern: "rest.ably.io")).to(beTrue())
-                            expect(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.host, pattern: "[a-e].ably-realtime.com")).to(beTrue())
-                            
-                            //#1 Store fallback used to request
-                            let usedFallbackURL = testHTTPExecutor.requests[1].url!
-                            
-                            waitUntil(timeout: testTimeout) { done in
-                                channel.publish(nil, data: "nil") { _ in
-                                    done()
-                                }
-                            }
-                            
-                            let reusedURL = testHTTPExecutor.requests[2].url!
-                            
-                            // Reuse host has to be equal previous (stored #1) fallback host
-                            expect(testHTTPExecutor.requests).to(haveCount(3))
-                            expect(usedFallbackURL.host).to(equal(reusedURL.host))
-                            
                         }
+
+                        expect(testHTTPExecutor.requests).to(haveCount(2))
+                        expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.host, pattern: "rest.ably.io")).to(beTrue())
+                        expect(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.host, pattern: "[a-e].ably-realtime.com")).to(beTrue())
+                        
+                        //#1 Store fallback used to request
+                        let usedFallbackURL = testHTTPExecutor.requests[1].url!
+                        
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish(nil, data: "nil") { _ in
+                                done()
+                            }
+                        }
+                        
+                        let reusedURL = testHTTPExecutor.requests[2].url!
+                        
+                        // Reuse host has to be equal previous (stored #1) fallback host
+                        expect(testHTTPExecutor.requests).to(haveCount(3))
+                        expect(usedFallbackURL.host).to(equal(reusedURL.host))
+                    }
+                    
+                    it(".hostUnreachable") {
+                        testStoresSuccessfulFallbackHostAsDefaultHost(.hostUnreachable)
+                    }
+                    
+                    it(".requestTimeout(timeout: 0.1)") {
+                        testStoresSuccessfulFallbackHostAsDefaultHost(.requestTimeout(timeout: 0.1))
+                    }
+                    
+                    it(".hostInternalError(code: 501)") {
+                        testStoresSuccessfulFallbackHostAsDefaultHost(.hostInternalError(code: 501))
                     }
                     
                     context("should restore default primary host after fallbackRetryTimeout expired") {
