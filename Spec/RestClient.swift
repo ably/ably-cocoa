@@ -1326,31 +1326,39 @@ class RestClient: QuickSpec {
                 // RSC15d
                 context("should use an alternative host when") {
 
-                    for caseTest: FakeNetworkResponse in [.hostUnreachable,
-                                                          .requestTimeout(timeout: 0.1),
-                                                          .hostInternalError(code: 501)] {
-                        it("\(caseTest)") {
-                            let options = ARTClientOptions(key: "xxxx:xxxx")
-                            let client = ARTRest(options: options)
-                            let mockHTTP = MockHTTP(logger: options.logHandler)
-                            testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: options.logHandler)
-                            client.internal.httpExecutor = testHTTPExecutor
-                            mockHTTP.setNetworkState(network: caseTest, resetAfter: 1)
-                            let channel = client.channels.get("test")
+                    func testUsesAlternativeHost(_ caseTest: FakeNetworkResponse) {
+                        let options = ARTClientOptions(key: "xxxx:xxxx")
+                        let client = ARTRest(options: options)
+                        let mockHTTP = MockHTTP(logger: options.logHandler)
+                        testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: options.logHandler)
+                        client.internal.httpExecutor = testHTTPExecutor
+                        mockHTTP.setNetworkState(network: caseTest, resetAfter: 1)
+                        let channel = client.channels.get("test")
 
-                            waitUntil(timeout: testTimeout) { done in
-                                channel.publish(nil, data: "nil") { _ in
-                                    done()
-                                }
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish(nil, data: "nil") { _ in
+                                done()
                             }
-
-                            expect(testHTTPExecutor.requests).to(haveCount(2))
-                            if testHTTPExecutor.requests.count != 2 {
-                                return
-                            }
-                            expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
-                            expect(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
                         }
+
+                        expect(testHTTPExecutor.requests).to(haveCount(2))
+                        if testHTTPExecutor.requests.count != 2 {
+                            return
+                        }
+                        expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
+                        expect(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+                    }
+                    
+                    it(".hostUnreachable") {
+                        testUsesAlternativeHost(.hostUnreachable)
+                    }
+                    
+                    it(".requestTimeout(timeout: 0.1)") {
+                        testUsesAlternativeHost(.requestTimeout(timeout: 0.1))
+                    }
+                    
+                    it(".hostInternalError(code: 501)") {
+                        testUsesAlternativeHost(.hostInternalError(code: 501))
                     }
                 }
 
