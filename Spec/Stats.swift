@@ -47,32 +47,38 @@ class Stats: QuickSpec {
             }
 
             // TS7
-            for direction in ["inbound", "outbound"] {
-                context(direction) {
-                    let data: JSON = [
-                        [ direction: [
-                            "realtime": [ "messages": [ "count": 5] ],
-                            "all": [ "messages": [ "count": 25 ], "presence": [ "data": 210 ] ]
-                        ] ]
-                    ]
-                    let rawData = try! data.rawData()
-                    let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
-                    let subject = stats?.value(forKey: direction) as? ARTStatsMessageTraffic
+            func reusableTestsTestDirection(_ direction: String) {
+                let data: JSON = [
+                    [ direction: [
+                        "realtime": [ "messages": [ "count": 5] ],
+                        "all": [ "messages": [ "count": 25 ], "presence": [ "data": 210 ] ]
+                    ] ]
+                ]
+                let rawData = try! data.rawData()
+                let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
+                let subject = stats?.value(forKey: direction) as? ARTStatsMessageTraffic
 
-                    it("should return a MessageTraffic object") {
-                        expect(subject).to(beAnInstanceOf(ARTStatsMessageTraffic.self))
-                    }
-
-                    // TS5
-                    it("should return value for realtime message counts") {
-                        expect(subject?.realtime.messages.count).to(equal(5))
-                    }
-
-                    // TS5
-                    it("should return value for all presence data") {
-                        expect(subject?.all.presence.data).to(equal(210))
-                    }
+                it("should return a MessageTraffic object") {
+                    expect(subject).to(beAnInstanceOf(ARTStatsMessageTraffic.self))
                 }
+
+                // TS5
+                it("should return value for realtime message counts") {
+                    expect(subject?.realtime.messages.count).to(equal(5))
+                }
+
+                // TS5
+                it("should return value for all presence data") {
+                    expect(subject?.all.presence.data).to(equal(210))
+                }
+            }
+        
+            context("inbound") {
+                reusableTestsTestDirection("inbound")
+            }
+            
+            context("outbound") {
+                reusableTestsTestDirection("outbound")
             }
 
             // TS4
