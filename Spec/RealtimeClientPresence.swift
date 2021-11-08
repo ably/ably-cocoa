@@ -3327,30 +3327,35 @@ class RealtimeClientPresence: QuickSpec {
                         
                         return (channel, client)
                     }
-
-                    for (name, getPresence) in [
-                        ("by default", { channel, callback in
-                            channel.presence.get(callback)
-                        }),
-                        ("if waitForSync is true", { channel, callback in
-                            let params = ARTRealtimePresenceQuery()
-                            params.waitForSync = true
-                            channel.presence.get(params, callback: callback)
-                        })
-                    ] as [(String, (ARTRealtimeChannel, @escaping ([ARTPresenceMessage]?, ARTErrorInfo?) -> Void) -> Void)] {
-                        context(name) {
-                            it("results in an error") {
-                                let (channel, client) = getSuspendedChannel()
-                                defer { client.dispose(); client.close() }
-                                
-                                getPresence(channel) { result, err in
-                                    expect(result).to(beNil())
-                                    expect(err).toNot(beNil())
-                                    guard let err = err else {
-                                        return
-                                    }
-                                    expect(err.code).to(equal(ARTErrorCode.presenceStateIsOutOfSync.intValue))
-                                }
+                    
+                    func testSuspendedStateResultsInError(_ getPresence: (ARTRealtimeChannel, @escaping ([ARTPresenceMessage]?, ARTErrorInfo?) -> Void) -> Void) {
+                        let (channel, client) = getSuspendedChannel()
+                        defer { client.dispose(); client.close() }
+                        
+                        getPresence(channel) { result, err in
+                            expect(result).to(beNil())
+                            expect(err).toNot(beNil())
+                            guard let err = err else {
+                                return
+                            }
+                            expect(err.code).to(equal(ARTErrorCode.presenceStateIsOutOfSync.intValue))
+                        }
+                    }
+                    
+                    context("by default") {
+                        it("results in an error") {
+                            testSuspendedStateResultsInError { channel, callback in
+                                channel.presence.get(callback)
+                            }
+                        }
+                    }
+                    
+                    context("if waitForSync is true") {
+                        it("results in an error") {
+                            testSuspendedStateResultsInError { channel, callback in
+                                let params = ARTRealtimePresenceQuery()
+                                params.waitForSync = true
+                                channel.presence.get(params, callback: callback)
                             }
                         }
                     }
