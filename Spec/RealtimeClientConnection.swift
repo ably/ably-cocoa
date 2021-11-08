@@ -3501,47 +3501,51 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 context("should move to disconnected when there's no internet") {
-                    var errors: [(String, NSError)] = []
-                    for code in [57, 50] {
-                        errors.append(("with NSPOSIXErrorDomain with code \(code)", NSError(domain: "NSPOSIXErrorDomain", code: code, userInfo: [NSLocalizedDescriptionKey: "shouldn't matter"])))
-                    }
-                    errors.append(("with any kCFErrorDomainCFNetwork", NSError(domain: "kCFErrorDomainCFNetwork", code: 1337, userInfo: [NSLocalizedDescriptionKey: "shouldn't matter"])))
-                        
-                    for (name, error) in errors {
-                        it(name) {
-                            let options = AblyTests.commonAppSetup()
-                            options.autoConnect = false
-                            let client = AblyTests.newRealtime(options)
-                            defer {
-                                client.dispose()
-                                client.close()
-                            }
-                            client.internal.setTransport(TestProxyTransport.self)
-
-                            waitUntil(timeout: testTimeout) { done in
-                                client.connection.once(.connected) { _ in
-                                    done()
-                                }
-                                client.connect()
-                            }
-
-                            var _transport: ARTWebSocketTransport?
-                            AblyTests.queue.sync {
-                                _transport = client.internal.transport as? ARTWebSocketTransport
-                            }
-
-                            guard let wsTransport = _transport else {
-                                fail("expected WS transport")
-                                return
-                            }
-
-                            waitUntil(timeout: testTimeout) { done in
-                                client.connection.once(.disconnected) { _ in
-                                    done()
-                                }
-                                wsTransport.webSocket(wsTransport.websocket!, didFailWithError:error)
-                            }
+                    func testMovesToDisconnectedWithNetworkingError(_ error: Error) {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let client = AblyTests.newRealtime(options)
+                        defer {
+                            client.dispose()
+                            client.close()
                         }
+                        client.internal.setTransport(TestProxyTransport.self)
+
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.connected) { _ in
+                                done()
+                            }
+                            client.connect()
+                        }
+
+                        var _transport: ARTWebSocketTransport?
+                        AblyTests.queue.sync {
+                            _transport = client.internal.transport as? ARTWebSocketTransport
+                        }
+
+                        guard let wsTransport = _transport else {
+                            fail("expected WS transport")
+                            return
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.disconnected) { _ in
+                                done()
+                            }
+                            wsTransport.webSocket(wsTransport.websocket!, didFailWithError:error)
+                        }
+                    }
+                    
+                    it("with NSPOSIXErrorDomain with code 57") {
+                        testMovesToDisconnectedWithNetworkingError(NSError(domain: "NSPOSIXErrorDomain", code: 57, userInfo: [NSLocalizedDescriptionKey: "shouldn't matter"]))
+                    }
+                    
+                    it("with NSPOSIXErrorDomain with code 50") {
+                        testMovesToDisconnectedWithNetworkingError(NSError(domain: "NSPOSIXErrorDomain", code: 50, userInfo: [NSLocalizedDescriptionKey: "shouldn't matter"]))
+                    }
+                    
+                    it("with any kCFErrorDomainCFNetwork") {
+                        testMovesToDisconnectedWithNetworkingError(NSError(domain: "kCFErrorDomainCFNetwork", code: 1337, userInfo: [NSLocalizedDescriptionKey: "shouldn't matter"]))
                     }
                 }
 
