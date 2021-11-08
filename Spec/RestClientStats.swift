@@ -51,12 +51,15 @@ class RestClientStats: QuickSpec {
                 // RSC6a
                 context("result") {
                     let calendar = NSCalendar(identifier: NSCalendar.Identifier.gregorian)!
-                    let dateComponents = NSDateComponents()
-                    dateComponents.year = calendar.component(NSCalendar.Unit.year, from: NSDate() as Date) - 1
-                    dateComponents.month = 2
-                    dateComponents.day = 3
-                    dateComponents.hour = 16
-                    dateComponents.minute = 3
+                    let dateComponents: NSDateComponents = {
+                        let dateComponents = NSDateComponents()
+                        dateComponents.year = calendar.component(NSCalendar.Unit.year, from: NSDate() as Date) - 1
+                        dateComponents.month = 2
+                        dateComponents.day = 3
+                        dateComponents.hour = 16
+                        dateComponents.minute = 3
+                        return dateComponents
+                    }()
                     let date = calendar.date(from: dateComponents as DateComponents)!
                     let dateFormatter = DateFormatter()
                     dateFormatter.timeZone = NSTimeZone(name: "UTC") as TimeZone?
