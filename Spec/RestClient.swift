@@ -1436,36 +1436,44 @@ class RestClient: QuickSpec {
                         
                         ARTDefault.setFallbackRetryTimeout(1.0)
                         
-                        for caseTest: FakeNetworkResponse in [.hostUnreachable,
-                                                              .requestTimeout(timeout: 0.1),
-                                                              .hostInternalError(code: 501)] {
-                            it("\(caseTest)") {
-                                let options = ARTClientOptions(key: "xxxx:xxxx")
-                                options.logLevel = .debug
-                                let client = ARTRest(options: options)
-                                let mockHTTP = MockHTTP(logger: options.logHandler)
-                                testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: options.logHandler)
-                                client.internal.httpExecutor = testHTTPExecutor
-                                mockHTTP.setNetworkState(network: caseTest, resetAfter: 1)
-                                let channel = client.channels.get("test-fallback-retry-timeout")
-                                
-                                waitUntil(timeout: testTimeout) { done in
+                        func testRestoresDefaultPrimaryHostAfterTimeoutExpires(_ caseTest: FakeNetworkResponse) {
+                            let options = ARTClientOptions(key: "xxxx:xxxx")
+                            options.logLevel = .debug
+                            let client = ARTRest(options: options)
+                            let mockHTTP = MockHTTP(logger: options.logHandler)
+                            testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: options.logHandler)
+                            client.internal.httpExecutor = testHTTPExecutor
+                            mockHTTP.setNetworkState(network: caseTest, resetAfter: 1)
+                            let channel = client.channels.get("test-fallback-retry-timeout")
+                            
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.publish(nil, data: "nil") { _ in
+                                    done()
+                                }
+                            }
+                            
+                            waitUntil(timeout: testTimeout) { done in
+                                delay(1.1) {
                                     channel.publish(nil, data: "nil") { _ in
                                         done()
                                     }
                                 }
-                                
-                                waitUntil(timeout: testTimeout) { done in
-                                    delay(1.1) {
-                                        channel.publish(nil, data: "nil") { _ in
-                                            done()
-                                        }
-                                    }
-                                }
-                                
-                                expect(testHTTPExecutor.requests).to(haveCount(3))
-                                expect(testHTTPExecutor.requests[2].url!.host).to(equal("rest.ably.io"))
                             }
+                            
+                            expect(testHTTPExecutor.requests).to(haveCount(3))
+                            expect(testHTTPExecutor.requests[2].url!.host).to(equal("rest.ably.io"))
+                        }
+                        
+                        it(".hostUnreachable") {
+                            testRestoresDefaultPrimaryHostAfterTimeoutExpires(.hostUnreachable)
+                        }
+                        
+                        it(".requestTimeout(timeout: 0.1)") {
+                            testRestoresDefaultPrimaryHostAfterTimeoutExpires(.requestTimeout(timeout: 0.1))
+                        }
+                        
+                        it(".hostInternalError(code: 501)") {
+                            testRestoresDefaultPrimaryHostAfterTimeoutExpires(.hostInternalError(code: 501))
                         }
                     }
                     
