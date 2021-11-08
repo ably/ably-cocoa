@@ -136,29 +136,35 @@ class Stats: QuickSpec {
             }
 
             // TS8
-            for requestType in ["apiRequests", "tokenRequests"] {
+            func reusableTestsTestRequestType(_ requestType: String) {
                 let data: JSON = [
                     [ requestType: [ "succeeded": 5, "failed": 10 ] ]
                 ]
                 let rawData = try! data.rawData()
                 let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
                 let subject = stats?.value(forKey: requestType) as? ARTStatsRequestCount
+                
+                it("should return a RequestCount object") {
+                    expect(subject).to(beAnInstanceOf(ARTStatsRequestCount.self))
+                }
 
-                context(requestType) {
-                    it("should return a RequestCount object") {
-                        expect(subject).to(beAnInstanceOf(ARTStatsRequestCount.self))
-                    }
+                it("should return value for succeeded") {
+                    expect(subject?.succeeded).to(equal(5))
+                }
 
-                    it("should return value for succeeded") {
-                        expect(subject?.succeeded).to(equal(5))
-                    }
-
-                    it("should return value for failed") {
-                        expect(subject?.failed).to(equal(10))
-                    }
+                it("should return value for failed") {
+                    expect(subject?.failed).to(equal(10))
                 }
             }
-
+            
+            context("apiRequests") {
+                reusableTestsTestRequestType("apiRequests")
+            }
+            
+            context("tokenRequests") {
+                reusableTestsTestRequestType("tokenRequests")
+            }
+            
             context("interval") {
                 let data: JSON = [
                     [ "intervalId": "2004-02-01:05:06" ]
