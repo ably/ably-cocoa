@@ -524,18 +524,19 @@ class Auth : QuickSpec {
                 // Cases:
                 //  - useTokenAuth is specified and thus a key is not provided
                 //  - authCallback and authUrl are both specified
-                let cases: [String: (ARTAuthOptions) -> ()] = [
-                    "useTokenAuth and no key":{ $0.useTokenAuth = true },
-                    "authCallback and authUrl":{ $0.authCallback = { params, callback in /*nothing*/ }; $0.authUrl = URL(string: "http://auth.ably.io") }
-                ]
+                func testStopsClientWithOptions(caseSetter: (ARTClientOptions) -> ()) {
+                    let options = ARTClientOptions()
+                    caseSetter(options)
+                    
+                    expect{ ARTRest(options: options) }.to(raiseException())
+                }
                 
-                for (caseName, caseSetter) in cases {
-                    it("should stop client when \(caseName) occurs") {
-                        let options = ARTClientOptions()
-                        caseSetter(options)
-                        
-                        expect{ ARTRest(options: options) }.to(raiseException())
-                    }
+                it("should stop client when useTokenAuth and no key occurs") {
+                    testStopsClientWithOptions { $0.useTokenAuth = true }
+                }
+                
+                it ("should stop client when authCallback and authUrl occurs") {
+                    testStopsClientWithOptions { $0.authCallback = { params, callback in /*nothing*/ }; $0.authUrl = URL(string: "http://auth.ably.io") }
                 }
 
                 // RSA4c
