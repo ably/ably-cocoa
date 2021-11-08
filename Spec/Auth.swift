@@ -169,15 +169,37 @@ class Auth : QuickSpec {
 
             // RSA4
             context("authentication method") {
-                for (caseName, caseSetter) in AblyTests.authTokenCases {
-                    it("should be default auth method when \(caseName) is set") {
-                        let options = ARTClientOptions()
-                        caseSetter(options)
+                func testOptionsGiveDefaultAuthMethod(_ caseSetter: (ARTAuthOptions) -> Void) {
+                    let options = ARTClientOptions()
+                    caseSetter(options)
+                    
+                    let client = ARTRest(options: options)
+                    
+                    expect(client.auth.internal.method).to(equal(ARTAuthMethod.token))
+                }
+                
+                it("should be default auth method when options’ useTokenAuth is set") {
+                    testOptionsGiveDefaultAuthMethod { $0.useTokenAuth = true; $0.key = "fake:key" }
+                }
+                
+                it("should be default auth method when options’ authUrl is set") {
+                    testOptionsGiveDefaultAuthMethod { $0.authUrl = URL(string: "http://test.com") }
+                }
+                
+                it("should be default auth method when options’ authCallback is set") {
+                    testOptionsGiveDefaultAuthMethod { $0.authCallback = { _, _ in return } }
+                }
+                
+                it("should be default auth method when options’ tokenDetails is set") {
+                    testOptionsGiveDefaultAuthMethod { $0.tokenDetails = ARTTokenDetails(token: "token") }
+                }
 
-                        let client = ARTRest(options: options)
-
-                        expect(client.auth.internal.method).to(equal(ARTAuthMethod.token))
-                    }
+                it("should be default auth method when options’ token is set") {
+                    testOptionsGiveDefaultAuthMethod { $0.token = "token" }
+                }
+                
+                it("should be default auth method when options’ key is set") {
+                    testOptionsGiveDefaultAuthMethod { $0.tokenDetails = ARTTokenDetails(token: "token"); $0.key = "fake:key" }
                 }
 
                 // RSA4a

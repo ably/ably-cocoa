@@ -492,20 +492,42 @@ class RestClient: QuickSpec {
 
                 // RSC14b
                 context("basic authentication flag") {
-                    it("should be true when key is set") {
+                    it("should be true when initialized with a key") {
                         let client = ARTRest(key: "key:secret")
                         expect(client.auth.internal.options.isBasicAuth()).to(beTrue())
                     }
+                    
+                    func testOptionsGiveBasicAuthFalse(_ caseSetter: (ARTAuthOptions) -> Void) {
+                        let options = ARTClientOptions()
+                        caseSetter(options)
+                        
+                        let client = ARTRest(options: options)
+                        
+                        expect(client.auth.internal.options.isBasicAuth()).to(beFalse())
+                    }
+                    
+                    it("should be false when options’ useTokenAuth is set") {
+                        testOptionsGiveBasicAuthFalse { $0.useTokenAuth = true; $0.key = "fake:key" }
+                    }
+                    
+                    it("should be false when options’ authUrl is set") {
+                        testOptionsGiveBasicAuthFalse { $0.authUrl = URL(string: "http://test.com") }
+                    }
+                    
+                    it("should be false when options’ authCallback is set") {
+                        testOptionsGiveBasicAuthFalse { $0.authCallback = { _, _ in return } }
+                    }
+                    
+                    it("should be false when options’ tokenDetails is set") {
+                        testOptionsGiveBasicAuthFalse { $0.tokenDetails = ARTTokenDetails(token: "token") }
+                    }
 
-                    for (caseName, caseSetter) in AblyTests.authTokenCases {
-                        it("should be false when \(caseName) is set") {
-                            let options = ARTClientOptions()
-                            caseSetter(options)
-
-                            let client = ARTRest(options: options)
-
-                            expect(client.auth.internal.options.isBasicAuth()).to(beFalse())
-                        }
+                    it("should be false when options’ token is set") {
+                        testOptionsGiveBasicAuthFalse { $0.token = "token" }
+                    }
+                    
+                    it("should be false when options’ key is set") {
+                        testOptionsGiveBasicAuthFalse { $0.tokenDetails = ARTTokenDetails(token: "token"); $0.key = "fake:key" }
                     }
                 }
 
