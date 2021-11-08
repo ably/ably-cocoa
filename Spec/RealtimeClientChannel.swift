@@ -3436,47 +3436,47 @@ class RealtimeClientChannel: QuickSpec {
                         }
                         fail("Should raise an error")
                     }
+                    
+                    func testWithUntilAttach(_ untilAttach: Bool) {
+                        let options = AblyTests.commonAppSetup()
+                        let client = ARTRealtime(options: options)
+                        defer { client.dispose(); client.close() }
+                        let channel = client.channels.get("test")
 
-                    struct CaseTest {
-                        let untilAttach: Bool
-                    }
+                        let testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+                        client.internal.rest.httpExecutor = testHTTPExecutor
 
-                    let cases = [CaseTest(untilAttach: true), CaseTest(untilAttach: false)]
+                        let query = ARTRealtimeHistoryQuery()
+                        query.untilAttach = untilAttach
 
-                    for caseItem in cases {
-                        it("where value is \(caseItem.untilAttach), should pass the querystring param fromSerial with the serial number assigned to the channel") {
-                            let options = AblyTests.commonAppSetup()
-                            let client = ARTRealtime(options: options)
-                            defer { client.dispose(); client.close() }
-                            let channel = client.channels.get("test")
+                        channel.attach()
+                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
 
-                            let testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                            client.internal.rest.httpExecutor = testHTTPExecutor
-
-                            let query = ARTRealtimeHistoryQuery()
-                            query.untilAttach = caseItem.untilAttach
-
-                            channel.attach()
-                            expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
-
-                            waitUntil(timeout: testTimeout) { done in
-                                expect {
-                                    try channel.history(query) { _, errorInfo in
-                                        expect(errorInfo).to(beNil())
-                                        done()
-                                    }
-                                }.toNot(throwError() { err in fail("\(err)"); done() })
-                            }
-
-                            let queryString = testHTTPExecutor.requests.last!.url!.query
-
-                            if query.untilAttach {
-                                expect(queryString).to(contain("fromSerial=\(channel.internal.attachSerial!)"))
-                            }
-                            else {
-                                expect(queryString).toNot(contain("fromSerial"))
-                            }
+                        waitUntil(timeout: testTimeout) { done in
+                            expect {
+                                try channel.history(query) { _, errorInfo in
+                                    expect(errorInfo).to(beNil())
+                                    done()
+                                }
+                            }.toNot(throwError() { err in fail("\(err)"); done() })
                         }
+
+                        let queryString = testHTTPExecutor.requests.last!.url!.query
+
+                        if query.untilAttach {
+                            expect(queryString).to(contain("fromSerial=\(channel.internal.attachSerial!)"))
+                        }
+                        else {
+                            expect(queryString).toNot(contain("fromSerial"))
+                        }
+                    }
+                    
+                    it("where value is true, should pass the querystring param fromSerial with the serial number assigned to the channel") {
+                        testWithUntilAttach(true)
+                    }
+                    
+                    it("where value is false, should pass the querystring param fromSerial with the serial number assigned to the channel") {
+                        testWithUntilAttach(true)
                     }
 
                     it("should retrieve messages prior to the moment that the channel was attached") {
