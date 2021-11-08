@@ -8,8 +8,7 @@ class Crypto : QuickSpec {
         describe("Crypto") {
             let key = "+/h4eHh4eHh4eHh4eHh4eA=="
             let binaryKey = Data(base64Encoded: key, options: .ignoreUnknownCharacters)!
-            let longKey = NSMutableData(data: binaryKey)
-            longKey.append(binaryKey)
+            let longKey = binaryKey + binaryKey
 
             // RSE1
             context("getDefaultParams") {
