@@ -3942,58 +3942,53 @@ class Auth : QuickSpec {
         describe("TokenRequest") {
             // TE6
             describe("fromJson") {
-                let cases = [
-                    "with TTL": (
-                        "{" +
-                        "    \"clientId\":\"myClientId\"," +
-                        "    \"mac\":\"4rr4J+JzjiCL1DoS8wq7k11Z4oTGCb1PoeN+yGjkaH4=\"," +
-                        "    \"capability\":\"{\\\"test\\\":[\\\"publish\\\"]}\"," +
-                        "    \"ttl\":42000," +
-                        "    \"timestamp\":1479087321934," +
-                        "    \"keyName\":\"xxxxxx.yyyyyy\"," +
-                        "    \"nonce\":\"7830658976108826\"" +
-                        "}",
-                        { (_ request: ARTTokenRequest) in
-                            expect(request.clientId).to(equal("myClientId"))
-                            expect(request.mac).to(equal("4rr4J+JzjiCL1DoS8wq7k11Z4oTGCb1PoeN+yGjkaH4="))
-                            expect(request.capability).to(equal("{\"test\":[\"publish\"]}"))
-                            expect(request.ttl as? TimeInterval).to(equal(TimeInterval(42)))
-                            expect(request.timestamp).to(equal(Date(timeIntervalSince1970: 1479087321.934)))
-                            expect(request.keyName).to(equal("xxxxxx.yyyyyy"))
-                            expect(request.nonce).to(equal("7830658976108826"))
-                        }
-                    ),
-                    "without TTL": (
-                        "{" +
-                        "    \"mac\":\"4rr4J+JzjiCL1DoS8wq7k11Z4oTGCb1PoeN+yGjkaH4=\"," +
-                        "    \"capability\":\"{\\\"test\\\":[\\\"publish\\\"]}\"," +
-                        "    \"timestamp\":1479087321934," +
-                        "    \"keyName\":\"xxxxxx.yyyyyy\"," +
-                        "    \"nonce\":\"7830658976108826\"" +
-                        "}",
-                        { (_ request: ARTTokenRequest) in
-                            expect(request.clientId).to(beNil())
-                            expect(request.mac).to(equal("4rr4J+JzjiCL1DoS8wq7k11Z4oTGCb1PoeN+yGjkaH4="))
-                            expect(request.capability).to(equal("{\"test\":[\"publish\"]}"))
-                            expect(request.ttl).to(beNil())
-                            expect(request.timestamp).to(equal(Date(timeIntervalSince1970: 1479087321.934)))
-                            expect(request.keyName).to(equal("xxxxxx.yyyyyy"))
-                            expect(request.nonce).to(equal("7830658976108826"))
-                        }
-                    )
-                ]
+                func reusableTestsTestTokenRequestFromJson(_ json: String, check: @escaping (_ request: ARTTokenRequest) -> Void) {
+                    it("accepts a string, which should be interpreted as JSON") {
+                        check(try! ARTTokenRequest.fromJson(json as ARTJsonCompatible))
+                    }
 
-                for (caseName, (json, check)) in cases {
-                    context(caseName) {
-                        it("accepts a string, which should be interpreted as JSON") {
-                            check(try! ARTTokenRequest.fromJson(json as ARTJsonCompatible))
-                        }
+                    it("accepts a NSDictionary") {
+                        let data = json.data(using: String.Encoding.utf8)!
+                        let dict = try! JSONSerialization.jsonObject(with: data, options: .mutableLeaves) as! NSDictionary
+                        check(try! ARTTokenRequest.fromJson(dict))
+                    }
+                }
 
-                        it("accepts a NSDictionary") {
-                            let data = json.data(using: String.Encoding.utf8)!
-                            let dict = try! JSONSerialization.jsonObject(with: data, options: .mutableLeaves) as! NSDictionary
-                            check(try! ARTTokenRequest.fromJson(dict))
-                        }
+                context("with TTL") {
+                    reusableTestsTestTokenRequestFromJson("{" +
+                                             "    \"clientId\":\"myClientId\"," +
+                                             "    \"mac\":\"4rr4J+JzjiCL1DoS8wq7k11Z4oTGCb1PoeN+yGjkaH4=\"," +
+                                             "    \"capability\":\"{\\\"test\\\":[\\\"publish\\\"]}\"," +
+                                             "    \"ttl\":42000," +
+                                             "    \"timestamp\":1479087321934," +
+                                             "    \"keyName\":\"xxxxxx.yyyyyy\"," +
+                                             "    \"nonce\":\"7830658976108826\"" +
+                                             "}") { request in
+                        expect(request.clientId).to(equal("myClientId"))
+                        expect(request.mac).to(equal("4rr4J+JzjiCL1DoS8wq7k11Z4oTGCb1PoeN+yGjkaH4="))
+                        expect(request.capability).to(equal("{\"test\":[\"publish\"]}"))
+                        expect(request.ttl as? TimeInterval).to(equal(TimeInterval(42)))
+                        expect(request.timestamp).to(equal(Date(timeIntervalSince1970: 1479087321.934)))
+                        expect(request.keyName).to(equal("xxxxxx.yyyyyy"))
+                        expect(request.nonce).to(equal("7830658976108826"))
+                    }
+                }
+                
+                context("without TTL") {
+                    reusableTestsTestTokenRequestFromJson("{" +
+                                             "    \"mac\":\"4rr4J+JzjiCL1DoS8wq7k11Z4oTGCb1PoeN+yGjkaH4=\"," +
+                                             "    \"capability\":\"{\\\"test\\\":[\\\"publish\\\"]}\"," +
+                                             "    \"timestamp\":1479087321934," +
+                                             "    \"keyName\":\"xxxxxx.yyyyyy\"," +
+                                             "    \"nonce\":\"7830658976108826\"" +
+                                             "}") { request in
+                        expect(request.clientId).to(beNil())
+                        expect(request.mac).to(equal("4rr4J+JzjiCL1DoS8wq7k11Z4oTGCb1PoeN+yGjkaH4="))
+                        expect(request.capability).to(equal("{\"test\":[\"publish\"]}"))
+                        expect(request.ttl).to(beNil())
+                        expect(request.timestamp).to(equal(Date(timeIntervalSince1970: 1479087321.934)))
+                        expect(request.keyName).to(equal("xxxxxx.yyyyyy"))
+                        expect(request.nonce).to(equal("7830658976108826"))
                     }
                 }
 
