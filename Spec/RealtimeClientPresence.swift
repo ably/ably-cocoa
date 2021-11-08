@@ -3083,48 +3083,52 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP16c
-                let cases: [ARTRealtimeConnectionState:(ARTRealtime)->()] = [
-                    .suspended: { client in
+                func testResultsInErrorWithConnectionState(_ connectionState: ARTRealtimeConnectionState, performMethod: @escaping (ARTRealtime) -> ()) {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("test")
+                    expect(client.internal.options.queueMessages).to(beTrue())
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach() { _ in
+                            performMethod(client)
+                            done()
+                        }
+                    }
+                    
+                    expect(client.connection.state).toEventually(equal(connectionState), timeout: testTimeout)
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.enterClient("user", data: nil) { error in
+                            expect(error).toNot(beNil())
+                            expect(client.internal.queuedMessages).to(haveCount(0))
+                            done()
+                        }
+                        expect(client.internal.queuedMessages).to(haveCount(0))
+                    }
+                }
+
+                it("should result in an error if the connection state is .suspended") {
+                    testResultsInErrorWithConnectionState(.suspended) { client in
                         AblyTests.queue.async {
                             client.internal.onSuspended()
                         }
-                    },
-                    .closed: { client in
+                    }
+                }
+                
+                it("should result in an error if the connection state is .closed") {
+                    testResultsInErrorWithConnectionState(.closed) { client in
                         client.close()
-                    },
-                    .failed: { client in
+                    }
+                }
+                
+                it("should result in an error if the connection state is .failed") {
+                    testResultsInErrorWithConnectionState(.failed) { client in
                         AblyTests.queue.async {
                             client.internal.onError(AblyTests.newErrorProtocolMessage())
                         }
                     }
-                ]
-                for (connectionState, performMethod) in cases {
-                    it("should result in an error if the connection state is \(connectionState)") {
-                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
-                        defer { client.dispose(); client.close() }
-                        let channel = client.channels.get("test")
-                        expect(client.internal.options.queueMessages).to(beTrue())
-
-                        waitUntil(timeout: testTimeout) { done in
-                            channel.attach() { _ in
-                                performMethod(client)
-                                done()
-                            }
-                        }
-
-                        expect(client.connection.state).toEventually(equal(connectionState), timeout: testTimeout)
-
-                        waitUntil(timeout: testTimeout) { done in
-                            channel.presence.enterClient("user", data: nil) { error in
-                                expect(error).toNot(beNil())
-                                expect(client.internal.queuedMessages).to(haveCount(0))
-                                done()
-                            }
-                            expect(client.internal.queuedMessages).to(haveCount(0))
-                        }
-                    }
                 }
-
             }
 
             // RTP11
