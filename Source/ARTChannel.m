@@ -51,6 +51,17 @@
 
 - (void)setOptions_nosync:(ARTChannelOptions *)options {
     _options = options;
+    [self recreateDataEncoderWith:options.cipher];
+}
+
+- (void)recreateDataEncoderWith:(ARTCipherParams*)cipher {
+    NSError *error = nil;
+    _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:cipher error:&error];
+    
+    if (error != nil) {
+        [_logger warn:@"creating ARTDataEncoder: %@", error];
+        _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:nil error:nil];
+    }
 }
 
 - (void)publish:(NSString *)name data:(id)data {
