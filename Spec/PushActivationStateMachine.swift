@@ -180,7 +180,7 @@ class PushActivationStateMachine : QuickSpec {
                 context("on Event GotPushDeviceDetails") {
 
                     // TODO: The exception is raised but the `send:` method is doing an async call and the `expect` doesn't catch it
-                    pending("should raise exception if ARTPushRegistererDelegate is not implemented") {
+                    xit("should raise exception if ARTPushRegistererDelegate is not implemented") {
                         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForPushDeviceDetails.self))
                         expect {
                             stateMachine.send(ARTPushActivationEventGotPushDeviceDetails())
