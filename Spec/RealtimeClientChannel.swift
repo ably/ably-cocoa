@@ -1986,14 +1986,14 @@ class RealtimeClientChannel: QuickSpec {
                         }
                     }
 
-                    class TotalMessages {
-                        static let expected = 50
-                        static var succeeded = 0
-                        static var failed = 0
-                        fileprivate init() {}
-                    }
-
                     it("for all messages published") {
+                        class TotalMessages {
+                            static let expected = 50
+                            static var succeeded = 0
+                            static var failed = 0
+                            fileprivate init() {}
+                        }
+                        
                         let options = AblyTests.commonAppSetup()
                         options.token = getTestToken(key: options.key, capability: "{ \"\(options.channelNamePrefix!)-channelToSucceed\":[\"subscribe\", \"publish\"], \"\(options.channelNamePrefix!)-channelToFail\":[\"subscribe\"] }")
                         let client = ARTRealtime(options: options)

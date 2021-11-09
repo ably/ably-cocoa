@@ -803,13 +803,13 @@ class RealtimeClientConnection: QuickSpec {
                 // RTN7b
                 context("ProtocolMessage") {
 
-                    class TotalMessages {
-                        static var expected: Int32 = 0
-                        static var succeeded: Int32 = 0
-                        fileprivate init() {}
-                    }
-
                     it("should contain unique serially incrementing msgSerial along with the count") {
+                        class TotalMessages {
+                            static var expected: Int32 = 0
+                            static var succeeded: Int32 = 0
+                            fileprivate init() {}
+                        }
+                        
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
                         options.clientId = "client_string"
