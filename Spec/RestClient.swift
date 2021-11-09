@@ -1456,7 +1456,9 @@ class RestClient: QuickSpec {
                     
                     context("should restore default primary host after fallbackRetryTimeout expired") {
                         
-                        ARTDefault.setFallbackRetryTimeout(1.0)
+                        beforeEach {
+                            ARTDefault.setFallbackRetryTimeout(1.0)
+                        }
                         
                         func testRestoresDefaultPrimaryHostAfterTimeoutExpires(_ caseTest: FakeNetworkResponse) {
                             let options = ARTClientOptions(key: "xxxx:xxxx")
@@ -1501,7 +1503,9 @@ class RestClient: QuickSpec {
                     
                     context("should use another fallback host if previous fallback request failed and store it as default if current fallback request succseeded") {
                             
-                        ARTDefault.setFallbackRetryTimeout(10)
+                        beforeEach {
+                            ARTDefault.setFallbackRetryTimeout(10)
+                        }
 
                         func testUsesAnotherFallbackHost(_ caseTest: FakeNetworkResponse) {
                             let options = ARTClientOptions(key: "xxxx:xxxx")
