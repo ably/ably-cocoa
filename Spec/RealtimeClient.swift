@@ -1375,12 +1375,12 @@ class RealtimeClient: QuickSpec {
                 }
             }
 
-            class AblyManager {
-                static let sharedClient = ARTRealtime(options: { $0.autoConnect = false; return $0 }(ARTClientOptions(key: "xxxx:xxxx")))
-            }
-
             // Issue https://github.com/ably/ably-cocoa/issues/640
             it("should dispatch in user queue when removing an observer") {
+                class AblyManager {
+                    static let sharedClient = ARTRealtime(options: { $0.autoConnect = false; return $0 }(ARTClientOptions(key: "xxxx:xxxx")))
+                }
+
                 class Foo {
                     init() {
                         AblyManager.sharedClient.channels.get("foo").subscribe { _ in
