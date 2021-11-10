@@ -5,8 +5,11 @@ import Nimble
 class ObjectLifetimes: QuickSpec {
     override func spec() {
         describe("ObjectLifetimes") {
-            let options = ARTClientOptions(key: "fake:key")
-            options.autoConnect = false
+            let options: ARTClientOptions = {
+                let options = ARTClientOptions(key: "fake:key")
+                options.autoConnect = false
+                return options
+            }()
             
             context("user code releases public object") {
                 it("the object's internal child's back-reference is released too") {
