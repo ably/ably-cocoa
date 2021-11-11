@@ -116,8 +116,8 @@ class PushActivationStateMachine : QuickSpec {
                         stateMachine.delegate = delegate
 
                         let testDeviceToken = "xxxx-xxxx-xxxx-xxxx-xxxx"
-                        stateMachine.rest.device.setAndPersistDeviceToken(testDeviceToken)
-                        defer { stateMachine.rest.device.setAndPersistDeviceToken(nil) }
+                        stateMachine.rest.device.setAndPersistAPNSDeviceToken(testDeviceToken)
+                        defer { stateMachine.rest.device.setAndPersistAPNSDeviceToken(nil) }
 
                         waitUntil(timeout: testTimeout) { done in
                             let partialDone = AblyTests.splitDone(2, done: done)
@@ -427,8 +427,8 @@ class PushActivationStateMachine : QuickSpec {
                 it("when initializing from persistent state with a deviceToken, GotPushDeviceDetails should be re-emitted") {
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForPushDeviceDetails(machine: initialStateMachine))
                     rest.internal.storage = storage
-                    rest.device.setAndPersistDeviceToken("foo")
-                    defer { rest.device.setAndPersistDeviceToken(nil) }
+                    rest.device.setAndPersistAPNSDeviceToken("foo")
+                    defer { rest.device.setAndPersistAPNSDeviceToken(nil) }
                     
                     var registered = false
 

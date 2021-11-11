@@ -70,7 +70,7 @@ NSString *const ARTDevicePushTransportType = @"apns";
     ARTDeviceIdentityTokenDetails *identityTokenDetails = [ARTDeviceIdentityTokenDetails unarchive:identityTokenDetailsInfo];
     device->_identityTokenDetails = identityTokenDetails;
 
-    [device setDeviceToken:[storage objectForKey:ARTDeviceTokenKey]];
+    [device setAPNSDeviceToken:[storage objectForKey:ARTAPNSDeviceTokenKey]];
 
     return device;
 }
@@ -85,17 +85,17 @@ NSString *const ARTDevicePushTransportType = @"apns";
     return [hash base64EncodedStringWithOptions:0];
 }
 
-- (NSString *)deviceToken {
+- (NSString *)apnsDeviceToken {
     return self.push.recipient[@"deviceToken"];
 }
 
-- (void)setDeviceToken:(NSString *_Nonnull)token {
+- (void)setAPNSDeviceToken:(NSString *_Nonnull)token {
     self.push.recipient[@"deviceToken"] = token;
 }
 
-- (void)setAndPersistDeviceToken:(NSString *)deviceToken {
-    [self.storage setObject:deviceToken forKey:ARTDeviceTokenKey];
-    [self setDeviceToken:deviceToken];
+- (void)setAndPersistAPNSDeviceToken:(NSString *)token {
+    [self.storage setObject:token forKey:ARTAPNSDeviceTokenKey];
+    [self setAPNSDeviceToken:token];
 }
 
 - (void)setAndPersistIdentityTokenDetails:(ARTDeviceIdentityTokenDetails *)tokenDetails {

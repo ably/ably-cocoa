@@ -61,13 +61,13 @@ class Push : QuickSpec {
             it("should handle GotPushDeviceDetails event when platform’s APIs sends the details for push notifications") {
                 let stateMachine = rest.push.internal.activationMachine
                 let testDeviceToken = "xxxx-xxxx-xxxx-xxxx-xxxx"
-                stateMachine.rest.device.setAndPersistDeviceToken(testDeviceToken)
+                stateMachine.rest.device.setAndPersistAPNSDeviceToken(testDeviceToken)
                 let stateMachineDelegate = StateMachineDelegate()
                 stateMachine.delegate = stateMachineDelegate
                 defer {
                     stateMachine.transitions = nil
                     stateMachine.delegate = nil
-                    stateMachine.rest.device.setAndPersistDeviceToken(nil)
+                    stateMachine.rest.device.setAndPersistAPNSDeviceToken(nil)
                 }
                 waitUntil(timeout: testTimeout) { done in
                     stateMachine.transitions = { event, _, _ in
@@ -129,13 +129,13 @@ class Push : QuickSpec {
                 }
 
                 let testDeviceToken = "xxxx-xxxx-xxxx-xxxx-xxxx"
-                stateMachine.rest.device.setAndPersistDeviceToken(testDeviceToken)
+                stateMachine.rest.device.setAndPersistAPNSDeviceToken(testDeviceToken)
                 let stateMachineDelegate = StateMachineDelegate()
                 stateMachine.delegate = stateMachineDelegate
                 defer {
                     stateMachine.transitions = nil
                     stateMachine.delegate = nil
-                    stateMachine.rest.device.setAndPersistDeviceToken(nil)
+                    stateMachine.rest.device.setAndPersistAPNSDeviceToken(nil)
                 }
 
                 expect(rest.device.clientId).to(beNil())
@@ -185,8 +185,8 @@ class Push : QuickSpec {
                     }
                     ARTPush.didRegisterForRemoteNotifications(withDeviceToken: TestDeviceToken.tokenData, rest: rest)
                 }
-                expect(storage.keysWritten.keys).to(contain(["ARTDeviceToken"]))
-                expect(storage.keysWritten.at("ARTDeviceToken")?.value as? String).to(equal(expectedDeviceToken))
+                expect(storage.keysWritten.keys).to(contain(["ARTAPNSDeviceToken"]))
+                expect(storage.keysWritten.at("ARTAPNSDeviceToken")?.value as? String).to(equal(expectedDeviceToken))
             }
 
             // https://github.com/ably/ably-cocoa/issues/888
@@ -216,12 +216,12 @@ class Push : QuickSpec {
 
                 let rest = ARTRest(key: "fake:key")
                 rest.internal.storage = storage
-                storage.simulateOnNextRead(string: testToken, for: ARTDeviceTokenKey)
+                storage.simulateOnNextRead(string: testToken, for: ARTAPNSDeviceTokenKey)
                 storage.simulateOnNextRead(data: testIdentity.archive(), for: ARTDeviceIdentityTokenKey)
 
                 let device = rest.device
                 
-                expect(device.deviceToken()).to(equal(testToken))
+                expect(device.apnsDeviceToken()).to(equal(testToken))
                 expect(device.identityTokenDetails?.token).to(equal(testIdentity.token))
             }
             
@@ -316,7 +316,7 @@ class Push : QuickSpec {
                 let delegate = StateMachineDelegate()
                 stateMachine.delegate = delegate
 
-                storage.simulateOnNextRead(string: testDeviceToken, for: ARTDeviceTokenKey)
+                storage.simulateOnNextRead(string: testDeviceToken, for: ARTAPNSDeviceTokenKey)
                 storage.simulateOnNextRead(data: testDeviceIdentity.archive(), for: ARTDeviceIdentityTokenKey)
 
                 expect(realtime.device.clientId).to(beNil())
