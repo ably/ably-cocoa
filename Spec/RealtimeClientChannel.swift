@@ -2183,7 +2183,7 @@ class RealtimeClientChannel: QuickSpec {
                         }
                         afterEach { rtl6c2TestsClient.close() }
 
-                        func publish(_ done: @escaping () -> ()) {
+                        func rtl16c2TestsPublish(_ done: @escaping () -> ()) {
                             rtl6c2TestsChannel.publish(nil, data: "message") { error in
                                 expect(error).to(beNil())
                                 expect(rtl6c2TestsClient.connection.state).to(equal(ARTRealtimeConnectionState.connected))
@@ -2195,7 +2195,7 @@ class RealtimeClientChannel: QuickSpec {
                             it("INITIALIZED") {
                                 waitUntil(timeout: testTimeout) { done in
                                     expect(rtl6c2TestsClient.connection.state).to(equal(ARTRealtimeConnectionState.initialized))
-                                    publish(done)
+                                    rtl16c2TestsPublish(done)
                                     rtl6c2TestsClient.connect()
                                     expect(rtl6c2TestsClient.internal.queuedMessages).to(haveCount(1))
                                 }
@@ -2205,7 +2205,7 @@ class RealtimeClientChannel: QuickSpec {
                                 waitUntil(timeout: testTimeout) { done in
                                     rtl6c2TestsClient.connect()
                                     expect(rtl6c2TestsClient.connection.state).to(equal(ARTRealtimeConnectionState.connecting))
-                                    publish(done)
+                                    rtl16c2TestsPublish(done)
                                     expect(rtl6c2TestsClient.internal.queuedMessages).to(haveCount(1))
                                 }
                             }
@@ -2217,7 +2217,7 @@ class RealtimeClientChannel: QuickSpec {
 
                                 waitUntil(timeout: testTimeout) { done in
                                     expect(rtl6c2TestsClient.connection.state).to(equal(ARTRealtimeConnectionState.disconnected))
-                                    publish(done)
+                                    rtl16c2TestsPublish(done)
                                     expect(rtl6c2TestsClient.internal.queuedMessages).to(haveCount(1))
                                 }
                             }
@@ -2231,7 +2231,7 @@ class RealtimeClientChannel: QuickSpec {
                                 expect(rtl6c2TestsClient.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
 
                                 waitUntil(timeout: testTimeout) { done in
-                                    publish(done)
+                                    rtl16c2TestsPublish(done)
                                     expect(rtl6c2TestsClient.internal.queuedMessages).to(haveCount(0))
                                     expect((rtl6c2TestsClient.internal.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
                                 }
@@ -2244,7 +2244,7 @@ class RealtimeClientChannel: QuickSpec {
                                 waitUntil(timeout: testTimeout) { done in
                                     rtl6c2TestsChannel.attach()
                                     expect(rtl6c2TestsChannel.state).to(equal(ARTRealtimeChannelState.attaching))
-                                    publish(done)
+                                    rtl16c2TestsPublish(done)
                                     expect(rtl6c2TestsClient.internal.queuedMessages).to(haveCount(0))
                                     expect((rtl6c2TestsClient.internal.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
                                 }
@@ -2278,7 +2278,7 @@ class RealtimeClientChannel: QuickSpec {
                                 expect(rtl6c2TestsChannel.state).to(equal(ARTRealtimeChannelState.attached))
 
                                 waitUntil(timeout: testTimeout) { done in
-                                    publish(done)
+                                    rtl16c2TestsPublish(done)
                                     expect(rtl6c2TestsClient.internal.queuedMessages).to(haveCount(1))
                                 }
                             }
