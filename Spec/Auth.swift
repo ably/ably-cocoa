@@ -1746,7 +1746,7 @@ class Auth : QuickSpec {
                 var options: ARTClientOptions!
                 var rest: ARTRest!
 
-                func setupDependencies() {
+                func tokenParamsTestsSetupDependencies() {
                     if (options == nil) {
                         options = AblyTests.commonAppSetup()
                         options.clientId = currentClientId
@@ -1755,7 +1755,7 @@ class Auth : QuickSpec {
                 }
 
                 it("using defaults") {
-                    setupDependencies()
+                    tokenParamsTestsSetupDependencies()
 
                     // Default values
                     let defaultTokenParams = ARTTokenParams(clientId: currentClientId)
@@ -1777,7 +1777,7 @@ class Auth : QuickSpec {
                 }
 
                 it("overriding defaults") {
-                    setupDependencies()
+                    tokenParamsTestsSetupDependencies()
 
                     // Custom values
                     let expectedTtl = 4800.0
@@ -4122,7 +4122,7 @@ class Auth : QuickSpec {
 
                 var keys: [String: String]!
 
-                func setupDependencies() {
+                func rsa8gTestsSetupDependencies() {
                     if (keys == nil) {
                         keys = getKeys()
                     }
@@ -4130,7 +4130,7 @@ class Auth : QuickSpec {
 
                 context("with valid credentials") {
                     it("fetches a channels and posts a message") {
-                        setupDependencies()
+                        rsa8gTestsSetupDependencies()
 
                         authUrlTestsOptions.authParams = [URLQueryItem]()
                         authUrlTestsOptions.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
@@ -4153,7 +4153,7 @@ class Auth : QuickSpec {
 
                 context("with wrong credentials") {
                     it("fails to connect with reason 'invalid signature'") {
-                        setupDependencies()
+                        rsa8gTestsSetupDependencies()
 
                         authUrlTestsOptions.authParams = [URLQueryItem]()
                         authUrlTestsOptions.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
@@ -4178,7 +4178,7 @@ class Auth : QuickSpec {
                 context("when token expires") {
 
                     it ("receives a 40142 error from the server") {
-                        setupDependencies()
+                        rsa8gTestsSetupDependencies()
 
                         let tokenDuration = 5.0
                         authUrlTestsOptions.authParams = [URLQueryItem]()
@@ -4204,7 +4204,7 @@ class Auth : QuickSpec {
                 // RTC8a4
                 context("when the server sends and AUTH protocol message") {
                     it("client reauths correctly without going through a disconnection") {
-                        setupDependencies()
+                        rsa8gTestsSetupDependencies()
                         
                         // The server sends an AUTH protocol message 30 seconds before a token expires
                         // We create a token that lasts 35 seconds, so there's room to receive the AUTH message
@@ -4422,7 +4422,7 @@ class Auth : QuickSpec {
             context("when the JWT token is returned with application/jwt content type") {
                 var client: ARTRest!
 
-                func setupDependencies() {
+                func jwtContentTypeTestsSetupDependencies() {
                     if (client == nil) {
                         let options = AblyTests.clientOptions()
                         let keys = getKeys()
@@ -4436,7 +4436,7 @@ class Auth : QuickSpec {
                 }
 
                 beforeEach {
-                    setupDependencies()
+                    jwtContentTypeTestsSetupDependencies()
                 }
                 
                 it("the client successfully connects and pulls stats") {
