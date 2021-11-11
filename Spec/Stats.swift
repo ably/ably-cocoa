@@ -112,7 +112,7 @@ class Stats: QuickSpec {
 
             // TS9
             context("channels") {
-                let subject: ARTStatsResourceCount? = {
+                let channelsSubject: ARTStatsResourceCount? = {
                     let data: JSON = [
                         [ "channels": [ "opened": 5, "peak": 10 ] ]
                     ]
@@ -122,20 +122,20 @@ class Stats: QuickSpec {
                 }()
 
                 it("should return a ResourceCount object") {
-                    expect(subject).to(beAnInstanceOf(ARTStatsResourceCount.self))
+                    expect(channelsSubject).to(beAnInstanceOf(ARTStatsResourceCount.self))
                 }
 
                 it("should return value for opened counts") {
-                    expect(subject?.opened).to(equal(5))
+                    expect(channelsSubject?.opened).to(equal(5))
                 }
 
                 it("should return value for peak channels") {
-                    expect(subject?.peak).to(equal(10))
+                    expect(channelsSubject?.peak).to(equal(10))
                 }
 
                 // TS2
                 it("should return zero for empty values") {
-                    expect(subject?.refused).to(equal(0))
+                    expect(channelsSubject?.refused).to(equal(0))
                 }
             }
 
@@ -192,7 +192,7 @@ class Stats: QuickSpec {
             }
             
             context("push") {
-                let subject: ARTStatsPushCount? = {
+                let pushSubject: ARTStatsPushCount? = {
                     let data: JSON = [
                         [ "push":
                             [
@@ -213,36 +213,36 @@ class Stats: QuickSpec {
                 }()
 
                 it("should return a ARTStatsPushCount object") {
-                    expect(subject).to(beAnInstanceOf(ARTStatsPushCount.self))
+                    expect(pushSubject).to(beAnInstanceOf(ARTStatsPushCount.self))
                 }
 
                 it("should return value for messages count") {
-                    expect(subject?.messages).to(equal(10))
+                    expect(pushSubject?.messages).to(equal(10))
                 }
 
                 it("should return value for invalid notifications") {
-                    expect(subject?.invalid).to(equal(1))
+                    expect(pushSubject?.invalid).to(equal(1))
                 }
 
                 it("should return value for attempted notifications") {
-                    expect(subject?.attempted).to(equal(2))
+                    expect(pushSubject?.attempted).to(equal(2))
                 }
 
                 it("should return value for successful notifications") {
-                    expect(subject?.succeeded).to(equal(3))
+                    expect(pushSubject?.succeeded).to(equal(3))
                 }
 
                 it("should return value for failed notifications") {
-                    expect(subject?.failed).to(equal(4))
+                    expect(pushSubject?.failed).to(equal(4))
                 }
 
                 it("should return value for directPublishes") {
-                    expect(subject?.direct).to(equal(5))
+                    expect(pushSubject?.direct).to(equal(5))
                 }
             }
 
             context("inProgress") {
-                let stats: ARTStats? = {
+                let inProgressStats: ARTStats? = {
                     let data: JSON = [
                         [ "inProgress": "2004-02-01:05:06" ]
                     ]
@@ -261,12 +261,12 @@ class Stats: QuickSpec {
 
                     let expected = NSCalendar(identifier: NSCalendar.Identifier.gregorian)?.date(from: dateComponents as DateComponents)
 
-                    expect(stats?.dateFromInProgress()).to(equal(expected))
+                    expect(inProgressStats?.dateFromInProgress()).to(equal(expected))
                 }
             }
             
             context("count") {
-                let stats: ARTStats? = {
+                let countStats: ARTStats? = {
                     let data: JSON = [
                         [ "count": 55 ]
                     ]
@@ -275,7 +275,7 @@ class Stats: QuickSpec {
                 }()
 
                 it("should return value for number of lower-level stats") {
-                    expect(stats?.count).to(equal(55))
+                    expect(countStats?.count).to(equal(55))
                 }
             }
         }
