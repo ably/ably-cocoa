@@ -83,12 +83,14 @@ class Stats: QuickSpec {
 
             // TS4
             context("connections") {
-                let data: JSON = [
-                    [ "connections": [ "tls": [ "opened": 5], "all": [ "peak": 10 ] ] ]
-                ]
-                let rawData = try! data.rawData()
-                let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
-                let subject = stats?.connections
+                let subject: ARTStatsConnectionTypes? = {
+                    let data: JSON = [
+                        [ "connections": [ "tls": [ "opened": 5], "all": [ "peak": 10 ] ] ]
+                    ]
+                    let rawData = try! data.rawData()
+                    let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
+                    return stats?.connections
+                }()
 
                 it("should return a ConnectionTypes object") {
                     expect(subject).to(beAnInstanceOf(ARTStatsConnectionTypes.self))
@@ -110,12 +112,14 @@ class Stats: QuickSpec {
 
             // TS9
             context("channels") {
-                let data: JSON = [
-                    [ "channels": [ "opened": 5, "peak": 10 ] ]
-                ]
-                let rawData = try! data.rawData()
-                let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
-                let subject = stats?.channels
+                let subject: ARTStatsResourceCount? = {
+                    let data: JSON = [
+                        [ "channels": [ "opened": 5, "peak": 10 ] ]
+                    ]
+                    let rawData = try! data.rawData()
+                    let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
+                    return stats?.channels
+                }()
 
                 it("should return a ResourceCount object") {
                     expect(subject).to(beAnInstanceOf(ARTStatsResourceCount.self))
@@ -166,13 +170,13 @@ class Stats: QuickSpec {
             }
             
             context("interval") {
-                let data: JSON = [
-                    [ "intervalId": "2004-02-01:05:06" ]
-                ]
-                let rawData = try! data.rawData()
-                let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
-
                 it("should return a Date object representing the start of the interval") {
+                    let data: JSON = [
+                        [ "intervalId": "2004-02-01:05:06" ]
+                    ]
+                    let rawData = try! data.rawData()
+                    let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
+                    
                     let dateComponents = NSDateComponents()
                     dateComponents.year = 2004
                     dateComponents.month = 2
@@ -188,23 +192,25 @@ class Stats: QuickSpec {
             }
             
             context("push") {
-                let data: JSON = [
-                    [ "push":
-                        [
-                            "messages": 10,
-                            "notifications": [
-                                "invalid": 1,
-                                "attempted": 2,
-                                "successful": 3,
-                                "failed": 4
-                            ],
-                            "directPublishes": 5
+                let subject: ARTStatsPushCount? = {
+                    let data: JSON = [
+                        [ "push":
+                            [
+                                "messages": 10,
+                                "notifications": [
+                                    "invalid": 1,
+                                    "attempted": 2,
+                                    "successful": 3,
+                                    "failed": 4
+                                ],
+                                "directPublishes": 5
+                            ]
                         ]
                     ]
-                ]
-                let rawData = try! data.rawData()
-                let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
-                let subject = stats?.pushes
+                    let rawData = try! data.rawData()
+                    let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
+                    return stats?.pushes
+                }()
 
                 it("should return a ARTStatsPushCount object") {
                     expect(subject).to(beAnInstanceOf(ARTStatsPushCount.self))
@@ -236,11 +242,13 @@ class Stats: QuickSpec {
             }
 
             context("inProgress") {
-                let data: JSON = [
-                    [ "inProgress": "2004-02-01:05:06" ]
-                ]
-                let rawData = try! data.rawData()
-                let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
+                let stats: ARTStats? = {
+                    let data: JSON = [
+                        [ "inProgress": "2004-02-01:05:06" ]
+                    ]
+                    let rawData = try! data.rawData()
+                    return try! encoder.decodeStats(rawData)[0] as? ARTStats
+                }()
 
                 it("should return a Date object representing the last sub-interval included in this statistic") {
                     let dateComponents = NSDateComponents()
@@ -258,11 +266,13 @@ class Stats: QuickSpec {
             }
             
             context("count") {
-                let data: JSON = [
-                    [ "count": 55 ]
-                ]
-                let rawData = try! data.rawData()
-                let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
+                let stats: ARTStats? = {
+                    let data: JSON = [
+                        [ "count": 55 ]
+                    ]
+                    let rawData = try! data.rawData()
+                    return try! encoder.decodeStats(rawData)[0] as? ARTStats
+                }()
 
                 it("should return value for number of lower-level stats") {
                     expect(stats?.count).to(equal(55))
