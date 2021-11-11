@@ -2361,7 +2361,7 @@ class RealtimeClientPresence: QuickSpec {
             }
 
             // RTP6
-            context("subscribe") {
+            context("subscribe 2") {
 
                 // RTP6c
                 it("should implicitly attach the channel") {
