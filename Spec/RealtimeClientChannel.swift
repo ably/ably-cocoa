@@ -2170,23 +2170,23 @@ class RealtimeClientChannel: QuickSpec {
 
                     // RTL6c2
                     context("the message") {
-                        var client: ARTRealtime!
-                        var channel: ARTRealtimeChannel!
+                        var rtl6c2TestsClient: ARTRealtime!
+                        var rtl6c2TestsChannel: ARTRealtimeChannel!
 
                         beforeEach {
                             let options = AblyTests.commonAppSetup()
                             options.useTokenAuth = true
                             options.autoConnect = false
-                            client = AblyTests.newRealtime(options)
-                            channel = client.channels.get("test")
-                            expect(client.internal.options.queueMessages).to(beTrue())
+                            rtl6c2TestsClient = AblyTests.newRealtime(options)
+                            rtl6c2TestsChannel = rtl6c2TestsClient.channels.get("test")
+                            expect(rtl6c2TestsClient.internal.options.queueMessages).to(beTrue())
                         }
-                        afterEach { client.close() }
+                        afterEach { rtl6c2TestsClient.close() }
 
                         func publish(_ done: @escaping () -> ()) {
-                            channel.publish(nil, data: "message") { error in
+                            rtl6c2TestsChannel.publish(nil, data: "message") { error in
                                 expect(error).to(beNil())
-                                expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connected))
+                                expect(rtl6c2TestsClient.connection.state).to(equal(ARTRealtimeConnectionState.connected))
                                 done()
                             }
                         }
@@ -2194,75 +2194,75 @@ class RealtimeClientChannel: QuickSpec {
                         context("should be queued and delivered as soon as the connection state returns to CONNECTED if the connection is") {
                             it("INITIALIZED") {
                                 waitUntil(timeout: testTimeout) { done in
-                                    expect(client.connection.state).to(equal(ARTRealtimeConnectionState.initialized))
+                                    expect(rtl6c2TestsClient.connection.state).to(equal(ARTRealtimeConnectionState.initialized))
                                     publish(done)
-                                    client.connect()
-                                    expect(client.internal.queuedMessages).to(haveCount(1))
+                                    rtl6c2TestsClient.connect()
+                                    expect(rtl6c2TestsClient.internal.queuedMessages).to(haveCount(1))
                                 }
                             }
 
                             it("CONNECTING") {
                                 waitUntil(timeout: testTimeout) { done in
-                                    client.connect()
-                                    expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connecting))
+                                    rtl6c2TestsClient.connect()
+                                    expect(rtl6c2TestsClient.connection.state).to(equal(ARTRealtimeConnectionState.connecting))
                                     publish(done)
-                                    expect(client.internal.queuedMessages).to(haveCount(1))
+                                    expect(rtl6c2TestsClient.internal.queuedMessages).to(haveCount(1))
                                 }
                             }
 
                             it("DISCONNECTED") {
-                                client.connect()
-                                expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
-                                client.internal.onDisconnected()
+                                rtl6c2TestsClient.connect()
+                                expect(rtl6c2TestsClient.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+                                rtl6c2TestsClient.internal.onDisconnected()
 
                                 waitUntil(timeout: testTimeout) { done in
-                                    expect(client.connection.state).to(equal(ARTRealtimeConnectionState.disconnected))
+                                    expect(rtl6c2TestsClient.connection.state).to(equal(ARTRealtimeConnectionState.disconnected))
                                     publish(done)
-                                    expect(client.internal.queuedMessages).to(haveCount(1))
+                                    expect(rtl6c2TestsClient.internal.queuedMessages).to(haveCount(1))
                                 }
                             }
                         }
 
                         context("should NOT be queued instead it should be published if the channel is") {
                             it("INITIALIZED") {
-                                client.connect()
-                                expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
+                                rtl6c2TestsClient.connect()
+                                expect(rtl6c2TestsChannel.state).to(equal(ARTRealtimeChannelState.initialized))
 
-                                expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+                                expect(rtl6c2TestsClient.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
 
                                 waitUntil(timeout: testTimeout) { done in
                                     publish(done)
-                                    expect(client.internal.queuedMessages).to(haveCount(0))
-                                    expect((client.internal.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
+                                    expect(rtl6c2TestsClient.internal.queuedMessages).to(haveCount(0))
+                                    expect((rtl6c2TestsClient.internal.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
                                 }
                             }
 
                             it("ATTACHING") {
-                                client.connect()
-                                expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+                                rtl6c2TestsClient.connect()
+                                expect(rtl6c2TestsClient.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
 
                                 waitUntil(timeout: testTimeout) { done in
-                                    channel.attach()
-                                    expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
+                                    rtl6c2TestsChannel.attach()
+                                    expect(rtl6c2TestsChannel.state).to(equal(ARTRealtimeChannelState.attaching))
                                     publish(done)
-                                    expect(client.internal.queuedMessages).to(haveCount(0))
-                                    expect((client.internal.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
+                                    expect(rtl6c2TestsClient.internal.queuedMessages).to(haveCount(0))
+                                    expect((rtl6c2TestsClient.internal.transport as! TestProxyTransport).protocolMessagesSent.filter({ $0.action == .message })).to(haveCount(1))
                                 }
                             }
 
                             it("ATTACHED") {
                                 waitUntil(timeout: testTimeout) { done in
-                                    channel.attach() { error in
+                                    rtl6c2TestsChannel.attach() { error in
                                         expect(error).to(beNil())
                                         done()
                                     }
-                                    client.connect()
+                                    rtl6c2TestsClient.connect()
                                 }
 
                                 waitUntil(timeout: testTimeout) { done in
                                     let tokenParams = ARTTokenParams()
                                     tokenParams.ttl = 5.0
-                                    client.auth.authorize(tokenParams, options: nil) { tokenDetails, error in
+                                    rtl6c2TestsClient.auth.authorize(tokenParams, options: nil) { tokenDetails, error in
                                         expect(error).to(beNil())
                                         expect(tokenDetails).toNot(beNil())
                                         done()
@@ -2270,16 +2270,16 @@ class RealtimeClientChannel: QuickSpec {
                                 }
 
                                 waitUntil(timeout: testTimeout) { done in
-                                    client.connection.once(.disconnected) { _ in
+                                    rtl6c2TestsClient.connection.once(.disconnected) { _ in
                                         done()
                                     }
                                 }
 
-                                expect(channel.state).to(equal(ARTRealtimeChannelState.attached))
+                                expect(rtl6c2TestsChannel.state).to(equal(ARTRealtimeChannelState.attached))
 
                                 waitUntil(timeout: testTimeout) { done in
                                     publish(done)
-                                    expect(client.internal.queuedMessages).to(haveCount(1))
+                                    expect(rtl6c2TestsClient.internal.queuedMessages).to(haveCount(1))
                                 }
                             }
                         }
