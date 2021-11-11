@@ -1755,7 +1755,7 @@ class RealtimeClientChannel: QuickSpec {
                         }
                     }
 
-                    it("FAILED") {
+                    it("FAILED 2") {
                         let client = ARTRealtime(options: AblyTests.commonAppSetup())
                         defer { client.dispose(); client.close() }
 
