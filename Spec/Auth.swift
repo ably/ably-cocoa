@@ -116,53 +116,57 @@ class Auth : QuickSpec {
                 }
 
                 // RSA3b
-                it("should send the token in the Authorization header") {
-                    let options = AblyTests.clientOptions()
-                    options.token = getTestToken()
-
-                    let client = ARTRest(options: options)
-                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    client.internal.httpExecutor = testHTTPExecutor
-                    
-                    waitUntil(timeout: testTimeout) { done in
-                        client.channels.get("test").publish(nil, data: "message") { error in
-                            done()
+                context("for REST requests") {
+                    it("should send the token in the Authorization header") {
+                        let options = AblyTests.clientOptions()
+                        options.token = getTestToken()
+                        
+                        let client = ARTRest(options: options)
+                        testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+                        client.internal.httpExecutor = testHTTPExecutor
+                        
+                        waitUntil(timeout: testTimeout) { done in
+                            client.channels.get("test").publish(nil, data: "message") { error in
+                                done()
+                            }
                         }
+                        
+                        guard let currentToken = client.internal.options.token else {
+                            fail("No access token")
+                            return
+                        }
+                        
+                        let expectedAuthorization = "Bearer \(currentToken)"
+                        
+                        guard let request = testHTTPExecutor.requests.first else {
+                            fail("No request found")
+                            return
+                        }
+                        
+                        let authorization = request.allHTTPHeaderFields?["Authorization"]
+                        
+                        expect(authorization).to(equal(expectedAuthorization))
                     }
-
-                    guard let currentToken = client.internal.options.token else {
-                        fail("No access token")
-                        return
-                    }
-
-                    let expectedAuthorization = "Bearer \(currentToken)"
-                    
-                    guard let request = testHTTPExecutor.requests.first else {
-                        fail("No request found")
-                        return
-                    }
-
-                    let authorization = request.allHTTPHeaderFields?["Authorization"]
-
-                    expect(authorization).to(equal(expectedAuthorization))
                 }
                 
                 // RSA3c
-                it("should send the token in the Authorization header") {
-                    let options = AblyTests.clientOptions()
-                    options.token = getTestToken()
-                    options.autoConnect = false
-
-                    let client = ARTRealtime(options: options)
-                    defer { client.dispose(); client.close() }
-                    client.internal.setTransport(TestProxyTransport.self)
-                    client.connect()
-
-                    if let transport = client.internal.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
-                        expect(query).to(haveParam("accessToken", withValue: client.auth.tokenDetails?.token ?? ""))
-                    }
-                    else {
-                        XCTFail("MockTransport is not working")
+                context("for Realtime connections") {
+                    it("should send the token in the querystring as a param named accessToken") {
+                        let options = AblyTests.clientOptions()
+                        options.token = getTestToken()
+                        options.autoConnect = false
+                        
+                        let client = ARTRealtime(options: options)
+                        defer { client.dispose(); client.close() }
+                        client.internal.setTransport(TestProxyTransport.self)
+                        client.connect()
+                        
+                        if let transport = client.internal.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
+                            expect(query).to(haveParam("accessToken", withValue: client.auth.tokenDetails?.token ?? ""))
+                        }
+                        else {
+                            XCTFail("MockTransport is not working")
+                        }
                     }
                 }
             }
