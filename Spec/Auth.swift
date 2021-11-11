@@ -4073,12 +4073,12 @@ class Auth : QuickSpec {
             let messageName = "message_JWT"
             
             context("client initialized with a JWT token in ClientOptions") {
-                let options = AblyTests.clientOptions()
+                let jwtTestsOptions = AblyTests.clientOptions()
 
                 context("with valid credentials") {
                     xit("pulls stats successfully") {
-                        options.token = getJWTToken()
-                        let client = AblyTests.newRealtime(options)
+                        jwtTestsOptions.token = getJWTToken()
+                        let client = AblyTests.newRealtime(jwtTestsOptions)
                         defer { client.dispose(); client.close() }
 
                         waitUntil(timeout: testTimeout) { done in
@@ -4092,9 +4092,9 @@ class Auth : QuickSpec {
 
                 context("with invalid credentials") {
                     it("fails to connect with reason 'invalid signature'") {
-                        options.token = getJWTToken(invalid: true)
-                        options.autoConnect = false
-                        let client = AblyTests.newRealtime(options)
+                        jwtTestsOptions.token = getJWTToken(invalid: true)
+                        jwtTestsOptions.autoConnect = false
+                        let client = AblyTests.newRealtime(jwtTestsOptions)
                         defer { client.dispose(); client.close() }
 
                         waitUntil(timeout: testTimeout) { done in
@@ -4114,7 +4114,7 @@ class Auth : QuickSpec {
 
             // RSA8g RSA8c
             context("when using authUrl") {
-                let options: ARTClientOptions = {
+                let authUrlTestsOptions: ARTClientOptions = {
                     let options = AblyTests.clientOptions()
                     options.authUrl = URL(string: echoServerAddress)!
                     return options
@@ -4132,10 +4132,10 @@ class Auth : QuickSpec {
                     it("fetches a channels and posts a message") {
                         setupDependencies()
 
-                        options.authParams = [URLQueryItem]()
-                        options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
-                        options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
-                        let client = ARTRealtime(options: options)
+                        authUrlTestsOptions.authParams = [URLQueryItem]()
+                        authUrlTestsOptions.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
+                        authUrlTestsOptions.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
+                        let client = ARTRealtime(options: authUrlTestsOptions)
                         defer { client.dispose(); client.close() }
 
                         waitUntil(timeout: testTimeout) { done in
@@ -4155,10 +4155,10 @@ class Auth : QuickSpec {
                     it("fails to connect with reason 'invalid signature'") {
                         setupDependencies()
 
-                        options.authParams = [URLQueryItem]()
-                        options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
-                        options.authParams?.append(URLQueryItem(name: "keySecret", value: "INVALID"))
-                        let client = ARTRealtime(options: options)
+                        authUrlTestsOptions.authParams = [URLQueryItem]()
+                        authUrlTestsOptions.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
+                        authUrlTestsOptions.authParams?.append(URLQueryItem(name: "keySecret", value: "INVALID"))
+                        let client = ARTRealtime(options: authUrlTestsOptions)
                         defer { client.dispose(); client.close() }
 
                         waitUntil(timeout: testTimeout) { done in
@@ -4181,11 +4181,11 @@ class Auth : QuickSpec {
                         setupDependencies()
 
                         let tokenDuration = 5.0
-                        options.authParams = [URLQueryItem]()
-                        options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
-                        options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
-                        options.authParams?.append(URLQueryItem(name: "expiresIn", value: String(UInt(tokenDuration))))
-                        let client = ARTRealtime(options: options)
+                        authUrlTestsOptions.authParams = [URLQueryItem]()
+                        authUrlTestsOptions.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
+                        authUrlTestsOptions.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
+                        authUrlTestsOptions.authParams?.append(URLQueryItem(name: "expiresIn", value: String(UInt(tokenDuration))))
+                        let client = ARTRealtime(options: authUrlTestsOptions)
                         defer { client.dispose(); client.close() }
                         
                         waitUntil(timeout: testTimeout) { done in
@@ -4209,12 +4209,12 @@ class Auth : QuickSpec {
                         // The server sends an AUTH protocol message 30 seconds before a token expires
                         // We create a token that lasts 35 seconds, so there's room to receive the AUTH message
                         let tokenDuration = 35.0
-                        options.authParams = [URLQueryItem]()
-                        options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
-                        options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
-                        options.authParams?.append(URLQueryItem(name: "expiresIn", value: String(UInt(tokenDuration))))
-                        options.autoConnect = false // Prevent auto connection so we can set the transport proxy
-                        let client = ARTRealtime(options: options)
+                        authUrlTestsOptions.authParams = [URLQueryItem]()
+                        authUrlTestsOptions.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
+                        authUrlTestsOptions.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
+                        authUrlTestsOptions.authParams?.append(URLQueryItem(name: "expiresIn", value: String(UInt(tokenDuration))))
+                        authUrlTestsOptions.autoConnect = false // Prevent auto connection so we can set the transport proxy
+                        let client = ARTRealtime(options: authUrlTestsOptions)
                         client.internal.setTransport(TestProxyTransport.self)
                         defer { client.dispose(); client.close() }
                         
@@ -4237,15 +4237,15 @@ class Auth : QuickSpec {
 
             // RSA8g
             context("when using authCallback") {
-                let options = AblyTests.clientOptions()
+                let authCallbackTestsOptions = AblyTests.clientOptions()
 
                 context("with valid credentials") {
                     xit("pulls stats successfully") {
-                        options.authCallback = { tokenParams, completion in
+                        authCallbackTestsOptions.authCallback = { tokenParams, completion in
                             let token = ARTTokenDetails(token: getJWTToken()!)
                             completion(token, nil)
                         }
-                        let client = ARTRealtime(options: options)
+                        let client = ARTRealtime(options: authCallbackTestsOptions)
                         defer { client.dispose(); client.close() }
 
                         waitUntil(timeout: testTimeout) { done in
@@ -4259,11 +4259,11 @@ class Auth : QuickSpec {
 
                 context("with invalid credentials") {
                     it("fails to connect") {
-                        options.authCallback = { tokenParams, completion in
+                        authCallbackTestsOptions.authCallback = { tokenParams, completion in
                             let token = ARTTokenDetails(token: getJWTToken(invalid: true)!)
                             completion(token, nil)
                         }
-                        let client = ARTRealtime(options: options)
+                        let client = ARTRealtime(options: authCallbackTestsOptions)
                         defer { client.dispose(); client.close() }
 
                         waitUntil(timeout: testTimeout) { done in
@@ -4390,12 +4390,12 @@ class Auth : QuickSpec {
         
         // RSC1 RSC1a RSC1c RSA3d
         describe("JWT and rest") {
-            let options = AblyTests.clientOptions()
+            let jwtAndRestTestsOptions = AblyTests.clientOptions()
             
             context("when the JWT token embeds an Ably token") {
                 it ("pulls stats successfully") {
-                    options.tokenDetails = ARTTokenDetails(token: getJWTToken(jwtType: "embedded")!)
-                    let client = ARTRest(options: options)
+                    jwtAndRestTestsOptions.tokenDetails = ARTTokenDetails(token: getJWTToken(jwtType: "embedded")!)
+                    let client = ARTRest(options: jwtAndRestTestsOptions)
                     waitUntil(timeout: testTimeout) { done in
                         client.stats { stats, error in
                             expect(error).to(beNil())
@@ -4407,8 +4407,8 @@ class Auth : QuickSpec {
             
             context("when the JWT token embeds an Ably token and it is requested as encrypted") {
                 it ("pulls stats successfully") {
-                    options.tokenDetails = ARTTokenDetails(token: getJWTToken(jwtType: "embedded", encrypted: 1)!)
-                    let client = ARTRest(options: options)
+                    jwtAndRestTestsOptions.tokenDetails = ARTTokenDetails(token: getJWTToken(jwtType: "embedded", encrypted: 1)!)
+                    let client = ARTRest(options: jwtAndRestTestsOptions)
                     waitUntil(timeout: testTimeout) { done in
                         client.stats { stats, error in
                             expect(error).to(beNil())
