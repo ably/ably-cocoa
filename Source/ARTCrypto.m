@@ -256,7 +256,7 @@
     NSString *algo = nil;
     switch (self.algorithm) {
         case kCCAlgorithmAES:
-            algo = @"aes-128";
+            algo = @"aes";
             break;
         case kCCAlgorithmDES:
             algo = @"des";
