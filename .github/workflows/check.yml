@@ -57,6 +57,16 @@ jobs:
       - name: Run Tests
         run: bundle exec fastlane ${{ matrix.lane }}
       
+      - name: Check Static Analyzer Output
+        run:  |
+          if [[ -z `find clang -name "*.html"` ]]; then
+            echo "Static Analyzer found no issues. Fail for demo purpose."
+            exit 123
+          else
+            echo "Static Analyzer found some issues"
+            exit 1234
+          fi
+
       # This is the script specified as the pod’s prepare_command in its Podspec.
       # It would be run automatically for a normal CocoaPods install, but it doesn’t
       # get run when the dependency is specified with the :path option. So we run it
