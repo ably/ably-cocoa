@@ -133,9 +133,6 @@ static ARTLocalDevice *_shared_nosync;
     _identityTokenDetails = nil;
     [self.push.recipient removeAllObjects];
     [self clearStorage];
-    if (self == ARTLocalDevice.shared_nosync) {
-        ARTLocalDevice.shared_nosync = nil;
-    }
 }
 
 @end
