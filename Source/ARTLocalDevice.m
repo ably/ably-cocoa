@@ -27,6 +27,16 @@ NSString *const ARTDevicePushTransportType = @"apns";
 
 @implementation ARTLocalDevice
 
+static ARTLocalDevice *_shared_nosync;
+
++ (ARTLocalDevice *)shared_nosync {
+    return _shared_nosync;
+}
+
++ (void)setShared_nosync:(ARTLocalDevice *)shared_nosync {
+    _shared_nosync = shared_nosync;
+}
+
 - (instancetype)initWithClientId:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage {
     if (self = [super init]) {
         self.clientId = clientId;
@@ -123,6 +133,9 @@ NSString *const ARTDevicePushTransportType = @"apns";
     _identityTokenDetails = nil;
     [self.push.recipient removeAllObjects];
     [self clearStorage];
+    if (self == ARTLocalDevice.shared_nosync) {
+        ARTLocalDevice.shared_nosync = nil;
+    }
 }
 
 @end

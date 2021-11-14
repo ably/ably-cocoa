@@ -721,9 +721,6 @@ dispatch_async(_queue, ^{
     return ret;
 }
 
-// Store address of once_token to access it in debug function.
-static dispatch_once_t *device_once_token;
-
 - (ARTLocalDevice *)device_nosync {
     // The device is shared in a static variable because it's a reflection
     // of what's persisted. Having a device instance per ARTRest instance
@@ -732,18 +729,14 @@ static dispatch_once_t *device_once_token;
     //
     // As a side effect, the first instance "wins" at setting the device's
     // client ID.
-
-    static dispatch_once_t once;
-    device_once_token = &once;
-    static id device;
-    dispatch_once(&once, ^{
-        device = [ARTLocalDevice load:self.auth.clientId_nosync storage:self.storage];
-    });
-    return device;
+    if (ARTLocalDevice.shared_nosync == nil) {
+        ARTLocalDevice.shared_nosync = [ARTLocalDevice load:self.auth.clientId_nosync storage:self.storage];
+    }
+    return ARTLocalDevice.shared_nosync;
 }
 
 - (void)resetDeviceSingleton {
-    if (device_once_token) *device_once_token = 0;
+    ARTLocalDevice.shared_nosync = nil;
 }
 #endif
 
