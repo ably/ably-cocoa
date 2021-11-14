@@ -59,10 +59,10 @@
     ARTScheduledBlockHandle *_work;
 }
 
-- (instancetype)initWithId:(NSString *)eventId token:(id<NSObject>)token handler:(ARTEventEmitter *)eventHandler center:(NSNotificationCenter *)center {
+- (instancetype)initWithId:(NSString *)eventId observer:(id<NSObject>)observer handler:(ARTEventEmitter *)eventHandler center:(NSNotificationCenter *)center {
     if (self = [super init]) {
         _eventId = eventId;
-        _token = token;
+        _observer = observer;
         _center = center;
         _eventHandler = eventHandler;
         _timeoutDeadline = 0;
@@ -75,23 +75,23 @@
 
 - (void)dealloc {
     [self invalidate];
-    [_center removeObserver:_token];
+    [_center removeObserver:_observer];
 }
 
 - (void)removeObserver {
-    if (!_token) {
+    if (!_observer) {
         return;
     }
     [self invalidate];
     if (_eventHandler && _eventHandler.userQueue) {
         dispatch_async(_eventHandler.userQueue, ^{
-            [self->_center removeObserver:self->_token];
-            self->_token = nil;
+            [self->_center removeObserver:self->_observer];
+            self->_observer = nil;
         });
     }
     else {
-        [_center removeObserver:_token];
-        _token = nil;
+        [_center removeObserver:_observer];
+        _observer = nil;
     }
 }
 
@@ -178,13 +178,13 @@
 - (ARTEventListener *)on:(id<ARTEventIdentification>)event callback:(void (^)(id))cb {
     NSString *eventId = [NSString stringWithFormat:@"%p-%@", self, [event identification]];
     __block ARTEventListener *listener;
-    id<NSObject> observerToken = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+    id<NSObject> observer = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
         if (listener == nil || [listener invalidated]) return;
         if ([listener hasTimer] && ![listener timerIsRunning]) return;
         [listener stopTimer];
         cb(note.object);
     }];
-    listener = [[ARTEventListener alloc] initWithId:eventId token:observerToken handler:self center:_notificationCenter];
+    listener = [[ARTEventListener alloc] initWithId:eventId observer:observer handler:self center:_notificationCenter];
     [self addObject:listener toArrayWithKey:listener.eventId inDictionary:self.listeners];
     return listener;
 }
@@ -192,8 +192,8 @@
 - (ARTEventListener *)once:(id<ARTEventIdentification>)event callback:(void (^)(id))cb {
     NSString *eventId = [NSString stringWithFormat:@"%p-%@", self, [event identification]];
     __block ARTEventListener *listener;
-    __weak typeof(self) weakSelf = self; // weak to avoid a warning, but strong should be safe too since the cycle is broken when the notification fires or the token is cancelled
-    id<NSObject> observerToken = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+    __weak typeof(self) weakSelf = self; // weak to avoid a warning, but strong should be safe too since the cycle is broken when the notification fires or the observer is cancelled
+    id<NSObject> observer = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
         if (listener == nil || [listener invalidated]) return;
         if ([listener hasTimer] && ![listener timerIsRunning]) return;
         if ([listener handled]) return;
@@ -201,7 +201,7 @@
         [weakSelf removeObject:listener fromArrayWithKey:[listener eventId] inDictionary:[weakSelf listeners]];
         cb(note.object);
     }];
-    listener = [[ARTEventListener alloc] initWithId:eventId token:observerToken handler:self center:_notificationCenter];
+    listener = [[ARTEventListener alloc] initWithId:eventId observer:observer handler:self center:_notificationCenter];
     [self addObject:listener toArrayWithKey:listener.eventId inDictionary:self.listeners];
     return listener;
 }
@@ -209,13 +209,13 @@
 - (ARTEventListener *)on:(void (^)(id))cb {
     NSString *eventId = [NSString stringWithFormat:@"%p", self];
     __block ARTEventListener *listener;
-    id<NSObject> observerToken = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+    id<NSObject> observer = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
         if (listener == nil || [listener invalidated]) return;
         if ([listener hasTimer] && ![listener timerIsRunning]) return;
         [listener stopTimer];
         cb(note.object);
     }];
-    listener = [[ARTEventListener alloc] initWithId:eventId token:observerToken handler:self center:_notificationCenter];
+    listener = [[ARTEventListener alloc] initWithId:eventId observer:observer handler:self center:_notificationCenter];
     [self.anyListeners addObject:listener];
     return listener;
 }
@@ -223,8 +223,8 @@
 - (ARTEventListener *)once:(void (^)(id))cb {
     NSString *eventId = [NSString stringWithFormat:@"%p", self];
     __block ARTEventListener *listener;
-    __weak typeof(self) weakSelf = self; // weak to avoid a warning, but strong should be safe too since the cycle is broken when the notification fires or the token is cancelled
-    id<NSObject> observerToken = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+    __weak typeof(self) weakSelf = self; // weak to avoid a warning, but strong should be safe too since the cycle is broken when the notification fires or the observer is cancelled
+    id<NSObject> observer = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
         if (listener == nil || [listener invalidated]) return;
         if ([listener hasTimer] && ![listener timerIsRunning]) return;
         if ([listener handled]) return;
@@ -232,7 +232,7 @@
         [[weakSelf anyListeners] removeObject:listener];
         cb(note.object);
     }];
-    listener = [[ARTEventListener alloc] initWithId:eventId token:observerToken handler:self center:_notificationCenter];
+    listener = [[ARTEventListener alloc] initWithId:eventId observer:observer handler:self center:_notificationCenter];
     [self.anyListeners addObject:listener];
     return listener;
 }

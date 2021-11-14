@@ -235,13 +235,13 @@ NSString *generateNonce(void);
 
 @interface NSMutableArray (ARTQueueAdditions)
 - (void)art_enqueue:(id)object;
-- (id)art_dequeue;
-- (id)art_peek;
+- (nullable id)art_dequeue;
+- (nullable id)art_peek;
 @end
 
 @interface NSObject (ARTArchive)
 - (nullable NSData *)art_archive;
-+ (nullable id)art_unarchive:(NSData *)data;
++ (nullable id)art_unarchiveFromData:(NSData *)data;
 @end
 
 @interface NSURLSessionTask (ARTCancellable) <ARTCancellable>

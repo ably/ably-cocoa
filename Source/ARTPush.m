@@ -68,7 +68,7 @@
 NSString *const ARTDeviceIdKey = @"ARTDeviceId";
 NSString *const ARTDeviceSecretKey = @"ARTDeviceSecret";
 NSString *const ARTDeviceIdentityTokenKey = @"ARTDeviceIdentityToken";
-NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
+NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
 
 @implementation ARTPushInternal {
     __weak ARTRestInternal *_rest; // weak because rest owns self
@@ -179,13 +179,13 @@ NSString *const ARTDeviceTokenKey = @"ARTDeviceToken";
     NSString *deviceToken = [hexString copy];
 
     [rest.logger info:@"ARTPush: device token: %@", deviceToken];
-    NSString *currentDeviceToken = [rest.storage objectForKey:ARTDeviceTokenKey];
+    NSString *currentDeviceToken = [rest.storage objectForKey:ARTAPNSDeviceTokenKey];
     if ([currentDeviceToken isEqualToString:deviceToken]) {
         // Already stored.
         return;
     }
 
-    [rest.device_nosync setAndPersistDeviceToken:deviceToken];
+    [rest.device_nosync setAndPersistAPNSDeviceToken:deviceToken];
     [rest.logger debug:@"ARTPush: device token stored"];
     [rest.push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
         [stateMachine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];

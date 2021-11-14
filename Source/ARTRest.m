@@ -284,7 +284,7 @@
                     return;
                 }
                 NSString *authorization = [self prepareTokenAuthorisationHeader:tokenDetails.token];
-                [self.logger verbose:@"RS:%p ARTRestInternal reissuing token: authorization bearer in Base64 %@", self, authorization];
+                [self.logger verbose:@"RS:%p ARTRestInternal reissuing token: authorization bearer %@", self, authorization];
                 [request setValue:authorization forHTTPHeaderField:@"Authorization"];
                 task = [self executeRequest:request completion:callback];
             }];
@@ -426,13 +426,15 @@
             }
         }
         if (callback) {
-            // Error object that indicates why the request failed
-            if ([error isKindOfClass:[ARTErrorInfo class]]) {
-                callback(response, data, error);
+            if (error != nil) {
+                if ([error isKindOfClass:[ARTErrorInfo class]]) {
+                    callback(response, data, error);
+                } else {
+                    callback(response, data, [NSError copyFromError:error withRequestId:requestId]);
+                }
             } else {
-                callback(response, data, [NSError copyFromError:error withRequestId:requestId]);
+                callback(response, data, nil);
             }
-            
         }
     }];
 
@@ -482,9 +484,8 @@
 }
 
 - (NSString *)prepareTokenAuthorisationHeader:(NSString *)token {
-    NSData *tokenData = [token dataUsingEncoding:NSUTF8StringEncoding];
-    NSString *tokenBase64 = [tokenData base64EncodedStringWithOptions:0];
-    return [NSString stringWithFormat:@"Bearer %@", tokenBase64];
+    // RSA3b: For REST requests, the token string is *optionally* Base64-encoded
+    return [NSString stringWithFormat:@"Bearer %@", token];
 }
 
 - (void)time:(ARTDateTimeCallback)callback {
@@ -600,13 +601,15 @@
         [request addValue:value forHTTPHeaderField:key];
     }];
 
-    NSError *encodeError = nil;
-    NSData *bodyData = [self.defaultEncoder encode:body error:&encodeError];
+    if (body != nil) {
+        NSError *encodeError = nil;
+        NSData *bodyData = [self.defaultEncoder encode:body error:&encodeError];
 
-    request.HTTPBody = bodyData;
-    [request setValue:[self.defaultEncoder mimeType] forHTTPHeaderField:@"Content-Type"];
-    if ([[method lowercaseString] isEqualToString:@"post"]) {
-        [request setValue:[NSString stringWithFormat:@"%d", (unsigned int)bodyData.length] forHTTPHeaderField:@"Content-Length"];
+        request.HTTPBody = bodyData;
+        [request setValue:[self.defaultEncoder mimeType] forHTTPHeaderField:@"Content-Type"];
+        if ([[method lowercaseString] isEqualToString:@"post"]) {
+            [request setValue:[NSString stringWithFormat:@"%d", (unsigned int)bodyData.length] forHTTPHeaderField:@"Content-Length"];
+        }
     }
 
     [request setAcceptHeader:self.defaultEncoder encoders:self.encoders];

@@ -51,6 +51,17 @@
 
 - (void)setOptions_nosync:(ARTChannelOptions *)options {
     _options = options;
+    [self recreateDataEncoderWith:options.cipher];
+}
+
+- (void)recreateDataEncoderWith:(ARTCipherParams*)cipher {
+    NSError *error = nil;
+    _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:cipher error:&error];
+    
+    if (error != nil) {
+        [_logger warn:@"creating ARTDataEncoder: %@", error];
+        _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:nil error:nil];
+    }
 }
 
 - (void)publish:(NSString *)name data:(id)data {
@@ -111,15 +122,18 @@
     [self publish:messages callback:nil];
 }
 
-- (void)publish:(__GENERIC(NSArray, ARTMessage *) *)messages callback:(art_nullable ARTCallback)callback {
+- (void)publish:(__GENERIC(NSArray, ARTMessage *) *)messages callback:(nullable ARTCallback)callback {
     NSError *error = nil;
 
     NSMutableArray<ARTMessage *> *messagesWithDataEncoded = [NSMutableArray new];
     for (ARTMessage *message in messages) {
         [messagesWithDataEncoded addObject:[self encodeMessageIfNeeded:message error:&error]];
     }
+    
     if (error) {
-        callback([ARTErrorInfo createFromNSError:error]);
+        if (callback) {
+            callback([ARTErrorInfo createFromNSError:error]);
+        }
         return;
     }
     

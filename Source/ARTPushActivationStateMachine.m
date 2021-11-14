@@ -35,7 +35,7 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
         _userQueue = _rest.userQueue;
         // Unarchiving
         NSData *stateData = [rest.storage objectForKey:ARTPushActivationCurrentStateKey];
-        _current = [NSObject art_unarchive:stateData];
+        _current = [ARTPushActivationState art_unarchiveFromData:stateData];
         if (!_current) {
             _current = [[ARTPushActivationStateNotActivated alloc] initWithMachine:self];
         } else {
@@ -45,7 +45,7 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
             _current.machine = self;
         }
         NSData *pendingEventsData = [rest.storage objectForKey:ARTPushActivationPendingEventsKey];
-        _pendingEvents = [NSObject art_unarchive:pendingEventsData];
+        _pendingEvents = [ARTPushActivationEvent art_unarchiveFromData:pendingEventsData];
         if (!_pendingEvents) {
             _pendingEvents = [NSMutableArray array];
         }
@@ -53,7 +53,7 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
         // Due to bug #966, old versions of the library might have led us to an illegal
         // persisted state: we have a deviceToken, but the persisted push state is WaitingForPushDeviceDetails.
         // So we need to re-emit the GotPushDeviceDetails event that led us there.
-        if ([_current isKindOfClass:[ARTPushActivationStateWaitingForPushDeviceDetails class]] && rest.device_nosync.deviceToken != nil) {
+        if ([_current isKindOfClass:[ARTPushActivationStateWaitingForPushDeviceDetails class]] && rest.device_nosync.apnsDeviceToken != nil) {
             [rest.logger debug:@"ARTPush: re-emitting stored device details for stuck state machine"];
             [self handleEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
         }
@@ -178,9 +178,9 @@ dispatch_async(_queue, ^{
             }
             NSError *decodeError = nil;
             ARTDeviceIdentityTokenDetails *identityTokenDetails = [[self->_rest defaultEncoder] decodeDeviceIdentityTokenDetails:data error:&decodeError];
-            if (decodeError) {
+            if (decodeError != nil) {
                 [[self->_rest logger] error:@"%@: decode identity token details failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
-                [self sendEvent:[ARTPushActivationEventGettingDeviceRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
+                [self sendEvent:[ARTPushActivationEventGettingDeviceRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:decodeError]]];
                 return;
             }
             [self sendEvent:[ARTPushActivationEventGotDeviceRegistration newWithIdentityTokenDetails:identityTokenDetails]];
