@@ -146,14 +146,14 @@ dispatch_async(_queue, ^{
 
 - (void)deviceRegistration:(ARTErrorInfo *)error {
     #if TARGET_OS_IOS
-    ARTLocalDevice *local = self.localDevice;
+    ARTLocalDevice *device = self.localDevice;
 
     const id<ARTPushRegistererDelegate, NSObject> delegate = self.delegate;
 
     // Custom register
     if ([delegate respondsToSelector:@selector(ablyPushCustomRegister:deviceDetails:callback:)]) {
         dispatch_async(_userQueue, ^{
-            [delegate ablyPushCustomRegister:error deviceDetails:local callback:^(ARTDeviceIdentityTokenDetails *identityTokenDetails, ARTErrorInfo *error) {
+            [delegate ablyPushCustomRegister:error deviceDetails:device callback:^(ARTDeviceIdentityTokenDetails *identityTokenDetails, ARTErrorInfo *error) {
                 if (error) {
                     // Failed
                     [self sendEvent:[ARTPushActivationEventGettingDeviceRegistrationFailed newWithError:error]];
@@ -175,7 +175,7 @@ dispatch_async(_queue, ^{
         // Asynchronous HTTP request
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/deviceRegistrations"]];
         request.HTTPMethod = @"POST";
-        request.HTTPBody = [[self->_rest defaultEncoder] encodeDeviceDetails:local error:nil];
+        request.HTTPBody = [[self->_rest defaultEncoder] encodeDeviceDetails:device error:nil];
         [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
         [[self->_rest logger] debug:__FILE__ line:__LINE__ message:@"%@: device registration with request %@", NSStringFromClass(self.class), request];
