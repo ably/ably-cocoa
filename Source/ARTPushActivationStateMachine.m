@@ -85,6 +85,15 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
     return _current;
 }
 
+- (ARTLocalDevice *)localDevice {
+    ARTLocalDevice *device = _rest.device_nosync;
+    if (device.id == nil) {
+        [_rest resetDeviceSingleton];
+        device = _rest.device_nosync;
+    }
+    return device;
+}
+
 - (void)sendEvent:(ARTPushActivationEvent *)event {
 dispatch_async(_queue, ^{
     [self handleEvent:event];
@@ -137,7 +146,7 @@ dispatch_async(_queue, ^{
 
 - (void)deviceRegistration:(ARTErrorInfo *)error {
     #if TARGET_OS_IOS
-    ARTLocalDevice *local = _rest.device_nosync;
+    ARTLocalDevice *local = self.localDevice;
 
     const id<ARTPushRegistererDelegate, NSObject> delegate = self.delegate;
 
