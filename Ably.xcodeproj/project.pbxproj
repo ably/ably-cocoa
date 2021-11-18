@@ -162,8 +162,6 @@
 		D54C5522268B041200729EC4 /* AblyDeltaCodec.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE12661AC37001FE9E6 /* AblyDeltaCodec.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D54C5523268B041200729EC4 /* msgpack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE32661AC37001FE9E6 /* msgpack.xcframework */; };
 		D54C5524268B041200729EC4 /* msgpack.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE32661AC37001FE9E6 /* msgpack.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		D54C5548268B31E500729EC4 /* ARTNSMutableDictionary+ARTDictionaryUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = D54C5546268B31E500729EC4 /* ARTNSMutableDictionary+ARTDictionaryUtil.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		D54C5549268B31E500729EC4 /* ARTNSMutableDictionary+ARTDictionaryUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = D54C5546268B31E500729EC4 /* ARTNSMutableDictionary+ARTDictionaryUtil.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D54C554A268B31E500729EC4 /* ARTNSMutableDictionary+ARTDictionaryUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = D54C5546268B31E500729EC4 /* ARTNSMutableDictionary+ARTDictionaryUtil.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D54C554D268B31E500729EC4 /* ARTNSMutableDictionary+ARTDictionaryUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = D54C5547268B31E500729EC4 /* ARTNSMutableDictionary+ARTDictionaryUtil.m */; };
 		D54C55A926957FDE00729EC4 /* ARTNSURL+ARTUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = D54C55A526957FDD00729EC4 /* ARTNSURL+ARTUtils.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -997,7 +995,6 @@
 		217D181525421FED00DFF07E /* ARTSRConstants.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRConstants.m; sourceTree = "<group>"; };
 		217D181625421FED00DFF07E /* NSRunLoop+ARTSRWebSocket.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSRunLoop+ARTSRWebSocket.h"; sourceTree = "<group>"; };
 		217D181725421FED00DFF07E /* NSURLRequest+ARTSRWebSocket.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSURLRequest+ARTSRWebSocket.m"; sourceTree = "<group>"; };
-		217D181A25421FED00DFF07E /* SocketRocketAblyFork.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SocketRocketAblyFork.h; sourceTree = "<group>"; };
 		217D181B25421FED00DFF07E /* ARTSRWebSocket.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTSRWebSocket.h; sourceTree = "<group>"; };
 		217D181C25421FED00DFF07E /* NSURLRequest+ARTSRWebSocket.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSURLRequest+ARTSRWebSocket.h"; sourceTree = "<group>"; };
 		217D181D25421FED00DFF07E /* NSRunLoop+ARTSRWebSocket.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSRunLoop+ARTSRWebSocket.m"; sourceTree = "<group>"; };
@@ -1374,7 +1371,6 @@
 				217D181D25421FED00DFF07E /* NSRunLoop+ARTSRWebSocket.m */,
 				217D181C25421FED00DFF07E /* NSURLRequest+ARTSRWebSocket.h */,
 				217D181725421FED00DFF07E /* NSURLRequest+ARTSRWebSocket.m */,
-				217D181A25421FED00DFF07E /* SocketRocketAblyFork.h */,
 			);
 			name = SocketRocket;
 			path = SocketRocket/SocketRocket;
@@ -2016,7 +2012,6 @@
 				96A507951A370F860077CDF8 /* ARTStats.h in Headers */,
 				D7AE18D21E5B410F00478D82 /* ARTPushChannelSubscriptions.h in Headers */,
 				D7D8F8251BC2C691009718F2 /* ARTTokenDetails.h in Headers */,
-				967A43211A39AEAF00E4CE23 /* ARTNSArray+ARTFunctional.h in Headers */,
 				96A507A51A377DE90077CDF8 /* ARTNSDictionary+ARTDictionaryUtil.h in Headers */,
 				D75A3F1B1DDE5B62002A4AAD /* ARTGCD.h in Headers */,
 				D3AD0EBD215E2FB000312105 /* ARTNSString+ARTUtil.h in Headers */,
@@ -2029,7 +2024,6 @@
 				960D07931A45F1D800ED8C8C /* ARTCrypto.h in Headers */,
 				D5BB20FC26A7F3FF00AA5F3E /* NSURLRequest+ARTSRWebSocket.h in Headers */,
 				D5C0CB3D268317B500C06521 /* NSURLQueryItem+Stringifiable.h in Headers */,
-				D54C5548268B31E500729EC4 /* ARTNSMutableDictionary+ARTDictionaryUtil.h in Headers */,
 				D5BB20FB26A7F3C800AA5F3E /* NSRunLoop+ARTSRWebSocket.h in Headers */,
 				D5BB20FD26A7F4F600AA5F3E /* ARTSRSecurityPolicy.h in Headers */,
 			);
@@ -2161,9 +2155,7 @@
 				D710D57C21949CC8008F54AD /* ARTPushAdmin+Private.h in Headers */,
 				D710D61B21949DEC008F54AD /* ARTDataQuery+Private.h in Headers */,
 				D710D67B21949E99008F54AD /* ARTGCD.h in Headers */,
-				D710D68721949ED5008F54AD /* ARTNSArray+ARTFunctional.h in Headers */,
 				D710D67E21949EA2008F54AD /* ARTOSReachability.h in Headers */,
-				D710D68421949ECE008F54AD /* ARTNSDictionary+ARTDictionaryUtil.h in Headers */,
 				D710D67521949E80008F54AD /* ARTNSString+ARTUtil.h in Headers */,
 				EB1B541622FB1CE1006A59AC /* ARTPushDeviceRegistrations+Private.h in Headers */,
 				D710D61E21949DEC008F54AD /* ARTFallback+Private.h in Headers */,
@@ -2174,7 +2166,6 @@
 				D5BB20FE26A7F50000AA5F3E /* ARTSRPinningSecurityPolicy.h in Headers */,
 				D5BB210126A80A9C00AA5F3E /* NSRunLoop+ARTSRWebSocket.h in Headers */,
 				D5C0CB3E268317B500C06521 /* NSURLQueryItem+Stringifiable.h in Headers */,
-				D54C5549268B31E500729EC4 /* ARTNSMutableDictionary+ARTDictionaryUtil.h in Headers */,
 				D5BB210026A80A9000AA5F3E /* NSURLRequest+ARTSRWebSocket.h in Headers */,
 				D5BB210526A80AFD00AA5F3E /* ARTSRSecurityPolicy.h in Headers */,
 			);
@@ -2306,7 +2297,6 @@
 				D710D62721949DED008F54AD /* ARTDataQuery+Private.h in Headers */,
 				D710D67D21949E99008F54AD /* ARTGCD.h in Headers */,
 				D710D68921949ED6008F54AD /* ARTNSArray+ARTFunctional.h in Headers */,
-				D710D68021949EA3008F54AD /* ARTOSReachability.h in Headers */,
 				D710D68621949ECF008F54AD /* ARTNSDictionary+ARTDictionaryUtil.h in Headers */,
 				D710D67721949E81008F54AD /* ARTNSString+ARTUtil.h in Headers */,
 				EB1B541722FB1CE1006A59AC /* ARTPushDeviceRegistrations+Private.h in Headers */,
@@ -2317,7 +2307,6 @@
 				D710D5CE21949D50008F54AD /* ARTBaseMessage+Private.h in Headers */,
 				D5BB20FF26A7F50800AA5F3E /* ARTSRPinningSecurityPolicy.h in Headers */,
 				D5BB210326A80AA700AA5F3E /* NSRunLoop+ARTSRWebSocket.h in Headers */,
-				D5C0CB3F268317B500C06521 /* NSURLQueryItem+Stringifiable.h in Headers */,
 				D54C554A268B31E500729EC4 /* ARTNSMutableDictionary+ARTDictionaryUtil.h in Headers */,
 				D5BB210226A80AA400AA5F3E /* NSURLRequest+ARTSRWebSocket.h in Headers */,
 				D5BB210426A80AF300AA5F3E /* ARTSRSecurityPolicy.h in Headers */,
@@ -2486,7 +2475,7 @@
 				CLASSPREFIX = ART;
 				DefaultBuildSystemTypeForWorkspace = Original;
 				LastSwiftUpdateCheck = 1120;
-				LastUpgradeCheck = 1200;
+				LastUpgradeCheck = 1300;
 				ORGANIZATIONNAME = Ably;
 				TargetAttributes = {
 					856AAC891B6E304B00B07119 = {
@@ -3210,6 +3199,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -3271,6 +3261,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
