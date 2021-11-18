@@ -121,7 +121,7 @@ static ARTLocalDevice *_shared_nosync;
 }
 
 - (void)clearStorage {
-    for (NSString *key in @[ ARTDeviceIdKey, ARTAPNSDeviceTokenKey, ARTDeviceIdentityTokenKey ]) {
+    for (NSString *key in @[ ARTDeviceIdKey, ARTDeviceIdentityTokenKey ]) {
         [self.storage setObject:nil forKey:key];
     }
 }
