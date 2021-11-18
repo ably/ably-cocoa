@@ -3,6 +3,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class ARTRestInternal;
+@class ARTLocalDevice;
 @protocol ARTPushRegistererDelegate;
 
 extern NSString *const ARTPushActivationCurrentStateKey;
@@ -22,6 +23,8 @@ extern NSString *const ARTPushActivationPendingEventsKey;
 @property (nonatomic, copy, nullable) void (^onEvent)(ARTPushActivationEvent *event, ARTPushActivationState *state);
 @property (readonly, nonatomic) ARTPushActivationEvent *lastEvent_nosync;
 @property (readonly, nonatomic) ARTPushActivationState *current_nosync;
+
+@property (readonly, nonatomic) ARTLocalDevice *localDevice;
 
 @end
 
