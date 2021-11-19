@@ -70,8 +70,8 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v2
         with:
-          name: static-analyzer-reports
-          path: ./derived_data/**/StaticAnalyzer/*.html
+          name: static-analyzer-reports-${{ matrix.lane }}
+          path: ./derived_data/**/StaticAnalyzer/**/*.html
 
       # This is the script specified as the pod’s prepare_command in its Podspec.
       # It would be run automatically for a normal CocoaPods install, but it doesn’t
