@@ -59,7 +59,7 @@ jobs:
       
       - name: Check Static Analyzer Output
         run:  |
-          if [[ -z `find $(pwd)/build -name "*.html"` ]]; then
+          if [[ -z `find $(pwd)/fastlane -name "*.html"` ]]; then
             echo "Static Analyzer found no issues."
           else
             echo "Static Analyzer found some issues. Failing build."
