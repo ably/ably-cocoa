@@ -55,20 +55,17 @@ jobs:
           make update_carthage_dependencies
 
       - name: Run Tests
-        run:  |
-          echo Current Path: $(pwd)
-          ls
-          bundle exec fastlane ${{ matrix.lane }}
-      
+        run: bundle exec fastlane ${{ matrix.lane }}
+
       - name: Check Static Analyzer Output
-        run:  |
-          if [[ -z `find $(pwd)/build -name "*.html"` ]]; then
+        run: |
+          if [[ -z $(find ./derived_data -name "report-*.html") ]]; then
             echo "Static Analyzer found no issues."
           else
             echo "Static Analyzer found some issues. Failing build."
             exit 1
           fi
-
+      
       # This is the script specified as the pod’s prepare_command in its Podspec.
       # It would be run automatically for a normal CocoaPods install, but it doesn’t
       # get run when the dependency is specified with the :path option. So we run it
