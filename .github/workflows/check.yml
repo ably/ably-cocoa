@@ -55,7 +55,10 @@ jobs:
           make update_carthage_dependencies
 
       - name: Run Tests
-        run: bundle exec fastlane ${{ matrix.lane }}
+        run:  |
+          echo Current Path: $(pwd)
+          ls
+          bundle exec fastlane ${{ matrix.lane }}
       
       - name: Check Static Analyzer Output
         run:  |
