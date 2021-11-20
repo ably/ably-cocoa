@@ -188,14 +188,14 @@
         [proxyType isEqualToString:(NSString *)kCFProxyTypeHTTPS]) {
         _httpProxyHost = settings[(NSString *)kCFProxyHostNameKey];
         NSNumber *portValue = settings[(NSString *)kCFProxyPortNumberKey];
-        if (portValue) {
+        if (portValue != nil) {
             _httpProxyPort = [portValue intValue];
         }
     }
     if ([proxyType isEqualToString:(NSString *)kCFProxyTypeSOCKS]) {
         _socksProxyHost = settings[(NSString *)kCFProxyHostNameKey];
         NSNumber *portValue = settings[(NSString *)kCFProxyPortNumberKey];
-        if (portValue)
+        if (portValue != nil)
             _socksProxyPort = [portValue intValue];
         _socksProxyUsername = settings[(NSString *)kCFProxyUsernameKey];
         _socksProxyPassword = settings[(NSString *)kCFProxyPasswordKey];

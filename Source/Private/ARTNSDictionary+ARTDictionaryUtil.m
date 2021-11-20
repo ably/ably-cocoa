@@ -13,7 +13,7 @@
 
 - (NSDate *)artTimestamp:(id)key {
     NSNumber *number = [self artNumber:key];
-    if (number) {
+    if (number != nil) {
         return [NSDate artDateFromNumberMs:number];
     }
     NSString *string = [self artString:key];
@@ -41,7 +41,7 @@
 
 - (NSInteger)artInteger:(id)key {
     NSNumber *number = [self artNumber:key];
-    if (number) {
+    if (number != nil) {
         return [number integerValue];
     }
     NSString *string = [self artString:key];

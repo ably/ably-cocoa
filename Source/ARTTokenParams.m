@@ -30,7 +30,7 @@
 - (instancetype)initWithOptions:(ARTClientOptions *)options {
     self = [self initWithClientId:options.clientId];
     if (options.defaultTokenParams) {
-        if (options.defaultTokenParams.ttl) _ttl = options.defaultTokenParams.ttl;
+        if (options.defaultTokenParams.ttl != nil) _ttl = options.defaultTokenParams.ttl;
         if (options.defaultTokenParams.capability) _capability = options.defaultTokenParams.capability;
     }
     return self;
@@ -64,7 +64,7 @@
     
     if (self.clientId)
         [params addObject:[NSURLQueryItem queryItemWithName:@"clientId" value:self.clientId]];
-    if (self.ttl)
+    if (self.ttl != nil)
         [params addObject:[NSURLQueryItem queryItemWithName:@"ttl" value:[NSString stringWithFormat:@"%@", self.ttl]]];
     if (self.capability)
         [params addObject:[NSURLQueryItem queryItemWithName:@"capability" value:self.capability]];
@@ -79,7 +79,7 @@
     
     if (self.clientId)
         params[@"clientId"] = self.clientId;
-    if (self.ttl)
+    if (self.ttl != nil)
         params[@"ttl"] = [NSString stringWithFormat:@"%@", self.ttl];
     if (self.capability)
         params[@"capability"] = self.capability;
@@ -155,7 +155,7 @@ static NSString *hmacForDataAndKey(NSData *data, NSData *key) {
     NSString *keySecret = keyComponents[1];
     NSString *capability = self.capability ? self.capability : @"";
     NSString *clientId = self.clientId ? self.clientId : @"";
-    NSString *ttl = self.ttl ? [NSString stringWithFormat:@"%lld", timeIntervalToMilliseconds([self.ttl doubleValue])] : @"";
+    NSString *ttl = self.ttl != nil ? [NSString stringWithFormat:@"%lld", timeIntervalToMilliseconds([self.ttl doubleValue])] : @"";
 
     NSString *signText = [NSString stringWithFormat:@"%@\n%@\n%@\n%@\n%lld\n%@\n", keyName, ttl, capability, clientId, dateToMilliseconds(self.timestamp), nonce];
     NSString *mac = hmacForDataAndKey([signText dataUsingEncoding:NSUTF8StringEncoding], [keySecret dataUsingEncoding:NSUTF8StringEncoding]);

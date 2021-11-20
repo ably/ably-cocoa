@@ -46,9 +46,9 @@
     }
 
     NSNumber *expiresInterval = [dict objectForKey:@"expires"];
-    NSDate *expires = expiresInterval ? [NSDate dateWithTimeIntervalSince1970:(expiresInterval.doubleValue) / 1000] : nil;
+    NSDate *expires = expiresInterval != nil ? [NSDate dateWithTimeIntervalSince1970:(expiresInterval.doubleValue) / 1000] : nil;
     NSNumber *issuedInterval = [dict objectForKey:@"issued"];
-    NSDate *issued = issuedInterval ? [NSDate dateWithTimeIntervalSince1970:(issuedInterval.doubleValue) / 1000] : nil;
+    NSDate *issued = issuedInterval != nil ? [NSDate dateWithTimeIntervalSince1970:(issuedInterval.doubleValue) / 1000] : nil;
 
     return [[ARTTokenDetails alloc] initWithToken:dict[@"token"]
                                           expires:expires
