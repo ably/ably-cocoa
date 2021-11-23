@@ -94,7 +94,11 @@ class RestClientStats: QuickSpec {
                     var statsOptions = ARTClientOptions()
 
                     beforeEach {
+print("START HOOK: RestClientStats.beforeEach__RestClient__stats__result")
+
                         statsOptions = postTestStats(statsFixtures)
+print("END HOOK: RestClientStats.beforeEach__RestClient__stats__result")
+
                     }
                     
                     xit("should match minute-level inbound and outbound fixture data (forwards)") {

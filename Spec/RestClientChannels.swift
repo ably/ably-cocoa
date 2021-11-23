@@ -24,8 +24,12 @@ class RestClientChannels: QuickSpec {
         var channelName: String!
 
         beforeEach {
+print("START HOOK: RestClientChannels.beforeEach")
+
             client = ARTRest(key: "fake:key")
             channelName = ProcessInfo.processInfo.globallyUniqueString
+print("END HOOK: RestClientChannels.beforeEach")
+
         }
 
         let cipherParams: ARTCipherParams? = nil

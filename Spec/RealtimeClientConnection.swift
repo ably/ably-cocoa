@@ -3248,16 +3248,24 @@ class RealtimeClientConnection: QuickSpec {
                 let originalARTFallback_shuffleArray = ARTFallback_shuffleArray
 
                 beforeEach {
+print("START HOOK: RealtimeClientConnection.beforeEach__Connection__Host_Fallback")
+
                     ARTFallback_shuffleArray = { array in
                         let arranged = expectedHostOrder.reversed().map { array[$0] }
                         for (i, element) in arranged.enumerated() {
                             array[i] = element
                         }
                     }
+print("END HOOK: RealtimeClientConnection.beforeEach__Connection__Host_Fallback")
+
                 }
 
                 afterEach {
+print("START HOOK: RealtimeClientConnection.afterEach__Connection__Host_Fallback")
+
                     ARTFallback_shuffleArray = originalARTFallback_shuffleArray
+print("END HOOK: RealtimeClientConnection.afterEach__Connection__Host_Fallback")
+
                 }
 
                 // RTN17b
@@ -4075,15 +4083,23 @@ class RealtimeClientConnection: QuickSpec {
                     var rtn20aTestsClient: ARTRealtime!
 
                     beforeEach {
+print("START HOOK: RealtimeClientConnection.beforeEach__Connection__Operating_System_events_for_network_internet_connectivity_changes__should_immediately_change_the_state_to_DISCONNECTED_if_the_operating_system_indicates_that_the_underlying_internet_connection_is_no_longer_available")
+
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
                         rtn20aTestsClient = ARTRealtime(options: options)
                         rtn20aTestsClient.internal.setReachabilityClass(TestReachability.self)
+print("END HOOK: RealtimeClientConnection.beforeEach__Connection__Operating_System_events_for_network_internet_connectivity_changes__should_immediately_change_the_state_to_DISCONNECTED_if_the_operating_system_indicates_that_the_underlying_internet_connection_is_no_longer_available")
+
                     }
 
                     afterEach {
+print("START HOOK: RealtimeClientConnection.afterEach__Connection__Operating_System_events_for_network_internet_connectivity_changes__should_immediately_change_the_state_to_DISCONNECTED_if_the_operating_system_indicates_that_the_underlying_internet_connection_is_no_longer_available")
+
                         rtn20aTestsClient.dispose()
                         rtn20aTestsClient.close()
+print("END HOOK: RealtimeClientConnection.afterEach__Connection__Operating_System_events_for_network_internet_connectivity_changes__should_immediately_change_the_state_to_DISCONNECTED_if_the_operating_system_indicates_that_the_underlying_internet_connection_is_no_longer_available")
+
                     }
 
                     it("when CONNECTING") {

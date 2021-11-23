@@ -2174,14 +2174,22 @@ class RealtimeClientChannel: QuickSpec {
                         var rtl6c2TestsChannel: ARTRealtimeChannel!
 
                         beforeEach {
+print("START HOOK: RealtimeClientChannel.beforeEach__Channel__publish__Connection_state_conditions__the_message")
+
                             let options = AblyTests.commonAppSetup()
                             options.useTokenAuth = true
                             options.autoConnect = false
                             rtl6c2TestsClient = AblyTests.newRealtime(options)
                             rtl6c2TestsChannel = rtl6c2TestsClient.channels.get("test")
                             expect(rtl6c2TestsClient.internal.options.queueMessages).to(beTrue())
+print("END HOOK: RealtimeClientChannel.beforeEach__Channel__publish__Connection_state_conditions__the_message")
+
                         }
-                        afterEach { rtl6c2TestsClient.close() }
+                        afterEach { 
+print("START HOOK: RealtimeClientChannel.afterEach__Channel__publish__Connection_state_conditions__the_message")
+rtl6c2TestsClient.close() 
+print("END HOOK: RealtimeClientChannel.afterEach__Channel__publish__Connection_state_conditions__the_message")
+}
 
                         func rtl16c2TestsPublish(_ done: @escaping () -> ()) {
                             rtl6c2TestsChannel.publish(nil, data: "message") { error in
@@ -2302,14 +2310,22 @@ class RealtimeClientChannel: QuickSpec {
                         }
 
                         beforeEach {
+print("START HOOK: RealtimeClientChannel.beforeEach__Channel__publish__Connection_state_conditions__will_result_in_an_error_if_the")
+
                             setupDependencies()
                             ARTDefault.setConnectionStateTtl(0.3)
                             client = AblyTests.newRealtime(options)
                             channel = client.channels.get("test")
+print("END HOOK: RealtimeClientChannel.beforeEach__Channel__publish__Connection_state_conditions__will_result_in_an_error_if_the")
+
                         }
                         afterEach {
+print("START HOOK: RealtimeClientChannel.afterEach__Channel__publish__Connection_state_conditions__will_result_in_an_error_if_the")
+
                             client.close()
                             ARTDefault.setConnectionStateTtl(previousConnectionStateTtl)
+print("END HOOK: RealtimeClientChannel.afterEach__Channel__publish__Connection_state_conditions__will_result_in_an_error_if_the")
+
                         }
 
                         func publish(_ done: @escaping () -> ()) {
