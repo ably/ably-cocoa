@@ -4,7 +4,8 @@ import Nimble
 import Quick
 import Aspects
 
-class Auth : QuickSpec {
+class Auth : ARTQuickSpec {
+    
     override func spec() {
         
         struct ExpectedTokenParams {
