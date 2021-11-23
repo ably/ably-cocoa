@@ -2,15 +2,14 @@ import Ably
 import Quick
 import Nimble
 
-class RestClientPresence: QuickSpec {
-    override func spec() {
-        describe("Presence") {
+class RestClientPresence: XCTestCase {
+        
 
             // RSP3
-            context("get") {
+            
 
                 // RSP3a
-                xit("should return a PaginatedResult page containing the first page of members") {
+                func skipped__test__002__Presence__get__should_return_a_PaginatedResult_page_containing_the_first_page_of_members() {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRest(options: options)
                     let channel = client.channels.get("test")
@@ -67,7 +66,7 @@ class RestClientPresence: QuickSpec {
                 }
 
                 // RSP3a1
-                it("limit should support up to 1000 items") {
+                func test__003__Presence__get__limit_should_support_up_to_1000_items() {
                     let client = ARTRest(options: AblyTests.commonAppSetup())
                     let channel = client.channels.get("test")
 
@@ -82,7 +81,7 @@ class RestClientPresence: QuickSpec {
                 }
 
                 // RSP3a2
-                it("clientId should filter members by the provided clientId") {
+                func test__004__Presence__get__clientId_should_filter_members_by_the_provided_clientId() {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRest(options: options)
                     let channel = client.channels.get("test")
@@ -115,7 +114,7 @@ class RestClientPresence: QuickSpec {
                 }
 
                 // RSP3a3
-                it("connectionId should filter members by the provided connectionId") {
+                func test__005__Presence__get__connectionId_should_filter_members_by_the_provided_connectionId() {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRest(options: options)
                     let channel = client.channels.get("test")
@@ -155,13 +154,11 @@ class RestClientPresence: QuickSpec {
                     }
                 }
 
-            }
-
             // RSP4
-            context("history") {
+            
 
                 // RSP4a
-                it("should return a PaginatedResult page containing the first page of members") {
+                func test__006__Presence__history__should_return_a_PaginatedResult_page_containing_the_first_page_of_members() {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRest(options: options)
                     let channel = client.channels.get("test")
@@ -213,18 +210,16 @@ class RestClientPresence: QuickSpec {
                     }
                 }
 
-            }
-
             // RSP4
-            context("history") {
+            
 
                 // RSP4b
-                context("query argument") {
+                
 
                     // RSP4b2
                     // Disabled because there's something wrong in the Sandbox.
                     // More info at https://ably-real-time.slack.com/archives/C030C5YLY/p1614269570000400
-                    xit("direction should change the order of the members") {
+                    func skipped__test__007__Presence__history__query_argument__direction_should_change_the_order_of_the_members() {
                         let options = AblyTests.commonAppSetup()
                         let client = ARTRest(options: options)
                         let channel = client.channels.get("test")
@@ -271,18 +266,14 @@ class RestClientPresence: QuickSpec {
                         }
                     }
 
-                }
-
-            }
-
             // RSP4
-            context("history") {
+            
 
                 // RSP4b
-                context("query argument") {
+                
 
                     // RSP4b3
-                    it("limit supports up to 1000 members") {
+                    func test__009__Presence__history__query_argument__limit_supports_up_to_1000_members() {
                         let options = AblyTests.commonAppSetup()
                         let client = ARTRest(options: options)
                         let channel = client.channels.get("test")
@@ -313,10 +304,9 @@ class RestClientPresence: QuickSpec {
                             expect(error._code).to(equal(ARTDataQueryError.limit.rawValue))
                         })
                     }
-                }
 
                 // RSP3a3
-                it("connectionId should filter members by the provided connectionId") {
+                func test__008__Presence__history__connectionId_should_filter_members_by_the_provided_connectionId() {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRest(options: options)
                     let channel = client.channels.get("test")
@@ -356,16 +346,14 @@ class RestClientPresence: QuickSpec {
                     }
                 }
 
-            }
-
             // RSP4
-            context("history") {
+            
 
                 // RSP4b
-                context("query argument") {
+                
 
                     // RSP4b1
-                    it("start and end should filter members between those two times") {
+                    func test__010__Presence__history__query_argument__start_and_end_should_filter_members_between_those_two_times() {
                         let options = AblyTests.commonAppSetup()
                         let client = ARTRest(options: options)
                         let channel = client.channels.get("test")
@@ -418,7 +406,7 @@ class RestClientPresence: QuickSpec {
                     }
 
                     // RSP4b1
-                    it("start must be equal to or less than end and is unaffected by the request direction") {
+                    func test__011__Presence__history__query_argument__start_must_be_equal_to_or_less_than_end_and_is_unaffected_by_the_request_direction() {
                         let client = ARTRest(options: AblyTests.commonAppSetup())
                         let channel = client.channels.get("test")
 
@@ -438,12 +426,8 @@ class RestClientPresence: QuickSpec {
                         })
                     }
 
-                }
-
-            }
-
             // RSP5
-            it("presence messages retrieved are decoded in the same way that messages are decoded") {
+            func test__001__Presence__presence_messages_retrieved_are_decoded_in_the_same_way_that_messages_are_decoded() {
                 let options = AblyTests.commonAppSetup()
                 let client = ARTRest(options: options)
                 let channel = client.channels.get("test")
@@ -494,7 +478,4 @@ class RestClientPresence: QuickSpec {
 
                 expect(decodeNumberOfCalls).to(equal(2))
             }
-
-        }
-    }
 }

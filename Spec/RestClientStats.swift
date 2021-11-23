@@ -42,16 +42,8 @@ private func queryStats(_ client: ARTRest, _ query: ARTStatsQuery, file: FileStr
     }
     return stats!
 }
-
-class RestClientStats: QuickSpec {
-    override func spec() {
-        describe("RestClient") {
-            // RSC6
-            context("stats") {
-                // RSC6a
-                context("result") {
-                    let calendar = NSCalendar(identifier: NSCalendar.Identifier.gregorian)!
-                    let dateComponents: NSDateComponents = {
+                    private let calendar = NSCalendar(identifier: NSCalendar.Identifier.gregorian)!
+                    private let dateComponents: NSDateComponents = {
                         let dateComponents = NSDateComponents()
                         dateComponents.year = calendar.component(NSCalendar.Unit.year, from: NSDate() as Date) - 1
                         dateComponents.month = 2
@@ -60,15 +52,15 @@ class RestClientStats: QuickSpec {
                         dateComponents.minute = 3
                         return dateComponents
                     }()
-                    let date = calendar.date(from: dateComponents as DateComponents)!
-                    let dateFormatter: DateFormatter = {
+                    private let date = calendar.date(from: dateComponents as DateComponents)!
+                    private let dateFormatter: DateFormatter = {
                         let dateFormatter = DateFormatter()
                         dateFormatter.timeZone = NSTimeZone(name: "UTC") as TimeZone?
                         dateFormatter.dateFormat = "YYYY-MM-dd:HH:mm"
                         return dateFormatter
                     }()
                     
-                    let statsFixtures: JSON = [
+                    private let statsFixtures: JSON = [
                         [
                             "intervalId": dateFormatter.string(from: date), // 20XX-02-03:16:03
                             "inbound": [ "realtime": [ "messages": [ "count": 50, "data": 5000 ] ] ],
@@ -91,13 +83,38 @@ class RestClientStats: QuickSpec {
                         ]
                     ]
                     
-                    var statsOptions = ARTClientOptions()
+                    private var statsOptions = ARTClientOptions()
 
-                    beforeEach {
+class RestClientStats: XCTestCase {
+
+override class var defaultTestSuite : XCTestSuite {
+    let _ = calendar
+    let _ = dateComponents
+    let _ = date
+    let _ = dateFormatter
+    let _ = statsFixtures
+    let _ = statsOptions
+
+    return super.defaultTestSuite
+}
+
+        
+            // RSC6
+            
+                // RSC6a
+                
+
+                    func beforeEach__RestClient__stats__result() {
+print("START HOOK: RestClientStats.beforeEach__RestClient__stats__result")
+
                         statsOptions = postTestStats(statsFixtures)
+print("END HOOK: RestClientStats.beforeEach__RestClient__stats__result")
+
                     }
                     
-                    xit("should match minute-level inbound and outbound fixture data (forwards)") {
+                    func skipped__test__001__RestClient__stats__result__should_match_minute_level_inbound_and_outbound_fixture_data__forwards_() {
+beforeEach__RestClient__stats__result()
+
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
                         query.start = date
@@ -117,7 +134,9 @@ class RestClientStats: QuickSpec {
                         expect(totalOutbound).to(equal(20 + 10 + 40))
                     }
                     
-                    it("should match hour-level inbound and outbound fixture data (forwards)") {
+                    func test__002__RestClient__stats__result__should_match_hour_level_inbound_and_outbound_fixture_data__forwards_() {
+beforeEach__RestClient__stats__result()
+
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
                         query.start = date
@@ -137,7 +156,9 @@ class RestClientStats: QuickSpec {
                         expect(totalOutbound).to(equal(20 + 10 + 40))
                     }
                     
-                    it("should match day-level inbound and outbound fixture data (forwards)") {
+                    func test__003__RestClient__stats__result__should_match_day_level_inbound_and_outbound_fixture_data__forwards_() {
+beforeEach__RestClient__stats__result()
+
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
                         query.end = calendar.date(byAdding: .day, value: 1, to: date, options: NSCalendar.Options(rawValue: 0))
@@ -153,7 +174,9 @@ class RestClientStats: QuickSpec {
                         expect(totalOutbound).to(equal(20 + 10 + 40))
                     }
                     
-                    xit("should match month-level inbound and outbound fixture data (forwards)") {
+                    func skipped__test__004__RestClient__stats__result__should_match_month_level_inbound_and_outbound_fixture_data__forwards_() {
+beforeEach__RestClient__stats__result()
+
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
                         query.end = calendar.date(byAdding: .month, value: 1, to: date, options: NSCalendar.Options(rawValue: 0))
@@ -169,7 +192,9 @@ class RestClientStats: QuickSpec {
                         expect(totalOutbound).to(equal(20 + 10 + 40))
                     }
                     
-                    xit("should contain only one item when limit is 1 (backwards") {
+                    func skipped__test__005__RestClient__stats__result__should_contain_only_one_item_when_limit_is_1__backwards() {
+beforeEach__RestClient__stats__result()
+
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
                         query.end = date.addingTimeInterval(60) // 20XX-02-03:16:04
@@ -184,7 +209,9 @@ class RestClientStats: QuickSpec {
                         expect(totalOutbound).to(equal(10))
                     }
                     
-                    it("should contain only one item when limit is 1 (forwards") {
+                    func test__006__RestClient__stats__result__should_contain_only_one_item_when_limit_is_1__forwards() {
+beforeEach__RestClient__stats__result()
+
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
                         query.end = date.addingTimeInterval(60) // 20XX-02-03:16:04
@@ -200,7 +227,9 @@ class RestClientStats: QuickSpec {
                         expect(totalOutbound).to(equal(20))
                     }
                     
-                    it("should be paginated according to the limit (backwards") {
+                    func test__007__RestClient__stats__result__should_be_paginated_according_to_the_limit__backwards() {
+beforeEach__RestClient__stats__result()
+
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
                         query.end = date.addingTimeInterval(120) // 20XX-02-03:16:05
@@ -252,7 +281,9 @@ class RestClientStats: QuickSpec {
                         expect((firstPageAgain.items)[0].inbound.all.messages.data).to(equal(7000))
                     }
                     
-                    xit("should be paginated according to the limit (fowards)") {
+                    func skipped__test__008__RestClient__stats__result__should_be_paginated_according_to_the_limit__fowards_() {
+beforeEach__RestClient__stats__result()
+
                         let client = ARTRest(options: statsOptions)
                         let query = ARTStatsQuery()
                         query.end = date.addingTimeInterval(120) // 20XX-02-03:16:05
@@ -304,13 +335,12 @@ class RestClientStats: QuickSpec {
                         expect(firstPageAgain.items.count).to(equal(1))
                         expect((firstPageAgain.items)[0].inbound.all.messages.data).to(equal(5000))
                     }
-                }
                 
                 // RSC6b
-                context("query") {
+                
                     // RSC6b1
-                    context("start") {
-                        it("should return an error when later than end") {
+                    
+                        func test__009__RestClient__stats__query__start__should_return_an_error_when_later_than_end() {
                             let client = ARTRest(key: "fake:key")
                             let query = ARTStatsQuery()
                             
@@ -319,26 +349,24 @@ class RestClientStats: QuickSpec {
 
                             expect{try client.stats(query, callback:{ status, result in })}.to(throwError())
                         }
-                    }
                     
                     // RSC6b2
-                    context("direction") {
-                        it("should be backwards by default") {
+                    
+                        func test__010__RestClient__stats__query__direction__should_be_backwards_by_default() {
                             let query = ARTStatsQuery()
                             
                             expect(query.direction).to(equal(ARTQueryDirection.backwards));
                         }
-                    }
                     
                     // RSC6b3
-                    context("limit") {
-                        it("should have a default value of 100") {
+                    
+                        func test__011__RestClient__stats__query__limit__should_have_a_default_value_of_100() {
                             let query = ARTStatsQuery()
                             
                             expect(query.limit).to(equal(100));
                         }
                         
-                        it("should return an error when greater than 1000") {
+                        func test__012__RestClient__stats__query__limit__should_return_an_error_when_greater_than_1000() {
                             let client = ARTRest(key: "fake:key")
                             let query = ARTStatsQuery()
                             
@@ -346,18 +374,12 @@ class RestClientStats: QuickSpec {
 
                             expect{try client.stats(query, callback:{ status, result in })}.to(throwError())
                         }
-                    }
                     
                     // RSC6b4
-                    context("unit") {
-                        it("should default to minute") {
+                    
+                        func test__013__RestClient__stats__query__unit__should_default_to_minute() {
                             let query = ARTStatsQuery()
                             
                             expect(query.unit).to(equal(ARTStatsGranularity.minute))
                         }
-                    }
-                }
-            }
-        }
-    }
 }

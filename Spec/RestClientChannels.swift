@@ -17,30 +17,46 @@ private func beAChannel(named expectedValue: String) -> Predicate<ARTChannel> {
         return PredicateResult(status: PredicateStatus(bool: actualValue?.name == expectedValue), message: m)
     }
 }
+        private var client: ARTRest!
+        private var channelName: String!
 
-class RestClientChannels: QuickSpec {
-    override func spec() {
-        var client: ARTRest!
-        var channelName: String!
+        private let cipherParams: ARTCipherParams? = nil
 
-        beforeEach {
+class RestClientChannels: XCTestCase {
+
+override class var defaultTestSuite : XCTestSuite {
+    let _ = client
+    let _ = channelName
+    let _ = cipherParams
+
+    return super.defaultTestSuite
+}
+
+
+        func beforeEach() {
+print("START HOOK: RestClientChannels.beforeEach")
+
             client = ARTRest(key: "fake:key")
             channelName = ProcessInfo.processInfo.globallyUniqueString
+print("END HOOK: RestClientChannels.beforeEach")
+
         }
 
-        let cipherParams: ARTCipherParams? = nil
-
-        describe("RestClient") {
-            context("channels") {
+        
+            
                 // RSN1
-                it("should return collection of channels") {
+                func test__001__RestClient__channels__should_return_collection_of_channels() {
+beforeEach()
+
                     let _: ARTRestChannels = client.channels
                 }
 
                 // RSN3
-                context("get") {
+                
                     // RSN3a
-                    it("should return a channel") {
+                    func test__003__RestClient__channels__get__should_return_a_channel() {
+beforeEach()
+
                         let channel = client.channels.get(channelName).internal
                         expect(channel).to(beAChannel(named: channelName))
 
@@ -49,7 +65,9 @@ class RestClientChannels: QuickSpec {
                     }
 
                     // RSN3b
-                    it("should return a channel with the provided options") {
+                    func test__004__RestClient__channels__get__should_return_a_channel_with_the_provided_options() {
+beforeEach()
+
                         let options = ARTChannelOptions(cipher: cipherParams)
                         let channel = client.channels.get(channelName, options: options)
 
@@ -58,7 +76,9 @@ class RestClientChannels: QuickSpec {
                     }
 
                     // RSN3b
-                    it("should not replace the options on an existing channel when none are provided") {
+                    func test__005__RestClient__channels__get__should_not_replace_the_options_on_an_existing_channel_when_none_are_provided() {
+beforeEach()
+
                         let options = ARTChannelOptions(cipher: cipherParams)
                         let channel = client.channels.get(channelName, options: options).internal
 
@@ -69,7 +89,9 @@ class RestClientChannels: QuickSpec {
                     }
 
                     // RSN3c
-                    it("should replace the options on an existing channel when new ones are provided") {
+                    func test__006__RestClient__channels__get__should_replace_the_options_on_an_existing_channel_when_new_ones_are_provided() {
+beforeEach()
+
                         let channel = client.channels.get(channelName).internal
                         let oldOptions = channel.options
 
@@ -80,22 +102,24 @@ class RestClientChannels: QuickSpec {
                         expect(newButSameChannel.options).to(beIdenticalTo(newOptions))
                         expect(newButSameChannel.options).notTo(beIdenticalTo(oldOptions))
                     }
-                }
 
                 // RSN2
-                context("channelExists") {
-                    it("should check if a channel exists") {
+                
+                    func test__007__RestClient__channels__channelExists__should_check_if_a_channel_exists() {
+beforeEach()
+
                         expect(client.channels.exists(channelName)).to(beFalse())
 
                         client.channels.get(channelName)
 
                         expect(client.channels.exists(channelName)).to(beTrue())
                     }
-                }
 
                 // RSN4
-                context("releaseChannel") {
-                    it("should release a channel") {
+                
+                    func test__008__RestClient__channels__releaseChannel__should_release_a_channel() {
+beforeEach()
+
                         weak var channel: ARTRestChannelInternal!
 
                         autoreleasepool {
@@ -107,10 +131,11 @@ class RestClientChannels: QuickSpec {
 
                         expect(channel).to(beNil())
                     }
-                }
 
                 // RSN2
-                it("should be enumerable") {
+                func test__002__RestClient__channels__should_be_enumerable() {
+beforeEach()
+
                     let channels = [
                         client.channels.get(channelName).internal,
                         client.channels.get(String(channelName.reversed())).internal
@@ -120,7 +145,4 @@ class RestClientChannels: QuickSpec {
                         expect(channels).to(contain((channel as! ARTRestChannel).internal))
                     }
                 }
-            }
-        }
-    }
 }

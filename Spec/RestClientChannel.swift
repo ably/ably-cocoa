@@ -3,30 +3,135 @@ import Nimble
 import Quick
 import Foundation
 import SwiftyJSON
+        private var client: ARTRest!
+        private var channel: ARTRestChannel!
+        private var testHTTPExecutor: TestProxyHTTPExecutor!
+                private let channelName = "test-message-size"
 
-class RestClientChannel: QuickSpec {
-    override func spec() {
-        var client: ARTRest!
-        var channel: ARTRestChannel!
-        var testHTTPExecutor: TestProxyHTTPExecutor!
+                private func assertMessagePayloadId(id: String?, expectedSerial: String) {
+                    guard let id = id else {
+                        fail("Message.id from payload is nil"); return
+                    }
 
-        beforeEach {
+                    let idParts = id.split(separator: ":")
+
+                    if idParts.count != 2 {
+                        fail("Message.id from payload should have baseId and serial separated by a colon"); return
+                    }
+
+                    let baseId = String(idParts[0])
+                    let serial = String(idParts[1])
+
+                    guard let baseIdData = Data(base64Encoded: baseId) else {
+                        fail("BaseId should be a base64 encoded string"); return
+                    }
+
+                    expect(baseIdData.bytes.count) == 9
+                    expect(serial).to(equal(expectedSerial))
+                }
+            private let presenceFixtures = appSetupJson["post_apps"]["channels"][0]["presence"]
+
+            private let text = "John"
+            private let integer = "5"
+            private let decimal = "65.33"
+            private let dictionary = ["number": 3, "name": "John"] as [String : Any]
+            private let array = ["John", "Mary"]
+            private let binaryData = "123456".data(using: .utf8)!
+
+                private func testSupportsAESEncryptionWithKeyLength(_ encryptionKeyLength: UInt) {
+                    let options = AblyTests.commonAppSetup()
+                    let client = ARTRest(options: options)
+                    client.internal.httpExecutor = testHTTPExecutor
+                    
+                    let params: ARTCipherParams = ARTCrypto.getDefaultParams([
+                        "key": ARTCrypto.generateRandomKey(encryptionKeyLength)
+                    ])
+                    expect(params.algorithm).to(equal("AES"))
+                    expect(params.keyLength).to(equal(encryptionKeyLength))
+                    expect(params.mode).to(equal("CBC"))
+                    
+                    let channelOptions = ARTChannelOptions(cipher: params)
+                    let channel = client.channels.get("test", options: channelOptions)
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish("test", data: "message1") { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+                    
+                    guard let httpBody = testHTTPExecutor.requests.last?.httpBody else {
+                        fail("HTTPBody is empty")
+                        return
+                    }
+                    let httpBodyAsJSON = AblyTests.msgpackToJSON(httpBody)
+                    expect(httpBodyAsJSON["encoding"].string).to(equal("utf-8/cipher+aes-\(encryptionKeyLength)-cbc/base64"))
+                    expect(httpBodyAsJSON["name"].string).to(equal("test"))
+                    expect(httpBodyAsJSON["data"].string).toNot(equal("message1"))
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.history { result, error in
+                            expect(error).to(beNil())
+                            guard let result = result else {
+                                fail("PaginatedResult is empty"); done()
+                                return
+                            }
+                            expect(result.hasNext).to(beFalse())
+                            expect(result.isLast).to(beTrue())
+                            let items = result.items
+                            if result.items.isEmpty {
+                                fail("PaginatedResult has no items"); done()
+                                return
+                            }
+                            expect(items[0].name).to(equal("test"))
+                            expect(items[0].data as? String).to(equal("message1"))
+                            done()
+                        }
+                    }
+                }
+
+class RestClientChannel: XCTestCase {
+
+override class var defaultTestSuite : XCTestSuite {
+    let _ = client
+    let _ = channel
+    let _ = testHTTPExecutor
+    let _ = channelName
+    let _ = presenceFixtures
+    let _ = text
+    let _ = integer
+    let _ = decimal
+    let _ = dictionary
+    let _ = array
+    let _ = binaryData
+
+    return super.defaultTestSuite
+}
+
+
+        func beforeEach() {
+print("START HOOK: RestClientChannel.beforeEach")
+
             let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
             client = ARTRest(options: options)
             channel = client.channels.get(ProcessInfo.processInfo.globallyUniqueString)
             testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+print("END HOOK: RestClientChannel.beforeEach")
+
         }
 
         // RSL1
-        describe("publish") {
+        
             struct PublishArgs {
                 static let name = "foo"
                 static let data = "bar"
             }
 
             // RSL1b
-            context("with name and data arguments") {
-                it("publishes the message and invokes callback with success") {
+            
+                func test__005__publish__with_name_and_data_arguments__publishes_the_message_and_invokes_callback_with_success() {
+beforeEach()
+
                     var publishError: ARTErrorInfo? = ARTErrorInfo.create(from: NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
 
@@ -41,11 +146,12 @@ class RestClientChannel: QuickSpec {
                     expect(publishedMessage?.name).toEventually(equal(PublishArgs.name), timeout: testTimeout)
                     expect(publishedMessage?.data as? String).toEventually(equal(PublishArgs.data), timeout: testTimeout)
                 }
-            }
 
             // RSL1b, RSL1e
-            context("with name only") {
-                it("publishes the message and invokes callback with success") {
+            
+                func test__006__publish__with_name_only__publishes_the_message_and_invokes_callback_with_success() {
+beforeEach()
+
                     var publishError: ARTErrorInfo? = ARTErrorInfo.create(from: NSError(domain: "io.ably.XCTest", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
 
@@ -60,11 +166,12 @@ class RestClientChannel: QuickSpec {
                     expect(publishedMessage?.name).toEventually(equal(PublishArgs.name), timeout: testTimeout)
                     expect(publishedMessage?.data).toEventually(beNil(), timeout: testTimeout)
                 }
-            }
 
             // RSL1b, RSL1e
-            context("with data only") {
-                it("publishes the message and invokes callback with success") {
+            
+                func test__007__publish__with_data_only__publishes_the_message_and_invokes_callback_with_success() {
+beforeEach()
+
                     var publishError: ARTErrorInfo? = ARTErrorInfo.create(from: NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
 
@@ -79,11 +186,12 @@ class RestClientChannel: QuickSpec {
                     expect(publishedMessage?.name).toEventually(beNil(), timeout: testTimeout)
                     expect(publishedMessage?.data as? String).toEventually(equal(PublishArgs.data), timeout: testTimeout)
                 }
-            }
 
             // RSL1b, RSL1e
-            context("with neither name nor data") {
-                it("publishes the message and invokes callback with success") {
+            
+                func test__008__publish__with_neither_name_nor_data__publishes_the_message_and_invokes_callback_with_success() {
+beforeEach()
+
                     var publishError: ARTErrorInfo? = ARTErrorInfo.create(from: NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
 
@@ -101,10 +209,11 @@ class RestClientChannel: QuickSpec {
                     expect(publishedMessage?.name).to(beNil())
                     expect(publishedMessage?.data).to(beNil())
                 }
-            }
 
-            context("with a Message object") {
-                it("publishes the message and invokes callback with success") {
+            
+                func test__009__publish__with_a_Message_object__publishes_the_message_and_invokes_callback_with_success() {
+beforeEach()
+
                     var publishError: ARTErrorInfo? = ARTErrorInfo.create(from: NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
 
@@ -122,11 +231,12 @@ class RestClientChannel: QuickSpec {
                     expect(publishedMessage?.name).to(equal(PublishArgs.name))
                     expect(publishedMessage?.data as? String).to(equal(PublishArgs.data))
                 }
-            }
 
             // RSL1c
-            context("with an array of Message objects") {
-                it("publishes the messages in a single request and invokes callback with success") {
+            
+                func test__010__publish__with_an_array_of_Message_objects__publishes_the_messages_in_a_single_request_and_invokes_callback_with_success() {
+beforeEach()
+
                     let oldExecutor = client.internal.httpExecutor
                     defer { client.internal.httpExecutor = oldExecutor}
                     client.internal.httpExecutor = testHTTPExecutor
@@ -156,12 +266,13 @@ class RestClientChannel: QuickSpec {
                     }
                     expect(testHTTPExecutor.requests.count).to(equal(1))
                 }
-            }
 
             // RSL1f
-            context("Unidentified clients using Basic Auth") {
+            
                 // RSL1f1
-                it("should publish message with the provided clientId") {
+                func test__011__publish__Unidentified_clients_using_Basic_Auth__should_publish_message_with_the_provided_clientId() {
+beforeEach()
+
                     let client = ARTRest(options: AblyTests.commonAppSetup())
                     let channel = client.channels.get("test")
                     waitUntil(timeout: testTimeout) { done in
@@ -182,13 +293,14 @@ class RestClientChannel: QuickSpec {
                         }
                     }
                 }
-            }
 
             // RSA7e
-            context("ClientOptions clientId") {
+            
 
                 // RSA7e1
-                it("should include the clientId as a querystring parameter in realtime connection requests") {
+                func test__012__publish__ClientOptions_clientId__should_include_the_clientId_as_a_querystring_parameter_in_realtime_connection_requests() {
+beforeEach()
+
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "john-doe"
                     let client = AblyTests.newRealtime(options)
@@ -208,7 +320,9 @@ class RestClientChannel: QuickSpec {
                 }
 
                 // RSA7e2
-                it("should include an X-Ably-ClientId header with value set to the clientId as Base64 encoded string in REST connection requests") {
+                func test__013__publish__ClientOptions_clientId__should_include_an_X_Ably_ClientId_header_with_value_set_to_the_clientId_as_Base64_encoded_string_in_REST_connection_requests() {
+beforeEach()
+
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "john-doe"
                     let client = ARTRest(options: options)
@@ -231,13 +345,13 @@ class RestClientChannel: QuickSpec {
                     }
                 }
 
-            }
-
             // RSL1m
-            context("Message clientId") {
+            
 
                 // RSL1m1
-                it("publishing with no clientId when the clientId is set to some value in the client options should result in a message received with the clientId property set to that value") {
+                func test__014__publish__Message_clientId__publishing_with_no_clientId_when_the_clientId_is_set_to_some_value_in_the_client_options_should_result_in_a_message_received_with_the_clientId_property_set_to_that_value() {
+beforeEach()
+
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "client-rest"
                     let expectedClientId = options.clientId
@@ -266,7 +380,9 @@ class RestClientChannel: QuickSpec {
                 }
 
                 // RSL1m2
-                it("publishing with a clientId set to the same value as the clientId in the client options should result in a message received with the clientId property set to that value") {
+                func test__015__publish__Message_clientId__publishing_with_a_clientId_set_to_the_same_value_as_the_clientId_in_the_client_options_should_result_in_a_message_received_with_the_clientId_property_set_to_that_value() {
+beforeEach()
+
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "client-rest"
                     let expectedClientId = options.clientId!
@@ -295,7 +411,9 @@ class RestClientChannel: QuickSpec {
                 }
 
                 // RSL1m3
-                it("publishing with a clientId set to a value from an unidentified client should result in a message received with the clientId property set to that value") {
+                func test__016__publish__Message_clientId__publishing_with_a_clientId_set_to_a_value_from_an_unidentified_client_should_result_in_a_message_received_with_the_clientId_property_set_to_that_value() {
+beforeEach()
+
                     let expectedClientId = "client-rest"
                     let options = AblyTests.commonAppSetup()
                     let rest = ARTRest(options: options)
@@ -322,7 +440,9 @@ class RestClientChannel: QuickSpec {
                 }
 
                 // RSL1m4
-                it("publishing with a clientId set to a different value from the clientId in the client options should result in a message being rejected by the server") {
+                func test__017__publish__Message_clientId__publishing_with_a_clientId_set_to_a_different_value_from_the_clientId_in_the_client_options_should_result_in_a_message_being_rejected_by_the_server() {
+beforeEach()
+
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "client-rest"
                     let rest = ARTRest(options: options)
@@ -348,10 +468,10 @@ class RestClientChannel: QuickSpec {
                     }
                 }
 
-            }
-
             // https://github.com/ably/ably-cocoa/issues/1074 and related with RSL1m
-            it("should not fail sending a message with no clientId in the client options and credentials that can assume any clientId") {
+            func test__001__publish__should_not_fail_sending_a_message_with_no_clientId_in_the_client_options_and_credentials_that_can_assume_any_clientId() {
+beforeEach()
+
                 let options = AblyTests.clientOptions()
                 options.authCallback = { _, callback in
                     getTestTokenDetails(clientId: "*") { token, error in
@@ -379,7 +499,9 @@ class RestClientChannel: QuickSpec {
             }
 
             // RSL1h
-            it("should provide an optional argument that allows the clientId value to be specified") {
+            func test__002__publish__should_provide_an_optional_argument_that_allows_the_clientId_value_to_be_specified() {
+beforeEach()
+
                 let options = AblyTests.commonAppSetup()
                 options.clientId = "john"
                 let client = ARTRest(options: options)
@@ -393,7 +515,9 @@ class RestClientChannel: QuickSpec {
             }
 
             // RSL1h, RSL6a2
-            it("should provide an optional argument that allows the extras value to be specified") {
+            func test__003__publish__should_provide_an_optional_argument_that_allows_the_extras_value_to_be_specified() {
+beforeEach()
+
                 let options = AblyTests.commonAppSetup()
                 // Prevent channel name to be prefixed by test-*
                 options.channelNamePrefix = nil
@@ -433,10 +557,11 @@ class RestClientChannel: QuickSpec {
             }
 
             // RSL1i
-            context("If the total size of message(s) exceeds the maxMessageSize") {
-                let channelName = "test-message-size"
+            
 
-                it("the client library should reject the publish and indicate an error") {
+                func test__018__publish__If_the_total_size_of_message_s__exceeds_the_maxMessageSize__the_client_library_should_reject_the_publish_and_indicate_an_error() {
+beforeEach()
+
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRest(options: options)
                     let channel = client.channels.get(channelName)
@@ -450,7 +575,9 @@ class RestClientChannel: QuickSpec {
                     }
                 }
 
-                it("also when using publish:data:clientId:extras") {
+                func test__019__publish__If_the_total_size_of_message_s__exceeds_the_maxMessageSize__also_when_using_publish_data_clientId_extras() {
+beforeEach()
+
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRest(options: options)
                     let channel = client.channels.get(channelName)
@@ -463,13 +590,14 @@ class RestClientChannel: QuickSpec {
                         }
                     }
                 }
-            }
 
             // RSL1k
-            context("idempotent publishing") {
+            
 
                 // TO3n
-                it("idempotentRestPublishing option") {
+                func test__020__publish__idempotent_publishing__idempotentRestPublishing_option() {
+beforeEach()
+
                     expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "2")) == true
                     expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "2.0.0")) == true
                     expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "1.1")) == false
@@ -486,32 +614,12 @@ class RestClientChannel: QuickSpec {
                     expect(options.idempotentRestPublishing) == true
                 }
 
-                func assertMessagePayloadId(id: String?, expectedSerial: String) {
-                    guard let id = id else {
-                        fail("Message.id from payload is nil"); return
-                    }
-
-                    let idParts = id.split(separator: ":")
-
-                    if idParts.count != 2 {
-                        fail("Message.id from payload should have baseId and serial separated by a colon"); return
-                    }
-
-                    let baseId = String(idParts[0])
-                    let serial = String(idParts[1])
-
-                    guard let baseIdData = Data(base64Encoded: baseId) else {
-                        fail("BaseId should be a base64 encoded string"); return
-                    }
-
-                    expect(baseIdData.bytes.count) == 9
-                    expect(serial).to(equal(expectedSerial))
-                }
-
                 // RSL1k1
-                context("random idempotent publish id") {
+                
 
-                    it("should generate for one message with empty id") {
+                    func test__027__publish__idempotent_publishing__random_idempotent_publish_id__should_generate_for_one_message_with_empty_id() {
+beforeEach()
+
                         let message = ARTMessage(name: nil, data: "foo")
                         expect(message.id).to(beNil())
 
@@ -537,7 +645,9 @@ class RestClientChannel: QuickSpec {
                         expect(message.id).to(beNil())
                     }
 
-                    it("should generate for multiple messages with empty id") {
+                    func test__028__publish__idempotent_publishing__random_idempotent_publish_id__should_generate_for_multiple_messages_with_empty_id() {
+beforeEach()
+
                         let message1 = ARTMessage(name: nil, data: "foo1")
                         expect(message1.id).to(beNil())
                         let message2 = ARTMessage(name: "john", data: "foo2")
@@ -569,10 +679,11 @@ class RestClientChannel: QuickSpec {
                         // Same Base ID
                         expect(id1?.split(separator: ":").first).to(equal(id2?.split(separator: ":").first))
                     }
-                }
 
                 // RSL1k2
-                it("should not generate for message with a non empty id") {
+                func test__021__publish__idempotent_publishing__should_not_generate_for_message_with_a_non_empty_id() {
+beforeEach()
+
                     let message = ARTMessage(name: nil, data: "foo")
                     message.id = "123"
 
@@ -597,7 +708,9 @@ class RestClientChannel: QuickSpec {
                     expect(json.arrayValue.first?["id"].string).to(equal("123"))
                 }
 
-                it("should generate for internal message that is created in publish(name:data:) method") {
+                func test__022__publish__idempotent_publishing__should_generate_for_internal_message_that_is_created_in_publish_name_data___method() {
+beforeEach()
+
                     let rest = ARTRest(key: "xxxx:xxxx")
                     rest.internal.options.idempotentRestPublishing = true
                     let mockHTTPExecutor = MockHTTPExecutor()
@@ -620,7 +733,9 @@ class RestClientChannel: QuickSpec {
                 }
 
                 // RSL1k3
-                it("should not generate for multiple messages with a non empty id") {
+                func test__023__publish__idempotent_publishing__should_not_generate_for_multiple_messages_with_a_non_empty_id() {
+beforeEach()
+
                     let message1 = ARTMessage(name: nil, data: "foo1")
                     expect(message1.id).to(beNil())
                     let message2 = ARTMessage(name: "john", data: "foo2")
@@ -648,7 +763,9 @@ class RestClientChannel: QuickSpec {
                     expect(json.arrayValue.last?["id"].string).to(equal("123"))
                 }
 
-                it("should not generate when idempotentRestPublishing flag is off") {
+                func test__024__publish__idempotent_publishing__should_not_generate_when_idempotentRestPublishing_flag_is_off() {
+beforeEach()
+
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.idempotentRestPublishing = false
 
@@ -679,7 +796,9 @@ class RestClientChannel: QuickSpec {
                 }
 
                 // RSL1k4
-                it("should have only one published message") {
+                func test__025__publish__idempotent_publishing__should_have_only_one_published_message() {
+beforeEach()
+
                     client.internal.options.idempotentRestPublishing = true
                     client.internal.httpExecutor = testHTTPExecutor
                     client.internal.options.fallbackHostsUseDefault = true
@@ -722,7 +841,9 @@ class RestClientChannel: QuickSpec {
                 }
 
                 // RSL1k5
-                it("should publish a message with implicit Id only once") {
+                func test__026__publish__idempotent_publishing__should_publish_a_message_with_implicit_Id_only_once() {
+beforeEach()
+
                     let options = AblyTests.commonAppSetup()
                     let rest = ARTRest(options: options)
                     rest.internal.options.idempotentRestPublishing = true
@@ -752,10 +873,11 @@ class RestClientChannel: QuickSpec {
                         }
                     }
                 }
-            }
           
             // RSL1j
-            it("should include attributes supplied by the caller in the encoded message") {
+            func test__004__publish__should_include_attributes_supplied_by_the_caller_in_the_encoded_message() {
+beforeEach()
+
                 let options = AblyTests.commonAppSetup()
                 let client = ARTRest(options: options)
                 let proxyHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
@@ -784,13 +906,14 @@ class RestClientChannel: QuickSpec {
                 expect(jsonMessage["data"].string).to(equal(""))
                 expect(jsonMessage["id"].string).to(equal(message.id))
             }
-        }
 
         // RSL2
-        describe("history") {
+        
 
             // RSL2a
-            it("should return a PaginatedResult page containing the first page of messages") {
+            func test__029__history__should_return_a_PaginatedResult_page_containing_the_first_page_of_messages() {
+beforeEach()
+
                 let client = ARTRest(options: AblyTests.commonAppSetup())
                 let channel = client.channels.get("foo")
 
@@ -865,10 +988,12 @@ class RestClientChannel: QuickSpec {
             }
 
             // RSL2b
-            context("query arguments") {
+            
 
                 // RSL2b1
-                it("start and end should filter messages between those two times") {
+                func test__030__history__query_arguments__start_and_end_should_filter_messages_between_those_two_times() {
+beforeEach()
+
                     let client = ARTRest(options: AblyTests.commonAppSetup())
                     let channel = client.channels.get("test")
 
@@ -927,7 +1052,9 @@ class RestClientChannel: QuickSpec {
                 }
 
                 // RSL2b1
-                it("start must be equal to or less than end and is unaffected by the request direction") {
+                func test__031__history__query_arguments__start_must_be_equal_to_or_less_than_end_and_is_unaffected_by_the_request_direction() {
+beforeEach()
+
                     let client = ARTRest(options: AblyTests.commonAppSetup())
                     let channel = client.channels.get("test")
 
@@ -948,7 +1075,9 @@ class RestClientChannel: QuickSpec {
                 }
 
                 // RSL2b2
-                it("direction backwards or forwards") {
+                func test__032__history__query_arguments__direction_backwards_or_forwards() {
+beforeEach()
+
                     let client = ARTRest(options: AblyTests.commonAppSetup())
                     let channel = client.channels.get("test")
 
@@ -989,7 +1118,9 @@ class RestClientChannel: QuickSpec {
                 }
 
                 // RSL2b3
-                it("limit items result") {
+                func test__033__history__query_arguments__limit_items_result() {
+beforeEach()
+
                     let client = ARTRest(options: AblyTests.commonAppSetup())
                     let channel = client.channels.get("test")
 
@@ -1027,7 +1158,9 @@ class RestClientChannel: QuickSpec {
                 }
 
                 // RSL2b3
-                it("limit supports up to 1000 items") {
+                func test__034__history__query_arguments__limit_supports_up_to_1000_items() {
+beforeEach()
+
                     let client = ARTRest(options: AblyTests.commonAppSetup())
                     let channel = client.channels.get("test")
 
@@ -1041,17 +1174,14 @@ class RestClientChannel: QuickSpec {
                   expect{ try channel.history(query, callback: { _ , _  in }) }.toNot(throwError())
                 }
 
-            }
-
-        }
-
         // RSL3, RSP1
-        xdescribe("presence") {
-            let presenceFixtures = appSetupJson["post_apps"]["channels"][0]["presence"]
+        
 
             // RSP3
-            context("get") {
-                it("should return presence fixture data") {
+            
+                func skipped__test__035__presence__get__should_return_presence_fixture_data() {
+beforeEach()
+
                     let options = AblyTests.commonAppSetup()
                     options.channelNamePrefix = nil
                     client = ARTRest(options: options)
@@ -1089,26 +1219,19 @@ class RestClientChannel: QuickSpec {
                         expect(message.data as? NSObject).to(equal(encodedFixture.data as? NSObject));
                     }
                 }
-            }
-        }
 
         // RSL4
-        describe("message encoding") {
+        
 
             struct TestCase {
                 let value: Any?
                 let expected: JSON
             }
 
-            let text = "John"
-            let integer = "5"
-            let decimal = "65.33"
-            let dictionary = ["number": 3, "name": "John"] as [String : Any]
-            let array = ["John", "Mary"]
-            let binaryData = "123456".data(using: .utf8)!
-
             // RSL4a
-            it("payloads should be binary, strings, or objects capable of JSON representation") {
+            func test__036__message_encoding__payloads_should_be_binary__strings__or_objects_capable_of_JSON_representation() {
+beforeEach()
+
                 let validCases: [TestCase]
                 if #available(iOS 11.0, *) {
                     validCases = [
@@ -1171,7 +1294,9 @@ class RestClientChannel: QuickSpec {
             }
 
             // RSL4b
-            it("encoding attribute should represent the encoding(s) applied in right to left") {
+            func test__037__message_encoding__encoding_attribute_should_represent_the_encoding_s__applied_in_right_to_left() {
+beforeEach()
+
                 let encodingCases = [
                     TestCase(value: text, expected: JSON.null),
                     TestCase(value: dictionary, expected: "json"),
@@ -1196,9 +1321,11 @@ class RestClientChannel: QuickSpec {
                 }
             }
 
-            context("json") {
+            
                 // RSL4d1
-                it("binary payload should be encoded as Base64 and represented as a JSON string") {
+                func test__038__message_encoding__json__binary_payload_should_be_encoded_as_Base64_and_represented_as_a_JSON_string() {
+beforeEach()
+
                     client.internal.httpExecutor = testHTTPExecutor
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(nil, data: binaryData, callback: { error in
@@ -1217,7 +1344,9 @@ class RestClientChannel: QuickSpec {
                 }
 
                 // RSL4d
-                it("string payload should be represented as a JSON string") {
+                func test__039__message_encoding__json__string_payload_should_be_represented_as_a_JSON_string() {
+beforeEach()
+
                     client.internal.httpExecutor = testHTTPExecutor
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(nil, data: text, callback: { error in
@@ -1238,9 +1367,11 @@ class RestClientChannel: QuickSpec {
                 }
 
                 // RSL4d3
-                context("json payload should be stringified either") {
+                
 
-                    it("as a JSON Array") {
+                    func test__041__message_encoding__json__json_payload_should_be_stringified_either__as_a_JSON_Array() {
+beforeEach()
+
                         client.internal.httpExecutor = testHTTPExecutor
                         // JSON Array
                         waitUntil(timeout: testTimeout) { done in
@@ -1261,7 +1392,9 @@ class RestClientChannel: QuickSpec {
                         }
                     }
 
-                    it("as a JSON Object") {
+                    func test__042__message_encoding__json__json_payload_should_be_stringified_either__as_a_JSON_Object() {
+beforeEach()
+
                         client.internal.httpExecutor = testHTTPExecutor
                         // JSON Object
                         waitUntil(timeout: testTimeout) { done in
@@ -1282,10 +1415,10 @@ class RestClientChannel: QuickSpec {
                         }
                     }
 
-                }
-
                 // RSL4d4
-                it("messages received should be decoded based on the encoding field") {
+                func test__040__message_encoding__json__messages_received_should_be_decoded_based_on_the_encoding_field() {
+beforeEach()
+
                     let cases = [text, integer, decimal, dictionary, array, binaryData] as [Any]
 
                     cases.forEach { caseTest in
@@ -1330,83 +1463,32 @@ class RestClientChannel: QuickSpec {
                     }
                     expect(totalReceived).toEventually(equal(cases.count), timeout: testTimeout)
                 }
-            }
-        }
 
         // RSL5
-        describe("message payload encryption") {
+        
 
             // RSL5b
-            context("should support AES encryption") {
-
-                func testSupportsAESEncryptionWithKeyLength(_ encryptionKeyLength: UInt) {
-                    let options = AblyTests.commonAppSetup()
-                    let client = ARTRest(options: options)
-                    client.internal.httpExecutor = testHTTPExecutor
-                    
-                    let params: ARTCipherParams = ARTCrypto.getDefaultParams([
-                        "key": ARTCrypto.generateRandomKey(encryptionKeyLength)
-                    ])
-                    expect(params.algorithm).to(equal("AES"))
-                    expect(params.keyLength).to(equal(encryptionKeyLength))
-                    expect(params.mode).to(equal("CBC"))
-                    
-                    let channelOptions = ARTChannelOptions(cipher: params)
-                    let channel = client.channels.get("test", options: channelOptions)
-                    
-                    waitUntil(timeout: testTimeout) { done in
-                        channel.publish("test", data: "message1") { error in
-                            expect(error).to(beNil())
-                            done()
-                        }
-                    }
-                    
-                    guard let httpBody = testHTTPExecutor.requests.last?.httpBody else {
-                        fail("HTTPBody is empty")
-                        return
-                    }
-                    let httpBodyAsJSON = AblyTests.msgpackToJSON(httpBody)
-                    expect(httpBodyAsJSON["encoding"].string).to(equal("utf-8/cipher+aes-\(encryptionKeyLength)-cbc/base64"))
-                    expect(httpBodyAsJSON["name"].string).to(equal("test"))
-                    expect(httpBodyAsJSON["data"].string).toNot(equal("message1"))
-                    
-                    waitUntil(timeout: testTimeout) { done in
-                        channel.history { result, error in
-                            expect(error).to(beNil())
-                            guard let result = result else {
-                                fail("PaginatedResult is empty"); done()
-                                return
-                            }
-                            expect(result.hasNext).to(beFalse())
-                            expect(result.isLast).to(beTrue())
-                            let items = result.items
-                            if result.items.isEmpty {
-                                fail("PaginatedResult has no items"); done()
-                                return
-                            }
-                            expect(items[0].name).to(equal("test"))
-                            expect(items[0].data as? String).to(equal("message1"))
-                            done()
-                        }
-                    }
-                }
+            
                 
-                it("128 CBC mode") {
+                func test__043__message_payload_encryption__should_support_AES_encryption__128_CBC_mode() {
+beforeEach()
+
                     testSupportsAESEncryptionWithKeyLength(128)
                 }
                 
-                it("256 CBC mode") {
+                func test__044__message_payload_encryption__should_support_AES_encryption__256_CBC_mode() {
+beforeEach()
+
                     testSupportsAESEncryptionWithKeyLength(256)
                 }
-            }
-
-        }
 
         // RSL6
-        describe("message decoding") {
+        
 
             // RSL6b
-            it("should deliver with a binary payload when the payload was successfully decoded but it could not be decrypted") {
+            func test__045__message_decoding__should_deliver_with_a_binary_payload_when_the_payload_was_successfully_decoded_but_it_could_not_be_decrypted() {
+beforeEach()
+
                 let options = AblyTests.commonAppSetup()
                 let clientEncrypted = ARTRest(options: options)
 
@@ -1441,7 +1523,9 @@ class RestClientChannel: QuickSpec {
             }
 
             // RSL6b
-            it("should deliver with encoding attribute set indicating the residual encoding and error should be emitted") {
+            func test__046__message_decoding__should_deliver_with_encoding_attribute_set_indicating_the_residual_encoding_and_error_should_be_emitted() {
+beforeEach()
+
                 let options = AblyTests.commonAppSetup()
                 options.useBinaryProtocol = false
                 options.logHandler = ARTLog(capturingOutput: true)
@@ -1483,8 +1567,4 @@ class RestClientChannel: QuickSpec {
                     }
                 }
             }
-
-        }
-
-    }
 }

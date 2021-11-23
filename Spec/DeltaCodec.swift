@@ -3,13 +3,7 @@ import Quick
 import Nimble
 import AblyDeltaCodec
 
-class DeltaCodec: QuickSpec {
-    override func spec() {
-        describe("DeltaCodec") {
-
-            context("decoding") {
-
-                let testData: [String] = [
+                private let testData: [String] = [
                     "{ foo: \"bar\", count: 1, status: \"active\" }",
                     "{ foo: \"bar\", count: 2, status: \"active\" }",
                     "{ foo: \"bar\", count: 2, status: \"inactive\" }",
@@ -17,8 +11,20 @@ class DeltaCodec: QuickSpec {
                     "{ foo: \"bar\", count: 3, status: \"active\" }"
                 ]
 
+class DeltaCodec: XCTestCase {
+
+override class var defaultTestSuite : XCTestSuite {
+    let _ = testData
+
+    return super.defaultTestSuite
+}
+
+        
+
+            
+
                 // RTL19
-                it("should decode vcdiff encoded messages") {
+                func test__001__DeltaCodec__decoding__should_decode_vcdiff_encoded_messages() {
                     let options = AblyTests.commonAppSetup()
                     let client = AblyTests.newRealtime(options)
                     defer { client.dispose(); client.close() }
@@ -72,7 +78,7 @@ class DeltaCodec: QuickSpec {
                 }
 
                 // RTL20
-                it("should fail and recover when the vcdiff messages are out of order") {
+                func test__002__DeltaCodec__decoding__should_fail_and_recover_when_the_vcdiff_messages_are_out_of_order() {
                     let options = AblyTests.commonAppSetup()
                     let client = AblyTests.newRealtime(options)
                     defer { client.dispose(); client.close() }
@@ -130,7 +136,7 @@ class DeltaCodec: QuickSpec {
                 }
 
                 // RTL18
-                it("should recover when the vcdiff message decoding fails") {
+                func test__003__DeltaCodec__decoding__should_recover_when_the_vcdiff_message_decoding_fails() {
                     let options = AblyTests.commonAppSetup()
                     let client = AblyTests.newRealtime(options)
                     defer { client.dispose(); client.close() }
@@ -184,9 +190,4 @@ class DeltaCodec: QuickSpec {
 
                     expect(receivedMessages).toEventually(haveCount(testData.count))
                 }
-
-            }
-
-        }
-    }
 }

@@ -1,18 +1,24 @@
 import Ably
 import Quick
 import Nimble
-
-class ObjectLifetimes: QuickSpec {
-    override func spec() {
-        describe("ObjectLifetimes") {
-            let options: ARTClientOptions = {
+            private let options: ARTClientOptions = {
                 let options = ARTClientOptions(key: "fake:key")
                 options.autoConnect = false
                 return options
             }()
+
+class ObjectLifetimes: XCTestCase {
+
+override class var defaultTestSuite : XCTestSuite {
+    let _ = options
+
+    return super.defaultTestSuite
+}
+
+        
             
-            context("user code releases public object") {
-                it("the object's internal child's back-reference is released too") {
+            
+                func test__001__ObjectLifetimes__user_code_releases_public_object__the_object_s_internal_child_s_back_reference_is_released_too() {
                     var realtime: ARTRealtime? = ARTRealtime(options: options)
                     weak var internalRealtime: ARTRealtimeInternal? = realtime!.internal
                     weak var internalConn: ARTConnectionInternal? = realtime!.connection.internal
@@ -39,10 +45,9 @@ class ObjectLifetimes: QuickSpec {
                         }
                     }
                 }
-            }
 
-            context("user code holds only reference to public object's public child") {
-                it("still can access parent's internal object") {
+            
+                func test__002__ObjectLifetimes__user_code_holds_only_reference_to_public_object_s_public_child__still_can_access_parent_s_internal_object() {
                     let conn = ARTRealtime(options: options).connection
 
                     waitUntil(timeout: testTimeout) { done in
@@ -52,8 +57,8 @@ class ObjectLifetimes: QuickSpec {
                     }
                 }
                 
-                context("when it's released") {
-                    it("schedules async release of parent's internal object in internal queue") {
+                
+                    func test__003__ObjectLifetimes__user_code_holds_only_reference_to_public_object_s_public_child__when_it_s_released__schedules_async_release_of_parent_s_internal_object_in_internal_queue() {
                         var conn: ARTConnection? = ARTRealtime(options: options).connection
                         weak var weakConn = conn!.internal_nosync
 
@@ -74,11 +79,9 @@ class ObjectLifetimes: QuickSpec {
                             }
                         }
                     }
-                }
-            }
             
-            context("when user leaves Realtime open") {
-                it("still works") {
+            
+                func test__004__ObjectLifetimes__when_user_leaves_Realtime_open__still_works() {
                     let options = AblyTests.commonAppSetup()
                     
                     var client: ARTRealtime? = ARTRealtime(options: options)
@@ -97,10 +100,9 @@ class ObjectLifetimes: QuickSpec {
                         })
                     }
                 }
-            }
 
-            context("when Realtime is closed and user loses its reference") {
-                it("channels don't leak") {
+            
+                func test__005__ObjectLifetimes__when_Realtime_is_closed_and_user_loses_its_reference__channels_don_t_leak() {
                     let options = AblyTests.commonAppSetup()
 
                     var client: ARTRealtime? = ARTRealtime(options: options)
@@ -139,7 +141,4 @@ class ObjectLifetimes: QuickSpec {
                         }
                     }
                 }
-            }
-        }
-    }
 }

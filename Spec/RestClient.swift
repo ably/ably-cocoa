@@ -2,14 +2,145 @@ import Ably
 import Nimble
 import Quick
 
-class RestClient: QuickSpec {
-    override func spec() {
+        private var testHTTPExecutor: TestProxyHTTPExecutor!
+                    
+                    private func testOptionsGiveBasicAuthFalse(_ caseSetter: (ARTAuthOptions) -> Void) {
+                        let options = ARTClientOptions()
+                        caseSetter(options)
+                        
+                        let client = ARTRest(options: options)
+                        
+                        expect(client.auth.internal.options.isBasicAuth()).to(beFalse())
+                    }
+                    private let expectedHostOrder = [4, 3, 0, 2, 1]
 
-        var testHTTPExecutor: TestProxyHTTPExecutor!
+                    private let originalARTFallback_shuffleArray = ARTFallback_shuffleArray
 
-        describe("RestClient") {
+                    private let _fallbackHosts = ["f.ably-realtime.com", "g.ably-realtime.com", "h.ably-realtime.com", "i.ably-realtime.com", "j.ably-realtime.com"]
+
+                    private func testUsesAlternativeHost(_ caseTest: FakeNetworkResponse) {
+                        let options = ARTClientOptions(key: "xxxx:xxxx")
+                        let client = ARTRest(options: options)
+                        let mockHTTP = MockHTTP(logger: options.logHandler)
+                        testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: options.logHandler)
+                        client.internal.httpExecutor = testHTTPExecutor
+                        mockHTTP.setNetworkState(network: caseTest, resetAfter: 1)
+                        let channel = client.channels.get("test")
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish(nil, data: "nil") { _ in
+                                done()
+                            }
+                        }
+
+                        expect(testHTTPExecutor.requests).to(haveCount(2))
+                        if testHTTPExecutor.requests.count != 2 {
+                            return
+                        }
+                        expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
+                        expect(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+                    }
+                    
+                    private func testStoresSuccessfulFallbackHostAsDefaultHost(_ caseTest: FakeNetworkResponse) {
+                        let options = ARTClientOptions(key: "xxxx:xxxx")
+                        let client = ARTRest(options: options)
+                        let mockHTTP = MockHTTP(logger: options.logHandler)
+                        testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: options.logHandler)
+                        client.internal.httpExecutor = testHTTPExecutor
+                        mockHTTP.setNetworkState(network: caseTest, resetAfter: 1)
+                        let channel = client.channels.get("test")
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish(nil, data: "nil") { _ in
+                                done()
+                            }
+                        }
+
+                        expect(testHTTPExecutor.requests).to(haveCount(2))
+                        expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.host, pattern: "rest.ably.io")).to(beTrue())
+                        expect(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.host, pattern: "[a-e].ably-realtime.com")).to(beTrue())
+                        
+                        //#1 Store fallback used to request
+                        let usedFallbackURL = testHTTPExecutor.requests[1].url!
+                        
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish(nil, data: "nil") { _ in
+                                done()
+                            }
+                        }
+                        
+                        let reusedURL = testHTTPExecutor.requests[2].url!
+                        
+                        // Reuse host has to be equal previous (stored #1) fallback host
+                        expect(testHTTPExecutor.requests).to(haveCount(3))
+                        expect(usedFallbackURL.host).to(equal(reusedURL.host))
+                    }
+                        
+                        private func testRestoresDefaultPrimaryHostAfterTimeoutExpires(_ caseTest: FakeNetworkResponse) {
+                            let options = ARTClientOptions(key: "xxxx:xxxx")
+                            options.logLevel = .debug
+                            let client = ARTRest(options: options)
+                            let mockHTTP = MockHTTP(logger: options.logHandler)
+                            testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: options.logHandler)
+                            client.internal.httpExecutor = testHTTPExecutor
+                            mockHTTP.setNetworkState(network: caseTest, resetAfter: 1)
+                            let channel = client.channels.get("test-fallback-retry-timeout")
+                            
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.publish(nil, data: "nil") { _ in
+                                    done()
+                                }
+                            }
+                            
+                            waitUntil(timeout: testTimeout) { done in
+                                delay(1.1) {
+                                    channel.publish(nil, data: "nil") { _ in
+                                        done()
+                                    }
+                                }
+                            }
+                            
+                            expect(testHTTPExecutor.requests).to(haveCount(3))
+                            expect(testHTTPExecutor.requests[2].url!.host).to(equal("rest.ably.io"))
+                        }
+
+                        private func testUsesAnotherFallbackHost(_ caseTest: FakeNetworkResponse) {
+                            let options = ARTClientOptions(key: "xxxx:xxxx")
+                            options.logLevel = .debug
+                            let client = ARTRest(options: options)
+                            let mockHTTP = MockHTTP(logger: options.logHandler)
+                            testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: options.logHandler)
+                            client.internal.httpExecutor = testHTTPExecutor
+                            mockHTTP.setNetworkState(network: caseTest, resetAfter: 2)
+                            let channel = client.channels.get("test-fallback-retry-timeout")
+                            
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.publish(nil, data: "nil") { _ in
+                                    done()
+                                }
+                            }
+                            
+                            expect(testHTTPExecutor.requests).to(haveCount(3))
+                            expect(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.host, pattern: "[a-e].ably-realtime.com")).to(beTrue())
+                            expect(NSRegularExpression.match(testHTTPExecutor.requests[2].url!.host, pattern: "[a-e].ably-realtime.com")).to(beTrue())
+                            expect(testHTTPExecutor.requests[1].url!.host).toNot(equal(testHTTPExecutor.requests[2].url!.host))
+                        }
+
+class RestClient: XCTestCase {
+
+override class var defaultTestSuite : XCTestSuite {
+    let _ = testHTTPExecutor
+    let _ = expectedHostOrder
+    let _ = originalARTFallback_shuffleArray
+    let _ = _fallbackHosts
+
+    return super.defaultTestSuite
+}
+
+
+        
             // G4
-            it("All REST requests should include the current API version") {
+            func test__001__RestClient__All_REST_requests_should_include_the_current_API_version() {
                 let options = AblyTests.commonAppSetup()
                 let client = ARTRest(options: options)
                 testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
@@ -30,8 +161,8 @@ class RestClient: QuickSpec {
             }
 
             // RSC1
-            context("initializer") {
-                it("should accept an API key") {
+            
+                func test__015__RestClient__initializer__should_accept_an_API_key() {
                     let options = AblyTests.commonAppSetup()
                     
                     let client = ARTRest(key: options.key!)
@@ -42,11 +173,11 @@ class RestClient: QuickSpec {
                     expect(publishTask.error).toEventually(beNil(), timeout: testTimeout)
                 }
 
-                it("should throw when provided an invalid key") {
+                func test__016__RestClient__initializer__should_throw_when_provided_an_invalid_key() {
                     expect{ ARTRest(key: "invalid_key") }.to(raiseException())
                 }
 
-                it("should result in error status when provided a bad key") {
+                func test__017__RestClient__initializer__should_result_in_error_status_when_provided_a_bad_key() {
                     let client = ARTRest(key: "fake:key")
 
                     let publishTask = publishTestMessage(client, failOnError: false)
@@ -54,7 +185,7 @@ class RestClient: QuickSpec {
                     expect(publishTask.error?.code).toEventually(equal(ARTErrorCode.invalidCredential.intValue), timeout:testTimeout)
                 }
 
-                it("should accept a token") {
+                func test__018__RestClient__initializer__should_accept_a_token() {
                     ARTClientOptions.setDefaultEnvironment(getEnvironment())
                     defer { ARTClientOptions.setDefaultEnvironment(nil) }
 
@@ -63,7 +194,7 @@ class RestClient: QuickSpec {
                     expect(publishTask.error).toEventually(beNil(), timeout: testTimeout)
                 }
 
-                it("should accept an options object") {
+                func test__019__RestClient__initializer__should_accept_an_options_object() {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRest(options: options)
 
@@ -72,7 +203,7 @@ class RestClient: QuickSpec {
                     expect(publishTask.error).toEventually(beNil(), timeout: testTimeout)
                 }
 
-                it("should accept an options object with token authentication") {
+                func test__020__RestClient__initializer__should_accept_an_options_object_with_token_authentication() {
                     let options = AblyTests.clientOptions(requestToken: true)
                     let client = ARTRest(options: options)
 
@@ -81,7 +212,7 @@ class RestClient: QuickSpec {
                     expect(publishTask.error).toEventually(beNil(), timeout: testTimeout)
                 }
 
-                it("should result in error status when provided a bad token") {
+                func test__021__RestClient__initializer__should_result_in_error_status_when_provided_a_bad_token() {
                     let options = AblyTests.clientOptions()
                     options.token = "invalid_token"
                     let client = ARTRest(options: options)
@@ -90,11 +221,10 @@ class RestClient: QuickSpec {
 
                     expect(publishTask.error?.code).toEventually(equal(ARTErrorCode.invalidCredential.intValue), timeout: testTimeout)
                 }
-            }
 
-            context("logging") {
+            
                 // RSC2
-                it("should output to the system log and the log level should be Warn") {
+                func test__022__RestClient__logging__should_output_to_the_system_log_and_the_log_level_should_be_Warn() {
                     ARTClientOptions.setDefaultEnvironment(getEnvironment())
                     defer {
                         ARTClientOptions.setDefaultEnvironment(nil)
@@ -116,7 +246,7 @@ class RestClient: QuickSpec {
                 }
 
                 // RSC3
-                it("should have a mutable log level") {
+                func test__023__RestClient__logging__should_have_a_mutable_log_level() {
                     let options = AblyTests.commonAppSetup()
                     options.logHandler = ARTLog(capturingOutput: true)
                     let client = ARTRest(options: options)
@@ -130,7 +260,7 @@ class RestClient: QuickSpec {
                 }
 
                 // RSC4
-                it("should accept a custom logger") {
+                func test__024__RestClient__logging__should_accept_a_custom_logger() {
                     struct Log {
                         static var interceptedLog: (String, ARTLogLevel) = ("", .none)
                     }
@@ -153,13 +283,12 @@ class RestClient: QuickSpec {
                     
                     expect(client.internal.logger.logLevel).to(equal(customLogger.logLevel))
                 }
-            }
 
             // RSC11
-            context("endpoint") {
+            
 
                 // RSC11a
-                it("should accept a custom host and send requests to the specified host") {
+                func test__025__RestClient__endpoint__should_accept_a_custom_host_and_send_requests_to_the_specified_host() {
                     let options = ARTClientOptions(key: "fake:key")
                     options.restHost = "fake.ably.io"
                     let client = ARTRest(options: options)
@@ -171,7 +300,7 @@ class RestClient: QuickSpec {
                     expect(testHTTPExecutor.requests.first?.url?.host).toEventually(equal("fake.ably.io"), timeout: testTimeout)
                 }
 
-                it("should ignore an environment when restHost is customized") {
+                func test__026__RestClient__endpoint__should_ignore_an_environment_when_restHost_is_customized() {
                     let options = ARTClientOptions(key: "fake:key")
                     options.environment = "test"
                     options.restHost = "fake.ably.io"
@@ -185,7 +314,7 @@ class RestClient: QuickSpec {
                 }
 
                 // RSC11b
-                it("should accept an environment when restHost is left unchanged") {
+                func test__027__RestClient__endpoint__should_accept_an_environment_when_restHost_is_left_unchanged() {
                     let options = ARTClientOptions(key: "fake:key")
                     options.environment = "myEnvironment"
                     let client = ARTRest(options: options)
@@ -197,7 +326,7 @@ class RestClient: QuickSpec {
                     expect(testHTTPExecutor.requests.first?.url?.host).toEventually(equal("myEnvironment-rest.ably.io"), timeout: testTimeout)
                 }
                 
-                it("should default to https://rest.ably.io") {
+                func test__028__RestClient__endpoint__should_default_to_https___rest_ably_io() {
                     let options = ARTClientOptions(key: "fake:key")
                     let client = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
@@ -208,7 +337,7 @@ class RestClient: QuickSpec {
                     expect(testHTTPExecutor.requests.first?.url?.absoluteString).toEventually(beginWith("https://rest.ably.io"), timeout: testTimeout)
                 }
                 
-                it("should connect over plain http:// when tls is off") {
+                func test__029__RestClient__endpoint__should_connect_over_plain_http____when_tls_is_off() {
                     let options = AblyTests.clientOptions(requestToken: true)
                     options.tls = false
                     let client = ARTRest(options: options)
@@ -221,7 +350,7 @@ class RestClient: QuickSpec {
                 }
 
                 // RSC11b
-                it("should not prepend the environment if environment is configured as @production@") {
+                func test__030__RestClient__endpoint__should_not_prepend_the_environment_if_environment_is_configured_as__production_() {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.environment = "production"
                     let client = ARTRest(options: options)
@@ -229,12 +358,10 @@ class RestClient: QuickSpec {
                     expect(client.internal.options.realtimeHost).to(equal(ARTDefault.realtimeHost()))
                 }
 
-            }
-
             // RSC13
-            context("should use the the connection and request timeouts specified") {
+            
 
-                it("timeout for any single HTTP request and response") {
+                func test__031__RestClient__should_use_the_the_connection_and_request_timeouts_specified__timeout_for_any_single_HTTP_request_and_response() {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.restHost = "10.255.255.1" //non-routable IP address
                     expect(options.httpRequestTimeout).to(equal(10.0)) //Seconds
@@ -255,7 +382,7 @@ class RestClient: QuickSpec {
                     }
                 }
 
-                it("max number of fallback hosts") {
+                func test__032__RestClient__should_use_the_the_connection_and_request_timeouts_specified__max_number_of_fallback_hosts() {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     expect(options.httpMaxRetryCount).to(equal(3))
                     options.httpMaxRetryCount = 1
@@ -281,7 +408,7 @@ class RestClient: QuickSpec {
                     expect(totalRetry).to(equal(options.httpMaxRetryCount))
                 }
 
-                it("max elapsed time in which fallback host retries for HTTP requests will be attempted") {
+                func test__033__RestClient__should_use_the_the_connection_and_request_timeouts_specified__max_elapsed_time_in_which_fallback_host_retries_for_HTTP_requests_will_be_attempted() {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     expect(options.httpMaxRetryDuration).to(equal(15.0)) //Seconds
                     options.httpMaxRetryDuration = 1.0
@@ -300,10 +427,9 @@ class RestClient: QuickSpec {
                         }
                     }
                 }
-            }
 
             // RSC5
-            it("should provide access to the AuthOptions object passed in ClientOptions") {
+            func test__002__RestClient__should_provide_access_to_the_AuthOptions_object_passed_in_ClientOptions() {
                 let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                 let client = ARTRest(options: options)
                 
@@ -313,7 +439,7 @@ class RestClient: QuickSpec {
             }
 
             // RSC12
-            it("REST endpoint host should be configurable in the Client constructor with the option restHost") {
+            func test__003__RestClient__REST_endpoint_host_should_be_configurable_in_the_Client_constructor_with_the_option_restHost() {
                 let options = ARTClientOptions(key: "xxxx:xxxx")
                 expect(options.restHost).to(equal("rest.ably.io"))
                 options.restHost = "rest.ably.test"
@@ -331,8 +457,8 @@ class RestClient: QuickSpec {
             }
             
             // RSC16
-            context("time") {
-                it("should return server time") {
+            
+                func test__034__RestClient__time__should_return_server_time() {
                     let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                     let client = ARTRest(options: options)
                     
@@ -344,10 +470,9 @@ class RestClient: QuickSpec {
                     
                     expect(time?.timeIntervalSince1970).toEventually(beCloseTo(NSDate().timeIntervalSince1970, within: 60), timeout: testTimeout)
                 }
-            }
 
             // RSC7, RSC18
-            it("should send requests over http and https") {
+            func test__004__RestClient__should_send_requests_over_http_and_https() {
                 let options = AblyTests.commonAppSetup()
 
                 let clientHttps = ARTRest(options: options)
@@ -381,7 +506,7 @@ class RestClient: QuickSpec {
             }
 
             // RSC9
-            it("should use Auth to manage authentication") {
+            func test__005__RestClient__should_use_Auth_to_manage_authentication() {
                 let options = AblyTests.clientOptions()
                 guard let testTokenDetails = getTestTokenDetails() else {
                     fail("No test token details"); return
@@ -413,7 +538,7 @@ class RestClient: QuickSpec {
             }
 
             // RSC10
-            it("should request another token after current one is no longer valid") {
+            func test__006__RestClient__should_request_another_token_after_current_one_is_no_longer_valid() {
                 let options = AblyTests.commonAppSetup()
                 options.token = getTestToken(ttl: 0.5)
                 let client = ARTRest(options: options)
@@ -442,7 +567,7 @@ class RestClient: QuickSpec {
             }
 
             // RSC10
-            it("should result in an error when user does not have sufficient permissions") {
+            func test__007__RestClient__should_result_in_an_error_when_user_does_not_have_sufficient_permissions() {
                 let options = AblyTests.clientOptions()
                 options.token = getTestToken(capability: "{ \"main\":[\"subscribe\"] }")
                 let client = ARTRest(options: options)
@@ -469,10 +594,10 @@ class RestClient: QuickSpec {
             }
 
             // RSC14
-            context("Authentication") {
+            
 
                 // RSC14a
-                it("should support basic authentication when an API key is provided with the key option") {
+                func test__035__RestClient__Authentication__should_support_basic_authentication_when_an_API_key_is_provided_with_the_key_option() {
                     let options = AblyTests.commonAppSetup()
                     guard let components = options.key?.components(separatedBy: ":"), let keyName = components.first, let keySecret = components.last else {
                         fail("Invalid API key: \(options.key ?? "nil")"); return
@@ -491,48 +616,38 @@ class RestClient: QuickSpec {
                 }
 
                 // RSC14b
-                context("basic authentication flag") {
-                    it("should be true when initialized with a key") {
+                
+                    func test__038__RestClient__Authentication__basic_authentication_flag__should_be_true_when_initialized_with_a_key() {
                         let client = ARTRest(key: "key:secret")
                         expect(client.auth.internal.options.isBasicAuth()).to(beTrue())
                     }
                     
-                    func testOptionsGiveBasicAuthFalse(_ caseSetter: (ARTAuthOptions) -> Void) {
-                        let options = ARTClientOptions()
-                        caseSetter(options)
-                        
-                        let client = ARTRest(options: options)
-                        
-                        expect(client.auth.internal.options.isBasicAuth()).to(beFalse())
-                    }
-                    
-                    it("should be false when options’ useTokenAuth is set") {
+                    func test__039__RestClient__Authentication__basic_authentication_flag__should_be_false_when_options__useTokenAuth_is_set() {
                         testOptionsGiveBasicAuthFalse { $0.useTokenAuth = true; $0.key = "fake:key" }
                     }
                     
-                    it("should be false when options’ authUrl is set") {
+                    func test__040__RestClient__Authentication__basic_authentication_flag__should_be_false_when_options__authUrl_is_set() {
                         testOptionsGiveBasicAuthFalse { $0.authUrl = URL(string: "http://test.com") }
                     }
                     
-                    it("should be false when options’ authCallback is set") {
+                    func test__041__RestClient__Authentication__basic_authentication_flag__should_be_false_when_options__authCallback_is_set() {
                         testOptionsGiveBasicAuthFalse { $0.authCallback = { _, _ in return } }
                     }
                     
-                    it("should be false when options’ tokenDetails is set") {
+                    func test__042__RestClient__Authentication__basic_authentication_flag__should_be_false_when_options__tokenDetails_is_set() {
                         testOptionsGiveBasicAuthFalse { $0.tokenDetails = ARTTokenDetails(token: "token") }
                     }
 
-                    it("should be false when options’ token is set") {
+                    func test__043__RestClient__Authentication__basic_authentication_flag__should_be_false_when_options__token_is_set() {
                         testOptionsGiveBasicAuthFalse { $0.token = "token" }
                     }
                     
-                    it("should be false when options’ key is set") {
+                    func test__044__RestClient__Authentication__basic_authentication_flag__should_be_false_when_options__key_is_set() {
                         testOptionsGiveBasicAuthFalse { $0.tokenDetails = ARTTokenDetails(token: "token"); $0.key = "fake:key" }
                     }
-                }
 
                 // RSC14c
-                it("should error when expired token and no means to renew") {
+                func test__036__RestClient__Authentication__should_error_when_expired_token_and_no_means_to_renew() {
                     let client = ARTRest(options: AblyTests.commonAppSetup())
                     let auth = client.auth
 
@@ -594,7 +709,7 @@ class RestClient: QuickSpec {
                 }
 
                 // RSC14d
-                it("should renew the token when it has expired") {
+                func test__037__RestClient__Authentication__should_renew_the_token_when_it_has_expired() {
                     let client = ARTRest(options: AblyTests.commonAppSetup())
                     let auth = client.auth
 
@@ -648,15 +763,14 @@ class RestClient: QuickSpec {
                         }
                     }
                 }
-            }
 
             // RSC15
-            context("Host Fallback") {
+            
 
                 // TO3k7
-                context("fallbackHostsUseDefault option") {
+                
 
-                    it("allows the default fallback hosts to be used when @environment@ is not production") {
+                    func test__051__RestClient__Host_Fallback__fallbackHostsUseDefault_option__allows_the_default_fallback_hosts_to_be_used_when__environment__is_not_production() {
                         let options = ARTClientOptions(key: "xxxx:xxxx")
                         options.environment = "not-production"
                         options.fallbackHostsUseDefault = true
@@ -676,7 +790,7 @@ class RestClient: QuickSpec {
                         }
                     }
 
-                    it("allows the default fallback hosts to be used when a custom Realtime or REST host endpoint is being used") {
+                    func test__052__RestClient__Host_Fallback__fallbackHostsUseDefault_option__allows_the_default_fallback_hosts_to_be_used_when_a_custom_Realtime_or_REST_host_endpoint_is_being_used() {
                         let options = ARTClientOptions(key: "xxxx:xxxx")
                         options.restHost = "fake1.ably.io"
                         options.realtimeHost = "fake2.ably.io"
@@ -697,12 +811,12 @@ class RestClient: QuickSpec {
                         }
                     }
 
-                    it("should be inactive by default") {
+                    func test__053__RestClient__Host_Fallback__fallbackHostsUseDefault_option__should_be_inactive_by_default() {
                         let options = ARTClientOptions(key: "xxxx:xxxx")
                         expect(options.fallbackHostsUseDefault).to(beFalse())
                     }
 
-                    it("should never accept to configure @fallbackHost@ and set @fallbackHostsUseDefault@ to @true@") {
+                    func test__054__RestClient__Host_Fallback__fallbackHostsUseDefault_option__should_never_accept_to_configure__fallbackHost__and_set__fallbackHostsUseDefault__to__true_() {
                         let options = ARTClientOptions(key: "xxxx:xxxx")
                         expect(options.fallbackHosts).to(beNil())
                         expect(options.fallbackHostsUseDefault).to(beFalse())
@@ -718,13 +832,11 @@ class RestClient: QuickSpec {
                         expect { options.fallbackHosts = ["fake.ably.io"] }.to(raiseException(named: ARTFallbackIncompatibleOptionsException))
                     }
 
-                }
-
                 // RSC15b
-                context("Fallback behavior") {
+                
 
                     // RSC15b1
-                    it("should be applied when restHost, port and tlsPort has not been set to an explicit value") {
+                    func test__055__RestClient__Host_Fallback__Fallback_behavior__should_be_applied_when_restHost__port_and_tlsPort_has_not_been_set_to_an_explicit_value() {
                         let options = ARTClientOptions(key: "xxxx:xxxx")
                         let client = ARTRest(options: options)
                         let mockHTTP = MockHTTP(logger: options.logHandler)
@@ -749,7 +861,7 @@ class RestClient: QuickSpec {
                     }
 
                     // RSC15b1
-                    it("should NOT be applied when ClientOptions.restHost has been set") {
+                    func test__056__RestClient__Host_Fallback__Fallback_behavior__should_NOT_be_applied_when_ClientOptions_restHost_has_been_set() {
                         let options = ARTClientOptions(key: "xxxx:xxxx")
                         options.restHost = "fake.ably.io"
                         let client = ARTRest(options: options)
@@ -773,7 +885,7 @@ class RestClient: QuickSpec {
                     }
 
                     // RSC15b1
-                    it("should NOT be applied when ClientOptions.port has been set") {
+                    func test__057__RestClient__Host_Fallback__Fallback_behavior__should_NOT_be_applied_when_ClientOptions_port_has_been_set() {
                         let options = ARTClientOptions(token: "xxxx")
                         options.tls = false
                         options.port = 999
@@ -798,7 +910,7 @@ class RestClient: QuickSpec {
                     }
 
                     // RSC15b1
-                    it("should NOT be applied when ClientOptions.tlsPort has been set") {
+                    func test__058__RestClient__Host_Fallback__Fallback_behavior__should_NOT_be_applied_when_ClientOptions_tlsPort_has_been_set() {
                         let options = ARTClientOptions(key: "xxxx:xxxx")
                         options.tlsPort = 999
                         let client = ARTRest(options: options)
@@ -822,7 +934,7 @@ class RestClient: QuickSpec {
                     }
 
                     // RSC15b2
-                    it("should be applied when ClientOptions.fallbackHosts is provided") {
+                    func test__059__RestClient__Host_Fallback__Fallback_behavior__should_be_applied_when_ClientOptions_fallbackHosts_is_provided() {
                         let options = ARTClientOptions(key: "xxxx:xxxx")
                         options.fallbackHosts = ["a.cocoa.ably", "b.cocoa.ably"]
                         let client = ARTRest(options: options)
@@ -847,7 +959,7 @@ class RestClient: QuickSpec {
                     }
 
                     // RSC15b3, RSC15g4
-                    it("should be applied when ClientOptions.fallbackHosts is not provided and deprecated fallbackHostsUseDefault is on") {
+                    func test__060__RestClient__Host_Fallback__Fallback_behavior__should_be_applied_when_ClientOptions_fallbackHosts_is_not_provided_and_deprecated_fallbackHostsUseDefault_is_on() {
                         let options = ARTClientOptions(key: "xxxx:xxxx")
                         options.fallbackHostsUseDefault = true
                         let client = ARTRest(options: options)
@@ -871,10 +983,8 @@ class RestClient: QuickSpec {
                         expect(NSRegularExpression.match(capturedURLs.at(2), pattern: "//[a-e].ably-realtime.com")).to(beTrue())
                     }
 
-                }
-
                 // RSC15k
-                it("failing HTTP requests with custom endpoint should result in an error immediately") {
+                func test__045__RestClient__Host_Fallback__failing_HTTP_requests_with_custom_endpoint_should_result_in_an_error_immediately() {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.restHost = "fake.ably.io"
                     let client = ARTRest(options: options)
@@ -893,10 +1003,10 @@ class RestClient: QuickSpec {
                 }
 
                 // RSC15g
-                context("fallback hosts list and priorities") {
+                
 
                     // RSC15g1
-                    it("should use ClientOptions.fallbackHosts when list is provided") {
+                    func test__061__RestClient__Host_Fallback__fallback_hosts_list_and_priorities__should_use_ClientOptions_fallbackHosts_when_list_is_provided() {
                         let options = ARTClientOptions(key: "xxxx:xxxx")
                         options.fallbackHosts = ["f.ably-realtime.com"]
                         let client = ARTRest(options: options)
@@ -920,7 +1030,7 @@ class RestClient: QuickSpec {
                     }
 
                     // RSC15g2
-                    it("should use environment fallback hosts when ClientOptions.environment is set to a value other than 'production' and ClientOptions.fallbackHosts is not set") {
+                    func test__062__RestClient__Host_Fallback__fallback_hosts_list_and_priorities__should_use_environment_fallback_hosts_when_ClientOptions_environment_is_set_to_a_value_other_than__production__and_ClientOptions_fallbackHosts_is_not_set() {
                         let options = ARTClientOptions(key: "xxxx:xxxx")
                         options.environment = "test"
                         let client = ARTRest(options: options)
@@ -945,7 +1055,7 @@ class RestClient: QuickSpec {
                     }
 
                     // RSC15g2
-                    it("should NOT use environment fallback hosts when ClientOptions.environment is set to 'production'") {
+                    func test__063__RestClient__Host_Fallback__fallback_hosts_list_and_priorities__should_NOT_use_environment_fallback_hosts_when_ClientOptions_environment_is_set_to__production_() {
                         let options = ARTClientOptions(key: "xxxx:xxxx")
                         options.environment = "production"
                         let client = ARTRest(options: options)
@@ -971,7 +1081,7 @@ class RestClient: QuickSpec {
                     }
 
                     // RSC15g3
-                    it("should use default fallback hosts when both ClientOptions.fallbackHosts and ClientOptions.environment are not set") {
+                    func test__064__RestClient__Host_Fallback__fallback_hosts_list_and_priorities__should_use_default_fallback_hosts_when_both_ClientOptions_fallbackHosts_and_ClientOptions_environment_are_not_set() {
                         let options = ARTClientOptions(key: "xxxx:xxxx")
                         options.environment = ""
                         let client = ARTRest(options: options)
@@ -996,10 +1106,8 @@ class RestClient: QuickSpec {
                         expect(NSRegularExpression.match(capturedURLs.at(3), pattern: "//[a-e].ably-realtime.com")).to(beTrue())
                     }
 
-                }
-
                 // RSC15g4
-                it("applies when ClientOptions#fallbackHostsUseDefault is true") {
+                func test__046__RestClient__Host_Fallback__applies_when_ClientOptions_fallbackHostsUseDefault_is_true() {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.environment = "test"
                     options.fallbackHostsUseDefault = true
@@ -1023,7 +1131,7 @@ class RestClient: QuickSpec {
                 }
 
                 // RSC15g1
-                it("won't apply fallback hosts if ClientOptions#fallbackHosts array is empty") {
+                func test__047__RestClient__Host_Fallback__won_t_apply_fallback_hosts_if_ClientOptions_fallbackHosts_array_is_empty() {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.fallbackHosts = [] //to test TO3k6
                     let client = ARTRest(options: options)
@@ -1045,7 +1153,7 @@ class RestClient: QuickSpec {
                 }
 
                 // RSC15g3
-                it("won't apply custom fallback hosts if ClientOptions#fallbackHosts and ClientOptions#environment are not set, use defaults instead") {
+                func test__048__RestClient__Host_Fallback__won_t_apply_custom_fallback_hosts_if_ClientOptions_fallbackHosts_and_ClientOptions_environment_are_not_set__use_defaults_instead() {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.fallbackHosts = nil
                     let client = ARTRest(options: options)
@@ -1071,7 +1179,7 @@ class RestClient: QuickSpec {
                 }
 
                 // RSC15e
-                it("every new HTTP request is first attempted to the default primary host rest.ably.io") {
+                func test__049__RestClient__Host_Fallback__every_new_HTTP_request_is_first_attempted_to_the_default_primary_host_rest_ably_io() {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.httpMaxRetryCount = 1
                     let client = ARTRest(options: options)
@@ -1106,43 +1214,58 @@ class RestClient: QuickSpec {
                 }
 
                 // RSC15a
-                context("retry hosts in random order") {
-                    let expectedHostOrder = [4, 3, 0, 2, 1]
+                
 
-                    let originalARTFallback_shuffleArray = ARTFallback_shuffleArray
+                    func beforeEach__RestClient__Host_Fallback__retry_hosts_in_random_order() {
+print("START HOOK: RestClient.beforeEach__RestClient__Host_Fallback__retry_hosts_in_random_order")
 
-                    beforeEach {
                         ARTFallback_shuffleArray = { array in
                             let arranged = expectedHostOrder.reversed().map { array[$0] }
                             for (i, element) in arranged.enumerated() {
                                 array[i] = element
                             }
                         }
+print("END HOOK: RestClient.beforeEach__RestClient__Host_Fallback__retry_hosts_in_random_order")
+
                     }
 
-                    afterEach {
+                    func afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order() {
+print("START HOOK: RestClient.afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order")
+
                         ARTFallback_shuffleArray = originalARTFallback_shuffleArray
+print("END HOOK: RestClient.afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order")
+
                     }
 
                     // RSC15h
-                    it("default fallback hosts should match [a-e].ably-realtime.com") {
+                    func test__065__RestClient__Host_Fallback__retry_hosts_in_random_order__default_fallback_hosts_should_match__a_e__ably_realtime_com() {
+beforeEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
+
                         let defaultFallbackHosts = ARTDefault.fallbackHosts()
                         defaultFallbackHosts.forEach { host in
                             expect(host).to(match("[a-e].ably-realtime.com"))
                         }
                         expect(defaultFallbackHosts).to(haveCount(5))
+afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
+
                     }
 
                     // RSC15i
-                    it("environment fallback hosts have the format [environment]-[a-e]-fallback.ably-realtime.com") {
+                    func test__066__RestClient__Host_Fallback__retry_hosts_in_random_order__environment_fallback_hosts_have_the_format__environment___a_e__fallback_ably_realtime_com() {
+beforeEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
+
                         let environmentFallbackHosts = ARTDefault.fallbackHosts(withEnvironment: "sandbox")
                         environmentFallbackHosts.forEach { host in
                             expect(host).to(match("sandbox-[a-e]-fallback.ably-realtime.com"))
                         }
                         expect(environmentFallbackHosts).to(haveCount(5))
+afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
+
                     }
 
-                    it("until httpMaxRetryCount has been reached") {
+                    func test__067__RestClient__Host_Fallback__retry_hosts_in_random_order__until_httpMaxRetryCount_has_been_reached() {
+beforeEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
+
                         let options = ARTClientOptions(key: "xxxx:xxxx")
                         let client = ARTRest(options: options)
                         options.httpMaxRetryCount = 3
@@ -1167,9 +1290,13 @@ class RestClient: QuickSpec {
                         let expectedFallbackHosts = Array(expectedHostOrder.map({ ARTDefault.fallbackHosts()[$0] })[0..<Int(options.httpMaxRetryCount)])
 
                         expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
+afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
+
                     }
 
-                    it("use custom fallback hosts if set") {
+                    func test__068__RestClient__Host_Fallback__retry_hosts_in_random_order__use_custom_fallback_hosts_if_set() {
+beforeEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
+
                         let options = ARTClientOptions(key: "xxxx:xxxx")
                         options.httpMaxRetryCount = 10
                         let customFallbackHosts = ["j.ably-realtime.com",
@@ -1200,9 +1327,13 @@ class RestClient: QuickSpec {
                         let expectedFallbackHosts = expectedHostOrder.map { customFallbackHosts[$0] }
 
                         expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
+afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
+
                     }
 
-                    it("until all fallback hosts have been tried") {
+                    func test__069__RestClient__Host_Fallback__retry_hosts_in_random_order__until_all_fallback_hosts_have_been_tried() {
+beforeEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
+
                         let options = ARTClientOptions(key: "xxxx:xxxx")
                         options.httpMaxRetryCount = 10
                         let client = ARTRest(options: options)
@@ -1227,11 +1358,13 @@ class RestClient: QuickSpec {
                         let expectedFallbackHosts = expectedHostOrder.map { ARTDefault.fallbackHosts()[$0] }
 
                         expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
+afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
+
                     }
 
-                    let _fallbackHosts = ["f.ably-realtime.com", "g.ably-realtime.com", "h.ably-realtime.com", "i.ably-realtime.com", "j.ably-realtime.com"]
+                    func test__070__RestClient__Host_Fallback__retry_hosts_in_random_order__until_httpMaxRetryCount_has_been_reached__if_custom_fallback_hosts_are_provided_in_ClientOptions_fallbackHosts__then_they_will_be_used_instead() {
+beforeEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
 
-                    it("until httpMaxRetryCount has been reached, if custom fallback hosts are provided in ClientOptions#fallbackHosts, then they will be used instead") {
                         let options = ARTClientOptions(key: "xxxx:xxxx")
                         options.httpMaxRetryCount = 4
                         options.fallbackHosts = _fallbackHosts
@@ -1259,9 +1392,13 @@ class RestClient: QuickSpec {
                         let expectedFallbackHosts = Array(expectedHostOrder.map({ _fallbackHosts[$0] })[0..<Int(options.httpMaxRetryCount)])
 
                         expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
+afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
+
                     }
                     
-                    it("until all fallback hosts have been tried, if custom fallback hosts are provided in ClientOptions#fallbackHosts, then they will be used instead") {
+                    func test__071__RestClient__Host_Fallback__retry_hosts_in_random_order__until_all_fallback_hosts_have_been_tried__if_custom_fallback_hosts_are_provided_in_ClientOptions_fallbackHosts__then_they_will_be_used_instead() {
+beforeEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
+
                         let options = ARTClientOptions(key: "xxxx:xxxx")
                         options.httpMaxRetryCount = 10
                         options.fallbackHosts = _fallbackHosts
@@ -1289,9 +1426,13 @@ class RestClient: QuickSpec {
                         let expectedFallbackHosts = expectedHostOrder.map { _fallbackHosts[$0] }
                 
                         expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
+afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
+
                     }
                     
-                    it("all fallback requests headers should contain `Host` header with fallback host address") {
+                    func test__072__RestClient__Host_Fallback__retry_hosts_in_random_order__all_fallback_requests_headers_should_contain__Host__header_with_fallback_host_address() {
+beforeEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
+
                         let options = ARTClientOptions(key: "xxxx:xxxx")
                         options.httpMaxRetryCount = 10
                         options.fallbackHosts = _fallbackHosts
@@ -1320,9 +1461,13 @@ class RestClient: QuickSpec {
                         }
                                             
                         expect(fallbackRequests.count).to(be(fallbackRequestsWithHostHeader.count))
+afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
+
                     }
                     
-                    it("if an empty array of fallback hosts is provided, then fallback host functionality is disabled") {
+                    func test__073__RestClient__Host_Fallback__retry_hosts_in_random_order__if_an_empty_array_of_fallback_hosts_is_provided__then_fallback_host_functionality_is_disabled() {
+beforeEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
+
                         let options = ARTClientOptions(key: "xxxx:xxxx")
                         options.httpMaxRetryCount = 5
                         options.fallbackHosts = []
@@ -1342,50 +1487,27 @@ class RestClient: QuickSpec {
 
                         expect(testHTTPExecutor.requests).to(haveCount(1))
                         expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
+afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
+
                     }
-                }
 
                 // RSC15d
-                context("should use an alternative host when") {
-
-                    func testUsesAlternativeHost(_ caseTest: FakeNetworkResponse) {
-                        let options = ARTClientOptions(key: "xxxx:xxxx")
-                        let client = ARTRest(options: options)
-                        let mockHTTP = MockHTTP(logger: options.logHandler)
-                        testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: options.logHandler)
-                        client.internal.httpExecutor = testHTTPExecutor
-                        mockHTTP.setNetworkState(network: caseTest, resetAfter: 1)
-                        let channel = client.channels.get("test")
-
-                        waitUntil(timeout: testTimeout) { done in
-                            channel.publish(nil, data: "nil") { _ in
-                                done()
-                            }
-                        }
-
-                        expect(testHTTPExecutor.requests).to(haveCount(2))
-                        if testHTTPExecutor.requests.count != 2 {
-                            return
-                        }
-                        expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
-                        expect(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
-                    }
+                
                     
-                    it(".hostUnreachable") {
+                    func test__074__RestClient__Host_Fallback__should_use_an_alternative_host_when___hostUnreachable() {
                         testUsesAlternativeHost(.hostUnreachable)
                     }
                     
-                    it(".requestTimeout(timeout: 0.1)") {
+                    func test__075__RestClient__Host_Fallback__should_use_an_alternative_host_when___requestTimeout_timeout__0_1_() {
                         testUsesAlternativeHost(.requestTimeout(timeout: 0.1))
                     }
                     
-                    it(".hostInternalError(code: 501)") {
+                    func test__076__RestClient__Host_Fallback__should_use_an_alternative_host_when___hostInternalError_code__501_() {
                         testUsesAlternativeHost(.hostInternalError(code: 501))
                     }
-                }
 
                 // RSC15d
-                it("should not use an alternative host when the client receives an bad request") {
+                func test__050__RestClient__Host_Fallback__should_not_use_an_alternative_host_when_the_client_receives_an_bad_request() {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     let client = ARTRest(options: options)
                     let mockHTTP = MockHTTP(logger: options.logHandler)
@@ -1405,148 +1527,78 @@ class RestClient: QuickSpec {
                 }
                 
                 // RSC15f
-                context("should store successful fallback host as default host") {
+                
                     
-                    func testStoresSuccessfulFallbackHostAsDefaultHost(_ caseTest: FakeNetworkResponse) {
-                        let options = ARTClientOptions(key: "xxxx:xxxx")
-                        let client = ARTRest(options: options)
-                        let mockHTTP = MockHTTP(logger: options.logHandler)
-                        testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: options.logHandler)
-                        client.internal.httpExecutor = testHTTPExecutor
-                        mockHTTP.setNetworkState(network: caseTest, resetAfter: 1)
-                        let channel = client.channels.get("test")
-
-                        waitUntil(timeout: testTimeout) { done in
-                            channel.publish(nil, data: "nil") { _ in
-                                done()
-                            }
-                        }
-
-                        expect(testHTTPExecutor.requests).to(haveCount(2))
-                        expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.host, pattern: "rest.ably.io")).to(beTrue())
-                        expect(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.host, pattern: "[a-e].ably-realtime.com")).to(beTrue())
-                        
-                        //#1 Store fallback used to request
-                        let usedFallbackURL = testHTTPExecutor.requests[1].url!
-                        
-                        waitUntil(timeout: testTimeout) { done in
-                            channel.publish(nil, data: "nil") { _ in
-                                done()
-                            }
-                        }
-                        
-                        let reusedURL = testHTTPExecutor.requests[2].url!
-                        
-                        // Reuse host has to be equal previous (stored #1) fallback host
-                        expect(testHTTPExecutor.requests).to(haveCount(3))
-                        expect(usedFallbackURL.host).to(equal(reusedURL.host))
-                    }
-                    
-                    it(".hostUnreachable") {
+                    func test__077__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host___hostUnreachable() {
                         testStoresSuccessfulFallbackHostAsDefaultHost(.hostUnreachable)
                     }
                     
-                    it(".requestTimeout(timeout: 0.1)") {
+                    func test__078__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host___requestTimeout_timeout__0_1_() {
                         testStoresSuccessfulFallbackHostAsDefaultHost(.requestTimeout(timeout: 0.1))
                     }
                     
-                    it(".hostInternalError(code: 501)") {
+                    func test__079__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host___hostInternalError_code__501_() {
                         testStoresSuccessfulFallbackHostAsDefaultHost(.hostInternalError(code: 501))
                     }
                     
-                    context("should restore default primary host after fallbackRetryTimeout expired") {
+                    
                         
-                        beforeEach {
+                        func beforeEach__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_restore_default_primary_host_after_fallbackRetryTimeout_expired() {
+print("START HOOK: RestClient.beforeEach__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_restore_default_primary_host_after_fallbackRetryTimeout_expired")
+
                             ARTDefault.setFallbackRetryTimeout(1.0)
+print("END HOOK: RestClient.beforeEach__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_restore_default_primary_host_after_fallbackRetryTimeout_expired")
+
                         }
                         
-                        func testRestoresDefaultPrimaryHostAfterTimeoutExpires(_ caseTest: FakeNetworkResponse) {
-                            let options = ARTClientOptions(key: "xxxx:xxxx")
-                            options.logLevel = .debug
-                            let client = ARTRest(options: options)
-                            let mockHTTP = MockHTTP(logger: options.logHandler)
-                            testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: options.logHandler)
-                            client.internal.httpExecutor = testHTTPExecutor
-                            mockHTTP.setNetworkState(network: caseTest, resetAfter: 1)
-                            let channel = client.channels.get("test-fallback-retry-timeout")
-                            
-                            waitUntil(timeout: testTimeout) { done in
-                                channel.publish(nil, data: "nil") { _ in
-                                    done()
-                                }
-                            }
-                            
-                            waitUntil(timeout: testTimeout) { done in
-                                delay(1.1) {
-                                    channel.publish(nil, data: "nil") { _ in
-                                        done()
-                                    }
-                                }
-                            }
-                            
-                            expect(testHTTPExecutor.requests).to(haveCount(3))
-                            expect(testHTTPExecutor.requests[2].url!.host).to(equal("rest.ably.io"))
-                        }
-                        
-                        it(".hostUnreachable") {
+                        func test__080__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_restore_default_primary_host_after_fallbackRetryTimeout_expired___hostUnreachable() {
+beforeEach__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_restore_default_primary_host_after_fallbackRetryTimeout_expired()
+
                             testRestoresDefaultPrimaryHostAfterTimeoutExpires(.hostUnreachable)
                         }
                         
-                        it(".requestTimeout(timeout: 0.1)") {
+                        func test__081__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_restore_default_primary_host_after_fallbackRetryTimeout_expired___requestTimeout_timeout__0_1_() {
+beforeEach__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_restore_default_primary_host_after_fallbackRetryTimeout_expired()
+
                             testRestoresDefaultPrimaryHostAfterTimeoutExpires(.requestTimeout(timeout: 0.1))
                         }
                         
-                        it(".hostInternalError(code: 501)") {
+                        func test__082__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_restore_default_primary_host_after_fallbackRetryTimeout_expired___hostInternalError_code__501_() {
+beforeEach__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_restore_default_primary_host_after_fallbackRetryTimeout_expired()
+
                             testRestoresDefaultPrimaryHostAfterTimeoutExpires(.hostInternalError(code: 501))
                         }
-                    }
                     
-                    context("should use another fallback host if previous fallback request failed and store it as default if current fallback request succseeded") {
+                    
                             
-                        beforeEach {
-                            ARTDefault.setFallbackRetryTimeout(10)
-                        }
+                        func beforeEach__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_use_another_fallback_host_if_previous_fallback_request_failed_and_store_it_as_default_if_current_fallback_request_succseeded() {
+print("START HOOK: RestClient.beforeEach__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_use_another_fallback_host_if_previous_fallback_request_failed_and_store_it_as_default_if_current_fallback_request_succseeded")
 
-                        func testUsesAnotherFallbackHost(_ caseTest: FakeNetworkResponse) {
-                            let options = ARTClientOptions(key: "xxxx:xxxx")
-                            options.logLevel = .debug
-                            let client = ARTRest(options: options)
-                            let mockHTTP = MockHTTP(logger: options.logHandler)
-                            testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: options.logHandler)
-                            client.internal.httpExecutor = testHTTPExecutor
-                            mockHTTP.setNetworkState(network: caseTest, resetAfter: 2)
-                            let channel = client.channels.get("test-fallback-retry-timeout")
-                            
-                            waitUntil(timeout: testTimeout) { done in
-                                channel.publish(nil, data: "nil") { _ in
-                                    done()
-                                }
-                            }
-                            
-                            expect(testHTTPExecutor.requests).to(haveCount(3))
-                            expect(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.host, pattern: "[a-e].ably-realtime.com")).to(beTrue())
-                            expect(NSRegularExpression.match(testHTTPExecutor.requests[2].url!.host, pattern: "[a-e].ably-realtime.com")).to(beTrue())
-                            expect(testHTTPExecutor.requests[1].url!.host).toNot(equal(testHTTPExecutor.requests[2].url!.host))
+                            ARTDefault.setFallbackRetryTimeout(10)
+print("END HOOK: RestClient.beforeEach__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_use_another_fallback_host_if_previous_fallback_request_failed_and_store_it_as_default_if_current_fallback_request_succseeded")
+
                         }
                         
-                        it(".hostUnreachable") {
+                        func test__083__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_use_another_fallback_host_if_previous_fallback_request_failed_and_store_it_as_default_if_current_fallback_request_succseeded___hostUnreachable() {
+beforeEach__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_use_another_fallback_host_if_previous_fallback_request_failed_and_store_it_as_default_if_current_fallback_request_succseeded()
+
                             testUsesAnotherFallbackHost(.hostUnreachable)
                         }
                         
-                        it(".requestTimeout(timeout: 0.1)") {
+                        func test__084__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_use_another_fallback_host_if_previous_fallback_request_failed_and_store_it_as_default_if_current_fallback_request_succseeded___requestTimeout_timeout__0_1_() {
+beforeEach__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_use_another_fallback_host_if_previous_fallback_request_failed_and_store_it_as_default_if_current_fallback_request_succseeded()
+
                             testUsesAnotherFallbackHost(.requestTimeout(timeout: 0.1))
                         }
                         
-                        it(".hostInternalError(code: 501)") {
+                        func test__085__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_use_another_fallback_host_if_previous_fallback_request_failed_and_store_it_as_default_if_current_fallback_request_succseeded___hostInternalError_code__501_() {
+beforeEach__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_use_another_fallback_host_if_previous_fallback_request_failed_and_store_it_as_default_if_current_fallback_request_succseeded()
+
                             testUsesAnotherFallbackHost(.hostInternalError(code: 501))
                         }
-                    }
-
-                }
-            }
 
             // RSC8a
-            it("should use MsgPack binary protocol") {
+            func test__008__RestClient__should_use_MsgPack_binary_protocol() {
                 let options = AblyTests.commonAppSetup()
                 expect(options.useBinaryProtocol).to(beTrue())
 
@@ -1580,7 +1632,7 @@ class RestClient: QuickSpec {
             }
 
             // RSC8b
-            it("should use JSON text protocol") {
+            func test__009__RestClient__should_use_JSON_text_protocol() {
                 let options = AblyTests.commonAppSetup()
                 options.useBinaryProtocol = false
 
@@ -1613,7 +1665,7 @@ class RestClient: QuickSpec {
             }
 
             // RSC7a
-            it("X-Ably-Version must be included in all REST requests") {
+            func test__010__RestClient__X_Ably_Version_must_be_included_in_all_REST_requests() {
                 let options = AblyTests.commonAppSetup()
                 let client = ARTRest(options: options)
                 testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
@@ -1638,7 +1690,7 @@ class RestClient: QuickSpec {
             // RSC7b (Deprecated in favor of RCS7d)
 
             // RSC7d
-            it("The Agent library identifier is composed of a series of key[/value] entries joined by spaces") {
+            func test__011__RestClient__The_Agent_library_identifier_is_composed_of_a_series_of_key__value__entries_joined_by_spaces() {
                 let options = AblyTests.commonAppSetup()
                 let client = ARTRest(options: options)
                 testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
@@ -1657,7 +1709,7 @@ class RestClient: QuickSpec {
             }
 
             // https://github.com/ably/ably-cocoa/issues/117
-            it("should indicate an error if there is no way to renew the token") {
+            func test__012__RestClient__should_indicate_an_error_if_there_is_no_way_to_renew_the_token() {
                 let options = AblyTests.clientOptions()
                 options.token = getTestToken(ttl: 0.1)
                 let client = ARTRest(options: options)
@@ -1677,7 +1729,7 @@ class RestClient: QuickSpec {
             }
 
             // https://github.com/ably/ably-cocoa/issues/577
-            it("background behaviour") {
+            func test__013__RestClient__background_behaviour() {
                 let options = AblyTests.commonAppSetup()
                 waitUntil(timeout: testTimeout) { done in
                   URLSession.shared.dataTask(with: URL(string:"https://ably.io")!) { _ , _ , _  in
@@ -1690,7 +1742,7 @@ class RestClient: QuickSpec {
             }
 
             // https://github.com/ably/ably-cocoa/issues/589
-            it("client should handle error messages in plaintext and HTML format") {
+            func test__014__RestClient__client_should_handle_error_messages_in_plaintext_and_HTML_format() {
                 let request = URLRequest(url: URL(string: "https://www.example.com")!)
                 waitUntil(timeout: testTimeout) { done in
                     let rest = ARTRest(key: "xxxx:xxxx")
@@ -1710,11 +1762,11 @@ class RestClient: QuickSpec {
             }
             
             // RSC19
-            context("request") {
+            
 
                 // RSC19a
-                context("method signature and arguments") {
-                    it("should add query parameters") {
+                
+                    func test__086__RestClient__request__method_signature_and_arguments__should_add_query_parameters() {
                         let rest = ARTRest(key: "xxxx:xxxx")
                         let mockHttpExecutor = MockHTTPExecutor()
                         rest.internal.httpExecutor = mockHttpExecutor
@@ -1750,7 +1802,7 @@ class RestClient: QuickSpec {
                         expect(acceptHeaderValue).to(equal("application/x-msgpack,application/json"))
                     }
 
-                    it("should add a HTTP body") {
+                    func test__087__RestClient__request__method_signature_and_arguments__should_add_a_HTTP_body() {
                         let rest = ARTRest(key: "xxxx:xxxx")
                         let mockHttpExecutor = MockHTTPExecutor()
                         rest.internal.httpExecutor = mockHttpExecutor
@@ -1792,7 +1844,7 @@ class RestClient: QuickSpec {
                         expect(body.value(forKey: "blockchain") as? Bool).to(beTrue())
                     }
 
-                    it("should add a HTTP header") {
+                    func test__088__RestClient__request__method_signature_and_arguments__should_add_a_HTTP_header() {
                         let rest = ARTRest(key: "xxxx:xxxx")
                         let mockHttpExecutor = MockHTTPExecutor()
                         rest.internal.httpExecutor = mockHttpExecutor
@@ -1821,7 +1873,7 @@ class RestClient: QuickSpec {
                         expect(authorization).to(equal("ok"))
                     }
 
-                    it("should error if method is invalid") {
+                    func test__089__RestClient__request__method_signature_and_arguments__should_error_if_method_is_invalid() {
                         let rest = ARTRest(key: "xxxx:xxxx")
                         let mockHTTPExecutor = MockHTTPExecutor()
                         rest.internal.httpExecutor = mockHTTPExecutor
@@ -1847,7 +1899,7 @@ class RestClient: QuickSpec {
                         }
                     }
 
-                    it("should error if path is invalid") {
+                    func test__090__RestClient__request__method_signature_and_arguments__should_error_if_path_is_invalid() {
                         let rest = ARTRest(key: "xxxx:xxxx")
                         let mockHTTPExecutor = MockHTTPExecutor()
                         rest.internal.httpExecutor = mockHTTPExecutor
@@ -1873,7 +1925,7 @@ class RestClient: QuickSpec {
                         }
                     }
 
-                    it("should error if body is not a Dictionary or an Array") {
+                    func test__091__RestClient__request__method_signature_and_arguments__should_error_if_body_is_not_a_Dictionary_or_an_Array() {
                         let rest = ARTRest(key: "xxxx:xxxx")
                         let mockHttpExecutor = MockHTTPExecutor()
                         rest.internal.httpExecutor = mockHttpExecutor
@@ -1889,7 +1941,7 @@ class RestClient: QuickSpec {
                         }
                     }
 
-                    it("should do a request and receive a valid response") {
+                    func test__092__RestClient__request__method_signature_and_arguments__should_do_a_request_and_receive_a_valid_response() {
                         let options = AblyTests.commonAppSetup()
                         let rest = ARTRest(options: options)
                         let channel = rest.channels.get("request-method-test")
@@ -1942,7 +1994,7 @@ class RestClient: QuickSpec {
                         expect(response.allHeaderFields as NSDictionary) == httpPaginatedResponse.headers
                     }
 
-                    it("should handle response failures") {
+                    func test__093__RestClient__request__method_signature_and_arguments__should_handle_response_failures() {
                         let options = AblyTests.commonAppSetup()
                         let rest = ARTRest(options: options)
                         let channel = rest.channels.get("request-method-test")
@@ -1989,13 +2041,10 @@ class RestClient: QuickSpec {
                         expect(response.statusCode) == 404
                         expect(response.value(forHTTPHeaderField: "X-Ably-Errorcode")).to(equal("\(ARTErrorCode.notFound.intValue)"))
                     }
-                }
 
-            }
-
-            context("if in the course of a REST request an attempt to authenticate using authUrl fails due to a timeout") {
+            
                 // RSA4e
-                it("the request should result in an error with code 40170, statusCode 401, and a suitable error message") {
+                func test__094__RestClient__if_in_the_course_of_a_REST_request_an_attempt_to_authenticate_using_authUrl_fails_due_to_a_timeout__the_request_should_result_in_an_error_with_code_40170__statusCode_401__and_a_suitable_error_message() {
                     let options = AblyTests.commonAppSetup()
                     let token = getTestToken()
                     options.httpRequestTimeout = 3 // short timeout to make it fail faster
@@ -2020,12 +2069,11 @@ class RestClient: QuickSpec {
                         }
                     }
                 }
-            }
 
             // RSC7c
-            context("request IDs") {
+            
 
-                it("should add 'request_id' query parameter") {
+                func test__095__RestClient__request_IDs__should_add__request_id__query_parameter() {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.addRequestIds = true
 
@@ -2063,7 +2111,7 @@ class RestClient: QuickSpec {
                     }
                 }
 
-                it("should remain the same if a request is retried to a fallback host") {
+                func test__096__RestClient__request_IDs__should_remain_the_same_if_a_request_is_retried_to_a_fallback_host() {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.httpMaxRetryCount = 5
                     options.addRequestIds = true
@@ -2102,7 +2150,7 @@ class RestClient: QuickSpec {
                     expect(fallbackRequests).to(allPass { extractURLQueryValue($0?.url, key: "request_id") == requestId })
                 }
                 
-                it("ErrorInfo should have `requestId` property") {
+                func test__097__RestClient__request_IDs__ErrorInfo_should_have__requestId__property() {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.addRequestIds = true
 
@@ -2119,9 +2167,4 @@ class RestClient: QuickSpec {
                         }
                     }
                 }
-
-            }
-
-        } // RestClient
-    }
 }

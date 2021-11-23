@@ -3,22 +3,117 @@ import Ably.Private
 import Nimble
 import Quick
 import Aspects
+        
+        private var testHTTPExecutor: TestProxyHTTPExecutor!
+                private func testOptionsGiveDefaultAuthMethod(_ caseSetter: (ARTAuthOptions) -> Void) {
+                    let options = ARTClientOptions()
+                    caseSetter(options)
+                    
+                    let client = ARTRest(options: options)
+                    
+                    expect(client.auth.internal.method).to(equal(ARTAuthMethod.token))
+                }
+                // Cases:
+                //  - useTokenAuth is specified and thus a key is not provided
+                //  - authCallback and authUrl are both specified
+                private func testStopsClientWithOptions(caseSetter: (ARTClientOptions) -> ()) {
+                    let options = ARTClientOptions()
+                    caseSetter(options)
+                    
+                    expect{ ARTRest(options: options) }.to(raiseException())
+                }
 
-class Auth : QuickSpec {
-    override func spec() {
+                private let currentClientId = "client_string"
+
+                private var options: ARTClientOptions!
+                private var rest: ARTRest!
+
+                private func rsa8bTestsSetupDependencies() {
+                    if (options == nil) {
+                        options = AblyTests.commonAppSetup()
+                        options.clientId = currentClientId
+                        rest = ARTRest(options: options)
+                    }
+                }
+                private let json = "{" +
+                "    \"token\": \"xxxxxx.yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy\"," +
+                "    \"issued\": 1479087321934," +
+                "    \"expires\": 1479087363934," +
+                "    \"capability\": \"{\\\"test\\\":[\\\"publish\\\"]}\"," +
+                "    \"clientId\": \"myClientId\"" +
+                "}"
+
+                private func check(_ details: ARTTokenDetails) {
+                    expect(details.token).to(equal("xxxxxx.yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"))
+                    expect(details.issued).to(equal(Date(timeIntervalSince1970: 1479087321.934)))
+                    expect(details.expires).to(equal(Date(timeIntervalSince1970: 1479087363.934)))
+                    expect(details.capability).to(equal("{\"test\":[\"publish\"]}"))
+                    expect(details.clientId).to(equal("myClientId"))
+                }
+            private let channelName = "test_JWT"
+            private let messageName = "message_JWT"
+                private let jwtTestsOptions = AblyTests.clientOptions()
+                private let rsa8gTestsOptions: ARTClientOptions = {
+                    let options = AblyTests.clientOptions()
+                    options.authUrl = URL(string: echoServerAddress)!
+                    return options
+                }()
+
+                private var keys: [String: String]!
+
+                private func rsa8gTestsSetupDependencies() {
+                    if (keys == nil) {
+                        keys = getKeys()
+                    }
+                }
+                private let authCallbackTestsOptions = AblyTests.clientOptions()
+            private let rsc1TestsOptions = AblyTests.clientOptions()
+                private var client: ARTRest!
+
+                private func rsa4ftestsSetupDependencies() {
+                    if (client == nil) {
+                        let options = AblyTests.clientOptions()
+                        let keys = getKeys()
+                        options.authUrl = URL(string: echoServerAddress)!
+                        options.authParams = [URLQueryItem]()
+                        options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
+                        options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
+                        options.authParams?.append(URLQueryItem(name: "returnType", value: "jwt"))
+                        client = ARTRest(options: options)
+                    }
+                }
+
+class Auth : XCTestCase {
+
+override class var defaultTestSuite : XCTestSuite {
+    let _ = testHTTPExecutor
+    let _ = currentClientId
+    let _ = options
+    let _ = rest
+    let _ = json
+    let _ = channelName
+    let _ = messageName
+    let _ = jwtTestsOptions
+    let _ = rsa8gTestsOptions
+    let _ = keys
+    let _ = authCallbackTestsOptions
+    let _ = rsc1TestsOptions
+    let _ = client
+
+    return super.defaultTestSuite
+}
+
         
         struct ExpectedTokenParams {
             static let clientId = "client_from_params"
             static let ttl = 1.0
             static let capability = "{\"cansubscribe:*\":[\"subscribe\"]}"
         }
-        
-        var testHTTPExecutor: TestProxyHTTPExecutor!
 
-        describe("Basic") {
+        
 
             // RSA1
-            it("should work over HTTPS only") {
+            func test__003__Basic__should_work_over_HTTPS_only() {
                 let clientOptions = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                 clientOptions.tls = false
 
@@ -26,7 +121,7 @@ class Auth : QuickSpec {
             }
 
             // RSA11
-            it("should send the API key in the Authorization header") {
+            func test__004__Basic__should_send_the_API_key_in_the_Authorization_header() {
                 let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                 let client = ARTRest(options: options)
                 testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
@@ -55,19 +150,18 @@ class Auth : QuickSpec {
             }
 
             // RSA2
-            it("should be default when an API key is set") {
+            func test__005__Basic__should_be_default_when_an_API_key_is_set() {
                 let client = ARTRest(options: ARTClientOptions(key: "fake:key"))
 
                 expect(client.auth.internal.method).to(equal(ARTAuthMethod.basic))
             }
-        }
 
-        describe("Token") {
+        
             
             // RSA3
-            context("token auth") {
+            
                 // RSA3a
-                it("should work over HTTP") {
+                func test__010__Token__token_auth__should_work_over_HTTP() {
                     let options = AblyTests.clientOptions(requestToken: true)
                     options.tls = false
                     let clientHTTP = ARTRest(options: options)
@@ -91,7 +185,7 @@ class Auth : QuickSpec {
                     expect(url.scheme).to(equal("http"), description: "No HTTP support")
                 }
 
-                it("should work over HTTPS") {
+                func test__011__Token__token_auth__should_work_over_HTTPS() {
                     let options = AblyTests.clientOptions(requestToken: true)
                     options.tls = true
                     let clientHTTPS = ARTRest(options: options)
@@ -116,8 +210,8 @@ class Auth : QuickSpec {
                 }
 
                 // RSA3b
-                context("for REST requests") {
-                    it("should send the token in the Authorization header") {
+                
+                    func test__012__Token__token_auth__for_REST_requests__should_send_the_token_in_the_Authorization_header() {
                         let options = AblyTests.clientOptions()
                         options.token = getTestToken()
                         
@@ -147,11 +241,10 @@ class Auth : QuickSpec {
                         
                         expect(authorization).to(equal(expectedAuthorization))
                     }
-                }
                 
                 // RSA3c
-                context("for Realtime connections") {
-                    it("should send the token in the querystring as a param named accessToken") {
+                
+                    func test__013__Token__token_auth__for_Realtime_connections__should_send_the_token_in_the_querystring_as_a_param_named_accessToken() {
                         let options = AblyTests.clientOptions()
                         options.token = getTestToken()
                         options.autoConnect = false
@@ -168,46 +261,36 @@ class Auth : QuickSpec {
                             XCTFail("MockTransport is not working")
                         }
                     }
-                }
-            }
 
             // RSA4
-            context("authentication method") {
-                func testOptionsGiveDefaultAuthMethod(_ caseSetter: (ARTAuthOptions) -> Void) {
-                    let options = ARTClientOptions()
-                    caseSetter(options)
-                    
-                    let client = ARTRest(options: options)
-                    
-                    expect(client.auth.internal.method).to(equal(ARTAuthMethod.token))
-                }
+            
                 
-                it("should be default auth method when options’ useTokenAuth is set") {
+                func test__014__Token__authentication_method__should_be_default_auth_method_when_options__useTokenAuth_is_set() {
                     testOptionsGiveDefaultAuthMethod { $0.useTokenAuth = true; $0.key = "fake:key" }
                 }
                 
-                it("should be default auth method when options’ authUrl is set") {
+                func test__015__Token__authentication_method__should_be_default_auth_method_when_options__authUrl_is_set() {
                     testOptionsGiveDefaultAuthMethod { $0.authUrl = URL(string: "http://test.com") }
                 }
                 
-                it("should be default auth method when options’ authCallback is set") {
+                func test__016__Token__authentication_method__should_be_default_auth_method_when_options__authCallback_is_set() {
                     testOptionsGiveDefaultAuthMethod { $0.authCallback = { _, _ in return } }
                 }
                 
-                it("should be default auth method when options’ tokenDetails is set") {
+                func test__017__Token__authentication_method__should_be_default_auth_method_when_options__tokenDetails_is_set() {
                     testOptionsGiveDefaultAuthMethod { $0.tokenDetails = ARTTokenDetails(token: "token") }
                 }
 
-                it("should be default auth method when options’ token is set") {
+                func test__018__Token__authentication_method__should_be_default_auth_method_when_options__token_is_set() {
                     testOptionsGiveDefaultAuthMethod { $0.token = "token" }
                 }
                 
-                it("should be default auth method when options’ key is set") {
+                func test__019__Token__authentication_method__should_be_default_auth_method_when_options__key_is_set() {
                     testOptionsGiveDefaultAuthMethod { $0.tokenDetails = ARTTokenDetails(token: "token"); $0.key = "fake:key" }
                 }
 
                 // RSA4a
-                it("should indicate an error and not retry the request when the server responds with a token error and there is no way to renew the token") {
+                func test__020__Token__authentication_method__should_indicate_an_error_and_not_retry_the_request_when_the_server_responds_with_a_token_error_and_there_is_no_way_to_renew_the_token() {
                     let options = AblyTests.clientOptions()
                     options.token = getTestToken()
 
@@ -234,7 +317,7 @@ class Auth : QuickSpec {
                 }
 
                 // RSA4a
-                it("should transition the connection to the FAILED state when the server responds with a token error and there is no way to renew the token") {
+                func test__021__Token__authentication_method__should_transition_the_connection_to_the_FAILED_state_when_the_server_responds_with_a_token_error_and_there_is_no_way_to_renew_the_token() {
                     let options = AblyTests.clientOptions()
                     options.tokenDetails = getTestTokenDetails(ttl: 0.1)
                     options.autoConnect = false
@@ -268,7 +351,7 @@ class Auth : QuickSpec {
                 }
                 
                 // RSA4b
-                it("on token error, reissues token and retries REST requests") {
+                func test__022__Token__authentication_method__on_token_error__reissues_token_and_retries_REST_requests() {
                     var authCallbackCalled = 0
 
                     let options = AblyTests.commonAppSetup()
@@ -302,7 +385,7 @@ class Auth : QuickSpec {
                 }
 
                 // RSA4b
-                it("in REST, if the token creation failed or the subsequent request with the new token failed due to a token error, then the request should result in an error") {
+                func test__023__Token__authentication_method__in_REST__if_the_token_creation_failed_or_the_subsequent_request_with_the_new_token_failed_due_to_a_token_error__then_the_request_should_result_in_an_error() {
                     let options = AblyTests.commonAppSetup()
                     options.useTokenAuth = true
 
@@ -332,7 +415,7 @@ class Auth : QuickSpec {
                 }
 
                 // RSA4b
-                it("in Realtime, if the token creation failed then the connection should move to the DISCONNECTED state and reports the error") {
+                func test__024__Token__authentication_method__in_Realtime__if_the_token_creation_failed_then_the_connection_should_move_to_the_DISCONNECTED_state_and_reports_the_error() {
                     let options = AblyTests.commonAppSetup()
                     options.authCallback = { tokenParams, completion in
                         completion(nil, NSError(domain: NSURLErrorDomain, code: -1003, userInfo: [NSLocalizedDescriptionKey: "A server with the specified hostname could not be found."]))
@@ -358,7 +441,7 @@ class Auth : QuickSpec {
                 }
 
                 // RSA4b
-                it("in Realtime, if the connection fails due to a terminal token error, then the connection should move to the FAILED state and reports the error") {
+                func test__025__Token__authentication_method__in_Realtime__if_the_connection_fails_due_to_a_terminal_token_error__then_the_connection_should_move_to_the_FAILED_state_and_reports_the_error() {
                     let options = AblyTests.commonAppSetup()
                     options.authCallback = { tokenParams, completion in
                         getTestToken() { token in
@@ -387,8 +470,8 @@ class Auth : QuickSpec {
                 }
 
                 // RSA4b1
-                context("local token validity check") {
-                    it("should be done if queryTime is true and local time is in sync with server") {
+                
+                    func test__028__Token__authentication_method__local_token_validity_check__should_be_done_if_queryTime_is_true_and_local_time_is_in_sync_with_server() {
                         let options = AblyTests.commonAppSetup()
                         let testKey = options.key!
 
@@ -438,7 +521,7 @@ class Auth : QuickSpec {
                         expect(rest.auth.tokenDetails).toNot(beNil())
                     }
 
-                    it("should NOT be done if queryTime is false and local time is NOT in sync with server") {
+                    func test__029__Token__authentication_method__local_token_validity_check__should_NOT_be_done_if_queryTime_is_false_and_local_time_is_NOT_in_sync_with_server() {
                         let options = AblyTests.commonAppSetup()
                         let testKey = options.key!
 
@@ -479,10 +562,9 @@ class Auth : QuickSpec {
                             }
                         }
                     }
-                }
 
                 // RSA4d
-                it("if a request by a realtime client to an authUrl results in an HTTP 403 the client library should transition to the FAILED state") {
+                func test__026__Token__authentication_method__if_a_request_by_a_realtime_client_to_an_authUrl_results_in_an_HTTP_403_the_client_library_should_transition_to_the_FAILED_state() {
                     let options = AblyTests.clientOptions()
                     options.autoConnect = false
                     options.authUrl = URL(string: "https://echo.ably.io/respondwith?status=403")!
@@ -500,7 +582,7 @@ class Auth : QuickSpec {
                 }
                 
                 // RSA4d
-                it("if an authCallback results in an HTTP 403 the client library should transition to the FAILED state") {
+                func test__027__Token__authentication_method__if_an_authCallback_results_in_an_HTTP_403_the_client_library_should_transition_to_the_FAILED_state() {
                     let options = AblyTests.clientOptions()
                     options.autoConnect = false
                     var authCallbackHasBeenInvoked = false
@@ -521,35 +603,25 @@ class Auth : QuickSpec {
                         realtime.connect()
                     }
                 }
-            }
             
             // RSA14
-            context("options") {
-                // Cases:
-                //  - useTokenAuth is specified and thus a key is not provided
-                //  - authCallback and authUrl are both specified
-                func testStopsClientWithOptions(caseSetter: (ARTClientOptions) -> ()) {
-                    let options = ARTClientOptions()
-                    caseSetter(options)
-                    
-                    expect{ ARTRest(options: options) }.to(raiseException())
-                }
+            
                 
-                it("should stop client when useTokenAuth and no key occurs") {
+                func test__030__Token__options__should_stop_client_when_useTokenAuth_and_no_key_occurs() {
                     testStopsClientWithOptions { $0.useTokenAuth = true }
                 }
                 
-                it ("should stop client when authCallback and authUrl occurs") {
+                func test__031__Token__options__should_stop_client_when_authCallback_and_authUrl_occurs() {
                     testStopsClientWithOptions { $0.authCallback = { params, callback in /*nothing*/ }; $0.authUrl = URL(string: "http://auth.ably.io") }
                 }
 
                 // RSA4c
-                context("if an attempt by the realtime client library to authenticate is made using the authUrl or authCallback") {
+                
 
-                    context("the request to authUrl fails") {
+                    
 
                         // RSA4c1 & RSA4c2
-                        it("if the connection is CONNECTING, then the connection attempt should be treated as unsuccessful") {
+                        func test__032__Token__options__if_an_attempt_by_the_realtime_client_library_to_authenticate_is_made_using_the_authUrl_or_authCallback__the_request_to_authUrl_fails__if_the_connection_is_CONNECTING__then_the_connection_attempt_should_be_treated_as_unsuccessful() {
                             let options = AblyTests.clientOptions()
                             options.autoConnect = false
                             options.authUrl = URL(string: "http://echo.ably.io")!
@@ -576,7 +648,7 @@ class Auth : QuickSpec {
                         }
 
                         // RSA4c3
-                        it("if the connection is CONNECTED, then the connection should remain CONNECTED") {
+                        func test__033__Token__options__if_an_attempt_by_the_realtime_client_library_to_authenticate_is_made_using_the_authUrl_or_authCallback__the_request_to_authUrl_fails__if_the_connection_is_CONNECTED__then_the_connection_should_remain_CONNECTED() {
                             let token = getTestToken()
                             let options = AblyTests.clientOptions()
                             options.authUrl = URL(string: "http://echo.ably.io")!
@@ -611,12 +683,11 @@ class Auth : QuickSpec {
 
                             expect(realtime.connection.state).to(equal(ARTRealtimeConnectionState.connected))
                         }
-                    }
 
-                    context("the request to authCallback fails") {
+                    
 
                         // RSA4c1 & RSA4c2
-                        it("if the connection is CONNECTING, then the connection attempt should be treated as unsuccessful") {
+                        func test__034__Token__options__if_an_attempt_by_the_realtime_client_library_to_authenticate_is_made_using_the_authUrl_or_authCallback__the_request_to_authCallback_fails__if_the_connection_is_CONNECTING__then_the_connection_attempt_should_be_treated_as_unsuccessful() {
                             let options = AblyTests.clientOptions()
                             options.autoConnect = false
                             options.authCallback = { tokenParams, completion in
@@ -646,7 +717,7 @@ class Auth : QuickSpec {
                         }
 
                         // RSA4c3
-                        it("if the connection is CONNECTED, then the connection should remain CONNECTED") {
+                        func test__035__Token__options__if_an_attempt_by_the_realtime_client_library_to_authenticate_is_made_using_the_authUrl_or_authCallback__the_request_to_authCallback_fails__if_the_connection_is_CONNECTED__then_the_connection_should_remain_CONNECTED() {
                             let options = AblyTests.clientOptions()
                             options.authCallback = { tokenParams, completion in
                                 getTestTokenDetails(completion: completion)
@@ -680,12 +751,11 @@ class Auth : QuickSpec {
 
                             expect(realtime.connection.state).to(equal(ARTRealtimeConnectionState.connected))
                         }
-                    }
 
-                    context("the provided token is in an invalid format") {
+                    
 
                         // RSA4c1 & RSA4c2
-                        it("if the connection is CONNECTING, then the connection attempt should be treated as unsuccessful") {
+                        func test__036__Token__options__if_an_attempt_by_the_realtime_client_library_to_authenticate_is_made_using_the_authUrl_or_authCallback__the_provided_token_is_in_an_invalid_format__if_the_connection_is_CONNECTING__then_the_connection_attempt_should_be_treated_as_unsuccessful() {
                             let options = AblyTests.clientOptions()
                             options.autoConnect = false
                             options.authUrl = URL(string: "http://echo.ably.io")!
@@ -719,7 +789,7 @@ class Auth : QuickSpec {
                         }
 
                         // RSA4c3
-                        it("if the connection is CONNECTED, then the connection should remain CONNECTED") {
+                        func test__037__Token__options__if_an_attempt_by_the_realtime_client_library_to_authenticate_is_made_using_the_authUrl_or_authCallback__the_provided_token_is_in_an_invalid_format__if_the_connection_is_CONNECTED__then_the_connection_should_remain_CONNECTED() {
                             let options = AblyTests.clientOptions()
                             options.authUrl = URL(string: "http://echo.ably.io")!
                             options.authParams = [URLQueryItem]()
@@ -769,11 +839,10 @@ class Auth : QuickSpec {
 
                             expect(realtime.connection.state).to(equal(ARTRealtimeConnectionState.connected))
                         }
-                    }
 
-                    context("the attempt times out after realtimeRequestTimeout") {
+                    
                         // RSA4c1 & RSA4c2
-                        it("if the connection is CONNECTING, then the connection attempt should be treated as unsuccessful") {
+                        func test__038__Token__options__if_an_attempt_by_the_realtime_client_library_to_authenticate_is_made_using_the_authUrl_or_authCallback__the_attempt_times_out_after_realtimeRequestTimeout__if_the_connection_is_CONNECTING__then_the_connection_attempt_should_be_treated_as_unsuccessful() {
                             let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
                             defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
                             ARTDefault.setRealtimeRequestTimeout(0.5)
@@ -808,7 +877,7 @@ class Auth : QuickSpec {
                         }
 
                         // RSA4c3
-                        it("if the connection is CONNECTED, then the connection should remain CONNECTED") {
+                        func test__039__Token__options__if_an_attempt_by_the_realtime_client_library_to_authenticate_is_made_using_the_authUrl_or_authCallback__the_attempt_times_out_after_realtimeRequestTimeout__if_the_connection_is_CONNECTED__then_the_connection_should_remain_CONNECTED() {
                             let options = AblyTests.clientOptions()
                             options.autoConnect = false
                             options.authCallback = { tokenParams, completion in
@@ -854,16 +923,13 @@ class Auth : QuickSpec {
 
                             expect(realtime.connection.state).to(equal(ARTRealtimeConnectionState.connected))
                         }
-                    }
-                }
-            }
 
             // RSA15
-            context("token auth and clientId") {
+            
                 // RSA15a
-                context("should check clientId consistency") {
+                
 
-                    it("on rest") {
+                    func test__041__Token__token_auth_and_clientId__should_check_clientId_consistency__on_rest() {
                         let expectedClientId = "client_string"
                         let options = AblyTests.commonAppSetup()
                         options.useTokenAuth = true
@@ -895,7 +961,7 @@ class Auth : QuickSpec {
                         }
                     }
 
-                    it("on realtime") {
+                    func test__042__Token__token_auth_and_clientId__should_check_clientId_consistency__on_realtime() {
                         let expectedClientId = "client_string"
                         let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                         options.clientId = expectedClientId
@@ -931,16 +997,15 @@ class Auth : QuickSpec {
                         expect(connectedMessage.connectionDetails!.clientId).to(equal(expectedClientId))
                     }
 
-                    it("with wildcard") {
+                    func test__043__Token__token_auth_and_clientId__should_check_clientId_consistency__with_wildcard() {
                         let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                         options.clientId = "*"
                         expect{ ARTRest(options: options) }.to(raiseException())
                         expect{ ARTRealtime(options: options) }.to(raiseException())
                     }
-                }
                 
                 // RSA15b
-                it("should permit to be unauthenticated") {
+                func test__040__Token__token_auth_and_clientId__should_permit_to_be_unauthenticated() {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = nil
                     
@@ -969,9 +1034,9 @@ class Auth : QuickSpec {
                 }
                 
                 // RSA15c
-                context("Incompatible client") {
+                
 
-                    it("with Realtime, it should change the connection state to FAILED and emit an error") {
+                    func test__044__Token__token_auth_and_clientId__Incompatible_client__with_Realtime__it_should_change_the_connection_state_to_FAILED_and_emit_an_error() {
                         let options = AblyTests.commonAppSetup()
                         let wrongTokenDetails = getTestTokenDetails(clientId: "wrong")
 
@@ -992,7 +1057,7 @@ class Auth : QuickSpec {
                         }
                     }
 
-                    it("with Rest, it should result in an appropriate error response") {
+                    func test__045__Token__token_auth_and_clientId__Incompatible_client__with_Rest__it_should_result_in_an_appropriate_error_response() {
                         let options = AblyTests.commonAppSetup()
                         options.clientId = "john"
                         let rest = ARTRest(options: options)
@@ -1006,16 +1071,14 @@ class Auth : QuickSpec {
                             }
                         }
                     }
-                }
-            }
             
             // RSA5
-            it("TTL should default to be omitted") {
+            func test__006__Token__TTL_should_default_to_be_omitted() {
                 let tokenParams = ARTTokenParams()
                 expect(tokenParams.ttl).to(beNil())
             }
 
-            it("should URL query be correctly encoded") {
+            func test__007__Token__should_URL_query_be_correctly_encoded() {
                 let tokenParams = ARTTokenParams()
                 tokenParams.capability = "{\"*\":[\"*\"]}"
 
@@ -1044,7 +1107,7 @@ class Auth : QuickSpec {
             }
             
             // RSA6
-            it("should omit capability field if it is not specified") {
+            func test__008__Token__should_omit_capability_field_if_it_is_not_specified() {
                 let tokenParams = ARTTokenParams()
                 expect(tokenParams.capability).to(beNil())
                 
@@ -1074,7 +1137,7 @@ class Auth : QuickSpec {
             }
 
             // RSA6
-            it("should add capability field if the user specifies it") {
+            func test__009__Token__should_add_capability_field_if_the_user_specifies_it() {
                 let tokenParams = ARTTokenParams()
                 tokenParams.capability = "{\"*\":[\"*\"]}"
 
@@ -1103,10 +1166,10 @@ class Auth : QuickSpec {
             }
             
             // RSA7
-            context("clientId and authenticated clients") {
+            
 
                 // RSA7a1
-                it("should not pass clientId with published message") {
+                func test__046__Token__clientId_and_authenticated_clients__should_not_pass_clientId_with_published_message() {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "mary"
                     let rest = ARTRest(options: options)
@@ -1130,7 +1193,7 @@ class Auth : QuickSpec {
                 }
                 
                 // RSA7a2
-                it("should obtain a token if clientId is assigned") {
+                func test__047__Token__clientId_and_authenticated_clients__should_obtain_a_token_if_clientId_is_assigned() {
                     let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                     options.clientId = "client_string"
                     
@@ -1153,7 +1216,7 @@ class Auth : QuickSpec {
                 }
                 
                 // RSA7a3
-                it("should convenience clientId return a string") {
+                func test__048__Token__clientId_and_authenticated_clients__should_convenience_clientId_return_a_string() {
                     let clientOptions = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                     clientOptions.clientId = "String"
                     
@@ -1161,7 +1224,7 @@ class Auth : QuickSpec {
                 }
 
                 // RSA7a4
-                it("ClientOptions#clientId takes precendence when a clientId value is provided in both ClientOptions#clientId and ClientOptions#defaultTokenParams") {
+                func test__049__Token__clientId_and_authenticated_clients__ClientOptions_clientId_takes_precendence_when_a_clientId_value_is_provided_in_both_ClientOptions_clientId_and_ClientOptions_defaultTokenParams() {
                     let options = AblyTests.clientOptions()
                     options.clientId = "john"
                     options.authCallback = { tokenParams, completion in
@@ -1193,10 +1256,10 @@ class Auth : QuickSpec {
                 }
                 
                 // RSA12
-                context("Auth#clientId attribute is null") {
+                
 
                     // RSA12a
-                    it("identity should be anonymous for all operations") {
+                    func test__051__Token__clientId_and_authenticated_clients__Auth_clientId_attribute_is_null__identity_should_be_anonymous_for_all_operations() {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
                         let realtime = AblyTests.newRealtime(options)
@@ -1224,7 +1287,7 @@ class Auth : QuickSpec {
                     }
 
                     // RSA12b
-                    it("identity may change and become identified") {
+                    func test__052__Token__clientId_and_authenticated_clients__Auth_clientId_attribute_is_null__identity_may_change_and_become_identified() {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
                         options.token = getTestToken(clientId: "tester")
@@ -1245,13 +1308,11 @@ class Auth : QuickSpec {
                             realtime.connect()
                         }
                     }
-
-                }
                 
                 // RSA7b
-                context("auth.clientId not null") {
+                
                     // RSA7b1
-                    it("when clientId attribute is assigned on client options") {
+                    func test__053__Token__clientId_and_authenticated_clients__auth_clientId_not_null__when_clientId_attribute_is_assigned_on_client_options() {
                         let clientOptions = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                         clientOptions.clientId = "Exist"
                         
@@ -1259,7 +1320,7 @@ class Auth : QuickSpec {
                     }
                     
                     // RSA7b2
-                    it("when tokenRequest or tokenDetails has clientId not null or wildcard string") {
+                    func test__054__Token__clientId_and_authenticated_clients__auth_clientId_not_null__when_tokenRequest_or_tokenDetails_has_clientId_not_null_or_wildcard_string() {
                         let options = AblyTests.commonAppSetup()
                         options.clientId = "client_string"
                         options.useTokenAuth = true
@@ -1290,7 +1351,7 @@ class Auth : QuickSpec {
                     }
                     
                     // RSA7b3
-                    it("should CONNECTED ProtocolMessages contain a clientId") {
+                    func test__055__Token__clientId_and_authenticated_clients__auth_clientId_not_null__should_CONNECTED_ProtocolMessages_contain_a_clientId() {
                         let options = AblyTests.clientOptions()
                         options.token = getTestToken(clientId: "john")
                         expect(options.clientId).to(beNil())
@@ -1313,7 +1374,7 @@ class Auth : QuickSpec {
                     }
 
                     // RSA7b4
-                    it("client does not have an identity when a wildcard string '*' is present") {
+                    func test__056__Token__clientId_and_authenticated_clients__auth_clientId_not_null__client_does_not_have_an_identity_when_a_wildcard_string_____is_present() {
                         let options = AblyTests.clientOptions()
                         options.token = getTestToken(clientId: "*")
                         let realtime = ARTRealtime(options: options)
@@ -1325,24 +1386,20 @@ class Auth : QuickSpec {
                             }
                         }
                     }
-
-                }
                 
                 // RSA7c
-                it("should clientId be null or string") {
+                func test__050__Token__clientId_and_authenticated_clients__should_clientId_be_null_or_string() {
                     let clientOptions = AblyTests.setupOptions(AblyTests.jsonRestOptions)
                     clientOptions.clientId = "*"
                     
                     expect{ ARTRest(options: clientOptions) }.to(raiseException())
                 }
-            }
-        }
         
         // RSA8
-        describe("requestToken") {
-            context("arguments") {
+        
+            
                 // RSA8e
-                it("should not merge with the configured params and options but instead replace all corresponding values, even when @null@") {
+                func test__062__requestToken__arguments__should_not_merge_with_the_configured_params_and_options_but_instead_replace_all_corresponding_values__even_when__null_() {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "сlientId"
                     let rest = ARTRest(options: options)
@@ -1384,7 +1441,7 @@ class Auth : QuickSpec {
                 }
 
                 // RSA8e
-                it("should use configured defaults if the object arguments are omitted") {
+                func test__063__requestToken__arguments__should_use_configured_defaults_if_the_object_arguments_are_omitted() {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "tester"
                     let rest = ARTRest(options: options)
@@ -1442,12 +1499,11 @@ class Auth : QuickSpec {
                         }
                     }
                 }
-            }
 
             // RSA8c
-            context("authUrl") {
+            
 
-                it("query will provide a token string") {
+                func test__064__requestToken__authUrl__query_will_provide_a_token_string() {
                     let testToken = getTestToken()
 
                     let options = AblyTests.clientOptions()
@@ -1473,7 +1529,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                it("query will provide a TokenDetails") {
+                func test__065__requestToken__authUrl__query_will_provide_a_TokenDetails() {
                     guard let testTokenDetails = getTestTokenDetails(clientId: "tester") else {
                         fail("TokenDetails is empty")
                         return
@@ -1518,7 +1574,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                it("query will provide a TokenRequest") {
+                func test__066__requestToken__authUrl__query_will_provide_a_TokenRequest() {
                     let tokenParams = ARTTokenParams()
                     tokenParams.capability = "{\"test\":[\"subscribe\"]}"
 
@@ -1575,9 +1631,9 @@ class Auth : QuickSpec {
                     }
                 }
 
-                context("parameters") {
+                
                     // RSA8c1a
-                    it("should be added to the URL when auth method is GET") {
+                    func test__069__requestToken__authUrl__parameters__should_be_added_to_the_URL_when_auth_method_is_GET() {
                         let clientOptions = ARTClientOptions()
                         clientOptions.authUrl = URL(string: "http://auth.ably.io")
                         var authParams = [
@@ -1630,7 +1686,7 @@ class Auth : QuickSpec {
                     }
                     
                     // RSA8c1b
-                    it("should added on the body request when auth method is POST") {
+                    func test__070__requestToken__authUrl__parameters__should_added_on_the_body_request_when_auth_method_is_POST() {
                         let clientOptions = ARTClientOptions()
                         clientOptions.authUrl = URL(string: "http://auth.ably.io")
                         clientOptions.authParams = [
@@ -1669,10 +1725,9 @@ class Auth : QuickSpec {
                             }
                         }
                     }
-                }
 
                 // RSA8c2
-                it("TokenParams should take precedence over any configured authParams when a name conflict occurs") {
+                func test__067__requestToken__authUrl__TokenParams_should_take_precedence_over_any_configured_authParams_when_a_name_conflict_occurs() {
                     let options = ARTClientOptions()
                     options.clientId = "john"
                     options.authUrl = URL(string: "http://auth.ably.io")
@@ -1701,7 +1756,7 @@ class Auth : QuickSpec {
                 }
                 
                 // RSA8c3
-                it("should override previously configured parameters") {
+                func test__068__requestToken__authUrl__should_override_previously_configured_parameters() {
                     let clientOptions = ARTClientOptions()
                     clientOptions.authUrl = URL(string: "http://auth.ably.io")
                     let rest = ARTRest(options: clientOptions)
@@ -1713,10 +1768,9 @@ class Auth : QuickSpec {
                     let url = rest.auth.internal.buildURL(authOptions, with: ARTTokenParams())
                     expect(url.absoluteString).to(contain(URL(string: "http://auth.ably.io")?.absoluteString ?? ""))
                 }
-            }
 
             // RSA8a
-            it("implicitly creates a TokenRequest and requests a token") {
+            func test__057__requestToken__implicitly_creates_a_TokenRequest_and_requests_a_token() {
                 let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                 var createTokenRequestMethodWasCalled = false
@@ -1739,22 +1793,9 @@ class Auth : QuickSpec {
             }
 
             // RSA8b
-            context("should support all TokenParams") {
+            
 
-                let currentClientId = "client_string"
-
-                var options: ARTClientOptions!
-                var rest: ARTRest!
-
-                func rsa8bTestsSetupDependencies() {
-                    if (options == nil) {
-                        options = AblyTests.commonAppSetup()
-                        options.clientId = currentClientId
-                        rest = ARTRest(options: options)
-                    }
-                }
-
-                it("using defaults") {
+                func test__071__requestToken__should_support_all_TokenParams__using_defaults() {
                     rsa8bTestsSetupDependencies()
 
                     // Default values
@@ -1776,7 +1817,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                it("overriding defaults") {
+                func test__072__requestToken__should_support_all_TokenParams__overriding_defaults() {
                     rsa8bTestsSetupDependencies()
 
                     // Custom values
@@ -1801,12 +1842,11 @@ class Auth : QuickSpec {
                         })
                     }
                 }
-            }
 
             // RSA8d
-            context("When authCallback option is set, it will invoke the callback") {
+            
 
-                it("with a token string") {
+                func test__073__requestToken__When_authCallback_option_is_set__it_will_invoke_the_callback__with_a_token_string() {
                     let options = AblyTests.clientOptions()
                     let expectedTokenParams = ARTTokenParams()
 
@@ -1825,7 +1865,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                it("with a TokenDetails") {
+                func test__074__requestToken__When_authCallback_option_is_set__it_will_invoke_the_callback__with_a_TokenDetails() {
                     let expectedTokenParams = ARTTokenParams()
 
                     let options = AblyTests.clientOptions()
@@ -1844,7 +1884,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                it("with a TokenRequest") {
+                func test__075__requestToken__When_authCallback_option_is_set__it_will_invoke_the_callback__with_a_TokenRequest() {
                     let options = AblyTests.commonAppSetup()
                     let expectedTokenParams = ARTTokenParams()
                     expectedTokenParams.clientId = "foo"
@@ -1870,10 +1910,9 @@ class Auth : QuickSpec {
                         }
                     }
                 }
-            }
 
             // RSA8f1
-            it("ensure the message published does not have a clientId") {
+            func test__058__requestToken__ensure_the_message_published_does_not_have_a_clientId() {
                 let options = AblyTests.commonAppSetup()
                 options.token = getTestToken(clientId: nil)
                 let rest = ARTRest(options: options)
@@ -1907,7 +1946,7 @@ class Auth : QuickSpec {
             }
 
             // RSA8f2
-            it("ensure that the message is rejected") {
+            func test__059__requestToken__ensure_that_the_message_is_rejected() {
                 let options = AblyTests.commonAppSetup()
                 options.token = getTestToken(clientId: nil)
                 let rest = ARTRest(options: options)
@@ -1927,7 +1966,7 @@ class Auth : QuickSpec {
             }
 
             // RSA8f3
-            it("ensure the message published with a wildcard '*' does not have a clientId") {
+            func test__060__requestToken__ensure_the_message_published_with_a_wildcard_____does_not_have_a_clientId() {
                 let options = AblyTests.commonAppSetup()
                 let rest = ARTRest(options: options)
 
@@ -1968,7 +2007,7 @@ class Auth : QuickSpec {
             }
 
             // RSA8f4
-            it("ensure the message published with a wildcard '*' has the provided clientId") {
+            func test__061__requestToken__ensure_the_message_published_with_a_wildcard_____has_the_provided_clientId() {
                 let options = AblyTests.commonAppSetup()
                 // Request a token with a wildcard '*' value clientId
                 options.token = getTestToken(clientId: "*")
@@ -1994,13 +2033,12 @@ class Auth : QuickSpec {
                 }
                 expect(rest.auth.clientId).to(beNil())
             }
-        }
 
         // RSA9
-        describe("createTokenRequest") {
+        
 
             // RSA9h
-            it("should not merge with the configured params and options but instead replace all corresponding values, even when @null@") {
+            func test__076__createTokenRequest__should_not_merge_with_the_configured_params_and_options_but_instead_replace_all_corresponding_values__even_when__null_() {
                 let options = AblyTests.commonAppSetup()
                 options.clientId = "client_string"
                 let rest = ARTRest(options: options)
@@ -2085,7 +2123,7 @@ class Auth : QuickSpec {
                 }
             }
 
-            it("should override defaults if AuthOptions provided") {
+            func test__077__createTokenRequest__should_override_defaults_if_AuthOptions_provided() {
                 let defaultOptions = AblyTests.commonAppSetup()
                 defaultOptions.authCallback = { tokenParams, completion in
                     fail("Should not be called")
@@ -2114,7 +2152,7 @@ class Auth : QuickSpec {
                 expect(customCallbackCalled).to(beTrue())
             }
 
-            it("should use defaults if no AuthOptions is provided") {
+            func test__078__createTokenRequest__should_use_defaults_if_no_AuthOptions_is_provided() {
                 var currentTokenRequest: ARTTokenRequest? = nil
                 var callbackCalled = false
 
@@ -2142,7 +2180,7 @@ class Auth : QuickSpec {
                 expect(callbackCalled).to(beTrue())
             }
 
-            it("should replace defaults if `nil` option's field passed") {
+            func test__079__createTokenRequest__should_replace_defaults_if__nil__option_s_field_passed() {
                 let defaultOptions = AblyTests.commonAppSetup()
                 let rest = ARTRest(options: defaultOptions)
 
@@ -2160,7 +2198,7 @@ class Auth : QuickSpec {
             }
 
             // RSA9h
-            it("should use configured defaults if the object arguments are omitted") {
+            func test__080__createTokenRequest__should_use_configured_defaults_if_the_object_arguments_are_omitted() {
                 let options = AblyTests.commonAppSetup()
                 let rest = ARTRest(options: options)
 
@@ -2209,7 +2247,7 @@ class Auth : QuickSpec {
             }
 
             // RSA9a
-            it("should create and sign a TokenRequest") {
+            func test__081__createTokenRequest__should_create_and_sign_a_TokenRequest() {
                 let rest = ARTRest(options: AblyTests.commonAppSetup())
                 let expectedClientId = "client_string"
                 let tokenParams = ARTTokenParams(clientId: expectedClientId)
@@ -2230,7 +2268,7 @@ class Auth : QuickSpec {
             }
 
             // RSA9b
-            it("should support AuthOptions") {
+            func test__082__createTokenRequest__should_support_AuthOptions() {
                 let rest = ARTRest(options: AblyTests.commonAppSetup())
                 let auth: ARTAuth = rest.auth
 
@@ -2249,7 +2287,7 @@ class Auth : QuickSpec {
             }
 
             // RSA9c
-            it("should generate a unique 16+ character nonce if none is provided") {
+            func test__083__createTokenRequest__should_generate_a_unique_16__character_nonce_if_none_is_provided() {
                 let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                 waitUntil(timeout: testTimeout) { done in
@@ -2278,9 +2316,9 @@ class Auth : QuickSpec {
             }
 
             // RSA9d
-            context("should generate a timestamp") {
+            
 
-                it("from current time if not provided") {
+                func test__087__createTokenRequest__should_generate_a_timestamp__from_current_time_if_not_provided() {
                     let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                     waitUntil(timeout: testTimeout) { done in
@@ -2295,7 +2333,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                it("will retrieve the server time if queryTime is true") {
+                func test__088__createTokenRequest__should_generate_a_timestamp__will_retrieve_the_server_time_if_queryTime_is_true() {
                     let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                     var serverTimeRequestWasMade = false
@@ -2323,12 +2361,11 @@ class Auth : QuickSpec {
                         })
                     }
                 }
-            }
 
             // RSA9e
-            context("TTL") {
+            
 
-                it("should be optional") {
+                func test__089__createTokenRequest__TTL__should_be_optional() {
                     let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                     waitUntil(timeout: testTimeout) { done in
@@ -2361,7 +2398,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                it("should be specified in milliseconds") {
+                func test__090__createTokenRequest__TTL__should_be_specified_in_milliseconds() {
                     let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                     let params = ARTTokenParams()
@@ -2389,7 +2426,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                it("should be valid to request a token for 24 hours") {
+                func test__091__createTokenRequest__TTL__should_be_valid_to_request_a_token_for_24_hours() {
                     let rest = ARTRest(options: AblyTests.commonAppSetup())
                     let tokenParams = ARTTokenParams()
                     let dayInSeconds = TimeInterval(24 * 60 * 60)
@@ -2407,10 +2444,8 @@ class Auth : QuickSpec {
                     }
                 }
 
-            }
-
             // RSA9f
-            it("should provide capability has json text") {
+            func test__084__createTokenRequest__should_provide_capability_has_json_text() {
                 let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                 let tokenParams = ARTTokenParams()
@@ -2440,7 +2475,7 @@ class Auth : QuickSpec {
             }
 
             // RSA9g
-            it("should generate a valid HMAC") {
+            func test__085__createTokenRequest__should_generate_a_valid_HMAC() {
                 let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                 let tokenParams = ARTTokenParams(clientId: "client_string")
@@ -2468,7 +2503,7 @@ class Auth : QuickSpec {
             }
 
             // RSA9i
-            it("should respect all requirements") {
+            func test__086__createTokenRequest__should_respect_all_requirements() {
                 let rest = ARTRest(options: AblyTests.commonAppSetup())
                 let expectedClientId = "client_string"
                 let tokenParams = ARTTokenParams(clientId: expectedClientId)
@@ -2507,13 +2542,11 @@ class Auth : QuickSpec {
                 }
             }
 
-        }
-
         // RSA10
-        describe("authorize") {
+        
 
             // RSA10a
-            it("should always create a token") {
+            func test__092__authorize__should_always_create_a_token() {
                 let options = AblyTests.commonAppSetup()
                 options.useTokenAuth = true
                 let rest = ARTRest(options: options)
@@ -2569,7 +2602,7 @@ class Auth : QuickSpec {
             }
 
             // RSA10a
-            it("should create a new token if one already exist and ensure Token Auth is used for all future requests") {
+            func test__093__authorize__should_create_a_new_token_if_one_already_exist_and_ensure_Token_Auth_is_used_for_all_future_requests() {
                 let options = AblyTests.commonAppSetup()
                 let testToken = getTestToken()
                 options.token = testToken
@@ -2595,7 +2628,7 @@ class Auth : QuickSpec {
             }
 
             // RSA10a
-            it("should create a token immediately and ensures Token Auth is used for all future requests") {
+            func test__094__authorize__should_create_a_token_immediately_and_ensures_Token_Auth_is_used_for_all_future_requests() {
                 let options = AblyTests.commonAppSetup()
                 let rest = ARTRest(options: options)
 
@@ -2619,7 +2652,7 @@ class Auth : QuickSpec {
             }
 
             // RSA10b
-            it("should supports all TokenParams and AuthOptions") {
+            func test__095__authorize__should_supports_all_TokenParams_and_AuthOptions() {
                 let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                 waitUntil(timeout: testTimeout) { done in
@@ -2634,7 +2667,7 @@ class Auth : QuickSpec {
             }
 
             // RSA10e
-            it("should use the requestToken implementation") {
+            func test__096__authorize__should_use_the_requestToken_implementation() {
                 let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                 var requestMethodWasCalled = false
@@ -2663,7 +2696,7 @@ class Auth : QuickSpec {
             }
 
             // RSA10f
-            it("should return TokenDetails with valid token metadata") {
+            func test__097__authorize__should_return_TokenDetails_with_valid_token_metadata() {
                 let options = AblyTests.commonAppSetup()
                 options.clientId = "client_string"
                 let rest = ARTRest(options: options)
@@ -2684,9 +2717,9 @@ class Auth : QuickSpec {
             }
 
             // RSA10g
-            context("on subsequent authorisations") {
+            
 
-                it("should store the AuthOptions with authUrl") {
+                func test__099__authorize__on_subsequent_authorisations__should_store_the_AuthOptions_with_authUrl() {
                     let options = AblyTests.commonAppSetup()
                     let rest = ARTRest(options: options)
                     testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
@@ -2729,7 +2762,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                it("should store the AuthOptions with authCallback") {
+                func test__100__authorize__on_subsequent_authorisations__should_store_the_AuthOptions_with_authCallback() {
                     let rest = ARTRest(options: AblyTests.commonAppSetup())
                     let auth = rest.auth
 
@@ -2762,7 +2795,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                it("should not store queryTime") {
+                func test__101__authorize__on_subsequent_authorisations__should_not_store_queryTime() {
                     let options = AblyTests.commonAppSetup()
                     let rest = ARTRest(options: options)
                     let authOptions = ARTAuthOptions()
@@ -2796,7 +2829,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                it("should store the TokenParams") {
+                func test__102__authorize__on_subsequent_authorisations__should_store_the_TokenParams() {
                     let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                     let tokenParams = ARTTokenParams()
@@ -2828,7 +2861,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                it("should use configured defaults if the object arguments are omitted") {
+                func test__103__authorize__on_subsequent_authorisations__should_use_configured_defaults_if_the_object_arguments_are_omitted() {
                     let options = AblyTests.commonAppSetup()
                     let rest = ARTRest(options: options)
 
@@ -2866,10 +2899,8 @@ class Auth : QuickSpec {
                     expect(authCallbackCalled) == 2
                 }
 
-            }
-
             // RSA10h
-            it("should use the configured Auth#clientId, if not null, by default") {
+            func test__098__authorize__should_use_the_configured_Auth_clientId__if_not_null__by_default() {
                 let options = AblyTests.commonAppSetup()
                 var rest = ARTRest(options: options)
 
@@ -2902,9 +2933,9 @@ class Auth : QuickSpec {
             }
 
             // RSA10i
-            context("should adhere to all requirements relating to") {
+            
 
-                it("TokenParams") {
+                func test__104__authorize__should_adhere_to_all_requirements_relating_to__TokenParams() {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "client_string"
                     let rest = ARTRest(options: options)
@@ -2930,7 +2961,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                it("authCallback") {
+                func test__105__authorize__should_adhere_to_all_requirements_relating_to__authCallback() {
                     var currentTokenRequest: ARTTokenRequest? = nil
 
                     var rest = ARTRest(options: AblyTests.commonAppSetup())
@@ -2963,7 +2994,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                it("authUrl") {
+                func test__106__authorize__should_adhere_to_all_requirements_relating_to__authUrl() {
                     let options = ARTClientOptions()
                     options.authUrl = URL(string: "http://echo.ably.io")!
 
@@ -2980,7 +3011,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                it("authUrl with json") {
+                func test__107__authorize__should_adhere_to_all_requirements_relating_to__authUrl_with_json() {
                     guard let tokenDetails = getTestTokenDetails() else {
                         XCTFail("TokenDetails is empty")
                         return
@@ -3028,7 +3059,7 @@ class Auth : QuickSpec {
                 }
 
                 // https://github.com/ably/ably-cocoa/issues/618
-                it("authUrl returning TokenRequest decodes TTL as expected") {
+                func test__108__authorize__should_adhere_to_all_requirements_relating_to__authUrl_returning_TokenRequest_decodes_TTL_as_expected() {
                     let options = AblyTests.commonAppSetup()
 
                     var rest = ARTRest(options: options)
@@ -3075,7 +3106,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                it("authUrl with plain text") {
+                func test__109__authorize__should_adhere_to_all_requirements_relating_to__authUrl_with_plain_text() {
                     let token = getTestToken()
                     let options = ARTClientOptions()
                     // Use authUrl for authentication with plain text token response
@@ -3107,13 +3138,11 @@ class Auth : QuickSpec {
                         }
                     }
                 }
-                
-            }
 
             // RSA10j
-            context("when TokenParams and AuthOptions are provided") {
+            
 
-                it("should supersede configured AuthOptions (using key) even if arguments objects are empty") {
+                func test__110__authorize__when_TokenParams_and_AuthOptions_are_provided__should_supersede_configured_AuthOptions__using_key__even_if_arguments_objects_are_empty() {
                     let defaultOptions = AblyTests.clientOptions() //sandbox
                     defaultOptions.key = "xxxx:xxxx"
                     let rest = ARTRest(options: defaultOptions)
@@ -3163,7 +3192,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                it("should supersede configured AuthOptions (using authUrl) even if arguments objects are empty") {
+                func test__111__authorize__when_TokenParams_and_AuthOptions_are_provided__should_supersede_configured_AuthOptions__using_authUrl__even_if_arguments_objects_are_empty() {
                     let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                     let testTokenDetails = getTestTokenDetails(ttl: 0.1)
@@ -3257,7 +3286,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                it("should supersede configured AuthOptions (using authCallback) even if arguments objects are empty") {
+                func test__112__authorize__when_TokenParams_and_AuthOptions_are_provided__should_supersede_configured_AuthOptions__using_authCallback__even_if_arguments_objects_are_empty() {
                     let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                     let testTokenDetails = ARTTokenDetails(token: "token", expires: Date(), issued: Date(), capability: nil, clientId: nil)
@@ -3318,7 +3347,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                it("should supersede configured params and options even if arguments objects are empty") {
+                func test__113__authorize__when_TokenParams_and_AuthOptions_are_provided__should_supersede_configured_params_and_options_even_if_arguments_objects_are_empty() {
                     let options = AblyTests.clientOptions()
                     options.key = "xxxx:xxxx"
                     options.clientId = "client_string"
@@ -3385,7 +3414,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                it("example: if a client is initialised with TokenParams#ttl configured with a custom value, and a TokenParams object is passed in as an argument to #authorize with a null value for ttl, then the ttl used for every subsequent authorization will be null") {
+                func test__114__authorize__when_TokenParams_and_AuthOptions_are_provided__example__if_a_client_is_initialised_with_TokenParams_ttl_configured_with_a_custom_value__and_a_TokenParams_object_is_passed_in_as_an_argument_to__authorize_with_a_null_value_for_ttl__then_the_ttl_used_for_every_subsequent_authorization_will_be_null() {
                     let options = AblyTests.commonAppSetup()
                     options.defaultTokenParams = {
                         $0.ttl = 0.1;
@@ -3437,13 +3466,11 @@ class Auth : QuickSpec {
                         }
                     }
                 }
-
-            }
             
             // RSA10k
-            context("server time offset") {
+            
 
-                xit("should obtain server time once and persist the offset from the local clock") {
+                func skipped__test__115__authorize__server_time_offset__should_obtain_server_time_once_and_persist_the_offset_from_the_local_clock() {
                     let options = AblyTests.commonAppSetup()
                     let rest = ARTRest(options: options)
 
@@ -3499,7 +3526,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                it("should be consistent the timestamp request with the server time") {
+                func test__116__authorize__server_time_offset__should_be_consistent_the_timestamp_request_with_the_server_time() {
                     let options = AblyTests.commonAppSetup()
                     let rest = ARTRest(options: options)
 
@@ -3534,7 +3561,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                it("should be possible by lib Client to discard the cached local clock offset") {
+                func test__117__authorize__server_time_offset__should_be_possible_by_lib_Client_to_discard_the_cached_local_clock_offset() {
                     let options = AblyTests.commonAppSetup()
                     options.queryTime = true
                     let rest = ARTRest(options: options)
@@ -3583,7 +3610,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                it("should use the local clock offset to calculate the server time") {
+                func test__118__authorize__server_time_offset__should_use_the_local_clock_offset_to_calculate_the_server_time() {
                     let options = AblyTests.commonAppSetup()
                     let rest = ARTRest(options: options)
 
@@ -3611,7 +3638,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                it("should request server time when queryTime is true even if the time offset is assigned") {
+                func test__119__authorize__server_time_offset__should_request_server_time_when_queryTime_is_true_even_if_the_time_offset_is_assigned() {
                     let options = AblyTests.commonAppSetup()
                     let rest = ARTRest(options: options)
 
@@ -3642,7 +3669,7 @@ class Auth : QuickSpec {
                     }
                 }
 
-                it("should discard the time offset in situations in which it may have been invalidated") {
+                func test__120__authorize__server_time_offset__should_discard_the_time_offset_in_situations_in_which_it_may_have_been_invalidated() {
                     let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                     var discardTimeOffsetCallCount = 0
@@ -3672,10 +3699,8 @@ class Auth : QuickSpec {
                     expect(discardTimeOffsetCallCount).toEventually(equal(2), timeout: testTimeout)
                 }
 
-            }
-
-            context("two consecutive authorizations") {
-                it("using REST, should call each authorize callback") {
+            
+                func test__121__authorize__two_consecutive_authorizations__using_REST__should_call_each_authorize_callback() {
                     let options = AblyTests.commonAppSetup()
                     options.useTokenAuth = true
                     let rest = ARTRest(options: options)
@@ -3716,7 +3741,7 @@ class Auth : QuickSpec {
                     expect(rest.auth.tokenDetails).to(beIdenticalTo(tokenDetailsLast))
                     expect(rest.auth.tokenDetails?.token).to(equal(tokenDetailsLast?.token))
                 }
-                it("using Realtime and connection is CONNECTING, should call each Realtime authorize callback") {
+                func test__122__authorize__two_consecutive_authorizations__using_Realtime_and_connection_is_CONNECTING__should_call_each_Realtime_authorize_callback() {
                     let options = AblyTests.commonAppSetup()
                     options.useTokenAuth = true
                     let realtime = AblyTests.newRealtime(options)
@@ -3765,7 +3790,7 @@ class Auth : QuickSpec {
 
                     expect(connectedStateCount) == 1
                 }
-                it("using Realtime and connection is CONNECTED, should call each Realtime authorize callback") {
+                func test__123__authorize__two_consecutive_authorizations__using_Realtime_and_connection_is_CONNECTED__should_call_each_Realtime_authorize_callback() {
                     let options = AblyTests.commonAppSetup()
                     options.useTokenAuth = true
                     let realtime = ARTRealtime(options: options)
@@ -3813,19 +3838,16 @@ class Auth : QuickSpec {
                     expect(realtime.auth.tokenDetails).to(beIdenticalTo(tokenDetailsLast))
                     expect(realtime.auth.tokenDetails?.token).to(equal(tokenDetailsLast?.token))
                 }
-            }
 
-        }
-
-        describe("TokenParams") {
-            context("timestamp") {
-                it("if explicitly set, should be returned by the getter") {
+        
+            
+                func test__124__TokenParams__timestamp__if_explicitly_set__should_be_returned_by_the_getter() {
                     let params = ARTTokenParams()
                     params.timestamp = Date(timeIntervalSince1970: 123)
                     expect(params.timestamp).to(equal(Date(timeIntervalSince1970: 123)))
                 }
 
-                it("if explicitly set, the value should stick") {
+                func test__125__TokenParams__timestamp__if_explicitly_set__the_value_should_stick() {
                     let params = ARTTokenParams()
                     params.timestamp = Date()
 
@@ -3844,17 +3866,15 @@ class Auth : QuickSpec {
                 }
 
                 // https://github.com/ably/ably-cocoa/pull/508#discussion_r82577728
-                it("object has no timestamp value unless explicitly set") {
+                func test__126__TokenParams__timestamp__object_has_no_timestamp_value_unless_explicitly_set() {
                     let params = ARTTokenParams()
                     expect(params.timestamp).to(beNil())
                 }
-            }
-        }
 
-        describe("Reauth") {
+        
 
             // RTC8
-            it("should use authorize({force: true}) to reauth with a token with a different set of capabilities") {
+            func test__127__Reauth__should_use_authorize__force__true___to_reauth_with_a_token_with_a_different_set_of_capabilities() {
                 let options = AblyTests.commonAppSetup()
                 let initialToken = getTestToken(clientId: "tester", capability: "{\"restricted\":[\"*\"]}")
                 options.token = initialToken
@@ -3896,7 +3916,7 @@ class Auth : QuickSpec {
             }
 
             // RTC8
-            it("for a token change that fails due to an incompatible token, which should result in the connection entering the FAILED state") {
+            func test__128__Reauth__for_a_token_change_that_fails_due_to_an_incompatible_token__which_should_result_in_the_connection_entering_the_FAILED_state() {
                 let options = AblyTests.commonAppSetup()
                 options.clientId = "tester"
                 options.useTokenAuth = true
@@ -3934,11 +3954,9 @@ class Auth : QuickSpec {
                 expect(realtime.auth.tokenDetails?.capability).toNot(equal(tokenParams.capability))
             }
 
-        }
-
-        describe("TokenParams") {
+        
             // TK2d
-            it("timestamp should not be a member of any default token params") {
+            func test__129__TokenParams__timestamp_should_not_be_a_member_of_any_default_token_params() {
                 let rest = ARTRest(options: AblyTests.commonAppSetup())
                 waitUntil(timeout: testTimeout) { done in
                     rest.auth.authorize(nil, options: nil) { _, error in
@@ -3964,24 +3982,45 @@ class Auth : QuickSpec {
                     }
                 }
             }
-        }
+enum TestCase_ReusableTestsTestTokenRequestFromJson {
+case accepts_a_string__which_should_be_interpreted_as_JSON
+case accepts_a_NSDictionary
+}
 
-        describe("TokenRequest") {
-            // TE6
-            describe("fromJson") {
-                func reusableTestsTestTokenRequestFromJson(_ json: String, check: @escaping (_ request: ARTTokenRequest) -> Void) {
-                    it("accepts a string, which should be interpreted as JSON") {
+                func reusableTestsTestTokenRequestFromJson(_ json: String, testCase: TestCase_ReusableTestsTestTokenRequestFromJson, context: (beforeEach: (() -> ())?, afterEach: (() -> ())?), check: @escaping (_ request: ARTTokenRequest) -> Void) {
+                    func test__accepts_a_string__which_should_be_interpreted_as_JSON() {
+context.beforeEach?()
+
                         check(try! ARTTokenRequest.fromJson(json as ARTJsonCompatible))
+context.afterEach?()
+
                     }
 
-                    it("accepts a NSDictionary") {
+                    func test__accepts_a_NSDictionary() {
+context.beforeEach?()
+
                         let data = json.data(using: String.Encoding.utf8)!
                         let dict = try! JSONSerialization.jsonObject(with: data, options: .mutableLeaves) as! NSDictionary
                         check(try! ARTTokenRequest.fromJson(dict))
+context.afterEach?()
+
                     }
+
+switch testCase  {
+case .accepts_a_string__which_should_be_interpreted_as_JSON:
+    test__accepts_a_string__which_should_be_interpreted_as_JSON()
+case .accepts_a_NSDictionary:
+    test__accepts_a_NSDictionary()
+}
+
                 }
 
-                context("with TTL") {
+        
+            // TE6
+            
+
+                
+                    func test__TokenRequest__fromJson__with_TTL__reusableTestsTestTokenRequestFromJson(testCase: TestCase_ReusableTestsTestTokenRequestFromJson) {
                     reusableTestsTestTokenRequestFromJson("{" +
                                              "    \"clientId\":\"myClientId\"," +
                                              "    \"mac\":\"4rr4J+JzjiCL1DoS8wq7k11Z4oTGCb1PoeN+yGjkaH4=\"," +
@@ -3990,7 +4029,7 @@ class Auth : QuickSpec {
                                              "    \"timestamp\":1479087321934," +
                                              "    \"keyName\":\"xxxxxx.yyyyyy\"," +
                                              "    \"nonce\":\"7830658976108826\"" +
-                                             "}") { request in
+                                             "}", testCase: testCase, context: (beforeEach: nil, afterEach: nil)) { request in
                         expect(request.clientId).to(equal("myClientId"))
                         expect(request.mac).to(equal("4rr4J+JzjiCL1DoS8wq7k11Z4oTGCb1PoeN+yGjkaH4="))
                         expect(request.capability).to(equal("{\"test\":[\"publish\"]}"))
@@ -3998,17 +4037,25 @@ class Auth : QuickSpec {
                         expect(request.timestamp).to(equal(Date(timeIntervalSince1970: 1479087321.934)))
                         expect(request.keyName).to(equal("xxxxxx.yyyyyy"))
                         expect(request.nonce).to(equal("7830658976108826"))
-                    }
-                }
+                    }}
+func test__132__TokenRequest__fromJson__with_TTL__accepts_a_string__which_should_be_interpreted_as_JSON() {
+test__TokenRequest__fromJson__with_TTL__reusableTestsTestTokenRequestFromJson(testCase: .accepts_a_string__which_should_be_interpreted_as_JSON)
+}
+
+func test__133__TokenRequest__fromJson__with_TTL__accepts_a_NSDictionary() {
+test__TokenRequest__fromJson__with_TTL__reusableTestsTestTokenRequestFromJson(testCase: .accepts_a_NSDictionary)
+}
+
                 
-                context("without TTL") {
+                
+                    func test__TokenRequest__fromJson__without_TTL__reusableTestsTestTokenRequestFromJson(testCase: TestCase_ReusableTestsTestTokenRequestFromJson) {
                     reusableTestsTestTokenRequestFromJson("{" +
                                              "    \"mac\":\"4rr4J+JzjiCL1DoS8wq7k11Z4oTGCb1PoeN+yGjkaH4=\"," +
                                              "    \"capability\":\"{\\\"test\\\":[\\\"publish\\\"]}\"," +
                                              "    \"timestamp\":1479087321934," +
                                              "    \"keyName\":\"xxxxxx.yyyyyy\"," +
                                              "    \"nonce\":\"7830658976108826\"" +
-                                             "}") { request in
+                                             "}", testCase: testCase, context: (beforeEach: nil, afterEach: nil)) { request in
                         expect(request.clientId).to(beNil())
                         expect(request.mac).to(equal("4rr4J+JzjiCL1DoS8wq7k11Z4oTGCb1PoeN+yGjkaH4="))
                         expect(request.capability).to(equal("{\"test\":[\"publish\"]}"))
@@ -4016,67 +4063,52 @@ class Auth : QuickSpec {
                         expect(request.timestamp).to(equal(Date(timeIntervalSince1970: 1479087321.934)))
                         expect(request.keyName).to(equal("xxxxxx.yyyyyy"))
                         expect(request.nonce).to(equal("7830658976108826"))
-                    }
-                }
+                    }}
+func test__134__TokenRequest__fromJson__without_TTL__accepts_a_string__which_should_be_interpreted_as_JSON() {
+test__TokenRequest__fromJson__without_TTL__reusableTestsTestTokenRequestFromJson(testCase: .accepts_a_string__which_should_be_interpreted_as_JSON)
+}
 
-                it("rejects invalid JSON") {
+func test__135__TokenRequest__fromJson__without_TTL__accepts_a_NSDictionary() {
+test__TokenRequest__fromJson__without_TTL__reusableTestsTestTokenRequestFromJson(testCase: .accepts_a_NSDictionary)
+}
+
+
+                func test__130__TokenRequest__fromJson__rejects_invalid_JSON() {
                     expect{try ARTTokenRequest.fromJson("not JSON" as ARTJsonCompatible)}.to(throwError())
                 }
 
-                it("rejects non-object JSON") {
+                func test__131__TokenRequest__fromJson__rejects_non_object_JSON() {
                     expect{try ARTTokenRequest.fromJson("[]" as ARTJsonCompatible)}.to(throwError())
                 }
-            }
-        }
 
-        describe("TokenDetails") {
+        
             // TD7
-            describe("fromJson") {
-                let json = "{" +
-                "    \"token\": \"xxxxxx.yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy\"," +
-                "    \"issued\": 1479087321934," +
-                "    \"expires\": 1479087363934," +
-                "    \"capability\": \"{\\\"test\\\":[\\\"publish\\\"]}\"," +
-                "    \"clientId\": \"myClientId\"" +
-                "}"
+            
 
-                func check(_ details: ARTTokenDetails) {
-                    expect(details.token).to(equal("xxxxxx.yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"))
-                    expect(details.issued).to(equal(Date(timeIntervalSince1970: 1479087321.934)))
-                    expect(details.expires).to(equal(Date(timeIntervalSince1970: 1479087363.934)))
-                    expect(details.capability).to(equal("{\"test\":[\"publish\"]}"))
-                    expect(details.clientId).to(equal("myClientId"))
-                }
-
-                it("accepts a string, which should be interpreted as JSON") {
+                func test__136__TokenDetails__fromJson__accepts_a_string__which_should_be_interpreted_as_JSON() {
                     check(try! ARTTokenDetails.fromJson(json as ARTJsonCompatible))
                 }
 
-                it("accepts a NSDictionary") {
+                func test__137__TokenDetails__fromJson__accepts_a_NSDictionary() {
                     let data = json.data(using: String.Encoding.utf8)!
                     let dict = try! JSONSerialization.jsonObject(with: data, options: .mutableLeaves) as! NSDictionary
                     check(try! ARTTokenDetails.fromJson(dict))
                 }
 
-                it("rejects invalid JSON") {
+                func test__138__TokenDetails__fromJson__rejects_invalid_JSON() {
                     expect{try ARTTokenDetails.fromJson("not JSON" as ARTJsonCompatible)}.to(throwError())
                 }
 
-                it("rejects non-object JSON") {
+                func test__139__TokenDetails__fromJson__rejects_non_object_JSON() {
                     expect{try ARTTokenDetails.fromJson("[]" as ARTJsonCompatible)}.to(throwError())
                 }
-            }
-        }
 
-        describe("JWT and realtime") {
-            let channelName = "test_JWT"
-            let messageName = "message_JWT"
+        
             
-            context("client initialized with a JWT token in ClientOptions") {
-                let jwtTestsOptions = AblyTests.clientOptions()
+            
 
-                context("with valid credentials") {
-                    xit("pulls stats successfully") {
+                
+                    func skipped__test__140__JWT_and_realtime__client_initialized_with_a_JWT_token_in_ClientOptions__with_valid_credentials__pulls_stats_successfully() {
                         jwtTestsOptions.token = getJWTToken()
                         let client = AblyTests.newRealtime(jwtTestsOptions)
                         defer { client.dispose(); client.close() }
@@ -4088,10 +4120,9 @@ class Auth : QuickSpec {
                             }
                         }
                     }
-                }
 
-                context("with invalid credentials") {
-                    it("fails to connect with reason 'invalid signature'") {
+                
+                    func test__141__JWT_and_realtime__client_initialized_with_a_JWT_token_in_ClientOptions__with_invalid_credentials__fails_to_connect_with_reason__invalid_signature_() {
                         jwtTestsOptions.token = getJWTToken(invalid: true)
                         jwtTestsOptions.autoConnect = false
                         let client = AblyTests.newRealtime(jwtTestsOptions)
@@ -4109,27 +4140,12 @@ class Auth : QuickSpec {
                             client.connect()
                         }
                     }
-                }
-            }
 
             // RSA8g RSA8c
-            context("when using authUrl") {
-                let rsa8gTestsOptions: ARTClientOptions = {
-                    let options = AblyTests.clientOptions()
-                    options.authUrl = URL(string: echoServerAddress)!
-                    return options
-                }()
+            
 
-                var keys: [String: String]!
-
-                func rsa8gTestsSetupDependencies() {
-                    if (keys == nil) {
-                        keys = getKeys()
-                    }
-                }
-
-                context("with valid credentials") {
-                    it("fetches a channels and posts a message") {
+                
+                    func test__142__JWT_and_realtime__when_using_authUrl__with_valid_credentials__fetches_a_channels_and_posts_a_message() {
                         rsa8gTestsSetupDependencies()
 
                         rsa8gTestsOptions.authParams = [URLQueryItem]()
@@ -4149,10 +4165,9 @@ class Auth : QuickSpec {
                             client.connect()
                         }
                     }
-                }
 
-                context("with wrong credentials") {
-                    it("fails to connect with reason 'invalid signature'") {
+                
+                    func test__143__JWT_and_realtime__when_using_authUrl__with_wrong_credentials__fails_to_connect_with_reason__invalid_signature_() {
                         rsa8gTestsSetupDependencies()
 
                         rsa8gTestsOptions.authParams = [URLQueryItem]()
@@ -4173,11 +4188,10 @@ class Auth : QuickSpec {
                             client.connect()
                         }
                     }
-                }
 
-                context("when token expires") {
+                
 
-                    it ("receives a 40142 error from the server") {
+                    func test__144__JWT_and_realtime__when_using_authUrl__when_token_expires__receives_a_40142_error_from_the_server() {
                         rsa8gTestsSetupDependencies()
 
                         let tokenDuration = 5.0
@@ -4199,11 +4213,10 @@ class Auth : QuickSpec {
                             client.connect()
                         }
                     }
-                }
                 
                 // RTC8a4
-                context("when the server sends and AUTH protocol message") {
-                    it("client reauths correctly without going through a disconnection") {
+                
+                    func test__145__JWT_and_realtime__when_using_authUrl__when_the_server_sends_and_AUTH_protocol_message__client_reauths_correctly_without_going_through_a_disconnection() {
                         rsa8gTestsSetupDependencies()
                         
                         // The server sends an AUTH protocol message 30 seconds before a token expires
@@ -4232,15 +4245,12 @@ class Auth : QuickSpec {
                             client.connect()
                         }
                     }
-                }
-            }
 
             // RSA8g
-            context("when using authCallback") {
-                let authCallbackTestsOptions = AblyTests.clientOptions()
+            
 
-                context("with valid credentials") {
-                    xit("pulls stats successfully") {
+                
+                    func skipped__test__146__JWT_and_realtime__when_using_authCallback__with_valid_credentials__pulls_stats_successfully() {
                         authCallbackTestsOptions.authCallback = { tokenParams, completion in
                             let token = ARTTokenDetails(token: getJWTToken()!)
                             completion(token, nil)
@@ -4255,10 +4265,9 @@ class Auth : QuickSpec {
                             }
                         }
                     }
-                }
 
-                context("with invalid credentials") {
-                    it("fails to connect") {
+                
+                    func test__147__JWT_and_realtime__when_using_authCallback__with_invalid_credentials__fails_to_connect() {
                         authCallbackTestsOptions.authCallback = { tokenParams, completion in
                             let token = ARTTokenDetails(token: getJWTToken(invalid: true)!)
                             completion(token, nil)
@@ -4278,12 +4287,10 @@ class Auth : QuickSpec {
                             client.connect()
                         }
                     }
-                }
-            }
 
-            context("when token expires and has a means to renew") {
+            
 
-                it("reconnects using authCallback and obtains a new token") {
+                func test__148__JWT_and_realtime__when_token_expires_and_has_a_means_to_renew__reconnects_using_authCallback_and_obtains_a_new_token() {
                     let tokenDuration = 3.0
                     let options = AblyTests.clientOptions()
                     options.useTokenAuth = true
@@ -4314,10 +4321,9 @@ class Auth : QuickSpec {
                         client.connect()
                     }
                 }
-            }
             
-            context("when the token request includes a clientId") {
-                it("the clientId is the same specified in the JWT token request") {
+            
+                func test__149__JWT_and_realtime__when_the_token_request_includes_a_clientId__the_clientId_is_the_same_specified_in_the_JWT_token_request() {
                     let clientId = "JWTClientId"
                     let options = AblyTests.clientOptions()
                     options.tokenDetails = ARTTokenDetails(token: getJWTToken(clientId: clientId)!)
@@ -4332,10 +4338,9 @@ class Auth : QuickSpec {
                         client.connect()
                     }
                 }
-            }
             
-            context("when the token request includes subscribe-only capabilities") {
-                it("fails to publish to a channel with subscribe-only capability") {
+            
+                func test__150__JWT_and_realtime__when_the_token_request_includes_subscribe_only_capabilities__fails_to_publish_to_a_channel_with_subscribe_only_capability() {
                     let capability = "{\"\(channelName)\":[\"subscribe\"]}"
                     let options = AblyTests.clientOptions()
                     options.tokenDetails = ARTTokenDetails(token: getJWTToken(capability: capability)!)
@@ -4352,21 +4357,19 @@ class Auth : QuickSpec {
                         })
                     }
                 }
-            }
-        }
 
         // RSA11
-        context("currentTokenDetails") {
+        
 
             // RSA11b
-            it("should hold a @TokenDetails@ instance in which only the @token@ attribute is populated with that token string") {
+            func test__151__currentTokenDetails__should_hold_a__TokenDetails__instance_in_which_only_the__token__attribute_is_populated_with_that_token_string() {
                 let token = getTestToken()
                 let rest = ARTRest(token: token)
                 expect(rest.auth.tokenDetails?.token).to(equal(token))
             }
 
             // RSA11c
-            it("should be set with the current token (if applicable) on instantiation and each time it is replaced") {
+            func test__152__currentTokenDetails__should_be_set_with_the_current_token__if_applicable__on_instantiation_and_each_time_it_is_replaced() {
                 let rest = ARTRest(options: AblyTests.commonAppSetup())
                 expect(rest.auth.tokenDetails).to(beNil())
                 var authenticatedTokenDetails: ARTTokenDetails?
@@ -4381,19 +4384,16 @@ class Auth : QuickSpec {
             }
 
             // RSA11d
-            it("should be empty if there is no current token") {
+            func test__153__currentTokenDetails__should_be_empty_if_there_is_no_current_token() {
                 let rest = ARTRest(options: AblyTests.commonAppSetup())
                 expect(rest.auth.tokenDetails).to(beNil())
             }
-
-        }
         
         // RSC1 RSC1a RSC1c RSA3d
-        describe("JWT and rest") {
-            let rsc1TestsOptions = AblyTests.clientOptions()
+        
             
-            context("when the JWT token embeds an Ably token") {
-                it ("pulls stats successfully") {
+            
+                func test__154__JWT_and_rest__when_the_JWT_token_embeds_an_Ably_token__pulls_stats_successfully() {
                     rsc1TestsOptions.tokenDetails = ARTTokenDetails(token: getJWTToken(jwtType: "embedded")!)
                     let client = ARTRest(options: rsc1TestsOptions)
                     waitUntil(timeout: testTimeout) { done in
@@ -4403,10 +4403,9 @@ class Auth : QuickSpec {
                         }
                     }
                 }
-            }
             
-            context("when the JWT token embeds an Ably token and it is requested as encrypted") {
-                it ("pulls stats successfully") {
+            
+                func test__155__JWT_and_rest__when_the_JWT_token_embeds_an_Ably_token_and_it_is_requested_as_encrypted__pulls_stats_successfully() {
                     rsc1TestsOptions.tokenDetails = ARTTokenDetails(token: getJWTToken(jwtType: "embedded", encrypted: 1)!)
                     let client = ARTRest(options: rsc1TestsOptions)
                     waitUntil(timeout: testTimeout) { done in
@@ -4416,30 +4415,21 @@ class Auth : QuickSpec {
                         }
                     }
                 }
-            }
             
             // RSA4f, RSA8c
-            context("when the JWT token is returned with application/jwt content type") {
-                var client: ARTRest!
+            
 
-                func rsa4ftestsSetupDependencies() {
-                    if (client == nil) {
-                        let options = AblyTests.clientOptions()
-                        let keys = getKeys()
-                        options.authUrl = URL(string: echoServerAddress)!
-                        options.authParams = [URLQueryItem]()
-                        options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
-                        options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
-                        options.authParams?.append(URLQueryItem(name: "returnType", value: "jwt"))
-                        client = ARTRest(options: options)
-                    }
-                }
+                func beforeEach__JWT_and_rest__when_the_JWT_token_is_returned_with_application_jwt_content_type() {
+print("START HOOK: Auth.beforeEach__JWT_and_rest__when_the_JWT_token_is_returned_with_application_jwt_content_type")
 
-                beforeEach {
                     rsa4ftestsSetupDependencies()
+print("END HOOK: Auth.beforeEach__JWT_and_rest__when_the_JWT_token_is_returned_with_application_jwt_content_type")
+
                 }
                 
-                it("the client successfully connects and pulls stats") {
+                func test__156__JWT_and_rest__when_the_JWT_token_is_returned_with_application_jwt_content_type__the_client_successfully_connects_and_pulls_stats() {
+beforeEach__JWT_and_rest__when_the_JWT_token_is_returned_with_application_jwt_content_type()
+
                     waitUntil(timeout: testTimeout) { done in
                         client.stats { stats, error in
                             expect(error).to(beNil())
@@ -4448,7 +4438,9 @@ class Auth : QuickSpec {
                     }
                 }
                 
-                it("the client can request a new token to initilize another client that connects and pulls stats") {
+                func test__157__JWT_and_rest__when_the_JWT_token_is_returned_with_application_jwt_content_type__the_client_can_request_a_new_token_to_initilize_another_client_that_connects_and_pulls_stats() {
+beforeEach__JWT_and_rest__when_the_JWT_token_is_returned_with_application_jwt_content_type()
+
                     waitUntil(timeout: testTimeout) { done in
                         client.auth.requestToken(nil, with: nil, callback: { tokenDetails, error in
                             let newClientOptions = AblyTests.clientOptions()
@@ -4461,19 +4453,16 @@ class Auth : QuickSpec {
                         })
                     }
                 }
-            }
-
-        }
 
         // https://github.com/ably/ably-cocoa/issues/849
-        it("should not force token auth when clientId is set") {
+        func test__001__should_not_force_token_auth_when_clientId_is_set() {
             let options = AblyTests.commonAppSetup()
             options.clientId = "foo"
             expect(options.isBasicAuth()).to(beTrue())
         }
 
         // https://github.com/ably/ably-cocoa/issues/1093
-        it("should accept authURL response with timestamp argument as string") {
+        func test__002__should_accept_authURL_response_with_timestamp_argument_as_string() {
             var originalTokenRequest: ARTTokenRequest!
             let tmpRest = ARTRest(options: AblyTests.commonAppSetup())
             waitUntil(timeout: testTimeout) { done in
@@ -4522,6 +4511,4 @@ class Auth : QuickSpec {
             expect(tokenDetails.clientId).to(equal(originalTokenRequest.clientId))
             expect(tokenDetails.token).toNot(beNil())
         }
-
-    }
 }

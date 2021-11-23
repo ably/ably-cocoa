@@ -2,7 +2,12 @@ import Ably
 import Nimble
 import Quick
 
-class Push : QuickSpec {
+        private var rest: ARTRest!
+        private var mockHttpExecutor: MockHTTPExecutor!
+        private var storage: MockDeviceStorage!
+        private var stateMachineDelegate: StateMachineDelegate!
+
+class Push : XCTestCase {
 
     struct TestDeviceToken {
         static let tokenBase64 = "HYRXxPSQdt1pnxqtDAvc6PTTLH7N6okiBhYyLClJdmQ="
@@ -10,14 +15,19 @@ class Push : QuickSpec {
         static let tokenString = tokenData.map { String(format: "%02x", $0) }.joined()
     }
 
-    override func spec() {
+override class var defaultTestSuite : XCTestSuite {
+    let _ = rest
+    let _ = mockHttpExecutor
+    let _ = storage
+    let _ = stateMachineDelegate
 
-        var rest: ARTRest!
-        var mockHttpExecutor: MockHTTPExecutor!
-        var storage: MockDeviceStorage!
-        var stateMachineDelegate: StateMachineDelegate!
+    return super.defaultTestSuite
+}
 
-        beforeEach {
+
+        func beforeEach() {
+print("START HOOK: Push.beforeEach")
+
             rest = ARTRest(key: "xxxx:xxxx")
             rest.internal.resetDeviceSingleton()
             mockHttpExecutor = MockHTTPExecutor()
@@ -26,13 +36,17 @@ class Push : QuickSpec {
             rest.internal.storage = storage
             stateMachineDelegate = StateMachineDelegate()
             rest.push.internal.createActivationStateMachine(withDelegate: stateMachineDelegate!)
+print("END HOOK: Push.beforeEach")
+
         }
 
         // RSH2
-        describe("activation") {
+        
 
             // RSH2a
-            it("activate method should send a CalledActivate event to the state machine") {
+            func test__001__activation__activate_method_should_send_a_CalledActivate_event_to_the_state_machine() {
+beforeEach()
+
                 defer { rest.push.internal.activationMachine.transitions = nil }
                 waitUntil(timeout: testTimeout) { done in
                     rest.push.internal.activationMachine.transitions = { event, _, _ in
@@ -45,7 +59,9 @@ class Push : QuickSpec {
             }
 
             // RSH2b
-            it("deactivate method should send a CalledDeactivate event to the state machine") {
+            func test__002__activation__deactivate_method_should_send_a_CalledDeactivate_event_to_the_state_machine() {
+beforeEach()
+
                 defer { rest.push.internal.activationMachine.transitions = nil }
                 waitUntil(timeout: testTimeout) { done in
                     rest.push.internal.activationMachine.transitions = { event, _, _ in
@@ -58,7 +74,9 @@ class Push : QuickSpec {
             }
 
             // RSH2c / RSH8g
-            it("should handle GotPushDeviceDetails event when platform’s APIs sends the details for push notifications") {
+            func test__003__activation__should_handle_GotPushDeviceDetails_event_when_platform_s_APIs_sends_the_details_for_push_notifications() {
+beforeEach()
+
                 let stateMachine = rest.push.internal.activationMachine
                 let testDeviceToken = "xxxx-xxxx-xxxx-xxxx-xxxx"
                 stateMachine.rest.device.setAndPersistAPNSDeviceToken(testDeviceToken)
@@ -80,7 +98,9 @@ class Push : QuickSpec {
             }
             
             // RSH2d / RSH8h
-            it("sends GettingPushDeviceDetailsFailed when push registration fails") {
+            func test__004__activation__sends_GettingPushDeviceDetailsFailed_when_push_registration_fails() {
+beforeEach()
+
                 let stateMachine = rest.push.internal.activationMachine
                 defer { stateMachine.transitions = nil }
                 waitUntil(timeout: testTimeout) { done in
@@ -97,7 +117,9 @@ class Push : QuickSpec {
             }
 
             // https://github.com/ably/ably-cocoa/issues/877
-            it("should update LocalDevice.clientId when it's null with auth.clientId") {
+            func test__005__activation__should_update_LocalDevice_clientId_when_it_s_null_with_auth_clientId() {
+beforeEach()
+
                 let expectedClientId = "foo"
                 let options = AblyTests.clientOptions()
 
@@ -174,7 +196,9 @@ class Push : QuickSpec {
             }
 
             // https://github.com/ably/ably-cocoa/issues/889
-            it("should store the device token data as string") {
+            func test__006__activation__should_store_the_device_token_data_as_string() {
+beforeEach()
+
                 let expectedDeviceToken = TestDeviceToken.tokenString
                 defer { rest.push.internal.activationMachine.transitions = nil }
                 waitUntil(timeout: testTimeout) { done in
@@ -190,21 +214,25 @@ class Push : QuickSpec {
             }
 
             // https://github.com/ably/ably-cocoa/issues/888
-            it("should not sync the local device dispatched in internal queue") {
+            func test__007__activation__should_not_sync_the_local_device_dispatched_in_internal_queue() {
+beforeEach()
+
                 expect { ARTPush.didRegisterForRemoteNotifications(withDeviceToken: TestDeviceToken.tokenData, rest: rest) }.toNot(raiseException())
             }
 
-        }
-
-        context("LocalDevice") {
+        
             // RSH8
-            it("has a device method that returns a LocalDevice") {
+            func test__008__LocalDevice__has_a_device_method_that_returns_a_LocalDevice() {
+beforeEach()
+
                 let _: ARTLocalDevice = ARTRest(key: "fake:key").device
                 let _: ARTLocalDevice = ARTRealtime(key: "fake:key").device
             }
             
             // RSH8a
-            it("the device is lazily populated from the persisted state") {
+            func test__009__LocalDevice__the_device_is_lazily_populated_from_the_persisted_state() {
+beforeEach()
+
                 let testToken = "testDeviceToken"
                 let testIdentity = ARTDeviceIdentityTokenDetails(
                     token: "123456",
@@ -226,8 +254,10 @@ class Push : QuickSpec {
             }
             
             // RSH8d
-            context("when using token authentication") {
-                it("new clientID is set") {
+            
+                func test__012__LocalDevice__when_using_token_authentication__new_clientID_is_set() {
+beforeEach()
+
                     let options = ARTClientOptions(key: "fake:key")
                     options.autoConnect = false
                     options.authCallback = { _, callback in
@@ -247,11 +277,12 @@ class Push : QuickSpec {
 
                     expect(realtime.device.clientId).to(equal("testClient"))
                 }
-            }
             
             // RSH8d
-            context("when getting a client ID from CONNECTED message") {
-                it("new clientID is set") {
+            
+                func test__013__LocalDevice__when_getting_a_client_ID_from_CONNECTED_message__new_clientID_is_set() {
+beforeEach()
+
                     let options = ARTClientOptions(key: "fake:key")
                     options.autoConnect = false
 
@@ -273,10 +304,11 @@ class Push : QuickSpec {
 
                     expect(realtime.device.clientId).to(equal("testClient"))
                 }
-            }
             
             // RSH8e
-            it("authentication on registered device sends a GotPushDeviceDetails with new clientID") {
+            func test__010__LocalDevice__authentication_on_registered_device_sends_a_GotPushDeviceDetails_with_new_clientID() {
+beforeEach()
+
                 let testDeviceToken = "testDeviceToken"
                 let testDeviceIdentity = ARTDeviceIdentityTokenDetails(
                     token: "123456",
@@ -347,7 +379,9 @@ class Push : QuickSpec {
             }
 
             // RSH8f
-            it("sets device's client ID from registration response") {
+            func test__011__LocalDevice__sets_device_s_client_ID_from_registration_response() {
+beforeEach()
+
                 let expectedClientId = "testClientId"
 
                 let stateMachineDelegate = StateMachineDelegateCustomCallbacks()
@@ -376,11 +410,12 @@ class Push : QuickSpec {
                 
                 expect(rest.device.clientId).to(equal(expectedClientId))
             }
-        }
 
-        context("Registerer Delegate option") {
+        
 
-            it("a successful activation should call the correct registerer delegate method") {
+            func test__014__Registerer_Delegate_option__a_successful_activation_should_call_the_correct_registerer_delegate_method() {
+beforeEach()
+
                 let options = AblyTests.commonAppSetup()
                 options.key = "xxxx:xxxx"
                 let pushRegistererDelegate = StateMachineDelegate()
@@ -398,7 +433,9 @@ class Push : QuickSpec {
                 }
             }
 
-            it("registerer delegate should not hold a strong instance reference") {
+            func test__015__Registerer_Delegate_option__registerer_delegate_should_not_hold_a_strong_instance_reference() {
+beforeEach()
+
                 let options = AblyTests.commonAppSetup()
                 options.key = "xxxx:xxxx"
                 var pushRegistererDelegate: StateMachineDelegate? = StateMachineDelegate()
@@ -408,7 +445,4 @@ class Push : QuickSpec {
                 pushRegistererDelegate = nil
                 expect(rest.internal.options.pushRegistererDelegate).to(beNil())
             }
-
-        }
-    }
 }
