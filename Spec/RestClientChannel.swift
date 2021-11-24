@@ -3,26 +3,135 @@ import Nimble
 import Quick
 import Foundation
 import SwiftyJSON
+        private var client: ARTRest!
+        private var channel: ARTRestChannel!
+        private var testHTTPExecutor: TestProxyHTTPExecutor!
+                private let channelName = "test-message-size"
+
+                private func assertMessagePayloadId(id: String?, expectedSerial: String) {
+                    guard let id = id else {
+                        fail("Message.id from payload is nil"); return
+                    }
+
+                    let idParts = id.split(separator: ":")
+
+                    if idParts.count != 2 {
+                        fail("Message.id from payload should have baseId and serial separated by a colon"); return
+                    }
+
+                    let baseId = String(idParts[0])
+                    let serial = String(idParts[1])
+
+                    guard let baseIdData = Data(base64Encoded: baseId) else {
+                        fail("BaseId should be a base64 encoded string"); return
+                    }
+
+                    expect(baseIdData.bytes.count) == 9
+                    expect(serial).to(equal(expectedSerial))
+                }
+            private let presenceFixtures = appSetupJson["post_apps"]["channels"][0]["presence"]
+
+            private let text = "John"
+            private let integer = "5"
+            private let decimal = "65.33"
+            private let dictionary = ["number": 3, "name": "John"] as [String : Any]
+            private let array = ["John", "Mary"]
+            private let binaryData = "123456".data(using: .utf8)!
+
+                private func testSupportsAESEncryptionWithKeyLength(_ encryptionKeyLength: UInt) {
+                    let options = AblyTests.commonAppSetup()
+                    let client = ARTRest(options: options)
+                    client.internal.httpExecutor = testHTTPExecutor
+                    
+                    let params: ARTCipherParams = ARTCrypto.getDefaultParams([
+                        "key": ARTCrypto.generateRandomKey(encryptionKeyLength)
+                    ])
+                    expect(params.algorithm).to(equal("AES"))
+                    expect(params.keyLength).to(equal(encryptionKeyLength))
+                    expect(params.mode).to(equal("CBC"))
+                    
+                    let channelOptions = ARTChannelOptions(cipher: params)
+                    let channel = client.channels.get("test", options: channelOptions)
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.publish("test", data: "message1") { error in
+                            expect(error).to(beNil())
+                            done()
+                        }
+                    }
+                    
+                    guard let httpBody = testHTTPExecutor.requests.last?.httpBody else {
+                        fail("HTTPBody is empty")
+                        return
+                    }
+                    let httpBodyAsJSON = AblyTests.msgpackToJSON(httpBody)
+                    expect(httpBodyAsJSON["encoding"].string).to(equal("utf-8/cipher+aes-\(encryptionKeyLength)-cbc/base64"))
+                    expect(httpBodyAsJSON["name"].string).to(equal("test"))
+                    expect(httpBodyAsJSON["data"].string).toNot(equal("message1"))
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.history { result, error in
+                            expect(error).to(beNil())
+                            guard let result = result else {
+                                fail("PaginatedResult is empty"); done()
+                                return
+                            }
+                            expect(result.hasNext).to(beFalse())
+                            expect(result.isLast).to(beTrue())
+                            let items = result.items
+                            if result.items.isEmpty {
+                                fail("PaginatedResult has no items"); done()
+                                return
+                            }
+                            expect(items[0].name).to(equal("test"))
+                            expect(items[0].data as? String).to(equal("message1"))
+                            done()
+                        }
+                    }
+                }
 
 class RestClientChannel: QuickSpec {
-    override func spec() {
-        var client: ARTRest!
-        var channel: ARTRestChannel!
-        var testHTTPExecutor: TestProxyHTTPExecutor!
 
-        beforeEach {
-            let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
-            client = ARTRest(options: options)
-            channel = client.channels.get(ProcessInfo.processInfo.globallyUniqueString)
-            testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-        }
+override class var defaultTestSuite : XCTestSuite {
+    let _ = client
+    let _ = channel
+    let _ = testHTTPExecutor
+    let _ = channelName
+    let _ = presenceFixtures
+    let _ = text
+    let _ = integer
+    let _ = decimal
+    let _ = dictionary
+    let _ = array
+    let _ = binaryData
 
-        // RSL1
-        describe("publish") {
+    return super.defaultTestSuite
+}
+
             struct PublishArgs {
                 static let name = "foo"
                 static let data = "bar"
             }
+
+            struct TestCase {
+                let value: Any?
+                let expected: JSON
+            }
+    override func spec() {
+
+        beforeEach {
+print("START HOOK: RestClientChannel.beforeEach")
+
+            let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+            client = ARTRest(options: options)
+            channel = client.channels.get(ProcessInfo.processInfo.globallyUniqueString)
+            testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+print("END HOOK: RestClientChannel.beforeEach")
+
+        }
+
+        // RSL1
+        describe("publish") {
 
             // RSL1b
             context("with name and data arguments") {
@@ -434,7 +543,6 @@ class RestClientChannel: QuickSpec {
 
             // RSL1i
             context("If the total size of message(s) exceeds the maxMessageSize") {
-                let channelName = "test-message-size"
 
                 it("the client library should reject the publish and indicate an error") {
                     let options = AblyTests.commonAppSetup()
@@ -484,28 +592,6 @@ class RestClientChannel: QuickSpec {
                     // Current version
                     let options = AblyTests.clientOptions()
                     expect(options.idempotentRestPublishing) == true
-                }
-
-                func assertMessagePayloadId(id: String?, expectedSerial: String) {
-                    guard let id = id else {
-                        fail("Message.id from payload is nil"); return
-                    }
-
-                    let idParts = id.split(separator: ":")
-
-                    if idParts.count != 2 {
-                        fail("Message.id from payload should have baseId and serial separated by a colon"); return
-                    }
-
-                    let baseId = String(idParts[0])
-                    let serial = String(idParts[1])
-
-                    guard let baseIdData = Data(base64Encoded: baseId) else {
-                        fail("BaseId should be a base64 encoded string"); return
-                    }
-
-                    expect(baseIdData.bytes.count) == 9
-                    expect(serial).to(equal(expectedSerial))
                 }
 
                 // RSL1k1
@@ -1047,7 +1133,6 @@ class RestClientChannel: QuickSpec {
 
         // RSL3, RSP1
         xdescribe("presence") {
-            let presenceFixtures = appSetupJson["post_apps"]["channels"][0]["presence"]
 
             // RSP3
             context("get") {
@@ -1094,18 +1179,6 @@ class RestClientChannel: QuickSpec {
 
         // RSL4
         describe("message encoding") {
-
-            struct TestCase {
-                let value: Any?
-                let expected: JSON
-            }
-
-            let text = "John"
-            let integer = "5"
-            let decimal = "65.33"
-            let dictionary = ["number": 3, "name": "John"] as [String : Any]
-            let array = ["John", "Mary"]
-            let binaryData = "123456".data(using: .utf8)!
 
             // RSL4a
             it("payloads should be binary, strings, or objects capable of JSON representation") {
@@ -1338,58 +1411,6 @@ class RestClientChannel: QuickSpec {
 
             // RSL5b
             context("should support AES encryption") {
-
-                func testSupportsAESEncryptionWithKeyLength(_ encryptionKeyLength: UInt) {
-                    let options = AblyTests.commonAppSetup()
-                    let client = ARTRest(options: options)
-                    client.internal.httpExecutor = testHTTPExecutor
-                    
-                    let params: ARTCipherParams = ARTCrypto.getDefaultParams([
-                        "key": ARTCrypto.generateRandomKey(encryptionKeyLength)
-                    ])
-                    expect(params.algorithm).to(equal("AES"))
-                    expect(params.keyLength).to(equal(encryptionKeyLength))
-                    expect(params.mode).to(equal("CBC"))
-                    
-                    let channelOptions = ARTChannelOptions(cipher: params)
-                    let channel = client.channels.get("test", options: channelOptions)
-                    
-                    waitUntil(timeout: testTimeout) { done in
-                        channel.publish("test", data: "message1") { error in
-                            expect(error).to(beNil())
-                            done()
-                        }
-                    }
-                    
-                    guard let httpBody = testHTTPExecutor.requests.last?.httpBody else {
-                        fail("HTTPBody is empty")
-                        return
-                    }
-                    let httpBodyAsJSON = AblyTests.msgpackToJSON(httpBody)
-                    expect(httpBodyAsJSON["encoding"].string).to(equal("utf-8/cipher+aes-\(encryptionKeyLength)-cbc/base64"))
-                    expect(httpBodyAsJSON["name"].string).to(equal("test"))
-                    expect(httpBodyAsJSON["data"].string).toNot(equal("message1"))
-                    
-                    waitUntil(timeout: testTimeout) { done in
-                        channel.history { result, error in
-                            expect(error).to(beNil())
-                            guard let result = result else {
-                                fail("PaginatedResult is empty"); done()
-                                return
-                            }
-                            expect(result.hasNext).to(beFalse())
-                            expect(result.isLast).to(beTrue())
-                            let items = result.items
-                            if result.items.isEmpty {
-                                fail("PaginatedResult has no items"); done()
-                                return
-                            }
-                            expect(items[0].name).to(equal("test"))
-                            expect(items[0].data as? String).to(equal("message1"))
-                            done()
-                        }
-                    }
-                }
                 
                 it("128 CBC mode") {
                     testSupportsAESEncryptionWithKeyLength(128)

@@ -2,16 +2,52 @@ import Ably
 import Nimble
 import Quick
 import Foundation
+                private var jsonEncoder: ARTJsonLikeEncoder!
+
+                private var eventEmitter = ARTInternalEventEmitter<NSString, AnyObject>(queue: AblyTests.queue)
+                private var receivedFoo1: Int?
+                private var receivedFoo2: Int?
+                private var receivedBar: Int?
+                private var receivedBarOnce: Int?
+                private var receivedAll: Int?
+                private var receivedAllOnce: Int?
+                private weak var listenerFoo1: ARTEventListener?
+                private weak var listenerAll: ARTEventListener?
+                private let data = ["test": "test"]
+                private let extras = ["push": ["key": "value"]]
+                private let clientId = "clientId"
 
 class Utilities: QuickSpec {
+
+override class var defaultTestSuite : XCTestSuite {
+    let _ = jsonEncoder
+    let _ = eventEmitter
+    let _ = receivedFoo1
+    let _ = receivedFoo2
+    let _ = receivedBar
+    let _ = receivedBarOnce
+    let _ = receivedAll
+    let _ = receivedAllOnce
+    let _ = listenerFoo1
+    let _ = listenerAll
+    let _ = data
+    let _ = extras
+    let _ = clientId
+
+    return super.defaultTestSuite
+}
+
     override func spec() {
         describe("Utilities") {
 
             context("JSON Encoder") {
-                var jsonEncoder: ARTJsonLikeEncoder!
                 beforeEach {
+print("START HOOK: Utilities.beforeEach__Utilities__JSON_Encoder")
+
                     jsonEncoder = ARTJsonLikeEncoder()
                     jsonEncoder.delegate = ARTJsonEncoder()
+print("END HOOK: Utilities.beforeEach__Utilities__JSON_Encoder")
+
                 }
 
                 it("should decode a protocol message that has an error without a message") {
@@ -194,17 +230,9 @@ class Utilities: QuickSpec {
 
             context("EventEmitter") {
 
-                var eventEmitter = ARTInternalEventEmitter<NSString, AnyObject>(queue: AblyTests.queue)
-                var receivedFoo1: Int?
-                var receivedFoo2: Int?
-                var receivedBar: Int?
-                var receivedBarOnce: Int?
-                var receivedAll: Int?
-                var receivedAllOnce: Int?
-                weak var listenerFoo1: ARTEventListener?
-                weak var listenerAll: ARTEventListener?
-
                 beforeEach {
+print("START HOOK: Utilities.beforeEach__Utilities__EventEmitter")
+
                     eventEmitter = ARTInternalEventEmitter(queue: AblyTests.queue)
                     receivedFoo1 = nil
                     receivedFoo2 = nil
@@ -217,6 +245,8 @@ class Utilities: QuickSpec {
                     eventEmitter.once("bar", callback: { receivedBarOnce = $0 as? Int })
                     listenerAll = eventEmitter.on { receivedAll = $0 as? Int }
                     eventEmitter.once { receivedAllOnce = $0 as? Int }
+print("END HOOK: Utilities.beforeEach__Utilities__EventEmitter")
+
                 }
 
                 it("should emit events to all relevant listeners") {
@@ -422,9 +452,6 @@ class Utilities: QuickSpec {
             }
             
             context("maxMessageSize") {
-                let data = ["test": "test"]
-                let extras = ["push": ["key": "value"]]
-                let clientId = "clientId"
 
                 it("calculates maxMessageSize of a Message with name and data") {
                     let message = ARTMessage(name: "this is name", data: data)

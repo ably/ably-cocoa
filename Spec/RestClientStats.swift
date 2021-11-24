@@ -42,16 +42,8 @@ private func queryStats(_ client: ARTRest, _ query: ARTStatsQuery, file: FileStr
     }
     return stats!
 }
-
-class RestClientStats: QuickSpec {
-    override func spec() {
-        describe("RestClient") {
-            // RSC6
-            context("stats") {
-                // RSC6a
-                context("result") {
-                    let calendar = NSCalendar(identifier: NSCalendar.Identifier.gregorian)!
-                    let dateComponents: NSDateComponents = {
+                    private let calendar = NSCalendar(identifier: NSCalendar.Identifier.gregorian)!
+                    private let dateComponents: NSDateComponents = {
                         let dateComponents = NSDateComponents()
                         dateComponents.year = calendar.component(NSCalendar.Unit.year, from: NSDate() as Date) - 1
                         dateComponents.month = 2
@@ -60,15 +52,15 @@ class RestClientStats: QuickSpec {
                         dateComponents.minute = 3
                         return dateComponents
                     }()
-                    let date = calendar.date(from: dateComponents as DateComponents)!
-                    let dateFormatter: DateFormatter = {
+                    private let date = calendar.date(from: dateComponents as DateComponents)!
+                    private let dateFormatter: DateFormatter = {
                         let dateFormatter = DateFormatter()
                         dateFormatter.timeZone = NSTimeZone(name: "UTC") as TimeZone?
                         dateFormatter.dateFormat = "YYYY-MM-dd:HH:mm"
                         return dateFormatter
                     }()
                     
-                    let statsFixtures: JSON = [
+                    private let statsFixtures: JSON = [
                         [
                             "intervalId": dateFormatter.string(from: date), // 20XX-02-03:16:03
                             "inbound": [ "realtime": [ "messages": [ "count": 50, "data": 5000 ] ] ],
@@ -91,10 +83,34 @@ class RestClientStats: QuickSpec {
                         ]
                     ]
                     
-                    var statsOptions = ARTClientOptions()
+                    private var statsOptions = ARTClientOptions()
+
+class RestClientStats: QuickSpec {
+
+override class var defaultTestSuite : XCTestSuite {
+    let _ = calendar
+    let _ = dateComponents
+    let _ = date
+    let _ = dateFormatter
+    let _ = statsFixtures
+    let _ = statsOptions
+
+    return super.defaultTestSuite
+}
+
+    override func spec() {
+        describe("RestClient") {
+            // RSC6
+            context("stats") {
+                // RSC6a
+                context("result") {
 
                     beforeEach {
+print("START HOOK: RestClientStats.beforeEach__RestClient__stats__result")
+
                         statsOptions = postTestStats(statsFixtures)
+print("END HOOK: RestClientStats.beforeEach__RestClient__stats__result")
+
                     }
                     
                     xit("should match minute-level inbound and outbound fixture data (forwards)") {

@@ -1,6 +1,14 @@
 import Ably
 import Quick
 import Nimble
+                private let query: ARTStatsQuery = {
+                    let query = ARTStatsQuery()
+                    query.unit = .minute
+                    return query
+                }()
+            private let channelName = "test-message-size"
+            private let presenceData = buildStringThatExceedMaxMessageSize()
+            private let clientId = "testMessageSizeClientId"
 
 class RealtimeClient: QuickSpec {
 
@@ -16,6 +24,16 @@ class RealtimeClient: QuickSpec {
     func checkError(_ errorInfo: ARTErrorInfo?) {
         checkError(errorInfo, withAlternative: "")
     }
+
+override class var defaultTestSuite : XCTestSuite {
+    let _ = query
+    let _ = channelName
+    let _ = presenceData
+    let _ = clientId
+
+    return super.defaultTestSuite
+}
+
 
     override func spec() {
         describe("RealtimeClient") {
@@ -274,11 +292,6 @@ class RealtimeClient: QuickSpec {
             }
 
             context("stats") {
-                let query: ARTStatsQuery = {
-                    let query = ARTStatsQuery()
-                    query.unit = .minute
-                    return query
-                }()
 
                 // RTC5a
                 it("should present an async interface") {
@@ -1480,9 +1493,6 @@ class RealtimeClient: QuickSpec {
         
         // RSL1i
         context("If the total size of message(s) exceeds the maxMessageSize") {
-            let channelName = "test-message-size"
-            let presenceData = buildStringThatExceedMaxMessageSize()
-            let clientId = "testMessageSizeClientId"
             
             it("the client library should reject the publish and indicate an error") {
                 let options = AblyTests.commonAppSetup()

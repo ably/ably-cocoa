@@ -3,7 +3,157 @@ import Quick
 import Nimble
 import Aspects
 
+                    private let attachResumeExpectedValues: [ARTRealtimeChannelState: Bool] = [
+                        .initialized: false,
+                        .attached: true,
+                        .detaching: false,
+                        .failed: false,
+                    ]
+                        private var rtl6c2TestsClient: ARTRealtime!
+                        private var rtl6c2TestsChannel: ARTRealtimeChannel!
+
+                        private func rtl16c2TestsPublish(_ done: @escaping () -> ()) {
+                            rtl6c2TestsChannel.publish(nil, data: "message") { error in
+                                expect(error).to(beNil())
+                                expect(rtl6c2TestsClient.connection.state).to(equal(ARTRealtimeConnectionState.connected))
+                                done()
+                            }
+                        }
+                        private var options: ARTClientOptions!
+                        private var client: ARTRealtime!
+                        private var channel: ARTRealtimeChannel!
+
+                        private let previousConnectionStateTtl = ARTDefault.connectionStateTtl()
+
+                        private func setupDependencies() {
+                            if (options == nil) {
+                                options = AblyTests.commonAppSetup()
+                                options.suspendedRetryTimeout = 0.3
+                                options.autoConnect = false
+                            }
+                        }
+
+                        private func publish(_ done: @escaping () -> ()) {
+                            channel.publish(nil, data: "message") { error in
+                                expect(error).toNot(beNil())
+                                done()
+                            }
+                        }
+                    /*
+                     This test makes a deep assumption about the content of these two files,
+                     specifically the format of the first message in the items array.
+                     */
+                    private func testHandlesDecodingErrorInFixture(_ cryptoFixtureFileName: String) {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        options.logHandler = ARTLog(capturingOutput: true)
+                        let client = ARTRealtime(options: options)
+                        client.internal.setTransport(TestProxyTransport.self)
+                        client.connect()
+                        defer { client.dispose(); client.close() }
+                        
+                        let (keyData, ivData, messages) = AblyTests.loadCryptoTestData(cryptoFixtureFileName)
+                        let testMessage = messages[0]
+                        
+                        let cipherParams = ARTCipherParams(algorithm: "aes", key: keyData as ARTCipherKeyCompatible, iv: ivData)
+                        let channelOptions = ARTRealtimeChannelOptions(cipher: cipherParams)
+                        let channel = client.channels.get("test", options: channelOptions)
+                        
+                        let transport = client.internal.transport as! TestProxyTransport
+                        
+                        transport.setListenerBeforeProcessingOutgoingMessage({ protocolMessage in
+                            if protocolMessage.action == .message {
+                                expect(protocolMessage.messages![0].data as? String).to(equal(testMessage.encrypted.data))
+                                expect(protocolMessage.messages![0].encoding).to(equal(testMessage.encrypted.encoding))
+                            }
+                        })
+                        
+                        transport.setBeforeIncomingMessageModifier({ protocolMessage in
+                            if protocolMessage.action == .message {
+                                expect(protocolMessage.messages![0].data as? NSObject).to(equal(AblyTests.base64ToData(testMessage.encrypted.data) as NSObject?))
+                                expect(protocolMessage.messages![0].encoding).to(equal("utf-8/cipher+aes-\(cryptoFixtureFileName.suffix(3))-cbc"))
+                                
+                                // Force an error decoding a message
+                                protocolMessage.messages![0].encoding = "bad_encoding_type"
+                            }
+                            return protocolMessage
+                        })
+                        
+                        waitUntil(timeout: testTimeout) { done in
+                            let partlyDone = AblyTests.splitDone(2, done: done)
+                            
+                            channel.subscribe(testMessage.encoded.name) { message in
+                                expect(message.data as? NSObject).to(equal(AblyTests.base64ToData(testMessage.encrypted.data) as NSObject?))
+                                
+                                let logs = options.logHandler.captured
+                                let line = logs.reduce("") { $0 + "; " + $1.toString() } //Reduce in one line
+                                
+                                expect(line).to(contain("Failed to decode data: unknown encoding: 'bad_encoding_type'"))
+                                
+                                partlyDone()
+                            }
+                            
+                            channel.on(.update) { stateChange in
+                                guard let error = stateChange.reason else {
+                                    return
+                                }
+                                expect(error.message).to(contain("Failed to decode data: unknown encoding: 'bad_encoding_type'"))
+                                expect(error).to(beIdenticalTo(channel.errorReason))
+                                partlyDone()
+                            }
+                            
+                            channel.publish(testMessage.encoded.name, data: testMessage.encoded.data)
+                        }
+                    }
+                    
+                    private func testWithUntilAttach(_ untilAttach: Bool) {
+                        let options = AblyTests.commonAppSetup()
+                        let client = ARTRealtime(options: options)
+                        defer { client.dispose(); client.close() }
+                        let channel = client.channels.get("test")
+
+                        let testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+                        client.internal.rest.httpExecutor = testHTTPExecutor
+
+                        let query = ARTRealtimeHistoryQuery()
+                        query.untilAttach = untilAttach
+
+                        channel.attach()
+                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
+
+                        waitUntil(timeout: testTimeout) { done in
+                            expect {
+                                try channel.history(query) { _, errorInfo in
+                                    expect(errorInfo).to(beNil())
+                                    done()
+                                }
+                            }.toNot(throwError() { err in fail("\(err)"); done() })
+                        }
+
+                        let queryString = testHTTPExecutor.requests.last!.url!.query
+
+                        if query.untilAttach {
+                            expect(queryString).to(contain("fromSerial=\(channel.internal.attachSerial!)"))
+                        }
+                        else {
+                            expect(queryString).toNot(contain("fromSerial"))
+                        }
+                    }
+
 class RealtimeClientChannel: QuickSpec {
+
+override class var defaultTestSuite : XCTestSuite {
+    let _ = attachResumeExpectedValues
+    let _ = rtl6c2TestsClient
+    let _ = rtl6c2TestsChannel
+    let _ = options
+    let _ = client
+    let _ = channel
+    let _ = previousConnectionStateTtl
+
+    return super.defaultTestSuite
+}
+
     override func spec() {
         describe("Channel") {
 
@@ -1370,13 +1520,6 @@ class RealtimeClientChannel: QuickSpec {
                         expect(lastAttach.flags & Int64(ARTProtocolMessageFlag.attachResume.rawValue)).to(beGreaterThan(0)) //true
                     }
 
-                    let attachResumeExpectedValues: [ARTRealtimeChannelState: Bool] = [
-                        .initialized: false,
-                        .attached: true,
-                        .detaching: false,
-                        .failed: false,
-                    ]
-
                     // RTL4j1
                     it("should have correct AttachResume value") {
                         let client = ARTRealtime(options: AblyTests.commonAppSetup())
@@ -2170,26 +2313,24 @@ class RealtimeClientChannel: QuickSpec {
 
                     // RTL6c2
                     context("the message") {
-                        var rtl6c2TestsClient: ARTRealtime!
-                        var rtl6c2TestsChannel: ARTRealtimeChannel!
 
                         beforeEach {
+print("START HOOK: RealtimeClientChannel.beforeEach__Channel__publish__Connection_state_conditions__the_message")
+
                             let options = AblyTests.commonAppSetup()
                             options.useTokenAuth = true
                             options.autoConnect = false
                             rtl6c2TestsClient = AblyTests.newRealtime(options)
                             rtl6c2TestsChannel = rtl6c2TestsClient.channels.get("test")
                             expect(rtl6c2TestsClient.internal.options.queueMessages).to(beTrue())
-                        }
-                        afterEach { rtl6c2TestsClient.close() }
+print("END HOOK: RealtimeClientChannel.beforeEach__Channel__publish__Connection_state_conditions__the_message")
 
-                        func rtl16c2TestsPublish(_ done: @escaping () -> ()) {
-                            rtl6c2TestsChannel.publish(nil, data: "message") { error in
-                                expect(error).to(beNil())
-                                expect(rtl6c2TestsClient.connection.state).to(equal(ARTRealtimeConnectionState.connected))
-                                done()
-                            }
                         }
+                        afterEach { 
+print("START HOOK: RealtimeClientChannel.afterEach__Channel__publish__Connection_state_conditions__the_message")
+rtl6c2TestsClient.close() 
+print("END HOOK: RealtimeClientChannel.afterEach__Channel__publish__Connection_state_conditions__the_message")
+}
 
                         context("should be queued and delivered as soon as the connection state returns to CONNECTED if the connection is") {
                             it("INITIALIZED") {
@@ -2287,36 +2428,24 @@ class RealtimeClientChannel: QuickSpec {
 
                     // RTL6c4
                     context("will result in an error if the") {
-                        var options: ARTClientOptions!
-                        var client: ARTRealtime!
-                        var channel: ARTRealtimeChannel!
-
-                        let previousConnectionStateTtl = ARTDefault.connectionStateTtl()
-
-                        func setupDependencies() {
-                            if (options == nil) {
-                                options = AblyTests.commonAppSetup()
-                                options.suspendedRetryTimeout = 0.3
-                                options.autoConnect = false
-                            }
-                        }
 
                         beforeEach {
+print("START HOOK: RealtimeClientChannel.beforeEach__Channel__publish__Connection_state_conditions__will_result_in_an_error_if_the")
+
                             setupDependencies()
                             ARTDefault.setConnectionStateTtl(0.3)
                             client = AblyTests.newRealtime(options)
                             channel = client.channels.get("test")
+print("END HOOK: RealtimeClientChannel.beforeEach__Channel__publish__Connection_state_conditions__will_result_in_an_error_if_the")
+
                         }
                         afterEach {
+print("START HOOK: RealtimeClientChannel.afterEach__Channel__publish__Connection_state_conditions__will_result_in_an_error_if_the")
+
                             client.close()
                             ARTDefault.setConnectionStateTtl(previousConnectionStateTtl)
-                        }
+print("END HOOK: RealtimeClientChannel.afterEach__Channel__publish__Connection_state_conditions__will_result_in_an_error_if_the")
 
-                        func publish(_ done: @escaping () -> ()) {
-                            channel.publish(nil, data: "message") { error in
-                                expect(error).toNot(beNil())
-                                done()
-                            }
                         }
 
                         it("connection is SUSPENDED") {
@@ -3151,72 +3280,6 @@ class RealtimeClientChannel: QuickSpec {
 
                 // RTL7d
                 context("should deliver the message even if there is an error while decoding") {
-                    /*
-                     This test makes a deep assumption about the content of these two files,
-                     specifically the format of the first message in the items array.
-                     */
-                    func testHandlesDecodingErrorInFixture(_ cryptoFixtureFileName: String) {
-                        let options = AblyTests.commonAppSetup()
-                        options.autoConnect = false
-                        options.logHandler = ARTLog(capturingOutput: true)
-                        let client = ARTRealtime(options: options)
-                        client.internal.setTransport(TestProxyTransport.self)
-                        client.connect()
-                        defer { client.dispose(); client.close() }
-                        
-                        let (keyData, ivData, messages) = AblyTests.loadCryptoTestData(cryptoFixtureFileName)
-                        let testMessage = messages[0]
-                        
-                        let cipherParams = ARTCipherParams(algorithm: "aes", key: keyData as ARTCipherKeyCompatible, iv: ivData)
-                        let channelOptions = ARTRealtimeChannelOptions(cipher: cipherParams)
-                        let channel = client.channels.get("test", options: channelOptions)
-                        
-                        let transport = client.internal.transport as! TestProxyTransport
-                        
-                        transport.setListenerBeforeProcessingOutgoingMessage({ protocolMessage in
-                            if protocolMessage.action == .message {
-                                expect(protocolMessage.messages![0].data as? String).to(equal(testMessage.encrypted.data))
-                                expect(protocolMessage.messages![0].encoding).to(equal(testMessage.encrypted.encoding))
-                            }
-                        })
-                        
-                        transport.setBeforeIncomingMessageModifier({ protocolMessage in
-                            if protocolMessage.action == .message {
-                                expect(protocolMessage.messages![0].data as? NSObject).to(equal(AblyTests.base64ToData(testMessage.encrypted.data) as NSObject?))
-                                expect(protocolMessage.messages![0].encoding).to(equal("utf-8/cipher+aes-\(cryptoFixtureFileName.suffix(3))-cbc"))
-                                
-                                // Force an error decoding a message
-                                protocolMessage.messages![0].encoding = "bad_encoding_type"
-                            }
-                            return protocolMessage
-                        })
-                        
-                        waitUntil(timeout: testTimeout) { done in
-                            let partlyDone = AblyTests.splitDone(2, done: done)
-                            
-                            channel.subscribe(testMessage.encoded.name) { message in
-                                expect(message.data as? NSObject).to(equal(AblyTests.base64ToData(testMessage.encrypted.data) as NSObject?))
-                                
-                                let logs = options.logHandler.captured
-                                let line = logs.reduce("") { $0 + "; " + $1.toString() } //Reduce in one line
-                                
-                                expect(line).to(contain("Failed to decode data: unknown encoding: 'bad_encoding_type'"))
-                                
-                                partlyDone()
-                            }
-                            
-                            channel.on(.update) { stateChange in
-                                guard let error = stateChange.reason else {
-                                    return
-                                }
-                                expect(error.message).to(contain("Failed to decode data: unknown encoding: 'bad_encoding_type'"))
-                                expect(error).to(beIdenticalTo(channel.errorReason))
-                                partlyDone()
-                            }
-                            
-                            channel.publish(testMessage.encoded.name, data: testMessage.encoded.data)
-                        }
-                    }
                     
                     it("using crypto-data-128") {
                         testHandlesDecodingErrorInFixture("crypto-data-128")
@@ -3439,40 +3502,6 @@ class RealtimeClientChannel: QuickSpec {
                             return
                         }
                         fail("Should raise an error")
-                    }
-                    
-                    func testWithUntilAttach(_ untilAttach: Bool) {
-                        let options = AblyTests.commonAppSetup()
-                        let client = ARTRealtime(options: options)
-                        defer { client.dispose(); client.close() }
-                        let channel = client.channels.get("test")
-
-                        let testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                        client.internal.rest.httpExecutor = testHTTPExecutor
-
-                        let query = ARTRealtimeHistoryQuery()
-                        query.untilAttach = untilAttach
-
-                        channel.attach()
-                        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
-
-                        waitUntil(timeout: testTimeout) { done in
-                            expect {
-                                try channel.history(query) { _, errorInfo in
-                                    expect(errorInfo).to(beNil())
-                                    done()
-                                }
-                            }.toNot(throwError() { err in fail("\(err)"); done() })
-                        }
-
-                        let queryString = testHTTPExecutor.requests.last!.url!.query
-
-                        if query.untilAttach {
-                            expect(queryString).to(contain("fromSerial=\(channel.internal.attachSerial!)"))
-                        }
-                        else {
-                            expect(queryString).toNot(contain("fromSerial"))
-                        }
                     }
                     
                     it("where value is true, should pass the querystring param fromSerial with the serial number assigned to the channel") {

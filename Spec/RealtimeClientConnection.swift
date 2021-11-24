@@ -11,8 +11,149 @@ func countChannels(_ channels: ARTRealtimeChannels) -> Int {
     }
     return i
 }
+                    private var rtn15gTestsClient: ARTRealtime!
+                    private var rtn15gTestsConnectionId = ""
+                    private let customTtlInterval: TimeInterval = 0.1
+                    private let customIdleInterval: TimeInterval = 0.1
+                    private var rtn15g2TestsClient: ARTRealtime!
+                    private var rtn15g2TestsConnectionId = ""
+                private let expectedHostOrder = [3, 4, 0, 2, 1]
+                private let originalARTFallback_shuffleArray = ARTFallback_shuffleArray
+                    private func testUsesAlternativeHostOnResponse(_ caseTest: FakeNetworkResponse) {
+                        let options = ARTClientOptions(key: "xxxx:xxxx")
+                        options.autoConnect = false
+                        let client = ARTRealtime(options: options)
+                        defer { client.dispose(); client.close() }
+                        client.channels.get("test")
+
+                        let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
+                        defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
+                        ARTDefault.setRealtimeRequestTimeout(1.0)
+
+                        client.internal.setTransport(TestProxyTransport.self)
+                        TestProxyTransport.fakeNetworkResponse = caseTest
+                        defer { TestProxyTransport.fakeNetworkResponse = nil }
+
+                        var urlConnections = [URL]()
+                        TestProxyTransport.networkConnectEvent = { transport, url in
+                            if client.internal.transport !== transport {
+                                return
+                            }
+                            urlConnections.append(url)
+                            if urlConnections.count == 1 {
+                                TestProxyTransport.fakeNetworkResponse = nil
+                            }
+                        }
+                        defer { TestProxyTransport.networkConnectEvent = nil }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            // wss://[a-e].ably-realtime.com: when a timeout occurs
+                            client.connection.once(.disconnected) { error in
+                                done()
+                            }
+                            // wss://[a-e].ably-realtime.com: when a 401 occurs because of the `xxxx:xxxx` key
+                            client.connection.once(.failed) { error in
+                                done()
+                            }
+                            client.connect()
+                        }
+
+                        expect(urlConnections).to(haveCount(2))
+                        expect(NSRegularExpression.match(urlConnections[0].absoluteString, pattern: "//realtime.ably.io")).to(beTrue())
+                        expect(NSRegularExpression.match(urlConnections[1].absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+                    }
+                    private func testMovesToDisconnectedWithNetworkingError(_ error: Error) {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let client = AblyTests.newRealtime(options)
+                        defer {
+                            client.dispose()
+                            client.close()
+                        }
+                        client.internal.setTransport(TestProxyTransport.self)
+
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.connected) { _ in
+                                done()
+                            }
+                            client.connect()
+                        }
+
+                        var _transport: ARTWebSocketTransport?
+                        AblyTests.queue.sync {
+                            _transport = client.internal.transport as? ARTWebSocketTransport
+                        }
+
+                        guard let wsTransport = _transport else {
+                            fail("expected WS transport")
+                            return
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.disconnected) { _ in
+                                done()
+                            }
+                            wsTransport.webSocket(wsTransport.websocket!, didFailWithError:error)
+                        }
+                    }
+                    private var rtn20aTestsClient: ARTRealtime!
+                private let fixtures = try! JSON(data: NSData(contentsOfFile: pathForTestResource(testResourcesPath + "messages-encoding.json"))! as Data, options: .mutableContainers)
+
+                private func expectDataToMatch(_ message: ARTMessage, _ fixtureMessage: JSON) {
+                    switch fixtureMessage["expectedType"].string! {
+                    case "string":
+                        expect(message.data as? NSString).to(equal(fixtureMessage["expectedValue"].string! as NSString?))
+                    case "jsonObject":
+                        if let data = message.data as? NSDictionary {
+                            expect(JSON(data)).to(equal(fixtureMessage["expectedValue"]))
+                        } else {
+                            fail("expected NSDictionary")
+                        }              
+                    case "jsonArray":
+                        if let data = message.data as? NSArray {
+                            expect(JSON(data)).to(equal(fixtureMessage["expectedValue"]))
+                        } else {
+                            fail("expected NSArray")
+                        }
+                    case "binary":
+                        expect(message.data as? NSData).to(equal(fixtureMessage["expectedHexValue"].string!.dataFromHexadecimalString()! as NSData?))
+                    default:
+                        fail("unhandled: \(fixtureMessage["expectedType"].string!)")
+                    }
+                }
+
+                private var jsonOptions: ARTClientOptions!
+                private var msgpackOptions: ARTClientOptions!
+
+                private func setupDependencies() {
+                    if (jsonOptions == nil) {
+                        jsonOptions = AblyTests.commonAppSetup()
+                        jsonOptions.useBinaryProtocol = false
+                        // Keep the same key and channel prefix
+                        msgpackOptions = (jsonOptions.copy() as! ARTClientOptions)
+                        msgpackOptions.useBinaryProtocol = true
+                    }
+                }
 
 class RealtimeClientConnection: QuickSpec {
+
+override class var defaultTestSuite : XCTestSuite {
+    let _ = rtn15gTestsClient
+    let _ = rtn15gTestsConnectionId
+    let _ = customTtlInterval
+    let _ = customIdleInterval
+    let _ = rtn15g2TestsClient
+    let _ = rtn15g2TestsConnectionId
+    let _ = expectedHostOrder
+    let _ = originalARTFallback_shuffleArray
+    let _ = rtn20aTestsClient
+    let _ = fixtures
+    let _ = jsonOptions
+    let _ = msgpackOptions
+
+    return super.defaultTestSuite
+}
+
 
     override func spec() {
         describe("Connection") {
@@ -2815,10 +2956,6 @@ class RealtimeClientConnection: QuickSpec {
                 
                 // RTN15g RTN15g1
                 context("when connection (ttl + idle interval) period has passed since last activity") {
-                    var rtn15gTestsClient: ARTRealtime!
-                    var rtn15gTestsConnectionId = ""
-                    let customTtlInterval: TimeInterval = 0.1
-                    let customIdleInterval: TimeInterval = 0.1
                     
                     xit("uses a new connection") {
                         let options = AblyTests.commonAppSetup()
@@ -2894,8 +3031,6 @@ class RealtimeClientConnection: QuickSpec {
                 
                 // RTN15g2
                 context("when connection (ttl + idle interval) period has NOT passed since last activity") {
-                    var rtn15g2TestsClient: ARTRealtime!
-                    var rtn15g2TestsConnectionId = ""
                     
                     it("uses the same connection") {
                         let options = AblyTests.commonAppSetup()
@@ -3244,20 +3379,26 @@ class RealtimeClientConnection: QuickSpec {
 
             // RTN17
             context("Host Fallback") {
-                let expectedHostOrder = [3, 4, 0, 2, 1]
-                let originalARTFallback_shuffleArray = ARTFallback_shuffleArray
 
                 beforeEach {
+print("START HOOK: RealtimeClientConnection.beforeEach__Connection__Host_Fallback")
+
                     ARTFallback_shuffleArray = { array in
                         let arranged = expectedHostOrder.reversed().map { array[$0] }
                         for (i, element) in arranged.enumerated() {
                             array[i] = element
                         }
                     }
+print("END HOOK: RealtimeClientConnection.beforeEach__Connection__Host_Fallback")
+
                 }
 
                 afterEach {
+print("START HOOK: RealtimeClientConnection.afterEach__Connection__Host_Fallback")
+
                     ARTFallback_shuffleArray = originalARTFallback_shuffleArray
+print("END HOOK: RealtimeClientConnection.afterEach__Connection__Host_Fallback")
+
                 }
 
                 // RTN17b
@@ -3451,49 +3592,6 @@ class RealtimeClientConnection: QuickSpec {
 
                 // RTN17d
                 xcontext("should use an alternative host when") {
-                    func testUsesAlternativeHostOnResponse(_ caseTest: FakeNetworkResponse) {
-                        let options = ARTClientOptions(key: "xxxx:xxxx")
-                        options.autoConnect = false
-                        let client = ARTRealtime(options: options)
-                        defer { client.dispose(); client.close() }
-                        client.channels.get("test")
-
-                        let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
-                        defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
-                        ARTDefault.setRealtimeRequestTimeout(1.0)
-
-                        client.internal.setTransport(TestProxyTransport.self)
-                        TestProxyTransport.fakeNetworkResponse = caseTest
-                        defer { TestProxyTransport.fakeNetworkResponse = nil }
-
-                        var urlConnections = [URL]()
-                        TestProxyTransport.networkConnectEvent = { transport, url in
-                            if client.internal.transport !== transport {
-                                return
-                            }
-                            urlConnections.append(url)
-                            if urlConnections.count == 1 {
-                                TestProxyTransport.fakeNetworkResponse = nil
-                            }
-                        }
-                        defer { TestProxyTransport.networkConnectEvent = nil }
-
-                        waitUntil(timeout: testTimeout) { done in
-                            // wss://[a-e].ably-realtime.com: when a timeout occurs
-                            client.connection.once(.disconnected) { error in
-                                done()
-                            }
-                            // wss://[a-e].ably-realtime.com: when a 401 occurs because of the `xxxx:xxxx` key
-                            client.connection.once(.failed) { error in
-                                done()
-                            }
-                            client.connect()
-                        }
-
-                        expect(urlConnections).to(haveCount(2))
-                        expect(NSRegularExpression.match(urlConnections[0].absoluteString, pattern: "//realtime.ably.io")).to(beTrue())
-                        expect(NSRegularExpression.match(urlConnections[1].absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
-                    }
                     
                     it(".hostUnreachable") {
                         testUsesAlternativeHostOnResponse(.hostUnreachable)
@@ -3509,40 +3607,6 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 context("should move to disconnected when there's no internet") {
-                    func testMovesToDisconnectedWithNetworkingError(_ error: Error) {
-                        let options = AblyTests.commonAppSetup()
-                        options.autoConnect = false
-                        let client = AblyTests.newRealtime(options)
-                        defer {
-                            client.dispose()
-                            client.close()
-                        }
-                        client.internal.setTransport(TestProxyTransport.self)
-
-                        waitUntil(timeout: testTimeout) { done in
-                            client.connection.once(.connected) { _ in
-                                done()
-                            }
-                            client.connect()
-                        }
-
-                        var _transport: ARTWebSocketTransport?
-                        AblyTests.queue.sync {
-                            _transport = client.internal.transport as? ARTWebSocketTransport
-                        }
-
-                        guard let wsTransport = _transport else {
-                            fail("expected WS transport")
-                            return
-                        }
-
-                        waitUntil(timeout: testTimeout) { done in
-                            client.connection.once(.disconnected) { _ in
-                                done()
-                            }
-                            wsTransport.webSocket(wsTransport.websocket!, didFailWithError:error)
-                        }
-                    }
                     
                     it("with NSPOSIXErrorDomain with code 57") {
                         testMovesToDisconnectedWithNetworkingError(NSError(domain: "NSPOSIXErrorDomain", code: 57, userInfo: [NSLocalizedDescriptionKey: "shouldn't matter"]))
@@ -4072,18 +4136,25 @@ class RealtimeClientConnection: QuickSpec {
 
                 // RTN20a
                 context("should immediately change the state to DISCONNECTED if the operating system indicates that the underlying internet connection is no longer available") {
-                    var rtn20aTestsClient: ARTRealtime!
 
                     beforeEach {
+print("START HOOK: RealtimeClientConnection.beforeEach__Connection__Operating_System_events_for_network_internet_connectivity_changes__should_immediately_change_the_state_to_DISCONNECTED_if_the_operating_system_indicates_that_the_underlying_internet_connection_is_no_longer_available")
+
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
                         rtn20aTestsClient = ARTRealtime(options: options)
                         rtn20aTestsClient.internal.setReachabilityClass(TestReachability.self)
+print("END HOOK: RealtimeClientConnection.beforeEach__Connection__Operating_System_events_for_network_internet_connectivity_changes__should_immediately_change_the_state_to_DISCONNECTED_if_the_operating_system_indicates_that_the_underlying_internet_connection_is_no_longer_available")
+
                     }
 
                     afterEach {
+print("START HOOK: RealtimeClientConnection.afterEach__Connection__Operating_System_events_for_network_internet_connectivity_changes__should_immediately_change_the_state_to_DISCONNECTED_if_the_operating_system_indicates_that_the_underlying_internet_connection_is_no_longer_available")
+
                         rtn20aTestsClient.dispose()
                         rtn20aTestsClient.close()
+print("END HOOK: RealtimeClientConnection.afterEach__Connection__Operating_System_events_for_network_internet_connectivity_changes__should_immediately_change_the_state_to_DISCONNECTED_if_the_operating_system_indicates_that_the_underlying_internet_connection_is_no_longer_available")
+
                     }
 
                     it("when CONNECTING") {
@@ -4505,30 +4576,6 @@ class RealtimeClientConnection: QuickSpec {
             }
 
             context("with fixture messages") {
-                let fixtures = try! JSON(data: NSData(contentsOfFile: pathForTestResource(testResourcesPath + "messages-encoding.json"))! as Data, options: .mutableContainers)
-
-                func expectDataToMatch(_ message: ARTMessage, _ fixtureMessage: JSON) {
-                    switch fixtureMessage["expectedType"].string! {
-                    case "string":
-                        expect(message.data as? NSString).to(equal(fixtureMessage["expectedValue"].string! as NSString?))
-                    case "jsonObject":
-                        if let data = message.data as? NSDictionary {
-                            expect(JSON(data)).to(equal(fixtureMessage["expectedValue"]))
-                        } else {
-                            fail("expected NSDictionary")
-                        }              
-                    case "jsonArray":
-                        if let data = message.data as? NSArray {
-                            expect(JSON(data)).to(equal(fixtureMessage["expectedValue"]))
-                        } else {
-                            fail("expected NSArray")
-                        }
-                    case "binary":
-                        expect(message.data as? NSData).to(equal(fixtureMessage["expectedHexValue"].string!.dataFromHexadecimalString()! as NSData?))
-                    default:
-                        fail("unhandled: \(fixtureMessage["expectedType"].string!)")
-                    }
-                }
 
                 // https://github.com/ably/wiki/issues/22
                 xit("should encode and decode fixture messages as expected") {
@@ -4598,19 +4645,6 @@ class RealtimeClientConnection: QuickSpec {
                                 })
                             }
                         }
-                    }
-                }
-
-                var jsonOptions: ARTClientOptions!
-                var msgpackOptions: ARTClientOptions!
-
-                func setupDependencies() {
-                    if (jsonOptions == nil) {
-                        jsonOptions = AblyTests.commonAppSetup()
-                        jsonOptions.useBinaryProtocol = false
-                        // Keep the same key and channel prefix
-                        msgpackOptions = (jsonOptions.copy() as! ARTClientOptions)
-                        msgpackOptions.useBinaryProtocol = true
                     }
                 }
 

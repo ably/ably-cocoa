@@ -2,6 +2,11 @@ import Ably
 import Nimble
 import Quick
 
+        private var rest: ARTRest!
+        private var mockHttpExecutor: MockHTTPExecutor!
+        private var storage: MockDeviceStorage!
+        private var stateMachineDelegate: StateMachineDelegate!
+
 class Push : QuickSpec {
 
     struct TestDeviceToken {
@@ -10,14 +15,21 @@ class Push : QuickSpec {
         static let tokenString = tokenData.map { String(format: "%02x", $0) }.joined()
     }
 
+override class var defaultTestSuite : XCTestSuite {
+    let _ = rest
+    let _ = mockHttpExecutor
+    let _ = storage
+    let _ = stateMachineDelegate
+
+    return super.defaultTestSuite
+}
+
+
     override func spec() {
 
-        var rest: ARTRest!
-        var mockHttpExecutor: MockHTTPExecutor!
-        var storage: MockDeviceStorage!
-        var stateMachineDelegate: StateMachineDelegate!
-
         beforeEach {
+print("START HOOK: Push.beforeEach")
+
             rest = ARTRest(key: "xxxx:xxxx")
             rest.internal.resetDeviceSingleton()
             mockHttpExecutor = MockHTTPExecutor()
@@ -26,6 +38,8 @@ class Push : QuickSpec {
             rest.internal.storage = storage
             stateMachineDelegate = StateMachineDelegate()
             rest.push.internal.createActivationStateMachine(withDelegate: stateMachineDelegate!)
+print("END HOOK: Push.beforeEach")
+
         }
 
         // RSH2

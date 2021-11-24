@@ -3,17 +3,113 @@ import Ably.Private
 import Nimble
 import Quick
 import Aspects
+        
+        private var testHTTPExecutor: TestProxyHTTPExecutor!
+                private func testOptionsGiveDefaultAuthMethod(_ caseSetter: (ARTAuthOptions) -> Void) {
+                    let options = ARTClientOptions()
+                    caseSetter(options)
+                    
+                    let client = ARTRest(options: options)
+                    
+                    expect(client.auth.internal.method).to(equal(ARTAuthMethod.token))
+                }
+                // Cases:
+                //  - useTokenAuth is specified and thus a key is not provided
+                //  - authCallback and authUrl are both specified
+                private func testStopsClientWithOptions(caseSetter: (ARTClientOptions) -> ()) {
+                    let options = ARTClientOptions()
+                    caseSetter(options)
+                    
+                    expect{ ARTRest(options: options) }.to(raiseException())
+                }
+
+                private let currentClientId = "client_string"
+
+                private var options: ARTClientOptions!
+                private var rest: ARTRest!
+
+                private func rsa8bTestsSetupDependencies() {
+                    if (options == nil) {
+                        options = AblyTests.commonAppSetup()
+                        options.clientId = currentClientId
+                        rest = ARTRest(options: options)
+                    }
+                }
+                private let json = "{" +
+                "    \"token\": \"xxxxxx.yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy\"," +
+                "    \"issued\": 1479087321934," +
+                "    \"expires\": 1479087363934," +
+                "    \"capability\": \"{\\\"test\\\":[\\\"publish\\\"]}\"," +
+                "    \"clientId\": \"myClientId\"" +
+                "}"
+
+                private func check(_ details: ARTTokenDetails) {
+                    expect(details.token).to(equal("xxxxxx.yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"))
+                    expect(details.issued).to(equal(Date(timeIntervalSince1970: 1479087321.934)))
+                    expect(details.expires).to(equal(Date(timeIntervalSince1970: 1479087363.934)))
+                    expect(details.capability).to(equal("{\"test\":[\"publish\"]}"))
+                    expect(details.clientId).to(equal("myClientId"))
+                }
+            private let channelName = "test_JWT"
+            private let messageName = "message_JWT"
+                private let jwtTestsOptions = AblyTests.clientOptions()
+                private let rsa8gTestsOptions: ARTClientOptions = {
+                    let options = AblyTests.clientOptions()
+                    options.authUrl = URL(string: echoServerAddress)!
+                    return options
+                }()
+
+                private var keys: [String: String]!
+
+                private func rsa8gTestsSetupDependencies() {
+                    if (keys == nil) {
+                        keys = getKeys()
+                    }
+                }
+                private let authCallbackTestsOptions = AblyTests.clientOptions()
+            private let rsc1TestsOptions = AblyTests.clientOptions()
+                private var client: ARTRest!
+
+                private func rsa4ftestsSetupDependencies() {
+                    if (client == nil) {
+                        let options = AblyTests.clientOptions()
+                        let keys = getKeys()
+                        options.authUrl = URL(string: echoServerAddress)!
+                        options.authParams = [URLQueryItem]()
+                        options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
+                        options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
+                        options.authParams?.append(URLQueryItem(name: "returnType", value: "jwt"))
+                        client = ARTRest(options: options)
+                    }
+                }
 
 class Auth : QuickSpec {
-    override func spec() {
+
+override class var defaultTestSuite : XCTestSuite {
+    let _ = testHTTPExecutor
+    let _ = currentClientId
+    let _ = options
+    let _ = rest
+    let _ = json
+    let _ = channelName
+    let _ = messageName
+    let _ = jwtTestsOptions
+    let _ = rsa8gTestsOptions
+    let _ = keys
+    let _ = authCallbackTestsOptions
+    let _ = rsc1TestsOptions
+    let _ = client
+
+    return super.defaultTestSuite
+}
+
         
         struct ExpectedTokenParams {
             static let clientId = "client_from_params"
             static let ttl = 1.0
             static let capability = "{\"cansubscribe:*\":[\"subscribe\"]}"
         }
-        
-        var testHTTPExecutor: TestProxyHTTPExecutor!
+    override func spec() {
 
         describe("Basic") {
 
@@ -173,14 +269,6 @@ class Auth : QuickSpec {
 
             // RSA4
             context("authentication method") {
-                func testOptionsGiveDefaultAuthMethod(_ caseSetter: (ARTAuthOptions) -> Void) {
-                    let options = ARTClientOptions()
-                    caseSetter(options)
-                    
-                    let client = ARTRest(options: options)
-                    
-                    expect(client.auth.internal.method).to(equal(ARTAuthMethod.token))
-                }
                 
                 it("should be default auth method when options’ useTokenAuth is set") {
                     testOptionsGiveDefaultAuthMethod { $0.useTokenAuth = true; $0.key = "fake:key" }
@@ -525,15 +613,6 @@ class Auth : QuickSpec {
             
             // RSA14
             context("options") {
-                // Cases:
-                //  - useTokenAuth is specified and thus a key is not provided
-                //  - authCallback and authUrl are both specified
-                func testStopsClientWithOptions(caseSetter: (ARTClientOptions) -> ()) {
-                    let options = ARTClientOptions()
-                    caseSetter(options)
-                    
-                    expect{ ARTRest(options: options) }.to(raiseException())
-                }
                 
                 it("should stop client when useTokenAuth and no key occurs") {
                     testStopsClientWithOptions { $0.useTokenAuth = true }
@@ -1740,19 +1819,6 @@ class Auth : QuickSpec {
 
             // RSA8b
             context("should support all TokenParams") {
-
-                let currentClientId = "client_string"
-
-                var options: ARTClientOptions!
-                var rest: ARTRest!
-
-                func rsa8bTestsSetupDependencies() {
-                    if (options == nil) {
-                        options = AblyTests.commonAppSetup()
-                        options.clientId = currentClientId
-                        rest = ARTRest(options: options)
-                    }
-                }
 
                 it("using defaults") {
                     rsa8bTestsSetupDependencies()
@@ -4032,21 +4098,6 @@ class Auth : QuickSpec {
         describe("TokenDetails") {
             // TD7
             describe("fromJson") {
-                let json = "{" +
-                "    \"token\": \"xxxxxx.yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy\"," +
-                "    \"issued\": 1479087321934," +
-                "    \"expires\": 1479087363934," +
-                "    \"capability\": \"{\\\"test\\\":[\\\"publish\\\"]}\"," +
-                "    \"clientId\": \"myClientId\"" +
-                "}"
-
-                func check(_ details: ARTTokenDetails) {
-                    expect(details.token).to(equal("xxxxxx.yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"))
-                    expect(details.issued).to(equal(Date(timeIntervalSince1970: 1479087321.934)))
-                    expect(details.expires).to(equal(Date(timeIntervalSince1970: 1479087363.934)))
-                    expect(details.capability).to(equal("{\"test\":[\"publish\"]}"))
-                    expect(details.clientId).to(equal("myClientId"))
-                }
 
                 it("accepts a string, which should be interpreted as JSON") {
                     check(try! ARTTokenDetails.fromJson(json as ARTJsonCompatible))
@@ -4069,11 +4120,8 @@ class Auth : QuickSpec {
         }
 
         describe("JWT and realtime") {
-            let channelName = "test_JWT"
-            let messageName = "message_JWT"
             
             context("client initialized with a JWT token in ClientOptions") {
-                let jwtTestsOptions = AblyTests.clientOptions()
 
                 context("with valid credentials") {
                     xit("pulls stats successfully") {
@@ -4114,19 +4162,6 @@ class Auth : QuickSpec {
 
             // RSA8g RSA8c
             context("when using authUrl") {
-                let rsa8gTestsOptions: ARTClientOptions = {
-                    let options = AblyTests.clientOptions()
-                    options.authUrl = URL(string: echoServerAddress)!
-                    return options
-                }()
-
-                var keys: [String: String]!
-
-                func rsa8gTestsSetupDependencies() {
-                    if (keys == nil) {
-                        keys = getKeys()
-                    }
-                }
 
                 context("with valid credentials") {
                     it("fetches a channels and posts a message") {
@@ -4237,7 +4272,6 @@ class Auth : QuickSpec {
 
             // RSA8g
             context("when using authCallback") {
-                let authCallbackTestsOptions = AblyTests.clientOptions()
 
                 context("with valid credentials") {
                     xit("pulls stats successfully") {
@@ -4390,7 +4424,6 @@ class Auth : QuickSpec {
         
         // RSC1 RSC1a RSC1c RSA3d
         describe("JWT and rest") {
-            let rsc1TestsOptions = AblyTests.clientOptions()
             
             context("when the JWT token embeds an Ably token") {
                 it ("pulls stats successfully") {
@@ -4420,23 +4453,13 @@ class Auth : QuickSpec {
             
             // RSA4f, RSA8c
             context("when the JWT token is returned with application/jwt content type") {
-                var client: ARTRest!
-
-                func rsa4ftestsSetupDependencies() {
-                    if (client == nil) {
-                        let options = AblyTests.clientOptions()
-                        let keys = getKeys()
-                        options.authUrl = URL(string: echoServerAddress)!
-                        options.authParams = [URLQueryItem]()
-                        options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
-                        options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
-                        options.authParams?.append(URLQueryItem(name: "returnType", value: "jwt"))
-                        client = ARTRest(options: options)
-                    }
-                }
 
                 beforeEach {
+print("START HOOK: Auth.beforeEach__JWT_and_rest__when_the_JWT_token_is_returned_with_application_jwt_content_type")
+
                     rsa4ftestsSetupDependencies()
+print("END HOOK: Auth.beforeEach__JWT_and_rest__when_the_JWT_token_is_returned_with_application_jwt_content_type")
+
                 }
                 
                 it("the client successfully connects and pulls stats") {

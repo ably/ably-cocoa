@@ -2,13 +2,23 @@ import Ably
 import Nimble
 import Quick
 
+        private var rest: ARTRest!
+        private var mockHttpExecutor: MockHTTPExecutor!
+
 class PushChannel : QuickSpec {
+
+override class var defaultTestSuite : XCTestSuite {
+    let _ = rest
+    let _ = mockHttpExecutor
+
+    return super.defaultTestSuite
+}
+
     override func spec() {
 
-        var rest: ARTRest!
-        var mockHttpExecutor: MockHTTPExecutor!
-
         beforeEach {
+print("START HOOK: PushChannel.beforeEach")
+
             mockHttpExecutor = MockHTTPExecutor()
             let options = ARTClientOptions(key: "xxxx:xxxx")
             options.dispatchQueue = AblyTests.userQueue
@@ -17,6 +27,8 @@ class PushChannel : QuickSpec {
             rest.internal.options.clientId = "tester"
             rest.internal.httpExecutor = mockHttpExecutor
             rest.internal.resetDeviceSingleton()
+print("END HOOK: PushChannel.beforeEach")
+
         }
 
         // RSH7

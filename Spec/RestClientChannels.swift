@@ -17,18 +17,31 @@ private func beAChannel(named expectedValue: String) -> Predicate<ARTChannel> {
         return PredicateResult(status: PredicateStatus(bool: actualValue?.name == expectedValue), message: m)
     }
 }
+        private var client: ARTRest!
+        private var channelName: String!
+
+        private let cipherParams: ARTCipherParams? = nil
 
 class RestClientChannels: QuickSpec {
+
+override class var defaultTestSuite : XCTestSuite {
+    let _ = client
+    let _ = channelName
+    let _ = cipherParams
+
+    return super.defaultTestSuite
+}
+
     override func spec() {
-        var client: ARTRest!
-        var channelName: String!
 
         beforeEach {
+print("START HOOK: RestClientChannels.beforeEach")
+
             client = ARTRest(key: "fake:key")
             channelName = ProcessInfo.processInfo.globallyUniqueString
-        }
+print("END HOOK: RestClientChannels.beforeEach")
 
-        let cipherParams: ARTCipherParams? = nil
+        }
 
         describe("RestClient") {
             context("channels") {

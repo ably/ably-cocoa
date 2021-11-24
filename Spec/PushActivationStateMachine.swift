@@ -2,31 +2,53 @@ import Ably
 import Nimble
 import Quick
 
+        private var rest: ARTRest!
+        private var httpExecutor: MockHTTPExecutor!
+        private var storage: MockDeviceStorage!
+        private var initialStateMachine: ARTPushActivationStateMachine!
+
+        private let expectedFormFactor = "phone"
+        private let expectedPlatform = "ios"
+        private let expectedPushRecipient: [String: [String: String]] = ["recipient": ["transportType": "apns"]]
+
+        private var stateMachine: ARTPushActivationStateMachine!
+
 class PushActivationStateMachine : QuickSpec {
+
+override class var defaultTestSuite : XCTestSuite {
+    let _ = rest
+    let _ = httpExecutor
+    let _ = storage
+    let _ = initialStateMachine
+    let _ = expectedFormFactor
+    let _ = expectedPlatform
+    let _ = expectedPushRecipient
+    let _ = stateMachine
+
+    return super.defaultTestSuite
+}
+
     override func spec() {
 
-        var rest: ARTRest!
-        var httpExecutor: MockHTTPExecutor!
-        var storage: MockDeviceStorage!
-        var initialStateMachine: ARTPushActivationStateMachine!
-
-        let expectedFormFactor = "phone"
-        let expectedPlatform = "ios"
-        let expectedPushRecipient: [String: [String: String]] = ["recipient": ["transportType": "apns"]]
-
-        var stateMachine: ARTPushActivationStateMachine!
-
         beforeEach {
+print("START HOOK: PushActivationStateMachine.beforeEach")
+
             rest = ARTRest(key: "xxxx:xxxx")
             httpExecutor = MockHTTPExecutor()
             rest.internal.httpExecutor = httpExecutor
             storage = MockDeviceStorage()
             rest.internal.storage = storage
             initialStateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
+print("END HOOK: PushActivationStateMachine.beforeEach")
+
         }
 
         afterEach {
+print("START HOOK: PushActivationStateMachine.afterEach")
+
            rest.internal.resetDeviceSingleton()
+print("END HOOK: PushActivationStateMachine.afterEach")
+
         }
 
         describe("Activation state machine") {
@@ -60,9 +82,13 @@ class PushActivationStateMachine : QuickSpec {
             context("State NotActivated") {
 
                 beforeEach {
+print("START HOOK: PushActivationStateMachine.beforeEach__Activation_state_machine__State_NotActivated")
+
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateNotActivated(machine: initialStateMachine))
                     rest.internal.storage = storage
                     stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
+print("END HOOK: PushActivationStateMachine.beforeEach__Activation_state_machine__State_NotActivated")
+
                 }
 
                 // RSH3a1
@@ -152,9 +178,13 @@ class PushActivationStateMachine : QuickSpec {
             context("State WaitingForPushDeviceDetails") {
 
                 beforeEach {
+print("START HOOK: PushActivationStateMachine.beforeEach__Activation_state_machine__State_WaitingForPushDeviceDetails")
+
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForPushDeviceDetails(machine: initialStateMachine))
                     rest.internal.storage = storage
                     stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
+print("END HOOK: PushActivationStateMachine.beforeEach__Activation_state_machine__State_WaitingForPushDeviceDetails")
+
                 }
 
                 // RSH3b1
@@ -447,9 +477,13 @@ class PushActivationStateMachine : QuickSpec {
             context("State WaitingForDeviceRegistration") {
 
                 beforeEach {
+print("START HOOK: PushActivationStateMachine.beforeEach__Activation_state_machine__State_WaitingForDeviceRegistration")
+
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeviceRegistration(machine: initialStateMachine))
                     rest.internal.storage = storage
                     stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
+print("END HOOK: PushActivationStateMachine.beforeEach__Activation_state_machine__State_WaitingForDeviceRegistration")
+
                 }
 
                 // RSH3c1
@@ -514,9 +548,13 @@ class PushActivationStateMachine : QuickSpec {
             context("State WaitingForNewPushDeviceDetails") {
 
                 beforeEach {
+print("START HOOK: PushActivationStateMachine.beforeEach__Activation_state_machine__State_WaitingForNewPushDeviceDetails")
+
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForNewPushDeviceDetails(machine: initialStateMachine))
                     rest.internal.storage = storage
                     stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
+print("END HOOK: PushActivationStateMachine.beforeEach__Activation_state_machine__State_WaitingForNewPushDeviceDetails")
+
                 }
 
                 // RSH3d1
@@ -542,10 +580,14 @@ class PushActivationStateMachine : QuickSpec {
             // RSH3e
             func reusableTestsTestStateWaitingForRegistrationSyncThrough(_ fromEvent: ARTPushActivationEvent) {
                 beforeEach {
+print("START HOOK: PushActivationStateMachine.beforeEach")
+
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForRegistrationSync(machine: initialStateMachine, from: fromEvent))
                     rest.internal.storage = storage
                     stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
                     (stateMachine.current as! ARTPushActivationStateWaitingForRegistrationSync).fromEvent = fromEvent
+print("END HOOK: PushActivationStateMachine.beforeEach")
+
                 }
                 
                 // RSH3e1
@@ -644,9 +686,13 @@ class PushActivationStateMachine : QuickSpec {
             context("State AfterRegistrationSyncFailed") {
 
                 beforeEach {
+print("START HOOK: PushActivationStateMachine.beforeEach__Activation_state_machine__State_AfterRegistrationSyncFailed")
+
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateAfterRegistrationSyncFailed(machine: initialStateMachine))
                     rest.internal.storage = storage
                     stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
+print("END HOOK: PushActivationStateMachine.beforeEach__Activation_state_machine__State_AfterRegistrationSyncFailed")
+
                 }
 
                 // RSH3f1
@@ -670,9 +716,13 @@ class PushActivationStateMachine : QuickSpec {
             context("State WaitingForDeregistration") {
 
                 beforeEach {
+print("START HOOK: PushActivationStateMachine.beforeEach__Activation_state_machine__State_WaitingForDeregistration")
+
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeregistration(machine: initialStateMachine))
                     rest.internal.storage = storage
                     stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
+print("END HOOK: PushActivationStateMachine.beforeEach__Activation_state_machine__State_WaitingForDeregistration")
+
                 }
 
                 // RSH3g1
@@ -826,14 +876,22 @@ class PushActivationStateMachine : QuickSpec {
                 
                 context("the local DeviceDetails matches the instance's client ID") {
                     beforeEach {
+print("START HOOK: PushActivationStateMachine.beforeEach__the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID")
+
                         storage.simulateOnNextRead(string: testDeviceId, for: ARTDeviceIdKey)
 
                         let testDeviceIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
                         stateMachine.rest.device.setAndPersistIdentityTokenDetails(testDeviceIdentityTokenDetails)
+print("END HOOK: PushActivationStateMachine.beforeEach__the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID")
+
                     }
                         
                     afterEach {
+print("START HOOK: PushActivationStateMachine.afterEach__the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID")
+
                         stateMachine.rest.device.setAndPersistIdentityTokenDetails(nil)
+print("END HOOK: PushActivationStateMachine.afterEach__the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID")
+
                     }
                     
                     // RSH3a2a2, RSH3a2a4

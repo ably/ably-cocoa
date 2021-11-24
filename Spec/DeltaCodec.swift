@@ -3,19 +3,26 @@ import Quick
 import Nimble
 import AblyDeltaCodec
 
-class DeltaCodec: QuickSpec {
-    override func spec() {
-        describe("DeltaCodec") {
-
-            context("decoding") {
-
-                let testData: [String] = [
+                private let testData: [String] = [
                     "{ foo: \"bar\", count: 1, status: \"active\" }",
                     "{ foo: \"bar\", count: 2, status: \"active\" }",
                     "{ foo: \"bar\", count: 2, status: \"inactive\" }",
                     "{ foo: \"bar\", count: 3, status: \"inactive\" }",
                     "{ foo: \"bar\", count: 3, status: \"active\" }"
                 ]
+
+class DeltaCodec: QuickSpec {
+
+override class var defaultTestSuite : XCTestSuite {
+    let _ = testData
+
+    return super.defaultTestSuite
+}
+
+    override func spec() {
+        describe("DeltaCodec") {
+
+            context("decoding") {
 
                 // RTL19
                 it("should decode vcdiff encoded messages") {

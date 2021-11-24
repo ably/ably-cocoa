@@ -1,15 +1,22 @@
 import Ably
 import Quick
 import Nimble
-
-class ObjectLifetimes: QuickSpec {
-    override func spec() {
-        describe("ObjectLifetimes") {
-            let options: ARTClientOptions = {
+            private let options: ARTClientOptions = {
                 let options = ARTClientOptions(key: "fake:key")
                 options.autoConnect = false
                 return options
             }()
+
+class ObjectLifetimes: QuickSpec {
+
+override class var defaultTestSuite : XCTestSuite {
+    let _ = options
+
+    return super.defaultTestSuite
+}
+
+    override func spec() {
+        describe("ObjectLifetimes") {
             
             context("user code releases public object") {
                 it("the object's internal child's back-reference is released too") {
