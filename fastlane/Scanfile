@@ -1,3 +1,4 @@
 open_report false
 clean true
 skip_slack true
+disable_xcpretty true
