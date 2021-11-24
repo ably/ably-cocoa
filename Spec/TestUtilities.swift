@@ -26,6 +26,13 @@ class CryptoTest {
     ];
 }
 
+// Swift isn't yet smart enough to do this automatically when bridging Objective-C APIs
+extension ARTRealtimeChannels: Sequence {
+    public func makeIterator() -> NSFastEnumerationIterator {
+        return NSFastEnumerationIterator(self.iterate())
+    }
+}
+
 class Configuration : QuickConfiguration {
     override class func configure(_ configuration: Quick.Configuration!) {
         configuration.beforeSuite {
@@ -34,6 +41,7 @@ class Configuration : QuickConfiguration {
     }
 }
 
+typealias ARTDeviceId = String
 func pathForTestResource(_ resourcePath: String) -> String {
     let testBundle = Bundle(for: AblyTests.self)
     return testBundle.path(forResource: resourcePath, ofType: "")!
