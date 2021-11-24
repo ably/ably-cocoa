@@ -1112,16 +1112,24 @@ class RestClient: QuickSpec {
                     let originalARTFallback_shuffleArray = ARTFallback_shuffleArray
 
                     beforeEach {
+print("START HOOK: RestClient.beforeEach__RestClient__Host_Fallback__retry_hosts_in_random_order")
+
                         ARTFallback_shuffleArray = { array in
                             let arranged = expectedHostOrder.reversed().map { array[$0] }
                             for (i, element) in arranged.enumerated() {
                                 array[i] = element
                             }
                         }
+print("END HOOK: RestClient.beforeEach__RestClient__Host_Fallback__retry_hosts_in_random_order")
+
                     }
 
                     afterEach {
+print("START HOOK: RestClient.afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order")
+
                         ARTFallback_shuffleArray = originalARTFallback_shuffleArray
+print("END HOOK: RestClient.afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order")
+
                     }
 
                     // RSC15h
@@ -1457,7 +1465,11 @@ class RestClient: QuickSpec {
                     context("should restore default primary host after fallbackRetryTimeout expired") {
                         
                         beforeEach {
+print("START HOOK: RestClient.beforeEach__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_restore_default_primary_host_after_fallbackRetryTimeout_expired")
+
                             ARTDefault.setFallbackRetryTimeout(1.0)
+print("END HOOK: RestClient.beforeEach__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_restore_default_primary_host_after_fallbackRetryTimeout_expired")
+
                         }
                         
                         func testRestoresDefaultPrimaryHostAfterTimeoutExpires(_ caseTest: FakeNetworkResponse) {
@@ -1504,7 +1516,11 @@ class RestClient: QuickSpec {
                     context("should use another fallback host if previous fallback request failed and store it as default if current fallback request succseeded") {
                             
                         beforeEach {
+print("START HOOK: RestClient.beforeEach__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_use_another_fallback_host_if_previous_fallback_request_failed_and_store_it_as_default_if_current_fallback_request_succseeded")
+
                             ARTDefault.setFallbackRetryTimeout(10)
+print("END HOOK: RestClient.beforeEach__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_use_another_fallback_host_if_previous_fallback_request_failed_and_store_it_as_default_if_current_fallback_request_succseeded")
+
                         }
 
                         func testUsesAnotherFallbackHost(_ caseTest: FakeNetworkResponse) {

@@ -4436,7 +4436,11 @@ class Auth : QuickSpec {
                 }
 
                 beforeEach {
+print("START HOOK: Auth.beforeEach__JWT_and_rest__when_the_JWT_token_is_returned_with_application_jwt_content_type")
+
                     rsa4ftestsSetupDependencies()
+print("END HOOK: Auth.beforeEach__JWT_and_rest__when_the_JWT_token_is_returned_with_application_jwt_content_type")
+
                 }
                 
                 it("the client successfully connects and pulls stats") {

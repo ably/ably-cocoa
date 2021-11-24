@@ -18,6 +18,8 @@ class Push : QuickSpec {
         var stateMachineDelegate: StateMachineDelegate!
 
         beforeEach {
+print("START HOOK: Push.beforeEach")
+
             rest = ARTRest(key: "xxxx:xxxx")
             rest.internal.resetDeviceSingleton()
             mockHttpExecutor = MockHTTPExecutor()
@@ -26,6 +28,8 @@ class Push : QuickSpec {
             rest.internal.storage = storage
             stateMachineDelegate = StateMachineDelegate()
             rest.push.internal.createActivationStateMachine(withDelegate: stateMachineDelegate!)
+print("END HOOK: Push.beforeEach")
+
         }
 
         // RSH2

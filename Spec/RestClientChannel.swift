@@ -11,10 +11,14 @@ class RestClientChannel: QuickSpec {
         var testHTTPExecutor: TestProxyHTTPExecutor!
 
         beforeEach {
+print("START HOOK: RestClientChannel.beforeEach")
+
             let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
             client = ARTRest(options: options)
             channel = client.channels.get(ProcessInfo.processInfo.globallyUniqueString)
             testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+print("END HOOK: RestClientChannel.beforeEach")
+
         }
 
         // RSL1

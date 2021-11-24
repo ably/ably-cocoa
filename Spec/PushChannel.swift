@@ -9,6 +9,8 @@ class PushChannel : QuickSpec {
         var mockHttpExecutor: MockHTTPExecutor!
 
         beforeEach {
+print("START HOOK: PushChannel.beforeEach")
+
             mockHttpExecutor = MockHTTPExecutor()
             let options = ARTClientOptions(key: "xxxx:xxxx")
             options.dispatchQueue = AblyTests.userQueue
@@ -17,6 +19,8 @@ class PushChannel : QuickSpec {
             rest.internal.options.clientId = "tester"
             rest.internal.httpExecutor = mockHttpExecutor
             rest.internal.resetDeviceSingleton()
+print("END HOOK: PushChannel.beforeEach")
+
         }
 
         // RSH7
