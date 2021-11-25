@@ -64,7 +64,7 @@ jobs:
           if [[ -z $(find ./derived_data -name "report-*.html") ]]; then
             echo "Static Analyzer found no issues."
           else
-            echo "Static Analyzer found some issues. Failing build."
+            echo "Static Analyzer found some issues."
             exit 1
           fi
       
@@ -74,6 +74,9 @@ jobs:
         with:
           name: static-analyzer-reports-${{ matrix.lane }}
           path: ./derived_data/**/StaticAnalyzer/**/*.html
+        run: |
+          echo "Failing build due to issues in Static Analyzer."
+          exit 1
 
       # This is the script specified as the pod’s prepare_command in its Podspec.
       # It would be run automatically for a normal CocoaPods install, but it doesn’t
