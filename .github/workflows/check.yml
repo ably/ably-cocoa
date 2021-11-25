@@ -58,7 +58,8 @@ jobs:
         run: bundle exec fastlane ${{ matrix.lane }}
 
       - name: Check Static Analyzer Output
-        id: analyzer_output
+        id: analyzer-output
+        continue-on-error: true
         run: |
           if [[ -z $(find ./derived_data -name "report-*.html") ]]; then
             echo "Static Analyzer found no issues."
@@ -68,7 +69,7 @@ jobs:
           fi
       
       - name: Static Analyzer Reports Artifact
-        if: steps.analyzer_output.outcome == 'failure'
+        if: steps.analyzer-output.outcome == 'failure'
         uses: actions/upload-artifact@v2
         with:
           name: static-analyzer-reports-${{ matrix.lane }}
