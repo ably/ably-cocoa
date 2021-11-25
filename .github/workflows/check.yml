@@ -64,11 +64,11 @@ jobs:
           if [[ -z $(find ./derived_data -name "report-*.html") ]]; then
             echo "Static Analyzer found no issues."
           else
-            echo "Static Analyzer found some issues. Failing build."
+            echo "Static Analyzer found some issues. HTML report will be available in Artifacts section."
             exit 1
           fi
       
-      - name: Static Analyzer Reports Artifact
+      - name: Static Analyzer Reports Uploading
         if: steps.analyzer-output.outcome == 'failure'
         uses: actions/upload-artifact@v2
         with:
@@ -78,6 +78,7 @@ jobs:
       - name: Explicit Static Analyzer Build Failure
         if: steps.analyzer-output.outcome == 'failure'
         run: |
+          echo "Failing build due to Static Analyzer issues."
           exit 1
 
       # This is the script specified as the pod’s prepare_command in its Podspec.
