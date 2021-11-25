@@ -82,7 +82,7 @@ class PushActivationStateMachine : QuickSpec {
                 // RSH3a2
                 context("on Event CalledActivate") {
                     // RSH3a2a
-                    rsh3a2a()
+                    reusableTestsRsh3a2a()
 
                     // RSH3a2b
                     context("local device") {
@@ -534,7 +534,7 @@ class PushActivationStateMachine : QuickSpec {
 
                 // RSH3d2
                 context("on Event CalledDeactivate") {
-                    rsh3d2()
+                    reusableTestsRsh3d2()
                 }
 
             }
@@ -649,17 +649,17 @@ class PushActivationStateMachine : QuickSpec {
 
                 // RSH3f1
                 context("on Event CalledActivate") {
-                    rsh3a2a()
+                    reusableTestsRsh3a2a()
                 }
 
                 // RSH3f1
                 context("on Event GotPushDeviceDetails") {
-                    rsh3a2a()
+                    reusableTestsRsh3a2a()
                 }
 
                 // RSH3f2
                 context("on Event CalledDeactivate") {
-                    rsh3d2()
+                    reusableTestsRsh3d2()
                 }
 
             }
@@ -787,7 +787,7 @@ class PushActivationStateMachine : QuickSpec {
             expect(storage.object(forKey: ARTDeviceIdentityTokenKey)).to(beNil())
         }
 
-        func rsh3a2a() {
+        func reusableTestsRsh3a2a() {
             context("the local device has id and deviceIdentityToken") {
                 let testDeviceId = "aaaa"
                 
@@ -915,7 +915,7 @@ class PushActivationStateMachine : QuickSpec {
             }
         }
 
-        func rsh3d2() {
+        func reusableTestsRsh3d2() {
             // RSH3d2a, RSH3d2c, RSH3d2d
             it("should use custom deregisterCallback and fire Deregistered event") {
                 let delegate = StateMachineDelegateCustomCallbacks()
