@@ -74,6 +74,11 @@ jobs:
         with:
           name: static-analyzer-reports-${{ matrix.lane }}
           path: ./derived_data/**/StaticAnalyzer/**/*.html
+      
+      - name: Explicit Static Analyzer Build Failure
+        if: steps.analyzer-output.outcome == 'failure'
+        run: |
+          exit 1
 
       # This is the script specified as the pod’s prepare_command in its Podspec.
       # It would be run automatically for a normal CocoaPods install, but it doesn’t
