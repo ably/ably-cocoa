@@ -125,57 +125,63 @@ class Crypto : QuickSpec {
                 }
             }
 
-            for cryptoFixture in CryptoTest.fixtures {
-                context("with fixtures from \(cryptoFixture.fileName).json") {
-                    let (key, iv, items) = AblyTests.loadCryptoTestData(cryptoFixture.fileName)
-                    let decoder = ARTDataEncoder.init(cipherParams: nil, error: nil)
-                    let cipherParams = ARTCipherParams(algorithm: "aes", key: key as ARTCipherKeyCompatible, iv: iv)
-                    let encrypter = ARTDataEncoder.init(cipherParams: cipherParams, error: nil)
-
-                    func extractMessage(_ fixture: AblyTests.CryptoTestItem.TestMessage) -> ARTMessage {
-                        let msg = ARTMessage(name: fixture.name, data: fixture.data)
-                        msg.encoding = fixture.encoding
-                        return msg
-                    }
-
-                    it("should encrypt messages as expected in the fixtures") {
-                        for item in items {
-                            let fixture = extractMessage(item.encoded)
-                            let encryptedFixture = extractMessage(item.encrypted)
-                            expect(encryptedFixture.encoding).to(endWith("\(cryptoFixture.expectedEncryptedEncoding)/base64"))
-
-                            var error: NSError?
-                            let decoded = fixture.decode(with: decoder, error: &error) as! ARTMessage
-                            expect(error).to(beNil())
-                            expect(decoded).notTo(beNil())
-
-                            let encrypted = decoded.encode(with: encrypter, error: &error)
-                            expect(error).to(beNil())
-                            expect(encrypted).notTo(beNil())
-
-                            expect((encrypted as! ARTMessage)).to(equal(encryptedFixture))
-                        }
-                    }
-
-                    it("should decrypt messages as expected in the fixtures") {
-                        for item in items {
-                            let fixture = extractMessage(item.encoded)
-                            let encryptedFixture = extractMessage(item.encrypted)
-                            expect(encryptedFixture.encoding).to(endWith("\(cryptoFixture.expectedEncryptedEncoding)/base64"))
-
-                            var error: NSError?
-                            let decoded = fixture.decode(with: decoder, error: &error) as! ARTMessage
-                            expect(error).to(beNil())
-                            expect(decoded).notTo(beNil())
-
-                            let decrypted = encryptedFixture.decode(with: encrypter, error: &error)
-                            expect(error).to(beNil())
-                            expect(decrypted).notTo(beNil())
-                            
-                            expect((decrypted as! ARTMessage)).to(equal(decoded))
-                        }
+            func reusableTestsTestFixture(_ cryptoFixture: ( fileName: String, expectedEncryptedEncoding: String, keyLength: UInt)) {
+                let (key, iv, items) = AblyTests.loadCryptoTestData(cryptoFixture.fileName)
+                let decoder = ARTDataEncoder.init(cipherParams: nil, error: nil)
+                let cipherParams = ARTCipherParams(algorithm: "aes", key: key as ARTCipherKeyCompatible, iv: iv)
+                let encrypter = ARTDataEncoder.init(cipherParams: cipherParams, error: nil)
+                
+                func extractMessage(_ fixture: AblyTests.CryptoTestItem.TestMessage) -> ARTMessage {
+                    let msg = ARTMessage(name: fixture.name, data: fixture.data)
+                    msg.encoding = fixture.encoding
+                    return msg
+                }
+                
+                it("should encrypt messages as expected in the fixtures") {
+                    for item in items {
+                        let fixture = extractMessage(item.encoded)
+                        let encryptedFixture = extractMessage(item.encrypted)
+                        expect(encryptedFixture.encoding).to(endWith("\(cryptoFixture.expectedEncryptedEncoding)/base64"))
+                        
+                        var error: NSError?
+                        let decoded = fixture.decode(with: decoder, error: &error) as! ARTMessage
+                        expect(error).to(beNil())
+                        expect(decoded).notTo(beNil())
+                        
+                        let encrypted = decoded.encode(with: encrypter, error: &error)
+                        expect(error).to(beNil())
+                        expect(encrypted).notTo(beNil())
+                        
+                        expect((encrypted as! ARTMessage)).to(equal(encryptedFixture))
                     }
                 }
+                
+                it("should decrypt messages as expected in the fixtures") {
+                    for item in items {
+                        let fixture = extractMessage(item.encoded)
+                        let encryptedFixture = extractMessage(item.encrypted)
+                        expect(encryptedFixture.encoding).to(endWith("\(cryptoFixture.expectedEncryptedEncoding)/base64"))
+                        
+                        var error: NSError?
+                        let decoded = fixture.decode(with: decoder, error: &error) as! ARTMessage
+                        expect(error).to(beNil())
+                        expect(decoded).notTo(beNil())
+                        
+                        let decrypted = encryptedFixture.decode(with: encrypter, error: &error)
+                        expect(error).to(beNil())
+                        expect(decrypted).notTo(beNil())
+                        
+                        expect((decrypted as! ARTMessage)).to(equal(decoded))
+                    }
+                }
+            }
+
+            context("with fixtures from crypto-data-128.json") {
+                reusableTestsTestFixture(("crypto-data-128",  "cipher+aes-128-cbc", 128))
+            }
+
+            context("with fixtures from crypto-data-256.json") {
+                reusableTestsTestFixture(("crypto-data-256",  "cipher+aes-256-cbc", 256))
             }
         }
     }

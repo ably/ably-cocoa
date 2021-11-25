@@ -540,104 +540,106 @@ class PushActivationStateMachine : QuickSpec {
             }
 
             // RSH3e
-            for fromEvent in [
-                ARTPushActivationEventCalledActivate(),
-                ARTPushActivationEventGotPushDeviceDetails()
-            ] {
-                context("State WaitingForRegistrationSync through \(fromEvent)") {
-
-                    beforeEach {
-                        storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForRegistrationSync(machine: initialStateMachine, from: fromEvent))
-                        rest.internal.storage = storage
-                        stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
-                        (stateMachine.current as! ARTPushActivationStateWaitingForRegistrationSync).fromEvent = fromEvent
+            func reusableTestsTestStateWaitingForRegistrationSyncThrough(_ fromEvent: ARTPushActivationEvent) {
+                beforeEach {
+                    storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForRegistrationSync(machine: initialStateMachine, from: fromEvent))
+                    rest.internal.storage = storage
+                    stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
+                    (stateMachine.current as! ARTPushActivationStateWaitingForRegistrationSync).fromEvent = fromEvent
+                }
+                
+                // RSH3e1
+                it("on Event CalledActivate") {
+                    var activatedCallbackCalled = false
+                    let hook = stateMachine.testSuite_injectIntoMethod(after: NSSelectorFromString("callActivatedCallback:")) {
+                        activatedCallbackCalled = true
                     }
-
-                    // RSH3e1
-                    it("on Event CalledActivate") {
-                        var activatedCallbackCalled = false
-                        let hook = stateMachine.testSuite_injectIntoMethod(after: NSSelectorFromString("callActivatedCallback:")) {
-                            activatedCallbackCalled = true
-                        }
-                        defer { hook.remove() }
-
-                        stateMachine.send(ARTPushActivationEventCalledActivate())
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
-                        if (!fromEvent.isKind(of: ARTPushActivationEventCalledActivate.self)) {                        expect(activatedCallbackCalled).to(beTrue())
-                            expect(stateMachine.pendingEvents).to(haveCount(0))
-                        } else {
-                            expect(activatedCallbackCalled).to(beFalse())
-                            expect(stateMachine.pendingEvents).to(haveCount(1))
-                        }
-                    }
-
-                    // RSH3e2
-                    it("on Event RegistrationSynced") {
-                        var setAndPersistIdentityTokenDetailsCalled = false
-                        let hookDevice = stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
-                            setAndPersistIdentityTokenDetailsCalled = true
-                        }
-                        defer { hookDevice.remove() }
-                        
-                        let delegate = StateMachineDelegate()
-                        stateMachine.delegate = delegate
-                        
-                        var activateCallbackCalled = false
-                        delegate.onDidActivateAblyPush = { error in
-                            expect(error).to(beNil())
-                            activateCallbackCalled = true
-                        }
-
-                        let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(
-                            token: "123456",
-                            issued: Date(),
-                            expires: Date.distantFuture,
-                            capability: "",
-                            clientId: ""
-                        )
-
-                        stateMachine.send(ARTPushActivationEventRegistrationSynced(identityTokenDetails: testIdentityTokenDetails))
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
-                        expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
-                        
-                        // RSH3e2b
-                        expect(activateCallbackCalled).toEventually(equal(fromEvent is ARTPushActivationEventCalledActivate), timeout: testTimeout)
-                    }
-
-                    // RSH3e3
-                    it("on Event SyncRegistrationFailed") {
-                        let expectedError = ARTErrorInfo(domain: ARTAblyErrorDomain, code: 1234, userInfo: nil)
-
-                        var updateFailedCallbackCalled = false
-                        let hook = stateMachine.testSuite_getArgument(from: NSSelectorFromString("callUpdateFailedCallback:"), at: 0, callback: { arg0 in
-                            updateFailedCallbackCalled = true
-                            guard let error = arg0 as? ARTErrorInfo else {
-                                fail("Error is missing"); return
-                            }
-                            expect(error) == expectedError
-                        })
-                        defer { hook.remove() }
-                        
-                        let delegate = StateMachineDelegate()
-                        stateMachine.delegate = delegate
-                        
-                        var activateCallbackCalled = false
-                        delegate.onDidActivateAblyPush = { error in
-                            expect(error) == expectedError
-                            activateCallbackCalled = true
-                        }
-
-                        stateMachine.send(ARTPushActivationEventSyncRegistrationFailed(error: expectedError))
-                        expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
-                        
-                        // RSH3e3a
-                        expect(updateFailedCallbackCalled).toEventually(equal(!(fromEvent is ARTPushActivationEventCalledActivate)), timeout: testTimeout)
-                        // RSH3e3c
-                        expect(activateCallbackCalled).toEventually(equal(fromEvent is ARTPushActivationEventCalledActivate), timeout: testTimeout)
+                    defer { hook.remove() }
+                    
+                    stateMachine.send(ARTPushActivationEventCalledActivate())
+                    expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
+                    if (!fromEvent.isKind(of: ARTPushActivationEventCalledActivate.self)) {                        expect(activatedCallbackCalled).to(beTrue())
+                        expect(stateMachine.pendingEvents).to(haveCount(0))
+                    } else {
+                        expect(activatedCallbackCalled).to(beFalse())
+                        expect(stateMachine.pendingEvents).to(haveCount(1))
                     }
                 }
+                
+                // RSH3e2
+                it("on Event RegistrationSynced") {
+                    var setAndPersistIdentityTokenDetailsCalled = false
+                    let hookDevice = stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
+                        setAndPersistIdentityTokenDetailsCalled = true
+                    }
+                    defer { hookDevice.remove() }
+                    
+                    let delegate = StateMachineDelegate()
+                    stateMachine.delegate = delegate
+                    
+                    var activateCallbackCalled = false
+                    delegate.onDidActivateAblyPush = { error in
+                        expect(error).to(beNil())
+                        activateCallbackCalled = true
+                    }
+                    
+                    let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(
+                        token: "123456",
+                        issued: Date(),
+                        expires: Date.distantFuture,
+                        capability: "",
+                        clientId: ""
+                    )
+                    
+                    stateMachine.send(ARTPushActivationEventRegistrationSynced(identityTokenDetails: testIdentityTokenDetails))
+                    expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
+                    expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
+                    
+                    // RSH3e2b
+                    expect(activateCallbackCalled).toEventually(equal(fromEvent is ARTPushActivationEventCalledActivate), timeout: testTimeout)
+                }
+                
+                // RSH3e3
+                it("on Event SyncRegistrationFailed") {
+                    let expectedError = ARTErrorInfo(domain: ARTAblyErrorDomain, code: 1234, userInfo: nil)
+                    
+                    var updateFailedCallbackCalled = false
+                    let hook = stateMachine.testSuite_getArgument(from: NSSelectorFromString("callUpdateFailedCallback:"), at: 0, callback: { arg0 in
+                        updateFailedCallbackCalled = true
+                        guard let error = arg0 as? ARTErrorInfo else {
+                            fail("Error is missing"); return
+                        }
+                        expect(error) == expectedError
+                    })
+                    defer { hook.remove() }
+                    
+                    let delegate = StateMachineDelegate()
+                    stateMachine.delegate = delegate
+                    
+                    var activateCallbackCalled = false
+                    delegate.onDidActivateAblyPush = { error in
+                        expect(error) == expectedError
+                        activateCallbackCalled = true
+                    }
+                    
+                    stateMachine.send(ARTPushActivationEventSyncRegistrationFailed(error: expectedError))
+                    expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
+                    
+                    // RSH3e3a
+                    expect(updateFailedCallbackCalled).toEventually(equal(!(fromEvent is ARTPushActivationEventCalledActivate)), timeout: testTimeout)
+                    // RSH3e3c
+                    expect(activateCallbackCalled).toEventually(equal(fromEvent is ARTPushActivationEventCalledActivate), timeout: testTimeout)
+                }
             }
-
+            
+            context("State WaitingForRegistrationSync through ARTPushActivationEventCalledActivate") {
+                reusableTestsTestStateWaitingForRegistrationSyncThrough(ARTPushActivationEventCalledActivate())
+            }
+            
+            context("State WaitingForRegistrationSync through ARTPushActivationEventGotPushDeviceDetails") {
+                reusableTestsTestStateWaitingForRegistrationSyncThrough(ARTPushActivationEventGotPushDeviceDetails())
+            }
+            
             // RSH3f
             context("State AfterRegistrationSyncFailed") {
 

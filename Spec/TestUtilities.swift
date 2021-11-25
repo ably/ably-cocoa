@@ -12,20 +12,6 @@ typealias HookToken = AspectToken
 
 let AblyTestsErrorDomain = "test.ably.io"
 
-class CryptoTest {
-    private static let aes128 = "cipher+aes-128-cbc";
-    private static let aes256 = "cipher+aes-256-cbc";
-
-    public static let fixtures: [(
-        fileName: String,
-        expectedEncryptedEncoding: String,
-        keyLength: UInt
-    )] = [
-        ("crypto-data-128", aes128, 128),
-        ("crypto-data-256", aes256, 256),
-    ];
-}
-
 class Configuration : QuickConfiguration {
     override class func configure(_ configuration: Quick.Configuration!) {
         configuration.beforeSuite {
