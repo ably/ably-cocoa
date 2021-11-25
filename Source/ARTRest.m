@@ -390,7 +390,7 @@
                 error = [ARTErrorInfo
                          createWithCode:response.statusCode*100
                          status:response.statusCode
-                         message:[[NSString alloc] initWithData:data ?: [NSData data] encoding:NSUTF8StringEncoding]
+                         message:[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]
                          requestId:requestId];
             }
             
