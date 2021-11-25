@@ -3083,48 +3083,52 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP16c
-                let cases: [ARTRealtimeConnectionState:(ARTRealtime)->()] = [
-                    .suspended: { client in
+                func testResultsInErrorWithConnectionState(_ connectionState: ARTRealtimeConnectionState, performMethod: @escaping (ARTRealtime) -> ()) {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("test")
+                    expect(client.internal.options.queueMessages).to(beTrue())
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach() { _ in
+                            performMethod(client)
+                            done()
+                        }
+                    }
+                    
+                    expect(client.connection.state).toEventually(equal(connectionState), timeout: testTimeout)
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.enterClient("user", data: nil) { error in
+                            expect(error).toNot(beNil())
+                            expect(client.internal.queuedMessages).to(haveCount(0))
+                            done()
+                        }
+                        expect(client.internal.queuedMessages).to(haveCount(0))
+                    }
+                }
+
+                it("should result in an error if the connection state is .suspended") {
+                    testResultsInErrorWithConnectionState(.suspended) { client in
                         AblyTests.queue.async {
                             client.internal.onSuspended()
                         }
-                    },
-                    .closed: { client in
+                    }
+                }
+                
+                it("should result in an error if the connection state is .closed") {
+                    testResultsInErrorWithConnectionState(.closed) { client in
                         client.close()
-                    },
-                    .failed: { client in
+                    }
+                }
+                
+                it("should result in an error if the connection state is .failed") {
+                    testResultsInErrorWithConnectionState(.failed) { client in
                         AblyTests.queue.async {
                             client.internal.onError(AblyTests.newErrorProtocolMessage())
                         }
                     }
-                ]
-                for (connectionState, performMethod) in cases {
-                    it("should result in an error if the connection state is \(connectionState)") {
-                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
-                        defer { client.dispose(); client.close() }
-                        let channel = client.channels.get("test")
-                        expect(client.internal.options.queueMessages).to(beTrue())
-
-                        waitUntil(timeout: testTimeout) { done in
-                            channel.attach() { _ in
-                                performMethod(client)
-                                done()
-                            }
-                        }
-
-                        expect(client.connection.state).toEventually(equal(connectionState), timeout: testTimeout)
-
-                        waitUntil(timeout: testTimeout) { done in
-                            channel.presence.enterClient("user", data: nil) { error in
-                                expect(error).toNot(beNil())
-                                expect(client.internal.queuedMessages).to(haveCount(0))
-                                done()
-                            }
-                            expect(client.internal.queuedMessages).to(haveCount(0))
-                        }
-                    }
                 }
-
             }
 
             // RTP11
@@ -3327,30 +3331,35 @@ class RealtimeClientPresence: QuickSpec {
                         
                         return (channel, client)
                     }
-
-                    for (name, getPresence) in [
-                        ("by default", { channel, callback in
-                            channel.presence.get(callback)
-                        }),
-                        ("if waitForSync is true", { channel, callback in
-                            let params = ARTRealtimePresenceQuery()
-                            params.waitForSync = true
-                            channel.presence.get(params, callback: callback)
-                        })
-                    ] as [(String, (ARTRealtimeChannel, @escaping ([ARTPresenceMessage]?, ARTErrorInfo?) -> Void) -> Void)] {
-                        context(name) {
-                            it("results in an error") {
-                                let (channel, client) = getSuspendedChannel()
-                                defer { client.dispose(); client.close() }
-                                
-                                getPresence(channel) { result, err in
-                                    expect(result).to(beNil())
-                                    expect(err).toNot(beNil())
-                                    guard let err = err else {
-                                        return
-                                    }
-                                    expect(err.code).to(equal(ARTErrorCode.presenceStateIsOutOfSync.intValue))
-                                }
+                    
+                    func testSuspendedStateResultsInError(_ getPresence: (ARTRealtimeChannel, @escaping ([ARTPresenceMessage]?, ARTErrorInfo?) -> Void) -> Void) {
+                        let (channel, client) = getSuspendedChannel()
+                        defer { client.dispose(); client.close() }
+                        
+                        getPresence(channel) { result, err in
+                            expect(result).to(beNil())
+                            expect(err).toNot(beNil())
+                            guard let err = err else {
+                                return
+                            }
+                            expect(err.code).to(equal(ARTErrorCode.presenceStateIsOutOfSync.intValue))
+                        }
+                    }
+                    
+                    context("by default") {
+                        it("results in an error") {
+                            testSuspendedStateResultsInError { channel, callback in
+                                channel.presence.get(callback)
+                            }
+                        }
+                    }
+                    
+                    context("if waitForSync is true") {
+                        it("results in an error") {
+                            testSuspendedStateResultsInError { channel, callback in
+                                let params = ARTRealtimePresenceQuery()
+                                params.waitForSync = true
+                                channel.presence.get(params, callback: callback)
                             }
                         }
                     }

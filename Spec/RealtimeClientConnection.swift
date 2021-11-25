@@ -3451,97 +3451,109 @@ class RealtimeClientConnection: QuickSpec {
 
                 // RTN17d
                 xcontext("should use an alternative host when") {
-                    for caseTest: FakeNetworkResponse in [.hostUnreachable,
-                                                    .requestTimeout(timeout: 0.1),
-                                                    .hostInternalError(code: 501)] {
-                        it("\(caseTest)") {
-                            let options = ARTClientOptions(key: "xxxx:xxxx")
-                            options.autoConnect = false
-                            let client = ARTRealtime(options: options)
-                            defer { client.dispose(); client.close() }
-                            client.channels.get("test")
+                    func testUsesAlternativeHostOnResponse(_ caseTest: FakeNetworkResponse) {
+                        let options = ARTClientOptions(key: "xxxx:xxxx")
+                        options.autoConnect = false
+                        let client = ARTRealtime(options: options)
+                        defer { client.dispose(); client.close() }
+                        client.channels.get("test")
 
-                            let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
-                            defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
-                            ARTDefault.setRealtimeRequestTimeout(1.0)
+                        let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
+                        defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
+                        ARTDefault.setRealtimeRequestTimeout(1.0)
 
-                            client.internal.setTransport(TestProxyTransport.self)
-                            TestProxyTransport.fakeNetworkResponse = caseTest
-                            defer { TestProxyTransport.fakeNetworkResponse = nil }
+                        client.internal.setTransport(TestProxyTransport.self)
+                        TestProxyTransport.fakeNetworkResponse = caseTest
+                        defer { TestProxyTransport.fakeNetworkResponse = nil }
 
-                            var urlConnections = [URL]()
-                            TestProxyTransport.networkConnectEvent = { transport, url in
-                                if client.internal.transport !== transport {
-                                    return
-                                }
-                                urlConnections.append(url)
-                                if urlConnections.count == 1 {
-                                    TestProxyTransport.fakeNetworkResponse = nil
-                                }
+                        var urlConnections = [URL]()
+                        TestProxyTransport.networkConnectEvent = { transport, url in
+                            if client.internal.transport !== transport {
+                                return
                             }
-                            defer { TestProxyTransport.networkConnectEvent = nil }
-
-                            waitUntil(timeout: testTimeout) { done in
-                                // wss://[a-e].ably-realtime.com: when a timeout occurs
-                                client.connection.once(.disconnected) { error in
-                                    done()
-                                }
-                                // wss://[a-e].ably-realtime.com: when a 401 occurs because of the `xxxx:xxxx` key
-                                client.connection.once(.failed) { error in
-                                    done()
-                                }
-                                client.connect()
+                            urlConnections.append(url)
+                            if urlConnections.count == 1 {
+                                TestProxyTransport.fakeNetworkResponse = nil
                             }
-
-                            expect(urlConnections).to(haveCount(2))
-                            expect(NSRegularExpression.match(urlConnections[0].absoluteString, pattern: "//realtime.ably.io")).to(beTrue())
-                            expect(NSRegularExpression.match(urlConnections[1].absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
                         }
+                        defer { TestProxyTransport.networkConnectEvent = nil }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            // wss://[a-e].ably-realtime.com: when a timeout occurs
+                            client.connection.once(.disconnected) { error in
+                                done()
+                            }
+                            // wss://[a-e].ably-realtime.com: when a 401 occurs because of the `xxxx:xxxx` key
+                            client.connection.once(.failed) { error in
+                                done()
+                            }
+                            client.connect()
+                        }
+
+                        expect(urlConnections).to(haveCount(2))
+                        expect(NSRegularExpression.match(urlConnections[0].absoluteString, pattern: "//realtime.ably.io")).to(beTrue())
+                        expect(NSRegularExpression.match(urlConnections[1].absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+                    }
+                    
+                    it(".hostUnreachable") {
+                        testUsesAlternativeHostOnResponse(.hostUnreachable)
+                    }
+                    
+                    it(".requestTimeout(timeout: 0.1)") {
+                        testUsesAlternativeHostOnResponse(.requestTimeout(timeout: 0.1))
+                    }
+                    
+                    it(".hostInternalError(code: 501)") {
+                        testUsesAlternativeHostOnResponse(.hostInternalError(code: 501))
                     }
                 }
 
                 context("should move to disconnected when there's no internet") {
-                    var errors: [(String, NSError)] = []
-                    for code in [57, 50] {
-                        errors.append(("with NSPOSIXErrorDomain with code \(code)", NSError(domain: "NSPOSIXErrorDomain", code: code, userInfo: [NSLocalizedDescriptionKey: "shouldn't matter"])))
-                    }
-                    errors.append(("with any kCFErrorDomainCFNetwork", NSError(domain: "kCFErrorDomainCFNetwork", code: 1337, userInfo: [NSLocalizedDescriptionKey: "shouldn't matter"])))
-                        
-                    for (name, error) in errors {
-                        it(name) {
-                            let options = AblyTests.commonAppSetup()
-                            options.autoConnect = false
-                            let client = AblyTests.newRealtime(options)
-                            defer {
-                                client.dispose()
-                                client.close()
-                            }
-                            client.internal.setTransport(TestProxyTransport.self)
-
-                            waitUntil(timeout: testTimeout) { done in
-                                client.connection.once(.connected) { _ in
-                                    done()
-                                }
-                                client.connect()
-                            }
-
-                            var _transport: ARTWebSocketTransport?
-                            AblyTests.queue.sync {
-                                _transport = client.internal.transport as? ARTWebSocketTransport
-                            }
-
-                            guard let wsTransport = _transport else {
-                                fail("expected WS transport")
-                                return
-                            }
-
-                            waitUntil(timeout: testTimeout) { done in
-                                client.connection.once(.disconnected) { _ in
-                                    done()
-                                }
-                                wsTransport.webSocket(wsTransport.websocket!, didFailWithError:error)
-                            }
+                    func testMovesToDisconnectedWithNetworkingError(_ error: Error) {
+                        let options = AblyTests.commonAppSetup()
+                        options.autoConnect = false
+                        let client = AblyTests.newRealtime(options)
+                        defer {
+                            client.dispose()
+                            client.close()
                         }
+                        client.internal.setTransport(TestProxyTransport.self)
+
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.connected) { _ in
+                                done()
+                            }
+                            client.connect()
+                        }
+
+                        var _transport: ARTWebSocketTransport?
+                        AblyTests.queue.sync {
+                            _transport = client.internal.transport as? ARTWebSocketTransport
+                        }
+
+                        guard let wsTransport = _transport else {
+                            fail("expected WS transport")
+                            return
+                        }
+
+                        waitUntil(timeout: testTimeout) { done in
+                            client.connection.once(.disconnected) { _ in
+                                done()
+                            }
+                            wsTransport.webSocket(wsTransport.websocket!, didFailWithError:error)
+                        }
+                    }
+                    
+                    it("with NSPOSIXErrorDomain with code 57") {
+                        testMovesToDisconnectedWithNetworkingError(NSError(domain: "NSPOSIXErrorDomain", code: 57, userInfo: [NSLocalizedDescriptionKey: "shouldn't matter"]))
+                    }
+                    
+                    it("with NSPOSIXErrorDomain with code 50") {
+                        testMovesToDisconnectedWithNetworkingError(NSError(domain: "NSPOSIXErrorDomain", code: 50, userInfo: [NSLocalizedDescriptionKey: "shouldn't matter"]))
+                    }
+                    
+                    it("with any kCFErrorDomainCFNetwork") {
+                        testMovesToDisconnectedWithNetworkingError(NSError(domain: "kCFErrorDomainCFNetwork", code: 1337, userInfo: [NSLocalizedDescriptionKey: "shouldn't matter"]))
                     }
                 }
 

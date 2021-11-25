@@ -78,18 +78,6 @@ class AblyTests {
         }
     }
 
-    class var authTokenCases: [String: (ARTAuthOptions) -> Void] {
-        get { return [
-            "useTokenAuth": { $0.useTokenAuth = true; $0.key = "fake:key" },
-            "authUrl": { $0.authUrl = URL(string: "http://test.com") },
-            "authCallback": { $0.authCallback = { _, _ in return } },
-            "tokenDetails": { $0.tokenDetails = ARTTokenDetails(token: "token") },
-            "token": { $0.token = "token" },
-            "key": { $0.tokenDetails = ARTTokenDetails(token: "token"); $0.key = "fake:key" }
-            ]
-        }
-    }
-
     static var testApplication: JSON?
     static fileprivate var setupOptionsCounter = 0
 
