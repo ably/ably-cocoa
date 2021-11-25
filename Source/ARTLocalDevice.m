@@ -76,8 +76,8 @@ static ARTLocalDevice *_shared_nosync;
     device.id = deviceId;
     device.secret = deviceSecret;
 
-    id identityTokenDetailsInfo = [storage objectForKey:ARTDeviceIdentityTokenKey];
-    ARTDeviceIdentityTokenDetails *identityTokenDetails = [ARTDeviceIdentityTokenDetails unarchive:identityTokenDetailsInfo];
+    id detailsInfo = [storage objectForKey:ARTDeviceIdentityTokenKey];
+    ARTDeviceIdentityTokenDetails *identityTokenDetails = detailsInfo != nil ? [ARTDeviceIdentityTokenDetails unarchive:detailsInfo] : nil;
     device->_identityTokenDetails = identityTokenDetails;
 
     [device setAPNSDeviceToken:[storage objectForKey:ARTAPNSDeviceTokenKey]];

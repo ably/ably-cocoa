@@ -35,7 +35,7 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
         _userQueue = _rest.userQueue;
         // Unarchiving
         NSData *stateData = [rest.storage objectForKey:ARTPushActivationCurrentStateKey];
-        _current = [ARTPushActivationState art_unarchiveFromData:stateData];
+        _current = stateData != nil ? [ARTPushActivationState art_unarchiveFromData:stateData] : nil;
         if (!_current) {
             _current = [[ARTPushActivationStateNotActivated alloc] initWithMachine:self];
         } else {
@@ -44,8 +44,8 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
             }
             _current.machine = self;
         }
-        NSData *pendingEventsData = [rest.storage objectForKey:ARTPushActivationPendingEventsKey];
-        _pendingEvents = [ARTPushActivationEvent art_unarchiveFromData:pendingEventsData];
+        NSData *eventsData = [rest.storage objectForKey:ARTPushActivationPendingEventsKey];
+        _pendingEvents = eventsData != nil ? [ARTPushActivationEvent art_unarchiveFromData:eventsData] : nil;
         if (!_pendingEvents) {
             _pendingEvents = [NSMutableArray array];
         }
