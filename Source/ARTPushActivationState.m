@@ -152,7 +152,7 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
         return [ARTPushActivationStateWaitingForDeviceRegistration newWithMachine:self.machine];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventGettingPushDeviceDetailsFailed class]]) {
-        [self.machine callActivatedCallback:((ARTPushActivationEventGettingPushDeviceDetailsFailed *) event).error];
+        [self.machine callDeactivatedCallback:((ARTPushActivationEventGettingPushDeviceDetailsFailed *) event).error];
         return [ARTPushActivationStateNotActivated newWithMachine:self.machine];
     }
     return nil;
