@@ -137,7 +137,7 @@ dispatch_async(_queue, ^{
 
 - (void)deviceRegistration:(ARTErrorInfo *)error {
     #if TARGET_OS_IOS
-    ARTLocalDevice *device = _rest.device_nosync;
+    ARTLocalDevice *const device = _rest.device_nosync;
 
     const id<ARTPushRegistererDelegate, NSObject> delegate = self.delegate;
 
@@ -200,7 +200,7 @@ dispatch_async(_queue, ^{
 
 - (void)deviceUpdateRegistration:(ARTErrorInfo *)error {
     #if TARGET_OS_IOS
-    ARTLocalDevice *local = _rest.device_nosync;
+    ARTLocalDevice *const local = _rest.device_nosync;
 
     const id<ARTPushRegistererDelegate, NSObject> delegate = self.delegate;
 
