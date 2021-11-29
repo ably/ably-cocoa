@@ -3370,8 +3370,11 @@ class RealtimeClientPresence: QuickSpec {
                     }
                     
                     context("if waitForSync is false") {
-                        let getParams = ARTRealtimePresenceQuery()
-                        getParams.waitForSync = false
+                        let getParams: ARTRealtimePresenceQuery = {
+                            let getParams = ARTRealtimePresenceQuery()
+                            getParams.waitForSync = false
+                            return getParams
+                        }()
                         
                         it("returns the members in the current PresenceMap") {
                             let (channel, client) = getSuspendedChannel()

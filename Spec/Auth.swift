@@ -4114,8 +4114,11 @@ class Auth : QuickSpec {
 
             // RSA8g RSA8c
             context("when using authUrl") {
-                let options = AblyTests.clientOptions()
-                options.authUrl = URL(string: echoServerAddress)!
+                let options: ARTClientOptions = {
+                    let options = AblyTests.clientOptions()
+                    options.authUrl = URL(string: echoServerAddress)!
+                    return options
+                }()
 
                 var keys: [String: String]!
 
