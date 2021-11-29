@@ -1,7 +1,7 @@
 import Ably
 import Foundation
 import Nimble
-import Quick
+import XCTest
 
 // This file is to be kept in sync with the examples in README.md, to make sure they are kept valid.
 

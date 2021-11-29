@@ -2,7 +2,7 @@ import Ably
 import Ably.Private
 import Aspects
 import Nimble
-import Quick
+import XCTest
 
 private var testHTTPExecutor: TestProxyHTTPExecutor!
 private func testOptionsGiveDefaultAuthMethod(_ caseSetter: (ARTAuthOptions) -> Void) {

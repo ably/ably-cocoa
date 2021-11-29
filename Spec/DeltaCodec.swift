@@ -1,7 +1,7 @@
 import Ably
 import AblyDeltaCodec
 import Nimble
-import Quick
+import XCTest
 
 private let testData: [String] = [
     "{ foo: \"bar\", count: 1, status: \"active\" }",

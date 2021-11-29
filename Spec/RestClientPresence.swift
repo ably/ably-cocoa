@@ -1,6 +1,6 @@
 import Ably
 import Nimble
-import Quick
+import XCTest
 
 class RestClientPresence: XCTestCase {
     // RSP3

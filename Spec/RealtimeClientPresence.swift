@@ -2,7 +2,7 @@ import Ably
 import Aspects
 import Foundation
 import Nimble
-import Quick
+import XCTest
 
 private let channelName = NSUUID().uuidString
 

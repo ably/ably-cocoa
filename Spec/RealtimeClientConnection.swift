@@ -1,7 +1,7 @@
 import Ably
 import Aspects
 import Nimble
-import Quick
+import XCTest
 import SwiftyJSON
 
 func countChannels(_ channels: ARTRealtimeChannels) -> Int {

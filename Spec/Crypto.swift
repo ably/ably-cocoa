@@ -1,6 +1,6 @@
 import Ably
 import Nimble
-import Quick
+import XCTest
 import SwiftyJSON
 
 private let key = "+/h4eHh4eHh4eHh4eHh4eA=="

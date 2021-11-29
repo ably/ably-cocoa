@@ -1,6 +1,6 @@
 import Ably
 import Nimble
-import Quick
+import XCTest
 
 class Stringifiable: XCTestCase {
     func test__001__Stringifiable__type_conversion__as_string() {

@@ -1,7 +1,7 @@
 import Ably
 import Aspects
 import Nimble
-import Quick
+import XCTest
 
 private let attachResumeExpectedValues: [ARTRealtimeChannelState: Bool] = [
     .initialized: false,

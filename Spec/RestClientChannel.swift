@@ -1,7 +1,7 @@
 import Ably
 import Foundation
 import Nimble
-import Quick
+import XCTest
 import SwiftyJSON
 
 private var client: ARTRest!

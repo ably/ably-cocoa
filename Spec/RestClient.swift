@@ -1,6 +1,6 @@
 import Ably
 import Nimble
-import Quick
+ import XCTest
 
 private var testHTTPExecutor: TestProxyHTTPExecutor!
 

@@ -1,7 +1,6 @@
 import Ably
 import Foundation
 import XCTest
-import Quick
 import Nimble
 import SwiftyJSON
 import Aspects

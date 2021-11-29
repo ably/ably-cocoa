@@ -1,6 +1,6 @@
 import Ably
 import Nimble
-import Quick
+import XCTest
 
 // Swift isn't yet smart enough to do this automatically when bridging Objective-C APIs
 extension ARTRealtimeChannels: Sequence {
