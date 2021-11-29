@@ -23,7 +23,7 @@ private func beAChannel(named expectedValue: String) -> Predicate<ARTChannel> {
 
         private let cipherParams: ARTCipherParams? = nil
 
-class RestClientChannels: QuickSpec {
+class RestClientChannels: XCTestCase {
 
 // XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
 override class var defaultTestSuite : XCTestSuite {
@@ -34,24 +34,25 @@ override class var defaultTestSuite : XCTestSuite {
     return super.defaultTestSuite
 }
 
-    override func spec() {
+        override func setUp() {
+super.setUp()
 
-        beforeEach {
+
             client = ARTRest(key: "fake:key")
             channelName = ProcessInfo.processInfo.globallyUniqueString
         }
 
-        describe("RestClient") {
-            context("channels") {
+        
+            
                 // RSN1
-                it("should return collection of channels") {
+                func test__001__RestClient__channels__should_return_collection_of_channels() {
                     let _: ARTRestChannels = client.channels
                 }
 
                 // RSN3
-                context("get") {
+                
                     // RSN3a
-                    it("should return a channel") {
+                    func test__003__RestClient__channels__get__should_return_a_channel() {
                         let channel = client.channels.get(channelName).internal
                         expect(channel).to(beAChannel(named: channelName))
 
@@ -60,7 +61,7 @@ override class var defaultTestSuite : XCTestSuite {
                     }
 
                     // RSN3b
-                    it("should return a channel with the provided options") {
+                    func test__004__RestClient__channels__get__should_return_a_channel_with_the_provided_options() {
                         let options = ARTChannelOptions(cipher: cipherParams)
                         let channel = client.channels.get(channelName, options: options)
 
@@ -69,7 +70,7 @@ override class var defaultTestSuite : XCTestSuite {
                     }
 
                     // RSN3b
-                    it("should not replace the options on an existing channel when none are provided") {
+                    func test__005__RestClient__channels__get__should_not_replace_the_options_on_an_existing_channel_when_none_are_provided() {
                         let options = ARTChannelOptions(cipher: cipherParams)
                         let channel = client.channels.get(channelName, options: options).internal
 
@@ -80,7 +81,7 @@ override class var defaultTestSuite : XCTestSuite {
                     }
 
                     // RSN3c
-                    it("should replace the options on an existing channel when new ones are provided") {
+                    func test__006__RestClient__channels__get__should_replace_the_options_on_an_existing_channel_when_new_ones_are_provided() {
                         let channel = client.channels.get(channelName).internal
                         let oldOptions = channel.options
 
@@ -91,22 +92,20 @@ override class var defaultTestSuite : XCTestSuite {
                         expect(newButSameChannel.options).to(beIdenticalTo(newOptions))
                         expect(newButSameChannel.options).notTo(beIdenticalTo(oldOptions))
                     }
-                }
 
                 // RSN2
-                context("channelExists") {
-                    it("should check if a channel exists") {
+                
+                    func test__007__RestClient__channels__channelExists__should_check_if_a_channel_exists() {
                         expect(client.channels.exists(channelName)).to(beFalse())
 
                         client.channels.get(channelName)
 
                         expect(client.channels.exists(channelName)).to(beTrue())
                     }
-                }
 
                 // RSN4
-                context("releaseChannel") {
-                    it("should release a channel") {
+                
+                    func test__008__RestClient__channels__releaseChannel__should_release_a_channel() {
                         weak var channel: ARTRestChannelInternal!
 
                         autoreleasepool {
@@ -118,10 +117,9 @@ override class var defaultTestSuite : XCTestSuite {
 
                         expect(channel).to(beNil())
                     }
-                }
 
                 // RSN2
-                it("should be enumerable") {
+                func test__002__RestClient__channels__should_be_enumerable() {
                     let channels = [
                         client.channels.get(channelName).internal,
                         client.channels.get(String(channelName.reversed())).internal
@@ -131,7 +129,4 @@ override class var defaultTestSuite : XCTestSuite {
                         expect(channels).to(contain((channel as! ARTRestChannel).internal))
                     }
                 }
-            }
-        }
-    }
 }

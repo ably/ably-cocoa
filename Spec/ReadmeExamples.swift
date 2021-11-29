@@ -5,20 +5,19 @@ import Nimble
 
 // This file is to be kept in sync with the examples in README.md, to make sure they are kept valid.
 
-class ReadmeExamples : QuickSpec {
-    override func spec() {
+class ReadmeExamples : XCTestCase {
 
-        it("testMakeKeyInstance") {
+        func test__001__testMakeKeyInstance() {
             let client = ARTRealtime(key: "xxxx:xxxx")
             client.connection.close()
         }
 
-        it("testMakeTokenInstance") {
+        func test__002__testMakeTokenInstance() {
             let client = ARTRealtime(token: "xxxx")
             client.connection.close()
         }
 
-        it("testListenToConnectionStateChanges") {
+        func test__003__testListenToConnectionStateChanges() {
             let options = AblyTests.clientOptions(requestToken: true)
             let client = ARTRealtime(options: options)
             defer { client.close() }
@@ -35,7 +34,7 @@ class ReadmeExamples : QuickSpec {
             }
         }
 
-        it("testNoAutoConnect") {
+        func test__004__testNoAutoConnect() {
             let options = ARTClientOptions(key: "xxxx:xxxx")
             options.autoConnect = false
             let client = ARTRealtime(options: options)
@@ -43,7 +42,7 @@ class ReadmeExamples : QuickSpec {
             client.connection.close()
         }
 
-        it("testSubscribeAndPublishingToChannel") {
+        func test__005__testSubscribeAndPublishingToChannel() {
             let options = AblyTests.clientOptions(requestToken: true)
             let client = ARTRealtime(options: options)
             defer { client.close() }
@@ -63,7 +62,7 @@ class ReadmeExamples : QuickSpec {
             channel.publish("greeting", data: "Hello World!")
         }
 
-        it("testQueryingTheHistory") {
+        func test__006__testQueryingTheHistory() {
             let options = AblyTests.clientOptions(requestToken: true)
             let client = ARTRealtime(options: options)
             defer { client.close() }
@@ -83,7 +82,7 @@ class ReadmeExamples : QuickSpec {
             }
         }
 
-        it("testPresenceOnAChannel") {
+        func test__007__testPresenceOnAChannel() {
             let options = AblyTests.clientOptions(requestToken: true)
             options.clientId = "foo"
             let client = ARTRealtime(options: options)
@@ -102,7 +101,7 @@ class ReadmeExamples : QuickSpec {
             }
         }
 
-        it("testQueryingThePresenceHistory") {
+        func test__008__testQueryingThePresenceHistory() {
             let options = AblyTests.clientOptions(requestToken: true)
             let client = ARTRealtime(options: options)
             defer { client.close() }
@@ -122,13 +121,13 @@ class ReadmeExamples : QuickSpec {
             }
         }
 
-        it("testMakeRestClientAndChannel") {
+        func test__009__testMakeRestClientAndChannel() {
             let client = ARTRest(key: "xxxx:xxxx")
             let channel = client.channels.get("test")
             _ = channel
         }
 
-        it("testRestPublishMessage") {
+        func test__010__testRestPublishMessage() {
             let options = AblyTests.clientOptions(requestToken: true)
             let client = ARTRest(options: options)
             let channel = client.channels.get("test")
@@ -136,7 +135,7 @@ class ReadmeExamples : QuickSpec {
             channel.publish("myEvent", data: "Hello!")
         }
 
-        it("testRestQueryingTheHistory") {
+        func test__011__testRestQueryingTheHistory() {
             let options = AblyTests.clientOptions(requestToken: true)
             let client = ARTRest(options: options)
             let channel = client.channels.get("test")
@@ -152,7 +151,7 @@ class ReadmeExamples : QuickSpec {
             }
         }
 
-        it("testRestPresenceOnAChannel") {
+        func test__012__testRestPresenceOnAChannel() {
             let options = AblyTests.clientOptions(requestToken: true)
             let client = ARTRest(options: options)
             let channel = client.channels.get("test")
@@ -168,7 +167,7 @@ class ReadmeExamples : QuickSpec {
             }
         }
 
-        it("testRestQueryingThePresenceHistory") {
+        func test__013__testRestQueryingThePresenceHistory() {
             let options = AblyTests.clientOptions(requestToken: true)
             let client = ARTRest(options: options)
             let channel = client.channels.get("test")
@@ -184,7 +183,7 @@ class ReadmeExamples : QuickSpec {
             }
         }
 
-        it("testGenerateToken") {
+        func test__014__testGenerateToken() {
             let client = ARTRest(options: AblyTests.commonAppSetup())
 
             client.auth.requestToken(nil, with: nil) { tokenDetails, error in
@@ -195,7 +194,7 @@ class ReadmeExamples : QuickSpec {
             }
         }
         
-        it("testFetchingStats") {
+        func test__015__testFetchingStats() {
             let client = ARTRest(options: AblyTests.commonAppSetup())
             client.channels.get("test").publish("foo", data: "bar") { _ in
                 client.stats { statsPage, error in
@@ -208,14 +207,12 @@ class ReadmeExamples : QuickSpec {
             }
         }
         
-        it("testFetchingTime") {
+        func test__016__testFetchingTime() {
             let client = ARTRest(options: AblyTests.commonAppSetup())
             
             client.time { time, error in
                 print(time as Any) // 2016-02-09 03:59:24 +0000
             }
         }
-
-    }
 
 }

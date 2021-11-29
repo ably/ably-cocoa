@@ -91,7 +91,7 @@ import SwiftyJSON
                     }
                 }
 
-class RestClientChannel: QuickSpec {
+class RestClientChannel: XCTestCase {
 
 // XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
 override class var defaultTestSuite : XCTestSuite {
@@ -119,9 +119,11 @@ override class var defaultTestSuite : XCTestSuite {
                 let value: Any?
                 let expected: JSON
             }
-    override func spec() {
 
-        beforeEach {
+        override func setUp() {
+super.setUp()
+
+
             let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
             client = ARTRest(options: options)
             channel = client.channels.get(ProcessInfo.processInfo.globallyUniqueString)
@@ -129,11 +131,11 @@ override class var defaultTestSuite : XCTestSuite {
         }
 
         // RSL1
-        describe("publish") {
+        
 
             // RSL1b
-            context("with name and data arguments") {
-                it("publishes the message and invokes callback with success") {
+            
+                func test__005__publish__with_name_and_data_arguments__publishes_the_message_and_invokes_callback_with_success() {
                     var publishError: ARTErrorInfo? = ARTErrorInfo.create(from: NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
 
@@ -148,11 +150,10 @@ override class var defaultTestSuite : XCTestSuite {
                     expect(publishedMessage?.name).toEventually(equal(PublishArgs.name), timeout: testTimeout)
                     expect(publishedMessage?.data as? String).toEventually(equal(PublishArgs.data), timeout: testTimeout)
                 }
-            }
 
             // RSL1b, RSL1e
-            context("with name only") {
-                it("publishes the message and invokes callback with success") {
+            
+                func test__006__publish__with_name_only__publishes_the_message_and_invokes_callback_with_success() {
                     var publishError: ARTErrorInfo? = ARTErrorInfo.create(from: NSError(domain: "io.ably.XCTest", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
 
@@ -167,11 +168,10 @@ override class var defaultTestSuite : XCTestSuite {
                     expect(publishedMessage?.name).toEventually(equal(PublishArgs.name), timeout: testTimeout)
                     expect(publishedMessage?.data).toEventually(beNil(), timeout: testTimeout)
                 }
-            }
 
             // RSL1b, RSL1e
-            context("with data only") {
-                it("publishes the message and invokes callback with success") {
+            
+                func test__007__publish__with_data_only__publishes_the_message_and_invokes_callback_with_success() {
                     var publishError: ARTErrorInfo? = ARTErrorInfo.create(from: NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
 
@@ -186,11 +186,10 @@ override class var defaultTestSuite : XCTestSuite {
                     expect(publishedMessage?.name).toEventually(beNil(), timeout: testTimeout)
                     expect(publishedMessage?.data as? String).toEventually(equal(PublishArgs.data), timeout: testTimeout)
                 }
-            }
 
             // RSL1b, RSL1e
-            context("with neither name nor data") {
-                it("publishes the message and invokes callback with success") {
+            
+                func test__008__publish__with_neither_name_nor_data__publishes_the_message_and_invokes_callback_with_success() {
                     var publishError: ARTErrorInfo? = ARTErrorInfo.create(from: NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
 
@@ -208,10 +207,9 @@ override class var defaultTestSuite : XCTestSuite {
                     expect(publishedMessage?.name).to(beNil())
                     expect(publishedMessage?.data).to(beNil())
                 }
-            }
 
-            context("with a Message object") {
-                it("publishes the message and invokes callback with success") {
+            
+                func test__009__publish__with_a_Message_object__publishes_the_message_and_invokes_callback_with_success() {
                     var publishError: ARTErrorInfo? = ARTErrorInfo.create(from: NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
 
@@ -229,11 +227,10 @@ override class var defaultTestSuite : XCTestSuite {
                     expect(publishedMessage?.name).to(equal(PublishArgs.name))
                     expect(publishedMessage?.data as? String).to(equal(PublishArgs.data))
                 }
-            }
 
             // RSL1c
-            context("with an array of Message objects") {
-                it("publishes the messages in a single request and invokes callback with success") {
+            
+                func test__010__publish__with_an_array_of_Message_objects__publishes_the_messages_in_a_single_request_and_invokes_callback_with_success() {
                     let oldExecutor = client.internal.httpExecutor
                     defer { client.internal.httpExecutor = oldExecutor}
                     client.internal.httpExecutor = testHTTPExecutor
@@ -263,12 +260,11 @@ override class var defaultTestSuite : XCTestSuite {
                     }
                     expect(testHTTPExecutor.requests.count).to(equal(1))
                 }
-            }
 
             // RSL1f
-            context("Unidentified clients using Basic Auth") {
+            
                 // RSL1f1
-                it("should publish message with the provided clientId") {
+                func test__011__publish__Unidentified_clients_using_Basic_Auth__should_publish_message_with_the_provided_clientId() {
                     let client = ARTRest(options: AblyTests.commonAppSetup())
                     let channel = client.channels.get("test")
                     waitUntil(timeout: testTimeout) { done in
@@ -289,13 +285,12 @@ override class var defaultTestSuite : XCTestSuite {
                         }
                     }
                 }
-            }
 
             // RSA7e
-            context("ClientOptions clientId") {
+            
 
                 // RSA7e1
-                it("should include the clientId as a querystring parameter in realtime connection requests") {
+                func test__012__publish__ClientOptions_clientId__should_include_the_clientId_as_a_querystring_parameter_in_realtime_connection_requests() {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "john-doe"
                     let client = AblyTests.newRealtime(options)
@@ -315,7 +310,7 @@ override class var defaultTestSuite : XCTestSuite {
                 }
 
                 // RSA7e2
-                it("should include an X-Ably-ClientId header with value set to the clientId as Base64 encoded string in REST connection requests") {
+                func test__013__publish__ClientOptions_clientId__should_include_an_X_Ably_ClientId_header_with_value_set_to_the_clientId_as_Base64_encoded_string_in_REST_connection_requests() {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "john-doe"
                     let client = ARTRest(options: options)
@@ -338,13 +333,11 @@ override class var defaultTestSuite : XCTestSuite {
                     }
                 }
 
-            }
-
             // RSL1m
-            context("Message clientId") {
+            
 
                 // RSL1m1
-                it("publishing with no clientId when the clientId is set to some value in the client options should result in a message received with the clientId property set to that value") {
+                func test__014__publish__Message_clientId__publishing_with_no_clientId_when_the_clientId_is_set_to_some_value_in_the_client_options_should_result_in_a_message_received_with_the_clientId_property_set_to_that_value() {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "client-rest"
                     let expectedClientId = options.clientId
@@ -373,7 +366,7 @@ override class var defaultTestSuite : XCTestSuite {
                 }
 
                 // RSL1m2
-                it("publishing with a clientId set to the same value as the clientId in the client options should result in a message received with the clientId property set to that value") {
+                func test__015__publish__Message_clientId__publishing_with_a_clientId_set_to_the_same_value_as_the_clientId_in_the_client_options_should_result_in_a_message_received_with_the_clientId_property_set_to_that_value() {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "client-rest"
                     let expectedClientId = options.clientId!
@@ -402,7 +395,7 @@ override class var defaultTestSuite : XCTestSuite {
                 }
 
                 // RSL1m3
-                it("publishing with a clientId set to a value from an unidentified client should result in a message received with the clientId property set to that value") {
+                func test__016__publish__Message_clientId__publishing_with_a_clientId_set_to_a_value_from_an_unidentified_client_should_result_in_a_message_received_with_the_clientId_property_set_to_that_value() {
                     let expectedClientId = "client-rest"
                     let options = AblyTests.commonAppSetup()
                     let rest = ARTRest(options: options)
@@ -429,7 +422,7 @@ override class var defaultTestSuite : XCTestSuite {
                 }
 
                 // RSL1m4
-                it("publishing with a clientId set to a different value from the clientId in the client options should result in a message being rejected by the server") {
+                func test__017__publish__Message_clientId__publishing_with_a_clientId_set_to_a_different_value_from_the_clientId_in_the_client_options_should_result_in_a_message_being_rejected_by_the_server() {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "client-rest"
                     let rest = ARTRest(options: options)
@@ -455,10 +448,8 @@ override class var defaultTestSuite : XCTestSuite {
                     }
                 }
 
-            }
-
             // https://github.com/ably/ably-cocoa/issues/1074 and related with RSL1m
-            it("should not fail sending a message with no clientId in the client options and credentials that can assume any clientId") {
+            func test__001__publish__should_not_fail_sending_a_message_with_no_clientId_in_the_client_options_and_credentials_that_can_assume_any_clientId() {
                 let options = AblyTests.clientOptions()
                 options.authCallback = { _, callback in
                     getTestTokenDetails(clientId: "*") { token, error in
@@ -486,7 +477,7 @@ override class var defaultTestSuite : XCTestSuite {
             }
 
             // RSL1h
-            it("should provide an optional argument that allows the clientId value to be specified") {
+            func test__002__publish__should_provide_an_optional_argument_that_allows_the_clientId_value_to_be_specified() {
                 let options = AblyTests.commonAppSetup()
                 options.clientId = "john"
                 let client = ARTRest(options: options)
@@ -500,7 +491,7 @@ override class var defaultTestSuite : XCTestSuite {
             }
 
             // RSL1h, RSL6a2
-            it("should provide an optional argument that allows the extras value to be specified") {
+            func test__003__publish__should_provide_an_optional_argument_that_allows_the_extras_value_to_be_specified() {
                 let options = AblyTests.commonAppSetup()
                 // Prevent channel name to be prefixed by test-*
                 options.channelNamePrefix = nil
@@ -540,9 +531,9 @@ override class var defaultTestSuite : XCTestSuite {
             }
 
             // RSL1i
-            context("If the total size of message(s) exceeds the maxMessageSize") {
+            
 
-                it("the client library should reject the publish and indicate an error") {
+                func test__018__publish__If_the_total_size_of_message_s__exceeds_the_maxMessageSize__the_client_library_should_reject_the_publish_and_indicate_an_error() {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRest(options: options)
                     let channel = client.channels.get(channelName)
@@ -556,7 +547,7 @@ override class var defaultTestSuite : XCTestSuite {
                     }
                 }
 
-                it("also when using publish:data:clientId:extras") {
+                func test__019__publish__If_the_total_size_of_message_s__exceeds_the_maxMessageSize__also_when_using_publish_data_clientId_extras() {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRest(options: options)
                     let channel = client.channels.get(channelName)
@@ -569,13 +560,12 @@ override class var defaultTestSuite : XCTestSuite {
                         }
                     }
                 }
-            }
 
             // RSL1k
-            context("idempotent publishing") {
+            
 
                 // TO3n
-                it("idempotentRestPublishing option") {
+                func test__020__publish__idempotent_publishing__idempotentRestPublishing_option() {
                     expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "2")) == true
                     expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "2.0.0")) == true
                     expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "1.1")) == false
@@ -593,9 +583,9 @@ override class var defaultTestSuite : XCTestSuite {
                 }
 
                 // RSL1k1
-                context("random idempotent publish id") {
+                
 
-                    it("should generate for one message with empty id") {
+                    func test__027__publish__idempotent_publishing__random_idempotent_publish_id__should_generate_for_one_message_with_empty_id() {
                         let message = ARTMessage(name: nil, data: "foo")
                         expect(message.id).to(beNil())
 
@@ -621,7 +611,7 @@ override class var defaultTestSuite : XCTestSuite {
                         expect(message.id).to(beNil())
                     }
 
-                    it("should generate for multiple messages with empty id") {
+                    func test__028__publish__idempotent_publishing__random_idempotent_publish_id__should_generate_for_multiple_messages_with_empty_id() {
                         let message1 = ARTMessage(name: nil, data: "foo1")
                         expect(message1.id).to(beNil())
                         let message2 = ARTMessage(name: "john", data: "foo2")
@@ -653,10 +643,9 @@ override class var defaultTestSuite : XCTestSuite {
                         // Same Base ID
                         expect(id1?.split(separator: ":").first).to(equal(id2?.split(separator: ":").first))
                     }
-                }
 
                 // RSL1k2
-                it("should not generate for message with a non empty id") {
+                func test__021__publish__idempotent_publishing__should_not_generate_for_message_with_a_non_empty_id() {
                     let message = ARTMessage(name: nil, data: "foo")
                     message.id = "123"
 
@@ -681,7 +670,7 @@ override class var defaultTestSuite : XCTestSuite {
                     expect(json.arrayValue.first?["id"].string).to(equal("123"))
                 }
 
-                it("should generate for internal message that is created in publish(name:data:) method") {
+                func test__022__publish__idempotent_publishing__should_generate_for_internal_message_that_is_created_in_publish_name_data___method() {
                     let rest = ARTRest(key: "xxxx:xxxx")
                     rest.internal.options.idempotentRestPublishing = true
                     let mockHTTPExecutor = MockHTTPExecutor()
@@ -704,7 +693,7 @@ override class var defaultTestSuite : XCTestSuite {
                 }
 
                 // RSL1k3
-                it("should not generate for multiple messages with a non empty id") {
+                func test__023__publish__idempotent_publishing__should_not_generate_for_multiple_messages_with_a_non_empty_id() {
                     let message1 = ARTMessage(name: nil, data: "foo1")
                     expect(message1.id).to(beNil())
                     let message2 = ARTMessage(name: "john", data: "foo2")
@@ -732,7 +721,7 @@ override class var defaultTestSuite : XCTestSuite {
                     expect(json.arrayValue.last?["id"].string).to(equal("123"))
                 }
 
-                it("should not generate when idempotentRestPublishing flag is off") {
+                func test__024__publish__idempotent_publishing__should_not_generate_when_idempotentRestPublishing_flag_is_off() {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.idempotentRestPublishing = false
 
@@ -763,7 +752,7 @@ override class var defaultTestSuite : XCTestSuite {
                 }
 
                 // RSL1k4
-                it("should have only one published message") {
+                func test__025__publish__idempotent_publishing__should_have_only_one_published_message() {
                     client.internal.options.idempotentRestPublishing = true
                     client.internal.httpExecutor = testHTTPExecutor
                     client.internal.options.fallbackHostsUseDefault = true
@@ -806,7 +795,7 @@ override class var defaultTestSuite : XCTestSuite {
                 }
 
                 // RSL1k5
-                it("should publish a message with implicit Id only once") {
+                func test__026__publish__idempotent_publishing__should_publish_a_message_with_implicit_Id_only_once() {
                     let options = AblyTests.commonAppSetup()
                     let rest = ARTRest(options: options)
                     rest.internal.options.idempotentRestPublishing = true
@@ -836,10 +825,9 @@ override class var defaultTestSuite : XCTestSuite {
                         }
                     }
                 }
-            }
           
             // RSL1j
-            it("should include attributes supplied by the caller in the encoded message") {
+            func test__004__publish__should_include_attributes_supplied_by_the_caller_in_the_encoded_message() {
                 let options = AblyTests.commonAppSetup()
                 let client = ARTRest(options: options)
                 let proxyHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
@@ -868,13 +856,12 @@ override class var defaultTestSuite : XCTestSuite {
                 expect(jsonMessage["data"].string).to(equal(""))
                 expect(jsonMessage["id"].string).to(equal(message.id))
             }
-        }
 
         // RSL2
-        describe("history") {
+        
 
             // RSL2a
-            it("should return a PaginatedResult page containing the first page of messages") {
+            func test__029__history__should_return_a_PaginatedResult_page_containing_the_first_page_of_messages() {
                 let client = ARTRest(options: AblyTests.commonAppSetup())
                 let channel = client.channels.get("foo")
 
@@ -949,10 +936,10 @@ override class var defaultTestSuite : XCTestSuite {
             }
 
             // RSL2b
-            context("query arguments") {
+            
 
                 // RSL2b1
-                it("start and end should filter messages between those two times") {
+                func test__030__history__query_arguments__start_and_end_should_filter_messages_between_those_two_times() {
                     let client = ARTRest(options: AblyTests.commonAppSetup())
                     let channel = client.channels.get("test")
 
@@ -1011,7 +998,7 @@ override class var defaultTestSuite : XCTestSuite {
                 }
 
                 // RSL2b1
-                it("start must be equal to or less than end and is unaffected by the request direction") {
+                func test__031__history__query_arguments__start_must_be_equal_to_or_less_than_end_and_is_unaffected_by_the_request_direction() {
                     let client = ARTRest(options: AblyTests.commonAppSetup())
                     let channel = client.channels.get("test")
 
@@ -1032,7 +1019,7 @@ override class var defaultTestSuite : XCTestSuite {
                 }
 
                 // RSL2b2
-                it("direction backwards or forwards") {
+                func test__032__history__query_arguments__direction_backwards_or_forwards() {
                     let client = ARTRest(options: AblyTests.commonAppSetup())
                     let channel = client.channels.get("test")
 
@@ -1073,7 +1060,7 @@ override class var defaultTestSuite : XCTestSuite {
                 }
 
                 // RSL2b3
-                it("limit items result") {
+                func test__033__history__query_arguments__limit_items_result() {
                     let client = ARTRest(options: AblyTests.commonAppSetup())
                     let channel = client.channels.get("test")
 
@@ -1111,7 +1098,7 @@ override class var defaultTestSuite : XCTestSuite {
                 }
 
                 // RSL2b3
-                it("limit supports up to 1000 items") {
+                func test__034__history__query_arguments__limit_supports_up_to_1000_items() {
                     let client = ARTRest(options: AblyTests.commonAppSetup())
                     let channel = client.channels.get("test")
 
@@ -1125,16 +1112,12 @@ override class var defaultTestSuite : XCTestSuite {
                   expect{ try channel.history(query, callback: { _ , _  in }) }.toNot(throwError())
                 }
 
-            }
-
-        }
-
         // RSL3, RSP1
-        xdescribe("presence") {
+        
 
             // RSP3
-            context("get") {
-                it("should return presence fixture data") {
+            
+                func skipped__test__035__presence__get__should_return_presence_fixture_data() {
                     let options = AblyTests.commonAppSetup()
                     options.channelNamePrefix = nil
                     client = ARTRest(options: options)
@@ -1172,14 +1155,12 @@ override class var defaultTestSuite : XCTestSuite {
                         expect(message.data as? NSObject).to(equal(encodedFixture.data as? NSObject));
                     }
                 }
-            }
-        }
 
         // RSL4
-        describe("message encoding") {
+        
 
             // RSL4a
-            it("payloads should be binary, strings, or objects capable of JSON representation") {
+            func test__036__message_encoding__payloads_should_be_binary__strings__or_objects_capable_of_JSON_representation() {
                 let validCases: [TestCase]
                 if #available(iOS 11.0, *) {
                     validCases = [
@@ -1242,7 +1223,7 @@ override class var defaultTestSuite : XCTestSuite {
             }
 
             // RSL4b
-            it("encoding attribute should represent the encoding(s) applied in right to left") {
+            func test__037__message_encoding__encoding_attribute_should_represent_the_encoding_s__applied_in_right_to_left() {
                 let encodingCases = [
                     TestCase(value: text, expected: JSON.null),
                     TestCase(value: dictionary, expected: "json"),
@@ -1267,9 +1248,9 @@ override class var defaultTestSuite : XCTestSuite {
                 }
             }
 
-            context("json") {
+            
                 // RSL4d1
-                it("binary payload should be encoded as Base64 and represented as a JSON string") {
+                func test__038__message_encoding__json__binary_payload_should_be_encoded_as_Base64_and_represented_as_a_JSON_string() {
                     client.internal.httpExecutor = testHTTPExecutor
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(nil, data: binaryData, callback: { error in
@@ -1288,7 +1269,7 @@ override class var defaultTestSuite : XCTestSuite {
                 }
 
                 // RSL4d
-                it("string payload should be represented as a JSON string") {
+                func test__039__message_encoding__json__string_payload_should_be_represented_as_a_JSON_string() {
                     client.internal.httpExecutor = testHTTPExecutor
                     waitUntil(timeout: testTimeout) { done in
                         channel.publish(nil, data: text, callback: { error in
@@ -1309,9 +1290,9 @@ override class var defaultTestSuite : XCTestSuite {
                 }
 
                 // RSL4d3
-                context("json payload should be stringified either") {
+                
 
-                    it("as a JSON Array") {
+                    func test__041__message_encoding__json__json_payload_should_be_stringified_either__as_a_JSON_Array() {
                         client.internal.httpExecutor = testHTTPExecutor
                         // JSON Array
                         waitUntil(timeout: testTimeout) { done in
@@ -1332,7 +1313,7 @@ override class var defaultTestSuite : XCTestSuite {
                         }
                     }
 
-                    it("as a JSON Object") {
+                    func test__042__message_encoding__json__json_payload_should_be_stringified_either__as_a_JSON_Object() {
                         client.internal.httpExecutor = testHTTPExecutor
                         // JSON Object
                         waitUntil(timeout: testTimeout) { done in
@@ -1353,10 +1334,8 @@ override class var defaultTestSuite : XCTestSuite {
                         }
                     }
 
-                }
-
                 // RSL4d4
-                it("messages received should be decoded based on the encoding field") {
+                func test__040__message_encoding__json__messages_received_should_be_decoded_based_on_the_encoding_field() {
                     let cases = [text, integer, decimal, dictionary, array, binaryData] as [Any]
 
                     cases.forEach { caseTest in
@@ -1401,31 +1380,26 @@ override class var defaultTestSuite : XCTestSuite {
                     }
                     expect(totalReceived).toEventually(equal(cases.count), timeout: testTimeout)
                 }
-            }
-        }
 
         // RSL5
-        describe("message payload encryption") {
+        
 
             // RSL5b
-            context("should support AES encryption") {
+            
                 
-                it("128 CBC mode") {
+                func test__043__message_payload_encryption__should_support_AES_encryption__128_CBC_mode() {
                     testSupportsAESEncryptionWithKeyLength(128)
                 }
                 
-                it("256 CBC mode") {
+                func test__044__message_payload_encryption__should_support_AES_encryption__256_CBC_mode() {
                     testSupportsAESEncryptionWithKeyLength(256)
                 }
-            }
-
-        }
 
         // RSL6
-        describe("message decoding") {
+        
 
             // RSL6b
-            it("should deliver with a binary payload when the payload was successfully decoded but it could not be decrypted") {
+            func test__045__message_decoding__should_deliver_with_a_binary_payload_when_the_payload_was_successfully_decoded_but_it_could_not_be_decrypted() {
                 let options = AblyTests.commonAppSetup()
                 let clientEncrypted = ARTRest(options: options)
 
@@ -1460,7 +1434,7 @@ override class var defaultTestSuite : XCTestSuite {
             }
 
             // RSL6b
-            it("should deliver with encoding attribute set indicating the residual encoding and error should be emitted") {
+            func test__046__message_decoding__should_deliver_with_encoding_attribute_set_indicating_the_residual_encoding_and_error_should_be_emitted() {
                 let options = AblyTests.commonAppSetup()
                 options.useBinaryProtocol = false
                 options.logHandler = ARTLog(capturingOutput: true)
@@ -1502,8 +1476,4 @@ override class var defaultTestSuite : XCTestSuite {
                     }
                 }
             }
-
-        }
-
-    }
 }

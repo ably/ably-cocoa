@@ -6,7 +6,7 @@ import Quick
         private var rest: ARTRest!
         private var mockHttpExecutor: MockHTTPExecutor!
 
-class PushChannel : QuickSpec {
+class PushChannel : XCTestCase {
 
 // XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
 override class var defaultTestSuite : XCTestSuite {
@@ -16,9 +16,10 @@ override class var defaultTestSuite : XCTestSuite {
     return super.defaultTestSuite
 }
 
-    override func spec() {
+        override func setUp() {
+super.setUp()
 
-        beforeEach {
+
             mockHttpExecutor = MockHTTPExecutor()
             let options = ARTClientOptions(key: "xxxx:xxxx")
             options.dispatchQueue = AblyTests.userQueue
@@ -30,12 +31,12 @@ override class var defaultTestSuite : XCTestSuite {
         }
 
         // RSH7
-        describe("Push Channel") {
+        
 
             // RSH7a
-            context("subscribeDevice") {
+            
                 // RSH7a1
-                it("should fail if the LocalDevice doesn't have an deviceIdentityToken") {
+                func test__001__Push_Channel__subscribeDevice__should_fail_if_the_LocalDevice_doesn_t_have_an_deviceIdentityToken() {
                     waitUntil(timeout: testTimeout) { done in
                         rest.channels.get("foo").push.subscribeDevice { error in
                             guard let error = error else {
@@ -49,7 +50,7 @@ override class var defaultTestSuite : XCTestSuite {
                 }
 
                 // RSH7a2, RSH7a3
-                it("should do a POST request to /push/channelSubscriptions and include device authentication") {
+                func test__002__Push_Channel__subscribeDevice__should_do_a_POST_request_to__push_channelSubscriptions_and_include_device_authentication() {
                     let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
                     rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
                     defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
@@ -90,12 +91,11 @@ override class var defaultTestSuite : XCTestSuite {
                     expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
                     expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"]).to(beNil())
                 }
-            }
 
             // RSH7b
-            context("subscribeClient") {
+            
                 // RSH7b1
-                it("should fail if the LocalDevice doesn't have a clientId") {
+                func test__003__Push_Channel__subscribeClient__should_fail_if_the_LocalDevice_doesn_t_have_a_clientId() {
                     let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
                     rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
                     defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
@@ -117,7 +117,7 @@ override class var defaultTestSuite : XCTestSuite {
                 }
 
                 // RSH7b2
-                it("should do a POST request to /push/channelSubscriptions") {
+                func test__004__Push_Channel__subscribeClient__should_do_a_POST_request_to__push_channelSubscriptions() {
                     let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
                     rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
                     defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
@@ -157,12 +157,11 @@ override class var defaultTestSuite : XCTestSuite {
                     expect(request.allHTTPHeaderFields?["X-Ably-DeviceToken"]).to(beNil())
                     expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"]).to(beNil())
                 }
-            }
 
             // RSH7c
-            context("unsubscribeDevice") {
+            
                 // RSH7c1
-                it("should fail if the LocalDevice doesn't have a deviceIdentityToken") {
+                func test__005__Push_Channel__unsubscribeDevice__should_fail_if_the_LocalDevice_doesn_t_have_a_deviceIdentityToken() {
                     waitUntil(timeout: testTimeout) { done in
                         rest.channels.get("foo").push.unsubscribeDevice { error in
                             guard let error = error else {
@@ -176,7 +175,7 @@ override class var defaultTestSuite : XCTestSuite {
                 }
 
                 // RSH7c2, RSH7c3
-                it("should do a DELETE request to /push/channelSubscriptions and include device authentication") {
+                func test__006__Push_Channel__unsubscribeDevice__should_do_a_DELETE_request_to__push_channelSubscriptions_and_include_device_authentication() {
                     let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
                     rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
                     defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
@@ -207,12 +206,11 @@ override class var defaultTestSuite : XCTestSuite {
                     expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
                     expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"]).to(beNil())
                 }
-            }
 
             // RSH7d
-            context("unsubscribeClient") {
+            
                 // RSH7d1
-                it("should fail if the LocalDevice doesn't have a clientId") {
+                func test__007__Push_Channel__unsubscribeClient__should_fail_if_the_LocalDevice_doesn_t_have_a_clientId() {
                     let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
                     rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
                     defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
@@ -234,7 +232,7 @@ override class var defaultTestSuite : XCTestSuite {
                 }
 
                 // RSH7d2
-                it("should do a DELETE request to /push/channelSubscriptions") {
+                func test__008__Push_Channel__unsubscribeClient__should_do_a_DELETE_request_to__push_channelSubscriptions() {
                     let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
                     rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
                     defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
@@ -264,11 +262,10 @@ override class var defaultTestSuite : XCTestSuite {
                     expect(request.allHTTPHeaderFields?["X-Ably-DeviceToken"]).to(beNil())
                     expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"]).to(beNil())
                 }
-            }
 
             // RSH7e
-            context("listSubscriptions") {
-                it("should return a paginated result with PushChannelSubscription filtered by channel and device") {
+            
+                func test__009__Push_Channel__listSubscriptions__should_return_a_paginated_result_with_PushChannelSubscription_filtered_by_channel_and_device() {
                     let params = [
                         "deviceId": "111",
                         "channel": "aaa"
@@ -298,7 +295,7 @@ override class var defaultTestSuite : XCTestSuite {
                     expect(query).to(haveParam("concatFilters", withValue: "true"))
                 }
 
-                it("should return a paginated result with PushChannelSubscription filtered by channel and client") {
+                func test__010__Push_Channel__listSubscriptions__should_return_a_paginated_result_with_PushChannelSubscription_filtered_by_channel_and_client() {
                     let params = [
                         "clientId": "tester",
                         "channel": "aaa"
@@ -328,14 +325,14 @@ override class var defaultTestSuite : XCTestSuite {
                     expect(query).to(haveParam("concatFilters", withValue: "true"))
                 }
 
-                it("should not accept null deviceId and null clientId") {
+                func test__011__Push_Channel__listSubscriptions__should_not_accept_null_deviceId_and_null_clientId() {
                     let channel = rest.channels.get("foo")
                     expect { try channel.push.listSubscriptions([:]) { _, _ in } }.to(throwError { (error: NSError) in
                         expect(error.code).to(equal(ARTDataQueryError.missingRequiredFields.rawValue))
                     })
                 }
 
-                it("should not accept both deviceId and clientId params at the same time") {
+                func test__012__Push_Channel__listSubscriptions__should_not_accept_both_deviceId_and_clientId_params_at_the_same_time() {
                     let params = [
                         "deviceId": "x",
                         "clientId": "y"
@@ -346,7 +343,7 @@ override class var defaultTestSuite : XCTestSuite {
                     })
                 }
 
-                it("should return a paginated result with PushChannelSubscription") {
+                func test__013__Push_Channel__listSubscriptions__should_return_a_paginated_result_with_PushChannelSubscription() {
                     let options = AblyTests.commonAppSetup()
                     options.clientId = "tester"
                     // Prevent channel name to be prefixed by test-*
@@ -382,10 +379,5 @@ override class var defaultTestSuite : XCTestSuite {
                         }
                     }
                 }
-            }
-
-        }
-
-    }
 
 }

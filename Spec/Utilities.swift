@@ -18,7 +18,7 @@ import Foundation
                 private let extras = ["push": ["key": "value"]]
                 private let clientId = "clientId"
 
-class Utilities: QuickSpec {
+class Utilities: XCTestCase {
 
 // XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
 override class var defaultTestSuite : XCTestSuite {
@@ -38,17 +38,17 @@ override class var defaultTestSuite : XCTestSuite {
 
     return super.defaultTestSuite
 }
+        
 
-    override func spec() {
-        describe("Utilities") {
-
-            context("JSON Encoder") {
-                beforeEach {
+            
+                func beforeEach__Utilities__JSON_Encoder() {
                     jsonEncoder = ARTJsonLikeEncoder()
                     jsonEncoder.delegate = ARTJsonEncoder()
                 }
 
-                it("should decode a protocol message that has an error without a message") {
+                func test__001__Utilities__JSON_Encoder__should_decode_a_protocol_message_that_has_an_error_without_a_message() {
+beforeEach__Utilities__JSON_Encoder()
+
                     let jsonObject: NSDictionary = [
                         "action": 9,
                         "error": [
@@ -66,7 +66,9 @@ override class var defaultTestSuite : XCTestSuite {
                     expect(error.message).to(equal(""))
                 }
 
-                it("should encode a protocol message that has invalid data") {
+                func test__002__Utilities__JSON_Encoder__should_encode_a_protocol_message_that_has_invalid_data() {
+beforeEach__Utilities__JSON_Encoder()
+
                     let pm = ARTProtocolMessage()
                     pm.action = .message
                     pm.channel = "foo"
@@ -81,7 +83,9 @@ override class var defaultTestSuite : XCTestSuite {
                     expect(result).to(beNil())
                 }
 
-                it("should decode data with malformed JSON") {
+                func test__003__Utilities__JSON_Encoder__should_decode_data_with_malformed_JSON() {
+beforeEach__Utilities__JSON_Encoder()
+
                     let malformedJSON = "{...}"
                     let data = malformedJSON.data(using: String.Encoding.utf8)!
                     var result: AnyObject?
@@ -92,7 +96,9 @@ override class var defaultTestSuite : XCTestSuite {
                     expect(result).to(beNil())
                 }
 
-                it("should decode data with malformed MsgPack") {
+                func test__004__Utilities__JSON_Encoder__should_decode_data_with_malformed_MsgPack() {
+beforeEach__Utilities__JSON_Encoder()
+
                     let data = NSData()
                     var result: AnyObject?
                     expect{ result = try ARTMsgPackEncoder().decode(data as Data) as! (Data) as (Data) as AnyObject? }.to(throwError { error in
@@ -101,8 +107,10 @@ override class var defaultTestSuite : XCTestSuite {
                     expect(result).to(beNil())
                 }
 
-                context("in Realtime") {
-                    it("should handle and emit the invalid data error") {
+                
+                    func test__005__Utilities__JSON_Encoder__in_Realtime__should_handle_and_emit_the_invalid_data_error() {
+beforeEach__Utilities__JSON_Encoder()
+
                         let options = AblyTests.commonAppSetup()
                         let realtime = ARTRealtime(options: options)
                         defer { realtime.close() }
@@ -129,7 +137,9 @@ override class var defaultTestSuite : XCTestSuite {
                         }
                     }
 
-                    it("should ignore invalid transport message") {
+                    func test__006__Utilities__JSON_Encoder__in_Realtime__should_ignore_invalid_transport_message() {
+beforeEach__Utilities__JSON_Encoder()
+
                         let options = AblyTests.commonAppSetup()
                         let realtime = ARTRealtime(options: options)
                         defer { realtime.close() }
@@ -163,10 +173,11 @@ override class var defaultTestSuite : XCTestSuite {
                         channel.off()
                         channel.unsubscribe()
                     }
-                }
 
-                context("in Rest") {
-                    it("should handle and emit the invalid data error") {
+                
+                    func test__007__Utilities__JSON_Encoder__in_Rest__should_handle_and_emit_the_invalid_data_error() {
+beforeEach__Utilities__JSON_Encoder()
+
                         let options = AblyTests.commonAppSetup()
                         let rest = ARTRest(options: options)
                         let channel = rest.channels.get("foo")
@@ -192,7 +203,9 @@ override class var defaultTestSuite : XCTestSuite {
                         }
                     }
 
-                    it("should ignore invalid response payload") {
+                    func test__008__Utilities__JSON_Encoder__in_Rest__should_ignore_invalid_response_payload() {
+beforeEach__Utilities__JSON_Encoder()
+
                         let options = AblyTests.commonAppSetup()
                         let rest = ARTRest(options: options)
                         let testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
@@ -223,12 +236,10 @@ override class var defaultTestSuite : XCTestSuite {
                             }
                         }
                     }
-                }
-            }
 
-            context("EventEmitter") {
+            
 
-                beforeEach {
+                func beforeEach__Utilities__EventEmitter() {
                     eventEmitter = ARTInternalEventEmitter(queue: AblyTests.queue)
                     receivedFoo1 = nil
                     receivedFoo2 = nil
@@ -243,7 +254,9 @@ override class var defaultTestSuite : XCTestSuite {
                     eventEmitter.once { receivedAllOnce = $0 as? Int }
                 }
 
-                it("should emit events to all relevant listeners") {
+                func test__009__Utilities__EventEmitter__should_emit_events_to_all_relevant_listeners() {
+beforeEach__Utilities__EventEmitter()
+
                     eventEmitter.emit("foo", with: 123 as AnyObject?)
 
                     expect(receivedFoo1).to(equal(123))
@@ -263,7 +276,9 @@ override class var defaultTestSuite : XCTestSuite {
                     expect(receivedAll).toEventually(equal(789), timeout: testTimeout)
                 }
                 
-                it("should only call once listeners once for its event") {
+                func test__010__Utilities__EventEmitter__should_only_call_once_listeners_once_for_its_event() {
+beforeEach__Utilities__EventEmitter()
+
                     eventEmitter.emit("foo", with: 123 as AnyObject?)
 
                     expect(receivedBarOnce).to(beNil())
@@ -280,8 +295,10 @@ override class var defaultTestSuite : XCTestSuite {
                     expect(receivedAllOnce).to(equal(123))
                 }
                 
-                context("calling off with a single listener argument") {
-                    it("should stop receiving events when calling off with a single listener argument") {
+                
+                    func test__011__Utilities__EventEmitter__calling_off_with_a_single_listener_argument__should_stop_receiving_events_when_calling_off_with_a_single_listener_argument() {
+beforeEach__Utilities__EventEmitter()
+
                         eventEmitter.off(listenerFoo1!)
                         eventEmitter.emit("foo", with: 123 as AnyObject?)
                         
@@ -300,7 +317,9 @@ override class var defaultTestSuite : XCTestSuite {
                         expect(receivedAll).to(equal(222))
                     }
 
-                    xit("should remove the timeout") {
+                    func skipped__test__012__Utilities__EventEmitter__calling_off_with_a_single_listener_argument__should_remove_the_timeout() {
+beforeEach__Utilities__EventEmitter()
+
                         listenerFoo1!.setTimer(0.1, onTimeout: {
                             fail("onTimeout callback shouldn't have been called")
                         }).startTimer()
@@ -311,10 +330,11 @@ override class var defaultTestSuite : XCTestSuite {
                             }
                         }
                     }
-                }
                 
-                context("calling off with listener and event arguments") {
-                    it("should still receive events if off doesn't match the listener's criteria") {
+                
+                    func test__013__Utilities__EventEmitter__calling_off_with_listener_and_event_arguments__should_still_receive_events_if_off_doesn_t_match_the_listener_s_criteria() {
+beforeEach__Utilities__EventEmitter()
+
                         eventEmitter.off("foo", listener: listenerAll!)
                         eventEmitter.emit("foo", with: 111 as AnyObject?)
 
@@ -322,17 +342,20 @@ override class var defaultTestSuite : XCTestSuite {
                         expect(receivedAll).to(equal(111))
                     }
 
-                    it("should stop receive events if off matches the listener's criteria") {
+                    func test__014__Utilities__EventEmitter__calling_off_with_listener_and_event_arguments__should_stop_receive_events_if_off_matches_the_listener_s_criteria() {
+beforeEach__Utilities__EventEmitter()
+
                         eventEmitter.off("foo", listener: listenerFoo1!)
                         eventEmitter.emit("foo", with: 111 as AnyObject?)
 
                         expect(receivedFoo1).to(beNil())
                         expect(receivedAll).to(equal(111))
                     }
-                }
                 
-                context("calling off with no arguments") {
-                    it("should remove all listeners") {
+                
+                    func test__015__Utilities__EventEmitter__calling_off_with_no_arguments__should_remove_all_listeners() {
+beforeEach__Utilities__EventEmitter()
+
                         eventEmitter.off()
                         eventEmitter.emit("foo", with: 111 as AnyObject?)
                         
@@ -347,14 +370,18 @@ override class var defaultTestSuite : XCTestSuite {
                         expect(receivedAll).to(beNil())
                     }
                     
-                    it("should allow listening again") {
+                    func test__016__Utilities__EventEmitter__calling_off_with_no_arguments__should_allow_listening_again() {
+beforeEach__Utilities__EventEmitter()
+
                         eventEmitter.off()
                         eventEmitter.on("foo", callback: { receivedFoo1 = $0 as? Int })
                         eventEmitter.emit("foo", with: 111 as AnyObject?)
                         expect(receivedFoo1).to(equal(111))
                     }
 
-                    it("should remove all timeouts") {
+                    func test__017__Utilities__EventEmitter__calling_off_with_no_arguments__should_remove_all_timeouts() {
+beforeEach__Utilities__EventEmitter()
+
                         listenerFoo1!.setTimer(0.1, onTimeout: {
                             fail("onTimeout callback shouldn't have been called")
                         }).startTimer()
@@ -368,10 +395,11 @@ override class var defaultTestSuite : XCTestSuite {
                             }
                         }
                     }
-                }
 
-                context("the timed method") {
-                    it("should not call onTimeout if the deadline isn't reached") {
+                
+                    func test__018__Utilities__EventEmitter__the_timed_method__should_not_call_onTimeout_if_the_deadline_isn_t_reached() {
+beforeEach__Utilities__EventEmitter()
+
                         weak var timer = listenerFoo1!.setTimer(0.2, onTimeout: {
                             fail("onTimeout callback shouldn't have been called")
                         })
@@ -385,7 +413,9 @@ override class var defaultTestSuite : XCTestSuite {
                         }
                     }
 
-                    it("should call onTimeout and off the listener if the deadline is reached") {
+                    func test__019__Utilities__EventEmitter__the_timed_method__should_call_onTimeout_and_off_the_listener_if_the_deadline_is_reached() {
+beforeEach__Utilities__EventEmitter()
+
                         var calledOnTimeout = false
                         let beforeEmitting = NSDate()
                         listenerFoo1!.setTimer(0.3, onTimeout: {
@@ -401,12 +431,13 @@ override class var defaultTestSuite : XCTestSuite {
                             }
                         }
                     }
-                }
                 
-                context("set of listeners") {
+                
                     
                     // RTE6a
-                    it("should not change over the course of the emit") {
+                    func test__020__Utilities__EventEmitter__set_of_listeners__should_not_change_over_the_course_of_the_emit() {
+beforeEach__Utilities__EventEmitter()
+
                         var firstCallbackCalled = false;
                         var secondCallbackCalled = false;
                         eventEmitter.on("a", callback: { _ in
@@ -419,12 +450,10 @@ override class var defaultTestSuite : XCTestSuite {
                         expect(firstCallbackCalled).to(beTrue())
                         expect(secondCallbackCalled).to(beFalse())
                     }
-                }
-            }
 
-            context("Logger") {
+            
 
-                it("should have a history of logs") {
+                func test__021__Utilities__Logger__should_have_a_history_of_logs() {
                     let options = AblyTests.commonAppSetup()
                     let realtime = ARTRealtime(options: options)
                     realtime.internal.logger.logLevel = .verbose
@@ -442,32 +471,27 @@ override class var defaultTestSuite : XCTestSuite {
                     expect(realtime.internal.logger.history.map{ $0.message }.first).to(contain("channel state transitions from 1 - Attaching to 2 - Attached"))
                     expect(realtime.internal.logger.history.filter{ $0.message.contains("realtime state transitions to 2 - Connected") }).to(haveCount(1))
                 }
-
-            }
             
-            context("maxMessageSize") {
+            
 
-                it("calculates maxMessageSize of a Message with name and data") {
+                func test__022__Utilities__maxMessageSize__calculates_maxMessageSize_of_a_Message_with_name_and_data() {
                     let message = ARTMessage(name: "this is name", data: data)
                     let expectedSize = "{\"test\":\"test\"}".count + message.name!.count
                     expect(message.messageSize()).to(equal(expectedSize))
                 }
 
-                it("calculates maxMessageSize of a Message with name, data and extras") {
+                func test__023__Utilities__maxMessageSize__calculates_maxMessageSize_of_a_Message_with_name__data_and_extras() {
                     let message = ARTMessage(name: "this is name", data: data)
                     message.extras = extras as ARTJsonCompatible
                     let expectedSize = "{\"test\":\"test\"}".count + "{\"push\":{\"key\":\"value\"}}".count + message.name!.count
                     expect(message.messageSize()).to(equal(expectedSize))
                 }
 
-                it("calculates maxMessageSize of a Message with name, data, clientId and extras") {
+                func test__024__Utilities__maxMessageSize__calculates_maxMessageSize_of_a_Message_with_name__data__clientId_and_extras() {
                     let message = ARTMessage(name: "this is name", data: data)
                     message.clientId = clientId
                     message.extras = extras as ARTJsonCompatible
                     let expectedSize = "{\"test\":\"test\"}".count + "{\"push\":{\"key\":\"value\"}}".count + clientId.count + message.name!.count
                     expect(message.messageSize()).to(equal(expectedSize))
                 }
-            }
-        }
-    }
 }

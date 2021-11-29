@@ -12,7 +12,7 @@ import AblyDeltaCodec
                     "{ foo: \"bar\", count: 3, status: \"active\" }"
                 ]
 
-class DeltaCodec: QuickSpec {
+class DeltaCodec: XCTestCase {
 
 // XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
 override class var defaultTestSuite : XCTestSuite {
@@ -20,14 +20,12 @@ override class var defaultTestSuite : XCTestSuite {
 
     return super.defaultTestSuite
 }
+        
 
-    override func spec() {
-        describe("DeltaCodec") {
-
-            context("decoding") {
+            
 
                 // RTL19
-                it("should decode vcdiff encoded messages") {
+                func test__001__DeltaCodec__decoding__should_decode_vcdiff_encoded_messages() {
                     let options = AblyTests.commonAppSetup()
                     let client = AblyTests.newRealtime(options)
                     defer { client.dispose(); client.close() }
@@ -81,7 +79,7 @@ override class var defaultTestSuite : XCTestSuite {
                 }
 
                 // RTL20
-                it("should fail and recover when the vcdiff messages are out of order") {
+                func test__002__DeltaCodec__decoding__should_fail_and_recover_when_the_vcdiff_messages_are_out_of_order() {
                     let options = AblyTests.commonAppSetup()
                     let client = AblyTests.newRealtime(options)
                     defer { client.dispose(); client.close() }
@@ -139,7 +137,7 @@ override class var defaultTestSuite : XCTestSuite {
                 }
 
                 // RTL18
-                it("should recover when the vcdiff message decoding fails") {
+                func test__003__DeltaCodec__decoding__should_recover_when_the_vcdiff_message_decoding_fails() {
                     let options = AblyTests.commonAppSetup()
                     let client = AblyTests.newRealtime(options)
                     defer { client.dispose(); client.close() }
@@ -193,9 +191,4 @@ override class var defaultTestSuite : XCTestSuite {
 
                     expect(receivedMessages).toEventually(haveCount(testData.count))
                 }
-
-            }
-
-        }
-    }
 }

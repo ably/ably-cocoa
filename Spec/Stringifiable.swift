@@ -2,11 +2,10 @@ import Ably
 import Quick
 import Nimble
 
-class Stringifiable: QuickSpec {
-    override func spec() {
-        describe("Stringifiable") {
-            context("type conversion") {
-                it("as string") {
+class Stringifiable: XCTestCase {
+        
+            
+                func test__001__Stringifiable__type_conversion__as_string() {
                     expect(
                         ARTStringifiable(string: "Lorem Ipsum").stringValue
                     )
@@ -15,7 +14,7 @@ class Stringifiable: QuickSpec {
                     )
                 }
                 
-                it("as bool [true]") {
+                func test__002__Stringifiable__type_conversion__as_bool__true_() {
                     expect {
                         ARTStringifiable(bool: true).stringValue
                     }
@@ -24,7 +23,7 @@ class Stringifiable: QuickSpec {
                     )
                 }
                 
-                it("as bool [false]") {
+                func test__003__Stringifiable__type_conversion__as_bool__false_() {
                     expect {
                         ARTStringifiable(bool: false).stringValue
                     }
@@ -33,7 +32,7 @@ class Stringifiable: QuickSpec {
                     )
                 }
                 
-                it("as integer that is not treated as bool [false]") {
+                func test__004__Stringifiable__type_conversion__as_integer_that_is_not_treated_as_bool__false_() {
                     expect {
                         ARTStringifiable(number: NSNumber(value: 0)).stringValue
                     }
@@ -42,7 +41,7 @@ class Stringifiable: QuickSpec {
                     )
                 }
                 
-                it("as integer that is not treated as bool [true]") {
+                func test__005__Stringifiable__type_conversion__as_integer_that_is_not_treated_as_bool__true_() {
                     expect {
                         ARTStringifiable(number: NSNumber(value: 1)).stringValue
                     }
@@ -51,7 +50,7 @@ class Stringifiable: QuickSpec {
                     )
                 }
                 
-                it("as number [Int]") {
+                func test__006__Stringifiable__type_conversion__as_number__Int_() {
                     expect {
                         ARTStringifiable(number: NSNumber(value: 12)).stringValue
                     }
@@ -60,7 +59,7 @@ class Stringifiable: QuickSpec {
                     )
                 }
                 
-                it("as number [Float 1 decimal digit]") {
+                func test__007__Stringifiable__type_conversion__as_number__Float_1_decimal_digit_() {
                     expect {
                         ARTStringifiable(number: NSNumber(value: 0.1)).stringValue
                     }
@@ -69,7 +68,7 @@ class Stringifiable: QuickSpec {
                     )
                 }
                 
-                it("as number [Float 2 decimal digits]") {
+                func test__008__Stringifiable__type_conversion__as_number__Float_2_decimal_digits_() {
                     expect {
                         ARTStringifiable(number: NSNumber(value: 0.12)).stringValue
                     }
@@ -78,7 +77,7 @@ class Stringifiable: QuickSpec {
                     )
                 }
                 
-                it("as number [Float 4 decimal digits]") {
+                func test__009__Stringifiable__type_conversion__as_number__Float_4_decimal_digits_() {
                     expect {
                         ARTStringifiable(number: NSNumber(value: 0.1234)).stringValue
                     }
@@ -86,7 +85,4 @@ class Stringifiable: QuickSpec {
                         equal("0.1234")
                     )
                 }
-            }
-        }
-    }
 }
