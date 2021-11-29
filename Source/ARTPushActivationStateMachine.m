@@ -146,7 +146,7 @@ dispatch_async(_queue, ^{
 
 - (void)deviceRegistration:(ARTErrorInfo *)error {
     #if TARGET_OS_IOS
-    ARTLocalDevice *device = self.localDevice;
+    ARTLocalDevice *const device = self.localDevice;
 
     const id<ARTPushRegistererDelegate, NSObject> delegate = self.delegate;
 
@@ -209,7 +209,7 @@ dispatch_async(_queue, ^{
 
 - (void)deviceUpdateRegistration:(ARTErrorInfo *)error {
     #if TARGET_OS_IOS
-    ARTLocalDevice *local = self.localDevice;
+    ARTLocalDevice *const local = self.localDevice;
 
     const id<ARTPushRegistererDelegate, NSObject> delegate = self.delegate;
 
@@ -315,7 +315,7 @@ dispatch_async(_queue, ^{
 
 - (void)deviceUnregistration:(ARTErrorInfo *)error {
     #if TARGET_OS_IOS
-    ARTLocalDevice *local = self.localDevice;
+    ARTLocalDevice *const local = self.localDevice;
 
     __block id delegate = self.delegate;
 
