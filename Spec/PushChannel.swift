@@ -2,11 +2,21 @@ import Ably
 import Nimble
 import Quick
 
-class PushChannel : QuickSpec {
-    override func spec() {
 
-        var rest: ARTRest!
-        var mockHttpExecutor: MockHTTPExecutor!
+        private var rest: ARTRest!
+        private var mockHttpExecutor: MockHTTPExecutor!
+
+class PushChannel : QuickSpec {
+
+// XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
+override class var defaultTestSuite : XCTestSuite {
+    let _ = rest
+    let _ = mockHttpExecutor
+
+    return super.defaultTestSuite
+}
+
+    override func spec() {
 
         beforeEach {
             mockHttpExecutor = MockHTTPExecutor()

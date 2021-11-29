@@ -2,19 +2,35 @@ import Ably
 import Nimble
 import Quick
 
+
+        private var rest: ARTRest!
+        private var httpExecutor: MockHTTPExecutor!
+        private var storage: MockDeviceStorage!
+        private var initialStateMachine: ARTPushActivationStateMachine!
+
+        private let expectedFormFactor = "phone"
+        private let expectedPlatform = "ios"
+        private let expectedPushRecipient: [String: [String: String]] = ["recipient": ["transportType": "apns"]]
+
+        private var stateMachine: ARTPushActivationStateMachine!
+
 class PushActivationStateMachine : QuickSpec {
+
+// XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
+override class var defaultTestSuite : XCTestSuite {
+    let _ = rest
+    let _ = httpExecutor
+    let _ = storage
+    let _ = initialStateMachine
+    let _ = expectedFormFactor
+    let _ = expectedPlatform
+    let _ = expectedPushRecipient
+    let _ = stateMachine
+
+    return super.defaultTestSuite
+}
+
     override func spec() {
-
-        var rest: ARTRest!
-        var httpExecutor: MockHTTPExecutor!
-        var storage: MockDeviceStorage!
-        var initialStateMachine: ARTPushActivationStateMachine!
-
-        let expectedFormFactor = "phone"
-        let expectedPlatform = "ios"
-        let expectedPushRecipient: [String: [String: String]] = ["recipient": ["transportType": "apns"]]
-
-        var stateMachine: ARTPushActivationStateMachine!
 
         beforeEach {
             rest = ARTRest(key: "xxxx:xxxx")

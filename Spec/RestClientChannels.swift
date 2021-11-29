@@ -18,17 +18,28 @@ private func beAChannel(named expectedValue: String) -> Predicate<ARTChannel> {
     }
 }
 
+        private var client: ARTRest!
+        private var channelName: String!
+
+        private let cipherParams: ARTCipherParams? = nil
+
 class RestClientChannels: QuickSpec {
+
+// XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
+override class var defaultTestSuite : XCTestSuite {
+    let _ = client
+    let _ = channelName
+    let _ = cipherParams
+
+    return super.defaultTestSuite
+}
+
     override func spec() {
-        var client: ARTRest!
-        var channelName: String!
 
         beforeEach {
             client = ARTRest(key: "fake:key")
             channelName = ProcessInfo.processInfo.globallyUniqueString
         }
-
-        let cipherParams: ARTCipherParams? = nil
 
         describe("RestClient") {
             context("channels") {

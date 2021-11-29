@@ -3,19 +3,28 @@ import Quick
 import Nimble
 import AblyDeltaCodec
 
-class DeltaCodec: QuickSpec {
-    override func spec() {
-        describe("DeltaCodec") {
 
-            context("decoding") {
-
-                let testData: [String] = [
+                private let testData: [String] = [
                     "{ foo: \"bar\", count: 1, status: \"active\" }",
                     "{ foo: \"bar\", count: 2, status: \"active\" }",
                     "{ foo: \"bar\", count: 2, status: \"inactive\" }",
                     "{ foo: \"bar\", count: 3, status: \"inactive\" }",
                     "{ foo: \"bar\", count: 3, status: \"active\" }"
                 ]
+
+class DeltaCodec: QuickSpec {
+
+// XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
+override class var defaultTestSuite : XCTestSuite {
+    let _ = testData
+
+    return super.defaultTestSuite
+}
+
+    override func spec() {
+        describe("DeltaCodec") {
+
+            context("decoding") {
 
                 // RTL19
                 it("should decode vcdiff encoded messages") {

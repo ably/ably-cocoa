@@ -3,13 +3,23 @@ import Nimble
 import Quick
 import SwiftyJSON
 
+
+            private let links = "<./messages?start=0&end=1535035746063&limit=100&direction=backwards&format=msgpack&firstEnd=1535035746063&fromDate=1535035746063&mode=all>; rel=\"first\", <./messages?start=0&end=1535035746063&limit=100&direction=backwards&format=msgpack&firstEnd=1535035746063&fromDate=1535035746063&mode=all>; rel=\"current\""
+
+            private let url = URL(string: "https://sandbox-rest.ably.io:443/channels/foo/messages?limit=100&direction=backwards")!
+
 class RestPaginated : QuickSpec {
+
+// XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
+override class var defaultTestSuite : XCTestSuite {
+    let _ = links
+    let _ = url
+
+    return super.defaultTestSuite
+}
+
     override func spec() {
         describe("RestPaginated") {
-
-            let links = "<./messages?start=0&end=1535035746063&limit=100&direction=backwards&format=msgpack&firstEnd=1535035746063&fromDate=1535035746063&mode=all>; rel=\"first\", <./messages?start=0&end=1535035746063&limit=100&direction=backwards&format=msgpack&firstEnd=1535035746063&fromDate=1535035746063&mode=all>; rel=\"current\""
-
-            let url = URL(string: "https://sandbox-rest.ably.io:443/channels/foo/messages?limit=100&direction=backwards")!
 
             it("should extract links from the response") {
                 guard let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: ["Link": links]) else {

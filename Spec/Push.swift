@@ -2,6 +2,12 @@ import Ably
 import Nimble
 import Quick
 
+
+        private var rest: ARTRest!
+        private var mockHttpExecutor: MockHTTPExecutor!
+        private var storage: MockDeviceStorage!
+        private var stateMachineDelegate: StateMachineDelegate!
+
 class Push : QuickSpec {
 
     struct TestDeviceToken {
@@ -10,12 +16,18 @@ class Push : QuickSpec {
         static let tokenString = tokenData.map { String(format: "%02x", $0) }.joined()
     }
 
-    override func spec() {
+// XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
+override class var defaultTestSuite : XCTestSuite {
+    let _ = rest
+    let _ = mockHttpExecutor
+    let _ = storage
+    let _ = stateMachineDelegate
 
-        var rest: ARTRest!
-        var mockHttpExecutor: MockHTTPExecutor!
-        var storage: MockDeviceStorage!
-        var stateMachineDelegate: StateMachineDelegate!
+    return super.defaultTestSuite
+}
+
+
+    override func spec() {
 
         beforeEach {
             rest = ARTRest(key: "xxxx:xxxx")

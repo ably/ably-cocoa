@@ -2,10 +2,144 @@ import Ably
 import Nimble
 import Quick
 
-class RestClient: QuickSpec {
-    override func spec() {
 
-        var testHTTPExecutor: TestProxyHTTPExecutor!
+        private var testHTTPExecutor: TestProxyHTTPExecutor!
+                    
+                    private func testOptionsGiveBasicAuthFalse(_ caseSetter: (ARTAuthOptions) -> Void) {
+                        let options = ARTClientOptions()
+                        caseSetter(options)
+                        
+                        let client = ARTRest(options: options)
+                        
+                        expect(client.auth.internal.options.isBasicAuth()).to(beFalse())
+                    }
+                    private let expectedHostOrder = [4, 3, 0, 2, 1]
+
+                    private let originalARTFallback_shuffleArray = ARTFallback_shuffleArray
+
+                    private let _fallbackHosts = ["f.ably-realtime.com", "g.ably-realtime.com", "h.ably-realtime.com", "i.ably-realtime.com", "j.ably-realtime.com"]
+
+                    private func testUsesAlternativeHost(_ caseTest: FakeNetworkResponse) {
+                        let options = ARTClientOptions(key: "xxxx:xxxx")
+                        let client = ARTRest(options: options)
+                        let mockHTTP = MockHTTP(logger: options.logHandler)
+                        testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: options.logHandler)
+                        client.internal.httpExecutor = testHTTPExecutor
+                        mockHTTP.setNetworkState(network: caseTest, resetAfter: 1)
+                        let channel = client.channels.get("test")
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish(nil, data: "nil") { _ in
+                                done()
+                            }
+                        }
+
+                        expect(testHTTPExecutor.requests).to(haveCount(2))
+                        if testHTTPExecutor.requests.count != 2 {
+                            return
+                        }
+                        expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
+                        expect(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+                    }
+                    
+                    private func testStoresSuccessfulFallbackHostAsDefaultHost(_ caseTest: FakeNetworkResponse) {
+                        let options = ARTClientOptions(key: "xxxx:xxxx")
+                        let client = ARTRest(options: options)
+                        let mockHTTP = MockHTTP(logger: options.logHandler)
+                        testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: options.logHandler)
+                        client.internal.httpExecutor = testHTTPExecutor
+                        mockHTTP.setNetworkState(network: caseTest, resetAfter: 1)
+                        let channel = client.channels.get("test")
+
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish(nil, data: "nil") { _ in
+                                done()
+                            }
+                        }
+
+                        expect(testHTTPExecutor.requests).to(haveCount(2))
+                        expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.host, pattern: "rest.ably.io")).to(beTrue())
+                        expect(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.host, pattern: "[a-e].ably-realtime.com")).to(beTrue())
+                        
+                        //#1 Store fallback used to request
+                        let usedFallbackURL = testHTTPExecutor.requests[1].url!
+                        
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.publish(nil, data: "nil") { _ in
+                                done()
+                            }
+                        }
+                        
+                        let reusedURL = testHTTPExecutor.requests[2].url!
+                        
+                        // Reuse host has to be equal previous (stored #1) fallback host
+                        expect(testHTTPExecutor.requests).to(haveCount(3))
+                        expect(usedFallbackURL.host).to(equal(reusedURL.host))
+                    }
+                        
+                        private func testRestoresDefaultPrimaryHostAfterTimeoutExpires(_ caseTest: FakeNetworkResponse) {
+                            let options = ARTClientOptions(key: "xxxx:xxxx")
+                            options.logLevel = .debug
+                            let client = ARTRest(options: options)
+                            let mockHTTP = MockHTTP(logger: options.logHandler)
+                            testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: options.logHandler)
+                            client.internal.httpExecutor = testHTTPExecutor
+                            mockHTTP.setNetworkState(network: caseTest, resetAfter: 1)
+                            let channel = client.channels.get("test-fallback-retry-timeout")
+                            
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.publish(nil, data: "nil") { _ in
+                                    done()
+                                }
+                            }
+                            
+                            waitUntil(timeout: testTimeout) { done in
+                                delay(1.1) {
+                                    channel.publish(nil, data: "nil") { _ in
+                                        done()
+                                    }
+                                }
+                            }
+                            
+                            expect(testHTTPExecutor.requests).to(haveCount(3))
+                            expect(testHTTPExecutor.requests[2].url!.host).to(equal("rest.ably.io"))
+                        }
+
+                        private func testUsesAnotherFallbackHost(_ caseTest: FakeNetworkResponse) {
+                            let options = ARTClientOptions(key: "xxxx:xxxx")
+                            options.logLevel = .debug
+                            let client = ARTRest(options: options)
+                            let mockHTTP = MockHTTP(logger: options.logHandler)
+                            testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: options.logHandler)
+                            client.internal.httpExecutor = testHTTPExecutor
+                            mockHTTP.setNetworkState(network: caseTest, resetAfter: 2)
+                            let channel = client.channels.get("test-fallback-retry-timeout")
+                            
+                            waitUntil(timeout: testTimeout) { done in
+                                channel.publish(nil, data: "nil") { _ in
+                                    done()
+                                }
+                            }
+                            
+                            expect(testHTTPExecutor.requests).to(haveCount(3))
+                            expect(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.host, pattern: "[a-e].ably-realtime.com")).to(beTrue())
+                            expect(NSRegularExpression.match(testHTTPExecutor.requests[2].url!.host, pattern: "[a-e].ably-realtime.com")).to(beTrue())
+                            expect(testHTTPExecutor.requests[1].url!.host).toNot(equal(testHTTPExecutor.requests[2].url!.host))
+                        }
+
+class RestClient: QuickSpec {
+
+// XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
+override class var defaultTestSuite : XCTestSuite {
+    let _ = testHTTPExecutor
+    let _ = expectedHostOrder
+    let _ = originalARTFallback_shuffleArray
+    let _ = _fallbackHosts
+
+    return super.defaultTestSuite
+}
+
+    override func spec() {
 
         describe("RestClient") {
             // G4
@@ -495,15 +629,6 @@ class RestClient: QuickSpec {
                     it("should be true when initialized with a key") {
                         let client = ARTRest(key: "key:secret")
                         expect(client.auth.internal.options.isBasicAuth()).to(beTrue())
-                    }
-                    
-                    func testOptionsGiveBasicAuthFalse(_ caseSetter: (ARTAuthOptions) -> Void) {
-                        let options = ARTClientOptions()
-                        caseSetter(options)
-                        
-                        let client = ARTRest(options: options)
-                        
-                        expect(client.auth.internal.options.isBasicAuth()).to(beFalse())
                     }
                     
                     it("should be false when options’ useTokenAuth is set") {
@@ -1107,9 +1232,6 @@ class RestClient: QuickSpec {
 
                 // RSC15a
                 context("retry hosts in random order") {
-                    let expectedHostOrder = [4, 3, 0, 2, 1]
-
-                    let originalARTFallback_shuffleArray = ARTFallback_shuffleArray
 
                     beforeEach {
                         ARTFallback_shuffleArray = { array in
@@ -1229,8 +1351,6 @@ class RestClient: QuickSpec {
                         expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
                     }
 
-                    let _fallbackHosts = ["f.ably-realtime.com", "g.ably-realtime.com", "h.ably-realtime.com", "i.ably-realtime.com", "j.ably-realtime.com"]
-
                     it("until httpMaxRetryCount has been reached, if custom fallback hosts are provided in ClientOptions#fallbackHosts, then they will be used instead") {
                         let options = ARTClientOptions(key: "xxxx:xxxx")
                         options.httpMaxRetryCount = 4
@@ -1347,29 +1467,6 @@ class RestClient: QuickSpec {
 
                 // RSC15d
                 context("should use an alternative host when") {
-
-                    func testUsesAlternativeHost(_ caseTest: FakeNetworkResponse) {
-                        let options = ARTClientOptions(key: "xxxx:xxxx")
-                        let client = ARTRest(options: options)
-                        let mockHTTP = MockHTTP(logger: options.logHandler)
-                        testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: options.logHandler)
-                        client.internal.httpExecutor = testHTTPExecutor
-                        mockHTTP.setNetworkState(network: caseTest, resetAfter: 1)
-                        let channel = client.channels.get("test")
-
-                        waitUntil(timeout: testTimeout) { done in
-                            channel.publish(nil, data: "nil") { _ in
-                                done()
-                            }
-                        }
-
-                        expect(testHTTPExecutor.requests).to(haveCount(2))
-                        if testHTTPExecutor.requests.count != 2 {
-                            return
-                        }
-                        expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
-                        expect(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
-                    }
                     
                     it(".hostUnreachable") {
                         testUsesAlternativeHost(.hostUnreachable)
@@ -1407,41 +1504,6 @@ class RestClient: QuickSpec {
                 // RSC15f
                 context("should store successful fallback host as default host") {
                     
-                    func testStoresSuccessfulFallbackHostAsDefaultHost(_ caseTest: FakeNetworkResponse) {
-                        let options = ARTClientOptions(key: "xxxx:xxxx")
-                        let client = ARTRest(options: options)
-                        let mockHTTP = MockHTTP(logger: options.logHandler)
-                        testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: options.logHandler)
-                        client.internal.httpExecutor = testHTTPExecutor
-                        mockHTTP.setNetworkState(network: caseTest, resetAfter: 1)
-                        let channel = client.channels.get("test")
-
-                        waitUntil(timeout: testTimeout) { done in
-                            channel.publish(nil, data: "nil") { _ in
-                                done()
-                            }
-                        }
-
-                        expect(testHTTPExecutor.requests).to(haveCount(2))
-                        expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.host, pattern: "rest.ably.io")).to(beTrue())
-                        expect(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.host, pattern: "[a-e].ably-realtime.com")).to(beTrue())
-                        
-                        //#1 Store fallback used to request
-                        let usedFallbackURL = testHTTPExecutor.requests[1].url!
-                        
-                        waitUntil(timeout: testTimeout) { done in
-                            channel.publish(nil, data: "nil") { _ in
-                                done()
-                            }
-                        }
-                        
-                        let reusedURL = testHTTPExecutor.requests[2].url!
-                        
-                        // Reuse host has to be equal previous (stored #1) fallback host
-                        expect(testHTTPExecutor.requests).to(haveCount(3))
-                        expect(usedFallbackURL.host).to(equal(reusedURL.host))
-                    }
-                    
                     it(".hostUnreachable") {
                         testStoresSuccessfulFallbackHostAsDefaultHost(.hostUnreachable)
                     }
@@ -1458,34 +1520,6 @@ class RestClient: QuickSpec {
                         
                         beforeEach {
                             ARTDefault.setFallbackRetryTimeout(1.0)
-                        }
-                        
-                        func testRestoresDefaultPrimaryHostAfterTimeoutExpires(_ caseTest: FakeNetworkResponse) {
-                            let options = ARTClientOptions(key: "xxxx:xxxx")
-                            options.logLevel = .debug
-                            let client = ARTRest(options: options)
-                            let mockHTTP = MockHTTP(logger: options.logHandler)
-                            testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: options.logHandler)
-                            client.internal.httpExecutor = testHTTPExecutor
-                            mockHTTP.setNetworkState(network: caseTest, resetAfter: 1)
-                            let channel = client.channels.get("test-fallback-retry-timeout")
-                            
-                            waitUntil(timeout: testTimeout) { done in
-                                channel.publish(nil, data: "nil") { _ in
-                                    done()
-                                }
-                            }
-                            
-                            waitUntil(timeout: testTimeout) { done in
-                                delay(1.1) {
-                                    channel.publish(nil, data: "nil") { _ in
-                                        done()
-                                    }
-                                }
-                            }
-                            
-                            expect(testHTTPExecutor.requests).to(haveCount(3))
-                            expect(testHTTPExecutor.requests[2].url!.host).to(equal("rest.ably.io"))
                         }
                         
                         it(".hostUnreachable") {
@@ -1505,28 +1539,6 @@ class RestClient: QuickSpec {
                             
                         beforeEach {
                             ARTDefault.setFallbackRetryTimeout(10)
-                        }
-
-                        func testUsesAnotherFallbackHost(_ caseTest: FakeNetworkResponse) {
-                            let options = ARTClientOptions(key: "xxxx:xxxx")
-                            options.logLevel = .debug
-                            let client = ARTRest(options: options)
-                            let mockHTTP = MockHTTP(logger: options.logHandler)
-                            testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: options.logHandler)
-                            client.internal.httpExecutor = testHTTPExecutor
-                            mockHTTP.setNetworkState(network: caseTest, resetAfter: 2)
-                            let channel = client.channels.get("test-fallback-retry-timeout")
-                            
-                            waitUntil(timeout: testTimeout) { done in
-                                channel.publish(nil, data: "nil") { _ in
-                                    done()
-                                }
-                            }
-                            
-                            expect(testHTTPExecutor.requests).to(haveCount(3))
-                            expect(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.host, pattern: "[a-e].ably-realtime.com")).to(beTrue())
-                            expect(NSRegularExpression.match(testHTTPExecutor.requests[2].url!.host, pattern: "[a-e].ably-realtime.com")).to(beTrue())
-                            expect(testHTTPExecutor.requests[1].url!.host).toNot(equal(testHTTPExecutor.requests[2].url!.host))
                         }
                         
                         it(".hostUnreachable") {

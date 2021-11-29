@@ -4,10 +4,73 @@ import Quick
 import SwiftyJSON
 import Foundation
 
+            private let encoder = ARTJsonLikeEncoder()
+                private let subject: ARTStatsConnectionTypes? = {
+                    let data: JSON = [
+                        [ "connections": [ "tls": [ "opened": 5], "all": [ "peak": 10 ] ] ]
+                    ]
+                    let rawData = try! data.rawData()
+                    let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
+                    return stats?.connections
+                }()
+                private let channelsTestsSubject: ARTStatsResourceCount? = {
+                    let data: JSON = [
+                        [ "channels": [ "opened": 5, "peak": 10 ] ]
+                    ]
+                    let rawData = try! data.rawData()
+                    let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
+                    return stats?.channels
+                }()
+                private let pushTestsSubject: ARTStatsPushCount? = {
+                    let data: JSON = [
+                        [ "push":
+                            [
+                                "messages": 10,
+                                "notifications": [
+                                    "invalid": 1,
+                                    "attempted": 2,
+                                    "successful": 3,
+                                    "failed": 4
+                                ],
+                                "directPublishes": 5
+                            ]
+                        ]
+                    ]
+                    let rawData = try! data.rawData()
+                    let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
+                    return stats?.pushes
+                }()
+                private let inProgressTestsStats: ARTStats? = {
+                    let data: JSON = [
+                        [ "inProgress": "2004-02-01:05:06" ]
+                    ]
+                    let rawData = try! data.rawData()
+                    return try! encoder.decodeStats(rawData)[0] as? ARTStats
+                }()
+                private let countTestStats: ARTStats? = {
+                    let data: JSON = [
+                        [ "count": 55 ]
+                    ]
+                    let rawData = try! data.rawData()
+                    return try! encoder.decodeStats(rawData)[0] as? ARTStats
+                }()
+
 class Stats: QuickSpec {
+
+// XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
+override class var defaultTestSuite : XCTestSuite {
+    let _ = encoder
+    let _ = subject
+    let _ = channelsTestsSubject
+    let _ = pushTestsSubject
+    let _ = inProgressTestsStats
+    let _ = countTestStats
+
+    return super.defaultTestSuite
+}
+
     override func spec() {
         describe("Stats") {
-            let encoder = ARTJsonLikeEncoder()
 
             // TS6
             func reusableTestsTestAttribute(_ attribute: String) {
@@ -83,14 +146,6 @@ class Stats: QuickSpec {
 
             // TS4
             context("connections") {
-                let subject: ARTStatsConnectionTypes? = {
-                    let data: JSON = [
-                        [ "connections": [ "tls": [ "opened": 5], "all": [ "peak": 10 ] ] ]
-                    ]
-                    let rawData = try! data.rawData()
-                    let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
-                    return stats?.connections
-                }()
 
                 it("should return a ConnectionTypes object") {
                     expect(subject).to(beAnInstanceOf(ARTStatsConnectionTypes.self))
@@ -112,14 +167,6 @@ class Stats: QuickSpec {
 
             // TS9
             context("channels") {
-                let channelsTestsSubject: ARTStatsResourceCount? = {
-                    let data: JSON = [
-                        [ "channels": [ "opened": 5, "peak": 10 ] ]
-                    ]
-                    let rawData = try! data.rawData()
-                    let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
-                    return stats?.channels
-                }()
 
                 it("should return a ResourceCount object") {
                     expect(channelsTestsSubject).to(beAnInstanceOf(ARTStatsResourceCount.self))
@@ -192,25 +239,6 @@ class Stats: QuickSpec {
             }
             
             context("push") {
-                let pushTestsSubject: ARTStatsPushCount? = {
-                    let data: JSON = [
-                        [ "push":
-                            [
-                                "messages": 10,
-                                "notifications": [
-                                    "invalid": 1,
-                                    "attempted": 2,
-                                    "successful": 3,
-                                    "failed": 4
-                                ],
-                                "directPublishes": 5
-                            ]
-                        ]
-                    ]
-                    let rawData = try! data.rawData()
-                    let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
-                    return stats?.pushes
-                }()
 
                 it("should return a ARTStatsPushCount object") {
                     expect(pushTestsSubject).to(beAnInstanceOf(ARTStatsPushCount.self))
@@ -242,13 +270,6 @@ class Stats: QuickSpec {
             }
 
             context("inProgress") {
-                let inProgressTestsStats: ARTStats? = {
-                    let data: JSON = [
-                        [ "inProgress": "2004-02-01:05:06" ]
-                    ]
-                    let rawData = try! data.rawData()
-                    return try! encoder.decodeStats(rawData)[0] as? ARTStats
-                }()
 
                 it("should return a Date object representing the last sub-interval included in this statistic") {
                     let dateComponents = NSDateComponents()
@@ -266,13 +287,6 @@ class Stats: QuickSpec {
             }
             
             context("count") {
-                let countTestStats: ARTStats? = {
-                    let data: JSON = [
-                        [ "count": 55 ]
-                    ]
-                    let rawData = try! data.rawData()
-                    return try! encoder.decodeStats(rawData)[0] as? ARTStats
-                }()
 
                 it("should return value for number of lower-level stats") {
                     expect(countTestStats?.count).to(equal(55))

@@ -3,12 +3,23 @@ import Nimble
 import Quick
 import SwiftyJSON
 
+            private let key = "+/h4eHh4eHh4eHh4eHh4eA=="
+            private let binaryKey = Data(base64Encoded: key, options: .ignoreUnknownCharacters)!
+            private let longKey = binaryKey + binaryKey
+
 class Crypto : QuickSpec {    
+
+// XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
+override class var defaultTestSuite : XCTestSuite {
+    let _ = key
+    let _ = binaryKey
+    let _ = longKey
+
+    return super.defaultTestSuite
+}
+
     override func spec() {
         describe("Crypto") {
-            let key = "+/h4eHh4eHh4eHh4eHh4eA=="
-            let binaryKey = Data(base64Encoded: key, options: .ignoreUnknownCharacters)!
-            let longKey = binaryKey + binaryKey
 
             // RSE1
             context("getDefaultParams") {

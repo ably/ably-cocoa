@@ -4,6 +4,68 @@ import Nimble
 import Foundation
 import Aspects
 
+                private let channelName = NSUUID().uuidString
+
+                // RTP16c
+                private func testResultsInErrorWithConnectionState(_ connectionState: ARTRealtimeConnectionState, performMethod: @escaping (ARTRealtime) -> ()) {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("test")
+                    expect(client.internal.options.queueMessages).to(beTrue())
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach() { _ in
+                            performMethod(client)
+                            done()
+                        }
+                    }
+                    
+                    expect(client.connection.state).toEventually(equal(connectionState), timeout: testTimeout)
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.enterClient("user", data: nil) { error in
+                            expect(error).toNot(beNil())
+                            expect(client.internal.queuedMessages).to(haveCount(0))
+                            done()
+                        }
+                        expect(client.internal.queuedMessages).to(haveCount(0))
+                    }
+                }
+                    private func getSuspendedChannel() -> (ARTRealtimeChannel, ARTRealtime) {
+                        let options = AblyTests.commonAppSetup()
+                        
+                        let client = ARTRealtime(options: options)
+                        let channel = client.channels.get("test")
+                        
+                        waitUntil(timeout: testTimeout) { done in
+                            channel.once(.suspended) { _ in
+                                done()
+                            }
+                            client.internal.onSuspended()
+                        }
+                        
+                        return (channel, client)
+                    }
+                    
+                    private func testSuspendedStateResultsInError(_ getPresence: (ARTRealtimeChannel, @escaping ([ARTPresenceMessage]?, ARTErrorInfo?) -> Void) -> Void) {
+                        let (channel, client) = getSuspendedChannel()
+                        defer { client.dispose(); client.close() }
+                        
+                        getPresence(channel) { result, err in
+                            expect(result).to(beNil())
+                            expect(err).toNot(beNil())
+                            guard let err = err else {
+                                return
+                            }
+                            expect(err.code).to(equal(ARTErrorCode.presenceStateIsOutOfSync.intValue))
+                        }
+                    }
+                        private let getParams: ARTRealtimePresenceQuery = {
+                            let getParams = ARTRealtimePresenceQuery()
+                            getParams.waitForSync = false
+                            return getParams
+                        }()
+
 class RealtimeClientPresence: QuickSpec {
 
     override func setUp() {
@@ -11,12 +73,20 @@ class RealtimeClientPresence: QuickSpec {
         AsyncDefaults.timeout = testTimeout
     }
 
+// XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
+override class var defaultTestSuite : XCTestSuite {
+    let _ = channelName
+    let _ = getParams
+
+    return super.defaultTestSuite
+}
+
+
     override func spec() {
         describe("Presence") {
 
             // RTP1
             context("ProtocolMessage bit flag") {
-                let channelName = NSUUID().uuidString
 
                 // FIXME Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
                 xit("when no members are present") {
@@ -3087,32 +3157,6 @@ class RealtimeClientPresence: QuickSpec {
                     }
                 }
 
-                // RTP16c
-                func testResultsInErrorWithConnectionState(_ connectionState: ARTRealtimeConnectionState, performMethod: @escaping (ARTRealtime) -> ()) {
-                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
-                    defer { client.dispose(); client.close() }
-                    let channel = client.channels.get("test")
-                    expect(client.internal.options.queueMessages).to(beTrue())
-                    
-                    waitUntil(timeout: testTimeout) { done in
-                        channel.attach() { _ in
-                            performMethod(client)
-                            done()
-                        }
-                    }
-                    
-                    expect(client.connection.state).toEventually(equal(connectionState), timeout: testTimeout)
-                    
-                    waitUntil(timeout: testTimeout) { done in
-                        channel.presence.enterClient("user", data: nil) { error in
-                            expect(error).toNot(beNil())
-                            expect(client.internal.queuedMessages).to(haveCount(0))
-                            done()
-                        }
-                        expect(client.internal.queuedMessages).to(haveCount(0))
-                    }
-                }
-
                 it("should result in an error if the connection state is .suspended") {
                     testResultsInErrorWithConnectionState(.suspended) { client in
                         AblyTests.queue.async {
@@ -3321,35 +3365,6 @@ class RealtimeClientPresence: QuickSpec {
                 
                 // RTP11d
                 context("If the Channel is in the SUSPENDED state then") {
-                    func getSuspendedChannel() -> (ARTRealtimeChannel, ARTRealtime) {
-                        let options = AblyTests.commonAppSetup()
-                        
-                        let client = ARTRealtime(options: options)
-                        let channel = client.channels.get("test")
-                        
-                        waitUntil(timeout: testTimeout) { done in
-                            channel.once(.suspended) { _ in
-                                done()
-                            }
-                            client.internal.onSuspended()
-                        }
-                        
-                        return (channel, client)
-                    }
-                    
-                    func testSuspendedStateResultsInError(_ getPresence: (ARTRealtimeChannel, @escaping ([ARTPresenceMessage]?, ARTErrorInfo?) -> Void) -> Void) {
-                        let (channel, client) = getSuspendedChannel()
-                        defer { client.dispose(); client.close() }
-                        
-                        getPresence(channel) { result, err in
-                            expect(result).to(beNil())
-                            expect(err).toNot(beNil())
-                            guard let err = err else {
-                                return
-                            }
-                            expect(err.code).to(equal(ARTErrorCode.presenceStateIsOutOfSync.intValue))
-                        }
-                    }
                     
                     context("by default") {
                         it("results in an error") {
@@ -3370,11 +3385,6 @@ class RealtimeClientPresence: QuickSpec {
                     }
                     
                     context("if waitForSync is false") {
-                        let getParams: ARTRealtimePresenceQuery = {
-                            let getParams = ARTRealtimePresenceQuery()
-                            getParams.waitForSync = false
-                            return getParams
-                        }()
                         
                         it("returns the members in the current PresenceMap") {
                             let (channel, client) = getSuspendedChannel()

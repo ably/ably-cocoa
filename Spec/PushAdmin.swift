@@ -2,6 +2,26 @@ import Ably
 import Nimble
 import Quick
 
+
+        private var rest: ARTRest!
+        private var mockHttpExecutor: MockHTTPExecutor!
+        private var storage: MockDeviceStorage!
+        private var localDevice: ARTLocalDevice!
+
+        private let recipient = [
+            "clientId": "bob"
+        ]
+
+        private let payload = [
+            "notification": [
+                "title": "Welcome"
+            ]
+        ]
+        
+        private let quxChannelName = "pushenabled:qux"
+
+            private let subscription = ARTPushChannelSubscription(clientId: "newClient", channel: quxChannelName)
+
 class PushAdmin : QuickSpec {
 
     private static let deviceDetails: ARTDeviceDetails = {
@@ -140,22 +160,22 @@ class PushAdmin : QuickSpec {
         super.tearDown()
     }
 
+// XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
+override class var defaultTestSuite : XCTestSuite {
+    let _ = rest
+    let _ = mockHttpExecutor
+    let _ = storage
+    let _ = localDevice
+    let _ = recipient
+    let _ = payload
+    let _ = quxChannelName
+    let _ = subscription
+
+    return super.defaultTestSuite
+}
+
+
     override func spec() {
-
-        var rest: ARTRest!
-        var mockHttpExecutor: MockHTTPExecutor!
-        var storage: MockDeviceStorage!
-        var localDevice: ARTLocalDevice!
-
-        let recipient = [
-            "clientId": "bob"
-        ]
-
-        let payload = [
-            "notification": [
-                "title": "Welcome"
-            ]
-        ]
 
         beforeEach {
             rest = ARTRest(key: "xxxx:xxxx")
@@ -165,8 +185,6 @@ class PushAdmin : QuickSpec {
             rest.internal.storage = storage
             localDevice = rest.device
         }
-        
-        let quxChannelName = "pushenabled:qux"
 
         // RSH1a
         describe("publish") {
@@ -668,8 +686,6 @@ class PushAdmin : QuickSpec {
         }
 
         describe("Channel Subscriptions") {
-
-            let subscription = ARTPushChannelSubscription(clientId: "newClient", channel: quxChannelName)
 
             // RSH1c3
             context("save") {

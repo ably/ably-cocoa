@@ -2,6 +2,15 @@ import Ably
 import Quick
 import Nimble
 
+                private let query: ARTStatsQuery = {
+                    let query = ARTStatsQuery()
+                    query.unit = .minute
+                    return query
+                }()
+            private let channelName = "test-message-size"
+            private let presenceData = buildStringThatExceedMaxMessageSize()
+            private let clientId = "testMessageSizeClientId"
+
 class RealtimeClient: QuickSpec {
 
     func checkError(_ errorInfo: ARTErrorInfo?, withAlternative message: String) {
@@ -16,6 +25,21 @@ class RealtimeClient: QuickSpec {
     func checkError(_ errorInfo: ARTErrorInfo?) {
         checkError(errorInfo, withAlternative: "")
     }
+
+// XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
+override class var defaultTestSuite : XCTestSuite {
+    let _ = query
+    let _ = channelName
+    let _ = presenceData
+    let _ = clientId
+
+    return super.defaultTestSuite
+}
+
+
+            class AblyManager {
+                static let sharedClient = ARTRealtime(options: { $0.autoConnect = false; return $0 }(ARTClientOptions(key: "xxxx:xxxx")))
+            }
 
     override func spec() {
         describe("RealtimeClient") {
@@ -274,11 +298,6 @@ class RealtimeClient: QuickSpec {
             }
 
             context("stats") {
-                let query: ARTStatsQuery = {
-                    let query = ARTStatsQuery()
-                    query.unit = .minute
-                    return query
-                }()
 
                 // RTC5a
                 it("should present an async interface") {
@@ -1375,10 +1394,6 @@ class RealtimeClient: QuickSpec {
                 }
             }
 
-            class AblyManager {
-                static let sharedClient = ARTRealtime(options: { $0.autoConnect = false; return $0 }(ARTClientOptions(key: "xxxx:xxxx")))
-            }
-
             // Issue https://github.com/ably/ably-cocoa/issues/640
             it("should dispatch in user queue when removing an observer") {
                 class Foo {
@@ -1480,9 +1495,6 @@ class RealtimeClient: QuickSpec {
         
         // RSL1i
         context("If the total size of message(s) exceeds the maxMessageSize") {
-            let channelName = "test-message-size"
-            let presenceData = buildStringThatExceedMaxMessageSize()
-            let clientId = "testMessageSizeClientId"
             
             it("the client library should reject the publish and indicate an error") {
                 let options = AblyTests.commonAppSetup()
