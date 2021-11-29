@@ -64,7 +64,7 @@ jobs:
           if [[ -z $(find ./derived_data -name "report-*.html") ]]; then
             echo "Static Analyzer found no issues."
           else
-            echo "Static Analyzer found some issues. HTML report will be available in Artifacts section."
+            echo "Static Analyzer found some issues. HTML report will be available in Artifacts section. Failing build."
             exit 1
           fi
       
