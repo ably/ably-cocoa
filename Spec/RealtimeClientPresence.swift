@@ -2889,75 +2889,80 @@ class RealtimeClientPresence: QuickSpec {
             }
 
             // RTP15e
-            let cases: [String:(ARTRealtimePresence, Optional<(ARTErrorInfo?)->Void>)->()] = [
-                "enterClient": { $0.enterClient("john", data: nil, callback: $1) },
-                "updateClient": { $0.updateClient("john", data: nil, callback: $1) },
-                "leaveClient": { $0.leaveClient("john", data: nil, callback: $1) }
-            ]
-            for (testCase, performMethod) in cases {
-                context(testCase) {
-                    it("should implicitly attach the Channel") {
-                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
-                        defer { client.dispose(); client.close() }
-                        let channel = client.channels.get("test")
-
-                        expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
-                        waitUntil(timeout: testTimeout) { done in
-                            //Call: enterClient, updateClient and leaveClient
-                            performMethod(channel.presence) { errorInfo in
-                                expect(errorInfo).to(beNil())
-                                done()
-                            }
-                            expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
+            func reusableTestsTestPresencePerformMethod(_ performMethod: @escaping (ARTRealtimePresence, Optional<(ARTErrorInfo?)->Void>)->()) {
+                it("should implicitly attach the Channel") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("test")
+                    
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
+                    waitUntil(timeout: testTimeout) { done in
+                        //Call: enterClient, updateClient and leaveClient
+                        performMethod(channel.presence) { errorInfo in
+                            expect(errorInfo).to(beNil())
+                            done()
                         }
-                        expect(channel.state).to(equal(ARTRealtimeChannelState.attached))
+                        expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
                     }
-
-                    it("should result in an error if the channel is in the FAILED state") {
-                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
-                        defer { client.dispose(); client.close() }
-                        let channel = client.channels.get("test")
-
-                        let expectedErrorMessage = "Something has failed"
-                        AblyTests.queue.async {
-                            channel.internal.onError(AblyTests.newErrorProtocolMessage(message: expectedErrorMessage))
-                        }
-
-                        waitUntil(timeout: testTimeout) { done in
-                            //Call: enterClient, updateClient and leaveClient
-                            performMethod(channel.presence) { error in
-                                expect(error?.code).to(equal(ARTErrorCode.channelOperationFailedInvalidState.intValue))
-                                expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
-                                guard let reason = channel.errorReason else {
-                                    fail("Reason is empty"); done(); return
-                                }
-                                expect(reason.message).to(equal(expectedErrorMessage))
-                                done()
-                            }
-                        }
+                    expect(channel.state).to(equal(ARTRealtimeChannelState.attached))
+                }
+                
+                it("should result in an error if the channel is in the FAILED state") {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("test")
+                    
+                    let expectedErrorMessage = "Something has failed"
+                    AblyTests.queue.async {
+                        channel.internal.onError(AblyTests.newErrorProtocolMessage(message: expectedErrorMessage))
                     }
-
-                    it("should result in an error if the channel moves to the FAILED state") {
-                        let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
-                        defer { client.dispose(); client.close() }
-                        let channel = client.channels.get("test")
-
-                        waitUntil(timeout: testTimeout) { done in
-                            let error = AblyTests.newErrorProtocolMessage()
-                            channel.once(.attaching) { _ in
-                                AblyTests.queue.async {
-                                    channel.internal.onError(error)
-                                }
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        //Call: enterClient, updateClient and leaveClient
+                        performMethod(channel.presence) { error in
+                            expect(error?.code).to(equal(ARTErrorCode.channelOperationFailedInvalidState.intValue))
+                            expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
+                            guard let reason = channel.errorReason else {
+                                fail("Reason is empty"); done(); return
                             }
-                            (client.internal.transport as! TestProxyTransport).actionsIgnored += [.attached]
-                            //Call: enterClient, updateClient and leaveClient
-                            performMethod(channel.presence) { errorInfo in
-                                expect(errorInfo).to(equal(error.error))
-                                done()
-                            }
+                            expect(reason.message).to(equal(expectedErrorMessage))
+                            done()
                         }
                     }
                 }
+                
+                it("should result in an error if the channel moves to the FAILED state") {
+                    let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("test")
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        let error = AblyTests.newErrorProtocolMessage()
+                        channel.once(.attaching) { _ in
+                            AblyTests.queue.async {
+                                channel.internal.onError(error)
+                            }
+                        }
+                        (client.internal.transport as! TestProxyTransport).actionsIgnored += [.attached]
+                        //Call: enterClient, updateClient and leaveClient
+                        performMethod(channel.presence) { errorInfo in
+                            expect(errorInfo).to(equal(error.error))
+                            done()
+                        }
+                    }
+                }
+            }
+            
+            context("enterClient") {
+                reusableTestsTestPresencePerformMethod { $0.enterClient("john", data: nil, callback: $1) }
+            }
+            
+            context("updateClient") {
+                reusableTestsTestPresencePerformMethod { $0.updateClient("john", data: nil, callback: $1) }
+            }
+            
+            context("leaveClient") {
+                reusableTestsTestPresencePerformMethod { $0.leaveClient("john", data: nil, callback: $1) }
             }
 
             // RTP15f
@@ -3083,48 +3088,52 @@ class RealtimeClientPresence: QuickSpec {
                 }
 
                 // RTP16c
-                let cases: [ARTRealtimeConnectionState:(ARTRealtime)->()] = [
-                    .suspended: { client in
+                func testResultsInErrorWithConnectionState(_ connectionState: ARTRealtimeConnectionState, performMethod: @escaping (ARTRealtime) -> ()) {
+                    let client = ARTRealtime(options: AblyTests.commonAppSetup())
+                    defer { client.dispose(); client.close() }
+                    let channel = client.channels.get("test")
+                    expect(client.internal.options.queueMessages).to(beTrue())
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.attach() { _ in
+                            performMethod(client)
+                            done()
+                        }
+                    }
+                    
+                    expect(client.connection.state).toEventually(equal(connectionState), timeout: testTimeout)
+                    
+                    waitUntil(timeout: testTimeout) { done in
+                        channel.presence.enterClient("user", data: nil) { error in
+                            expect(error).toNot(beNil())
+                            expect(client.internal.queuedMessages).to(haveCount(0))
+                            done()
+                        }
+                        expect(client.internal.queuedMessages).to(haveCount(0))
+                    }
+                }
+
+                it("should result in an error if the connection state is .suspended") {
+                    testResultsInErrorWithConnectionState(.suspended) { client in
                         AblyTests.queue.async {
                             client.internal.onSuspended()
                         }
-                    },
-                    .closed: { client in
+                    }
+                }
+                
+                it("should result in an error if the connection state is .closed") {
+                    testResultsInErrorWithConnectionState(.closed) { client in
                         client.close()
-                    },
-                    .failed: { client in
+                    }
+                }
+                
+                it("should result in an error if the connection state is .failed") {
+                    testResultsInErrorWithConnectionState(.failed) { client in
                         AblyTests.queue.async {
                             client.internal.onError(AblyTests.newErrorProtocolMessage())
                         }
                     }
-                ]
-                for (connectionState, performMethod) in cases {
-                    it("should result in an error if the connection state is \(connectionState)") {
-                        let client = ARTRealtime(options: AblyTests.commonAppSetup())
-                        defer { client.dispose(); client.close() }
-                        let channel = client.channels.get("test")
-                        expect(client.internal.options.queueMessages).to(beTrue())
-
-                        waitUntil(timeout: testTimeout) { done in
-                            channel.attach() { _ in
-                                performMethod(client)
-                                done()
-                            }
-                        }
-
-                        expect(client.connection.state).toEventually(equal(connectionState), timeout: testTimeout)
-
-                        waitUntil(timeout: testTimeout) { done in
-                            channel.presence.enterClient("user", data: nil) { error in
-                                expect(error).toNot(beNil())
-                                expect(client.internal.queuedMessages).to(haveCount(0))
-                                done()
-                            }
-                            expect(client.internal.queuedMessages).to(haveCount(0))
-                        }
-                    }
                 }
-
             }
 
             // RTP11
@@ -3327,37 +3336,45 @@ class RealtimeClientPresence: QuickSpec {
                         
                         return (channel, client)
                     }
-
-                    for (name, getPresence) in [
-                        ("by default", { channel, callback in
-                            channel.presence.get(callback)
-                        }),
-                        ("if waitForSync is true", { channel, callback in
-                            let params = ARTRealtimePresenceQuery()
-                            params.waitForSync = true
-                            channel.presence.get(params, callback: callback)
-                        })
-                    ] as [(String, (ARTRealtimeChannel, @escaping ([ARTPresenceMessage]?, ARTErrorInfo?) -> Void) -> Void)] {
-                        context(name) {
-                            it("results in an error") {
-                                let (channel, client) = getSuspendedChannel()
-                                defer { client.dispose(); client.close() }
-                                
-                                getPresence(channel) { result, err in
-                                    expect(result).to(beNil())
-                                    expect(err).toNot(beNil())
-                                    guard let err = err else {
-                                        return
-                                    }
-                                    expect(err.code).to(equal(ARTErrorCode.presenceStateIsOutOfSync.intValue))
-                                }
+                    
+                    func testSuspendedStateResultsInError(_ getPresence: (ARTRealtimeChannel, @escaping ([ARTPresenceMessage]?, ARTErrorInfo?) -> Void) -> Void) {
+                        let (channel, client) = getSuspendedChannel()
+                        defer { client.dispose(); client.close() }
+                        
+                        getPresence(channel) { result, err in
+                            expect(result).to(beNil())
+                            expect(err).toNot(beNil())
+                            guard let err = err else {
+                                return
+                            }
+                            expect(err.code).to(equal(ARTErrorCode.presenceStateIsOutOfSync.intValue))
+                        }
+                    }
+                    
+                    context("by default") {
+                        it("results in an error") {
+                            testSuspendedStateResultsInError { channel, callback in
+                                channel.presence.get(callback)
+                            }
+                        }
+                    }
+                    
+                    context("if waitForSync is true") {
+                        it("results in an error") {
+                            testSuspendedStateResultsInError { channel, callback in
+                                let params = ARTRealtimePresenceQuery()
+                                params.waitForSync = true
+                                channel.presence.get(params, callback: callback)
                             }
                         }
                     }
                     
                     context("if waitForSync is false") {
-                        let getParams = ARTRealtimePresenceQuery()
-                        getParams.waitForSync = false
+                        let getParams: ARTRealtimePresenceQuery = {
+                            let getParams = ARTRealtimePresenceQuery()
+                            getParams.waitForSync = false
+                            return getParams
+                        }()
                         
                         it("returns the members in the current PresenceMap") {
                             let (channel, client) = getSuspendedChannel()

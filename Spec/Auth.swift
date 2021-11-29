@@ -116,68 +116,94 @@ class Auth : QuickSpec {
                 }
 
                 // RSA3b
-                it("should send the token in the Authorization header") {
-                    let options = AblyTests.clientOptions()
-                    options.token = getTestToken()
-
-                    let client = ARTRest(options: options)
-                    testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
-                    client.internal.httpExecutor = testHTTPExecutor
-                    
-                    waitUntil(timeout: testTimeout) { done in
-                        client.channels.get("test").publish(nil, data: "message") { error in
-                            done()
+                context("for REST requests") {
+                    it("should send the token in the Authorization header") {
+                        let options = AblyTests.clientOptions()
+                        options.token = getTestToken()
+                        
+                        let client = ARTRest(options: options)
+                        testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+                        client.internal.httpExecutor = testHTTPExecutor
+                        
+                        waitUntil(timeout: testTimeout) { done in
+                            client.channels.get("test").publish(nil, data: "message") { error in
+                                done()
+                            }
                         }
+                        
+                        guard let currentToken = client.internal.options.token else {
+                            fail("No access token")
+                            return
+                        }
+                        
+                        let expectedAuthorization = "Bearer \(currentToken)"
+                        
+                        guard let request = testHTTPExecutor.requests.first else {
+                            fail("No request found")
+                            return
+                        }
+                        
+                        let authorization = request.allHTTPHeaderFields?["Authorization"]
+                        
+                        expect(authorization).to(equal(expectedAuthorization))
                     }
-
-                    guard let currentToken = client.internal.options.token else {
-                        fail("No access token")
-                        return
-                    }
-
-                    let expectedAuthorization = "Bearer \(currentToken)"
-                    
-                    guard let request = testHTTPExecutor.requests.first else {
-                        fail("No request found")
-                        return
-                    }
-
-                    let authorization = request.allHTTPHeaderFields?["Authorization"]
-
-                    expect(authorization).to(equal(expectedAuthorization))
                 }
                 
                 // RSA3c
-                it("should send the token in the Authorization header") {
-                    let options = AblyTests.clientOptions()
-                    options.token = getTestToken()
-                    options.autoConnect = false
-
-                    let client = ARTRealtime(options: options)
-                    defer { client.dispose(); client.close() }
-                    client.internal.setTransport(TestProxyTransport.self)
-                    client.connect()
-
-                    if let transport = client.internal.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
-                        expect(query).to(haveParam("accessToken", withValue: client.auth.tokenDetails?.token ?? ""))
-                    }
-                    else {
-                        XCTFail("MockTransport is not working")
+                context("for Realtime connections") {
+                    it("should send the token in the querystring as a param named accessToken") {
+                        let options = AblyTests.clientOptions()
+                        options.token = getTestToken()
+                        options.autoConnect = false
+                        
+                        let client = ARTRealtime(options: options)
+                        defer { client.dispose(); client.close() }
+                        client.internal.setTransport(TestProxyTransport.self)
+                        client.connect()
+                        
+                        if let transport = client.internal.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
+                            expect(query).to(haveParam("accessToken", withValue: client.auth.tokenDetails?.token ?? ""))
+                        }
+                        else {
+                            XCTFail("MockTransport is not working")
+                        }
                     }
                 }
             }
 
             // RSA4
             context("authentication method") {
-                for (caseName, caseSetter) in AblyTests.authTokenCases {
-                    it("should be default auth method when \(caseName) is set") {
-                        let options = ARTClientOptions()
-                        caseSetter(options)
+                func testOptionsGiveDefaultAuthMethod(_ caseSetter: (ARTAuthOptions) -> Void) {
+                    let options = ARTClientOptions()
+                    caseSetter(options)
+                    
+                    let client = ARTRest(options: options)
+                    
+                    expect(client.auth.internal.method).to(equal(ARTAuthMethod.token))
+                }
+                
+                it("should be default auth method when options’ useTokenAuth is set") {
+                    testOptionsGiveDefaultAuthMethod { $0.useTokenAuth = true; $0.key = "fake:key" }
+                }
+                
+                it("should be default auth method when options’ authUrl is set") {
+                    testOptionsGiveDefaultAuthMethod { $0.authUrl = URL(string: "http://test.com") }
+                }
+                
+                it("should be default auth method when options’ authCallback is set") {
+                    testOptionsGiveDefaultAuthMethod { $0.authCallback = { _, _ in return } }
+                }
+                
+                it("should be default auth method when options’ tokenDetails is set") {
+                    testOptionsGiveDefaultAuthMethod { $0.tokenDetails = ARTTokenDetails(token: "token") }
+                }
 
-                        let client = ARTRest(options: options)
-
-                        expect(client.auth.internal.method).to(equal(ARTAuthMethod.token))
-                    }
+                it("should be default auth method when options’ token is set") {
+                    testOptionsGiveDefaultAuthMethod { $0.token = "token" }
+                }
+                
+                it("should be default auth method when options’ key is set") {
+                    testOptionsGiveDefaultAuthMethod { $0.tokenDetails = ARTTokenDetails(token: "token"); $0.key = "fake:key" }
                 }
 
                 // RSA4a
@@ -502,18 +528,19 @@ class Auth : QuickSpec {
                 // Cases:
                 //  - useTokenAuth is specified and thus a key is not provided
                 //  - authCallback and authUrl are both specified
-                let cases: [String: (ARTAuthOptions) -> ()] = [
-                    "useTokenAuth and no key":{ $0.useTokenAuth = true },
-                    "authCallback and authUrl":{ $0.authCallback = { params, callback in /*nothing*/ }; $0.authUrl = URL(string: "http://auth.ably.io") }
-                ]
+                func testStopsClientWithOptions(caseSetter: (ARTClientOptions) -> ()) {
+                    let options = ARTClientOptions()
+                    caseSetter(options)
+                    
+                    expect{ ARTRest(options: options) }.to(raiseException())
+                }
                 
-                for (caseName, caseSetter) in cases {
-                    it("should stop client when \(caseName) occurs") {
-                        let options = ARTClientOptions()
-                        caseSetter(options)
-                        
-                        expect{ ARTRest(options: options) }.to(raiseException())
-                    }
+                it("should stop client when useTokenAuth and no key occurs") {
+                    testStopsClientWithOptions { $0.useTokenAuth = true }
+                }
+                
+                it ("should stop client when authCallback and authUrl occurs") {
+                    testStopsClientWithOptions { $0.authCallback = { params, callback in /*nothing*/ }; $0.authUrl = URL(string: "http://auth.ably.io") }
                 }
 
                 // RSA4c
@@ -3942,58 +3969,53 @@ class Auth : QuickSpec {
         describe("TokenRequest") {
             // TE6
             describe("fromJson") {
-                let cases = [
-                    "with TTL": (
-                        "{" +
-                        "    \"clientId\":\"myClientId\"," +
-                        "    \"mac\":\"4rr4J+JzjiCL1DoS8wq7k11Z4oTGCb1PoeN+yGjkaH4=\"," +
-                        "    \"capability\":\"{\\\"test\\\":[\\\"publish\\\"]}\"," +
-                        "    \"ttl\":42000," +
-                        "    \"timestamp\":1479087321934," +
-                        "    \"keyName\":\"xxxxxx.yyyyyy\"," +
-                        "    \"nonce\":\"7830658976108826\"" +
-                        "}",
-                        { (_ request: ARTTokenRequest) in
-                            expect(request.clientId).to(equal("myClientId"))
-                            expect(request.mac).to(equal("4rr4J+JzjiCL1DoS8wq7k11Z4oTGCb1PoeN+yGjkaH4="))
-                            expect(request.capability).to(equal("{\"test\":[\"publish\"]}"))
-                            expect(request.ttl as? TimeInterval).to(equal(TimeInterval(42)))
-                            expect(request.timestamp).to(equal(Date(timeIntervalSince1970: 1479087321.934)))
-                            expect(request.keyName).to(equal("xxxxxx.yyyyyy"))
-                            expect(request.nonce).to(equal("7830658976108826"))
-                        }
-                    ),
-                    "without TTL": (
-                        "{" +
-                        "    \"mac\":\"4rr4J+JzjiCL1DoS8wq7k11Z4oTGCb1PoeN+yGjkaH4=\"," +
-                        "    \"capability\":\"{\\\"test\\\":[\\\"publish\\\"]}\"," +
-                        "    \"timestamp\":1479087321934," +
-                        "    \"keyName\":\"xxxxxx.yyyyyy\"," +
-                        "    \"nonce\":\"7830658976108826\"" +
-                        "}",
-                        { (_ request: ARTTokenRequest) in
-                            expect(request.clientId).to(beNil())
-                            expect(request.mac).to(equal("4rr4J+JzjiCL1DoS8wq7k11Z4oTGCb1PoeN+yGjkaH4="))
-                            expect(request.capability).to(equal("{\"test\":[\"publish\"]}"))
-                            expect(request.ttl).to(beNil())
-                            expect(request.timestamp).to(equal(Date(timeIntervalSince1970: 1479087321.934)))
-                            expect(request.keyName).to(equal("xxxxxx.yyyyyy"))
-                            expect(request.nonce).to(equal("7830658976108826"))
-                        }
-                    )
-                ]
+                func reusableTestsTestTokenRequestFromJson(_ json: String, check: @escaping (_ request: ARTTokenRequest) -> Void) {
+                    it("accepts a string, which should be interpreted as JSON") {
+                        check(try! ARTTokenRequest.fromJson(json as ARTJsonCompatible))
+                    }
 
-                for (caseName, (json, check)) in cases {
-                    context(caseName) {
-                        it("accepts a string, which should be interpreted as JSON") {
-                            check(try! ARTTokenRequest.fromJson(json as ARTJsonCompatible))
-                        }
+                    it("accepts a NSDictionary") {
+                        let data = json.data(using: String.Encoding.utf8)!
+                        let dict = try! JSONSerialization.jsonObject(with: data, options: .mutableLeaves) as! NSDictionary
+                        check(try! ARTTokenRequest.fromJson(dict))
+                    }
+                }
 
-                        it("accepts a NSDictionary") {
-                            let data = json.data(using: String.Encoding.utf8)!
-                            let dict = try! JSONSerialization.jsonObject(with: data, options: .mutableLeaves) as! NSDictionary
-                            check(try! ARTTokenRequest.fromJson(dict))
-                        }
+                context("with TTL") {
+                    reusableTestsTestTokenRequestFromJson("{" +
+                                             "    \"clientId\":\"myClientId\"," +
+                                             "    \"mac\":\"4rr4J+JzjiCL1DoS8wq7k11Z4oTGCb1PoeN+yGjkaH4=\"," +
+                                             "    \"capability\":\"{\\\"test\\\":[\\\"publish\\\"]}\"," +
+                                             "    \"ttl\":42000," +
+                                             "    \"timestamp\":1479087321934," +
+                                             "    \"keyName\":\"xxxxxx.yyyyyy\"," +
+                                             "    \"nonce\":\"7830658976108826\"" +
+                                             "}") { request in
+                        expect(request.clientId).to(equal("myClientId"))
+                        expect(request.mac).to(equal("4rr4J+JzjiCL1DoS8wq7k11Z4oTGCb1PoeN+yGjkaH4="))
+                        expect(request.capability).to(equal("{\"test\":[\"publish\"]}"))
+                        expect(request.ttl as? TimeInterval).to(equal(TimeInterval(42)))
+                        expect(request.timestamp).to(equal(Date(timeIntervalSince1970: 1479087321.934)))
+                        expect(request.keyName).to(equal("xxxxxx.yyyyyy"))
+                        expect(request.nonce).to(equal("7830658976108826"))
+                    }
+                }
+                
+                context("without TTL") {
+                    reusableTestsTestTokenRequestFromJson("{" +
+                                             "    \"mac\":\"4rr4J+JzjiCL1DoS8wq7k11Z4oTGCb1PoeN+yGjkaH4=\"," +
+                                             "    \"capability\":\"{\\\"test\\\":[\\\"publish\\\"]}\"," +
+                                             "    \"timestamp\":1479087321934," +
+                                             "    \"keyName\":\"xxxxxx.yyyyyy\"," +
+                                             "    \"nonce\":\"7830658976108826\"" +
+                                             "}") { request in
+                        expect(request.clientId).to(beNil())
+                        expect(request.mac).to(equal("4rr4J+JzjiCL1DoS8wq7k11Z4oTGCb1PoeN+yGjkaH4="))
+                        expect(request.capability).to(equal("{\"test\":[\"publish\"]}"))
+                        expect(request.ttl).to(beNil())
+                        expect(request.timestamp).to(equal(Date(timeIntervalSince1970: 1479087321.934)))
+                        expect(request.keyName).to(equal("xxxxxx.yyyyyy"))
+                        expect(request.nonce).to(equal("7830658976108826"))
                     }
                 }
 
@@ -4092,8 +4114,11 @@ class Auth : QuickSpec {
 
             // RSA8g RSA8c
             context("when using authUrl") {
-                let options = AblyTests.clientOptions()
-                options.authUrl = URL(string: echoServerAddress)!
+                let options: ARTClientOptions = {
+                    let options = AblyTests.clientOptions()
+                    options.authUrl = URL(string: echoServerAddress)!
+                    return options
+                }()
 
                 var keys: [String: String]!
 

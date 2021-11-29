@@ -10,63 +10,75 @@ class Stats: QuickSpec {
             let encoder = ARTJsonLikeEncoder()
 
             // TS6
-            for attribute in ["all", "persisted"] {
-                context(attribute) {
-                    let data: JSON = [
-                        [ attribute: [ "messages": [ "count": 5], "all": [ "data": 10 ] ] ]
-                    ]
-                    let rawData = try! data.rawData()
-                    let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
-                    let subject = stats?.value(forKey: attribute) as? ARTStatsMessageTypes
+            func reusableTestsTestAttribute(_ attribute: String) {
+                let data: JSON = [
+                    [ attribute: [ "messages": [ "count": 5], "all": [ "data": 10 ] ] ]
+                ]
+                let rawData = try! data.rawData()
+                let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
+                let subject = stats?.value(forKey: attribute) as? ARTStatsMessageTypes
 
-                    it("should return a MessagesTypes object") {
-                        expect(subject).to(beAnInstanceOf(ARTStatsMessageTypes.self))
-                    }
-
-                    // TS5
-                    it("should return value for message counts") {
-                        expect(subject?.messages.count).to(equal(5))
-                    }
-
-                    // TS5
-                    it("should return value for all data transferred") {
-                        expect(subject?.all.data).to(equal(10))
-                    }
-
-                    // TS2
-                    it("should return zero for empty values") {
-                        expect(subject?.presence.count).to(equal(0))
-                    }
+                it("should return a MessagesTypes object") {
+                    expect(subject).to(beAnInstanceOf(ARTStatsMessageTypes.self))
                 }
+
+                // TS5
+                it("should return value for message counts") {
+                    expect(subject?.messages.count).to(equal(5))
+                }
+
+                // TS5
+                it("should return value for all data transferred") {
+                    expect(subject?.all.data).to(equal(10))
+                }
+
+                // TS2
+                it("should return zero for empty values") {
+                    expect(subject?.presence.count).to(equal(0))
+                }
+            }
+            
+            context("all") {
+                reusableTestsTestAttribute("all")
+            }
+            
+            context("persisted") {
+                reusableTestsTestAttribute("persisted")
             }
 
             // TS7
-            for direction in ["inbound", "outbound"] {
-                context(direction) {
-                    let data: JSON = [
-                        [ direction: [
-                            "realtime": [ "messages": [ "count": 5] ],
-                            "all": [ "messages": [ "count": 25 ], "presence": [ "data": 210 ] ]
-                        ] ]
-                    ]
-                    let rawData = try! data.rawData()
-                    let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
-                    let subject = stats?.value(forKey: direction) as? ARTStatsMessageTraffic
+            func reusableTestsTestDirection(_ direction: String) {
+                let data: JSON = [
+                    [ direction: [
+                        "realtime": [ "messages": [ "count": 5] ],
+                        "all": [ "messages": [ "count": 25 ], "presence": [ "data": 210 ] ]
+                    ] ]
+                ]
+                let rawData = try! data.rawData()
+                let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
+                let subject = stats?.value(forKey: direction) as? ARTStatsMessageTraffic
 
-                    it("should return a MessageTraffic object") {
-                        expect(subject).to(beAnInstanceOf(ARTStatsMessageTraffic.self))
-                    }
-
-                    // TS5
-                    it("should return value for realtime message counts") {
-                        expect(subject?.realtime.messages.count).to(equal(5))
-                    }
-
-                    // TS5
-                    it("should return value for all presence data") {
-                        expect(subject?.all.presence.data).to(equal(210))
-                    }
+                it("should return a MessageTraffic object") {
+                    expect(subject).to(beAnInstanceOf(ARTStatsMessageTraffic.self))
                 }
+
+                // TS5
+                it("should return value for realtime message counts") {
+                    expect(subject?.realtime.messages.count).to(equal(5))
+                }
+
+                // TS5
+                it("should return value for all presence data") {
+                    expect(subject?.all.presence.data).to(equal(210))
+                }
+            }
+        
+            context("inbound") {
+                reusableTestsTestDirection("inbound")
+            }
+            
+            context("outbound") {
+                reusableTestsTestDirection("outbound")
             }
 
             // TS4
@@ -124,29 +136,35 @@ class Stats: QuickSpec {
             }
 
             // TS8
-            for requestType in ["apiRequests", "tokenRequests"] {
+            func reusableTestsTestRequestType(_ requestType: String) {
                 let data: JSON = [
                     [ requestType: [ "succeeded": 5, "failed": 10 ] ]
                 ]
                 let rawData = try! data.rawData()
                 let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
                 let subject = stats?.value(forKey: requestType) as? ARTStatsRequestCount
+                
+                it("should return a RequestCount object") {
+                    expect(subject).to(beAnInstanceOf(ARTStatsRequestCount.self))
+                }
 
-                context(requestType) {
-                    it("should return a RequestCount object") {
-                        expect(subject).to(beAnInstanceOf(ARTStatsRequestCount.self))
-                    }
+                it("should return value for succeeded") {
+                    expect(subject?.succeeded).to(equal(5))
+                }
 
-                    it("should return value for succeeded") {
-                        expect(subject?.succeeded).to(equal(5))
-                    }
-
-                    it("should return value for failed") {
-                        expect(subject?.failed).to(equal(10))
-                    }
+                it("should return value for failed") {
+                    expect(subject?.failed).to(equal(10))
                 }
             }
-
+            
+            context("apiRequests") {
+                reusableTestsTestRequestType("apiRequests")
+            }
+            
+            context("tokenRequests") {
+                reusableTestsTestRequestType("tokenRequests")
+            }
+            
             context("interval") {
                 let data: JSON = [
                     [ "intervalId": "2004-02-01:05:06" ]

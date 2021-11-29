@@ -274,8 +274,11 @@ class RealtimeClient: QuickSpec {
             }
 
             context("stats") {
-                let query = ARTStatsQuery()
-                query.unit = .minute
+                let query: ARTStatsQuery = {
+                    let query = ARTStatsQuery()
+                    query.unit = .minute
+                    return query
+                }()
 
                 // RTC5a
                 it("should present an async interface") {
