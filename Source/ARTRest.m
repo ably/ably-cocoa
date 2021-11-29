@@ -732,6 +732,9 @@ dispatch_async(_queue, ^{
     //
     // As a side effect, the first instance "wins" at setting the device's
     // client ID.
+    if (ARTLocalDevice.shared_nosync.id == nil) {
+        ARTLocalDevice.shared_nosync = nil;
+    }
     if (ARTLocalDevice.shared_nosync == nil) {
         ARTLocalDevice.shared_nosync = [ARTLocalDevice load:self.auth.clientId_nosync storage:self.storage];
     }
