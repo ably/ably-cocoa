@@ -1,194 +1,190 @@
 import Ably
-import Quick
-import Nimble
 import AblyDeltaCodec
+import Nimble
+import Quick
 
-
-                private let testData: [String] = [
-                    "{ foo: \"bar\", count: 1, status: \"active\" }",
-                    "{ foo: \"bar\", count: 2, status: \"active\" }",
-                    "{ foo: \"bar\", count: 2, status: \"inactive\" }",
-                    "{ foo: \"bar\", count: 3, status: \"inactive\" }",
-                    "{ foo: \"bar\", count: 3, status: \"active\" }"
-                ]
+private let testData: [String] = [
+    "{ foo: \"bar\", count: 1, status: \"active\" }",
+    "{ foo: \"bar\", count: 2, status: \"active\" }",
+    "{ foo: \"bar\", count: 2, status: \"inactive\" }",
+    "{ foo: \"bar\", count: 3, status: \"inactive\" }",
+    "{ foo: \"bar\", count: 3, status: \"active\" }",
+]
 
 class DeltaCodec: XCTestCase {
+    // XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
+    override class var defaultTestSuite: XCTestSuite {
+        _ = testData
 
-// XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
-override class var defaultTestSuite : XCTestSuite {
-    let _ = testData
+        return super.defaultTestSuite
+    }
 
-    return super.defaultTestSuite
-}
-        
+    // RTL19
+    func test__001__DeltaCodec__decoding__should_decode_vcdiff_encoded_messages() {
+        let options = AblyTests.commonAppSetup()
+        let client = AblyTests.newRealtime(options)
+        defer { client.dispose(); client.close() }
 
-            
+        let channelOptions = ARTRealtimeChannelOptions()
+        channelOptions.modes = [.subscribe, .publish]
+        channelOptions.params = [
+            "delta": "vcdiff",
+        ]
 
-                // RTL19
-                func test__001__DeltaCodec__decoding__should_decode_vcdiff_encoded_messages() {
-                    let options = AblyTests.commonAppSetup()
-                    let client = AblyTests.newRealtime(options)
-                    defer { client.dispose(); client.close() }
+        let channel = client.channels.get("foo", options: channelOptions)
 
-                    let channelOptions = ARTRealtimeChannelOptions()
-                    channelOptions.modes = [.subscribe, .publish]
-                    channelOptions.params = [
-                        "delta": "vcdiff"
-                    ]
+        waitUntil(timeout: testTimeout) { done in
+            channel.attach { error in
+                expect(error).to(beNil())
+                done()
+            }
+        }
 
-                    let channel = client.channels.get("foo", options: channelOptions)
+        guard let transport = client.internal.transport as? TestProxyTransport else {
+            fail("TestProxyTransport is not be assigned"); return
+        }
 
-                    waitUntil(timeout: testTimeout) { done in
-                        channel.attach() { error in
-                            expect(error).to(beNil())
-                            done()
-                        }
-                    }
+        var receivedMessages: [ARTMessage] = []
+        channel.subscribe { message in
+            receivedMessages.append(message)
+        }
 
-                    guard let transport = client.internal.transport as? TestProxyTransport else {
-                        fail("TestProxyTransport is not be assigned"); return
-                    }
+        for (i, data) in testData.enumerated() {
+            channel.publish(String(i), data: data)
+        }
 
-                    var receivedMessages: [ARTMessage] = []
-                    channel.subscribe { message in
-                        receivedMessages.append(message)
-                    }
+        expect(channel.errorReason).to(beNil())
+        expect(receivedMessages).toEventually(haveCount(testData.count))
 
-                    for (i, data) in testData.enumerated() {
-                        channel.publish(String(i), data: data)
-                    }
+        for (i, message) in receivedMessages.enumerated() {
+            if let name = message.name, let expectedMessageIndex = Int(name) {
+                expect(i).to(equal(expectedMessageIndex))
+                expect(message.data as? String).to(equal(testData[expectedMessageIndex]))
+            } else {
+                fail("Received message has an unexpected 'id': \(message)")
+            }
+        }
 
-                    expect(channel.errorReason).to(beNil())
-                    expect(receivedMessages).toEventually(haveCount(testData.count))
+        channel.unsubscribe()
 
-                    for (i, message) in receivedMessages.enumerated() {
-                        if let name = message.name, let expectedMessageIndex = Int(name) {
-                            expect(i).to(equal(expectedMessageIndex))
-                            expect(message.data as? String).to(equal(testData[expectedMessageIndex]))
-                        }
-                        else {
-                            fail("Received message has an unexpected 'id': \(message)")
-                        }
-                    }
+        let protocolMessages = transport.protocolMessagesReceived.filter { $0.action == .message }
+        let messagesEncoding = (protocolMessages.reduce([]) { $0 + ($1.messages ?? []) }.compactMap { $0.encoding })
+        expect(messagesEncoding).to(allPass(equal("utf-8/vcdiff")))
+    }
 
-                    channel.unsubscribe()
+    // RTL20
+    func test__002__DeltaCodec__decoding__should_fail_and_recover_when_the_vcdiff_messages_are_out_of_order() {
+        let options = AblyTests.commonAppSetup()
+        let client = AblyTests.newRealtime(options)
+        defer { client.dispose(); client.close() }
+        let channelOptions = ARTRealtimeChannelOptions()
+        channelOptions.params = ["delta": "vcdiff"]
+        let channel = client.channels.get("foo", options: channelOptions)
 
-                    let protocolMessages = transport.protocolMessagesReceived.filter({ $0.action == .message })
-                    let messagesEncoding = (protocolMessages.reduce([], { $0 + ($1.messages ?? []) }).compactMap({ $0.encoding }))
-                    expect(messagesEncoding).to(allPass(equal("utf-8/vcdiff")))
+        waitUntil(timeout: testTimeout) { done in
+            channel.attach { error in
+                expect(error).to(beNil())
+                done()
+            }
+        }
+
+        guard let transport = client.internal.transport as? TestProxyTransport else {
+            fail("TestProxyTransport is not be assigned"); return
+        }
+
+        transport.setBeforeIncomingMessageModifier { protocolMessage in
+            if protocolMessage.action == .message,
+               let thirdMessage = protocolMessage.messages?.filter({ $0.name == "2" }).first
+            {
+                thirdMessage.extras = [
+                    "delta": [
+                        "format": "vcdiff",
+                        "from": "foo:1:0",
+                    ],
+                ] as NSDictionary
+                transport.setBeforeIncomingMessageModifier(nil)
+            }
+            return protocolMessage
+        }
+
+        var receivedMessages: [ARTMessage] = []
+        channel.subscribe { message in
+            receivedMessages.append(message)
+        }
+
+        for (i, data) in testData.enumerated() {
+            channel.publish(String(i), data: data)
+        }
+
+        waitUntil(timeout: testTimeout) { done in
+            let partialDone = AblyTests.splitDone(2, done: done)
+            channel.once(.attaching) { stateChange in
+                expect(receivedMessages).to(haveCount(testData.count - 3)) // messages discarded
+                expect(stateChange.reason?.code).to(equal(ARTErrorCode.unableToDecodeMessage.intValue))
+                partialDone()
+            }
+            channel.once(.attached) { _ in
+                partialDone()
+            }
+        }
+
+        expect(receivedMessages).toEventually(haveCount(testData.count))
+    }
+
+    // RTL18
+    func test__003__DeltaCodec__decoding__should_recover_when_the_vcdiff_message_decoding_fails() {
+        let options = AblyTests.commonAppSetup()
+        let client = AblyTests.newRealtime(options)
+        defer { client.dispose(); client.close() }
+        let channelOptions = ARTRealtimeChannelOptions()
+        channelOptions.params = ["delta": "vcdiff"]
+        let channel = client.channels.get("foo", options: channelOptions)
+
+        waitUntil(timeout: testTimeout) { done in
+            channel.attach { error in
+                expect(error).to(beNil())
+                done()
+            }
+        }
+
+        guard let transport = client.internal.transport as? TestProxyTransport else {
+            fail("TestProxyTransport is not be assigned"); return
+        }
+
+        transport.setBeforeIncomingMessageModifier { protocolMessage in
+            if protocolMessage.action == .message,
+               let thirdMessage = protocolMessage.messages?.filter({ $0.name == "2" }).first
+            {
+                thirdMessage.data = Data() // invalid delta
+                transport.setBeforeIncomingMessageModifier(nil)
+            }
+            return protocolMessage
+        }
+
+        var receivedMessages: [ARTMessage] = []
+        channel.subscribe { message in
+            receivedMessages.append(message)
+        }
+
+        for (i, data) in testData.enumerated() {
+            channel.publish(String(i), data: data)
+        }
+
+        waitUntil(timeout: testTimeout) { done in
+            let partialDone = AblyTests.splitDone(2, done: done)
+            channel.once(.attaching) { stateChange in
+                expect(receivedMessages).to(haveCount(testData.count - 3)) // messages discarded
+                guard let errorReason = stateChange.reason else {
+                    fail("Reason should not be empty"); partialDone(); return
                 }
+                expect(errorReason.code).to(equal(ARTErrorCode.unableToDecodeMessage.intValue))
+                partialDone()
+            }
+            channel.once(.attached) { _ in
+                partialDone()
+            }
+        }
 
-                // RTL20
-                func test__002__DeltaCodec__decoding__should_fail_and_recover_when_the_vcdiff_messages_are_out_of_order() {
-                    let options = AblyTests.commonAppSetup()
-                    let client = AblyTests.newRealtime(options)
-                    defer { client.dispose(); client.close() }
-                    let channelOptions = ARTRealtimeChannelOptions()
-                    channelOptions.params = ["delta": "vcdiff"]
-                    let channel = client.channels.get("foo", options: channelOptions)
-
-                    waitUntil(timeout: testTimeout) { done in
-                        channel.attach() { error in
-                            expect(error).to(beNil())
-                            done()
-                        }
-                    }
-
-                    guard let transport = client.internal.transport as? TestProxyTransport else {
-                        fail("TestProxyTransport is not be assigned"); return
-                    }
-
-                    transport.setBeforeIncomingMessageModifier({ protocolMessage in
-                        if protocolMessage.action == .message,
-                            let thirdMessage = protocolMessage.messages?.filter({ $0.name == "2" }).first {
-                            thirdMessage.extras = [
-                                "delta": [
-                                    "format": "vcdiff",
-                                    "from": "foo:1:0"
-                                ]
-                            ] as NSDictionary
-                            transport.setBeforeIncomingMessageModifier(nil)
-                        }
-                        return protocolMessage
-                    })
-
-                    var receivedMessages: [ARTMessage] = []
-                    channel.subscribe { message in
-                        receivedMessages.append(message)
-                    }
-
-                    for (i, data) in testData.enumerated() {
-                        channel.publish(String(i), data: data)
-                    }
-
-                    waitUntil(timeout: testTimeout) { done in
-                        let partialDone = AblyTests.splitDone(2, done: done)
-                        channel.once(.attaching) { stateChange in
-                            expect(receivedMessages).to(haveCount(testData.count - 3)) //messages discarded
-                            expect(stateChange.reason?.code).to(equal(ARTErrorCode.unableToDecodeMessage.intValue))
-                            partialDone()
-                        }
-                        channel.once(.attached) { stateChange in
-                            partialDone()
-                        }
-                    }
-
-                    expect(receivedMessages).toEventually(haveCount(testData.count))
-                }
-
-                // RTL18
-                func test__003__DeltaCodec__decoding__should_recover_when_the_vcdiff_message_decoding_fails() {
-                    let options = AblyTests.commonAppSetup()
-                    let client = AblyTests.newRealtime(options)
-                    defer { client.dispose(); client.close() }
-                    let channelOptions = ARTRealtimeChannelOptions()
-                    channelOptions.params = ["delta": "vcdiff"]
-                    let channel = client.channels.get("foo", options: channelOptions)
-
-                    waitUntil(timeout: testTimeout) { done in
-                        channel.attach() { error in
-                            expect(error).to(beNil())
-                            done()
-                        }
-                    }
-
-                    guard let transport = client.internal.transport as? TestProxyTransport else {
-                        fail("TestProxyTransport is not be assigned"); return
-                    }
-
-                    transport.setBeforeIncomingMessageModifier({ protocolMessage in
-                        if protocolMessage.action == .message,
-                            let thirdMessage = protocolMessage.messages?.filter({ $0.name == "2" }).first {
-                            thirdMessage.data = Data() //invalid delta
-                            transport.setBeforeIncomingMessageModifier(nil)
-                        }
-                        return protocolMessage
-                    })
-
-                    var receivedMessages: [ARTMessage] = []
-                    channel.subscribe { message in
-                        receivedMessages.append(message)
-                    }
-
-                    for (i, data) in testData.enumerated() {
-                        channel.publish(String(i), data: data)
-                    }
-
-                    waitUntil(timeout: testTimeout) { done in
-                        let partialDone = AblyTests.splitDone(2, done: done)
-                        channel.once(.attaching) { stateChange in
-                            expect(receivedMessages).to(haveCount(testData.count - 3)) //messages discarded
-                            guard let errorReason = stateChange.reason else {
-                                fail("Reason should not be empty"); partialDone(); return
-                            }
-                            expect(errorReason.code).to(equal(ARTErrorCode.unableToDecodeMessage.intValue))
-                            partialDone()
-                        }
-                        channel.once(.attached) { stateChange in
-                            partialDone()
-                        }
-                    }
-
-                    expect(receivedMessages).toEventually(haveCount(testData.count))
-                }
+        expect(receivedMessages).toEventually(haveCount(testData.count))
+    }
 }
