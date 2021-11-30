@@ -19,8 +19,10 @@ class RestClientChannel: QuickSpec {
 
         // RSL1
         describe("publish") {
-            let name = "foo"
-            let data = "bar"
+            struct PublishArgs {
+                static let name = "foo"
+                static let data = "bar"
+            }
 
             // RSL1b
             context("with name and data arguments") {
@@ -28,7 +30,7 @@ class RestClientChannel: QuickSpec {
                     var publishError: ARTErrorInfo? = ARTErrorInfo.create(from: NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
 
-                    channel.publish(name, data: data) { error in
+                    channel.publish(PublishArgs.name, data: PublishArgs.data) { error in
                         publishError = error
                         channel.history { result, _ in
                             publishedMessage = result?.items.first
@@ -36,8 +38,8 @@ class RestClientChannel: QuickSpec {
                     }
 
                     expect(publishError).toEventually(beNil(), timeout: testTimeout)
-                    expect(publishedMessage?.name).toEventually(equal(name), timeout: testTimeout)
-                    expect(publishedMessage?.data as? String).toEventually(equal(data), timeout: testTimeout)
+                    expect(publishedMessage?.name).toEventually(equal(PublishArgs.name), timeout: testTimeout)
+                    expect(publishedMessage?.data as? String).toEventually(equal(PublishArgs.data), timeout: testTimeout)
                 }
             }
 
@@ -47,7 +49,7 @@ class RestClientChannel: QuickSpec {
                     var publishError: ARTErrorInfo? = ARTErrorInfo.create(from: NSError(domain: "io.ably.XCTest", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
 
-                    channel.publish(name, data: nil) { error in
+                    channel.publish(PublishArgs.name, data: nil) { error in
                         publishError = error
                         channel.history { result, _ in
                             publishedMessage = result?.items.first
@@ -55,7 +57,7 @@ class RestClientChannel: QuickSpec {
                     }
 
                     expect(publishError).toEventually(beNil(), timeout: testTimeout)
-                    expect(publishedMessage?.name).toEventually(equal(name), timeout: testTimeout)
+                    expect(publishedMessage?.name).toEventually(equal(PublishArgs.name), timeout: testTimeout)
                     expect(publishedMessage?.data).toEventually(beNil(), timeout: testTimeout)
                 }
             }
@@ -66,7 +68,7 @@ class RestClientChannel: QuickSpec {
                     var publishError: ARTErrorInfo? = ARTErrorInfo.create(from: NSError(domain: "", code: -1, userInfo: nil))
                     var publishedMessage: ARTMessage?
 
-                    channel.publish(nil, data: data) { error in
+                    channel.publish(nil, data: PublishArgs.data) { error in
                         publishError = error
                         channel.history { result, _ in
                             publishedMessage = result?.items.first
@@ -75,7 +77,7 @@ class RestClientChannel: QuickSpec {
 
                     expect(publishError).toEventually(beNil(), timeout: testTimeout)
                     expect(publishedMessage?.name).toEventually(beNil(), timeout: testTimeout)
-                    expect(publishedMessage?.data as? String).toEventually(equal(data), timeout: testTimeout)
+                    expect(publishedMessage?.data as? String).toEventually(equal(PublishArgs.data), timeout: testTimeout)
                 }
             }
 
@@ -107,7 +109,7 @@ class RestClientChannel: QuickSpec {
                     var publishedMessage: ARTMessage?
 
                     waitUntil(timeout: testTimeout) { done in
-                        channel.publish([ARTMessage(name: name, data: data)]) { error in
+                        channel.publish([ARTMessage(name: PublishArgs.name, data: PublishArgs.data)]) { error in
                             publishError = error
                             channel.history { result, _ in
                                 publishedMessage = result?.items.first
@@ -117,8 +119,8 @@ class RestClientChannel: QuickSpec {
                     }
 
                     expect(publishError).to(beNil())
-                    expect(publishedMessage?.name).to(equal(name))
-                    expect(publishedMessage?.data as? String).to(equal(data))
+                    expect(publishedMessage?.name).to(equal(PublishArgs.name))
+                    expect(publishedMessage?.data as? String).to(equal(PublishArgs.data))
                 }
             }
 

@@ -2815,8 +2815,8 @@ class RealtimeClientConnection: QuickSpec {
                 
                 // RTN15g RTN15g1
                 context("when connection (ttl + idle interval) period has passed since last activity") {
-                    var client: ARTRealtime!
-                    var connectionId = ""
+                    var ttlAndIdleIntervalPassedTestsClient: ARTRealtime!
+                    var ttlAndIdleIntervalPassedTestsConnectionId = ""
                     let customTtlInterval: TimeInterval = 0.1
                     let customIdleInterval: TimeInterval = 0.1
                     
@@ -2824,31 +2824,31 @@ class RealtimeClientConnection: QuickSpec {
                         let options = AblyTests.commonAppSetup()
                         // We want this to be > than the sum of customTtlInterval and customIdleInterval
                         options.disconnectedRetryTimeout = 5.0 + customTtlInterval + customIdleInterval
-                        client = AblyTests.newRealtime(options)
-                        client.internal.shouldImmediatelyReconnect = false
-                        client.connect()
-                        defer { client.close() }
+                        ttlAndIdleIntervalPassedTestsClient = AblyTests.newRealtime(options)
+                        ttlAndIdleIntervalPassedTestsClient.internal.shouldImmediatelyReconnect = false
+                        ttlAndIdleIntervalPassedTestsClient.connect()
+                        defer { ttlAndIdleIntervalPassedTestsClient.close() }
                         
                         waitUntil(timeout: testTimeout) { done in
-                            client.connection.once(.connected) { _ in
-                                expect(client.connection.id).toNot(beNil())
-                                connectionId = client.connection.id!
-                                client.internal.connectionStateTtl = customTtlInterval
-                                client.internal.maxIdleInterval = customIdleInterval
-                                client.connection.once(.disconnected) { _ in
+                            ttlAndIdleIntervalPassedTestsClient.connection.once(.connected) { _ in
+                                expect(ttlAndIdleIntervalPassedTestsClient.connection.id).toNot(beNil())
+                                ttlAndIdleIntervalPassedTestsConnectionId = ttlAndIdleIntervalPassedTestsClient.connection.id!
+                                ttlAndIdleIntervalPassedTestsClient.internal.connectionStateTtl = customTtlInterval
+                                ttlAndIdleIntervalPassedTestsClient.internal.maxIdleInterval = customIdleInterval
+                                ttlAndIdleIntervalPassedTestsClient.connection.once(.disconnected) { _ in
                                     let disconnectedAt = Date()
-                                    expect(client.internal.connectionStateTtl).to(equal(customTtlInterval))
-                                    expect(client.internal.maxIdleInterval).to(equal(customIdleInterval))
-                                    client.connection.once(.connecting) { _ in
+                                    expect(ttlAndIdleIntervalPassedTestsClient.internal.connectionStateTtl).to(equal(customTtlInterval))
+                                    expect(ttlAndIdleIntervalPassedTestsClient.internal.maxIdleInterval).to(equal(customIdleInterval))
+                                    ttlAndIdleIntervalPassedTestsClient.connection.once(.connecting) { _ in
                                         let reconnectionInterval = Date().timeIntervalSince(disconnectedAt)
-                                        expect(reconnectionInterval).to(beGreaterThan(client.internal.connectionStateTtl + client.internal.maxIdleInterval))
-                                        client.connection.once(.connected) { _ in
-                                            expect(client.connection.id).toNot(equal(connectionId))
+                                        expect(reconnectionInterval).to(beGreaterThan(ttlAndIdleIntervalPassedTestsClient.internal.connectionStateTtl + ttlAndIdleIntervalPassedTestsClient.internal.maxIdleInterval))
+                                        ttlAndIdleIntervalPassedTestsClient.connection.once(.connected) { _ in
+                                            expect(ttlAndIdleIntervalPassedTestsClient.connection.id).toNot(equal(ttlAndIdleIntervalPassedTestsConnectionId))
                                             done()
                                         }
                                     }
                                 }
-                                client.internal.onDisconnected()
+                                ttlAndIdleIntervalPassedTestsClient.internal.onDisconnected()
                             }
                         }
                     }
@@ -2857,28 +2857,28 @@ class RealtimeClientConnection: QuickSpec {
                         let options = AblyTests.commonAppSetup()
                         // We want this to be > than the sum of customTtlInterval and customIdleInterval
                         options.disconnectedRetryTimeout = 5.0
-                        client = AblyTests.newRealtime(options)
-                        client.internal.shouldImmediatelyReconnect = false
-                        defer { client.close() }
+                        ttlAndIdleIntervalPassedTestsClient = AblyTests.newRealtime(options)
+                        ttlAndIdleIntervalPassedTestsClient.internal.shouldImmediatelyReconnect = false
+                        defer { ttlAndIdleIntervalPassedTestsClient.close() }
                         let channelName = "test-reattach-after-ttl"
-                        let channel = client.channels.get(channelName)
+                        let channel = ttlAndIdleIntervalPassedTestsClient.channels.get(channelName)
                         
                         waitUntil(timeout: testTimeout) { done in
-                            client.connection.once(.connected) { _ in
-                                connectionId = client.connection.id!
-                                client.internal.connectionStateTtl = customTtlInterval
-                                client.internal.maxIdleInterval = customIdleInterval
+                            ttlAndIdleIntervalPassedTestsClient.connection.once(.connected) { _ in
+                                ttlAndIdleIntervalPassedTestsConnectionId = ttlAndIdleIntervalPassedTestsClient.connection.id!
+                                ttlAndIdleIntervalPassedTestsClient.internal.connectionStateTtl = customTtlInterval
+                                ttlAndIdleIntervalPassedTestsClient.internal.maxIdleInterval = customIdleInterval
                                 channel.attach { error in
                                     if let error = error {
                                         fail(error.message)
                                     }
                                     expect(channel.state).to(equal(ARTRealtimeChannelState.attached))
-                                    client.internal.onDisconnected()
+                                    ttlAndIdleIntervalPassedTestsClient.internal.onDisconnected()
                                 }
-                                client.connection.once(.disconnected) { _ in
-                                    client.connection.once(.connecting) { _ in
-                                        client.connection.once(.connected) { _ in
-                                            expect(client.connection.id).toNot(equal(connectionId))
+                                ttlAndIdleIntervalPassedTestsClient.connection.once(.disconnected) { _ in
+                                    ttlAndIdleIntervalPassedTestsClient.connection.once(.connecting) { _ in
+                                        ttlAndIdleIntervalPassedTestsClient.connection.once(.connected) { _ in
+                                            expect(ttlAndIdleIntervalPassedTestsClient.connection.id).toNot(equal(ttlAndIdleIntervalPassedTestsConnectionId))
                                             channel.once(.attached) { stateChange in
                                                 expect(stateChange.resumed).to(beFalse())
                                                 done()
@@ -2887,38 +2887,38 @@ class RealtimeClientConnection: QuickSpec {
                                     }
                                 }
                             }
-                            client.connect()
+                            ttlAndIdleIntervalPassedTestsClient.connect()
                         }
                     }
                 }
                 
                 // RTN15g2
                 context("when connection (ttl + idle interval) period has NOT passed since last activity") {
-                    var client: ARTRealtime!
-                    var connectionId = ""
+                    var ttlAndIdleIntervalNotPassedTestsClient: ARTRealtime!
+                    var ttlAndIdleIntervalNotPassedTestsConnectionId = ""
                     
                     it("uses the same connection") {
                         let options = AblyTests.commonAppSetup()
-                        client = AblyTests.newRealtime(options)
-                        client.connect()
-                        defer { client.close() }
+                        ttlAndIdleIntervalNotPassedTestsClient = AblyTests.newRealtime(options)
+                        ttlAndIdleIntervalNotPassedTestsClient.connect()
+                        defer { ttlAndIdleIntervalNotPassedTestsClient.close() }
                         
                         waitUntil(timeout: testTimeout) { done in
-                            client.connection.once(.connected) { _ in
-                                expect(client.connection.id).toNot(beNil())
-                                connectionId = client.connection.id!
-                                client.connection.once(.disconnected) { _ in
+                            ttlAndIdleIntervalNotPassedTestsClient.connection.once(.connected) { _ in
+                                expect(ttlAndIdleIntervalNotPassedTestsClient.connection.id).toNot(beNil())
+                                ttlAndIdleIntervalNotPassedTestsConnectionId = ttlAndIdleIntervalNotPassedTestsClient.connection.id!
+                                ttlAndIdleIntervalNotPassedTestsClient.connection.once(.disconnected) { _ in
                                     let disconnectedAt = Date()
-                                    client.connection.once(.connecting) { _ in
+                                    ttlAndIdleIntervalNotPassedTestsClient.connection.once(.connecting) { _ in
                                         let reconnectionInterval = Date().timeIntervalSince(disconnectedAt)
-                                        expect(reconnectionInterval).to(beLessThan(client.internal.connectionStateTtl + client.internal.maxIdleInterval))
-                                        client.connection.once(.connected) { _ in
-                                            expect(client.connection.id).to(equal(connectionId))
+                                        expect(reconnectionInterval).to(beLessThan(ttlAndIdleIntervalNotPassedTestsClient.internal.connectionStateTtl + ttlAndIdleIntervalNotPassedTestsClient.internal.maxIdleInterval))
+                                        ttlAndIdleIntervalNotPassedTestsClient.connection.once(.connected) { _ in
+                                            expect(ttlAndIdleIntervalNotPassedTestsClient.connection.id).to(equal(ttlAndIdleIntervalNotPassedTestsConnectionId))
                                             done()
                                         }
                                     }
                                 }
-                                client.internal.onDisconnected()
+                                ttlAndIdleIntervalNotPassedTestsClient.internal.onDisconnected()
                             }
                         }
                     }
@@ -4072,31 +4072,31 @@ class RealtimeClientConnection: QuickSpec {
 
                 // RTN20a
                 context("should immediately change the state to DISCONNECTED if the operating system indicates that the underlying internet connection is no longer available") {
-                    var client: ARTRealtime!
+                    var internetConnectionNotAvailableTestsClient: ARTRealtime!
 
                     beforeEach {
                         let options = AblyTests.commonAppSetup()
                         options.autoConnect = false
-                        client = ARTRealtime(options: options)
-                        client.internal.setReachabilityClass(TestReachability.self)
+                        internetConnectionNotAvailableTestsClient = ARTRealtime(options: options)
+                        internetConnectionNotAvailableTestsClient.internal.setReachabilityClass(TestReachability.self)
                     }
 
                     afterEach {
-                        client.dispose()
-                        client.close()
+                        internetConnectionNotAvailableTestsClient.dispose()
+                        internetConnectionNotAvailableTestsClient.close()
                     }
 
                     it("when CONNECTING") {
                         waitUntil(timeout: testTimeout) { done in
-                            client.connection.on { stateChange in
+                            internetConnectionNotAvailableTestsClient.connection.on { stateChange in
                                 switch stateChange.current {
                                 case .connecting:
                                     expect(stateChange.reason).to(beNil())
-                                    guard let reachability = client.internal.reachability as? TestReachability else {
+                                    guard let reachability = internetConnectionNotAvailableTestsClient.internal.reachability as? TestReachability else {
                                         fail("expected test reachability")
                                         done(); return
                                     }
-                                    expect(reachability.host).to(equal(client.internal.options.realtimeHost))
+                                    expect(reachability.host).to(equal(internetConnectionNotAvailableTestsClient.internal.options.realtimeHost))
                                     reachability.simulate(false)
                                 case .disconnected:
                                     guard let reason = stateChange.reason else {
@@ -4109,21 +4109,21 @@ class RealtimeClientConnection: QuickSpec {
                                     break
                                 }
                             }
-                            client.connect()
+                            internetConnectionNotAvailableTestsClient.connect()
                         }
                     }
 
                     it("when CONNECTED") {
                         waitUntil(timeout: testTimeout) { done in
-                            client.connection.on { stateChange in
+                            internetConnectionNotAvailableTestsClient.connection.on { stateChange in
                                 switch stateChange.current {
                                 case .connected:
                                     expect(stateChange.reason).to(beNil())
-                                    guard let reachability = client.internal.reachability as? TestReachability else {
+                                    guard let reachability = internetConnectionNotAvailableTestsClient.internal.reachability as? TestReachability else {
                                         fail("expected test reachability")
                                         done(); return
                                     }
-                                    expect(reachability.host).to(equal(client.internal.options.realtimeHost))
+                                    expect(reachability.host).to(equal(internetConnectionNotAvailableTestsClient.internal.options.realtimeHost))
                                     reachability.simulate(false)
                                 case .disconnected:
                                     guard let reason = stateChange.reason else {
@@ -4136,7 +4136,7 @@ class RealtimeClientConnection: QuickSpec {
                                     break
                                 }
                             }
-                            client.connect()
+                            internetConnectionNotAvailableTestsClient.connect()
                         }
                     }
                 }

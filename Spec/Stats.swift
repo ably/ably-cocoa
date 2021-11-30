@@ -83,12 +83,14 @@ class Stats: QuickSpec {
 
             // TS4
             context("connections") {
-                let data: JSON = [
-                    [ "connections": [ "tls": [ "opened": 5], "all": [ "peak": 10 ] ] ]
-                ]
-                let rawData = try! data.rawData()
-                let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
-                let subject = stats?.connections
+                let subject: ARTStatsConnectionTypes? = {
+                    let data: JSON = [
+                        [ "connections": [ "tls": [ "opened": 5], "all": [ "peak": 10 ] ] ]
+                    ]
+                    let rawData = try! data.rawData()
+                    let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
+                    return stats?.connections
+                }()
 
                 it("should return a ConnectionTypes object") {
                     expect(subject).to(beAnInstanceOf(ARTStatsConnectionTypes.self))
@@ -110,28 +112,30 @@ class Stats: QuickSpec {
 
             // TS9
             context("channels") {
-                let data: JSON = [
-                    [ "channels": [ "opened": 5, "peak": 10 ] ]
-                ]
-                let rawData = try! data.rawData()
-                let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
-                let subject = stats?.channels
+                let channelsTestsSubject: ARTStatsResourceCount? = {
+                    let data: JSON = [
+                        [ "channels": [ "opened": 5, "peak": 10 ] ]
+                    ]
+                    let rawData = try! data.rawData()
+                    let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
+                    return stats?.channels
+                }()
 
                 it("should return a ResourceCount object") {
-                    expect(subject).to(beAnInstanceOf(ARTStatsResourceCount.self))
+                    expect(channelsTestsSubject).to(beAnInstanceOf(ARTStatsResourceCount.self))
                 }
 
                 it("should return value for opened counts") {
-                    expect(subject?.opened).to(equal(5))
+                    expect(channelsTestsSubject?.opened).to(equal(5))
                 }
 
                 it("should return value for peak channels") {
-                    expect(subject?.peak).to(equal(10))
+                    expect(channelsTestsSubject?.peak).to(equal(10))
                 }
 
                 // TS2
                 it("should return zero for empty values") {
-                    expect(subject?.refused).to(equal(0))
+                    expect(channelsTestsSubject?.refused).to(equal(0))
                 }
             }
 
@@ -166,13 +170,13 @@ class Stats: QuickSpec {
             }
             
             context("interval") {
-                let data: JSON = [
-                    [ "intervalId": "2004-02-01:05:06" ]
-                ]
-                let rawData = try! data.rawData()
-                let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
-
                 it("should return a Date object representing the start of the interval") {
+                    let data: JSON = [
+                        [ "intervalId": "2004-02-01:05:06" ]
+                    ]
+                    let rawData = try! data.rawData()
+                    let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
+                    
                     let dateComponents = NSDateComponents()
                     dateComponents.year = 2004
                     dateComponents.month = 2
@@ -188,59 +192,63 @@ class Stats: QuickSpec {
             }
             
             context("push") {
-                let data: JSON = [
-                    [ "push":
-                        [
-                            "messages": 10,
-                            "notifications": [
-                                "invalid": 1,
-                                "attempted": 2,
-                                "successful": 3,
-                                "failed": 4
-                            ],
-                            "directPublishes": 5
+                let pushTestsSubject: ARTStatsPushCount? = {
+                    let data: JSON = [
+                        [ "push":
+                            [
+                                "messages": 10,
+                                "notifications": [
+                                    "invalid": 1,
+                                    "attempted": 2,
+                                    "successful": 3,
+                                    "failed": 4
+                                ],
+                                "directPublishes": 5
+                            ]
                         ]
                     ]
-                ]
-                let rawData = try! data.rawData()
-                let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
-                let subject = stats?.pushes
+                    let rawData = try! data.rawData()
+                    let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
+                    return stats?.pushes
+                }()
 
                 it("should return a ARTStatsPushCount object") {
-                    expect(subject).to(beAnInstanceOf(ARTStatsPushCount.self))
+                    expect(pushTestsSubject).to(beAnInstanceOf(ARTStatsPushCount.self))
                 }
 
                 it("should return value for messages count") {
-                    expect(subject?.messages).to(equal(10))
+                    expect(pushTestsSubject?.messages).to(equal(10))
                 }
 
                 it("should return value for invalid notifications") {
-                    expect(subject?.invalid).to(equal(1))
+                    expect(pushTestsSubject?.invalid).to(equal(1))
                 }
 
                 it("should return value for attempted notifications") {
-                    expect(subject?.attempted).to(equal(2))
+                    expect(pushTestsSubject?.attempted).to(equal(2))
                 }
 
                 it("should return value for successful notifications") {
-                    expect(subject?.succeeded).to(equal(3))
+                    expect(pushTestsSubject?.succeeded).to(equal(3))
                 }
 
                 it("should return value for failed notifications") {
-                    expect(subject?.failed).to(equal(4))
+                    expect(pushTestsSubject?.failed).to(equal(4))
                 }
 
                 it("should return value for directPublishes") {
-                    expect(subject?.direct).to(equal(5))
+                    expect(pushTestsSubject?.direct).to(equal(5))
                 }
             }
 
             context("inProgress") {
-                let data: JSON = [
-                    [ "inProgress": "2004-02-01:05:06" ]
-                ]
-                let rawData = try! data.rawData()
-                let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
+                let inProgressTestsStats: ARTStats? = {
+                    let data: JSON = [
+                        [ "inProgress": "2004-02-01:05:06" ]
+                    ]
+                    let rawData = try! data.rawData()
+                    return try! encoder.decodeStats(rawData)[0] as? ARTStats
+                }()
 
                 it("should return a Date object representing the last sub-interval included in this statistic") {
                     let dateComponents = NSDateComponents()
@@ -253,19 +261,21 @@ class Stats: QuickSpec {
 
                     let expected = NSCalendar(identifier: NSCalendar.Identifier.gregorian)?.date(from: dateComponents as DateComponents)
 
-                    expect(stats?.dateFromInProgress()).to(equal(expected))
+                    expect(inProgressTestsStats?.dateFromInProgress()).to(equal(expected))
                 }
             }
             
             context("count") {
-                let data: JSON = [
-                    [ "count": 55 ]
-                ]
-                let rawData = try! data.rawData()
-                let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
+                let countTestStats: ARTStats? = {
+                    let data: JSON = [
+                        [ "count": 55 ]
+                    ]
+                    let rawData = try! data.rawData()
+                    return try! encoder.decodeStats(rawData)[0] as? ARTStats
+                }()
 
                 it("should return value for number of lower-level stats") {
-                    expect(stats?.count).to(equal(55))
+                    expect(countTestStats?.count).to(equal(55))
                 }
             }
         }
