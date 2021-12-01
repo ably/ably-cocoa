@@ -11,8 +11,6 @@ extern NSString *const ARTAPNSDeviceTokenKey;
 
 @interface ARTLocalDevice ()
 
-@property (class, nullable, strong, nonatomic) ARTLocalDevice *shared_nosync;
-
 @property (strong, nonatomic) id<ARTDeviceStorage> storage;
 
 + (ARTLocalDevice *)load:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage;

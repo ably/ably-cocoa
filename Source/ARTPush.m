@@ -15,6 +15,7 @@
 #import "ARTClientOptions+Private.h"
 #import "ARTPushAdmin+Private.h"
 #import "ARTLocalDevice+Private.h"
+#import "ARTLocalDeviceStorage.h"
 #import "ARTDeviceStorage.h"
 #import "ARTRealtime+Private.h"
 
@@ -72,7 +73,6 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
 
 @implementation ARTPushInternal {
     __weak ARTRestInternal *_rest; // weak because rest owns self
-    ARTLog *_logger;
     ARTPushActivationStateMachine *_activationMachine;
     NSLock *_activationMachineLock;
 }
@@ -85,6 +85,7 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
         _activationMachine = nil;
         _activationMachineLock = [[NSLock alloc] init];
         _activationMachineLock.name = @"ActivationMachineLock";
+        _storage = [ARTLocalDeviceStorage newWithLogger:_logger];
     }
     return self;
 }
@@ -94,6 +95,34 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
 }
 
 #if TARGET_OS_IOS
+
+static ARTLocalDevice *_sharedDevice;
+
+- (ARTLocalDevice *)device {
+    __block ARTLocalDevice *ret;
+    dispatch_sync(self.queue, ^{
+        ret = [self device_nosync];
+    });
+    return ret;
+}
+
+- (ARTLocalDevice *)device_nosync {
+    // The device is shared in a static variable because it's a reflection
+    // of what's persisted. Having a device instance per ARTPush instance
+    // could leave some instances in a stale state, if, through another
+    // instance, the persisted state is changed.
+    //
+    // As a side effect, the first instance "wins" at setting the device's
+    // client ID.
+    if (_sharedDevice == nil) {
+        _sharedDevice = [ARTLocalDevice load:_rest.auth.clientId_nosync storage:self.storage];
+    }
+    return _sharedDevice;
+}
+
+- (void)resetSharedDevice {
+    _sharedDevice = nil;
+}
 
 - (void)getActivationMachine:(void (^)(ARTPushActivationStateMachine *const))block {
     if (!block) {
@@ -166,8 +195,8 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
     return machine;
 }
 
-+ (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceTokenData restInternal:(ARTRestInternal *)rest {
-    [rest.logger debug:@"ARTPush: device token data received: %@", [deviceTokenData base64EncodedStringWithOptions:0]];
++ (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceTokenData pushInternal:(ARTPushInternal *)push {
+    [push.logger debug:@"ARTPush: device token data received: %@", [deviceTokenData base64EncodedStringWithOptions:0]];
 
     NSUInteger dataLength = deviceTokenData.length;
     const unsigned char *dataBuffer = deviceTokenData.bytes;
@@ -178,48 +207,48 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
 
     NSString *deviceToken = [hexString copy];
 
-    [rest.logger info:@"ARTPush: device token: %@", deviceToken];
-    NSString *currentDeviceToken = [rest.storage objectForKey:ARTAPNSDeviceTokenKey];
+    [push.logger info:@"ARTPush: device token: %@", deviceToken];
+    NSString *currentDeviceToken = [push.storage objectForKey:ARTAPNSDeviceTokenKey];
     if ([currentDeviceToken isEqualToString:deviceToken]) {
         // Already stored.
         return;
     }
 
-    [rest.device_nosync setAndPersistAPNSDeviceToken:deviceToken];
-    [rest.logger debug:@"ARTPush: device token stored"];
-    [rest.push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
+    [push.device_nosync setAndPersistAPNSDeviceToken:deviceToken];
+    [push.logger debug:@"ARTPush: device token stored"];
+    [push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
         [stateMachine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
+    }];
+}
+
++ (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error pushInternal:(ARTPushInternal *)push {
+    [push.logger error:@"ARTPush: device token not received (%@)", [error localizedDescription]];
+    [push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
+        [stateMachine sendEvent:[ARTPushActivationEventGettingPushDeviceDetailsFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
     }];
 }
 
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken realtime:(ARTRealtime *)realtime {
     [realtime internalAsync:^(ARTRealtimeInternal *realtime) {
-        [ARTPushInternal didRegisterForRemoteNotificationsWithDeviceToken:deviceToken restInternal:realtime.rest];
+        [ARTPushInternal didRegisterForRemoteNotificationsWithDeviceToken:deviceToken pushInternal:realtime.push];
     }];
 }
 
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken rest:(ARTRest *)rest {
     [rest internalAsync:^(ARTRestInternal *rest) {
-        [ARTPushInternal didRegisterForRemoteNotificationsWithDeviceToken:deviceToken restInternal:rest];
-    }];
-}
-
-+ (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error restInternal:(ARTRestInternal *)rest {
-    [rest.logger error:@"ARTPush: device token not received (%@)", [error localizedDescription]];
-    [rest.push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
-        [stateMachine sendEvent:[ARTPushActivationEventGettingPushDeviceDetailsFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
+        [ARTPushInternal didRegisterForRemoteNotificationsWithDeviceToken:deviceToken pushInternal:rest.push];
     }];
 }
 
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error realtime:(ARTRealtime *)realtime {
     [realtime internalAsync:^(ARTRealtimeInternal *realtime) {
-        [ARTPushInternal didFailToRegisterForRemoteNotificationsWithError:error restInternal:realtime.rest];
+        [ARTPushInternal didFailToRegisterForRemoteNotificationsWithError:error pushInternal:realtime.push];
     }];
 }
 
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error rest:(ARTRest *)rest {
     [rest internalAsync:^(ARTRestInternal *rest) {
-        [ARTPushInternal didFailToRegisterForRemoteNotificationsWithError:error restInternal:rest];
+        [ARTPushInternal didFailToRegisterForRemoteNotificationsWithError:error pushInternal:rest.push];
     }];
 }
 

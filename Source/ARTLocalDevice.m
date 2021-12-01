@@ -27,16 +27,6 @@ NSString *const ARTDevicePushTransportType = @"apns";
 
 @implementation ARTLocalDevice
 
-static ARTLocalDevice *_shared_nosync;
-
-+ (ARTLocalDevice *)shared_nosync {
-    return _shared_nosync;
-}
-
-+ (void)setShared_nosync:(ARTLocalDevice *)shared_nosync {
-    _shared_nosync = shared_nosync;
-}
-
 - (instancetype)initWithClientId:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage {
     if (self = [super init]) {
         self.clientId = clientId;

@@ -132,10 +132,6 @@
     return _internal.device;
 }
 
-- (ARTLocalDevice *)device_nosync {
-    return _internal.device_nosync;
-}
-
 #endif
 
 @end
@@ -172,7 +168,6 @@
 
         _queue = options.internalDispatchQueue;
         _userQueue = options.dispatchQueue;
-        _storage = [ARTLocalDeviceStorage newWithLogger:_logger];
         _http = [[ARTHttp alloc] init:_queue logger:_logger];
         [_logger verbose:__FILE__ line:__LINE__ message:@"RS:%p %p alloc HTTP", self, _http];
         _httpExecutor = _http;
@@ -716,31 +711,11 @@ dispatch_async(_queue, ^{
 }
 
 #if TARGET_OS_IOS
+
 - (ARTLocalDevice *)device {
-    __block ARTLocalDevice *ret;
-    dispatch_sync(_queue, ^{
-        ret = [self device_nosync];
-    });
-    return ret;
+    return _push.device;
 }
 
-- (ARTLocalDevice *)device_nosync {
-    // The device is shared in a static variable because it's a reflection
-    // of what's persisted. Having a device instance per ARTRest instance
-    // could leave some instances in a stale state, if, through another
-    // instance, the persisted state is changed.
-    //
-    // As a side effect, the first instance "wins" at setting the device's
-    // client ID.
-    if (ARTLocalDevice.shared_nosync == nil) {
-        ARTLocalDevice.shared_nosync = [ARTLocalDevice load:self.auth.clientId_nosync storage:self.storage];
-    }
-    return ARTLocalDevice.shared_nosync;
-}
-
-- (void)resetDeviceSingleton {
-    ARTLocalDevice.shared_nosync = nil;
-}
 #endif
 
 @end

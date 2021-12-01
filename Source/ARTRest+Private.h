@@ -32,7 +32,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, strong, atomic, nullable) NSString *prioritizedHost;
 
 @property (nonatomic, strong) id<ARTHTTPExecutor> httpExecutor;
-@property (nonatomic) id<ARTDeviceStorage> storage;
 
 @property (nonatomic, readonly, getter=getBaseUrl) NSURL *baseUrl;
 @property (nullable, nonatomic, copy) NSString *currentFallbackHost;
@@ -62,10 +61,6 @@ NS_ASSUME_NONNULL_BEGIN
                                            completion:(ARTURLRequestCallback)callback;
 
 - (nullable NSObject<ARTCancellable> *)internetIsUp:(void (^)(BOOL isUp))cb;
-
-#if TARGET_OS_IOS
-- (void)resetDeviceSingleton;
-#endif
 
 @end
 
