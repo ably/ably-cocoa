@@ -128,7 +128,7 @@ class CryptoTests: XCTestCase {
         case should_decrypt_messages_as_expected_in_the_fixtures
     }
 
-    func reusableTestsTestFixture(_ cryptoFixture: (fileName: String, expectedEncryptedEncoding: String, keyLength: UInt), testCase: TestCase_ReusableTestsTestFixture, beforeEach contextBeforeEach: (() -> Void)? = nil, afterEach contextAfterEach: (() -> Void)? = nil) {
+    func reusableTestsTestFixture(_ cryptoFixture: (fileName: String, expectedEncryptedEncoding: String, keyLength: UInt), testCase: TestCase_ReusableTestsTestFixture, beforeEach contextBeforeEach: (() -> Void)? = nil, afterEach contextAfterEach: (() -> Void)? = nil) throws {
         let (key, iv, items) = AblyTests.loadCryptoTestData(cryptoFixture.fileName)
         let decoder = ARTDataEncoder(cipherParams: nil, error: nil)
         let cipherParams = ARTCipherParams(algorithm: "aes", key: key as ARTCipherKeyCompatible, iv: iv)
@@ -140,7 +140,7 @@ class CryptoTests: XCTestCase {
             return msg
         }
 
-        func test__should_encrypt_messages_as_expected_in_the_fixtures() {
+        func test__should_encrypt_messages_as_expected_in_the_fixtures() throws {
             contextBeforeEach?()
 
             for item in items {
@@ -153,17 +153,17 @@ class CryptoTests: XCTestCase {
                 expect(error).to(beNil())
                 expect(decoded).notTo(beNil())
 
-                let encrypted = decoded.encode(with: encrypter, error: &error)
+                let encrypted = try XCTUnwrap(decoded.encode(with: encrypter, error: &error) as? ARTMessage)
                 expect(error).to(beNil())
                 expect(encrypted).notTo(beNil())
-
-                expect(encrypted as! ARTMessage).to(equal(encryptedFixture))
+                
+                expect(encrypted).to(equal(encryptedFixture))
             }
 
             contextAfterEach?()
         }
 
-        func test__should_decrypt_messages_as_expected_in_the_fixtures() {
+        func test__should_decrypt_messages_as_expected_in_the_fixtures() throws {
             contextBeforeEach?()
 
             for item in items {
@@ -176,11 +176,11 @@ class CryptoTests: XCTestCase {
                 expect(error).to(beNil())
                 expect(decoded).notTo(beNil())
 
-                let decrypted = encryptedFixture.decode(with: encrypter, error: &error)
+                let decrypted = try XCTUnwrap(encryptedFixture.decode(with: encrypter, error: &error) as? ARTMessage)
                 expect(error).to(beNil())
                 expect(decrypted).notTo(beNil())
 
-                expect(decrypted as! ARTMessage).to(equal(decoded))
+                expect(decrypted).to(equal(decoded))
             }
 
             contextAfterEach?()
@@ -188,33 +188,33 @@ class CryptoTests: XCTestCase {
 
         switch testCase {
         case .should_encrypt_messages_as_expected_in_the_fixtures:
-            test__should_encrypt_messages_as_expected_in_the_fixtures()
+            try test__should_encrypt_messages_as_expected_in_the_fixtures()
         case .should_decrypt_messages_as_expected_in_the_fixtures:
-            test__should_decrypt_messages_as_expected_in_the_fixtures()
+            try test__should_decrypt_messages_as_expected_in_the_fixtures()
         }
     }
 
-    func reusableTestsWrapper__Crypto__with_fixtures_from_crypto_data_128_json__reusableTestsTestFixture(testCase: TestCase_ReusableTestsTestFixture) {
-        reusableTestsTestFixture(("crypto-data-128", "cipher+aes-128-cbc", 128), testCase: testCase)
+    func reusableTestsWrapper__Crypto__with_fixtures_from_crypto_data_128_json__reusableTestsTestFixture(testCase: TestCase_ReusableTestsTestFixture) throws {
+        try reusableTestsTestFixture(("crypto-data-128", "cipher+aes-128-cbc", 128), testCase: testCase)
     }
 
-    func test__011__Crypto__with_fixtures_from_crypto_data_128_json__should_encrypt_messages_as_expected_in_the_fixtures() {
-        reusableTestsWrapper__Crypto__with_fixtures_from_crypto_data_128_json__reusableTestsTestFixture(testCase: .should_encrypt_messages_as_expected_in_the_fixtures)
+    func test__011__Crypto__with_fixtures_from_crypto_data_128_json__should_encrypt_messages_as_expected_in_the_fixtures() throws {
+        try reusableTestsWrapper__Crypto__with_fixtures_from_crypto_data_128_json__reusableTestsTestFixture(testCase: .should_encrypt_messages_as_expected_in_the_fixtures)
     }
 
-    func test__012__Crypto__with_fixtures_from_crypto_data_128_json__should_decrypt_messages_as_expected_in_the_fixtures() {
-        reusableTestsWrapper__Crypto__with_fixtures_from_crypto_data_128_json__reusableTestsTestFixture(testCase: .should_decrypt_messages_as_expected_in_the_fixtures)
+    func test__012__Crypto__with_fixtures_from_crypto_data_128_json__should_decrypt_messages_as_expected_in_the_fixtures() throws {
+        try reusableTestsWrapper__Crypto__with_fixtures_from_crypto_data_128_json__reusableTestsTestFixture(testCase: .should_decrypt_messages_as_expected_in_the_fixtures)
     }
 
-    func reusableTestsWrapper__Crypto__with_fixtures_from_crypto_data_256_json__reusableTestsTestFixture(testCase: TestCase_ReusableTestsTestFixture) {
-        reusableTestsTestFixture(("crypto-data-256", "cipher+aes-256-cbc", 256), testCase: testCase)
+    func reusableTestsWrapper__Crypto__with_fixtures_from_crypto_data_256_json__reusableTestsTestFixture(testCase: TestCase_ReusableTestsTestFixture) throws {
+        try reusableTestsTestFixture(("crypto-data-256", "cipher+aes-256-cbc", 256), testCase: testCase)
     }
 
-    func test__013__Crypto__with_fixtures_from_crypto_data_256_json__should_encrypt_messages_as_expected_in_the_fixtures() {
-        reusableTestsWrapper__Crypto__with_fixtures_from_crypto_data_256_json__reusableTestsTestFixture(testCase: .should_encrypt_messages_as_expected_in_the_fixtures)
+    func test__013__Crypto__with_fixtures_from_crypto_data_256_json__should_encrypt_messages_as_expected_in_the_fixtures() throws {
+        try reusableTestsWrapper__Crypto__with_fixtures_from_crypto_data_256_json__reusableTestsTestFixture(testCase: .should_encrypt_messages_as_expected_in_the_fixtures)
     }
 
-    func test__014__Crypto__with_fixtures_from_crypto_data_256_json__should_decrypt_messages_as_expected_in_the_fixtures() {
-        reusableTestsWrapper__Crypto__with_fixtures_from_crypto_data_256_json__reusableTestsTestFixture(testCase: .should_decrypt_messages_as_expected_in_the_fixtures)
+    func test__014__Crypto__with_fixtures_from_crypto_data_256_json__should_decrypt_messages_as_expected_in_the_fixtures() throws {
+        try reusableTestsWrapper__Crypto__with_fixtures_from_crypto_data_256_json__reusableTestsTestFixture(testCase: .should_decrypt_messages_as_expected_in_the_fixtures)
     }
 }
