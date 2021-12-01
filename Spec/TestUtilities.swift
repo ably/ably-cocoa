@@ -1,7 +1,6 @@
 import Ably
 import Foundation
 import XCTest
-import Quick
 import Nimble
 import SwiftyJSON
 import Aspects
@@ -12,11 +11,27 @@ typealias HookToken = AspectToken
 
 let AblyTestsErrorDomain = "test.ably.io"
 
-class Configuration : QuickConfiguration {
-    override class func configure(_ configuration: Quick.Configuration!) {
-        configuration.beforeSuite {
-            AsyncDefaults.timeout = testTimeout
+class AblyTestsConfiguration: NSObject, XCTestObservation {
+    override init() {
+        super.init()
+        XCTestObservationCenter.shared.addTestObserver(self)
+    }
+    
+    private var performedPreFirstTestCaseSetup = false
+    
+    func testCaseWillStart(_ testCase: XCTestCase) {
+        if !performedPreFirstTestCaseSetup {
+            preFirstTestCaseSetup()
+            performedPreFirstTestCaseSetup = true
         }
+    }
+    
+    private func preFirstTestCaseSetup() {
+        // This is code that, when we were using the Quick testing
+        // framework, was inside a `configuration.beforeSuite` hook,
+        // which means it runs just before the execution of the first
+        // test case.
+        AsyncDefaults.timeout = testTimeout
     }
 }
 

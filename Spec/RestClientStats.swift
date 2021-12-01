@@ -1,21 +1,21 @@
 import Ably
-import Nimble
-import Quick
-import SwiftyJSON
 import Foundation
+import Nimble
+import XCTest
+import SwiftyJSON
 
 private func postTestStats(_ stats: JSON) -> ARTClientOptions {
-    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions, forceNewApp: true);
-    
+    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions, forceNewApp: true)
+
     let keyBase64 = encodeBase64(options.key ?? "")
 
     let request = NSMutableURLRequest(url: URL(string: "\(AblyTests.clientOptions().restUrl().absoluteString)/stats")!)
-    
+
     request.httpMethod = "POST"
     request.httpBody = try? stats.rawData()
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Basic \(keyBase64)", forHTTPHeaderField: "Authorization")
-    
+
     let (_, responseError, httpResponse) = NSURLSessionServerTrustSync().get(request)
 
     if let error = responseError {
@@ -25,7 +25,7 @@ private func postTestStats(_ stats: JSON) -> ARTClientOptions {
             XCTFail("Posting stats fixtures failed: code response \(response.statusCode)")
         }
     }
-    
+
     return options
 }
 
@@ -35,7 +35,7 @@ private func queryStats(_ client: ARTRest, _ query: ARTStatsQuery, file: FileStr
             try client.stats(query, callback: { result, err in
                 value((result, err))
             })
-        }.toNot(throwError() { _ in value(nil) })
+        }.toNot(throwError { _ in value(nil) })
     })!
     if let error = error {
         fail(error.message, file: file, line: line)
@@ -43,321 +43,339 @@ private func queryStats(_ client: ARTRest, _ query: ARTStatsQuery, file: FileStr
     return stats!
 }
 
-class RestClientStats: QuickSpec {
-    override func spec() {
-        describe("RestClient") {
-            // RSC6
-            context("stats") {
-                // RSC6a
-                context("result") {
-                    let calendar = NSCalendar(identifier: NSCalendar.Identifier.gregorian)!
-                    let dateComponents: NSDateComponents = {
-                        let dateComponents = NSDateComponents()
-                        dateComponents.year = calendar.component(NSCalendar.Unit.year, from: NSDate() as Date) - 1
-                        dateComponents.month = 2
-                        dateComponents.day = 3
-                        dateComponents.hour = 16
-                        dateComponents.minute = 3
-                        return dateComponents
-                    }()
-                    let date = calendar.date(from: dateComponents as DateComponents)!
-                    let dateFormatter: DateFormatter = {
-                        let dateFormatter = DateFormatter()
-                        dateFormatter.timeZone = NSTimeZone(name: "UTC") as TimeZone?
-                        dateFormatter.dateFormat = "YYYY-MM-dd:HH:mm"
-                        return dateFormatter
-                    }()
-                    
-                    let statsFixtures: JSON = [
-                        [
-                            "intervalId": dateFormatter.string(from: date), // 20XX-02-03:16:03
-                            "inbound": [ "realtime": [ "messages": [ "count": 50, "data": 5000 ] ] ],
-                            "outbound": [ "realtime": [ "messages": [ "count": 20, "data": 2000 ] ] ]
-                        ],
-                        [
-                            "intervalId": dateFormatter.string(from: date.addingTimeInterval(60)), // 20XX-02-03:16:04
-                            "inbound": [ "realtime": [ "messages": [ "count": 60, "data": 6000 ] ] ],
-                            "outbound": [ "realtime": [ "messages": [ "count": 10, "data": 1000 ] ] ]
-                        ],
-                        [
-                            "intervalId": dateFormatter.string(from: date.addingTimeInterval(120)), // 20XX-02-03:16:05
-                            "inbound": [ "realtime": [ "messages": [ "count": 70, "data": 7000 ] ] ],
-                            "outbound": [ "realtime": [ "messages": [ "count": 40, "data": 4000 ] ] ],
-                            "persisted": [ "presence": [ "count": 20, "data": 2000 ] ],
-                            "connections": [ "tls": [ "peak": 20,  "opened": 10 ] ],
-                            "channels": [ "peak": 50, "opened": 30 ],
-                            "apiRequests": [ "succeeded": 50, "failed": 10 ],
-                            "tokenRequests": [ "succeeded": 60, "failed": 20 ]
-                        ]
-                    ]
-                    
-                    var statsOptions = ARTClientOptions()
+private let calendar = NSCalendar(identifier: NSCalendar.Identifier.gregorian)!
+private let dateComponents: NSDateComponents = {
+    let dateComponents = NSDateComponents()
+    dateComponents.year = calendar.component(NSCalendar.Unit.year, from: NSDate() as Date) - 1
+    dateComponents.month = 2
+    dateComponents.day = 3
+    dateComponents.hour = 16
+    dateComponents.minute = 3
+    return dateComponents
+}()
 
-                    beforeEach {
-                        statsOptions = postTestStats(statsFixtures)
-                    }
-                    
-                    xit("should match minute-level inbound and outbound fixture data (forwards)") {
-                        let client = ARTRest(options: statsOptions)
-                        let query = ARTStatsQuery()
-                        query.start = date
-                        query.direction = .forwards
-                        
-                        let result = queryStats(client, query)
-                        expect(result.items.count).to(equal(3))
-                        
-                        let totalInbound = result.items.reduce(0 as UInt, {
-                            return $0 + $1.inbound.all.messages.count
-                        })
-                        expect(totalInbound).to(equal(50 + 60 + 70))
-                        
-                        let totalOutbound = result.items.reduce(0 as UInt, {
-                            return $0 + $1.outbound.all.messages.count
-                        })
-                        expect(totalOutbound).to(equal(20 + 10 + 40))
-                    }
-                    
-                    it("should match hour-level inbound and outbound fixture data (forwards)") {
-                        let client = ARTRest(options: statsOptions)
-                        let query = ARTStatsQuery()
-                        query.start = date
-                        query.direction = .forwards
-                        query.unit = .hour
-                        
-                        let result = queryStats(client, query)
-                        let totalInbound = result.items.reduce(0 as UInt, {
-                            return $0 + $1.inbound.all.messages.count
-                        })
-                        let totalOutbound = result.items.reduce(0 as UInt, {
-                            return $0 + $1.outbound.all.messages.count
-                        })
-                        
-                        expect(result.items.count).to(equal(1))
-                        expect(totalInbound).to(equal(50 + 60 + 70))
-                        expect(totalOutbound).to(equal(20 + 10 + 40))
-                    }
-                    
-                    it("should match day-level inbound and outbound fixture data (forwards)") {
-                        let client = ARTRest(options: statsOptions)
-                        let query = ARTStatsQuery()
-                        query.end = calendar.date(byAdding: .day, value: 1, to: date, options: NSCalendar.Options(rawValue: 0))
-                        query.direction = .forwards
-                        query.unit = .month
-                        
-                        let result = queryStats(client, query)
-                        let totalInbound = (result.items).reduce(0, { $0 + $1.inbound.all.messages.count })
-                        let totalOutbound = (result.items).reduce(0, { $0 + $1.outbound.all.messages.count })
-                        
-                        expect(result.items.count).to(equal(1))
-                        expect(totalInbound).to(equal(50 + 60 + 70))
-                        expect(totalOutbound).to(equal(20 + 10 + 40))
-                    }
-                    
-                    xit("should match month-level inbound and outbound fixture data (forwards)") {
-                        let client = ARTRest(options: statsOptions)
-                        let query = ARTStatsQuery()
-                        query.end = calendar.date(byAdding: .month, value: 1, to: date, options: NSCalendar.Options(rawValue: 0))
-                        query.direction = .forwards
-                        query.unit = .month
-                        
-                        let result = queryStats(client, query)
-                        let totalInbound = (result.items).reduce(0, { $0 + $1.inbound.all.messages.count })
-                        let totalOutbound = (result.items).reduce(0, { $0 + $1.outbound.all.messages.count })
-                        
-                        expect(result.items.count).to(equal(1))
-                        expect(totalInbound).to(equal(50 + 60 + 70))
-                        expect(totalOutbound).to(equal(20 + 10 + 40))
-                    }
-                    
-                    xit("should contain only one item when limit is 1 (backwards") {
-                        let client = ARTRest(options: statsOptions)
-                        let query = ARTStatsQuery()
-                        query.end = date.addingTimeInterval(60) // 20XX-02-03:16:04
-                        query.limit = 1
-                        
-                        let result = queryStats(client, query)
-                        let totalInbound = (result.items).reduce(0, { $0 + $1.inbound.all.messages.count })
-                        let totalOutbound = (result.items).reduce(0, { $0 + $1.outbound.all.messages.count })
-                        
-                        expect(result.items.count).to(equal(1))
-                        expect(totalInbound).to(equal(60))
-                        expect(totalOutbound).to(equal(10))
-                    }
-                    
-                    it("should contain only one item when limit is 1 (forwards") {
-                        let client = ARTRest(options: statsOptions)
-                        let query = ARTStatsQuery()
-                        query.end = date.addingTimeInterval(60) // 20XX-02-03:16:04
-                        query.limit = 1
-                        query.direction = .forwards
-                        
-                        let result = queryStats(client, query)
-                        let totalInbound = (result.items).reduce(0, { $0 + $1.inbound.all.messages.count })
-                        let totalOutbound = (result.items).reduce(0, { $0 + $1.outbound.all.messages.count })
-                        
-                        expect(result.items.count).to(equal(1))
-                        expect(totalInbound).to(equal(50))
-                        expect(totalOutbound).to(equal(20))
-                    }
-                    
-                    it("should be paginated according to the limit (backwards") {
-                        let client = ARTRest(options: statsOptions)
-                        let query = ARTStatsQuery()
-                        query.end = date.addingTimeInterval(120) // 20XX-02-03:16:05
-                        query.limit = 1
+private let date = calendar.date(from: dateComponents as DateComponents)!
+private let dateFormatter: DateFormatter = {
+    let dateFormatter = DateFormatter()
+    dateFormatter.timeZone = NSTimeZone(name: "UTC") as TimeZone?
+    dateFormatter.dateFormat = "YYYY-MM-dd:HH:mm"
+    return dateFormatter
+}()
 
-                        let firstPage = queryStats(client, query)
-                        expect(firstPage.items.count).to(equal(1))
-                        expect((firstPage.items)[0].inbound.all.messages.data).to(equal(7000))
-                        expect(firstPage.hasNext).to(beTrue())
-                        expect(firstPage.isLast).to(beFalse())
-                        
-                        guard let secondPage: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
-                            firstPage.next { page, err in
-                                expect(err).to(beNil())
-                                value(page)
-                            }
-                        }) else {
-                            return
-                        }
+private let statsFixtures: JSON = [
+    [
+        "intervalId": dateFormatter.string(from: date), // 20XX-02-03:16:03
+        "inbound": ["realtime": ["messages": ["count": 50, "data": 5000]]],
+        "outbound": ["realtime": ["messages": ["count": 20, "data": 2000]]],
+    ],
+    [
+        "intervalId": dateFormatter.string(from: date.addingTimeInterval(60)), // 20XX-02-03:16:04
+        "inbound": ["realtime": ["messages": ["count": 60, "data": 6000]]],
+        "outbound": ["realtime": ["messages": ["count": 10, "data": 1000]]],
+    ],
+    [
+        "intervalId": dateFormatter.string(from: date.addingTimeInterval(120)), // 20XX-02-03:16:05
+        "inbound": ["realtime": ["messages": ["count": 70, "data": 7000]]],
+        "outbound": ["realtime": ["messages": ["count": 40, "data": 4000]]],
+        "persisted": ["presence": ["count": 20, "data": 2000]],
+        "connections": ["tls": ["peak": 20, "opened": 10]],
+        "channels": ["peak": 50, "opened": 30],
+        "apiRequests": ["succeeded": 50, "failed": 10],
+        "tokenRequests": ["succeeded": 60, "failed": 20],
+    ],
+]
 
-                        expect(secondPage.items.count).to(equal(1))
-                        expect((secondPage.items)[0].inbound.all.messages.data).to(equal(6000))
-                        expect(secondPage.hasNext).to(beTrue())
-                        expect(secondPage.isLast).to(beFalse())
-                        
-                        guard let thirdPage: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
-                            secondPage.next { page, err in
-                                expect(err).to(beNil())
-                                value(page)
-                            }
-                        }) else {
-                            return
-                        }
+private var statsOptions = ARTClientOptions()
 
-                        expect(thirdPage.items.count).to(equal(1))
-                        expect((thirdPage.items)[0].inbound.all.messages.data).to(equal(5000))
-                        expect(thirdPage.isLast).to(beTrue())
-                        
-                        guard let firstPageAgain: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
-                            thirdPage.first { page, err in
-                                expect(err).to(beNil())
-                                value(page)
-                            }
-                        }) else {
-                            return
-                        }
+class RestClientStats: XCTestCase {
+    // XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
+    override class var defaultTestSuite: XCTestSuite {
+        _ = calendar
+        _ = dateComponents
+        _ = date
+        _ = dateFormatter
+        _ = statsFixtures
+        _ = statsOptions
 
-                        expect(firstPageAgain.items.count).to(equal(1))
-                        expect((firstPageAgain.items)[0].inbound.all.messages.data).to(equal(7000))
-                    }
-                    
-                    xit("should be paginated according to the limit (fowards)") {
-                        let client = ARTRest(options: statsOptions)
-                        let query = ARTStatsQuery()
-                        query.end = date.addingTimeInterval(120) // 20XX-02-03:16:05
-                        query.limit = 1
-                        query.direction = .forwards
-                        
-                        let firstPage = queryStats(client, query)
-                        expect(firstPage.items.count).to(equal(1))
-                        expect((firstPage.items)[0].inbound.all.messages.data).to(equal(5000))
-                        expect(firstPage.hasNext).to(beTrue())
-                        expect(firstPage.isLast).to(beFalse())
-                        
-                        guard let secondPage: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
-                            firstPage.next { page, err in
-                                expect(err).to(beNil())
-                                value(page)
-                            }
-                        }) else {
-                            return
-                        }
+        return super.defaultTestSuite
+    }
 
-                        expect(secondPage.items.count).to(equal(1))
-                        expect((secondPage.items)[0].inbound.all.messages.data).to(equal(6000))
-                        expect(secondPage.hasNext).to(beTrue())
-                        expect(secondPage.isLast).to(beFalse())
-                        
-                        guard let thirdPage: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
-                            secondPage.next { page, err in
-                                expect(err).to(beNil())
-                                value(page)
-                            }
-                        }) else {
-                            return
-                        }
+    // RSC6
 
-                        expect(thirdPage.items.count).to(equal(1))
-                        expect((thirdPage.items)[0].inbound.all.messages.data).to(equal(7000))
-                        expect(thirdPage.isLast).to(beTrue())
-                        
-                        guard let firstPageAgain: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
-                            thirdPage.first { page, err in
-                                expect(err).to(beNil())
-                                value(page)
-                            }
-                        }) else {
-                            return
-                        }
+    // RSC6a
 
-                        expect(firstPageAgain.items.count).to(equal(1))
-                        expect((firstPageAgain.items)[0].inbound.all.messages.data).to(equal(5000))
-                    }
-                }
-                
-                // RSC6b
-                context("query") {
-                    // RSC6b1
-                    context("start") {
-                        it("should return an error when later than end") {
-                            let client = ARTRest(key: "fake:key")
-                            let query = ARTStatsQuery()
-                            
-                            query.start = NSDate.distantFuture
-                            query.end = NSDate.distantPast
+    func beforeEach__RestClient__stats__result() {
+        statsOptions = postTestStats(statsFixtures)
+    }
 
-                            expect{try client.stats(query, callback:{ status, result in })}.to(throwError())
-                        }
-                    }
-                    
-                    // RSC6b2
-                    context("direction") {
-                        it("should be backwards by default") {
-                            let query = ARTStatsQuery()
-                            
-                            expect(query.direction).to(equal(ARTQueryDirection.backwards));
-                        }
-                    }
-                    
-                    // RSC6b3
-                    context("limit") {
-                        it("should have a default value of 100") {
-                            let query = ARTStatsQuery()
-                            
-                            expect(query.limit).to(equal(100));
-                        }
-                        
-                        it("should return an error when greater than 1000") {
-                            let client = ARTRest(key: "fake:key")
-                            let query = ARTStatsQuery()
-                            
-                            query.limit = 1001;
+    func skipped__test__001__RestClient__stats__result__should_match_minute_level_inbound_and_outbound_fixture_data__forwards_() {
+        beforeEach__RestClient__stats__result()
 
-                            expect{try client.stats(query, callback:{ status, result in })}.to(throwError())
-                        }
-                    }
-                    
-                    // RSC6b4
-                    context("unit") {
-                        it("should default to minute") {
-                            let query = ARTStatsQuery()
-                            
-                            expect(query.unit).to(equal(ARTStatsGranularity.minute))
-                        }
-                    }
-                }
-            }
+        let client = ARTRest(options: statsOptions)
+        let query = ARTStatsQuery()
+        query.start = date
+        query.direction = .forwards
+
+        let result = queryStats(client, query)
+        expect(result.items.count).to(equal(3))
+
+        let totalInbound = result.items.reduce(0 as UInt) {
+            $0 + $1.inbound.all.messages.count
         }
+        expect(totalInbound).to(equal(50 + 60 + 70))
+
+        let totalOutbound = result.items.reduce(0 as UInt) {
+            $0 + $1.outbound.all.messages.count
+        }
+        expect(totalOutbound).to(equal(20 + 10 + 40))
+    }
+
+    func test__002__RestClient__stats__result__should_match_hour_level_inbound_and_outbound_fixture_data__forwards_() {
+        beforeEach__RestClient__stats__result()
+
+        let client = ARTRest(options: statsOptions)
+        let query = ARTStatsQuery()
+        query.start = date
+        query.direction = .forwards
+        query.unit = .hour
+
+        let result = queryStats(client, query)
+        let totalInbound = result.items.reduce(0 as UInt) {
+            $0 + $1.inbound.all.messages.count
+        }
+        let totalOutbound = result.items.reduce(0 as UInt) {
+            $0 + $1.outbound.all.messages.count
+        }
+
+        expect(result.items.count).to(equal(1))
+        expect(totalInbound).to(equal(50 + 60 + 70))
+        expect(totalOutbound).to(equal(20 + 10 + 40))
+    }
+
+    func test__003__RestClient__stats__result__should_match_day_level_inbound_and_outbound_fixture_data__forwards_() {
+        beforeEach__RestClient__stats__result()
+
+        let client = ARTRest(options: statsOptions)
+        let query = ARTStatsQuery()
+        query.end = calendar.date(byAdding: .day, value: 1, to: date, options: NSCalendar.Options(rawValue: 0))
+        query.direction = .forwards
+        query.unit = .month
+
+        let result = queryStats(client, query)
+        let totalInbound = (result.items).reduce(0) { $0 + $1.inbound.all.messages.count }
+        let totalOutbound = (result.items).reduce(0) { $0 + $1.outbound.all.messages.count }
+
+        expect(result.items.count).to(equal(1))
+        expect(totalInbound).to(equal(50 + 60 + 70))
+        expect(totalOutbound).to(equal(20 + 10 + 40))
+    }
+
+    func skipped__test__004__RestClient__stats__result__should_match_month_level_inbound_and_outbound_fixture_data__forwards_() {
+        beforeEach__RestClient__stats__result()
+
+        let client = ARTRest(options: statsOptions)
+        let query = ARTStatsQuery()
+        query.end = calendar.date(byAdding: .month, value: 1, to: date, options: NSCalendar.Options(rawValue: 0))
+        query.direction = .forwards
+        query.unit = .month
+
+        let result = queryStats(client, query)
+        let totalInbound = (result.items).reduce(0) { $0 + $1.inbound.all.messages.count }
+        let totalOutbound = (result.items).reduce(0) { $0 + $1.outbound.all.messages.count }
+
+        expect(result.items.count).to(equal(1))
+        expect(totalInbound).to(equal(50 + 60 + 70))
+        expect(totalOutbound).to(equal(20 + 10 + 40))
+    }
+
+    func skipped__test__005__RestClient__stats__result__should_contain_only_one_item_when_limit_is_1__backwards() {
+        beforeEach__RestClient__stats__result()
+
+        let client = ARTRest(options: statsOptions)
+        let query = ARTStatsQuery()
+        query.end = date.addingTimeInterval(60) // 20XX-02-03:16:04
+        query.limit = 1
+
+        let result = queryStats(client, query)
+        let totalInbound = (result.items).reduce(0) { $0 + $1.inbound.all.messages.count }
+        let totalOutbound = (result.items).reduce(0) { $0 + $1.outbound.all.messages.count }
+
+        expect(result.items.count).to(equal(1))
+        expect(totalInbound).to(equal(60))
+        expect(totalOutbound).to(equal(10))
+    }
+
+    func test__006__RestClient__stats__result__should_contain_only_one_item_when_limit_is_1__forwards() {
+        beforeEach__RestClient__stats__result()
+
+        let client = ARTRest(options: statsOptions)
+        let query = ARTStatsQuery()
+        query.end = date.addingTimeInterval(60) // 20XX-02-03:16:04
+        query.limit = 1
+        query.direction = .forwards
+
+        let result = queryStats(client, query)
+        let totalInbound = (result.items).reduce(0) { $0 + $1.inbound.all.messages.count }
+        let totalOutbound = (result.items).reduce(0) { $0 + $1.outbound.all.messages.count }
+
+        expect(result.items.count).to(equal(1))
+        expect(totalInbound).to(equal(50))
+        expect(totalOutbound).to(equal(20))
+    }
+
+    func test__007__RestClient__stats__result__should_be_paginated_according_to_the_limit__backwards() {
+        beforeEach__RestClient__stats__result()
+
+        let client = ARTRest(options: statsOptions)
+        let query = ARTStatsQuery()
+        query.end = date.addingTimeInterval(120) // 20XX-02-03:16:05
+        query.limit = 1
+
+        let firstPage = queryStats(client, query)
+        expect(firstPage.items.count).to(equal(1))
+        expect((firstPage.items)[0].inbound.all.messages.data).to(equal(7000))
+        expect(firstPage.hasNext).to(beTrue())
+        expect(firstPage.isLast).to(beFalse())
+
+        guard let secondPage: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
+            firstPage.next { page, err in
+                expect(err).to(beNil())
+                value(page)
+            }
+        }) else {
+            return
+        }
+
+        expect(secondPage.items.count).to(equal(1))
+        expect((secondPage.items)[0].inbound.all.messages.data).to(equal(6000))
+        expect(secondPage.hasNext).to(beTrue())
+        expect(secondPage.isLast).to(beFalse())
+
+        guard let thirdPage: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
+            secondPage.next { page, err in
+                expect(err).to(beNil())
+                value(page)
+            }
+        }) else {
+            return
+        }
+
+        expect(thirdPage.items.count).to(equal(1))
+        expect((thirdPage.items)[0].inbound.all.messages.data).to(equal(5000))
+        expect(thirdPage.isLast).to(beTrue())
+
+        guard let firstPageAgain: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
+            thirdPage.first { page, err in
+                expect(err).to(beNil())
+                value(page)
+            }
+        }) else {
+            return
+        }
+
+        expect(firstPageAgain.items.count).to(equal(1))
+        expect((firstPageAgain.items)[0].inbound.all.messages.data).to(equal(7000))
+    }
+
+    func skipped__test__008__RestClient__stats__result__should_be_paginated_according_to_the_limit__fowards_() {
+        beforeEach__RestClient__stats__result()
+
+        let client = ARTRest(options: statsOptions)
+        let query = ARTStatsQuery()
+        query.end = date.addingTimeInterval(120) // 20XX-02-03:16:05
+        query.limit = 1
+        query.direction = .forwards
+
+        let firstPage = queryStats(client, query)
+        expect(firstPage.items.count).to(equal(1))
+        expect((firstPage.items)[0].inbound.all.messages.data).to(equal(5000))
+        expect(firstPage.hasNext).to(beTrue())
+        expect(firstPage.isLast).to(beFalse())
+
+        guard let secondPage: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
+            firstPage.next { page, err in
+                expect(err).to(beNil())
+                value(page)
+            }
+        }) else {
+            return
+        }
+
+        expect(secondPage.items.count).to(equal(1))
+        expect((secondPage.items)[0].inbound.all.messages.data).to(equal(6000))
+        expect(secondPage.hasNext).to(beTrue())
+        expect(secondPage.isLast).to(beFalse())
+
+        guard let thirdPage: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
+            secondPage.next { page, err in
+                expect(err).to(beNil())
+                value(page)
+            }
+        }) else {
+            return
+        }
+
+        expect(thirdPage.items.count).to(equal(1))
+        expect((thirdPage.items)[0].inbound.all.messages.data).to(equal(7000))
+        expect(thirdPage.isLast).to(beTrue())
+
+        guard let firstPageAgain: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
+            thirdPage.first { page, err in
+                expect(err).to(beNil())
+                value(page)
+            }
+        }) else {
+            return
+        }
+
+        expect(firstPageAgain.items.count).to(equal(1))
+        expect((firstPageAgain.items)[0].inbound.all.messages.data).to(equal(5000))
+    }
+
+    // RSC6b
+
+    // RSC6b1
+
+    func test__009__RestClient__stats__query__start__should_return_an_error_when_later_than_end() {
+        let client = ARTRest(key: "fake:key")
+        let query = ARTStatsQuery()
+
+        query.start = NSDate.distantFuture
+        query.end = NSDate.distantPast
+
+        expect { try client.stats(query, callback: { _, _ in }) }.to(throwError())
+    }
+
+    // RSC6b2
+
+    func test__010__RestClient__stats__query__direction__should_be_backwards_by_default() {
+        let query = ARTStatsQuery()
+
+        expect(query.direction).to(equal(ARTQueryDirection.backwards))
+    }
+
+    // RSC6b3
+
+    func test__011__RestClient__stats__query__limit__should_have_a_default_value_of_100() {
+        let query = ARTStatsQuery()
+
+        expect(query.limit).to(equal(100))
+    }
+
+    func test__012__RestClient__stats__query__limit__should_return_an_error_when_greater_than_1000() {
+        let client = ARTRest(key: "fake:key")
+        let query = ARTStatsQuery()
+
+        query.limit = 1001
+
+        expect { try client.stats(query, callback: { _, _ in }) }.to(throwError())
+    }
+
+    // RSC6b4
+
+    func test__013__RestClient__stats__query__unit__should_default_to_minute() {
+        let query = ARTStatsQuery()
+
+        expect(query.unit).to(equal(ARTStatsGranularity.minute))
     }
 }
