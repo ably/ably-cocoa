@@ -765,6 +765,7 @@ class RestClientTests: XCTestCase {
 
     // TO3k7
 
+    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
     func test__051__RestClient__Host_Fallback__fallbackHostsUseDefault_option__allows_the_default_fallback_hosts_to_be_used_when__environment__is_not_production() {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.environment = "not-production"
@@ -785,6 +786,7 @@ class RestClientTests: XCTestCase {
         }
     }
 
+    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
     func test__052__RestClient__Host_Fallback__fallbackHostsUseDefault_option__allows_the_default_fallback_hosts_to_be_used_when_a_custom_Realtime_or_REST_host_endpoint_is_being_used() {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.restHost = "fake1.ably.io"
@@ -806,11 +808,13 @@ class RestClientTests: XCTestCase {
         }
     }
 
+    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
     func test__053__RestClient__Host_Fallback__fallbackHostsUseDefault_option__should_be_inactive_by_default() {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         expect(options.fallbackHostsUseDefault).to(beFalse())
     }
 
+    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
     func test__054__RestClient__Host_Fallback__fallbackHostsUseDefault_option__should_never_accept_to_configure__fallbackHost__and_set__fallbackHostsUseDefault__to__true_() {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         expect(options.fallbackHosts).to(beNil())
@@ -953,6 +957,7 @@ class RestClientTests: XCTestCase {
     }
 
     // RSC15b3, RSC15g4
+    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
     func test__060__RestClient__Host_Fallback__Fallback_behavior__should_be_applied_when_ClientOptions_fallbackHosts_is_not_provided_and_deprecated_fallbackHostsUseDefault_is_on() {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.fallbackHostsUseDefault = true
@@ -1100,6 +1105,7 @@ class RestClientTests: XCTestCase {
     }
 
     // RSC15g4
+    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
     func test__046__RestClient__Host_Fallback__applies_when_ClientOptions_fallbackHostsUseDefault_is_true() {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.environment = "test"
