@@ -24,7 +24,6 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
     ARTPushActivationState *_current;
     dispatch_queue_t _queue;
     dispatch_queue_t _userQueue;
-    id<ARTDeviceStorage> _storage;
 }
 
 - (instancetype)initWithRest:(ARTRestInternal *const)rest
@@ -34,9 +33,8 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
         _delegate = delegate;
         _queue = _rest.queue;
         _userQueue = _rest.userQueue;
-        _storage = _rest.push.storage;
         // Unarchiving
-        NSData *stateData = [_storage objectForKey:ARTPushActivationCurrentStateKey];
+        NSData *stateData = [rest.storage objectForKey:ARTPushActivationCurrentStateKey];
         _current = stateData != nil ? [ARTPushActivationState art_unarchiveFromData:stateData] : nil;
         if (!_current) {
             _current = [[ARTPushActivationStateNotActivated alloc] initWithMachine:self];
@@ -46,7 +44,7 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
             }
             _current.machine = self;
         }
-        NSData *eventsData = [_storage objectForKey:ARTPushActivationPendingEventsKey];
+        NSData *eventsData = [rest.storage objectForKey:ARTPushActivationPendingEventsKey];
         _pendingEvents = eventsData != nil ? [ARTPushActivationEvent art_unarchiveFromData:eventsData] : nil;
         if (!_pendingEvents) {
             _pendingEvents = [NSMutableArray array];
@@ -88,10 +86,10 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
 }
 
 - (ARTLocalDevice *)localDevice {
-    ARTLocalDevice *device = _rest.push.device_nosync;
+    ARTLocalDevice *device = _rest.device_nosync;
     if (device.id == nil) {
-        [_rest.push resetSharedDevice];
-        device = _rest.push.device_nosync;
+        [_rest resetDeviceSingleton];
+        device = _rest.device_nosync;
     }
     return device;
 }
@@ -141,9 +139,9 @@ dispatch_async(_queue, ^{
 - (void)persist {
     // Archiving
     if ([_current isKindOfClass:[ARTPushActivationPersistentState class]]) {
-        [_storage setObject:[_current art_archive] forKey:ARTPushActivationCurrentStateKey];
+        [self.rest.storage setObject:[_current art_archive] forKey:ARTPushActivationCurrentStateKey];
     }
-    [_storage setObject:[_pendingEvents art_archive] forKey:ARTPushActivationPendingEventsKey];
+    [self.rest.storage setObject:[_pendingEvents art_archive] forKey:ARTPushActivationPendingEventsKey];
 }
 
 - (void)deviceRegistration:(ARTErrorInfo *)error {

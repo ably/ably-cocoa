@@ -4,9 +4,6 @@
 
 @class ARTPushActivationStateMachine;
 @class ARTRestInternal;
-@class ARTLog;
-@class ARTLocalDevice;
-@protocol ARTDeviceStorage;
 @protocol ARTPushRegistererDelegate;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -16,19 +13,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) ARTPushAdminInternal *admin;
 @property (readonly) dispatch_queue_t queue;
 
-@property (nonatomic, strong, readonly) ARTLog *logger;
-
 - (instancetype)init:(ARTRestInternal *)rest;
 
 #if TARGET_OS_IOS
-
-@property (nonatomic) id<ARTDeviceStorage> storage;
-
-@property (nonnull, nonatomic, readonly) ARTLocalDevice *device;
-@property (nonnull, nonatomic, readonly) ARTLocalDevice *device_nosync;
-
-- (void)resetSharedDevice;
-
 - (void)getActivationMachine:(void (^)(ARTPushActivationStateMachine *))block;
 
 /// Direct access to _activationMachine var for internal testing.
