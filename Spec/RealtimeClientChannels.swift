@@ -9,12 +9,11 @@ extension ARTRealtimeChannels: Sequence {
     }
 }
 
-class RealtimeClientChannels: QuickSpec {
-    override func spec() {
-        describe("Channels") {
+class RealtimeClientChannels: XCTestCase {
+        
 
             // RTS2
-            it("should exist methods to check if a channel exists or iterate through the existing channels") {
+            func test__001__Channels__should_exist_methods_to_check_if_a_channel_exists_or_iterate_through_the_existing_channels() {
                 let client = ARTRealtime(options: AblyTests.commonAppSetup())
                 defer { client.dispose(); client.close() }
                 var disposable = [String]()
@@ -33,10 +32,10 @@ class RealtimeClientChannels: QuickSpec {
             }
 
             // RTS3
-            context("get") {
+            
 
                 // RTS3a
-                it("should create a new Channel if none exists or return the existing one") {
+                func test__002__Channels__get__should_create_a_new_Channel_if_none_exists_or_return_the_existing_one() {
                     let options = AblyTests.commonAppSetup()
                     let client = ARTRealtime(options: options)
                     defer { client.dispose(); client.close() }
@@ -51,7 +50,7 @@ class RealtimeClientChannels: QuickSpec {
                 }
 
                 // RTS3b
-                it("should be possible to specify a ChannelOptions") {
+                func test__003__Channels__get__should_be_possible_to_specify_a_ChannelOptions() {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
                     let options = ARTRealtimeChannelOptions()
@@ -60,7 +59,7 @@ class RealtimeClientChannels: QuickSpec {
                 }
 
                 // RTS3c
-                it("accessing an existing Channel with options should update the options and then return the object") {
+                func test__004__Channels__get__accessing_an_existing_Channel_with_options_should_update_the_options_and_then_return_the_object() {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
                     expect(client.channels.get("test").options).to(beNil())
@@ -69,11 +68,9 @@ class RealtimeClientChannels: QuickSpec {
                     expect(channel.options).to(beIdenticalTo(options))
                 }
 
-            }
-
             // RTS4
-            context("release") {
-                it("should release a channel") {
+            
+                func test__005__Channels__release__should_release_a_channel() {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { client.dispose(); client.close() }
 
@@ -102,8 +99,4 @@ class RealtimeClientChannels: QuickSpec {
                         sameChannel.publish("foo", data: nil)
                     }
                 }
-            }
-
-        }
-    }
 }

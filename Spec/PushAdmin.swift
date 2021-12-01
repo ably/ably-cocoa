@@ -2,7 +2,27 @@ import Ably
 import Nimble
 import Quick
 
-class PushAdmin : QuickSpec {
+
+        private var rest: ARTRest!
+        private var mockHttpExecutor: MockHTTPExecutor!
+        private var storage: MockDeviceStorage!
+        private var localDevice: ARTLocalDevice!
+
+        private let recipient = [
+            "clientId": "bob"
+        ]
+
+        private let payload = [
+            "notification": [
+                "title": "Welcome"
+            ]
+        ]
+        
+        private let quxChannelName = "pushenabled:qux"
+
+            private let subscription = ARTPushChannelSubscription(clientId: "newClient", channel: quxChannelName)
+
+class PushAdmin : XCTestCase {
 
     private static let deviceDetails: ARTDeviceDetails = {
         let deviceDetails = ARTDeviceDetails(id: "testDeviceDetails")
@@ -140,38 +160,37 @@ class PushAdmin : QuickSpec {
         super.tearDown()
     }
 
-    override func spec() {
+override class var defaultTestSuite : XCTestSuite {
+    let _ = rest
+    let _ = mockHttpExecutor
+    let _ = storage
+    let _ = localDevice
+    let _ = recipient
+    let _ = payload
+    let _ = quxChannelName
+    let _ = subscription
 
-        var rest: ARTRest!
-        var mockHttpExecutor: MockHTTPExecutor!
-        var storage: MockDeviceStorage!
-        var localDevice: ARTLocalDevice!
+    return super.defaultTestSuite
+}
 
-        let recipient = [
-            "clientId": "bob"
-        ]
 
-        let payload = [
-            "notification": [
-                "title": "Welcome"
-            ]
-        ]
+        override func setUp() {
+print("START HOOK: PushAdmin.beforeEach")
 
-        beforeEach {
             rest = ARTRest(key: "xxxx:xxxx")
             mockHttpExecutor = MockHTTPExecutor()
             rest.internal.httpExecutor = mockHttpExecutor
             storage = MockDeviceStorage()
             rest.internal.storage = storage
             localDevice = rest.device
+print("END HOOK: PushAdmin.beforeEach")
+
         }
-        
-        let quxChannelName = "pushenabled:qux"
 
         // RSH1a
-        describe("publish") {
+        
 
-            it("should perform an HTTP request to /push/publish") {
+            func test__001__publish__should_perform_an_HTTP_request_to__push_publish() {
                 waitUntil(timeout: testTimeout) { done in
                     rest.push.admin.publish(recipient, data: payload) { error in
                         expect(error).to(beNil())
@@ -204,7 +223,7 @@ class PushAdmin : QuickSpec {
                 }
             }
 
-            xit("should publish successfully") {
+            func skipped__test__002__publish__should_publish_successfully() {
                 let options = AblyTests.commonAppSetup()
                 let realtime = ARTRealtime(options: options)
                 defer { realtime.dispose(); realtime.close() }
@@ -237,7 +256,7 @@ class PushAdmin : QuickSpec {
                 }
             }
 
-            xit("should fail with a bad recipient") {
+            func skipped__test__003__publish__should_fail_with_a_bad_recipient() {
                 let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                 defer { realtime.dispose(); realtime.close() }
                 let channel = realtime.channels.get("pushenabled:push_admin_publish-bad-recipient")
@@ -264,7 +283,7 @@ class PushAdmin : QuickSpec {
                 }
             }
 
-            xit("should fail with an empty recipient") {
+            func skipped__test__004__publish__should_fail_with_an_empty_recipient() {
                 let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                 defer { realtime.dispose(); realtime.close() }
                 let channel = realtime.channels.get("pushenabled:push_admin_publish-empty-recipient")
@@ -290,7 +309,7 @@ class PushAdmin : QuickSpec {
                 }
             }
 
-            it("should fail with an empty payload") {
+            func test__005__publish__should_fail_with_an_empty_payload() {
                 let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                 defer { realtime.dispose(); realtime.close() }
                 let channel = realtime.channels.get("pushenabled:push_admin_publish-empty-payload")
@@ -316,13 +335,11 @@ class PushAdmin : QuickSpec {
                 }
             }
 
-        }
-
-        describe("Device Registrations") {
+        
 
             // RSH1b1
-            context("get") {
-                it("should return a device") {
+            
+                func test__006__Device_Registrations__get__should_return_a_device() {
                     let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { realtime.dispose(); realtime.close() }
                     waitUntil(timeout: testTimeout) { done in
@@ -337,7 +354,7 @@ class PushAdmin : QuickSpec {
                     }
                 }
 
-                it("should not return a device if it doesnt exist") {
+                func test__007__Device_Registrations__get__should_not_return_a_device_if_it_doesnt_exist() {
                     let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { realtime.dispose(); realtime.close() }
                     waitUntil(timeout: testTimeout) { done in
@@ -353,8 +370,8 @@ class PushAdmin : QuickSpec {
                     }
                 }
 
-                context("push device authentication") {
-                    it("should include DeviceIdentityToken HTTP header") {
+                
+                    func test__008__Device_Registrations__get__push_device_authentication__should_include_DeviceIdentityToken_HTTP_header() {
                         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                         defer { realtime.dispose(); realtime.close() }
                         realtime.internal.rest.httpExecutor = mockHttpExecutor
@@ -386,7 +403,7 @@ class PushAdmin : QuickSpec {
                         expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
                     }
 
-                    it("should include DeviceSecret HTTP header") {
+                    func test__009__Device_Registrations__get__push_device_authentication__should_include_DeviceSecret_HTTP_header() {
                         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                         defer { realtime.dispose(); realtime.close() }
                         realtime.internal.rest.httpExecutor = mockHttpExecutor
@@ -405,12 +422,10 @@ class PushAdmin : QuickSpec {
                         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
                         expect(authorization).to(equal(localDevice.secret))
                     }
-                }
-            }
 
             // RSH1b2
-            context("list") {
-                it("should list devices by id") {
+            
+                func test__010__Device_Registrations__list__should_list_devices_by_id() {
                     let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { realtime.dispose(); realtime.close() }
                     waitUntil(timeout: testTimeout) { done in
@@ -425,7 +440,7 @@ class PushAdmin : QuickSpec {
                     }
                 }
 
-                it("should list devices by client id") {
+                func test__011__Device_Registrations__list__should_list_devices_by_client_id() {
                     let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { realtime.dispose(); realtime.close() }
                     waitUntil(timeout: testTimeout) { done in
@@ -440,7 +455,7 @@ class PushAdmin : QuickSpec {
                     }
                 }
 
-                it("should list devices sorted") {
+                func test__012__Device_Registrations__list__should_list_devices_sorted() {
                     let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { realtime.dispose(); realtime.close() }
                     waitUntil(timeout: testTimeout) { done in
@@ -455,7 +470,7 @@ class PushAdmin : QuickSpec {
                     }
                 }
 
-                it("should return an empty list when id does not exist") {
+                func test__013__Device_Registrations__list__should_return_an_empty_list_when_id_does_not_exist() {
                     let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { realtime.dispose(); realtime.close() }
                     waitUntil(timeout: testTimeout) { done in
@@ -469,11 +484,10 @@ class PushAdmin : QuickSpec {
                         }
                     }
                 }
-            }
 
             // RSH1b4
-            context("remove") {
-                it("should unregister a device") {
+            
+                func test__014__Device_Registrations__remove__should_unregister_a_device() {
                     let options = AblyTests.commonAppSetup()
                     options.pushFullWait = true
                     let realtime = ARTRealtime(options: options)
@@ -495,11 +509,10 @@ class PushAdmin : QuickSpec {
                     expect(request.allHTTPHeaderFields?["X-Ably-DeviceToken"]).to(beNil())
                     expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]).to(beNil())
                 }
-            }
 
             // RSH1b3
-            context("save") {
-                it("should register a device") {
+            
+                func test__015__Device_Registrations__save__should_register_a_device() {
                     let options = AblyTests.commonAppSetup()
                     options.pushFullWait = true
                     let realtime = ARTRealtime(options: options)
@@ -522,8 +535,8 @@ class PushAdmin : QuickSpec {
                     expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]).to(beNil())
                 }
 
-                context("push device authentication") {
-                    it("should include DeviceIdentityToken HTTP header") {
+                
+                    func test__016__Device_Registrations__save__push_device_authentication__should_include_DeviceIdentityToken_HTTP_header() {
                         let options = AblyTests.commonAppSetup()
                         options.pushFullWait = true
                         let realtime = ARTRealtime(options: options)
@@ -559,7 +572,7 @@ class PushAdmin : QuickSpec {
                         expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
                     }
 
-                    it("should include DeviceSecret HTTP header") {
+                    func test__017__Device_Registrations__save__push_device_authentication__should_include_DeviceSecret_HTTP_header() {
                         let options = AblyTests.commonAppSetup()
                         options.pushFullWait = true
                         let realtime = ARTRealtime(options: options)
@@ -582,12 +595,10 @@ class PushAdmin : QuickSpec {
                         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
                         expect(authorization).to(equal(localDevice.secret))
                     }
-                }
-            }
 
             // RSH1b5
-            context("removeWhere") {
-                it("should unregister a device") {
+            
+                func test__018__Device_Registrations__removeWhere__should_unregister_a_device() {
                     let options = AblyTests.commonAppSetup()
                     options.pushFullWait = true
                     let realtime = ARTRealtime(options: options)
@@ -663,17 +674,12 @@ class PushAdmin : QuickSpec {
                         }
                     }
                 }
-            }
 
-        }
-
-        describe("Channel Subscriptions") {
-
-            let subscription = ARTPushChannelSubscription(clientId: "newClient", channel: quxChannelName)
+        
 
             // RSH1c3
-            context("save") {
-                it("should add a subscription") {
+            
+                func test__019__Channel_Subscriptions__save__should_add_a_subscription() {
                     let options = AblyTests.commonAppSetup()
                     let realtime = ARTRealtime(options: options)
                     defer { realtime.dispose(); realtime.close() }
@@ -697,7 +703,7 @@ class PushAdmin : QuickSpec {
                     expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]).to(beNil())
                 }
 
-                it("should update a subscription") {
+                func test__020__Channel_Subscriptions__save__should_update_a_subscription() {
                     let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { realtime.dispose(); realtime.close() }
                     let updateSubscription = ARTPushChannelSubscription(clientId: subscription.clientId!, channel: "pushenabled:foo")
@@ -709,7 +715,7 @@ class PushAdmin : QuickSpec {
                     }
                 }
 
-                it("should fail with a bad recipient") {
+                func test__021__Channel_Subscriptions__save__should_fail_with_a_bad_recipient() {
                     let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { realtime.dispose(); realtime.close() }
                     let invalidSubscription = ARTPushChannelSubscription(deviceId: "madeup", channel: "pushenabled:foo")
@@ -725,8 +731,8 @@ class PushAdmin : QuickSpec {
                     }
                 }
 
-                context("push device authentication") {
-                    it("should include DeviceIdentityToken HTTP header") {
+                
+                    func test__022__Channel_Subscriptions__save__push_device_authentication__should_include_DeviceIdentityToken_HTTP_header() {
                         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                         defer { realtime.dispose(); realtime.close() }
                         realtime.internal.rest.httpExecutor = mockHttpExecutor
@@ -761,7 +767,7 @@ class PushAdmin : QuickSpec {
                         expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
                     }
 
-                    it("should include DeviceSecret HTTP header") {
+                    func test__023__Channel_Subscriptions__save__push_device_authentication__should_include_DeviceSecret_HTTP_header() {
                         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                         defer { realtime.dispose(); realtime.close() }
                         realtime.internal.rest.httpExecutor = mockHttpExecutor
@@ -783,12 +789,10 @@ class PushAdmin : QuickSpec {
                         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
                         expect(authorization).to(equal(localDevice.secret))
                     }
-                }
-            }
 
             // RSH1c1
-            context("list") {
-                it("should receive a list of subscriptions") {
+            
+                func test__024__Channel_Subscriptions__list__should_receive_a_list_of_subscriptions() {
                     let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { realtime.dispose(); realtime.close() }
                     waitUntil(timeout: testTimeout) { done in
@@ -805,11 +809,10 @@ class PushAdmin : QuickSpec {
                         }
                     }
                 }
-            }
 
             // RSH1c2
-            context("listChannels") {
-                it("should receive a list of subscriptions") {
+            
+                func test__025__Channel_Subscriptions__listChannels__should_receive_a_list_of_subscriptions() {
                     let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { realtime.dispose(); realtime.close() }
                     waitUntil(timeout: testTimeout) { done in
@@ -823,11 +826,10 @@ class PushAdmin : QuickSpec {
                         }
                     }
                 }
-            }
 
             // RSH1c4
-            context("remove") {
-                it("should remove a subscription") {
+            
+                func test__026__Channel_Subscriptions__remove__should_remove_a_subscription() {
                     let options = AblyTests.commonAppSetup()
                     let realtime = ARTRealtime(options: options)
                     defer { realtime.dispose(); realtime.close() }
@@ -862,8 +864,8 @@ class PushAdmin : QuickSpec {
                     }
                 }
 
-                context("push device authentication") {
-                    it("should include DeviceIdentityToken HTTP header") {
+                
+                    func test__027__Channel_Subscriptions__remove__push_device_authentication__should_include_DeviceIdentityToken_HTTP_header() {
                         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                         defer { realtime.dispose(); realtime.close() }
                         realtime.internal.rest.httpExecutor = mockHttpExecutor
@@ -898,7 +900,7 @@ class PushAdmin : QuickSpec {
                         expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
                     }
 
-                    it("should include DeviceSecret HTTP header") {
+                    func test__028__Channel_Subscriptions__remove__push_device_authentication__should_include_DeviceSecret_HTTP_header() {
                         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                         defer { realtime.dispose(); realtime.close() }
                         realtime.internal.rest.httpExecutor = mockHttpExecutor
@@ -920,12 +922,10 @@ class PushAdmin : QuickSpec {
                         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
                         expect(authorization).to(equal(localDevice.secret))
                     }
-                }
-            }
 
             // RSH1c5
-            context("removeWhere") {
-                it("should remove by cliendId") {
+            
+                func test__029__Channel_Subscriptions__removeWhere__should_remove_by_cliendId() {
                     let options = AblyTests.commonAppSetup()
                     options.pushFullWait = true
                     let realtime = ARTRealtime(options: options)
@@ -980,7 +980,7 @@ class PushAdmin : QuickSpec {
                     }
                 }
 
-                it("should remove by cliendId and channel") {
+                func test__030__Channel_Subscriptions__removeWhere__should_remove_by_cliendId_and_channel() {
                     let options = AblyTests.commonAppSetup()
                     options.pushFullWait = true
                     let realtime = ARTRealtime(options: options)
@@ -1025,7 +1025,7 @@ class PushAdmin : QuickSpec {
                     }
                 }
 
-                it("should remove by deviceId") {
+                func test__031__Channel_Subscriptions__removeWhere__should_remove_by_deviceId() {
                     let options = AblyTests.commonAppSetup()
                     options.pushFullWait = true
                     let realtime = ARTRealtime(options: options)
@@ -1070,7 +1070,7 @@ class PushAdmin : QuickSpec {
                     }
                 }
 
-                it("should not remove by inexistent deviceId") {
+                func test__032__Channel_Subscriptions__removeWhere__should_not_remove_by_inexistent_deviceId() {
                     let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer { realtime.dispose(); realtime.close() }
 
@@ -1096,20 +1096,13 @@ class PushAdmin : QuickSpec {
                         }
                     }
                 }
-            }
 
-        }
+        
 
-        describe("local device") {
-
-            it("should include an id and a secret") {
+            func test__033__local_device__should_include_an_id_and_a_secret() {
                 expect(localDevice.id).toNot(beNil())
                 expect(localDevice.secret).toNot(beNil())
                 expect(localDevice.identityTokenDetails).to(beNil())
             }
-
-        }
-
-    }
 
 }
