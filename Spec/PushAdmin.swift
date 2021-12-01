@@ -158,12 +158,16 @@ class PushAdmin : QuickSpec {
         ]
 
         beforeEach {
+print("START HOOK: PushAdmin.beforeEach")
+
             rest = ARTRest(key: "xxxx:xxxx")
             mockHttpExecutor = MockHTTPExecutor()
             rest.internal.httpExecutor = mockHttpExecutor
             storage = MockDeviceStorage()
             rest.internal.storage = storage
             localDevice = rest.device
+print("END HOOK: PushAdmin.beforeEach")
+
         }
         
         let quxChannelName = "pushenabled:qux"

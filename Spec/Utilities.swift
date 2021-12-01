@@ -10,8 +10,12 @@ class Utilities: QuickSpec {
             context("JSON Encoder") {
                 var jsonEncoder: ARTJsonLikeEncoder!
                 beforeEach {
+print("START HOOK: Utilities.beforeEach__Utilities__JSON_Encoder")
+
                     jsonEncoder = ARTJsonLikeEncoder()
                     jsonEncoder.delegate = ARTJsonEncoder()
+print("END HOOK: Utilities.beforeEach__Utilities__JSON_Encoder")
+
                 }
 
                 it("should decode a protocol message that has an error without a message") {
@@ -205,6 +209,8 @@ class Utilities: QuickSpec {
                 weak var listenerAll: ARTEventListener?
 
                 beforeEach {
+print("START HOOK: Utilities.beforeEach__Utilities__EventEmitter")
+
                     eventEmitter = ARTInternalEventEmitter(queue: AblyTests.queue)
                     receivedFoo1 = nil
                     receivedFoo2 = nil
@@ -217,6 +223,8 @@ class Utilities: QuickSpec {
                     eventEmitter.once("bar", callback: { receivedBarOnce = $0 as? Int })
                     listenerAll = eventEmitter.on { receivedAll = $0 as? Int }
                     eventEmitter.once { receivedAllOnce = $0 as? Int }
+print("END HOOK: Utilities.beforeEach__Utilities__EventEmitter")
+
                 }
 
                 it("should emit events to all relevant listeners") {
