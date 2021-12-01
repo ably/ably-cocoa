@@ -89,7 +89,7 @@ class PushAdmin : QuickSpec {
         options.pushFullWait = true
         options.dispatchQueue = AblyTests.userQueue
         let rest = ARTRest(options: options)
-        rest.internal.storage = MockDeviceStorage()
+        rest.internal.push.storage = MockDeviceStorage()
         let group = DispatchGroup()
 
         group.enter()
@@ -120,7 +120,7 @@ class PushAdmin : QuickSpec {
         let options = AblyTests.commonAppSetup()
         options.dispatchQueue = AblyTests.userQueue
         let rest = ARTRest(options: options)
-        rest.internal.storage = MockDeviceStorage()
+        rest.internal.push.storage = MockDeviceStorage()
         let group = DispatchGroup()
 
         for device in allDeviceDetails {
@@ -163,7 +163,7 @@ class PushAdmin : QuickSpec {
             mockHttpExecutor = MockHTTPExecutor()
             rest.internal.httpExecutor = mockHttpExecutor
             storage = MockDeviceStorage()
-            rest.internal.storage = storage
+            rest.internal.push.storage = storage
             localDevice = rest.device
         }
         

@@ -16,7 +16,7 @@ class PushChannel : QuickSpec {
             rest = ARTRest(options: options)
             rest.internal.options.clientId = "tester"
             rest.internal.httpExecutor = mockHttpExecutor
-            rest.internal.resetDeviceSingleton()
+            rest.internal.push.resetSharedDevice()
         }
 
         // RSH7
@@ -342,7 +342,7 @@ class PushChannel : QuickSpec {
                     // Prevent channel name to be prefixed by test-*
                     options.channelNamePrefix = nil
                     let rest = ARTRest(options: options)
-                    rest.internal.storage = MockDeviceStorage()
+                    rest.internal.push.storage = MockDeviceStorage()
 
                     // Activate device
                     let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")

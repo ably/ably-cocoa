@@ -21,12 +21,12 @@ class PushActivationStateMachine : QuickSpec {
             httpExecutor = MockHTTPExecutor()
             rest.internal.httpExecutor = httpExecutor
             storage = MockDeviceStorage()
-            rest.internal.storage = storage
+            rest.internal.push.storage = storage
             initialStateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
         }
 
         afterEach {
-           rest.internal.resetDeviceSingleton()
+           rest.internal.push.resetSharedDevice()
         }
 
         describe("Activation state machine") {
@@ -37,7 +37,7 @@ class PushActivationStateMachine : QuickSpec {
 
             it("should read the current state from disk") {
                 let storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeviceRegistration(machine: initialStateMachine))
-                rest.internal.storage = storage
+                rest.internal.push.storage = storage
                 let stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
                 expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeviceRegistration.self))
                 expect(storage.keysRead).to(haveCount(2))
@@ -51,7 +51,7 @@ class PushActivationStateMachine : QuickSpec {
 
                 let storage = MockDeviceStorage()
                 storage.simulateOnNextRead(data: stateEncodedFromOldVersion, for: ARTPushActivationCurrentStateKey)
-                rest.internal.storage = storage
+                rest.internal.push.storage = storage
                 let stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
                 expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
             }
@@ -61,7 +61,7 @@ class PushActivationStateMachine : QuickSpec {
 
                 beforeEach {
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateNotActivated(machine: initialStateMachine))
-                    rest.internal.storage = storage
+                    rest.internal.push.storage = storage
                     stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
                 }
 
@@ -87,7 +87,7 @@ class PushActivationStateMachine : QuickSpec {
                     // RSH3a2b
                     context("local device") {
                         it("should have a generated id") {
-                            rest.internal.resetDeviceSingleton()
+                            rest.internal.push.resetSharedDevice()
                             expect(rest.device.id).toNot(beNil())
                             expect(rest.device.id!.count) == 36
                         }
@@ -106,7 +106,7 @@ class PushActivationStateMachine : QuickSpec {
                             let options = ARTClientOptions(key: "xxxx:xxxx")
                             options.clientId = "deviceClient"
                             let rest = ARTRest(options: options)
-                            rest.internal.storage = storage
+                            rest.internal.push.storage = storage
                             expect(rest.device.clientId).to(equal("deviceClient"))
                         }
                     }
@@ -154,7 +154,7 @@ class PushActivationStateMachine : QuickSpec {
 
                 beforeEach {
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForPushDeviceDetails(machine: initialStateMachine))
-                    rest.internal.storage = storage
+                    rest.internal.push.storage = storage
                     stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
                 }
 
@@ -427,7 +427,7 @@ class PushActivationStateMachine : QuickSpec {
                 // https://github.com/ably/ably-cocoa/issues/966
                 it("when initializing from persistent state with a deviceToken, GotPushDeviceDetails should be re-emitted") {
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForPushDeviceDetails(machine: initialStateMachine))
-                    rest.internal.storage = storage
+                    rest.internal.push.storage = storage
                     rest.device.setAndPersistAPNSDeviceToken("foo")
                     defer { rest.device.setAndPersistAPNSDeviceToken(nil) }
                     
@@ -449,7 +449,7 @@ class PushActivationStateMachine : QuickSpec {
 
                 beforeEach {
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeviceRegistration(machine: initialStateMachine))
-                    rest.internal.storage = storage
+                    rest.internal.push.storage = storage
                     stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
                 }
 
@@ -461,7 +461,7 @@ class PushActivationStateMachine : QuickSpec {
 
                 // RSH3c2 / RSH8c
                 it("on Event GotDeviceRegistration") {
-                    rest.internal.resetDeviceSingleton()
+                    rest.internal.push.resetSharedDevice()
 
                     var activatedCallbackCalled = false
                     let hook = stateMachine.testSuite_injectIntoMethod(after: NSSelectorFromString("callActivatedCallback:")) {
@@ -516,7 +516,7 @@ class PushActivationStateMachine : QuickSpec {
 
                 beforeEach {
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForNewPushDeviceDetails(machine: initialStateMachine))
-                    rest.internal.storage = storage
+                    rest.internal.push.storage = storage
                     stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
                 }
 
@@ -544,7 +544,7 @@ class PushActivationStateMachine : QuickSpec {
             func reusableTestsTestStateWaitingForRegistrationSyncThrough(_ fromEvent: ARTPushActivationEvent) {
                 beforeEach {
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForRegistrationSync(machine: initialStateMachine, from: fromEvent))
-                    rest.internal.storage = storage
+                    rest.internal.push.storage = storage
                     stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
                     (stateMachine.current as! ARTPushActivationStateWaitingForRegistrationSync).fromEvent = fromEvent
                 }
@@ -646,7 +646,7 @@ class PushActivationStateMachine : QuickSpec {
 
                 beforeEach {
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateAfterRegistrationSyncFailed(machine: initialStateMachine))
-                    rest.internal.storage = storage
+                    rest.internal.push.storage = storage
                     stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
                 }
 
@@ -672,7 +672,7 @@ class PushActivationStateMachine : QuickSpec {
 
                 beforeEach {
                     storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeregistration(machine: initialStateMachine))
-                    rest.internal.storage = storage
+                    rest.internal.push.storage = storage
                     stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
                 }
 
@@ -729,7 +729,7 @@ class PushActivationStateMachine : QuickSpec {
             it("should queue event that has no transition defined for it") {
                 // Start with WaitingForDeregistration state
                 let storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeregistration(machine: initialStateMachine))
-                rest.internal.storage = storage
+                rest.internal.push.storage = storage
                 let stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
 
                 stateMachine.transitions = { event, from, to in
@@ -769,7 +769,7 @@ class PushActivationStateMachine : QuickSpec {
             // RSH5
             it("event handling sould be atomic and sequential") {
                 let storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeregistration(machine: initialStateMachine))
-                rest.internal.storage = storage
+                rest.internal.push.storage = storage
                 let stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
                 stateMachine.send(ARTPushActivationEventCalledActivate())
                 DispatchQueue(label: "QueueA").sync {
@@ -782,9 +782,9 @@ class PushActivationStateMachine : QuickSpec {
 
         it("should remove identityTokenDetails from cache and storage") {
             let storage = MockDeviceStorage()
-            rest.internal.storage = storage
+            rest.internal.push.storage = storage
             rest.device.setAndPersistIdentityTokenDetails(nil)
-            rest.internal.resetDeviceSingleton()
+            rest.internal.push.resetSharedDevice()
             expect(rest.device.identityTokenDetails).to(beNil())
             expect(rest.device.isRegistered()) == false
             expect(storage.object(forKey: ARTDeviceIdentityTokenKey)).to(beNil())
@@ -799,13 +799,13 @@ class PushActivationStateMachine : QuickSpec {
                     let options = ARTClientOptions(key: "xxxx:xxxx")
                     options.clientId = "deviceClient"
                     let rest = ARTRest(options: options)
-                    rest.internal.storage = storage
+                    rest.internal.push.storage = storage
                     expect(rest.device.clientId).to(equal("deviceClient"))
 
                     let newOptions = ARTClientOptions(key: "xxxx:xxxx")
                     newOptions.clientId = "instanceClient"
                     let newRest = ARTRest(options: newOptions)
-                    newRest.internal.storage = storage
+                    newRest.internal.push.storage = storage
                     let stateMachine = ARTPushActivationStateMachine(rest: newRest.internal, delegate: StateMachineDelegate())
                     
                     storage.simulateOnNextRead(string: testDeviceId, for: ARTDeviceIdKey)

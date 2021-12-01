@@ -19,11 +19,11 @@ class Push : QuickSpec {
 
         beforeEach {
             rest = ARTRest(key: "xxxx:xxxx")
-            rest.internal.resetDeviceSingleton()
+            rest.internal.push.resetSharedDevice()
             mockHttpExecutor = MockHTTPExecutor()
             rest.internal.httpExecutor = mockHttpExecutor
             storage = MockDeviceStorage()
-            rest.internal.storage = storage
+            rest.internal.push.storage = storage
             stateMachineDelegate = StateMachineDelegate()
             rest.push.internal.createActivationStateMachine(withDelegate: stateMachineDelegate!)
         }
@@ -116,9 +116,9 @@ class Push : QuickSpec {
                 let mockHttpExecutor = MockHTTPExecutor()
                 rest.internal.httpExecutor = mockHttpExecutor
                 let storage = MockDeviceStorage()
-                rest.internal.storage = storage
+                rest.internal.push.storage = storage
                 
-                rest.internal.resetDeviceSingleton()
+                rest.internal.push.resetSharedDevice()
 
                 var stateMachine: ARTPushActivationStateMachine!
                 waitUntil(timeout: testTimeout) { done in
@@ -215,7 +215,7 @@ class Push : QuickSpec {
                 )
 
                 let rest = ARTRest(key: "fake:key")
-                rest.internal.storage = storage
+                rest.internal.push.storage = storage
                 storage.simulateOnNextRead(string: testToken, for: ARTAPNSDeviceTokenKey)
                 storage.simulateOnNextRead(data: testIdentity.archive(), for: ARTDeviceIdentityTokenKey)
 
@@ -304,7 +304,7 @@ class Push : QuickSpec {
                         machine: ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
                     )
                 )
-                realtime.internal.rest.storage = storage
+                realtime.internal.push.storage = storage
 
                 var stateMachine: ARTPushActivationStateMachine!
                 waitUntil(timeout: testTimeout) { done in
