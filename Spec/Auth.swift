@@ -2249,7 +2249,7 @@ class Auth : QuickSpec {
             }
 
             // RSA9c
-            it("should generate a unique 16+ character nonce if none is provided") {
+            it("should generate a unique 16 plus character nonce if none is provided") {
                 let rest = ARTRest(options: AblyTests.commonAppSetup())
 
                 waitUntil(timeout: testTimeout) { done in

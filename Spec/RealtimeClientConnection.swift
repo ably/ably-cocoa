@@ -1326,7 +1326,7 @@ class RealtimeClientConnection: QuickSpec {
             context("serial") {
 
                 // RTN10a
-                it("should be -1 once connected") {
+                it("should be minus 1 once connected") {
                     let client = ARTRealtime(options: AblyTests.commonAppSetup())
                     defer {
                         client.dispose()
@@ -2814,7 +2814,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
                 
                 // RTN15g RTN15g1
-                context("when connection (ttl + idle interval) period has passed since last activity") {
+                context("when connection (ttl plus idle interval) period has passed since last activity") {
                     var ttlAndIdleIntervalPassedTestsClient: ARTRealtime!
                     var ttlAndIdleIntervalPassedTestsConnectionId = ""
                     let customTtlInterval: TimeInterval = 0.1
@@ -2893,7 +2893,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
                 
                 // RTN15g2
-                context("when connection (ttl + idle interval) period has NOT passed since last activity") {
+                context("when connection (ttl plus idle interval) period has NOT passed since last activity") {
                     var ttlAndIdleIntervalNotPassedTestsClient: ARTRealtime!
                     var ttlAndIdleIntervalNotPassedTestsConnectionId = ""
                     
@@ -4261,7 +4261,7 @@ class RealtimeClientConnection: QuickSpec {
                 }
 
                 // RTN22a
-                it("re-authenticate and resume the connection when the client is forcibly disconnected following a DISCONNECTED message containing an error code in the range 40140 <= code < 40150") {
+                it("re-authenticate and resume the connection when the client is forcibly disconnected following a DISCONNECTED message containing an error code greater than or equal to 40140 and less than 40150") {
                     let options = AblyTests.commonAppSetup()
                     options.token = getTestToken(key: options.key!, ttl: 5.0)
                     let client = ARTRealtime(options: options)
