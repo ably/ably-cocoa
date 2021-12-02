@@ -3326,6 +3326,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     }
 
     // RTN17b
+    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
     func test__086__Connection__Host_Fallback__failing_connections_with_custom_endpoint_should_result_in_an_error_immediately() {
         beforeEach__Connection__Host_Fallback()
 
@@ -3380,6 +3381,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     }
 
     // RTN17b
+    @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
     func test__087__Connection__Host_Fallback__failing_connections_with_custom_endpoint_should_result_in_time_outs() {
         beforeEach__Connection__Host_Fallback()
 
