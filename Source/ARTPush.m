@@ -169,27 +169,20 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceTokenData restInternal:(ARTRestInternal *)rest {
     [rest.logger debug:@"ARTPush: device token data received: %@", [deviceTokenData base64EncodedStringWithOptions:0]];
 
-    NSUInteger dataLength = deviceTokenData.length;
-    const unsigned char *dataBuffer = deviceTokenData.bytes;
-    NSMutableString *hexString = [NSMutableString stringWithCapacity:(dataLength * 2)];
-    for (int i = 0; i < dataLength; ++i) {
-        [hexString appendFormat:@"%02x", dataBuffer[i]];
+    NSString* tokenString = deviceTokenData.apnsTokenString;
+
+    [rest.logger info:@"ARTPush: device token: %@", tokenString];
+    
+    ARTLocalDevice *currentDevice = [ARTLocalDevice shared];
+    if (currentDevice == nil) {
+        [ARTLocalDevice createDeviceWithClientId:rest.auth.clientId_nosync apnsToken:tokenString logger:rest.logger];
+        
+        [rest.logger debug:@"ARTPush: device token stored"];
+        
+        [rest.push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
+            [stateMachine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
+        }];
     }
-
-    NSString *deviceToken = [hexString copy];
-
-    [rest.logger info:@"ARTPush: device token: %@", deviceToken];
-    NSString *currentDeviceToken = [rest.storage objectForKey:ARTAPNSDeviceTokenKey];
-    if ([currentDeviceToken isEqualToString:deviceToken]) {
-        // Already stored.
-        return;
-    }
-
-    [rest.device_nosync setAndPersistAPNSDeviceToken:deviceToken];
-    [rest.logger debug:@"ARTPush: device token stored"];
-    [rest.push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
-        [stateMachine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
-    }];
 }
 
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken realtime:(ARTRealtime *)realtime {
@@ -224,6 +217,7 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
 }
 
 - (void)activate {
+    [ARTLocalDevice renewDeviceWithClientId:_rest.auth.clientId_nosync logger:_rest.logger];
     [self getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
         [stateMachine sendEvent:[ARTPushActivationEventCalledActivate new]];
     }];
@@ -236,5 +230,19 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
 }
 
 #endif
+
+@end
+
+@implementation NSData (APNSToken)
+
+- (NSString *)apnsTokenString {
+    NSUInteger dataLength = self.length;
+    const unsigned char *dataBuffer = self.bytes;
+    NSMutableString *hexString = [NSMutableString stringWithCapacity:(dataLength * 2)];
+    for (int i = 0; i < dataLength; ++i) {
+        [hexString appendFormat:@"%02x", dataBuffer[i]];
+    }
+    return [hexString copy];
+}
 
 @end

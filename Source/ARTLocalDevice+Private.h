@@ -1,4 +1,4 @@
-#import <Ably/ARTRest.h>
+#import <Ably/ARTRest+Private.h>
 
 @protocol ARTDeviceStorage;
 
@@ -11,11 +11,11 @@ extern NSString *const ARTAPNSDeviceTokenKey;
 
 @interface ARTLocalDevice ()
 
-@property (class, nullable, strong, nonatomic) ARTLocalDevice *shared_nosync;
+@property (class, nullable, readonly, nonatomic) ARTLocalDevice *shared;
+@property (class, nullable, readonly, nonatomic) ARTLocalDevice *shared_nosync;
 
 @property (strong, nonatomic) id<ARTDeviceStorage> storage;
 
-+ (ARTLocalDevice *)load:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage;
 - (nullable NSString *)apnsDeviceToken;
 - (void)setAndPersistAPNSDeviceToken:(nullable NSString *)deviceToken;
 - (void)setAndPersistIdentityTokenDetails:(nullable ARTDeviceIdentityTokenDetails *)tokenDetails;
@@ -23,6 +23,10 @@ extern NSString *const ARTAPNSDeviceTokenKey;
 
 + (NSString *)generateId;
 + (NSString *)generateSecret;
+
++ (ARTLocalDevice *)createDeviceWithClientId:(NSString *)clientId apnsToken:(NSString *)apnsToken logger:(ARTLog *)logger;
++ (ARTLocalDevice *)renewDeviceWithClientId:(NSString *)clientId logger:(ARTLog *)logger;
++ (void)resetSharedDevice;
 
 @end
 
