@@ -58,7 +58,7 @@ private let countTestStats: ARTStats? = {
     return try! encoder.decodeStats(rawData)[0] as? ARTStats
 }()
 
-class Stats: XCTestCase {
+class StatsTests: XCTestCase {
     // XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
     override class var defaultTestSuite: XCTestSuite {
         _ = encoder

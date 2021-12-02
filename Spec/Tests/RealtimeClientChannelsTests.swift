@@ -9,7 +9,7 @@ extension ARTRealtimeChannels: Sequence {
     }
 }
 
-class RealtimeClientChannels: XCTestCase {
+class RealtimeClientChannelsTests: XCTestCase {
     // RTS2
     func test__001__Channels__should_exist_methods_to_check_if_a_channel_exists_or_iterate_through_the_existing_channels() {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())

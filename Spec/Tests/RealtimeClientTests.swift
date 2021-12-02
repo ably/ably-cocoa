@@ -12,7 +12,7 @@ private let channelName = "test-message-size"
 private let presenceData = buildStringThatExceedMaxMessageSize()
 private let clientId = "testMessageSizeClientId"
 
-class RealtimeClient: XCTestCase {
+class RealtimeClientTests: XCTestCase {
     func checkError(_ errorInfo: ARTErrorInfo?, withAlternative message: String) {
         if let error = errorInfo {
             XCTFail("\(error.code): \(error.message)")

@@ -2,7 +2,7 @@ import Ably
 import Nimble
 import XCTest
 
-class Stringifiable: XCTestCase {
+class StringifiableTests: XCTestCase {
     func test__001__Stringifiable__type_conversion__as_string() {
         expect(
             ARTStringifiable(string: "Lorem Ipsum").stringValue
