@@ -7,7 +7,7 @@ private var mockHttpExecutor: MockHTTPExecutor!
 private var storage: MockDeviceStorage!
 private var stateMachineDelegate: StateMachineDelegate!
 
-class Push: XCTestCase {
+class PushTests: XCTestCase {
     enum TestDeviceToken {
         static let tokenBase64 = "HYRXxPSQdt1pnxqtDAvc6PTTLH7N6okiBhYyLClJdmQ="
         static let tokenData = Data(base64Encoded: tokenBase64, options: [])!

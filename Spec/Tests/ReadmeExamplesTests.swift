@@ -5,7 +5,7 @@ import XCTest
 
 // This file is to be kept in sync with the examples in README.md, to make sure they are kept valid.
 
-class ReadmeExamples: XCTestCase {
+class ReadmeExamplesTests: XCTestCase {
     func test__001__testMakeKeyInstance() {
         let client = ARTRealtime(key: "xxxx:xxxx")
         client.connection.close()

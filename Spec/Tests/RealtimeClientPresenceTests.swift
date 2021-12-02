@@ -68,7 +68,7 @@ private let getParams: ARTRealtimePresenceQuery = {
     return getParams
 }()
 
-class RealtimeClientPresence: XCTestCase {
+class RealtimeClientPresenceTests: XCTestCase {
     override func setUp() {
         super.setUp()
         AsyncDefaults.timeout = testTimeout

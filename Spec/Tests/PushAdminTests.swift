@@ -21,7 +21,7 @@ private let quxChannelName = "pushenabled:qux"
 
 private let subscription = ARTPushChannelSubscription(clientId: "newClient", channel: quxChannelName)
 
-class PushAdmin: XCTestCase {
+class PushAdminTests: XCTestCase {
     private static let deviceDetails: ARTDeviceDetails = {
         let deviceDetails = ARTDeviceDetails(id: "testDeviceDetails")
         deviceDetails.platform = "ios"

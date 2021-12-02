@@ -7,7 +7,7 @@ private let key = "+/h4eHh4eHh4eHh4eHh4eA=="
 private let binaryKey = Data(base64Encoded: key, options: .ignoreUnknownCharacters)!
 private let longKey = binaryKey + binaryKey
 
-class Crypto: XCTestCase {
+class CryptoTests: XCTestCase {
     // XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
     override class var defaultTestSuite: XCTestSuite {
         _ = key

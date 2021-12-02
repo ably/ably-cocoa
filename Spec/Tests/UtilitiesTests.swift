@@ -18,7 +18,7 @@ private let data = ["test": "test"]
 private let extras = ["push": ["key": "value"]]
 private let clientId = "clientId"
 
-class Utilities: XCTestCase {
+class UtilitiesTests: XCTestCase {
     // XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
     override class var defaultTestSuite: XCTestSuite {
         _ = jsonEncoder
