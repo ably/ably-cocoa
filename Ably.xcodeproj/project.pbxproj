@@ -1456,26 +1456,18 @@
 			path = IOConsumer;
 			sourceTree = "<group>";
 		};
-		856AAC8B1B6E304B00B07119 /* Spec */ = {
+		21BF06092758477700AE4C43 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				856AAC9A1B6E326E00B07119 /* ably-common */,
-				856AAC951B6E30C800B07119 /* AblySpec-Bridging-Header.h */,
-				D780846C1C68B3E50083009D /* NSObject+TestSuite.h */,
 				841134772722205400CFA837 /* ARTArchiveTests.m */,
-				56190953238C3D3200A862A6 /* CryptoTest.m */,
-				848ED97226E50D0F0087E800 /* ObjcppTest.mm */,
-				D780846D1C68B3E50083009D /* NSObject+TestSuite.m */,
-				856AAC8E1B6E304B00B07119 /* Info-iOS.plist */,
-				D7093C0E219E2DB200723F17 /* Info-macOS.plist */,
-				D7093C64219EE1AE00723F17 /* Info-tvOS.plist */,
 				560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */,
 				D7C1B8761BBEA81A0087B55F /* Auth.swift */,
 				84569FA226B46ADC00457CF5 /* ClientOptions.swift */,
 				EB7913A71C6E54C3000ABF9B /* Crypto.swift */,
+				56190953238C3D3200A862A6 /* CryptoTest.m */,
 				D798554723EB96C000946BE2 /* DeltaCodec.swift */,
-				D7093CA8219EFA8A00723F17 /* MockDeviceStorage.swift */,
-				D714A63D1C74D4B2002F2CA0 /* NSObject+TestSuite.swift */,
+				D5A22171266F526600C87C42 /* GCDTest.swift */,
+				848ED97226E50D0F0087E800 /* ObjcppTest.mm */,
 				EB1B53F822F85CE4006A59AC /* ObjectLifetimes.swift */,
 				D7FC1ECA209CEA2E001E4153 /* Push.swift */,
 				D7DF73831EA5FE620013CD36 /* PushActivationStateMachine.swift */,
@@ -1495,9 +1487,33 @@
 				D74CBC09212EC02C00D090E4 /* RestPaginated.swift */,
 				851674EE1B7BA5CD00D35169 /* Stats.swift */,
 				D520C4DD2680A1E3000012B2 /* Stringifiable.swift */,
-				856AAC961B6E30C800B07119 /* TestUtilities.swift */,
 				EB1AE0CD1C5C3A4900D62250 /* Utilities.swift */,
-				D5A22171266F526600C87C42 /* GCDTest.swift */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		21BF060A2758477E00AE4C43 /* Test Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				D7093CA8219EFA8A00723F17 /* MockDeviceStorage.swift */,
+				D780846C1C68B3E50083009D /* NSObject+TestSuite.h */,
+				D780846D1C68B3E50083009D /* NSObject+TestSuite.m */,
+				D714A63D1C74D4B2002F2CA0 /* NSObject+TestSuite.swift */,
+				856AAC961B6E30C800B07119 /* TestUtilities.swift */,
+			);
+			path = "Test Utilities";
+			sourceTree = "<group>";
+		};
+		856AAC8B1B6E304B00B07119 /* Spec */ = {
+			isa = PBXGroup;
+			children = (
+				21BF06092758477700AE4C43 /* Tests */,
+				21BF060A2758477E00AE4C43 /* Test Utilities */,
+				856AAC9A1B6E326E00B07119 /* ably-common */,
+				856AAC951B6E30C800B07119 /* AblySpec-Bridging-Header.h */,
+				856AAC8E1B6E304B00B07119 /* Info-iOS.plist */,
+				D7093C0E219E2DB200723F17 /* Info-macOS.plist */,
+				D7093C64219EE1AE00723F17 /* Info-tvOS.plist */,
 			);
 			path = Spec;
 			sourceTree = "<group>";
