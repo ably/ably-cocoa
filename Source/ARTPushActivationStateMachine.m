@@ -55,7 +55,7 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
         // Due to bug #966, old versions of the library might have led us to an illegal
         // persisted state: we have a deviceToken, but the persisted push state is WaitingForPushDeviceDetails.
         // So we need to re-emit the GotPushDeviceDetails event that led us there.
-        if ([_current isKindOfClass:[ARTPushActivationStateWaitingForPushDeviceDetails class]] && self.localDevice.apnsDeviceToken != nil) {
+        if ([_current isKindOfClass:[ARTPushActivationStateWaitingForPushDeviceDetails class]] && _rest.device_nosync.apnsDeviceToken != nil) {
             [rest.logger debug:@"ARTPush: re-emitting stored device details for stuck state machine"];
             [self handleEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
         }
@@ -85,10 +85,6 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
 
 - (ARTPushActivationState *)current_nosync {
     return _current;
-}
-
-- (ARTLocalDevice *)localDevice {
-    return _rest.device_nosync;
 }
 
 - (void)sendEvent:(ARTPushActivationEvent *)event {
@@ -143,7 +139,7 @@ dispatch_async(_queue, ^{
 
 - (void)deviceRegistration:(ARTErrorInfo *)error {
     #if TARGET_OS_IOS
-    ARTLocalDevice *const device = self.localDevice;
+    ARTLocalDevice *const device = _rest.device_nosync;
 
     const id<ARTPushRegistererDelegate, NSObject> delegate = self.delegate;
 
@@ -206,7 +202,7 @@ dispatch_async(_queue, ^{
 
 - (void)deviceUpdateRegistration:(ARTErrorInfo *)error {
     #if TARGET_OS_IOS
-    ARTLocalDevice *const local = self.localDevice;
+    ARTLocalDevice *const local = _rest.device_nosync;
 
     const id<ARTPushRegistererDelegate, NSObject> delegate = self.delegate;
 
@@ -255,7 +251,7 @@ dispatch_async(_queue, ^{
 
 - (void)syncDevice {
     #if TARGET_OS_IOS
-    ARTLocalDevice *const local = self.localDevice;
+    ARTLocalDevice *const local = _rest.device_nosync;
 
     const id<ARTPushRegistererDelegate, NSObject> delegate = self.delegate;
 
@@ -312,7 +308,7 @@ dispatch_async(_queue, ^{
 
 - (void)deviceUnregistration:(ARTErrorInfo *)error {
     #if TARGET_OS_IOS
-    ARTLocalDevice *const local = self.localDevice;
+    ARTLocalDevice *const local = _rest.device_nosync;
 
     __block id delegate = self.delegate;
 
