@@ -171,8 +171,8 @@ static ARTLocalDevice *_shared;
 }
 
 - (void)reset {
-    dispatch_sync([ARTLocalDevice queue], ^{
-        self.id = nil;
+    dispatch_sync(ARTLocalDevice.queue, ^{
+        self.id = @"";
         self.secret = nil;
         self.clientId = nil;
         _identityTokenDetails = nil;

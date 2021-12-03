@@ -715,21 +715,35 @@ dispatch_async(_queue, ^{
 }
 
 #if TARGET_OS_IOS
+
 - (ARTLocalDevice *)device {
-    __block ARTLocalDevice *ret;
-    dispatch_sync(_queue, ^{
-        ret = [self device_nosync];
-    });
-    return ret;
+    ARTLocalDevice *device = ARTLocalDevice.shared;
+    if (device == nil) {
+        device = [ARTLocalDevice createSharedDeviceWithClientId:_auth.clientId_nosync apnsToken:nil logger:_logger];
+    }
+    return device;
 }
 
 - (ARTLocalDevice *)device_nosync {
     return ARTLocalDevice.shared_nosync;
 }
 
+#pragma mark - Tests methods
+
+// These set of methods and properties is for use in tests only
+
 - (void)resetDeviceSingleton {
     [ARTLocalDevice resetSharedDevice];
 }
+
+- (void)setStorage:(id<ARTDeviceStorage>)storage {
+    self.device.storage = storage;
+}
+
+- (id<ARTDeviceStorage>)storage {
+    return self.device_nosync.storage;
+}
+
 #endif
 
 @end

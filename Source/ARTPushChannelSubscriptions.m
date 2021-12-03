@@ -73,7 +73,7 @@
     }
     
 #if TARGET_OS_IOS
-    ARTLocalDevice *local = _rest.device;
+    ARTLocalDevice *local = _rest.device_nosync;
 #else
     ARTLocalDevice *local = nil;
 #endif
