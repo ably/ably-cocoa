@@ -24,8 +24,7 @@ extern NSString *const ARTAPNSDeviceTokenKey;
 + (NSString *)generateId;
 + (NSString *)generateSecret;
 
-+ (ARTLocalDevice *)createDeviceWithClientId:(NSString *)clientId apnsToken:(NSString *)apnsToken logger:(ARTLog *)logger;
-+ (ARTLocalDevice *)renewDeviceWithClientId:(NSString *)clientId logger:(ARTLog *)logger;
++ (ARTLocalDevice *)createSharedDeviceWithClientId:(NSString *)clientId apnsToken:(nullable NSString *)apnsToken logger:(ARTLog *)logger;
 + (void)resetSharedDevice;
 
 @end

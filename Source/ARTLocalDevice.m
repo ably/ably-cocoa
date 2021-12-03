@@ -59,7 +59,7 @@ static ARTLocalDevice *_shared;
     return self;
 }
 
-+ (ARTLocalDevice *)deviceWithClientId:(NSString *)clientId apnsToken:(NSString *)apnsToken logger:(ARTLog *)logger {
++ (ARTLocalDevice *)_createSharedDeviceWithClientId:(NSString *)clientId apnsToken:(NSString *)apnsToken logger:(ARTLog *)logger {
     ARTLocalDevice *device = [[ARTLocalDevice alloc] initWithClientId:clientId logger:logger];
     device.platform = ARTDevicePlatform;
     #if TARGET_OS_IOS
@@ -94,12 +94,12 @@ static ARTLocalDevice *_shared;
     ARTDeviceIdentityTokenDetails *identityTokenDetails = detailsInfo != nil ? [ARTDeviceIdentityTokenDetails unarchive:detailsInfo] : nil;
     device->_identityTokenDetails = identityTokenDetails;
 
-    [device setAndPersistAPNSDeviceToken:apnsToken];
+    [device _setAndPersistAPNSDeviceToken:apnsToken ?: [device.storage objectForKey:ARTAPNSDeviceTokenKey]];
 
     return device;
 }
 
-+ (ARTLocalDevice *)createDeviceWithClientId:(NSString *)clientId apnsToken:(NSString *)apnsToken logger:(ARTLog *)logger {
++ (ARTLocalDevice *)createSharedDeviceWithClientId:(NSString *)clientId apnsToken:(NSString *)apnsToken logger:(ARTLog *)logger {
     // The device is shared in a static variable because it's a reflection
     // of what's persisted. Having a device instance per ARTRest instance
     // could leave some instances in a stale state, if, through another
@@ -109,27 +109,16 @@ static ARTLocalDevice *_shared;
     // client ID and APNS token.
     __block ARTLocalDevice *device;
     dispatch_sync(self.queue, ^{
-        if (_shared == nil) {
-            _shared = [self deviceWithClientId:clientId apnsToken:apnsToken logger:logger];
-        }
-        device = _shared;
-    });
-    return device;
-}
-
-+ (ARTLocalDevice *)renewDeviceWithClientId:(NSString *)clientId logger:(ARTLog *)logger {
-    __block ARTLocalDevice *device;
-    dispatch_sync(self.queue, ^{
-        NSString* apnsToken = [_shared.storage objectForKey:ARTAPNSDeviceTokenKey];
-        NSAssert(apnsToken, @"APNS token not found.");
-        _shared = [self deviceWithClientId:clientId apnsToken:apnsToken logger:logger];
+        _shared = [self _createSharedDeviceWithClientId:clientId apnsToken:apnsToken logger:logger];
         device = _shared;
     });
     return device;
 }
 
 + (void)resetSharedDevice {
-    _shared = nil;
+    dispatch_sync(self.queue, ^{
+        _shared = nil;
+    });
 }
 
 + (NSString *)generateId {
@@ -146,21 +135,33 @@ static ARTLocalDevice *_shared;
     return self.push.recipient[@"deviceToken"];
 }
 
-- (void)setAndPersistAPNSDeviceToken:(NSString *)token {
+- (void)_setAndPersistAPNSDeviceToken:(NSString *)token {
     self.push.recipient[@"deviceToken"] = token;
     [self.storage setObject:token forKey:ARTAPNSDeviceTokenKey];
 }
 
+- (void)setAndPersistAPNSDeviceToken:(NSString *)token {
+    dispatch_sync(ARTLocalDevice.queue, ^{
+        [self _setAndPersistAPNSDeviceToken:token];
+    });
+}
+
 - (void)setAndPersistIdentityTokenDetails:(ARTDeviceIdentityTokenDetails *)tokenDetails {
-    [self.storage setObject:[tokenDetails archive] forKey:ARTDeviceIdentityTokenKey];
-    _identityTokenDetails = tokenDetails;
-    if (self.clientId == nil) {
-        self.clientId = tokenDetails.clientId;
-    }
+    dispatch_sync(ARTLocalDevice.queue, ^{
+        [self.storage setObject:[tokenDetails archive] forKey:ARTDeviceIdentityTokenKey];
+        _identityTokenDetails = tokenDetails;
+        if (self.clientId == nil) {
+            self.clientId = tokenDetails.clientId;
+        }
+    });
 }
 
 - (BOOL)isRegistered {
-    return _identityTokenDetails != nil;
+    __block BOOL isRegistered = NO;
+    dispatch_sync(ARTLocalDevice.queue, ^{
+        isRegistered = _identityTokenDetails != nil;
+    });
+    return isRegistered;
 }
 
 - (void)clearStorage {
