@@ -138,6 +138,7 @@ class PushActivationStateMachineTests: XCTestCase {
     // RSH8b
     func test__016__Activation_state_machine__State_NotActivated__on_Event_CalledActivate__local_device__should_have_a_clientID_if_the_client_is_identified() {
         beforeEach__Activation_state_machine__State_NotActivated()
+        rest.internal.resetDeviceSingleton()
 
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.clientId = "deviceClient"
@@ -948,9 +949,8 @@ class PushActivationStateMachineTests: XCTestCase {
 
     func test__001__should_remove_identityTokenDetails_from_cache_and_storage() {
         let storage = MockDeviceStorage()
-        rest.internal.storage = storage
+        rest.device.storage = storage
         rest.device.setAndPersistIdentityTokenDetails(nil)
-        rest.internal.resetDeviceSingleton()
         expect(rest.device.identityTokenDetails).to(beNil())
         expect(rest.device.isRegistered()) == false
         expect(storage.object(forKey: ARTDeviceIdentityTokenKey)).to(beNil())
@@ -968,6 +968,8 @@ class PushActivationStateMachineTests: XCTestCase {
         // RSH3a2a1
         func test__the_local_device_has_id_and_deviceIdentityToken__emits_a_SyncRegistrationFailed_event_with_code_61002_if_client_IDs_don_t_match() {
             contextBeforeEach?()
+
+            rest.internal.resetDeviceSingleton()
 
             let options = ARTClientOptions(key: "xxxx:xxxx")
             options.clientId = "deviceClient"
