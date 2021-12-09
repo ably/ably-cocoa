@@ -859,16 +859,16 @@ class PushActivationStateMachineTests: XCTestCase {
         }
         defer { hook.remove() }
 
-        var setAndPersistIdentityTokenDetailsCalled = false
-        let hookDevice = stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
-            setAndPersistIdentityTokenDetailsCalled = true
+        var resetDeviceCalled = false
+        let hookDevice = stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("reset")) {
+            resetDeviceCalled = true
         }
         defer { hookDevice.remove() }
 
         stateMachine.send(ARTPushActivationEventDeregistered())
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
         expect(deactivatedCallbackCalled).to(beTrue())
-        expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
+        expect(resetDeviceCalled).to(beTrue())
         // RSH3g2a
         expect(stateMachine.rest.device.identityTokenDetails).to(beNil())
     }
@@ -1192,7 +1192,10 @@ class PushActivationStateMachineTests: XCTestCase {
 
             let delegate = StateMachineDelegate()
             stateMachine.delegate = delegate
-
+            
+            let deviceId = rest.device.id
+            let deviceSecret = rest.device.secret
+            
             waitUntil(timeout: testTimeout) { done in
                 let partialDone = AblyTests.splitDone(2, done: done)
                 stateMachine.transitions = { event, _, currentState in
@@ -1210,19 +1213,16 @@ class PushActivationStateMachineTests: XCTestCase {
 
             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
             expect(httpExecutor.requests.count) == 1
-            let requests = httpExecutor.requests.compactMap { $0.url?.path }.filter { $0 == "/push/deviceRegistrations/\(rest.device.id)" }
+            let requests = httpExecutor.requests.filter({ $0.url?.path == "/push/deviceRegistrations/\(deviceId)" })
             expect(requests).to(haveCount(1))
-            guard let request = httpExecutor.requests.first else {
-                fail("should have a \"/push/deviceRegistrations\" request"); return
-            }
-            guard let url = request.url else {
-                fail("should have a \"/push/deviceRegistrations\" URL"); return
+            guard let request = requests.first, let url = request.url else {
+                fail("should have a '/push/deviceRegistrations/\(deviceId)' request"); return
             }
             expect(url.host).to(equal(rest.internal.options.restUrl().host))
             expect(request.httpMethod) == "DELETE"
             expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
             let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
-            expect(deviceAuthorization).to(equal(rest.device.secret))
+            expect(deviceAuthorization).to(equal(deviceSecret))
 
             contextAfterEach?()
         }
@@ -1241,6 +1241,8 @@ class PushActivationStateMachineTests: XCTestCase {
                 capability: "",
                 clientId: ""
             )
+            
+            let deviceId = rest.device.id
 
             expect(rest.device.identityTokenDetails).to(beNil())
             rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
@@ -1264,13 +1266,10 @@ class PushActivationStateMachineTests: XCTestCase {
 
             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
             expect(httpExecutor.requests.count) == 1
-            let requests = httpExecutor.requests.compactMap { $0.url?.path }.filter { $0 == "/push/deviceRegistrations/\(rest.device.id)" }
+            let requests = httpExecutor.requests.filter({ $0.url?.path == "/push/deviceRegistrations/\(deviceId)" })
             expect(requests).to(haveCount(1))
-            guard let request = httpExecutor.requests.first else {
-                fail("should have a \"/push/deviceRegistrations\" request"); return
-            }
-            guard let url = request.url else {
-                fail("should have a \"/push/deviceRegistrations\" URL"); return
+            guard let request = requests.first, let url = request.url else {
+                fail("should have a '/push/deviceRegistrations/\(deviceId)' request"); return
             }
             expect(url.host).to(equal(rest.internal.options.restUrl().host))
             expect(request.httpMethod) == "DELETE"
