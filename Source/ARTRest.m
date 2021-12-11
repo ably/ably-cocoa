@@ -742,6 +742,19 @@ static ARTLocalDevice *_sharedDevice;
     return _sharedDevice;
 }
 
+/*
+ This function is needed to return functioning local device, since after `reset` call
+ you will end up with empty string as a device's `id` on the server.
+ */
+- (ARTLocalDevice *)loadDevice {
+    ARTLocalDevice *device = [self device_nosync];
+    if (device.isReset) {
+        [self resetDeviceSingleton];
+        device = [self device_nosync];
+    }
+    return device;
+}
+
 - (void)createSharedDevice {
     _sharedDevice = [ARTLocalDevice load:self.auth.clientId_nosync storage:self.storage];
 }

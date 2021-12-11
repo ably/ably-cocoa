@@ -125,4 +125,8 @@ NSString *const ARTDevicePushTransportType = @"apns";
     [self clearStorage];
 }
 
+- (BOOL)isReset {
+    return [self.id isEqualToString:@""];
+}
+
 @end
