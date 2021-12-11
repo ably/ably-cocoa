@@ -728,6 +728,17 @@ static ARTLocalDevice *_sharedDevice;
 }
 
 - (ARTLocalDevice *)device_nosync {
+    // The device is shared in a static variable because it's a reflection
+    // of what's persisted. Having a device instance per ARTRest instance
+    // could leave some instances in a stale state, if, through another
+    // instance, the persisted state is changed.
+    //
+    // As a side effect, the first instance "wins" at setting the device's
+    // client ID.
+
+    if (_sharedDevice == nil) {
+        [self createSharedDevice];
+    }
     return _sharedDevice;
 }
 

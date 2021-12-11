@@ -172,16 +172,12 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
     NSString *deviceToken = [deviceTokenData apnsTokenString];
 
     [rest.logger info:@"ARTPush: device token: %@", deviceToken];
-    
     NSString *currentDeviceToken = [rest.storage objectForKey:ARTAPNSDeviceTokenKey];
     if ([currentDeviceToken isEqualToString:deviceToken]) {
         // Already stored.
         return;
     }
-    
-    if (rest.device_nosync == nil) {
-        [rest createSharedDevice];
-    }
+
     [rest.device_nosync setAndPersistAPNSDeviceToken:deviceToken];
     [rest.logger debug:@"ARTPush: device token stored"];
     [rest.push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
@@ -221,7 +217,6 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
 }
 
 - (void)activate {
-    [_rest createSharedDevice];
     [self getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
         [stateMachine sendEvent:[ARTPushActivationEventCalledActivate new]];
     }];
