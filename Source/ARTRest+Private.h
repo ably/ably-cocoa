@@ -65,6 +65,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #if TARGET_OS_IOS
 - (void)resetDeviceSingleton;
+- (ARTLocalDevice *)loadDevice;
 #endif
 
 @end

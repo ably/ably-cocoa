@@ -73,7 +73,7 @@
     }
     
 #if TARGET_OS_IOS
-    ARTLocalDevice *local = _rest.device;
+    ARTLocalDevice *local = _rest.loadDevice;
 #else
     ARTLocalDevice *local = nil;
 #endif
@@ -203,7 +203,7 @@
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[components URL]];
     request.HTTPMethod = @"DELETE";
 #if TARGET_OS_IOS
-    [request setDeviceAuthentication:[params objectForKey:@"deviceId"] localDevice:_rest.device_nosync];
+    [request setDeviceAuthentication:[params objectForKey:@"deviceId"] localDevice:_rest.loadDevice];
 #endif
     
     [_logger debug:__FILE__ line:__LINE__ message:@"remove channel subscription with request %@", request];

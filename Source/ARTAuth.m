@@ -809,7 +809,7 @@ dispatch_sync(_queue, ^{
 
 #if TARGET_OS_IOS
 - (void)setLocalDeviceClientId_nosync:(NSString *)clientId {
-    if (clientId == nil || [clientId isEqualToString:@"*"] || [clientId isEqualToString:_rest.device_nosync.clientId]) {
+    if (clientId == nil || [clientId isEqualToString:@"*"] || [clientId isEqualToString:[_rest loadDevice].clientId]) {
         return;
     }
     [_rest.device_nosync setClientId:clientId];
