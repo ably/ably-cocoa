@@ -755,6 +755,20 @@ static ARTLocalDevice *_sharedDevice;
     return device;
 }
 
+- (NSString *)apnsDeviceToken {
+    __block NSString *value;
+    dispatch_sync(ARTRestInternal.storageQueue, ^{
+        value = [[self device_nosync] apnsDeviceToken];
+    });
+    return value;
+}
+
+- (void)setAndPersistAPNSDeviceToken:(NSString *)deviceToken {
+    dispatch_sync(ARTRestInternal.storageQueue, ^{
+        [[self device_nosync] setAndPersistAPNSDeviceToken:deviceToken];
+    });
+}
+
 - (void)createSharedDevice {
     _sharedDevice = [ARTLocalDevice load:self.auth.clientId_nosync storage:self.storage];
 }
@@ -763,5 +777,18 @@ static ARTLocalDevice *_sharedDevice;
     _sharedDevice = nil;
 }
 #endif
+
+@end
+
+@implementation ARTRestInternal (Storage)
+
++ (dispatch_queue_t)storageQueue {
+    static dispatch_queue_t queue;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        queue = dispatch_queue_create("io.ably.device-storage", DISPATCH_QUEUE_SERIAL);
+    });
+    return queue;
+}
 
 @end

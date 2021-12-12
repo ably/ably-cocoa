@@ -67,8 +67,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)createSharedDevice;
 - (void)resetDeviceSingleton;
 - (ARTLocalDevice *)loadDevice;
+- (nullable NSString *)apnsDeviceToken;
+- (void)setAndPersistAPNSDeviceToken:(nullable NSString *)deviceToken;
 #endif
-
 @end
 
 @interface ARTRest ()
@@ -76,6 +77,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) ARTRestInternal *internal;
 
 - (void)internalAsync:(void (^)(ARTRestInternal *))use;
+
+@end
+
+@interface ARTRestInternal (Storage)
+
++ (dispatch_queue_t)storageQueue;
 
 @end
 
