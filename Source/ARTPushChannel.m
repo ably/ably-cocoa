@@ -299,7 +299,7 @@ dispatch_sync(_queue, ^{
 
 - (ARTLocalDevice *)getDevice:(ARTCallback)callback {
     #if TARGET_OS_IOS
-    ARTLocalDevice *device = [_rest device_nosync];
+    ARTLocalDevice *device = [_rest loadDevice];
     #else
     ARTLocalDevice *device = nil;
     #endif
