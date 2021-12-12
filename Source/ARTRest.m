@@ -762,7 +762,7 @@ static ARTLocalDevice *_sharedDevice;
 
 @end
 
-
+#if TARGET_OS_IOS
 @implementation ARTRestInternal (Storage)
 
 + (dispatch_queue_t)storageQueue {
@@ -789,3 +789,4 @@ static ARTLocalDevice *_sharedDevice;
 }
 
 @end
+#endif

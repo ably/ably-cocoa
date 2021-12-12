@@ -78,6 +78,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+#if TARGET_OS_IOS
 @interface ARTRestInternal (Storage)
 
 + (dispatch_queue_t)storageQueue;
@@ -86,5 +87,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setAndPersistAPNSDeviceToken:(nullable NSString *)deviceToken;
 
 @end
+#endif
 
 NS_ASSUME_NONNULL_END
