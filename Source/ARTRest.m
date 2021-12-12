@@ -716,6 +716,9 @@ dispatch_async(_queue, ^{
 }
 
 #if TARGET_OS_IOS
+
+static ARTLocalDevice *_sharedDevice;
+
 - (ARTLocalDevice *)device {
     __block ARTLocalDevice *ret;
     dispatch_sync(_queue, ^{
@@ -723,9 +726,6 @@ dispatch_async(_queue, ^{
     });
     return ret;
 }
-
-// Store address of once_token to access it in debug function.
-static dispatch_once_t *device_once_token;
 
 - (ARTLocalDevice *)device_nosync {
     // The device is shared in a static variable because it's a reflection
@@ -736,17 +736,14 @@ static dispatch_once_t *device_once_token;
     // As a side effect, the first instance "wins" at setting the device's
     // client ID.
 
-    static dispatch_once_t once;
-    device_once_token = &once;
-    static id device;
-    dispatch_once(&once, ^{
-        device = [ARTLocalDevice load:self.auth.clientId_nosync storage:self.storage];
-    });
-    return device;
+    if (_sharedDevice == nil) {
+        _sharedDevice = [ARTLocalDevice load:self.auth.clientId_nosync storage:self.storage];
+    }
+    return _sharedDevice;
 }
 
 - (void)resetDeviceSingleton {
-    if (device_once_token) *device_once_token = 0;
+    _sharedDevice = nil;
 }
 #endif
 
