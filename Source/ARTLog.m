@@ -1,5 +1,6 @@
 #import "ARTLog+Private.h"
 #import "ARTNSDate+ARTUtil.h"
+@import os.log;
 
 static const char *logLevelName(ARTLogLevel level) {
     switch(level) {
@@ -66,6 +67,7 @@ static const char *logLevelName(ARTLogLevel level) {
     NSMutableArray<ARTLogLine *> *_history;
     NSUInteger _historyLines;
     dispatch_queue_t _queue;
+    os_log_t _logger;
 }
 
 - (instancetype)init {
@@ -86,6 +88,8 @@ static const char *logLevelName(ARTLogLevel level) {
         _history = [[NSMutableArray alloc] init];
         _historyLines = historyLines;
         _queue = dispatch_queue_create("io.ably.log", DISPATCH_QUEUE_SERIAL);
+        _logger = os_log_create("io.ably.log", "");
+        
     }
     return self;
 }
@@ -94,7 +98,10 @@ static const char *logLevelName(ARTLogLevel level) {
     dispatch_sync(_queue, ^{
         ARTLogLine *logLine = [[ARTLogLine alloc] initWithDate:[NSDate date] level:level message:message];
         if (level >= self.logLevel) {
-            NSLog(@"%@", [logLine toString]);
+            NSString *logLineString = [logLine toString];
+//            os_log(_logger, "%@", [logLine toString]);
+            os_log_with_type(_logger, OS_LOG_TYPE_DEFAULT, "%@", [logLine toString]);
+//            os_log(_logger, "%@", [logLine toString]);
             if (self->_captured) {
                 [self->_captured addObject:logLine];
             }
