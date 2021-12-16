@@ -59,7 +59,6 @@ jobs:
 
       - name: Check Static Analyzer Output
         id: analyzer-output
-        continue-on-error: true
         run: |
           if [[ -z $(find ./derived_data -name "report-*.html") ]]; then
             echo "Static Analyzer found no issues."
@@ -69,7 +68,7 @@ jobs:
           fi
       
       - name: Static Analyzer Reports Uploading
-        if: steps.analyzer-output.outcome == 'failure'
+        if: ${{ failure() }}
         uses: actions/upload-artifact@v2
         with:
           name: static-analyzer-reports-${{ matrix.lane }}
