@@ -788,5 +788,12 @@ static ARTLocalDevice *_sharedDevice;
     });
 }
 
+- (void)resetDevice {
+    dispatch_sync(ARTRestInternal.storageQueue, ^{
+        ARTLocalDevice *device = [self device_nosync];
+        [device reset];
+    });
+}
+
 @end
 #endif

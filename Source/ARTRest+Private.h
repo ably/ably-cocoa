@@ -85,6 +85,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable NSString *)apnsDeviceToken;
 - (void)setAndPersistAPNSDeviceToken:(nullable NSString *)deviceToken;
+- (void)resetDevice;
 
 @end
 #endif
