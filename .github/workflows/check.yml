@@ -68,7 +68,7 @@ jobs:
           fi
       
       - name: Static Analyzer Reports Uploading
-        if: ${{ failure() }}
+        if: ${{ failure() && steps.analyzer-output.outcome == 'failure' }}
         uses: actions/upload-artifact@v2
         with:
           name: static-analyzer-reports-${{ matrix.lane }}
