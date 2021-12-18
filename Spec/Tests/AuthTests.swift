@@ -122,7 +122,7 @@ class AuthTests: XCTestCase {
     }
 
     // RSA11
-    func test__004__Basic__should_send_the_API_key_in_the_Authorization_header() {
+    func test__004__Basic__should_send_the_API_key_in_the_Authorization_header() throws {
         let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
         let client = ARTRest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
@@ -140,10 +140,7 @@ class AuthTests: XCTestCase {
 
         let expectedAuthorization = "Basic \(key64)"
 
-        guard let request = testHTTPExecutor.requests.first else {
-            fail("No request found")
-            return
-        }
+        let request = try XCTUnwrap(testHTTPExecutor.requests.first, "No request found")
 
         let authorization = request.allHTTPHeaderFields?["Authorization"]
 
@@ -160,7 +157,7 @@ class AuthTests: XCTestCase {
     // RSA3
 
     // RSA3a
-    func test__010__Token__token_auth__should_work_over_HTTP() {
+    func test__010__Token__token_auth__should_work_over_HTTP() throws {
         let options = AblyTests.clientOptions(requestToken: true)
         options.tls = false
         let clientHTTP = ARTRest(options: options)
@@ -172,19 +169,13 @@ class AuthTests: XCTestCase {
                 done()
             }
         }
-
-        guard let request = testHTTPExecutor.requests.first else {
-            fail("No request found")
-            return
-        }
-        guard let url = request.url else {
-            fail("Request is invalid")
-            return
-        }
+        
+        let url = try XCTUnwrap(testHTTPExecutor.requests.first?.url, "No request url found")
+        
         expect(url.scheme).to(equal("http"), description: "No HTTP support")
     }
 
-    func test__011__Token__token_auth__should_work_over_HTTPS() {
+    func test__011__Token__token_auth__should_work_over_HTTPS() throws {
         let options = AblyTests.clientOptions(requestToken: true)
         options.tls = true
         let clientHTTPS = ARTRest(options: options)
@@ -197,20 +188,14 @@ class AuthTests: XCTestCase {
             }
         }
 
-        guard let request = testHTTPExecutor.requests.first else {
-            fail("No request found")
-            return
-        }
-        guard let url = request.url else {
-            fail("Request is invalid")
-            return
-        }
+        let url = try XCTUnwrap(testHTTPExecutor.requests.first?.url, "No request url found")
+        
         expect(url.scheme).to(equal("https"), description: "No HTTPS support")
     }
 
     // RSA3b
 
-    func test__012__Token__token_auth__for_REST_requests__should_send_the_token_in_the_Authorization_header() {
+    func test__012__Token__token_auth__for_REST_requests__should_send_the_token_in_the_Authorization_header() throws {
         let options = AblyTests.clientOptions()
         options.token = getTestToken()
 
@@ -231,10 +216,7 @@ class AuthTests: XCTestCase {
 
         let expectedAuthorization = "Bearer \(currentToken)"
 
-        guard let request = testHTTPExecutor.requests.first else {
-            fail("No request found")
-            return
-        }
+        let request = try XCTUnwrap(testHTTPExecutor.requests.first, "No request found")
 
         let authorization = request.allHTTPHeaderFields?["Authorization"]
 
@@ -916,7 +898,7 @@ class AuthTests: XCTestCase {
 
     // RSA15a
 
-    func test__041__Token__token_auth_and_clientId__should_check_clientId_consistency__on_rest() {
+    func test__041__Token__token_auth_and_clientId__should_check_clientId_consistency__on_rest() throws {
         let expectedClientId = "client_string"
         let options = AblyTests.commonAppSetup()
         options.useTokenAuth = true
@@ -938,8 +920,10 @@ class AuthTests: XCTestCase {
                 done()
             }
         }
-
-        switch extractBodyAsMsgPack(testHTTPExecutor.requests.first) {
+        
+        let request = try XCTUnwrap(testHTTPExecutor.requests.first, "No request found")
+        
+        switch extractBodyAsMsgPack(request) {
         case let .failure(error):
             XCTFail(error)
         case let .success(httpBody):
@@ -1091,7 +1075,7 @@ class AuthTests: XCTestCase {
     }
 
     // RSA6
-    func test__008__Token__should_omit_capability_field_if_it_is_not_specified() {
+    func test__008__Token__should_omit_capability_field_if_it_is_not_specified() throws {
         let tokenParams = ARTTokenParams()
         expect(tokenParams.capability).to(beNil())
 
@@ -1111,8 +1095,10 @@ class AuthTests: XCTestCase {
                 done()
             }
         }
-
-        switch extractBodyAsMsgPack(testHTTPExecutor.requests.first) {
+        
+        let request = try XCTUnwrap(testHTTPExecutor.requests.first, "No request found")
+        
+        switch extractBodyAsMsgPack(request) {
         case let .failure(error):
             fail(error)
         case let .success(httpBody):
@@ -1121,7 +1107,7 @@ class AuthTests: XCTestCase {
     }
 
     // RSA6
-    func test__009__Token__should_add_capability_field_if_the_user_specifies_it() {
+    func test__009__Token__should_add_capability_field_if_the_user_specifies_it() throws {
         let tokenParams = ARTTokenParams()
         tokenParams.capability = "{\"*\":[\"*\"]}"
 
@@ -1140,8 +1126,10 @@ class AuthTests: XCTestCase {
                 done()
             }
         }
-
-        switch extractBodyAsMsgPack(testHTTPExecutor.requests.first) {
+        
+        let request = try XCTUnwrap(testHTTPExecutor.requests.first, "No request found")
+        
+        switch extractBodyAsMsgPack(request) {
         case let .failure(error):
             fail(error)
         case let .success(httpBody):

@@ -435,7 +435,7 @@ class RestClientTests: XCTestCase {
     }
 
     // RSC12
-    func test__003__RestClient__REST_endpoint_host_should_be_configurable_in_the_Client_constructor_with_the_option_restHost() {
+    func test__003__RestClient__REST_endpoint_host_should_be_configurable_in_the_Client_constructor_with_the_option_restHost() throws {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         expect(options.restHost).to(equal("rest.ably.io"))
         options.restHost = "rest.ably.test"
@@ -449,7 +449,10 @@ class RestClientTests: XCTestCase {
                 done()
             }
         }
-        expect(testHTTPExecutor.requests.first!.url!.absoluteString).to(contain("//rest.ably.test"))
+        
+        let url = try XCTUnwrap(testHTTPExecutor.requests.first?.url, "No request url found")
+
+        expect(url.absoluteString).to(contain("//rest.ably.test"))
     }
 
     // RSC16
@@ -468,7 +471,7 @@ class RestClientTests: XCTestCase {
     }
 
     // RSC7, RSC18
-    func test__004__RestClient__should_send_requests_over_http_and_https() {
+    func test__004__RestClient__should_send_requests_over_http_and_https() throws {
         let options = AblyTests.commonAppSetup()
 
         let clientHttps = ARTRest(options: options)
@@ -481,7 +484,8 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        let requestUrlA = testHTTPExecutor.requests.first!.url!
+        let requestUrlA = try XCTUnwrap(testHTTPExecutor.requests.first?.url, "No request url found")
+
         expect(requestUrlA.scheme).to(equal("https"))
 
         options.clientId = "client_http"
@@ -497,7 +501,7 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        let requestUrlB = testHTTPExecutor.requests.last!.url!
+        let requestUrlB = try XCTUnwrap(testHTTPExecutor.requests.last?.url, "No request url found")
         expect(requestUrlB.scheme).to(equal("http"))
     }
 
@@ -1574,7 +1578,7 @@ class RestClientTests: XCTestCase {
     }
 
     // RSC8a
-    func test__008__RestClient__should_use_MsgPack_binary_protocol() {
+    func test__008__RestClient__should_use_MsgPack_binary_protocol() throws {
         let options = AblyTests.commonAppSetup()
         expect(options.useBinaryProtocol).to(beTrue())
 
@@ -1586,8 +1590,10 @@ class RestClientTests: XCTestCase {
                 done()
             }
         }
+        
+        let request = try XCTUnwrap(testHTTPExecutor.requests.first, "No request found")
 
-        switch extractBodyAsMsgPack(testHTTPExecutor.requests.first) {
+        switch extractBodyAsMsgPack(request) {
         case let .failure(error):
             fail(error)
         default: break
@@ -1608,7 +1614,7 @@ class RestClientTests: XCTestCase {
     }
 
     // RSC8b
-    func test__009__RestClient__should_use_JSON_text_protocol() {
+    func test__009__RestClient__should_use_JSON_text_protocol() throws {
         let options = AblyTests.commonAppSetup()
         options.useBinaryProtocol = false
 
@@ -1620,8 +1626,10 @@ class RestClientTests: XCTestCase {
                 done()
             }
         }
+        
+        let request = try XCTUnwrap(testHTTPExecutor.requests.first, "No request found")
 
-        switch extractBodyAsJSON(testHTTPExecutor.requests.first) {
+        switch extractBodyAsJSON(request) {
         case let .failure(error):
             fail(error)
         default: break
