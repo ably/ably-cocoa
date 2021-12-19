@@ -363,7 +363,7 @@ class PushAdminTests: XCTestCase {
         }
     }
 
-    func test__008__Device_Registrations__get__push_device_authentication__should_include_DeviceIdentityToken_HTTP_header() {
+    func test__008__Device_Registrations__get__push_device_authentication__should_include_DeviceIdentityToken_HTTP_header() throws {
         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { realtime.dispose(); realtime.close() }
         realtime.internal.rest.httpExecutor = mockHttpExecutor
@@ -385,17 +385,14 @@ class PushAdminTests: XCTestCase {
                 done()
             }
         }
-
-        guard let request = mockHttpExecutor.requests.first else {
-            fail("No requests found")
-            return
-        }
-
+        
+        let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
+        
         expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
     }
 
-    func test__009__Device_Registrations__get__push_device_authentication__should_include_DeviceSecret_HTTP_header() {
+    func test__009__Device_Registrations__get__push_device_authentication__should_include_DeviceSecret_HTTP_header() throws {
         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { realtime.dispose(); realtime.close() }
         realtime.internal.rest.httpExecutor = mockHttpExecutor
@@ -406,12 +403,9 @@ class PushAdminTests: XCTestCase {
             }
         }
 
-        guard let request = mockHttpExecutor.requests.first else {
-            fail("No requests found")
-            return
-        }
-
+        let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
+        
         expect(authorization).to(equal(localDevice.secret))
     }
 
@@ -479,7 +473,7 @@ class PushAdminTests: XCTestCase {
 
     // RSH1b4
 
-    func test__014__Device_Registrations__remove__should_unregister_a_device() {
+    func test__014__Device_Registrations__remove__should_unregister_a_device() throws {
         let options = AblyTests.commonAppSetup()
         options.pushFullWait = true
         let realtime = ARTRealtime(options: options)
@@ -492,10 +486,7 @@ class PushAdminTests: XCTestCase {
             }
         }
 
-        guard let request = mockHttpExecutor.requests.first else {
-            fail("No requests found")
-            return
-        }
+        let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
 
         expect(request.httpMethod) == "DELETE"
         expect(request.allHTTPHeaderFields?["X-Ably-DeviceToken"]).to(beNil())
@@ -504,7 +495,7 @@ class PushAdminTests: XCTestCase {
 
     // RSH1b3
 
-    func test__015__Device_Registrations__save__should_register_a_device() {
+    func test__015__Device_Registrations__save__should_register_a_device() throws {
         let options = AblyTests.commonAppSetup()
         options.pushFullWait = true
         let realtime = ARTRealtime(options: options)
@@ -516,18 +507,15 @@ class PushAdminTests: XCTestCase {
                 done()
             }
         }
-
-        guard let request = mockHttpExecutor.requests.first else {
-            fail("No requests found")
-            return
-        }
+        
+        let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
 
         expect(request.httpMethod) == "PUT"
         expect(request.allHTTPHeaderFields?["X-Ably-DeviceToken"]).to(beNil())
         expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]).to(beNil())
     }
 
-    func test__016__Device_Registrations__save__push_device_authentication__should_include_DeviceIdentityToken_HTTP_header() {
+    func test__016__Device_Registrations__save__push_device_authentication__should_include_DeviceIdentityToken_HTTP_header() throws {
         let options = AblyTests.commonAppSetup()
         options.pushFullWait = true
         let realtime = ARTRealtime(options: options)
@@ -552,18 +540,15 @@ class PushAdminTests: XCTestCase {
                 done()
             }
         }
-
-        guard let request = mockHttpExecutor.requests.first else {
-            fail("No requests found")
-            return
-        }
-        expect(request.httpMethod).to(equal("PUT"))
-
+        
+        let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
+        
+        expect(request.httpMethod).to(equal("PUT"))
         expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
     }
 
-    func test__017__Device_Registrations__save__push_device_authentication__should_include_DeviceSecret_HTTP_header() {
+    func test__017__Device_Registrations__save__push_device_authentication__should_include_DeviceSecret_HTTP_header() throws {
         let options = AblyTests.commonAppSetup()
         options.pushFullWait = true
         let realtime = ARTRealtime(options: options)
@@ -577,19 +562,16 @@ class PushAdminTests: XCTestCase {
             }
         }
 
-        guard let request = mockHttpExecutor.requests.first else {
-            fail("No requests found")
-            return
-        }
-        expect(request.httpMethod).to(equal("PUT"))
-
+        let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
+        
+        expect(request.httpMethod).to(equal("PUT"))
         expect(authorization).to(equal(localDevice.secret))
     }
 
     // RSH1b5
 
-    func test__018__Device_Registrations__removeWhere__should_unregister_a_device() {
+    func test__018__Device_Registrations__removeWhere__should_unregister_a_device() throws {
         let options = AblyTests.commonAppSetup()
         options.pushFullWait = true
         let realtime = ARTRealtime(options: options)
@@ -620,11 +602,8 @@ class PushAdminTests: XCTestCase {
                 done()
             }
         }
-
-        guard let request = mockHttpExecutor.requests.first else {
-            fail("No requests found")
-            return
-        }
+        
+        let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
 
         expect(request.httpMethod) == "DELETE"
         expect(request.allHTTPHeaderFields?["X-Ably-DeviceToken"]).to(beNil())
@@ -668,7 +647,7 @@ class PushAdminTests: XCTestCase {
 
     // RSH1c3
 
-    func test__019__Channel_Subscriptions__save__should_add_a_subscription() {
+    func test__019__Channel_Subscriptions__save__should_add_a_subscription() throws {
         let options = AblyTests.commonAppSetup()
         let realtime = ARTRealtime(options: options)
         defer { realtime.dispose(); realtime.close() }
@@ -682,10 +661,7 @@ class PushAdminTests: XCTestCase {
             }
         }
 
-        guard let request = testProxyHTTPExecutor.requests.first else {
-            fail("No requests found")
-            return
-        }
+        let request = try XCTUnwrap(testProxyHTTPExecutor.requests.first, "No request found")
 
         expect(request.httpMethod).to(equal("POST"))
         expect(request.allHTTPHeaderFields?["X-Ably-DeviceToken"]).to(beNil())
@@ -720,7 +696,7 @@ class PushAdminTests: XCTestCase {
         }
     }
 
-    func test__022__Channel_Subscriptions__save__push_device_authentication__should_include_DeviceIdentityToken_HTTP_header() {
+    func test__022__Channel_Subscriptions__save__push_device_authentication__should_include_DeviceIdentityToken_HTTP_header() throws {
         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { realtime.dispose(); realtime.close() }
         realtime.internal.rest.httpExecutor = mockHttpExecutor
@@ -746,16 +722,13 @@ class PushAdminTests: XCTestCase {
             }
         }
 
-        guard let request = mockHttpExecutor.requests.first else {
-            fail("No requests found")
-            return
-        }
-
+        let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
+        
         expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
     }
 
-    func test__023__Channel_Subscriptions__save__push_device_authentication__should_include_DeviceSecret_HTTP_header() {
+    func test__023__Channel_Subscriptions__save__push_device_authentication__should_include_DeviceSecret_HTTP_header() throws {
         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { realtime.dispose(); realtime.close() }
         realtime.internal.rest.httpExecutor = mockHttpExecutor
@@ -769,12 +742,9 @@ class PushAdminTests: XCTestCase {
             }
         }
 
-        guard let request = mockHttpExecutor.requests.first else {
-            fail("No requests found")
-            return
-        }
-
+        let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
+        
         expect(authorization).to(equal(localDevice.secret))
     }
 
@@ -817,7 +787,7 @@ class PushAdminTests: XCTestCase {
 
     // RSH1c4
 
-    func test__026__Channel_Subscriptions__remove__should_remove_a_subscription() {
+    func test__026__Channel_Subscriptions__remove__should_remove_a_subscription() throws {
         let options = AblyTests.commonAppSetup()
         let realtime = ARTRealtime(options: options)
         defer { realtime.dispose(); realtime.close() }
@@ -831,11 +801,8 @@ class PushAdminTests: XCTestCase {
             }
         }
 
-        guard let request = testProxyHTTPExecutor.requests.first else {
-            fail("No requests found")
-            return
-        }
-
+        let request = try XCTUnwrap(testProxyHTTPExecutor.requests.first, "No request found")
+        
         expect(request.httpMethod).to(equal("DELETE"))
         expect(request.allHTTPHeaderFields?["X-Ably-DeviceToken"]).to(beNil())
         expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]).to(beNil())
@@ -852,7 +819,7 @@ class PushAdminTests: XCTestCase {
         }
     }
 
-    func test__027__Channel_Subscriptions__remove__push_device_authentication__should_include_DeviceIdentityToken_HTTP_header() {
+    func test__027__Channel_Subscriptions__remove__push_device_authentication__should_include_DeviceIdentityToken_HTTP_header() throws {
         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { realtime.dispose(); realtime.close() }
         realtime.internal.rest.httpExecutor = mockHttpExecutor
@@ -878,16 +845,13 @@ class PushAdminTests: XCTestCase {
             }
         }
 
-        guard let request = mockHttpExecutor.requests.first else {
-            fail("No requests found")
-            return
-        }
-
+        let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
+        
         expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
     }
 
-    func test__028__Channel_Subscriptions__remove__push_device_authentication__should_include_DeviceSecret_HTTP_header() {
+    func test__028__Channel_Subscriptions__remove__push_device_authentication__should_include_DeviceSecret_HTTP_header() throws {
         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { realtime.dispose(); realtime.close() }
         realtime.internal.rest.httpExecutor = mockHttpExecutor
@@ -901,12 +865,9 @@ class PushAdminTests: XCTestCase {
             }
         }
 
-        guard let request = mockHttpExecutor.requests.first else {
-            fail("No requests found")
-            return
-        }
-
+        let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
+        
         expect(authorization).to(equal(localDevice.secret))
     }
 
