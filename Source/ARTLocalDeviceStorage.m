@@ -136,8 +136,11 @@
     OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)query, &result);
 
     if (status != errSecSuccess) {
+        [_logger error:@"failed to read device secret, status %d", status];
+        // I feel something's going wrong here, given it's not giving an error
         if (error) {
             *error = [self keychainErrorWithCode:status];
+            [_logger error:@"populated error with %@ (localizedDescription %@)", *error, (*error).localizedDescription];
         }
     }
     else {

@@ -180,6 +180,7 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
 
     [rest.logger info:@"ARTPush: device token: %@", deviceToken];
     NSString *currentDeviceToken = [rest.storage objectForKey:ARTAPNSDeviceTokenKey];
+    [rest.logger info:@"ARTPush: currentDeviceToken (from storage): %@", currentDeviceToken];
     if ([currentDeviceToken isEqualToString:deviceToken]) {
         // Already stored.
         return;

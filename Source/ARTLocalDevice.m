@@ -5,6 +5,7 @@
 #import "ARTDeviceStorage.h"
 #import "ARTDeviceIdentityTokenDetails.h"
 #import "ARTCrypto+Private.h"
+#import "ARTLog.h"
 
 NSString *const ARTDevicePlatform = @"ios";
 
@@ -35,7 +36,7 @@ NSString *const ARTDevicePushTransportType = @"apns";
     return self;
 }
 
-+ (ARTLocalDevice *)load:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage {
++ (ARTLocalDevice *)load:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage logger:(ARTLog *)logger {
     ARTLocalDevice *device = [[ARTLocalDevice alloc] initWithClientId:clientId storage:storage];
     device.platform = ARTDevicePlatform;
     #if TARGET_OS_IOS
@@ -55,9 +56,23 @@ NSString *const ARTDevicePushTransportType = @"apns";
     NSString *deviceId = [storage objectForKey:ARTDeviceIdKey];
     NSString *deviceSecret = deviceId == nil ? nil : [storage secretForDevice:deviceId];
     
+    if (deviceId == nil) {
+        [logger info:@"ARTLocalDevice: loaded deviceId is nil"];
+    } else {
+        [logger info:@"ARTLocalDevice: loaded deviceId is %@", deviceId];
+    }
+    
+    if (deviceSecret == nil) {
+        [logger info:@"ARTLocalDevice: loaded deviceSecret is nil"];
+    } else {
+        [logger info:@"ARTLocalDevice: loaded deviceSecret is %@", deviceSecret];
+    }
+    
     if (deviceId == nil || deviceSecret == nil) { // generate both at the same time
         deviceId = [self generateId];
         deviceSecret = [self generateSecret];
+        
+        [logger info:@"ARTLocalDevice: Generated deviceId %@ and deviceSecret %@, and will now store them", deviceId, deviceSecret];
         
         [storage setObject:deviceId forKey:ARTDeviceIdKey];
         [storage setSecret:deviceSecret forDevice:deviceId];

@@ -99,9 +99,9 @@ static const char *logLevelName(ARTLogLevel level) {
         ARTLogLine *logLine = [[ARTLogLine alloc] initWithDate:[NSDate date] level:level message:message];
         if (level >= self.logLevel) {
             NSString *logLineString = [logLine toString];
-//            os_log(_logger, "%@", [logLine toString]);
-            os_log_with_type(_logger, OS_LOG_TYPE_DEFAULT, "%@", [logLine toString]);
-//            os_log(_logger, "%@", [logLine toString]);
+            
+            [self write:logLineString];
+            
             if (self->_captured) {
                 [self->_captured addObject:logLine];
             }
@@ -113,6 +113,10 @@ static const char *logLevelName(ARTLogLevel level) {
             }
         }
     });
+}
+
+- (void)write:(NSString *)message {
+    os_log_with_type(_logger, OS_LOG_TYPE_DEFAULT, "%@", message);
 }
 
 - (void)logWithError:(ARTErrorInfo *)error {

@@ -20,6 +20,9 @@ typedef NS_ENUM(NSUInteger, ARTLogLevel) {
 - (void)log:(NSString *)message withLevel:(ARTLogLevel)level;
 - (void)logWithError:(ARTErrorInfo *)error;
 
+// to override in subclasses
+- (void)write:(NSString *)message;
+
 - (ARTLog *)verboseMode;
 - (ARTLog *)debugMode;
 - (ARTLog *)infoMode;

@@ -35,6 +35,7 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
         _userQueue = _rest.userQueue;
         // Unarchiving
         NSData *stateData = [rest.storage objectForKey:ARTPushActivationCurrentStateKey];
+        [rest.logger info:@"ARTPushActivationStateMachine: state data loaded from storage: %@", stateData];
         _current = [ARTPushActivationState art_unarchiveFromData:stateData];
         if (!_current) {
             _current = [[ARTPushActivationStateNotActivated alloc] initWithMachine:self];
