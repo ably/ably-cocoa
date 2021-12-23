@@ -56,7 +56,9 @@ jobs:
 
       - name: Run Tests
         run: bundle exec fastlane ${{ matrix.lane }}
-
+      
+      # This `run` command will look report-*.html in the path like this: 
+      # ~/Library/Developer/Xcode/DerivedData/Ably-*/Build/Intermediates.noindex/Ably.build/Debug/Ably-macOS.build/StaticAnalyzer/Ably/Ably-macOS/normal/x86_64
       - name: Check Static Analyzer Output
         id: analyzer-output
         run: |
