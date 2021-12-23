@@ -62,7 +62,7 @@ jobs:
       - name: Check Static Analyzer Output
         id: analyzer-output
         run: |
-          if [[ -z $(find ./derived_data/**/StaticAnalyzer/** -name "report-*.html") ]]; then
+          if [[ -z $(find ./derived_data/**/StaticAnalyzer/**/ -name "report-*.html") ]]; then
             echo "Static Analyzer found no issues."
           else
             echo "Static Analyzer found some issues. HTML report will be available in Artifacts section. Failing build."
