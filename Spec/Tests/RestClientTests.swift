@@ -1749,7 +1749,7 @@ class RestClientTests: XCTestCase {
 
     // RSC19a
 
-    func test__086__RestClient__request__method_signature_and_arguments__should_add_query_parameters() {
+    func test__086__RestClient__request__method_signature_and_arguments__should_add_query_parameters() throws {
         let rest = ARTRest(key: "xxxx:xxxx")
         let mockHttpExecutor = MockHTTPExecutor()
         rest.internal.httpExecutor = mockHttpExecutor
@@ -1768,23 +1768,16 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        guard let request = mockHttpExecutor.requests.first else {
-            fail("No requests found")
-            return
-        }
-
-        guard let url = request.url, url.absoluteString == "https://rest.ably.io:443/feature?foo=1" else {
-            fail("should have a \"/feature\" URL with query \(params)"); return
-        }
+        let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
+        let url = try XCTUnwrap(request.url, "No request url found")
+        let acceptHeaderValue = try XCTUnwrap(request.allHTTPHeaderFields?["Accept"], "Accept HTTP Header is missing")
+        
         expect(request.httpMethod) == "patch"
-
-        guard let acceptHeaderValue = request.allHTTPHeaderFields?["Accept"] else {
-            fail("Accept HTTP Header is missing"); return
-        }
+        expect(url.absoluteString).to(equal("https://rest.ably.io:443/feature?foo=1"))
         expect(acceptHeaderValue).to(equal("application/x-msgpack,application/json"))
     }
 
-    func test__087__RestClient__request__method_signature_and_arguments__should_add_a_HTTP_body() {
+    func test__087__RestClient__request__method_signature_and_arguments__should_add_a_HTTP_body() throws {
         let rest = ARTRest(key: "xxxx:xxxx")
         let mockHttpExecutor = MockHTTPExecutor()
         rest.internal.httpExecutor = mockHttpExecutor
@@ -1802,29 +1795,16 @@ class RestClientTests: XCTestCase {
                 done()
             }
         }
-
-        guard let request = mockHttpExecutor.requests.first else {
-            fail("No requests found")
-            return
-        }
-        guard let rawBody = request.httpBody else {
-            fail("should have a body"); return
-        }
-
-        let decodedBody: Any
-        do {
-            decodedBody = try rest.internal.defaultEncoder.decode(rawBody)
-        } catch {
-            fail("decode failure: \(error)"); return
-        }
-
-        guard let body = decodedBody as? NSDictionary else {
-            fail("body is invalid"); return
-        }
+        
+        let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No requests found")
+        let rawBody = try XCTUnwrap(request.httpBody, "should have a body")
+        let decodedBody = try XCTUnwrap(try rest.internal.defaultEncoder.decode(rawBody), "Decode request body failed")
+        let body = try XCTUnwrap(decodedBody as? NSDictionary, "Request body is invalid")
+        
         expect(body.value(forKey: "blockchain") as? Bool).to(beTrue())
     }
 
-    func test__088__RestClient__request__method_signature_and_arguments__should_add_a_HTTP_header() {
+    func test__088__RestClient__request__method_signature_and_arguments__should_add_a_HTTP_header() throws {
         let rest = ARTRest(key: "xxxx:xxxx")
         let mockHttpExecutor = MockHTTPExecutor()
         rest.internal.httpExecutor = mockHttpExecutor
@@ -1843,10 +1823,7 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        guard let request = mockHttpExecutor.requests.first else {
-            fail("No requests found")
-            return
-        }
+        let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No requests found")
 
         let authorization = request.allHTTPHeaderFields?["X-foo"]
         expect(authorization).to(equal("ok"))
@@ -1915,7 +1892,7 @@ class RestClientTests: XCTestCase {
         }
     }
 
-    func test__092__RestClient__request__method_signature_and_arguments__should_do_a_request_and_receive_a_valid_response() {
+    func test__092__RestClient__request__method_signature_and_arguments__should_do_a_request_and_receive_a_valid_response() throws {
         let options = AblyTests.commonAppSetup()
         let rest = ARTRest(options: options)
         let channel = rest.channels.get("request-method-test")
@@ -1958,16 +1935,13 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        guard let response = proxyHTTPExecutor.responses.first else {
-            fail("No responses found")
-            return
-        }
+        let response = try XCTUnwrap(proxyHTTPExecutor.responses.first, "No responses found")
 
         expect(response.statusCode) == httpPaginatedResponse.statusCode
         expect(response.allHeaderFields as NSDictionary) == httpPaginatedResponse.headers
     }
 
-    func test__093__RestClient__request__method_signature_and_arguments__should_handle_response_failures() {
+    func test__093__RestClient__request__method_signature_and_arguments__should_handle_response_failures() throws {
         let options = AblyTests.commonAppSetup()
         let rest = ARTRest(options: options)
         let channel = rest.channels.get("request-method-test")
@@ -2005,10 +1979,7 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        guard let response = proxyHTTPExecutor.responses.first else {
-            fail("No responses found")
-            return
-        }
+        let response = try XCTUnwrap(proxyHTTPExecutor.responses.first, "No responses found")
 
         expect(response.statusCode) == 404
         expect(response.value(forHTTPHeaderField: "X-Ably-Errorcode")).to(equal("\(ARTErrorCode.notFound.intValue)"))

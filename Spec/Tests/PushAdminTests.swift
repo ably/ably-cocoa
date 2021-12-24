@@ -185,7 +185,7 @@ class PushAdminTests: XCTestCase {
 
     // RSH1a
 
-    func test__001__publish__should_perform_an_HTTP_request_to__push_publish() {
+    func test__001__publish__should_perform_an_HTTP_request_to__push_publish() throws {
         waitUntil(timeout: testTimeout) { done in
             rest.push.admin.publish(recipient, data: payload) { error in
                 expect(error).to(beNil())
@@ -193,12 +193,8 @@ class PushAdminTests: XCTestCase {
             }
         }
 
-        guard let request = mockHttpExecutor.requests.first else {
-            fail("Request is missing"); return
-        }
-        guard let url = request.url else {
-            fail("URL is missing"); return
-        }
+        let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
+        let url = try XCTUnwrap(request.url, "No request url found")
 
         expect(url.absoluteString).to(contain("/push/publish"))
 
