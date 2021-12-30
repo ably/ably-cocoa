@@ -65,7 +65,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithMachine:(ARTPushActivationStateMachine *)machine NS_UNAVAILABLE;
 + (instancetype)newWithMachine:(ARTPushActivationStateMachine *)machine NS_UNAVAILABLE;
-- (ARTPushActivationPersistentState *)migrate;
+- (nullable ARTPushActivationPersistentState *)migrate;
 
 @end
 
