@@ -869,8 +869,15 @@ class PushActivationStateMachineTests: XCTestCase {
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
         expect(deactivatedCallbackCalled).to(beTrue())
         expect(resetDeviceCalled).to(beTrue())
+        
         // RSH3g2a
+        expect(stateMachine.rest.device.id).to(equal(""))
+        expect(stateMachine.rest.device.secret).to(beNil())
+        expect(stateMachine.rest.device.clientId).to(beNil())
+        expect(stateMachine.rest.device.push.recipient).to(beEmpty())
         expect(stateMachine.rest.device.identityTokenDetails).to(beNil())
+        expect(stateMachine.rest.device.storage.object(forKey: ARTDeviceIdKey)).to(beNil())
+        expect(stateMachine.rest.device.storage.object(forKey: ARTDeviceIdentityTokenKey)).to(beNil())
     }
 
     // RSH3g3
