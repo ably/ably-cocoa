@@ -18,7 +18,7 @@
 #import "ARTPush.h"
 #import "ARTDeviceDetails.h"
 #import "ARTDeviceIdentityTokenDetails.h"
-#import "ARTDevicePushDetails+Private.h"
+#import "ARTDevicePushDetails.h"
 #import "ARTConnectionDetails.h"
 #import "ARTRest+Private.h"
 #import "ARTJsonEncoder.h"
