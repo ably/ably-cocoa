@@ -17,23 +17,6 @@ private let payload = [
 
 class PushAdminTests: XCTestCase {
 
-    override class func setUp() {
-        super.setUp()
-        let options = AblyTests.commonAppSetup()
-        options.pushFullWait = true
-        options.dispatchQueue = AblyTests.userQueue
-        let rest = ARTRest(options: options)
-        rest.internal.storage = MockDeviceStorage()
-    }
-
-    override class func tearDown() {
-        let options = AblyTests.commonAppSetup()
-        options.dispatchQueue = AblyTests.userQueue
-        let rest = ARTRest(options: options)
-        rest.internal.storage = MockDeviceStorage()
-        super.tearDown()
-    }
-
     // XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
     override class var defaultTestSuite: XCTestSuite {
         _ = rest
