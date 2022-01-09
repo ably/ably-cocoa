@@ -12,10 +12,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init;
 
-- (NSString *)stateString;
-
-+ (ARTPushState)stateFromString:(NSString *)string;
-
 @end
 
 NS_ASSUME_NONNULL_END
