@@ -35,6 +35,14 @@
     return [[ARTPushAdmin alloc] initWithInternal:_internal.admin queuedDealloc:_dealloc];
 }
 
+- (ARTPushDeviceRegistrations *)deviceRegistrations {
+    return [[ARTPushDeviceRegistrations alloc] initWithInternal:_internal.deviceRegistrations queuedDealloc:_dealloc];
+}
+
+- (ARTPushChannelSubscriptions *)channelSubscriptions {
+    return [[ARTPushChannelSubscriptions alloc] initWithInternal:_internal.channelSubscriptions queuedDealloc:_dealloc];
+}
+
 #if TARGET_OS_IOS
 
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken rest:(ARTRest *)rest; {
@@ -86,6 +94,8 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
         _rest = rest;
         _logger = [rest logger];
         _admin = [[ARTPushAdminInternal alloc] initWithRest:rest];
+        _deviceRegistrations = [[ARTPushDeviceRegistrationsInternal alloc] initWithRest:rest];
+        _channelSubscriptions = [[ARTPushChannelSubscriptionsInternal alloc] initWithRest:rest];
         _activationMachine = nil;
         _activationMachineLock = [[NSLock alloc] init];
         _activationMachineLock.name = @"ActivationMachineLock";
@@ -240,7 +250,7 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
 }
 
 - (void)getDevicePushDetails:(nonnull ARTPushStateCallback)callback {
-    [_admin.deviceRegistrations get:_rest.device.id callback:^(ARTDeviceDetails *device, ARTErrorInfo *error) {
+    [_deviceRegistrations get:_rest.device.id callback:^(ARTDeviceDetails *device, ARTErrorInfo *error) {
         if (error != nil) {
             callback(nil, error);
             return;

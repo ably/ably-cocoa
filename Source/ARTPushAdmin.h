@@ -1,7 +1,5 @@
 #import <Foundation/Foundation.h>
 #import <Ably/ARTTypes.h>
-#import <Ably/ARTPushDeviceRegistrations.h>
-#import <Ably/ARTPushChannelSubscriptions.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -15,9 +13,6 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 @interface ARTPushAdmin : NSObject <ARTPushAdminProtocol>
-
-@property (nonatomic, readonly) ARTPushDeviceRegistrations *deviceRegistrations;
-@property (nonatomic, readonly) ARTPushChannelSubscriptions *channelSubscriptions;
 
 @end
 

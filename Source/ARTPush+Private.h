@@ -1,5 +1,7 @@
 #import <Ably/ARTPush.h>
 #import <Ably/ARTPushAdmin+Private.h>
+#import <Ably/ARTPushDeviceRegistrations+Private.h>
+#import <Ably/ARTPushChannelSubscriptions+Private.h>
 #import "ARTQueuedDealloc.h"
 
 @class ARTPushActivationStateMachine;
@@ -11,6 +13,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTPushInternal : NSObject <ARTPushProtocol>
 
 @property (nonatomic, strong, readonly) ARTPushAdminInternal *admin;
+@property (nonatomic, strong, readonly) ARTPushDeviceRegistrationsInternal *deviceRegistrations;
+@property (nonatomic, strong, readonly) ARTPushChannelSubscriptionsInternal *channelSubscriptions;
+
 @property (readonly) dispatch_queue_t queue;
 
 - (instancetype)init:(ARTRestInternal *)rest;

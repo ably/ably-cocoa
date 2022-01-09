@@ -24,14 +24,6 @@
     [_internal publish:recipient data:data callback:callback];
 }
 
-- (ARTPushDeviceRegistrations *)deviceRegistrations {
-    return [[ARTPushDeviceRegistrations alloc] initWithInternal:_internal.deviceRegistrations queuedDealloc:_dealloc];
-}
-
-- (ARTPushChannelSubscriptions *)channelSubscriptions {
-    return [[ARTPushChannelSubscriptions alloc] initWithInternal:_internal.channelSubscriptions queuedDealloc:_dealloc];
-}
-
 @end
 
 @implementation ARTPushAdminInternal {
@@ -45,8 +37,6 @@
     if (self = [super init]) {
         _rest = rest;
         _logger = [rest logger];
-        _deviceRegistrations = [[ARTPushDeviceRegistrationsInternal alloc] initWithRest:rest];
-        _channelSubscriptions = [[ARTPushChannelSubscriptionsInternal alloc] initWithRest:rest];
         _userQueue = rest.userQueue;
         _queue = rest.queue;
     }

@@ -1,5 +1,7 @@
 #import <Foundation/Foundation.h>
 #import <Ably/ARTTypes.h>
+#import <Ably/ARTPushDeviceRegistrations.h>
+#import <Ably/ARTPushChannelSubscriptions.h>
 
 @class ARTRest;
 @class ARTRealtime;
@@ -84,6 +86,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTPush : NSObject <ARTPushProtocol>
 
 @property (readonly) ARTPushAdmin *admin;
+@property (readonly) ARTPushDeviceRegistrations *deviceRegistrations;
+@property (readonly) ARTPushChannelSubscriptions *channelSubscriptions;
 
 @end
 
