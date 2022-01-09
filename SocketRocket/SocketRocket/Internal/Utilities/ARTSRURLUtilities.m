@@ -26,7 +26,7 @@ NSString *ARTSRURLOrigin(NSURL *url)
     [origin appendFormat:@"%@://%@", scheme, url.host];
 
     NSNumber *port = url.port;
-    BOOL portIsDefault = (!port ||
+    BOOL portIsDefault = (port == nil ||
                           ([scheme isEqualToString:@"http"] && port.integerValue == 80) ||
                           ([scheme isEqualToString:@"https"] && port.integerValue == 443));
     if (!portIsDefault) {

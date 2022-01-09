@@ -1,7 +1,6 @@
 import Ably
 import Foundation
 import XCTest
-import Quick
 import Nimble
 import SwiftyJSON
 import Aspects
@@ -12,25 +11,27 @@ typealias HookToken = AspectToken
 
 let AblyTestsErrorDomain = "test.ably.io"
 
-class CryptoTest {
-    private static let aes128 = "cipher+aes-128-cbc";
-    private static let aes256 = "cipher+aes-256-cbc";
-
-    public static let fixtures: [(
-        fileName: String,
-        expectedEncryptedEncoding: String,
-        keyLength: UInt
-    )] = [
-        ("crypto-data-128", aes128, 128),
-        ("crypto-data-256", aes256, 256),
-    ];
-}
-
-class Configuration : QuickConfiguration {
-    override class func configure(_ configuration: Quick.Configuration!) {
-        configuration.beforeSuite {
-            AsyncDefaults.timeout = testTimeout
+class AblyTestsConfiguration: NSObject, XCTestObservation {
+    override init() {
+        super.init()
+        XCTestObservationCenter.shared.addTestObserver(self)
+    }
+    
+    private var performedPreFirstTestCaseSetup = false
+    
+    func testCaseWillStart(_ testCase: XCTestCase) {
+        if !performedPreFirstTestCaseSetup {
+            preFirstTestCaseSetup()
+            performedPreFirstTestCaseSetup = true
         }
+    }
+    
+    private func preFirstTestCaseSetup() {
+        // This is code that, when we were using the Quick testing
+        // framework, was inside a `configuration.beforeSuite` hook,
+        // which means it runs just before the execution of the first
+        // test case.
+        AsyncDefaults.timeout = testTimeout
     }
 }
 
@@ -75,18 +76,6 @@ class AblyTests {
         get {
             let options = AblyTests.clientOptions()
             return options
-        }
-    }
-
-    class var authTokenCases: [String: (ARTAuthOptions) -> Void] {
-        get { return [
-            "useTokenAuth": { $0.useTokenAuth = true; $0.key = "fake:key" },
-            "authUrl": { $0.authUrl = URL(string: "http://test.com") },
-            "authCallback": { $0.authCallback = { _, _ in return } },
-            "tokenDetails": { $0.tokenDetails = ARTTokenDetails(token: "token") },
-            "token": { $0.token = "token" },
-            "key": { $0.tokenDetails = ARTTokenDetails(token: "token"); $0.key = "fake:key" }
-            ]
         }
     }
 

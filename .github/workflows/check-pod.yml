@@ -12,15 +12,23 @@ jobs:
 
       # Run the steps we document in the Release Process.
       # unzip commands included as proof-of-life for the Carthage output.
-      - run: |
-          ruby --version
-          echo -n "carthage version: " && carthage version
-          echo -n "pod version: " && pod --version --verbose
-          make --version
-          make update
-          make carthage_package
+      - name: Print Ruby version
+        run: ruby --version
+      - name: Print Carthage version
+        run: 'echo -n "carthage version: " && carthage version'
+      - name: Print CocoaPods version
+        run: 'echo -n "pod version: " && pod --version --verbose'
+      - name: Print Make version
+        run: make --version
+      - name: Build Carthage dependencies
+        run: make update
+      - name: Build Ably framework
+        run: make carthage_package
+      - name: Print contents of generated ZIP file
+        run: |
           unzip -l Ably.framework.zip
           unzip -l Ably.framework.zip | grep 'Mac/Ably.framework'
           unzip -l Ably.framework.zip | grep 'tvOS/Ably.framework'
           unzip -l Ably.framework.zip | grep 'iOS/Ably.framework'
-          pod lib lint
+      - name: Validate pod
+        run: pod lib lint

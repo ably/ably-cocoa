@@ -8,11 +8,11 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTEventListener ()
 
 @property (nonatomic, readonly) NSString *eventId;
-@property (nonatomic, readonly) id<NSObject> token;
 @property (nonatomic, readonly) NSUInteger count;
+@property (nullable, nonatomic, readonly) id<NSObject> observer;
 
 - (instancetype)init NS_UNAVAILABLE;
-- (instancetype)initWithId:(NSString *)eventId token:(id<NSObject>)token handler:(ARTEventEmitter *)eventHandler center:(NSNotificationCenter *)center;
+- (instancetype)initWithId:(NSString *)eventId observer:(id<NSObject>)observer handler:(ARTEventEmitter *)eventHandler center:(NSNotificationCenter *)center;
 
 - (ARTEventListener *)setTimer:(NSTimeInterval)timeoutDeadline onTimeout:(void (^)(void))timeoutBlock;
 - (void)startTimer;
@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) NSNotificationCenter *notificationCenter;
 @property (nonatomic, readonly) dispatch_queue_t queue;
-@property (nonatomic, readonly) dispatch_queue_t userQueue;
+@property (nullable, nonatomic, readonly) dispatch_queue_t userQueue;
 
 @property (readonly, atomic) NSMutableDictionary<NSString *, NSMutableArray<ARTEventListener *> *> *listeners;
 @property (readonly, atomic) NSMutableArray<ARTEventListener *> *anyListeners;

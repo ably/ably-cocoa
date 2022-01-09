@@ -33,11 +33,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTJsonLikeEncoder ()
 
-- (ARTMessage *)messageFromDictionary:(NSDictionary *)input;
-- (NSArray *)messagesFromArray:(NSArray *)input;
+- (nullable ARTMessage *)messageFromDictionary:(NSDictionary *)input;
+- (nullable NSArray *)messagesFromArray:(NSArray *)input;
 
-- (ARTPresenceMessage *)presenceMessageFromDictionary:(NSDictionary *)input;
-- (NSArray *)presenceMessagesFromArray:(NSArray *)input;
+- (nullable ARTPresenceMessage *)presenceMessageFromDictionary:(NSDictionary *)input;
+- (nullable NSArray *)presenceMessagesFromArray:(NSArray *)input;
 
 - (NSDictionary *)messageToDictionary:(ARTMessage *)message;
 - (NSArray *)messagesToArray:(NSArray *)messages;
@@ -46,26 +46,26 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSArray *)presenceMessagesToArray:(NSArray *)messages;
 
 - (NSDictionary *)protocolMessageToDictionary:(ARTProtocolMessage *)message;
-- (ARTProtocolMessage *)protocolMessageFromDictionary:(NSDictionary *)input;
+- (nullable ARTProtocolMessage *)protocolMessageFromDictionary:(NSDictionary *)input;
 
 - (NSDictionary *)tokenRequestToDictionary:(ARTTokenRequest *)tokenRequest;
 
 - (NSDictionary *)authDetailsToDictionary:(ARTAuthDetails *)authDetails;
-- (ARTAuthDetails *)authDetailsFromDictionary:(NSDictionary *)input;
+- (nullable ARTAuthDetails *)authDetailsFromDictionary:(NSDictionary *)input;
 
-- (NSArray *)statsFromArray:(NSArray *)input;
-- (ARTStats *)statsFromDictionary:(NSDictionary *)input;
-- (ARTStatsMessageTypes *)statsMessageTypesFromDictionary:(NSDictionary *)input;
-- (ARTStatsMessageCount *)statsMessageCountFromDictionary:(NSDictionary *)input;
-- (ARTStatsMessageTraffic *)statsMessageTrafficFromDictionary:(NSDictionary *)input;
-- (ARTStatsConnectionTypes *)statsConnectionTypesFromDictionary:(NSDictionary *)input;
-- (ARTStatsResourceCount *)statsResourceCountFromDictionary:(NSDictionary *)input;
-- (ARTStatsRequestCount *)statsRequestCountFromDictionary:(NSDictionary *)input;
+- (nullable NSArray *)statsFromArray:(NSArray *)input;
+- (nullable ARTStats *)statsFromDictionary:(NSDictionary *)input;
+- (nullable ARTStatsMessageTypes *)statsMessageTypesFromDictionary:(NSDictionary *)input;
+- (nullable ARTStatsMessageCount *)statsMessageCountFromDictionary:(NSDictionary *)input;
+- (nullable ARTStatsMessageTraffic *)statsMessageTrafficFromDictionary:(NSDictionary *)input;
+- (nullable ARTStatsConnectionTypes *)statsConnectionTypesFromDictionary:(NSDictionary *)input;
+- (nullable ARTStatsResourceCount *)statsResourceCountFromDictionary:(NSDictionary *)input;
+- (nullable ARTStatsRequestCount *)statsRequestCountFromDictionary:(NSDictionary *)input;
 
 - (void)writeData:(id)data encoding:(NSString *)encoding toDictionary:(NSMutableDictionary *)output;
 
-- (NSDictionary *)decodeDictionary:(NSData *)data error:(NSError **)error;
-- (NSArray *)decodeArray:(NSData *)data error:(NSError **)error;
+- (nullable NSDictionary *)decodeDictionary:(NSData *)data error:(NSError **)error;
+- (nullable NSArray *)decodeArray:(NSData *)data error:(NSError **)error;
 
 @end
 

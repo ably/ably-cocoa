@@ -101,7 +101,7 @@
             id<ARTEncoder> encoder = [rest.encoders objectForKey:response.MIMEType];
             return [encoder decodeToArray:data error:errorPtr];
         };
-        NSArray *items = error ? nil : responseProcessor(response, data, &decodeError);
+        NSArray *items = error ? @[] : responseProcessor(response, data, &decodeError);
 
         if (decodeError) {
             callback(nil, [ARTErrorInfo createFromNSError:decodeError]);

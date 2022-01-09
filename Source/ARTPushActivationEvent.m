@@ -36,7 +36,7 @@ NSString *const ARTCoderIdentityTokenDetailsKey = @"identityTokenDetails";
 }
 
 + (ARTPushActivationEvent *)unarchive:(NSData *)data {
-    return [NSObject art_unarchive:data];
+    return [self art_unarchiveFromData:data];
 }
 
 @end

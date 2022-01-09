@@ -330,7 +330,8 @@ dispatch_sync(_queue, ^{
     if ([data isKindOfClass:[ARTMessage class]]) {
         ARTMessage *message = (ARTMessage *)data;
         if (message.clientId && self->_realtime.rest.auth.clientId_nosync && ![message.clientId isEqualToString:self->_realtime.rest.auth.clientId_nosync]) {
-            callback([ARTErrorInfo createWithCode:ARTStateMismatchedClientId message:@"attempted to publish message with an invalid clientId"]);
+            if (callback)
+                callback([ARTErrorInfo createWithCode:ARTStateMismatchedClientId message:@"attempted to publish message with an invalid clientId"]);
             return;
         }
     }
@@ -338,14 +339,16 @@ dispatch_sync(_queue, ^{
         NSArray<ARTMessage *> *messages = (NSArray *)data;
         for (ARTMessage *message in messages) {
             if (message.clientId && self->_realtime.rest.auth.clientId_nosync && ![message.clientId isEqualToString:self->_realtime.rest.auth.clientId_nosync]) {
-                callback([ARTErrorInfo createWithCode:ARTStateMismatchedClientId message:@"attempted to publish message with an invalid clientId"]);
+                if (callback)
+                    callback([ARTErrorInfo createWithCode:ARTStateMismatchedClientId message:@"attempted to publish message with an invalid clientId"]);
                 return;
             }
         }
     }
 
     if (!self.realtime.connection.isActive_nosync) {
-        if (callback) callback([self.realtime.connection error_nosync]);
+        if (callback)
+            callback([self.realtime.connection error_nosync]);
         return;
     }
 
@@ -355,7 +358,8 @@ dispatch_sync(_queue, ^{
     msg.messages = data;
 
     [self publishProtocolMessage:msg callback:^void(ARTStatus *status) {
-        if (callback) callback(status.errorInfo);
+        if (callback)
+            callback(status.errorInfo);
     }];
 });
 }
@@ -1233,7 +1237,8 @@ dispatch_sync(_queue, ^{
     [self setOptions_nosync:options];
 
     if (!options.modes && !options.params) {
-        callback(nil);
+        if (callback)
+            callback(nil);
         return;
     }
 
@@ -1244,7 +1249,8 @@ dispatch_sync(_queue, ^{
             [self internalAttach:callback withReason:nil];
             break;
         default:
-            callback(nil);
+            if (callback)
+                callback(nil);
             break;
     }
 }

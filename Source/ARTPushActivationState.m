@@ -60,7 +60,7 @@
 }
 
 + (ARTPushActivationState *)unarchive:(NSData *)data {
-    return [NSObject art_unarchive:data];
+    return [self art_unarchiveFromData:data];
 }
 
 @end
@@ -87,7 +87,7 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
         }
         
         return [ARTPushActivationStateWaitingForRegistrationSync newWithMachine:machine fromEvent:event];
-    } else if ([local deviceToken]) {
+    } else if ([local apnsDeviceToken]) {
         [machine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
     }
     #endif

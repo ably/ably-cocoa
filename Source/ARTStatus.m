@@ -42,9 +42,6 @@ NSInteger getStatusFromCode(NSInteger code) {
 }
 
 + (ARTErrorInfo *)createFromNSError:(NSError *)error {
-    if (!error) {
-        return nil;
-    }
     if ([error isKindOfClass:[ARTErrorInfo class]]) {
         return (ARTErrorInfo *)error;
     }

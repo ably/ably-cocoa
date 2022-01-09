@@ -1,6 +1,60 @@
 # Change Log
 
-## [v1.2.6](https://github.com/ably/ably-cocoa/tree/1.2.6)
+## [1.2.7](https://github.com/ably/ably-cocoa/tree/1.2.7)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.6...1.2.7)
+
+**Implemented enhancements:**
+
+- Stop base64-encoding authorization headers unnecessarily [\#1185](https://github.com/ably/ably-cocoa/issues/1185)
+- Conflict with XAspect with `HAVE_CONFIG_H` macro [\#1161](https://github.com/ably/ably-cocoa/issues/1161)
+- Blocks supplied as properties or method arguments should have typedef [\#1032](https://github.com/ably/ably-cocoa/issues/1032)
+- Unused function warnings in xdelta3.x when Ably added via CocoaPods - Unused Entity Issue [\#1031](https://github.com/ably/ably-cocoa/issues/1031)
+- Reduce library dependencies [\#949](https://github.com/ably/ably-cocoa/issues/949)
+- Improve error message for invalid state operations [\#843](https://github.com/ably/ably-cocoa/issues/843)
+- Finish implementing TI3 [\#760](https://github.com/ably/ably-cocoa/issues/760)
+- Update Stats fields with latest MessageTraffic types [\#732](https://github.com/ably/ably-cocoa/issues/732)
+- Address issues raised by Xcode’s static analyzer [\#694](https://github.com/ably/ably-cocoa/issues/694)
+- Quick Documentation: add headerdoc comments [\#298](https://github.com/ably/ably-cocoa/issues/298)
+
+**Fixed bugs:**
+
+- Encrypt messages if a new ARTRealtimeChannelOptions or ARTChannelOptions containing cipher is set [\#1207](https://github.com/ably/ably-cocoa/issues/1207)
+- Prebuilt `Ably.framework` from `make carthage_package` doesn't work in Xcode projects [\#1168](https://github.com/ably/ably-cocoa/issues/1168)
+- Library version identifier invalid [\#900](https://github.com/ably/ably-cocoa/issues/900)
+- Check RTN15c3 implementation [\#847](https://github.com/ably/ably-cocoa/issues/847)
+- when using authUrl with authMethod=POST, authParams are sent JSON-encoded, not form-encoded [\#690](https://github.com/ably/ably-cocoa/issues/690)
+
+**Closed issues:**
+
+- Add Swift Package Manager badges to README.md [\#1204](https://github.com/ably/ably-cocoa/issues/1204)
+- NSSecureCoding NSObject bypasses security [\#1188](https://github.com/ably/ably-cocoa/issues/1188)
+- Add Ably-cocoa swift package to Swift Package Index [\#1141](https://github.com/ably/ably-cocoa/issues/1141)
+- App Store upload problem - non-public API use [\#1104](https://github.com/ably/ably-cocoa/issues/1104)
+- Memory leak\(s\) when using event emitters [\#1099](https://github.com/ably/ably-cocoa/issues/1099)
+- build warning - treating a forced downcast to 'ARTClientOptions' as optional will never produce 'nil' [\#1035](https://github.com/ably/ably-cocoa/issues/1035)
+- Warnings about deprecations when used in a Mac Catalyst app [\#1003](https://github.com/ably/ably-cocoa/issues/1003)
+- Possible race conditions in Test Suite [\#912](https://github.com/ably/ably-cocoa/issues/912)
+
+**Merged pull requests:**
+
+- Fix `ARTChannel.setOptions` and `ARTRealtimeChannel.setOptions`: Recreate ARTDataEncoder on ARTChannel options update [\#1208](https://github.com/ably/ably-cocoa/pull/1208) ([lukasz-szyszkowski](https://github.com/lukasz-szyszkowski))
+- Add Swift Package Index badges [\#1205](https://github.com/ably/ably-cocoa/pull/1205) ([lukasz-szyszkowski](https://github.com/lukasz-szyszkowski))
+- Fix/694 static analyser issues [\#1198](https://github.com/ably/ably-cocoa/pull/1198) ([maratal](https://github.com/maratal))
+- Log message text fixed. [\#1197](https://github.com/ably/ably-cocoa/pull/1197) ([maratal](https://github.com/maratal))
+- Removed optional base64 auth header [\#1195](https://github.com/ably/ably-cocoa/pull/1195) ([maratal](https://github.com/maratal))
+- Fix/1188 Added allowed class for NSKeyedUnarchiver [\#1194](https://github.com/ably/ably-cocoa/pull/1194) ([maratal](https://github.com/maratal))
+- Added Xcodebuild Logs uploading step [\#1192](https://github.com/ably/ably-cocoa/pull/1192) ([maratal](https://github.com/maratal))
+- Make sure we all use the same version of Fastlane [\#1189](https://github.com/ably/ably-cocoa/pull/1189) ([lawrence-forooghian](https://github.com/lawrence-forooghian))
+- Assure new secret to be created only together with the deviceId [\#1187](https://github.com/ably/ably-cocoa/pull/1187) ([maratal](https://github.com/maratal))
+- Copied descriptions from ably.com/documentation/realtime/types [\#1176](https://github.com/ably/ably-cocoa/pull/1176) ([maratal](https://github.com/maratal))
+- New stats fields [\#1175](https://github.com/ably/ably-cocoa/pull/1175) ([maratal](https://github.com/maratal))
+- Reattaching channels in compliance with RTN15c3 [\#1172](https://github.com/ably/ably-cocoa/pull/1172) ([maratal](https://github.com/maratal))
+- 1003 mac catalyst warnings [\#1171](https://github.com/ably/ably-cocoa/pull/1171) ([maratal](https://github.com/maratal))
+- Documentation: Add link to example app, and clarify `ARTPushRegistererDelegate` usage [\#1170](https://github.com/ably/ably-cocoa/pull/1170) ([ben-xD](https://github.com/ben-xD))
+- Blocks typedef [\#1166](https://github.com/ably/ably-cocoa/pull/1166) ([maratal](https://github.com/maratal))
+
+## [1.2.6](https://github.com/ably/ably-cocoa/tree/1.2.6)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.5...1.2.6)
 

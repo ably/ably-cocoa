@@ -418,9 +418,6 @@
     
     for (ARTMessage *message in messages) {
         NSDictionary *item = [self messageToDictionary:message];
-        if (!(item)) {
-            return nil;
-        }
         [output addObject:item];
     }
     
@@ -457,9 +454,6 @@
     
     for (ARTPresenceMessage *message in messages) {
         NSDictionary *item = [self presenceMessageToDictionary:message];
-        if (!(item)) {
-            return nil;
-        }
         [output addObject:item];
     }
     return output;
@@ -477,7 +471,7 @@
         output[@"channelSerial"] = message.channelSerial;
     }
 
-    if (message.msgSerial) {
+    if (message.msgSerial != nil) {
         output[@"msgSerial"] = message.msgSerial;
     }
 
@@ -528,9 +522,9 @@
     
     NSString *token = [input artString:@"token"];
     NSNumber *expiresTimeInterval = [input objectForKey:@"expires"];
-    NSDate *expires = expiresTimeInterval ? [NSDate dateWithTimeIntervalSince1970:millisecondsToTimeInterval(expiresTimeInterval.doubleValue)] : nil;
+    NSDate *expires = expiresTimeInterval != nil ? [NSDate dateWithTimeIntervalSince1970:millisecondsToTimeInterval(expiresTimeInterval.doubleValue)] : nil;
     NSNumber *issuedInterval = [input objectForKey:@"issued"];
-    NSDate *issued = issuedInterval ? [NSDate dateWithTimeIntervalSince1970:millisecondsToTimeInterval(issuedInterval.doubleValue)] : nil;
+    NSDate *issued = issuedInterval != nil ? [NSDate dateWithTimeIntervalSince1970:millisecondsToTimeInterval(issuedInterval.doubleValue)] : nil;
     
     return [[ARTTokenDetails alloc] initWithToken:token
                                               expires:expires
@@ -562,7 +556,7 @@
     if (tokenRequest.clientId) {
         dictionary[@"clientId"] = tokenRequest.clientId;
     }
-    if (tokenRequest.ttl) {
+    if (tokenRequest.ttl != nil) {
         dictionary[@"ttl"] = [NSNumber numberWithUnsignedLongLong:timeIntervalToMilliseconds(tokenRequest.ttl.doubleValue)];
     }
 
@@ -722,7 +716,7 @@
     message.channelSerial = [input artString:@"channelSerial"];
     message.connectionId = [input artString:@"connectionId"];
     NSNumber * serial =  [input artNumber:@"connectionSerial"];
-    if (serial) {
+    if (serial != nil) {
         message.connectionSerial = [serial longLongValue];
     }
     message.id = [input artString:@"id"];

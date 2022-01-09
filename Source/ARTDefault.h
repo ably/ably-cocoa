@@ -4,6 +4,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTDefault : NSObject
 
++ (NSString *)apiVersion;
++ (NSString *)libraryVersion;
+
 + (NSArray<NSString *> *)fallbackHosts;
 + (NSArray<NSString *> *)fallbackHostsWithEnvironment:(NSString *_Nullable)environment;
 + (NSString*)restHost;
@@ -27,10 +30,6 @@ NS_ASSUME_NONNULL_BEGIN
  When a realtime client library is establishing a connection with Ably, or sending a HEARTBEAT, CONNECT, ATTACH, DETACH or CLOSE ProtocolMessage to Ably, this is the amount of time that the client library will wait before considering that request as failed and triggering a suitable failure condition.
  */
 + (NSTimeInterval)realtimeRequestTimeout;
-
-+ (NSString *)version;
-
-+ (NSString *)libraryVersion;
 
 + (NSString *)libraryAgent;
 
