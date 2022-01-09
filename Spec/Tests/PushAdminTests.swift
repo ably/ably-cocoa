@@ -112,7 +112,7 @@ class PushAdminTests: XCTestCase {
 
         group.enter()
         for device in allDeviceDetails {
-            rest.push.admin.deviceRegistrations.save(device) { error in
+            rest.push.deviceRegistrations.save(device) { error in
                 assert(error == nil, error?.message ?? "no message")
                 if allDeviceDetails.last == device {
                     group.leave()
@@ -123,7 +123,7 @@ class PushAdminTests: XCTestCase {
 
         group.enter()
         for subscription in allSubscriptions {
-            rest.push.admin.channelSubscriptions.save(subscription) { error in
+            rest.push.channelSubscriptions.save(subscription) { error in
                 assert(error == nil, error?.message ?? "no message")
                 if allSubscriptions.last == subscription {
                     group.leave()
@@ -143,14 +143,14 @@ class PushAdminTests: XCTestCase {
 
         for device in allDeviceDetails {
             group.enter()
-            rest.push.admin.deviceRegistrations.remove(device.id) { _ in
+            rest.push.deviceRegistrations.remove(device.id) { _ in
                 group.leave()
             }
         }
 
         for subscription in allSubscriptions {
             group.enter()
-            rest.push.admin.channelSubscriptions.remove(subscription) { _ in
+            rest.push.channelSubscriptions.remove(subscription) { _ in
                 group.leave()
             }
         }
@@ -336,7 +336,7 @@ class PushAdminTests: XCTestCase {
         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { realtime.dispose(); realtime.close() }
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.deviceRegistrations.get("testDeviceDetails") { device, error in
+            realtime.push.deviceRegistrations.get("testDeviceDetails") { device, error in
                 guard let device = device else {
                     fail("Device is missing"); done(); return
                 }
@@ -351,7 +351,7 @@ class PushAdminTests: XCTestCase {
         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { realtime.dispose(); realtime.close() }
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.deviceRegistrations.get("madeup") { device, error in
+            realtime.push.deviceRegistrations.get("madeup") { device, error in
                 expect(device).to(beNil())
                 guard let error = error else {
                     fail("Error should not be empty"); done(); return
@@ -381,7 +381,7 @@ class PushAdminTests: XCTestCase {
         defer { realtime.internal.rest.device.setAndPersistIdentityTokenDetails(nil) }
 
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.deviceRegistrations.get(localDevice.id) { _, _ in
+            realtime.push.deviceRegistrations.get(localDevice.id) { _, _ in
                 done()
             }
         }
@@ -401,7 +401,7 @@ class PushAdminTests: XCTestCase {
         realtime.internal.rest.httpExecutor = mockHttpExecutor
 
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.deviceRegistrations.get(localDevice.id) { _, _ in
+            realtime.push.deviceRegistrations.get(localDevice.id) { _, _ in
                 done()
             }
         }
@@ -421,7 +421,7 @@ class PushAdminTests: XCTestCase {
         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { realtime.dispose(); realtime.close() }
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.deviceRegistrations.list(["deviceId": "testDeviceDetails"]) { result, error in
+            realtime.push.deviceRegistrations.list(["deviceId": "testDeviceDetails"]) { result, error in
                 guard let result = result else {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
@@ -436,7 +436,7 @@ class PushAdminTests: XCTestCase {
         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { realtime.dispose(); realtime.close() }
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.deviceRegistrations.list(["clientId": "clientA"]) { result, error in
+            realtime.push.deviceRegistrations.list(["clientId": "clientA"]) { result, error in
                 guard let result = result else {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
@@ -451,7 +451,7 @@ class PushAdminTests: XCTestCase {
         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { realtime.dispose(); realtime.close() }
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.deviceRegistrations.list(["direction": "forwards"]) { result, error in
+            realtime.push.deviceRegistrations.list(["direction": "forwards"]) { result, error in
                 guard let result = result else {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
@@ -466,7 +466,7 @@ class PushAdminTests: XCTestCase {
         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { realtime.dispose(); realtime.close() }
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.deviceRegistrations.list(["deviceId": "madeup"]) { result, error in
+            realtime.push.deviceRegistrations.list(["deviceId": "madeup"]) { result, error in
                 guard let result = result else {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
@@ -486,7 +486,7 @@ class PushAdminTests: XCTestCase {
         defer { realtime.dispose(); realtime.close() }
         realtime.internal.rest.httpExecutor = mockHttpExecutor
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.deviceRegistrations.remove(Self.deviceDetails.id) { error in
+            realtime.push.deviceRegistrations.remove(Self.deviceDetails.id) { error in
                 expect(error).to(beNil())
                 done()
             }
@@ -511,7 +511,7 @@ class PushAdminTests: XCTestCase {
         defer { realtime.dispose(); realtime.close() }
         realtime.internal.rest.httpExecutor = mockHttpExecutor
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.deviceRegistrations.save(Self.deviceDetails) { error in
+            realtime.push.deviceRegistrations.save(Self.deviceDetails) { error in
                 expect(error).to(beNil())
                 done()
             }
@@ -547,7 +547,7 @@ class PushAdminTests: XCTestCase {
         defer { realtime.internal.rest.device.setAndPersistIdentityTokenDetails(nil) }
 
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.deviceRegistrations.save(localDevice) { error in
+            realtime.push.deviceRegistrations.save(localDevice) { error in
                 expect(error).to(beNil())
                 done()
             }
@@ -571,7 +571,7 @@ class PushAdminTests: XCTestCase {
         realtime.internal.rest.httpExecutor = mockHttpExecutor
 
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.deviceRegistrations.save(localDevice) { error in
+            realtime.push.deviceRegistrations.save(localDevice) { error in
                 expect(error).to(beNil())
                 done()
             }
@@ -602,7 +602,7 @@ class PushAdminTests: XCTestCase {
         let expectedRemoved = Self.allDeviceDetails.filter { $0.clientId == "clientA" }
 
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.deviceRegistrations.list(params) { result, error in
+            realtime.push.deviceRegistrations.list(params) { result, error in
                 guard let result = result else {
                     fail("PaginatedResult should not be nil"); done(); return
                 }
@@ -615,7 +615,7 @@ class PushAdminTests: XCTestCase {
         realtime.internal.rest.httpExecutor = mockHttpExecutor
 
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.deviceRegistrations.removeWhere(params) { error in
+            realtime.push.deviceRegistrations.removeWhere(params) { error in
                 expect(error).to(beNil())
                 done()
             }
@@ -631,7 +631,7 @@ class PushAdminTests: XCTestCase {
         expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]).to(beNil())
 
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.deviceRegistrations.list(params) { result, error in
+            realtime.push.deviceRegistrations.list(params) { result, error in
                 guard let result = result else {
                     fail("PaginatedResult should not be nil"); done(); return
                 }
@@ -646,7 +646,7 @@ class PushAdminTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(expectedRemoved.count, done: done)
             for removedDevice in expectedRemoved {
-                realtime.push.admin.deviceRegistrations.save(removedDevice) { error in
+                realtime.push.deviceRegistrations.save(removedDevice) { error in
                     expect(error).to(beNil())
                     partialDone()
                 }
@@ -655,11 +655,11 @@ class PushAdminTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
-            realtime.push.admin.channelSubscriptions.save(Self.subscriptionFooDevice2) { error in
+            realtime.push.channelSubscriptions.save(Self.subscriptionFooDevice2) { error in
                 expect(error).to(beNil())
                 partialDone()
             }
-            realtime.push.admin.channelSubscriptions.save(Self.subscriptionBarDevice2) { error in
+            realtime.push.channelSubscriptions.save(Self.subscriptionBarDevice2) { error in
                 expect(error).to(beNil())
                 partialDone()
             }
@@ -676,7 +676,7 @@ class PushAdminTests: XCTestCase {
         realtime.internal.rest.httpExecutor = testProxyHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.channelSubscriptions.save(subscription) { error in
+            realtime.push.channelSubscriptions.save(subscription) { error in
                 expect(error).to(beNil())
                 done()
             }
@@ -697,7 +697,7 @@ class PushAdminTests: XCTestCase {
         defer { realtime.dispose(); realtime.close() }
         let updateSubscription = ARTPushChannelSubscription(clientId: subscription.clientId!, channel: "pushenabled:foo")
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.channelSubscriptions.save(updateSubscription) { error in
+            realtime.push.channelSubscriptions.save(updateSubscription) { error in
                 expect(error).to(beNil())
                 done()
             }
@@ -709,7 +709,7 @@ class PushAdminTests: XCTestCase {
         defer { realtime.dispose(); realtime.close() }
         let invalidSubscription = ARTPushChannelSubscription(deviceId: "madeup", channel: "pushenabled:foo")
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.channelSubscriptions.save(invalidSubscription) { error in
+            realtime.push.channelSubscriptions.save(invalidSubscription) { error in
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
@@ -740,7 +740,7 @@ class PushAdminTests: XCTestCase {
         let subscription = ARTPushChannelSubscription(deviceId: localDevice.id, channel: quxChannelName)
 
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.channelSubscriptions.save(subscription) { error in
+            realtime.push.channelSubscriptions.save(subscription) { error in
                 expect(error).to(beNil())
                 done()
             }
@@ -763,7 +763,7 @@ class PushAdminTests: XCTestCase {
         let subscription = ARTPushChannelSubscription(deviceId: localDevice.id, channel: quxChannelName)
 
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.channelSubscriptions.save(subscription) { error in
+            realtime.push.channelSubscriptions.save(subscription) { error in
                 expect(error).to(beNil())
                 done()
             }
@@ -784,9 +784,9 @@ class PushAdminTests: XCTestCase {
         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { realtime.dispose(); realtime.close() }
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.channelSubscriptions.save(subscription) { error in
+            realtime.push.channelSubscriptions.save(subscription) { error in
                 expect(error).to(beNil())
-                realtime.push.admin.channelSubscriptions.list(["channel": quxChannelName]) { result, error in
+                realtime.push.channelSubscriptions.list(["channel": quxChannelName]) { result, error in
                     guard let result = result else {
                         fail("PaginatedResult should not be empty"); done(); return
                     }
@@ -804,7 +804,7 @@ class PushAdminTests: XCTestCase {
         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { realtime.dispose(); realtime.close() }
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.channelSubscriptions.listChannels { result, error in
+            realtime.push.channelSubscriptions.listChannels { result, error in
                 expect(error).to(beNil())
                 guard let result = result else {
                     fail("PaginatedResult should not be empty"); done(); return
@@ -825,7 +825,7 @@ class PushAdminTests: XCTestCase {
         realtime.internal.rest.httpExecutor = testProxyHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.channelSubscriptions.remove(subscription) { error in
+            realtime.push.channelSubscriptions.remove(subscription) { error in
                 expect(error).to(beNil())
                 done()
             }
@@ -841,7 +841,7 @@ class PushAdminTests: XCTestCase {
         expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]).to(beNil())
 
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.channelSubscriptions.list(["channel": quxChannelName]) { result, error in
+            realtime.push.channelSubscriptions.list(["channel": quxChannelName]) { result, error in
                 guard let result = result else {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
@@ -872,7 +872,7 @@ class PushAdminTests: XCTestCase {
         let subscription = ARTPushChannelSubscription(deviceId: localDevice.id, channel: quxChannelName)
 
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.channelSubscriptions.remove(subscription) { error in
+            realtime.push.channelSubscriptions.remove(subscription) { error in
                 expect(error).to(beNil())
                 done()
             }
@@ -895,7 +895,7 @@ class PushAdminTests: XCTestCase {
         let subscription = ARTPushChannelSubscription(deviceId: localDevice.id, channel: quxChannelName)
 
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.channelSubscriptions.remove(subscription) { error in
+            realtime.push.channelSubscriptions.remove(subscription) { error in
                 expect(error).to(beNil())
                 done()
             }
@@ -928,7 +928,7 @@ class PushAdminTests: XCTestCase {
         ]
 
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.channelSubscriptions.list(params) { result, error in
+            realtime.push.channelSubscriptions.list(params) { result, error in
                 guard let result = result else {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
@@ -939,14 +939,14 @@ class PushAdminTests: XCTestCase {
         }
 
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.channelSubscriptions.removeWhere(params) { error in
+            realtime.push.channelSubscriptions.removeWhere(params) { error in
                 expect(error).to(beNil())
                 done()
             }
         }
 
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.channelSubscriptions.list(params) { result, error in
+            realtime.push.channelSubscriptions.list(params) { result, error in
                 guard let result = result else {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
@@ -959,7 +959,7 @@ class PushAdminTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(expectedRemoved.count, done: done)
             for removedSubscription in expectedRemoved {
-                realtime.push.admin.channelSubscriptions.save(removedSubscription) { error in
+                realtime.push.channelSubscriptions.save(removedSubscription) { error in
                     expect(error).to(beNil())
                     partialDone()
                 }
@@ -983,7 +983,7 @@ class PushAdminTests: XCTestCase {
         ]
 
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.channelSubscriptions.list(params) { result, error in
+            realtime.push.channelSubscriptions.list(params) { result, error in
                 guard let result = result else {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
@@ -994,14 +994,14 @@ class PushAdminTests: XCTestCase {
         }
 
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.channelSubscriptions.removeWhere(params) { error in
+            realtime.push.channelSubscriptions.removeWhere(params) { error in
                 expect(error).to(beNil())
                 done()
             }
         }
 
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.channelSubscriptions.list(params) { result, error in
+            realtime.push.channelSubscriptions.list(params) { result, error in
                 guard let result = result else {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
@@ -1028,7 +1028,7 @@ class PushAdminTests: XCTestCase {
         ]
 
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.channelSubscriptions.list(params) { result, error in
+            realtime.push.channelSubscriptions.list(params) { result, error in
                 guard let result = result else {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
@@ -1039,14 +1039,14 @@ class PushAdminTests: XCTestCase {
         }
 
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.channelSubscriptions.removeWhere(params) { error in
+            realtime.push.channelSubscriptions.removeWhere(params) { error in
                 expect(error).to(beNil())
                 done()
             }
         }
 
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.channelSubscriptions.list(params) { result, error in
+            realtime.push.channelSubscriptions.list(params) { result, error in
                 guard let result = result else {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
@@ -1066,7 +1066,7 @@ class PushAdminTests: XCTestCase {
         ]
 
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.channelSubscriptions.list(params) { result, error in
+            realtime.push.channelSubscriptions.list(params) { result, error in
                 guard let result = result else {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
@@ -1077,7 +1077,7 @@ class PushAdminTests: XCTestCase {
         }
 
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.channelSubscriptions.removeWhere(params) { error in
+            realtime.push.channelSubscriptions.removeWhere(params) { error in
                 expect(error).to(beNil())
                 done()
             }
