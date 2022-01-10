@@ -694,9 +694,11 @@
 
     ARTDevicePushDetails *devicePushDetails = [[ARTDevicePushDetails alloc] init];
     devicePushDetails.state = [ARTDevicePushDetails stateFromString:[input artString:@"state"]];
-    NSDictionary *errorReason = [input valueForKey:@"errorReason"];
-    if (errorReason) {
-        devicePushDetails.errorReason = [ARTErrorInfo createWithCode:[[errorReason artNumber:@"code"] intValue] status:[[errorReason artNumber:@"statusCode"] intValue] message:[errorReason artString:@"message"]];
+    NSDictionary *errorDict = [input valueForKey:@"error"];
+    if (errorDict) {
+        devicePushDetails.errorReason = [ARTErrorInfo createWithCode:[[errorDict artNumber:@"code"] intValue]
+                                                              status:[[errorDict artNumber:@"statusCode"] intValue]
+                                                             message:[errorDict artString:@"message"]];
     }
     devicePushDetails.recipient = [input valueForKey:@"recipient"];
 
