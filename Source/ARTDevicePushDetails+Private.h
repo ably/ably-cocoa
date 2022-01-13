@@ -6,7 +6,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSString *)stateString;
 
-+ (ARTPushState)stateFromString:(NSString *)string;
++ (ARTPushState)stateFromJsonString:(NSString *)string;
 
 @end
 

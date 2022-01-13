@@ -693,7 +693,7 @@
     }
 
     ARTDevicePushDetails *devicePushDetails = [[ARTDevicePushDetails alloc] init];
-    devicePushDetails.state = [ARTDevicePushDetails stateFromString:[input artString:@"state"]];
+    devicePushDetails.state = [ARTDevicePushDetails stateFromJsonString:[input artString:@"state"]];
     NSDictionary *errorDict = [input valueForKey:@"error"];
     if (errorDict) {
         devicePushDetails.errorReason = [ARTErrorInfo createWithCode:[[errorDict artNumber:@"code"] intValue]

@@ -34,7 +34,7 @@
     }
 }
 
-+ (ARTPushState)stateFromString:(NSString *)string {
++ (ARTPushState)stateFromJsonString:(NSString *)string {
     string = string.lowercaseString;
     if ([string isEqualToString:@"active"]) {
         return ARTPushStateActive;
