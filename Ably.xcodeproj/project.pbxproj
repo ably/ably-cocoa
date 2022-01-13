@@ -1593,12 +1593,6 @@
 				D7AE18C71E5B40C900478D82 /* ARTPushAdmin.h */,
 				EBFFAC1A1E97EF5C003E7326 /* ARTPushAdmin+Private.h */,
 				D7AE18C81E5B40C900478D82 /* ARTPushAdmin.m */,
-				D7AE18CC1E5B40FE00478D82 /* ARTPushDeviceRegistrations.h */,
-				EB1B541422FB1CE1006A59AC /* ARTPushDeviceRegistrations+Private.h */,
-				D7AE18CD1E5B40FE00478D82 /* ARTPushDeviceRegistrations.m */,
-				D7AE18D01E5B410F00478D82 /* ARTPushChannelSubscriptions.h */,
-				EB1B541822FB1D7F006A59AC /* ARTPushChannelSubscriptions+Private.h */,
-				D7AE18D11E5B410F00478D82 /* ARTPushChannelSubscriptions.m */,
 			);
 			name = Admin;
 			sourceTree = "<group>";
@@ -1840,6 +1834,12 @@
 				D7B621971E4A762A00684474 /* ARTPushChannel.m */,
 				D785C4271E549E33008FEC05 /* ARTPushChannelSubscription.h */,
 				D785C4281E549E33008FEC05 /* ARTPushChannelSubscription.m */,
+				D7AE18CC1E5B40FE00478D82 /* ARTPushDeviceRegistrations.h */,
+				EB1B541422FB1CE1006A59AC /* ARTPushDeviceRegistrations+Private.h */,
+				D7AE18CD1E5B40FE00478D82 /* ARTPushDeviceRegistrations.m */,
+				D7AE18D01E5B410F00478D82 /* ARTPushChannelSubscriptions.h */,
+				EB1B541822FB1D7F006A59AC /* ARTPushChannelSubscriptions+Private.h */,
+				D7AE18D11E5B410F00478D82 /* ARTPushChannelSubscriptions.m */,
 				D7B621921E4A6FE600684474 /* ARTDeviceDetails.h */,
 				D7B621931E4A6FE600684474 /* ARTDeviceDetails.m */,
 				D768C6AA1E4B5B0200436011 /* ARTDevicePushDetails.h */,
