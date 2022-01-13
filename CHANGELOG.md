@@ -22,33 +22,17 @@
 - Improve test file structure and naming [\#1203](https://github.com/ably/ably-cocoa/issues/1203)
 - Run static analysis for builds in CI [\#1202](https://github.com/ably/ably-cocoa/issues/1202)
 - Investigate how we might get rid of the Quick testing framework [\#1201](https://github.com/ably/ably-cocoa/issues/1201)
-- Push deactivate event is fired before whole deactivating process is finished [\#1146](https://github.com/ably/ably-cocoa/issues/1146)
-- Enable CLANG\_WARN\_QUOTED\_INCLUDE\_IN\_FRAMEWORK\_HEADER for project, if possible [\#1076](https://github.com/ably/ably-cocoa/issues/1076)
 
 **Merged pull requests:**
 
 - Fix/1177 full reset device details \(RSH3g2a only\) [\#1259](https://github.com/ably/ably-cocoa/pull/1259) ([maratal](https://github.com/maratal))
 - Improve test file structure and naming [\#1252](https://github.com/ably/ably-cocoa/pull/1252) ([lawrence-forooghian](https://github.com/lawrence-forooghian))
-- Fix linker warnings about missing directories [\#1251](https://github.com/ably/ably-cocoa/pull/1251) ([lawrence-forooghian](https://github.com/lawrence-forooghian))
-- Complete Xcode 13.1’s “Update to recommended settings” wizard [\#1250](https://github.com/ably/ably-cocoa/pull/1250) ([lawrence-forooghian](https://github.com/lawrence-forooghian))
 - Treat warnings as errors across the codebase [\#1249](https://github.com/ably/ably-cocoa/pull/1249) ([lawrence-forooghian](https://github.com/lawrence-forooghian))
-- \[Groundwork for \#1201\] Rewrite test descriptions containing meaningful symbols [\#1242](https://github.com/ably/ably-cocoa/pull/1242) ([lawrence-forooghian](https://github.com/lawrence-forooghian))
 - Remove the Quick testing framework [\#1240](https://github.com/ably/ably-cocoa/pull/1240) ([lawrence-forooghian](https://github.com/lawrence-forooghian))
-- \[Groundwork for \#1201\] Rename or remove clashing variables [\#1239](https://github.com/ably/ably-cocoa/pull/1239) ([lawrence-forooghian](https://github.com/lawrence-forooghian))
 - Fix Carthage \#3019 workaround for Xcode 13 [\#1235](https://github.com/ably/ably-cocoa/pull/1235) ([lawrence-forooghian](https://github.com/lawrence-forooghian))
-- \[Groundwork for \#1201, but also a fix\] Fix setting of fallback retry timeout in tests [\#1233](https://github.com/ably/ably-cocoa/pull/1233) ([lawrence-forooghian](https://github.com/lawrence-forooghian))
-- \[Groundwork for \#1201\] Remove floating statements at `spec` / `describe` / `context` level [\#1232](https://github.com/ably/ably-cocoa/pull/1232) ([lawrence-forooghian](https://github.com/lawrence-forooghian))
-- \[Groundwork for \#1201\] Prefix `rsh3\*` function names with `reusableTests` [\#1231](https://github.com/ably/ably-cocoa/pull/1231) ([lawrence-forooghian](https://github.com/lawrence-forooghian))
--  \[Groundwork for \#1201\] Fix test with duplicate name [\#1228](https://github.com/ably/ably-cocoa/pull/1228) ([lawrence-forooghian](https://github.com/lawrence-forooghian))
-- \[Groundwork for \#1201\] Replace call to `pending` with `xit` [\#1227](https://github.com/ably/ably-cocoa/pull/1227) ([lawrence-forooghian](https://github.com/lawrence-forooghian))
-- \[Groundwork for \#1201\] Unroll simple test-defining loops in test files [\#1226](https://github.com/ably/ably-cocoa/pull/1226) ([lawrence-forooghian](https://github.com/lawrence-forooghian))
-- \[Groundwork for \#1201\] Unroll test-defining loops in test files into `reusableTests` function calls [\#1225](https://github.com/ably/ably-cocoa/pull/1225) ([lawrence-forooghian](https://github.com/lawrence-forooghian))
 - Feature/1209 device token key [\#1215](https://github.com/ably/ably-cocoa/pull/1215) ([maratal](https://github.com/maratal))
 - Replaced deprecated kCCAlgorithmAES128 with kCCAlgorithmAES [\#1214](https://github.com/ably/ably-cocoa/pull/1214) ([maratal](https://github.com/maratal))
 - Turned on static analyser after build [\#1213](https://github.com/ably/ably-cocoa/pull/1213) ([maratal](https://github.com/maratal))
-- Fix/xcode project cleanup [\#1212](https://github.com/ably/ably-cocoa/pull/1212) ([maratal](https://github.com/maratal))
-- Turned off newly added clang flag [\#1211](https://github.com/ably/ably-cocoa/pull/1211) ([maratal](https://github.com/maratal))
-- \[Groundwork for \#1201\] Remove capture in Quick method call trailing closures [\#1206](https://github.com/ably/ably-cocoa/pull/1206) ([lawrence-forooghian](https://github.com/lawrence-forooghian))
 
 ## [1.2.7](https://github.com/ably/ably-cocoa/tree/1.2.7)
 
