@@ -10,38 +10,6 @@ _[Ably](https://ably.com) is the platform that powers synchronized digital exper
 
 This is an iOS, tvOS and macOS Objective-C and Swift client library SDK for Ably, written in Objective-C. The library currently targets the [Ably client library features spec](https://www.ably.io/documentation/client-lib-development-guide/features/) Version 1.2. You can jump to the '[Known Limitations](#known-limitations)' section to see the features this client library does not yet support or [view our client library SDKs feature support matrix](https://www.ably.io/download/sdk-feature-support-matrix) to see the list of all the available features.
 
-- [Supported platforms](#supported-platforms)
-	- [Acknowledgments](#acknowledgments)
-- [Known Limitations](#known-limitations)
-- [Documentation](#documentation)
-- [Installation Guide](#installation-guide)
-	- [CocoaPods](#installing-through-cocoapods)
-	- [Carthage](#installing-through-carthage)
-	- [Manual](#manual-installation)
-- [Thread-safety Acknowledgments](#thread-safety)
-- [Push Notifications](#push-notifications)
-- [Using the Realtime API](#using-the-realtime-api)
-	- [Connection](#connection)
-	- [Subscribing to a channel](#subscribing-to-a-channel)
-	- [Publishing to a channel](#publishing-to-a-channel)
-	- [Querying the history](#querying-the-history)
-	- [Presence on a channel](#presence-on-a-channel)
-	- [Querying the presence history](#querying-the-presence-history)
-	- [Using the authCallback](#using-the-authCallback)
-- [Using the REST API](#using-the-rest-api)
-	- [Publishing a message to a channel](#publishing-a-message-to-a-channel)
-	- [Querying the history](#querying-the-history)
-	- [Presence on a channel](#presence-on-a-channel)
-	- [Querying the presence history](#querying-the-presence-history)
-	- [Generate token](#generate-token)
-	- [Fetching your application's stats](#fetching-your-applications-stats)
-	- [Fetching the Ably service time](#fetching-the-ably-service-time)
-- [Support, feedback and troubleshooting](#support-feedback-and-troubleshooting)
-- [Contributing](#contributing)
-    - [Development Flow](#development-flow)
-- [Running tests](#running-tests)
-- [Release Process](#release-process)
-
 ## Supported platforms
 
 This SDK is compatible with projects that target:
