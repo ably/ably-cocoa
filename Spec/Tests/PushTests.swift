@@ -30,6 +30,19 @@ class PushTests: XCTestCase {
         ]
         return deviceDetails
     }()
+    
+    private static let failedDeviceDetails: ARTDeviceDetails = {
+        let deviceDetails = ARTDeviceDetails(id: "testFailedDeviceDetails")
+        deviceDetails.platform = "ios"
+        deviceDetails.formFactor = "phone"
+        deviceDetails.metadata = NSMutableDictionary()
+        deviceDetails.push.recipient = [
+            "transportType": "apns"
+        ]
+        deviceDetails.push.errorReason = ARTErrorInfo(domain: ARTAblyErrorDomain, code: 0, userInfo: nil)
+        deviceDetails.push.state = ARTPushState.failed
+        return deviceDetails
+    }()
 
     private static let deviceDetails1ClientA: ARTDeviceDetails = {
         let deviceDetails = ARTDeviceDetails(id: "deviceDetails1ClientA")
@@ -582,6 +595,21 @@ class PushTests: XCTestCase {
                 }
                 expect(error.statusCode) == 404
                 expect(error.message).to(contain("not found"))
+                done()
+            }
+        }
+    }
+
+    func test__007__Device_Registrations__get__should_return_failed_device_with_error_info_and_with_a_state_equal_to_failed() {
+        let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
+        defer { realtime.dispose(); realtime.close() }
+        waitUntil(timeout: testTimeout) { done in
+            realtime.push.deviceRegistrations.get("testFailedDeviceDetails") { device, error in
+                guard let device = device else {
+                    fail("Device is missing"); done(); return
+                }
+                expect(device).to(equal(Self.failedDeviceDetails))
+                expect(error).to(beNil())
                 done()
             }
         }
