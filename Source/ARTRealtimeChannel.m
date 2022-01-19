@@ -1235,6 +1235,7 @@ dispatch_sync(_queue, ^{
 
 - (void)setOptions_nosync:(ARTRealtimeChannelOptions *_Nullable)options callback:(nullable ARTCallback)callback {
     [self setOptions_nosync:options];
+    [self.restChannel setOptions_nosync:options];
 
     if (!options.modes && !options.params) {
         if (callback)
