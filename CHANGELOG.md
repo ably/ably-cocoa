@@ -1,5 +1,22 @@
 # Change Log
 
+## [1.2.9](https://github.com/ably/ably-cocoa/tree/1.2.9)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.8...1.2.9)
+
+**Bug Fix:**
+
+This bug affects customers using
+[message content encryption](https://ably.com/documentation/realtime/encryption)
+alongisde
+[channel history](https://ably.com/documentation/rest/history)
+for a single Ably client instance.
+History REST requests were incorrectly returning unencrypted payloads,
+despite encryption having been enabled via the Realtime channel `setOptions` API.
+
+- **Bug**: Updating `ARTRealtimeChannel`’s options doesn’t update the options of its `ARTRestChannelInternal` [\#1265](https://github.com/ably/ably-cocoa/issues/1265)
+- **Fix**: When setting realtime channel options, pass through to REST channel [\#1266](https://github.com/ably/ably-cocoa/pull/1266) ([lawrence-forooghian](https://github.com/lawrence-forooghian))
+
 ## [1.2.8](https://github.com/ably/ably-cocoa/tree/1.2.8)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.7...1.2.8)
