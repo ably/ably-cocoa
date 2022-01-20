@@ -11,7 +11,7 @@ This bug affects customers using
 alongisde
 [channel history](https://ably.com/documentation/rest/history)
 for a single Ably client instance.
-History REST requests were incorrectly returning unencrypted payloads,
+History REST requests were incorrectly returning encrypted payloads,
 despite encryption having been enabled via the Realtime channel `setOptions` API.
 
 - **Bug**: Updating `ARTRealtimeChannel`’s options doesn’t update the options of its `ARTRestChannelInternal` [\#1265](https://github.com/ably/ably-cocoa/issues/1265)
