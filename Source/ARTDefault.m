@@ -9,7 +9,7 @@ static inline UInt32 conformVersionComponent(const NSInteger component) {
 }
 
 NSString *const ARTDefault_apiVersion = @"1.2";
-NSString *const ARTDefault_libraryVersion = @"1.2.8";
+NSString *const ARTDefault_libraryVersion = @"1.2.9";
 
 NSString *const ARTDefaultProduction = @"production";
 
