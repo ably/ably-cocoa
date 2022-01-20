@@ -17,7 +17,7 @@
     return [self aspect_hookSelector:selector withOptions:AspectPositionAfter usingBlock:^(id<AspectInfo> info) {
         __autoreleasing id arg;
         [[info originalInvocation] getArgument:&arg atIndex:2+index];
-        callback([arg copy]);
+        callback(arg);
     } error:nil];
 }
 
