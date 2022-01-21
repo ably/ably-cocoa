@@ -1,8 +1,9 @@
 on:
-  pull_request:
-  push:
-    branches:
-      - main
+  workflow_call:
+    inputs:
+      lane:
+        required: true
+        type: string
 
 jobs:
   check:
@@ -12,18 +13,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-
           - platform: iOS
-            lane: test_iOS12
-
-          - platform: iOS
-            lane: test_iOS11
-
-          - platform: tvOS
-            lane: test_tvOS12
-
-          - platform: macOS
-            lane: test_macOS
+            lane: ${{ inputs.lane }}
 
     env:
       LC_CTYPE: en_US.UTF-8
@@ -56,23 +47,6 @@ jobs:
 
       - name: Run Tests
         run: bundle exec fastlane ${{ matrix.lane }}
-
-      - name: Check Static Analyzer Output
-        id: analyzer-output
-        run: |
-          if [[ -z $(find ./derived_data -name "report-*.html") ]]; then
-            echo "Static Analyzer found no issues."
-          else
-            echo "Static Analyzer found some issues. HTML report will be available in Artifacts section. Failing build."
-            exit 1
-          fi
-      
-      - name: Static Analyzer Reports Uploading
-        if: ${{ failure() && steps.analyzer-output.outcome == 'failure' }}
-        uses: actions/upload-artifact@v2
-        with:
-          name: static-analyzer-reports-${{ matrix.lane }}
-          path: ./derived_data/**/report-*.html
       
       # This is the script specified as the pod’s prepare_command in its Podspec.
       # It would be run automatically for a normal CocoaPods install, but it doesn’t
