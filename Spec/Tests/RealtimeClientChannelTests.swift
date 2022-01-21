@@ -4188,6 +4188,39 @@ class RealtimeClientChannelTests: XCTestCase {
         expect(lastAttach.flags & subscribeFlag).to(equal(subscribeFlag))
         expect(lastAttach.params).to(equal(channelOptions.params))
     }
+    
+    func test__Channel_options__setOptions__shouldUpdateOptionsOfRestChannel() {
+        let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
+        defer { client.dispose(); client.close() }
+        let channel = client.channels.get("foo")
+
+        waitUntil(timeout: testTimeout) { done in
+            client.connection.once(.connected) { _ in
+                done()
+            }
+        }
+        
+        var restChannelSetOptions: ARTChannelOptions?
+        let token = channel.internal.restChannel.testSuite_getArgument(from: #selector(ARTRestChannelInternal.setOptions_nosync(_:)), at: 0) { arg in
+            guard let optionsArg = arg as? ARTChannelOptions else {
+                XCTFail("Expected setOptions: to have been called with an ARTChannelOptions instance")
+                return
+            }
+            restChannelSetOptions = optionsArg
+        }
+        defer { token.remove() }
+        
+        let channelOptions = ARTRealtimeChannelOptions(cipherKey: ARTCrypto.generateRandomKey() as NSData)
+        
+        waitUntil(timeout: testTimeout) { done in
+            channel.setOptions(channelOptions) { error in
+                XCTAssertNil(error)
+                done()
+            }
+        }
+        
+        expect(restChannelSetOptions).to(beIdenticalTo(channelOptions))
+    }
 
     // RTL17
     func test__122__Channel__history__should_not_emit_messages_to_subscribers_if_the_channel_is_in_any_state_other_than_ATTACHED() {

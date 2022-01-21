@@ -1,5 +1,56 @@
 # Change Log
 
+## [1.2.9](https://github.com/ably/ably-cocoa/tree/1.2.9)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.8...1.2.9)
+
+**Bug Fix:**
+
+This bug affects customers using
+[message content encryption](https://ably.com/documentation/realtime/encryption)
+alongisde
+[channel history](https://ably.com/documentation/rest/history)
+for a single Ably client instance.
+History REST requests were incorrectly returning encrypted payloads,
+despite encryption having been enabled via the Realtime channel `setOptions` API.
+
+- **Bug**: Updating `ARTRealtimeChannel`’s options doesn’t update the options of its `ARTRestChannelInternal` [\#1265](https://github.com/ably/ably-cocoa/issues/1265)
+- **Fix**: When setting realtime channel options, pass through to REST channel [\#1266](https://github.com/ably/ably-cocoa/pull/1266) ([lawrence-forooghian](https://github.com/lawrence-forooghian))
+
+## [1.2.8](https://github.com/ably/ably-cocoa/tree/1.2.8)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.7...1.2.8)
+
+**Implemented enhancements:**
+
+- Rename `ARTDeviceTokenKey` to `ARTAPNSDeviceTokenKey` [\#1209](https://github.com/ably/ably-cocoa/issues/1209)
+- Deprecation: Replace usages of deprecated kCCAlgorithmAES128 with kCCAlgorithmAES [\#1199](https://github.com/ably/ably-cocoa/issues/1199)
+- Add support for remembered REST fallback host [\#815](https://github.com/ably/ably-cocoa/issues/815)
+- Ensure request method accepts UPDATE, PATCH & DELETE verbs [\#780](https://github.com/ably/ably-cocoa/issues/780)
+
+**Fixed bugs:**
+
+- Calling state's machine activation callback upon push device details failure [\#1236](https://github.com/ably/ably-cocoa/issues/1236)
+- Push device deregistration does not clear/ reset device details  [\#1177](https://github.com/ably/ably-cocoa/issues/1177)
+
+**Closed issues:**
+
+- Check ability of using `ably-cocoa` in SwiftUI projects [\#1254](https://github.com/ably/ably-cocoa/issues/1254)
+- Improve test file structure and naming [\#1203](https://github.com/ably/ably-cocoa/issues/1203)
+- Run static analysis for builds in CI [\#1202](https://github.com/ably/ably-cocoa/issues/1202)
+- Investigate how we might get rid of the Quick testing framework [\#1201](https://github.com/ably/ably-cocoa/issues/1201)
+
+**Merged pull requests:**
+
+- Fix/1177 full reset device details \(RSH3g2a only\) [\#1259](https://github.com/ably/ably-cocoa/pull/1259) ([maratal](https://github.com/maratal))
+- Improve test file structure and naming [\#1252](https://github.com/ably/ably-cocoa/pull/1252) ([lawrence-forooghian](https://github.com/lawrence-forooghian))
+- Treat warnings as errors across the codebase [\#1249](https://github.com/ably/ably-cocoa/pull/1249) ([lawrence-forooghian](https://github.com/lawrence-forooghian))
+- Remove the Quick testing framework [\#1240](https://github.com/ably/ably-cocoa/pull/1240) ([lawrence-forooghian](https://github.com/lawrence-forooghian))
+- Fix Carthage \#3019 workaround for Xcode 13 [\#1235](https://github.com/ably/ably-cocoa/pull/1235) ([lawrence-forooghian](https://github.com/lawrence-forooghian))
+- Feature/1209 device token key [\#1215](https://github.com/ably/ably-cocoa/pull/1215) ([maratal](https://github.com/maratal))
+- Replaced deprecated kCCAlgorithmAES128 with kCCAlgorithmAES [\#1214](https://github.com/ably/ably-cocoa/pull/1214) ([maratal](https://github.com/maratal))
+- Turned on static analyser after build [\#1213](https://github.com/ably/ably-cocoa/pull/1213) ([maratal](https://github.com/maratal))
+
 ## [1.2.7](https://github.com/ably/ably-cocoa/tree/1.2.7)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.6...1.2.7)

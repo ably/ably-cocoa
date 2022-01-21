@@ -1,46 +1,15 @@
 # [Ably](https://www.ably.io) iOS, tvOS and macOS Objective-C and Swift client library SDK
 
 [![.github/workflows/check.yml](https://github.com/ably/ably-cocoa/actions/workflows/check.yml/badge.svg)](https://github.com/ably/ably-cocoa/actions/workflows/check.yml)
-[![CocoaPods Compatible](https://img.shields.io/cocoapods/v/Ably.svg)](https://img.shields.io/cocoapods/v/Ably.svg)
-[![Carthage Compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
-[![SPM Swift Versions Compatibility](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fably%2Fably-cocoa%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/ably/ably-cocoa)
-[![SPM Platforms Compatibility](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fably%2Fably-cocoa%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/ably/ably-cocoa)
+[![.github/workflows/check-pod.yml](https://github.com/ably/ably-cocoa/actions/workflows/check-pod.yml/badge.svg)](https://github.com/ably/ably-cocoa/actions/workflows/check-pod.yml)
+
+[![CocoaPods](https://img.shields.io/cocoapods/v/Ably.svg)](https://cocoapods.org/pods/Ably)
+[![SPM Swift Compatibility](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fably%2Fably-cocoa%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/ably/ably-cocoa)
+[![SPM Platform Compatibility](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fably%2Fably-cocoa%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/ably/ably-cocoa)
 
 _[Ably](https://ably.com) is the platform that powers synchronized digital experiences in realtime. Whether attending an event in a virtual venue, receiving realtime financial information, or monitoring live car performance data – consumers simply expect realtime digital experiences as standard. Ably provides a suite of APIs to build, extend, and deliver powerful digital experiences in realtime for more than 250 million devices across 80 countries each month. Organizations like Bloomberg, HubSpot, Verizon, and Hopin depend on Ably’s platform to offload the growing complexity of business-critical realtime data synchronization at global scale. For more information, see the [Ably documentation](https://ably.com/documentation)._
 
 This is an iOS, tvOS and macOS Objective-C and Swift client library SDK for Ably, written in Objective-C. The library currently targets the [Ably client library features spec](https://www.ably.io/documentation/client-lib-development-guide/features/) Version 1.2. You can jump to the '[Known Limitations](#known-limitations)' section to see the features this client library does not yet support or [view our client library SDKs feature support matrix](https://www.ably.io/download/sdk-feature-support-matrix) to see the list of all the available features.
-
-- [Supported platforms](#supported-platforms)
-	- [Acknowledgments](#acknowledgments)
-- [Known Limitations](#known-limitations)
-- [Documentation](#documentation)
-- [Installation Guide](#installation-guide)
-	- [CocoaPods](#installing-through-cocoapods)
-	- [Carthage](#installing-through-carthage)
-	- [Manual](#manual-installation)
-- [Thread-safety Acknowledgments](#thread-safety)
-- [Push Notifications](#push-notifications)
-- [Using the Realtime API](#using-the-realtime-api)
-	- [Connection](#connection)
-	- [Subscribing to a channel](#subscribing-to-a-channel)
-	- [Publishing to a channel](#publishing-to-a-channel)
-	- [Querying the history](#querying-the-history)
-	- [Presence on a channel](#presence-on-a-channel)
-	- [Querying the presence history](#querying-the-presence-history)
-	- [Using the authCallback](#using-the-authCallback)
-- [Using the REST API](#using-the-rest-api)
-	- [Publishing a message to a channel](#publishing-a-message-to-a-channel)
-	- [Querying the history](#querying-the-history)
-	- [Presence on a channel](#presence-on-a-channel)
-	- [Querying the presence history](#querying-the-presence-history)
-	- [Generate token](#generate-token)
-	- [Fetching your application's stats](#fetching-your-applications-stats)
-	- [Fetching the Ably service time](#fetching-the-ably-service-time)
-- [Support, feedback and troubleshooting](#support-feedback-and-troubleshooting)
-- [Contributing](#contributing)
-    - [Development Flow](#development-flow)
-- [Running tests](#running-tests)
-- [Release Process](#release-process)
 
 ## Supported platforms
 
@@ -73,8 +42,6 @@ Visit [ably.io/documentation](https://www.ably.io/documentation) for a complete 
 ## Installation Guide
 
 You can install Ably for iOS and macOS through Package Manager, CocoaPods, Carthage or manually.
-
-## Installation
 
 ### Installing through [Swift Package Manager](https://swift.org/package-manager/)
 - To install the `ably-cocoa` package in your **Xcode Project**: 
@@ -126,7 +93,7 @@ If you see, for example, a `dyld: Library not loaded: @rpath/AblyDeltaCodec.fram
 
 ### Manual installation 
 
-1. Get the code from GitHub [from the release page](https://github.com/ably/ably-cocoa/releases/tag/1.2.7), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-cocoa.git`
+1. Get the code from GitHub [from the release page](https://github.com/ably/ably-cocoa/releases/tag/1.2.9), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-cocoa.git`
 2. Drag the directory `ably-cocoa/ably-cocoa` into your project as a group.
 3. Ably depends on our [MessagePack Fork](https://github.com/ably-forks/msgpack-objective-C) 0.2.0; get it [from the releases page](https://github.com/ably-forks/msgpack-objective-C/releases/tag/0.2.0-ably-1) and link it into your project.
 
@@ -753,7 +720,7 @@ For each release, the following needs to be done:
 * Create a new branch `release/x.x.x` (where `x.x.x` is the new version number) from the `main` branch
 * Run `make bump_[major|minor|patch]` to bump the new version number (creates a Git commit)
 * Run [`github_changelog_generator`](https://github.com/github-changelog-generator/github-changelog-generator) to automate the update of the [CHANGELOG](./CHANGELOG.md). This may require some manual intervention, both in terms of how the command is run and how the change log file is modified. Your mileage may vary:
-    * The command you will need to run will look something like this: `github_changelog_generator -u ably -p ably-cocoa --since-tag 1.2.7 --output delta.md`
+    * The command you will need to run will look something like this: `github_changelog_generator -u ably -p ably-cocoa --since-tag 1.2.9 --output delta.md`
     * Using the command above, `--output delta.md` writes changes made after `--since-tag` to a new file
     * The contents of that new file (`delta.md`) then need to be manually inserted at the top of the `CHANGELOG.md`, changing the "Unreleased" heading and linking with the current version numbers
     * Also ensure that the "Full Changelog" link points to the new version tag instead of the `HEAD`

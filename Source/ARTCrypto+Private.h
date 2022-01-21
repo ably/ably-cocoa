@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (ARTStatus *)encrypt:(NSData *)plaintext output:(NSData *_Nullable *_Nullable)output;
 - (ARTStatus *)decrypt:(NSData *)ciphertext output:(NSData *_Nullable *_Nullable)output;
-- (NSString *)cipherName;
+- (nullable NSString *)cipherName;
 - (size_t) keyLength;
 
 @end
