@@ -73,11 +73,11 @@ private func rsa8gTestsSetupDependencies() {
 private let authCallbackTestsOptions = AblyTests.clientOptions()
 private let jwtAndRestTestsOptions = AblyTests.clientOptions()
 private var client: ARTRest!
-private var jsonEncoder: ARTJsonLikeEncoder = {
+private func createJsonEncoder() -> ARTJsonLikeEncoder {
     let encoder = ARTJsonLikeEncoder()
     encoder.delegate = ARTJsonEncoder()
     return encoder
-}()
+}
 
 private func jwtContentTypeTestsSetupDependencies() {
     if client == nil {
@@ -1492,7 +1492,7 @@ class AuthTests: XCTestCase {
 
     func test__065__requestToken__authUrl__query_will_provide_a_TokenDetails() throws {
         let testTokenDetails = try XCTUnwrap(getTestTokenDetails(clientId: "tester"), "TokenDetails is empty")
-        let jsonTokenDetails = try XCTUnwrap(jsonEncoder.encode(testTokenDetails), "Invalid TokenDetails")
+        let jsonTokenDetails = try XCTUnwrap(createJsonEncoder().encode(testTokenDetails), "Invalid TokenDetails")
 
         let options = ARTClientOptions()
         options.authUrl = URL(string: "http://echo.ably.io")
@@ -1547,7 +1547,7 @@ class AuthTests: XCTestCase {
         }
         
         let testTokenRequest = try XCTUnwrap(tokenRequest, "TokenRequest is empty")
-        let jsonTokenRequest = try XCTUnwrap(try jsonEncoder.encode(testTokenRequest), "Invalid TokenRequest")
+        let jsonTokenRequest = try XCTUnwrap(createJsonEncoder().encode(testTokenRequest), "Invalid TokenRequest")
 
         // JSON with TokenRequest
         options.authParams = [URLQueryItem]()
@@ -2939,7 +2939,7 @@ class AuthTests: XCTestCase {
     func test__107__authorize__should_adhere_to_all_requirements_relating_to__authUrl_with_json() throws {
         
         let tokenDetails = try XCTUnwrap(getTestTokenDetails(), "TokenDetails is empty")
-        let tokenDetailsData = try XCTUnwrap(try jsonEncoder.encode(tokenDetails), "Couldn't encode token details")
+        let tokenDetailsData = try XCTUnwrap(createJsonEncoder().encode(tokenDetails), "Couldn't encode token details")
         let tokenDetailsJSON = try XCTUnwrap(String(data: tokenDetailsData, encoding: .utf8), "JSON TokenDetails is empty")
 
         let options = ARTClientOptions()
@@ -2992,7 +2992,7 @@ class AuthTests: XCTestCase {
             }
         }
 
-        let tokenRequestData = try XCTUnwrap(try jsonEncoder.encode(tokenRequest), "Encode failure")
+        let tokenRequestData = try XCTUnwrap(createJsonEncoder().encode(tokenRequest), "Encode failure")
         let tokenRequestJSON = try XCTUnwrap(String(data: tokenRequestData, encoding: .utf8), "JSON Token Request is empty")
 
         options.authUrl = URL(string: "http://echo.ably.io")!
@@ -3101,7 +3101,7 @@ class AuthTests: XCTestCase {
         let rest = ARTRest(options: AblyTests.commonAppSetup())
 
         let testTokenDetails = try XCTUnwrap(getTestTokenDetails(ttl: 0.1))
-        let tokenRequestData = try XCTUnwrap(try jsonEncoder.encode(testTokenDetails), "Encode failure")
+        let tokenRequestData = try XCTUnwrap(createJsonEncoder().encode(testTokenDetails), "Encode failure")
 
         let authOptions = ARTAuthOptions()
         authOptions.authUrl = URL(string: "http://echo.ably.io")!
