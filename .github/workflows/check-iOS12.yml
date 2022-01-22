@@ -6,6 +6,6 @@ on:
 
 jobs:
   check:
-    uses: check-base.yml@{github.base_ref}
+    uses: .github/workflows/check-base.yml@{github.base_ref}
     with:
       lane: test_iOS12
