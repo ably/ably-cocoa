@@ -6,6 +6,6 @@ on:
 
 jobs:
   check:
-    uses: check-base.yml
+    uses: check-base.yml@{github.base_ref}
     with:
       lane: test_tvOS12
