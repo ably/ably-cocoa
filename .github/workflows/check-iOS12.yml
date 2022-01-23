@@ -8,4 +8,5 @@ jobs:
   check:
     uses: ably/ably-cocoa/.github/workflows/check-base.yml@feature/1273-one-job-per-workflow
     with:
+      platform: iOS
       lane: test_iOS12
