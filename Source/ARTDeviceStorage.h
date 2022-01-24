@@ -3,6 +3,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+// TODO why is this public?
+
 @protocol ARTDeviceStorage <NSObject>
 - (BOOL)getObject:(_Nullable id * _Nullable)ptr forKey:(NSString *)key error:(NSError **)error;
 - (BOOL)setObject:(nullable id)value forKey:(NSString *)key error:(NSError **)error;

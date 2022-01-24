@@ -57,11 +57,14 @@ NSString *const ARTDevicePushTransportType = @"apns";
     NSError *error = nil;
     if (![storage getObject:&deviceId forKey:ARTDeviceIdKey error:&error]) {
         [logger error:@"%@: failed to load device ID (%@)", NSStringFromClass(self.class), error.localizedDescription];
+        device.idLoadingError = error;
     }
+    
     NSString *deviceSecret = nil;
     if (deviceId != nil) {
         if (![storage getSecret:&deviceSecret forDevice:deviceId error:&error]) {
             [logger error:@"%@: failed to load device secret (%@)", NSStringFromClass(self.class), error.localizedDescription];
+            device.secretLoadingError = error;
         }
     }
     

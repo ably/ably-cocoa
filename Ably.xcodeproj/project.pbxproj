@@ -18,6 +18,9 @@
 		1C6C18A41ADFDAB100AB79E4 /* ARTLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C6C18A21ADFDAB100AB79E4 /* ARTLog.m */; };
 		1CD8DC9F1B1C7315007EAF36 /* ARTDefault.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1CD8DCA01B1C7315007EAF36 /* ARTDefault.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CD8DC9E1B1C7315007EAF36 /* ARTDefault.m */; };
+		210C26D1279ED1C1002C2132 /* ARTLocalDeviceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 210C26D0279ED1C0002C2132 /* ARTLocalDeviceTests.swift */; };
+		210C26D2279ED1C1002C2132 /* ARTLocalDeviceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 210C26D0279ED1C0002C2132 /* ARTLocalDeviceTests.swift */; };
+		210C26D3279ED1C1002C2132 /* ARTLocalDeviceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 210C26D0279ED1C0002C2132 /* ARTLocalDeviceTests.swift */; };
 		21447D3B254A2ECB00B3905A /* ARTSRWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 217D181B25421FED00DFF07E /* ARTSRWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		21447D40254A2ECE00B3905A /* ARTSRWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 217D181B25421FED00DFF07E /* ARTSRWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		21447D45254A2ED100B3905A /* ARTSRWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 217D181B25421FED00DFF07E /* ARTSRWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -958,6 +961,7 @@
 		1C6C18A21ADFDAB100AB79E4 /* ARTLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTLog.m; sourceTree = "<group>"; };
 		1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTDefault.h; sourceTree = "<group>"; };
 		1CD8DC9E1B1C7315007EAF36 /* ARTDefault.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTDefault.m; sourceTree = "<group>"; };
+		210C26D0279ED1C0002C2132 /* ARTLocalDeviceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARTLocalDeviceTests.swift; sourceTree = "<group>"; };
 		217D17F125421FED00DFF07E /* ARTSRProxyConnect.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTSRProxyConnect.h; sourceTree = "<group>"; };
 		217D17F225421FED00DFF07E /* ARTSRProxyConnect.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRProxyConnect.m; sourceTree = "<group>"; };
 		217D17F425421FED00DFF07E /* ARTSRRunLoopThread.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRRunLoopThread.m; sourceTree = "<group>"; };
@@ -1461,29 +1465,30 @@
 			children = (
 				841134772722205400CFA837 /* ARTArchiveTests.m */,
 				560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */,
+				210C26D0279ED1C0002C2132 /* ARTLocalDeviceTests.swift */,
 				D7C1B8761BBEA81A0087B55F /* AuthTests.swift */,
 				84569FA226B46ADC00457CF5 /* ClientOptionsTests.swift */,
-				EB7913A71C6E54C3000ABF9B /* CryptoTests.swift */,
 				56190953238C3D3200A862A6 /* CryptoTest.m */,
+				EB7913A71C6E54C3000ABF9B /* CryptoTests.swift */,
 				D798554723EB96C000946BE2 /* DeltaCodecTests.swift */,
 				D5A22171266F526600C87C42 /* GCDTests.swift */,
 				848ED97226E50D0F0087E800 /* ObjcppTest.mm */,
 				EB1B53F822F85CE4006A59AC /* ObjectLifetimesTests.swift */,
-				D7FC1ECA209CEA2E001E4153 /* PushTests.swift */,
 				D7DF73831EA5FE620013CD36 /* PushActivationStateMachineTests.swift */,
 				D74A17B61FA0D81A006D27B5 /* PushAdminTests.swift */,
 				D777EEE620650A85002EBA03 /* PushChannelTests.swift */,
+				D7FC1ECA209CEA2E001E4153 /* PushTests.swift */,
 				EBAB9A6E1C69702800AF036B /* ReadmeExamplesTests.swift */,
-				D723046F1BB72CED00F1ABDA /* RealtimeClientTests.swift */,
-				D74EFAEA1C4D09B500CFF98E /* RealtimeClientChannelTests.swift */,
 				D71D30031C5F7B2F002115B0 /* RealtimeClientChannelsTests.swift */,
+				D74EFAEA1C4D09B500CFF98E /* RealtimeClientChannelTests.swift */,
 				D7EBE5A21BE8391E0086E675 /* RealtimeClientConnectionTests.swift */,
 				D7CEF1311C8DD3BC004FB242 /* RealtimeClientPresenceTests.swift */,
-				856AAC981B6E312F00B07119 /* RestClientTests.swift */,
-				D746AE2A1BBB625E003ECEF8 /* RestClientChannelTests.swift */,
+				D723046F1BB72CED00F1ABDA /* RealtimeClientTests.swift */,
 				D746AE2B1BBB625E003ECEF8 /* RestClientChannelsTests.swift */,
+				D746AE2A1BBB625E003ECEF8 /* RestClientChannelTests.swift */,
 				D72768201C9C19040022F8B2 /* RestClientPresenceTests.swift */,
 				853ED7C31B7A1A3C006F1C6F /* RestClientStatsTests.swift */,
+				856AAC981B6E312F00B07119 /* RestClientTests.swift */,
 				D74CBC09212EC02C00D090E4 /* RestPaginatedTests.swift */,
 				851674EE1B7BA5CD00D35169 /* StatsTests.swift */,
 				D520C4DD2680A1E3000012B2 /* StringifiableTests.swift */,
@@ -2629,6 +2634,7 @@
 				D714A63E1C74D4B2002F2CA0 /* NSObject+TestSuite.swift in Sources */,
 				856AAC971B6E30C800B07119 /* TestUtilities.swift in Sources */,
 				D72768211C9C19040022F8B2 /* RestClientPresenceTests.swift in Sources */,
+				210C26D1279ED1C1002C2132 /* ARTLocalDeviceTests.swift in Sources */,
 				D780846E1C68B3E50083009D /* NSObject+TestSuite.m in Sources */,
 				84569FA626B46F4E00457CF5 /* ClientOptionsTests.swift in Sources */,
 				D7093CA9219EFA8A00723F17 /* MockDeviceStorage.swift in Sources */,
@@ -2773,6 +2779,7 @@
 				D7093C23219E466E00723F17 /* RestPaginatedTests.swift in Sources */,
 				D7093C19219E465300723F17 /* TestUtilities.swift in Sources */,
 				560579DA24AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */,
+				210C26D2279ED1C1002C2132 /* ARTLocalDeviceTests.swift in Sources */,
 				D7093C1C219E466400723F17 /* ReadmeExamplesTests.swift in Sources */,
 				D7093C27219E466E00723F17 /* RealtimeClientChannelsTests.swift in Sources */,
 				848ED97426E50D0F0087E800 /* ObjcppTest.mm in Sources */,
@@ -2801,6 +2808,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D7093C75219EE26400723F17 /* RestClientTests.swift in Sources */,
+				210C26D3279ED1C1002C2132 /* ARTLocalDeviceTests.swift in Sources */,
 				D7093C7D219EE26400723F17 /* RealtimeClientChannelTests.swift in Sources */,
 				848ED97526E50D0F0087E800 /* ObjcppTest.mm in Sources */,
 				D7093C7F219EE26400723F17 /* RealtimeClientPresenceTests.swift in Sources */,

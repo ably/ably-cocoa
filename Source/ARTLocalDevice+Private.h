@@ -14,6 +14,8 @@ extern NSString *const ARTAPNSDeviceTokenKey;
 
 @property (strong, nonatomic) id<ARTDeviceStorage> storage;
 @property (strong, nonatomic) ARTLog *logger;
+@property (nullable, strong, nonatomic) NSError *idLoadingError;
+@property (nullable, strong, nonatomic) NSError *secretLoadingError;
 
 + (ARTLocalDevice *)load:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage logger:(ARTLog *)logger;
 - (nullable NSString *)apnsDeviceToken;
