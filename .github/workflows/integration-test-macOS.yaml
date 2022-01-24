@@ -8,6 +8,6 @@ on:
 
 jobs:
   check:
-    uses: ./.github/workflows/integration-test.yaml@feature/1273-one-job-per-workflow
+    uses: ably/ably-cocoa/.github/workflows/integration-test.yaml@feature/1273-one-job-per-workflow
     with:
       lane: test_macOS
