@@ -12,13 +12,6 @@ jobs:
   check:
     runs-on: macos-10.15
 
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: ${{ inputs.platform }}
-            lane: ${{ inputs.lane }}
-
     env:
       LC_CTYPE: en_US.UTF-8
       LANG: en_US.UTF-8
@@ -49,7 +42,7 @@ jobs:
           make update_carthage_dependencies
 
       - name: Run Tests
-        run: bundle exec fastlane ${{ matrix.lane }}
+        run: bundle exec fastlane ${{ inputs.lane }}
 
       - name: Check Static Analyzer Output
         id: analyzer-output
@@ -65,7 +58,7 @@ jobs:
         if: ${{ failure() && steps.analyzer-output.outcome == 'failure' }}
         uses: actions/upload-artifact@v2
         with:
-          name: static-analyzer-reports-${{ matrix.lane }}
+          name: static-analyzer-reports-${{ inputs.lane }}
           path: ./derived_data/**/report-*.html
       
       # This is the script specified as the pod’s prepare_command in its Podspec.
