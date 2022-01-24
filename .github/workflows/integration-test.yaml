@@ -1,9 +1,6 @@
 on:
   workflow_call:
     inputs:
-      platform:
-        required: true
-        type: string
       lane:
         required: true
         type: string
