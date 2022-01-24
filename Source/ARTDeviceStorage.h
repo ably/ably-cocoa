@@ -4,9 +4,9 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @protocol ARTDeviceStorage <NSObject>
-- (nullable id)objectForKey:(NSString *)key;
+- (BOOL)getObject:(_Nullable id * _Nullable)ptr forKey:(NSString *)key error:(NSError **)error;
 - (void)setObject:(nullable id)value forKey:(NSString *)key;
-- (nullable NSString *)secretForDevice:(ARTDeviceId *)deviceId;
+- (BOOL)getSecret:(NSString * _Nullable * _Nullable)ptr forDevice:(ARTDeviceId *)deviceId error:(NSError **)error;
 - (void)setSecret:(nullable NSString *)value forDevice:(ARTDeviceId *)deviceId;
 @end
 

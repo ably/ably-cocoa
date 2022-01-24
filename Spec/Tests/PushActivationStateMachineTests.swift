@@ -64,7 +64,7 @@ class PushActivationStateMachineTests: XCTestCase {
         let stateEncodedFromOldVersion = Data(base64Encoded: stateEncodedFromOldVersionBase64, options: .init())!
 
         let storage = MockDeviceStorage()
-        storage.simulateOnNextRead(data: stateEncodedFromOldVersion, for: ARTPushActivationCurrentStateKey)
+        storage.simulateOnNextRead(.data(stateEncodedFromOldVersion), for: ARTPushActivationCurrentStateKey)
         rest.internal.storage = storage
         let stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
@@ -919,14 +919,16 @@ class PushActivationStateMachineTests: XCTestCase {
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForPushDeviceDetails.self))
     }
 
-    func test__001__should_remove_identityTokenDetails_from_cache_and_storage() {
+    func test__001__should_remove_identityTokenDetails_from_cache_and_storage() throws {
         let storage = MockDeviceStorage()
         rest.internal.storage = storage
         rest.device.setAndPersistIdentityTokenDetails(nil)
         rest.internal.resetDeviceSingleton()
         expect(rest.device.identityTokenDetails).to(beNil())
         expect(rest.device.isRegistered()) == false
-        expect(storage.object(forKey: ARTDeviceIdentityTokenKey)).to(beNil())
+        var deviceToken: AnyObject? = nil
+        try storage.getObject(&deviceToken, forKey: ARTDeviceIdentityTokenKey)
+        expect(deviceToken).to(beNil())
     }
 
     enum TestCase_ReusableTestsRsh3a2a {
@@ -954,7 +956,7 @@ class PushActivationStateMachineTests: XCTestCase {
             newRest.internal.storage = storage
             let stateMachine = ARTPushActivationStateMachine(rest: newRest.internal, delegate: StateMachineDelegate())
 
-            storage.simulateOnNextRead(string: testDeviceId, for: ARTDeviceIdKey)
+            storage.simulateOnNextRead(.string(testDeviceId), for: ARTDeviceIdKey)
 
             let testDeviceIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "deviceClient")
             stateMachine.rest.device.setAndPersistIdentityTokenDetails(testDeviceIdentityTokenDetails)
@@ -976,7 +978,7 @@ class PushActivationStateMachineTests: XCTestCase {
         func beforeEach__the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID() {
             contextBeforeEach?()
 
-            storage.simulateOnNextRead(string: testDeviceId, for: ARTDeviceIdKey)
+            storage.simulateOnNextRead(.string(testDeviceId), for: ARTDeviceIdKey)
 
             let testDeviceIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
             stateMachine.rest.device.setAndPersistIdentityTokenDetails(testDeviceIdentityTokenDetails)

@@ -1,56 +1,61 @@
 import Ably
 
 class MockDeviceStorage: NSObject, ARTDeviceStorage {
+    
+    enum ReadResult {
+        case data(Data)
+        case string(String)
+        case error(Error)
+    }
 
     var keysRead: [String] = []
     var keysWritten: [String: Any?] = [:]
 
-    private var simulateData: [String: Data] = [:]
-    private var simulateString: [String: String] = [:]
+    private var simulateResults: [String: ReadResult] = [:]
 
     init(startWith state: ARTPushActivationState? = nil) {
         super.init()
         if let state = state {
-            simulateOnNextRead(data: state.archive(), for: ARTPushActivationCurrentStateKey)
+            simulateOnNextRead(.data(state.archive()), for: ARTPushActivationCurrentStateKey)
         }
     }
 
-    func object(forKey key: String) -> Any? {
+    func getObject(_ ptr: AutoreleasingUnsafeMutablePointer<AnyObject?>?, forKey key: String) throws {
         keysRead.append(key)
-        if let data = simulateData[key] {
-            defer { simulateData.removeValue(forKey: key) }
-            return data
+        
+        if let result = simulateResults[key] {
+            simulateResults.removeValue(forKey: key)
+            
+            switch result {
+            case let .data(data): ptr?.pointee = data as NSData
+            case let .string(string): ptr?.pointee = string as NSString
+            case let .error(error): throw error
+            }
         }
-        if let string = simulateString[key] {
-            defer { simulateString.removeValue(forKey: key) }
-            return string
-        }
-        return nil
     }
 
     func setObject(_ value: Any?, forKey key: String) {
         keysWritten.updateValue(value, forKey: key)
     }
 
-    func secret(forDevice deviceId: ARTDeviceId) -> String? {
+    func getSecret(_ ptr: AutoreleasingUnsafeMutablePointer<NSString?>?, forDevice deviceId: String) throws {
         keysRead.append(ARTDeviceSecretKey)
-        if let value = simulateString[ARTDeviceSecretKey] {
-            defer { simulateString.removeValue(forKey: ARTDeviceSecretKey) }
-            return value
+        if let value = simulateResults[ARTDeviceSecretKey] {
+            defer { simulateResults.removeValue(forKey: ARTDeviceSecretKey) }
+            
+            switch value {
+            case .data: preconditionFailure("Don’t know how to handle data-valued secret")
+            case let .string(string): ptr?.pointee = string as NSString
+            case let .error(error): throw error
+            }
         }
-        return nil
     }
 
     func setSecret(_ value: String?, forDevice deviceId: ARTDeviceId) {
         keysWritten.updateValue(value, forKey: ARTDeviceSecretKey)
     }
 
-    func simulateOnNextRead(data value: Data, `for` key: String) {
-        simulateData[key] = value
+    func simulateOnNextRead(_ result: ReadResult, `for` key: String) {
+        simulateResults[key] = result
     }
-
-    func simulateOnNextRead(string value: String, `for` key: String) {
-        simulateString[key] = value
-    }
-
 }

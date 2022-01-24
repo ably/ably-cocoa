@@ -17,26 +17,40 @@
     return [[self alloc] initWithLogger:logger];
 }
 
-- (nullable id)objectForKey:(NSString *)key {
-    return [NSUserDefaults.standardUserDefaults objectForKey:key];
+- (BOOL)getObject:(_Nullable id * _Nullable)ptr forKey:(NSString *)key error:(NSError **)error {
+    id result = [NSUserDefaults.standardUserDefaults objectForKey:key];
+    
+    if (ptr) {
+        *ptr = result;
+    }
+    
+    return YES;
 }
 
 - (void)setObject:(nullable id)value forKey:(NSString *)key {
     [NSUserDefaults.standardUserDefaults setObject:value forKey:key];
 }
 
-- (NSString *)secretForDevice:(ARTDeviceId *)deviceId {
-    NSError *error = nil;
-    NSString *value = [self keychainGetPasswordForService:ARTDeviceSecretKey account:(NSString *)deviceId error:&error];
+- (BOOL)getSecret:(NSString * _Nullable * _Nullable)ptr forDevice:(ARTDeviceId *)deviceId error:(NSError **)error {
+    NSError *localError = nil;
+    NSString *value = [self keychainGetPasswordForService:ARTDeviceSecretKey account:(NSString *)deviceId error:&localError];
+    
+    if (error && localError) {
+        *error = localError;
+    }
 
-    if ([error code] == errSecItemNotFound) {
+    if ([localError code] == errSecItemNotFound) {
         [_logger debug:__FILE__ line:__LINE__ message:@"Device Secret not found"];
     }
-    else if (error) {
-        [_logger error:@"Device Secret couldn't be read (%@)", [error localizedDescription]];
+    else if (localError) {
+        [_logger error:@"Device Secret couldn't be read (%@)", [localError localizedDescription]];
+    }
+    
+    if (ptr) {
+        *ptr = value;
     }
 
-    return value;
+    return localError == nil;
 }
 
 - (void)setSecret:(NSString *)value forDevice:(ARTDeviceId *)deviceId {

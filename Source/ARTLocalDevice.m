@@ -52,8 +52,12 @@ NSString *const ARTDevicePushTransportType = @"apns";
     #endif
     device.push.recipient[@"transportType"] = ARTDevicePushTransportType;
 
-    NSString *deviceId = [storage objectForKey:ARTDeviceIdKey];
-    NSString *deviceSecret = deviceId == nil ? nil : [storage secretForDevice:deviceId];
+    NSString *deviceId = nil;
+    [storage getObject:&deviceId forKey:ARTDeviceIdKey error:NULL];
+    NSString *deviceSecret = nil;
+    if (deviceId != nil) {
+        [storage getSecret:&deviceSecret forDevice:deviceId error:NULL];
+    }
     
     if (deviceId == nil || deviceSecret == nil) { // generate both at the same time
         deviceId = [self generateId];
@@ -66,11 +70,14 @@ NSString *const ARTDevicePushTransportType = @"apns";
     device.id = deviceId;
     device.secret = deviceSecret;
 
-    id identityTokenDetailsInfo = [storage objectForKey:ARTDeviceIdentityTokenKey];
+    id identityTokenDetailsInfo = nil;
+    [storage getObject:&identityTokenDetailsInfo forKey:ARTDeviceIdentityTokenKey error:NULL];
     ARTDeviceIdentityTokenDetails *identityTokenDetails = [ARTDeviceIdentityTokenDetails unarchive:identityTokenDetailsInfo];
     device->_identityTokenDetails = identityTokenDetails;
 
-    [device setAPNSDeviceToken:[storage objectForKey:ARTAPNSDeviceTokenKey]];
+    id deviceToken = nil;
+    [storage getObject:&deviceToken forKey:ARTAPNSDeviceTokenKey error:NULL];
+    [device setAPNSDeviceToken:deviceToken];
 
     return device;
 }
