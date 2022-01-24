@@ -1,3 +1,5 @@
+name: "Integration Test: iOS 12"
+
 on:
   pull_request:
   push:

@@ -1,3 +1,5 @@
+name: "Integration Test: macOS"
+
 on:
   pull_request:
   push:

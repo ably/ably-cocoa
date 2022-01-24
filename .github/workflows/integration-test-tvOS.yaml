@@ -1,3 +1,5 @@
+name: "Integration Test: tvOS"
+
 on:
   pull_request:
   push:
