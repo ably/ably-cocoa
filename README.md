@@ -1,7 +1,6 @@
 # [Ably](https://www.ably.io) iOS, tvOS and macOS Objective-C and Swift client library SDK
 
-[![.github/workflows/check.yml](https://github.com/ably/ably-cocoa/actions/workflows/check.yml/badge.svg)](https://github.com/ably/ably-cocoa/actions/workflows/check.yml)
-[![.github/workflows/check-pod.yml](https://github.com/ably/ably-cocoa/actions/workflows/check-pod.yml/badge.svg)](https://github.com/ably/ably-cocoa/actions/workflows/check-pod.yml)
+[![.github/workflows/check-pod.yaml](https://github.com/ably/ably-cocoa/actions/workflows/check-pod.yaml/badge.svg)](https://github.com/ably/ably-cocoa/actions/workflows/check-pod.yaml)
 
 [![CocoaPods](https://img.shields.io/cocoapods/v/Ably.svg)](https://cocoapods.org/pods/Ably)
 [![SPM Swift Compatibility](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fably%2Fably-cocoa%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/ably/ably-cocoa)

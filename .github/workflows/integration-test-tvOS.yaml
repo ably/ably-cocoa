@@ -6,7 +6,7 @@ on:
 
 jobs:
   check:
-    uses: ably/ably-cocoa/.github/workflows/check-base.yml@feature/1273-one-job-per-workflow
+    uses: ably/ably-cocoa/.github/workflows/integration-test.yaml@feature/1273-one-job-per-workflow
     with:
       platform: tvOS
       lane: test_tvOS12
