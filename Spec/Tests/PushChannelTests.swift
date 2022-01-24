@@ -46,7 +46,7 @@ class PushChannelTests: XCTestCase {
     }
 
     // RSH7a2, RSH7a3
-    func test__002__Push_Channel__subscribeDevice__should_do_a_POST_request_to__push_channelSubscriptions_and_include_device_authentication() {
+    func test__002__Push_Channel__subscribeDevice__should_do_a_POST_request_to__push_channelSubscriptions_and_include_device_authentication() throws {
         let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
         defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
@@ -59,26 +59,14 @@ class PushChannelTests: XCTestCase {
             }
         }
 
-        guard let request = mockHttpExecutor.requests.first else {
-            fail("should have a \"/push/channelSubscriptions\" request"); return
-        }
-        guard let url = request.url, url.absoluteString.contains("/push/channelSubscriptions") else {
-            fail("should have a \"/push/channelSubscriptions\" URL"); return
-        }
-        guard let rawBody = request.httpBody else {
-            fail("should have a body"); return
-        }
-        let decodedBody: Any
-        do {
-            decodedBody = try rest.internal.defaultEncoder.decode(rawBody)
-        } catch {
-            fail("Decode failed: \(error)"); return
-        }
-        guard let body = decodedBody as? NSDictionary else {
-            fail("body is invalid"); return
-        }
+        let request = try XCTUnwrap(mockHttpExecutor.requests.first, "should have a \"/push/channelSubscriptions\" request")
+        let url = try XCTUnwrap(request.url, "No request url found")
+        let rawBody = try XCTUnwrap(request.httpBody, "should have a body")
+        let decodedBody = try XCTUnwrap(try rest.internal.defaultEncoder.decode(rawBody), "Decode request body failed")
+        let body = try XCTUnwrap(decodedBody as? NSDictionary, "Request body is invalid")
 
         expect(request.httpMethod) == "POST"
+        expect(url.absoluteString).to(contain("/push/channelSubscriptions"))
         expect(body.value(forKey: "deviceId") as? String).to(equal(rest.device.id))
         expect(body.value(forKey: "channel") as? String).to(equal(channel.name))
 
@@ -112,7 +100,7 @@ class PushChannelTests: XCTestCase {
     }
 
     // RSH7b2
-    func test__004__Push_Channel__subscribeClient__should_do_a_POST_request_to__push_channelSubscriptions() {
+    func test__004__Push_Channel__subscribeClient__should_do_a_POST_request_to__push_channelSubscriptions() throws {
         let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
         defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
@@ -125,26 +113,14 @@ class PushChannelTests: XCTestCase {
             }
         }
 
-        guard let request = mockHttpExecutor.requests.first else {
-            fail("should have a \"/push/channelSubscriptions\" request"); return
-        }
-        guard let url = request.url, url.absoluteString.contains("/push/channelSubscriptions") else {
-            fail("should have a \"/push/channelSubscriptions\" URL"); return
-        }
-        guard let rawBody = request.httpBody else {
-            fail("should have a body"); return
-        }
-        let decodedBody: Any
-        do {
-            decodedBody = try rest.internal.defaultEncoder.decode(rawBody)
-        } catch {
-            fail("Decode failed: \(error)"); return
-        }
-        guard let body = decodedBody as? NSDictionary else {
-            fail("body is invalid"); return
-        }
+        let request = try XCTUnwrap(mockHttpExecutor.requests.first, "should have a \"/push/channelSubscriptions\" request")
+        let url = try XCTUnwrap(request.url, "No request url found")
+        let rawBody = try XCTUnwrap(request.httpBody, "should have a body")
+        let decodedBody = try XCTUnwrap(try rest.internal.defaultEncoder.decode(rawBody), "Decode request body failed")
+        let body = try XCTUnwrap(decodedBody as? NSDictionary, "Request body is invalid")
 
         expect(request.httpMethod) == "POST"
+        expect(url.absoluteString).to(contain("/push/channelSubscriptions"))
         expect(body.value(forKey: "clientId") as? String).to(equal(rest.device.clientId))
         expect(body.value(forKey: "channel") as? String).to(equal(channel.name))
 
@@ -169,7 +145,7 @@ class PushChannelTests: XCTestCase {
     }
 
     // RSH7c2, RSH7c3
-    func test__006__Push_Channel__unsubscribeDevice__should_do_a_DELETE_request_to__push_channelSubscriptions_and_include_device_authentication() {
+    func test__006__Push_Channel__unsubscribeDevice__should_do_a_DELETE_request_to__push_channelSubscriptions_and_include_device_authentication() throws {
         let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
         defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
@@ -182,17 +158,12 @@ class PushChannelTests: XCTestCase {
             }
         }
 
-        guard let request = mockHttpExecutor.requests.first else {
-            fail("should have a \"/push/channelSubscriptions\" request"); return
-        }
-        guard let url = request.url, url.absoluteString.contains("/push/channelSubscriptions") else {
-            fail("should have a \"/push/channelSubscriptions\" URL"); return
-        }
-        guard let query = request.url?.query else {
-            fail("should have a body"); return
-        }
+        let request = try XCTUnwrap(mockHttpExecutor.requests.first, "should have a \"/push/channelSubscriptions\" request")
+        let url = try XCTUnwrap(request.url, "No request url found")
+        let query = try XCTUnwrap(url.query, "should have a query")
 
         expect(request.httpMethod) == "DELETE"
+        expect(url.absoluteString).to(contain("/push/channelSubscriptions"))
         expect(query).to(haveParam("deviceId", withValue: rest.device.id))
         expect(query).to(haveParam("channel", withValue: channel.name))
 
@@ -226,7 +197,7 @@ class PushChannelTests: XCTestCase {
     }
 
     // RSH7d2
-    func test__008__Push_Channel__unsubscribeClient__should_do_a_DELETE_request_to__push_channelSubscriptions() {
+    func test__008__Push_Channel__unsubscribeClient__should_do_a_DELETE_request_to__push_channelSubscriptions() throws {
         let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
         defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
@@ -239,17 +210,12 @@ class PushChannelTests: XCTestCase {
             }
         }
 
-        guard let request = mockHttpExecutor.requests.first else {
-            fail("should have a \"/push/channelSubscriptions\" request"); return
-        }
-        guard let url = request.url, url.absoluteString.contains("/push/channelSubscriptions") else {
-            fail("should have a \"/push/channelSubscriptions\" URL"); return
-        }
-        guard let query = request.url?.query else {
-            fail("should have a body"); return
-        }
-
+        let request = try XCTUnwrap(mockHttpExecutor.requests.first, "should have a \"/push/channelSubscriptions\" request")
+        let url = try XCTUnwrap(request.url, "No request url found")
+        let query = try XCTUnwrap(url.query, "should have a query")
+        
         expect(request.httpMethod) == "DELETE"
+        expect(url.absoluteString).to(contain("/push/channelSubscriptions"))
         expect(query).to(haveParam("clientId", withValue: rest.device.clientId!))
         expect(query).to(haveParam("channel", withValue: channel.name))
 
@@ -259,7 +225,7 @@ class PushChannelTests: XCTestCase {
 
     // RSH7e
 
-    func test__009__Push_Channel__listSubscriptions__should_return_a_paginated_result_with_PushChannelSubscription_filtered_by_channel_and_device() {
+    func test__009__Push_Channel__listSubscriptions__should_return_a_paginated_result_with_PushChannelSubscription_filtered_by_channel_and_device() throws {
         let params = [
             "deviceId": "111",
             "channel": "aaa",
@@ -273,23 +239,18 @@ class PushChannelTests: XCTestCase {
             }
         }
 
-        guard let request = mockHttpExecutor.requests.first else {
-            fail("should have a \"/push/channelSubscriptions\" request"); return
-        }
-        guard let url = request.url, url.absoluteString.contains("/push/channelSubscriptions") else {
-            fail("should have a \"/push/channelSubscriptions\" URL"); return
-        }
-        guard let query = request.url?.query else {
-            fail("should have a body"); return
-        }
+        let request = try XCTUnwrap(mockHttpExecutor.requests.first, "should have a \"/push/channelSubscriptions\" request")
+        let url = try XCTUnwrap(request.url, "No request url found")
+        let query = try XCTUnwrap(url.query, "should have a query")
 
+        expect(url.absoluteString).to(contain("/push/channelSubscriptions"))
         expect(query).to(haveParam("deviceId", withValue: params["deviceId"]))
         expect(query).toNot(haveParam("clientId", withValue: rest.device.clientId))
         expect(query).to(haveParam("channel", withValue: params["channel"]))
         expect(query).to(haveParam("concatFilters", withValue: "true"))
     }
 
-    func test__010__Push_Channel__listSubscriptions__should_return_a_paginated_result_with_PushChannelSubscription_filtered_by_channel_and_client() {
+    func test__010__Push_Channel__listSubscriptions__should_return_a_paginated_result_with_PushChannelSubscription_filtered_by_channel_and_client() throws {
         let params = [
             "clientId": "tester",
             "channel": "aaa",
@@ -303,16 +264,11 @@ class PushChannelTests: XCTestCase {
             }
         }
 
-        guard let request = mockHttpExecutor.requests.first else {
-            fail("should have a \"/push/channelSubscriptions\" request"); return
-        }
-        guard let url = request.url, url.absoluteString.contains("/push/channelSubscriptions") else {
-            fail("should have a \"/push/channelSubscriptions\" URL"); return
-        }
-        guard let query = request.url?.query else {
-            fail("should have a body"); return
-        }
+        let request = try XCTUnwrap(mockHttpExecutor.requests.first, "should have a \"/push/channelSubscriptions\" request")
+        let url = try XCTUnwrap(request.url, "No request url found")
+        let query = try XCTUnwrap(url.query, "should have a query")
 
+        expect(url.absoluteString).to(contain("/push/channelSubscriptions"))
         expect(query).to(haveParam("clientId", withValue: params["clientId"]))
         expect(query).toNot(haveParam("deviceId", withValue: rest.device.id))
         expect(query).to(haveParam("channel", withValue: params["channel"]))
