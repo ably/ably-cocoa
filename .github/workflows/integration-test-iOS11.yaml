@@ -1,0 +1,13 @@
+name: "Integration Test: iOS 11"
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  check:
+    uses: ./.github/workflows/integration-test.yaml
+    with:
+      lane: test_iOS11
