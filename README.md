@@ -1,6 +1,10 @@
 # [Ably](https://www.ably.io) iOS, tvOS and macOS Objective-C and Swift client library SDK
 
-[![.github/workflows/check-pod.yaml](https://github.com/ably/ably-cocoa/actions/workflows/check-pod.yaml/badge.svg)](https://github.com/ably/ably-cocoa/actions/workflows/check-pod.yaml)
+[![Check Pod](https://github.com/ably/ably-cocoa/actions/workflows/check-pod.yaml/badge.svg)](https://github.com/ably/ably-cocoa/actions/workflows/check-pod.yaml)
+[![Integration Test: iOS 11](https://github.com/ably/ably-cocoa/actions/workflows/integration-test-iOS11.yaml/badge.svg)](https://github.com/ably/ably-cocoa/actions/workflows/integration-test-iOS11.yaml)
+[![Integration Test: iOS 12](https://github.com/ably/ably-cocoa/actions/workflows/integration-test-iOS12.yaml/badge.svg)](https://github.com/ably/ably-cocoa/actions/workflows/integration-test-iOS12.yaml)
+[![Integration Test: macOS](https://github.com/ably/ably-cocoa/actions/workflows/integration-test-macOS.yaml/badge.svg)](https://github.com/ably/ably-cocoa/actions/workflows/integration-test-macOS.yaml)
+[![Integration Test: tvOS](https://github.com/ably/ably-cocoa/actions/workflows/integration-test-tvOS.yaml/badge.svg)](https://github.com/ably/ably-cocoa/actions/workflows/integration-test-tvOS.yaml)
 
 [![CocoaPods](https://img.shields.io/cocoapods/v/Ably.svg)](https://cocoapods.org/pods/Ably)
 [![SPM Swift Compatibility](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fably%2Fably-cocoa%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/ably/ably-cocoa)
