@@ -1,5 +1,16 @@
 # Change Log
 
+## [1.2.10](https://github.com/ably/ably-cocoa/tree/1.2.10)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.9...1.2.10)
+
+**Revert Bug Fix:**
+
+We made a change, released in [version 1.2.8](https://github.com/ably/ably-cocoa/releases/tag/1.2.8), which we suspect has been causing issues for some customers.
+This release reverts that change.
+
+- Reverting Fix/1177 full reset rsh3g2a only [\#1272](https://github.com/ably/ably-cocoa/pull/1272) ([maratal](https://github.com/maratal))
+
 ## [1.2.9](https://github.com/ably/ably-cocoa/tree/1.2.9)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.8...1.2.9)

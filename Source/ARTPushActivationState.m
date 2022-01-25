@@ -259,8 +259,8 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
     }
     else if ([event isKindOfClass:[ARTPushActivationEventDeregistered class]]) {
         #if TARGET_OS_IOS
-        ARTLocalDevice *device = self.machine.rest.device_nosync;
-        [device reset];
+        ARTLocalDevice *local = self.machine.rest.device_nosync;
+        [local setAndPersistIdentityTokenDetails:nil];
         #endif
         [self.machine callDeactivatedCallback:nil];
         return [ARTPushActivationStateNotActivated newWithMachine:self.machine];

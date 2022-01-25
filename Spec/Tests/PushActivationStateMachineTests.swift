@@ -97,21 +97,21 @@ class PushActivationStateMachineTests: XCTestCase {
     // RSH3a2
 
     // RSH3a2a
-    func reusableTestsWrapper__Activation_state_machine__State_NotActivated__on_Event_CalledActivate__reusableTestsRsh3a2a(testCase: TestCase_ReusableTestsRsh3a2a) {
+    func reusableTestsWrapper__Activation_state_machine__State_NotActivated__on_Event_CalledActivate__reusableTestsRsh3a2a(testCase: TestCase_ReusableTestsRsh3a2a) throws {
         // RSH3a2a
-        reusableTestsRsh3a2a(testCase: testCase, beforeEach: beforeEach__Activation_state_machine__State_NotActivated)
+        try reusableTestsRsh3a2a(testCase: testCase, beforeEach: beforeEach__Activation_state_machine__State_NotActivated)
     }
 
-    func test__011__Activation_state_machine__State_NotActivated__on_Event_CalledActivate__the_local_device_has_id_and_deviceIdentityToken__emits_a_SyncRegistrationFailed_event_with_code_61002_if_client_IDs_don_t_match() {
-        reusableTestsWrapper__Activation_state_machine__State_NotActivated__on_Event_CalledActivate__reusableTestsRsh3a2a(testCase: .the_local_device_has_id_and_deviceIdentityToken__emits_a_SyncRegistrationFailed_event_with_code_61002_if_client_IDs_don_t_match)
+    func test__011__Activation_state_machine__State_NotActivated__on_Event_CalledActivate__the_local_device_has_id_and_deviceIdentityToken__emits_a_SyncRegistrationFailed_event_with_code_61002_if_client_IDs_don_t_match() throws {
+        try reusableTestsWrapper__Activation_state_machine__State_NotActivated__on_Event_CalledActivate__reusableTestsRsh3a2a(testCase: .the_local_device_has_id_and_deviceIdentityToken__emits_a_SyncRegistrationFailed_event_with_code_61002_if_client_IDs_don_t_match)
     }
 
-    func test__012__Activation_state_machine__State_NotActivated__on_Event_CalledActivate__the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__calls_registerCallback__transitions_to_WaitingForRegistrationSync() {
-        reusableTestsWrapper__Activation_state_machine__State_NotActivated__on_Event_CalledActivate__reusableTestsRsh3a2a(testCase: .the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__calls_registerCallback__transitions_to_WaitingForRegistrationSync)
+    func test__012__Activation_state_machine__State_NotActivated__on_Event_CalledActivate__the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__calls_registerCallback__transitions_to_WaitingForRegistrationSync() throws {
+        try reusableTestsWrapper__Activation_state_machine__State_NotActivated__on_Event_CalledActivate__reusableTestsRsh3a2a(testCase: .the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__calls_registerCallback__transitions_to_WaitingForRegistrationSync)
     }
 
-    func test__013__Activation_state_machine__State_NotActivated__on_Event_CalledActivate__the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__PUTs_device_registration__transitions_to_WaitingForRegistrationSync() {
-        reusableTestsWrapper__Activation_state_machine__State_NotActivated__on_Event_CalledActivate__reusableTestsRsh3a2a(testCase: .the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__PUTs_device_registration__transitions_to_WaitingForRegistrationSync)
+    func test__013__Activation_state_machine__State_NotActivated__on_Event_CalledActivate__the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__PUTs_device_registration__transitions_to_WaitingForRegistrationSync() throws {
+        try reusableTestsWrapper__Activation_state_machine__State_NotActivated__on_Event_CalledActivate__reusableTestsRsh3a2a(testCase: .the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__PUTs_device_registration__transitions_to_WaitingForRegistrationSync)
     }
 
     // RSH3a2b
@@ -123,15 +123,12 @@ class PushActivationStateMachineTests: XCTestCase {
         expect(rest.device.id.count) == 36
     }
 
-    func test__015__Activation_state_machine__State_NotActivated__on_Event_CalledActivate__local_device__should_have_a_generated_secret() {
+    func test__015__Activation_state_machine__State_NotActivated__on_Event_CalledActivate__local_device__should_have_a_generated_secret() throws {
         beforeEach__Activation_state_machine__State_NotActivated()
 
-        guard let deviceSecret = rest.device.secret else {
-            fail("Device Secret should be available because it's loaded when the getter of the property is called"); return
-        }
-        guard let data = Data(base64Encoded: deviceSecret) else {
-            fail("Device Secret should be encoded with Base64"); return
-        }
+        let secret = try XCTUnwrap(rest.device.secret, "Device Secret should be available in storage")
+        let data = try XCTUnwrap(Data(base64Encoded: secret), "Device Secret should be encoded with Base64")
+        
         expect(data.count) == 32 // 32 bytes digest
     }
 
@@ -302,7 +299,7 @@ class PushActivationStateMachineTests: XCTestCase {
     }
 
     // RSH3b3b, RSH3b3c
-    func test__024__Activation_state_machine__State_WaitingForPushDeviceDetails__on_Event_GotPushDeviceDetails__should_fire_GotDeviceRegistration_event() {
+    func test__024__Activation_state_machine__State_WaitingForPushDeviceDetails__on_Event_GotPushDeviceDetails__should_fire_GotDeviceRegistration_event() throws {
         beforeEach__Activation_state_machine__State_WaitingForPushDeviceDetails()
 
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForPushDeviceDetails.self))
@@ -335,24 +332,13 @@ class PushActivationStateMachineTests: XCTestCase {
         expect(httpExecutor.requests.count) == 1
         let requests = httpExecutor.requests.compactMap { $0.url?.path }.filter { $0 == "/push/deviceRegistrations" }
         expect(requests).to(haveCount(1))
-        guard let request = httpExecutor.requests.first else {
-            fail("should have a \"/push/deviceRegistrations\" request"); return
-        }
-        guard let url = request.url else {
-            fail("should have a \"/push/deviceRegistrations\" URL"); return
-        }
-        guard let rawBody = request.httpBody else {
-            fail("should have a body"); return
-        }
-        let decodedBody: Any
-        do {
-            decodedBody = try stateMachine.rest.defaultEncoder.decode(rawBody)
-        } catch {
-            fail("Decode failed: \(error)"); return
-        }
-        guard let body = decodedBody as? NSDictionary else {
-            fail("body is invalid"); return
-        }
+        
+        let request = try XCTUnwrap(httpExecutor.requests.first, "Should have a \"/push/deviceRegistrations\" request")
+        let url = try XCTUnwrap(request.url, "Request should have a \"/push/deviceRegistrations\" URL")
+        let rawBody = try XCTUnwrap(request.httpBody, "Request should have a body")
+        let decodedBody = try XCTUnwrap(try stateMachine.rest.defaultEncoder.decode(rawBody), "Decode request body failed")
+        let body = try XCTUnwrap(decodedBody as? NSDictionary, "Request body is invalid")
+        
         expect(url.host).to(equal(rest.internal.options.restUrl().host))
         expect(request.httpMethod) == "POST"
         expect(body.value(forKey: "id") as? String).to(equal(rest.device.id))
@@ -362,7 +348,7 @@ class PushActivationStateMachineTests: XCTestCase {
     }
 
     // RSH3b3c
-    func test__025__Activation_state_machine__State_WaitingForPushDeviceDetails__on_Event_GotPushDeviceDetails__should_fire_GettingDeviceRegistrationFailed_event() {
+    func test__025__Activation_state_machine__State_WaitingForPushDeviceDetails__on_Event_GotPushDeviceDetails__should_fire_GettingDeviceRegistrationFailed_event() throws {
         beforeEach__Activation_state_machine__State_WaitingForPushDeviceDetails()
 
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForPushDeviceDetails.self))
@@ -393,24 +379,13 @@ class PushActivationStateMachineTests: XCTestCase {
         expect(httpExecutor.requests.count) == 1
         let requests = httpExecutor.requests.compactMap { $0.url?.path }.filter { $0 == "/push/deviceRegistrations" }
         expect(requests).to(haveCount(1))
-        guard let request = httpExecutor.requests.first else {
-            fail("should have a \"/push/deviceRegistrations\" request"); return
-        }
-        guard request.url != nil else {
-            fail("should have a \"/push/deviceRegistrations\" URL"); return
-        }
-        guard let rawBody = request.httpBody else {
-            fail("should have a body"); return
-        }
-        let decodedBody: Any
-        do {
-            decodedBody = try stateMachine.rest.defaultEncoder.decode(rawBody)
-        } catch {
-            fail("Decode failed: \(error)"); return
-        }
-        guard let body = decodedBody as? NSDictionary else {
-            fail("body is invalid"); return
-        }
+        
+        let request = try XCTUnwrap(httpExecutor.requests.first, "Should have a \"/push/deviceRegistrations\" request")
+        let _ = try XCTUnwrap(request.url, "Request should have a \"/push/deviceRegistrations\" URL")
+        let rawBody = try XCTUnwrap(request.httpBody, "Request should have a body")
+        let decodedBody = try XCTUnwrap(try stateMachine.rest.defaultEncoder.decode(rawBody), "Decode request body failed")
+        let body = try XCTUnwrap(decodedBody as? NSDictionary, "Request body is invalid")
+        
         expect(body.value(forKey: "id") as? String).to(equal(rest.device.id))
         expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(expectedPushRecipient))
         expect(body.value(forKey: "formFactor") as? String) == expectedFormFactor
@@ -585,28 +560,28 @@ class PushActivationStateMachineTests: XCTestCase {
 
     // RSH3d2
 
-    func reusableTestsWrapper__Activation_state_machine__State_WaitingForNewPushDeviceDetails__on_Event_CalledDeactivate__reusableTestsRsh3d2(testCase: TestCase_ReusableTestsRsh3d2) {
-        reusableTestsRsh3d2(testCase: testCase, beforeEach: beforeEach__Activation_state_machine__State_WaitingForNewPushDeviceDetails)
+    func reusableTestsWrapper__Activation_state_machine__State_WaitingForNewPushDeviceDetails__on_Event_CalledDeactivate__reusableTestsRsh3d2(testCase: TestCase_ReusableTestsRsh3d2) throws {
+        try reusableTestsRsh3d2(testCase: testCase, beforeEach: beforeEach__Activation_state_machine__State_WaitingForNewPushDeviceDetails)
     }
 
-    func test__031__Activation_state_machine__State_WaitingForNewPushDeviceDetails__on_Event_CalledDeactivate__should_use_custom_deregisterCallback_and_fire_Deregistered_event() {
-        reusableTestsWrapper__Activation_state_machine__State_WaitingForNewPushDeviceDetails__on_Event_CalledDeactivate__reusableTestsRsh3d2(testCase: .should_use_custom_deregisterCallback_and_fire_Deregistered_event)
+    func test__031__Activation_state_machine__State_WaitingForNewPushDeviceDetails__on_Event_CalledDeactivate__should_use_custom_deregisterCallback_and_fire_Deregistered_event() throws {
+        try reusableTestsWrapper__Activation_state_machine__State_WaitingForNewPushDeviceDetails__on_Event_CalledDeactivate__reusableTestsRsh3d2(testCase: .should_use_custom_deregisterCallback_and_fire_Deregistered_event)
     }
 
-    func test__032__Activation_state_machine__State_WaitingForNewPushDeviceDetails__on_Event_CalledDeactivate__should_use_custom_deregisterCallback_and_fire_DeregistrationFailed_event() {
-        reusableTestsWrapper__Activation_state_machine__State_WaitingForNewPushDeviceDetails__on_Event_CalledDeactivate__reusableTestsRsh3d2(testCase: .should_use_custom_deregisterCallback_and_fire_DeregistrationFailed_event)
+    func test__032__Activation_state_machine__State_WaitingForNewPushDeviceDetails__on_Event_CalledDeactivate__should_use_custom_deregisterCallback_and_fire_DeregistrationFailed_event() throws {
+        try reusableTestsWrapper__Activation_state_machine__State_WaitingForNewPushDeviceDetails__on_Event_CalledDeactivate__reusableTestsRsh3d2(testCase: .should_use_custom_deregisterCallback_and_fire_DeregistrationFailed_event)
     }
 
-    func test__033__Activation_state_machine__State_WaitingForNewPushDeviceDetails__on_Event_CalledDeactivate__should_fire_Deregistered_event_and_include_DeviceSecret_HTTP_header() {
-        reusableTestsWrapper__Activation_state_machine__State_WaitingForNewPushDeviceDetails__on_Event_CalledDeactivate__reusableTestsRsh3d2(testCase: .should_fire_Deregistered_event_and_include_DeviceSecret_HTTP_header)
+    func test__033__Activation_state_machine__State_WaitingForNewPushDeviceDetails__on_Event_CalledDeactivate__should_fire_Deregistered_event_and_include_DeviceSecret_HTTP_header() throws {
+        try reusableTestsWrapper__Activation_state_machine__State_WaitingForNewPushDeviceDetails__on_Event_CalledDeactivate__reusableTestsRsh3d2(testCase: .should_fire_Deregistered_event_and_include_DeviceSecret_HTTP_header)
     }
 
-    func test__034__Activation_state_machine__State_WaitingForNewPushDeviceDetails__on_Event_CalledDeactivate__should_fire_Deregistered_event_and_include_DeviceIdentityToken_HTTP_header() {
-        reusableTestsWrapper__Activation_state_machine__State_WaitingForNewPushDeviceDetails__on_Event_CalledDeactivate__reusableTestsRsh3d2(testCase: .should_fire_Deregistered_event_and_include_DeviceIdentityToken_HTTP_header)
+    func test__034__Activation_state_machine__State_WaitingForNewPushDeviceDetails__on_Event_CalledDeactivate__should_fire_Deregistered_event_and_include_DeviceIdentityToken_HTTP_header() throws {
+        try reusableTestsWrapper__Activation_state_machine__State_WaitingForNewPushDeviceDetails__on_Event_CalledDeactivate__reusableTestsRsh3d2(testCase: .should_fire_Deregistered_event_and_include_DeviceIdentityToken_HTTP_header)
     }
 
-    func test__035__Activation_state_machine__State_WaitingForNewPushDeviceDetails__on_Event_CalledDeactivate__should_fire_DeregistrationFailed_event() {
-        reusableTestsWrapper__Activation_state_machine__State_WaitingForNewPushDeviceDetails__on_Event_CalledDeactivate__reusableTestsRsh3d2(testCase: .should_fire_DeregistrationFailed_event)
+    func test__035__Activation_state_machine__State_WaitingForNewPushDeviceDetails__on_Event_CalledDeactivate__should_fire_DeregistrationFailed_event() throws {
+        try reusableTestsWrapper__Activation_state_machine__State_WaitingForNewPushDeviceDetails__on_Event_CalledDeactivate__reusableTestsRsh3d2(testCase: .should_fire_DeregistrationFailed_event)
     }
 
     enum TestCase_ReusableTestsTestStateWaitingForRegistrationSyncThrough {
@@ -773,64 +748,64 @@ class PushActivationStateMachineTests: XCTestCase {
 
     // RSH3f1
 
-    func reusableTestsWrapper__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledActivate__reusableTestsRsh3a2a(testCase: TestCase_ReusableTestsRsh3a2a) {
-        reusableTestsRsh3a2a(testCase: testCase, beforeEach: beforeEach__Activation_state_machine__State_AfterRegistrationSyncFailed)
+    func reusableTestsWrapper__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledActivate__reusableTestsRsh3a2a(testCase: TestCase_ReusableTestsRsh3a2a) throws {
+        try reusableTestsRsh3a2a(testCase: testCase, beforeEach: beforeEach__Activation_state_machine__State_AfterRegistrationSyncFailed)
     }
 
-    func test__042__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledActivate__the_local_device_has_id_and_deviceIdentityToken__emits_a_SyncRegistrationFailed_event_with_code_61002_if_client_IDs_don_t_match() {
-        reusableTestsWrapper__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledActivate__reusableTestsRsh3a2a(testCase: .the_local_device_has_id_and_deviceIdentityToken__emits_a_SyncRegistrationFailed_event_with_code_61002_if_client_IDs_don_t_match)
+    func test__042__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledActivate__the_local_device_has_id_and_deviceIdentityToken__emits_a_SyncRegistrationFailed_event_with_code_61002_if_client_IDs_don_t_match() throws {
+        try reusableTestsWrapper__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledActivate__reusableTestsRsh3a2a(testCase: .the_local_device_has_id_and_deviceIdentityToken__emits_a_SyncRegistrationFailed_event_with_code_61002_if_client_IDs_don_t_match)
     }
 
-    func test__043__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledActivate__the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__calls_registerCallback__transitions_to_WaitingForRegistrationSync() {
-        reusableTestsWrapper__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledActivate__reusableTestsRsh3a2a(testCase: .the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__calls_registerCallback__transitions_to_WaitingForRegistrationSync)
+    func test__043__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledActivate__the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__calls_registerCallback__transitions_to_WaitingForRegistrationSync() throws {
+        try reusableTestsWrapper__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledActivate__reusableTestsRsh3a2a(testCase: .the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__calls_registerCallback__transitions_to_WaitingForRegistrationSync)
     }
 
-    func test__044__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledActivate__the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__PUTs_device_registration__transitions_to_WaitingForRegistrationSync() {
-        reusableTestsWrapper__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledActivate__reusableTestsRsh3a2a(testCase: .the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__PUTs_device_registration__transitions_to_WaitingForRegistrationSync)
+    func test__044__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledActivate__the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__PUTs_device_registration__transitions_to_WaitingForRegistrationSync() throws {
+        try reusableTestsWrapper__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledActivate__reusableTestsRsh3a2a(testCase: .the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__PUTs_device_registration__transitions_to_WaitingForRegistrationSync)
     }
 
     // RSH3f1
 
-    func reusableTestsWrapper__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_GotPushDeviceDetails__reusableTestsRsh3a2a(testCase: TestCase_ReusableTestsRsh3a2a) {
-        reusableTestsRsh3a2a(testCase: testCase, beforeEach: beforeEach__Activation_state_machine__State_AfterRegistrationSyncFailed)
+    func reusableTestsWrapper__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_GotPushDeviceDetails__reusableTestsRsh3a2a(testCase: TestCase_ReusableTestsRsh3a2a) throws {
+        try reusableTestsRsh3a2a(testCase: testCase, beforeEach: beforeEach__Activation_state_machine__State_AfterRegistrationSyncFailed)
     }
 
-    func test__045__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_GotPushDeviceDetails__the_local_device_has_id_and_deviceIdentityToken__emits_a_SyncRegistrationFailed_event_with_code_61002_if_client_IDs_don_t_match() {
-        reusableTestsWrapper__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_GotPushDeviceDetails__reusableTestsRsh3a2a(testCase: .the_local_device_has_id_and_deviceIdentityToken__emits_a_SyncRegistrationFailed_event_with_code_61002_if_client_IDs_don_t_match)
+    func test__045__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_GotPushDeviceDetails__the_local_device_has_id_and_deviceIdentityToken__emits_a_SyncRegistrationFailed_event_with_code_61002_if_client_IDs_don_t_match() throws {
+        try reusableTestsWrapper__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_GotPushDeviceDetails__reusableTestsRsh3a2a(testCase: .the_local_device_has_id_and_deviceIdentityToken__emits_a_SyncRegistrationFailed_event_with_code_61002_if_client_IDs_don_t_match)
     }
 
-    func test__046__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_GotPushDeviceDetails__the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__calls_registerCallback__transitions_to_WaitingForRegistrationSync() {
-        reusableTestsWrapper__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_GotPushDeviceDetails__reusableTestsRsh3a2a(testCase: .the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__calls_registerCallback__transitions_to_WaitingForRegistrationSync)
+    func test__046__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_GotPushDeviceDetails__the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__calls_registerCallback__transitions_to_WaitingForRegistrationSync() throws {
+        try reusableTestsWrapper__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_GotPushDeviceDetails__reusableTestsRsh3a2a(testCase: .the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__calls_registerCallback__transitions_to_WaitingForRegistrationSync)
     }
 
-    func test__047__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_GotPushDeviceDetails__the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__PUTs_device_registration__transitions_to_WaitingForRegistrationSync() {
-        reusableTestsWrapper__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_GotPushDeviceDetails__reusableTestsRsh3a2a(testCase: .the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__PUTs_device_registration__transitions_to_WaitingForRegistrationSync)
+    func test__047__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_GotPushDeviceDetails__the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__PUTs_device_registration__transitions_to_WaitingForRegistrationSync() throws {
+        try reusableTestsWrapper__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_GotPushDeviceDetails__reusableTestsRsh3a2a(testCase: .the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__PUTs_device_registration__transitions_to_WaitingForRegistrationSync)
     }
 
     // RSH3f2
 
-    func reusableTestsWrapper__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledDeactivate__reusableTestsRsh3d2(testCase: TestCase_ReusableTestsRsh3d2) {
-        reusableTestsRsh3d2(testCase: testCase, beforeEach: beforeEach__Activation_state_machine__State_AfterRegistrationSyncFailed)
+    func reusableTestsWrapper__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledDeactivate__reusableTestsRsh3d2(testCase: TestCase_ReusableTestsRsh3d2) throws {
+        try reusableTestsRsh3d2(testCase: testCase, beforeEach: beforeEach__Activation_state_machine__State_AfterRegistrationSyncFailed)
     }
 
-    func test__048__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledDeactivate__should_use_custom_deregisterCallback_and_fire_Deregistered_event() {
-        reusableTestsWrapper__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledDeactivate__reusableTestsRsh3d2(testCase: .should_use_custom_deregisterCallback_and_fire_Deregistered_event)
+    func test__048__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledDeactivate__should_use_custom_deregisterCallback_and_fire_Deregistered_event() throws {
+        try reusableTestsWrapper__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledDeactivate__reusableTestsRsh3d2(testCase: .should_use_custom_deregisterCallback_and_fire_Deregistered_event)
     }
 
-    func test__049__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledDeactivate__should_use_custom_deregisterCallback_and_fire_DeregistrationFailed_event() {
-        reusableTestsWrapper__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledDeactivate__reusableTestsRsh3d2(testCase: .should_use_custom_deregisterCallback_and_fire_DeregistrationFailed_event)
+    func test__049__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledDeactivate__should_use_custom_deregisterCallback_and_fire_DeregistrationFailed_event() throws {
+        try reusableTestsWrapper__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledDeactivate__reusableTestsRsh3d2(testCase: .should_use_custom_deregisterCallback_and_fire_DeregistrationFailed_event)
     }
 
-    func test__050__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledDeactivate__should_fire_Deregistered_event_and_include_DeviceSecret_HTTP_header() {
-        reusableTestsWrapper__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledDeactivate__reusableTestsRsh3d2(testCase: .should_fire_Deregistered_event_and_include_DeviceSecret_HTTP_header)
+    func test__050__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledDeactivate__should_fire_Deregistered_event_and_include_DeviceSecret_HTTP_header() throws {
+        try reusableTestsWrapper__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledDeactivate__reusableTestsRsh3d2(testCase: .should_fire_Deregistered_event_and_include_DeviceSecret_HTTP_header)
     }
 
-    func test__051__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledDeactivate__should_fire_Deregistered_event_and_include_DeviceIdentityToken_HTTP_header() {
-        reusableTestsWrapper__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledDeactivate__reusableTestsRsh3d2(testCase: .should_fire_Deregistered_event_and_include_DeviceIdentityToken_HTTP_header)
+    func test__051__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledDeactivate__should_fire_Deregistered_event_and_include_DeviceIdentityToken_HTTP_header() throws {
+        try reusableTestsWrapper__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledDeactivate__reusableTestsRsh3d2(testCase: .should_fire_Deregistered_event_and_include_DeviceIdentityToken_HTTP_header)
     }
 
-    func test__052__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledDeactivate__should_fire_DeregistrationFailed_event() {
-        reusableTestsWrapper__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledDeactivate__reusableTestsRsh3d2(testCase: .should_fire_DeregistrationFailed_event)
+    func test__052__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledDeactivate__should_fire_DeregistrationFailed_event() throws {
+        try reusableTestsWrapper__Activation_state_machine__State_AfterRegistrationSyncFailed__on_Event_CalledDeactivate__reusableTestsRsh3d2(testCase: .should_fire_DeregistrationFailed_event)
     }
 
     // RSH3g
@@ -859,25 +834,18 @@ class PushActivationStateMachineTests: XCTestCase {
         }
         defer { hook.remove() }
 
-        var resetDeviceCalled = false
-        let hookDevice = stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("reset")) {
-            resetDeviceCalled = true
+        var setAndPersistIdentityTokenDetailsCalled = false
+        let hookDevice = stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
+            setAndPersistIdentityTokenDetailsCalled = true
         }
         defer { hookDevice.remove() }
 
         stateMachine.send(ARTPushActivationEventDeregistered())
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
         expect(deactivatedCallbackCalled).to(beTrue())
-        expect(resetDeviceCalled).to(beTrue())
-        
+        expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
         // RSH3g2a
-        expect(stateMachine.rest.device.id).to(equal(""))
-        expect(stateMachine.rest.device.secret).to(beNil())
-        expect(stateMachine.rest.device.clientId).to(beNil())
-        expect(stateMachine.rest.device.push.recipient).to(beEmpty())
         expect(stateMachine.rest.device.identityTokenDetails).to(beNil())
-        expect(stateMachine.rest.device.storage.object(forKey: ARTDeviceIdKey)).to(beNil())
-        expect(stateMachine.rest.device.storage.object(forKey: ARTDeviceIdentityTokenKey)).to(beNil())
     }
 
     // RSH3g3
@@ -902,7 +870,7 @@ class PushActivationStateMachineTests: XCTestCase {
     }
 
     // RSH4
-    func test__005__Activation_state_machine__should_queue_event_that_has_no_transition_defined_for_it() {
+    func test__005__Activation_state_machine__should_queue_event_that_has_no_transition_defined_for_it() throws {
         // Start with WaitingForDeregistration state
         let storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeregistration(machine: initialStateMachine))
         rest.internal.storage = storage
@@ -917,9 +885,7 @@ class PushActivationStateMachineTests: XCTestCase {
         expect(stateMachine.pendingEvents).toEventually(haveCount(1), timeout: testTimeout)
         stateMachine.transitions = nil
 
-        guard let pendingEvent = stateMachine.pendingEvents.firstObject else {
-            fail("Pending event is missing"); return
-        }
+        let pendingEvent = try XCTUnwrap(stateMachine.pendingEvents.firstObject, "Pending event is missing")
         expect(pendingEvent).to(beAKindOf(ARTPushActivationEventCalledActivate.self))
 
         waitUntil(timeout: testTimeout) { done in
@@ -969,7 +935,7 @@ class PushActivationStateMachineTests: XCTestCase {
         case the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__PUTs_device_registration__transitions_to_WaitingForRegistrationSync
     }
 
-    func reusableTestsRsh3a2a(testCase: TestCase_ReusableTestsRsh3a2a, beforeEach contextBeforeEach: (() -> Void)? = nil, afterEach contextAfterEach: (() -> Void)? = nil) {
+    func reusableTestsRsh3a2a(testCase: TestCase_ReusableTestsRsh3a2a, beforeEach contextBeforeEach: (() -> Void)? = nil, afterEach contextAfterEach: (() -> Void)? = nil) throws {
         let testDeviceId = "aaaa"
 
         // RSH3a2a1
@@ -1054,7 +1020,7 @@ class PushActivationStateMachineTests: XCTestCase {
         }
 
         // RSH3a2a3, RSH3a2a4, RSH3b3c
-        func test__the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__PUTs_device_registration__transitions_to_WaitingForRegistrationSync() {
+        func test__the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__PUTs_device_registration__transitions_to_WaitingForRegistrationSync() throws {
             beforeEach__the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID()
 
             let delegate = StateMachineDelegate()
@@ -1076,24 +1042,13 @@ class PushActivationStateMachineTests: XCTestCase {
 
             let requests = httpExecutor.requests.compactMap { $0.url?.path }.filter { $0 == "/push/deviceRegistrations/\(rest.device.id)" }
             expect(requests).to(haveCount(1))
-            guard let request = httpExecutor.requests.first else {
-                fail("should have a \"/push/deviceRegistrations/:deviceId\" request"); return
-            }
-            guard let url = request.url else {
-                fail("should have a URL"); return
-            }
-            guard let rawBody = request.httpBody else {
-                fail("should have a body"); return
-            }
-            let decodedBody: Any
-            do {
-                decodedBody = try stateMachine.rest.defaultEncoder.decode(rawBody)
-            } catch {
-                fail("Decode failed: \(error)"); return
-            }
-            guard let body = decodedBody as? NSDictionary else {
-                fail("body is invalid"); return
-            }
+            
+            let request = try XCTUnwrap(httpExecutor.requests.first, "Should have a \"/push/deviceRegistrations\" request")
+            let url = try XCTUnwrap(request.url, "Request should have a \"/push/deviceRegistrations\" URL")
+            let rawBody = try XCTUnwrap(request.httpBody, "Request should have a body")
+            let decodedBody = try XCTUnwrap(try stateMachine.rest.defaultEncoder.decode(rawBody), "Decode request body failed")
+            let body = try XCTUnwrap(decodedBody as? NSDictionary, "Request body is invalid")
+            
             expect(url.host).to(equal(rest.internal.options.restUrl().host))
             expect(request.httpMethod) == "PUT"
             expect(body.value(forKey: "id") as? String).to(equal(rest.device.id))
@@ -1110,7 +1065,7 @@ class PushActivationStateMachineTests: XCTestCase {
         case .the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__calls_registerCallback__transitions_to_WaitingForRegistrationSync:
             test__the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__calls_registerCallback__transitions_to_WaitingForRegistrationSync()
         case .the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__PUTs_device_registration__transitions_to_WaitingForRegistrationSync:
-            test__the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__PUTs_device_registration__transitions_to_WaitingForRegistrationSync()
+            try test__the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID__PUTs_device_registration__transitions_to_WaitingForRegistrationSync()
         }
     }
 
@@ -1122,7 +1077,7 @@ class PushActivationStateMachineTests: XCTestCase {
         case should_fire_DeregistrationFailed_event
     }
 
-    func reusableTestsRsh3d2(testCase: TestCase_ReusableTestsRsh3d2, beforeEach contextBeforeEach: (() -> Void)? = nil, afterEach contextAfterEach: (() -> Void)? = nil) {
+    func reusableTestsRsh3d2(testCase: TestCase_ReusableTestsRsh3d2, beforeEach contextBeforeEach: (() -> Void)? = nil, afterEach contextAfterEach: (() -> Void)? = nil) throws {
         // RSH3d2a, RSH3d2c, RSH3d2d
         func test__should_use_custom_deregisterCallback_and_fire_Deregistered_event() {
             contextBeforeEach?()
@@ -1194,15 +1149,12 @@ class PushActivationStateMachineTests: XCTestCase {
         }
 
         // RSH3d2b, RSH3d2c, RSH3d2d
-        func test__should_fire_Deregistered_event_and_include_DeviceSecret_HTTP_header() {
+        func test__should_fire_Deregistered_event_and_include_DeviceSecret_HTTP_header() throws {
             contextBeforeEach?()
 
             let delegate = StateMachineDelegate()
             stateMachine.delegate = delegate
-            
-            let deviceId = rest.device.id
-            let deviceSecret = rest.device.secret
-            
+
             waitUntil(timeout: testTimeout) { done in
                 let partialDone = AblyTests.splitDone(2, done: done)
                 stateMachine.transitions = { event, _, currentState in
@@ -1220,22 +1172,23 @@ class PushActivationStateMachineTests: XCTestCase {
 
             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
             expect(httpExecutor.requests.count) == 1
-            let requests = httpExecutor.requests.filter({ $0.url?.path == "/push/deviceRegistrations/\(deviceId)" })
+            let requests = httpExecutor.requests.compactMap { $0.url?.path }.filter { $0 == "/push/deviceRegistrations/\(rest.device.id)" }
             expect(requests).to(haveCount(1))
-            guard let request = requests.first, let url = request.url else {
-                fail("should have a '/push/deviceRegistrations/\(deviceId)' request"); return
-            }
+            
+            let request = try XCTUnwrap(httpExecutor.requests.first, "Should have a \"/push/deviceRegistrations\" request")
+            let url = try XCTUnwrap(request.url, "Request should have a \"/push/deviceRegistrations\" URL")
+
             expect(url.host).to(equal(rest.internal.options.restUrl().host))
             expect(request.httpMethod) == "DELETE"
             expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
             let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
-            expect(deviceAuthorization).to(equal(deviceSecret))
+            expect(deviceAuthorization).to(equal(rest.device.secret))
 
             contextAfterEach?()
         }
 
         // RSH3d2b, RSH3d2c, RSH3d2d
-        func test__should_fire_Deregistered_event_and_include_DeviceIdentityToken_HTTP_header() {
+        func test__should_fire_Deregistered_event_and_include_DeviceIdentityToken_HTTP_header() throws {
             contextBeforeEach?()
 
             let delegate = StateMachineDelegate()
@@ -1248,8 +1201,6 @@ class PushActivationStateMachineTests: XCTestCase {
                 capability: "",
                 clientId: ""
             )
-            
-            let deviceId = rest.device.id
 
             expect(rest.device.identityTokenDetails).to(beNil())
             rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
@@ -1273,11 +1224,12 @@ class PushActivationStateMachineTests: XCTestCase {
 
             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
             expect(httpExecutor.requests.count) == 1
-            let requests = httpExecutor.requests.filter({ $0.url?.path == "/push/deviceRegistrations/\(deviceId)" })
+            let requests = httpExecutor.requests.compactMap { $0.url?.path }.filter { $0 == "/push/deviceRegistrations/\(rest.device.id)" }
             expect(requests).to(haveCount(1))
-            guard let request = requests.first, let url = request.url else {
-                fail("should have a '/push/deviceRegistrations/\(deviceId)' request"); return
-            }
+            
+            let request = try XCTUnwrap(httpExecutor.requests.first, "Should have a \"/push/deviceRegistrations\" request")
+            let url = try XCTUnwrap(request.url, "Request should have a \"/push/deviceRegistrations\" URL")
+
             expect(url.host).to(equal(rest.internal.options.restUrl().host))
             expect(request.httpMethod) == "DELETE"
             expect(rest.device.identityTokenDetails).to(beNil())
@@ -1289,7 +1241,7 @@ class PushActivationStateMachineTests: XCTestCase {
         }
 
         // RSH3d2c
-        func test__should_fire_DeregistrationFailed_event() {
+        func test__should_fire_DeregistrationFailed_event() throws {
             contextBeforeEach?()
 
             let delegate = StateMachineDelegate()
@@ -1318,12 +1270,10 @@ class PushActivationStateMachineTests: XCTestCase {
             expect(httpExecutor.requests.count) == 1
             let requests = httpExecutor.requests.compactMap { $0.url?.path }.filter { $0 == "/push/deviceRegistrations/\(rest.device.id)" }
             expect(requests).to(haveCount(1))
-            guard let request = httpExecutor.requests.first else {
-                fail("should have a \"/push/deviceRegistrations\" request"); return
-            }
-            guard let url = request.url else {
-                fail("should have a \"/push/deviceRegistrations\" URL"); return
-            }
+            
+            let request = try XCTUnwrap(httpExecutor.requests.first, "Should have a \"/push/deviceRegistrations\" request")
+            let url = try XCTUnwrap(request.url, "Request should have a \"/push/deviceRegistrations\" URL")
+
             expect(url.host).to(equal(rest.internal.options.restUrl().host))
             expect(request.httpMethod) == "DELETE"
 
@@ -1336,11 +1286,11 @@ class PushActivationStateMachineTests: XCTestCase {
         case .should_use_custom_deregisterCallback_and_fire_DeregistrationFailed_event:
             test__should_use_custom_deregisterCallback_and_fire_DeregistrationFailed_event()
         case .should_fire_Deregistered_event_and_include_DeviceSecret_HTTP_header:
-            test__should_fire_Deregistered_event_and_include_DeviceSecret_HTTP_header()
+            try test__should_fire_Deregistered_event_and_include_DeviceSecret_HTTP_header()
         case .should_fire_Deregistered_event_and_include_DeviceIdentityToken_HTTP_header:
-            test__should_fire_Deregistered_event_and_include_DeviceIdentityToken_HTTP_header()
+            try test__should_fire_Deregistered_event_and_include_DeviceIdentityToken_HTTP_header()
         case .should_fire_DeregistrationFailed_event:
-            test__should_fire_DeregistrationFailed_event()
+            try test__should_fire_DeregistrationFailed_event()
         }
     }
 }

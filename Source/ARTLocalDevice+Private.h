@@ -22,8 +22,6 @@ extern NSString *const ARTAPNSDeviceTokenKey;
 + (NSString *)generateId;
 + (NSString *)generateSecret;
 
-- (void)reset;
-
 @end
 
 NS_ASSUME_NONNULL_END
