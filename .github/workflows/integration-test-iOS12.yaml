@@ -8,6 +8,6 @@ on:
 
 jobs:
   check:
-    uses: ./.github/workflows/integration-test.yaml
+    uses: ably/cocoa/.github/workflows/integration-test.yaml
     with:
       lane: test_iOS12
