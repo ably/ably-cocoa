@@ -56,6 +56,29 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
         if (!_pendingEvents) {
             _pendingEvents = [NSMutableArray array];
         }
+       
+        if (rest.device_nosync.idLoadingError || rest.device_nosync.secretLoadingError) {
+            // RSH8j
+            NSMutableArray<NSString *> *logMessageComponents = [[NSMutableArray alloc] init];
+            
+            if (rest.device_nosync.idLoadingError) {
+                [logMessageComponents addObject:[NSString stringWithFormat:@"error loading LocalDevice id (%@)", rest.device_nosync.idLoadingError.localizedDescription]];
+            }
+            
+            if (rest.device_nosync.secretLoadingError) {
+                [logMessageComponents addObject:[NSString stringWithFormat:@"error loading LocalDevice secret (%@)", rest.device_nosync.secretLoadingError.localizedDescription]];
+            }
+            
+            [rest.logger error:@"%@: Got %@. Transitioning to NotActivated state.", NSStringFromClass(self.class), [logMessageComponents componentsJoinedByString:@" and "]];
+            
+            // TODO what does it mean to "discard" the previous values? And then what,
+            // does activate get an error?
+            
+            // TODO how do we handle the fact that we’re probably here because persistence
+            // is having issues?
+            _current = [[ARTPushActivationStateNotActivated alloc] initWithMachine:self];
+            [self persistWithLoggingReason:@"failure loading LocalDevice data"];
+        }
 
         // Due to bug #966, old versions of the library might have led us to an illegal
         // persisted state: we have a deviceToken, but the persisted push state is WaitingForPushDeviceDetails.
