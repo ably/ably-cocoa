@@ -958,7 +958,7 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
 
     init(_ logger: ARTLog) {
         self._logger = logger
-        self.http = ARTHttp(AblyTests.queue, logger: logger)
+        self.http = MockHTTP(logger: logger)
     }
 
     init(http: ARTHttp, logger: ARTLog) {
