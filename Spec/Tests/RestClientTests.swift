@@ -441,7 +441,8 @@ class RestClientTests: XCTestCase {
         options.restHost = "rest.ably.test"
         expect(options.restHost).to(equal("rest.ably.test"))
         let client = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+        let http = ARTHttp(AblyTests.queue, logger: options.logHandler)
+        testHTTPExecutor = TestProxyHTTPExecutor(http: http, logger: options.logHandler)
         client.internal.httpExecutor = testHTTPExecutor
         waitUntil(timeout: testTimeout) { done in
             client.channels.get("test").publish(nil, data: "message") { error in
@@ -542,7 +543,8 @@ class RestClientTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         options.token = getTestToken(ttl: 0.5)
         let client = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+        let http = ARTHttp(AblyTests.queue, logger: options.logHandler)
+        testHTTPExecutor = TestProxyHTTPExecutor(http: http, logger: options.logHandler)
         client.internal.httpExecutor = testHTTPExecutor
         let auth = client.auth
 
@@ -571,7 +573,8 @@ class RestClientTests: XCTestCase {
         let options = AblyTests.clientOptions()
         options.token = getTestToken(capability: "{ \"main\":[\"subscribe\"] }")
         let client = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+        let http = ARTHttp(AblyTests.queue, logger: options.logHandler)
+        testHTTPExecutor = TestProxyHTTPExecutor(http: http, logger: options.logHandler)
         client.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -687,7 +690,8 @@ class RestClientTests: XCTestCase {
         }
 
         let rest = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+        let http = ARTHttp(AblyTests.queue, logger: options.logHandler)
+        testHTTPExecutor = TestProxyHTTPExecutor(http: http, logger: options.logHandler)
         rest.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -743,7 +747,8 @@ class RestClientTests: XCTestCase {
                 )
 
                 let rest = ARTRest(options: options)
-                testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+                let http = ARTHttp(AblyTests.queue, logger: options.logHandler)
+                testHTTPExecutor = TestProxyHTTPExecutor(http: http, logger: options.logHandler)
                 rest.internal.httpExecutor = testHTTPExecutor
 
                 // Delay for token expiration
@@ -1903,7 +1908,8 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        let proxyHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+        let http = ARTHttp(AblyTests.queue, logger: options.logHandler)
+        let proxyHTTPExecutor = TestProxyHTTPExecutor(http: http, logger: options.logHandler)
         rest.internal.httpExecutor = proxyHTTPExecutor
 
         var httpPaginatedResponse: ARTHTTPPaginatedResponse!
@@ -1952,7 +1958,8 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        let proxyHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+        let http = ARTHttp(AblyTests.queue, logger: options.logHandler)
+        let proxyHTTPExecutor = TestProxyHTTPExecutor(http: http, logger: options.logHandler)
         rest.internal.httpExecutor = proxyHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
