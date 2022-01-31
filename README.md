@@ -681,4 +681,4 @@ You can also view the [community reported Github issues](https://github.com/ably
 
 ## Contributing
 
-See [Contributing.md](./Contributing.md) for details.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for details.
