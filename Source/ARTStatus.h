@@ -167,6 +167,7 @@ typedef CF_ENUM(NSUInteger, ARTErrorCode) {
 typedef CF_ENUM(NSUInteger, ARTClientCodeError) {
     ARTClientCodeErrorInvalidType,
     ARTClientCodeErrorTransport,
+    ARTClientCodeErrorStorageIsNotDictionary,
 };
 
 NS_ASSUME_NONNULL_BEGIN
