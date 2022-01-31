@@ -34,7 +34,7 @@ class MockDeviceStorage: NSObject, ARTDeviceStorage {
         }
     }
 
-    func setObject(_ value: Any?, forKey key: String) {
+    func setObject(_ value: Any?, forKey key: String) throws {
         keysWritten.updateValue(value, forKey: key)
     }
 
@@ -51,7 +51,7 @@ class MockDeviceStorage: NSObject, ARTDeviceStorage {
         }
     }
 
-    func setSecret(_ value: String?, forDevice deviceId: ARTDeviceId) {
+    func setSecret(_ value: String?, forDevice deviceId: ARTDeviceId) throws {
         keysWritten.updateValue(value, forKey: ARTDeviceSecretKey)
     }
 

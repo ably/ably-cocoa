@@ -27,8 +27,9 @@
     return YES;
 }
 
-- (void)setObject:(nullable id)value forKey:(NSString *)key {
+- (BOOL)setObject:(nullable id)value forKey:(NSString *)key error:(NSError **)error {
     [NSUserDefaults.standardUserDefaults setObject:value forKey:key];
+    return YES;
 }
 
 - (BOOL)getSecret:(NSString * _Nullable * _Nullable)ptr forDevice:(ARTDeviceId *)deviceId error:(NSError **)error {
@@ -53,25 +54,39 @@
     return localError == nil;
 }
 
-- (void)setSecret:(NSString *)value forDevice:(ARTDeviceId *)deviceId {
-    NSError *error = nil;
+- (BOOL)setSecret:(NSString *)value forDevice:(ARTDeviceId *)deviceId error:(NSError **)error {
+    NSError *localError = nil;
     if (value == nil) {
-        [self keychainDeletePasswordForService:ARTDeviceSecretKey account:(NSString *)deviceId error:&error];
-
-        if ([error code] == errSecItemNotFound) {
-            [_logger warn:@"Device Secret can't be deleted because it doesn't exist"];
-        }
-        else if (error) {
-            [_logger error:@"Device Secret couldn't be updated (%@)", [error localizedDescription]];
+        if (![self keychainDeletePasswordForService:ARTDeviceSecretKey account:(NSString *)deviceId error:&localError]) {
+            if ([localError code] == errSecItemNotFound) {
+                [_logger warn:@"Device Secret can't be deleted because it doesn't exist"];
+            }
+            else if (localError) {
+                [_logger error:@"Device Secret couldn't be updated (%@)", [localError localizedDescription]];
+            }
+            
+            if (error) {
+                *error = localError;
+            }
+            
+            return NO;
         }
     }
     else {
-        [self keychainSetPassword:value forService:ARTDeviceSecretKey account:(NSString *)deviceId error:&error];
-
-        if (error) {
-            [_logger error:@"Device Secret couldn't be updated (%@)", [error localizedDescription]];
+        if (![self keychainSetPassword:value forService:ARTDeviceSecretKey account:(NSString *)deviceId error:&localError]) {
+            if (localError) {
+                [_logger error:@"Device Secret couldn't be updated (%@)", [localError localizedDescription]];
+            }
+            
+            if (error) {
+                *error = localError;
+            }
+            
+            return NO;
         }
     }
+    
+    return YES;
 }
 
 #pragma mark - Keychain

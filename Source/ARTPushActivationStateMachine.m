@@ -137,9 +137,9 @@ dispatch_async(_queue, ^{
 - (void)persist {
     // Archiving
     if ([_current isKindOfClass:[ARTPushActivationPersistentState class]]) {
-        [self.rest.storage setObject:[_current art_archive] forKey:ARTPushActivationCurrentStateKey];
+        [self.rest.storage setObject:[_current art_archive] forKey:ARTPushActivationCurrentStateKey error:NULL];
     }
-    [self.rest.storage setObject:[_pendingEvents art_archive] forKey:ARTPushActivationPendingEventsKey];
+    [self.rest.storage setObject:[_pendingEvents art_archive] forKey:ARTPushActivationPendingEventsKey error:NULL];
 }
 
 - (void)deviceRegistration:(ARTErrorInfo *)error {

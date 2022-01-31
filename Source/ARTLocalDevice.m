@@ -68,8 +68,8 @@ NSString *const ARTDevicePushTransportType = @"apns";
         deviceId = [self generateId];
         deviceSecret = [self generateSecret];
         
-        [storage setObject:deviceId forKey:ARTDeviceIdKey];
-        [storage setSecret:deviceSecret forDevice:deviceId];
+        [storage setObject:deviceId forKey:ARTDeviceIdKey error:NULL];
+        [storage setSecret:deviceSecret forDevice:deviceId error:NULL];
     }
     
     device.id = deviceId;
@@ -110,12 +110,12 @@ NSString *const ARTDevicePushTransportType = @"apns";
 }
 
 - (void)setAndPersistAPNSDeviceToken:(NSString *)token {
-    [self.storage setObject:token forKey:ARTAPNSDeviceTokenKey];
+    [self.storage setObject:token forKey:ARTAPNSDeviceTokenKey error:NULL];
     [self setAPNSDeviceToken:token];
 }
 
 - (void)setAndPersistIdentityTokenDetails:(ARTDeviceIdentityTokenDetails *)tokenDetails {
-    [self.storage setObject:[tokenDetails archive] forKey:ARTDeviceIdentityTokenKey];
+    [self.storage setObject:[tokenDetails archive] forKey:ARTDeviceIdentityTokenKey error:NULL];
     _identityTokenDetails = tokenDetails;
     if (self.clientId == nil) {
         self.clientId = tokenDetails.clientId;
