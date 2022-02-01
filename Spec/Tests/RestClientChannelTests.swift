@@ -1416,6 +1416,8 @@ class RestClientChannelTests: XCTestCase {
         let client = ARTRest(options: options)
         let channelOptions = ARTChannelOptions(cipher: ["key": ARTCrypto.generateRandomKey()] as ARTCipherParamsCompatible)
         let channel = client.channels.get("test", options: channelOptions)
+        let http = ARTHttp(AblyTests.queue, logger: options.logHandler)
+        testHTTPExecutor = TestProxyHTTPExecutor(http: http, logger: options.logHandler)
         client.internal.httpExecutor = testHTTPExecutor
 
         let expectedMessage = ["something": 1]

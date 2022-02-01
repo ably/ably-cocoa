@@ -1851,7 +1851,8 @@ class AuthTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         options.token = getTestToken(clientId: nil)
         let rest = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+        let http = ARTHttp(AblyTests.queue, logger: options.logHandler)
+        testHTTPExecutor = TestProxyHTTPExecutor(http: http, logger: options.logHandler)
         rest.internal.httpExecutor = testHTTPExecutor
         let channel = rest.channels.get("test")
 
@@ -1912,7 +1913,9 @@ class AuthTests: XCTestCase {
             }
         }
 
-        testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+        let http = ARTHttp(AblyTests.queue, logger: options.logHandler)
+        testHTTPExecutor = TestProxyHTTPExecutor(http: http, logger: options.logHandler)
+        
         rest.internal.httpExecutor = testHTTPExecutor
         let channel = rest.channels.get("test")
 
