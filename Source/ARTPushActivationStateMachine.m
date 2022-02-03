@@ -54,7 +54,7 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
         // persisted state: we have a deviceToken, but the persisted push state is WaitingForPushDeviceDetails.
         // So we need to re-emit the GotPushDeviceDetails event that led us there.
         if ([_current isKindOfClass:[ARTPushActivationStateWaitingForPushDeviceDetails class]] && rest.device_nosync.apnsDeviceToken != nil) {
-            [rest.logger debug:@"ARTPush: re-emitting stored device details for stuck state machine"];
+            [rest.logger debug:@"%@: re-emitting stored device details for stuck state machine", NSStringFromClass(self.class)];
             [self handleEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
         }
     }
