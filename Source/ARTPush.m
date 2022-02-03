@@ -180,7 +180,10 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
 
     [rest.logger info:@"ARTPush: device token: %@", deviceToken];
     NSString *currentDeviceToken = nil;
-    [rest.storage getObject:&currentDeviceToken forKey:ARTAPNSDeviceTokenKey error:NULL];
+    NSError *error = nil;
+    if (![rest.storage getObject:&currentDeviceToken forKey:ARTAPNSDeviceTokenKey error:&error]) {
+        [rest.logger error:@"ARTPush: failed to load APNS device token (%@)", error.localizedDescription];
+    }
     if ([currentDeviceToken isEqualToString:deviceToken]) {
         // Already stored.
         return;

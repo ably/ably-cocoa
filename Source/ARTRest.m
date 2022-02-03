@@ -740,7 +740,7 @@ static dispatch_once_t *device_once_token;
     device_once_token = &once;
     static id device;
     dispatch_once(&once, ^{
-        device = [ARTLocalDevice load:self.auth.clientId_nosync storage:self.storage];
+        device = [ARTLocalDevice load:self.auth.clientId_nosync storage:self.storage logger:self.logger];
     });
     return device;
 }

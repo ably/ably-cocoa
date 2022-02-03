@@ -35,7 +35,7 @@ NSString *const ARTDevicePushTransportType = @"apns";
     return self;
 }
 
-+ (ARTLocalDevice *)load:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage {
++ (ARTLocalDevice *)load:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage logger:(ARTLog *)logger {
     ARTLocalDevice *device = [[ARTLocalDevice alloc] initWithClientId:clientId storage:storage];
     device.platform = ARTDevicePlatform;
     #if TARGET_OS_IOS
@@ -53,10 +53,15 @@ NSString *const ARTDevicePushTransportType = @"apns";
     device.push.recipient[@"transportType"] = ARTDevicePushTransportType;
 
     NSString *deviceId = nil;
-    [storage getObject:&deviceId forKey:ARTDeviceIdKey error:NULL];
+    NSError *error = nil;
+    if (![storage getObject:&deviceId forKey:ARTDeviceIdKey error:&error]) {
+        [logger error:@"%@: failed to load device ID (%@)", NSStringFromClass(self.class), error.localizedDescription];
+    }
     NSString *deviceSecret = nil;
     if (deviceId != nil) {
-        [storage getSecret:&deviceSecret forDevice:deviceId error:NULL];
+        if (![storage getSecret:&deviceSecret forDevice:deviceId error:&error]) {
+            [logger error:@"%@: failed to load device secret (%@)", NSStringFromClass(self.class), error.localizedDescription];
+        }
     }
     
     if (deviceId == nil || deviceSecret == nil) { // generate both at the same time
@@ -71,12 +76,16 @@ NSString *const ARTDevicePushTransportType = @"apns";
     device.secret = deviceSecret;
 
     id identityTokenDetailsInfo = nil;
-    [storage getObject:&identityTokenDetailsInfo forKey:ARTDeviceIdentityTokenKey error:NULL];
+    if (![storage getObject:&identityTokenDetailsInfo forKey:ARTDeviceIdentityTokenKey error:&error]) {
+        [logger error:@"%@: failed to load device identity token (%@)", NSStringFromClass(self.class), error.localizedDescription];
+    }
     ARTDeviceIdentityTokenDetails *identityTokenDetails = [ARTDeviceIdentityTokenDetails unarchive:identityTokenDetailsInfo];
     device->_identityTokenDetails = identityTokenDetails;
 
     id deviceToken = nil;
-    [storage getObject:&deviceToken forKey:ARTAPNSDeviceTokenKey error:NULL];
+    if (![storage getObject:&deviceToken forKey:ARTAPNSDeviceTokenKey error:&error]) {
+        [logger error:@"%@: failed to load APNS device token (%@)", NSStringFromClass(self.class), error.localizedDescription];
+    }
     [device setAPNSDeviceToken:deviceToken];
 
     return device;

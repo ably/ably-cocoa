@@ -35,7 +35,10 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
         _userQueue = _rest.userQueue;
         // Unarchiving
         NSData *stateData = nil;
-        [rest.storage getObject:&stateData forKey:ARTPushActivationCurrentStateKey error:NULL];
+        NSError *error = nil;
+        if (![rest.storage getObject:&stateData forKey:ARTPushActivationCurrentStateKey error:&error]) {
+            [rest.logger error:@"%@: failed to load current state (%@)", NSStringFromClass(self.class), error.localizedDescription];
+        }
         _current = [ARTPushActivationState art_unarchiveFromData:stateData];
         if (!_current) {
             _current = [[ARTPushActivationStateNotActivated alloc] initWithMachine:self];
@@ -46,7 +49,9 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
             _current.machine = self;
         }
         NSData *pendingEventsData = nil;
-        [rest.storage getObject:&pendingEventsData forKey:ARTPushActivationPendingEventsKey error:NULL];
+        if (![rest.storage getObject:&pendingEventsData forKey:ARTPushActivationPendingEventsKey error:&error]) {
+            [rest.logger error:@"%@: failed to load pending events (%@)", NSStringFromClass(self.class), error.localizedDescription];
+        }
         _pendingEvents = [ARTPushActivationEvent art_unarchiveFromData:pendingEventsData];
         if (!_pendingEvents) {
             _pendingEvents = [NSMutableArray array];
