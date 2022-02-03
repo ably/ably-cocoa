@@ -27,16 +27,17 @@ NSString *const ARTDevicePushTransportType = @"apns";
 
 @implementation ARTLocalDevice
 
-- (instancetype)initWithClientId:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage {
+- (instancetype)initWithClientId:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage logger:(ARTLog *)logger {
     if (self = [super init]) {
         self.clientId = clientId;
         self.storage = storage;
+        self.logger = logger;
     }
     return self;
 }
 
 + (ARTLocalDevice *)load:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage logger:(ARTLog *)logger {
-    ARTLocalDevice *device = [[ARTLocalDevice alloc] initWithClientId:clientId storage:storage];
+    ARTLocalDevice *device = [[ARTLocalDevice alloc] initWithClientId:clientId storage:storage logger:logger];
     device.platform = ARTDevicePlatform;
     #if TARGET_OS_IOS
     switch ([[UIDevice currentDevice] userInterfaceIdiom]) {
@@ -68,8 +69,12 @@ NSString *const ARTDevicePushTransportType = @"apns";
         deviceId = [self generateId];
         deviceSecret = [self generateSecret];
         
-        [storage setObject:deviceId forKey:ARTDeviceIdKey error:NULL];
-        [storage setSecret:deviceSecret forDevice:deviceId error:NULL];
+        if (![storage setObject:deviceId forKey:ARTDeviceIdKey error:&error]) {
+            [logger error:@"%@: failed to store device ID (%@)", NSStringFromClass(self.class), error.localizedDescription];
+        }
+        if (![storage setSecret:deviceSecret forDevice:deviceId error:&error]) {
+            [logger error:@"%@: failed to store device secret (%@)", NSStringFromClass(self.class), error.localizedDescription];
+        }
     }
     
     device.id = deviceId;
@@ -110,12 +115,18 @@ NSString *const ARTDevicePushTransportType = @"apns";
 }
 
 - (void)setAndPersistAPNSDeviceToken:(NSString *)token {
-    [self.storage setObject:token forKey:ARTAPNSDeviceTokenKey error:NULL];
+    NSError *error = nil;
+    if (![self.storage setObject:token forKey:ARTAPNSDeviceTokenKey error:&error]) {
+       [self.logger error:@"%@: failed to store APNS device token (%@)", NSStringFromClass(self.class), error.localizedDescription];
+    }
     [self setAPNSDeviceToken:token];
 }
 
 - (void)setAndPersistIdentityTokenDetails:(ARTDeviceIdentityTokenDetails *)tokenDetails {
-    [self.storage setObject:[tokenDetails archive] forKey:ARTDeviceIdentityTokenKey error:NULL];
+    NSError *error = nil;
+    if (![self.storage setObject:[tokenDetails archive] forKey:ARTDeviceIdentityTokenKey error:&error]) {
+       [self.logger error:@"%@: failed to store device identity token (%@)", NSStringFromClass(self.class), error.localizedDescription];
+    }
     _identityTokenDetails = tokenDetails;
     if (self.clientId == nil) {
         self.clientId = tokenDetails.clientId;

@@ -135,11 +135,16 @@ dispatch_async(_queue, ^{
 }
 
 - (void)persist {
+    NSError *error = nil;
     // Archiving
     if ([_current isKindOfClass:[ARTPushActivationPersistentState class]]) {
-        [self.rest.storage setObject:[_current art_archive] forKey:ARTPushActivationCurrentStateKey error:NULL];
+        if (![self.rest.storage setObject:[_current art_archive] forKey:ARTPushActivationCurrentStateKey error:&error]) {
+            [_rest.logger error:@"%@: failed to store current state (%@)", NSStringFromClass(self.class), error.localizedDescription];
+        }
     }
-    [self.rest.storage setObject:[_pendingEvents art_archive] forKey:ARTPushActivationPendingEventsKey error:NULL];
+    if (![self.rest.storage setObject:[_pendingEvents art_archive] forKey:ARTPushActivationPendingEventsKey error:&error]) {
+        [_rest.logger error:@"%@: failed to store pending events (%@)", NSStringFromClass(self.class), error.localizedDescription];
+    }
 }
 
 - (void)deviceRegistration:(ARTErrorInfo *)error {
