@@ -1382,7 +1382,7 @@ class RealtimeClientTests: XCTestCase {
     // Issue https://github.com/ably/ably-cocoa/issues/640
     func test__009__RealtimeClient__should_dispatch_in_user_queue_when_removing_an_observer() {
         class Foo {
-            static let channelName = uniqueChannelName()
+            static let channelName = uniqueChannelName(testIdentifier: "test__009__RealtimeClient__should_dispatch_in_user_queue_when_removing_an_observer")
             init() {
                 AblyManager.sharedClient.channels.get(Self.channelName).subscribe { _ in
                     // keep reference
