@@ -6,7 +6,6 @@ import SwiftyJSON
 
 private var client: ARTRest!
 private var testHTTPExecutor: TestProxyHTTPExecutor!
-private let channelName = "test-message-size"
 
 private func assertMessagePayloadId(id: String?, expectedSerial: String) {
     guard let id = id else {
@@ -96,7 +95,6 @@ class RestClientChannelTests: XCTestCase {
     override class var defaultTestSuite: XCTestSuite {
         _ = client
         _ = testHTTPExecutor
-        _ = channelName
         _ = presenceFixtures
         _ = text
         _ = integer
@@ -540,7 +538,7 @@ class RestClientChannelTests: XCTestCase {
     func test__018__publish__If_the_total_size_of_message_s__exceeds_the_maxMessageSize__the_client_library_should_reject_the_publish_and_indicate_an_error() {
         let options = AblyTests.commonAppSetup()
         let client = ARTRest(options: options)
-        let channel = client.channels.get(channelName)
+        let channel = client.channels.get(uniqueChannelName())
         let messages = buildMessagesThatExceedMaxMessageSize()
 
         waitUntil(timeout: testTimeout) { done in
@@ -554,7 +552,7 @@ class RestClientChannelTests: XCTestCase {
     func test__019__publish__If_the_total_size_of_message_s__exceeds_the_maxMessageSize__also_when_using_publish_data_clientId_extras() {
         let options = AblyTests.commonAppSetup()
         let client = ARTRest(options: options)
-        let channel = client.channels.get(channelName)
+        let channel = client.channels.get(uniqueChannelName())
         let name = buildStringThatExceedMaxMessageSize()
 
         waitUntil(timeout: testTimeout) { done in
