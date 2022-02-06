@@ -38,7 +38,7 @@ private let dictionary = ["number": 3, "name": "John"] as [String: Any]
 private let array = ["John", "Mary"]
 private let binaryData = "123456".data(using: .utf8)!
 
-private func testSupportsAESEncryptionWithKeyLength(_ encryptionKeyLength: UInt) {
+private func testSupportsAESEncryptionWithKeyLength(_ encryptionKeyLength: UInt, channelName: String) {
     let options = AblyTests.commonAppSetup()
     let client = ARTRest(options: options)
     client.internal.httpExecutor = testHTTPExecutor
@@ -51,7 +51,7 @@ private func testSupportsAESEncryptionWithKeyLength(_ encryptionKeyLength: UInt)
     expect(params.mode).to(equal("CBC"))
 
     let channelOptions = ARTChannelOptions(cipher: params)
-    let channel = client.channels.get("test", options: channelOptions)
+    let channel = client.channels.get(channelName, options: channelOptions)
 
     waitUntil(timeout: testTimeout) { done in
         channel.publish("test", data: "message1") { error in
@@ -1392,11 +1392,11 @@ class RestClientChannelTests: XCTestCase {
     // RSL5b
 
     func test__043__message_payload_encryption__should_support_AES_encryption__128_CBC_mode() {
-        testSupportsAESEncryptionWithKeyLength(128)
+        testSupportsAESEncryptionWithKeyLength(128, channelName: uniqueChannelName())
     }
 
     func test__044__message_payload_encryption__should_support_AES_encryption__256_CBC_mode() {
-        testSupportsAESEncryptionWithKeyLength(256)
+        testSupportsAESEncryptionWithKeyLength(256, channelName: uniqueChannelName())
     }
 
     // RSL6
