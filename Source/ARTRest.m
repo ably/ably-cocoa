@@ -172,7 +172,6 @@
 
         _queue = options.internalDispatchQueue;
         _userQueue = options.dispatchQueue;
-        _storage = [ARTLocalDeviceStorage newWithLogger:_logger];
         _http = [[ARTHttp alloc] init:_queue logger:_logger];
         [_logger verbose:__FILE__ line:__LINE__ message:@"RS:%p %p alloc HTTP", self, _http];
         _httpExecutor = _http;
@@ -740,7 +739,8 @@ static dispatch_once_t *device_once_token;
     device_once_token = &once;
     static id device;
     dispatch_once(&once, ^{
-        device = [ARTLocalDevice load:self.auth.clientId_nosync storage:self.storage logger:self.logger];
+        const id<ARTDeviceStorage> storage = [ARTLocalDeviceStorage newWithLogger:self.logger];
+        device = [ARTLocalDevice load:self.auth.clientId_nosync storage:storage logger:self.logger];
     });
     return device;
 }
