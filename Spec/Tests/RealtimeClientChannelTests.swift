@@ -3659,6 +3659,11 @@ class RealtimeClientChannelTests: XCTestCase {
             attachedMessage.action = .attached
             attachedMessage.channel = channel.name
 
+            /* TODO: ->
+             this callback called twice leading to a fail with "waitUntil(..) expects its completion closure to be only called once"
+             however sometimes it called once thus succeeding this test!
+             https://github.com/ably/ably-cocoa/issues/1281
+             */
             hook = channel.internal.testSuite_injectIntoMethod(after: #selector(channel.internal.onChannelMessage(_:))) {
                 done()
             }
