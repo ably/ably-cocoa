@@ -131,19 +131,19 @@ dispatch_async(_queue, ^{
         _current = maybeNext;
     }
 
-    [self persist];
+    [self persistWithLoggingReason:@"handleEvent"];
 }
 
-- (void)persist {
+- (void)persistWithLoggingReason:(NSString *)loggingReason {
     NSError *error = nil;
     // Archiving
     if ([_current isKindOfClass:[ARTPushActivationPersistentState class]]) {
         if (![self.rest.storage setObject:[_current art_archive] forKey:ARTPushActivationCurrentStateKey error:&error]) {
-            [_rest.logger error:@"%@: failed to store current state (%@)", NSStringFromClass(self.class), error.localizedDescription];
+            [_rest.logger error:@"%@: failed to store current state (%@) (reason for persisting: %@)", NSStringFromClass(self.class), error.localizedDescription, loggingReason];
         }
     }
     if (![self.rest.storage setObject:[_pendingEvents art_archive] forKey:ARTPushActivationPendingEventsKey error:&error]) {
-        [_rest.logger error:@"%@: failed to store pending events (%@)", NSStringFromClass(self.class), error.localizedDescription];
+        [_rest.logger error:@"%@: failed to store pending events (%@) (reason for persisting: %@)", NSStringFromClass(self.class), error.localizedDescription, loggingReason];
     }
 }
 
