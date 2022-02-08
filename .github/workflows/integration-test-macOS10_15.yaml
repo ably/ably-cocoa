@@ -27,6 +27,7 @@ jobs:
 
       - name: Install Dependencies and Run Tests
         run: |
+          brew install xcbeautify
           make submodules
           bundle install
           make update_carthage_dependencies_macos
