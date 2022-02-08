@@ -28,6 +28,7 @@
 }
 
 - (ARTRealtimeChannel *)get:(NSString *)name options:(ARTRealtimeChannelOptions *)options {
+    [NSException raise:NSInternalInconsistencyException format:@"Deliberate Lawrence exception"];
     return [[ARTRealtimeChannel alloc] initWithInternal:[_internal get:(NSString *)name options:options] queuedDealloc:_dealloc];
 }
 
