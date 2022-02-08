@@ -61,7 +61,7 @@ jobs:
         run: |
           pod repo update
           pod install
-          bundle exec fastlane scan -s Tests
+          bundle exec fastlane scan -s Tests --output-directory "fastlane/test_output/examples/test_macOS"
       
       - name: Xcodebuild Logs Artifact
         if: always()
