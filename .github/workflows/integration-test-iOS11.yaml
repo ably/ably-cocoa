@@ -30,7 +30,7 @@ jobs:
           make submodules
           bundle install
           make update_carthage_dependencies
-          bundle exec fastlane test_iOS11
+          bundle exec fastlane --verbose test_iOS11
 
       - name: Check Static Analyzer Output
         id: analyzer-output
