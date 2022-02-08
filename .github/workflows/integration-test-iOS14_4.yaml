@@ -1,4 +1,4 @@
-name: "Integration Test: tvOS"
+name: "Integration Test: iOS 14.4"
 
 on:
   pull_request:
@@ -30,7 +30,8 @@ jobs:
           make submodules
           bundle install
           make update_carthage_dependencies
-          bundle exec fastlane test_tvOS12
+          mkdir -p fastlane/test_output/sdk/test_iOS14_4
+          bundle exec fastlane test_iOS14_4
 
       - name: Check Static Analyzer Output
         id: analyzer-output
@@ -46,7 +47,7 @@ jobs:
         if: ${{ failure() && steps.analyzer-output.outcome == 'failure' }}
         uses: actions/upload-artifact@v2
         with:
-          name: static-analyzer-reports-test_tvOS12
+          name: static-analyzer-reports-test_iOS14_4
           path: ./derived_data/**/report-*.html
 
       # This is the script specified as the pod’s prepare_command in its Podspec.
@@ -61,7 +62,8 @@ jobs:
         run: |
           pod repo update
           pod install
-          bundle exec fastlane scan -s Tests --output-directory "fastlane/test_output/examples/test_tvOS" 
+          mkdir -p fastlane/test_output/examples/test_iOS14_4
+          bundle exec fastlane scan -s Tests --output-directory "fastlane/test_output/examples/test_iOS14_4" 
       
       - name: Xcodebuild Logs Artifact
         if: always()
