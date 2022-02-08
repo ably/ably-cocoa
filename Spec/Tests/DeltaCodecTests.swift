@@ -69,7 +69,7 @@ class DeltaCodecTests: XCTestCase {
 
         let protocolMessages = transport.protocolMessagesReceived.filter { $0.action == .message }
         let messagesEncoding = (protocolMessages.reduce([]) { $0 + ($1.messages ?? []) }.compactMap { $0.encoding })
-        expect(messagesEncoding).to(allPass(equal("utf-8/vcdiff")))
+        expect(messagesEncoding).to(allPass(equal("utf-8/vcdiff-failme")))
     }
 
     // RTL20
