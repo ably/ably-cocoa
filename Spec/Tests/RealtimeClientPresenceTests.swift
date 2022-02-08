@@ -4,8 +4,6 @@ import Foundation
 import Nimble
 import XCTest
 
-private let channelName = NSUUID().uuidString
-
 // RTP16c
 private func testResultsInErrorWithConnectionState(_ connectionState: ARTRealtimeConnectionState, channelName: String, performMethod: @escaping (ARTRealtime) -> Void) {
     let client = ARTRealtime(options: AblyTests.commonAppSetup())
@@ -76,7 +74,6 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     // XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
     override class var defaultTestSuite: XCTestSuite {
-        _ = channelName
         _ = getParams
 
         return super.defaultTestSuite
@@ -92,7 +89,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         client.internal.setTransport(TestProxyTransport.self)
         client.connect()
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(channelName)
+        let channel = client.channels.get(uniqueChannelName())
         channel.attach()
 
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
@@ -117,6 +114,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
         }
 
+        let channelName = uniqueChannelName()
         disposable += [AblyTests.addMembersSequentiallyToChannel(channelName, members: 250, options: options)]
 
         options.autoConnect = false
