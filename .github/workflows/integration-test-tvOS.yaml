@@ -69,6 +69,13 @@ jobs:
         with:
           name: xcodebuild-logs
           path: ~/Library/Developer/Xcode/DerivedData/*/Logs
+
+      - name: Fastlane Output Artifact
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: fastlane-output
+          path: fastlane/test_output
       
       - name: Swift Package Manager - Installation Test
         working-directory: ./
