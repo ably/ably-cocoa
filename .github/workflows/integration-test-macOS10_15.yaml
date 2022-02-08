@@ -1,4 +1,4 @@
-name: "Integration Test: macOS"
+name: "Integration Test: macOS 10.15"
 
 on:
   pull_request:
