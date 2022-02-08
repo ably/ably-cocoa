@@ -188,6 +188,10 @@ class RealtimeClientPresenceTests: XCTestCase {
             fail("TestProxyTransport is not set"); return
         }
 
+        /*
+         FIXME: investigate why transport.protocolMessagesSent.count = 0
+         Issue: https://github.com/ably/ably-cocoa/issues/1286
+         */
         let syncSentProtocolMessages = transport.protocolMessagesSent.filter { $0.action == .sync }
         guard let syncSentMessage = syncSentProtocolMessages.last, syncSentProtocolMessages.count == 1 else {
             fail("Should send one SYNC protocol message"); return
