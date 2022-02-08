@@ -25,6 +25,9 @@ jobs:
       - name: Reset Simulators
         run: xcrun simctl erase all
 
+      - name: List Simulators
+        run: xcrun simctl list devices
+
       - name: Install Dependencies and Run Tests
         run: |
           make submodules
