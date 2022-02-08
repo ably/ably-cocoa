@@ -5,6 +5,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+// TODO document here there's no synchronisation between instances - particularly with the storage
+
 @interface ARTLocalDevice : ARTDeviceDetails
 
 @property (nullable, nonatomic, readonly) ARTDeviceIdentityTokenDetails *identityTokenDetails;

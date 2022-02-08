@@ -11,9 +11,11 @@
 NS_ASSUME_NONNULL_BEGIN
 
 // TODO we need to make sure access to this is synchronised - across instances and across threads on single instance
+
+// TODO header visibility
 @interface ARTPropertyListFileStorage : NSObject
 
-+ (NSURL *)defaultPropertyListFileURL;
+@property (class, readonly) NSURL *defaultPropertyListFileURL;
 
 - (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithPropertyListFileURL:(NSURL *)propertyListFileURL;

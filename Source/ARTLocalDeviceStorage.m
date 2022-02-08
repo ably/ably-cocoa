@@ -1,14 +1,20 @@
 #import "ARTLocalDeviceStorage.h"
 #import "ARTLog.h"
 #import "ARTLocalDevice+Private.h"
+#import "ARTPropertyListFileStorage.h"
 
 @implementation ARTLocalDeviceStorage {
     ARTLog *_logger;
+    ARTPropertyListFileStorage *_fileStorage;
+    // TODO should we be aiming to use the existing synchronisation that's there?
+    dispatch_queue_t _fileStorageAccessQueue;
 }
 
 - (instancetype)initWithLogger:(ARTLog *)logger {
     if (self = [super init]) {
         _logger = logger;
+        _fileStorage = [[ARTPropertyListFileStorage alloc] initWithPropertyListFileURL:ARTPropertyListFileStorage.defaultPropertyListFileURL];
+        _fileStorageAccessQueue = dispatch_queue_create("io.ably.filestorage", DISPATCH_QUEUE_SERIAL);
     }
     return self;
 }
@@ -18,18 +24,36 @@
 }
 
 - (BOOL)getObject:(_Nullable id * _Nullable)ptr forKey:(NSString *)key error:(NSError **)error {
-    id result = [NSUserDefaults.standardUserDefaults objectForKey:key];
+    __block BOOL result;
+    __block id object;
+    __block id localError;
+    dispatch_sync(_fileStorageAccessQueue, ^{
+        result = [_fileStorage getObject:&object forKey:key error:&localError];
+    });
     
     if (ptr) {
-        *ptr = result;
+        *ptr = object;
     }
     
-    return YES;
+    if (error) {
+        *error = localError;
+    }
+    
+    return result;
 }
 
 - (BOOL)setObject:(nullable id)value forKey:(NSString *)key error:(NSError **)error {
-    [NSUserDefaults.standardUserDefaults setObject:value forKey:key];
-    return YES;
+    __block BOOL result;
+    __block id localError;
+    dispatch_sync(_fileStorageAccessQueue, ^{
+        result = [_fileStorage setObject:value forKey:key error:&localError];
+    });
+    
+    if (error) {
+        *error = localError;
+    }
+    
+    return result;
 }
 
 - (BOOL)getSecret:(NSString * _Nullable * _Nullable)ptr forDevice:(ARTDeviceId *)deviceId error:(NSError **)error {
