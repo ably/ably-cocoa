@@ -3,3 +3,5 @@ clean true
 skip_slack true
 output_style "raw"
 result_bundle true
+output_types "junit"
+xcodebuild_formatter ""
