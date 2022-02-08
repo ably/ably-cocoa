@@ -23,28 +23,6 @@ platform :ios do
     )
   end
 
-  lane :test_iOS10 do
-    run_tests(
-      scheme: "Ably-iOS-Tests",
-      derived_data_path: "derived_data",
-      devices: ["iPhone 7 (10.3.1)"],
-      test_without_building: false,
-      xcargs: { ABLY_ENV: ENV['ABLY_ENV'], CLANG_ANALYZER_OUTPUT: 'plist-html' },
-      output_directory: "fastlane/test_output/sdk/test_iOS10" 
-    )
-  end
-
-  lane :test_iOS9 do
-    run_tests(
-      scheme: "Ably-iOS-Tests",
-      derived_data_path: "derived_data",
-      devices: ["iPhone 6 (9.3)"],
-      test_without_building: false,
-      xcargs: { ABLY_ENV: ENV['ABLY_ENV'], CLANG_ANALYZER_OUTPUT: 'plist-html' },
-      output_directory: "fastlane/test_output/sdk/test_iOS9" 
-    )
-  end
-
   lane :test_tvOS12 do
     run_tests(
       scheme: "Ably-tvOS-Tests",
