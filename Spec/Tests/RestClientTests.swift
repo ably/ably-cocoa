@@ -167,7 +167,7 @@ class RestClientTests: XCTestCase {
         let client = ARTRest(key: options.key!)
         client.internal.prioritizedHost = options.restHost
 
-        let publishTask = publishTestMessage(client)
+        let publishTask = publishTestMessage(client, channelName: uniqueChannelName())
 
         expect(publishTask.error).toEventually(beNil(), timeout: testTimeout)
     }
@@ -179,7 +179,7 @@ class RestClientTests: XCTestCase {
     func test__017__RestClient__initializer__should_result_in_error_status_when_provided_a_bad_key() {
         let client = ARTRest(key: "fake:key")
 
-        let publishTask = publishTestMessage(client, failOnError: false)
+        let publishTask = publishTestMessage(client, channelName: uniqueChannelName(), failOnError: false)
 
         expect(publishTask.error?.code).toEventually(equal(ARTErrorCode.invalidCredential.intValue), timeout: testTimeout)
     }
@@ -189,7 +189,7 @@ class RestClientTests: XCTestCase {
         defer { ARTClientOptions.setDefaultEnvironment(nil) }
 
         let client = ARTRest(token: getTestToken())
-        let publishTask = publishTestMessage(client)
+        let publishTask = publishTestMessage(client, channelName: uniqueChannelName())
         expect(publishTask.error).toEventually(beNil(), timeout: testTimeout)
     }
 
@@ -197,7 +197,7 @@ class RestClientTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         let client = ARTRest(options: options)
 
-        let publishTask = publishTestMessage(client)
+        let publishTask = publishTestMessage(client, channelName: uniqueChannelName())
 
         expect(publishTask.error).toEventually(beNil(), timeout: testTimeout)
     }
@@ -206,7 +206,7 @@ class RestClientTests: XCTestCase {
         let options = AblyTests.clientOptions(requestToken: true)
         let client = ARTRest(options: options)
 
-        let publishTask = publishTestMessage(client)
+        let publishTask = publishTestMessage(client, channelName: uniqueChannelName())
 
         expect(publishTask.error).toEventually(beNil(), timeout: testTimeout)
     }
@@ -216,7 +216,7 @@ class RestClientTests: XCTestCase {
         options.token = "invalid_token"
         let client = ARTRest(options: options)
 
-        let publishTask = publishTestMessage(client, failOnError: false)
+        let publishTask = publishTestMessage(client, channelName: uniqueChannelName(), failOnError: false)
 
         expect(publishTask.error?.code).toEventually(equal(ARTErrorCode.invalidCredential.intValue), timeout: testTimeout)
     }
@@ -292,7 +292,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
         client.internal.httpExecutor = testHTTPExecutor
 
-        publishTestMessage(client, failOnError: false)
+        publishTestMessage(client, channelName: uniqueChannelName(), failOnError: false)
 
         expect(testHTTPExecutor.requests.first?.url?.host).toEventually(equal("fake.ably.io"), timeout: testTimeout)
     }
@@ -305,7 +305,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
         client.internal.httpExecutor = testHTTPExecutor
 
-        publishTestMessage(client, failOnError: false)
+        publishTestMessage(client, channelName: uniqueChannelName(), failOnError: false)
 
         expect(testHTTPExecutor.requests.first?.url?.host).toEventually(equal("fake.ably.io"), timeout: testTimeout)
     }
@@ -318,7 +318,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
         client.internal.httpExecutor = testHTTPExecutor
 
-        publishTestMessage(client, failOnError: false)
+        publishTestMessage(client, channelName: uniqueChannelName(), failOnError: false)
 
         expect(testHTTPExecutor.requests.first?.url?.host).toEventually(equal("myEnvironment-rest.ably.io"), timeout: testTimeout)
     }
@@ -329,7 +329,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
         client.internal.httpExecutor = testHTTPExecutor
 
-        publishTestMessage(client, failOnError: false)
+        publishTestMessage(client, channelName: uniqueChannelName(), failOnError: false)
 
         expect(testHTTPExecutor.requests.first?.url?.absoluteString).toEventually(beginWith("https://rest.ably.io"), timeout: testTimeout)
     }
@@ -341,7 +341,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
         client.internal.httpExecutor = testHTTPExecutor
 
-        publishTestMessage(client, failOnError: false)
+        publishTestMessage(client, channelName: uniqueChannelName(), failOnError: false)
 
         expect(testHTTPExecutor.requests.first?.url?.scheme).toEventually(equal("http"), timeout: testTimeout)
     }
@@ -478,8 +478,10 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
         clientHttps.internal.httpExecutor = testHTTPExecutor
 
+        let channelName = uniqueChannelName()
+        
         waitUntil(timeout: testTimeout) { done in
-            publishTestMessage(clientHttps) { _ in
+            publishTestMessage(clientHttps, channelName: channelName) { _ in
                 done()
             }
         }
@@ -496,7 +498,7 @@ class RestClientTests: XCTestCase {
         clientHttp.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
-            publishTestMessage(clientHttp) { _ in
+            publishTestMessage(clientHttp, channelName: channelName) { _ in
                 done()
             }
         }
@@ -694,7 +696,7 @@ class RestClientTests: XCTestCase {
             // Delay for token expiration
             delay(TimeInterval(truncating: tokenParams.ttl!)) {
                 // [40140, 40150) - token expired and will not recover because authUrl is invalid
-                publishTestMessage(rest) { error in
+                publishTestMessage(rest, channelName: uniqueChannelName()) { error in
                     guard let errorCode = testHTTPExecutor.responses.first?.value(forHTTPHeaderField: "X-Ably-Errorcode") else {
                         fail("expected X-Ably-Errorcode header in request")
                         return
@@ -749,7 +751,7 @@ class RestClientTests: XCTestCase {
                 // Delay for token expiration
                 delay(TimeInterval(truncating: tokenParams.ttl!)) {
                     // [40140, 40150) - token expired and will not recover because authUrl is invalid
-                    publishTestMessage(rest) { error in
+                    publishTestMessage(rest, channelName: uniqueChannelName()) { error in
                         guard let errorCode = testHTTPExecutor.responses.first?.value(forHTTPHeaderField: "X-Ably-Errorcode") else {
                             fail("expected X-Ably-Errorcode header in request")
                             return

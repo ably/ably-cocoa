@@ -2546,7 +2546,7 @@ class AuthTests: XCTestCase {
                 expect(tokenDetails.token).toNot(equal(testToken))
                 expect(rest.auth.internal.method).to(equal(ARTAuthMethod.token))
 
-                publishTestMessage(rest, completion: { error in
+                publishTestMessage(rest, channelName: uniqueChannelName(), completion: { error in
                     expect(error).to(beNil())
                     expect(rest.auth.internal.method).to(equal(ARTAuthMethod.token))
                     expect(rest.auth.tokenDetails?.token).to(equal(tokenDetails.token))
@@ -2570,7 +2570,7 @@ class AuthTests: XCTestCase {
                 expect(tokenDetails.token).toNot(beNil())
                 expect(rest.auth.internal.method).to(equal(ARTAuthMethod.token))
 
-                publishTestMessage(rest, completion: { error in
+                publishTestMessage(rest, channelName: uniqueChannelName(), completion: { error in
                     expect(error).to(beNil())
                     expect(rest.auth.internal.method).to(equal(ARTAuthMethod.token))
                     expect(rest.auth.tokenDetails?.token).to(equal(tokenDetails.token))
