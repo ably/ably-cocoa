@@ -801,7 +801,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
-            publishFirstTestMessage(client, completion: { error in
+            publishFirstTestMessage(client, channelName: uniqueChannelName(), completion: { error in
                 expect(error).to(beNil())
                 done()
             })
@@ -862,7 +862,9 @@ class RealtimeClientConnectionTests: XCTestCase {
 
     func test__030__Connection__ACK_and_NACK__should_expect_either_an_ACK_or_NACK_to_confirm__message_failure() {
         let options = AblyTests.commonAppSetup()
-        options.token = getTestToken(key: options.key, capability: "{ \"\(options.channelNamePrefix!)-test\":[\"subscribe\"] }")
+        
+        let channelName = uniqueChannelName()
+        options.token = getTestToken(key: options.key, capability: "{ \"\(options.channelNamePrefix!)-\(channelName)\":[\"subscribe\"] }")
         options.autoConnect = false
         let client = ARTRealtime(options: options)
         client.internal.setTransport(TestProxyTransport.self)
@@ -870,7 +872,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
-            publishFirstTestMessage(client, completion: { error in
+            publishFirstTestMessage(client, channelName: channelName, completion: { error in
                 expect(error).toNot(beNil())
                 done()
             })
