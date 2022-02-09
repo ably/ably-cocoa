@@ -1,3 +1,5 @@
+name: Check Pod
+
 on:
   pull_request:
   push:
