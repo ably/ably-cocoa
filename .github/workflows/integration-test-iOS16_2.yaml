@@ -42,73 +42,12 @@ jobs:
           path: xcparse/.build/debug/xcparse
           key: ${{ runner.os }}-xcparse-${{ steps.get-xcparse-commit-sha.outputs.sha }}
 
-      - name: Reset Simulators
-        run: xcrun simctl erase all
-
-      - name: Install Dependencies and Run Tests
+      - name: Install Dependencies and Run Tests Continuously
+        env:
+          TEST_OBSERVABILITY_SERVER_AUTH_KEY: ${{ secrets.TEST_OBSERVABILITY_SERVER_AUTH_KEY }}
         run: |
           brew install xcbeautify
           make submodules
           bundle install
           make update_carthage_dependencies_ios
-          bundle exec fastlane test_iOS16_2
-
-      - name: Check Static Analyzer Output
-        id: analyzer-output
-        run: |
-          if [[ -z $(find ./derived_data -name "report-*.html") ]]; then
-            echo "Static Analyzer found no issues."
-          else
-            echo "Static Analyzer found some issues. HTML report will be available in Artifacts section. Failing build."
-            exit 1
-          fi
-      
-      - name: Static Analyzer Reports Uploading
-        if: ${{ failure() && steps.analyzer-output.outcome == 'failure' }}
-        uses: actions/upload-artifact@v2
-        with:
-          name: static-analyzer-reports-test_iOS16_2
-          path: ./derived_data/**/report-*.html
-
-      - name: Run Examples Tests
-        working-directory: ./Examples/Tests
-        run: |
-          pod repo update
-          pod install
-          bundle exec fastlane scan -s Tests --output-directory "fastlane/test_output/examples/test_iOS16_2"
-
-      - name: Build APNS Example Project
-        working-directory: ./Examples/AblyPush
-        run: |
-          xcodebuild build -scheme "AblyPushExample" -destination "platform=iOS Simulator,name=iPhone 14" -configuration "Debug"
-      
-      - name: Xcodebuild Logs Artifact
-        if: always()
-        uses: actions/upload-artifact@v2
-        with:
-          name: xcodebuild-logs
-          path: ~/Library/Developer/Xcode/DerivedData/*/Logs
-
-      - name: Upload test output artifact
-        if: always()
-        uses: actions/upload-artifact@v2
-        with:
-          name: test-output
-          path: fastlane/test_output
-
-      - name: Upload test results to observability server
-        if: always()
-        env:
-          TEST_OBSERVABILITY_SERVER_AUTH_KEY: ${{ secrets.TEST_OBSERVABILITY_SERVER_AUTH_KEY }}
-        run: Scripts/upload_test_results.sh
-      
-      - name: Swift Package Manager - Installation Test
-        working-directory: ./
-        run:  |
-          echo 'Current Branch: ' $GITHUB_HEAD_REF
-          echo 'Current Revision (SHA):' $GITHUB_SHA
-          echo Current Path: $(pwd)
-          export PACKAGE_URL=file://$(pwd)
-          export PACKAGE_BRANCH_NAME=$GITHUB_HEAD_REF
-          export PACKAGE_REVISION=$GITHUB_SHA
-          swift test --package-path Examples/SPM -v
+          Scripts/continuously-run-tests-and-upload-results.sh --lane test_iOS16_2
