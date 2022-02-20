@@ -37,6 +37,7 @@ NSString *ARTDefaultEnvironment = nil;
     _channelRetryTimeout = 15.0; //Seconds
     _httpOpenTimeout = 4.0; //Seconds
     _httpRequestTimeout = 10.0; //Seconds
+    _fallbackRetryTimeout = 600.0; // Seconds, TO3l10
     _httpMaxRetryDuration = 15.0; //Seconds
     _httpMaxRetryCount = 3;
     _fallbackHosts = nil;
@@ -120,7 +121,7 @@ NSString *ARTDefaultEnvironment = nil;
     options.httpMaxRetryCount = self.httpMaxRetryCount;
     options.httpMaxRetryDuration = self.httpMaxRetryDuration;
     options.httpOpenTimeout = self.httpOpenTimeout;
-    options.httpRequestTimeout = self.httpRequestTimeout;
+    options.fallbackRetryTimeout = self.fallbackRetryTimeout;
     options->_fallbackHosts = self.fallbackHosts; //ignore setter
     
 #pragma clang diagnostic push
