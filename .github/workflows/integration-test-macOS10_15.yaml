@@ -1,4 +1,4 @@
-name: "Integration Test: iOS 11"
+name: "Integration Test: macOS 10.15"
 
 on:
   pull_request:
@@ -29,8 +29,8 @@ jobs:
         run: |
           make submodules
           bundle install
-          make update_carthage_dependencies_ios
-          bundle exec fastlane test_iOS11
+          make update_carthage_dependencies_macos
+          bundle exec fastlane test_macOS
 
       - name: Check Static Analyzer Output
         id: analyzer-output
@@ -46,7 +46,7 @@ jobs:
         if: ${{ failure() && steps.analyzer-output.outcome == 'failure' }}
         uses: actions/upload-artifact@v2
         with:
-          name: static-analyzer-reports-test_iOS11
+          name: static-analyzer-reports-test_macOS
           path: ./derived_data/**/report-*.html
 
       # This is the script specified as the pod’s prepare_command in its Podspec.

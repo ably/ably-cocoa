@@ -1,10 +1,9 @@
 # [Ably](https://www.ably.io) iOS, tvOS and macOS Objective-C and Swift client library SDK
 
 [![Check Pod](https://github.com/ably/ably-cocoa/actions/workflows/check-pod.yaml/badge.svg)](https://github.com/ably/ably-cocoa/actions/workflows/check-pod.yaml)
-[![Integration Test: iOS 11](https://github.com/ably/ably-cocoa/actions/workflows/integration-test-iOS11.yaml/badge.svg)](https://github.com/ably/ably-cocoa/actions/workflows/integration-test-iOS11.yaml)
-[![Integration Test: iOS 12](https://github.com/ably/ably-cocoa/actions/workflows/integration-test-iOS12.yaml/badge.svg)](https://github.com/ably/ably-cocoa/actions/workflows/integration-test-iOS12.yaml)
-[![Integration Test: macOS](https://github.com/ably/ably-cocoa/actions/workflows/integration-test-macOS.yaml/badge.svg)](https://github.com/ably/ably-cocoa/actions/workflows/integration-test-macOS.yaml)
-[![Integration Test: tvOS](https://github.com/ably/ably-cocoa/actions/workflows/integration-test-tvOS.yaml/badge.svg)](https://github.com/ably/ably-cocoa/actions/workflows/integration-test-tvOS.yaml)
+[![Integration Test: iOS 14.4](https://github.com/ably/ably-cocoa/actions/workflows/integration-test-iOS14_4.yaml/badge.svg)](https://github.com/ably/ably-cocoa/actions/workflows/integration-test-iOS14_4.yaml)
+[![Integration Test: macOS 10.15](https://github.com/ably/ably-cocoa/actions/workflows/integration-test-macOS10_15.yaml/badge.svg)](https://github.com/ably/ably-cocoa/actions/workflows/integration-test-macOS10_15.yaml)
+[![Integration Test: tvOS 14.3](https://github.com/ably/ably-cocoa/actions/workflows/integration-test-tvOS14_3.yaml/badge.svg)](https://github.com/ably/ably-cocoa/actions/workflows/integration-test-tvOS14_3.yaml)
 
 [![CocoaPods](https://img.shields.io/cocoapods/v/Ably.svg)](https://cocoapods.org/pods/Ably)
 [![SPM Swift Compatibility](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fably%2Fably-cocoa%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/ably/ably-cocoa)
@@ -22,11 +21,19 @@ This SDK is compatible with projects that target:
 - tvOS 10.0+
 - macOS 10.12+
 
-We maintain compatibility and explicitly support these platform versions, including performing CI testing on all library revisions.
+We maintain compatibility and explicitly support these platform versions.
 
-We do not explicitly maintain compatibility with older platform versions; we no longer perform CI testing on iOS 8 as of version 1.0.12 (released on January 31st 2018). Any known incompatibilities with older versions can be found [here](https://github.com/ably/ably-cocoa/issues?q=is%3Aissue+is%3Aopen+label%3A%22compatibility%22).
+We do not explicitly maintain compatibility with older platform versions. Any known incompatibilities with older versions can be found [here](https://github.com/ably/ably-cocoa/issues?q=is%3Aissue+is%3Aopen+label%3A%22compatibility%22).
 
 If you find any issues with unsupported platform versions, please [raise an issue](https://github.com/ably/ably-cocoa/issues) in this repository or [contact Ably customer support](https://support.ably.io) for advice.
+
+### Continuous Integration Testing
+
+We perform CI testing on the following operating systems:
+
+- iOS 14.4
+- tvOS 14.3
+- macOS 10.15
 
 ## Known Limitations
 
