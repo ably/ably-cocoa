@@ -29,7 +29,7 @@ jobs:
         run: |
           make submodules
           bundle install
-          make update_carthage_dependencies
+          make update_carthage_dependencies_tvos
           bundle exec fastlane test_tvOS12
 
       - name: Check Static Analyzer Output
