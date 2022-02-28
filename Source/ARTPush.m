@@ -57,6 +57,14 @@
     [_internal activate];
 }
 
+- (void)activate:(UNAuthorizationOptions)options {
+    [_internal activate:options];
+}
+
+- (void)registerAPNSDeviceToken:(NSData *)deviceToken {
+    [_internal registerAPNSDeviceToken:deviceToken];
+}
+
 - (void)deactivate {
     [_internal deactivate];
 }
@@ -223,13 +231,44 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
     }];
 }
 
-- (void)activate {
+- (void)requestAndRegisterForRemoteNotifications:(UNAuthorizationOptions)options {
+#if !TARGET_OS_SIMULATOR
+    ARTRestInternal *rest = _rest;
+    [[UNUserNotificationCenter currentNotificationCenter] requestAuthorizationWithOptions:options completionHandler:^(BOOL granted, NSError * _Nullable error) {
+        if (granted) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[UIApplication sharedApplication] registerForRemoteNotifications];
+            });
+        } else if (error) {
+            [rest.logger error:@"ARTPush: request authorization failed (%@)", [error localizedDescription]];
+        }
+    }];
+#endif
+}
+
+- (void)registerAPNSDeviceToken:(NSData *)deviceToken {
+    ARTRestInternal *rest = _rest;
+    dispatch_async(rest.queue, ^{
+        [ARTPushInternal didRegisterForRemoteNotificationsWithDeviceToken:deviceToken restInternal:rest];
+    });
+}
+
+- (void)activate:(UNAuthorizationOptions)options {
+    [self requestAndRegisterForRemoteNotifications:options];
     [self getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
         [stateMachine sendEvent:[ARTPushActivationEventCalledActivate new]];
     }];
 }
 
+- (void)activate {
+    UNAuthorizationOptions options = UNAuthorizationOptionAlert | UNAuthorizationOptionSound | UNAuthorizationOptionBadge;
+    [self activate:options];
+}
+
 - (void)deactivate {
+#if !TARGET_OS_SIMULATOR
+    [[UIApplication sharedApplication] unregisterForRemoteNotifications];
+#endif
     [self getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
         [stateMachine sendEvent:[ARTPushActivationEventCalledDeactivate new]];
     }];

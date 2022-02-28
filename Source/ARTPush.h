@@ -1,5 +1,6 @@
 #import <Foundation/Foundation.h>
 #import <Ably/ARTTypes.h>
+#import <UserNotifications/UserNotifications.h>
 
 @class ARTRest;
 @class ARTRealtime;
@@ -66,9 +67,21 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error realtime:(ARTRealtime *)realtime;
 
 /**
- Activating a device for push notifications and registering it with Ably. The registration process can be performed entirely from the device or from your own server using the optional `ablyPushCustomRegister:deviceDetails:callback` method.
+ Activating a device for push notifications (with requesting user permissions and registering with the APN service).
+ The registration process can be performed on the device or from your own server using the optional ``ablyPushCustomRegister:deviceDetails:callback`` method.
+ */
+- (void)activate:(UNAuthorizationOptions)options;
+
+/**
+ Calls ``activate:`` with the badge, sound and alert options included.
  */
 - (void)activate;
+
+/**
+ Registering the new APNs device token received from Apple within Ably service.
+ Should be called manually in ``UIApplicationDelegate/application:didRegisterForRemoteNotificationsWithDeviceToken:``.
+ */
+- (void)registerAPNSDeviceToken:(NSData *)deviceToken;
 
 /**
  Deactivating a device for push notifications and unregistering it with Ably. The unregistration process can be performed entirely from the device or from your own server using the optional `ablyPushCustomDeregister:deviceId:callback` method.
