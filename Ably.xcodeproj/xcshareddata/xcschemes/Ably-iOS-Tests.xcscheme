@@ -44,6 +44,335 @@
                BlueprintName = "Ably-iOS-Tests"
                ReferencedContainer = "container:Ably.xcodeproj">
             </BuildableReference>
+            <SkippedTests>
+               <Test
+                  Identifier = "ARTArchiveTests">
+               </Test>
+               <Test
+                  Identifier = "ARTDefaultTests">
+               </Test>
+               <Test
+                  Identifier = "AuthTests">
+               </Test>
+               <Test
+                  Identifier = "ClientOptionsTests">
+               </Test>
+               <Test
+                  Identifier = "CryptoTest">
+               </Test>
+               <Test
+                  Identifier = "CryptoTests">
+               </Test>
+               <Test
+                  Identifier = "DeltaCodecTests">
+               </Test>
+               <Test
+                  Identifier = "ObjcppTest">
+               </Test>
+               <Test
+                  Identifier = "ObjectLifetimesTests">
+               </Test>
+               <Test
+                  Identifier = "PushActivationStateMachineTests">
+               </Test>
+               <Test
+                  Identifier = "PushAdminTests">
+               </Test>
+               <Test
+                  Identifier = "PushChannelTests">
+               </Test>
+               <Test
+                  Identifier = "PushTests">
+               </Test>
+               <Test
+                  Identifier = "ReadmeExamplesTests">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientChannelTests">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientChannelsTests">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__004__Presence__callback_can_be_provided_that_will_be_called_upon_success()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__005__Presence__callback_can_be_provided_that_will_be_called_upon_failure()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__006__Presence__should_also_ensure_that_using_updateClient_has_no_side_effects_on_a_client_that_has_entered_normally_using_Presence_enter()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__007__Presence__should_indicate_an_error_if_the_client_is_identified_and_has_a_valid_clientId_and_the_clientId_argument_does_not_match_the_client_s_clientId()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__016__Presence__unsubscribe__with_no_arguments_unsubscribes_the_listener_if_previously_subscribed_with_an_action_specific_subscription()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__018__Presence__Channel_state_change_side_effects__if_the_channel_enters_the_FAILED_state__all_queued_presence_messages_should_fail_immediately()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__020__Presence__Channel_state_change_side_effects__if_the_channel_enters_the_DETACHED_state__all_queued_presence_messages_should_fail_immediately()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__021__Presence__Channel_state_change_side_effects__if_the_channel_enters_the_DETACHED_state__should_clear_the_PresenceMap_including_local_members_and_does_not_emit_any_presence_events()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__022__Presence__Channel_state_change_side_effects__channel_enters_the_SUSPENDED_state__all_queued_presence_messages_should_fail_immediately()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__023__Presence__Channel_state_change_side_effects__channel_enters_the_SUSPENDED_state__should_maintain_the_PresenceMap_and_any_members_present_before_and_after_the_sync_should_not_emit_presence_events()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__025__Presence__unsubscribe__with_a_single_action_argument_unsubscribes_the_provided_listener_to_all_presence_messages_for_that_action()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__026__Presence__subscribe__should_implicitly_attach_the_channel()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__027__Presence__subscribe__should_result_in_an_error_if_the_channel_is_in_the_FAILED_state()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__028__Presence__subscribe__should_result_in_an_error_if_the_channel_moves_to_the_FAILED_state()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__029__Presence__subscribe__with_a_single_action_argument()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__032__Presence__enter__entering_without_an_explicit_PresenceMessage_clientId_should_implicitly_use_the_clientId_of_the_current_connection()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__033__Presence__enter__should_result_in_an_error_immediately_if_the_client_is_anonymous()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__034__Presence__enter__should_result_in_an_error_immediately_if_the_channel_is_DETACHED()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__035__Presence__enter__should_result_in_an_error_immediately_if_the_channel_is_FAILED()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__036__Presence__enter__should_result_in_an_error_if_Ably_service_determines_that_the_client_is_unidentified()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__040__Presence__update__optionally_a_callback_can_be_provided_that_is_called_for_success()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__041__Presence__update__optionally_a_callback_can_be_provided_that_is_called_for_failure()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__042__Presence__update__update_without_an_explicit_PresenceMessage_clientId_should_implicitly_use_the_clientId_of_the_current_connection()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__048__Presence__PresenceMap__if_action_of_PRESENT_arrives__it_should_be_added_to_the_presence_map_with_the_action_set_to_PRESENT()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__052__Presence__PresenceMap__compare_for_newness__split_the_id_of_both_presence_messages()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__053__Presence__PresenceMap__compare_for_newness__presence_message_has_a_connectionId_which_is_not_an_initial_substring_of_its_id__compares_them_by_timestamp_numerically()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__056__Presence__enter__should_result_in_an_error_if_the_client_does_not_have_required_presence_permission()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__057__Presence__update__should_result_in_an_error_immediately_if_the_client_is_anonymous()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__058__Presence__update__should_result_in_an_error_immediately_if_the_channel_is_DETACHED()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__059__Presence__update__should_result_in_an_error_immediately_if_the_channel_is_FAILED()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__060__Presence__update__should_result_in_an_error_if_the_client_does_not_have_required_presence_permission()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__061__Presence__update__should_result_in_an_error_if_Ably_service_determines_that_the_client_is_unidentified()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__062__Presence__leave__optionally_a_callback_can_be_provided_that_is_called_for_success()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__063__Presence__leave__optionally_a_callback_can_be_provided_that_is_called_for_failure()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__064__Presence__leave__should_raise_an_error_if_client_is_not_present()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__065__Presence__leave__entering_without_an_explicit_PresenceMessage_clientId_should_implicitly_use_the_clientId_of_the_current_connection()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__066__Presence__leave__if_the_client_is_not_currently_ENTERED__Ably_will_respond_with_an_ACK_and_the_request_will_succeed()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__067__Presence__enter__implicitly_attaches_the_Channel()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__068__Presence__enter__should_result_in_an_error_if_the_channel_is_in_the_FAILED_state()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__069__Presence__enter__should_result_in_an_error_if_the_channel_is_in_the_DETACHED_state()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__070__Presence__leave__should_result_in_an_error_immediately_if_the_client_is_anonymous()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__071__Presence__leave__should_result_in_an_error_immediately_if_the_channel_is_DETACHED()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__072__Presence__leave__should_result_in_an_error_immediately_if_the_channel_is_FAILED()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__073__Presence__leave__should_result_in_an_error_if_the_client_does_not_have_required_presence_permission()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__074__Presence__leave__should_result_in_an_error_if_Ably_service_determines_that_the_client_is_unidentified()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__075__Presence__subscribe__should_implicitly_attach_the_channel()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__076__Presence__subscribe__should_result_in_an_error_if_the_channel_is_in_the_FAILED_state()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__077__Presence__subscribe__should_result_in_an_error_if_the_channel_moves_to_the_FAILED_state()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__078__Presence__enter__optional_data_can_be_included_when_entering_a_channel()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__079__Presence__enter__should_emit_the_data_attribute_in_the_LEAVE_event_when_data_is_provided_when_entering_but_no_data_is_provided_when_leaving()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__084__Presence__enterClient__should_implicitly_attach_the_Channel()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__085__Presence__enterClient__should_result_in_an_error_if_the_channel_is_in_the_FAILED_state()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__086__Presence__enterClient__should_result_in_an_error_if_the_channel_moves_to_the_FAILED_state()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__087__Presence__updateClient__should_implicitly_attach_the_Channel()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__088__Presence__updateClient__should_result_in_an_error_if_the_channel_is_in_the_FAILED_state()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__089__Presence__updateClient__should_result_in_an_error_if_the_channel_moves_to_the_FAILED_state()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__090__Presence__leaveClient__should_implicitly_attach_the_Channel()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__091__Presence__leaveClient__should_result_in_an_error_if_the_channel_is_in_the_FAILED_state()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__092__Presence__leaveClient__should_result_in_an_error_if_the_channel_moves_to_the_FAILED_state()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__093__Presence__Connection_state_conditions__all_presence_messages_are_published_immediately_if_the_connection_is_CONNECTED()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__094__Presence__Connection_state_conditions__all_presence_messages_will_be_queued_and_delivered_as_soon_as_the_connection_state_returns_to_CONNECTED()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__095__Presence__Connection_state_conditions__all_presence_messages_will_be_lost_if_queueMessages_has_been_explicitly_set_to_false()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__096__Presence__Connection_state_conditions__should_result_in_an_error_if_the_connection_state_is_INITIALIZED_and_queueMessages_has_been_explicitly_set_to_false()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__097__Presence__Connection_state_conditions__should_result_in_an_error_if_the_connection_state_is__suspended()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__098__Presence__Connection_state_conditions__should_result_in_an_error_if_the_connection_state_is__closed()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__099__Presence__Connection_state_conditions__should_result_in_an_error_if_the_connection_state_is__failed()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__101__Presence__get__should_implicitly_attach_the_channel()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__102__Presence__get__should_result_in_an_error_if_the_channel_is_in_the_FAILED_state()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__103__Presence__get__should_result_in_an_error_if_the_channel_moves_to_the_FAILED_state()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__104__Presence__get__should_result_in_an_error_if_the_channel_is_in_the_DETACHED_state()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__105__Presence__get__should_result_in_an_error_if_the_channel_moves_to_the_DETACHED_state()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__106__Presence__get__query__waitForSync_should_be_true_by_default()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__107__Presence__get__If_the_Channel_is_in_the_SUSPENDED_state_then__by_default__results_in_an_error()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__108__Presence__get__If_the_Channel_is_in_the_SUSPENDED_state_then__if_waitForSync_is_true__results_in_an_error()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__109__Presence__get__If_the_Channel_is_in_the_SUSPENDED_state_then__if_waitForSync_is_false__returns_the_members_in_the_current_PresenceMap()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__111__Presence__get__Query__set_of_params___waitForSync_is_false__should_return_immediately_the_known_set_of_presence_members()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__112__Presence__get__Query__set_of_params___should_return_members_filtered_by_clientId()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__113__Presence__get__Query__set_of_params___should_return_members_filtered_by_connectionId()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__114__Presence__history__should_support_all_the_same_params_as_Rest()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__115__Presence__history__should_return_a_PaginatedResult_page()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__117__Presence__enterClient__should_be_present_all_the_registered_members_on_a_presence_channel()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests/test__118__Presence__presence_message_attributes__if_the_presence_message_does_not_contain_an_id__it_should_be_set_to_protocolMsgId_index()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientTests">
+               </Test>
+               <Test
+                  Identifier = "RestClientChannelTests">
+               </Test>
+               <Test
+                  Identifier = "RestClientChannelsTests">
+               </Test>
+               <Test
+                  Identifier = "RestClientPresenceTests">
+               </Test>
+               <Test
+                  Identifier = "RestClientStatsTests">
+               </Test>
+               <Test
+                  Identifier = "RestClientTests">
+               </Test>
+               <Test
+                  Identifier = "RestPaginatedTests">
+               </Test>
+               <Test
+                  Identifier = "StatsTests">
+               </Test>
+               <Test
+                  Identifier = "UtilitiesTests">
+               </Test>
+            </SkippedTests>
          </TestableReference>
       </Testables>
    </TestAction>
