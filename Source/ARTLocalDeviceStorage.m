@@ -22,6 +22,7 @@
 }
 
 - (void)setObject:(nullable id)value forKey:(NSString *)key {
+    [_logger debug:@"ARTLocalDeviceStorage setObject: %@, forKey: %@", value, key];
     [NSUserDefaults.standardUserDefaults setObject:value forKey:key];
 }
 
@@ -40,6 +41,7 @@
 }
 
 - (void)setSecret:(NSString *)value forDevice:(ARTDeviceId *)deviceId {
+    [_logger debug:@"ARTLocalDeviceStorage setSecret: %@, forDevice: %@", value, deviceId];
     NSError *error = nil;
     if (value == nil) {
         [self keychainDeletePasswordForService:ARTDeviceSecretKey account:(NSString *)deviceId error:&error];
