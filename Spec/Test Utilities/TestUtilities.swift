@@ -1893,3 +1893,18 @@ extension ARTErrorCode {
         return NSInteger(rawValue)
     }
 }
+
+func waitUntilWithLogging(description: String, timeout: DispatchTimeInterval = AsyncDefaults.timeout, file: FileString = #file, line: UInt = #line, action: @escaping (@escaping () -> Void) -> Void) {
+    let startTime = Date()
+    NSLog("BEGIN waitUntil: \(description)")
+    waitUntil(timeout: timeout, file: file, line: line, action: { done in
+        action({
+            let endTime = Date()
+            let duration = endTime.timeIntervalSince(startTime)
+            
+            NSLog("END waitUntil: \(description) (\(duration)s)")
+            
+            done()
+        })
+    })
+}
