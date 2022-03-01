@@ -18,6 +18,7 @@
 }
 
 - (nullable id)objectForKey:(NSString *)key {
+    NSLog(@"ARTLocalDeviceStorage objectForKey: %@", key);
     return [NSUserDefaults.standardUserDefaults objectForKey:key];
 }
 
@@ -27,6 +28,7 @@
 }
 
 - (NSString *)secretForDevice:(ARTDeviceId *)deviceId {
+    NSLog(@"ARTLocalDeviceStorage secretForDevice: %@", deviceId);
     NSError *error = nil;
     NSString *value = [self keychainGetPasswordForService:ARTDeviceSecretKey account:(NSString *)deviceId error:&error];
 
