@@ -1164,7 +1164,8 @@ class RealtimeClientPresenceTests: XCTestCase {
         defer { client.dispose(); client.close() }
         let channel = client.channels.get("test")
 
-        waitUntil(timeout: testTimeout) { done in
+        
+        waitUntilWithLogging(description: "channel.presence.subscribe(.enter) completes", timeout: testTimeout) { done in
             channel.presence.subscribe(.enter) { member in
                 expect(member.data).to(beNil())
                 done()
@@ -1172,7 +1173,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             channel.presence.enter(nil)
         }
 
-        waitUntil(timeout: testTimeout) { done in
+        waitUntilWithLogging(description: "channel.presence.subscribe(.update) completes", timeout: testTimeout) { done in
             channel.presence.subscribe(.update) { member in
                 expect(member.data as? NSObject).to(equal("online" as NSObject?))
                 done()
