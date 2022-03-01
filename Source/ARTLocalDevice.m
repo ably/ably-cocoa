@@ -37,9 +37,11 @@ NSString *const ARTDevicePushTransportType = @"apns";
 
 + (ARTLocalDevice *)load:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage {
     NSLog(@"ARTLocalDevice load:storage:");
+    NSLog(@"ARTLocalDevice create instance");
     ARTLocalDevice *device = [[ARTLocalDevice alloc] initWithClientId:clientId storage:storage];
     device.platform = ARTDevicePlatform;
     #if TARGET_OS_IOS
+    NSLog(@"ARTLocalDevice check user interface idiom");
     switch ([[UIDevice currentDevice] userInterfaceIdiom]) {
         case UIUserInterfaceIdiomPad:
             device.formFactor = @"tablet";
@@ -51,6 +53,7 @@ NSString *const ARTDevicePushTransportType = @"apns";
     #else
     device.formFactor = ARTDeviceFormFactor;
     #endif
+    NSLog(@"ARTLocalDevice set push recipient transport type");
     device.push.recipient[@"transportType"] = ARTDevicePushTransportType;
 
     NSString *deviceId = [storage objectForKey:ARTDeviceIdKey];
