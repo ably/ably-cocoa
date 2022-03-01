@@ -29,6 +29,7 @@ do
   echo "BEGIN ITERATION ${iteration}" 2>&1
 
   rm -rf fastlane/test_output
+  rm -rf xcodebuild_output
   xcrun simctl erase all
 
   set +e
@@ -42,6 +43,11 @@ do
   else
     echo "ITERATION ${iteration}: Tests failed (exit value ${tests_exit_value})."
   fi
+
+  echo "ITERATION ${iteration}: BEGIN xcodebuild raw output."
+  ls xcodebuild_output
+  cat xcodebuild_output/**
+  echo "ITERATION ${iteration}: END xcodebuild raw output."
 
   echo "ITERATION ${iteration}: Uploading results to observability server."
 
