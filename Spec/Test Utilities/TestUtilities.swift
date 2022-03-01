@@ -110,7 +110,8 @@ class AblyTests {
         return DispatchQueue.getSpecific(key: queueIdentityKey)?.label
     }
 
-    class func setupOptions(_ options: ARTClientOptions, forceNewApp: Bool = false, debug: Bool = false) -> ARTClientOptions {
+    class func setupOptions(_ options: ARTClientOptions, forceNewApp: Bool = false, debug: Bool = true) -> ARTClientOptions {
+        NSLog("(setupOptions) BEGIN")
         options.channelNamePrefix = "test-\(setupOptionsCounter)"
         setupOptionsCounter += 1
 
@@ -128,7 +129,11 @@ class AblyTests {
                 "Content-Type" : "application/json"
             ]
 
+            let startTime = Date()
+            NSLog("(setupOptions) Send request to create app")
             let (responseData, responseError, _) = NSURLSessionServerTrustSync().get(request)
+            let endTime = Date()
+            NSLog("(setupOptions) Completed (\(endTime.timeIntervalSince(startTime))s) request to create app (responseData: \(String(describing: responseData)), responseError: \(String(describing: responseError)))")
 
             if let error = responseError {
                 fatalError(error.localizedDescription)
@@ -150,14 +155,16 @@ class AblyTests {
         if debug {
             options.logLevel = .verbose
         }
+        
+        NSLog("(setupOptions) END")
         return options
     }
     
-    class func commonAppSetup(_ debug: Bool = false) -> ARTClientOptions {
+    class func commonAppSetup(_ debug: Bool = true) -> ARTClientOptions {
         return AblyTests.setupOptions(AblyTests.jsonRestOptions, debug: debug)
     }
 
-    class func clientOptions(_ debug: Bool = false, key: String? = nil, requestToken: Bool = false) -> ARTClientOptions {
+    class func clientOptions(_ debug: Bool = true, key: String? = nil, requestToken: Bool = false) -> ARTClientOptions {
         let options = ARTClientOptions()
         options.environment = getEnvironment()
         options.logExceptionReportingUrl = nil
