@@ -6,3 +6,5 @@ output_types "junit"
 # I'm being explicit about this because I want to make sure it's being used, to make sure that trainer is used to generate the JUnit report
 xcodebuild_formatter "xcbeautify"
 result_bundle true
+# Just for printing inside these loop jobs
+buildlog_path "xcodebuild_output"
