@@ -36,6 +36,7 @@ NSString *const ARTDevicePushTransportType = @"apns";
 }
 
 + (ARTLocalDevice *)load:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage {
+    NSLog(@"ARTLocalDevice load:storage:");
     ARTLocalDevice *device = [[ARTLocalDevice alloc] initWithClientId:clientId storage:storage];
     device.platform = ARTDevicePlatform;
     #if TARGET_OS_IOS
@@ -56,7 +57,9 @@ NSString *const ARTDevicePushTransportType = @"apns";
     NSString *deviceSecret = deviceId == nil ? nil : [storage secretForDevice:deviceId];
     
     if (deviceId == nil || deviceSecret == nil) { // generate both at the same time
+        NSLog(@"ARTLocalDevice generateId");
         deviceId = [self generateId];
+        NSLog(@"ARTLocalDevice generateSecret");
         deviceSecret = [self generateSecret];
         
         [storage setObject:deviceId forKey:ARTDeviceIdKey];
