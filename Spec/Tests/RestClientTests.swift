@@ -1534,32 +1534,26 @@ class RestClientTests: XCTestCase {
     }
 
     func test__080__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_restore_default_primary_host_after_fallbackRetryTimeout_expired___hostUnreachable() {
-        
         testRestoresDefaultPrimaryHostAfterTimeoutExpires(.hostUnreachable)
     }
 
     func test__081__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_restore_default_primary_host_after_fallbackRetryTimeout_expired___requestTimeout_timeout__0_1_() {
-
         testRestoresDefaultPrimaryHostAfterTimeoutExpires(.requestTimeout(timeout: 0.1))
     }
 
     func test__082__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_restore_default_primary_host_after_fallbackRetryTimeout_expired___hostInternalError_code__501_() {
-
         testRestoresDefaultPrimaryHostAfterTimeoutExpires(.hostInternalError(code: 501))
     }
 
     func test__083__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_use_another_fallback_host_if_previous_fallback_request_failed_and_store_it_as_default_if_current_fallback_request_succseeded___hostUnreachable() {
-
         testUsesAnotherFallbackHost(.hostUnreachable)
     }
 
     func test__084__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_use_another_fallback_host_if_previous_fallback_request_failed_and_store_it_as_default_if_current_fallback_request_succseeded___requestTimeout_timeout__0_1_() {
-
         testUsesAnotherFallbackHost(.requestTimeout(timeout: 0.1))
     }
 
     func test__085__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_use_another_fallback_host_if_previous_fallback_request_failed_and_store_it_as_default_if_current_fallback_request_succseeded___hostInternalError_code__501_() {
-
         testUsesAnotherFallbackHost(.hostInternalError(code: 501))
     }
 
