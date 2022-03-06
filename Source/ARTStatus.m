@@ -96,8 +96,12 @@ NSInteger getStatusFromCode(NSInteger code) {
     return reason;
 }
 
-- (NSError *)cause {
-    return self.userInfo[NSUnderlyingErrorKey];
+- (ARTErrorInfo *)cause {
+    NSError *underlyingError = self.userInfo[NSUnderlyingErrorKey];
+    if (underlyingError == nil) {
+        return nil;
+    }
+    return [ARTErrorInfo createFromNSError:underlyingError];
 }
 
 - (NSInteger)statusCode {
