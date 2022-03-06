@@ -96,6 +96,10 @@ NSInteger getStatusFromCode(NSInteger code) {
     return reason;
 }
 
+- (NSError *)cause {
+    return self.userInfo[NSUnderlyingErrorKey];
+}
+
 - (NSInteger)statusCode {
     return [self artStatusCode];
 }

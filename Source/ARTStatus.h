@@ -191,6 +191,7 @@ FOUNDATION_EXPORT NSString *const ARTAblyMessageNoMeansToRenewToken;
 @interface ARTErrorInfo : NSError
 
 @property (readonly) NSString *message;
+@property (nullable, readonly) NSError *cause;
 @property (nullable, readonly) NSString *reason;
 @property (readonly) NSInteger statusCode;
 @property (nullable, readonly) NSString *href;
