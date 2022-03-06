@@ -63,7 +63,7 @@ func uniqueChannelName(prefix: String = "",
 #else
     platform = "Unknown"
 #endif
-    return "\(prefix)-\(platform)-\(testIdentifier.replacingOccurrences(of: "()", with: ""))-\(timestamp)"
+    return "\(prefix)-\(platform)-\(testIdentifier.replacingOccurrences(of: "()", with: ""))-\(timestamp)-\(NSUUID().uuidString)"
 }
 
 /// Common test utilities.
