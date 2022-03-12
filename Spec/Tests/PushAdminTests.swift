@@ -218,7 +218,7 @@ class PushAdminTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         let realtime = ARTRealtime(options: options)
         defer { realtime.dispose(); realtime.close() }
-        let channel = realtime.channels.get("pushenabled:push_admin_publish-ok")
+        let channel = realtime.channels.get("pushenabled:\(uniqueChannelName())") // works with pure uniqueChannelName() as well
         let publishObject = ["transportType": "ablyChannel",
                              "channel": channel.name,
                              "ablyKey": options.key!,
@@ -250,7 +250,7 @@ class PushAdminTests: XCTestCase {
     func skipped__test__003__publish__should_fail_with_a_bad_recipient() {
         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { realtime.dispose(); realtime.close() }
-        let channel = realtime.channels.get("pushenabled:push_admin_publish-bad-recipient")
+        let channel = realtime.channels.get("pushenabled:\(uniqueChannelName())") // works with pure uniqueChannelName() as well
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
@@ -277,7 +277,7 @@ class PushAdminTests: XCTestCase {
     func skipped__test__004__publish__should_fail_with_an_empty_recipient() {
         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { realtime.dispose(); realtime.close() }
-        let channel = realtime.channels.get("pushenabled:push_admin_publish-empty-recipient")
+        let channel = realtime.channels.get("pushenabled:\(uniqueChannelName())") // works with pure uniqueChannelName() as well
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
@@ -303,7 +303,7 @@ class PushAdminTests: XCTestCase {
     func test__005__publish__should_fail_with_an_empty_payload() {
         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { realtime.dispose(); realtime.close() }
-        let channel = realtime.channels.get("pushenabled:push_admin_publish-empty-payload")
+        let channel = realtime.channels.get("pushenabled:\(uniqueChannelName())") // works with pure uniqueChannelName() as well
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in

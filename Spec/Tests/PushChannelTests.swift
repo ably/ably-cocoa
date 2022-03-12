@@ -34,7 +34,7 @@ class PushChannelTests: XCTestCase {
     // RSH7a1
     func test__001__Push_Channel__subscribeDevice__should_fail_if_the_LocalDevice_doesn_t_have_an_deviceIdentityToken() {
         waitUntil(timeout: testTimeout) { done in
-            rest.channels.get("foo").push.subscribeDevice { error in
+            rest.channels.get(uniqueChannelName()).push.subscribeDevice { error in
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
@@ -51,7 +51,7 @@ class PushChannelTests: XCTestCase {
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
         defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
-        let channel = rest.channels.get("foo")
+        let channel = rest.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.push.subscribeDevice { error in
                 expect(error).to(beNil())
@@ -88,7 +88,7 @@ class PushChannelTests: XCTestCase {
         defer { rest.device.clientId = originalClientId }
 
         waitUntil(timeout: testTimeout) { done in
-            rest.channels.get("foo").push.subscribeClient { error in
+            rest.channels.get(uniqueChannelName()).push.subscribeClient { error in
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
@@ -105,7 +105,7 @@ class PushChannelTests: XCTestCase {
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
         defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
-        let channel = rest.channels.get("foo")
+        let channel = rest.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.push.subscribeClient { error in
                 expect(error).to(beNil())
@@ -133,7 +133,7 @@ class PushChannelTests: XCTestCase {
     // RSH7c1
     func test__005__Push_Channel__unsubscribeDevice__should_fail_if_the_LocalDevice_doesn_t_have_a_deviceIdentityToken() {
         waitUntil(timeout: testTimeout) { done in
-            rest.channels.get("foo").push.unsubscribeDevice { error in
+            rest.channels.get(uniqueChannelName()).push.unsubscribeDevice { error in
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
@@ -150,7 +150,7 @@ class PushChannelTests: XCTestCase {
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
         defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
-        let channel = rest.channels.get("foo")
+        let channel = rest.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.push.unsubscribeDevice { error in
                 expect(error).to(beNil())
@@ -185,7 +185,7 @@ class PushChannelTests: XCTestCase {
         defer { rest.device.clientId = originalClientId }
 
         waitUntil(timeout: testTimeout) { done in
-            rest.channels.get("foo").push.unsubscribeClient { error in
+            rest.channels.get(uniqueChannelName()).push.unsubscribeClient { error in
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
@@ -202,7 +202,7 @@ class PushChannelTests: XCTestCase {
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
         defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
-        let channel = rest.channels.get("foo")
+        let channel = rest.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.push.unsubscribeClient { error in
                 expect(error).to(beNil())
@@ -230,7 +230,7 @@ class PushChannelTests: XCTestCase {
             "deviceId": "111",
             "channel": "aaa",
         ]
-        let channel = rest.channels.get("foo")
+        let channel = rest.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             try? channel.push.listSubscriptions(params) { result, error in
                 expect(error).to(beNil())
@@ -255,7 +255,7 @@ class PushChannelTests: XCTestCase {
             "clientId": "tester",
             "channel": "aaa",
         ]
-        let channel = rest.channels.get("foo")
+        let channel = rest.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             try? channel.push.listSubscriptions(params) { result, error in
                 expect(error).to(beNil())
@@ -276,7 +276,7 @@ class PushChannelTests: XCTestCase {
     }
 
     func test__011__Push_Channel__listSubscriptions__should_not_accept_null_deviceId_and_null_clientId() {
-        let channel = rest.channels.get("foo")
+        let channel = rest.channels.get(uniqueChannelName())
         expect { try channel.push.listSubscriptions([:]) { _, _ in } }.to(throwError { (error: NSError) in
             expect(error.code).to(equal(ARTDataQueryError.missingRequiredFields.rawValue))
         })
@@ -287,7 +287,7 @@ class PushChannelTests: XCTestCase {
             "deviceId": "x",
             "clientId": "y",
         ]
-        let channel = rest.channels.get("foo")
+        let channel = rest.channels.get(uniqueChannelName())
         expect { try channel.push.listSubscriptions(params) { _, _ in } }.to(throwError { (error: NSError) in
             expect(error.code).to(equal(ARTDataQueryError.invalidParameters.rawValue))
         })
@@ -306,7 +306,7 @@ class PushChannelTests: XCTestCase {
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
         defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
-        let channel = rest.channels.get("pushenabled:foo")
+        let channel = rest.channels.get("pushenabled:\(uniqueChannelName())")
         waitUntil(timeout: testTimeout) { done in
             channel.push.subscribeClient { error in
                 expect(error).to(beNil())
