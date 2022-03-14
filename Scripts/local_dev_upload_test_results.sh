@@ -14,5 +14,6 @@ export GITHUB_RUN_ATTEMPT="1"
 export GITHUB_BASE_REF="main"
 export GITHUB_HEAD_REF="my-branch"
 export GITHUB_JOB="fake-job"
+export GITHUB_REPOSITORY="ably/ably-cocoa"
 
 ./Scripts/upload_test_results.sh --upload-server-base-url "http://localhost:3000"
