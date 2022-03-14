@@ -73,18 +73,6 @@ then
   exit 1
 fi
 
-if [[ -z $GITHUB_BASE_REF ]]
-then
-  echo "The GITHUB_BASE_REF environment variable must be set." 2>&1
-  exit 1
-fi
-
-if [[ -z $GITHUB_HEAD_REF ]]
-then
-  echo "The GITHUB_HEAD_REF environment variable must be set." 2>&1
-  exit 1
-fi
-
 if [[ -z $GITHUB_JOB ]]
 then
   echo "The GITHUB_JOB environment variable must be set." 2>&1
@@ -136,6 +124,23 @@ echo "Test report found: ${test_reports}" 2>&1
 
 temp_request_body_file=$(mktemp)
 
+# https://unix.stackexchange.com/questions/446847/conditionally-pass-params-to-a-script
+optional_params=()
+
+if [[ ! -z $GITHUB_BASE_REF ]]
+then
+  optional_params+=(--arg github_base_ref "${GITHUB_BASE_REF}")
+else
+  optional_params+=(--argjson github_base_ref null)
+fi
+
+if [[ ! -z $GITHUB_HEAD_REF ]]
+then
+  optional_params+=(--arg github_head_ref "${GITHUB_HEAD_REF}")
+else
+  optional_params+=(--argjson github_head_ref null)
+fi
+
 jq -n \
   --rawfile junit_report_xml "${test_reports}" \
   --arg github_repository "${GITHUB_REPOSITORY}" \
@@ -146,10 +151,9 @@ jq -n \
   --arg github_run_number "${GITHUB_RUN_NUMBER}" \
   --arg github_run_attempt "${GITHUB_RUN_ATTEMPT}" \
   --arg github_run_id "${GITHUB_RUN_ID}" \
-  --arg github_base_ref "${GITHUB_BASE_REF}" \
-  --arg github_head_ref "${GITHUB_HEAD_REF}" \
   --arg github_job "${GITHUB_JOB}" \
   --arg iteration "${iteration}" \
+  "${optional_params[@]}" \
   '{ junit_report_xml: $junit_report_xml | @base64, github_repository: $github_repository, github_sha: $github_sha, github_ref_name: $github_ref_name, github_retention_days: $github_retention_days, github_action: $github_action, github_run_number: $github_run_number, github_run_attempt: $github_run_attempt, github_run_id: $github_run_id, github_base_ref: $github_base_ref, github_head_ref: $github_head_ref, github_job: $github_job, iteration: $iteration }' \
   > "${temp_request_body_file}"
 
