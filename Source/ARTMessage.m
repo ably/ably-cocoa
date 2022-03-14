@@ -1,4 +1,8 @@
 #import "ARTMessage.h"
+#import "ARTJsonEncoder.h"
+#import "ARTJsonLikeEncoder.h"
+#import "ARTBaseMessage+Private.h"
+#import "ARTNSArray+ARTFunctional.h"
 
 @implementation ARTMessage
 
@@ -42,6 +46,31 @@
 - (NSInteger)messageSize {
     // TO3l8*
     return [super messageSize] + [self.name lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+}
+
+@end
+
+@implementation ARTMessage (Decryption)
+
++ (instancetype)fromEncodedJsonObject:(NSDictionary *)input channelOptions:(ARTChannelOptions *)options error:(NSError **)error {
+    ARTJsonLikeEncoder *jsonEncoder = [[ARTJsonLikeEncoder alloc] initWithDelegate:[[ARTJsonEncoder alloc] init]];
+    ARTDataEncoder *decoder = [[ARTDataEncoder alloc] initWithCipherParams:options.cipher error:error];
+    
+    ARTMessage *message = [jsonEncoder messageFromDictionary:input];
+    message = [message decodeWithEncoder:decoder error:error];
+    
+    return message;
+}
+
++ (NSArray<ARTMessage *> *)fromEncodedJsonArray:(NSArray<NSDictionary *> *)jsonArray channelOptions:(ARTChannelOptions *)options error:(NSError **)error {
+    ARTJsonLikeEncoder *jsonEncoder = [[ARTJsonLikeEncoder alloc] initWithDelegate:[[ARTJsonEncoder alloc] init]];
+    ARTDataEncoder *decoder = [[ARTDataEncoder alloc] initWithCipherParams:options.cipher error:error];
+    
+    NSArray <ARTMessage *> *messagesArray = [jsonEncoder messagesFromArray:jsonArray];
+    messagesArray = [messagesArray artMap:^(ARTMessage *message) {
+        return [message decodeWithEncoder:decoder error:nil];
+    }];
+    return messagesArray;
 }
 
 @end

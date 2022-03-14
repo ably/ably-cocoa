@@ -2,6 +2,7 @@
 
 #import <Ably/ARTBaseMessage.h>
 #import <Ably/ARTTypes.h>
+#import <Ably/ARTChannelOptions.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -13,6 +14,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithName:(nullable NSString *)name data:(id)data;
 - (instancetype)initWithName:(nullable NSString *)name data:(id)data clientId:(NSString *)clientId;
+
+@end
+
+@interface ARTMessage (Decryption)
+
++ (instancetype)fromEncodedJsonObject:(NSDictionary *)json channelOptions:(ARTChannelOptions *)options error:(NSError **)error;
++ (NSArray<ARTMessage *> *)fromEncodedJsonArray:(NSArray<NSDictionary *> *)jsonArray channelOptions:(ARTChannelOptions *)options error:(NSError **)error;
 
 @end
 
