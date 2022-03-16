@@ -46,6 +46,26 @@ let testTimeout = DispatchTimeInterval.seconds(20)
 let testResourcesPath = "ably-common/test-resources/"
 let echoServerAddress = "https://echo.ably.io/createJWT"
 
+func uniqueChannelName(prefix: String = "",
+                       testIdentifier: String = #function,
+                       timestamp: TimeInterval = Date.timeIntervalSinceReferenceDate) -> String {
+    let platform: String
+#if targetEnvironment(macCatalyst)
+    platform = "macCatalyst"
+#elseif os(OSX)
+    platform = "OSX"
+#elseif os(iOS)
+    platform = "iOS"
+#elseif os(tvOS)
+    platform = "tvOS"
+#elseif os(watchOS)
+    platform = "watchOS"
+#else
+    platform = "Unknown"
+#endif
+    return "\(prefix)-\(platform)-\(testIdentifier.replacingOccurrences(of: "()", with: ""))-\(timestamp)-\(NSUUID().uuidString)"
+}
+
 /// Common test utilities.
 class AblyTests {
 
@@ -421,8 +441,8 @@ class PublishTestMessage {
     var completion: ((ARTErrorInfo?) -> Void)? = nil
     var error: ARTErrorInfo? = nil
 
-    init(client: ARTRest, failOnError: Bool = true, completion: ((ARTErrorInfo?) -> Void)? = nil) {
-        client.channels.get("test").publish(nil, data: "message") { error in
+    init(client: ARTRest, channelName: String, failOnError: Bool = true, completion: ((ARTErrorInfo?) -> Void)? = nil) {
+        client.channels.get(channelName).publish(nil, data: "message") { error in
             self.error = error
             if let callback = completion {
                 callback(error)
@@ -433,7 +453,7 @@ class PublishTestMessage {
         }
     }
 
-    init(client: ARTRealtime, failOnError: Bool = true, completion: ((ARTErrorInfo?) -> Void)? = nil) {
+    init(client: ARTRealtime, channelName: String, failOnError: Bool = true, completion: ((ARTErrorInfo?) -> Void)? = nil) {
         let complete: (ARTErrorInfo?) -> Void = { errorInfo in
             // ARTErrorInfo to NSError
             self.error = errorInfo
@@ -449,7 +469,7 @@ class PublishTestMessage {
         client.connection.on { stateChange in
             let state = stateChange.current
             if state == .connected {
-                let channel = client.channels.get("test")
+                let channel = client.channels.get(channelName)
                 channel.on { stateChange in
                     switch stateChange.current {
                     case .attached:
@@ -470,24 +490,24 @@ class PublishTestMessage {
 }
 
 /// Rest - Publish message
-@discardableResult func publishTestMessage(_ rest: ARTRest, completion: Optional<(ARTErrorInfo?)->()>) -> PublishTestMessage {
-    return PublishTestMessage(client: rest, failOnError: false, completion: completion)
+@discardableResult func publishTestMessage(_ rest: ARTRest, channelName: String, completion: Optional<(ARTErrorInfo?)->()>) -> PublishTestMessage {
+    return PublishTestMessage(client: rest, channelName: channelName, failOnError: false, completion: completion)
 }
 
-@discardableResult func publishTestMessage(_ rest: ARTRest, failOnError: Bool = true) -> PublishTestMessage {
-    return PublishTestMessage(client: rest, failOnError: failOnError)
+@discardableResult func publishTestMessage(_ rest: ARTRest, channelName: String, failOnError: Bool = true) -> PublishTestMessage {
+    return PublishTestMessage(client: rest, channelName: channelName, failOnError: failOnError)
 }
 
 /// Realtime - Publish message with callback
 /// (publishes if connection state changes to CONNECTED and channel state changes to ATTACHED)
-@discardableResult func publishFirstTestMessage(_ realtime: ARTRealtime, completion: Optional<(ARTErrorInfo?)->()>) -> PublishTestMessage {
-    return PublishTestMessage(client: realtime, failOnError: false, completion: completion)
+@discardableResult func publishFirstTestMessage(_ realtime: ARTRealtime, channelName: String, completion: Optional<(ARTErrorInfo?)->()>) -> PublishTestMessage {
+    return PublishTestMessage(client: realtime, channelName: channelName, failOnError: false, completion: completion)
 }
 
 /// Realtime - Publish message
 /// (publishes if connection state changes to CONNECTED and channel state changes to ATTACHED)
-@discardableResult func publishFirstTestMessage(_ realtime: ARTRealtime, failOnError: Bool = true) -> PublishTestMessage {
-    return PublishTestMessage(client: realtime, failOnError: failOnError)
+@discardableResult func publishFirstTestMessage(_ realtime: ARTRealtime, channelName: String, failOnError: Bool = true) -> PublishTestMessage {
+    return PublishTestMessage(client: realtime, channelName: channelName, failOnError: failOnError)
 }
 
 /// Access Token

@@ -46,7 +46,7 @@ class ReadmeExamplesTests: XCTestCase {
         let client = ARTRealtime(options: options)
         defer { client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         channel.subscribe { message in
             print(message.name as Any)
@@ -66,7 +66,7 @@ class ReadmeExamplesTests: XCTestCase {
         let client = ARTRealtime(options: options)
         defer { client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         channel.history { messagesPage, _ in
             let messagesPage = messagesPage!
@@ -89,7 +89,7 @@ class ReadmeExamplesTests: XCTestCase {
 
         client.connection.on { stateChange in
             if stateChange.current == .connected {
-                let channel = client.channels.get("test")
+                let channel = client.channels.get(uniqueChannelName())
 
                 channel.presence.enter("john.doe") { _ in
                     channel.presence.get { _, _ in
@@ -105,7 +105,7 @@ class ReadmeExamplesTests: XCTestCase {
         let client = ARTRealtime(options: options)
         defer { client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         channel.presence.history { presencePage, _ in
             let presencePage = presencePage!
@@ -122,14 +122,14 @@ class ReadmeExamplesTests: XCTestCase {
 
     func test__009__testMakeRestClientAndChannel() {
         let client = ARTRest(key: "xxxx:xxxx")
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         _ = channel
     }
 
     func test__010__testRestPublishMessage() {
         let options = AblyTests.clientOptions(requestToken: true)
         let client = ARTRest(options: options)
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         channel.publish("myEvent", data: "Hello!")
     }
@@ -137,7 +137,7 @@ class ReadmeExamplesTests: XCTestCase {
     func test__011__testRestQueryingTheHistory() {
         let options = AblyTests.clientOptions(requestToken: true)
         let client = ARTRest(options: options)
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         channel.history { messagesPage, _ in
             let messagesPage = messagesPage!
@@ -153,7 +153,7 @@ class ReadmeExamplesTests: XCTestCase {
     func test__012__testRestPresenceOnAChannel() {
         let options = AblyTests.clientOptions(requestToken: true)
         let client = ARTRest(options: options)
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         channel.presence.get { membersPage, _ in
             let membersPage = membersPage!
@@ -169,7 +169,7 @@ class ReadmeExamplesTests: XCTestCase {
     func test__013__testRestQueryingThePresenceHistory() {
         let options = AblyTests.clientOptions(requestToken: true)
         let client = ARTRest(options: options)
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         channel.presence.history { presencePage, _ in
             let presencePage = presencePage!
@@ -195,7 +195,7 @@ class ReadmeExamplesTests: XCTestCase {
 
     func test__015__testFetchingStats() {
         let client = ARTRest(options: AblyTests.commonAppSetup())
-        client.channels.get("test").publish("foo", data: "bar") { _ in
+        client.channels.get(uniqueChannelName()).publish("foo", data: "bar") { _ in
             client.stats { statsPage, _ in
                 let statsPage = statsPage!
                 print(statsPage.items.first as Any)

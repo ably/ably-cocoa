@@ -45,7 +45,7 @@ private func rtl6c4TestsPublish(_ done: @escaping () -> Void) {
  This test makes a deep assumption about the content of these two files,
  specifically the format of the first message in the items array.
  */
-private func testHandlesDecodingErrorInFixture(_ cryptoFixtureFileName: String) {
+private func testHandlesDecodingErrorInFixture(_ cryptoFixtureFileName: String, channelName: String) {
     let options = AblyTests.commonAppSetup()
     options.autoConnect = false
     options.logHandler = ARTLog(capturingOutput: true)
@@ -59,7 +59,7 @@ private func testHandlesDecodingErrorInFixture(_ cryptoFixtureFileName: String) 
 
     let cipherParams = ARTCipherParams(algorithm: "aes", key: keyData as ARTCipherKeyCompatible, iv: ivData)
     let channelOptions = ARTRealtimeChannelOptions(cipher: cipherParams)
-    let channel = client.channels.get("test", options: channelOptions)
+    let channel = client.channels.get(channelName, options: channelOptions)
 
     let transport = client.internal.transport as! TestProxyTransport
 
@@ -108,11 +108,11 @@ private func testHandlesDecodingErrorInFixture(_ cryptoFixtureFileName: String) 
     }
 }
 
-private func testWithUntilAttach(_ untilAttach: Bool) {
+private func testWithUntilAttach(_ untilAttach: Bool, channelName: String) {
     let options = AblyTests.commonAppSetup()
     let client = ARTRealtime(options: options)
     defer { client.dispose(); client.close() }
-    let channel = client.channels.get("test")
+    let channel = client.channels.get(channelName)
 
     let testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
     client.internal.rest.httpExecutor = testHTTPExecutor
@@ -167,7 +167,10 @@ class RealtimeClientChannelTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         let client1 = AblyTests.newRealtime(options)
         defer { client1.dispose(); client1.close() }
-        let channel1 = client1.channels.get("room")
+        
+        let roomName = uniqueChannelName(prefix: "room")
+        
+        let channel1 = client1.channels.get(roomName)
 
         waitUntil(timeout: testTimeout) { done in
             channel1.presence.enterClient("Client 1", data: nil) { errorInfo in
@@ -179,7 +182,7 @@ class RealtimeClientChannelTests: XCTestCase {
         options.clientId = "Client 2"
         let client2 = AblyTests.newRealtime(options)
         defer { client2.dispose(); client2.close() }
-        let channel2 = client2.channels.get("room")
+        let channel2 = client2.channels.get(roomName)
 
         channel2.subscribe("Client 1") { message in
             expect(message.data as? String).to(equal("message"))
@@ -233,7 +236,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         expect(channel.internal.statesEventEmitter).to(beAKindOf(ARTEventEmitter<ARTEvent, ARTChannelStateChange>.self))
 
         var channelOnMethodCalled = false
@@ -300,7 +303,7 @@ class RealtimeClientChannelTests: XCTestCase {
         options.token = getTestToken(capability: "{\"secret\":[\"subscribe\"]}")
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.on { stateChange in
@@ -330,7 +333,7 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__005__Channel__EventEmitter__channel_states_and_events__should_implement_the_EventEmitter_and_emit_events_for_SUSPENDED_state_changes() {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
@@ -354,7 +357,7 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__006__Channel__EventEmitter__channel_states_and_events__can_emit_an_UPDATE_event() {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("foo")
+        let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
                 expect(error).to(beNil())
@@ -393,7 +396,7 @@ class RealtimeClientChannelTests: XCTestCase {
         options.logLevel = .debug
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("foo")
+        let channel = client.channels.get(uniqueChannelName())
 
         channel.on { stateChange in
             expect(stateChange.current).toNot(equal(stateChange.previous))
@@ -430,7 +433,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
 
         channel.attach()
@@ -442,7 +445,7 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__009__Channel__EventEmitter__channel_states_and_events__should_contain_an_ErrorInfo_object_with_details_when_an_error_occurs() {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         let pmError = AblyTests.newErrorProtocolMessage()
         waitUntil(timeout: testTimeout) { done in
@@ -464,7 +467,7 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__010__Channel__EventEmitter__channel_states_and_events__a_ChannelStateChange_is_emitted_as_the_first_argument_for_every_channel_state_change() {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.on { stateChange in
@@ -499,7 +502,7 @@ class RealtimeClientChannelTests: XCTestCase {
         options.tokenDetails = getTestTokenDetails(ttl: 5.0)
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.on { stateChange in
@@ -536,7 +539,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.once(.attached) { stateChange in
@@ -576,7 +579,7 @@ class RealtimeClientChannelTests: XCTestCase {
         client.connect()
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         channel.attach()
         let transport = client.internal.transport as! TestProxyTransport
         transport.actionsIgnored += [.attached]
@@ -603,7 +606,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         channel.attach()
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
 
@@ -636,8 +639,11 @@ class RealtimeClientChannelTests: XCTestCase {
         let transport = client.internal.transport as! TestProxyTransport
         transport.actionsIgnored += [.detached]
 
+        var channel0Name = ""
         for i in 0 ..< 100 { // We need a few channels to trigger iterator invalidation.
-            let channel = client.channels.get("test\(i)")
+            let channelName = uniqueChannelName(prefix: "channel\(i)")
+            if i == 0 { channel0Name = channelName }
+            let channel = client.channels.get(channelName)
             channel.attach() // No need to wait; ATTACHING state is good enough.
             expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attaching), timeout: testTimeout)
         }
@@ -645,7 +651,7 @@ class RealtimeClientChannelTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
 
-            client.channels.release("test0") { _ in
+            client.channels.release(channel0Name) { _ in
                 partialDone()
             }
 
@@ -664,7 +670,7 @@ class RealtimeClientChannelTests: XCTestCase {
         options.autoConnect = false
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("foo")
+        let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             expect(client.connection.state).to(equal(.initialized))
             channel.publish(nil, data: "message") { error in
@@ -695,7 +701,7 @@ class RealtimeClientChannelTests: XCTestCase {
         defer { client.dispose(); client.close() }
         client.internal.setTransport(TestProxyTransport.self)
         client.internal.setReachabilityClass(TestReachability.self)
-        let channel = client.channels.get("foo")
+        let channel = client.channels.get(uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { _ in
@@ -749,7 +755,7 @@ class RealtimeClientChannelTests: XCTestCase {
         defer { client.dispose(); client.close() }
         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         channel.attach()
         let transport = client.internal.transport as! TestProxyTransport
         transport.actionsIgnored += [.attached]
@@ -766,7 +772,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         channel.attach()
 
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
@@ -786,7 +792,7 @@ class RealtimeClientChannelTests: XCTestCase {
         client.connect()
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         channel.attach()
         let transport = client.internal.transport as! TestProxyTransport
         transport.actionsIgnored += [.attached]
@@ -802,7 +808,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         channel.attach()
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
         client.internal.onSuspended()
@@ -821,9 +827,12 @@ class RealtimeClientChannelTests: XCTestCase {
         // forced SUSPENDED message, not by a DETACHED.
         let transport = client.internal.transport as! TestProxyTransport
         transport.actionsIgnored += [.detached]
-
+        
+        var channel0Name = ""
         for i in 0 ..< 100 { // We need a few channels to trigger iterator invalidation.
-            let channel = client.channels.get("test\(i)")
+            let channelName = uniqueChannelName(prefix: "channel\(i)")
+            if i == 0 { channel0Name = channelName }
+            let channel = client.channels.get(channelName)
             channel.attach() // No need to wait; ATTACHING state is good enough.
             expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attaching), timeout: testTimeout)
         }
@@ -831,7 +840,7 @@ class RealtimeClientChannelTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
 
-            client.channels.release("test0") { _ in
+            client.channels.release(channel0Name) { _ in
                 partialDone()
             }
 
@@ -849,7 +858,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("foo")
+        let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
                 expect(error).to(beNil())
@@ -876,7 +885,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
                 expect(error).to(beNil())
@@ -913,7 +922,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let ttlHookToken = client.overrideConnectionStateTTL(3.0)
         defer { ttlHookToken.remove() }
 
-        let channel = client.channels.get("foo")
+        let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
                 expect(error).to(beNil())
@@ -969,7 +978,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         channel.once(.detached) { _ in
             fail("Should not reach the DETACHED state")
@@ -1000,7 +1009,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         channel.attach { errorInfo in
             expect(errorInfo).to(beNil())
@@ -1029,7 +1038,7 @@ class RealtimeClientChannelTests: XCTestCase {
         options.token = getTestToken(key: options.key!, capability: "{\"restricted\":[\"*\"]}")
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
@@ -1054,7 +1063,7 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__029__Channel__attach__if_the_channel_is_in_the_FAILED_state__the_attach_request_sets_its_errorReason_to_null__and_proceeds_with_a_channel_attach() {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         channel.attach()
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
@@ -1090,7 +1099,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let transport = client.internal.transport as! TestProxyTransport
         transport.actionsIgnored += [.closed]
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         client.close()
         expect(client.connection.state).to(equal(ARTRealtimeConnectionState.closing))
@@ -1107,7 +1116,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         client.close()
         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.closed), timeout: testTimeout)
@@ -1124,7 +1133,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         client.internal.onSuspended()
         expect(client.connection.state).to(equal(ARTRealtimeConnectionState.suspended))
         waitUntil(timeout: testTimeout) { done in
@@ -1139,7 +1148,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         client.internal.onError(AblyTests.newErrorProtocolMessage())
         expect(client.connection.state).to(equal(ARTRealtimeConnectionState.failed))
         waitUntil(timeout: testTimeout) { done in
@@ -1158,7 +1167,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         expect(client.connection.state).to(equal(.initialized))
         waitUntil(timeout: testTimeout) { done in
             channel.on(.attached) { stateChange in
@@ -1178,7 +1187,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             client.connect()
@@ -1197,7 +1206,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
 
@@ -1225,7 +1234,7 @@ class RealtimeClientChannelTests: XCTestCase {
         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
         let transport = client.internal.transport as! TestProxyTransport
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         channel.attach()
 
         expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
@@ -1242,7 +1251,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         channel.attach()
 
         waitUntil(timeout: testTimeout) { done in
@@ -1277,7 +1286,7 @@ class RealtimeClientChannelTests: XCTestCase {
         }
         transport.actionsIgnored += [.attached]
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.attach { errorInfo in
                 expect(errorInfo).toNot(beNil())
@@ -1307,7 +1316,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { errorInfo in
@@ -1322,7 +1331,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach()
@@ -1339,7 +1348,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         channel.attach()
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
@@ -1357,7 +1366,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("foo")
+        let channel = client.channels.get(uniqueChannelName())
 
         var attachedCount = 0
         channel.on(.attached) { stateChange in
@@ -1389,7 +1398,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("foo")
+        let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
                 expect(error).to(beNil())
@@ -1432,7 +1441,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("foo")
+        let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
                 expect(error).to(beNil())
@@ -1468,7 +1477,7 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__046__Channel__attach__attach_resume__should_pass_attach_resume_flag_in_attach_message() {
         let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("foo")
+        let channel = client.channels.get(uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
@@ -1509,7 +1518,7 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__047__Channel__attach__attach_resume__should_have_correct_AttachResume_value() {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("foo")
+        let channel = client.channels.get(uniqueChannelName())
 
         // Initialized
         expect(channel.internal.attachResume).to(equal(attachResumeExpectedValues[channel.state]))
@@ -1550,9 +1559,10 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__048__Channel__attach__attach_resume__should_encode_correctly_the_AttachResume_flag() {
         let options = AblyTests.commonAppSetup()
 
+        let channelName = uniqueChannelName()
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("foo")
+        let channel = client.channels.get(channelName)
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish("test", data: nil) { error in
@@ -1566,7 +1576,7 @@ class RealtimeClientChannelTests: XCTestCase {
 
         let client1 = ARTRealtime(options: options)
         defer { client1.dispose(); client1.close() }
-        let channelWithAttachResume = client1.channels.get("foo", options: channelOptions)
+        let channelWithAttachResume = client1.channels.get(channelName, options: channelOptions)
         channelWithAttachResume.internal.attachResume = true
         waitUntil(timeout: testTimeout) { done in
             channelWithAttachResume.subscribe { _ in
@@ -1584,7 +1594,7 @@ class RealtimeClientChannelTests: XCTestCase {
         channelOptions.modes = [.subscribe]
         let client2 = ARTRealtime(options: options)
         defer { client2.dispose(); client2.close() }
-        let channelWithoutAttachResume = client2.channels.get("foo", options: channelOptions)
+        let channelWithoutAttachResume = client2.channels.get(channelName, options: channelOptions)
         waitUntil(timeout: testTimeout) { done in
             channelWithoutAttachResume.subscribe { message in
                 expect(message.name).to(equal("test"))
@@ -1599,7 +1609,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
         channel.detach { errorInfo in
@@ -1631,7 +1641,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("foo")
+        let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
                 expect(error).to(beNil())
@@ -1682,7 +1692,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("foo")
+        let channel = client.channels.get(uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(3, done: done)
@@ -1714,7 +1724,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         client.internal.onError(AblyTests.newErrorProtocolMessage())
         expect(client.connection.state).to(equal(ARTRealtimeConnectionState.failed))
 
@@ -1738,7 +1748,7 @@ class RealtimeClientChannelTests: XCTestCase {
         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
         let transport = client.internal.transport as! TestProxyTransport
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         channel.attach()
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
         channel.detach()
@@ -1755,7 +1765,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         channel.attach()
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
@@ -1774,7 +1784,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         channel.attach()
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
@@ -1795,7 +1805,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         channel.attach()
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
@@ -1827,7 +1837,7 @@ class RealtimeClientChannelTests: XCTestCase {
         defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
         ARTDefault.setRealtimeRequestTimeout(1.0)
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         channel.attach()
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
 
@@ -1862,7 +1872,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let transport = client.internal.transport as! TestProxyTransport
         transport.actionsIgnored += [.closed]
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         channel.attach()
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
 
@@ -1881,7 +1891,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         channel.attach()
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
 
@@ -1903,7 +1913,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.attach()
             expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
@@ -1924,7 +1934,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             client.connect()
@@ -1944,7 +1954,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
 
@@ -1966,7 +1976,7 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__058__Channel__detach__if_the_channel_state_is_SUSPENDED__the__detach__request_transitions_the_channel_immediately_to_the_DETACHED_state() {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("foo")
+        let channel = client.channels.get(uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
@@ -2001,8 +2011,10 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__064__Channel__publish__should_encode_messages_in_the_same_way_as_the_RestChannel() {
         let data = ["value": 1]
 
+        let channelName = uniqueChannelName()
+        
         let rest = ARTRest(options: AblyTests.commonAppSetup())
-        let restChannel = rest.channels.get("test")
+        let restChannel = rest.channels.get(channelName)
 
         var restEncodedMessage: ARTMessage?
         restChannel.internal.testSuite_getReturnValue(from: NSSelectorFromString("encodeMessageIfNeeded:error:")) { value in
@@ -2018,7 +2030,7 @@ class RealtimeClientChannelTests: XCTestCase {
 
         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { realtime.close() }
-        let realtimeChannel = realtime.channels.get("test")
+        let realtimeChannel = realtime.channels.get(channelName)
         realtimeChannel.attach()
         expect(realtimeChannel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
 
@@ -2054,7 +2066,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 let error = stateChange.reason
                 expect(error).to(beNil())
                 if state == .connected {
-                    let channel = client.channels.get("test")
+                    let channel = client.channels.get(uniqueChannelName())
                     channel.on { stateChange in
                         if stateChange.current == .attached {
                             channel.publish(nil, data: "message") { errorInfo in
@@ -2071,7 +2083,8 @@ class RealtimeClientChannelTests: XCTestCase {
 
     func test__068__Channel__publish__should_invoke_callback__upon_failure() {
         let options = AblyTests.commonAppSetup()
-        options.token = getTestToken(key: options.key, capability: "{ \"\(options.channelNamePrefix!)-test\":[\"subscribe\"] }")
+        let channelname = uniqueChannelName()
+        options.token = getTestToken(key: options.key, capability: "{ \"\(options.channelNamePrefix!)-\(channelname)\":[\"subscribe\"] }")
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
@@ -2081,7 +2094,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 let error = stateChange.reason
                 expect(error).to(beNil())
                 if state == .connected {
-                    let channel = client.channels.get("test")
+                    let channel = client.channels.get(channelname)
                     channel.on { stateChange in
                         if stateChange.current == .attached {
                             channel.publish(nil, data: "message") { errorInfo in
@@ -2103,14 +2116,19 @@ class RealtimeClientChannelTests: XCTestCase {
 
     func test__069__Channel__publish__should_invoke_callback__for_all_messages_published() {
         let options = AblyTests.commonAppSetup()
-        options.token = getTestToken(key: options.key, capability: "{ \"\(options.channelNamePrefix!)-channelToSucceed\":[\"subscribe\", \"publish\"], \"\(options.channelNamePrefix!)-channelToFail\":[\"subscribe\"] }")
+        
+        let channelToSucceedName = uniqueChannelName(prefix: "channelToSucceed")
+        let channelToFailName = uniqueChannelName(prefix: "channelToFail")
+        
+        options.token = getTestToken(key: options.key, capability: "{ \"\(options.channelNamePrefix!)-\(channelToSucceedName)\":[\"subscribe\", \"publish\"], \"\(options.channelNamePrefix!)-\(channelToFailName)\":[\"subscribe\"] }")
+        
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
         TotalMessages.succeeded = 0
         TotalMessages.failed = 0
 
-        let channelToSucceed = client.channels.get("channelToSucceed")
+        let channelToSucceed = client.channels.get(channelToSucceedName)
         channelToSucceed.on { stateChange in
             if stateChange.current == .attached {
                 for index in 1 ... TotalMessages.expected {
@@ -2125,7 +2143,7 @@ class RealtimeClientChannelTests: XCTestCase {
         }
         channelToSucceed.attach()
 
-        let channelToFail = client.channels.get("channelToFail")
+        let channelToFail = client.channels.get(channelToFailName)
         channelToFail.on { stateChange in
             if stateChange.current == .attached {
                 for index in 1 ... TotalMessages.expected {
@@ -2151,7 +2169,7 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__071__Channel__publish__Connection_state_conditions__if_the_connection_is_CONNECTED_and_the_channel_is__ATTACHED_then_the_messages_should_be_published_immediately() {
         let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         channel.attach()
 
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
@@ -2174,7 +2192,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 done()
             }
         }
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
         expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connected))
 
@@ -2192,7 +2210,7 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__073__Channel__publish__Connection_state_conditions__if_the_connection_is_CONNECTED_and_the_channel_is__DETACHED_then_the_messages_should_be_published_immediately() {
         let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.attach { _ in
                 done()
@@ -2220,7 +2238,7 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__074__Channel__publish__Connection_state_conditions__if_the_connection_is_CONNECTED_and_the_channel_is__ATTACHING_then_the_messages_should_be_published_immediately() {
         let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { _ in
                 done()
@@ -2247,7 +2265,7 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__075__Channel__publish__Connection_state_conditions__if_the_connection_is_CONNECTED_and_the_channel_is__DETACHING_then_the_messages_should_be_published_immediately() {
         let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.attach { _ in
                 done()
@@ -2274,19 +2292,19 @@ class RealtimeClientChannelTests: XCTestCase {
 
     // RTL6c2
 
-    func beforeEach__Channel__publish__Connection_state_conditions__the_message() {
+    func beforeEach__Channel__publish__Connection_state_conditions__the_message(channelName: String) {
         let options = AblyTests.commonAppSetup()
         options.useTokenAuth = true
         options.autoConnect = false
         rtl6c2TestsClient = AblyTests.newRealtime(options)
-        rtl6c2TestsChannel = rtl6c2TestsClient.channels.get("test")
+        rtl6c2TestsChannel = rtl6c2TestsClient.channels.get(channelName)
         expect(rtl6c2TestsClient.internal.options.queueMessages).to(beTrue())
     }
 
     func afterEach__Channel__publish__Connection_state_conditions__the_message() { rtl6c2TestsClient.close() }
 
     func test__076__Channel__publish__Connection_state_conditions__the_message__should_be_queued_and_delivered_as_soon_as_the_connection_state_returns_to_CONNECTED_if_the_connection_is__INITIALIZED() {
-        beforeEach__Channel__publish__Connection_state_conditions__the_message()
+        beforeEach__Channel__publish__Connection_state_conditions__the_message(channelName: uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             expect(rtl6c2TestsClient.connection.state).to(equal(ARTRealtimeConnectionState.initialized))
@@ -2299,7 +2317,7 @@ class RealtimeClientChannelTests: XCTestCase {
     }
 
     func test__077__Channel__publish__Connection_state_conditions__the_message__should_be_queued_and_delivered_as_soon_as_the_connection_state_returns_to_CONNECTED_if_the_connection_is__CONNECTING() {
-        beforeEach__Channel__publish__Connection_state_conditions__the_message()
+        beforeEach__Channel__publish__Connection_state_conditions__the_message(channelName: uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             rtl6c2TestsClient.connect()
@@ -2312,7 +2330,7 @@ class RealtimeClientChannelTests: XCTestCase {
     }
 
     func test__078__Channel__publish__Connection_state_conditions__the_message__should_be_queued_and_delivered_as_soon_as_the_connection_state_returns_to_CONNECTED_if_the_connection_is__DISCONNECTED() {
-        beforeEach__Channel__publish__Connection_state_conditions__the_message()
+        beforeEach__Channel__publish__Connection_state_conditions__the_message(channelName: uniqueChannelName())
 
         rtl6c2TestsClient.connect()
         expect(rtl6c2TestsClient.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
@@ -2328,7 +2346,7 @@ class RealtimeClientChannelTests: XCTestCase {
     }
 
     func test__079__Channel__publish__Connection_state_conditions__the_message__should_NOT_be_queued_instead_it_should_be_published_if_the_channel_is__INITIALIZED() {
-        beforeEach__Channel__publish__Connection_state_conditions__the_message()
+        beforeEach__Channel__publish__Connection_state_conditions__the_message(channelName: uniqueChannelName())
 
         rtl6c2TestsClient.connect()
         expect(rtl6c2TestsChannel.state).to(equal(ARTRealtimeChannelState.initialized))
@@ -2345,7 +2363,7 @@ class RealtimeClientChannelTests: XCTestCase {
     }
 
     func test__080__Channel__publish__Connection_state_conditions__the_message__should_NOT_be_queued_instead_it_should_be_published_if_the_channel_is__ATTACHING() {
-        beforeEach__Channel__publish__Connection_state_conditions__the_message()
+        beforeEach__Channel__publish__Connection_state_conditions__the_message(channelName: uniqueChannelName())
 
         rtl6c2TestsClient.connect()
         expect(rtl6c2TestsClient.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
@@ -2362,7 +2380,7 @@ class RealtimeClientChannelTests: XCTestCase {
     }
 
     func test__081__Channel__publish__Connection_state_conditions__the_message__should_NOT_be_queued_instead_it_should_be_published_if_the_channel_is__ATTACHED() {
-        beforeEach__Channel__publish__Connection_state_conditions__the_message()
+        beforeEach__Channel__publish__Connection_state_conditions__the_message(channelName: uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             rtl6c2TestsChannel.attach { error in
@@ -2400,11 +2418,11 @@ class RealtimeClientChannelTests: XCTestCase {
 
     // RTL6c4
 
-    func beforeEach__Channel__publish__Connection_state_conditions__will_result_in_an_error_if_the() {
+    func beforeEach__Channel__publish__Connection_state_conditions__will_result_in_an_error_if_the(channelName: String) {
         setupDependencies()
         ARTDefault.setConnectionStateTtl(0.3)
         rtl6c4TestsClient = AblyTests.newRealtime(options)
-        rtl6c4TestsChannel = rtl6c4TestsClient.channels.get("test")
+        rtl6c4TestsChannel = rtl6c4TestsClient.channels.get(channelName)
     }
 
     func afterEach__Channel__publish__Connection_state_conditions__will_result_in_an_error_if_the() {
@@ -2413,7 +2431,7 @@ class RealtimeClientChannelTests: XCTestCase {
     }
 
     func test__082__Channel__publish__Connection_state_conditions__will_result_in_an_error_if_the__connection_is_SUSPENDED() {
-        beforeEach__Channel__publish__Connection_state_conditions__will_result_in_an_error_if_the()
+        beforeEach__Channel__publish__Connection_state_conditions__will_result_in_an_error_if_the(channelName: uniqueChannelName())
 
         rtl6c4TestsClient.connect()
         expect(rtl6c4TestsClient.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
@@ -2427,7 +2445,7 @@ class RealtimeClientChannelTests: XCTestCase {
     }
 
     func test__083__Channel__publish__Connection_state_conditions__will_result_in_an_error_if_the__connection_is_CLOSING() {
-        beforeEach__Channel__publish__Connection_state_conditions__will_result_in_an_error_if_the()
+        beforeEach__Channel__publish__Connection_state_conditions__will_result_in_an_error_if_the(channelName: uniqueChannelName())
 
         rtl6c4TestsClient.connect()
         expect(rtl6c4TestsClient.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
@@ -2441,7 +2459,7 @@ class RealtimeClientChannelTests: XCTestCase {
     }
 
     func test__084__Channel__publish__Connection_state_conditions__will_result_in_an_error_if_the__connection_is_CLOSED() {
-        beforeEach__Channel__publish__Connection_state_conditions__will_result_in_an_error_if_the()
+        beforeEach__Channel__publish__Connection_state_conditions__will_result_in_an_error_if_the(channelName: uniqueChannelName())
 
         rtl6c4TestsClient.connect()
         expect(rtl6c4TestsClient.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
@@ -2455,7 +2473,7 @@ class RealtimeClientChannelTests: XCTestCase {
     }
 
     func test__085__Channel__publish__Connection_state_conditions__will_result_in_an_error_if_the__connection_is_FAILED() {
-        beforeEach__Channel__publish__Connection_state_conditions__will_result_in_an_error_if_the()
+        beforeEach__Channel__publish__Connection_state_conditions__will_result_in_an_error_if_the(channelName: uniqueChannelName())
 
         rtl6c4TestsClient.connect()
         expect(rtl6c4TestsClient.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
@@ -2469,7 +2487,7 @@ class RealtimeClientChannelTests: XCTestCase {
     }
 
     func test__086__Channel__publish__Connection_state_conditions__will_result_in_an_error_if_the__channel_is_SUSPENDED() {
-        beforeEach__Channel__publish__Connection_state_conditions__will_result_in_an_error_if_the()
+        beforeEach__Channel__publish__Connection_state_conditions__will_result_in_an_error_if_the(channelName: uniqueChannelName())
 
         rtl6c4TestsClient.connect()
         rtl6c4TestsChannel.attach()
@@ -2484,7 +2502,7 @@ class RealtimeClientChannelTests: XCTestCase {
     }
 
     func test__087__Channel__publish__Connection_state_conditions__will_result_in_an_error_if_the__channel_is_FAILED() {
-        beforeEach__Channel__publish__Connection_state_conditions__will_result_in_an_error_if_the()
+        beforeEach__Channel__publish__Connection_state_conditions__will_result_in_an_error_if_the(channelName: uniqueChannelName())
 
         rtl6c4TestsClient.connect()
         rtl6c4TestsChannel.attach()
@@ -2504,7 +2522,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             let protocolError = AblyTests.newErrorProtocolMessage()
             expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
@@ -2531,7 +2549,7 @@ class RealtimeClientChannelTests: XCTestCase {
         options.autoConnect = false
         let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         // Test that the initially queued messages are sent together.
 
@@ -2585,7 +2603,7 @@ class RealtimeClientChannelTests: XCTestCase {
         options.autoConnect = false
         let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("test-maxMessageSize")
+        let channel = client.channels.get(uniqueChannelName())
         // This amount of messages would be beyond maxMessageSize, if bundled together
         let messagesToBeSent = 2000
 
@@ -2617,7 +2635,7 @@ class RealtimeClientChannelTests: XCTestCase {
         options.autoConnect = false
         let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("test-message-bundling-prevention")
+        let channel = client.channels.get(uniqueChannelName())
         let clientIDs = ["client1", "client2", "client3"]
 
         waitUntil(timeout: testTimeout) { done in
@@ -2641,7 +2659,7 @@ class RealtimeClientChannelTests: XCTestCase {
         options.autoConnect = false
         let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("test-message-bundling-prevention")
+        let channel = client.channels.get(uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
@@ -2666,7 +2684,7 @@ class RealtimeClientChannelTests: XCTestCase {
         options.autoConnect = false
         let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("test-message-bundling-prevention")
+        let channel = client.channels.get(uniqueChannelName())
         var messages = [ARTMessage]()
         for i in 1 ... 3 {
             messages.append(ARTMessage(name: "name\(i)", data: "data\(i)", clientId: "clientId\(i)"))
@@ -2695,8 +2713,8 @@ class RealtimeClientChannelTests: XCTestCase {
         options.autoConnect = false
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channelOne = client.channels.get("bundlingOne")
-        let channelTwo = client.channels.get("bundlingTwo")
+        let channelOne = client.channels.get(uniqueChannelName(prefix: "bundlingOne"))
+        let channelTwo = client.channels.get(uniqueChannelName(prefix: "bundlingTwo"))
 
         channelTwo.publish("2a", data: ["expectedBundle": 0])
         channelOne.publish("a", data: ["expectedBundle": 1])
@@ -2761,7 +2779,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("idempotentRealtimePublishing")
+        let channel = client.channels.get(uniqueChannelName(prefix: "idempotentRealtimePublishing"))
 
         waitUntil(timeout: testTimeout) { done in
             channel.once(.attached) { stateChange in
@@ -2801,7 +2819,7 @@ class RealtimeClientChannelTests: XCTestCase {
 
         expect(client.auth.clientId).to(beNil())
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         var resultClientId: String?
 
@@ -2827,7 +2845,7 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__065__Channel__publish__Message_connectionId_should_match_the_current_Connection_id_for_all_published_messages() {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.subscribe { message in
@@ -2847,7 +2865,7 @@ class RealtimeClientChannelTests: XCTestCase {
         client.internal.setTransport(TestProxyTransport.self)
         client.connect()
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         typealias JSONObject = NSDictionary
 
         var result = [JSONObject]()
@@ -2867,7 +2885,7 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__097__Channel__publish__expect_either__a_name_string_and_data_payload() {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         let expectedResult = "string_data"
         var result: String?
@@ -2888,7 +2906,7 @@ class RealtimeClientChannelTests: XCTestCase {
         client.internal.setTransport(TestProxyTransport.self)
         client.connect()
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
         let expectedObject = ["data": "message", "connectionId": client.connection.id!]
@@ -2926,7 +2944,7 @@ class RealtimeClientChannelTests: XCTestCase {
         client.internal.setTransport(TestProxyTransport.self)
         client.connect()
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
         let expectedObject = ["name": "click", "connectionId": client.connection.id!]
@@ -2964,7 +2982,7 @@ class RealtimeClientChannelTests: XCTestCase {
         client.internal.setTransport(TestProxyTransport.self)
         client.connect()
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
         let expectedObject = ["name": "click", "data": "message", "connectionId": client.connection.id!]
@@ -2999,7 +3017,7 @@ class RealtimeClientChannelTests: XCTestCase {
         client.internal.setTransport(TestProxyTransport.self)
         client.connect()
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         let message = ARTMessage(name: nil, data: "message")
         expect(message.clientId).to(beNil())
@@ -3027,7 +3045,7 @@ class RealtimeClientChannelTests: XCTestCase {
         options.clientId = "john"
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         let message = ARTMessage(name: nil, data: "message", clientId: options.clientId!)
         var resultClientId: String?
@@ -3053,7 +3071,7 @@ class RealtimeClientChannelTests: XCTestCase {
         options.clientId = "john"
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish([ARTMessage(name: nil, data: "message", clientId: "tester")]) { error in
@@ -3078,7 +3096,7 @@ class RealtimeClientChannelTests: XCTestCase {
         }
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         let message = ARTMessage(name: nil, data: "message", clientId: "john")
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
@@ -3101,7 +3119,7 @@ class RealtimeClientChannelTests: XCTestCase {
         }
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         let message = ARTMessage(name: nil, data: "message", clientId: "tester")
         waitUntil(timeout: testTimeout) { done in
             channel.publish([message]) { error in
@@ -3115,7 +3133,7 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__066__Channel__publish__should_provide_an_optional_argument_that_allows_the_clientId_value_to_be_specified() {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
@@ -3139,7 +3157,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         class Test {
             static var counter = 0
@@ -3163,7 +3181,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         class Test {
             static var counter = 0
@@ -3188,7 +3206,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         let publishedMessage = ARTMessage(name: "foo", data: "bar")
 
@@ -3214,7 +3232,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         channel.subscribe { _ in }
 
@@ -3226,7 +3244,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         channel.internal.onError(AblyTests.newErrorProtocolMessage())
         expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
 
@@ -3245,11 +3263,11 @@ class RealtimeClientChannelTests: XCTestCase {
     // RTL7d
 
     func test__112__Channel__subscribe__should_deliver_the_message_even_if_there_is_an_error_while_decoding__using_crypto_data_128() {
-        testHandlesDecodingErrorInFixture("crypto-data-128")
+        testHandlesDecodingErrorInFixture("crypto-data-128", channelName: uniqueChannelName())
     }
 
     func test__113__Channel__subscribe__should_deliver_the_message_even_if_there_is_an_error_while_decoding__using_crypto_data_256() {
-        testHandlesDecodingErrorInFixture("crypto-data-256")
+        testHandlesDecodingErrorInFixture("crypto-data-256", channelName: uniqueChannelName())
     }
 
     // RTL7e
@@ -3263,7 +3281,7 @@ class RealtimeClientChannelTests: XCTestCase {
         defer { client.dispose(); client.close() }
 
         let channelOptions = ARTRealtimeChannelOptions(cipher: ["key": ARTCrypto.generateRandomKey()] as ARTCipherParamsCompatible)
-        let channel = client.channels.get("test", options: channelOptions)
+        let channel = client.channels.get(uniqueChannelName(), options: channelOptions)
 
         let expectedMessage = ["key": 1]
         let expectedData = try! JSONSerialization.data(withJSONObject: expectedMessage, options: JSONSerialization.WritingOptions(rawValue: 0))
@@ -3309,8 +3327,9 @@ class RealtimeClientChannelTests: XCTestCase {
         let client2 = ARTRealtime(options: options)
         defer { client2.close() }
 
-        let channel1 = client1.channels.get("test")
-        let channel2 = client2.channels.get("test")
+        let channelName = uniqueChannelName()
+        let channel1 = client1.channels.get(channelName)
+        let channel2 = client2.channels.get(channelName)
 
         waitUntil(timeout: testTimeout) { done in
             channel1.attach { err in
@@ -3336,7 +3355,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             let listener = channel.subscribe { _ in
@@ -3358,7 +3377,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             let eventAListener = channel.subscribe("eventA") { _ in
@@ -3386,8 +3405,8 @@ class RealtimeClientChannelTests: XCTestCase {
         let realtime = ARTRealtime(options: options)
         defer { realtime.close() }
 
-        let channelRest = rest.channels.get("test")
-        let channelRealtime = realtime.channels.get("test")
+        let channelRest = rest.channels.get(uniqueChannelName())
+        let channelRealtime = realtime.channels.get(uniqueChannelName())
 
         var restChannelHistoryMethodWasCalled = false
 
@@ -3439,7 +3458,7 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__124__Channel__history__supports_the_param_untilAttach__should_invoke_an_error_when_the_untilAttach_is_specified_and_the_channel_is_not_attached() {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
 
         let query = ARTRealtimeHistoryQuery()
         query.untilAttach = true
@@ -3456,11 +3475,11 @@ class RealtimeClientChannelTests: XCTestCase {
     }
 
     func test__125__Channel__history__supports_the_param_untilAttach__where_value_is_true__should_pass_the_querystring_param_fromSerial_with_the_serial_number_assigned_to_the_channel() {
-        testWithUntilAttach(true)
+        testWithUntilAttach(true, channelName: uniqueChannelName())
     }
 
     func test__126__Channel__history__supports_the_param_untilAttach__where_value_is_false__should_pass_the_querystring_param_fromSerial_with_the_serial_number_assigned_to_the_channel() {
-        testWithUntilAttach(true)
+        testWithUntilAttach(true, channelName: uniqueChannelName())
     }
 
     func test__127__Channel__history__supports_the_param_untilAttach__should_retrieve_messages_prior_to_the_moment_that_the_channel_was_attached() {
@@ -3472,7 +3491,9 @@ class RealtimeClientChannelTests: XCTestCase {
         let client2 = ARTRealtime(options: options)
         defer { client2.close() }
 
-        let channel1 = client1.channels.get("test")
+        let channelName = uniqueChannelName()
+        
+        let channel1 = client1.channels.get(channelName)
         channel1.attach()
         expect(channel1.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
 
@@ -3488,7 +3509,7 @@ class RealtimeClientChannelTests: XCTestCase {
         }
 
         client2.connect()
-        let channel2 = client2.channels.get("test")
+        let channel2 = client2.channels.get(channelName)
         channel2.attach()
         expect(channel2.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
 
@@ -3533,7 +3554,7 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__118__Channel__history__should_return_a_PaginatedResult_page() {
         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { realtime.close() }
-        let channel = realtime.channels.get("test")
+        let channel = realtime.channels.get(uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "message") { errorInfo in
@@ -3566,8 +3587,10 @@ class RealtimeClientChannelTests: XCTestCase {
 
         let client2 = ARTRealtime(options: options)
         defer { client2.close() }
+        
+        let channelName = uniqueChannelName()
 
-        let channel1 = client1.channels.get("test")
+        let channel1 = client1.channels.get(channelName)
         channel1.attach()
         expect(channel1.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
 
@@ -3582,7 +3605,7 @@ class RealtimeClientChannelTests: XCTestCase {
             }
         }
 
-        let channel2 = client2.channels.get("test")
+        let channel2 = client2.channels.get(channelName)
         channel2.attach()
         expect(channel2.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
 
@@ -3615,7 +3638,7 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__120__Channel__history__attached_channel_may_receive_an_additional_ATTACHED_ProtocolMessage() {
         let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("test")
+        let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
                 expect(error).to(beNil())
@@ -3636,6 +3659,11 @@ class RealtimeClientChannelTests: XCTestCase {
             attachedMessage.action = .attached
             attachedMessage.channel = channel.name
 
+            /* TODO: ->
+             this callback called twice leading to a fail with "waitUntil(..) expects its completion closure to be only called once"
+             however sometimes it called once thus succeeding this test!
+             https://github.com/ably/ably-cocoa/issues/1281
+             */
             hook = channel.internal.testSuite_injectIntoMethod(after: #selector(channel.internal.onChannelMessage(_:))) {
                 done()
             }
@@ -3671,7 +3699,7 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__128__Channel__history__if_the_channel_receives_a_server_initiated_DETACHED_message_when__the_channel_is_in_the_ATTACHED_states__an_attempt_to_reattach_the_channel_should_be_made_immediately_by_sending_a_new_ATTACH_message_and_the_channel_should_transition_to_the_ATTACHING_state_with_the_error_emitted_in_the_ChannelStateChange_event() {
         let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("foo")
+        let channel = client.channels.get(uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
@@ -3726,7 +3754,7 @@ class RealtimeClientChannelTests: XCTestCase {
         defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
         ARTDefault.setRealtimeRequestTimeout(1.0)
 
-        let channel = client.channels.get("foo")
+        let channel = client.channels.get(uniqueChannelName())
 
         // Timeout
         transport.actionsIgnored += [.attached]
@@ -3767,7 +3795,7 @@ class RealtimeClientChannelTests: XCTestCase {
         options.channelRetryTimeout = 1.0
         let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("foo")
+        let channel = client.channels.get(uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
@@ -3829,7 +3857,7 @@ class RealtimeClientChannelTests: XCTestCase {
         options.channelRetryTimeout = 1.0
         let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("foo")
+        let channel = client.channels.get(uniqueChannelName())
 
         let detachedMessageWithError = AblyTests.newErrorProtocolMessage()
         detachedMessageWithError.action = .detached
@@ -3868,7 +3896,7 @@ class RealtimeClientChannelTests: XCTestCase {
         options.channelRetryTimeout = 1.0
         let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("foo")
+        let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
                 expect(error).to(beNil())
@@ -3924,7 +3952,7 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__121__Channel__history__If_an_ERROR_ProtocolMessage_is_received_for_this_channel_then_the_channel_should_immediately_transition_to_the_FAILED_state__the_errorReason_should_be_set_and_an_error_should_be_emitted_on_the_channel() {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("foo")
+        let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
                 expect(error).to(beNil())
@@ -3959,7 +3987,7 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__133__Channel__history__Channel_options__setOptions__should_send_an_ATTACH_message_with_params___modes_if_the_channel_is_attached() {
         let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("foo")
+        let channel = client.channels.get(uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
@@ -4027,7 +4055,7 @@ class RealtimeClientChannelTests: XCTestCase {
             "delta": "vcdiff",
         ]
 
-        let channel = client.channels.get("foo")
+        let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(3, done: done)
             channel.once(.attaching) { _ in
@@ -4069,7 +4097,7 @@ class RealtimeClientChannelTests: XCTestCase {
         options.autoConnect = false
         let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("foo")
+        let channel = client.channels.get(uniqueChannelName())
 
         let channelOptions = ARTRealtimeChannelOptions()
         channelOptions.modes = [.subscribe]
@@ -4091,7 +4119,7 @@ class RealtimeClientChannelTests: XCTestCase {
         options.token = getTestToken(capability: "{\"secret\":[\"subscribe\"]}") // access denied
         let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("foo")
+        let channel = client.channels.get(uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { _ in
@@ -4139,7 +4167,7 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__137__Channel__history__Channel_options__setOptions__should_fail_if_the_attach_moves_to_DETACHED() {
         let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("foo")
+        let channel = client.channels.get(uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { _ in
@@ -4192,7 +4220,7 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__Channel_options__setOptions__shouldUpdateOptionsOfRestChannel() {
         let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("foo")
+        let channel = client.channels.get(uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { _ in
@@ -4227,7 +4255,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         let client = ARTRealtime(options: options)
         defer { client.close(); client.dispose() }
-        let channel = client.channels.get("foo")
+        let channel = client.channels.get(uniqueChannelName())
 
         let m1 = ARTMessage(name: "m1", data: "d1")
         let m2 = ARTMessage(name: "m2", data: "d2")
@@ -4284,8 +4312,9 @@ class RealtimeClientChannelTests: XCTestCase {
         clientReceiver.connect()
 
         let key = ARTCrypto.generateRandomKey()
-        let sender = clientSender.channels.get("test", options: ARTRealtimeChannelOptions(cipherKey: key as ARTCipherKeyCompatible))
-        let receiver = clientReceiver.channels.get("test", options: ARTRealtimeChannelOptions(cipherKey: key as ARTCipherKeyCompatible))
+        let channelName = uniqueChannelName()
+        let sender = clientSender.channels.get(channelName, options: ARTRealtimeChannelOptions(cipherKey: key as ARTCipherKeyCompatible))
+        let receiver = clientReceiver.channels.get(channelName, options: ARTRealtimeChannelOptions(cipherKey: key as ARTCipherKeyCompatible))
 
         var received = [ARTMessage]()
 
@@ -4358,7 +4387,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get("foo")
+        let channel = client.channels.get(uniqueChannelName())
 
         let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
         defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
@@ -4395,7 +4424,7 @@ class RealtimeClientChannelTests: XCTestCase {
         p.id = "protocolId"
         let m = ARTMessage(name: nil, data: "message without ID")
         p.messages = [m]
-        let channel = client.channels.get(NSUUID().uuidString)
+        let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.attach { _ in
                 done()

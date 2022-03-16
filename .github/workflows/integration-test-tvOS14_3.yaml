@@ -1,4 +1,4 @@
-name: "Integration Test: iOS 11"
+name: "Integration Test: tvOS 14.3"
 
 on:
   pull_request:
@@ -27,10 +27,11 @@ jobs:
 
       - name: Install Dependencies and Run Tests
         run: |
+          brew install xcbeautify
           make submodules
           bundle install
-          make update_carthage_dependencies
-          bundle exec fastlane test_iOS11
+          make update_carthage_dependencies_tvos
+          bundle exec fastlane test_tvOS14_3
 
       - name: Check Static Analyzer Output
         id: analyzer-output
@@ -46,7 +47,7 @@ jobs:
         if: ${{ failure() && steps.analyzer-output.outcome == 'failure' }}
         uses: actions/upload-artifact@v2
         with:
-          name: static-analyzer-reports-test_iOS11
+          name: static-analyzer-reports-test_tvOS14_3
           path: ./derived_data/**/report-*.html
 
       # This is the script specified as the pod’s prepare_command in its Podspec.
@@ -61,7 +62,7 @@ jobs:
         run: |
           pod repo update
           pod install
-          bundle exec fastlane scan -s Tests
+          bundle exec fastlane scan -s Tests --output-directory "fastlane/test_output/examples/test_tvOS_14_3"
       
       - name: Xcodebuild Logs Artifact
         if: always()
@@ -69,6 +70,12 @@ jobs:
         with:
           name: xcodebuild-logs
           path: ~/Library/Developer/Xcode/DerivedData/*/Logs
+
+      - name: Upload test results to observability server
+        if: always()
+        env:
+          TEST_OBSERVABILITY_SERVER_AUTH_KEY: ${{ secrets.TEST_OBSERVABILITY_SERVER_AUTH_KEY }}
+        run: Scripts/upload_test_results.sh
       
       - name: Swift Package Manager - Installation Test
         working-directory: ./

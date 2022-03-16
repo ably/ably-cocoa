@@ -2,51 +2,24 @@ default_platform(:ios)
 
 platform :ios do
 
-  lane :test_iOS12 do
+  lane :test_iOS14_4 do
     run_tests(
       scheme: "Ably-iOS-Tests",
       derived_data_path: "derived_data",
-      devices: ["iPhone XS (12.0)"],
-      xcargs: { ABLY_ENV: ENV['ABLY_ENV'], CLANG_ANALYZER_OUTPUT: 'plist-html' }
-    )
-  end
-
-  lane :test_iOS11 do
-    run_tests(
-      scheme: "Ably-iOS-Tests",
-      derived_data_path: "derived_data",
-      devices: ["iPhone 8 (11.4)"],
+      devices: ["iPhone 12 (14.4)"],
       test_without_building: false,
-      xcargs: { ABLY_ENV: ENV['ABLY_ENV'], CLANG_ANALYZER_OUTPUT: 'plist-html' }
+      xcargs: { ABLY_ENV: ENV['ABLY_ENV'], CLANG_ANALYZER_OUTPUT: 'plist-html' },
+      output_directory: "fastlane/test_output/sdk/test_iOS14_4"
     )
   end
 
-  lane :test_iOS10 do
-    run_tests(
-      scheme: "Ably-iOS-Tests",
-      derived_data_path: "derived_data",
-      devices: ["iPhone 7 (10.3.1)"],
-      test_without_building: false,
-      xcargs: { ABLY_ENV: ENV['ABLY_ENV'], CLANG_ANALYZER_OUTPUT: 'plist-html' }
-    )
-  end
-
-  lane :test_iOS9 do
-    run_tests(
-      scheme: "Ably-iOS-Tests",
-      derived_data_path: "derived_data",
-      devices: ["iPhone 6 (9.3)"],
-      test_without_building: false,
-      xcargs: { ABLY_ENV: ENV['ABLY_ENV'], CLANG_ANALYZER_OUTPUT: 'plist-html' }
-    )
-  end
-
-  lane :test_tvOS12 do
+  lane :test_tvOS14_3 do
     run_tests(
       scheme: "Ably-tvOS-Tests",
       derived_data_path: "derived_data",
-      devices: ["Apple TV 4K"],
-      xcargs: { ABLY_ENV: ENV['ABLY_ENV'], CLANG_ANALYZER_OUTPUT: 'plist-html' }
+      devices: ["Apple TV 4K (14.3)"],
+      xcargs: { ABLY_ENV: ENV['ABLY_ENV'], CLANG_ANALYZER_OUTPUT: 'plist-html' },
+      output_directory: "fastlane/test_output/sdk/test_tvOS14_3"
     )
   end
 
@@ -55,7 +28,8 @@ platform :ios do
       scheme: "Ably-macOS-Tests",
       derived_data_path: "derived_data",
       test_without_building: false,
-      xcargs: { ABLY_ENV: ENV['ABLY_ENV'], CLANG_ANALYZER_OUTPUT: 'plist-html' }
+      xcargs: { ABLY_ENV: ENV['ABLY_ENV'], CLANG_ANALYZER_OUTPUT: 'plist-html' },
+      output_directory: "fastlane/test_output/sdk/test_macOS"
     )
   end
 

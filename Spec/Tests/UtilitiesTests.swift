@@ -110,7 +110,7 @@ class UtilitiesTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         let realtime = ARTRealtime(options: options)
         defer { realtime.close() }
-        let channel = realtime.channels.get("foo")
+        let channel = realtime.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.publish("test", data: NSDate()) { error in
                 guard let error = error else {
@@ -139,7 +139,7 @@ class UtilitiesTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         let realtime = ARTRealtime(options: options)
         defer { realtime.close() }
-        let channel = realtime.channels.get("foo")
+        let channel = realtime.channels.get(uniqueChannelName())
 
         // Garbage values (whatever is on the heap)
         let bytes = UnsafeMutablePointer<Int>.allocate(capacity: 1)
@@ -175,7 +175,7 @@ class UtilitiesTests: XCTestCase {
 
         let options = AblyTests.commonAppSetup()
         let rest = ARTRest(options: options)
-        let channel = rest.channels.get("foo")
+        let channel = rest.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.publish("test", data: NSDate()) { error in
                 guard let error = error else {
@@ -205,7 +205,7 @@ class UtilitiesTests: XCTestCase {
         let rest = ARTRest(options: options)
         let testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
         rest.internal.httpExecutor = testHTTPExecutor
-        let channel = rest.channels.get("foo")
+        let channel = rest.channels.get(uniqueChannelName())
 
         // Garbage values (whatever is on the heap)
         let bytes = UnsafeMutablePointer<Int>.allocate(capacity: 1)
@@ -443,7 +443,7 @@ class UtilitiesTests: XCTestCase {
         let realtime = ARTRealtime(options: options)
         realtime.internal.logger.logLevel = .verbose
         defer { realtime.close() }
-        let channel = realtime.channels.get("foo")
+        let channel = realtime.channels.get(uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
