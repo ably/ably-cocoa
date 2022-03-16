@@ -80,6 +80,7 @@ private func testStoresSuccessfulFallbackHostAsDefaultHost(_ caseTest: FakeNetwo
 private func testRestoresDefaultPrimaryHostAfterTimeoutExpires(_ caseTest: FakeNetworkResponse, channelName: String) {
     let options = ARTClientOptions(key: "xxxx:xxxx")
     options.logLevel = .debug
+    options.fallbackRetryTimeout = 1
     let client = ARTRest(options: options)
     let mockHTTP = MockHTTP(logger: options.logHandler)
     testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: options.logHandler)
@@ -107,6 +108,7 @@ private func testRestoresDefaultPrimaryHostAfterTimeoutExpires(_ caseTest: FakeN
 
 private func testUsesAnotherFallbackHost(_ caseTest: FakeNetworkResponse, channelName: String) {
     let options = ARTClientOptions(key: "xxxx:xxxx")
+    options.fallbackRetryTimeout = 10
     options.logLevel = .debug
     let client = ARTRest(options: options)
     let mockHTTP = MockHTTP(logger: options.logHandler)
@@ -1187,15 +1189,13 @@ class RestClientTests: XCTestCase {
     func test__049__RestClient__Host_Fallback__every_new_HTTP_request_is_first_attempted_to_the_default_primary_host_rest_ably_io() {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.httpMaxRetryCount = 1
+        options.fallbackRetryTimeout = 1 // RSC15j exception
         let client = ARTRest(options: options)
         let mockHTTP = MockHTTP(logger: options.logHandler)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: options.logHandler)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable, resetAfter: 1)
         let channel = client.channels.get(uniqueChannelName())
-
-        // RSC15j exception
-        ARTDefault.setFallbackRetryTimeout(1)
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "nil") { _ in
@@ -1535,47 +1535,27 @@ class RestClientTests: XCTestCase {
         testStoresSuccessfulFallbackHostAsDefaultHost(.hostInternalError(code: 501), channelName: uniqueChannelName())
     }
 
-    func beforeEach__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_restore_default_primary_host_after_fallbackRetryTimeout_expired() {
-        ARTDefault.setFallbackRetryTimeout(1.0)
-    }
-
     func test__080__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_restore_default_primary_host_after_fallbackRetryTimeout_expired___hostUnreachable() {
-        beforeEach__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_restore_default_primary_host_after_fallbackRetryTimeout_expired()
-
         testRestoresDefaultPrimaryHostAfterTimeoutExpires(.hostUnreachable, channelName: uniqueChannelName())
     }
 
     func test__081__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_restore_default_primary_host_after_fallbackRetryTimeout_expired___requestTimeout_timeout__0_1_() {
-        beforeEach__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_restore_default_primary_host_after_fallbackRetryTimeout_expired()
-
         testRestoresDefaultPrimaryHostAfterTimeoutExpires(.requestTimeout(timeout: 0.1), channelName: uniqueChannelName())
     }
 
     func test__082__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_restore_default_primary_host_after_fallbackRetryTimeout_expired___hostInternalError_code__501_() {
-        beforeEach__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_restore_default_primary_host_after_fallbackRetryTimeout_expired()
-
         testRestoresDefaultPrimaryHostAfterTimeoutExpires(.hostInternalError(code: 501), channelName: uniqueChannelName())
     }
 
-    func beforeEach__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_use_another_fallback_host_if_previous_fallback_request_failed_and_store_it_as_default_if_current_fallback_request_succseeded() {
-        ARTDefault.setFallbackRetryTimeout(10)
-    }
-
     func test__083__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_use_another_fallback_host_if_previous_fallback_request_failed_and_store_it_as_default_if_current_fallback_request_succseeded___hostUnreachable() {
-        beforeEach__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_use_another_fallback_host_if_previous_fallback_request_failed_and_store_it_as_default_if_current_fallback_request_succseeded()
-
         testUsesAnotherFallbackHost(.hostUnreachable, channelName: uniqueChannelName())
     }
 
     func test__084__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_use_another_fallback_host_if_previous_fallback_request_failed_and_store_it_as_default_if_current_fallback_request_succseeded___requestTimeout_timeout__0_1_() {
-        beforeEach__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_use_another_fallback_host_if_previous_fallback_request_failed_and_store_it_as_default_if_current_fallback_request_succseeded()
-
         testUsesAnotherFallbackHost(.requestTimeout(timeout: 0.1), channelName: uniqueChannelName())
     }
 
     func test__085__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_use_another_fallback_host_if_previous_fallback_request_failed_and_store_it_as_default_if_current_fallback_request_succseeded___hostInternalError_code__501_() {
-        beforeEach__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_use_another_fallback_host_if_previous_fallback_request_failed_and_store_it_as_default_if_current_fallback_request_succseeded()
-
         testUsesAnotherFallbackHost(.hostInternalError(code: 501), channelName: uniqueChannelName())
     }
 

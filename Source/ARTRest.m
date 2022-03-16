@@ -712,7 +712,7 @@ dispatch_async(_queue, ^{
     
     _currentFallbackHost = value;
 
-    _fallbackRetryExpiration = [ARTTime timeSinceBoot] + [ARTDefault fallbackRetryTimeout];
+    _fallbackRetryExpiration = [ARTTime timeSinceBoot] + _options.fallbackRetryTimeout;
 }
 
 #if TARGET_OS_IOS

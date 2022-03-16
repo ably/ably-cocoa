@@ -9,6 +9,5 @@ extern NSString *const ARTDefault_variant;
 + (void)setRealtimeRequestTimeout:(NSTimeInterval)value;
 + (void)setConnectionStateTtl:(NSTimeInterval)value;
 + (void)setMaxMessageSize:(NSInteger)value;
-+ (void)setFallbackRetryTimeout:(NSTimeInterval)value;
 
 @end
