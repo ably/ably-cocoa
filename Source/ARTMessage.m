@@ -66,11 +66,23 @@
     ARTJsonLikeEncoder *jsonEncoder = [[ARTJsonLikeEncoder alloc] initWithDelegate:[[ARTJsonEncoder alloc] init]];
     ARTDataEncoder *decoder = [[ARTDataEncoder alloc] initWithCipherParams:options.cipher error:error];
     
-    NSArray <ARTMessage *> *messagesArray = [jsonEncoder messagesFromArray:jsonArray];
-    messagesArray = [messagesArray artMap:^(ARTMessage *message) {
-        return [message decodeWithEncoder:decoder error:nil];
-    }];
-    return messagesArray;
+    NSArray<ARTMessage *> *messages = [jsonEncoder messagesFromArray:jsonArray];
+    NSMutableArray<ARTMessage *> *decodedMessages = [NSMutableArray array];
+    for (ARTMessage *message in messages) {
+        NSError *decodeError = nil;
+        ARTMessage *decodedMessage = [message decodeWithEncoder:decoder error:&decodeError];
+        if (decodeError != nil) {
+            ARTErrorInfo *errorInfo =
+            [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:ARTErrorUnableToDecodeMessage message:decodeError.localizedFailureReason]
+                       prepend:[NSString stringWithFormat:@"Failed to decode data for message: %@. Decoding array aborted.", message.name]];
+            *error = errorInfo;
+            break;
+        }
+        else {
+            [decodedMessages addObject:decodedMessage];
+        }
+    }
+    return decodedMessages;
 }
 
 @end
