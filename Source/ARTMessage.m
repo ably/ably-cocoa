@@ -52,7 +52,7 @@
 
 @implementation ARTMessage (Decryption)
 
-+ (instancetype)fromEncodedJsonObject:(NSDictionary *)input channelOptions:(ARTChannelOptions *)options error:(NSError **)error {
++ (instancetype)fromEncodedJsonObject:(NSDictionary *)json channelOptions:(ARTChannelOptions *)options error:(NSError **)error {
     ARTJsonLikeEncoder *jsonEncoder = [[ARTJsonLikeEncoder alloc] initWithDelegate:[[ARTJsonEncoder alloc] init]];
     NSError *encoderError = nil;
     ARTDataEncoder *decoder = [[ARTDataEncoder alloc] initWithCipherParams:options.cipher error:&encoderError];
@@ -66,7 +66,7 @@
         return nil;
     }
     
-    ARTMessage *message = [jsonEncoder messageFromDictionary:input];
+    ARTMessage *message = [jsonEncoder messageFromDictionary:json];
     
     NSError *decodeError = nil;
     message = [message decodeWithEncoder:decoder error:&decodeError];
