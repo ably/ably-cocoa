@@ -50,7 +50,7 @@
 
 @end
 
-@implementation ARTMessage (Decryption)
+@implementation ARTMessage (Decoding)
 
 + (instancetype)fromEncodedJsonObject:(NSDictionary *)json channelOptions:(ARTChannelOptions *)options error:(NSError **)error {
     ARTJsonLikeEncoder *jsonEncoder = [[ARTJsonLikeEncoder alloc] initWithDelegate:[[ARTJsonEncoder alloc] init]];
