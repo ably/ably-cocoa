@@ -19,13 +19,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTMessage (Decryption)
 
-+ (instancetype)fromEncodedJsonObject:(NSDictionary *)json
-                       channelOptions:(ARTChannelOptions *)options
-                                error:(NSError *_Nullable *_Nullable)error;
++ (nullable instancetype)fromEncodedJsonObject:(NSDictionary *)json
+                                channelOptions:(ARTChannelOptions *)options
+                                         error:(NSError *_Nullable *_Nullable)error;
 
-+ (NSArray<ARTMessage *> *)fromEncodedJsonArray:(NSArray<NSDictionary *> *)jsonArray
-                                 channelOptions:(ARTChannelOptions *)options
-                                          error:(NSError *_Nullable *_Nullable)error;
++ (nullable NSArray<ARTMessage *> *)fromEncodedJsonArray:(NSArray<NSDictionary *> *)jsonArray
+                                          channelOptions:(ARTChannelOptions *)options
+                                                   error:(NSError *_Nullable *_Nullable)error;
 
 @end
 
