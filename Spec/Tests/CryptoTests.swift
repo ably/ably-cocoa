@@ -218,8 +218,7 @@ class CryptoTests: XCTestCase {
             expect(decoded).notTo(beNil())
             
             let rawDictionary = try XCTUnwrap(encryptedFixture.dictionaryObject)
-            let decrypted = ARTMessage.fromEncodedJsonObject(rawDictionary, channelOptions: channelOptions, error: &error)
-            expect(error).to(beNil())
+            let decrypted = try XCTUnwrap(ARTMessage.fromEncodedJsonObject(rawDictionary, channelOptions: channelOptions))
             expect(decrypted).notTo(beNil())
             
             expect(decrypted).to(equal(decoded))
@@ -228,9 +227,7 @@ class CryptoTests: XCTestCase {
         // a bunch at once
         let encryptedFixtures = try jsonItems.map { try XCTUnwrap($0["encrypted"].dictionaryObject) }
 
-        var error: NSError?
-        let decryptedArray = ARTMessage.fromEncodedJsonArray(encryptedFixtures, channelOptions: channelOptions, error: &error)
-        expect(error).to(beNil())
+        let decryptedArray = try XCTUnwrap(ARTMessage.fromEncodedJsonArray(encryptedFixtures, channelOptions: channelOptions))
         expect(decryptedArray.count).to(equal(jsonItems.count))
         
         for i in 0..<jsonItems.count {
