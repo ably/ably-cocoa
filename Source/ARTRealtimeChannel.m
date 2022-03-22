@@ -403,7 +403,7 @@ dispatch_sync(_queue, ^{
     [self.realtime send:msg sentCallback:^(ARTErrorInfo *error) {
         if (error) {
             [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) SYNC request failed with %@", self->_realtime, self, self.name, error];
-            [self.presenceMap endSync];
+            [self.presenceMap endSync:@"-[ARTRealtimeChannel sync]"];
             if (callback) callback(error);
         }
         else {
@@ -413,7 +413,7 @@ dispatch_sync(_queue, ^{
     } ackCallback:nil];
 }
 
-- (void)requestContinueSync {
+- (void)requestContinueSync:(NSString *)reason {
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) requesting to continue sync operation after reconnect using msgSerial %lld and channelSerial %@", _realtime, self, self.name, self.presenceMap.syncMsgSerial, self.presenceMap.syncChannelSerial];
 
     ARTProtocolMessage * msg = [[ARTProtocolMessage alloc] init];
@@ -426,7 +426,7 @@ dispatch_sync(_queue, ^{
     [self.realtime send:msg sentCallback:^(ARTErrorInfo *error) {
         [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) continue sync, error is %@", self->_realtime, self, self.name, error];
         if (error) {
-            [self.presenceMap endSync];
+            [self.presenceMap endSync:reason];
         }
     } ackCallback:nil];
 }
@@ -733,7 +733,7 @@ dispatch_sync(_queue, ^{
         if (!message.resumed) {
             // When an ATTACHED message is received without a HAS_PRESENCE flag and PresenceMap has existing members
             [self.presenceMap startSync];
-            [self.presenceMap endSync];
+            [self.presenceMap endSync:@"-[ARTRealtimeChannel setAttached:]"];
             [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) PresenceMap has been reset", _realtime, self, self.name];
         }
     }
@@ -885,7 +885,7 @@ dispatch_sync(_queue, ^{
             presence.id = [NSString stringWithFormat:@"%@:%d", message.id, i];
         }
 
-        if ([self.presenceMap add:presence]) {
+        if ([self.presenceMap add:presence reason:@"-[ARTRealtimeChannel onPresence:]"]) {
             [self broadcastPresence:presence];
         }
 
@@ -906,13 +906,13 @@ dispatch_sync(_queue, ^{
 
     for (int i=0; i<[message.presence count]; i++) {
         ARTPresenceMessage *presence = [message.presence objectAtIndex:i];
-        if ([self.presenceMap add:presence]) {
+        if ([self.presenceMap add:presence reason:@"-[ARTRealtimeChannel onSync:]"]) {
             [self broadcastPresence:presence];
         }
     }
 
     if ([self isLastChannelSerial:message.channelSerial]) {
-        [self.presenceMap endSync];
+        [self.presenceMap endSync:@"-[ARTRealtimeChannel onSync:]"];
         self.presenceMap.syncChannelSerial = nil;
         [self.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) PresenceMap sync ended", _realtime, self, self.name];
     }
