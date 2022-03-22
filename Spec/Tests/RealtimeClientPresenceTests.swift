@@ -1175,7 +1175,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     // RTP9a
     func test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value() {
-        let options = AblyTests.commonAppSetup(true)
+        let options = AblyTests.commonAppSetup()
         options.clientId = "john"
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
