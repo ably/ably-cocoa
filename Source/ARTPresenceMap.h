@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// List of internal members.
 /// The key is the clientId and the value is the latest relevant ARTPresenceMessage for that clientId.
+// TODO this doesn't need to be mutable
 @property (readonly, atomic) NSMutableSet<ARTPresenceMessage *> *localMembers;
 
 @property (nullable, weak) id<ARTPresenceMapDelegate> delegate; // weak because delegates outlive their counterpart
@@ -37,18 +38,18 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 - (instancetype)initWithQueue:(_Nonnull dispatch_queue_t)queue logger:(ARTLog *)logger;
 
-- (BOOL)add:(ARTPresenceMessage *)message;
-- (void)reset;
+- (BOOL)add:(ARTPresenceMessage *)message reason:(NSString *)reason;
+- (void)reset:(NSString *)reason;
 
 - (void)startSync;
-- (void)endSync;
+- (void)endSync:(NSString *)reason;
 - (void)failsSync:(ARTErrorInfo *)error;
 
 - (void)onceSyncEnds:(void (^)(NSArray<ARTPresenceMessage *> *))callback;
 - (void)onceSyncFails:(ARTCallback)callback;
 
-- (void)internalAdd:(ARTPresenceMessage *)message;
-- (void)internalAdd:(ARTPresenceMessage *)message withSessionId:(NSUInteger)sessionId;
+- (void)internalAdd:(ARTPresenceMessage *)message reason:(NSString *)reason;
+- (void)internalAdd:(ARTPresenceMessage *)message withSessionId:(NSUInteger)sessionId reason:(NSString *)reason;
 
 @end
 
