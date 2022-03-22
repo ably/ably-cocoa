@@ -381,7 +381,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         expect(channel.internal.presenceMap.members).to(haveCount(2))
         // Inject a local member
         let localMember = ARTPresenceMessage(clientId: NSUUID().uuidString, action: .enter, connectionId: "another", id: "another:0:0")
-        channel.internal.presenceMap.add(localMember)
+        channel.internal.presenceMap.add(localMember, reason: "test")
         expect(channel.internal.presenceMap.members).to(haveCount(3))
         expect(channel.internal.presenceMap.members.filter { memberKey, _ in memberKey.contains(localMember.clientId!) }).to(haveCount(1))
 
@@ -434,8 +434,8 @@ class RealtimeClientPresenceTests: XCTestCase {
         let channel = client.channels.get(channelName)
 
         // Inject local members
-        channel.internal.presenceMap.add(ARTPresenceMessage(clientId: "tester1", action: .enter, connectionId: "another", id: "another:0:0"))
-        channel.internal.presenceMap.add(ARTPresenceMessage(clientId: "tester2", action: .enter, connectionId: "another", id: "another:0:1"))
+        channel.internal.presenceMap.add(ARTPresenceMessage(clientId: "tester1", action: .enter, connectionId: "another", id: "another:0:0"), reason: "test")
+        channel.internal.presenceMap.add(ARTPresenceMessage(clientId: "tester2", action: .enter, connectionId: "another", id: "another:0:1"), reason: "test")
 
         guard let transport = client.internal.transport as? TestProxyTransport else {
             fail("TestProxyTransport is not set"); return
@@ -1878,7 +1878,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
 
             hook = channel.internal.presenceMap.testSuite_getArgument(
-                from: #selector(ARTPresenceMap.internalAdd(_:withSessionId:)),
+                from: #selector(ARTPresenceMap.internalAdd(_:withSessionId:reason:)),
                 at: 0
             ) { arg in
                 let m = arg as? ARTPresenceMessage
@@ -3366,7 +3366,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         for i in 0 ..< 3 {
             let msg = ARTPresenceMessage(clientId: "client\(i)", action: .present, connectionId: "foo", id: "foo:0:0")
             msgs[msg.clientId!] = msg
-            channel.internal.presenceMap.internalAdd(msg)
+            channel.internal.presenceMap.internalAdd(msg, reason: "test 109")
         }
 
         channel.presence.get(getParams) { result, err in
