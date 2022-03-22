@@ -54,7 +54,7 @@
     [description appendFormat:@" id: %@,\n", self.id];
     [description appendFormat:@" clientId: %@,\n", self.clientId];
     [description appendFormat:@" connectionId: %@,\n", self.connectionId];
-    [description appendFormat:@" timestamp: %@,\n", self.timestamp];
+    [description appendFormat:@" timestamp: %@ (%.3f),\n", self.timestamp, [self.timestamp timeIntervalSince1970]];
     [description appendFormat:@" encoding: %@,\n", self.encoding];
     [description appendFormat:@" data: %@\n", self.data];
     [description appendFormat:@"}"];
