@@ -1,0 +1,400 @@
+Test Case '-[Ably_iOS_Tests.RealtimeClientPresenceTests test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value]' started.
+2022-03-23 14:48:35.109068+0000 xctest[82604:1849305] VERBOSE: (ARTRest.m:177) RS:0x7ffed4189ec0 0x7ffed418a9a0 alloc HTTP
+2022-03-23 14:48:35.109647+0000 xctest[82604:1849305] DEBUG: (ARTAuth.m:152) RS:0x7ffed4189ec0 validating <ARTClientOptions: 0x7ffed48b2860> - 
+	 key: _tmp_ikfk-w.YXBSUQ:jSWf8-oDHl1KCZb59juaAfimVt4Nwi_Sdr9AugXi9qs; 
+	 token: (null); 
+	 authUrl: (null); 
+	 authMethod: GET; 
+	 hasAuthCallback: 0;
+	 clientId: john;
+2022-03-23 14:48:35.113696+0000 xctest[82604:1849305] DEBUG: (ARTAuth.m:158) RS:0x7ffed4189ec0 setting up auth method Basic (anonymous)
+2022-03-23 14:48:35.113878+0000 xctest[82604:1849305] VERBOSE: (ARTRest.m:194) RS:0x7ffed4189ec0 initialized
+2022-03-23 14:48:35.114149+0000 xctest[82604:1849305] VERBOSE: (ARTRealtime.m:208) R:0x7ffed418a410 initialized with RS:0x7ffed4189ec0
+2022-03-23 14:48:35.114314+0000 xctest[82604:1849305] VERBOSE: (ARTRealtime.m:480) R:0x7ffed418a410 realtime state transitions to 1 - Connecting
+2022-03-23 14:48:35.114525+0000 xctest[82604:1849305] DEBUG: RT:0x7ffed418a410 realtime is transitioning from 0 - Initialized to 1 - Connecting
+2022-03-23 14:48:35.114724+0000 xctest[82604:1849305] VERBOSE: (ARTWebSocketTransport.m:72) R:0x0 WS:0x7ffed3be52d0 alloc
+2022-03-23 14:48:35.114964+0000 xctest[82604:1849305] DEBUG: (ARTWebSocketTransport.m:123) R:0x7ffed418a410 WS:0x7ffed3be52d0 websocket connect with key
+2022-03-23 14:48:35.116190+0000 xctest[82604:1849305] DEBUG: (ARTWebSocketTransport.m:194) R:0x7ffed418a410 WS:0x7ffed3be52d0 url wss://sandbox-realtime.ably.io:443/?agent=ably-cocoa/1.2.10%20iOS/14.4.0&key=_tmp_ikfk-w.YXBSUQ:jSWf8-oDHl1KCZb59juaAfimVt4Nwi_Sdr9AugXi9qs&clientId=john&echo=true&v=1.2&format=msgpack
+2022-03-23 14:48:35.117219+0000 xctest[82604:1849305] INFO: Reachability: started listening for host sandbox-realtime.ably.io
+2022-03-23 14:48:35.117995+0000 xctest[82604:1849305] VERBOSE: PublicEventEmitter Notification emitted 0x7ffed4445ba0-ARTRealtimeConnectionEventConnecting
+2022-03-23 14:48:35.118556+0000 xctest[82604:1849305] VERBOSE: PublicEventEmitter Notification emitted 0x7ffed4445ba0
+2022-03-23 14:48:35.119800+0000 xctest[82604:1849305] DEBUG: (ARTRestChannel.m:122) RS:0x7ffed41896c0 instantiating under 'test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A'
+2022-03-23 14:48:35.120522+0000 xctest[82604:1849305] DEBUG: (ARTPresenceMap.m:172) 1279-logging (reason ARTPresenceMap init): reset
+2022-03-23 14:48:35.120992+0000 xctest[82604:1849305] INFO: Reachability: host sandbox-realtime.ably.io is reachable: true
+2022-03-23 14:48:35.121207+0000 xctest[82604:1849305] DEBUG: (ARTRealtimeChannel.m:608) RT:0x7ffed418a410 C:0x7ffed41895e0 (test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A) channel state transitions from 0 - Initialized to 1 - Attaching
+2022-03-23 14:48:35.126625+0000 xctest[82604:1849305] VERBOSE: PublicEventEmitter Notification emitted 0x7ffed44a63f0-ARTChannelEventAttaching
+2022-03-23 14:48:35.126780+0000 xctest[82604:1849305] VERBOSE: PublicEventEmitter Notification emitted 0x7ffed44a63f0
+2022-03-23 14:48:35.127190+0000 xctest[82604:1849305] DEBUG: (ARTRealtime.m:1193) RT:0x7ffed418a410 (channel: test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A) protocol message with action '10 - Attach' has been queued ((null))
+2022-03-23 14:48:35.127395+0000 xctest[82604:1849305] VERBOSE: R:0x7ffed418a410 C:0x7ffed41895e0 (test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A) presence subscribe to action Enter
+2022-03-23 14:48:35.400525+0000 xctest[82604:1882976] DEBUG: (ARTWebSocketTransport.m:266) R:0x7ffed418a410 WS:0x7ffed3be52d0 websocket did open
+2022-03-23 14:48:35.403271+0000 xctest[82604:1885267] VERBOSE: (ARTWebSocketTransport.m:339) R:0x7ffed418a410 WS:0x7ffed3be52d0 websocket did receive message
+2022-03-23 14:48:35.403463+0000 xctest[82604:1885267] VERBOSE: (ARTWebSocketTransport.m:365) R:0x7ffed418a410 WS:0x7ffed3be52d0 websocket in Open state did receive data {length = 404, bytes = 0x85a66163 74696f6e 04ac636f 6e6e6563 ... 65727661 6ccd3a98 }
+2022-03-23 14:48:35.403717+0000 xctest[82604:1885267] DEBUG: RS:0x7ffed4189ec0 ARTJsonLikeEncoder<msgpack> decoding '{length = 404, bytes = 0x85a66163 74696f6e 04ac636f 6e6e6563 ... 65727661 6ccd3a98 }'; got: {
+    action = 4;
+    connectionDetails =     {
+        clientId = john;
+        connectionKey = "e7dsO2e-wB9TGy!Tyul_N8Gdtmf_Epq-159c1e7dsO2e-wB9TGy";
+        connectionStateTtl = 120000;
+        maxFrameSize = 262144;
+        maxIdleInterval = 15000;
+        maxInboundRate = 250;
+        maxMessageSize = 16384;
+        maxOutboundRate = 100;
+        serverId = "frontend.1edc.8.us-east-1-A.i-0be5bf2287e73fb25.e7dsO2e-wB9TGy";
+    };
+    connectionId = "Tyul_N8Gdt";
+    connectionKey = "e7dsO2e-wB9TGy!Tyul_N8Gdtmf_Epq-159c1e7dsO2e-wB9TGy";
+    connectionSerial = "-1";
+}
+2022-03-23 14:48:35.404233+0000 xctest[82604:1885267] VERBOSE: RS:0x7ffed4189ec0 ARTJsonLikeEncoder<msgpack>: protocolMessageFromDictionary {
+    action = 4;
+    connectionDetails =     {
+        clientId = john;
+        connectionKey = "e7dsO2e-wB9TGy!Tyul_N8Gdtmf_Epq-159c1e7dsO2e-wB9TGy";
+        connectionStateTtl = 120000;
+        maxFrameSize = 262144;
+        maxIdleInterval = 15000;
+        maxInboundRate = 250;
+        maxMessageSize = 16384;
+        maxOutboundRate = 100;
+        serverId = "frontend.1edc.8.us-east-1-A.i-0be5bf2287e73fb25.e7dsO2e-wB9TGy";
+    };
+    connectionId = "Tyul_N8Gdt";
+    connectionKey = "e7dsO2e-wB9TGy!Tyul_N8Gdtmf_Epq-159c1e7dsO2e-wB9TGy";
+    connectionSerial = "-1";
+}
+2022-03-23 14:48:35.404434+0000 xctest[82604:1885267] VERBOSE: (ARTRealtime.m:1372) R:0x7ffed418a410 activity
+2022-03-23 14:48:35.404584+0000 xctest[82604:1885267] VERBOSE: R:0x7ffed418a410 set idle timer had been ignored
+2022-03-23 14:48:35.404737+0000 xctest[82604:1885267] VERBOSE: R:0x7ffed418a410 did receive Protocol Message Connected (connection state is Connecting)
+2022-03-23 14:48:35.405342+0000 xctest[82604:1885267] VERBOSE: (ARTRealtime.m:480) R:0x7ffed418a410 realtime state transitions to 2 - Connected
+2022-03-23 14:48:35.405495+0000 xctest[82604:1885267] DEBUG: RT:0x7ffed418a410 realtime is transitioning from 1 - Connecting to 2 - Connected
+2022-03-23 14:48:35.405680+0000 xctest[82604:1885267] VERBOSE: RS:0x7ffed4189ec0 ARTJsonLikeEncoder<msgpack>: protocolMessageToDictionary {
+    action = 10;
+    channel = "test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A";
+}
+2022-03-23 14:48:35.405872+0000 xctest[82604:1885267] DEBUG: RS:0x7ffed4189ec0 ARTJsonLikeEncoder<msgpack> encoding '{
+    action = 10;
+    channel = "test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A";
+}'; got: {length = 173, bytes = 0x82a76368 616e6e65 6cd99a74 6573742d ... a6616374 696f6e0a }
+2022-03-23 14:48:35.406459+0000 xctest[82604:1885267] DEBUG: (ARTRealtime.m:1176) RT:0x7ffed418a410 sending action 10 - Attach
+2022-03-23 14:48:35.406665+0000 xctest[82604:1885267] VERBOSE: (ARTRealtimeChannel.m:951) RT:0x7ffed418a410 C:0x7ffed41895e0 (test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A) already attaching
+2022-03-23 14:48:35.406817+0000 xctest[82604:1885267] VERBOSE: PublicEventEmitter Notification emitted 0x7ffed4445ba0-ARTRealtimeConnectionEventConnected
+2022-03-23 14:48:35.406968+0000 xctest[82604:1885267] VERBOSE: PublicEventEmitter Notification emitted 0x7ffed4445ba0
+2022-03-23 14:48:35.478465+0000 xctest[82604:1886730] VERBOSE: (ARTWebSocketTransport.m:339) R:0x7ffed418a410 WS:0x7ffed3be52d0 websocket did receive message
+2022-03-23 14:48:35.478686+0000 xctest[82604:1886730] VERBOSE: (ARTWebSocketTransport.m:365) R:0x7ffed418a410 WS:0x7ffed3be52d0 websocket in Open state did receive data {length = 224, bytes = 0x84a66163 74696f6e 0ba5666c 616773ce ... 38353236 343a2d31 }
+2022-03-23 14:48:35.478889+0000 xctest[82604:1886730] DEBUG: RS:0x7ffed4189ec0 ARTJsonLikeEncoder<msgpack> decoding '{length = 224, bytes = 0x84a66163 74696f6e 0ba5666c 616773ce ... 38353236 343a2d31 }'; got: {
+    action = 11;
+    channel = "test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A";
+    channelSerial = "e7d9bhfgQB9THX52785264:-1";
+    flags = 983041;
+}
+2022-03-23 14:48:35.479072+0000 xctest[82604:1886730] VERBOSE: RS:0x7ffed4189ec0 ARTJsonLikeEncoder<msgpack>: protocolMessageFromDictionary {
+    action = 11;
+    channel = "test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A";
+    channelSerial = "e7d9bhfgQB9THX52785264:-1";
+    flags = 983041;
+}
+2022-03-23 14:48:35.479618+0000 xctest[82604:1886730] VERBOSE: (ARTRealtime.m:1372) R:0x7ffed418a410 activity
+2022-03-23 14:48:35.479793+0000 xctest[82604:1886730] VERBOSE: R:0x7ffed418a410 did receive Protocol Message Attached (connection state is Connected)
+2022-03-23 14:48:35.479953+0000 xctest[82604:1886730] DEBUG: (ARTRealtimeChannel.m:681) R:0x7ffed418a410 C:0x7ffed41895e0 (test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A) received channel message 11 - Attached
+2022-03-23 14:48:35.480132+0000 xctest[82604:1886730] DEBUG: (ARTRealtimeChannel.m:684) R:0x7ffed418a410 C:0x7ffed41895e0 (test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A) <ARTProtocolMessage: 0x7ffed44a8c30> {
+ count: 0,
+ id: (null),
+ action: 11 (Attached),
+ channel: test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A,
+ channelSerial: e7d9bhfgQB9THX52785264:-1,
+ connectionId: (null),
+ connectionKey: (null),
+ connectionSerial: 0,
+ msgSerial: (null),
+ timestamp: (null),
+ flags: 983041,
+ flags.hasPresence: YES,
+ flags.hasBacklog: NO,
+ flags.resumed: NO,
+ messages: (null)
+ params: (null)
+}
+2022-03-23 14:48:35.480668+0000 xctest[82604:1886730] DEBUG: (ARTPresenceMap.m:178) 0x7ffed9c33420 PresenceMap sync started
+2022-03-23 14:48:35.480857+0000 xctest[82604:1886730] DEBUG: (ARTRealtimeChannel.m:608) RT:0x7ffed418a410 C:0x7ffed41895e0 (test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A) channel state transitions from 1 - Attaching to 2 - Attached
+2022-03-23 14:48:35.481008+0000 xctest[82604:1886730] VERBOSE: PublicEventEmitter Notification emitted 0x7ffed44a63f0-ARTChannelEventAttached
+2022-03-23 14:48:35.481658+0000 xctest[82604:1886730] VERBOSE: PublicEventEmitter Notification emitted 0x7ffed44a63f0
+2022-03-23 14:48:35.481848+0000 xctest[82604:1886730] VERBOSE: RS:0x7ffed4189ec0 ARTJsonLikeEncoder<msgpack>: presenceMessageToDictionary {
+    action = 2;
+}
+2022-03-23 14:48:35.482031+0000 xctest[82604:1886730] VERBOSE: RS:0x7ffed4189ec0 ARTJsonLikeEncoder<msgpack>: protocolMessageToDictionary {
+    action = 14;
+    channel = "test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A";
+    msgSerial = 0;
+    presence =     (
+                {
+            action = 2;
+        }
+    );
+}
+2022-03-23 14:48:35.482227+0000 xctest[82604:1886730] DEBUG: RS:0x7ffed4189ec0 ARTJsonLikeEncoder<msgpack> encoding '{
+    action = 14;
+    channel = "test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A";
+    msgSerial = 0;
+    presence =     (
+                {
+            action = 2;
+        }
+    );
+}'; got: {length = 203, bytes = 0x84a96d73 67536572 69616c00 a8707265 ... a6616374 696f6e0e }
+2022-03-23 14:48:35.482774+0000 xctest[82604:1886730] DEBUG: (ARTRealtime.m:1176) RT:0x7ffed418a410 sending action 14 - Presence
+2022-03-23 14:48:35.552804+0000 xctest[82604:1873995] VERBOSE: (ARTWebSocketTransport.m:339) R:0x7ffed418a410 WS:0x7ffed3be52d0 websocket did receive message
+2022-03-23 14:48:35.553033+0000 xctest[82604:1873995] VERBOSE: (ARTWebSocketTransport.m:365) R:0x7ffed418a410 WS:0x7ffed3be52d0 websocket in Open state did receive data {length = 221, bytes = 0x84a66163 74696f6e 10a76368 616e6e65 ... 72657365 6e636590 }
+2022-03-23 14:48:35.553221+0000 xctest[82604:1873995] DEBUG: RS:0x7ffed4189ec0 ARTJsonLikeEncoder<msgpack> decoding '{length = 221, bytes = 0x84a66163 74696f6e 10a76368 616e6e65 ... 72657365 6e636590 }'; got: {
+    action = 16;
+    channel = "test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A";
+    channelSerial = "e7dsO2e-wB9TGy78568345:";
+    presence =     (
+    );
+}
+2022-03-23 14:48:35.553397+0000 xctest[82604:1873995] VERBOSE: RS:0x7ffed4189ec0 ARTJsonLikeEncoder<msgpack>: protocolMessageFromDictionary {
+    action = 16;
+    channel = "test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A";
+    channelSerial = "e7dsO2e-wB9TGy78568345:";
+    presence =     (
+    );
+}
+2022-03-23 14:48:35.553888+0000 xctest[82604:1873995] VERBOSE: (ARTRealtime.m:1372) R:0x7ffed418a410 activity
+2022-03-23 14:48:35.554059+0000 xctest[82604:1873995] VERBOSE: R:0x7ffed418a410 did receive Protocol Message Sync (connection state is Connected)
+2022-03-23 14:48:35.554226+0000 xctest[82604:1873995] DEBUG: (ARTRealtimeChannel.m:681) R:0x7ffed418a410 C:0x7ffed41895e0 (test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A) received channel message 16 - Sync
+2022-03-23 14:48:35.554390+0000 xctest[82604:1873995] DEBUG: (ARTRealtimeChannel.m:904) RT:0x7ffed418a410 C:0x7ffed41895e0 (test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A) PresenceMap sync is in progress
+2022-03-23 14:48:35.554570+0000 xctest[82604:1873995] VERBOSE: (ARTPresenceMap.m:185) 0x7ffed9c33420 PresenceMap sync ending
+2022-03-23 14:48:35.555435+0000 xctest[82604:1873995] DEBUG: (ARTPresenceMap.m:139) 0x7ffed9c33420 cleaning up absent members (syncSessionId=1)
+2022-03-23 14:48:35.555594+0000 xctest[82604:1873995] DEBUG: (ARTPresenceMap.m:149) 0x7ffed9c33420 leaving members not present in sync (syncSessionId=1)
+2022-03-23 14:48:35.555753+0000 xctest[82604:1873995] DEBUG: (ARTPresenceMap.m:161) 0x7ffed9c33420 reentering local members missed from sync (syncSessionId=1)
+2022-03-23 14:48:35.555929+0000 xctest[82604:1873995] DEBUG: (ARTPresenceMap.m:139) 0x7ffed9c33420 cleaning up absent members (syncSessionId=1)
+2022-03-23 14:48:35.556104+0000 xctest[82604:1873995] DEBUG: (ARTPresenceMap.m:192) 0x7ffed9c33420 PresenceMap sync ended
+2022-03-23 14:48:35.556257+0000 xctest[82604:1873995] DEBUG: (ARTRealtimeChannel.m:917) RT:0x7ffed418a410 C:0x7ffed41895e0 (test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A) PresenceMap sync ended
+2022-03-23 14:48:35.556937+0000 xctest[82604:1873995] VERBOSE: (ARTWebSocketTransport.m:339) R:0x7ffed418a410 WS:0x7ffed3be52d0 websocket did receive message
+2022-03-23 14:48:35.557101+0000 xctest[82604:1873995] VERBOSE: (ARTWebSocketTransport.m:365) R:0x7ffed418a410 WS:0x7ffed3be52d0 websocket in Open state did receive data {length = 27, bytes = 0x83a66163 74696f6e 01a5636f 756e7401 ... 67536572 69616c00 }
+2022-03-23 14:48:35.557287+0000 xctest[82604:1873995] DEBUG: RS:0x7ffed4189ec0 ARTJsonLikeEncoder<msgpack> decoding '{length = 27, bytes = 0x83a66163 74696f6e 01a5636f 756e7401 ... 67536572 69616c00 }'; got: {
+    action = 1;
+    count = 1;
+    msgSerial = 0;
+}
+2022-03-23 14:48:35.557450+0000 xctest[82604:1873995] VERBOSE: RS:0x7ffed4189ec0 ARTJsonLikeEncoder<msgpack>: protocolMessageFromDictionary {
+    action = 1;
+    count = 1;
+    msgSerial = 0;
+}
+2022-03-23 14:48:35.557644+0000 xctest[82604:1873995] VERBOSE: (ARTRealtime.m:1372) R:0x7ffed418a410 activity
+2022-03-23 14:48:35.558221+0000 xctest[82604:1873995] VERBOSE: R:0x7ffed418a410 did receive Protocol Message Ack (connection state is Connected)
+2022-03-23 14:48:35.558370+0000 xctest[82604:1873995] VERBOSE: R:0x7ffed418a410 ACK: msgSerial=0, count=1
+2022-03-23 14:48:35.558515+0000 xctest[82604:1873995] VERBOSE: R:0x7ffed418a410 ACK (before processing): pendingMessageStartSerial=0, pendingMessages=1
+2022-03-23 14:48:35.558663+0000 xctest[82604:1873995] VERBOSE: R:0x7ffed418a410 ACK (after processing): pendingMessageStartSerial=1, pendingMessages=0
+2022-03-23 14:48:35.558830+0000 xctest[82604:1873995] VERBOSE: (ARTWebSocketTransport.m:339) R:0x7ffed418a410 WS:0x7ffed3be52d0 websocket did receive message
+2022-03-23 14:48:35.558985+0000 xctest[82604:1873995] VERBOSE: (ARTWebSocketTransport.m:365) R:0x7ffed418a410 WS:0x7ffed3be52d0 websocket in Open state did receive data {length = 383, bytes = 0x88a66163 74696f6e 0ea26964 ac547975 ... a6616374 696f6e02 }
+2022-03-23 14:48:35.559204+0000 xctest[82604:1873995] DEBUG: RS:0x7ffed4189ec0 ARTJsonLikeEncoder<msgpack> decoding '{length = 383, bytes = 0x88a66163 74696f6e 0ea26964 ac547975 ... a6616374 696f6e02 }'; got: {
+    action = 14;
+    channel = "test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A";
+    channelSerial = "e7d9bhfgQB9THX52785264:0";
+    connectionId = "Tyul_N8Gdt";
+    connectionSerial = 0;
+    id = "Tyul_N8Gdt:0";
+    presence =     (
+                {
+            action = 2;
+            clientId = john;
+            connectionId = "Tyul_N8Gdt";
+            id = "Tyul_N8Gdt:0:0";
+            timestamp = 1648046915517;
+        }
+    );
+    timestamp = 1648046915517;
+}
+2022-03-23 14:48:35.559911+0000 xctest[82604:1873995] VERBOSE: RS:0x7ffed4189ec0 ARTJsonLikeEncoder<msgpack>: protocolMessageFromDictionary {
+    action = 14;
+    channel = "test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A";
+    channelSerial = "e7d9bhfgQB9THX52785264:0";
+    connectionId = "Tyul_N8Gdt";
+    connectionSerial = 0;
+    id = "Tyul_N8Gdt:0";
+    presence =     (
+                {
+            action = 2;
+            clientId = john;
+            connectionId = "Tyul_N8Gdt";
+            id = "Tyul_N8Gdt:0:0";
+            timestamp = 1648046915517;
+        }
+    );
+    timestamp = 1648046915517;
+}
+2022-03-23 14:48:35.560097+0000 xctest[82604:1873995] VERBOSE: RS:0x7ffed4189ec0 ARTJsonLikeEncoder<msgpack>: presenceMessageFromDictionary {
+    action = 2;
+    clientId = john;
+    connectionId = "Tyul_N8Gdt";
+    id = "Tyul_N8Gdt:0:0";
+    timestamp = 1648046915517;
+}
+2022-03-23 14:48:35.560315+0000 xctest[82604:1873995] VERBOSE: (ARTRealtime.m:1372) R:0x7ffed418a410 activity
+2022-03-23 14:48:35.560881+0000 xctest[82604:1873995] VERBOSE: R:0x7ffed418a410 did receive Protocol Message Presence (connection state is Connected)
+2022-03-23 14:48:35.561042+0000 xctest[82604:1873995] DEBUG: (ARTRealtimeChannel.m:681) R:0x7ffed418a410 C:0x7ffed41895e0 (test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A) received channel message 14 - Presence
+2022-03-23 14:48:35.561200+0000 xctest[82604:1873995] DEBUG: (ARTRealtimeChannel.m:866) RT:0x7ffed418a410 C:0x7ffed41895e0 (test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A) handle PRESENCE message
+2022-03-23 14:48:35.561396+0000 xctest[82604:1873995] DEBUG: (ARTPresenceMap.m:77) 1279-logging (reason -[ARTRealtimeChannel onPresence:]): add: <ARTPresenceMessage: 0x7ffed434e020> {
+ id: Tyul_N8Gdt:0:0,
+ clientId: john,
+ connectionId: Tyul_N8Gdt,
+ timestamp: 2022-03-23 14:48:35 +0000 (1648046915.517),
+ encoding: (null),
+ data: (null),
+ action: Enter,
+ syncSessionId: 0
+}. Comparing to latest (null)
+2022-03-23 14:48:35.561955+0000 xctest[82604:1873995] DEBUG: (ARTPresenceMap.m:107) 1279-logging (reason -[ARTRealtimeChannel onPresence:]): internalAdd: <ARTPresenceMessage: 0x7ffed3feb6e0> {
+ id: Tyul_N8Gdt:0:0,
+ clientId: john,
+ connectionId: Tyul_N8Gdt,
+ timestamp: 2022-03-23 14:48:35 +0000 (1648046915.517),
+ encoding: (null),
+ data: (null),
+ action: Present,
+ syncSessionId: 1
+}
+2022-03-23 14:48:35.562120+0000 xctest[82604:1873995] DEBUG: (ARTPresenceMap.m:112) local member Tyul_N8Gdt:john with action PRESENT has been added
+2022-03-23 14:48:35.562591+0000 xctest[82604:1849305] VERBOSE: (ARTRealtimeChannel.m:955) RT:0x7ffed418a410 C:0x7ffed41895e0 (test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A) already attached
+2022-03-23 14:48:35.562928+0000 xctest[82604:1849305] VERBOSE: R:0x7ffed418a410 C:0x7ffed41895e0 (test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A) presence subscribe to action Update
+2022-03-23 14:48:35.563181+0000 xctest[82604:1873995] VERBOSE: RS:0x7ffed4189ec0 ARTJsonLikeEncoder<msgpack>: presenceMessageToDictionary {
+    action = 4;
+    connectionId = "Tyul_N8Gdt";
+    data = online;
+}
+2022-03-23 14:48:35.563367+0000 xctest[82604:1873995] VERBOSE: RS:0x7ffed4189ec0 ARTJsonLikeEncoder<msgpack>: protocolMessageToDictionary {
+    action = 14;
+    channel = "test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A";
+    msgSerial = 1;
+    presence =     (
+                {
+            action = 4;
+            connectionId = "Tyul_N8Gdt";
+            data = online;
+        }
+    );
+}
+2022-03-23 14:48:35.563921+0000 xctest[82604:1873995] DEBUG: RS:0x7ffed4189ec0 ARTJsonLikeEncoder<msgpack> encoding '{
+    action = 14;
+    channel = "test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A";
+    msgSerial = 1;
+    presence =     (
+                {
+            action = 4;
+            connectionId = "Tyul_N8Gdt";
+            data = online;
+        }
+    );
+}'; got: {length = 239, bytes = 0x84a96d73 67536572 69616c01 a8707265 ... a6616374 696f6e0e }
+2022-03-23 14:48:35.564087+0000 xctest[82604:1873995] DEBUG: (ARTRealtime.m:1176) RT:0x7ffed418a410 sending action 14 - Presence
+2022-03-23 14:48:35.631792+0000 xctest[82604:1873995] VERBOSE: (ARTWebSocketTransport.m:339) R:0x7ffed418a410 WS:0x7ffed3be52d0 websocket did receive message
+2022-03-23 14:48:35.631993+0000 xctest[82604:1873995] VERBOSE: (ARTWebSocketTransport.m:365) R:0x7ffed418a410 WS:0x7ffed3be52d0 websocket in Open state did receive data {length = 395, bytes = 0x88a66163 74696f6e 0ea26964 ac547975 ... a6616374 696f6e04 }
+2022-03-23 14:48:35.632233+0000 xctest[82604:1873995] DEBUG: RS:0x7ffed4189ec0 ARTJsonLikeEncoder<msgpack> decoding '{length = 395, bytes = 0x88a66163 74696f6e 0ea26964 ac547975 ... a6616374 696f6e04 }'; got: {
+    action = 14;
+    channel = "test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A";
+    channelSerial = "e7d9bhfgQB9THX52785264:1";
+    connectionId = "Tyul_N8Gdt";
+    connectionSerial = 1;
+    id = "Tyul_N8Gdt:1";
+    presence =     (
+                {
+            action = 4;
+            clientId = john;
+            connectionId = "Tyul_N8Gdt";
+            data = online;
+            id = "Tyul_N8Gdt:1:0";
+            timestamp = 1648046915594;
+        }
+    );
+    timestamp = 1648046915594;
+}
+2022-03-23 14:48:35.632762+0000 xctest[82604:1873995] VERBOSE: RS:0x7ffed4189ec0 ARTJsonLikeEncoder<msgpack>: protocolMessageFromDictionary {
+    action = 14;
+    channel = "test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A";
+    channelSerial = "e7d9bhfgQB9THX52785264:1";
+    connectionId = "Tyul_N8Gdt";
+    connectionSerial = 1;
+    id = "Tyul_N8Gdt:1";
+    presence =     (
+                {
+            action = 4;
+            clientId = john;
+            connectionId = "Tyul_N8Gdt";
+            data = online;
+            id = "Tyul_N8Gdt:1:0";
+            timestamp = 1648046915594;
+        }
+    );
+    timestamp = 1648046915594;
+}
+2022-03-23 14:48:35.632944+0000 xctest[82604:1873995] VERBOSE: RS:0x7ffed4189ec0 ARTJsonLikeEncoder<msgpack>: presenceMessageFromDictionary {
+    action = 4;
+    clientId = john;
+    connectionId = "Tyul_N8Gdt";
+    data = online;
+    id = "Tyul_N8Gdt:1:0";
+    timestamp = 1648046915594;
+}
+2022-03-23 14:48:35.633585+0000 xctest[82604:1873995] VERBOSE: (ARTRealtime.m:1372) R:0x7ffed418a410 activity
+2022-03-23 14:48:35.633762+0000 xctest[82604:1873995] VERBOSE: R:0x7ffed418a410 did receive Protocol Message Presence (connection state is Connected)
+2022-03-23 14:48:35.633926+0000 xctest[82604:1873995] DEBUG: (ARTRealtimeChannel.m:681) R:0x7ffed418a410 C:0x7ffed41895e0 (test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A) received channel message 14 - Presence
+2022-03-23 14:48:35.634081+0000 xctest[82604:1873995] DEBUG: (ARTRealtimeChannel.m:866) RT:0x7ffed418a410 C:0x7ffed41895e0 (test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A) handle PRESENCE message
+2022-03-23 14:48:35.634306+0000 xctest[82604:1873995] DEBUG: (ARTPresenceMap.m:77) 1279-logging (reason -[ARTRealtimeChannel onPresence:]): add: <ARTPresenceMessage: 0x7ffed41e81d0> {
+ id: Tyul_N8Gdt:1:0,
+ clientId: john,
+ connectionId: Tyul_N8Gdt,
+ timestamp: 2022-03-23 14:48:35 +0000 (1648046915.594),
+ encoding: (null),
+ data: online,
+ action: Update,
+ syncSessionId: 0
+}. Comparing to latest <ARTPresenceMessage: 0x7ffed3feb6e0> {
+ id: Tyul_N8Gdt:0:0,
+ clientId: john,
+ connectionId: Tyul_N8Gdt,
+ timestamp: 2022-03-23 14:48:35 +0000 (1648046915.517),
+ encoding: (null),
+ data: (null),
+ action: Present,
+ syncSessionId: 1
+}
+2022-03-23 14:48:35.634992+0000 xctest[82604:1873995] DEBUG: (ARTPresenceMap.m:107) 1279-logging (reason -[ARTRealtimeChannel onPresence:]): internalAdd: <ARTPresenceMessage: 0x7ffed44e7500> {
+ id: Tyul_N8Gdt:1:0,
+ clientId: john,
+ connectionId: Tyul_N8Gdt,
+ timestamp: 2022-03-23 14:48:35 +0000 (1648046915.594),
+ encoding: (null),
+ data: online,
+ action: Present,
+ syncSessionId: 1
+}
+2022-03-23 14:48:35.635165+0000 xctest[82604:1873995] DEBUG: (ARTPresenceMap.m:112) local member Tyul_N8Gdt:john with action PRESENT has been added
+2022-03-23 14:48:35.635918+0000 xctest[82604:1849305] DEBUG: (ARTRealtimeChannel.m:608) RT:0x7ffed418a410 C:0x7ffed41895e0 (test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A) channel state transitions from 2 - Attached to 3 - Detaching
+2022-03-23 14:48:35.636086+0000 xctest[82604:1849305] VERBOSE: PublicEventEmitter Notification emitted 0x7ffed44a63f0-ARTChannelEventDetaching
+2022-03-23 14:48:35.636230+0000 xctest[82604:1849305] VERBOSE: PublicEventEmitter Notification emitted 0x7ffed44a63f0
+2022-03-23 14:48:35.636508+0000 xctest[82604:1849305] VERBOSE: RS:0x7ffed4189ec0 ARTJsonLikeEncoder<msgpack>: protocolMessageToDictionary {
+    action = 12;
+    channel = "test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A";
+}
+2022-03-23 14:48:35.636688+0000 xctest[82604:1849305] DEBUG: RS:0x7ffed4189ec0 ARTJsonLikeEncoder<msgpack> encoding '{
+    action = 12;
+    channel = "test-433--iOS-test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value-669739715.11971-FABA4498-5C28-481D-8DD9-765C9B27986A";
+}'; got: {length = 173, bytes = 0x82a76368 616e6e65 6cd99a74 6573742d ... a6616374 696f6e0c }
+2022-03-23 14:48:35.637160+0000 xctest[82604:1849305] DEBUG: (ARTRealtime.m:1176) RT:0x7ffed418a410 sending action 12 - Detach
+2022-03-23 14:48:35.637478+0000 xctest[82604:1849305] INFO: Reachability: stopped listening for host sandbox-realtime.ably.io
+2022-03-23 14:48:35.637697+0000 xctest[82604:1849305] VERBOSE: (ARTRealtime.m:921) R:0x7ffed418a410 cancel timers
+2022-03-23 14:48:35.637873+0000 xctest[82604:1849305] VERBOSE: (ARTRealtime.m:480) R:0x7ffed418a410 realtime state transitions to 5 - Closing
+2022-03-23 14:48:35.638095+0000 xctest[82604:1849305] DEBUG: RT:0x7ffed418a410 realtime is transitioning from 2 - Connected to 5 - Closing
+2022-03-23 14:48:35.638300+0000 xctest[82604:1849305] INFO: Reachability: stopped listening for host (null)
+2022-03-23 14:48:35.639003+0000 xctest[82604:1849305] DEBUG: (ARTWebSocketTransport.m:104) R:0x7ffed418a410 WS:0x7ffed3be52d0 websocket sending action 7 - Close
+2022-03-23 14:48:35.639219+0000 xctest[82604:1849305] VERBOSE: RS:0x7ffed4189ec0 ARTJsonLikeEncoder<msgpack>: protocolMessageToDictionary {
+    action = 7;
+}
+2022-03-23 14:48:35.639397+0000 xctest[82604:1849305] DEBUG: RS:0x7ffed4189ec0 ARTJsonLikeEncoder<msgpack> encoding '{
+    action = 7;
+}'; got: {length = 9, bytes = 0x81a6616374696f6e07}
+2022-03-23 14:48:35.639670+0000 xctest[82604:1849305] VERBOSE: PublicEventEmitter Notification emitted 0x7ffed4445ba0-ARTRealtimeConnectionEventClosing
+2022-03-23 14:48:35.639862+0000 xctest[82604:1849305] VERBOSE: PublicEventEmitter Notification emitted 0x7ffed4445ba0
+Test Case '-[Ably_iOS_Tests.RealtimeClientPresenceTests test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value]' passed (0.532 seconds).
