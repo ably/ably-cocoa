@@ -240,16 +240,6 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
 }
 
 - (void)deactivate {
-#if TARGET_OS_IOS && !TARGET_OS_SIMULATOR
-    if ([NSThread isMainThread]) {
-        [[UIApplication sharedApplication] unregisterForRemoteNotifications];
-    }
-    else {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[UIApplication sharedApplication] unregisterForRemoteNotifications];
-        });
-    }
-#endif
     [self getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
         [stateMachine sendEvent:[ARTPushActivationEventCalledDeactivate new]];
     }];
