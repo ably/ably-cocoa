@@ -68,6 +68,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) NSTimeInterval httpRequestTimeout;
 
 /**
+ The period in seconds before HTTP requests are retried against the default endpoint.
+ (After a failed request to the default endpoint, followed by a successful request to a fallback endpoint)
+ */
+@property (readwrite, assign, nonatomic) NSTimeInterval fallbackRetryTimeout;
+
+/**
  Max number of fallback host retries for HTTP requests that fail due to network issues or server problems.
  */
 @property (readwrite, assign, nonatomic) NSUInteger httpMaxRetryCount;

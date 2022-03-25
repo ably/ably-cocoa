@@ -31,7 +31,7 @@ class DeltaCodecTests: XCTestCase {
             "delta": "vcdiff",
         ]
 
-        let channel = client.channels.get("foo", options: channelOptions)
+        let channel = client.channels.get(uniqueChannelName(), options: channelOptions)
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
@@ -79,7 +79,7 @@ class DeltaCodecTests: XCTestCase {
         defer { client.dispose(); client.close() }
         let channelOptions = ARTRealtimeChannelOptions()
         channelOptions.params = ["delta": "vcdiff"]
-        let channel = client.channels.get("foo", options: channelOptions)
+        let channel = client.channels.get(uniqueChannelName(), options: channelOptions)
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
@@ -138,7 +138,7 @@ class DeltaCodecTests: XCTestCase {
         defer { client.dispose(); client.close() }
         let channelOptions = ARTRealtimeChannelOptions()
         channelOptions.params = ["delta": "vcdiff"]
-        let channel = client.channels.get("foo", options: channelOptions)
+        let channel = client.channels.get(uniqueChannelName(), options: channelOptions)
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in

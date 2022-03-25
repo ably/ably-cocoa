@@ -85,10 +85,11 @@ class ObjectLifetimesTests: XCTestCase {
         expect(weakClient).toNot(beNil())
         defer { client?.close() }
 
+        let channelName = uniqueChannelName()
         waitUntil(timeout: testTimeout) { done in
-            client!.channels.get("foo").subscribe(attachCallback: { _ in
+            client!.channels.get(channelName).subscribe(attachCallback: { _ in
                 client = nil
-                ARTRest(options: options).channels.get("foo").publish(nil, data: "bar")
+                ARTRest(options: options).channels.get(channelName).publish(nil, data: "bar")
             }, callback: { msg in
                 expect(msg.data as? String).to(equal("bar"))
                 done()
@@ -102,7 +103,7 @@ class ObjectLifetimesTests: XCTestCase {
         var client: ARTRealtime? = ARTRealtime(options: options)
         weak var weakClient = client!.internal
 
-        var channel: ARTRealtimeChannel? = client!.channels.get("foo")
+        var channel: ARTRealtimeChannel? = client!.channels.get(uniqueChannelName())
         weak var weakChannel = channel!.internal
 
         waitUntil(timeout: testTimeout) { done in
