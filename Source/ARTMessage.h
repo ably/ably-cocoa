@@ -23,9 +23,9 @@ NS_ASSUME_NONNULL_BEGIN
                                 channelOptions:(ARTChannelOptions *)options
                                          error:(NSError *_Nullable *_Nullable)error;
 
-+ (nullable NSArray<ARTMessage *> *)fromEncodedJsonArray:(NSArray<NSDictionary *> *)jsonArray
-                                          channelOptions:(ARTChannelOptions *)options
-                                                   error:(NSError *_Nullable *_Nullable)error;
++ (nullable NSArray<ARTMessage *> *)fromEncodedArray:(NSArray<NSDictionary *> *)jsonArray
+                                      channelOptions:(ARTChannelOptions *)options
+                                               error:(NSError *_Nullable *_Nullable)error;
 
 @end
 

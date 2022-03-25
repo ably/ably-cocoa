@@ -227,7 +227,7 @@ class CryptoTests: XCTestCase {
         // a bunch at once
         let encryptedFixtures = try jsonItems.map { try XCTUnwrap($0["encrypted"].dictionaryObject) }
 
-        let decryptedArray = try XCTUnwrap(ARTMessage.fromEncodedJsonArray(encryptedFixtures, channelOptions: channelOptions))
+        let decryptedArray = try XCTUnwrap(ARTMessage.fromEncodedArray(encryptedFixtures, channelOptions: channelOptions))
         expect(decryptedArray.count).to(equal(jsonItems.count))
         
         for i in 0..<jsonItems.count {
