@@ -224,16 +224,6 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
 }
 
 - (void)activate {
-#if TARGET_OS_IOS && !TARGET_OS_SIMULATOR
-    if ([NSThread isMainThread]) {
-        [[UIApplication sharedApplication] registerForRemoteNotifications];
-    }
-    else {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[UIApplication sharedApplication] registerForRemoteNotifications];
-        });
-    }
-#endif
     [self getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
         [stateMachine sendEvent:[ARTPushActivationEventCalledActivate new]];
     }];

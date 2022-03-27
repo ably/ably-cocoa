@@ -16,6 +16,8 @@
 
 #if TARGET_OS_IOS
 
+#import <UIKit/UIKit.h>
+
 NSString *const ARTPushActivationCurrentStateKey = @"ARTPushActivationCurrentState";
 NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEvents";
 
@@ -377,6 +379,19 @@ dispatch_async(_queue, ^{
         }
     });
     #endif
+}
+
+- (void)registerForAPNS {
+#if !TARGET_OS_SIMULATOR
+    if ([NSThread isMainThread]) {
+        [[UIApplication sharedApplication] registerForRemoteNotifications];
+    }
+    else {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[UIApplication sharedApplication] registerForRemoteNotifications];
+        });
+    }
+#endif
 }
 
 @end
