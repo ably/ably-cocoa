@@ -49,7 +49,7 @@ extension AblyHelper {
             print("IDENTITY TOKEN: doesn't exist")
             return
         }
-        print("INDENTITY TOKEN:\n\(tokenInfo.token)")
+        print("IDENTITY TOKEN:\n\(tokenInfo.token)")
     }
     
     func getDeviceDetails(_ callback: @escaping (ARTDeviceDetails?, ARTErrorInfo?) -> ()) {
