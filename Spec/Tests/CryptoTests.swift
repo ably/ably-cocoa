@@ -218,7 +218,7 @@ class CryptoTests: XCTestCase {
             expect(decoded).notTo(beNil())
             
             let rawDictionary = try XCTUnwrap(encryptedFixture.dictionaryObject)
-            let decrypted = try XCTUnwrap(ARTMessage.fromEncodedJsonObject(rawDictionary, channelOptions: channelOptions))
+            let decrypted = try XCTUnwrap(ARTMessage.fromEncoded(rawDictionary, channelOptions: channelOptions))
             expect(decrypted).notTo(beNil())
             
             expect(decrypted).to(equal(decoded))
