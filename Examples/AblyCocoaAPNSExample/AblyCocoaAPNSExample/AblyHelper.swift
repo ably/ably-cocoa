@@ -46,7 +46,7 @@ extension AblyHelper {
             let tokenData = UserDefaults.standard.value(forKey: "ARTDeviceIdentityToken") as? Data,
             let tokenInfo = ARTDeviceIdentityTokenDetails.unarchive(tokenData)
         else {
-            print("INDENTITY TOKEN: doesn't exist")
+            print("IDENTITY TOKEN: doesn't exist")
             return
         }
         print("INDENTITY TOKEN:\n\(tokenInfo.token)")
