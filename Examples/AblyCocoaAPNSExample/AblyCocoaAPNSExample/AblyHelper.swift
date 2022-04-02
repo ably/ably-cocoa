@@ -13,6 +13,7 @@ class AblyHelper: NSObject {
         super.init()
         let options = ARTClientOptions(key: key)
         options.clientId = "basic-apns-example"
+        options.pushRegistererDelegate = self
         self.realtime = ARTRealtime(options: options)
         UNUserNotificationCenter.current().delegate = self
     }
@@ -61,6 +62,17 @@ extension AblyHelper {
         realtime.push.admin.publish(recipient, data: data) { error in
             print("Result: \(error?.localizedDescription ?? "Success")")
         }
+    }
+}
+
+extension AblyHelper: ARTPushRegistererDelegate {
+    
+    func didActivateAblyPush(_ error: ARTErrorInfo?) {
+        print("Push activation: \(error?.localizedDescription ?? "Success")")
+    }
+    
+    func didDeactivateAblyPush(_ error: ARTErrorInfo?) {
+        print("Push deactivation: \(error?.localizedDescription ?? "Success")")
     }
 }
 
