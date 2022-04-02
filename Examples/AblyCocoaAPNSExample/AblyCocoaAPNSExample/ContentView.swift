@@ -40,7 +40,7 @@ struct ContentView: View {
             }
             .padding()
             Button("Send Push") {
-                AblyHelper.shared.sendAdminPush()
+                AblyHelper.shared.sendAdminPush(title: "Hello", body: "This push was sent with deviceId")
             }
             .padding()
             Spacer()

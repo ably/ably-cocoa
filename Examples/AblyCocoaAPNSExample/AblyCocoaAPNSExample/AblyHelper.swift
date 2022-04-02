@@ -45,14 +45,15 @@ extension AblyHelper {
         realtime.push.admin.deviceRegistrations.get(realtime.device.id, callback: callback)
     }
     
-    func sendAdminPush() {
+    // For this to work you must turn on 'Push Admin' capability in your API key settings
+    func sendAdminPush(title: String, body: String) {
         let recipient = [
             "deviceId": realtime.device.id
         ]
         let data = [
             "notification": [
-                "title": "Hello",
-                "body": "This push was sent with deviceId"
+                "title": title,
+                "body": body
             ],
             "data": [
                 "foo": "bar",
@@ -60,7 +61,7 @@ extension AblyHelper {
             ]
         ]
         realtime.push.admin.publish(recipient, data: data) { error in
-            print("Result: \(error?.localizedDescription ?? "Success")")
+            print("Publish result: \(error?.localizedDescription ?? "Success")")
         }
     }
 }
