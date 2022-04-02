@@ -7,10 +7,13 @@ class AblyHelper: NSObject {
     
     private(set) var realtime: ARTRealtime!
     
-    private let key = "<YOUR ABLY API KEY>"
+    private let key = "" // Your API Key from your app's dashboard
     
     private override init() {
         super.init()
+        guard key != "" else {
+            preconditionFailure("Obtain your API key at https://ably.com/accounts/")
+        }
         let options = ARTClientOptions(key: key)
         options.clientId = "basic-apns-example"
         options.pushRegistererDelegate = self
