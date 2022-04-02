@@ -20,7 +20,7 @@ class AblyHelper: NSObject {
 
 extension AblyHelper: UNUserNotificationCenterDelegate {
     
-    static func requestAPNSAuthorization() {
+    static func requestUserNotificationAuthorization() {
         UNUserNotificationCenter.current().requestAuthorization(options:[.badge, .alert, .sound]) { granted, error in
             DispatchQueue.main.async() {
                 UIApplication.shared.registerForRemoteNotifications()

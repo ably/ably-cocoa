@@ -11,7 +11,7 @@ struct ContentView: View {
         VStack {
             Spacer()
             Button("Activate") {
-                AblyHelper.requestAPNSAuthorization()
+                AblyHelper.requestUserNotificationAuthorization()
                 AblyHelper.shared.realtime.push.activate()
             }
             .padding()
