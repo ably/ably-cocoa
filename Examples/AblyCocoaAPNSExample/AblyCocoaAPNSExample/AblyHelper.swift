@@ -18,27 +18,6 @@ class AblyHelper: NSObject {
     }
 }
 
-extension AblyHelper: UNUserNotificationCenterDelegate {
-    
-    static func requestUserNotificationAuthorization() {
-        UNUserNotificationCenter.current().requestAuthorization(options:[.badge, .alert, .sound]) { granted, error in
-            DispatchQueue.main.async() {
-                UIApplication.shared.registerForRemoteNotifications()
-                print("Push auth: \(error?.localizedDescription ?? (granted ? "Granted" : "Not Granted"))")
-            }
-        }
-    }
-    
-    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
-        completionHandler()
-    }
-    
-    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        print("Got push notification!")
-        completionHandler([.banner, .sound])
-    }
-}
-
 extension AblyHelper {
     
     func activatePush() {
@@ -82,5 +61,26 @@ extension AblyHelper {
         realtime.push.admin.publish(recipient, data: data) { error in
             print("Result: \(error?.localizedDescription ?? "Success")")
         }
+    }
+}
+
+extension AblyHelper: UNUserNotificationCenterDelegate {
+    
+    static func requestUserNotificationAuthorization() {
+        UNUserNotificationCenter.current().requestAuthorization(options:[.badge, .alert, .sound]) { granted, error in
+            DispatchQueue.main.async() {
+                UIApplication.shared.registerForRemoteNotifications()
+                print("Push auth: \(error?.localizedDescription ?? (granted ? "Granted" : "Not Granted"))")
+            }
+        }
+    }
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        completionHandler()
+    }
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        print("Got push notification!")
+        completionHandler([.banner, .sound])
     }
 }

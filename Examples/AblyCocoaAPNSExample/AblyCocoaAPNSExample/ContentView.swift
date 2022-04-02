@@ -32,7 +32,8 @@ struct ContentView: View {
             .alert(isPresented: $showDeviceDetailsAlert) {
                 if deviceDetails != nil {
                     return Alert(title: Text("Device Details"), message: Text("\(deviceDetails!)"))
-                } else if deviceDetailsError != nil {
+                }
+                else if deviceDetailsError != nil {
                     return Alert(title: Text("Device Details Error"), message: Text("\(deviceDetailsError!)"))
                 }
                 return Alert(title: Text("Device Details Error"), message: Text("Unknown result."))
