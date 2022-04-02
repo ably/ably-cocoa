@@ -12,7 +12,7 @@
 		8405EE8827F0B06C00C9E461 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8405EE8727F0B06C00C9E461 /* Assets.xcassets */; };
 		8405EE8B27F0B06C00C9E461 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8405EE8A27F0B06C00C9E461 /* Preview Assets.xcassets */; };
 		842F124A27F0B29D0029692E /* AblyHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842F124927F0B29D0029692E /* AblyHelper.swift */; };
-		842F124F27F0ECC50029692E /* Ably in Frameworks */ = {isa = PBXBuildFile; productRef = 842F124E27F0ECC50029692E /* Ably */; };
+		848694D127F8958F00B41A5D /* Ably in Frameworks */ = {isa = PBXBuildFile; productRef = 848694D027F8958F00B41A5D /* Ably */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +24,7 @@
 		842F124927F0B29D0029692E /* AblyHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AblyHelper.swift; sourceTree = "<group>"; };
 		842F124B27F0BFC10029692E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		842F124C27F0BFD40029692E /* AblyCocoaAPNSExample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AblyCocoaAPNSExample.entitlements; sourceTree = "<group>"; };
+		848694CE27F8957400B41A5D /* ably-cocoa */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "ably-cocoa"; path = ../..; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -31,7 +32,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				842F124F27F0ECC50029692E /* Ably in Frameworks */,
+				848694D127F8958F00B41A5D /* Ably in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -42,7 +43,9 @@
 			isa = PBXGroup;
 			children = (
 				8405EE8227F0B06800C9E461 /* AblyCocoaAPNSExample */,
+				848694CD27F8957400B41A5D /* Packages */,
 				8405EE8127F0B06800C9E461 /* Products */,
+				848694CF27F8958F00B41A5D /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -76,6 +79,21 @@
 			path = "Preview Content";
 			sourceTree = "<group>";
 		};
+		848694CD27F8957400B41A5D /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				848694CE27F8957400B41A5D /* ably-cocoa */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		848694CF27F8958F00B41A5D /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -93,7 +111,7 @@
 			);
 			name = AblyCocoaAPNSExample;
 			packageProductDependencies = (
-				842F124E27F0ECC50029692E /* Ably */,
+				848694D027F8958F00B41A5D /* Ably */,
 			);
 			productName = AblyCocoaAPNSExample;
 			productReference = 8405EE8027F0B06800C9E461 /* Push Example.app */;
@@ -124,7 +142,6 @@
 			);
 			mainGroup = 8405EE7727F0B06800C9E461;
 			packageReferences = (
-				842F124D27F0ECC50029692E /* XCRemoteSwiftPackageReference "ably-cocoa" */,
 			);
 			productRefGroup = 8405EE8127F0B06800C9E461 /* Products */;
 			projectDirPath = "";
@@ -364,21 +381,9 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		842F124D27F0ECC50029692E /* XCRemoteSwiftPackageReference "ably-cocoa" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/ably/ably-cocoa";
-			requirement = {
-				branch = main;
-				kind = branch;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
 /* Begin XCSwiftPackageProductDependency section */
-		842F124E27F0ECC50029692E /* Ably */ = {
+		848694D027F8958F00B41A5D /* Ably */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 842F124D27F0ECC50029692E /* XCRemoteSwiftPackageReference "ably-cocoa" */;
 			productName = Ably;
 		};
 /* End XCSwiftPackageProductDependency section */
