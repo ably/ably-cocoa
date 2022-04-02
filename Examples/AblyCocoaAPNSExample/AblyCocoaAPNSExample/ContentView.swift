@@ -11,12 +11,11 @@ struct ContentView: View {
         VStack {
             Spacer()
             Button("Activate") {
-                AblyHelper.requestUserNotificationAuthorization()
-                AblyHelper.shared.realtime.push.activate()
+                AblyHelper.shared.activatePush()
             }
             .padding()
             Button("Dectivate") {
-                AblyHelper.shared.realtime.push.deactivate()
+                AblyHelper.shared.deactivatePush()
             }
             .padding()
             Button("Print Token") {

@@ -41,6 +41,15 @@ extension AblyHelper: UNUserNotificationCenterDelegate {
 
 extension AblyHelper {
     
+    func activatePush() {
+        Self.requestUserNotificationAuthorization()
+        realtime.push.activate()
+    }
+    
+    func deactivatePush() {
+        realtime.push.deactivate()
+    }
+    
     func printIdentityToken() {
         guard
             let tokenData = UserDefaults.standard.value(forKey: "ARTDeviceIdentityToken") as? Data,
