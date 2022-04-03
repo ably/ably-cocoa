@@ -67,7 +67,7 @@ jobs:
       - name: Build APNS Example Project
         working-directory: ./Examples/AblyCocoaAPNSExample
         run: |
-          xcodebuild build -scheme "AblyCocoaAPNSExample" -destination "platform=iOS Simulator,name=iPhone 13" -configuration "Debug"
+          xcodebuild build -scheme "AblyCocoaAPNSExample" -destination "platform=iOS Simulator,name=iPhone 12" -configuration "Debug"
       
       - name: Xcodebuild Logs Artifact
         if: always()
