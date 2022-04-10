@@ -16,14 +16,14 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		8405EE8027F0B06800C9E461 /* Push Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Push Example.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8405EE8027F0B06800C9E461 /* Ably Push.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Ably Push.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8405EE8327F0B06800C9E461 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
 		8405EE8527F0B06800C9E461 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		8405EE8727F0B06C00C9E461 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8405EE8A27F0B06C00C9E461 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		842F124927F0B29D0029692E /* AblyHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AblyHelper.swift; sourceTree = "<group>"; };
 		842F124B27F0BFC10029692E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		842F124C27F0BFD40029692E /* AblyCocoaAPNSExample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AblyCocoaAPNSExample.entitlements; sourceTree = "<group>"; };
+		842F124C27F0BFD40029692E /* AblyPushExample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AblyPushExample.entitlements; sourceTree = "<group>"; };
 		848694CE27F8957400B41A5D /* ably-cocoa */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "ably-cocoa"; path = ../..; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -42,7 +42,7 @@
 		8405EE7727F0B06800C9E461 = {
 			isa = PBXGroup;
 			children = (
-				8405EE8227F0B06800C9E461 /* AblyCocoaAPNSExample */,
+				8405EE8227F0B06800C9E461 /* AblyPushExample */,
 				848694CD27F8957400B41A5D /* Packages */,
 				8405EE8127F0B06800C9E461 /* Products */,
 				848694CF27F8958F00B41A5D /* Frameworks */,
@@ -52,12 +52,12 @@
 		8405EE8127F0B06800C9E461 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8405EE8027F0B06800C9E461 /* Push Example.app */,
+				8405EE8027F0B06800C9E461 /* Ably Push.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		8405EE8227F0B06800C9E461 /* AblyCocoaAPNSExample */ = {
+		8405EE8227F0B06800C9E461 /* AblyPushExample */ = {
 			isa = PBXGroup;
 			children = (
 				8405EE8327F0B06800C9E461 /* App.swift */,
@@ -65,10 +65,10 @@
 				8405EE8527F0B06800C9E461 /* ContentView.swift */,
 				842F124B27F0BFC10029692E /* Info.plist */,
 				8405EE8727F0B06C00C9E461 /* Assets.xcassets */,
-				842F124C27F0BFD40029692E /* AblyCocoaAPNSExample.entitlements */,
+				842F124C27F0BFD40029692E /* AblyPushExample.entitlements */,
 				8405EE8927F0B06C00C9E461 /* Preview Content */,
 			);
-			path = AblyCocoaAPNSExample;
+			path = AblyPushExample;
 			sourceTree = "<group>";
 		};
 		8405EE8927F0B06C00C9E461 /* Preview Content */ = {
@@ -97,9 +97,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		8405EE7F27F0B06800C9E461 /* AblyCocoaAPNSExample */ = {
+		8405EE7F27F0B06800C9E461 /* AblyPushExample */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 8405EE8E27F0B06C00C9E461 /* Build configuration list for PBXNativeTarget "AblyCocoaAPNSExample" */;
+			buildConfigurationList = 8405EE8E27F0B06C00C9E461 /* Build configuration list for PBXNativeTarget "AblyPushExample" */;
 			buildPhases = (
 				8405EE7C27F0B06800C9E461 /* Sources */,
 				8405EE7D27F0B06800C9E461 /* Frameworks */,
@@ -109,12 +109,12 @@
 			);
 			dependencies = (
 			);
-			name = AblyCocoaAPNSExample;
+			name = AblyPushExample;
 			packageProductDependencies = (
 				848694D027F8958F00B41A5D /* Ably */,
 			);
-			productName = AblyCocoaAPNSExample;
-			productReference = 8405EE8027F0B06800C9E461 /* Push Example.app */;
+			productName = AblyPushExample;
+			productReference = 8405EE8027F0B06800C9E461 /* Ably Push.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -132,7 +132,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 8405EE7B27F0B06800C9E461 /* Build configuration list for PBXProject "AblyCocoaAPNSExample" */;
+			buildConfigurationList = 8405EE7B27F0B06800C9E461 /* Build configuration list for PBXProject "AblyPushExample" */;
 			compatibilityVersion = "Xcode 13.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -147,7 +147,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				8405EE7F27F0B06800C9E461 /* AblyCocoaAPNSExample */,
+				8405EE7F27F0B06800C9E461 /* AblyPushExample */,
 			);
 		};
 /* End PBXProject section */
@@ -299,14 +299,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = AblyCocoaAPNSExample/AblyCocoaAPNSExample.entitlements;
+				CODE_SIGN_ENTITLEMENTS = AblyPushExample/AblyPushExample.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"AblyCocoaAPNSExample/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"AblyPushExample/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = AblyCocoaAPNSExample/Info.plist;
+				INFOPLIST_FILE = AblyPushExample/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -318,8 +318,8 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.basic-apns-example";
-				PRODUCT_NAME = "Push Example";
+				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.basic-push-example";
+				PRODUCT_NAME = "Ably Push";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -331,14 +331,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = AblyCocoaAPNSExample/AblyCocoaAPNSExample.entitlements;
+				CODE_SIGN_ENTITLEMENTS = AblyPushExample/AblyPushExample.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"AblyCocoaAPNSExample/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"AblyPushExample/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = AblyCocoaAPNSExample/Info.plist;
+				INFOPLIST_FILE = AblyPushExample/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -350,8 +350,8 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.basic-apns-example";
-				PRODUCT_NAME = "Push Example";
+				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.basic-push-example";
+				PRODUCT_NAME = "Ably Push";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -361,7 +361,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		8405EE7B27F0B06800C9E461 /* Build configuration list for PBXProject "AblyCocoaAPNSExample" */ = {
+		8405EE7B27F0B06800C9E461 /* Build configuration list for PBXProject "AblyPushExample" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8405EE8C27F0B06C00C9E461 /* Debug */,
@@ -370,7 +370,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		8405EE8E27F0B06C00C9E461 /* Build configuration list for PBXNativeTarget "AblyCocoaAPNSExample" */ = {
+		8405EE8E27F0B06C00C9E461 /* Build configuration list for PBXNativeTarget "AblyPushExample" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8405EE8F27F0B06C00C9E461 /* Debug */,

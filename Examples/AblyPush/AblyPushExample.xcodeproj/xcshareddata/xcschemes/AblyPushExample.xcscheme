@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "8405EE7F27F0B06800C9E461"
-               BuildableName = "Push Example.app"
-               BlueprintName = "AblyCocoaAPNSExample"
-               ReferencedContainer = "container:AblyCocoaAPNSExample.xcodeproj">
+               BuildableName = "Ably Push.app"
+               BlueprintName = "AblyPushExample"
+               ReferencedContainer = "container:AblyPushExample.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -45,9 +45,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "8405EE7F27F0B06800C9E461"
-            BuildableName = "Push Example.app"
-            BlueprintName = "AblyCocoaAPNSExample"
-            ReferencedContainer = "container:AblyCocoaAPNSExample.xcodeproj">
+            BuildableName = "Ably Push.app"
+            BlueprintName = "AblyPushExample"
+            ReferencedContainer = "container:AblyPushExample.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -62,9 +62,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "8405EE7F27F0B06800C9E461"
-            BuildableName = "Push Example.app"
-            BlueprintName = "AblyCocoaAPNSExample"
-            ReferencedContainer = "container:AblyCocoaAPNSExample.xcodeproj">
+            BuildableName = "Ably Push.app"
+            BlueprintName = "AblyPushExample"
+            ReferencedContainer = "container:AblyPushExample.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
