@@ -344,15 +344,20 @@ class AblyTests {
         }
 
     }
-
-    class func loadCryptoTestData(_ fileName: String) -> (key: Data, iv: Data, items: [CryptoTestItem]) {
+    
+    class func loadCryptoTestRawData(_ fileName: String) -> (key: Data, iv: Data, jsonItems: [JSON]) {
         let file = testResourcesPath + fileName + ".json";
         let json = JSON(parseJSON: try! String(contentsOfFile: pathForTestResource(file)))
 
         let keyData = Data(base64Encoded: json["key"].stringValue, options: Data.Base64DecodingOptions(rawValue: 0))!
         let ivData = Data(base64Encoded: json["iv"].stringValue, options: Data.Base64DecodingOptions(rawValue: 0))!
-        let items = json["items"].map{ $0.1 }.map(CryptoTestItem.init)
-        
+
+        return (keyData, ivData, json["items"].arrayValue)
+    }
+    
+    class func loadCryptoTestData(_ fileName: String) -> (key: Data, iv: Data, items: [CryptoTestItem]) {
+        let (keyData, ivData, jsonItems) = loadCryptoTestRawData(fileName)
+        let items = jsonItems.map{ $0 }.map(CryptoTestItem.init)
         return (keyData, ivData, items)
     }
 }

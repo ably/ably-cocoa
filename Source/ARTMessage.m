@@ -1,4 +1,8 @@
 #import "ARTMessage.h"
+#import "ARTJsonEncoder.h"
+#import "ARTJsonLikeEncoder.h"
+#import "ARTBaseMessage+Private.h"
+#import "ARTNSArray+ARTFunctional.h"
 
 @implementation ARTMessage
 
@@ -42,6 +46,76 @@
 - (NSInteger)messageSize {
     // TO3l8*
     return [super messageSize] + [self.name lengthOfBytesUsingEncoding:NSUTF8StringEncoding];
+}
+
+@end
+
+@implementation ARTMessage (Decoding)
+
++ (instancetype)fromEncoded:(NSDictionary *)jsonObject channelOptions:(ARTChannelOptions *)options error:(NSError **)error {
+    ARTJsonLikeEncoder *jsonEncoder = [[ARTJsonLikeEncoder alloc] initWithDelegate:[[ARTJsonEncoder alloc] init]];
+    NSError *encoderError = nil;
+    ARTDataEncoder *decoder = [[ARTDataEncoder alloc] initWithCipherParams:options.cipher error:&encoderError];
+    if (encoderError != nil) {
+        if (error != nil) {
+            ARTErrorInfo *errorInfo =
+            [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:ARTErrorUnableToDecodeMessage message:encoderError.localizedFailureReason]
+                       prepend:[NSString stringWithFormat:@"Decoder can't be created with cipher: %@", options.cipher]];
+            *error = errorInfo;
+        }
+        return nil;
+    }
+    
+    ARTMessage *message = [jsonEncoder messageFromDictionary:jsonObject];
+    
+    NSError *decodeError = nil;
+    message = [message decodeWithEncoder:decoder error:&decodeError];
+    if (decodeError != nil) {
+        if (error != nil) {
+            ARTErrorInfo *errorInfo =
+            [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:ARTErrorUnableToDecodeMessage message:decodeError.localizedFailureReason]
+                       prepend:[NSString stringWithFormat:@"Failed to decode data for message: %@. Decoding array aborted.", message.name]];
+            *error = errorInfo;
+        }
+        return nil;
+    }
+    return message;
+}
+
++ (NSArray<ARTMessage *> *)fromEncodedArray:(NSArray<NSDictionary *> *)jsonArray channelOptions:(ARTChannelOptions *)options error:(NSError **)error {
+    ARTJsonLikeEncoder *jsonEncoder = [[ARTJsonLikeEncoder alloc] initWithDelegate:[[ARTJsonEncoder alloc] init]];
+    NSError *encoderError = nil;
+    ARTDataEncoder *decoder = [[ARTDataEncoder alloc] initWithCipherParams:options.cipher error:&encoderError];
+    if (encoderError != nil) {
+        if (error != nil) {
+            ARTErrorInfo *errorInfo =
+            [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:ARTErrorUnableToDecodeMessage message:encoderError.localizedFailureReason]
+                       prepend:[NSString stringWithFormat:@"Decoder can't be created with cipher: %@", options.cipher]];
+            *error = errorInfo;
+        }
+        return nil;
+    }
+    
+    NSArray<ARTMessage *> *messages = [jsonEncoder messagesFromArray:jsonArray];
+    
+    NSMutableArray<ARTMessage *> *decodedMessages = [NSMutableArray array];
+    for (ARTMessage *message in messages) {
+        NSError *decodeError = nil;
+        ARTMessage *decodedMessage = [message decodeWithEncoder:decoder error:&decodeError];
+        if (decodeError != nil) {
+            if (error != nil) {
+                ARTErrorInfo *errorInfo =
+                [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:ARTErrorUnableToDecodeMessage message:decodeError.localizedFailureReason]
+                           prepend:[NSString stringWithFormat:@"Failed to decode data for message: %@. Decoding array aborted.", message.name]];
+                *error = errorInfo;
+            }
+            break;
+        }
+        else {
+            [decodedMessages addObject:decodedMessage];
+        }
+    }
+    return decodedMessages;
 }
 
 @end
