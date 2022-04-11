@@ -8,3 +8,4 @@ xcodebuild_formatter "xcbeautify"
 result_bundle true
 # Just for printing inside these loop jobs
 buildlog_path "xcodebuild_output"
+result_bundle true
