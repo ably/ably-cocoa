@@ -80,7 +80,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setFailed:(ARTStatus *)status;
 - (void)throwOnDisconnectedOrFailed;
 
-- (void)broadcastPresence:(ARTPresenceMessage *)pm;
+- (void)broadcastPresence:(ARTPresenceMessage *)pm reason:(NSString *)reason;
 - (void)detachChannel:(ARTStatus *)status;
 
 - (void)sync;
