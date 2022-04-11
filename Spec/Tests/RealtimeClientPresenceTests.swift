@@ -521,14 +521,24 @@ class RealtimeClientPresenceTests: XCTestCase {
         let channel2 = client2.channels.get(channelName)
 
         var receivedMembers = [ARTPresenceMessage]()
+        NSLog("84c9fbc5-8882-4010-ba99-3e44d1793397: before channel1.presence.subscribe")
         channel1.presence.subscribe { member in
+            NSLog("84c9fbc5-8882-4010-ba99-3e44d1793397: channel1.presence.subscribe callback received \(member.description())")
             receivedMembers.append(member)
         }
 
+        NSLog("84c9fbc5-8882-4010-ba99-3e44d1793397: before waitUntil")
         waitUntil(timeout: testTimeout) { done in
-            channel2.presence.enterClient("john", data: "online") { _ in
-                channel2.presence.updateClient("john", data: "away") { _ in
-                    channel2.presence.leaveClient("john", data: nil) { _ in
+            NSLog("84c9fbc5-8882-4010-ba99-3e44d1793397: before enterClient")
+            channel2.presence.enterClient("john", data: "online") { errorInfo in
+                NSLog("84c9fbc5-8882-4010-ba99-3e44d1793397: in enterClient callback and before updateClient")
+                XCTAssertNil(errorInfo)
+                channel2.presence.updateClient("john", data: "away") { errorInfo in
+                    NSLog("84c9fbc5-8882-4010-ba99-3e44d1793397: in updateClient callback and before leaveClient")
+                    XCTAssertNil(errorInfo)
+                    channel2.presence.leaveClient("john", data: nil) { errorInfo in
+                        NSLog("84c9fbc5-8882-4010-ba99-3e44d1793397: in leaveClient callback")
+                        XCTAssertNil(errorInfo)
                         done()
                     }
                 }
@@ -537,6 +547,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         expect(receivedMembers).toEventually(haveCount(3), timeout: testTimeout)
         if receivedMembers.count != 3 {
+            XCTFail("receivedMembers.count is not 3")
             return
         }
 
