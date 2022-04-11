@@ -4162,6 +4162,7 @@ class AuthTests: XCTestCase {
         options.useTokenAuth = true
         options.autoConnect = false
         options.authCallback = { _, completion in
+            NSLog("181c0d92-7356-4faf-acd0-7cc9b78a0aa2: inside authCallback")
             let token = ARTTokenDetails(token: getJWTToken(expiresIn: Int(tokenDuration))!)
             completion(token, nil)
         }
@@ -4169,15 +4170,22 @@ class AuthTests: XCTestCase {
         defer { client.dispose(); client.close() }
         var originalToken = ""
         var originalConnectionID = ""
+        NSLog("181c0d92-7356-4faf-acd0-7cc9b78a0aa2: before waitUntil")
         waitUntil(timeout: testTimeout) { done in
+            NSLog("181c0d92-7356-4faf-acd0-7cc9b78a0aa2: before first client.connection.once(.connected)")
             client.connection.once(.connected) { _ in
+                NSLog("181c0d92-7356-4faf-acd0-7cc9b78a0aa2: inside first client.connection.once(.connected) callback")
                 originalToken = client.auth.tokenDetails!.token
                 originalConnectionID = client.connection.id!
 
+                NSLog("181c0d92-7356-4faf-acd0-7cc9b78a0aa2: before client.connection.once(.disconnected)")
                 client.connection.once(.disconnected) { stateChange in
+                    NSLog("181c0d92-7356-4faf-acd0-7cc9b78a0aa2: inside client.connection.once(.disconnected) callback")
                     expect(stateChange.reason?.code).to(equal(ARTErrorCode.tokenExpired.intValue))
 
+                    NSLog("181c0d92-7356-4faf-acd0-7cc9b78a0aa2: before second client.connection.once(.connected)")
                     client.connection.once(.connected) { _ in
+                        NSLog("181c0d92-7356-4faf-acd0-7cc9b78a0aa2: inside second client.connection.once(.connected) callback")
                         expect(client.connection.id).to(equal(originalConnectionID))
                         expect(client.auth.tokenDetails!.token).toNot(equal(originalToken))
                         done()
