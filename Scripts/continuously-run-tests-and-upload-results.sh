@@ -24,6 +24,11 @@ fi
 declare -i iteration=1
 while true
 do
+  if [[ $iteration -eq 3 ]]; then
+    echo "FINAL ITERATION; ending loop"
+    exit 0
+  fi
+
   echo "BEGIN ITERATION ${iteration}" 2>&1
 
   rm -rf fastlane/test_output
