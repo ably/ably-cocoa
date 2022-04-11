@@ -50,6 +50,39 @@ do
   echo "ITERATION ${iteration}: Uploading results to observability server."
   ./Scripts/upload_test_results.sh --iteration $iteration
 
+  # Find the .xcresult bundle and copy it to the directory that will eventually be saved as an artifact.
+
+  result_bundles=$(find fastlane/test_output/sdk -name '*.xcresult')
+  if [[ -z $result_bundles ]]
+  then
+    number_of_result_bundles=0
+  else
+    number_of_result_bundles=$(echo "${result_bundles}" | wc -l)
+  fi
+
+  if [[ $number_of_result_bundles -eq 0 ]]
+  then
+    echo "ITERATION ${iteration}: No result bundles found."
+    exit 1
+  fi
+
+  if [[ $number_of_result_bundles -gt 1 ]]
+  then
+    echo -e "ITERATION ${iteration}: Multiple result bundles found:\n${result_bundles}"
+    exit 1
+  fi
+
+  echo "ITERATION ${iteration}: Report bundle found: ${result_bundles}"
+
+  if [[ ! -d xcresult-bundles ]]; then
+    mkdir xcresult-bundles
+  fi
+
+  mkdir "xcresult-bundles/${iteration}"
+  cp -r "${result_bundles}" "xcresult-bundles/${iteration}"
+
+  echo "ITERATION ${iteration}: Copied result bundle to xcresult-bundles/${iteration}."
+
   echo "END ITERATION ${iteration}" 2>&1
 
   iteration+=1
