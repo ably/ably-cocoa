@@ -2471,7 +2471,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             channel1.attach { error in
                 expect(error).to(beNil())
                 let partlyDone = AblyTests.splitDone(2, done: done)
-                channel1.presence.subscribe(.enter) { member in
+                waitForFirstPresenceEnterOrPresentEvent(on: channel1) { member in
                     expect(member.data as? NSObject).to(equal(expectedData as NSObject?))
                     partlyDone()
                 }
