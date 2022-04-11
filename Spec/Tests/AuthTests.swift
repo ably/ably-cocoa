@@ -4158,7 +4158,7 @@ class AuthTests: XCTestCase {
 
     func test__148__JWT_and_realtime__when_token_expires_and_has_a_means_to_renew__reconnects_using_authCallback_and_obtains_a_new_token() {
         let tokenDuration = 3.0
-        let options = AblyTests.clientOptions()
+        let options = AblyTests.clientOptions(true)
         options.useTokenAuth = true
         options.autoConnect = false
         options.authCallback = { _, completion in

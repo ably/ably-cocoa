@@ -182,7 +182,7 @@ class AblyTests {
         options.environment = getEnvironment()
         options.logExceptionReportingUrl = nil
         if debug {
-            options.logLevel = .debug
+            options.logLevel = .verbose
         }
         if let key = key {
             options.key = key
