@@ -7,3 +7,4 @@ output_types "junit"
 xcodebuild_formatter "xcbeautify"
 # Just for printing inside these loop jobs
 buildlog_path "xcodebuild_output"
+result_bundle true
