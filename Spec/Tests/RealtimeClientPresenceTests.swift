@@ -508,7 +508,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     // RTP6a
     func test__015__Presence__subscribe__with_no_arguments_should_subscribe_a_listener_to_all_presence_messages() {
-        let options = AblyTests.commonAppSetup()
+        let options = AblyTests.commonAppSetup(true)
 
         let client1 = ARTRealtime(options: options)
         defer { client1.close() }
