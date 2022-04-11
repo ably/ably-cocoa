@@ -886,7 +886,7 @@ dispatch_sync(_queue, ^{
         }
 
         if ([self.presenceMap add:presence reason:@"-[ARTRealtimeChannel onPresence:]"]) {
-            [self broadcastPresence:presence];
+            [self broadcastPresence:presence reason:@"-[ARTRealtimeChannel onPresence:]"];
         }
 
         ++i;
@@ -907,7 +907,7 @@ dispatch_sync(_queue, ^{
     for (int i=0; i<[message.presence count]; i++) {
         ARTPresenceMessage *presence = [message.presence objectAtIndex:i];
         if ([self.presenceMap add:presence reason:@"-[ARTRealtimeChannel onSync:]"]) {
-            [self broadcastPresence:presence];
+            [self broadcastPresence:presence reason:@"-[ARTRealtimeChannel onSync:]"];
         }
     }
 
@@ -918,7 +918,8 @@ dispatch_sync(_queue, ^{
     }
 }
 
-- (void)broadcastPresence:(ARTPresenceMessage *)pm {
+- (void)broadcastPresence:(ARTPresenceMessage *)pm reason:(NSString *)reason {
+    [self.logger verbose:__FILE__ line:__LINE__ message:@"1279-logging (reason %@): broadcastPresence: %@", reason, [pm description]];
     [self.presenceEventEmitter emit:[ARTEvent newWithPresenceAction:pm.action] with:pm];
 }
 
@@ -1185,7 +1186,7 @@ dispatch_sync(_queue, ^{
     presence.action = ARTPresenceLeave;
     presence.id = nil;
     presence.timestamp = [NSDate date];
-    [self broadcastPresence:presence];
+    [self broadcastPresence:presence reason:@"-[ARTRealtimeChannel map:didRemovedMemberNoLongerPresent:]"];
     [self.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) member \"%@\" no longer present", _realtime, self, self.name, presence.memberKey];
 }
 
