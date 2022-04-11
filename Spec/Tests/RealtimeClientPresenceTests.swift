@@ -1065,13 +1065,18 @@ class RealtimeClientPresenceTests: XCTestCase {
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(uniqueChannelName())
 
+        NSLog("ac44f09c-f521-4bfc-a3d7-58d4f7428c74: before waitUntil")
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
+            NSLog("ac44f09c-f521-4bfc-a3d7-58d4f7428c74: before channel.presence.enter")
             channel.presence.enter("online") { error in
+                NSLog("ac44f09c-f521-4bfc-a3d7-58d4f7428c74: in channel.presence.enter callback")
                 expect(error).to(beNil())
                 partialDone()
             }
+            NSLog("ac44f09c-f521-4bfc-a3d7-58d4f7428c74: before channel.presence.subscribe")
             channel.presence.subscribe { message in
+                NSLog("ac44f09c-f521-4bfc-a3d7-58d4f7428c74: in channel.presence.subscribe callback")
                 expect(message.clientId).to(equal("john"))
                 channel.presence.unsubscribe()
                 partialDone()
@@ -1079,10 +1084,14 @@ class RealtimeClientPresenceTests: XCTestCase {
         }
 
         let transport = client.internal.transport as! TestProxyTransport
-        let sent = transport.protocolMessagesSent.filter { $0.action == .presence }[0].presence![0]
+        let protocolMessagesSent = transport.protocolMessagesSent
+        NSLog("ac44f09c-f521-4bfc-a3d7-58d4f7428c74: protocolMessagesSent is \(protocolMessagesSent.map(\.description))")
+        let sent = protocolMessagesSent.filter { $0.action == .presence }[0].presence![0]
         expect(sent.action).to(equal(ARTPresenceAction.enter))
         expect(sent.clientId).to(beNil())
 
+        let protocolMessagesReceived = transport.protocolMessagesReceived
+        NSLog("ac44f09c-f521-4bfc-a3d7-58d4f7428c74: protocolMessagesReceived is \(protocolMessagesReceived.map(\.description))")
         let received = transport.protocolMessagesReceived.filter { $0.action == .presence }[0].presence![0]
         expect(received.action).to(equal(ARTPresenceAction.enter))
         expect(received.clientId).to(equal("john"))
