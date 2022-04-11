@@ -61,3 +61,10 @@ jobs:
           bundle install
           make update_carthage_dependencies_ios
           Scripts/continuously-run-tests-and-upload-results.sh --lane test_iOS16_2
+
+      - name: Upload .xcresult bundles
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: xcresult-bundles
+          path: xcresult-bundles
