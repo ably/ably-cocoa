@@ -2451,7 +2451,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: before waitForFirstPresenceEnterOrPresentEvent")
                 waitForFirstPresenceEnterOrPresentEvent(on: channel1) { member in
                     NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: inside waitForFirstPresenceEnterOrPresentEvent callback")
-                    NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: type(of: member.data): \(type(of: member.data))")
+                    NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: type(of: member.data!): \(type(of: member.data!))")
                     expect(member.data as? NSObject).to(equal(expectedData as NSObject?))
                     partlyDone()
                 }
