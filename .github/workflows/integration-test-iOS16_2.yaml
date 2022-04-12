@@ -50,6 +50,7 @@ jobs:
           TEST_OBSERVABILITY_SERVER_AUTH_KEY: ${{ secrets.TEST_OBSERVABILITY_SERVER_AUTH_KEY }}
         run: |
           brew install xcbeautify
+          brew install coreutils # for `timeout`
           make submodules
           bundle install
           make update_carthage_dependencies_ios
