@@ -31,7 +31,7 @@ fi
 # maximum job running time.
 started_at=`date +%s`
 # https://docs.github.com/en/actions/learn-github-actions/usage-limits-billing-and-administration
-let github_job_maximum_execution_seconds=6*60*60
+let github_job_maximum_execution_seconds=60*60
 # We assume that the part of the job that ran before this script took at most 10 minutes, and that uploading the artifacts will take 10 minutes.
 let must_end_by=$((started_at + github_job_maximum_execution_seconds - (10 + 10) * 60))
 
