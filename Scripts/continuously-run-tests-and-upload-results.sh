@@ -2,7 +2,15 @@
 
 set -e
 
-# 1. Grab command-line options.
+# 1. Check dependencies.
+
+if ! which timeout > /dev/null
+then
+  echo "You need to install timeout (\`brew install coreutils\` on macOS)." 2>&1
+  exit 1
+fi
+
+# 2. Grab command-line options.
 
 # https://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash
 while [[ "$#" -gt 0 ]]; do
@@ -20,7 +28,17 @@ then
   exit 1
 fi
 
-# 2. Run the tests in a loop and report the results.
+# 3. Capture the time at which we started, to make sure we don’t exceed the
+# maximum job running time.
+started_at=`date +%s`
+# https://docs.github.com/en/actions/learn-github-actions/usage-limits-billing-and-administration
+let github_job_maximum_execution_seconds=6*60*60
+# We assume that the part of the job that ran before this script took at most 10 minutes, and that uploading the artifacts will take 30 minutes.
+let must_end_by=$((started_at + github_job_maximum_execution_seconds - (10 + 30) * 60))
+
+echo "We’ll make sure this script ends by `date -r${must_end_by}`." 2>&1
+
+# 4. Run the tests in a loop and report the results.
 
 declare -i iteration=1
 while true
@@ -32,9 +50,26 @@ do
   xcrun simctl erase all
 
   set +e
-  bundle exec fastlane --verbose $lane
+  let allowed_execution_time=$must_end_by-`date +%s`
+  set -e
+
+  if [[ $allowed_execution_time -le 0 ]]; then
+    echo "ITERATION ${iteration}: Allowed execution time reached. Exiting." 2>&1
+    exit 0
+  fi
+
+  echo "ITERATION ${iteration}: Running fastlane with a timeout of ${allowed_execution_time} seconds." 2>&1
+
+  set +e
+  timeout --kill-after=20 ${allowed_execution_time} bundle exec fastlane --verbose $lane
   tests_exit_value=$?
   set -e
+
+  if [[ tests_exit_value -eq 124 || tests_exit_value -eq 137 ]]; then
+    # Execution timed out.
+    echo "ITERATION ${iteration}: Cancelled the execution of fastlane since it exceeded timeout imposed by maximum GitHub running time. Terminating this script."
+    exit 0
+  fi
 
   if [[ tests_exit_value -eq 0 ]]
   then
