@@ -19,7 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) ARTPushInternal *push;
 #if TARGET_OS_IOS
 @property (nonnull, nonatomic, readonly, getter=device) ARTLocalDevice *device;
-@property (nonnull, nonatomic, readonly, getter=device_nosync) ARTLocalDevice *device_nosync;
+- (void)setLocalDeviceClientId:(NSString *)clientId;
 #endif
 
 @property (nonatomic, strong, readonly) ARTClientOptions *options;

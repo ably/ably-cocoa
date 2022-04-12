@@ -9,6 +9,7 @@ extern NSString *const ARTDeviceSecretKey;
 extern NSString *const ARTDeviceIdentityTokenKey;
 extern NSString *const ARTAPNSDeviceTokenKey;
 
+// TODO document thread-safety of this interface
 @interface ARTLocalDevice ()
 
 @property (strong, nonatomic) id<ARTDeviceStorage> storage;
