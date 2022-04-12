@@ -2467,15 +2467,23 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         let expectedData = ["data": 123]
 
+        NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: before waitUntil")
         waitUntil(timeout: testTimeout) { done in
+            NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: before channel1.attach")
             channel1.attach { error in
+                NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: inside channel1.attach callback")
                 expect(error).to(beNil())
                 let partlyDone = AblyTests.splitDone(2, done: done)
+                NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: before waitForFirstPresenceEnterOrPresentEvent")
                 waitForFirstPresenceEnterOrPresentEvent(on: channel1) { member in
+                    NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: inside waitForFirstPresenceEnterOrPresentEvent callback")
+                    NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: type(of: member.data): \(type(of: member.data))")
                     expect(member.data as? NSObject).to(equal(expectedData as NSObject?))
                     partlyDone()
                 }
+                NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: before channel2.presence.enter")
                 channel2.presence.enter(expectedData) { error in
+                    NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: inside channel2.presence.enter callback")
                     expect(error).to(beNil())
                     partlyDone()
                 }
