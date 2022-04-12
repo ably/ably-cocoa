@@ -38,6 +38,9 @@
 #import "ARTNSMutableURLRequest+ARTUtils.h"
 #import "ARTNSURL+ARTUtils.h"
 #import "ARTTime.h"
+#import "ARTPushActivationStateMachine+Private.h"
+#import "ARTPushActivationEvent.h"
+#import "ARTPushActivationState.h"
 
 @implementation ARTRest {
     ARTQueuedDealloc *_dealloc;
@@ -130,10 +133,6 @@
 
 - (ARTLocalDevice *)device {
     return _internal.device;
-}
-
-- (ARTLocalDevice *)device_nosync {
-    return _internal.device_nosync;
 }
 
 #endif
@@ -716,18 +715,47 @@ dispatch_async(_queue, ^{
 }
 
 #if TARGET_OS_IOS
+
+// TODO make sure these are true - will depend on how -device is being used by rest of app
+// On this queue, it's appropriate to:
+// - +load the shared device instance (defined in +device_nosync_to_be_called_from_queue_its_appropriate_to_load_device_on)
+// - call -clientId on the shared device instance
+// - call -setClientId on the shared device instance
++ (dispatch_queue_t)deviceAccessQueue {
+    static dispatch_queue_t queue;
+    static dispatch_once_t onceToken;
+    
+    dispatch_once(&onceToken, ^{
+        queue = dispatch_queue_create("io.ably.deviceAccess", DISPATCH_QUEUE_SERIAL);
+    });
+    
+    return queue;
+}
+
+// TODO make sure this is not called from deviceAccessQueue
+// TODO we can probably then move this out of ARTRest (nice to have, not necessary)
+// TODO check what we do with the return value of this method - might it also need synchronisation?
+// TODO bear in mind this is part of the public interface too - check what someone might do
 - (ARTLocalDevice *)device {
     __block ARTLocalDevice *ret;
-    dispatch_sync(_queue, ^{
-        ret = [self device_nosync];
+    dispatch_sync([ARTRestInternal deviceAccessQueue], ^{
+        ret = [self device_nosync_to_be_called_from_thread_its_appropriate_to_load_device_on];
     });
     return ret;
+}
+
+// TODO make sure this is not called from deviceAccessQueue
+- (void)setLocalDeviceClientId:(NSString *)clientId {
+    dispatch_sync([ARTRestInternal deviceAccessQueue], ^{
+        [self setLocalDeviceClientId_to_be_called_from_thread_its_appropriate_to_load_device_on_and_on_which_its_appropriate_to_call_device_clientId_and_device_setClientId:clientId];
+        
+    });
 }
 
 // Store address of once_token to access it in debug function.
 static dispatch_once_t *device_once_token;
 
-- (ARTLocalDevice *)device_nosync {
+- (ARTLocalDevice *)device_nosync_to_be_called_from_thread_its_appropriate_to_load_device_on {
     // The device is shared in a static variable because it's a reflection
     // of what's persisted. Having a device instance per ARTRest instance
     // could leave some instances in a stale state, if, through another
@@ -743,6 +771,18 @@ static dispatch_once_t *device_once_token;
         device = [ARTLocalDevice load:self.auth.clientId_nosync storage:self.storage];
     });
     return device;
+}
+
+- (void)setLocalDeviceClientId_to_be_called_from_thread_its_appropriate_to_load_device_on_and_on_which_its_appropriate_to_call_device_clientId_and_device_setClientId:(NSString *)clientId {
+    if (clientId == nil || [clientId isEqualToString:@"*"] || [clientId isEqualToString:self.device_nosync_to_be_called_from_thread_its_appropriate_to_load_device_on.clientId]) {
+        return;
+    }
+    [self.device_nosync_to_be_called_from_thread_its_appropriate_to_load_device_on setClientId:clientId];
+    [self.push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
+        if (![stateMachine.current_nosync isKindOfClass:[ARTPushActivationStateNotActivated class]]) {
+            [stateMachine sendEvent:[[ARTPushActivationEventGotPushDeviceDetails alloc] init]];
+        }
+    }];
 }
 
 - (void)resetDeviceSingleton {

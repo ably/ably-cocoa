@@ -297,9 +297,10 @@ dispatch_sync(_queue, ^{
     return ret;
 }
 
+// TODO what on earth is this?
 - (ARTLocalDevice *)getDevice:(ARTCallback)callback {
     #if TARGET_OS_IOS
-    ARTLocalDevice *device = [_rest device_nosync];
+    ARTLocalDevice *device = _rest.device;
     #else
     ARTLocalDevice *device = nil;
     #endif
