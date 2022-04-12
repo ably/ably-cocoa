@@ -60,5 +60,5 @@ jobs:
         uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: xcresult-bundles
-          path: xcresult-bundles
+          name: xcresult-bundles.tar.gz
+          path: xcresult-bundles.tar.gz
