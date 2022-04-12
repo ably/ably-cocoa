@@ -44,6 +44,8 @@ end_iteration_with_exit_value() {
   if [[ -e xcresult-bundles ]]
   then
     echo "There are `du -d0 -h xcresult-bundles | awk -F '\t' '{print $1}'` of xcresult bundles to be uploaded."
+    tar --create --gzip xcresult-bundles > xcresult-bundles.tar.gz
+    echo "The file xcresult-bundles.tar.gz that will be uploaded as an artifact is `du -d0 -h xcresult-bundles.tar.gz | awk -F '\t' '{print $1}'`."
   else
     echo "There are no xcresult bundles to be uploaded."
   fi
