@@ -5,6 +5,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+// TODO check thread-safety of public interface - is this all immutable?
 @interface ARTLocalDevice : ARTDeviceDetails
 
 @property (nullable, nonatomic, readonly) ARTDeviceIdentityTokenDetails *identityTokenDetails;

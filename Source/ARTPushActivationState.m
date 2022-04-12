@@ -74,7 +74,7 @@
 
 ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, ARTPushActivationEvent *event) {
     #if TARGET_OS_IOS
-    ARTLocalDevice *const local = machine.rest.device_nosync;
+    ARTLocalDevice *const local = machine.rest.device;
 
     if (local.identityTokenDetails) {
         // Already registered.
@@ -121,7 +121,7 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
     else if ([event isKindOfClass:[ARTPushActivationEventGotDeviceRegistration class]]) {
         #if TARGET_OS_IOS
         ARTPushActivationEventGotDeviceRegistration *gotDeviceRegistrationEvent = (ARTPushActivationEventGotDeviceRegistration *)event;
-        ARTLocalDevice *local = self.machine.rest.device_nosync;
+        ARTLocalDevice *local = self.machine.rest.device;
         [local setAndPersistIdentityTokenDetails:gotDeviceRegistrationEvent.identityTokenDetails];
         #endif
         [self.machine callActivatedCallback:nil];
@@ -206,7 +206,7 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
         #if TARGET_OS_IOS
         ARTPushActivationEventRegistrationSynced *registrationUpdatedEvent = (ARTPushActivationEventRegistrationSynced *)event;
         if (registrationUpdatedEvent.identityTokenDetails) {
-            ARTLocalDevice *local = self.machine.rest.device_nosync;
+            ARTLocalDevice *local = self.machine.rest.device;
             [local setAndPersistIdentityTokenDetails:registrationUpdatedEvent.identityTokenDetails];
         }
         #endif
@@ -259,7 +259,7 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
     }
     else if ([event isKindOfClass:[ARTPushActivationEventDeregistered class]]) {
         #if TARGET_OS_IOS
-        ARTLocalDevice *local = self.machine.rest.device_nosync;
+        ARTLocalDevice *local = self.machine.rest.device;
         [local setAndPersistIdentityTokenDetails:nil];
         #endif
         [self.machine callDeactivatedCallback:nil];

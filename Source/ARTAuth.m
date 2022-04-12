@@ -16,9 +16,6 @@
 #import "ARTJsonEncoder.h"
 #import "ARTGCD.h"
 #import "ARTEventEmitter+Private.h"
-#import "ARTPushActivationStateMachine+Private.h"
-#import "ARTPushActivationEvent.h"
-#import "ARTPushActivationState.h"
 #import "ARTFormEncode.h"
 
 @implementation ARTAuth {
@@ -719,7 +716,7 @@ dispatch_async(_queue, ^{
 - (void)setProtocolClientId:(NSString *)clientId {
     _protocolClientId = clientId;
     #if TARGET_OS_IOS
-    [self setLocalDeviceClientId_nosync:_protocolClientId];
+    [_rest setLocalDeviceClientId:_protocolClientId];
     #endif
 }
 
@@ -776,7 +773,7 @@ dispatch_sync(_queue, ^{
 - (void)setTokenDetails:(ARTTokenDetails *)tokenDetails {
     _tokenDetails = tokenDetails;
     #if TARGET_OS_IOS
-    [self setLocalDeviceClientId_nosync:tokenDetails.clientId];
+    [_rest setLocalDeviceClientId:tokenDetails.clientId];
     #endif
 }
 
@@ -806,20 +803,6 @@ dispatch_sync(_queue, ^{
     }
     return parts[0];
 }
-
-#if TARGET_OS_IOS
-- (void)setLocalDeviceClientId_nosync:(NSString *)clientId {
-    if (clientId == nil || [clientId isEqualToString:@"*"] || [clientId isEqualToString:_rest.device_nosync.clientId]) {
-        return;
-    }
-    [_rest.device_nosync setClientId:clientId];
-    [_rest.push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
-        if (![stateMachine.current_nosync isKindOfClass:[ARTPushActivationStateNotActivated class]]) {
-            [stateMachine sendEvent:[[ARTPushActivationEventGotPushDeviceDetails alloc] init]];
-        }
-    }];
-}
-#endif
 
 @end
 
