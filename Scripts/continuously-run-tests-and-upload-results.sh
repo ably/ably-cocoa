@@ -60,7 +60,9 @@ do
   if [[ tests_exit_value -eq 124 || tests_exit_value -eq 137 ]]; then
     # Execution timed out.
     echo "ITERATION ${iteration}: Cancelled the execution of fastlane since it exceeded timeout imposed by maximum GitHub running time. Terminating this script."
-    echo "There are `du -d0 -h xcresult-bundles | awk -F '\t' '{print $1}'` of xcresult bundles to be uploaded."
+    echo "There are `du -d0 -h xcresult-bundles | awk -F '\t' '{print $1}'` of xcresult bundles."
+    tar --create --gzip xcresult-bundles > xcresult-bundles.tar.gz
+    echo "The file xcresult-bundles.tar.gz that will be uploaded as an artifact is `du -d0 -h xcresult-bundles.tar.gz | awk -F '\t' '{print $1}'`."
     exit 0
   fi
 
