@@ -57,6 +57,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           brew install xcbeautify
+          brew install coreutils # for `timeout`
           make submodules
           bundle install
           make update_carthage_dependencies_ios
