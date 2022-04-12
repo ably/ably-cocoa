@@ -41,6 +41,17 @@ echo "We’ll make sure this script ends by `date -r${must_end_by}`." 2>&1
 
 # 4. Run the tests in a loop and report the results.
 
+end_iteration_with_exit_value() {
+  if [[ -e xcresult-bundles ]]
+  then
+    echo "There are `du -d0 -h xcresult-bundles | awk -F '\t' '{print $1}'` of xcresult bundles to be uploaded."
+  else
+    echo "There are no xcresult bundles to be uploaded."
+  fi
+
+  exit $1
+}
+
 declare -i iteration=1
 while true
 do
@@ -56,7 +67,7 @@ do
 
   if [[ $allowed_execution_time -le 0 ]]; then
     echo "ITERATION ${iteration}: Allowed execution time reached. Exiting." 2>&1
-    exit 0
+    end_iteration_with_exit_value 0
   fi
 
   echo "ITERATION ${iteration}: Running fastlane with a timeout of ${allowed_execution_time} seconds." 2>&1
@@ -69,7 +80,7 @@ do
   if [[ tests_exit_value -eq 124 || tests_exit_value -eq 137 ]]; then
     # Execution timed out.
     echo "ITERATION ${iteration}: Cancelled the execution of fastlane since it exceeded timeout imposed by maximum GitHub running time. Terminating this script."
-    exit 0
+    end_iteration_with_exit_value 0
   fi
 
   if [[ tests_exit_value -eq 0 ]]
@@ -127,13 +138,13 @@ do
   if [[ $number_of_result_bundles -eq 0 ]]
   then
     echo "ITERATION ${iteration}: No result bundles found."
-    exit 1
+    end_iteration_with_exit_value 1
   fi
 
   if [[ $number_of_result_bundles -gt 1 ]]
   then
     echo -e "ITERATION ${iteration}: Multiple result bundles found:\n${result_bundles}"
-    exit 1
+    end_iteration_with_exit_value 1
   fi
 
   echo "ITERATION ${iteration}: Report bundle found: ${result_bundles}"
@@ -150,7 +161,7 @@ do
   if [[ upload_exit_value -ne 0 ]]
   then
     echo "ITERATION ${iteration}: Terminating due to failed upload."
-    exit $upload_exit_value
+    end_iteration_with_exit_value $upload_exit_value
   fi
 
   echo "END ITERATION ${iteration}" 2>&1
