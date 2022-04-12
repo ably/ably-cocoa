@@ -752,8 +752,18 @@ dispatch_async(_queue, ^{
     });
 }
 
-// Store address of once_token to access it in debug function.
-static dispatch_once_t *device_once_token;
+// Access synchronised by sharedDeviceInitializationSemaphore
+static BOOL isSharedDeviceInitialized = NO;
+
++ (dispatch_semaphore_t)sharedDeviceInitializationSemaphore {
+    static dispatch_once_t once;
+    static dispatch_semaphore_t semaphore;
+    dispatch_once(&once, ^{
+        semaphore = dispatch_semaphore_create(1);
+    });
+    
+    return semaphore;
+}
 
 - (ARTLocalDevice *)device_nosync_to_be_called_from_thread_its_appropriate_to_load_device_on {
     // The device is shared in a static variable because it's a reflection
@@ -764,12 +774,15 @@ static dispatch_once_t *device_once_token;
     // As a side effect, the first instance "wins" at setting the device's
     // client ID.
 
-    static dispatch_once_t once;
-    device_once_token = &once;
+    // Access synchronised by sharedDeviceInitializationSemaphore
     static id device;
-    dispatch_once(&once, ^{
+    dispatch_semaphore_wait([ARTRestInternal sharedDeviceInitializationSemaphore], DISPATCH_TIME_FOREVER);
+    if (!isSharedDeviceInitialized) {
         device = [ARTLocalDevice load:self.auth.clientId_nosync storage:self.storage];
-    });
+        isSharedDeviceInitialized = YES;
+    }
+    dispatch_semaphore_signal([ARTRestInternal sharedDeviceInitializationSemaphore]);
+    
     return device;
 }
 
@@ -786,7 +799,9 @@ static dispatch_once_t *device_once_token;
 }
 
 - (void)resetDeviceSingleton {
-    if (device_once_token) *device_once_token = 0;
+    dispatch_semaphore_wait([ARTRestInternal sharedDeviceInitializationSemaphore], DISPATCH_TIME_FOREVER);
+    isSharedDeviceInitialized = NO;
+    dispatch_semaphore_signal([ARTRestInternal sharedDeviceInitializationSemaphore]);
 }
 #endif
 
