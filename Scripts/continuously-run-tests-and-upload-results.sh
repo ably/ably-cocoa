@@ -60,6 +60,7 @@ do
   if [[ tests_exit_value -eq 124 || tests_exit_value -eq 137 ]]; then
     # Execution timed out.
     echo "ITERATION ${iteration}: Cancelled the execution of fastlane since it exceeded timeout imposed by maximum GitHub running time. Terminating this script."
+    echo "There are `du -d0 -h xcresult-bundles | awk -F '\t' '{print $1}'` of xcresult bundles to be uploaded."
     exit 0
   fi
 
