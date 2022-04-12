@@ -2425,7 +2425,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     // RTP8e
     func test__078__Presence__enter__optional_data_can_be_included_when_entering_a_channel() {
-        let options = AblyTests.commonAppSetup()
+        let options = AblyTests.commonAppSetup(true)
 
         options.clientId = "john"
         let client1 = ARTRealtime(options: options)
