@@ -63,6 +63,11 @@ jobs:
           pod repo update
           pod install
           bundle exec fastlane scan -s Tests --output-directory "fastlane/test_output/examples/test_iOS14_4"
+
+      - name: Build APNS Example Project
+        working-directory: ./Examples/AblyPush
+        run: |
+          xcodebuild build -scheme "AblyPushExample" -destination "platform=iOS Simulator,name=iPhone 12" -configuration "Debug"
       
       - name: Xcodebuild Logs Artifact
         if: always()
