@@ -383,14 +383,9 @@ dispatch_async(_queue, ^{
 
 - (void)registerForAPNS {
 #if !TARGET_OS_SIMULATOR
-    if ([NSThread isMainThread]) {
+    dispatch_async(dispatch_get_main_queue(), ^{
         [[UIApplication sharedApplication] registerForRemoteNotifications];
-    }
-    else {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[UIApplication sharedApplication] registerForRemoteNotifications];
-        });
-    }
+    });
 #endif
 }
 
