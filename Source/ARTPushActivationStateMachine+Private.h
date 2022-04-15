@@ -23,6 +23,8 @@ extern NSString *const ARTPushActivationPendingEventsKey;
 @property (readonly, nonatomic) ARTPushActivationEvent *lastEvent_nosync;
 @property (readonly, nonatomic) ARTPushActivationState *current_nosync;
 
+- (void)registerForAPNS;
+
 @end
 
 NS_ASSUME_NONNULL_END

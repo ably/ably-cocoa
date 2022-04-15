@@ -104,6 +104,7 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
         return self;
     }
     else if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
+        [self.machine registerForAPNS];
         return validateAndSync(self.machine, event);
     }
     return nil;

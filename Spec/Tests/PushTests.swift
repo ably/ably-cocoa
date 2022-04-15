@@ -407,4 +407,26 @@ class PushTests: XCTestCase {
         pushRegistererDelegate = nil
         expect(rest.internal.options.pushRegistererDelegate).to(beNil())
     }
+    
+    func test__016__activate_should_call_registerForAPNS_while_transition_from_not_activated() {
+        var registerForAPNSMethodWasCalled = false
+
+        let hook = rest.push.internal.activationMachine.testSuite_injectIntoMethod(after: NSSelectorFromString("registerForAPNS")) {
+            registerForAPNSMethodWasCalled = true
+        }
+
+        defer {
+            hook.remove()
+            rest.push.internal.activationMachine.transitions = nil
+        }
+        waitUntil(timeout: testTimeout) { done in
+            rest.push.internal.activationMachine.transitions = { event, _, _ in
+                if event is ARTPushActivationEventCalledActivate {
+                    done()
+                }
+            }
+            rest.push.activate()
+        }
+        expect(registerForAPNSMethodWasCalled).to(beTrue())
+    }
 }
