@@ -3820,14 +3820,15 @@ class RealtimeClientConnectionTests: XCTestCase {
         afterEach__Connection__Host_Fallback()
     }
 
-    func skipped__test__094__Connection__Host_Fallback__should_retry_custom_fallback_hosts_in_random_order_after_checkin_if_an_internet_connection_is_available() {
+    func test__094__Connection__Host_Fallback__should_retry_custom_fallback_hosts_in_random_order_after_checkin_if_an_internet_connection_is_available() {
         beforeEach__Connection__Host_Fallback()
 
-        let fbHosts = ["f.ably-realtime.com", "g.ably-realtime.com", "h.ably-realtime.com", "i.ably-realtime.com", "j.ably-realtime.com"]
+        let hostPrefixes = Array("fghij")
+        let expectedFallbackHosts = Array(expectedHostOrder.map { "\(hostPrefixes[$0]).ably-realtime.com" })
 
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.autoConnect = false
-        options.fallbackHosts = fbHosts
+        options.fallbackHosts = expectedFallbackHosts.sorted() // will be picked "randomly" as of expectedHostOrder
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
         client.channels.get(uniqueChannelName())
@@ -3843,15 +3844,29 @@ class RealtimeClientConnectionTests: XCTestCase {
         TestProxyTransport.fakeNetworkResponse = .hostUnreachable
         defer { TestProxyTransport.fakeNetworkResponse = nil }
 
+        let extractHostname = { (url: URL) in
+            NSRegularExpression.extract(url.absoluteString, pattern: "[\(hostPrefixes.first!)-\(hostPrefixes.last!)].ably-realtime.com")
+        }
+        
         var urls = [URL]()
+        var fallbackHostsCount = 0
+        let fallbackHostsExp = XCTestExpectation(description: "TestProxyTransport should spit 5 fallback hosts on networkConnectEvent")
+        
         TestProxyTransport.networkConnectEvent = { transport, url in
             if client.internal.transport !== transport {
                 return
             }
             DispatchQueue.main.async {
                 urls.append(url)
+                if let _ = extractHostname(url) {
+                    fallbackHostsCount += 1
+                    if fallbackHostsCount == expectedFallbackHosts.count {
+                        fallbackHostsExp.fulfill()
+                    }
+                }
             }
         }
+        
         defer { TestProxyTransport.networkConnectEvent = nil }
 
         testHttpExecutor.setListenerAfterRequest { request in
@@ -3869,10 +3884,8 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
             client.connect()
         }
-
-        let extractHostname = { (url: URL) in
-            NSRegularExpression.extract(url.absoluteString, pattern: "[f-j].ably-realtime.com")
-        }
+        
+        wait(for: [fallbackHostsExp], timeout: testTimeout.toTimeInterval())
 
         var resultFallbackHosts = [String]()
         var gotInternetIsUpCheck = false
@@ -3889,8 +3902,6 @@ class RealtimeClientConnectionTests: XCTestCase {
                 resultFallbackHosts.append(fallbackHost)
             }
         }
-
-        let expectedFallbackHosts = Array(expectedHostOrder.map { fbHosts[$0] })
 
         expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
 
