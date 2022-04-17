@@ -3713,14 +3713,28 @@ class RealtimeClientConnectionTests: XCTestCase {
         client.internal.setTransport(TestProxyTransport.self)
         TestProxyTransport.fakeNetworkResponse = .hostUnreachable
         defer { TestProxyTransport.fakeNetworkResponse = nil }
+        
+        let hostPrefixes = Array("abcde")
 
+        let extractHostname = { (url: URL) in
+            NSRegularExpression.extract(url.absoluteString, pattern: "[\(hostPrefixes.first!)-\(hostPrefixes.last!)].ably-realtime.com")
+        }
+        
         var urls = [URL]()
+        var fallbackHosts = [String]()
+        let fallbackHostsExp = XCTestExpectation(description: "TestProxyTransport should spit 5 fallback hosts on networkConnectEvent")
         TestProxyTransport.networkConnectEvent = { transport, url in
             if client.internal.transport !== transport {
                 return
             }
             DispatchQueue.main.async {
                 urls.append(url)
+                if let fallbackHost = extractHostname(url) {
+                    fallbackHosts.append(fallbackHost)
+                    if fallbackHosts.count == hostPrefixes.count {
+                        fallbackHostsExp.fulfill()
+                    }
+                }
             }
         }
         defer { TestProxyTransport.networkConnectEvent = nil }
@@ -3728,7 +3742,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             urls.append(request.url!)
         }
 
-        waitUntil(timeout: testTimeout.multiplied(by: 1000)) { done in
+        waitUntil(timeout: testTimeout) { done in
             // wss://[a-e].ably-realtime.com: when a timeout occurs
             client.connection.once(.disconnected) { _ in
                 done()
@@ -3739,10 +3753,8 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
             client.connect()
         }
-
-        let extractHostname = { (url: URL) in
-            NSRegularExpression.extract(url.absoluteString, pattern: "[a-e].ably-realtime.com")
-        }
+        
+        wait(for: [fallbackHostsExp], timeout: testTimeout.toTimeInterval())
 
         var resultFallbackHosts = [String]()
         var gotInternetIsUpCheck = false
