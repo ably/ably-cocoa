@@ -3715,29 +3715,32 @@ class RealtimeClientConnectionTests: XCTestCase {
         defer { TestProxyTransport.fakeNetworkResponse = nil }
         
         let hostPrefixes = Array("abcde")
-
+        
         let extractHostname = { (url: URL) in
             NSRegularExpression.extract(url.absoluteString, pattern: "[\(hostPrefixes.first!)-\(hostPrefixes.last!)].ably-realtime.com")
         }
         
         var urls = [URL]()
-        var fallbackHosts = [String]()
+        var fallbackHostsCount = 0
+        let expectedFallbackHosts = Array(expectedHostOrder.map { ARTDefault.fallbackHosts()[$0] })
         let fallbackHostsExp = XCTestExpectation(description: "TestProxyTransport should spit 5 fallback hosts on networkConnectEvent")
+        
         TestProxyTransport.networkConnectEvent = { transport, url in
             if client.internal.transport !== transport {
                 return
             }
             DispatchQueue.main.async {
                 urls.append(url)
-                if let fallbackHost = extractHostname(url) {
-                    fallbackHosts.append(fallbackHost)
-                    if fallbackHosts.count == hostPrefixes.count {
+                if let _ = extractHostname(url) {
+                    fallbackHostsCount += 1
+                    if fallbackHostsCount == expectedFallbackHosts.count {
                         fallbackHostsExp.fulfill()
                     }
                 }
             }
         }
         defer { TestProxyTransport.networkConnectEvent = nil }
+        
         testHttpExecutor.setListenerAfterRequest { request in
             urls.append(request.url!)
         }
@@ -3771,8 +3774,6 @@ class RealtimeClientConnectionTests: XCTestCase {
                 resultFallbackHosts.append(fallbackHost)
             }
         }
-
-        let expectedFallbackHosts = Array(expectedHostOrder.map { ARTDefault.fallbackHosts()[$0] })
 
         expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
 
