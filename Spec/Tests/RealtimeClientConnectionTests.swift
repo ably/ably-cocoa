@@ -3726,6 +3726,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let fallbackHostsExp = XCTestExpectation(description: "TestProxyTransport should spit 5 fallback hosts on networkConnectEvent")
         
         TestProxyTransport.networkConnectEvent = { transport, url in
+            NSLog("LAWRENCE: got \(url)")
             if client.internal.transport !== transport {
                 return
             }
@@ -3734,6 +3735,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 if let _ = extractHostname(url) {
                     fallbackHostsCount += 1
                     if fallbackHostsCount == expectedFallbackHosts.count {
+                        NSLog("LAWRENCE: fulfilling expectation")
                         fallbackHostsExp.fulfill()
                     }
                 }
@@ -3748,10 +3750,17 @@ class RealtimeClientConnectionTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             // wss://[a-e].ably-realtime.com: when a timeout occurs
             client.connection.once(.disconnected) { _ in
+                NSLog("LAWRENCE: got disconnected")
+                
+//                if let errorReason = client.connection.errorReason {
+//                    NSLog("LAWRENCE: errorReason is \(errorReason)")
+//                }
+                
                 done()
             }
             // wss://[a-e].ably-realtime.com: when a 401 occurs because of the `xxxx:xxxx` key
             client.connection.once(.failed) { _ in
+                NSLog("LAWRENCE: got failed")
                 done()
             }
             client.connect()
