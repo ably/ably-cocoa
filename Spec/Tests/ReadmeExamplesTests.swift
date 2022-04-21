@@ -182,8 +182,8 @@ class ReadmeExamplesTests: XCTestCase {
         }
     }
 
-    func test__014__testGenerateToken() {
-        let client = ARTRest(options: AblyTests.commonAppSetup())
+    func test__014__testGenerateToken() throws {
+        let client = ARTRest(options: try AblyTests.commonAppSetup())
 
         client.auth.requestToken(nil, with: nil) { tokenDetails, _ in
             let tokenDetails = tokenDetails!
@@ -193,8 +193,8 @@ class ReadmeExamplesTests: XCTestCase {
         }
     }
 
-    func test__015__testFetchingStats() {
-        let client = ARTRest(options: AblyTests.commonAppSetup())
+    func test__015__testFetchingStats() throws {
+        let client = ARTRest(options: try AblyTests.commonAppSetup())
         client.channels.get(uniqueChannelName()).publish("foo", data: "bar") { _ in
             client.stats { statsPage, _ in
                 let statsPage = statsPage!
@@ -206,8 +206,8 @@ class ReadmeExamplesTests: XCTestCase {
         }
     }
 
-    func test__016__testFetchingTime() {
-        let client = ARTRest(options: AblyTests.commonAppSetup())
+    func test__016__testFetchingTime() throws {
+        let client = ARTRest(options: try AblyTests.commonAppSetup())
 
         client.time { time, _ in
             print(time as Any) // 2016-02-09 03:59:24 +0000

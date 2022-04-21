@@ -293,8 +293,8 @@ class PushChannelTests: XCTestCase {
         })
     }
 
-    func test__013__Push_Channel__listSubscriptions__should_return_a_paginated_result_with_PushChannelSubscription() {
-        let options = AblyTests.commonAppSetup()
+    func test__013__Push_Channel__listSubscriptions__should_return_a_paginated_result_with_PushChannelSubscription() throws {
+        let options = try AblyTests.commonAppSetup()
         options.clientId = "tester"
         // Prevent channel name to be prefixed by test-*
         options.channelNamePrefix = nil

@@ -130,7 +130,7 @@ class AblyTests {
         return DispatchQueue.getSpecific(key: queueIdentityKey)?.label
     }
 
-    class func setupOptions(_ options: ARTClientOptions, forceNewApp: Bool = false, debug: Bool = false) -> ARTClientOptions {
+    class func setupOptions(_ options: ARTClientOptions, forceNewApp: Bool = false, debug: Bool = false) throws -> ARTClientOptions {
         options.channelNamePrefix = "test-\(setupOptionsCounter)"
         setupOptionsCounter += 1
 
@@ -160,7 +160,7 @@ class AblyTests {
                 print(testApplication!)
             }
 
-            return setupOptions(options, debug: debug)
+            return try setupOptions(options, debug: debug)
         }
         
         let key = app["keys"][0]
@@ -173,8 +173,8 @@ class AblyTests {
         return options
     }
     
-    class func commonAppSetup(_ debug: Bool = false) -> ARTClientOptions {
-        return AblyTests.setupOptions(AblyTests.jsonRestOptions, debug: debug)
+    class func commonAppSetup(_ debug: Bool = false) throws -> ARTClientOptions {
+        return try AblyTests.setupOptions(AblyTests.jsonRestOptions, debug: debug)
     }
 
     class func clientOptions(_ debug: Bool = false, key: String? = nil, requestToken: Bool = false) -> ARTClientOptions {
@@ -360,6 +360,16 @@ class AblyTests {
         let items = jsonItems.map{ $0 }.map(CryptoTestItem.init)
         return (keyData, ivData, items)
     }
+    
+    class func createAuthCallback(fromThrowing throwingCallback: @escaping (ARTTokenParams, @escaping ARTTokenDetailsCompatibleCallback) throws -> Void) -> ARTAuthCallback {
+        return { (params, callback) in
+            do {
+                try throwingCallback(params, callback)
+            } catch {
+                fatalError(error.localizedDescription)
+            }
+        }
+    }
 }
 
 class NSURLSessionServerTrustSync: NSObject, URLSessionDelegate, URLSessionTaskDelegate {
@@ -520,8 +530,8 @@ func getTestToken(key: String? = nil, clientId: String? = nil, capability: Strin
     return getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl, file: file, line: line)?.token ?? ""
 }
 
-func getTestToken(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, file: FileString = #file, line: UInt = #line, completion: @escaping (String) -> Void) {
-    getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl) { tokenDetails, error in
+func getTestToken(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, file: FileString = #file, line: UInt = #line, completion: @escaping (String) -> Void) throws {
+    try getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl) { tokenDetails, error in
         if let e = error {
             fail(e.localizedDescription, file: file, line: line)
         }
@@ -530,14 +540,14 @@ func getTestToken(key: String? = nil, clientId: String? = nil, capability: Strin
 }
 
 /// Access TokenDetails
-func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, queryTime: Bool? = nil, completion: @escaping (ARTTokenDetails?, Error?) -> Void) {
+func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, queryTime: Bool? = nil, completion: @escaping (ARTTokenDetails?, Error?) -> Void) throws {
     let options: ARTClientOptions
     if let key = key {
         options = AblyTests.clientOptions()
         options.key = key
     }
     else {
-        options = AblyTests.commonAppSetup()
+        options = try AblyTests.commonAppSetup()
     }
     if let queryTime = queryTime {
         options.queryTime = queryTime
@@ -566,11 +576,15 @@ func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability
 }
 
 func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, queryTime: Bool? = nil, file: FileString = #file, line: UInt = #line) -> ARTTokenDetails? {
-    guard let (tokenDetails, error) = (AblyTests.waitFor(timeout: testTimeout, file: file, line: line) { value in
-        getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl, queryTime: queryTime) { tokenDetails, error in
-            value((tokenDetails, error))
+    guard let result: (ARTTokenDetails?, Error?)? = (AblyTests.waitFor(timeout: testTimeout, file: file, line: line) { value in
+        do {
+            try getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl, queryTime: queryTime) { tokenDetails, error in
+                value((tokenDetails, error))
+            }
+        } catch {
+            value((nil, error))
         }
-    }) else {
+    }), let (tokenDetails, error) = result else {
         return nil
     }
 
@@ -580,8 +594,8 @@ func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability
     return tokenDetails
 }
 
-func getJWTToken(invalid: Bool = false, expiresIn: Int = 3600, clientId: String = "testClientIDiOS", capability: String = "{\"*\":[\"*\"]}", jwtType: String = "", encrypted: Int = 0) -> String? {
-    let options = AblyTests.commonAppSetup()
+func getJWTToken(invalid: Bool = false, expiresIn: Int = 3600, clientId: String = "testClientIDiOS", capability: String = "{\"*\":[\"*\"]}", jwtType: String = "", encrypted: Int = 0) throws -> String? {
+    let options = try AblyTests.commonAppSetup()
     guard let components = options.key?.components(separatedBy: ":"), let keyName = components.first, var keySecret = components.last else {
         fail("Invalid API key: \(options.key ?? "nil")")
         return nil
@@ -611,8 +625,8 @@ func getJWTToken(invalid: Bool = false, expiresIn: Int = 3600, clientId: String 
     return String(data: responseData!, encoding: String.Encoding.utf8)
 }
 
-func getKeys() -> Dictionary<String, String> {
-    let options = AblyTests.commonAppSetup()
+func getKeys() throws -> Dictionary<String, String> {
+    let options = try AblyTests.commonAppSetup()
     guard let components = options.key?.components(separatedBy: ":"), let keyName = components.first, let keySecret = components.last else {
         fatalError("Invalid API key)")
     }

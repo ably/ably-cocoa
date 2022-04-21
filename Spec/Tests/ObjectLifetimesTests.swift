@@ -76,8 +76,8 @@ class ObjectLifetimesTests: XCTestCase {
         }
     }
 
-    func test__004__ObjectLifetimes__when_user_leaves_Realtime_open__still_works() {
-        let options = AblyTests.commonAppSetup()
+    func test__004__ObjectLifetimes__when_user_leaves_Realtime_open__still_works() throws {
+        let options = try AblyTests.commonAppSetup()
 
         var client: ARTRealtime? = ARTRealtime(options: options)
 
@@ -97,8 +97,8 @@ class ObjectLifetimesTests: XCTestCase {
         }
     }
 
-    func test__005__ObjectLifetimes__when_Realtime_is_closed_and_user_loses_its_reference__channels_don_t_leak() {
-        let options = AblyTests.commonAppSetup()
+    func test__005__ObjectLifetimes__when_Realtime_is_closed_and_user_loses_its_reference__channels_don_t_leak() throws {
+        let options = try AblyTests.commonAppSetup()
 
         var client: ARTRealtime? = ARTRealtime(options: options)
         weak var weakClient = client!.internal

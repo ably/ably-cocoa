@@ -104,10 +104,10 @@ class UtilitiesTests: XCTestCase {
         expect(result).to(beNil())
     }
 
-    func test__005__Utilities__JSON_Encoder__in_Realtime__should_handle_and_emit_the_invalid_data_error() {
+    func test__005__Utilities__JSON_Encoder__in_Realtime__should_handle_and_emit_the_invalid_data_error() throws {
         beforeEach__Utilities__JSON_Encoder()
 
-        let options = AblyTests.commonAppSetup()
+        let options = try AblyTests.commonAppSetup()
         let realtime = ARTRealtime(options: options)
         defer { realtime.close() }
         let channel = realtime.channels.get(uniqueChannelName())
@@ -133,10 +133,10 @@ class UtilitiesTests: XCTestCase {
         }
     }
 
-    func test__006__Utilities__JSON_Encoder__in_Realtime__should_ignore_invalid_transport_message() {
+    func test__006__Utilities__JSON_Encoder__in_Realtime__should_ignore_invalid_transport_message() throws {
         beforeEach__Utilities__JSON_Encoder()
 
-        let options = AblyTests.commonAppSetup()
+        let options = try AblyTests.commonAppSetup()
         let realtime = ARTRealtime(options: options)
         defer { realtime.close() }
         let channel = realtime.channels.get(uniqueChannelName())
@@ -170,10 +170,10 @@ class UtilitiesTests: XCTestCase {
         channel.unsubscribe()
     }
 
-    func test__007__Utilities__JSON_Encoder__in_Rest__should_handle_and_emit_the_invalid_data_error() {
+    func test__007__Utilities__JSON_Encoder__in_Rest__should_handle_and_emit_the_invalid_data_error() throws {
         beforeEach__Utilities__JSON_Encoder()
 
-        let options = AblyTests.commonAppSetup()
+        let options = try AblyTests.commonAppSetup()
         let rest = ARTRest(options: options)
         let channel = rest.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
@@ -198,10 +198,10 @@ class UtilitiesTests: XCTestCase {
         }
     }
 
-    func test__008__Utilities__JSON_Encoder__in_Rest__should_ignore_invalid_response_payload() {
+    func test__008__Utilities__JSON_Encoder__in_Rest__should_ignore_invalid_response_payload() throws {
         beforeEach__Utilities__JSON_Encoder()
 
-        let options = AblyTests.commonAppSetup()
+        let options = try AblyTests.commonAppSetup()
         let rest = ARTRest(options: options)
         let testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
         rest.internal.httpExecutor = testHTTPExecutor
@@ -438,8 +438,8 @@ class UtilitiesTests: XCTestCase {
         expect(secondCallbackCalled).to(beFalse())
     }
 
-    func test__021__Utilities__Logger__should_have_a_history_of_logs() {
-        let options = AblyTests.commonAppSetup()
+    func test__021__Utilities__Logger__should_have_a_history_of_logs() throws {
+        let options = try AblyTests.commonAppSetup()
         let realtime = ARTRealtime(options: options)
         realtime.internal.logger.logLevel = .verbose
         defer { realtime.close() }
