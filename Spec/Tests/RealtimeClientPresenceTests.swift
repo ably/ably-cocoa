@@ -1059,6 +1059,8 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     // RTP8c
     func test__032__Presence__enter__entering_without_an_explicit_PresenceMessage_clientId_should_implicitly_use_the_clientId_of_the_current_connection() {
+        continueAfterFailure = false
+        
         let options = AblyTests.commonAppSetup()
         options.clientId = "john"
         let client = AblyTests.newRealtime(options)
@@ -1066,7 +1068,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let channel = client.channels.get(uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
-            let partialDone = AblyTests.splitDone(2, done: done)
+            let partialDone = AblyTests.splitDone(3, done: done)
             channel.presence.enter("online") { error in
                 expect(error).to(beNil())
                 partialDone()
@@ -1077,6 +1079,8 @@ class RealtimeClientPresenceTests: XCTestCase {
                 partialDone()
             }
         }
+        
+        NSLog("IM HERE")
 
         let transport = client.internal.transport as! TestProxyTransport
         let sent = transport.protocolMessagesSent.filter { $0.action == .presence }[0].presence![0]
