@@ -68,7 +68,11 @@ func uniqueChannelName(prefix: String = "",
 
 /// Common test utilities.
 class AblyTests {
-
+    
+    enum Error: Swift.Error {
+        case invalidAPIKey
+    }
+    
     class func base64ToData(_ base64: String) -> Data {
         return Data(base64Encoded: base64, options: NSData.Base64DecodingOptions(rawValue: 0))!
     }
@@ -151,7 +155,7 @@ class AblyTests {
             let (responseData, responseError, _) = NSURLSessionServerTrustSync().get(request)
 
             if let error = responseError {
-                fatalError(error.localizedDescription)
+                throw error
             }
 
             testApplication = try! JSON(data: responseData!)
@@ -628,7 +632,7 @@ func getJWTToken(invalid: Bool = false, expiresIn: Int = 3600, clientId: String 
 func getKeys() throws -> Dictionary<String, String> {
     let options = try AblyTests.commonAppSetup()
     guard let components = options.key?.components(separatedBy: ":"), let keyName = components.first, let keySecret = components.last else {
-        fatalError("Invalid API key)")
+        throw AblyTests.Error.invalidAPIKey
     }
     return ["keyName": keyName, "keySecret": keySecret]
 }
