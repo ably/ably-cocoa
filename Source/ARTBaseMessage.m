@@ -26,7 +26,11 @@
 }
 
 - (id)decodeWithEncoder:(ARTDataEncoder*)encoder error:(NSError **)error {
+    NSLog(@"1e5beffd-b21f-4281-85c9-b1b6ab02471d: -[ARTBaseMessage decodeWithEncoder:error:], calling decode: %@ (class %@) encoding: %@", [self.data debugDescription], [self.data class], self.encoding);
+    
     ARTDataEncoderOutput *decoded = [encoder decode:self.data encoding:self.encoding];
+    NSLog(@"1e5beffd-b21f-4281-85c9-b1b6ab02471d: -[ARTBaseMessage decodeWithEncoder:error:], decoded.errorInfo is %@", [decoded.errorInfo description]);
+    NSLog(@"1e5beffd-b21f-4281-85c9-b1b6ab02471d: -[ARTBaseMessage decodeWithEncoder:error:], decoded.data is %@ (class %@), with encoding: %@", [decoded.data debugDescription], [decoded.data class], decoded.encoding);
     if (decoded.errorInfo && error) {
         *error = [NSError errorWithDomain:ARTAblyErrorDomain code:decoded.errorInfo.code userInfo:@{NSLocalizedDescriptionKey: @"decoding failed",
                                                                                NSLocalizedFailureReasonErrorKey: decoded.errorInfo.message}];

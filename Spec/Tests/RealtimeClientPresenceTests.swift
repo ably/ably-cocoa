@@ -2429,15 +2429,20 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         options.clientId = "john"
         let client1 = ARTRealtime(options: options)
+        NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: client1 is \(client1)")
         defer { client1.close() }
         
         let channelName = uniqueChannelName()
+        NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: channelName is \(channelName)")
         let channel1 = client1.channels.get(channelName)
+        NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: channel1 is \(channel1)")
 
         options.clientId = "mary"
         let client2 = ARTRealtime(options: options)
+        NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: client2 is \(client2)")
         defer { client2.close() }
         let channel2 = client2.channels.get(channelName)
+        NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: channel2 is \(channel2)")
 
         let expectedData = ["data": 123]
 

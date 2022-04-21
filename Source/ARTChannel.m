@@ -22,10 +22,14 @@
         _queue = rest.queue;
         _options = options;
         NSError *error = nil;
+        NSLog(@"1e5beffd-b21f-4281-85c9-b1b6ab02471d: -[ARTChannel (%p %@) initWithName: %@ andOptions: %@ rest: %@]", self, [self class], name, options, rest);
+
         _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:_options.cipher error:&error];
+        NSLog(@"1e5beffd-b21f-4281-85c9-b1b6ab02471d: ARTChannel (%p) created dataEncoder %@", self, _dataEncoder);
         if (error != nil) {
             [_logger warn:@"creating ARTDataEncoder: %@", error];
             _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:nil error:nil];
+            NSLog(@"1e5beffd-b21f-4281-85c9-b1b6ab02471d: ARTChannel (%p) created empty dataEncoder %@ after error %@", self, _dataEncoder, [error localizedDescription]);
         }
     }
     return self;
@@ -57,10 +61,12 @@
 - (void)recreateDataEncoderWith:(ARTCipherParams*)cipher {
     NSError *error = nil;
     _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:cipher error:&error];
+    NSLog(@"1e5beffd-b21f-4281-85c9-b1b6ab02471d: recreated dataEncoder %@", _dataEncoder);
     
     if (error != nil) {
         [_logger warn:@"creating ARTDataEncoder: %@", error];
         _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:nil error:nil];
+        NSLog(@"1e5beffd-b21f-4281-85c9-b1b6ab02471d: recreated empty dataEncoder %@ after error %@", _dataEncoder, [error localizedDescription]);
     }
 }
 

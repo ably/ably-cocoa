@@ -863,15 +863,19 @@ dispatch_sync(_queue, ^{
 }
 
 - (void)onPresence:(ARTProtocolMessage *)message {
+    NSLog(@"1e5beffd-b21f-4281-85c9-b1b6ab02471d: -[ARTRealtimeChannelInternal onPresence: %@]", [message description]);
     [self.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) handle PRESENCE message", _realtime, self, self.name];
     int i = 0;
     ARTDataEncoder *dataEncoder = self.dataEncoder;
     for (ARTPresenceMessage *p in message.presence) {
+        NSLog(@"1e5beffd-b21f-4281-85c9-b1b6ab02471d: loop iteration %d, handling presence message %@ whose data has class %@. dataEncoder is %@", i, [p description], [p.data class], [dataEncoder description]);
         ARTPresenceMessage *presence = p;
         if (presence.data && dataEncoder) {
             NSError *decodeError = nil;
+            NSLog(@"1e5beffd-b21f-4281-85c9-b1b6ab02471d: calling decodeWithEncoder:");
             presence = [p decodeWithEncoder:dataEncoder error:&decodeError];
             if (decodeError != nil) {
+                NSLog(@"1e5beffd-b21f-4281-85c9-b1b6ab02471d: got decodeError %@", [decodeError localizedDescription]);
                 ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:ARTErrorUnableToDecodeMessage message:decodeError.localizedFailureReason] prepend:@"Failed to decode data: "];
                 [self.logger error:@"RT:%p C:%p (%@) %@", _realtime, self, self.name, errorInfo.message];
             }
@@ -886,7 +890,10 @@ dispatch_sync(_queue, ^{
         }
 
         if ([self.presenceMap add:presence]) {
+            NSLog(@"1e5beffd-b21f-4281-85c9-b1b6ab02471d: [self.broadcastMap add:] returned true");
             [self broadcastPresence:presence];
+        } else {
+            NSLog(@"1e5beffd-b21f-4281-85c9-b1b6ab02471d: [self.broadcastMap add:] returned false");
         }
 
         ++i;
