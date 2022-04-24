@@ -3835,7 +3835,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
         defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
-        ARTDefault.setRealtimeRequestTimeout(1.0)
+        ARTDefault.setRealtimeRequestTimeout(5.0)
 
         let testHttpExecutor = TestProxyHTTPExecutor(options.logHandler)
         client.internal.rest.httpExecutor = testHttpExecutor
@@ -3849,8 +3849,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
         
         var urls = [URL]()
-        var fallbackHostsCount = 0
-        let fallbackHostsExp = XCTestExpectation(description: "TestProxyTransport should spit 5 fallback hosts on networkConnectEvent")
+        let allFallbackHostsTriedOfFailedExp = XCTestExpectation(description: "TestProxyTransport should spit 5 fallback hosts on networkConnectEvent")
         
         TestProxyTransport.networkConnectEvent = { transport, url in
             if client.internal.transport !== transport {
@@ -3858,12 +3857,6 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
             DispatchQueue.main.async {
                 urls.append(url)
-                if let _ = extractHostname(url) {
-                    fallbackHostsCount += 1
-                    if fallbackHostsCount == expectedFallbackHosts.count {
-                        fallbackHostsExp.fulfill()
-                    }
-                }
             }
         }
         
@@ -3877,15 +3870,17 @@ class RealtimeClientConnectionTests: XCTestCase {
             // wss://[a-e].ably-realtime.com: when a timeout occurs
             client.connection.once(.disconnected) { _ in
                 done()
+                allFallbackHostsTriedOfFailedExp.fulfill()
             }
             // wss://[a-e].ably-realtime.com: when a 401 occurs because of the `xxxx:xxxx` key
             client.connection.once(.failed) { _ in
                 done()
+                allFallbackHostsTriedOfFailedExp.fulfill()
             }
             client.connect()
         }
         
-        wait(for: [fallbackHostsExp], timeout: testTimeout.toTimeInterval())
+        wait(for: [allFallbackHostsTriedOfFailedExp], timeout: testTimeout.toTimeInterval())
 
         var resultFallbackHosts = [String]()
         var gotInternetIsUpCheck = false
