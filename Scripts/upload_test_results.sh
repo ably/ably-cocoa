@@ -17,6 +17,12 @@ then
   exit 1
 fi
 
+if [[ ! -d xcparse ]]
+then
+  echo "You need to check out the xcparse repository." 2>&1
+  exit 1
+fi
+
 # 2. Grab the variables from the environment.
 
 if [[ -z $TEST_OBSERVABILITY_SERVER_AUTH_KEY ]]
@@ -120,7 +126,76 @@ fi
 
 echo "Test report found: ${test_reports}" 2>&1
 
-# 4. Create the JSON request body.
+# 5. Find the .xcresult bundle.
+
+# We use ~+ to give us an absolute path (https://askubuntu.com/a/1033450)
+result_bundles=$(find ~+/fastlane/test_output/sdk -name '*.xcresult')
+if [[ -z $result_bundles ]]
+then
+  number_of_result_bundles=0
+else
+  number_of_result_bundles=$(echo "${result_bundles}" | wc -l)
+fi
+
+if [[ $number_of_result_bundles -eq 0 ]]
+then
+  echo "No result bundles found." 2>&1
+  exit 1
+fi
+
+if [[ $number_of_result_bundles -gt 1 ]]
+then
+  echo -e "Multiple result bundles found:\n${result_bundles}" 2>&1
+  exit 1
+fi
+
+echo "Result bundle found: ${result_bundles}" 2>&1
+
+# 6. Use xcparse to extract the crash reports from the .xcresult bundle.
+
+xcparse_output_directory=$(mktemp -d)
+echo "Extracting result bundle attachments to ${xcparse_output_directory}." 2>&1
+
+cd xcparse
+if [[ ! -f .build/debug/xcparse ]]
+then
+  swift build
+fi
+
+.build/debug/xcparse attachments "${result_bundles}" "${xcparse_output_directory}"
+cd ..
+
+xcparse_attachment_descriptors_file="${xcparse_output_directory}/xcparseAttachmentDescriptors.json"
+
+# 7. Filter the output of xcparse to find just the crash reports (files whose name ends in .crash).
+
+filtered_xcparse_attachment_descriptors_file=$(mktemp)
+
+jq 'map(select(.attachmentName | endswith(".crash")))' < "${xcparse_attachment_descriptors_file}" > "${filtered_xcparse_attachment_descriptors_file}"
+
+declare -i number_of_filtered_attachments
+number_of_filtered_attachments=$(jq '. | length' < "${filtered_xcparse_attachment_descriptors_file}")
+
+echo "There is/are ${number_of_filtered_attachments} crash report(s) in total." 2>&1
+
+crash_reports_json_file=$(mktemp)
+echo '[]' > $crash_reports_json_file
+
+for ((i=0; i < ${number_of_filtered_attachments}; i+=1))
+do
+  attachment_file="${xcparse_output_directory}/$(jq --raw-output ".[${i}].attachmentName" < "${filtered_xcparse_attachment_descriptors_file}")"
+
+  temp_crash_reports_json_file=$(mktemp)
+  jq \
+    --slurpfile attachmentDescriptors "${filtered_xcparse_attachment_descriptors_file}" \
+    --rawfile attachment "${attachment_file}" ". += [{filename: \$attachmentDescriptors[0][$i].attachmentName, test_class_name: \$attachmentDescriptors[0][$i].testClassName, test_case_name: \$attachmentDescriptors[0][$i].testCaseName, data: \$attachment | @base64 }]" \
+    < "${crash_reports_json_file}" \
+    > "${temp_crash_reports_json_file}"
+
+  crash_reports_json_file="${temp_crash_reports_json_file}"
+done
+
+# 8. Create the JSON request body.
 
 temp_request_body_file=$(mktemp)
 
@@ -143,6 +218,7 @@ fi
 
 jq -n \
   --rawfile junit_report_xml "${test_reports}" \
+  --slurpfile crash_reports "${crash_reports_json_file}" \
   --arg github_repository "${GITHUB_REPOSITORY}" \
   --arg github_sha "${GITHUB_SHA}" \
   --arg github_ref_name "${GITHUB_REF_NAME}" \
@@ -154,10 +230,10 @@ jq -n \
   --arg github_job "${GITHUB_JOB}" \
   --arg iteration "${iteration}" \
   "${optional_params[@]}" \
-  '{ junit_report_xml: $junit_report_xml | @base64, github_repository: $github_repository, github_sha: $github_sha, github_ref_name: $github_ref_name, github_retention_days: $github_retention_days, github_action: $github_action, github_run_number: $github_run_number, github_run_attempt: $github_run_attempt, github_run_id: $github_run_id, github_base_ref: $github_base_ref, github_head_ref: $github_head_ref, github_job: $github_job, iteration: $iteration }' \
+  '{ junit_report_xml: $junit_report_xml | @base64, crash_reports: $crash_reports[0], github_repository: $github_repository, github_sha: $github_sha, github_ref_name: $github_ref_name, github_retention_days: $github_retention_days, github_action: $github_action, github_run_number: $github_run_number, github_run_attempt: $github_run_attempt, github_run_id: $github_run_id, github_base_ref: $github_base_ref, github_head_ref: $github_head_ref, github_job: $github_job, iteration: $iteration }' \
   > "${temp_request_body_file}"
 
-# 5. Send the request.
+# 9. Send the request.
 
 echo "Uploading test report." 2>&1
 

@@ -20,7 +20,28 @@ jobs:
       ABLY_ENV: sandbox
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Check out SDK repo
+        uses: actions/checkout@v2
+
+      - name: Check out xcparse repo
+        uses: actions/checkout@v3
+        with:
+          # TODO change to ably-forks
+          repository: lawrence-forooghian/xcparse
+          ref: emit-test-case-info
+          path: xcparse
+
+      - id: get-xcparse-commit-sha
+        name: Get xcparse commit SHA
+        run: |
+          cd xcparse
+          echo "::set-output name=sha::$(git rev-parse HEAD)"
+
+      - name: "actions/cache@v3 (xcparse binary)"
+        uses: actions/cache@v3
+        with:
+          path: xcparse/.build/debug/xcparse
+          key: ${{ runner.os }}-xcparse-${{ steps.get-xcparse-commit-sha.outputs.sha }}
 
       - name: Reset Simulators
         run: xcrun simctl erase all
