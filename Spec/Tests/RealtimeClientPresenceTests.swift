@@ -1059,6 +1059,8 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     // RTP8c
     func test__032__Presence__enter__entering_without_an_explicit_PresenceMessage_clientId_should_implicitly_use_the_clientId_of_the_current_connection() {
+        continueAfterFailure = false
+
         let options = AblyTests.commonAppSetup(true)
         options.clientId = "john"
         let client = AblyTests.newRealtime(options)
