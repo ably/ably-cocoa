@@ -1177,10 +1177,33 @@ class RealtimeClientPresenceTests: XCTestCase {
     func test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value() {
         let options = AblyTests.commonAppSetup(true)
         options.clientId = "john"
+        options.autoConnect = false
         let client = ARTRealtime(options: options)
+        // approach copied from test__013__Token__token_auth__for_Realtime_connections__should_send_the_token_in_the_querystring_as_a_param_named_accessToken
+        client.internal.setTransport(TestProxyTransport.self)
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(uniqueChannelName())
-
+        
+        client.connect()
+        
+        // ATTACHED messages may also include a presence flag (right most bit value 1), which if present, indicates that members are currently present on the channel and a presence SYNC is about to commence. Equally, the service might send an ATTACHED message with no presence flag thus indicating that at the time of attach no members are present on the channel and as such the client can assume the presence set is empty.
+        
+        let transport = client.internal.transport as! TestProxyTransport
+        
+        var attachedProtocolMessage: ARTProtocolMessage!
+        expect(transport.protocolMessagesReceived).toEventually(containElementSatisfying { protocolMessage in
+            if (protocolMessage.action == .attached) {
+                attachedProtocolMessage = protocolMessage
+                return true
+            }
+            
+            return false
+        }, timeout: testTimeout)
+        
+        if ARTProtocolMessageFlag(rawValue: UInt(attachedProtocolMessage.flags)).contains(.presence) {
+            expect(channel.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
+        }
+        
         waitUntil(timeout: testTimeout) { done in
             channel.presence.subscribe(.enter) { member in
                 expect(member.data).to(beNil())
