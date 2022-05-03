@@ -66,6 +66,27 @@ private let getParams: ARTRealtimePresenceQuery = {
     return getParams
 }()
 
+// TODO document what's going on, document how to use
+// ATTACHED messages may also include a presence flag (right most bit value 1), which if present, indicates that members are currently present on the channel and a presence SYNC is about to commence. Equally, the service might send an ATTACHED message with no presence flag thus indicating that at the time of attach no members are present on the channel and as such the client can assume the presence set is empty.
+
+private func attachAndWaitForInitialPresenceSyncToComplete(client: ARTRealtime, channel: ARTRealtimeChannel) {
+    waitUntil(timeout: testTimeout) { done in
+        channel.attach { error in
+            expect(error).to(beNil())
+            done()
+        }
+    }
+    
+    let transport = client.internal.transport as! TestProxyTransport
+    
+    let attachedProtocolMessage = transport.protocolMessagesReceived.first { $0.action == .attached }
+    expect(attachedProtocolMessage).notTo(beNil())
+    
+    if ARTProtocolMessageFlag(rawValue: UInt(attachedProtocolMessage!.flags)).contains(.presence) {
+        expect(channel.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
+    }
+}
+
 class RealtimeClientPresenceTests: XCTestCase {
     override func setUp() {
         super.setUp()
@@ -1177,9 +1198,11 @@ class RealtimeClientPresenceTests: XCTestCase {
     func test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value() {
         let options = AblyTests.commonAppSetup()
         options.clientId = "john"
-        let client = ARTRealtime(options: options)
+        let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
+
         let channel = client.channels.get(uniqueChannelName())
+        attachAndWaitForInitialPresenceSyncToComplete(client: client, channel: channel)
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.subscribe(.enter) { member in
