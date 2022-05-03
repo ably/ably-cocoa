@@ -66,6 +66,31 @@ private let getParams: ARTRealtimePresenceQuery = {
     return getParams
 }()
 
+// Attaches to the given channel. If, upon attach, Realtime indicates that it
+// will initiate a presence SYNC (as indicated by the presence flag on the
+// received ATTACH protocol message), this method will then wait until the
+// presence sync has completed.
+//
+// The client must have been set up to use TestProxyTransport (e.g. using
+// AblyTests.newRealtime(:)).
+private func attachAndWaitForInitialPresenceSyncToComplete(client: ARTRealtime, channel: ARTRealtimeChannel) {
+    waitUntil(timeout: testTimeout) { done in
+        channel.attach { error in
+            expect(error).to(beNil())
+            done()
+        }
+    }
+    
+    let transport = client.internal.transport as! TestProxyTransport
+    
+    let attachedProtocolMessage = transport.protocolMessagesReceived.first { $0.action == .attached }
+    expect(attachedProtocolMessage).notTo(beNil())
+    
+    if ARTProtocolMessageFlag(rawValue: UInt(attachedProtocolMessage!.flags)).contains(.presence) {
+        expect(channel.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
+    }
+}
+
 class RealtimeClientPresenceTests: XCTestCase {
     override func setUp() {
         super.setUp()
@@ -1177,9 +1202,15 @@ class RealtimeClientPresenceTests: XCTestCase {
     func test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value() {
         let options = AblyTests.commonAppSetup()
         options.clientId = "john"
-        let client = ARTRealtime(options: options)
+        let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
+
         let channel = client.channels.get(uniqueChannelName())
+        // We want to make sure that the ENTER presence action that we publish
+        // gets sent by Realtime as a PRESENCE protocol message, and not in the
+        // channel’s initial post-attach SYNC. So, we wait for any initial SYNC
+        // to complete before publishing any presence actions.
+        attachAndWaitForInitialPresenceSyncToComplete(client: client, channel: channel)
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.subscribe(.enter) { member in
