@@ -2428,7 +2428,10 @@ class RealtimeClientPresenceTests: XCTestCase {
         let options = AblyTests.commonAppSetup(true)
 
         options.clientId = "john"
+        options.autoConnect = false
         let client1 = ARTRealtime(options: options)
+        client1.internal.setTransport(TestProxyTransport.self)
+        client1.connect()
         NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: client1 is \(client1)")
         defer { client1.close() }
         
@@ -2436,8 +2439,34 @@ class RealtimeClientPresenceTests: XCTestCase {
         NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: channelName is \(channelName)")
         let channel1 = client1.channels.get(channelName)
         NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: channel1 is \(channel1)")
+        
+        NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: before channel1.attach")
+        waitUntil(timeout: testTimeout) { done in
+            channel1.attach { error in
+                NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: inside channel1.attach callback")
+                expect(error).to(beNil())
+                done()
+            }
+        }
+        
+        let transport = client1.internal.transport as! TestProxyTransport
+        
+        var attachedProtocolMessage: ARTProtocolMessage!
+        expect(transport.protocolMessagesReceived).toEventually(containElementSatisfying { protocolMessage in
+            if (protocolMessage.action == .attached) {
+                attachedProtocolMessage = protocolMessage
+                return true
+            }
+            
+            return false
+        }, timeout: testTimeout)
+        
+        if ARTProtocolMessageFlag(rawValue: UInt(attachedProtocolMessage.flags)).contains(.presence) {
+            expect(channel1.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
+        }
 
         options.clientId = "mary"
+        options.autoConnect = true
         let client2 = ARTRealtime(options: options)
         NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: client2 is \(client2)")
         defer { client2.close() }
@@ -2445,29 +2474,27 @@ class RealtimeClientPresenceTests: XCTestCase {
         NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: channel2 is \(channel2)")
 
         let expectedData = ["data": 123]
+        
+        var receivedEnter = false
+        channel1.presence.subscribe(.enter) { member in
+            NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: inside subscribe(.enter) callback")
+            NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: type(of: member.data!): \(type(of: member.data!))")
+            expect(member.data as? NSObject).to(equal(expectedData as NSObject?))
+            receivedEnter = true
+        }
 
         NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: before waitUntil")
         waitUntil(timeout: testTimeout) { done in
-            NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: before channel1.attach")
-            channel1.attach { error in
-                NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: inside channel1.attach callback")
+            NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: before waitForFirstPresenceEnterOrPresentEvent")
+            NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: before channel2.presence.enter")
+            channel2.presence.enter(expectedData) { error in
+                NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: inside channel2.presence.enter callback")
                 expect(error).to(beNil())
-                let partlyDone = AblyTests.splitDone(2, done: done)
-                NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: before waitForFirstPresenceEnterOrPresentEvent")
-                waitForFirstPresenceEnterOrPresentEvent(on: channel1) { member in
-                    NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: inside waitForFirstPresenceEnterOrPresentEvent callback")
-                    NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: type(of: member.data!): \(type(of: member.data!))")
-                    expect(member.data as? NSObject).to(equal(expectedData as NSObject?))
-                    partlyDone()
-                }
-                NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: before channel2.presence.enter")
-                channel2.presence.enter(expectedData) { error in
-                    NSLog("1e5beffd-b21f-4281-85c9-b1b6ab02471d: inside channel2.presence.enter callback")
-                    expect(error).to(beNil())
-                    partlyDone()
-                }
+                done()
             }
         }
+        
+        expect(receivedEnter).toEventually(beTrue(), timeout: testTimeout)
     }
 
     // RTP8e
