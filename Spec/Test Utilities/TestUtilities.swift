@@ -1287,6 +1287,7 @@ class TestProxyTransport: ARTWebSocketTransport {
     }
 
     override func receive(_ original: ARTProtocolMessage) {
+        NSLog("ac44f09c-f521-4bfc-a3d7-58d4f7428c74: TestProxyTransport received original \(original.description)")
         if original.action == .ack || original.action == .presence {
             if let error = replacingAcksWithNacks {
                 original.action = .nack
