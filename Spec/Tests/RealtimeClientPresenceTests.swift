@@ -509,13 +509,33 @@ class RealtimeClientPresenceTests: XCTestCase {
     // RTP6a
     func test__015__Presence__subscribe__with_no_arguments_should_subscribe_a_listener_to_all_presence_messages() {
         let options = AblyTests.commonAppSetup(true)
+        let optionsWithoutAutoConnect = options.copy() as! ARTClientOptions
+        optionsWithoutAutoConnect.autoConnect = false
 
-        let client1 = ARTRealtime(options: options)
+        let client1 = ARTRealtime(options: optionsWithoutAutoConnect)
+        client1.internal.setTransport(TestProxyTransport.self)
+        client1.connect()
         defer { client1.close() }
         
         let channelName = uniqueChannelName()
         let channel1 = client1.channels.get(channelName)
-
+        
+        let transport = client1.internal.transport as! TestProxyTransport
+        
+        var attachedProtocolMessage: ARTProtocolMessage!
+        expect(transport.protocolMessagesReceived).toEventually(containElementSatisfying { protocolMessage in
+            if (protocolMessage.action == .attached) {
+                attachedProtocolMessage = protocolMessage
+                return true
+            }
+            
+            return false
+        }, timeout: testTimeout)
+        
+        if ARTProtocolMessageFlag(rawValue: UInt(attachedProtocolMessage.flags)).contains(.presence) {
+            expect(channel1.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
+        }
+        
         let client2 = ARTRealtime(options: options)
         defer { client2.close() }
         let channel2 = client2.channels.get(channelName)
