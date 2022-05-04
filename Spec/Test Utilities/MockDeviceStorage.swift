@@ -1,6 +1,8 @@
 import Ably
 
 class MockDeviceStorage: NSObject, ARTDeviceStorage {
+    
+    private let accessQueue = DispatchQueue(label: "io.ably.MockDeviceStorage")
 
     var keysRead: [String] = []
     var keysWritten: [String: Any?] = [:]
@@ -16,41 +18,53 @@ class MockDeviceStorage: NSObject, ARTDeviceStorage {
     }
 
     func object(forKey key: String) -> Any? {
-        keysRead.append(key)
-        if let data = simulateData[key] {
-            defer { simulateData.removeValue(forKey: key) }
-            return data
+        return accessQueue.sync {
+            keysRead.append(key)
+            if let data = simulateData[key] {
+                defer { simulateData.removeValue(forKey: key) }
+                return data
+            }
+            if let string = simulateString[key] {
+                defer { simulateString.removeValue(forKey: key) }
+                return string
+            }
+            return nil
         }
-        if let string = simulateString[key] {
-            defer { simulateString.removeValue(forKey: key) }
-            return string
-        }
-        return nil
     }
 
     func setObject(_ value: Any?, forKey key: String) {
-        keysWritten.updateValue(value, forKey: key)
+        accessQueue.sync {
+            _ = keysWritten.updateValue(value, forKey: key)
+        }
     }
 
     func secret(forDevice deviceId: ARTDeviceId) -> String? {
-        keysRead.append(ARTDeviceSecretKey)
-        if let value = simulateString[ARTDeviceSecretKey] {
-            defer { simulateString.removeValue(forKey: ARTDeviceSecretKey) }
-            return value
+        return accessQueue.sync {
+            keysRead.append(ARTDeviceSecretKey)
+            if let value = simulateString[ARTDeviceSecretKey] {
+                defer { simulateString.removeValue(forKey: ARTDeviceSecretKey) }
+                return value
+            }
+            return nil
         }
-        return nil
     }
 
     func setSecret(_ value: String?, forDevice deviceId: ARTDeviceId) {
-        keysWritten.updateValue(value, forKey: ARTDeviceSecretKey)
+        accessQueue.sync {
+            _ = keysWritten.updateValue(value, forKey: ARTDeviceSecretKey)
+        }
     }
 
     func simulateOnNextRead(data value: Data, `for` key: String) {
-        simulateData[key] = value
+        accessQueue.sync {
+            simulateData[key] = value
+        }
     }
 
     func simulateOnNextRead(string value: String, `for` key: String) {
-        simulateString[key] = value
+        accessQueue.sync {
+            simulateString[key] = value
+        }
     }
 
 }
