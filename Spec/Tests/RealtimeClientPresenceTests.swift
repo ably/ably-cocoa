@@ -1094,16 +1094,21 @@ class RealtimeClientPresenceTests: XCTestCase {
         let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(uniqueChannelName())
+        // We want to make sure that the ENTER presence action that we publish
+        // gets sent by Realtime as a PRESENCE protocol message, and not in the
+        // channel’s initial post-attach SYNC. So, we wait for any initial SYNC
+        // to complete before publishing any presence actions.
+        attachAndWaitForInitialPresenceSyncToComplete(client: client, channel: channel)
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
-            channel.presence.enter("online") { error in
-                expect(error).to(beNil())
-                partialDone()
-            }
-            channel.presence.subscribe { message in
+            channel.presence.subscribe(.enter) { message in
                 expect(message.clientId).to(equal("john"))
                 channel.presence.unsubscribe()
+                partialDone()
+            }
+            channel.presence.enter("online") { error in
+                expect(error).to(beNil())
                 partialDone()
             }
         }
