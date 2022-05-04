@@ -2452,11 +2452,12 @@ class RealtimeClientPresenceTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
 
         options.clientId = "john"
-        let client1 = ARTRealtime(options: options)
+        let client1 = AblyTests.newRealtime(options)
         defer { client1.close() }
         
         let channelName = uniqueChannelName()
         let channel1 = client1.channels.get(channelName)
+        attachAndWaitForInitialPresenceSyncToComplete(client: client1, channel: channel1)
 
         options.clientId = "mary"
         let client2 = ARTRealtime(options: options)
@@ -2466,17 +2467,14 @@ class RealtimeClientPresenceTests: XCTestCase {
         let expectedData = ["data": 123]
 
         waitUntil(timeout: testTimeout) { done in
-            channel1.attach { error in
+            let partlyDone = AblyTests.splitDone(2, done: done)
+            channel1.presence.subscribe(.enter) { member in
+                expect(member.data as? NSObject).to(equal(expectedData as NSObject?))
+                partlyDone()
+            }
+            channel2.presence.enter(expectedData) { error in
                 expect(error).to(beNil())
-                let partlyDone = AblyTests.splitDone(2, done: done)
-                channel1.presence.subscribe(.enter) { member in
-                    expect(member.data as? NSObject).to(equal(expectedData as NSObject?))
-                    partlyDone()
-                }
-                channel2.presence.enter(expectedData) { error in
-                    expect(error).to(beNil())
-                    partlyDone()
-                }
+                partlyDone()
             }
         }
     }
