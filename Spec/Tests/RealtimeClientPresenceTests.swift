@@ -535,11 +535,16 @@ class RealtimeClientPresenceTests: XCTestCase {
     func test__015__Presence__subscribe__with_no_arguments_should_subscribe_a_listener_to_all_presence_messages() {
         let options = AblyTests.commonAppSetup()
 
-        let client1 = ARTRealtime(options: options)
+        let client1 = AblyTests.newRealtime(options)
         defer { client1.close() }
         
         let channelName = uniqueChannelName()
         let channel1 = client1.channels.get(channelName)
+        // We want to make sure that the ENTER presence action that we publish
+        // gets sent by Realtime as a PRESENCE protocol message, and not in the
+        // channel’s initial post-attach SYNC. So, we wait for any initial SYNC
+        // to complete before publishing any presence actions.
+        attachAndWaitForInitialPresenceSyncToComplete(client: client1, channel: channel1)
 
         let client2 = ARTRealtime(options: options)
         defer { client2.close() }
