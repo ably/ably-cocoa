@@ -1094,16 +1094,18 @@ class RealtimeClientPresenceTests: XCTestCase {
         let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(uniqueChannelName())
+        attachAndWaitForInitialPresenceSyncToComplete(client: client, channel: channel)
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
-            channel.presence.enter("online") { error in
-                expect(error).to(beNil())
-                partialDone()
-            }
-            channel.presence.subscribe { message in
+            // i suspect this was sometimes getting a .present instead of a .enter, hence the crash
+            channel.presence.subscribe(.enter) { message in
                 expect(message.clientId).to(equal("john"))
                 channel.presence.unsubscribe()
+                partialDone()
+            }
+            channel.presence.enter("online") { error in
+                expect(error).to(beNil())
                 partialDone()
             }
         }
