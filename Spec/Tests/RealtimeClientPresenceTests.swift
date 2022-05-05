@@ -3483,12 +3483,17 @@ class RealtimeClientPresenceTests: XCTestCase {
             channel.attach { error in
                 expect(error).to(beNil())
                 let transport = client.internal.transport as! TestProxyTransport
-                transport.setListenerBeforeProcessingIncomingMessage { message in
+                var alreadySawSync = false
+                transport.setBeforeIncomingMessageModifier { message in
                     if message.action == .sync {
                         // Ignore next SYNC so that the sync process never finishes.
-                        transport.actionsIgnored += [.sync]
+                        if alreadySawSync {
+                            return nil
+                        }
+                        alreadySawSync = true
                         done()
                     }
+                    return message
                 }
             }
         }
