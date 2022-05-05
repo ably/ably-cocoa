@@ -167,9 +167,7 @@ class AblyTests {
         options.key = key["keyStr"].stringValue
         options.dispatchQueue = DispatchQueue.main
         options.internalDispatchQueue = queue
-        if debug {
-            options.logLevel = .verbose
-        }
+        options.logLevel = .verbose
         return options
     }
     
