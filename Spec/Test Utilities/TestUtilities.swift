@@ -1145,7 +1145,7 @@ class TestProxyTransport: ARTWebSocketTransport {
     private var callbackBeforeProcessingIncomingMessage: ((ARTProtocolMessage) -> Void)?
     private var callbackAfterProcessingIncomingMessage: ((ARTProtocolMessage) -> Void)?
     private var callbackBeforeProcessingOutgoingMessage: ((ARTProtocolMessage) -> Void)?
-    private var callbackBeforeIncomingMessageModifier: ((ARTProtocolMessage) -> ARTProtocolMessage)?
+    private var callbackBeforeIncomingMessageModifier: ((ARTProtocolMessage) -> ARTProtocolMessage?)?
     private var callbackAfterIncomingMessageModifier: ((ARTProtocolMessage) -> ARTProtocolMessage)?
 
     func setListenerBeforeProcessingIncomingMessage(_ callback: ((ARTProtocolMessage) -> Void)?) {
@@ -1167,7 +1167,7 @@ class TestProxyTransport: ARTWebSocketTransport {
     }
 
     /// The modifier will be used in the internal queue.
-    func setBeforeIncomingMessageModifier(_ callback: ((ARTProtocolMessage) -> ARTProtocolMessage)?) {
+    func setBeforeIncomingMessageModifier(_ callback: ((ARTProtocolMessage) -> ARTProtocolMessage?)?) {
         self.callbackBeforeIncomingMessageModifier = callback
     }
 
@@ -1304,7 +1304,11 @@ class TestProxyTransport: ARTWebSocketTransport {
         }
         var msg = original
         if let performEvent = callbackBeforeIncomingMessageModifier {
-            msg = performEvent(original)
+            // TODO tidy up this alternative way of ignoring a message
+            guard let modifiedMsg = performEvent(original) else {
+                return
+            }
+            msg = modifiedMsg
         }
         super.receive(msg)
         if let performEvent = callbackAfterIncomingMessageModifier {
