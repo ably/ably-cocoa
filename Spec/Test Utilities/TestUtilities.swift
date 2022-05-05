@@ -242,7 +242,7 @@ class AblyTests {
 
         for i in startFrom..<startFrom+members {
             waitUntil(timeout: testTimeout) { done in
-                channel.presence.enterClient("user\(i)", data: data) { _ in
+                channel.presence.enterClient("user\(String(format: "%03d", i))", data: data) { _ in
                     done()
                 }
             }
@@ -1295,6 +1295,7 @@ class TestProxyTransport: ARTWebSocketTransport {
         if actionsIgnored.contains(original.action) {
             return
         }
+        NSLog("Not ignoring message \(original)")
         if let performEvent = callbackBeforeProcessingIncomingMessage {
             DispatchQueue.main.async {
                 performEvent(original)

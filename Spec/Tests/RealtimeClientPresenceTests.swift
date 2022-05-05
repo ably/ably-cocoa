@@ -3442,6 +3442,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 let transport = client.internal.transport as! TestProxyTransport
                 transport.setListenerBeforeProcessingIncomingMessage { message in
                     if message.action == .sync {
+                        NSLog("Appending .sync to ignore")
                         // Ignore next SYNC so that the sync process never finishes.
                         transport.actionsIgnored += [.sync]
                         done()
