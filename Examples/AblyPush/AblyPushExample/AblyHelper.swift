@@ -85,7 +85,6 @@ extension AblyHelper: UNUserNotificationCenterDelegate {
     static func requestUserNotificationAuthorization() {
         UNUserNotificationCenter.current().requestAuthorization(options:[.badge, .alert, .sound]) { granted, error in
             DispatchQueue.main.async() {
-                UIApplication.shared.registerForRemoteNotifications()
                 print("Push auth: \(error?.localizedDescription ?? (granted ? "Granted" : "Not Granted"))")
             }
         }
