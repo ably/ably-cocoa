@@ -20,75 +20,40 @@ jobs:
       ABLY_ENV: sandbox
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Check out SDK repo
+        uses: actions/checkout@v2
 
-      - name: Reset Simulators
-        run: xcrun simctl erase all
+      - name: Check out xcparse repo
+        uses: actions/checkout@v3
+        with:
+          repository: ably-forks/xcparse
+          ref: emit-test-case-info
+          path: xcparse
 
-      - name: Install Dependencies and Run Tests
+      - id: get-xcparse-commit-sha
+        name: Get xcparse commit SHA
+        run: |
+          cd xcparse
+          echo "::set-output name=sha::$(git rev-parse HEAD)"
+
+      - name: "actions/cache@v3 (xcparse binary)"
+        uses: actions/cache@v3
+        with:
+          path: xcparse/.build/debug/xcparse
+          key: ${{ runner.os }}-xcparse-${{ steps.get-xcparse-commit-sha.outputs.sha }}
+
+      - name: Install Dependencies and Run Tests Continuously
+        env:
+          TEST_OBSERVABILITY_SERVER_AUTH_KEY: ${{ secrets.TEST_OBSERVABILITY_SERVER_AUTH_KEY }}
         run: |
           brew install xcbeautify
+          brew install coreutils # for `timeout`
           make submodules
           bundle install
           make update_carthage_dependencies_ios
-          bundle exec fastlane test_iOS14_4
+          Scripts/continuously-run-tests-and-upload-results.sh --lane test_iOS14_4
 
-      - name: Check Static Analyzer Output
-        id: analyzer-output
-        run: |
-          if [[ -z $(find ./derived_data -name "report-*.html") ]]; then
-            echo "Static Analyzer found no issues."
-          else
-            echo "Static Analyzer found some issues. HTML report will be available in Artifacts section. Failing build."
-            exit 1
-          fi
-      
-      - name: Static Analyzer Reports Uploading
-        if: ${{ failure() && steps.analyzer-output.outcome == 'failure' }}
-        uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
-          name: static-analyzer-reports-test_iOS14_4
-          path: ./derived_data/**/report-*.html
-
-      # This is the script specified as the pod’s prepare_command in its Podspec.
-      # It would be run automatically for a normal CocoaPods install, but it doesn’t
-      # get run when the dependency is specified with the :path option. So we run it
-      # manually.
-      - name: Prepare Pod
-        run: Scripts/prepare-pod.sh
-
-      - name: Run Examples Tests
-        working-directory: ./Examples/Tests
-        run: |
-          pod repo update
-          pod install
-          bundle exec fastlane scan -s Tests --output-directory "fastlane/test_output/examples/test_iOS14_4"
-
-      - name: Build APNS Example Project
-        working-directory: ./Examples/AblyPush
-        run: |
-          xcodebuild build -scheme "AblyPushExample" -destination "platform=iOS Simulator,name=iPhone 12" -configuration "Debug"
-      
-      - name: Xcodebuild Logs Artifact
-        if: always()
-        uses: actions/upload-artifact@v2
-        with:
-          name: xcodebuild-logs
-          path: ~/Library/Developer/Xcode/DerivedData/*/Logs
-
-      - name: Upload test results to observability server
-        if: always()
-        env:
-          TEST_OBSERVABILITY_SERVER_AUTH_KEY: ${{ secrets.TEST_OBSERVABILITY_SERVER_AUTH_KEY }}
-        run: Scripts/upload_test_results.sh
-      
-      - name: Swift Package Manager - Installation Test
-        working-directory: ./
-        run:  |
-          echo 'Current Branch: ' $GITHUB_HEAD_REF
-          echo 'Current Revision (SHA):' $GITHUB_SHA
-          echo Current Path: $(pwd)
-          export PACKAGE_URL=file://$(pwd)
-          export PACKAGE_BRANCH_NAME=$GITHUB_HEAD_REF
-          export PACKAGE_REVISION=$GITHUB_SHA
-          swift test --package-path Examples/SPM -v
+          name: xcresult-bundles.tar.gz
+          path: xcresult-bundles.tar.gz
