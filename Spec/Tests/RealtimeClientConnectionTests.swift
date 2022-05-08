@@ -2483,15 +2483,13 @@ class RealtimeClientConnectionTests: XCTestCase {
     func test__064__Connection__connection_failures_once_CONNECTED__if_a_Connection_transport_is_disconnected_unexpectedly_or_if_a_token_expires__then_the_Connection_manager_will_immediately_attempt_to_reconnect() {
         let options = AblyTests.commonAppSetup()
         options.autoConnect = false
-        let ttl = 3.0
-        options.tokenDetails = getTestTokenDetails(ttl: ttl)
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { _ in
-                // if realtime didn't disconnect after ttl, fire onDisconnected manually a second later
-                delay(ttl + 1.0) {
+                // Simulate interruption shortly
+                delay(1.0) {
                     client.internal.onDisconnected()
                 }
             }
