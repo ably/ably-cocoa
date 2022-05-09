@@ -160,9 +160,8 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     // RTP18
 
-    // FIXME: Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
     // RTP18a, RTP18b
-    func skipped__test__011__Presence__realtime_system_reserves_the_right_to_initiate_a_sync_of_the_presence_members_at_any_point_once_a_channel_is_attached__should_do_a_new_sync_whenever_a_SYNC_ProtocolMessage_is_received_with_a_channel_attribute_and_a_new_sync_sequence_identifier_in_the_channelSerial_attribute() {
+    func test__011__Presence__realtime_system_reserves_the_right_to_initiate_a_sync_of_the_presence_members_at_any_point_once_a_channel_is_attached__should_do_a_new_sync_whenever_a_SYNC_ProtocolMessage_is_received_with_a_channel_attribute_and_a_new_sync_sequence_identifier_in_the_channelSerial_attribute() {
         let options = AblyTests.commonAppSetup()
         let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
@@ -179,7 +178,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             fail("TestProxyTransport is not set"); return
         }
 
-        expect(channel.internal.presenceMap.syncInProgress).to(beFalse())
+        expect(channel.internal.presenceMap.syncInProgress).toEventually(beFalse(), timeout: testTimeout)
         expect(channel.internal.presenceMap.members).to(beEmpty())
 
         waitUntil(timeout: testTimeout) { done in
@@ -243,9 +242,8 @@ class RealtimeClientPresenceTests: XCTestCase {
         }
     }
 
-    // FIXME: Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
     // RTP18c, RTP18b
-    func skipped__test__012__Presence__realtime_system_reserves_the_right_to_initiate_a_sync_of_the_presence_members_at_any_point_once_a_channel_is_attached__when_a_SYNC_is_sent_with_no_channelSerial_attribute_then_the_sync_data_is_entirely_contained_within_that_ProtocolMessage() {
+    func test__012__Presence__realtime_system_reserves_the_right_to_initiate_a_sync_of_the_presence_members_at_any_point_once_a_channel_is_attached__when_a_SYNC_is_sent_with_no_channelSerial_attribute_then_the_sync_data_is_entirely_contained_within_that_ProtocolMessage() {
         let options = AblyTests.commonAppSetup()
         let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
@@ -262,7 +260,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             fail("TestProxyTransport is not set"); return
         }
 
-        expect(channel.internal.presenceMap.syncInProgress).to(beFalse())
+        expect(channel.internal.presenceMap.syncInProgress).toEventually(beFalse(), timeout: testTimeout)
         expect(channel.internal.presenceMap.members).to(beEmpty())
 
         waitUntil(timeout: testTimeout) { done in
