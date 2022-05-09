@@ -1166,12 +1166,12 @@ class TestProxyTransport: ARTWebSocketTransport {
         }
     }
 
-    /// The modifier will be used in the internal queue.
+    /// The modifier will be called on the internal queue.
     func setBeforeIncomingMessageModifier(_ callback: ((ARTProtocolMessage) -> ARTProtocolMessage)?) {
         self.callbackBeforeIncomingMessageModifier = callback
     }
 
-    /// The modifier will be used in the internal queue.
+    /// The modifier will be called on the internal queue.
     func setAfterIncomingMessageModifier(_ callback: ((ARTProtocolMessage) -> ARTProtocolMessage)?) {
         self.callbackAfterIncomingMessageModifier = callback
     }
