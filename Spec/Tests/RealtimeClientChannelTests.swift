@@ -141,6 +141,18 @@ private func testWithUntilAttach(_ untilAttach: Bool, channelName: String) {
     }
 }
 
+struct Example {
+    var integerExample: Decimal
+}
+
+extension Example: Decodable {}
+
+extension Decimal {
+    var doubleValue: Double {
+        return Double(truncating: self as NSNumber)
+    }
+}
+
 class RealtimeClientChannelTests: XCTestCase {
     // XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
     override class var defaultTestSuite: XCTestSuite {
@@ -161,7 +173,67 @@ class RealtimeClientChannelTests: XCTestCase {
         static var failed = 0
         fileprivate init() {}
     }
+    
+    func test_deserialization_of_integers_with_JSONSerialization() {
+        
+        let jsonString = "{\"integerExample\": 1756699}"
+        let jsonStringData = Data(jsonString.utf8)
+        
+        let jsonObject = try! JSONSerialization.jsonObject(with: jsonStringData, options: .fragmentsAllowed) as! [String: Any]
+        
+        let doubleExample = jsonObject["integerExample"] as! Double
+        
+        print("Decoded Data: \(jsonObject), type: \(type(of: jsonObject)), as decimal: \(Decimal(doubleExample)), as double: \(doubleExample)")
+    }
+    
+    func test_deserialization_of_integers_with_JSONDecoder() {
+        
+        let jsonString = "{\"integerExample\": 1756699}"
+        let jsonStringData = Data(jsonString.utf8)
+        
+        let decodedObject = try! JSONDecoder().decode(Example.self, from: jsonStringData)
+        
+        print("Decoded Object: \(decodedObject), type: \(type(of: decodedObject)), as decimal: \(decodedObject.integerExample), as double: \(decodedObject.integerExample.doubleValue)")
+    }
+    
+    func test_deserialization_of_integers_with_realtime() {
+        let options = AblyTests.commonAppSetup()
+        let client1 = AblyTests.newRealtime(options)
+        let client2 = AblyTests.newRealtime(options)
+        defer { client1.dispose(); client1.close(); client2.dispose(); client2.close() }
 
+        let channel1 = client1.channels.get("myChannel")
+        let channel2 = client2.channels.get("myChannel")
+        
+        let dict = ["integerExample": 1756699]
+        
+        waitUntil(timeout: testTimeout) { done in
+            channel2.on(.attached) { _ in
+                expect(channel2.state).to(equal(ARTRealtimeChannelState.attached))
+                done()
+            }
+            channel2.attach()
+        }
+        
+        waitUntil(timeout: testTimeout) { done in
+            
+            let message = ARTMessage(name: "foo", data: dict)
+            
+            channel1.subscribe { message in
+                
+                let decodedObject = try! JSONDecoder().decode(Example.self, from: message.jsonData!)
+                
+                print("Decoded Object: \(decodedObject), type: \(type(of: decodedObject)), as decimal: \(decodedObject.integerExample), as double: \(decodedObject.integerExample.doubleValue)")
+                
+                done()
+            }
+            
+            channel2.publish([message]) { errorInfo in
+                expect(errorInfo).to(beNil())
+            }
+        }
+    }
+    
     // RTL1
     func skipped__test__001__Channel__should_process_all_incoming_messages_and_presence_messages_as_soon_as_a_Channel_becomes_attached() {
         let options = AblyTests.commonAppSetup()
