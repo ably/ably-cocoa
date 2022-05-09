@@ -218,7 +218,7 @@ class PushActivationStateMachineTests: XCTestCase {
     // RSH3b3
 
     // TODO: The exception is raised but the `send:` method is doing an async call and the `expect` doesn't catch it
-    func skipped__test__021__Activation_state_machine__State_WaitingForPushDeviceDetails__on_Event_GotPushDeviceDetails__should_raise_exception_if_ARTPushRegistererDelegate_is_not_implemented() {
+    func test__021__Activation_state_machine__State_WaitingForPushDeviceDetails__on_Event_GotPushDeviceDetails__should_raise_exception_if_ARTPushRegistererDelegate_is_not_implemented() {
         beforeEach__Activation_state_machine__State_WaitingForPushDeviceDetails()
 
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForPushDeviceDetails.self))

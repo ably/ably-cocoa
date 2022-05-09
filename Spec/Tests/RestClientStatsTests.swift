@@ -108,7 +108,7 @@ class RestClientStatsTests: XCTestCase {
         statsOptions = postTestStats(statsFixtures)
     }
 
-    func skipped__test__001__RestClient__stats__result__should_match_minute_level_inbound_and_outbound_fixture_data__forwards_() {
+    func test__001__RestClient__stats__result__should_match_minute_level_inbound_and_outbound_fixture_data__forwards_() {
         beforeEach__RestClient__stats__result()
 
         let client = ARTRest(options: statsOptions)
@@ -170,7 +170,7 @@ class RestClientStatsTests: XCTestCase {
         expect(totalOutbound).to(equal(20 + 10 + 40))
     }
 
-    func skipped__test__004__RestClient__stats__result__should_match_month_level_inbound_and_outbound_fixture_data__forwards_() {
+    func test__004__RestClient__stats__result__should_match_month_level_inbound_and_outbound_fixture_data__forwards_() {
         beforeEach__RestClient__stats__result()
 
         let client = ARTRest(options: statsOptions)
@@ -188,7 +188,7 @@ class RestClientStatsTests: XCTestCase {
         expect(totalOutbound).to(equal(20 + 10 + 40))
     }
 
-    func skipped__test__005__RestClient__stats__result__should_contain_only_one_item_when_limit_is_1__backwards() {
+    func test__005__RestClient__stats__result__should_contain_only_one_item_when_limit_is_1__backwards() {
         beforeEach__RestClient__stats__result()
 
         let client = ARTRest(options: statsOptions)
@@ -277,7 +277,7 @@ class RestClientStatsTests: XCTestCase {
         expect((firstPageAgain.items)[0].inbound.all.messages.data).to(equal(7000))
     }
 
-    func skipped__test__008__RestClient__stats__result__should_be_paginated_according_to_the_limit__fowards_() {
+    func test__008__RestClient__stats__result__should_be_paginated_according_to_the_limit__fowards_() {
         beforeEach__RestClient__stats__result()
 
         let client = ARTRest(options: statsOptions)
