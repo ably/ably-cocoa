@@ -1125,7 +1125,7 @@ class RestClientChannelTests: XCTestCase {
 
     // RSP3
 
-    func skipped__test__035__presence__get__should_return_presence_fixture_data() {
+    func test__035__presence__get__should_return_presence_fixture_data() {
         let options = AblyTests.commonAppSetup()
         options.channelNamePrefix = nil
         client = ARTRest(options: options)

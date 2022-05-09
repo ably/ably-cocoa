@@ -3369,7 +3369,7 @@ class AuthTests: XCTestCase {
 
     // RSA10k
 
-    func skipped__test__115__authorize__server_time_offset__should_obtain_server_time_once_and_persist_the_offset_from_the_local_clock() {
+    func test__115__authorize__server_time_offset__should_obtain_server_time_once_and_persist_the_offset_from_the_local_clock() {
         let options = AblyTests.commonAppSetup()
         let rest = ARTRest(options: options)
 
@@ -3985,7 +3985,7 @@ class AuthTests: XCTestCase {
         expect { try ARTTokenDetails.fromJson("[]" as ARTJsonCompatible) }.to(throwError())
     }
 
-    func skipped__test__140__JWT_and_realtime__client_initialized_with_a_JWT_token_in_ClientOptions__with_valid_credentials__pulls_stats_successfully() {
+    func test__140__JWT_and_realtime__client_initialized_with_a_JWT_token_in_ClientOptions__with_valid_credentials__pulls_stats_successfully() {
         jwtTestsOptions.token = getJWTToken()
         let client = AblyTests.newRealtime(jwtTestsOptions)
         defer { client.dispose(); client.close() }
@@ -4119,7 +4119,7 @@ class AuthTests: XCTestCase {
 
     // RSA8g
 
-    func skipped__test__146__JWT_and_realtime__when_using_authCallback__with_valid_credentials__pulls_stats_successfully() {
+    func test__146__JWT_and_realtime__when_using_authCallback__with_valid_credentials__pulls_stats_successfully() {
         authCallbackTestsOptions.authCallback = { _, completion in
             let token = ARTTokenDetails(token: getJWTToken()!)
             completion(token, nil)

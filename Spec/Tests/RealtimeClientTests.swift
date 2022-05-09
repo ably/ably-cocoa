@@ -305,7 +305,7 @@ class RealtimeClientTests: XCTestCase {
     }
 
     // RTC5b
-    func skipped__test__023__RealtimeClient__stats__should_accept_all_the_same_params_as_RestClient() {
+    func test__023__RealtimeClient__stats__should_accept_all_the_same_params_as_RestClient() {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.close() }
         var paginatedResult: ARTPaginatedResult<AnyObject>?
@@ -977,7 +977,7 @@ class RealtimeClientTests: XCTestCase {
     }
 
     // RTC8b1 - part 4
-    func skipped__test__036__RealtimeClient__Auth_authorize_should_upgrade_the_connection_with_current_token__authorize_call_should_complete_with_an_error_if_the_connection_moves_to_the_CLOSED_state() {
+    func test__036__RealtimeClient__Auth_authorize_should_upgrade_the_connection_with_current_token__authorize_call_should_complete_with_an_error_if_the_connection_moves_to_the_CLOSED_state() {
         let options = AblyTests.commonAppSetup()
         options.autoConnect = false
         options.useTokenAuth = true
@@ -1241,7 +1241,7 @@ class RealtimeClientTests: XCTestCase {
 
     // FIXME: Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
     // https://github.com/ably/ably-cocoa/issues/577
-    func skipped__test__005__RealtimeClient__background_behaviour() {
+    func test__005__RealtimeClient__background_behaviour() {
         waitUntil(timeout: testTimeout) { done in
             URLSession.shared.dataTask(with: URL(string: "https://ably.io")!) { _, _, _ in
                 let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
@@ -1456,7 +1456,7 @@ class RealtimeClientTests: XCTestCase {
         }
     }
 
-    func skipped__test__012__RealtimeClient__moves_to_DISCONNECTED_on_an_unexpected_normal_WebSocket_close() {
+    func test__012__RealtimeClient__moves_to_DISCONNECTED_on_an_unexpected_normal_WebSocket_close() {
         let options = AblyTests.commonAppSetup()
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
