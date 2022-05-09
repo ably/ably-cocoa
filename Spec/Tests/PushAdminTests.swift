@@ -214,7 +214,7 @@ class PushAdminTests: XCTestCase {
         }
     }
 
-    func skipped__test__002__publish__should_publish_successfully() {
+    func test__002__publish__should_publish_successfully() {
         let options = AblyTests.commonAppSetup()
         let realtime = ARTRealtime(options: options)
         defer { realtime.dispose(); realtime.close() }
@@ -247,7 +247,7 @@ class PushAdminTests: XCTestCase {
         }
     }
 
-    func skipped__test__003__publish__should_fail_with_a_bad_recipient() {
+    func test__003__publish__should_fail_with_a_bad_recipient() {
         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { realtime.dispose(); realtime.close() }
         let channel = realtime.channels.get("pushenabled:\(uniqueChannelName())") // works with pure uniqueChannelName() as well
@@ -274,7 +274,7 @@ class PushAdminTests: XCTestCase {
         }
     }
 
-    func skipped__test__004__publish__should_fail_with_an_empty_recipient() {
+    func test__004__publish__should_fail_with_an_empty_recipient() {
         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { realtime.dispose(); realtime.close() }
         let channel = realtime.channels.get("pushenabled:\(uniqueChannelName())") // works with pure uniqueChannelName() as well
