@@ -6,7 +6,7 @@ class RestClientPresenceTests: XCTestCase {
     // RSP3
 
     // RSP3a
-    func skipped__test__002__Presence__get__should_return_a_PaginatedResult_page_containing_the_first_page_of_members() {
+    func test__002__Presence__get__should_return_a_PaginatedResult_page_containing_the_first_page_of_members() {
         let options = AblyTests.commonAppSetup()
         let client = ARTRest(options: options)
         let channelName = uniqueChannelName()
@@ -220,7 +220,7 @@ class RestClientPresenceTests: XCTestCase {
     // RSP4b2
     // Disabled because there's something wrong in the Sandbox.
     // More info at https://ably-real-time.slack.com/archives/C030C5YLY/p1614269570000400
-    func skipped__test__007__Presence__history__query_argument__direction_should_change_the_order_of_the_members() {
+    func test__007__Presence__history__query_argument__direction_should_change_the_order_of_the_members() {
         let options = AblyTests.commonAppSetup()
         let client = ARTRest(options: options)
         
