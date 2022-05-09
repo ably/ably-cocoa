@@ -309,7 +309,7 @@ class UtilitiesTests: XCTestCase {
         expect(receivedAll).to(equal(222))
     }
 
-    func skipped__test__012__Utilities__EventEmitter__calling_off_with_a_single_listener_argument__should_remove_the_timeout() {
+    func test__012__Utilities__EventEmitter__calling_off_with_a_single_listener_argument__should_remove_the_timeout() {
         beforeEach__Utilities__EventEmitter()
 
         listenerFoo1!.setTimer(0.1, onTimeout: {
