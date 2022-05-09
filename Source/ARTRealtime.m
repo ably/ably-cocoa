@@ -791,13 +791,6 @@
         else {
             [self.logger debug:@"RT:%p connection \"%@\" has reconnected and resumed successfully", self, message.connectionId];
         }
-        
-        for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
-            if (channel.presenceMap.syncInProgress) {
-                // FIXME or not, regarding https://github.com/ably/docs/issues/349
-                //[channel requestContinueSync];
-            }
-        }
     }
     
     switch (self.connection.state_nosync) {
