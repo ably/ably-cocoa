@@ -33,6 +33,7 @@
     }
     id ret = [self copy];
     ((ARTBaseMessage *)ret).data = decoded.data;
+    ((ARTBaseMessage *)ret).jsonData = decoded.jsonData;
     ((ARTBaseMessage *)ret).encoding = decoded.encoding;
     return ret;
 }

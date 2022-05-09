@@ -15,6 +15,17 @@
     return self;
 }
 
+- (id)initWithData:(id)data jsonData:(NSData *)jsonData encoding:(NSString *)encoding errorInfo:(ARTErrorInfo *)errorInfo {
+    self = [super init];
+    if (self) {
+        _data = data;
+        _jsonData = jsonData;
+        _encoding = encoding;
+        _errorInfo = errorInfo;
+    }
+    return self;
+}
+
 @end
 
 @implementation ARTDataEncoder {
@@ -139,6 +150,7 @@
     ARTErrorInfo *errorInfo = nil;
     NSArray *encodings = [encoding componentsSeparatedByString:@"/"];
     NSString *outputEncoding = [NSString stringWithString:encoding];
+    NSData *jsonData = nil;
     
     for (NSUInteger i = [encodings count]; i > 0; i--) {
         errorInfo = nil;
@@ -167,7 +179,7 @@
                 data = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
             }
             if ([data isKindOfClass:[NSString class]]) {
-                NSData *jsonData = [data dataUsingEncoding:NSUTF8StringEncoding];
+                jsonData = [data dataUsingEncoding:NSUTF8StringEncoding];
                 NSError *error = nil;
                 data = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
                 if (error != nil) {
@@ -207,6 +219,7 @@
     }
     
     return [[ARTDataEncoderOutput alloc] initWithData:data
+                                             jsonData:jsonData
                                              encoding:outputEncoding
                                             errorInfo:errorInfo];
 }
