@@ -106,12 +106,10 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     // RTP1
 
-    // FIXME: Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
-    func skipped__test__009__Presence__ProtocolMessage_bit_flag__when_no_members_are_present() {
+    func test__009__Presence__ProtocolMessage_bit_flag__when_no_members_are_present() {
         let options = AblyTests.commonAppSetup()
         options.autoConnect = false
         let client = ARTRealtime(options: options)
-        client.internal.setTransport(TestProxyTransport.self)
         client.connect()
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(uniqueChannelName())
@@ -119,13 +117,8 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
 
-        let transport = client.internal.transport as! TestProxyTransport
-        let attached = transport.protocolMessagesReceived.filter { $0.action == .attached }[0]
-
-        expect(attached.flags & 0x1).to(equal(0))
-        expect(attached.hasPresence).to(beFalse())
-        expect(channel.presence.syncComplete).to(beFalse())
-        expect(channel.internal.presenceMap.syncComplete).to(beFalse())
+        expect(channel.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
+        expect(channel.internal.presenceMap.syncComplete).toEventually(beTrue(), timeout: testTimeout)
     }
 
     func skipped__test__010__Presence__ProtocolMessage_bit_flag__when_members_are_present() {
