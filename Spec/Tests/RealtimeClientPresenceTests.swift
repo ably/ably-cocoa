@@ -370,9 +370,8 @@ class RealtimeClientPresenceTests: XCTestCase {
         }
     }
 
-    // FIXME: Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
     // RTP19a
-    func skipped__test__014__Presence__PresenceMap_has_existing_members_when_a_SYNC_is_started__should_emit_a_LEAVE_event_for_each_existing_member_if_the_PresenceMap_has_existing_members_when_an_ATTACHED_message_is_received_without_a_HAS_PRESENCE_flag() {
+    func test__014__Presence__PresenceMap_has_existing_members_when_a_SYNC_is_started__should_emit_a_LEAVE_event_for_each_existing_member_if_the_PresenceMap_has_existing_members_when_an_ATTACHED_message_is_received_without_a_HAS_PRESENCE_flag() {
         let options = AblyTests.commonAppSetup()
         let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
@@ -386,6 +385,19 @@ class RealtimeClientPresenceTests: XCTestCase {
         guard let transport = client.internal.transport as? TestProxyTransport else {
             fail("TestProxyTransport is not set"); return
         }
+        
+        // It's not clear how to achieve the scenario described by this test (an ATTACHED ProtocolMessage received without
+        // the HAS_PRESENCE flag set). So we fake it, by stripping the flag from the ATTACHED message and also dropping
+        // the subsequent received SYNC ProtocolMessage (for consistency with the flag).
+        transport.setBeforeIncomingMessageModifier { protocolMessage in
+            if protocolMessage.action == .attached {
+                var flags = ARTProtocolMessageFlag(rawValue: UInt(protocolMessage.flags))
+                flags.remove(.hasPresence)
+                protocolMessage.flags = Int64(flags.rawValue)
+            }
+            return protocolMessage
+        }
+        transport.actionsIgnored = [.sync]
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(4, done: done)
