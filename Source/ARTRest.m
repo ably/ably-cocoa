@@ -725,9 +725,10 @@ dispatch_async(_queue, ^{
 }
 
 - (ARTLocalDevice *)device_nosync {
+    NSString *clientId = self.auth.clientId_nosync;
     __block ARTLocalDevice *ret;
     dispatch_sync(ARTRestInternal.deviceAccessQueue, ^{
-        ret = [self deviceWithClientId_onlyCallOnDeviceAccessQueue:self.auth.clientId_nosync];
+        ret = [self deviceWithClientId_onlyCallOnDeviceAccessQueue:clientId];
     });
     return ret;
 }
