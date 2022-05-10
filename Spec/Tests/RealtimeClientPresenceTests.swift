@@ -3480,16 +3480,25 @@ class RealtimeClientPresenceTests: XCTestCase {
         query.waitForSync = false
 
         waitUntil(timeout: testTimeout) { done in
+            let partialDone = AblyTests.splitDone(2, done: done)
+            
+            let transport = client.internal.transport as! TestProxyTransport
+            var alreadySawSync = false
+            transport.setBeforeIncomingMessageModifier { message in
+                if message.action == .sync {
+                    // Ignore next SYNC so that the sync process never finishes.
+                    if alreadySawSync {
+                        return nil
+                    }
+                    alreadySawSync = true
+                    partialDone()
+                }
+                return message
+            }
+
             channel.attach { error in
                 expect(error).to(beNil())
-                let transport = client.internal.transport as! TestProxyTransport
-                transport.setListenerBeforeProcessingIncomingMessage { message in
-                    if message.action == .sync {
-                        // Ignore next SYNC so that the sync process never finishes.
-                        transport.actionsIgnored += [.sync]
-                        done()
-                    }
-                }
+                partialDone()
             }
         }
 

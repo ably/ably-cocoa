@@ -1145,8 +1145,8 @@ class TestProxyTransport: ARTWebSocketTransport {
     private var callbackBeforeProcessingIncomingMessage: ((ARTProtocolMessage) -> Void)?
     private var callbackAfterProcessingIncomingMessage: ((ARTProtocolMessage) -> Void)?
     private var callbackBeforeProcessingOutgoingMessage: ((ARTProtocolMessage) -> Void)?
-    private var callbackBeforeIncomingMessageModifier: ((ARTProtocolMessage) -> ARTProtocolMessage)?
-    private var callbackAfterIncomingMessageModifier: ((ARTProtocolMessage) -> ARTProtocolMessage)?
+    private var callbackBeforeIncomingMessageModifier: ((ARTProtocolMessage) -> ARTProtocolMessage?)?
+    private var callbackAfterIncomingMessageModifier: ((ARTProtocolMessage) -> ARTProtocolMessage?)?
 
     func setListenerBeforeProcessingIncomingMessage(_ callback: ((ARTProtocolMessage) -> Void)?) {
         queue.sync {
@@ -1166,13 +1166,17 @@ class TestProxyTransport: ARTWebSocketTransport {
         }
     }
 
-    /// The modifier will be used in the internal queue.
-    func setBeforeIncomingMessageModifier(_ callback: ((ARTProtocolMessage) -> ARTProtocolMessage)?) {
+    /// The modifier will be called on the internal queue.
+    ///
+    /// If `callback` returns nil, the message will be ignored.
+    func setBeforeIncomingMessageModifier(_ callback: ((ARTProtocolMessage) -> ARTProtocolMessage?)?) {
         self.callbackBeforeIncomingMessageModifier = callback
     }
 
-    /// The modifier will be used in the internal queue.
-    func setAfterIncomingMessageModifier(_ callback: ((ARTProtocolMessage) -> ARTProtocolMessage)?) {
+    /// The modifier will be called on the internal queue.
+    ///
+    /// If `callback` returns nil, the message will be ignored.
+    func setAfterIncomingMessageModifier(_ callback: ((ARTProtocolMessage) -> ARTProtocolMessage?)?) {
         self.callbackAfterIncomingMessageModifier = callback
     }
 
@@ -1304,11 +1308,17 @@ class TestProxyTransport: ARTWebSocketTransport {
         }
         var msg = original
         if let performEvent = callbackBeforeIncomingMessageModifier {
-            msg = performEvent(original)
+            guard let modifiedMsg = performEvent(msg) else {
+                return
+            }
+            msg = modifiedMsg
         }
         super.receive(msg)
         if let performEvent = callbackAfterIncomingMessageModifier {
-            msg = performEvent(msg)
+            guard let modifiedMsg = performEvent(msg) else {
+                return
+            }
+            msg = modifiedMsg
         }
         if let performEvent = callbackAfterProcessingIncomingMessage {
             DispatchQueue.main.async {
