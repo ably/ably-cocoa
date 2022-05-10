@@ -316,7 +316,7 @@ class UtilitiesTests: XCTestCase {
             fail("onTimeout callback shouldn't have been called")
         }).startTimer()
         eventEmitter.off(listenerFoo1!)
-        waitUntil(timeout: DispatchTimeInterval.milliseconds(300)) { done in
+        waitUntil(timeout: testTimeout) { done in
             AblyTests.queue.asyncAfter(deadline: DispatchTime.now() + 0.3) {
                 done()
             }
