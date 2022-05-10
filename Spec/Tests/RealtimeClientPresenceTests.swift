@@ -371,7 +371,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     }
 
     // RTP19a
-    func test__014__Presence__PresenceMap_has_existing_members_when_a_SYNC_is_started__should_emit_a_LEAVE_event_for_each_existing_member_if_the_PresenceMap_has_existing_members_when_an_ATTACHED_message_is_received_without_a_HAS_PRESENCE_flag() {
+    func test__014__Presence__PresenceMap_has_existing_members_when_an_ATTACHED_message_is_received_without_a_HAS_PRESENCE_flag__should_emit_a_LEAVE_event_for_each_existing_member() {
         let options = AblyTests.commonAppSetup()
         let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
