@@ -3185,7 +3185,6 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
     }
 
-    // FIXME: Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
     // RTN16b
     func test__081__Connection__Connection_recovery__Connection_recoveryKey_should_be_composed_with_the_connection_key_and_latest_serial_received_and_msgSerial() {
         let options = AblyTests.commonAppSetup()
@@ -3198,16 +3197,19 @@ class RealtimeClientConnectionTests: XCTestCase {
                 expect(client.connection.serial).to(equal(-1))
                 expect(client.connection.recoveryKey).to(equal("\(client.connection.key!):\(client.connection.serial):\(client.internal.msgSerial)"))
             }
-            channel.publish(nil, data: "message") { error in
+            channel.subscribe(attachCallback: { error in
                 expect(error).to(beNil())
-                partialDone()
-            }
-            channel.subscribe { message in
+                
+                channel.publish(nil, data: "message") { error in
+                    expect(error).to(beNil())
+                    partialDone()
+                }
+            }, callback: { message in
                 expect(message.data as? String).to(equal("message"))
                 expect(client.connection.serial).to(equal(0))
                 channel.unsubscribe()
                 partialDone()
-            }
+            })
         }
         expect(client.internal.msgSerial) == 1
         expect(client.connection.recoveryKey).to(equal("\(client.connection.key!):\(client.connection.serial):\(client.internal.msgSerial)"))
