@@ -9,7 +9,8 @@ class RestClientPresenceTests: XCTestCase {
     func test__002__Presence__get__should_return_a_PaginatedResult_page_containing_the_first_page_of_members() {
         let options = AblyTests.commonAppSetup()
         let client = ARTRest(options: options)
-        let channel = client.channels.get(uniqueChannelName())
+        let channelName = uniqueChannelName()
+        let channel = client.channels.get(channelName)
 
         var disposable = [ARTRealtime]()
         defer {
@@ -23,7 +24,7 @@ class RestClientPresenceTests: XCTestCase {
         let expectedPattern = "^user(\\d+)$"
 
         // Load 150 members (2 pages)
-        disposable += [AblyTests.addMembersSequentiallyToChannel("test", members: 150, data: expectedData as AnyObject?, options: options)]
+        disposable += [AblyTests.addMembersSequentiallyToChannel(channelName, members: 150, data: expectedData as AnyObject?, options: options)]
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.get { membersPage, error in
