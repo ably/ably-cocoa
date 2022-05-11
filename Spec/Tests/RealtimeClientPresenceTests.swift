@@ -3735,10 +3735,12 @@ class RealtimeClientPresenceTests: XCTestCase {
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
 
         let transport = client.internal.transport as! TestProxyTransport
-        transport.setListenerBeforeProcessingIncomingMessage { protocolMessage in
+        // we've changed the queue so that syncComplete doesn't change to true by the time this block gets to the main thread, and also because it's not safe to call _nosync. bit messy because we don't really want to modify anything
+        transport.setBeforeIncomingMessageModifier { protocolMessage in
             if protocolMessage.action == .sync {
                 expect(channel.presence.internal.syncComplete_nosync()).to(beFalse())
             }
+            return protocolMessage
         }
 
         expect(channel.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
