@@ -3380,21 +3380,32 @@ class RealtimeClientPresenceTests: XCTestCase {
         let query = ARTRealtimePresenceQuery()
         expect(query.waitForSync).to(beTrue())
 
+        NSLog("Lawrence: before waitUntil")
         waitUntil(timeout: testTimeout) { done in
-            channel.attach { error in
-                expect(error).to(beNil())
-                let transport = client.internal.transport as! TestProxyTransport
-                transport.setListenerBeforeProcessingIncomingMessage { protocolMessage in
-                    if protocolMessage.action == .sync {
-                        expect(protocolMessage.presence!.count).to(equal(100))
-                        channel.presence.get(query) { members, error in
-                            expect(error).to(beNil())
-                            expect(members).to(haveCount(150))
-                            done()
-                        }
-                        transport.setListenerBeforeProcessingIncomingMessage(nil)
+            let partialDone = AblyTests.splitDone(2, done: done)
+            
+            let transport = client.internal.transport as! TestProxyTransport
+            var sawSync = false
+            transport.setListenerBeforeProcessingIncomingMessage { protocolMessage in
+                if !sawSync && protocolMessage.action == .sync {
+                    NSLog("Lawrence: got a SYNC with \(protocolMessage.presence!.count) members")
+                    expect(protocolMessage.presence!.count).to(equal(100))
+                    channel.presence.get(query) { members, error in
+                        expect(error).to(beNil())
+                        expect(members).to(haveCount(150))
+                        partialDone()
                     }
+                    sawSync = true
+                    // there might also be a problem here
+                    // yep, now it's getting a second one with 50 members, replacing with sawSync
+//                    transport.setListenerBeforeProcessingIncomingMessage(nil)
                 }
+            }
+            
+            channel.attach { error in
+                NSLog("Lawrence: attached")
+                expect(error).to(beNil())
+                partialDone()
             }
         }
     }
