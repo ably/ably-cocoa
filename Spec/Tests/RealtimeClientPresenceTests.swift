@@ -343,8 +343,11 @@ class RealtimeClientPresenceTests: XCTestCase {
         }
 
         waitUntil(timeout: testTimeout) { done in
-            channel.presence.subscribe(.leave) { leave in
+            var listener: ARTEventListener!
+            listener = channel.presence.subscribe(.leave) { leave in
+                // my suspicion is that this is being called when clientMembers gets disposed at the end of the test?
                 expect(leave.clientId).to(equal(localMember.clientId))
+                channel.presence.unsubscribe(listener)
                 done()
             }
 
