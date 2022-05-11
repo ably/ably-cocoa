@@ -2703,7 +2703,6 @@ class RealtimeClientChannelTests: XCTestCase {
         expect(protocolMessages.count).to(equal(1))
     }
 
-    // FIXME: Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
     func test__090__Channel__publish__message_bundling__should_only_bundle_messages_when_it_respects_all_of_the_constraints() {
         let defaultMaxMessageSize = ARTDefault.maxMessageSize()
         ARTDefault.setMaxMessageSize(256)
@@ -2715,6 +2714,17 @@ class RealtimeClientChannelTests: XCTestCase {
         defer { client.dispose(); client.close() }
         let channelOne = client.channels.get(uniqueChannelName(prefix: "bundlingOne"))
         let channelTwo = client.channels.get(uniqueChannelName(prefix: "bundlingTwo"))
+        
+        options.autoConnect = true
+        let client2 = ARTRealtime(options: options)
+        let channelOneClient2 = client2.channels.get(channelOne.name)
+        
+        waitUntil(timeout: testTimeout) { done in
+            channelOneClient2.attach { error in
+                expect(error).to(beNil())
+                done()
+            }
+        }
 
         channelTwo.publish("2a", data: ["expectedBundle": 0])
         channelOne.publish("a", data: ["expectedBundle": 1])
@@ -2763,13 +2773,17 @@ class RealtimeClientChannelTests: XCTestCase {
 
         // RTL6d6
         var currentName = ""
-        channelOne.subscribe { message in
+        
+        // sometimes it gets nothing here!
+        channelOneClient2.subscribe { message in
+            NSLog("Got message \(message.name!)")
             expect(currentName) < message.name! // Check final ordering preserved
             currentName = message.name!
             if currentName == "z_last" {
                 expectationMessageFinalOrder.fulfill()
             }
         }
+        // the problem here is what if the publishing happens before the subscribing?
         client.connect()
 
         AblyTests.wait(for: [expectationMessageFinalOrder], timeout: testTimeout)
