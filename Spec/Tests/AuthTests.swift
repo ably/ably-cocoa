@@ -3370,7 +3370,7 @@ class AuthTests: XCTestCase {
     // RSA10k
 
     func test__115__authorize__server_time_offset__should_obtain_server_time_once_and_persist_the_offset_from_the_local_clock() {
-        let options = AblyTests.commonAppSetup()
+        let options = AblyTests.commonAppSetup(true)
         let rest = ARTRest(options: options)
 
         let mockServerDate = Date().addingTimeInterval(120)

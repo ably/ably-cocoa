@@ -1126,7 +1126,7 @@ class RestClientChannelTests: XCTestCase {
     // RSP3
 
     func test__035__presence__get__should_return_presence_fixture_data() {
-        let options = AblyTests.commonAppSetup()
+        let options = AblyTests.commonAppSetup(true)
         options.channelNamePrefix = nil
         client = ARTRest(options: options)
         let key = appSetupJson["cipher"]["key"].string!

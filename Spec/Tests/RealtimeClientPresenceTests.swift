@@ -818,7 +818,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     // RTP8a
     func test__024__Presence__enter__should_enter_the_current_client__optionally_with_the_data_provided() {
-        let options = AblyTests.commonAppSetup()
+        let options = AblyTests.commonAppSetup(true)
         options.clientId = "john"
 
         let client1 = ARTRealtime(options: options)
@@ -926,7 +926,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     // RTP6b
     func test__029__Presence__subscribe__with_a_single_action_argument() {
-        let options = AblyTests.commonAppSetup()
+        let options = AblyTests.commonAppSetup(true)
 
         let client1 = ARTRealtime(options: options)
         defer { client1.close() }
@@ -1325,7 +1325,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     // RTP10a
     func test__044__Presence__leave__should_leave_the_current_client_with_no_data() {
-        let options = AblyTests.commonAppSetup()
+        let options = AblyTests.commonAppSetup(true)
         options.clientId = "john"
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
@@ -1386,7 +1386,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     // RTP2a
     func test__045__Presence__PresenceMap__all_incoming_presence_messages_must_be_compared_for_newness_with_the_matching_member_already_in_the_PresenceMap() {
-        let options = AblyTests.commonAppSetup()
+        let options = AblyTests.commonAppSetup(true)
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
         let channelName = uniqueChannelName()
@@ -2481,7 +2481,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     // RTP17
 
     func test__080__Presence__private_and_internal_PresenceMap_containing_only_members_that_match_the_current_connectionId__any_ENTER__PRESENT__UPDATE_or_LEAVE_event_that_matches_the_current_connectionId_should_be_applied_to_this_object() {
-        let options = AblyTests.commonAppSetup()
+        let options = AblyTests.commonAppSetup(true)
         let channelName = uniqueChannelName()
 
         options.clientId = "a"
@@ -3751,7 +3751,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     // RTP14a, RTP14b, RTP14c, RTP14d
     func test__116__Presence__enterClient__enters_into_presence_on_a_channel_on_behalf_of_another_clientId() {
-        let client = ARTRealtime(options: AblyTests.commonAppSetup())
+        let client = ARTRealtime(options: AblyTests.commonAppSetup(true))
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(uniqueChannelName())
         expect(channel.internal.presenceMap.members).to(haveCount(0))

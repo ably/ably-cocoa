@@ -978,7 +978,7 @@ class RealtimeClientTests: XCTestCase {
 
     // RTC8b1 - part 4
     func test__036__RealtimeClient__Auth_authorize_should_upgrade_the_connection_with_current_token__authorize_call_should_complete_with_an_error_if_the_connection_moves_to_the_CLOSED_state() {
-        let options = AblyTests.commonAppSetup()
+        let options = AblyTests.commonAppSetup(true)
         options.autoConnect = false
         options.useTokenAuth = true
         let client = ARTRealtime(options: options)

@@ -164,7 +164,7 @@ class RealtimeClientChannelTests: XCTestCase {
 
     // RTL1
     func test__001__Channel__should_process_all_incoming_messages_and_presence_messages_as_soon_as_a_Channel_becomes_attached() {
-        let options = AblyTests.commonAppSetup()
+        let options = AblyTests.commonAppSetup(true)
         let client1 = AblyTests.newRealtime(options)
         defer { client1.dispose(); client1.close() }
         
