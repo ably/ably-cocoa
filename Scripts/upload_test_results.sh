@@ -243,4 +243,4 @@ then
   upload_server_base_url="https://test-observability.herokuapp.com"
 fi
 
-curl -vvv --fail --data-binary "@${temp_request_body_file}" --header "Content-Type: application/json" --header "Test-Observability-Auth-Key: ${TEST_OBSERVABILITY_SERVER_AUTH_KEY}" "${upload_server_base_url}/uploads"
+curl -vvv --fail-with-body --data-binary "@${temp_request_body_file}" --header "Content-Type: application/json" --header "Test-Observability-Auth-Key: ${TEST_OBSERVABILITY_SERVER_AUTH_KEY}" "${upload_server_base_url}/uploads"
