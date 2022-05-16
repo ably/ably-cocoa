@@ -2490,9 +2490,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.connection.once(.connected) { _ in
                 // Simulate interruption shortly
                 delay(1.0) {
-                    client.internalAsync { _internal in
-                        _internal.onDisconnected()
-                    }
+                    client.internal.onDisconnected()
                 }
             }
             client.connection.on(.disconnected) { _ in
