@@ -2505,7 +2505,6 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
             client.connect()
         }
-        // commit to restart hanged CI
     }
 
     // RTN15b
