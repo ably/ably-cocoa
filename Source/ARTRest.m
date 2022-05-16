@@ -724,10 +724,29 @@ dispatch_async(_queue, ^{
     return ret;
 }
 
-// Store address of once_token to access it in debug function.
-static dispatch_once_t *device_once_token;
-
 - (ARTLocalDevice *)device_nosync {
+    NSString *clientId = self.auth.clientId_nosync;
+    __block ARTLocalDevice *ret;
+    dispatch_sync(ARTRestInternal.deviceAccessQueue, ^{
+        ret = [self deviceWithClientId_onlyCallOnDeviceAccessQueue:clientId];
+    });
+    return ret;
+}
+
++ (dispatch_queue_t)deviceAccessQueue {
+    static dispatch_queue_t queue;
+    static dispatch_once_t onceToken;
+    
+    dispatch_once(&onceToken, ^{
+        queue = dispatch_queue_create("io.ably.deviceAccess", DISPATCH_QUEUE_SERIAL);
+    });
+    
+    return queue;
+}
+
+static BOOL sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = YES;
+
+- (ARTLocalDevice *)deviceWithClientId_onlyCallOnDeviceAccessQueue:(NSString *)clientId {
     // The device is shared in a static variable because it's a reflection
     // of what's persisted. Having a device instance per ARTRest instance
     // could leave some instances in a stale state, if, through another
@@ -736,17 +755,18 @@ static dispatch_once_t *device_once_token;
     // As a side effect, the first instance "wins" at setting the device's
     // client ID.
 
-    static dispatch_once_t once;
-    device_once_token = &once;
     static id device;
-    dispatch_once(&once, ^{
-        device = [ARTLocalDevice load:self.auth.clientId_nosync storage:self.storage];
-    });
+    if (sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue) {
+        device = [ARTLocalDevice load:clientId storage:self.storage];
+        sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = NO;
+    }
     return device;
 }
 
 - (void)resetDeviceSingleton {
-    if (device_once_token) *device_once_token = 0;
+    dispatch_sync([ARTRestInternal deviceAccessQueue], ^{
+        sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = YES;
+    });
 }
 #endif
 

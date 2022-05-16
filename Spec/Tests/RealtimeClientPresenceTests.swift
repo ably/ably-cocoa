@@ -66,6 +66,31 @@ private let getParams: ARTRealtimePresenceQuery = {
     return getParams
 }()
 
+// Attaches to the given channel. If, upon attach, Realtime indicates that it
+// will initiate a presence SYNC (as indicated by the presence flag on the
+// received ATTACH protocol message), this method will then wait until the
+// presence sync has completed.
+//
+// The client must have been set up to use TestProxyTransport (e.g. using
+// AblyTests.newRealtime(:)).
+private func attachAndWaitForInitialPresenceSyncToComplete(client: ARTRealtime, channel: ARTRealtimeChannel) {
+    waitUntil(timeout: testTimeout) { done in
+        channel.attach { error in
+            expect(error).to(beNil())
+            done()
+        }
+    }
+    
+    let transport = client.internal.transport as! TestProxyTransport
+    
+    let attachedProtocolMessage = transport.protocolMessagesReceived.first { $0.action == .attached }
+    expect(attachedProtocolMessage).notTo(beNil())
+    
+    if ARTProtocolMessageFlag(rawValue: UInt(attachedProtocolMessage!.flags)).contains(.presence) {
+        expect(channel.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
+    }
+}
+
 class RealtimeClientPresenceTests: XCTestCase {
     override func setUp() {
         super.setUp()
@@ -510,11 +535,16 @@ class RealtimeClientPresenceTests: XCTestCase {
     func test__015__Presence__subscribe__with_no_arguments_should_subscribe_a_listener_to_all_presence_messages() {
         let options = AblyTests.commonAppSetup()
 
-        let client1 = ARTRealtime(options: options)
+        let client1 = AblyTests.newRealtime(options)
         defer { client1.close() }
         
         let channelName = uniqueChannelName()
         let channel1 = client1.channels.get(channelName)
+        // We want to make sure that the ENTER presence action that we publish
+        // gets sent by Realtime as a PRESENCE protocol message, and not in the
+        // channel’s initial post-attach SYNC. So, we wait for any initial SYNC
+        // to complete before publishing any presence actions.
+        attachAndWaitForInitialPresenceSyncToComplete(client: client1, channel: channel1)
 
         let client2 = ARTRealtime(options: options)
         defer { client2.close() }
@@ -1064,16 +1094,21 @@ class RealtimeClientPresenceTests: XCTestCase {
         let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(uniqueChannelName())
+        // We want to make sure that the ENTER presence action that we publish
+        // gets sent by Realtime as a PRESENCE protocol message, and not in the
+        // channel’s initial post-attach SYNC. So, we wait for any initial SYNC
+        // to complete before publishing any presence actions.
+        attachAndWaitForInitialPresenceSyncToComplete(client: client, channel: channel)
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
-            channel.presence.enter("online") { error in
-                expect(error).to(beNil())
-                partialDone()
-            }
-            channel.presence.subscribe { message in
+            channel.presence.subscribe(.enter) { message in
                 expect(message.clientId).to(equal("john"))
                 channel.presence.unsubscribe()
+                partialDone()
+            }
+            channel.presence.enter("online") { error in
+                expect(error).to(beNil())
                 partialDone()
             }
         }
@@ -1177,9 +1212,15 @@ class RealtimeClientPresenceTests: XCTestCase {
     func test__037__Presence__update__should_update_the_data_for_the_present_member_with_a_value() {
         let options = AblyTests.commonAppSetup()
         options.clientId = "john"
-        let client = ARTRealtime(options: options)
+        let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
+
         let channel = client.channels.get(uniqueChannelName())
+        // We want to make sure that the ENTER presence action that we publish
+        // gets sent by Realtime as a PRESENCE protocol message, and not in the
+        // channel’s initial post-attach SYNC. So, we wait for any initial SYNC
+        // to complete before publishing any presence actions.
+        attachAndWaitForInitialPresenceSyncToComplete(client: client, channel: channel)
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.subscribe(.enter) { member in
@@ -2428,11 +2469,16 @@ class RealtimeClientPresenceTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
 
         options.clientId = "john"
-        let client1 = ARTRealtime(options: options)
+        let client1 = AblyTests.newRealtime(options)
         defer { client1.close() }
         
         let channelName = uniqueChannelName()
         let channel1 = client1.channels.get(channelName)
+        // We want to make sure that the ENTER presence action that we publish
+        // gets sent by Realtime as a PRESENCE protocol message, and not in the
+        // channel’s initial post-attach SYNC. So, we wait for any initial SYNC
+        // to complete before publishing any presence actions.
+        attachAndWaitForInitialPresenceSyncToComplete(client: client1, channel: channel1)
 
         options.clientId = "mary"
         let client2 = ARTRealtime(options: options)
@@ -2442,17 +2488,14 @@ class RealtimeClientPresenceTests: XCTestCase {
         let expectedData = ["data": 123]
 
         waitUntil(timeout: testTimeout) { done in
-            channel1.attach { error in
+            let partlyDone = AblyTests.splitDone(2, done: done)
+            channel1.presence.subscribe(.enter) { member in
+                expect(member.data as? NSObject).to(equal(expectedData as NSObject?))
+                partlyDone()
+            }
+            channel2.presence.enter(expectedData) { error in
                 expect(error).to(beNil())
-                let partlyDone = AblyTests.splitDone(2, done: done)
-                channel1.presence.subscribe(.enter) { member in
-                    expect(member.data as? NSObject).to(equal(expectedData as NSObject?))
-                    partlyDone()
-                }
-                channel2.presence.enter(expectedData) { error in
-                    expect(error).to(beNil())
-                    partlyDone()
-                }
+                partlyDone()
             }
         }
     }
@@ -3437,16 +3480,25 @@ class RealtimeClientPresenceTests: XCTestCase {
         query.waitForSync = false
 
         waitUntil(timeout: testTimeout) { done in
+            let partialDone = AblyTests.splitDone(2, done: done)
+            
+            let transport = client.internal.transport as! TestProxyTransport
+            var alreadySawSync = false
+            transport.setBeforeIncomingMessageModifier { message in
+                if message.action == .sync {
+                    // Ignore next SYNC so that the sync process never finishes.
+                    if alreadySawSync {
+                        return nil
+                    }
+                    alreadySawSync = true
+                    partialDone()
+                }
+                return message
+            }
+
             channel.attach { error in
                 expect(error).to(beNil())
-                let transport = client.internal.transport as! TestProxyTransport
-                transport.setListenerBeforeProcessingIncomingMessage { message in
-                    if message.action == .sync {
-                        // Ignore next SYNC so that the sync process never finishes.
-                        transport.actionsIgnored += [.sync]
-                        done()
-                    }
-                }
+                partialDone()
             }
         }
 
