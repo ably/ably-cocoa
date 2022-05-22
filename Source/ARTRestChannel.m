@@ -46,6 +46,10 @@
     return [_internal history:query callback:callback error:errorPtr];
 }
 
+- (void)status:(ARTChannelDetailsCallback)callback {
+    [_internal status:callback];
+}
+
 - (void)publish:(nullable NSString *)name data:(nullable id)data {
     [_internal publish:name data:data];
 }
@@ -212,6 +216,57 @@ dispatch_sync(_queue, ^{
     ret = YES;
 });
     return ret;
+}
+
+- (void)status:(ARTChannelDetailsCallback)callback {
+    if (callback) {
+        ARTChannelDetailsCallback userCallback = callback;
+        callback = ^(ARTChannelDetails *details, ARTErrorInfo *_Nullable error) {
+            dispatch_async(self->_userQueue, ^{
+                userCallback(details, error);
+            });
+        };
+    }
+    dispatch_async(_queue, ^{
+        NSURL *url = [NSURL URLWithString:self->_basePath];
+        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+        
+        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p C:%p (%@) channel details request %@", self->_rest, self, self.name, request];
+        
+        [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable error) {
+            
+            if (response.statusCode == 200 /*OK*/) {
+                NSError *decodeError = nil;
+                ARTChannelDetails *channelDetails = [[self->_rest defaultEncoder] decodeChannelDetails:data error:&decodeError];
+                if (decodeError) {
+                    [self.logger debug:__FILE__ line:__LINE__ message:@"%@: decode channel details failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+                    if (callback) {
+                        callback(nil, [ARTErrorInfo createFromNSError:decodeError]);
+                    }
+                }
+                else {
+                    [self.logger debug:__FILE__ line:__LINE__ message:@"%@: successfully got channel details %@", NSStringFromClass(self.class), channelDetails.channelId];
+                    if (callback) {
+                        callback(channelDetails, nil);
+                    }
+                }
+            }
+            else {
+                [self.logger debug:__FILE__ line:__LINE__ message:@"%@: get channel details failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+                ARTErrorInfo *errorInfo = nil;
+                if (error) {
+                    if (self->_rest.options.addRequestIds) {
+                        errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createFromNSError:error] prepend:[NSString stringWithFormat:@"Request '%@' failed with ", request.URL]];
+                    } else {
+                        errorInfo = [ARTErrorInfo createFromNSError:error];
+                    }
+                }
+                if (callback) {
+                    callback(nil, errorInfo);
+                }
+            }
+        }];
+    });
 }
 
 - (void)internalPostMessages:(id)data callback:(ARTCallback)callback {

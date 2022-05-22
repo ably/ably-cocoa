@@ -15,6 +15,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)history:(nullable ARTDataQuery *)query callback:(ARTPaginatedMessagesCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
+- (void)status:(ARTChannelDetailsCallback)callback;
+
 - (void)setOptions:(ARTChannelOptions *_Nullable)options;
 
 @end

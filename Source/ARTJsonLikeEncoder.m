@@ -136,6 +136,10 @@
     return [self deviceDetailsFromDictionary:[self decodeDictionary:data error:nil] error:error];
 }
 
+- (ARTChannelDetails *)decodeChannelDetails:(NSData *)data error:(NSError **)error {
+    return [self channelDetailsFromDictionary:[self decodeDictionary:data error:error]];
+}
+
 - (NSArray<ARTDeviceDetails *> *)decodeDevicesDetails:(NSData *)data error:(NSError * __autoreleasing *)error {
     return [self devicesDetailsFromArray:[self decodeArray:data error:nil] error:error];
 }
@@ -751,6 +755,28 @@
                                       connectionStateTtl:millisecondsToTimeInterval([input artInteger:@"connectionStateTtl"])
                                                 serverId:[input artString:@"serverId"]
                                          maxIdleInterval:millisecondsToTimeInterval([input artInteger:@"maxIdleInterval"])];
+}
+
+- (ARTChannelDetails *)channelDetailsFromDictionary:(NSDictionary *)input {
+    if (!input) {
+        return nil;
+    }
+    
+    NSDictionary* statusDict = [input valueForKey:@"status"];
+    NSDictionary* metricsDict = [statusDict valueForKeyPath:@"occupancy.metrics"];
+    
+    ARTChannelMetrics* metrics = nil;
+    if (metricsDict != nil) {
+        metrics = [[ARTChannelMetrics alloc] initWithConnections:[metricsDict artInteger:@"connections"]
+                                                      publishers:[metricsDict artInteger:@"publishers"]
+                                                     subscribers:[metricsDict artInteger:@"subscribers"]
+                                             presenceConnections:[metricsDict artInteger:@"presenceConnections"]
+                                                 presenceMembers:[metricsDict artInteger:@"presenceMembers"]
+                                             presenceSubscribers:[metricsDict artInteger:@"presenceSubscribers"]];
+    }
+    return [[ARTChannelDetails alloc] initWithChannelId:[input artString:@"channelId"]
+                                                 status:[statusDict artBoolean:@"isActive"]
+                                                metrics:metrics];
 }
 
 - (NSArray *)statsFromArray:(NSArray *)input {
