@@ -51,4 +51,8 @@
     return 0;
 }
 
+- (BOOL)artBoolean:(id)key {
+    return [self artInteger:key] != 0;
+}
+
 @end
