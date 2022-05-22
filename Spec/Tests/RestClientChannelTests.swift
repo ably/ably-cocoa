@@ -1488,4 +1488,26 @@ class RestClientChannelTests: XCTestCase {
             }
         }
     }
+    
+    // ??
+    func test__047__lifecycle_status_response_should_contain_status_object() {
+        let channelName = uniqueChannelName()
+        let options = AblyTests.commonAppSetup()
+        let testToken = getTestToken(capability: "{\"*\":[\"channel-metadata\"]}")
+        options.token = testToken
+        let client = ARTRest(options: options)
+        let channel = client.channels.get(channelName)
+        
+        waitUntil(timeout: testTimeout) { done in
+            channel.status { details, error in
+                expect(error).to(beNil())
+                guard let details = details else {
+                    fail("Channel details are empty"); done()
+                    return
+                }
+                expect(details.status).toNot(beNil())
+                done()
+            }
+        }
+    }
 }
