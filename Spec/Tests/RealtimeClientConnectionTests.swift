@@ -3705,7 +3705,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
         defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
-        ARTDefault.setRealtimeRequestTimeout(1.0)
+        ARTDefault.setRealtimeRequestTimeout(5.0)
 
         let testHttpExecutor = TestProxyHTTPExecutor(options.logHandler)
         client.internal.rest.httpExecutor = testHttpExecutor
@@ -3713,8 +3713,17 @@ class RealtimeClientConnectionTests: XCTestCase {
         client.internal.setTransport(TestProxyTransport.self)
         TestProxyTransport.fakeNetworkResponse = .hostUnreachable
         defer { TestProxyTransport.fakeNetworkResponse = nil }
-
+        
+        let hostPrefixes = Array("abcde")
+        
+        let extractHostname = { (url: URL) in
+            NSRegularExpression.extract(url.absoluteString, pattern: "[\(hostPrefixes.first!)-\(hostPrefixes.last!)].ably-realtime.com")
+        }
+        
         var urls = [URL]()
+        let expectedFallbackHosts = Array(expectedHostOrder.map { ARTDefault.fallbackHosts()[$0] })
+        let allFallbackHostsTriedOfFailedExp = XCTestExpectation(description: "TestProxyTransport should spit 5 fallback hosts on networkConnectEvent")
+        
         TestProxyTransport.networkConnectEvent = { transport, url in
             if client.internal.transport !== transport {
                 return
@@ -3724,25 +3733,26 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
         }
         defer { TestProxyTransport.networkConnectEvent = nil }
+        
         testHttpExecutor.setListenerAfterRequest { request in
             urls.append(request.url!)
         }
 
-        waitUntil(timeout: testTimeout.multiplied(by: 1000)) { done in
+        waitUntil(timeout: testTimeout) { done in
             // wss://[a-e].ably-realtime.com: when a timeout occurs
             client.connection.once(.disconnected) { _ in
                 done()
+                allFallbackHostsTriedOfFailedExp.fulfill()
             }
             // wss://[a-e].ably-realtime.com: when a 401 occurs because of the `xxxx:xxxx` key
             client.connection.once(.failed) { _ in
                 done()
+                allFallbackHostsTriedOfFailedExp.fulfill()
             }
             client.connect()
         }
-
-        let extractHostname = { (url: URL) in
-            NSRegularExpression.extract(url.absoluteString, pattern: "[a-e].ably-realtime.com")
-        }
+        
+        wait(for: [allFallbackHostsTriedOfFailedExp], timeout: testTimeout.toTimeInterval())
 
         var resultFallbackHosts = [String]()
         var gotInternetIsUpCheck = false
@@ -3759,8 +3769,6 @@ class RealtimeClientConnectionTests: XCTestCase {
                 resultFallbackHosts.append(fallbackHost)
             }
         }
-
-        let expectedFallbackHosts = Array(expectedHostOrder.map { ARTDefault.fallbackHosts()[$0] })
 
         expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
 
