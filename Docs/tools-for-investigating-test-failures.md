@@ -38,11 +38,13 @@ We have a branch [`1279-run-tests-in-loop`](https://github.com/ably/ably-cocoa/t
 So, if you want to observe how a test case is behaving when run multiple times (perhaps after adding further logging to it, or after trying to fix it):
 
 1. Merge `1279-run-tests-in-loop` into your feature branch.
-2. Push to GitHub and open a draft pull request. This will cause CI to run on that branch. If you want more than 6 hours’ worth of test resuts, you will need to re-run the failed job manually.
+2. Push to GitHub and open a draft pull request. This will cause CI to run on that branch. If you want more than 6 hours’ worth of test resuts, you will need to re-run the failed job manually, or see how to [run the tests for a long time or in parallel](#running-for-a-long-time-or-in-parallel).
 
 You can then use the [branch filter](https://test-observability.herokuapp.com/repos/ably/ably-cocoa/uploads/filter) in the test observability server to view all of the test results from your branch. If you are seeing failures that you’d like to investigate further, [we also have a script](#downloading-all-of-the-xcodebuild-logs-for-a-branch) that you can use to download all the `xcodebuild` logs for that branch.
 
-There is also a branch `1279-run-tests-in-loop-lots-of-times`, which will run the tests 4 times in a row (i.e. for one day). You can use this branch if you want to gather _a lot_ of data.
+### Running for a long time or in parallel
+
+If you’d like to run the tests for more than 6 hours, or would to perform multiple test runs in parallel, you can use the script [`Scripts/set-ci-length-and-parallelism.sh`](https://github.com/ably/ably-cocoa/blob/1279-run-tests-in-loop/Scripts/set-ci-length-and-parallelism.sh). This script will modify / create extra GitHub workflow YAML files to allow you to increase the number of workflows and jobs per workflow. See the usage instructions in the script.
 
 ### Downloading all of the `xcodebuild` logs for a branch
 
