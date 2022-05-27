@@ -11,7 +11,7 @@
 
 _[Ably](https://ably.com) is the platform that powers synchronized digital experiences in realtime. Whether attending an event in a virtual venue, receiving realtime financial information, or monitoring live car performance data – consumers simply expect realtime digital experiences as standard. Ably provides a suite of APIs to build, extend, and deliver powerful digital experiences in realtime for more than 250 million devices across 80 countries each month. Organizations like Bloomberg, HubSpot, Verizon, and Hopin depend on Ably’s platform to offload the growing complexity of business-critical realtime data synchronization at global scale. For more information, see the [Ably documentation](https://ably.com/documentation)._
 
-This is an iOS, tvOS and macOS Objective-C and Swift client library SDK for Ably, written in Objective-C. The library currently targets the [Ably client library features spec](https://www.ably.io/documentation/client-lib-development-guide/features/) Version 1.2. You can jump to the '[Known Limitations](#known-limitations)' section to see the features this client library does not yet support or [view our client library SDKs feature support matrix](https://www.ably.io/download/sdk-feature-support-matrix) to see the list of all the available features.
+This is an iOS, tvOS and macOS Objective-C and Swift client library SDK for Ably, written in Objective-C. The library currently targets the [Ably client library features spec](https://www.ably.com/docs/client-lib-development-guide/features/) Version 1.2. You can jump to the '[Known Limitations](#known-limitations)' section to see the features this client library does not yet support or [view our client library SDKs feature support matrix](https://www.ably.io/download/sdk-feature-support-matrix) to see the list of all the available features.
 
 ## Supported platforms
 
@@ -41,9 +41,9 @@ This client library is currently *not compatible* with some of the Ably features
 
 | Feature |
 | :--- |
-| [Custom transportParams](https://ably.io/documentation/realtime/usage#client-options) |
-| [Remember fallback host during failures](https://ably.io/documentation/realtime/usage#client-options) | 
-| [ErrorInfo URLs to help debug issues](https://ably.io/documentation/realtime/types#error-info) |
+| [Custom transportParams](https://ably.com/docs/realtime/usage#client-options) |
+| [Remember fallback host during failures](https://ably.com/docs/realtime/usage#client-options) | 
+| [ErrorInfo URLs to help debug issues](https://ably.com/docs/realtime/types#error-info) |
 
 ## Documentation
 
@@ -122,11 +122,11 @@ This allows you to react to Ably's output by doing UI operations directly. You c
 
 ## Push Notifications
 
-If you haven’t yet, you should first check the detailed [documentation](https://www.ably.io/documentation/general/push). An [example app for push notifications](https://github.com/ably/push-example-ios) is also available.
+If you haven’t yet, you should first check the detailed [documentation](https://www.ably.com/docs/general/push). An [example app for push notifications](https://github.com/ably/push-example-ios) is also available.
 
 ### Activation and device registration
 
-For more information, see [Push Notifications - Device activation and subscription](https://ably.com/documentation/general/push/activate-subscribe).
+For more information, see [Push Notifications - Device activation and subscription](https://ably.com/docs/general/push/activate-subscribe).
 
 **`ARTPushRegistererDelegate`** defines 3 delegate methods to handle the outcome of push activation, deactivation and update events. By default, the Ably SDK will check if `UIApplication.sharedApplication.delegate` conforms to `ARTPushRegistererDelegate`, and call the delegate methods when appropriate. Therefore, specifying the `ARTPushRegistererDelegate` is optional. To use a different class implementing `ARTPushRegistererDelegate`, you must provide this class to Ably, by setting the `ARTClientOptions#pushRegistererDelegate` delegate. In SwiftUI applications, you must set the `ARTClientOptions#pushRegistererDelegate` delegate property.
 
@@ -142,11 +142,11 @@ func application(_ application: UIApplication, didFailToRegisterForRemoteNotific
 }
 ```
 
-Only one instance of `ARTRest` or `ARTRealtime` at a time must be [activated for receiving push notifications](https://www.ably.io/documentation/general/push/activate-subscribe). Having more than one activated instance at a time may have unexpected consequences.
+Only one instance of `ARTRest` or `ARTRealtime` at a time must be [activated for receiving push notifications](https://www.ably.com/docs/general/push/activate-subscribe). Having more than one activated instance at a time may have unexpected consequences.
 
 ### macOS & tvOS
 
-Be aware that Push Notifications are currently unsupported for macOS and tvOS. You can only use the [Push Admin](https://www.ably.io/documentation/general/push/admin) functionalities, for example:
+Be aware that Push Notifications are currently unsupported for macOS and tvOS. You can only use the [Push Admin](https://www.ably.com/docs/general/push/admin) functionalities, for example:
 
 ```swift
 let recipient: [String: Any] = [
@@ -326,7 +326,7 @@ channel.subscribe("myEvent") { message in
 
 ### Subscribing to a channel in delta mode
 
-Subscribing to a channel in delta mode enables [delta compression](https://www.ably.io/documentation/realtime/channels/channel-parameters/deltas). This is a way for a client to subscribe to a channel so that message payloads sent contain only the difference (ie the delta) between the present message and the previous message on the channel.
+Subscribing to a channel in delta mode enables [delta compression](https://www.ably.com/docs/realtime/channels/channel-parameters/deltas). This is a way for a client to subscribe to a channel so that message payloads sent contain only the difference (ie the delta) between the present message and the previous message on the channel.
 
 Request a Vcdiff formatted delta stream using channel options when you get the channel:
  
