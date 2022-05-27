@@ -1,4 +1,4 @@
-# [Ably](https://www.ably.io) iOS, tvOS and macOS Objective-C and Swift client library SDK
+# [Ably](https://www.ably.com) iOS, tvOS and macOS Objective-C and Swift client library SDK
 
 [![Check Pod](https://github.com/ably/ably-cocoa/actions/workflows/check-pod.yaml/badge.svg)](https://github.com/ably/ably-cocoa/actions/workflows/check-pod.yaml)
 [![Integration Test: iOS 14.4](https://github.com/ably/ably-cocoa/actions/workflows/integration-test-iOS14_4.yaml/badge.svg)](https://github.com/ably/ably-cocoa/actions/workflows/integration-test-iOS14_4.yaml)
@@ -11,7 +11,7 @@
 
 _[Ably](https://ably.com) is the platform that powers synchronized digital experiences in realtime. Whether attending an event in a virtual venue, receiving realtime financial information, or monitoring live car performance data – consumers simply expect realtime digital experiences as standard. Ably provides a suite of APIs to build, extend, and deliver powerful digital experiences in realtime for more than 250 million devices across 80 countries each month. Organizations like Bloomberg, HubSpot, Verizon, and Hopin depend on Ably’s platform to offload the growing complexity of business-critical realtime data synchronization at global scale. For more information, see the [Ably documentation](https://ably.com/documentation)._
 
-This is an iOS, tvOS and macOS Objective-C and Swift client library SDK for Ably, written in Objective-C. The library currently targets the [Ably client library features spec](https://www.ably.com/docs/client-lib-development-guide/features/) Version 1.2. You can jump to the '[Known Limitations](#known-limitations)' section to see the features this client library does not yet support or [view our client library SDKs feature support matrix](https://www.ably.io/download/sdk-feature-support-matrix) to see the list of all the available features.
+This is an iOS, tvOS and macOS Objective-C and Swift client library SDK for Ably, written in Objective-C. The library currently targets the [Ably client library features spec](https://www.ably.com/docs/client-lib-development-guide/features/) Version 1.2. You can jump to the '[Known Limitations](#known-limitations)' section to see the features this client library does not yet support or [view our client library SDKs feature support matrix](https://www.ably.com/download/sdk-feature-support-matrix) to see the list of all the available features.
 
 ## Supported platforms
 
@@ -25,7 +25,7 @@ We maintain compatibility and explicitly support these platform versions.
 
 We do not explicitly maintain compatibility with older platform versions. Any known incompatibilities with older versions can be found [here](https://github.com/ably/ably-cocoa/issues?q=is%3Aissue+is%3Aopen+label%3A%22compatibility%22).
 
-If you find any issues with unsupported platform versions, please [raise an issue](https://github.com/ably/ably-cocoa/issues) in this repository or [contact Ably customer support](https://support.ably.io) for advice.
+If you find any issues with unsupported platform versions, please [raise an issue](https://github.com/ably/ably-cocoa/issues) in this repository or [contact Ably customer support](https://support.ably.com) for advice.
 
 ### Continuous Integration Testing
 
@@ -47,7 +47,7 @@ This client library is currently *not compatible* with some of the Ably features
 
 ## Documentation
 
-Visit [ably.io/documentation](https://www.ably.io/documentation) for a complete API reference and more examples.
+Visit [ably.com/documentation](https://www.ably.com/documentation) for a complete API reference and more examples.
 
 ## Installation Guide
 
@@ -685,7 +685,7 @@ client.time { time, error in
 
 ## Support, feedback and troubleshooting
 
-Please visit https://support.ably.io/ for access to our knowledgebase and to ask for any assistance.
+Please visit https://support.ably.com/ for access to our knowledgebase and to ask for any assistance.
 
 You can also view the [community reported Github issues](https://github.com/ably/ably-cocoa/issues).
 
