@@ -27,11 +27,16 @@ jobs:
           ./Scripts/jazzy.sh
           ls -al Docs/jazzy
 
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: eu-west-2
+          role-to-assume: arn:aws:iam::${{ secrets.ABLY_AWS_ACCOUNT_ID_SDK }}:role/ably-sdk-builds-ably-cocoa
+          role-session-name: "${{ github.run_id }}-${{ github.run_number }}"
+
       - name: Upload Documentation
         uses: ably/sdk-upload-action@v1
         with:
-          s3AccessKeyId: ${{ secrets.SDK_S3_ACCESS_KEY_ID }}
-          s3AccessKey: ${{ secrets.SDK_S3_ACCESS_KEY }}
           sourcePath: Docs/jazzy
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           artifactName: jazzydoc
