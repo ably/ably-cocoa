@@ -17,6 +17,7 @@
 @class ARTPushChannelSubscription;
 @class ARTDeviceDetails;
 @protocol ARTTokenDetailsCompatible;
+@class ARTTokenRevocationResponse;
 
 // More context
 typedef NSDictionary<NSString *, id> ARTJsonObject;
@@ -270,6 +271,7 @@ typedef void (^ARTURLRequestCallback)(NSHTTPURLResponse *_Nullable result, NSDat
 typedef void (^ARTTokenDetailsCallback)(ARTTokenDetails *_Nullable result, NSError *_Nullable error);
 typedef void (^ARTTokenDetailsCompatibleCallback)(id<ARTTokenDetailsCompatible> _Nullable result, NSError *_Nullable error);
 typedef void (^ARTAuthCallback)(ARTTokenParams *params, ARTTokenDetailsCompatibleCallback callback);
+typedef void (^ARTTokenRevocationCallback)(ARTTokenRevocationResponse *_Nullable response, NSError *_Nullable error);
 
 typedef void (^ARTHTTPPaginatedCallback)(ARTHTTPPaginatedResponse *_Nullable response, ARTErrorInfo *_Nullable error);
 typedef void (^ARTPaginatedStatsCallback)(ARTPaginatedResult<ARTStats *> *_Nullable result, ARTErrorInfo *_Nullable error);

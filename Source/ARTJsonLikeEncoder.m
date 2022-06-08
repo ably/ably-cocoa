@@ -23,6 +23,8 @@
 #import "ARTRest+Private.h"
 #import "ARTJsonEncoder.h"
 #import "ARTPushChannelSubscription.h"
+#import "ARTTokenRevocationTarget.h"
+#import "ARTTokenRevocationResponse.h"
 
 @implementation ARTJsonLikeEncoder {
     __weak ARTRestInternal *_rest; // weak because rest owns self
@@ -127,6 +129,44 @@
 - (NSData *)encodeTokenDetails:(ARTTokenDetails *)tokenDetails error:(NSError **)error {
     return [self encode:[self tokenDetailsToDictionary:tokenDetails] error:error];
 }
+
+-(NSString *)targetPair:(ARTTokenRevocationTarget *)target {
+    return [NSString stringWithFormat:@"%@:%@", target.key, target.value];
+}
+- (nullable NSData *)encodeTokenRevocationRequest:(NSArray<ARTTokenRevocationTarget *> *)targets
+                                     issuedBefore:(NSDate *)issuedBefore
+                                allowReauthMargin:(BOOL)allowReauthMargin
+                                            error:(NSError *_Nullable *_Nullable)error{
+    NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
+
+    NSMutableArray *targetsArray = [[NSMutableArray alloc] initWithCapacity:targets.count];
+    for (ARTTokenRevocationTarget *target in targets) {
+        [targetsArray addObject:[self targetPair:target]];
+    }
+    dictionary[@"targets"] = targetsArray;
+    if (issuedBefore) {
+        NSTimeInterval seconds = [NSDate timeIntervalSinceReferenceDate];
+        dictionary[@"issuedBefore"] = @(seconds * 1000);
+    }
+    if (allowReauthMargin) {
+        dictionary[@"allowReauthMargin"] = @(allowReauthMargin);
+    }
+    return [self encode:dictionary error:error];
+}
+- (nullable ARTTokenRevocationResponse *)decodeTokenRevocationRequest:(NSData *)data error:(__autoreleasing NSError **)error {
+    NSDictionary *dictionary = [self decodeDictionary:data error:error];
+    if (!dictionary) {
+        return nil;
+    }
+    NSArray *targets = dictionary[@"targets"];
+
+    ARTTokenRevocationResponse *response = [[ARTTokenRevocationResponse alloc] init];
+    NSMutableArray<ARTTokenRevocationTarget *> *targetsArray = [[NSMutableArray alloc] initWithCapacity:targets.count];
+
+    //todo decode targets
+    return  response;
+}
+
 
 - (NSData *)encodeDeviceDetails:(ARTDeviceDetails *)deviceDetails error:(NSError **)error {
     return [self encode:[self deviceDetailsToDictionary:deviceDetails] error:error];

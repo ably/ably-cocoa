@@ -1,4 +1,5 @@
 #import "ARTTypes.h"
+#import "ARTTokenRevocationResponse.h"
 
 // MARK: Global helper functions
 

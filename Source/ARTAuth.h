@@ -10,6 +10,7 @@
 @class ARTTokenParams;
 @class ARTTokenDetails;
 @class ARTTokenRequest;
+@class ARTTokenRevocationTarget;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -52,6 +53,16 @@ NS_ASSUME_NONNULL_BEGIN
                   callback:(void (^)(ARTTokenRequest *_Nullable tokenRequest, NSError *_Nullable error))callback;
 
 - (void)createTokenRequest:(void (^)(ARTTokenRequest *_Nullable tokenRequest, NSError *_Nullable error))callback;
+
+//function with only required parameters
+- (NSObject <ARTCancellable> *) revokeTokens:(nonnull NSArray<ARTTokenRevocationTarget *> *)targets
+            callback:(ARTTokenRevocationCallback)callback;/*
+//Function that has all params*/
+- (NSObject <ARTCancellable> *)revokeTokens:(nonnull NSArray<ARTTokenRevocationTarget *> *)targets
+                               issuedBefore:(nullable NSDate *)issuedBefore
+                          allowReauthMargin:(BOOL)allowReauthMargin
+                                   callback:(ARTTokenRevocationCallback)callback;
+
 
 @end
 
