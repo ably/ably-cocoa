@@ -11,4 +11,6 @@
 @property (strong, nonatomic) ARTTokenRevocationTarget *target;
 @property (strong, nonatomic) NSDate *issuedBefore;
 @property (strong, nonatomic) NSDate *appliesAt;
+
+-(instancetype)initWith:(ARTTokenRevocationTarget *)target issuedBefore:(NSDate *)issuedBefore appliesAt:(NSDate *)appliesAt;
 @end

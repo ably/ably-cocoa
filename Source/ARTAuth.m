@@ -718,6 +718,8 @@
         issuedBefore:(NSDate *)issuedBefore
    allowReauthMargin:(BOOL)allowReauthMargin
             callback:(ARTTokenRevocationCallback)callback {
+    //todo validate targets
+
     id <ARTEncoder> encoder = _rest.defaultEncoder;
 
     NSURL *requestUrl = [NSURL URLWithString:[NSString stringWithFormat:@"/keys/%@/revokeTokens", self.options.key]
@@ -740,12 +742,11 @@
             callback(nil, error);
         } else {
             NSError *decodeError = nil;
-            ARTTokenDetails *tokenDetails = [encoder decodeTokenDetails:data error:&decodeError];
-            [encoder decodeTokenRevocationRequest:data error:&decodeError];
+            ARTTokenRevocationResponse *revocationResponse =  [encoder decodeTokenRevocationRequest:data error:&decodeError];
             if (decodeError) {
                 callback(nil, decodeError);
             } else {
-                callback(tokenDetails, nil);
+                callback(revocationResponse, nil);
             }
         }
     }];

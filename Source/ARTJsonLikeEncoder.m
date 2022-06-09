@@ -153,18 +153,41 @@
     }
     return [self encode:dictionary error:error];
 }
+
 - (nullable ARTTokenRevocationResponse *)decodeTokenRevocationRequest:(NSData *)data error:(__autoreleasing NSError **)error {
-    NSDictionary *dictionary = [self decodeDictionary:data error:error];
-    if (!dictionary) {
+    NSArray *targetsArr = [self decodeArray:data error:error];
+    if (!targetsArr) {
         return nil;
     }
-    NSArray *targets = dictionary[@"targets"];
 
     ARTTokenRevocationResponse *response = [[ARTTokenRevocationResponse alloc] init];
-    NSMutableArray<ARTTokenRevocationTarget *> *targetsArray = [[NSMutableArray alloc] initWithCapacity:targets.count];
+    //what if targets array does not contain any targets? response without targets? Return empty response?
+    if (targetsArr.count == 0) {
+        return response;
+    }
+    NSMutableArray<ARTRevokedTarget *> *revokedTargets = [[NSMutableArray alloc] initWithCapacity:targetsArr.count];
+    for(NSDictionary *targetItem in targetsArr){
+        [revokedTargets addObject:[self revokedTargetFromDictionary:targetItem error:error]];
+    }
 
-    //todo decode targets
+    response.revokedTargets = revokedTargets;
     return  response;
+}
+
+- (ARTRevokedTarget *)revokedTargetFromDictionary:(NSDictionary *)dictionary error:(__autoreleasing NSError **)error {
+    NSString *targetString = dictionary[@"target"];
+    NSArray<NSString *> *targetPair = [targetString componentsSeparatedByString:@":"];
+    //what if targetPair does not contain 2 items? which error code should we use?
+    if (targetPair.count != 2) {
+        *error = [NSError errorWithDomain:ARTAblyErrorDomain
+                                     code:0
+                                 userInfo:@{NSLocalizedDescriptionKey: @"target is not a valid target string"}];
+        return nil;
+    }
+
+    NSDate *issuedBefore = [NSDate art_dateWithMillisecondsSince1970:[dictionary[@"issuedBefore"] longValue]];
+    NSDate *appliesAt = [NSDate art_dateWithMillisecondsSince1970:[dictionary[@"appliesAt"] longValue]];
+    return [ARTRevokedTarget alloc];
 }
 
 
