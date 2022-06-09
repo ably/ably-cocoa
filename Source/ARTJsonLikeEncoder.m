@@ -25,6 +25,7 @@
 #import "ARTPushChannelSubscription.h"
 #import "ARTTokenRevocationTarget.h"
 #import "ARTTokenRevocationResponse.h"
+#import "ARTRevokedTarget.h"
 
 @implementation ARTJsonLikeEncoder {
     __weak ARTRestInternal *_rest; // weak because rest owns self
@@ -131,8 +132,9 @@
 }
 
 -(NSString *)targetPair:(ARTTokenRevocationTarget *)target {
-    return [NSString stringWithFormat:@"%@:%@", target.key, target.value];
+    return [NSString stringWithFormat:@"%@:%@", target.type, target.value];
 }
+
 - (nullable NSData *)encodeTokenRevocationRequest:(NSArray<ARTTokenRevocationTarget *> *)targets
                                      issuedBefore:(NSDate *)issuedBefore
                                 allowReauthMargin:(BOOL)allowReauthMargin
@@ -184,10 +186,11 @@
                                  userInfo:@{NSLocalizedDescriptionKey: @"target is not a valid target string"}];
         return nil;
     }
+    ARTTokenRevocationTarget *target = [[ARTTokenRevocationTarget alloc] initWith:targetPair[0] value:targetPair[1]];
 
     NSDate *issuedBefore = [NSDate art_dateWithMillisecondsSince1970:[dictionary[@"issuedBefore"] longValue]];
     NSDate *appliesAt = [NSDate art_dateWithMillisecondsSince1970:[dictionary[@"appliesAt"] longValue]];
-    return [ARTRevokedTarget alloc];
+    return [[ARTRevokedTarget alloc] initWith:target issuedBefore:issuedBefore appliesAt:appliesAt];
 }
 
 

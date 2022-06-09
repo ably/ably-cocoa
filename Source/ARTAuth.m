@@ -79,11 +79,11 @@
     [_internal createTokenRequest:callback];
 }
 
-- (void)revokeTokens:(nonnull NSArray<ARTTokenRevocationTarget *> *)targets
-        issuedBefore:(nullable NSDate *)issuedBefore
-   allowReauthMargin:(BOOL)allowReauthMargin
-            callback:(ARTTokenRevocationCallback)callback {
-    [_internal revokeTokens:targets issuedBefore:issuedBefore allowReauthMargin:allowReauthMargin callback:callback];
+- (NSObject <ARTCancellable> *)revokeTokens:(nonnull NSArray<ARTTokenRevocationTarget *> *)targets
+                               issuedBefore:(nullable NSDate *)issuedBefore
+                          allowReauthMargin:(BOOL)allowReauthMargin
+                                   callback:(ARTTokenRevocationCallback)callback {
+    return [_internal revokeTokens:targets issuedBefore:issuedBefore allowReauthMargin:allowReauthMargin callback:callback];
 }
 
 
