@@ -1,3 +1,5 @@
+name: Docs Generation
+
 on:
   pull_request:
   push:
