@@ -753,10 +753,6 @@
 
 }
 
-- (NSObject <ARTCancellable> *) revokeTokens:(NSArray<ARTTokenRevocationTarget *> *)targets callback:(ARTTokenRevocationCallback)callback {
-    return [self revokeTokens:targets issuedBefore:nil allowReauthMargin:NO callback:callback];
-}
-
 // For mocking when testing.
 - (NSDate *)handleServerTime:(NSDate *)time {
     return time;
