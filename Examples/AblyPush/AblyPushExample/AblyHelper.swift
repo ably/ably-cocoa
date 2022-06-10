@@ -47,6 +47,14 @@ extension AblyHelper {
     func getDeviceDetails(_ callback: @escaping (ARTDeviceDetails?, ARTErrorInfo?) -> ()) {
         realtime.push.admin.deviceRegistrations.get(realtime.device.id, callback: callback)
     }
+
+    func revokeTokens() {
+        let targets = [ARTTokenRevocationTarget( "clientId", value: "client1@client.com")]
+        realtime.auth.revokeTokens(targets, issuedBefore: Date.now, allowReauthMargin: false) {
+            (response: ARTTokenRevocationResponse?, error: Error?) in
+        };
+
+    }
     
     // For this to work you must turn on 'Push Admin' capability in your API key settings
     func sendAdminPush(title: String, body: String) {

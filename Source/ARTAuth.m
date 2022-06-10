@@ -718,7 +718,12 @@
         issuedBefore:(NSDate *)issuedBefore
    allowReauthMargin:(BOOL)allowReauthMargin
             callback:(ARTTokenRevocationCallback)callback {
-    //todo validate targets
+    //RSA17d
+    if (!targets || targets.count == 0) {
+        NSDictionary *userInfo = @{NSLocalizedDescriptionKey: @"targets cannot be null or empty"};
+        callback(nil,[NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:userInfo]);
+        return nil;
+    }
 
     id <ARTEncoder> encoder = _rest.defaultEncoder;
 
