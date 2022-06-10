@@ -47,9 +47,6 @@ FOUNDATION_EXPORT const unsigned char ablyVersionString[];
 #import <Ably/ARTPush.h>
 #import <Ably/ARTPushChannel.h>
 #import <Ably/ARTPushChannelSubscription.h>
-#import <Ably/ARTPushActivationStateMachine.h>
-#import <Ably/ARTPushActivationEvent.h>
-#import <Ably/ARTPushActivationState.h>
 #import <Ably/ARTPushAdmin.h>
 #import <Ably/ARTPushChannelSubscriptions.h>
 #import <Ably/ARTPushDeviceRegistrations.h>
