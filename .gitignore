@@ -71,3 +71,7 @@ Examples/Tests/Podfile.lock
 # AppCode
 .build
 .idea
+
+# Jazzy Docs
+Docs/jazzy
+
