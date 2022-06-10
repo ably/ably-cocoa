@@ -9,5 +9,4 @@ jazzy \
   --umbrella-header Source/Ably.h \
   --framework-root . \
   --module Ably \
-  --exclude="*/ARTPushActivationStateMachine.h","*/ARTPushActivationStateMachine+Private.h" \
   --output Docs/jazzy
