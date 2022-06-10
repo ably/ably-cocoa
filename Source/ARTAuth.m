@@ -724,6 +724,14 @@
         callback(nil,[NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:userInfo]);
         return nil;
     }
+    //RSA17e
+    for (ARTTokenRevocationTarget *target in targets) {
+        if (!target.type || !target.value) {
+            NSDictionary *userInfo = @{NSLocalizedDescriptionKey: @"Invalid RevocationTarget in targets array"};
+            callback(nil,[NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:userInfo]);
+            return nil;
+        }
+    }
 
     id <ARTEncoder> encoder = _rest.defaultEncoder;
 
