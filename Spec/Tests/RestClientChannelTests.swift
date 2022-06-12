@@ -1489,8 +1489,8 @@ class RestClientChannelTests: XCTestCase {
         }
     }
     
-    // ??
-    func test__047__lifecycle_status_response_should_contain_status_object() {
+    // RSL8a
+    func test__047__channel_status_returns_a_channel_details_object() {
         let channelName = uniqueChannelName()
         let options = AblyTests.commonAppSetup()
         let testToken = getTestToken(capability: "{\"*\":[\"channel-metadata\"]}")
@@ -1505,7 +1505,8 @@ class RestClientChannelTests: XCTestCase {
                     fail("Channel details are empty"); done()
                     return
                 }
-                expect(details.status).toNot(beNil())
+                expect(details.channelId).toNot(beNil()) // CHD2a
+                expect(details.status).toNot(beNil()) // CHD2b
                 done()
             }
         }
