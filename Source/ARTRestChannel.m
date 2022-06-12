@@ -237,7 +237,8 @@ dispatch_sync(_queue, ^{
             
             if (response.statusCode == 200 /*OK*/) {
                 NSError *decodeError = nil;
-                ARTChannelDetails *channelDetails = [[self->_rest defaultEncoder] decodeChannelDetails:data error:&decodeError];
+                id<ARTEncoder> encoder = self->_rest.encoders[response.MIMEType];
+                ARTChannelDetails *channelDetails = [encoder decodeChannelDetails:data error:&decodeError];
                 if (decodeError) {
                     [self.logger debug:__FILE__ line:__LINE__ message:@"%@: decode channel details failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
                     if (callback) {
