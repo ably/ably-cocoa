@@ -746,37 +746,47 @@
     if (!input) {
         return nil;
     }
+    return [[ARTConnectionDetails alloc] initWithClientId:[input artString:@"clientId"]
+                                            connectionKey:[input artString:@"connectionKey"]
+                                           maxMessageSize:[input artInteger:@"maxMessageSize"]
+                                             maxFrameSize:[input artInteger:@"maxFrameSize"]
+                                           maxInboundRate:[input artInteger:@"maxInboundRate"]
+                                       connectionStateTtl:millisecondsToTimeInterval([input artInteger:@"connectionStateTtl"])
+                                                 serverId:[input artString:@"serverId"]
+                                          maxIdleInterval:millisecondsToTimeInterval([input artInteger:@"maxIdleInterval"])];
+}
 
-   return [[ARTConnectionDetails alloc] initWithClientId:[input artString:@"clientId"]
-                                           connectionKey:[input artString:@"connectionKey"]
-                                          maxMessageSize:[input artInteger:@"maxMessageSize"]
-                                            maxFrameSize:[input artInteger:@"maxFrameSize"]
-                                          maxInboundRate:[input artInteger:@"maxInboundRate"]
-                                      connectionStateTtl:millisecondsToTimeInterval([input artInteger:@"connectionStateTtl"])
-                                                serverId:[input artString:@"serverId"]
-                                         maxIdleInterval:millisecondsToTimeInterval([input artInteger:@"maxIdleInterval"])];
+- (ARTChannelMetrics *)channelMetricsFromDictionary:(NSDictionary *)input {
+    return [[ARTChannelMetrics alloc] initWithConnections:[input artInteger:@"connections"]
+                                               publishers:[input artInteger:@"publishers"]
+                                              subscribers:[input artInteger:@"subscribers"]
+                                      presenceConnections:[input artInteger:@"presenceConnections"]
+                                          presenceMembers:[input artInteger:@"presenceMembers"]
+                                      presenceSubscribers:[input artInteger:@"presenceSubscribers"]];;
+}
+
+- (nullable ARTChannelOccupancy *)channelOccupancyFromDictionary:(NSDictionary *)input {
+    NSDictionary *metricsDict = [input valueForKey:@"metrics"];
+    if (metricsDict == nil) {
+        return nil;
+    }
+    ARTChannelMetrics *metrics = [self channelMetricsFromDictionary:metricsDict];
+    ARTChannelOccupancy *occupancy = [[ARTChannelOccupancy alloc] initWithMetrics:metrics];
+    return occupancy;
+}
+
+- (nullable ARTChannelStatus *)channelStatusFromDictionary:(NSDictionary *)input {
+    NSDictionary *occupancyDict = [input valueForKey:@"occupancy"];
+    ARTChannelOccupancy *occupancy = occupancyDict != nil ? [self channelOccupancyFromDictionary:occupancyDict] : nil;
+    ARTChannelStatus *status = [[ARTChannelStatus alloc] initWithOccupancy:occupancy active:[input artBoolean:@"isActive"]];
+    return status;
 }
 
 - (ARTChannelDetails *)channelDetailsFromDictionary:(NSDictionary *)input {
-    if (!input) {
-        return nil;
-    }
-    
-    NSDictionary* statusDict = [input valueForKey:@"status"];
-    NSDictionary* metricsDict = [statusDict valueForKeyPath:@"occupancy.metrics"];
-    
-    ARTChannelMetrics* metrics = nil;
-    if (metricsDict != nil) {
-        metrics = [[ARTChannelMetrics alloc] initWithConnections:[metricsDict artInteger:@"connections"]
-                                                      publishers:[metricsDict artInteger:@"publishers"]
-                                                     subscribers:[metricsDict artInteger:@"subscribers"]
-                                             presenceConnections:[metricsDict artInteger:@"presenceConnections"]
-                                                 presenceMembers:[metricsDict artInteger:@"presenceMembers"]
-                                             presenceSubscribers:[metricsDict artInteger:@"presenceSubscribers"]];
-    }
-    return [[ARTChannelDetails alloc] initWithChannelId:[input artString:@"channelId"]
-                                                 status:[statusDict artBoolean:@"isActive"]
-                                                metrics:metrics];
+    NSDictionary *statusDict = [input valueForKey:@"status"];
+    ARTChannelStatus *status = statusDict != nil ? [self channelStatusFromDictionary:statusDict] : nil;
+    ARTChannelDetails *details = [[ARTChannelDetails alloc] initWithChannelId:[input artString:@"channelId"] status:status];
+    return details;
 }
 
 - (NSArray *)statsFromArray:(NSArray *)input {

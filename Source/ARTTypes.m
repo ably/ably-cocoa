@@ -197,13 +197,6 @@ NSString *ARTRealtimeConnectionEventToStr(ARTRealtimeConnectionEvent event) {
     return self;
 }
 
-- (instancetype)initWithChannelId:(NSString *)channelId status:(BOOL)status metrics:(ARTChannelMetrics *)metrics {
-    ARTChannelOccupancy *occupancy = metrics != nil ? [[ARTChannelOccupancy alloc] initWithMetrics:metrics] : nil;
-    ARTChannelStatus *channelStatus = [[ARTChannelStatus alloc] initWithOccupancy:occupancy active:status];
-    ARTChannelDetails *details = [[ARTChannelDetails alloc] initWithChannelId:channelId status:channelStatus];
-    return details;
-}
-
 @end
 
 #pragma mark - ARTEventIdentification

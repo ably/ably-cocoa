@@ -249,11 +249,9 @@ NSString *generateNonce(void);
 
 @property (nonatomic, strong, readonly) NSString *channelId;
 
-@property (nonatomic, strong, readonly) ARTChannelStatus *status;
+@property (nonatomic, strong, readonly, nullable) ARTChannelStatus *status;
 
-- (instancetype)initWithChannelId:(NSString *)channelId status:(ARTChannelStatus *)status;
-
-- (instancetype)initWithChannelId:(NSString *)channelId status:(BOOL)status metrics:(nullable ARTChannelMetrics *)metrics;
+- (instancetype)initWithChannelId:(NSString *)channelId status:(nullable ARTChannelStatus *)status;
 
 @end
 
