@@ -26,10 +26,10 @@ echo "Old version: $OLD_VERSION"
 echo "$VERSION_CONFIG_VAR = $NEW_VERSION" > $VERSION_CONFIG_FILE
 
 sed -i '' -e 's/'"$OLD_VERSION"'/'"$NEW_VERSION"'/g' README.md
-sed -i '' -e 's/'"$OLD_VERSION"'/'"$NEW_VERSION"'/g' Spec/RealtimeClientConnection.swift
+sed -i '' -e 's/'"$OLD_VERSION"'/'"$NEW_VERSION"'/g' Spec/Tests/RealtimeClientConnectionTests.swift
 
 git add README.md
-git add Spec/RealtimeClientConnection.swift
+git add Spec/Tests/RealtimeClientConnectionTests.swift
 git add Version.xcconfig
 git commit -m "Bump version to $NEW_VERSION."
 
