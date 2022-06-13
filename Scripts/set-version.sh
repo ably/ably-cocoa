@@ -34,4 +34,3 @@ git add Spec/Tests/RealtimeClientConnectionTests.swift
 git add Version.xcconfig
 git add Scripts/jazzy.sh
 git commit -m "Bump version to $NEW_VERSION."
-
