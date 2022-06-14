@@ -7,12 +7,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTDeviceDetails : NSObject
 
-@property (nonatomic) ARTDeviceId *id;
-@property (nullable, nonatomic) NSString *clientId;
-@property (nonatomic) NSString *platform;
-@property (nonatomic) NSString *formFactor;
-@property (nonatomic) NSMutableDictionary<NSString *, NSString *> *metadata;
-@property (nonatomic) ARTDevicePushDetails *push;
+@property (strong, nonatomic) ARTDeviceId *id;
+@property (strong, nullable, nonatomic) NSString *clientId;
+@property (strong, nonatomic) NSString *platform;
+@property (strong, nonatomic) NSString *formFactor;
+@property (strong, nonatomic) NSMutableDictionary<NSString *, NSString *> *metadata;
+@property (strong, nonatomic) ARTDevicePushDetails *push;
 
 - (instancetype)init;
 - (instancetype)initWithId:(ARTDeviceId *)deviceId;

@@ -55,8 +55,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, readwrite, strong, nonatomic) NSArray<ARTMessage *> *messages;
 @property (nullable, readwrite, strong, nonatomic) NSArray<ARTPresenceMessage *> *presence;
 @property (readwrite, assign, nonatomic) int64_t flags;
-@property (nullable, readwrite, nonatomic) ARTConnectionDetails *connectionDetails;
-@property (nullable, nonatomic) ARTAuthDetails *auth;
+@property (strong, nullable, readwrite, nonatomic) ARTConnectionDetails *connectionDetails;
+@property (strong, nullable, nonatomic) ARTAuthDetails *auth;
 @property (nonatomic, strong, nullable) NSStringDictionary *params;
 
 @end

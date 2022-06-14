@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Device secret generated using random data with sufficient entropy. It's a sha256 digest encoded with base64.
  */
-@property (nullable, nonatomic) ARTDeviceSecret *secret;
+@property (strong, nullable, nonatomic) ARTDeviceSecret *secret;
 
 - (instancetype)init NS_UNAVAILABLE;
 
