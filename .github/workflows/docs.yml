@@ -22,6 +22,9 @@ jobs:
           sudo xcode-select -s /Applications/Xcode_13.2.app
           echo "Selected Xcode version:"
           xcodebuild -version
+          
+      - name: Install SourceKitten via Homebrew
+        run: brew install sourcekitten
 
       - name: Build Documentation
         run: |
