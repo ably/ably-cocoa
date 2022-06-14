@@ -3,7 +3,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTDeltaCodec (ARTDeltaCodec_VCDiffDecoder) <ARTVCDiffDecoder>
+@interface ARTDeltaCodec (VCDiffDecoder) <ARTVCDiffDecoder>
 @end
 
 NS_ASSUME_NONNULL_END

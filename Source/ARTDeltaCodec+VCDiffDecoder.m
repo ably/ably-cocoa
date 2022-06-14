@@ -1,6 +1,6 @@
-#import "ARTDeltaCodec.h"
+#import "ARTDeltaCodec+VCDiffDecoder.h"
 
-@implementation ARTDeltaCodec (ARTDeltaCodec_VCDiffDecoder)
+@implementation ARTDeltaCodec (VCDiffDecoder)
 
 - (NSData *)decode:(NSData *)delta base:(NSData *)base error:(NSError **)error{
     return [ARTDeltaCodec applyDelta:delta previous:base error:error];

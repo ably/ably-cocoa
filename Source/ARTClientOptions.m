@@ -4,7 +4,7 @@
 #import "ARTDefault+Private.h"
 #import "ARTStatus.h"
 #import "ARTTokenParams.h"
-#import "ARTDeltaCodec.h"
+#import "ARTDeltaCodec+VCDiffDecoder.h"
 #import "ARTStringifiable.h"
 #import "ARTNSString+ARTUtil.h"
 

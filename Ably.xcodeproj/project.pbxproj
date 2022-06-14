@@ -652,12 +652,12 @@
 		D737F829263AF4CE0064FA05 /* ARTFallbackHosts.m in Sources */ = {isa = PBXBuildFile; fileRef = D737F825263AF4CE0064FA05 /* ARTFallbackHosts.m */; };
 		D737F82A263AF4CE0064FA05 /* ARTFallbackHosts.m in Sources */ = {isa = PBXBuildFile; fileRef = D737F825263AF4CE0064FA05 /* ARTFallbackHosts.m */; };
 		D737F82B263AF4CE0064FA05 /* ARTFallbackHosts.m in Sources */ = {isa = PBXBuildFile; fileRef = D737F825263AF4CE0064FA05 /* ARTFallbackHosts.m */; };
-		D73B655523EF2B2900D459A6 /* ARTDeltaCodec.h in Headers */ = {isa = PBXBuildFile; fileRef = D73B655323EF2B2900D459A6 /* ARTDeltaCodec.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		D73B655623EF2B2900D459A6 /* ARTDeltaCodec.h in Headers */ = {isa = PBXBuildFile; fileRef = D73B655323EF2B2900D459A6 /* ARTDeltaCodec.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		D73B655723EF2B2900D459A6 /* ARTDeltaCodec.h in Headers */ = {isa = PBXBuildFile; fileRef = D73B655323EF2B2900D459A6 /* ARTDeltaCodec.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		D73B655823EF2B2900D459A6 /* ARTDeltaCodec.m in Sources */ = {isa = PBXBuildFile; fileRef = D73B655423EF2B2900D459A6 /* ARTDeltaCodec.m */; };
-		D73B655923EF2B2900D459A6 /* ARTDeltaCodec.m in Sources */ = {isa = PBXBuildFile; fileRef = D73B655423EF2B2900D459A6 /* ARTDeltaCodec.m */; };
-		D73B655A23EF2B2900D459A6 /* ARTDeltaCodec.m in Sources */ = {isa = PBXBuildFile; fileRef = D73B655423EF2B2900D459A6 /* ARTDeltaCodec.m */; };
+		D73B655523EF2B2900D459A6 /* ARTDeltaCodec+VCDiffDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = D73B655323EF2B2900D459A6 /* ARTDeltaCodec+VCDiffDecoder.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D73B655623EF2B2900D459A6 /* ARTDeltaCodec+VCDiffDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = D73B655323EF2B2900D459A6 /* ARTDeltaCodec+VCDiffDecoder.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D73B655723EF2B2900D459A6 /* ARTDeltaCodec+VCDiffDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = D73B655323EF2B2900D459A6 /* ARTDeltaCodec+VCDiffDecoder.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D73B655823EF2B2900D459A6 /* ARTDeltaCodec+VCDiffDecoder.m in Sources */ = {isa = PBXBuildFile; fileRef = D73B655423EF2B2900D459A6 /* ARTDeltaCodec+VCDiffDecoder.m */; };
+		D73B655923EF2B2900D459A6 /* ARTDeltaCodec+VCDiffDecoder.m in Sources */ = {isa = PBXBuildFile; fileRef = D73B655423EF2B2900D459A6 /* ARTDeltaCodec+VCDiffDecoder.m */; };
+		D73B655A23EF2B2900D459A6 /* ARTDeltaCodec+VCDiffDecoder.m in Sources */ = {isa = PBXBuildFile; fileRef = D73B655423EF2B2900D459A6 /* ARTDeltaCodec+VCDiffDecoder.m */; };
 		D746AE1D1BBB5207003ECEF8 /* ARTDataQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE1A1BBB5207003ECEF8 /* ARTDataQuery.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D746AE1E1BBB5207003ECEF8 /* ARTDataQuery+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE1B1BBB5207003ECEF8 /* ARTDataQuery+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D746AE1F1BBB5207003ECEF8 /* ARTDataQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = D746AE1C1BBB5207003ECEF8 /* ARTDataQuery.m */; };
@@ -1112,8 +1112,8 @@
 		D73691FE1DB788C40062C150 /* ARTAuthDetails.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTAuthDetails.m; sourceTree = "<group>"; };
 		D737F824263AF4CE0064FA05 /* ARTFallbackHosts.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTFallbackHosts.h; sourceTree = "<group>"; };
 		D737F825263AF4CE0064FA05 /* ARTFallbackHosts.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTFallbackHosts.m; sourceTree = "<group>"; };
-		D73B655323EF2B2900D459A6 /* ARTDeltaCodec.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTDeltaCodec.h; sourceTree = "<group>"; };
-		D73B655423EF2B2900D459A6 /* ARTDeltaCodec.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTDeltaCodec.m; sourceTree = "<group>"; };
+		D73B655323EF2B2900D459A6 /* ARTDeltaCodec+VCDiffDecoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ARTDeltaCodec+VCDiffDecoder.h"; sourceTree = "<group>"; };
+		D73B655423EF2B2900D459A6 /* ARTDeltaCodec+VCDiffDecoder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "ARTDeltaCodec+VCDiffDecoder.m"; sourceTree = "<group>"; };
 		D746AE1A1BBB5207003ECEF8 /* ARTDataQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTDataQuery.h; sourceTree = "<group>"; };
 		D746AE1B1BBB5207003ECEF8 /* ARTDataQuery+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTDataQuery+Private.h"; sourceTree = "<group>"; };
 		D746AE1C1BBB5207003ECEF8 /* ARTDataQuery.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTDataQuery.m; sourceTree = "<group>"; };
@@ -1778,8 +1778,8 @@
 				D3AD0EBB215E2FB000312105 /* ARTNSString+ARTUtil.h */,
 				D3AD0EBC215E2FB000312105 /* ARTNSString+ARTUtil.m */,
 				D798555E23ECCDAF00946BE2 /* ARTVCDiffDecoder.h */,
-				D73B655323EF2B2900D459A6 /* ARTDeltaCodec.h */,
-				D73B655423EF2B2900D459A6 /* ARTDeltaCodec.m */,
+				D73B655323EF2B2900D459A6 /* ARTDeltaCodec+VCDiffDecoder.h */,
+				D73B655423EF2B2900D459A6 /* ARTDeltaCodec+VCDiffDecoder.m */,
 				D5C0CB3B268317B500C06521 /* NSURLQueryItem+Stringifiable.h */,
 				D5C0CB3C268317B500C06521 /* NSURLQueryItem+Stringifiable.m */,
 				D54C5546268B31E500729EC4 /* ARTNSMutableDictionary+ARTDictionaryUtil.h */,
@@ -1916,7 +1916,7 @@
 				96BF615E1A35C1C8004CF2B3 /* ARTTypes.h in Headers */,
 				EB503C881C7E4A090053AF00 /* ARTClientOptions+Private.h in Headers */,
 				EB2D84F71CD75CCE00F23CDA /* ARTReachability.h in Headers */,
-				D73B655523EF2B2900D459A6 /* ARTDeltaCodec.h in Headers */,
+				D73B655523EF2B2900D459A6 /* ARTDeltaCodec+VCDiffDecoder.h in Headers */,
 				1C1EC3FA1AE26A8B00AAADD7 /* ARTStatus.h in Headers */,
 				D70EAAED1BC3376200CD8B9E /* ARTRestChannel.h in Headers */,
 				96BF61581A35B52C004CF2B3 /* ARTHttp.h in Headers */,
@@ -2056,7 +2056,7 @@
 				D710D50921949C18008F54AD /* ARTRealtimeChannels+Private.h in Headers */,
 				D710D58421949D28008F54AD /* ARTClientOptions.h in Headers */,
 				D710D69121949EFF008F54AD /* ARTEncoder.h in Headers */,
-				D73B655623EF2B2900D459A6 /* ARTDeltaCodec.h in Headers */,
+				D73B655623EF2B2900D459A6 /* ARTDeltaCodec+VCDiffDecoder.h in Headers */,
 				D710D5BB21949D4F008F54AD /* ARTChannel+Private.h in Headers */,
 				D710D5BF21949D4F008F54AD /* ARTPresenceMessage+Private.h in Headers */,
 				D710D69421949EFF008F54AD /* ARTLog.h in Headers */,
@@ -2198,7 +2198,7 @@
 				D710D51521949C19008F54AD /* ARTRealtimeChannels+Private.h in Headers */,
 				D710D5AA21949D2A008F54AD /* ARTClientOptions.h in Headers */,
 				D710D69B21949F00008F54AD /* ARTEncoder.h in Headers */,
-				D73B655723EF2B2900D459A6 /* ARTDeltaCodec.h in Headers */,
+				D73B655723EF2B2900D459A6 /* ARTDeltaCodec+VCDiffDecoder.h in Headers */,
 				D710D5CB21949D50008F54AD /* ARTChannel+Private.h in Headers */,
 				D710D5CF21949D50008F54AD /* ARTPresenceMessage+Private.h in Headers */,
 				D710D69E21949F00008F54AD /* ARTLog.h in Headers */,
@@ -2751,7 +2751,7 @@
 				EB89D4051C61C1A4007FA5B7 /* ARTRestChannels.m in Sources */,
 				217D1834254222F600DFF07E /* ARTSRURLUtilities.m in Sources */,
 				D777EEE1206285CF002EBA03 /* ARTDeviceIdentityTokenDetails.m in Sources */,
-				D73B655823EF2B2900D459A6 /* ARTDeltaCodec.m in Sources */,
+				D73B655823EF2B2900D459A6 /* ARTDeltaCodec+VCDiffDecoder.m in Sources */,
 				D5BB211B26AA9AA700AA5F3E /* ARTNSMutableDictionary+ARTDictionaryUtil.m in Sources */,
 				D768C6AD1E4B5B0200436011 /* ARTDevicePushDetails.m in Sources */,
 				1C6C18A41ADFDAB100AB79E4 /* ARTLog.m in Sources */,
@@ -2928,7 +2928,7 @@
 				D710D57421949CC4008F54AD /* ARTPushDeviceRegistrations.m in Sources */,
 				D710D5D821949D78008F54AD /* ARTChannelOptions.m in Sources */,
 				217D184B254222F700DFF07E /* ARTSRURLUtilities.m in Sources */,
-				D73B655923EF2B2900D459A6 /* ARTDeltaCodec.m in Sources */,
+				D73B655923EF2B2900D459A6 /* ARTDeltaCodec+VCDiffDecoder.m in Sources */,
 				D710D62D21949E03008F54AD /* ARTHttp.m in Sources */,
 				D5BB211A26AA9AA600AA5F3E /* ARTNSMutableDictionary+ARTDictionaryUtil.m in Sources */,
 				D710D63021949E03008F54AD /* ARTPaginatedResult.m in Sources */,
@@ -3038,7 +3038,7 @@
 				D710D5FE21949D79008F54AD /* ARTChannelOptions.m in Sources */,
 				D5BB213826AAA60500AA5F3E /* ARTNSError+ARTUtils.m in Sources */,
 				217D1862254222FA00DFF07E /* ARTSRURLUtilities.m in Sources */,
-				D73B655A23EF2B2900D459A6 /* ARTDeltaCodec.m in Sources */,
+				D73B655A23EF2B2900D459A6 /* ARTDeltaCodec+VCDiffDecoder.m in Sources */,
 				D710D63D21949E04008F54AD /* ARTHttp.m in Sources */,
 				D710D64021949E04008F54AD /* ARTPaginatedResult.m in Sources */,
 				D710D60721949D79008F54AD /* ARTStatus.m in Sources */,
