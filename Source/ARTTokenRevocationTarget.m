@@ -1,7 +1,3 @@
-//
-// Created by Ikbal Kaya on 07/06/2022.
-//
-
 #import "ARTTokenRevocationTarget.h"
 
 @implementation ARTTokenRevocationTarget
