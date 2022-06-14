@@ -4,6 +4,7 @@
 
 jazzy \
   --objc \
+  --clean \
   --author Ably \
   --module-version 1.2.10 \
   --umbrella-header Source/Ably.h \
