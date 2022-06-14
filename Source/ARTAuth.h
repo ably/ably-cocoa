@@ -56,7 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 //todo Decide what to do with optional params
-- (NSObject <ARTCancellable> *)revokeTokens:(nonnull NSArray<ARTTokenRevocationTarget *> *)targets
+- (void)revokeTokens:(nonnull NSArray<ARTTokenRevocationTarget *> *)targets
                                issuedBefore:(nullable NSDate *)issuedBefore
                           allowReauthMargin:(BOOL)allowReauthMargin
                                    callback:(ARTTokenRevocationCallback)callback;
