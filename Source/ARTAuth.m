@@ -743,6 +743,7 @@
 
     NSError *encodeError = nil;
     request.HTTPBody = [encoder encodeTokenRevocationRequest:targets issuedBefore:issuedBefore allowReauthMargin:allowReauthMargin error:&encodeError];
+    //Todo should we document encoding errors in spec ?
     if (encodeError) {
         callback(nil, encodeError);
         return nil;

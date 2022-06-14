@@ -158,6 +158,7 @@
 
 - (nullable ARTTokenRevocationResponse *)decodeTokenRevocationRequest:(NSData *)data error:(__autoreleasing NSError **)error {
     NSArray *targetsArr = [self decodeArray:data error:error];
+    //TODO: Should we set an error or return a null response error is nil?
     if (!targetsArr) {
         return nil;
     }

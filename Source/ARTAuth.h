@@ -55,7 +55,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)createTokenRequest:(void (^)(ARTTokenRequest *_Nullable tokenRequest, NSError *_Nullable error))callback;
 
 
-//Function that has all params*/
+//todo Decide what to do with optional params
 - (NSObject <ARTCancellable> *)revokeTokens:(nonnull NSArray<ARTTokenRevocationTarget *> *)targets
                                issuedBefore:(nullable NSDate *)issuedBefore
                           allowReauthMargin:(BOOL)allowReauthMargin
