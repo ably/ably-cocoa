@@ -23,9 +23,14 @@ jobs:
           echo "Selected Xcode version:"
           xcodebuild -version
 
+      - name: Install Dependencies
+        run: |
+          make submodules
+          bundle install
+          make update_carthage_dependencies_macos
+
       - name: Build Documentation
         run: |
-          bundle install
           ./Scripts/jazzy.sh
           ls -al Docs/jazzy
 
