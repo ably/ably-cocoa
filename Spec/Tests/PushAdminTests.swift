@@ -26,7 +26,7 @@ class PushAdminTests: XCTestCase {
         let deviceDetails = ARTDeviceDetails(id: "testDeviceDetails")
         deviceDetails.platform = "ios"
         deviceDetails.formFactor = "phone"
-        deviceDetails.metadata = NSMutableDictionary()
+        deviceDetails.metadata = [String : String]()
         deviceDetails.push.recipient = [
             "transportType": "apns",
             "deviceToken": "foo",
@@ -39,7 +39,7 @@ class PushAdminTests: XCTestCase {
         deviceDetails.platform = "android"
         deviceDetails.formFactor = "tablet"
         deviceDetails.clientId = "clientA"
-        deviceDetails.metadata = NSMutableDictionary()
+        deviceDetails.metadata = [String : String]()
         deviceDetails.push.recipient = [
             "transportType": "gcm",
             "registrationToken": "qux",
@@ -52,7 +52,7 @@ class PushAdminTests: XCTestCase {
         deviceDetails.platform = "android"
         deviceDetails.formFactor = "tablet"
         deviceDetails.clientId = "clientA"
-        deviceDetails.metadata = NSMutableDictionary()
+        deviceDetails.metadata = [String : String]()
         deviceDetails.push.recipient = [
             "transportType": "gcm",
             "registrationToken": "qux",
@@ -65,7 +65,7 @@ class PushAdminTests: XCTestCase {
         deviceDetails.platform = "android"
         deviceDetails.formFactor = "tablet"
         deviceDetails.clientId = "clientB"
-        deviceDetails.metadata = NSMutableDictionary()
+        deviceDetails.metadata = [String : String]()
         deviceDetails.push.recipient = [
             "transportType": "gcm",
             "registrationToken": "qux",
