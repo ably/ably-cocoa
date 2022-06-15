@@ -182,10 +182,13 @@
     NSArray<NSString *> *targetPair = [targetString componentsSeparatedByString:@":"];
     //what if targetPair does not contain 2 items? which error code should we use?
     if (targetPair.count != 2) {
-        *error = [NSError errorWithDomain:ARTAblyErrorDomain
-                                     code:0
-                                 userInfo:@{NSLocalizedDescriptionKey: @"target is not a valid target string"}];
-        return nil;
+        if (error != NULL){
+            *error = [NSError errorWithDomain:ARTAblyErrorDomain
+                                         code:0
+                                     userInfo:@{NSLocalizedDescriptionKey: @"target is not a valid target string"}];
+           
+        }
+       return nil;
     }
     ARTTokenRevocationTarget *target = [[ARTTokenRevocationTarget alloc] initWith:targetPair[0] value:targetPair[1]];
 
