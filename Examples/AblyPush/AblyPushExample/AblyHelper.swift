@@ -32,12 +32,16 @@ extension AblyHelper {
     }
 
     func revokeTokens() {
-        let targets = [ARTTokenRevocationTarget("client",value: "client1@hello.com")]
-        rest.auth.revokeTokens(targets, issuedBefore: Date.now, allowReauthMargin: false) { (response: ARTTokenRevocationResponse?, error: Error?) in
+        let targets:[ARTTokenRevocationTarget] = [ARTTokenRevocationTarget("client",value: "client1@hello.com")]
+        
+    
+        
+        rest.auth.revokeTokens(targets, issuedBefore: nil, allowReauthMargin: false) { UnsafeMutablePointer<Int32>?, error Error? in
             if let error = error {
                 print(error)
             }
         }
+        
 
     }
     

@@ -1,6 +1,6 @@
 #import <Foundation/Foundation.h>
 #import "ARTTypes.h"
-#import "../ARTTokenRevocationTarget.h"
+#import "ARTTokenRevocationTarget.h"
 
 @class ARTMessage;
 @class ARTPresenceMessage;

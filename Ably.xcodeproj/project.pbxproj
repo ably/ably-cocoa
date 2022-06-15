@@ -88,7 +88,7 @@
 		295DB7682858DBBE001767D5 /* ARTTokenRevocationTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = 295DB7672858DBBE001767D5 /* ARTTokenRevocationTarget.h */; };
 		295DB7692858DBBE001767D5 /* ARTTokenRevocationTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = 295DB7672858DBBE001767D5 /* ARTTokenRevocationTarget.h */; };
 		295DB76A2858DBBE001767D5 /* ARTTokenRevocationTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = 295DB7672858DBBE001767D5 /* ARTTokenRevocationTarget.h */; };
-		295DB76D2858DBD4001767D5 /* ARTTokenRevocationResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = 295DB76B2858DBD4001767D5 /* ARTTokenRevocationResponse.h */; };
+		295DB76D2858DBD4001767D5 /* ARTTokenRevocationResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = 295DB76B2858DBD4001767D5 /* ARTTokenRevocationResponse.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		295DB76E2858DBD4001767D5 /* ARTTokenRevocationResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = 295DB76B2858DBD4001767D5 /* ARTTokenRevocationResponse.h */; };
 		295DB76F2858DBD4001767D5 /* ARTTokenRevocationResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = 295DB76B2858DBD4001767D5 /* ARTTokenRevocationResponse.h */; };
 		295DB7702858DBD4001767D5 /* ARTTokenRevocationResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 295DB76C2858DBD4001767D5 /* ARTTokenRevocationResponse.m */; };
@@ -100,6 +100,9 @@
 		295DB7782858DBF1001767D5 /* ARTRevokedTarget.m in Sources */ = {isa = PBXBuildFile; fileRef = 295DB7742858DBF0001767D5 /* ARTRevokedTarget.m */; };
 		295DB7792858DBF1001767D5 /* ARTRevokedTarget.m in Sources */ = {isa = PBXBuildFile; fileRef = 295DB7742858DBF0001767D5 /* ARTRevokedTarget.m */; };
 		295DB77A2858DBF1001767D5 /* ARTRevokedTarget.m in Sources */ = {isa = PBXBuildFile; fileRef = 295DB7742858DBF0001767D5 /* ARTRevokedTarget.m */; };
+		296F475E285A24C300A954AC /* AuthRevocationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 296F475D285A24C300A954AC /* AuthRevocationTests.m */; };
+		296F475F285A24C300A954AC /* AuthRevocationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 296F475D285A24C300A954AC /* AuthRevocationTests.m */; };
+		296F4760285A24C300A954AC /* AuthRevocationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 296F475D285A24C300A954AC /* AuthRevocationTests.m */; };
 		560579D924AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */; };
 		560579DA24AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */; };
 		560579DB24AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */; };
@@ -1026,6 +1029,8 @@
 		295DB76C2858DBD4001767D5 /* ARTTokenRevocationResponse.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTTokenRevocationResponse.m; sourceTree = "<group>"; };
 		295DB7732858DBF0001767D5 /* ARTRevokedTarget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTRevokedTarget.h; sourceTree = "<group>"; };
 		295DB7742858DBF0001767D5 /* ARTRevokedTarget.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRevokedTarget.m; sourceTree = "<group>"; };
+		296F475C285A24C300A954AC /* AuthRevocationTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AuthRevocationTests.h; sourceTree = "<group>"; };
+		296F475D285A24C300A954AC /* AuthRevocationTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AuthRevocationTests.m; sourceTree = "<group>"; };
 		560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARTDefaultTests.swift; sourceTree = "<group>"; };
 		56190953238C3D3200A862A6 /* CryptoTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CryptoTest.m; sourceTree = "<group>"; };
 		841134772722205400CFA837 /* ARTArchiveTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTArchiveTests.m; sourceTree = "<group>"; };
@@ -1516,6 +1521,8 @@
 				851674EE1B7BA5CD00D35169 /* StatsTests.swift */,
 				D520C4DD2680A1E3000012B2 /* StringifiableTests.swift */,
 				EB1AE0CD1C5C3A4900D62250 /* UtilitiesTests.swift */,
+				296F475C285A24C300A954AC /* AuthRevocationTests.h */,
+				296F475D285A24C300A954AC /* AuthRevocationTests.m */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -2018,7 +2025,6 @@
 				D7B621941E4A6FE600684474 /* ARTDeviceDetails.h in Headers */,
 				96BF61701A35FB7C004CF2B3 /* ARTAuth.h in Headers */,
 				D76F153B23DB010C00B5133C /* ARTRealtimeChannelOptions.h in Headers */,
-				295DB76D2858DBD4001767D5 /* ARTTokenRevocationResponse.h in Headers */,
 				D74CBC07212EB5B900D090E4 /* ARTNSMutableURLRequest+ARTPaginated.h in Headers */,
 				96A507A11A377AA50077CDF8 /* ARTPresenceMessage.h in Headers */,
 				850BFB4C1B79323C009D0ADD /* ARTPaginatedResult.h in Headers */,
@@ -2067,6 +2073,7 @@
 				EB1AE0CC1C5C1EB200D62250 /* ARTEventEmitter+Private.h in Headers */,
 				D7DF738A1EA645300013CD36 /* ARTLocalDeviceStorage.h in Headers */,
 				960D07931A45F1D800ED8C8C /* ARTCrypto.h in Headers */,
+				295DB76D2858DBD4001767D5 /* ARTTokenRevocationResponse.h in Headers */,
 				D5BB20FC26A7F3FF00AA5F3E /* NSURLRequest+ARTSRWebSocket.h in Headers */,
 				D5C0CB3D268317B500C06521 /* NSURLQueryItem+Stringifiable.h in Headers */,
 				D5BB20FB26A7F3C800AA5F3E /* NSRunLoop+ARTSRWebSocket.h in Headers */,
@@ -2694,6 +2701,7 @@
 				EBAB9A6F1C69702800AF036B /* ReadmeExamplesTests.swift in Sources */,
 				56190954238C3D3200A862A6 /* CryptoTest.m in Sources */,
 				D7C1B8771BBEA81A0087B55F /* AuthTests.swift in Sources */,
+				296F475E285A24C300A954AC /* AuthRevocationTests.m in Sources */,
 				D7EBE5A31BE8391E0086E675 /* RealtimeClientConnectionTests.swift in Sources */,
 				560579D924AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */,
 			);
@@ -2704,6 +2712,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				D5BB213126AAA55C00AA5F3E /* ARTNSMutableURLRequest+ARTUtils.m in Sources */,
+				295DB7702858DBD4001767D5 /* ARTTokenRevocationResponse.m in Sources */,
+				295DB7782858DBF1001767D5 /* ARTRevokedTarget.m in Sources */,
+				295DB7642858DB9F001767D5 /* ARTTokenRevocationTarget.m in Sources */,
 				EB82F8521C59D30500661917 /* ARTDataEncoder.m in Sources */,
 				217D183A254222F600DFF07E /* NSURLRequest+ARTSRWebSocket.m in Sources */,
 				217D182B254222F500DFF07E /* ARTSRWebSocket.m in Sources */,
@@ -2734,7 +2745,6 @@
 				96BF61541A35B39C004CF2B3 /* ARTRest.m in Sources */,
 				D7D8F82C1BC2C706009718F2 /* ARTTokenRequest.m in Sources */,
 				D7D8F8261BC2C691009718F2 /* ARTTokenDetails.m in Sources */,
-				295DB7782858DBF1001767D5 /* ARTRevokedTarget.m in Sources */,
 				D75A3F1C1DDE5B62002A4AAD /* ARTGCD.m in Sources */,
 				1C2B0FFE1B136A6D00E3633C /* ARTPresenceMap.m in Sources */,
 				217D182A254222F500DFF07E /* ARTSRRandom.m in Sources */,
@@ -2750,12 +2760,10 @@
 				217D1833254222F600DFF07E /* ARTSRPinningSecurityPolicy.m in Sources */,
 				D3AD0EBE215E2FB000312105 /* ARTNSString+ARTUtil.m in Sources */,
 				D73692001DB788C40062C150 /* ARTAuthDetails.m in Sources */,
-				295DB7642858DB9F001767D5 /* ARTTokenRevocationTarget.m in Sources */,
 				D71966EB1E5E006E000974DD /* ARTPushActivationState.m in Sources */,
 				1C578E201B3435CA00EF46EC /* ARTFallback.m in Sources */,
 				217D1831254222F600DFF07E /* ARTSRConstants.m in Sources */,
 				96A507B61A37881C0077CDF8 /* ARTNSDate+ARTUtil.m in Sources */,
-				295DB7702858DBD4001767D5 /* ARTTokenRevocationResponse.m in Sources */,
 				217D182C254222F500DFF07E /* ARTSRProxyConnect.m in Sources */,
 				850BFB4D1B79323C009D0ADD /* ARTPaginatedResult.m in Sources */,
 				217D1836254222F600DFF07E /* ARTSRLog.m in Sources */,
@@ -2835,6 +2843,7 @@
 				D7093C20219E466E00723F17 /* RestClientChannelTests.swift in Sources */,
 				EB1B53FA22F85CE4006A59AC /* ObjectLifetimesTests.swift in Sources */,
 				D7093C2A219E466E00723F17 /* UtilitiesTests.swift in Sources */,
+				296F475F285A24C300A954AC /* AuthRevocationTests.m in Sources */,
 				D798554923EB96C000946BE2 /* DeltaCodecTests.swift in Sources */,
 				84569FA726B46F4F00457CF5 /* ClientOptionsTests.swift in Sources */,
 				D7093C21219E466E00723F17 /* RestClientChannelsTests.swift in Sources */,
@@ -2869,6 +2878,7 @@
 				D7093C82219EE26400723F17 /* CryptoTests.swift in Sources */,
 				D5A22174266F526600C87C42 /* GCDTests.swift in Sources */,
 				EB1B53FB22F85CE4006A59AC /* ObjectLifetimesTests.swift in Sources */,
+				296F4760285A24C300A954AC /* AuthRevocationTests.m in Sources */,
 				D7093C7C219EE26400723F17 /* RealtimeClientConnectionTests.swift in Sources */,
 				D798554A23EB96C000946BE2 /* DeltaCodecTests.swift in Sources */,
 				D7093C74219EE26400723F17 /* AuthTests.swift in Sources */,

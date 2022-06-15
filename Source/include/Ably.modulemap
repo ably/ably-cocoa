@@ -67,5 +67,8 @@ framework module Ably {
         header "Ably/ARTNSURL+ARTUtils.h"
         header "Ably/ARTNSMutableURLRequest+ARTUtils.h"
         header "Ably/ARTTime.h"
+        header "Ably/ARTTokenRevocationTarget.h"
+        header "Ably/ARTRevokedToken.h"
+        header "Ably/ARTTokenRevocationResponse.h"
     }
 }
