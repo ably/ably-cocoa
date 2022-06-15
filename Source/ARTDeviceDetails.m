@@ -6,7 +6,7 @@
 - (instancetype)init {
     if (self = [super init]) {
         _push = [[ARTDevicePushDetails alloc] init];
-        _metadata = [[NSMutableDictionary alloc] init];
+        _metadata = [[NSDictionary alloc] init];
     }
     return self;
 }
