@@ -1,7 +1,7 @@
 #import <Foundation/Foundation.h>
-
 #import <Ably/ARTStatus.h>
 #import <Ably/ARTEventEmitter.h>
+#import "ARTTokenRevocationResponse.h"
 
 @class ARTStatus;
 @class ARTHttpResponse;
@@ -17,7 +17,6 @@
 @class ARTPushChannelSubscription;
 @class ARTDeviceDetails;
 @protocol ARTTokenDetailsCompatible;
-@class ARTTokenRevocationResponse;
 
 // More context
 typedef NSDictionary<NSString *, id> ARTJsonObject;
