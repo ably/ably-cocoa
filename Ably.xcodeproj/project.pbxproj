@@ -85,16 +85,16 @@
 		295DB7642858DB9F001767D5 /* ARTTokenRevocationTarget.m in Sources */ = {isa = PBXBuildFile; fileRef = 295DB7632858DB9F001767D5 /* ARTTokenRevocationTarget.m */; };
 		295DB7652858DB9F001767D5 /* ARTTokenRevocationTarget.m in Sources */ = {isa = PBXBuildFile; fileRef = 295DB7632858DB9F001767D5 /* ARTTokenRevocationTarget.m */; };
 		295DB7662858DB9F001767D5 /* ARTTokenRevocationTarget.m in Sources */ = {isa = PBXBuildFile; fileRef = 295DB7632858DB9F001767D5 /* ARTTokenRevocationTarget.m */; };
-		295DB7682858DBBE001767D5 /* ARTTokenRevocationTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = 295DB7672858DBBE001767D5 /* ARTTokenRevocationTarget.h */; };
+		295DB7682858DBBE001767D5 /* ARTTokenRevocationTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = 295DB7672858DBBE001767D5 /* ARTTokenRevocationTarget.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		295DB7692858DBBE001767D5 /* ARTTokenRevocationTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = 295DB7672858DBBE001767D5 /* ARTTokenRevocationTarget.h */; };
 		295DB76A2858DBBE001767D5 /* ARTTokenRevocationTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = 295DB7672858DBBE001767D5 /* ARTTokenRevocationTarget.h */; };
-		295DB76D2858DBD4001767D5 /* ARTTokenRevocationResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = 295DB76B2858DBD4001767D5 /* ARTTokenRevocationResponse.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		295DB76D2858DBD4001767D5 /* ARTTokenRevocationResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = 295DB76B2858DBD4001767D5 /* ARTTokenRevocationResponse.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		295DB76E2858DBD4001767D5 /* ARTTokenRevocationResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = 295DB76B2858DBD4001767D5 /* ARTTokenRevocationResponse.h */; };
 		295DB76F2858DBD4001767D5 /* ARTTokenRevocationResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = 295DB76B2858DBD4001767D5 /* ARTTokenRevocationResponse.h */; };
 		295DB7702858DBD4001767D5 /* ARTTokenRevocationResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 295DB76C2858DBD4001767D5 /* ARTTokenRevocationResponse.m */; };
 		295DB7712858DBD4001767D5 /* ARTTokenRevocationResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 295DB76C2858DBD4001767D5 /* ARTTokenRevocationResponse.m */; };
 		295DB7722858DBD4001767D5 /* ARTTokenRevocationResponse.m in Sources */ = {isa = PBXBuildFile; fileRef = 295DB76C2858DBD4001767D5 /* ARTTokenRevocationResponse.m */; };
-		295DB7752858DBF1001767D5 /* ARTRevokedTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = 295DB7732858DBF0001767D5 /* ARTRevokedTarget.h */; };
+		295DB7752858DBF1001767D5 /* ARTRevokedTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = 295DB7732858DBF0001767D5 /* ARTRevokedTarget.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		295DB7762858DBF1001767D5 /* ARTRevokedTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = 295DB7732858DBF0001767D5 /* ARTRevokedTarget.h */; };
 		295DB7772858DBF1001767D5 /* ARTRevokedTarget.h in Headers */ = {isa = PBXBuildFile; fileRef = 295DB7732858DBF0001767D5 /* ARTRevokedTarget.h */; };
 		295DB7782858DBF1001767D5 /* ARTRevokedTarget.m in Sources */ = {isa = PBXBuildFile; fileRef = 295DB7742858DBF0001767D5 /* ARTRevokedTarget.m */; };
@@ -1975,7 +1975,6 @@
 				D746AE281BBB61C9003ECEF8 /* ARTPresence.h in Headers */,
 				EB89D4091C61C5ED007FA5B7 /* ARTRealtimeChannels.h in Headers */,
 				96E408431A38939E00087F77 /* ARTProtocolMessage.h in Headers */,
-				295DB7682858DBBE001767D5 /* ARTTokenRevocationTarget.h in Headers */,
 				D78D780921271FB10016808B /* ARTHTTPPaginatedResponse+Private.h in Headers */,
 				21447D3B254A2ECB00B3905A /* ARTSRWebSocket.h in Headers */,
 				EBB721CB2376B454001C3550 /* ARTURLSession.h in Headers */,
@@ -2002,9 +2001,11 @@
 				EB0505FC1C5BD7C4006BA7E2 /* ARTBaseMessage+Private.h in Headers */,
 				D777EEE42063A64E002EBA03 /* ARTNSMutableRequest+ARTPush.h in Headers */,
 				EB20F8D71C653F2300EF3978 /* ARTPresence+Private.h in Headers */,
+				295DB76D2858DBD4001767D5 /* ARTTokenRevocationResponse.h in Headers */,
+				295DB7682858DBBE001767D5 /* ARTTokenRevocationTarget.h in Headers */,
 				D7F1D3771BF4DE72001A4B5E /* ARTRealtimePresence.h in Headers */,
-				1C578E1F1B3435CA00EF46EC /* ARTFallback.h in Headers */,
 				295DB7752858DBF1001767D5 /* ARTRevokedTarget.h in Headers */,
+				1C578E1F1B3435CA00EF46EC /* ARTFallback.h in Headers */,
 				EB7617721CB6CBFF00D0981E /* ARTRealtimePresence+Private.h in Headers */,
 				EBFFAC1B1E97EF68003E7326 /* ARTPushAdmin+Private.h in Headers */,
 				D7D5A69C1CA40C350071BD6D /* ARTConnectionDetails+Private.h in Headers */,
@@ -2073,7 +2074,6 @@
 				EB1AE0CC1C5C1EB200D62250 /* ARTEventEmitter+Private.h in Headers */,
 				D7DF738A1EA645300013CD36 /* ARTLocalDeviceStorage.h in Headers */,
 				960D07931A45F1D800ED8C8C /* ARTCrypto.h in Headers */,
-				295DB76D2858DBD4001767D5 /* ARTTokenRevocationResponse.h in Headers */,
 				D5BB20FC26A7F3FF00AA5F3E /* NSURLRequest+ARTSRWebSocket.h in Headers */,
 				D5C0CB3D268317B500C06521 /* NSURLQueryItem+Stringifiable.h in Headers */,
 				D5BB20FB26A7F3C800AA5F3E /* NSRunLoop+ARTSRWebSocket.h in Headers */,
