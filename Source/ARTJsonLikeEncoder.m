@@ -137,7 +137,7 @@
 
 - (nullable NSData *)encodeTokenRevocationRequest:(NSArray<ARTTokenRevocationTarget *> *)targets
                                      issuedBefore:(NSDate *)issuedBefore
-                                allowReauthMargin:(BOOL)allowReauthMargin
+                                allowReauthMargin:(NSNumber *)allowReauthMargin
                                             error:(NSError *_Nullable *_Nullable)error{
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
 
@@ -151,7 +151,7 @@
         dictionary[@"issuedBefore"] = @(seconds * 1000);
     }
     if (allowReauthMargin) {
-        dictionary[@"allowReauthMargin"] = @(allowReauthMargin);
+        dictionary[@"allowReauthMargin"] = @([allowReauthMargin boolValue]);
     }
     return [self encode:dictionary error:error];
 }

@@ -80,10 +80,16 @@
 }
 
 - (void)revokeTokens:(nonnull NSArray<ARTTokenRevocationTarget *> *)targets
-                               issuedBefore:(nullable NSDate *)issuedBefore
-                          allowReauthMargin:(BOOL)allowReauthMargin
-                                   callback:(ARTTokenRevocationCallback)callback {
+        issuedBefore:(nullable NSDate *)issuedBefore
+   allowReauthMargin:(BOOL)allowReauthMargin
+            callback:(ARTTokenRevocationCallback)callback {
     [_internal revokeTokens:targets issuedBefore:issuedBefore allowReauthMargin:allowReauthMargin callback:callback];
+}
+
+- (void)revokeTokens:(NSArray<ARTTokenRevocationTarget *> *)targets
+        issuedBefore:(NSDate *)issuedBefore
+            callback:(ARTTokenRevocationCallback)callback {
+    [_internal revokeTokens:targets issuedBefore:issuedBefore callback:callback];
 }
 
 
@@ -716,20 +722,33 @@
 
 - (void)revokeTokens:(NSArray<ARTTokenRevocationTarget *> *)targets
         issuedBefore:(NSDate *)issuedBefore
+            callback:(ARTTokenRevocationCallback)callback {
+    [self _revokeTokens:targets issuedBefore:issuedBefore allowReauthMargin:nil callback:callback];
+}
+
+- (void)revokeTokens:(NSArray<ARTTokenRevocationTarget *> *)targets
+        issuedBefore:(NSDate *)issuedBefore
    allowReauthMargin:(BOOL)allowReauthMargin
             callback:(ARTTokenRevocationCallback)callback {
+    [self _revokeTokens:targets issuedBefore:issuedBefore allowReauthMargin:@(allowReauthMargin) callback:callback];
+}
+
+- (void)_revokeTokens:(NSArray<ARTTokenRevocationTarget *> *)targets
+         issuedBefore:(NSDate *)issuedBefore
+    allowReauthMargin:(NSNumber *)allowReauthMargin
+             callback:(ARTTokenRevocationCallback)callback {
     //RSA17d
     if (!targets || targets.count == 0) {
         NSDictionary *userInfo = @{NSLocalizedDescriptionKey: @"targets cannot be null or empty"};
-        callback(nil,[NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:userInfo]);
-        return ;
+        callback(nil, [NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:userInfo]);
+        return;
     }
     //RSA17e
     for (ARTTokenRevocationTarget *target in targets) {
         if (!target.type || !target.value) {
             NSDictionary *userInfo = @{NSLocalizedDescriptionKey: @"Invalid RevocationTarget in targets array"};
-            callback(nil,[NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:userInfo]);
-            return ;
+            callback(nil, [NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:userInfo]);
+            return;
         }
     }
 
@@ -756,7 +775,7 @@
             callback(nil, error);
         } else {
             NSError *decodeError = nil;
-            ARTTokenRevocationResponse *revocationResponse =  [encoder decodeTokenRevocationRequest:data error:&decodeError];
+            ARTTokenRevocationResponse *revocationResponse = [encoder decodeTokenRevocationRequest:data error:&decodeError];
             if (decodeError) {
                 callback(nil, decodeError);
             } else {

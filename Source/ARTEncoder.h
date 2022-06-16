@@ -45,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 //TokenRevocationRequest
 - (nullable NSData *)encodeTokenRevocationRequest:(NSArray<ARTTokenRevocationTarget *> *)targets
                                      issuedBefore:(NSDate *)issuedBefore
-                                allowReauthMargin:(BOOL)allowReauthMargin
+                                allowReauthMargin:(NSNumber *)allowReauthMargin
                                             error:(NSError *_Nullable *_Nullable)error;
 
 - (nullable ARTTokenRevocationResponse *)decodeTokenRevocationRequest:(NSData *)data error:(NSError *__autoreleasing *)error;
