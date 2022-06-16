@@ -11,7 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nullable, nonatomic) NSString *clientId;
 @property (strong, nonatomic) NSString *platform;
 @property (strong, nonatomic) NSString *formFactor;
-@property (strong, nonatomic) NSMutableDictionary<NSString *, NSString *> *metadata;
+@property (strong, nonatomic) NSDictionary<NSString *, NSString *> *metadata;
 @property (strong, nonatomic) ARTDevicePushDetails *push;
 
 - (instancetype)init;
