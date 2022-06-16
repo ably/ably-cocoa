@@ -8,6 +8,6 @@ jazzy \
   --author Ably \
   --module-version 1.2.10 \
   --umbrella-header Source/Ably.h \
-  --framework-root Source \
+  --framework-root . \
   --module Ably \
   --output Docs/jazzy
