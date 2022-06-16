@@ -1,28 +1,26 @@
-//
-//  AuthRevocationTests.m
-//  Ably
-//
-//  Created by Ikbal Kaya on 15/06/2022.
-//  Copyright © 2022 Ably. All rights reserved.
-//
-
 #import "AuthRevocationTests.h"
 
 @implementation AuthRevocationTests
 
--(void)test_art_revocation {
-   
-   ARTRest* rest = [[ARTRest alloc] initWithKey:@"xxxx:xxxx"];
-    ARTTokenRevocationTarget *firstTarget = [[ARTTokenRevocationTarget alloc] initWith:@"client1" value:@"client1@gmail.com"];
-    NSArray<ARTTokenRevocationTarget *> *targets = @[firstTarget];
-    [rest.auth revokeTokens:targets issuedBefore:nil allowReauthMargin:NO callback:^(ARTTokenRevocationResponse * _Nullable response, NSError * _Nullable error) {
+//RSA17d
+- (void)test_revoke_tokens_without_targets_fail_with_correct_message {
+    //given
+    ARTRest *rest = [[ARTRest alloc] initWithKey:@"xxxx:xxxx"];
+    NSArray<ARTTokenRevocationTarget *> *emptyTargets = @[];
+    XCTestExpectation *expectation = [[XCTestExpectation alloc] initWithDescription:@"Result of async"];
+    __block BOOL triggered = NO;
+    [rest.auth revokeTokens:emptyTargets issuedBefore:nil callback:^(ARTTokenRevocationResponse *_Nullable response, NSError *_Nullable error) {
+        triggered = YES;
         if (error) {
-            NSLog(@"Error");
+            XCTAssertTrue([[error localizedDescription] isEqualToString:@"targets cannot be null or empty"]);
+        } else {
+            XCTFail("Expected error when targets are empty but no error returned");
         }
-        XCTAssert([error.userInfo isEqual:@"hello"]);
+        [expectation fulfill];
     }];
-   
-}
 
+    [self waitForExpectations:@[expectation] timeout:10.0];
+    XCTAssertTrue(triggered, "targetsCallback is expected to be trigerred for test_revoke_tokens_without_targets_fail_with_correct_message");
+}
 
 @end
