@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (strong, nonatomic, nullable) id data;
 
-@property (nullable, nonatomic) id<ARTJsonCompatible> extras;
+@property (strong, nullable, nonatomic) id<ARTJsonCompatible> extras;
 
 - (NSString *)description;
 

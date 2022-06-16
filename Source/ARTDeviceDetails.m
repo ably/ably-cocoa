@@ -6,7 +6,7 @@
 - (instancetype)init {
     if (self = [super init]) {
         _push = [[ARTDevicePushDetails alloc] init];
-        _metadata = [[NSMutableDictionary alloc] init];
+        _metadata = [[NSDictionary alloc] init];
     }
     return self;
 }
@@ -21,10 +21,10 @@
 - (id)copyWithZone:(NSZone *)zone {
     ARTDeviceDetails *device = [[[self class] allocWithZone:zone] init];
 
-    device.id = self.id;
-    device.clientId = self.clientId;
-    device.platform = self.platform;
-    device.formFactor = self.formFactor;
+    device.id = [self.id copy];
+    device.clientId = [self.clientId copy];
+    device.platform = [self.platform copy];
+    device.formFactor = [self.formFactor copy];
     device.metadata = [self.metadata copy];
     device.push = [self.push copy];
 
