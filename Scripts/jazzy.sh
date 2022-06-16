@@ -10,4 +10,5 @@ jazzy \
   --umbrella-header Source/Ably.h \
   --framework-root . \
   --module Ably \
+  --sdk iphonesimulator \
   --output Docs/jazzy
