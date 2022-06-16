@@ -4368,4 +4368,33 @@ class AuthTests: XCTestCase {
         expect(tokenDetails.clientId).to(equal(originalTokenRequest.clientId))
         expect(tokenDetails.token).toNot(beNil())
     }
+
+    //RSA17d
+    func test_revoke_tokens_without_targets_fail_with_correct_error_message() {
+        let emptyTargets: [ARTTokenRevocationTarget] = []
+        let rest = ARTRest(options: AblyTests.commonAppSetup())
+
+        waitUntil(timeout: testTimeout) { done in
+            rest.auth.revokeTokens(emptyTargets, issuedBefore: nil) { response, error in
+                expect(error).toNot(beNil())
+                expect(error!.localizedDescription).to(equal("targets cannot be null or empty"))
+                done()
+            }
+        }
+
+    }
+
+    //RSA17e
+    func test_revoke_tokens_with_invalid_targets_fail_with_correct_error_message() {
+        let invalidTargets: [ARTTokenRevocationTarget] = [ARTTokenRevocationTarget("client1", value: "client1"), ARTTokenRevocationTarget("client2", value: nil)]
+        let rest = ARTRest(options: AblyTests.commonAppSetup())
+
+        waitUntil(timeout: testTimeout) { done in
+            rest.auth.revokeTokens(invalidTargets, issuedBefore: nil) { response, error in
+                expect(error).toNot(beNil())
+                expect(error!.localizedDescription).to(equal("Invalid RevocationTarget in targets array"))
+                done()
+            }
+        }
+    }
 }
