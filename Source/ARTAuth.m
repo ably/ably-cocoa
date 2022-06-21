@@ -754,7 +754,7 @@
 
     id <ARTEncoder> encoder = _rest.defaultEncoder;
 
-    NSURL *requestUrl = [NSURL URLWithString:[NSString stringWithFormat:@"/keys/%@/revokeTokens", self.options.key]
+    NSURL *requestUrl = [NSURL URLWithString:[NSString stringWithFormat:@"/keys/%@/revokeTokens", self.appKey]
                                relativeToURL:_rest.baseUrl];
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:requestUrl];
@@ -874,6 +874,25 @@
         return nil;
     }
     NSArray<NSString *> *parts = [s componentsSeparatedByString:@"."];
+    if (parts.count < 2) {
+        return nil;
+    }
+    return parts[0];
+}
+
+- (NSString *_Nullable)appKey {
+    NSString *s = nil;
+    if (_options.key) {
+        s = _options.key;
+    } else if (_options.token) {
+        s = _options.token;
+    } else if (_tokenDetails) {
+        s = _tokenDetails.token;
+    }
+    if (!s) {
+        return nil;
+    }
+    NSArray<NSString *> *parts = [s componentsSeparatedByString:@":"];
     if (parts.count < 2) {
         return nil;
     }
