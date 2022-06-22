@@ -42,6 +42,9 @@ func pathForTestResource(_ resourcePath: String) -> String {
 
 let appSetupJson = JSON(parseJSON: try! String(contentsOfFile: pathForTestResource(testResourcesPath + "test-app-setup.json")))
 
+let revocableTokenAppSetupJson = JSON(parseJSON: try! String(contentsOfFile: pathForTestResource(testResourcesPath + "test-app-setup-for-revocation.json")))
+
+
 let testTimeout = DispatchTimeInterval.seconds(20)
 let testResourcesPath = "ably-common/test-resources/"
 let echoServerAddress = "https://echo.ably.io/createJWT"
@@ -130,7 +133,7 @@ class AblyTests {
         return DispatchQueue.getSpecific(key: queueIdentityKey)?.label
     }
 
-    class func setupOptions(_ options: ARTClientOptions, forceNewApp: Bool = false, debug: Bool = false) -> ARTClientOptions {
+    class func setupOptions(_ options: ARTClientOptions, forceNewApp: Bool = false, debug: Bool = false, revocableTokens: Bool = false) -> ARTClientOptions {
         options.channelNamePrefix = "test-\(setupOptionsCounter)"
         setupOptionsCounter += 1
 
@@ -141,11 +144,15 @@ class AblyTests {
         guard let app = testApplication else {
             let request = NSMutableURLRequest(url: URL(string: "https://\(options.restHost):\(options.tlsPort)/apps")!)
             request.httpMethod = "POST"
-            request.httpBody = try? appSetupJson["post_apps"].rawData()
+            if (revocableTokens){
+                request.httpBody = try? revocableTokenAppSetupJson["post_apps"].rawData()
+            }else{
+                request.httpBody = try? appSetupJson["post_apps"].rawData()
+            }
 
             request.allHTTPHeaderFields = [
                 "Accept" : "application/json",
-                "Content-Type" : "application/json"
+                "Content-Type" : "application/json",
             ]
 
             let (responseData, responseError, _) = NSURLSessionServerTrustSync().get(request)
@@ -175,6 +182,10 @@ class AblyTests {
     
     class func commonAppSetup(_ debug: Bool = false) -> ARTClientOptions {
         return AblyTests.setupOptions(AblyTests.jsonRestOptions, debug: debug)
+    }
+
+    class func revokableAppSetup(_ debug: Bool = false) -> ARTClientOptions {
+        return AblyTests.setupOptions(AblyTests.jsonRestOptions, debug: debug,revocableTokens: true)
     }
 
     class func clientOptions(_ debug: Bool = false, key: String? = nil, requestToken: Bool = false) -> ARTClientOptions {
