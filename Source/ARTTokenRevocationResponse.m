@@ -1,7 +1,8 @@
 #import "ARTTokenRevocationResponse.h"
 #import "ARTRevokedTarget.h"
 
-@implementation ARTTokenRevocationResponse {
+@implementation ARTTokenRevocationResponse
+@end
 
-}
+@implementation ARTTokenRevocationBatchErrorResponse
 @end

@@ -164,7 +164,7 @@
     }
 
     ARTTokenRevocationResponse *response = [[ARTTokenRevocationResponse alloc] init];
-    //what if targets array does not contain any targets? response without targets? Return empty response?
+
     if (targetsArr.count == 0) {
         return response;
     }

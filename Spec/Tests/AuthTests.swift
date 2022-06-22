@@ -4375,7 +4375,7 @@ class AuthTests: XCTestCase {
         let rest = ARTRest(options: AblyTests.revokableAppSetup())
 
         waitUntil(timeout: testTimeout) { done in
-            rest.auth.revokeTokens(emptyTargets, issuedBefore: nil) { response, error in
+            rest.auth.revokeTokens(emptyTargets, issuedBefore: nil) { response, error, errorResponse in
                 expect(error).toNot(beNil())
                 expect(error!.localizedDescription).to(equal("targets cannot be null or empty"))
                 done()
@@ -4390,7 +4390,7 @@ class AuthTests: XCTestCase {
         let rest = ARTRest(options: AblyTests.revokableAppSetup())
 
         waitUntil(timeout: testTimeout) { done in
-            rest.auth.revokeTokens(invalidTargets, issuedBefore: nil) { response, error in
+            rest.auth.revokeTokens(invalidTargets, issuedBefore: nil) { response, error, errorResponse in
                 expect(error).toNot(beNil())
                 expect(error!.localizedDescription).to(equal("Invalid RevocationTarget in targets array"))
                 done()
@@ -4402,7 +4402,7 @@ class AuthTests: XCTestCase {
         let targets: [ARTTokenRevocationTarget] = [ARTTokenRevocationTarget("clientId", value: "client1@example.com")]
         let rest = ARTRest(options: AblyTests.revokableAppSetup())
         waitUntil(timeout: testTimeout) { done in
-            rest.auth.revokeTokens(targets, issuedBefore: nil) { response, error in
+            rest.auth.revokeTokens(targets, issuedBefore: nil) { response, error, errorResponse in
                 expect(error).to(beNil())
                 expect(response).toNot(beNil())
                 expect(response?.revokedTargets).toNot(beNil())
@@ -4421,7 +4421,7 @@ class AuthTests: XCTestCase {
         let targets: [ARTTokenRevocationTarget] = [ARTTokenRevocationTarget("revocationKey", value: "myRevoc_key")]
         let rest = ARTRest(options: AblyTests.revokableAppSetup())
         waitUntil(timeout: testTimeout) { done in
-            rest.auth.revokeTokens(targets, issuedBefore: nil) { response, error in
+            rest.auth.revokeTokens(targets, issuedBefore: nil) { response, error, errorResponse in
                 expect(error).to(beNil())
                 expect(response).toNot(beNil())
                 expect(response?.revokedTargets).toNot(beNil())
@@ -4435,6 +4435,20 @@ class AuthTests: XCTestCase {
                 done()
             }
         }
+    }
+
+    func test_revoke_tokens_with_incorrect_target_type_fail_with_correct_error_message() {
+        let targets: [ARTTokenRevocationTarget] = [ARTTokenRevocationTarget("strange-type", value: "Very wrong type")]
+        let rest = ARTRest(options: AblyTests.revokableAppSetup())
+
+        waitUntil(timeout: testTimeout) { done in
+            rest.auth.revokeTokens(targets, issuedBefore: nil) { response, error, errorResponse in
+                expect(error).toNot(beNil())
+                expect(error!.localizedDescription).to(equal("targets cannot be null or empty"))
+                done()
+            }
+        }
+
     }
 
 }

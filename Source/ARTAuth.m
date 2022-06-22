@@ -740,14 +740,14 @@
     //RSA17d
     if (!targets || targets.count == 0) {
         NSDictionary *userInfo = @{NSLocalizedDescriptionKey: @"targets cannot be null or empty"};
-        callback(nil, [NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:userInfo]);
+        callback(nil, [NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:userInfo],nil);
         return;
     }
     //RSA17e
     for (ARTTokenRevocationTarget *target in targets) {
         if (!target.type || !target.value) {
             NSDictionary *userInfo = @{NSLocalizedDescriptionKey: @"Invalid RevocationTarget in targets array"};
-            callback(nil, [NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:userInfo]);
+            callback(nil, [NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:userInfo], nil);
             return;
         }
     }
@@ -764,7 +764,7 @@
     request.HTTPBody = [encoder encodeTokenRevocationRequest:targets issuedBefore:issuedBefore allowReauthMargin:allowReauthMargin error:&encodeError];
     //Todo should we document encoding errors in spec ?
     if (encodeError) {
-        callback(nil, encodeError);
+        callback(nil, encodeError, nil);
         return;
     }
     [request setValue:[encoder mimeType] forHTTPHeaderField:@"Accept"];
@@ -772,14 +772,14 @@
 
     [_rest executeRequest:request withAuthOption:ARTAuthenticationUseBasic completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
-            callback(nil, error);
+            callback(nil, error, nil);
         } else {
             NSError *decodeError = nil;
             ARTTokenRevocationResponse *revocationResponse = [encoder decodeTokenRevocationRequest:data error:&decodeError];
             if (decodeError) {
-                callback(nil, decodeError);
+                callback(nil, decodeError, nil);
             } else {
-                callback(revocationResponse, nil);
+                callback(revocationResponse, nil, nil);
             }
         }
     }];
