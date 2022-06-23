@@ -35,7 +35,7 @@ In order to make available new public APIs to the Carthage users you must put th
 You should generate symlinks from the command line - in Terminal `cd` to the symlinks folder and type:
 
 ```
-ln -s HeaderName.h ../../../Source/HeaderName.h
+ln -s ../../../Source/HeaderName.h HeaderName.h
 ```
 
 *NOTE:*
