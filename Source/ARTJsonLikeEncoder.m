@@ -765,26 +765,23 @@
                                       presenceSubscribers:[input artInteger:@"presenceSubscribers"]];;
 }
 
-- (nullable ARTChannelOccupancy *)channelOccupancyFromDictionary:(NSDictionary *)input {
-    NSDictionary *metricsDict = [input valueForKey:@"metrics"];
-    if (metricsDict == nil) {
-        return nil;
-    }
+- (ARTChannelOccupancy *)channelOccupancyFromDictionary:(NSDictionary *)input {
+    NSDictionary *metricsDict = [input valueForKey:@"metrics"] ?: @{};
     ARTChannelMetrics *metrics = [self channelMetricsFromDictionary:metricsDict];
     ARTChannelOccupancy *occupancy = [[ARTChannelOccupancy alloc] initWithMetrics:metrics];
     return occupancy;
 }
 
-- (nullable ARTChannelStatus *)channelStatusFromDictionary:(NSDictionary *)input {
+- (ARTChannelStatus *)channelStatusFromDictionary:(NSDictionary *)input {
     NSDictionary *occupancyDict = [input valueForKey:@"occupancy"];
-    ARTChannelOccupancy *occupancy = occupancyDict != nil ? [self channelOccupancyFromDictionary:occupancyDict] : nil;
+    ARTChannelOccupancy *occupancy = [self channelOccupancyFromDictionary:occupancyDict];
     ARTChannelStatus *status = [[ARTChannelStatus alloc] initWithOccupancy:occupancy active:[input artBoolean:@"isActive"]];
     return status;
 }
 
 - (ARTChannelDetails *)channelDetailsFromDictionary:(NSDictionary *)input {
     NSDictionary *statusDict = [input valueForKey:@"status"];
-    ARTChannelStatus *status = statusDict != nil ? [self channelStatusFromDictionary:statusDict] : nil;
+    ARTChannelStatus *status = [self channelStatusFromDictionary:statusDict];
     ARTChannelDetails *details = [[ARTChannelDetails alloc] initWithChannelId:[input artString:@"channelId"] status:status];
     return details;
 }

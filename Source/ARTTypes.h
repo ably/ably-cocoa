@@ -237,9 +237,9 @@ NSString *generateNonce(void);
 
 @property (nonatomic, readonly) BOOL active;
 
-@property (nonatomic, strong, readonly, nullable) ARTChannelOccupancy *occupancy;
+@property (nonatomic, strong, readonly) ARTChannelOccupancy *occupancy;
 
-- (instancetype)initWithOccupancy:(nullable ARTChannelOccupancy *)occupancy active:(BOOL)active;
+- (instancetype)initWithOccupancy:(ARTChannelOccupancy *)occupancy active:(BOOL)active;
 
 @end
 
@@ -249,9 +249,9 @@ NSString *generateNonce(void);
 
 @property (nonatomic, strong, readonly) NSString *channelId;
 
-@property (nonatomic, strong, readonly, nullable) ARTChannelStatus *status;
+@property (nonatomic, strong, readonly) ARTChannelStatus *status;
 
-- (instancetype)initWithChannelId:(NSString *)channelId status:(nullable ARTChannelStatus *)status;
+- (instancetype)initWithChannelId:(NSString *)channelId status:(ARTChannelStatus *)status;
 
 @end
 
