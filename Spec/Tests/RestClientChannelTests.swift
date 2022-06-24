@@ -1490,23 +1490,43 @@ class RestClientChannelTests: XCTestCase {
     }
     
     // RSL8a
-    func test__047__channel_status_returns_a_channel_details_object() {
-        let channelName = uniqueChannelName()
+    func test__047__channel_with_subscribers_has_status_method_returning_a_channel_details_object_with_fullfilled_channel_metrics() {
         let options = AblyTests.commonAppSetup()
-        let testToken = getTestToken(capability: "{\"*\":[\"channel-metadata\"]}")
-        options.token = testToken
-        let client = ARTRest(options: options)
-        let channel = client.channels.get(channelName)
+        options.logHandler = ARTLog(capturingOutput: true)
+        let rest = ARTRest(options: options)
+        let channelOptions = ARTChannelOptions(cipher: ["key": ARTCrypto.generateRandomKey()] as ARTCipherParamsCompatible)
+        let channelName = uniqueChannelName(prefix: "ch1")
+        let restChannel = rest.channels.get(channelName, options: channelOptions)
+        rest.internal.httpExecutor = testHTTPExecutor
+        let realtime = ARTRealtime(options: options)
+        let realtimeChannel = realtime.channels.get(channelName)
+
+        let expectedMessage = ["something": 1]
         
         waitUntil(timeout: testTimeout) { done in
-            channel.status { details, error in
+            realtimeChannel.subscribe { message in
+                print(message)
+                done()
+            }
+            restChannel.publish(nil, data: expectedMessage) { err in
+                print(err == nil ? "No error" : "Publish error: \(err!)")
+            }
+        }
+
+        waitUntil(timeout: testTimeout) { done in
+            restChannel.status { details, error in
                 expect(error).to(beNil())
                 guard let details = details else {
                     fail("Channel details are empty"); done()
                     return
                 }
-                expect(details.channelId).toNot(beNil()) // CHD2a
-                expect(details.status).toNot(beNil()) // CHD2b
+                expect(details.status.occupancy.metrics.connections) == 1 // CHM2a
+                expect(details.status.occupancy.metrics.publishers) == 1 // CHM2e
+                expect(details.status.occupancy.metrics.subscribers) == 1 // CHM2f
+                
+                expect(details.status.occupancy.metrics.presenceMembers) == 0 // CHM2c
+                expect(details.status.occupancy.metrics.presenceConnections) == 1 // CHM2b
+                expect(details.status.occupancy.metrics.presenceSubscribers) == 1 // CHM2d
                 done()
             }
         }
