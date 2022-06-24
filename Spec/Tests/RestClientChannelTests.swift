@@ -1489,30 +1489,31 @@ class RestClientChannelTests: XCTestCase {
         }
     }
     
-    // RSL8a
-    func test__047__channel_with_subscribers_has_status_method_returning_a_channel_details_object_with_fullfilled_channel_metrics() {
+    // RSL8a, CHD2b, CHS2b, CHO2a
+    func test__047__channel_with_subscribers_status_method_returns_a_channel_details_object_with_fullfilled_channel_metrics() {
         let options = AblyTests.commonAppSetup()
-        options.logHandler = ARTLog(capturingOutput: true)
         let rest = ARTRest(options: options)
-        let channelOptions = ARTChannelOptions(cipher: ["key": ARTCrypto.generateRandomKey()] as ARTCipherParamsCompatible)
-        let channelName = uniqueChannelName(prefix: "ch1")
-        let restChannel = rest.channels.get(channelName, options: channelOptions)
-        rest.internal.httpExecutor = testHTTPExecutor
         let realtime = ARTRealtime(options: options)
-        let realtimeChannel = realtime.channels.get(channelName)
 
-        let expectedMessage = ["something": 1]
+        let channelName = uniqueChannelName()
         
+        let realtimeChannel = realtime.channels.get(channelName)
         waitUntil(timeout: testTimeout) { done in
-            realtimeChannel.subscribe { message in
-                print(message)
+            realtimeChannel.once(.attached) { _ in
                 done()
-            }
-            restChannel.publish(nil, data: expectedMessage) { err in
-                print(err == nil ? "No error" : "Publish error: \(err!)")
             }
         }
 
+        let restChannel = rest.channels.get(channelName)
+        waitUntil(timeout: testTimeout) { done in
+            realtimeChannel.subscribe { message in
+                done()
+            }
+            restChannel.publish(nil, data: nil) { error in
+                expect(error).to(beNil())
+            }
+        }
+        
         waitUntil(timeout: testTimeout) { done in
             restChannel.status { details, error in
                 expect(error).to(beNil())
@@ -1523,7 +1524,6 @@ class RestClientChannelTests: XCTestCase {
                 expect(details.status.occupancy.metrics.connections) == 1 // CHM2a
                 expect(details.status.occupancy.metrics.publishers) == 1 // CHM2e
                 expect(details.status.occupancy.metrics.subscribers) == 1 // CHM2f
-                
                 expect(details.status.occupancy.metrics.presenceMembers) == 0 // CHM2c
                 expect(details.status.occupancy.metrics.presenceConnections) == 1 // CHM2b
                 expect(details.status.occupancy.metrics.presenceSubscribers) == 1 // CHM2d
