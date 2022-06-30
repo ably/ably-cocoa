@@ -28,13 +28,20 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 /**
- ARTCipherParams contains configuration options for a channel cipher, including algorithm, mode, key length and key.
- Ably client libraries currently support AES with CBC, PKCS#7 with a default key length of 256 bits. All implementations also support AES128.
+ The ARTCipherParams object contains properties to configure encryption for a channel.
  */
 @interface ARTCipherParams : NSObject <ARTCipherParamsCompatible>
+
+/// The algorithm to use for encryption. Only AES is supported.
 @property (readonly, strong, nonatomic) NSString *algorithm;
+
+/// The private key used to encrypt and decrypt payloads.
 @property (readonly, strong, nonatomic) NSData *key;
+
+/// The length of the key in bits; for example 128 or 256.
 @property (readonly, nonatomic) NSUInteger keyLength;
+
+/// The cipher mode. Only "CBC" is supported.
 @property (readonly, getter=getMode) NSString *mode;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
