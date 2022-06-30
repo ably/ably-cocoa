@@ -27,9 +27,10 @@ echo "$VERSION_CONFIG_VAR = $NEW_VERSION" > $VERSION_CONFIG_FILE
 
 sed -i '' -e 's/'"$OLD_VERSION"'/'"$NEW_VERSION"'/g' README.md
 sed -i '' -e 's/'"$OLD_VERSION"'/'"$NEW_VERSION"'/g' Spec/Tests/RealtimeClientConnectionTests.swift
+sed -i '' -e 's/'"$OLD_VERSION"'/'"$NEW_VERSION"'/g' Scripts/jazzy.sh
 
 git add README.md
 git add Spec/Tests/RealtimeClientConnectionTests.swift
 git add Version.xcconfig
+git add Scripts/jazzy.sh
 git commit -m "Bump version to $NEW_VERSION."
-
