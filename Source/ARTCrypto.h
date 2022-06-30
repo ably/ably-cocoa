@@ -51,11 +51,30 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+/**
+ The ARTCrypto object ensures that message payloads are encrypted, can never be decrypted by Ably, and can only be decrypted by other clients that share the same secret symmetric key.
+ */
 @interface ARTCrypto : NSObject
 
+/**
+ Retrieves, or optionally sets, the `ARTCipherParams` for the channel.
+ @param params Overrides the default parameters. A suitable key must be provided as a minimum.
+ @return `ARTCipherParams` A ARTCipherParams object, using the default values for any field not supplied.
+ */
 + (ARTCipherParams *)getDefaultParams:(NSDictionary *)values;
-+ (NSData *)generateRandomKey;
+
+/**
+ Generates a random key to be used in the encryption of the channel.
+ @param keyLength The length of the key, in bits, to be generated. If not specified, this is equal to the default keyLength of the default algorithm: for AES this is 256 bits.
+ @return `NSData` The key as a binary data.
+ */
 + (NSData *)generateRandomKey:(NSUInteger)length;
+
+/**
+ Same as `+getDefaultParams:`, but with the default algorithm and key length: AES, 256 bits.
+ @return `NSData` The key as a binary data.
+ */
++ (NSData *)generateRandomKey;
 
 @end
 
