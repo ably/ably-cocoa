@@ -67,10 +67,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable NSArray<ARTDeviceDetails *> *)decodeDevicesDetails:(NSData *)data error:(NSError * __autoreleasing *)error;
 - (nullable ARTDeviceIdentityTokenDetails *)decodeDeviceIdentityTokenDetails:(NSData *)data error:(NSError * __autoreleasing *)error;
 
-// DevicePushDetails
-- (nullable NSData *)encodeDevicePushDetails:(ARTDevicePushDetails *)devicePushDetails error:(NSError *_Nullable *_Nullable)error;
-- (nullable ARTDevicePushDetails *)decodeDevicePushDetails:(NSData *)data error:(NSError * __autoreleasing *)error;
-
 // Push Channel Subscription
 - (nullable NSData *)encodePushChannelSubscription:(ARTPushChannelSubscription *)channelSubscription error:(NSError * __autoreleasing *)error;
 - (nullable ARTPushChannelSubscription *)decodePushChannelSubscription:(NSData *)data error:(NSError * __autoreleasing *)error;

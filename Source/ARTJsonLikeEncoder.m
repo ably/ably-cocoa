@@ -156,14 +156,6 @@
     return [self deviceIdentityTokenDetailsFromDictionary:[self decodeDictionary:data error:nil] error:error];
 }
 
-- (NSData *)encodeDevicePushDetails:(ARTDevicePushDetails *)devicePushDetails error:(NSError **)error {
-    return [self encode:[self devicePushDetailsToDictionary:devicePushDetails] error:error];
-}
-
-- (ARTDevicePushDetails *)decodeDevicePushDetails:(NSData *)data error:(NSError * __autoreleasing *)error {
-    return [self devicePushDetailsFromDictionary:[self decode:data error:nil] error:error];
-}
-
 - (NSData *)encodePushChannelSubscription:(ARTPushChannelSubscription *)channelSubscription error:(NSError * __autoreleasing *)error {
     return [self encode:[self pushChannelSubscriptionToDictionary:channelSubscription] error:error];
 }
