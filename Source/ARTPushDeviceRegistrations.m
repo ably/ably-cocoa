@@ -28,7 +28,7 @@
     [_internal save:deviceDetails callback:callback];
 }
 
-- (void)get:(ARTDeviceId *)deviceId callback:(void (^)(ARTDeviceDetails *_Nullable,  ARTErrorInfo *_Nullable))callback {
+- (void)get:(ARTDeviceId *)deviceId callback:(ARTDeviceDetailsCallback)callback {
     [_internal get:deviceId callback:callback];
 }
 
@@ -117,12 +117,12 @@ dispatch_async(_queue, ^{
 });
 }
 
-- (void)get:(ARTDeviceId *)deviceId callback:(void (^)(ARTDeviceDetails *, ARTErrorInfo *))callback {
+- (void)get:(ARTDeviceId *)deviceId callback:(ARTDeviceDetailsCallback)callback {
     if (callback) {
-        void (^userCallback)(ARTDeviceDetails *, ARTErrorInfo *error) = callback;
-        callback = ^(ARTDeviceDetails *device, ARTErrorInfo *error) {
+        ARTDeviceDetailsCallback userCallback = callback;
+        callback = ^(ARTDeviceDetailsResponse *response, ARTErrorInfo *error) {
             dispatch_async(self->_userQueue, ^{
-                userCallback(device, error);
+                userCallback(response, error);
             });
         };
     }
@@ -149,7 +149,7 @@ dispatch_async(_queue, ^{
             }
             else if (detailsResponse) {
                 [self->_logger debug:__FILE__ line:__LINE__ message:@"%@: get device successfully", NSStringFromClass(self.class)];
-                callback(detailsResponse.deviceDetails, nil);
+                callback(detailsResponse, nil);
             }
             else {
                 [self->_logger debug:__FILE__ line:__LINE__ message:@"%@: get device failed with unknown error", NSStringFromClass(self.class)];

@@ -16,6 +16,7 @@
 @class ARTStats;
 @class ARTPushChannelSubscription;
 @class ARTDeviceDetails;
+@class ARTDeviceDetailsResponse;
 @protocol ARTTokenDetailsCompatible;
 
 // More context
@@ -267,6 +268,7 @@ typedef void (^ARTPresenceMessagesCallback)(NSArray<ARTPresenceMessage *> *_Null
 
 typedef void (^ARTStatusCallback)(ARTStatus *status);
 typedef void (^ARTURLRequestCallback)(NSHTTPURLResponse *_Nullable result, NSData *_Nullable data, NSError *_Nullable error);
+typedef void (^ARTDeviceDetailsCallback)(ARTDeviceDetailsResponse *_Nullable result, ARTErrorInfo *_Nullable error);
 typedef void (^ARTTokenDetailsCallback)(ARTTokenDetails *_Nullable result, NSError *_Nullable error);
 typedef void (^ARTTokenDetailsCompatibleCallback)(id<ARTTokenDetailsCompatible> _Nullable result, NSError *_Nullable error);
 typedef void (^ARTAuthCallback)(ARTTokenParams *params, ARTTokenDetailsCompatibleCallback callback);
