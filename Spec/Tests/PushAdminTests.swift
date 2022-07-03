@@ -332,11 +332,11 @@ class PushAdminTests: XCTestCase {
         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { realtime.dispose(); realtime.close() }
         waitUntil(timeout: testTimeout) { done in
-            realtime.push.admin.deviceRegistrations.get("testDeviceDetails") { device, error in
-                guard let device = device else {
+            realtime.push.admin.deviceRegistrations.get("testDeviceDetails") { response, error in
+                guard let deviceDetails = response?.deviceDetails else {
                     fail("Device is missing"); done(); return
                 }
-                expect(device).to(equal(Self.deviceDetails))
+                expect(deviceDetails).to(equal(Self.deviceDetails))
                 expect(error).to(beNil())
                 done()
             }
