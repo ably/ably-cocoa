@@ -27,7 +27,7 @@ class PushAdminTests: XCTestCase {
         deviceDetails.platform = "ios"
         deviceDetails.formFactor = "phone"
         deviceDetails.metadata = [String : String]()
-        deviceDetails.push.recipient = [
+        deviceDetails.pushRecipient = [
             "transportType": "apns",
             "deviceToken": "foo",
         ]
@@ -40,7 +40,7 @@ class PushAdminTests: XCTestCase {
         deviceDetails.formFactor = "tablet"
         deviceDetails.clientId = "clientA"
         deviceDetails.metadata = [String : String]()
-        deviceDetails.push.recipient = [
+        deviceDetails.pushRecipient = [
             "transportType": "gcm",
             "registrationToken": "qux",
         ]
@@ -53,7 +53,7 @@ class PushAdminTests: XCTestCase {
         deviceDetails.formFactor = "tablet"
         deviceDetails.clientId = "clientA"
         deviceDetails.metadata = [String : String]()
-        deviceDetails.push.recipient = [
+        deviceDetails.pushRecipient = [
             "transportType": "gcm",
             "registrationToken": "qux",
         ]
@@ -66,7 +66,7 @@ class PushAdminTests: XCTestCase {
         deviceDetails.formFactor = "tablet"
         deviceDetails.clientId = "clientB"
         deviceDetails.metadata = [String : String]()
-        deviceDetails.push.recipient = [
+        deviceDetails.pushRecipient = [
             "transportType": "gcm",
             "registrationToken": "qux",
         ]
