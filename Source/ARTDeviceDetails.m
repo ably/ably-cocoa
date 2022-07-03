@@ -5,8 +5,8 @@
 
 - (instancetype)init {
     if (self = [super init]) {
-        _push = [[ARTDevicePushDetails alloc] init];
         _metadata = [[NSDictionary alloc] init];
+        _pushRecipient = [[NSMutableDictionary alloc] init];
     }
     return self;
 }
@@ -26,7 +26,7 @@
     device.platform = [self.platform copy];
     device.formFactor = [self.formFactor copy];
     device.metadata = [self.metadata copy];
-    device.push = [self.push copy];
+    device.pushRecipient = [self.pushRecipient copy];
 
     return device;
 }

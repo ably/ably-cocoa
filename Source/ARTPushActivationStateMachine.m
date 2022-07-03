@@ -231,7 +231,7 @@ dispatch_async(_queue, ^{
     request.HTTPMethod = @"PATCH";
     request.HTTPBody = [[_rest defaultEncoder] encode:@{
         @"push": @{
-            @"recipient": local.push.recipient
+            @"recipient": local.pushRecipient
         }
     } error:nil];
     [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];

@@ -1,27 +1,35 @@
 #import "ARTDevicePushDetails.h"
 #import "ARTPush.h"
 
-@implementation ARTDevicePushDetails
+@implementation ARTDevicePushStatus
 
 - (instancetype)init {
     if (self = [super init]) {
-        _recipient = [[NSMutableDictionary alloc] init];
+        //
     }
     return self;
 }
 
 - (id)copyWithZone:(NSZone *)zone {
-    ARTDevicePushDetails *push = [[[self class] allocWithZone:zone] init];
-
-    push.recipient = [self.recipient copy];
+    ARTDevicePushStatus *push = [[[self class] allocWithZone:zone] init];
     push.state = self.state;
     push.errorReason = [self.errorReason copy];
-
     return push;
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"%@ - \n\t recipient: %@; \n\t state: %@; \n\t errorReason: %@;", [super description], self.recipient, self.state, self.errorReason];
+    return [NSString stringWithFormat:@"%@ - \n\t state: %@; \n\t errorReason: %@;", [super description], self.state, self.errorReason];
+}
+
+@end
+
+@implementation ARTDeviceDetailsResponse
+
+- (instancetype)init {
+    if (self = [super init]) {
+        //
+    }
+    return self;
 }
 
 @end

@@ -50,7 +50,7 @@ NSString *const ARTDevicePushTransportType = @"apns";
     #else
     device.formFactor = ARTDeviceFormFactor;
     #endif
-    device.push.recipient[@"transportType"] = ARTDevicePushTransportType;
+    device.pushRecipient[@"transportType"] = ARTDevicePushTransportType;
 
     NSString *deviceId = [storage objectForKey:ARTDeviceIdKey];
     NSString *deviceSecret = deviceId == nil ? nil : [storage secretForDevice:deviceId];
@@ -86,11 +86,11 @@ NSString *const ARTDevicePushTransportType = @"apns";
 }
 
 - (NSString *)apnsDeviceToken {
-    return self.push.recipient[@"deviceToken"];
+    return self.pushRecipient[@"deviceToken"];
 }
 
 - (void)setAPNSDeviceToken:(NSString *_Nonnull)token {
-    self.push.recipient[@"deviceToken"] = token;
+    self.pushRecipient[@"deviceToken"] = token;
 }
 
 - (void)setAndPersistAPNSDeviceToken:(NSString *)token {
