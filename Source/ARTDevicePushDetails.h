@@ -7,7 +7,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTDevicePushStatus : NSObject
 
-@property (strong, nullable, nonatomic) NSString *state;
+@property (strong, nonatomic) NSString *state;
 @property (strong, nullable, nonatomic) ARTErrorInfo *errorReason;
 
 - (instancetype)init;
