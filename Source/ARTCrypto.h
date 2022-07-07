@@ -59,7 +59,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Retrieves, or optionally sets, the `ARTCipherParams` for the channel.
  @param params Overrides the default parameters. A suitable key must be provided as a minimum.
- @return `ARTCipherParams` A ARTCipherParams object, using the default values for any field not supplied.
+ @return An `ARTCipherParams` object, using the default values for any field not supplied.
  */
 + (ARTCipherParams *)getDefaultParams:(NSDictionary *)params;
 
