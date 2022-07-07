@@ -65,13 +65,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  Generates a random key to be used in the encryption of the channel.
- @param keyLength The length of the key, in bits, to be generated. If not specified, this is equal to the default keyLength of the default algorithm: for AES this is 256 bits.
+ @param keyLength The length of the key, in bits, to be generated.
  @return `NSData` The key as a binary data.
  */
 + (NSData *)generateRandomKey:(NSUInteger)keyLength;
 
 /**
- Same as `+getDefaultParams:`, but with the default algorithm and key length: AES, 256 bits.
+ Same as `+generateRandomKey:`, but with the default key length of the default algorithm: for AES this is 256 bits.
  @return `NSData` The key as a binary data.
  */
 + (NSData *)generateRandomKey;
