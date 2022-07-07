@@ -41,7 +41,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// The length of the key in bits; for example 128 or 256.
 @property (readonly, nonatomic) NSUInteger keyLength;
 
-/// The cipher mode. Only "CBC" is supported.
+/// The cipher mode. Only CBC is supported.
 @property (readonly, getter=getMode) NSString *mode;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
