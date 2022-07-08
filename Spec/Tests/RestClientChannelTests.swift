@@ -1500,26 +1500,13 @@ class RestClientChannelTests: XCTestCase {
         
         let realtimeChannel = realtime.channels.get(channelName)
         waitUntil(timeout: testTimeout) { done in
-            let partialDone = AblyTests.splitDone(2, done: done)
             realtimeChannel.presence.enter(nil) { error in
                 expect(error).to(beNil())
-                partialDone()
-            }
-            realtimeChannel.once(.attached) { _ in
-                partialDone()
+                done()
             }
         }
 
         let restChannel = rest.channels.get(channelName)
-        waitUntil(timeout: testTimeout) { done in
-            realtimeChannel.subscribe { message in
-                done()
-            }
-            restChannel.publish(nil, data: nil) { error in
-                expect(error).to(beNil())
-            }
-        }
-        
         waitUntil(timeout: testTimeout) { done in
             restChannel.status { details, error in
                 expect(error).to(beNil())
