@@ -766,7 +766,7 @@
 }
 
 - (ARTChannelOccupancy *)channelOccupancyFromDictionary:(NSDictionary *)input {
-    NSDictionary *metricsDict = [input valueForKey:@"metrics"] ?: @{};
+    NSDictionary *metricsDict = [input valueForKey:@"metrics"];
     ARTChannelMetrics *metrics = [self channelMetricsFromDictionary:metricsDict];
     ARTChannelOccupancy *occupancy = [[ARTChannelOccupancy alloc] initWithMetrics:metrics];
     return occupancy;
