@@ -1,7 +1,7 @@
 #import <Foundation/Foundation.h>
-
 #import <Ably/ARTStatus.h>
 #import <Ably/ARTEventEmitter.h>
+#import "ARTTokenRevocationResponse.h"
 
 @class ARTStatus;
 @class ARTHttpResponse;
@@ -270,6 +270,7 @@ typedef void (^ARTURLRequestCallback)(NSHTTPURLResponse *_Nullable result, NSDat
 typedef void (^ARTTokenDetailsCallback)(ARTTokenDetails *_Nullable result, NSError *_Nullable error);
 typedef void (^ARTTokenDetailsCompatibleCallback)(id<ARTTokenDetailsCompatible> _Nullable result, NSError *_Nullable error);
 typedef void (^ARTAuthCallback)(ARTTokenParams *params, ARTTokenDetailsCompatibleCallback callback);
+typedef void (^ARTTokenRevocationCallback)(ARTTokenRevocationResponse *_Nullable response, NSError *_Nullable error, ARTTokenRevocationBatchErrorResponse *_Nullable errorResponse);
 
 typedef void (^ARTHTTPPaginatedCallback)(ARTHTTPPaginatedResponse *_Nullable response, ARTErrorInfo *_Nullable error);
 typedef void (^ARTPaginatedStatsCallback)(ARTPaginatedResult<ARTStats *> *_Nullable result, ARTErrorInfo *_Nullable error);

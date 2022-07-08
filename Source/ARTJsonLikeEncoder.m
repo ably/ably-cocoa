@@ -23,6 +23,9 @@
 #import "ARTRest+Private.h"
 #import "ARTJsonEncoder.h"
 #import "ARTPushChannelSubscription.h"
+#import "ARTTokenRevocationTarget.h"
+#import "ARTTokenRevocationResponse.h"
+#import "ARTRevokedTarget.h"
 
 @implementation ARTJsonLikeEncoder {
     __weak ARTRestInternal *_rest; // weak because rest owns self
@@ -127,6 +130,73 @@
 - (NSData *)encodeTokenDetails:(ARTTokenDetails *)tokenDetails error:(NSError **)error {
     return [self encode:[self tokenDetailsToDictionary:tokenDetails] error:error];
 }
+
+-(NSString *)targetPair:(ARTTokenRevocationTarget *)target {
+    return [NSString stringWithFormat:@"%@:%@", target.type, target.value];
+}
+
+- (nullable NSData *)encodeTokenRevocationRequest:(NSArray<ARTTokenRevocationTarget *> *)targets
+                                     issuedBefore:(NSDate *)issuedBefore
+                                allowReauthMargin:(NSNumber *)allowReauthMargin
+                                            error:(NSError *_Nullable *_Nullable)error{
+    NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
+
+    NSMutableArray *targetsArray = [[NSMutableArray alloc] initWithCapacity:targets.count];
+    for (ARTTokenRevocationTarget *target in targets) {
+        [targetsArray addObject:[self targetPair:target]];
+    }
+    dictionary[@"targets"] = targetsArray;
+    if (issuedBefore) {
+        NSTimeInterval seconds = [NSDate timeIntervalSinceReferenceDate];
+        dictionary[@"issuedBefore"] = @(seconds * 1000);
+    }
+    if (allowReauthMargin) {
+        dictionary[@"allowReauthMargin"] = @([allowReauthMargin boolValue]);
+    }
+    return [self encode:dictionary error:error];
+}
+
+- (nullable ARTTokenRevocationResponse *)decodeTokenRevocationRequest:(NSData *)data error:(__autoreleasing NSError **)error {
+    NSArray *targetsArr = [self decodeArray:data error:error];
+    //TODO: Should we set an error or return a null response error is nil?
+    if (!targetsArr) {
+        return nil;
+    }
+
+    ARTTokenRevocationResponse *response = [[ARTTokenRevocationResponse alloc] init];
+
+    if (targetsArr.count == 0) {
+        return response;
+    }
+    NSMutableArray<ARTRevokedTarget *> *revokedTargets = [[NSMutableArray alloc] initWithCapacity:targetsArr.count];
+    for(NSDictionary *targetItem in targetsArr){
+        [revokedTargets addObject:[self revokedTargetFromDictionary:targetItem error:error]];
+    }
+
+    response.revokedTargets = revokedTargets;
+    return  response;
+}
+
+- (ARTRevokedTarget *)revokedTargetFromDictionary:(NSDictionary *)dictionary error:(__autoreleasing NSError **)error {
+    NSString *targetString = dictionary[@"target"];
+    NSArray<NSString *> *targetPair = [targetString componentsSeparatedByString:@":"];
+    //what if targetPair does not contain 2 items? which error code should we use?
+    if (targetPair.count != 2) {
+        if (error != NULL){
+            *error = [NSError errorWithDomain:ARTAblyErrorDomain
+                                         code:0
+                                     userInfo:@{NSLocalizedDescriptionKey: @"target is not a valid target string"}];
+           
+        }
+       return nil;
+    }
+    ARTTokenRevocationTarget *target = [[ARTTokenRevocationTarget alloc] initWith:targetPair[0] value:targetPair[1]];
+
+    NSDate *issuedBefore = [NSDate art_dateWithMillisecondsSince1970:[dictionary[@"issuedBefore"] longValue]];
+    NSDate *appliesAt = [NSDate art_dateWithMillisecondsSince1970:[dictionary[@"appliesAt"] longValue]];
+    return [[ARTRevokedTarget alloc] initWith:target issuedBefore:issuedBefore appliesAt:appliesAt];
+}
+
 
 - (NSData *)encodeDeviceDetails:(ARTDeviceDetails *)deviceDetails error:(NSError **)error {
     return [self encode:[self deviceDetailsToDictionary:deviceDetails] error:error];

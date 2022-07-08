@@ -20,6 +20,9 @@ FOUNDATION_EXPORT const unsigned char ablyVersionString[];
 #import <Ably/ARTTokenDetails.h>
 #import <Ably/ARTTokenRequest.h>
 #import <Ably/ARTTokenParams.h>
+#import <Ably/ARTTokenRevocationTarget.h>
+#import <Ably/ARTTokenRevocationResponse.h>
+#import <Ably/ARTRevokedTarget.h>
 #import <Ably/ARTAuthOptions.h>
 #import <Ably/ARTClientOptions.h>
 #import <Ably/ARTCrypto.h>
@@ -62,3 +65,4 @@ FOUNDATION_EXPORT const unsigned char ablyVersionString[];
 #import <Ably/ARTPendingMessage.h>
 #import <Ably/ARTStringifiable.h>
 #import <Ably/ARTNSMutableDictionary+ARTDictionaryUtil.h>
+

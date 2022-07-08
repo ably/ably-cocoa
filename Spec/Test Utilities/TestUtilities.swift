@@ -16,16 +16,16 @@ class AblyTestsConfiguration: NSObject, XCTestObservation {
         super.init()
         XCTestObservationCenter.shared.addTestObserver(self)
     }
-    
+
     private var performedPreFirstTestCaseSetup = false
-    
+
     func testCaseWillStart(_ testCase: XCTestCase) {
         if !performedPreFirstTestCaseSetup {
             preFirstTestCaseSetup()
             performedPreFirstTestCaseSetup = true
         }
     }
-    
+
     private func preFirstTestCaseSetup() {
         // This is code that, when we were using the Quick testing
         // framework, was inside a `configuration.beforeSuite` hook,
@@ -50,19 +50,19 @@ func uniqueChannelName(prefix: String = "",
                        testIdentifier: String = #function,
                        timestamp: TimeInterval = Date.timeIntervalSinceReferenceDate) -> String {
     let platform: String
-#if targetEnvironment(macCatalyst)
+    #if targetEnvironment(macCatalyst)
     platform = "macCatalyst"
-#elseif os(OSX)
+    #elseif os(OSX)
     platform = "OSX"
-#elseif os(iOS)
+    #elseif os(iOS)
     platform = "iOS"
-#elseif os(tvOS)
+    #elseif os(tvOS)
     platform = "tvOS"
-#elseif os(watchOS)
+    #elseif os(watchOS)
     platform = "watchOS"
-#else
+    #else
     platform = "Unknown"
-#endif
+    #endif
     return "\(prefix)-\(platform)-\(testIdentifier.replacingOccurrences(of: "()", with: ""))-\(timestamp)-\(NSUUID().uuidString)"
 }
 
@@ -81,9 +81,8 @@ class AblyTests {
 
     class func checkError(_ errorInfo: ARTErrorInfo?, withAlternative message: String) {
         if let error = errorInfo {
-            XCTFail("\((error ).code): \(error.message)")
-        }
-        else if !message.isEmpty {
+            XCTFail("\((error).code): \(error.message)")
+        } else if !message.isEmpty {
             XCTFail(message)
         }
     }
@@ -119,7 +118,7 @@ class AblyTests {
         queue.setSpecific(key: queueIdentityKey, value: QueueIdentity(label: queue.label))
         return queue
     }()
-    
+
     static var extraQueue: DispatchQueue = {
         let queue = DispatchQueue(label: "io.ably.tests.extra", qos: .userInitiated)
         queue.setSpecific(key: queueIdentityKey, value: QueueIdentity(label: queue.label))
@@ -130,7 +129,7 @@ class AblyTests {
         return DispatchQueue.getSpecific(key: queueIdentityKey)?.label
     }
 
-    class func setupOptions(_ options: ARTClientOptions, forceNewApp: Bool = false, debug: Bool = false) -> ARTClientOptions {
+    class func setupOptions(_ options: ARTClientOptions, forceNewApp: Bool = false, debug: Bool = false, revocableTokens: Bool = false) -> ARTClientOptions {
         options.channelNamePrefix = "test-\(setupOptionsCounter)"
         setupOptionsCounter += 1
 
@@ -144,8 +143,8 @@ class AblyTests {
             request.httpBody = try? appSetupJson["post_apps"].rawData()
 
             request.allHTTPHeaderFields = [
-                "Accept" : "application/json",
-                "Content-Type" : "application/json"
+                "Accept": "application/json",
+                "Content-Type": "application/json",
             ]
 
             let (responseData, responseError, _) = NSURLSessionServerTrustSync().get(request)
@@ -155,15 +154,15 @@ class AblyTests {
             }
 
             testApplication = try! JSON(data: responseData!)
-            
+
             if debug {
                 print(testApplication!)
             }
 
             return setupOptions(options, debug: debug)
         }
-        
-        let key = app["keys"][0]
+
+        let key = revocableTokens ? app["keys"][4] : app["keys"][0]
         options.key = key["keyStr"].stringValue
         options.dispatchQueue = DispatchQueue.main
         options.internalDispatchQueue = queue
@@ -172,9 +171,13 @@ class AblyTests {
         }
         return options
     }
-    
+
     class func commonAppSetup(_ debug: Bool = false) -> ARTClientOptions {
         return AblyTests.setupOptions(AblyTests.jsonRestOptions, debug: debug)
+    }
+
+    class func revokableAppSetup(_ debug: Bool = false) -> ARTClientOptions {
+        return AblyTests.setupOptions(AblyTests.jsonRestOptions, debug: debug, revocableTokens: true)
     }
 
     class func clientOptions(_ debug: Bool = false, key: String? = nil, requestToken: Bool = false) -> ARTClientOptions {
@@ -242,7 +245,7 @@ class AblyTests {
             }
         }
 
-        for i in startFrom..<startFrom+members {
+        for i in startFrom..<startFrom + members {
             waitUntil(timeout: testTimeout) { done in
                 channel.presence.enterClient("user\(i)", data: data) { _ in
                     done()
@@ -253,7 +256,7 @@ class AblyTests {
         return client
     }
 
-    class func addMembersSequentiallyToChannel(_ channelName: String, members: Int = 1, startFrom: Int = 1, data: AnyObject? = nil, options: ARTClientOptions, done: @escaping ()->()) -> ARTRealtime {
+    class func addMembersSequentiallyToChannel(_ channelName: String, members: Int = 1, startFrom: Int = 1, data: AnyObject? = nil, options: ARTClientOptions, done: @escaping () -> ()) -> ARTRealtime {
         let client = ARTRealtime(options: options)
         let channel = client.channels.get(channelName)
 
@@ -263,7 +266,7 @@ class AblyTests {
 
         Total.count = 0
         channel.attach() { _ in
-            for i in startFrom..<startFrom+members {
+            for i in startFrom..<startFrom + members {
                 channel.presence.enterClient("user\(i)", data: data) { _ in
                     Total.count += 1
                     if Total.count == members {
@@ -301,9 +304,9 @@ class AblyTests {
 
     class func wait(for expectations: [XCTestExpectation], timeout dispatchInterval: DispatchTimeInterval = testTimeout, file: Nimble.FileString = #file, line: UInt = #line) {
         let result = XCTWaiter.wait(
-            for: expectations,
-            timeout: dispatchInterval.toTimeInterval(),
-            enforceOrder: true
+                for: expectations,
+                timeout: dispatchInterval.toTimeInterval(),
+                enforceOrder: true
         )
 
         let title: String = "Waiter of expectations \(expectations.map({ $0.description }))"
@@ -344,7 +347,7 @@ class AblyTests {
         }
 
     }
-    
+
     class func loadCryptoTestRawData(_ fileName: String) -> (key: Data, iv: Data, jsonItems: [JSON]) {
         let file = testResourcesPath + fileName + ".json";
         let json = JSON(parseJSON: try! String(contentsOfFile: pathForTestResource(file)))
@@ -354,10 +357,13 @@ class AblyTests {
 
         return (keyData, ivData, json["items"].arrayValue)
     }
-    
+
     class func loadCryptoTestData(_ fileName: String) -> (key: Data, iv: Data, items: [CryptoTestItem]) {
         let (keyData, ivData, jsonItems) = loadCryptoTestRawData(fileName)
-        let items = jsonItems.map{ $0 }.map(CryptoTestItem.init)
+        let items = jsonItems.map {
+                    $0
+                }
+                .map(CryptoTestItem.init)
         return (keyData, ivData, items)
     }
 }
@@ -373,19 +379,18 @@ class NSURLSessionServerTrustSync: NSObject, URLSessionDelegate, URLSessionTaskD
         let configuration = URLSessionConfiguration.default
         let queue = OperationQueue()
         queue.underlyingQueue = AblyTests.extraQueue
-        let session = Foundation.URLSession(configuration:configuration, delegate:self, delegateQueue:queue)
+        let session = Foundation.URLSession(configuration: configuration, delegate: self, delegateQueue: queue)
 
         let task = session.dataTask(with: request as URLRequest, completionHandler: { data, response, error in
             if let response = response as? HTTPURLResponse {
                 responseData = data
                 responseError = error as NSError?
                 httpResponse = response
-            }
-            else if let error = error {
+            } else if let error = error {
                 responseError = error as NSError?
             }
             requestCompleted = true
-        }) 
+        })
         task.resume()
 
         while !requestCompleted {
@@ -401,8 +406,7 @@ class NSURLSessionServerTrustSync: NSObject, URLSessionDelegate, URLSessionTaskD
             // Server trust authentication
             // Reference: https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/URLLoadingSystem/Articles/AuthenticationChallenges.html
             completionHandler(Foundation.URLSession.AuthChallengeDisposition.useCredential, URLCredential(trust: serverTrust))
-        }
-        else {
+        } else {
             challenge.sender?.performDefaultHandling?(for: challenge)
             XCTFail("Current authentication: \(challenge.protectionSpace.authenticationMethod)")
         }
@@ -420,9 +424,9 @@ extension Date {
 
 func ==(lhs: ARTAuthOptions, rhs: ARTAuthOptions) -> Bool {
     return lhs.token == rhs.token &&
-        lhs.authMethod == rhs.authMethod &&
-        lhs.authUrl == rhs.authUrl &&
-        lhs.key == rhs.key
+            lhs.authMethod == rhs.authMethod &&
+            lhs.authUrl == rhs.authUrl &&
+            lhs.key == rhs.key
 }
 
 func ==(lhs: ARTJsonCompatible?, rhs: ARTJsonCompatible?) -> Bool {
@@ -451,8 +455,7 @@ class PublishTestMessage {
             self.error = error
             if let callback = completion {
                 callback(error)
-            }
-            else if failOnError, let e = error {
+            } else if failOnError, let e = error {
                 XCTFail("Got error '\(e)'")
             }
         }
@@ -465,8 +468,7 @@ class PublishTestMessage {
 
             if let callback = completion {
                 callback(self.error)
-            }
-            else if failOnError, let e = self.error {
+            } else if failOnError, let e = self.error {
                 XCTFail("Got error '\(e)'")
             }
         }
@@ -495,7 +497,7 @@ class PublishTestMessage {
 }
 
 /// Rest - Publish message
-@discardableResult func publishTestMessage(_ rest: ARTRest, channelName: String, completion: Optional<(ARTErrorInfo?)->()>) -> PublishTestMessage {
+@discardableResult func publishTestMessage(_ rest: ARTRest, channelName: String, completion: Optional<(ARTErrorInfo?) -> ()>) -> PublishTestMessage {
     return PublishTestMessage(client: rest, channelName: channelName, failOnError: false, completion: completion)
 }
 
@@ -505,7 +507,7 @@ class PublishTestMessage {
 
 /// Realtime - Publish message with callback
 /// (publishes if connection state changes to CONNECTED and channel state changes to ATTACHED)
-@discardableResult func publishFirstTestMessage(_ realtime: ARTRealtime, channelName: String, completion: Optional<(ARTErrorInfo?)->()>) -> PublishTestMessage {
+@discardableResult func publishFirstTestMessage(_ realtime: ARTRealtime, channelName: String, completion: Optional<(ARTErrorInfo?) -> ()>) -> PublishTestMessage {
     return PublishTestMessage(client: realtime, channelName: channelName, failOnError: false, completion: completion)
 }
 
@@ -535,8 +537,7 @@ func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability
     if let key = key {
         options = AblyTests.clientOptions()
         options.key = key
-    }
-    else {
+    } else {
         options = AblyTests.commonAppSetup()
     }
     if let queryTime = queryTime {
@@ -551,11 +552,15 @@ func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability
         tokenParams!.capability = capability
     }
     if let ttl = ttl {
-        if tokenParams == nil { tokenParams = ARTTokenParams() }
+        if tokenParams == nil {
+            tokenParams = ARTTokenParams()
+        }
         tokenParams!.ttl = NSNumber(value: ttl)
     }
     if let clientId = clientId {
-        if tokenParams == nil { tokenParams = ARTTokenParams() }
+        if tokenParams == nil {
+            tokenParams = ARTTokenParams()
+        }
         tokenParams!.clientId = clientId
     }
 
@@ -570,7 +575,8 @@ func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability
         getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl, queryTime: queryTime) { tokenDetails, error in
             value((tokenDetails, error))
         }
-    }) else {
+    })
+    else {
         return nil
     }
 
@@ -599,9 +605,9 @@ func getJWTToken(invalid: Bool = false, expiresIn: Int = 3600, clientId: String 
         URLQueryItem(name: "capability", value: capability),
         URLQueryItem(name: "jwtType", value: jwtType),
         URLQueryItem(name: "encrypted", value: String(encrypted)),
-        URLQueryItem(name: "environment", value: getEnvironment()) 
+        URLQueryItem(name: "environment", value: getEnvironment())
     ]
-    
+
     let request = NSMutableURLRequest(url: urlComponents!.url!)
     let (responseData, responseError, _) = NSURLSessionServerTrustSync().get(request)
     if let error = responseError {
@@ -624,7 +630,7 @@ public func delay(_ seconds: TimeInterval, closure: @escaping () -> Void) {
 }
 
 public func getEnvironment() -> String {
-    let b = Bundle(for: AblyTests.self)    
+    let b = Bundle(for: AblyTests.self)
     guard let env = b.infoDictionary!["ABLY_ENV"] as? String, env.count > 0 else {
         return "sandbox"
     }
@@ -650,6 +656,7 @@ public func buildStringThatExceedMaxMessageSize() -> String {
 
 class Box<T> {
     let unbox: T
+
     init(_ value: T) {
         self.unbox = value
     }
@@ -658,10 +665,12 @@ class Box<T> {
 enum Result<T> {
     case success(Box<T>)
     case failure(String)
+
     /// Constructs a success wrapping a `value`.
     init(value: Box<T>) {
         self = .success(value)
     }
+
     /// Constructs a failure wrapping an `error`.
     init(error: String) {
         self = .failure(error)
@@ -670,58 +679,84 @@ enum Result<T> {
 
 func extractURL(_ request: URLRequest?) -> Result<URL> {
     guard let request = request
-        else { return Result(error: "No request found") }
-    
+    else {
+        return Result(error: "No request found")
+    }
+
     guard let url = request.url
-        else { return Result(error: "Request has no URL defined") }
-    
+    else {
+        return Result(error: "Request has no URL defined")
+    }
+
     return Result.success(Box(url))
 }
 
 func extractBodyAsJSON(_ request: URLRequest?) -> Result<NSDictionary> {
     guard let request = request
-        else { return Result(error: "No request found") }
-    
+    else {
+        return Result(error: "No request found")
+    }
+
     guard let bodyData = request.httpBody
-        else { return Result(error: "No HTTPBody") }
-    
+    else {
+        return Result(error: "No HTTPBody")
+    }
+
     guard let json = try? JSONSerialization.jsonObject(with: bodyData, options: .mutableLeaves)
-        else { return Result(error: "Invalid json") }
-    
+    else {
+        return Result(error: "Invalid json")
+    }
+
     guard let httpBody = json as? NSDictionary
-        else { return Result(error: "HTTPBody has invalid format") }
+    else {
+        return Result(error: "HTTPBody has invalid format")
+    }
 
     return Result.success(Box(httpBody))
 }
 
 func extractBodyAsMsgPack(_ request: URLRequest?) -> Result<NSDictionary> {
     guard let request = request
-        else { return Result(error: "No request found") }
+    else {
+        return Result(error: "No request found")
+    }
 
     guard let bodyData = request.httpBody
-        else { return Result(error: "No HTTPBody") }
+    else {
+        return Result(error: "No HTTPBody")
+    }
 
     let json = try! ARTMsgPackEncoder().decode(bodyData)
 
     guard let httpBody = json as? NSDictionary
-        else { return Result(error: "expected dictionary, got \(type(of: (json) as AnyObject)): \(json)") }
+    else {
+        return Result(error: "expected dictionary, got \(type(of: (json) as AnyObject)): \(json)")
+    }
 
     return Result.success(Box(httpBody))
 }
 
 func extractBodyAsMessages(_ request: URLRequest?) -> Result<[NSDictionary]> {
     guard let request = request
-        else { return Result(error: "No request found") }
+    else {
+        return Result(error: "No request found")
+    }
 
     guard let bodyData = request.httpBody
-        else { return Result(error: "No HTTPBody") }
+    else {
+        return Result(error: "No HTTPBody")
+    }
 
     let json = try! ARTMsgPackEncoder().decode(bodyData)
 
     guard let httpBody = json as? NSArray
-        else { return Result(error: "expected array, got \(type(of: (json) as AnyObject)): \(json)") }
+    else {
+        return Result(error: "expected array, got \(type(of: (json) as AnyObject)): \(json)")
+    }
 
-    return Result.success(Box(httpBody.map{$0 as! NSDictionary}))
+    return Result.success(Box(httpBody.map {
+        $0 as! NSDictionary
+    }))
 }
 
 func extractURLQueryValue(_ url: URL?, key name: String) -> String? {
@@ -821,8 +856,7 @@ class MockHTTP: ARTHttp {
             case .host(let name):
                 if request.url?.host == name {
                     self.performRequest(state: self.networkState, requestCallback: callback)
-                }
-                else {
+                } else {
                     self.performRequest(state: nil, requestCallback: callback)
                 }
             case .resetAfter:
@@ -832,8 +866,7 @@ class MockHTTP: ARTHttp {
                 if self.count == 0 {
                     self.networkState = nil
                     self.rule = nil
-                }
-                else if self.count < 0 {
+                } else if self.count < 0 {
                     fatalError("Out of sync")
                 }
             }
@@ -876,17 +909,17 @@ struct ErrorSimulator {
             "X-Ably-Errorcode": String(value),
             "X-Ably-Errormessage": description,
             "X-Ably-Serverid": serverId,
-            ]
+        ]
         )
     }
 
     lazy var stubData: Data? = {
         let jsonObject = ["error": [
-            "statusCode": modf(Float(self.value)/100).0, //whole number part
+            "statusCode": modf(Float(self.value) / 100).0, //whole number part
             "code": self.value,
             "message": self.description,
             "serverId": self.serverId,
-            ]
+        ]
         ]
         return try? JSONSerialization.data(withJSONObject: jsonObject, options: JSONSerialization.WritingOptions.init(rawValue: 0))
     }()
@@ -917,7 +950,9 @@ class MockHTTPExecutor: NSObject, ARTHTTPAuthenticatedExecutor {
         self.requests.append(request as URLRequest)
 
         if let simulatedError = errorSimulator, var _ = request.url {
-            defer { errorSimulator = nil }
+            defer {
+                errorSimulator = nil
+            }
             callback(nil, nil, simulatedError)
             return nil
         }
@@ -928,9 +963,11 @@ class MockHTTPExecutor: NSObject, ARTHTTPAuthenticatedExecutor {
 
     func execute(_ request: URLRequest, completion callback: ((HTTPURLResponse?, Data?, Error?) -> Void)? = nil) -> (ARTCancellable & NSObjectProtocol)? {
         self.requests.append(request)
-        
+
         if let simulatedError = errorSimulator, var _ = request.url {
-            defer { errorSimulator = nil }
+            defer {
+                errorSimulator = nil
+            }
             callback?(nil, nil, simulatedError)
             return nil
         }
@@ -990,7 +1027,7 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
         self._logger = logger
         self.http = http
     }
-    
+
     func logger() -> ARTLog {
         return self._logger
     }
@@ -1036,11 +1073,10 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
                 return http.execute(request, completion: { response, data, error in
                     callback?(simulatedError.stubResponse(requestURL), simulatedError.stubData, nil)
                 })
-            }
-            else {
+            } else {
                 callback?(simulatedError.stubResponse(requestURL), simulatedError.stubData, nil)
                 return nil
-            }            
+            }
         }
 
         let task = http.execute(request, completion: { response, data, error in
@@ -1056,8 +1092,7 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
                         callback?(response, result, error)
                     }
                 }
-            }
-            else {
+            } else {
                 callback?(response, data, error)
             }
         })
@@ -1246,8 +1281,7 @@ class TestProxyTransport: ARTWebSocketTransport {
         }
         if let lastUrl = self.lastUrl {
             networkConnectEventHandler(self, lastUrl)
-        }
-        else {
+        } else {
             queue.asyncAfter(deadline: .now() + 0.1) {
                 // Repeat until `lastUrl` is assigned.
                 self.performNetworkConnectEvent()
@@ -1386,20 +1420,24 @@ extension Sequence where Iterator.Element == Data {
         let msgPackEncoder = ARTMsgPackEncoder()
         return map({ try! msgPackEncoder.decode($0) as! T })
     }
-    
+
 }
 
-func + <K,V> (left: Dictionary<K,V>, right: Dictionary<K,V>?) -> Dictionary<K,V> {
-    guard let right = right else { return left }
+func +<K, V>(left: Dictionary<K, V>, right: Dictionary<K, V>?) -> Dictionary<K, V> {
+    guard let right = right else {
+        return left
+    }
     return left.reduce(right) {
-        var new = $0 as [K:V]
+        var new = $0 as [K: V]
         new.updateValue($1.1, forKey: $1.0)
         return new
     }
 }
 
-func += <K,V> (left: inout Dictionary<K,V>, right: Dictionary<K,V>?) {
-    guard let right = right else { return }
+func +=<K, V>(left: inout Dictionary<K, V>, right: Dictionary<K, V>?) {
+    guard let right = right else {
+        return
+    }
     right.forEach { key, value in
         left.updateValue(value, forKey: key)
     }
@@ -1431,8 +1469,8 @@ extension ARTMessage {
     open override func isEqual(_ object: Any?) -> Bool {
         if let other = object as? ARTMessage {
             return self.name == other.name &&
-                self.encoding == other.encoding &&
-                self.data as! NSObject == other.data as! NSObject
+                    self.encoding == other.encoding &&
+                    self.data as! NSObject == other.data as! NSObject
         }
 
         return super.isEqual(object)
@@ -1458,7 +1496,7 @@ extension Data {
         return String(data: self, encoding: .utf8)!
     }
 
-    var bytes: [UInt8]{
+    var bytes: [UInt8] {
         return [UInt8](self)
     }
 
@@ -1471,7 +1509,7 @@ extension Data {
 
         return result.uppercased()
     }
-    
+
 }
 
 extension NSData {
@@ -1523,8 +1561,10 @@ extension NSRegularExpression {
         let regex = try! NSRegularExpression(pattern: pattern, options: options)
         let range = NSMakeRange(0, value.lengthOfBytes(using: String.Encoding.utf8))
         let result = regex.firstMatch(in: value, options: [], range: range)
-        guard let textRange = result?.range(at: 0) else { return nil }
-        let convertedRange =  value.index(value.startIndex, offsetBy: textRange.location)..<value.index(value.startIndex, offsetBy: textRange.location+textRange.length)
+        guard let textRange = result?.range(at: 0) else {
+            return nil
+        }
+        let convertedRange = value.index(value.startIndex, offsetBy: textRange.location)..<value.index(value.startIndex, offsetBy: textRange.location + textRange.length)
         return String(value[convertedRange.lowerBound..<convertedRange.upperBound])
     }
 
@@ -1613,7 +1653,7 @@ extension ARTWebSocketTransport {
     }
 
     func simulateIncomingError() {
-        let error = NSError(domain: ARTAblyErrorDomain, code: 0, userInfo: [NSLocalizedDescriptionKey:"Fail test"])
+        let error = NSError(domain: ARTAblyErrorDomain, code: 0, userInfo: [NSLocalizedDescriptionKey: "Fail test"])
         let webSocketDelegate = self as ARTWebSocketDelegate
         webSocketDelegate.webSocket(self.websocket!, didFailWithError: error)
     }
@@ -1627,12 +1667,12 @@ extension ARTAuthInternal {
             return
         }
         self.setTokenDetails(ARTTokenDetails(
-            token: tokenDetails.token,
-            expires: Date().addingTimeInterval(-1.0),
-            issued: Date().addingTimeInterval(-1.0),
-            capability: tokenDetails.capability,
-            clientId: tokenDetails.clientId
-            )
+                token: tokenDetails.token,
+                expires: Date().addingTimeInterval(-1.0),
+                issued: Date().addingTimeInterval(-1.0),
+                capability: tokenDetails.capability,
+                clientId: tokenDetails.clientId
+        )
         )
     }
 
@@ -1660,38 +1700,38 @@ extension ARTMessage {
 
 }
 
-extension ARTRealtimeConnectionState : CustomStringConvertible {
-    public var description : String {
+extension ARTRealtimeConnectionState: CustomStringConvertible {
+    public var description: String {
         return ARTRealtimeConnectionStateToStr(self)
     }
 }
 
-extension ARTRealtimeConnectionEvent : CustomStringConvertible {
-    public var description : String {
+extension ARTRealtimeConnectionEvent: CustomStringConvertible {
+    public var description: String {
         return ARTRealtimeConnectionEventToStr(self)
     }
 }
 
-extension ARTProtocolMessageAction : CustomStringConvertible {
-    public var description : String {
+extension ARTProtocolMessageAction: CustomStringConvertible {
+    public var description: String {
         return ARTProtocolMessageActionToStr(self)
     }
 }
 
-extension ARTRealtimeChannelState : CustomStringConvertible {
-    public var description : String {
+extension ARTRealtimeChannelState: CustomStringConvertible {
+    public var description: String {
         return ARTRealtimeChannelStateToStr(self)
     }
 }
 
-extension ARTChannelEvent : CustomStringConvertible {
-    public var description : String {
+extension ARTChannelEvent: CustomStringConvertible {
+    public var description: String {
         return ARTChannelEventToStr(self)
     }
 }
 
-extension ARTPresenceAction : CustomStringConvertible {
-    public var description : String {
+extension ARTPresenceAction: CustomStringConvertible {
+    public var description: String {
         return ARTPresenceActionToStr(self)
     }
 }
@@ -1772,7 +1812,7 @@ extension String {
     }
 }
 
-@objc class TestReachability : NSObject, ARTReachability {
+@objc class TestReachability: NSObject, ARTReachability {
     var host: String?
     var callback: ((Bool) -> Void)?
     var queue: DispatchQueue
@@ -1820,7 +1860,9 @@ extension HTTPURLResponse {
      - Warning: Don't use 'allHeaderFields' property. See discussion.
      */
     @available(*, deprecated, message: "Don't use 'allHeaderFields'. It's not case-insensitive. Please use 'value(forHTTPHeaderField:)' method")
-    open var _allHeaderFields: [AnyHashable : Any] { return [:] }
+    open var _allHeaderFields: [AnyHashable: Any] {
+        return [:]
+    }
 
     /**
      The value which corresponds to the given header
@@ -1848,6 +1890,7 @@ protocol ARTHasInternal {
 
 extension ARTRealtime: ARTHasInternal {
     typealias Internal = ARTRealtimeInternal
+
     func unwrapAsync(_ use: @escaping (Internal) -> ()) {
         self.internalAsync(use)
     }
@@ -1890,7 +1933,7 @@ extension DispatchTimeInterval {
             fatalError("Unhandled DispatchTimeInterval unit.")
         }
     }
-    
+
     /// Return a new dispatch time interval computed from this one, incremented by the supplied amount, to no less than millisecond precision.
     func incremented(by interval: TimeInterval) -> DispatchTimeInterval {
         // interval is a TimeInterval which is a Double which is in SECONDS
@@ -1916,7 +1959,7 @@ extension DispatchTimeInterval {
 }
 
 extension ARTErrorCode {
-    
+
     var intValue: NSInteger {
         return NSInteger(rawValue)
     }

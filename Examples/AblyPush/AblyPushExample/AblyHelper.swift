@@ -6,7 +6,9 @@ class AblyHelper: NSObject {
     static let shared = AblyHelper()
     
     private(set) var realtime: ARTRealtime!
-    
+    private(set) var rest: ARTRest!
+
+
     private let key = "" // Your API Key from your app's dashboard
     
     private override init() {
@@ -27,6 +29,20 @@ extension AblyHelper {
     func activatePush() {
         Self.requestUserNotificationAuthorization()
         realtime.push.activate()
+    }
+
+    func revokeTokens() {
+        let targets:[ARTTokenRevocationTarget] = [ARTTokenRevocationTarget("client",value: "client1@hello.com")]
+        
+    
+        
+        rest.auth.revokeTokens(targets, issuedBefore: nil, allowReauthMargin: false) { UnsafeMutablePointer<Int32>?, error Error? in
+            if let error = error {
+                print(error)
+            }
+        }
+        
+
     }
     
     func deactivatePush() {
