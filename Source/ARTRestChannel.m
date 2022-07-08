@@ -237,18 +237,27 @@ dispatch_sync(_queue, ^{
             
             if (response.statusCode == 200 /*OK*/) {
                 NSError *decodeError = nil;
-                id<ARTEncoder> encoder = self->_rest.encoders[response.MIMEType];
-                ARTChannelDetails *channelDetails = [encoder decodeChannelDetails:data error:&decodeError];
-                if (decodeError) {
-                    [self.logger debug:__FILE__ line:__LINE__ message:@"%@: decode channel details failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+                id<ARTEncoder> decoder = self->_rest.encoders[response.MIMEType];
+                if (decoder == nil) {
+                    NSString* errorMessage = [NSString stringWithFormat:@"Decoder for MIMEType '%@' wasn't found.", response.MIMEType];
+                    [self.logger debug:__FILE__ line:__LINE__ message:@"%@: %@", NSStringFromClass(self.class), errorMessage];
                     if (callback) {
-                        callback(nil, [ARTErrorInfo createFromNSError:decodeError]);
+                        callback(nil, [ARTErrorInfo createWithCode:ARTErrorUnableToDecodeMessage message:errorMessage]);
                     }
                 }
                 else {
-                    [self.logger debug:__FILE__ line:__LINE__ message:@"%@: successfully got channel details %@", NSStringFromClass(self.class), channelDetails.channelId];
-                    if (callback) {
-                        callback(channelDetails, nil);
+                    ARTChannelDetails *channelDetails = [decoder decodeChannelDetails:data error:&decodeError];
+                    if (decodeError) {
+                        [self.logger debug:__FILE__ line:__LINE__ message:@"%@: decode channel details failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+                        if (callback) {
+                            callback(nil, [ARTErrorInfo createFromNSError:decodeError]);
+                        }
+                    }
+                    else {
+                        [self.logger debug:__FILE__ line:__LINE__ message:@"%@: successfully got channel details %@", NSStringFromClass(self.class), channelDetails.channelId];
+                        if (callback) {
+                            callback(channelDetails, nil);
+                        }
                     }
                 }
             }
