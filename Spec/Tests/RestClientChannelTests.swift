@@ -1492,6 +1492,7 @@ class RestClientChannelTests: XCTestCase {
     // RSL8a, CHD2b, CHS2b, CHO2a
     func test__047__status__with_subscribers__returns_a_channel_details_object_populated_with_channel_metrics() {
         let options = AblyTests.commonAppSetup()
+        options.clientId = "Client 1"
         let rest = ARTRest(options: options)
         let realtime = ARTRealtime(options: options)
 
@@ -1499,8 +1500,13 @@ class RestClientChannelTests: XCTestCase {
         
         let realtimeChannel = realtime.channels.get(channelName)
         waitUntil(timeout: testTimeout) { done in
+            let partialDone = AblyTests.splitDone(2, done: done)
+            realtimeChannel.presence.enter(nil) { error in
+                expect(error).to(beNil())
+                partialDone()
+            }
             realtimeChannel.once(.attached) { _ in
-                done()
+                partialDone()
             }
         }
 
@@ -1524,7 +1530,7 @@ class RestClientChannelTests: XCTestCase {
                 expect(details.status.occupancy.metrics.connections) == 1 // CHM2a
                 expect(details.status.occupancy.metrics.publishers) == 1 // CHM2e
                 expect(details.status.occupancy.metrics.subscribers) == 1 // CHM2f
-                expect(details.status.occupancy.metrics.presenceMembers) == 0 // CHM2c
+                expect(details.status.occupancy.metrics.presenceMembers) == 1 // CHM2c
                 expect(details.status.occupancy.metrics.presenceConnections) == 1 // CHM2b
                 expect(details.status.occupancy.metrics.presenceSubscribers) == 1 // CHM2d
                 done()
