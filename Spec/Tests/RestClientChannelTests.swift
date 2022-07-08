@@ -1495,18 +1495,16 @@ class RestClientChannelTests: XCTestCase {
         options.clientId = "Client 1"
         let rest = ARTRest(options: options)
         let realtime = ARTRealtime(options: options)
-
         let channelName = uniqueChannelName()
-        
         let realtimeChannel = realtime.channels.get(channelName)
+        let restChannel = rest.channels.get(channelName)
+        
         waitUntil(timeout: testTimeout) { done in
             realtimeChannel.presence.enter(nil) { error in
                 expect(error).to(beNil())
                 done()
             }
         }
-
-        let restChannel = rest.channels.get(channelName)
         waitUntil(timeout: testTimeout) { done in
             restChannel.status { details, error in
                 expect(error).to(beNil())
