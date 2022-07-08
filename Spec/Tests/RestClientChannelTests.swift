@@ -1490,7 +1490,7 @@ class RestClientChannelTests: XCTestCase {
     }
     
     // RSL8a, CHD2b, CHS2b, CHO2a
-    func test__047__channel_with_subscribers_status_method_returns_a_channel_details_object_with_fullfilled_channel_metrics() {
+    func test__047__status__with_subscribers__returns_a_channel_details_object_populated_with_channel_metrics() {
         let options = AblyTests.commonAppSetup()
         let rest = ARTRest(options: options)
         let realtime = ARTRealtime(options: options)
