@@ -6,6 +6,11 @@
 #import "ARTDeviceIdentityTokenDetails.h"
 #import "ARTCrypto+Private.h"
 
+NSString *const ARTDeviceIdKey = @"ARTDeviceId";
+NSString *const ARTDeviceSecretKey = @"ARTDeviceSecret";
+NSString *const ARTDeviceIdentityTokenKey = @"ARTDeviceIdentityToken";
+NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
+
 NSString *const ARTDevicePlatform = @"ios";
 
 #if TARGET_OS_IOS
