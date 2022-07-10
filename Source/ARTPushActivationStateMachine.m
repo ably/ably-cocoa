@@ -20,6 +20,7 @@
 
 NSString *const ARTPushActivationCurrentStateKey = @"ARTPushActivationCurrentState";
 NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEvents";
+NSString *const ARTPushActivationErrorInfoKey = @"ARTPushActivationErrorInfoKey";
 
 @implementation ARTPushActivationStateMachine {
     ARTPushActivationEvent *_lastHandledEvent;
@@ -127,6 +128,11 @@ dispatch_async(_queue, ^{
     }
 
     [self persist];
+    
+    if ([event isKindOfClass:[ARTPushActivationErrorEvent class]]) {
+        ARTPushActivationErrorEvent* errorEvent = (ARTPushActivationErrorEvent *)event;
+        [self saveErrorInfo:errorEvent.error];
+    }
 }
 
 - (void)persist {
@@ -135,6 +141,14 @@ dispatch_async(_queue, ^{
         [self.rest.storage setObject:[_current art_archive] forKey:ARTPushActivationCurrentStateKey];
     }
     [self.rest.storage setObject:[_pendingEvents art_archive] forKey:ARTPushActivationPendingEventsKey];
+}
+
+- (void)saveErrorInfo:(ARTErrorInfo *)errorInfo {
+    [_rest.storage setObject:[errorInfo art_archive] forKey:ARTPushActivationErrorInfoKey];
+}
+
+- (void)clearErrorInfo {
+    [_rest.storage setObject:nil forKey:ARTPushActivationErrorInfoKey];
 }
 
 - (void)deviceRegistration:(ARTErrorInfo *)error {

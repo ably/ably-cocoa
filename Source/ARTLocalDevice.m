@@ -5,6 +5,8 @@
 #import "ARTDeviceStorage.h"
 #import "ARTDeviceIdentityTokenDetails.h"
 #import "ARTCrypto+Private.h"
+#import "ARTPushActivationStateMachine+Private.h"
+#import "ARTPushActivationState.h"
 
 NSString *const ARTDeviceIdKey = @"ARTDeviceId";
 NSString *const ARTDeviceSecretKey = @"ARTDeviceSecret";
@@ -92,6 +94,18 @@ NSString *const ARTDevicePushTransportType = @"apns";
 
 - (NSString *)apnsDeviceToken {
     return self.pushRecipient[@"deviceToken"];
+}
+
+- (ARTErrorInfo *)activationError {
+    NSData *errorData = [_storage objectForKey:ARTPushActivationErrorInfoKey];
+    ARTErrorInfo* errorInfo = [ARTErrorInfo art_unarchiveFromData:errorData];
+    return errorInfo;
+}
+
+- (ARTPushActivationState *)activationState {
+    NSData *stateData = [_storage objectForKey:ARTPushActivationCurrentStateKey];
+    ARTPushActivationState* state = [ARTPushActivationState art_unarchiveFromData:stateData];
+    return state;
 }
 
 - (void)setAPNSDeviceToken:(NSString *_Nonnull)token {

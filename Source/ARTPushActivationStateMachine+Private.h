@@ -7,6 +7,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 extern NSString *const ARTPushActivationCurrentStateKey;
 extern NSString *const ARTPushActivationPendingEventsKey;
+extern NSString *const ARTPushActivationErrorInfoKey;
 
 @interface ARTPushActivationStateMachine ()
 
@@ -24,6 +25,8 @@ extern NSString *const ARTPushActivationPendingEventsKey;
 @property (readonly, nonatomic) ARTPushActivationState *current_nosync;
 
 - (void)registerForAPNS;
+- (void)saveErrorInfo:(ARTErrorInfo *)errorInfo;
+- (void)clearErrorInfo;
 
 @end
 

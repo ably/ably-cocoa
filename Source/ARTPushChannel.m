@@ -9,6 +9,7 @@
 #import "ARTChannel+Private.h"
 #import "ARTLocalDevice+Private.h"
 #import "ARTNSMutableRequest+ARTPush.h"
+#import "ARTPushActivationState.h"
 
 @implementation ARTPushChannel {
     ARTQueuedDealloc *_dealloc;
@@ -304,7 +305,10 @@ dispatch_sync(_queue, ^{
     ARTLocalDevice *device = nil;
     #endif
     if (![device isRegistered]) {
-        if (callback) callback([ARTErrorInfo createWithCode:0 message:@"cannot use device before device activation has finished"]);
+        if (callback) {
+            ARTErrorInfo* errorInfo = device.activationState.isFailed ? device.activationError : [ARTErrorInfo createWithCode:0 message:@"cannot use device before device activation has finished"];
+            callback(errorInfo);
+        }
     }
     return device;
 }
