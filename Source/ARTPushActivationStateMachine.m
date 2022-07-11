@@ -20,7 +20,7 @@
 
 NSString *const ARTPushActivationCurrentStateKey = @"ARTPushActivationCurrentState";
 NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEvents";
-NSString *const ARTPushActivationErrorInfoKey = @"ARTPushActivationErrorInfoKey";
+NSString *const ARTPushActivationErrorInfoKey = @"ARTPushActivationErrorInfo";
 
 @implementation ARTPushActivationStateMachine {
     ARTPushActivationEvent *_lastHandledEvent;

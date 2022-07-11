@@ -96,6 +96,8 @@ NSString *const ARTDevicePushTransportType = @"apns";
     return self.pushRecipient[@"deviceToken"];
 }
 
+#if TARGET_OS_IOS
+
 - (ARTErrorInfo *)activationError {
     NSData *errorData = [_storage objectForKey:ARTPushActivationErrorInfoKey];
     ARTErrorInfo* errorInfo = [ARTErrorInfo art_unarchiveFromData:errorData];
@@ -107,6 +109,8 @@ NSString *const ARTDevicePushTransportType = @"apns";
     ARTPushActivationState* state = [ARTPushActivationState art_unarchiveFromData:stateData];
     return state;
 }
+
+#endif
 
 - (void)setAPNSDeviceToken:(NSString *_Nonnull)token {
     self.pushRecipient[@"deviceToken"] = token;

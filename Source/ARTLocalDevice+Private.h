@@ -14,8 +14,11 @@ extern NSString *const ARTDeviceActivationErrorKey;
 @interface ARTLocalDevice ()
 
 @property (strong, nonatomic) id<ARTDeviceStorage> storage;
+
+#if TARGET_OS_IOS
 @property (nullable, nonatomic, readonly) ARTErrorInfo *activationError;
 @property (nullable, nonatomic, readonly) ARTPushActivationPersistentState *activationState;
+#endif
 
 + (ARTLocalDevice *)load:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage;
 - (nullable NSString *)apnsDeviceToken;

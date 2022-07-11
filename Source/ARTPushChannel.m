@@ -299,11 +299,8 @@ dispatch_sync(_queue, ^{
 }
 
 - (ARTLocalDevice *)getDevice:(ARTCallback)callback {
-    #if TARGET_OS_IOS
+#if TARGET_OS_IOS
     ARTLocalDevice *device = [_rest device_nosync];
-    #else
-    ARTLocalDevice *device = nil;
-    #endif
     if (![device isRegistered]) {
         if (callback) {
             ARTErrorInfo* errorInfo = device.activationState.isFailed ? device.activationError : [ARTErrorInfo createWithCode:0 message:@"cannot use device before device activation has finished"];
@@ -311,6 +308,9 @@ dispatch_sync(_queue, ^{
         }
     }
     return device;
+#else
+    return nil;
+#endif
 }
 
 - (NSString *)getClientId:(ARTCallback)callback {
