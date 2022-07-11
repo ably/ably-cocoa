@@ -65,11 +65,6 @@
 
 @end
 
-NSString *const ARTDeviceIdKey = @"ARTDeviceId";
-NSString *const ARTDeviceSecretKey = @"ARTDeviceSecret";
-NSString *const ARTDeviceIdentityTokenKey = @"ARTDeviceIdentityToken";
-NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
-
 @implementation ARTPushInternal {
     __weak ARTRestInternal *_rest; // weak because rest owns self
     ARTLog *_logger;

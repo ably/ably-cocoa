@@ -25,6 +25,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Persistent State
 @interface ARTPushActivationPersistentState : ARTPushActivationState
+
+- (BOOL)isFailed;
+
 @end
 
 #pragma mark - States

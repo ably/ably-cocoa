@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (strong, nonatomic) NSString *platform;
 @property (strong, nonatomic) NSString *formFactor;
 @property (strong, nonatomic) NSDictionary<NSString *, NSString *> *metadata;
-@property (strong, nonatomic) ARTDevicePushDetails *push;
+@property (strong, nonatomic) NSMutableDictionary<NSString *, NSString *> *pushRecipient;
 
 - (instancetype)init;
 - (instancetype)initWithId:(ARTDeviceId *)deviceId;

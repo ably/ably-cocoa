@@ -68,6 +68,11 @@
 #pragma mark - Persistent State
 
 @implementation ARTPushActivationPersistentState
+
+- (BOOL)isFailed {
+    return [self isKindOfClass:[ARTPushActivationStateAfterRegistrationSyncFailed class]] || [self isKindOfClass:[ARTPushActivationEventDeregistrationFailed class]];
+}
+
 @end
 
 #pragma mark - Activation States

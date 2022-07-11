@@ -132,8 +132,8 @@
     return [self encode:[self deviceDetailsToDictionary:deviceDetails] error:error];
 }
 
-- (ARTDeviceDetails *)decodeDeviceDetails:(NSData *)data error:(NSError **)error {
-    return [self deviceDetailsFromDictionary:[self decodeDictionary:data error:nil] error:error];
+- (ARTDeviceDetailsResponse *)decodeDeviceDetailsResponse:(NSData *)data error:(NSError **)error {
+    return [self deviceDetailsResponseFromDictionary:[self decodeDictionary:data error:nil] error:error];
 }
 
 - (NSArray<ARTDeviceDetails *> *)decodeDevicesDetails:(NSData *)data error:(NSError * __autoreleasing *)error {
@@ -154,14 +154,6 @@
 
 - (ARTDeviceIdentityTokenDetails *)decodeDeviceIdentityTokenDetails:(NSData *)data error:(NSError * __autoreleasing *)error {
     return [self deviceIdentityTokenDetailsFromDictionary:[self decodeDictionary:data error:nil] error:error];
-}
-
-- (NSData *)encodeDevicePushDetails:(ARTDevicePushDetails *)devicePushDetails error:(NSError **)error {
-    return [self encode:[self devicePushDetailsToDictionary:devicePushDetails] error:error];
-}
-
-- (ARTDevicePushDetails *)decodeDevicePushDetails:(NSData *)data error:(NSError * __autoreleasing *)error {
-    return [self devicePushDetailsFromDictionary:[self decode:data error:nil] error:error];
 }
 
 - (NSData *)encodePushChannelSubscription:(ARTPushChannelSubscription *)channelSubscription error:(NSError * __autoreleasing *)error {
@@ -634,7 +626,7 @@
         dictionary[@"clientId"] = deviceDetails.clientId;
     }
 
-    dictionary[@"push"] = [self devicePushDetailsToDictionary:deviceDetails.push];
+    dictionary[@"push"] = @{ @"recipient": deviceDetails.pushRecipient };
 
     return dictionary;
 }
@@ -651,7 +643,7 @@
     deviceDetails.platform = [input artString:@"platform"];
     deviceDetails.formFactor = [input artString:@"formFactor"];
     deviceDetails.metadata = [input valueForKey:@"metadata"];
-    deviceDetails.push = [self devicePushDetailsFromDictionary:input[@"push"] error:error];
+    deviceDetails.pushRecipient = [input valueForKeyPath:@"push.recipient"];
 
     return deviceDetails;
 }
@@ -677,30 +669,34 @@
     return deviceIdentityTokenDetails;
 }
 
-- (NSDictionary *)devicePushDetailsToDictionary:(ARTDevicePushDetails *)devicePushDetails {
-    NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
-
-    dictionary[@"recipient"] = devicePushDetails.recipient;
-
-    return dictionary;
-}
-
-- (ARTDevicePushDetails *)devicePushDetailsFromDictionary:(NSDictionary *)input error:(NSError * __autoreleasing *)error {
-    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: devicePushDetailsFromDictionary %@", _rest, [_delegate formatAsString], input];
+- (ARTDevicePushStatus *)devicePushStatusFromDictionary:(NSDictionary *)input error:(NSError * __autoreleasing *)error {
+    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: devicePushStatusFromDictionary %@", _rest, [_delegate formatAsString], input];
 
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
 
-    ARTDevicePushDetails *devicePushDetails = [[ARTDevicePushDetails alloc] init];
-    devicePushDetails.state = [input artString:@"state"];
+    ARTDevicePushStatus *devicePushStatus = [[ARTDevicePushStatus alloc] init];
+    devicePushStatus.state = [input artString:@"state"];
     NSDictionary *errorReason = [input valueForKey:@"errorReason"];
     if (errorReason) {
-        devicePushDetails.errorReason = [ARTErrorInfo createWithCode:[[errorReason artNumber:@"code"] intValue] status:[[errorReason artNumber:@"statusCode"] intValue] message:[errorReason artString:@"message"]];
+        devicePushStatus.errorReason = [ARTErrorInfo createWithCode:[[errorReason artNumber:@"code"] intValue] status:[[errorReason artNumber:@"statusCode"] intValue] message:[errorReason artString:@"message"]];
     }
-    devicePushDetails.recipient = [input valueForKey:@"recipient"];
+    return devicePushStatus;
+}
 
-    return devicePushDetails;
+- (ARTDeviceDetailsResponse *)deviceDetailsResponseFromDictionary:(NSDictionary *)input error:(NSError * __autoreleasing *)error {
+    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: deviceDetailsResponseFromDictionary %@", _rest, [_delegate formatAsString], input];
+
+    if (![input isKindOfClass:[NSDictionary class]]) {
+        return nil;
+    }
+    
+    ARTDeviceDetailsResponse *response = [[ARTDeviceDetailsResponse alloc] init];
+    response.deviceDetails = [self deviceDetailsFromDictionary:input error:error];
+    response.pushStatus = [self devicePushStatusFromDictionary:input[@"push"] error:error];
+    
+    return response;
 }
 
 - (ARTProtocolMessage *)protocolMessageFromDictionary:(NSDictionary *)input {

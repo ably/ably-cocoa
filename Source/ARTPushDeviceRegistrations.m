@@ -28,7 +28,7 @@
     [_internal save:deviceDetails callback:callback];
 }
 
-- (void)get:(ARTDeviceId *)deviceId callback:(void (^)(ARTDeviceDetails *_Nullable,  ARTErrorInfo *_Nullable))callback {
+- (void)get:(ARTDeviceId *)deviceId callback:(ARTDeviceDetailsCallback)callback {
     [_internal get:deviceId callback:callback];
 }
 
@@ -94,13 +94,13 @@ dispatch_async(_queue, ^{
     [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode == 200 /*OK*/) {
             NSError *decodeError = nil;
-            ARTDeviceDetails *deviceDetails = [[self->_rest defaultEncoder] decodeDeviceDetails:data error:&decodeError];
+            ARTDeviceDetailsResponse *response = [[self->_rest defaultEncoder] decodeDeviceDetailsResponse:data error:&decodeError];
             if (decodeError) {
                 [self->_logger debug:__FILE__ line:__LINE__ message:@"%@: decode device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
                 callback([ARTErrorInfo createFromNSError:decodeError]);
             }
             else {
-                [self->_logger debug:__FILE__ line:__LINE__ message:@"%@: successfully saved device %@", NSStringFromClass(self.class), deviceDetails.id];
+                [self->_logger debug:__FILE__ line:__LINE__ message:@"%@: successfully saved device %@", NSStringFromClass(self.class), response.deviceDetails.id];
                 callback(nil);
             }
         }
@@ -117,12 +117,12 @@ dispatch_async(_queue, ^{
 });
 }
 
-- (void)get:(ARTDeviceId *)deviceId callback:(void (^)(ARTDeviceDetails *, ARTErrorInfo *))callback {
+- (void)get:(ARTDeviceId *)deviceId callback:(ARTDeviceDetailsCallback)callback {
     if (callback) {
-        void (^userCallback)(ARTDeviceDetails *, ARTErrorInfo *error) = callback;
-        callback = ^(ARTDeviceDetails *device, ARTErrorInfo *error) {
+        ARTDeviceDetailsCallback userCallback = callback;
+        callback = ^(ARTDeviceDetailsResponse *response, ARTErrorInfo *error) {
             dispatch_async(self->_userQueue, ^{
-                userCallback(device, error);
+                userCallback(response, error);
             });
         };
     }
@@ -142,14 +142,14 @@ dispatch_async(_queue, ^{
     [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode == 200 /*OK*/) {
             NSError *decodeError = nil;
-            ARTDeviceDetails *device = [self->_rest.encoders[response.MIMEType] decodeDeviceDetails:data error:&decodeError];
+            ARTDeviceDetailsResponse *detailsResponse = [self->_rest.encoders[response.MIMEType] decodeDeviceDetailsResponse:data error:&decodeError];
             if (decodeError) {
                 [self->_logger debug:__FILE__ line:__LINE__ message:@"%@: decode device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
                 callback(nil, [ARTErrorInfo createFromNSError:decodeError]);
             }
-            else if (device) {
+            else if (detailsResponse) {
                 [self->_logger debug:__FILE__ line:__LINE__ message:@"%@: get device successfully", NSStringFromClass(self.class)];
-                callback(device, nil);
+                callback(detailsResponse, nil);
             }
             else {
                 [self->_logger debug:__FILE__ line:__LINE__ message:@"%@: get device failed with unknown error", NSStringFromClass(self.class)];
