@@ -136,6 +136,10 @@
     return [self deviceDetailsFromDictionary:[self decodeDictionary:data error:nil] error:error];
 }
 
+- (ARTChannelDetails *)decodeChannelDetails:(NSData *)data error:(NSError **)error {
+    return [self channelDetailsFromDictionary:[self decodeDictionary:data error:error]];
+}
+
 - (NSArray<ARTDeviceDetails *> *)decodeDevicesDetails:(NSData *)data error:(NSError * __autoreleasing *)error {
     return [self devicesDetailsFromArray:[self decodeArray:data error:nil] error:error];
 }
@@ -742,15 +746,44 @@
     if (!input) {
         return nil;
     }
+    return [[ARTConnectionDetails alloc] initWithClientId:[input artString:@"clientId"]
+                                            connectionKey:[input artString:@"connectionKey"]
+                                           maxMessageSize:[input artInteger:@"maxMessageSize"]
+                                             maxFrameSize:[input artInteger:@"maxFrameSize"]
+                                           maxInboundRate:[input artInteger:@"maxInboundRate"]
+                                       connectionStateTtl:millisecondsToTimeInterval([input artInteger:@"connectionStateTtl"])
+                                                 serverId:[input artString:@"serverId"]
+                                          maxIdleInterval:millisecondsToTimeInterval([input artInteger:@"maxIdleInterval"])];
+}
 
-   return [[ARTConnectionDetails alloc] initWithClientId:[input artString:@"clientId"]
-                                           connectionKey:[input artString:@"connectionKey"]
-                                          maxMessageSize:[input artInteger:@"maxMessageSize"]
-                                            maxFrameSize:[input artInteger:@"maxFrameSize"]
-                                          maxInboundRate:[input artInteger:@"maxInboundRate"]
-                                      connectionStateTtl:millisecondsToTimeInterval([input artInteger:@"connectionStateTtl"])
-                                                serverId:[input artString:@"serverId"]
-                                         maxIdleInterval:millisecondsToTimeInterval([input artInteger:@"maxIdleInterval"])];
+- (ARTChannelMetrics *)channelMetricsFromDictionary:(NSDictionary *)input {
+    return [[ARTChannelMetrics alloc] initWithConnections:[input artInteger:@"connections"]
+                                               publishers:[input artInteger:@"publishers"]
+                                              subscribers:[input artInteger:@"subscribers"]
+                                      presenceConnections:[input artInteger:@"presenceConnections"]
+                                          presenceMembers:[input artInteger:@"presenceMembers"]
+                                      presenceSubscribers:[input artInteger:@"presenceSubscribers"]];;
+}
+
+- (ARTChannelOccupancy *)channelOccupancyFromDictionary:(NSDictionary *)input {
+    NSDictionary *metricsDict = [input valueForKey:@"metrics"];
+    ARTChannelMetrics *metrics = [self channelMetricsFromDictionary:metricsDict];
+    ARTChannelOccupancy *occupancy = [[ARTChannelOccupancy alloc] initWithMetrics:metrics];
+    return occupancy;
+}
+
+- (ARTChannelStatus *)channelStatusFromDictionary:(NSDictionary *)input {
+    NSDictionary *occupancyDict = [input valueForKey:@"occupancy"];
+    ARTChannelOccupancy *occupancy = [self channelOccupancyFromDictionary:occupancyDict];
+    ARTChannelStatus *status = [[ARTChannelStatus alloc] initWithOccupancy:occupancy active:[input artBoolean:@"isActive"]];
+    return status;
+}
+
+- (ARTChannelDetails *)channelDetailsFromDictionary:(NSDictionary *)input {
+    NSDictionary *statusDict = [input valueForKey:@"status"];
+    ARTChannelStatus *status = [self channelStatusFromDictionary:statusDict];
+    ARTChannelDetails *details = [[ARTChannelDetails alloc] initWithChannelId:[input artString:@"channelId"] status:status];
+    return details;
 }
 
 - (NSArray *)statsFromArray:(NSArray *)input {

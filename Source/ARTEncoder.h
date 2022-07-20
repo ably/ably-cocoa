@@ -64,6 +64,10 @@ NS_ASSUME_NONNULL_BEGIN
 // DeviceDetails
 - (nullable NSData *)encodeDeviceDetails:(ARTDeviceDetails *)deviceDetails error:(NSError *_Nullable *_Nullable)error;
 - (nullable ARTDeviceDetails *)decodeDeviceDetails:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
+
+// ChannelDetails
+- (nullable ARTChannelDetails *)decodeChannelDetails:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
+
 - (nullable NSArray<ARTDeviceDetails *> *)decodeDevicesDetails:(NSData *)data error:(NSError * __autoreleasing *)error;
 - (nullable ARTDeviceIdentityTokenDetails *)decodeDeviceIdentityTokenDetails:(NSData *)data error:(NSError * __autoreleasing *)error;
 

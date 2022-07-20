@@ -134,6 +134,71 @@ NSString *ARTRealtimeConnectionEventToStr(ARTRealtimeConnectionEvent event) {
 
 @end
 
+#pragma mark - ARTChannelMetrics
+
+@implementation ARTChannelMetrics
+
+- (instancetype)initWithConnections:(NSInteger)connections
+                         publishers:(NSInteger)publishers
+                        subscribers:(NSInteger)subscribers
+                presenceConnections:(NSInteger)presenceConnections
+                    presenceMembers:(NSInteger)presenceMembers
+                presenceSubscribers:(NSInteger)presenceSubscribers {
+    
+    if (self = [super init]) {
+        _connections = connections;
+        _publishers = publishers;
+        _subscribers = subscribers;
+        _presenceConnections = presenceConnections;
+        _presenceMembers = presenceMembers;
+        _presenceSubscribers = presenceSubscribers;
+    }
+    return self;
+}
+
+@end
+
+#pragma mark - ARTChannelOccupancy
+
+@implementation ARTChannelOccupancy
+
+- (instancetype)initWithMetrics:(ARTChannelMetrics *)metrics {
+    if (self = [super init]) {
+        _metrics = metrics;
+    }
+    return self;
+}
+
+@end
+
+#pragma mark - ARTChannelStatus
+
+@implementation ARTChannelStatus
+
+- (instancetype)initWithOccupancy:(ARTChannelOccupancy *)occupancy active:(BOOL)active {
+    if (self = [super init]) {
+        _occupancy = occupancy;
+        _active = active;
+    }
+    return self;
+}
+
+@end
+
+#pragma mark - ARTChannelDetails
+
+@implementation ARTChannelDetails
+
+- (instancetype)initWithChannelId:(NSString *)channelId status:(ARTChannelStatus *)status {
+    if (self = [super init]) {
+        _channelId = channelId;
+        _status = status;
+    }
+    return self;
+}
+
+@end
+
 #pragma mark - ARTEventIdentification
 
 @implementation NSString (ARTEventIdentification)

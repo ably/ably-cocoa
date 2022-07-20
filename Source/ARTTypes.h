@@ -201,6 +201,60 @@ NSString *generateNonce(void);
 
 @end
 
+#pragma mark - ARTChannelMetrics
+
+@interface ARTChannelMetrics : NSObject
+
+@property (nonatomic, readonly) NSInteger connections;
+@property (nonatomic, readonly) NSInteger publishers;
+@property (nonatomic, readonly) NSInteger subscribers;
+@property (nonatomic, readonly) NSInteger presenceConnections;
+@property (nonatomic, readonly) NSInteger presenceMembers;
+@property (nonatomic, readonly) NSInteger presenceSubscribers;
+
+- (instancetype)initWithConnections:(NSInteger)connections
+                         publishers:(NSInteger)publishers
+                        subscribers:(NSInteger)subscribers
+                presenceConnections:(NSInteger)presenceConnections
+                    presenceMembers:(NSInteger)presenceMembers
+                presenceSubscribers:(NSInteger)presenceSubscribers;
+
+@end
+
+#pragma mark - ARTChannelOccupancy
+
+@interface ARTChannelOccupancy : NSObject
+
+@property (nonatomic, strong, readonly) ARTChannelMetrics *metrics;
+
+- (instancetype)initWithMetrics:(ARTChannelMetrics *)metrics;
+
+@end
+
+#pragma mark - ARTChannelStatus
+
+@interface ARTChannelStatus : NSObject
+
+@property (nonatomic, readonly) BOOL active;
+
+@property (nonatomic, strong, readonly) ARTChannelOccupancy *occupancy;
+
+- (instancetype)initWithOccupancy:(ARTChannelOccupancy *)occupancy active:(BOOL)active;
+
+@end
+
+#pragma mark - ARTChannelDetails
+
+@interface ARTChannelDetails : NSObject
+
+@property (nonatomic, strong, readonly) NSString *channelId;
+
+@property (nonatomic, strong, readonly) ARTChannelStatus *status;
+
+- (instancetype)initWithChannelId:(NSString *)channelId status:(ARTChannelStatus *)status;
+
+@end
+
 #pragma mark - ARTJsonCompatible
 
 @protocol ARTJsonCompatible <NSObject>
@@ -264,6 +318,7 @@ typedef void (^ARTChannelStateCallback)(ARTChannelStateChange *stateChange);
 typedef void (^ARTConnectionStateCallback)(ARTConnectionStateChange *stateChange);
 typedef void (^ARTPresenceMessageCallback)(ARTPresenceMessage *message);
 typedef void (^ARTPresenceMessagesCallback)(NSArray<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error);
+typedef void (^ARTChannelDetailsCallback)(ARTChannelDetails *_Nullable details, ARTErrorInfo *_Nullable error);
 
 typedef void (^ARTStatusCallback)(ARTStatus *status);
 typedef void (^ARTURLRequestCallback)(NSHTTPURLResponse *_Nullable result, NSData *_Nullable data, NSError *_Nullable error);
