@@ -508,11 +508,11 @@ class RestClientChannelTests: XCTestCase {
         options.channelNamePrefix = nil
         let client = ARTRest(options: options)
         let channel = client.channels.get(uniqueChannelName(prefix: "pushenabled:test"))
-        let extras = ["notification": ["title": "Hello from Ably!"]] as ARTJsonCompatible
+        let extras = ["push": ["notification": ["title": "Hello from Ably!"]]] as ARTJsonCompatible
 
         expect((client.internal.encoders["application/json"] as! ARTJsonLikeEncoder).message(from: [
             "data": "foo",
-            "extras": ["notification": ["title": "Hello from Ably!"]],
+            "extras": ["push": ["notification": ["title": "Hello from Ably!"]]],
         ])?.extras == extras).to(beTrue())
 
         waitUntil(timeout: testTimeout) { done in
