@@ -1522,4 +1522,18 @@ class RestClientChannelTests: XCTestCase {
             }
         }
     }
+    
+    func test__48__channel_name_can_contain_slash_character_which_is_url_encoded_in_the_rest_request_path() throws {
+        client.internal.httpExecutor = testHTTPExecutor
+        let channel = client.channels.get(uniqueChannelName(prefix: "beforeSlash/afterSlash"))
+        
+        channel.publish(nil, data: nil)
+        
+        let url = try XCTUnwrap(testHTTPExecutor.requests.first?.url)
+        let urlEncodedChannelName = try XCTUnwrap(channel.name.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlHostAllowed))
+
+        XCTAssert(channel.name.contains("/"))
+        XCTAssertFalse(urlEncodedChannelName.contains("/"))
+        XCTAssert(url.absoluteString.contains(urlEncodedChannelName))
+    }
 }
