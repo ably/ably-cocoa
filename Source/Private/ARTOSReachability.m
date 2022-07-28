@@ -48,8 +48,10 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
     _host = host;
     _callback = callback;
 
-    dispatch_queue_attr_t attrs = dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_UTILITY, DISPATCH_QUEUE_PRIORITY_DEFAULT);
-    _queue = dispatch_queue_create("com.ably.reachability-monitor", attrs);
+    if(_queue == nil) {
+        dispatch_queue_attr_t attrs = dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_UTILITY, DISPATCH_QUEUE_PRIORITY_DEFAULT);
+        _queue = dispatch_queue_create("com.ably.reachability-monitor", attrs);
+    }
 
     _reachabilityRef = CFAutorelease(SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, [host UTF8String]));
 
