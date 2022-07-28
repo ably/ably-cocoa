@@ -44,7 +44,8 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
     _host = host;
     _callback = callback;
 
-    _reachabilityRef = SCNetworkReachabilityCreateWithName(NULL, [host UTF8String]);
+    _reachabilityRef = CFAutorelease(SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, [host UTF8String]));
+    
     SCNetworkReachabilityContext context = {0, (__bridge void *)(self), NULL, NULL, NULL};
 
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(networkIsReachable) name:kARTOSReachabilityNetworkIsReachableNotification object:nil];
