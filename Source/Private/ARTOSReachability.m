@@ -44,12 +44,18 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
     _host = host;
     _callback = callback;
 
+    dispatch_queue_attr_t attrs = dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_SERIAL, QOS_CLASS_UTILITY, DISPATCH_QUEUE_PRIORITY_DEFAULT);
+    _queue = dispatch_queue_create("com.ably.reachability-monitor", attrs);
+
     _reachabilityRef = CFAutorelease(SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, [host UTF8String]));
-    
+
     SCNetworkReachabilityContext context = {0, (__bridge void *)(self), NULL, NULL, NULL};
 
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(networkIsReachable) name:kARTOSReachabilityNetworkIsReachableNotification object:nil];
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(networkIsDown) name:kARTOSReachabilityNetworkIsDownNotification object:nil];
+
+    SCNetworkReachabilitySetDispatchQueue(_reachabilityRef, _queue);
+
     if (SCNetworkReachabilitySetCallback(_reachabilityRef, ARTOSReachability_Callback, &context)) {
         if (SCNetworkReachabilityScheduleWithRunLoop(_reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode)) {
             [_logger info:@"Reachability: started listening for host %@", _host];
