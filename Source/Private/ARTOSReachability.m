@@ -12,7 +12,7 @@ NSNotificationName const kARTOSReachabilityNetworkIsReachableNotification = @"AR
 NSNotificationName const kARTOSReachabilityNetworkIsDownNotification = @"ARTOSReachabilityNetworkIsDownNotification";
 
 /// Global callback for network state changes
-static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void* info) {
+static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void *_Nullable info) {
     // Post a notification to notify the instance that the network reachability changed.
     BOOL reachable = flags & kSCNetworkReachabilityFlagsReachable;
     if (reachable) {
