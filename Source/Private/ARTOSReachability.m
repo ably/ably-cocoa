@@ -71,18 +71,13 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
         }
     }
     else {
-        [NSNotificationCenter.defaultCenter removeObserver:self name:kARTOSReachabilityNetworkIsReachableNotification object:nil];
-        [NSNotificationCenter.defaultCenter removeObserver:self name:kARTOSReachabilityNetworkIsDownNotification object:nil];
+       [self removeAllObservers];
     }
 }
 
 - (void)off {
     if (_reachabilityRef != NULL) {
-        [NSNotificationCenter.defaultCenter removeObserver:self name:kARTOSReachabilityNetworkIsReachableNotification object:nil];
-        [NSNotificationCenter.defaultCenter removeObserver:self name:kARTOSReachabilityNetworkIsDownNotification object:nil];
-
-        [NSNotificationCenter.defaultCenter removeObserver:self name:kARTOSReachabilityNetworkIsReachableNotification object:nil];
-        [NSNotificationCenter.defaultCenter removeObserver:self name:kARTOSReachabilityNetworkIsDownNotification object:nil];
+        [self removeAllObservers];
 
         SCNetworkReachabilityUnscheduleFromRunLoop(_reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
         SCNetworkReachabilitySetDispatchQueue(_reachabilityRef, NULL);
@@ -91,6 +86,14 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
     }
     _callback = nil;
     _host = nil;
+}
+
+- (void)removeAllObservers {
+    [NSNotificationCenter.defaultCenter removeObserver:self name:kARTOSReachabilityNetworkIsReachableNotification object:nil];
+    [NSNotificationCenter.defaultCenter removeObserver:self name:kARTOSReachabilityNetworkIsDownNotification object:nil];
+
+    [NSNotificationCenter.defaultCenter removeObserver:self name:kARTOSReachabilityNetworkIsReachableNotification object:nil];
+    [NSNotificationCenter.defaultCenter removeObserver:self name:kARTOSReachabilityNetworkIsDownNotification object:nil];
 }
 
 - (void)networkIsReachable {
