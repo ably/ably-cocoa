@@ -78,6 +78,10 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
     if (_reachabilityRef != NULL) {
         [NSNotificationCenter.defaultCenter removeObserver:self name:kARTOSReachabilityNetworkIsReachableNotification object:nil];
         [NSNotificationCenter.defaultCenter removeObserver:self name:kARTOSReachabilityNetworkIsDownNotification object:nil];
+
+        [NSNotificationCenter.defaultCenter removeObserver:self name:kARTOSReachabilityNetworkIsReachableNotification object:nil];
+        [NSNotificationCenter.defaultCenter removeObserver:self name:kARTOSReachabilityNetworkIsDownNotification object:nil];
+
         SCNetworkReachabilityUnscheduleFromRunLoop(_reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
         SCNetworkReachabilitySetDispatchQueue(_reachabilityRef, NULL);
         SCNetworkReachabilitySetCallback(_reachabilityRef, NULL, NULL);
