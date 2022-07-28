@@ -16,10 +16,14 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
     // Post a notification to notify the instance that the network reachability changed.
     BOOL reachable = flags & kSCNetworkReachabilityFlagsReachable;
     if (reachable) {
-        [NSNotificationCenter.defaultCenter postNotificationName:kARTOSReachabilityNetworkIsReachableNotification object:nil];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [NSNotificationCenter.defaultCenter postNotificationName:kARTOSReachabilityNetworkIsReachableNotification object:nil];
+        });
     }
     else {
-        [NSNotificationCenter.defaultCenter postNotificationName:kARTOSReachabilityNetworkIsDownNotification object:nil];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [NSNotificationCenter.defaultCenter postNotificationName:kARTOSReachabilityNetworkIsDownNotification object:nil];
+        });
     }
 }
 
