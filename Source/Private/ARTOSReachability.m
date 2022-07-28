@@ -106,6 +106,7 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
     [self off];
     if (_reachabilityRef != NULL) {
         CFRelease(_reachabilityRef);
+        _reachabilityRef = NULL;
     }
 }
 
