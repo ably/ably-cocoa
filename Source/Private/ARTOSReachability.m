@@ -53,7 +53,7 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
         _queue = dispatch_queue_create("com.ably.reachability-monitor", attrs);
     }
 
-    _reachabilityRef = CFAutorelease(SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, [host UTF8String]));
+    _reachabilityRef = SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, [host UTF8String]);
 
     SCNetworkReachabilityContext context = {0, (__bridge void *)(self), NULL, NULL, NULL};
 
