@@ -60,18 +60,23 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(networkIsReachable) name:kARTOSReachabilityNetworkIsReachableNotification object:nil];
     [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(networkIsDown) name:kARTOSReachabilityNetworkIsDownNotification object:nil];
 
-    SCNetworkReachabilitySetDispatchQueue(_reachabilityRef, _queue);
-
-    if (SCNetworkReachabilitySetCallback(_reachabilityRef, ARTOSReachability_Callback, &context)) {
-        if (SCNetworkReachabilityScheduleWithRunLoop(_reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode)) {
-            [_logger info:@"Reachability: started listening for host %@", _host];
+    if(SCNetworkReachabilitySetDispatchQueue(_reachabilityRef, _queue)){
+        if (SCNetworkReachabilitySetCallback(_reachabilityRef, ARTOSReachability_Callback, &context)) {
+            if (SCNetworkReachabilityScheduleWithRunLoop(_reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode)) {
+                [_logger info:@"Reachability: started listening for host %@", _host];
+            }
+            else {
+                [_logger warn:@"Reachability: failed starting listener for host %@", _host];
+            }
         }
         else {
-            [_logger warn:@"Reachability: failed starting listener for host %@", _host];
+            [_logger warn:@"Reachability: failed setting callback for %@", _host];
+            [self removeAllObservers];
         }
     }
     else {
-       [self removeAllObservers];
+        [_logger info:@"Reachability: failed setting dispatch queue for  %@", _host];
+        [self removeAllObservers];
     }
 }
 
@@ -104,7 +109,11 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
 - (void)internalCallback:(BOOL)reachable {
     [_logger info:@"Reachability: host %@ is reachable: %@", _host, reachable ? @"true" : @"false"];
     dispatch_async(_queue, ^{
-        if (self->_callback) self->_callback(reachable);
+        if (self->_callback)
+        dispatch_async(dispatch_get_main_queue(), ^{
+            self->_callback(reachable);
+        });
+
     });
 }
 
