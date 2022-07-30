@@ -55,8 +55,10 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
 
 - (void)off {
     if (_reachabilityRef != NULL) {
-        SCNetworkReachabilityUnscheduleFromRunLoop(_reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
         [_logger info:@"Reachability: stopped listening for host %@", _host];
+        SCNetworkReachabilityUnscheduleFromRunLoop(_reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
+        CFRelease(_reachabilityRef);
+        _reachabilityRef = NULL;
     }
     _callback = nil;
     _host = nil;
@@ -71,9 +73,6 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
 
 - (void)dealloc {
     [self off];
-    if (_reachabilityRef != NULL) {
-        CFRelease(_reachabilityRef);
-    }
 }
 
 @end
