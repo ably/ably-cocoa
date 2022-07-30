@@ -44,7 +44,7 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
     SCNetworkReachabilityContext context = {0, (__bridge void *)(self), NULL, NULL, NULL};
     
     if (SCNetworkReachabilitySetCallback(_reachabilityRef, ARTOSReachability_Callback, &context)) {
-        if (SCNetworkReachabilitySetDispatchQueue(_reachabilityRef, _queue)) {
+        if (SCNetworkReachabilityScheduleWithRunLoop(_reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode)) {
             [_logger info:@"Reachability: started listening for host %@", _host];
         }
         else {
@@ -56,7 +56,7 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
 - (void)off {
     if (_reachabilityRef != NULL) {
         [_logger info:@"Reachability: stopped listening for host %@", _host];
-        SCNetworkReachabilitySetDispatchQueue(_reachabilityRef, NULL);
+        SCNetworkReachabilityUnscheduleFromRunLoop(_reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
         CFRelease(_reachabilityRef);
         _reachabilityRef = NULL;
     }
@@ -66,9 +66,9 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
 
 - (void)internalCallback:(BOOL)reachable {
     [_logger info:@"Reachability: host %@ is reachable: %@", _host, reachable ? @"true" : @"false"];
-    if (_callback) {
-        _callback(reachable);
-    }
+    dispatch_async(_queue, ^{
+        if (self->_callback) self->_callback(reachable);
+    });
 }
 
 - (void)dealloc {
