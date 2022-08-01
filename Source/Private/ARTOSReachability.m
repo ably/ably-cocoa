@@ -8,19 +8,15 @@
 
 #import "ARTOSReachability.h"
 
-NSNotificationName const kARTOSReachabilityNetworkIsReachableNotification = @"ARTOSReachabilityNetworkIsReachableNotification";
-NSNotificationName const kARTOSReachabilityNetworkIsDownNotification = @"ARTOSReachabilityNetworkIsDownNotification";
+@interface ARTOSReachability ()
+- (void)internalCallback:(BOOL)reachable;
+@end
 
 /// Global callback for network state changes
 static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void* info) {
-    // Post a notification to notify the instance that the network reachability changed.
+    ARTOSReachability *reachability = (__bridge ARTOSReachability *)info;
     BOOL reachable = flags & kSCNetworkReachabilityFlagsReachable;
-    if (reachable) {
-        [NSNotificationCenter.defaultCenter postNotificationName:kARTOSReachabilityNetworkIsReachableNotification object:nil];
-    }
-    else {
-        [NSNotificationCenter.defaultCenter postNotificationName:kARTOSReachabilityNetworkIsDownNotification object:nil];
-    }
+    [reachability internalCallback:reachable];
 }
 
 @implementation ARTOSReachability {
@@ -46,9 +42,7 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
 
     _reachabilityRef = SCNetworkReachabilityCreateWithName(NULL, [host UTF8String]);
     SCNetworkReachabilityContext context = {0, (__bridge void *)(self), NULL, NULL, NULL};
-
-    [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(networkIsReachable) name:kARTOSReachabilityNetworkIsReachableNotification object:nil];
-    [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(networkIsDown) name:kARTOSReachabilityNetworkIsDownNotification object:nil];
+    
     if (SCNetworkReachabilitySetCallback(_reachabilityRef, ARTOSReachability_Callback, &context)) {
         if (SCNetworkReachabilityScheduleWithRunLoop(_reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode)) {
             [_logger info:@"Reachability: started listening for host %@", _host];
@@ -57,29 +51,17 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
             [_logger warn:@"Reachability: failed starting listener for host %@", _host];
         }
     }
-    else {
-        [NSNotificationCenter.defaultCenter removeObserver:self name:kARTOSReachabilityNetworkIsReachableNotification object:nil];
-        [NSNotificationCenter.defaultCenter removeObserver:self name:kARTOSReachabilityNetworkIsDownNotification object:nil];
-    }
 }
 
 - (void)off {
     if (_reachabilityRef != NULL) {
-        [NSNotificationCenter.defaultCenter removeObserver:self name:kARTOSReachabilityNetworkIsReachableNotification object:nil];
-        [NSNotificationCenter.defaultCenter removeObserver:self name:kARTOSReachabilityNetworkIsDownNotification object:nil];
-        SCNetworkReachabilityUnscheduleFromRunLoop(_reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
         [_logger info:@"Reachability: stopped listening for host %@", _host];
+        SCNetworkReachabilityUnscheduleFromRunLoop(_reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
+        CFRelease(_reachabilityRef);
+        _reachabilityRef = NULL;
     }
     _callback = nil;
     _host = nil;
-}
-
-- (void)networkIsReachable {
-    [self internalCallback:true];
-}
-
-- (void)networkIsDown {
-    [self internalCallback:false];
 }
 
 - (void)internalCallback:(BOOL)reachable {
@@ -91,9 +73,6 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
 
 - (void)dealloc {
     [self off];
-    if (_reachabilityRef != NULL) {
-        CFRelease(_reachabilityRef);
-    }
 }
 
 @end
