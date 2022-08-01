@@ -1,5 +1,15 @@
 # Change Log
 
+## [1.2.12](https://github.com/ably/ably-cocoa/tree/1.2.12)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.11...1.2.12)
+
+**Fixed bugs:**
+
+- SCNetworkReachabilitySetCallback (Crashed: io.ably.main) [\#1380](https://github.com/ably/ably-cocoa/issues/1380), fixed in: Fix of the crash in the `ARTOSReachability` [\#1453](https://github.com/ably/ably-cocoa/pull/1453) ([maratal](https://github.com/maratal))
+
+- Channel names are not properly url-encoded [\#1449](https://github.com/ably/ably-cocoa/issues/1449), fixed in: Fixed channel name url encoding [\#1451](https://github.com/ably/ably-cocoa/pull/1451) ([maratal](https://github.com/maratal))
+
 ## [1.2.11](https://github.com/ably/ably-cocoa/tree/1.2.11)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.10...1.2.11)
