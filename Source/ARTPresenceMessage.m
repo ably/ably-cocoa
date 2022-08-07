@@ -1,3 +1,7 @@
+#import "ARTJsonEncoder.h"
+#import "ARTJsonLikeEncoder.h"
+#import "ARTBaseMessage+Private.h"
+#import "ARTNSArray+ARTFunctional.h"
 #import "ARTPresenceMessage+Private.h"
 
 NSString *const ARTPresenceMessageException = @"ARTPresenceMessageException";
@@ -140,6 +144,76 @@ NSString *ARTPresenceActionToStr(ARTPresenceAction action) {
 
 + (instancetype)newWithPresenceAction:(ARTPresenceAction)value {
     return [[self alloc] initWithPresenceAction:value];
+}
+
+@end
+
+@implementation ARTPresenceMessage (Decoding)
+
++ (instancetype)fromEncoded:(NSDictionary *)jsonObject channelOptions:(ARTChannelOptions *)options error:(NSError **)error {
+    ARTJsonLikeEncoder *jsonEncoder = [[ARTJsonLikeEncoder alloc] initWithDelegate:[[ARTJsonEncoder alloc] init]];
+    NSError *encoderError = nil;
+    ARTDataEncoder *decoder = [[ARTDataEncoder alloc] initWithCipherParams:options.cipher error:&encoderError];
+    if (encoderError != nil) {
+        if (error != nil) {
+            ARTErrorInfo *errorInfo =
+            [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:ARTErrorUnableToDecodeMessage message:encoderError.localizedFailureReason]
+                       prepend:[NSString stringWithFormat:@"Decoder can't be created with cipher: %@", options.cipher]];
+            *error = errorInfo;
+        }
+        return nil;
+    }
+    
+    ARTPresenceMessage *message = [jsonEncoder presenceMessageFromDictionary:jsonObject];
+    
+    NSError *decodeError = nil;
+    message = [message decodeWithEncoder:decoder error:&decodeError];
+    if (decodeError != nil) {
+        if (error != nil) {
+            ARTErrorInfo *errorInfo =
+            [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:ARTErrorUnableToDecodeMessage message:decodeError.localizedFailureReason]
+                       prepend:[NSString stringWithFormat:@"Failed to decode data for presence message: %@. Decoding array aborted.", ARTPresenceActionToStr(message.action)]];
+            *error = errorInfo;
+        }
+        return nil;
+    }
+    return message;
+}
+
++ (NSArray<ARTPresenceMessage *> *)fromEncodedArray:(NSArray<NSDictionary *> *)jsonArray channelOptions:(ARTChannelOptions *)options error:(NSError **)error {
+    ARTJsonLikeEncoder *jsonEncoder = [[ARTJsonLikeEncoder alloc] initWithDelegate:[[ARTJsonEncoder alloc] init]];
+    NSError *encoderError = nil;
+    ARTDataEncoder *decoder = [[ARTDataEncoder alloc] initWithCipherParams:options.cipher error:&encoderError];
+    if (encoderError != nil) {
+        if (error != nil) {
+            ARTErrorInfo *errorInfo =
+            [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:ARTErrorUnableToDecodeMessage message:encoderError.localizedFailureReason]
+                       prepend:[NSString stringWithFormat:@"Decoder can't be created with cipher: %@", options.cipher]];
+            *error = errorInfo;
+        }
+        return nil;
+    }
+    
+    NSArray<ARTPresenceMessage *> *messages = [jsonEncoder presenceMessagesFromArray:jsonArray];
+    
+    NSMutableArray<ARTPresenceMessage *> *decodedMessages = [NSMutableArray array];
+    for (ARTPresenceMessage *message in messages) {
+        NSError *decodeError = nil;
+        ARTPresenceMessage *decodedMessage = [message decodeWithEncoder:decoder error:&decodeError];
+        if (decodeError != nil) {
+            if (error != nil) {
+                ARTErrorInfo *errorInfo =
+                [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:ARTErrorUnableToDecodeMessage message:decodeError.localizedFailureReason]
+                           prepend:[NSString stringWithFormat:@"Failed to decode data for message: %@. Decoding array aborted.", ARTPresenceActionToStr(message.action)]];
+                *error = errorInfo;
+            }
+            break;
+        }
+        else {
+            [decodedMessages addObject:decodedMessage];
+        }
+    }
+    return decodedMessages;
 }
 
 @end

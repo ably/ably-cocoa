@@ -1,5 +1,6 @@
 #import <Ably/ARTBaseMessage.h>
 #import <Ably/ARTEventEmitter.h>
+#import <Ably/ARTChannelOptions.h>
 
 /**
  ARTPresenceAction represents all actions an ``ARTPresenceMessage`` can indicate.
@@ -28,6 +29,18 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)isEqualToPresenceMessage:(nonnull ARTPresenceMessage *)presence;
 
 - (BOOL)isNewerThan:(ARTPresenceMessage *)latest __attribute__((warn_unused_result));
+
+@end
+
+@interface ARTPresenceMessage (Decoding)
+
++ (nullable instancetype)fromEncoded:(NSDictionary *)jsonObject
+                      channelOptions:(ARTChannelOptions *)options
+                               error:(NSError *_Nullable *_Nullable)error;
+
++ (nullable NSArray<ARTPresenceMessage *> *)fromEncodedArray:(NSArray<NSDictionary *> *)jsonArray
+                                              channelOptions:(ARTChannelOptions *)options
+                                                       error:(NSError *_Nullable *_Nullable)error;
 
 @end
 
