@@ -295,41 +295,6 @@
     return output;
 }
 
-- (ARTPresenceAction)presenceActionFromInt:(int) action
-{
-    switch (action) {
-        case 0:
-            return ARTPresenceAbsent;
-        case 1:
-            return ARTPresencePresent;
-        case 2:
-            return ARTPresenceEnter;
-        case 3:
-            return ARTPresenceLeave;
-        case 4:
-            return ARTPresenceUpdate;
-    }
-    [_logger error:@"RS:%p ARTJsonEncoder invalid ARTPresenceAction %d", _rest, action];
-    return ARTPresenceAbsent;
-    
-}
-
-- (int)intFromPresenceMessageAction:(ARTPresenceAction) action
-{
-    switch (action) {
-        case ARTPresenceAbsent:
-            return 0;
-        case ARTPresencePresent:
-            return 1;
-        case ARTPresenceEnter:
-            return 2;
-        case ARTPresenceLeave:
-            return 3;
-        case ARTPresenceUpdate:
-            return 4;
-    }
-}
-
 - (ARTPresenceMessage *)presenceMessageFromDictionary:(NSDictionary *)input {
     [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: presenceMessageFromDictionary %@", _rest, [_delegate formatAsString], input];
     if (![input isKindOfClass:[NSDictionary class]]) {
@@ -341,11 +306,7 @@
     message.encoding = [input artString:@"encoding"];
     message.clientId = [input artString:@"clientId"];
     message.timestamp = [input artTimestamp:@"timestamp"];
-    
-    int action = [[input artNumber:@"action"] intValue];
-    
-    message.action = [self presenceActionFromInt:action];
-    
+    message.action = [[input artNumber:@"action"] intValue];
     message.connectionId = [input artString:@"connectionId"];
     
     return message;
@@ -442,13 +403,12 @@
     if (message.data) {
         [self writeData:message.data encoding:message.encoding toDictionary:output];
     }
+    
     if(message.connectionId) {
         [output setObject:message.connectionId forKey:@"connectionId"];
     }
     
-    int action = [self intFromPresenceMessageAction:message.action];
-    
-    [output setObject:[NSNumber numberWithInt:action] forKey:@"action"];
+    [output setObject:[NSNumber numberWithInteger:message.action] forKey:@"action"];
     [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: presenceMessageToDictionary %@", _rest, [_delegate formatAsString], output];
     return output;
 }

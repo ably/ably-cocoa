@@ -5,7 +5,7 @@
  ARTPresenceAction represents all actions an ``ARTPresenceMessage`` can indicate.
  */
 typedef NS_ENUM(NSUInteger, ARTPresenceAction) {
-    ARTPresenceAbsent,
+    ARTPresenceAbsent = 0,
     ARTPresencePresent,
     ARTPresenceEnter,
     ARTPresenceLeave,

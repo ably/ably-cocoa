@@ -118,15 +118,15 @@ NSString *const ARTAblyMessageInvalidPresenceId = @"Received presence message id
 NSString *ARTPresenceActionToStr(ARTPresenceAction action) {
     switch (action) {
         case ARTPresenceAbsent:
-            return @"Absent"; //0
+            return @"Absent";
         case ARTPresencePresent:
-            return @"Present"; //1
+            return @"Present";
         case ARTPresenceEnter:
-            return @"Enter"; //2
+            return @"Enter";
         case ARTPresenceLeave:
-            return @"Leave"; //3
+            return @"Leave";
         case ARTPresenceUpdate:
-            return @"Update"; //4
+            return @"Update";
     }
 }
 
