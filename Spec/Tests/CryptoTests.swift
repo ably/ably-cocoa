@@ -194,7 +194,7 @@ class CryptoTests: XCTestCase {
         }
     }
     
-    func reusableTestsTestManualDecryption(fileName: String, expectedEncryptedEncoding: String, keyLength: UInt) throws {
+    func reusableTestsTestManualMessageDecryption(fileName: String, expectedEncryptedEncoding: String, keyLength: UInt) throws {
         let (key, iv, jsonItems) = AblyTests.loadCryptoTestRawData(fileName)
         let decoder = ARTDataEncoder(cipherParams: nil, error: nil)
         let cipherParams = ARTCipherParams(algorithm: "aes", key: key as ARTCipherKeyCompatible, iv: iv)
@@ -242,6 +242,63 @@ class CryptoTests: XCTestCase {
             expect(decrypted).to(equal(decoded))
         }
     }
+    
+    func reusableTestsTestManualPresenceMessageDecryption(fileName: String, expectedEncryptedEncoding: String, keyLength: UInt) throws {
+        let (key, iv, jsonItems) = AblyTests.loadCryptoTestRawData(fileName)
+        let decoder = ARTDataEncoder(cipherParams: nil, error: nil)
+        let cipherParams = ARTCipherParams(algorithm: "aes", key: key as ARTCipherKeyCompatible, iv: iv)
+        let channelOptions = ARTChannelOptions(cipher: cipherParams)
+        
+        func extractPresenceMessage(_ rawFixture: JSON) -> ARTPresenceMessage {
+            let msg = ARTPresenceMessage()
+            msg.data = rawFixture["data"].stringValue
+            msg.encoding = rawFixture["encoding"].stringValue
+            return msg
+        }
+        
+        // one by one
+        for jsonItem in jsonItems {
+            let fixture = extractPresenceMessage(jsonItem["encoded"])
+            let encryptedFixture = jsonItem["encrypted"]
+            expect(encryptedFixture["encoding"].stringValue).to(endWith("\(expectedEncryptedEncoding)/base64"))
+            
+            var error: NSError?
+            let decoded = try XCTUnwrap(fixture.decode(with: decoder, error: &error) as? ARTPresenceMessage)
+            expect(error).to(beNil())
+            expect(decoded).notTo(beNil())
+            
+            let rawDictionary = try XCTUnwrap(encryptedFixture.dictionaryObject)
+            let decrypted = try XCTUnwrap(ARTPresenceMessage.fromEncoded(rawDictionary, channelOptions: channelOptions))
+            expect(decrypted).notTo(beNil())
+            
+            let decryptedData = try XCTUnwrap(decrypted.data as? NSObject)
+            let decodedData = try XCTUnwrap(decoded.data as? NSObject)
+            
+            expect(decryptedData).to(equal(decodedData))
+        }
+        
+        // a bunch at once
+        let encryptedFixtures = try jsonItems.map { try XCTUnwrap($0["encrypted"].dictionaryObject) }
+
+        let decryptedArray = try XCTUnwrap(ARTPresenceMessage.fromEncodedArray(encryptedFixtures, channelOptions: channelOptions))
+        expect(decryptedArray.count).to(equal(jsonItems.count))
+        
+        for i in 0..<jsonItems.count {
+            let fixture = extractPresenceMessage(jsonItems[i]["encoded"])
+
+            var error: NSError?
+            let decoded = try XCTUnwrap(fixture.decode(with: decoder, error: &error) as? ARTPresenceMessage)
+            expect(error).to(beNil())
+            expect(decoded).notTo(beNil())
+            
+            let decrypted = decryptedArray[i]
+            
+            let decryptedData = try XCTUnwrap(decrypted.data as? NSObject)
+            let decodedData = try XCTUnwrap(decoded.data as? NSObject)
+            
+            expect(decryptedData).to(equal(decodedData))
+        }
+    }
 
     func reusableTestsWrapper__Crypto__with_fixtures_from_crypto_data_128_json__reusableTestsTestFixture(testCase: TestCase_ReusableTestsTestFixture) throws {
         try reusableTestsTestFixture(("crypto-data-128", "cipher+aes-128-cbc", 128), testCase: testCase)
@@ -268,10 +325,18 @@ class CryptoTests: XCTestCase {
     }
     
     func test__015__Crypto__with_fixtures_from_crypto_data_128_json__manual_decrypt_messages_as_expected_in_the_fixtures() throws {
-        try reusableTestsTestManualDecryption(fileName: "crypto-data-128", expectedEncryptedEncoding: "cipher+aes-128-cbc", keyLength: 128)
+        try reusableTestsTestManualMessageDecryption(fileName: "crypto-data-128", expectedEncryptedEncoding: "cipher+aes-128-cbc", keyLength: 128)
     }
     
     func test__016__Crypto__with_fixtures_from_crypto_data_256_json__manual_decrypt_messages_as_expected_in_the_fixtures() throws {
-        try reusableTestsTestManualDecryption(fileName: "crypto-data-256", expectedEncryptedEncoding: "cipher+aes-256-cbc", keyLength: 256)
+        try reusableTestsTestManualMessageDecryption(fileName: "crypto-data-256", expectedEncryptedEncoding: "cipher+aes-256-cbc", keyLength: 256)
+    }
+    
+    func test__017__Crypto__with_fixtures_from_crypto_data_128_json__manual_decrypt_presence_messages_as_expected_in_the_fixtures() throws {
+        try reusableTestsTestManualPresenceMessageDecryption(fileName: "crypto-data-128", expectedEncryptedEncoding: "cipher+aes-128-cbc", keyLength: 128)
+    }
+    
+    func test__018__Crypto__with_fixtures_from_crypto_data_256_json__manual_decrypt_presence_messages_as_expected_in_the_fixtures() throws {
+        try reusableTestsTestManualPresenceMessageDecryption(fileName: "crypto-data-256", expectedEncryptedEncoding: "cipher+aes-256-cbc", keyLength: 256)
     }
 }
