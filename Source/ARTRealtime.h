@@ -107,6 +107,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface ARTRealtime : NSObject <ARTRealtimeProtocol>
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A [`Connection`]{@link Connection} object.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly) ARTConnection *connection;
 /**
  * BEGIN CANONICAL DOCSTRING
