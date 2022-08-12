@@ -89,6 +89,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface ARTRest : NSObject <ARTRestProtocol>
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A [Channels]{@link Channels} object.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly) ARTRestChannels *channels;
 /**
  * BEGIN CANONICAL DOCSTRING
