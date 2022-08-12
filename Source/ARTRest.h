@@ -57,7 +57,13 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 /**
- ARTRest object offers a simple stateless API to interact directly with Ably’s REST API.
+ * BEGIN CANONICAL DOCSTRING
+ * A client that offers a simple stateless API to interact directly with Ably's REST API.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * ARTRest object offers a simple stateless API to interact directly with Ably’s REST API.
+ * END LEGACY DOCSTRING
  */
 @interface ARTRest : NSObject <ARTRestProtocol>
 
