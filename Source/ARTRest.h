@@ -66,6 +66,13 @@ NS_ASSUME_NONNULL_BEGIN
         error:(NSError *_Nullable *_Nullable)errorPtr;
 
 #if TARGET_OS_IOS
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Retrieves a [LocalDevice]{@link LocalDevice} object that represents the current state of the device as a target for push notifications.
+ *
+ * @return A [LocalDevice]{@link LocalDevice} object.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly) ARTLocalDevice *device;
 #endif
 
