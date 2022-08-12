@@ -96,6 +96,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly) ARTConnection *connection;
 @property (readonly) ARTRealtimeChannels *channels;
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A [`Push`]{@link Push} object.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly) ARTPush *push;
 /**
  * BEGIN CANONICAL DOCSTRING
