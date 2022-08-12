@@ -66,9 +66,15 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 /**
- The top-level class to be instanced for the Ably Realtime library.
- The Ably Realtime library will open and maintain a connection to the Ably realtime servers as soon as it is instantiated.
- The ``ARTConnection`` object provides a straightforward API to monitor and manage connection state.
+ * BEGIN CANONICAL DOCSTRING
+ * A client that extends the functionality of the [`RestClient`]{@link RestClient} and provides additional realtime-specific features.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * The top-level class to be instanced for the Ably Realtime library.
+ * The Ably Realtime library will open and maintain a connection to the Ably realtime servers as soon as it is instantiated.
+ * The ``ARTConnection`` object provides a straightforward API to monitor and manage connection state.
+ * END LEGACY DOCSTRING
  */
 @interface ARTRealtime : NSObject <ARTRealtimeProtocol>
 
