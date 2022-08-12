@@ -83,6 +83,11 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTRest : NSObject <ARTRestProtocol>
 
 @property (readonly) ARTRestChannels *channels;
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A [Push]{@link Push} object.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly) ARTPush *push;
 /**
  * BEGIN CANONICAL DOCSTRING
