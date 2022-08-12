@@ -42,8 +42,16 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init NS_UNAVAILABLE;
 
 /**
- Instantiates the Ably library with the given options.
- :param options: see ``ARTClientOptions`` for options
+ * BEGIN CANONICAL DOCSTRING
+ * Constructs a `RealtimeClient` object using an Ably [`ClientOptions`]{@link ClientOptions} object.
+ *
+ * @param options A [`ClientOptions`]{@link ClientOptions} object.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Instantiates the Ably library with the given options.
+ * :param options: see ``ARTClientOptions`` for options
+ * END LEGACY DOCSTRING
  */
 - (instancetype)initWithOptions:(ARTClientOptions *)options;
 
