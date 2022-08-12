@@ -97,6 +97,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) ARTConnection *connection;
 @property (readonly) ARTRealtimeChannels *channels;
 @property (readonly) ARTPush *push;
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * An [`Auth`]{@link Auth} object.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly) ARTAuth *auth;
 
 + (instancetype)createWithOptions:(ARTClientOptions *)options NS_SWIFT_UNAVAILABLE("Use instance initializer instead");
