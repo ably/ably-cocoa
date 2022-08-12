@@ -51,6 +51,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)time:(ARTDateTimeCallback)callback;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Makes a REST request to a provided path. This is provided as a convenience for developers who wish to use REST API functionality that is either not documented or is not yet included in the public API, without having to directly handle features such as authentication, paging, fallback hosts, MsgPack and JSON support.
+ *
+ * @param method The request method to use, such as GET, POST.
+ * @param path The request path.
+ * @param params The parameters to include in the URL query of the request. The parameters depend on the endpoint being queried. See the [REST API reference](https://ably.com/docs/api/rest-api) for the available parameters of each endpoint.
+ * @param body The JSON body of the request.
+ * @param headers Additional HTTP headers to include in the request.
+ * @return An [HttpPaginatedResponse]{@link HttpPaginatedResponse} object returned by the HTTP request, containing an empty or JSON-encodable object.
+ * END CANONICAL DOCSTRING
+ */
 - (BOOL)request:(NSString *)method
            path:(NSString *)path
          params:(nullable NSStringDictionary *)params
