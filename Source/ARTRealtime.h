@@ -47,10 +47,18 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (instancetype)initWithOptions:(ARTClientOptions *)options;
 
-/** 
- Instance the Ably library using a key only. This is simply a convenience constructor for the simplest case of instancing the library with a key for basic authentication and no other options.
- :param key; String key (obtained from application dashboard)
-*/
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Constructs a `RealtimeClient` object using an Ably API key or token string.
+ *
+ * @param keyOrTokenStr The Ably API key or token string used to validate the client.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Instance the Ably library using a key only. This is simply a convenience constructor for the simplest case of instancing the library with a key for basic authentication and no other options.
+ * :param key; String key (obtained from application dashboard)
+ * END LEGACY DOCSTRING
+ */
 - (instancetype)initWithKey:(NSString *)key;
 - (instancetype)initWithToken:(NSString *)token;
 
