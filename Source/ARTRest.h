@@ -73,6 +73,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)stats:(ARTPaginatedStatsCallback)callback;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Queries the REST `/stats` API and retrieves your application's usage statistics. Returns a [`PaginatedResult`]{@link PaginatedResult} object, containing an array of [`Stats`]{@link Stats} objects. See the [Stats docs](https://ably.com/docs/general/statistics).
+ *
+ * @param start The time from which stats are retrieved, specified as milliseconds since the Unix epoch.
+ * @param end The time until stats are retrieved, specified as milliseconds since the Unix epoch.
+ * @param direction The order for which stats are returned in. Valid values are `backwards` which orders stats from most recent to oldest, or `forwards` which orders stats from oldest to most recent. The default is `backwards`.
+ * @param limit An upper limit on the number of stats returned. The default is 100, and the maximum is 1000.
+ * @param unit `minute`, `hour`, `day` or `month`. Based on the unit selected, the given `start` or `end` times are rounded down to the start of the relevant interval depending on the unit granularity of the query.
+ *
+ * @return A [`PaginatedResult`]{@link PaginatedResult} object containing an array of [`Stats`]{@link Stats} objects.
+ * END CANONICAL DOCSTRING
+ */
 - (BOOL)stats:(nullable ARTStatsQuery *)query
      callback:(ARTPaginatedStatsCallback)callback
         error:(NSError *_Nullable *_Nullable)errorPtr;
