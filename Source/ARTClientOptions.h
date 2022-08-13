@@ -179,7 +179,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) NSTimeInterval httpOpenTimeout;
 
 /**
- Timeout for any single HTTP request and response.
+ * BEGIN CANONICAL DOCSTRING
+ * Timeout for any single HTTP request and response.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Timeout for any single HTTP request and response.
+ * END LEGACY DOCSTRING
  */
 @property (readwrite, assign, nonatomic) NSTimeInterval httpRequestTimeout;
 
