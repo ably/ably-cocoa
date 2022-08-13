@@ -89,6 +89,12 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL DOCSTRING
  */
 @property (readwrite, assign, nonatomic) BOOL echoMessages;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * When `true`, the more efficient MsgPack binary encoding is used. When `false`, JSON text encoding is used. The default is `true`.
+ * END CANONICAL DOCSTRING
+ */
 @property (readwrite, assign, nonatomic) BOOL useBinaryProtocol;
 
 /**
