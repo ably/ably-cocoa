@@ -23,6 +23,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, strong, nonatomic) NSString *restHost;
 @property (readwrite, strong, nonatomic) NSString *realtimeHost;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Enables a non-default Ably port to be specified. For development environments only. The default value is 80.
+ * END CANONICAL DOCSTRING
+ */
 @property (nonatomic, assign) NSInteger port;
 @property (nonatomic, assign) NSInteger tlsPort;
 
