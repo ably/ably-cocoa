@@ -163,7 +163,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, copy) NSArray<NSString *> *fallbackHosts;
 
 /**
- Optionally allows the default fallback hosts `[a-e].ably-realtime.com` to be used when `environment` is not production or a custom realtime or REST host endpoint is being used. It is never valid to configure `fallbackHost` and set `fallbackHostsUseDefault` to `true`.
+ * BEGIN CANONICAL DOCSTRING
+ * DEPRECATED: this property is deprecated and will be removed in a future version. Enables default fallback hosts to be used.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Optionally allows the default fallback hosts `[a-e].ably-realtime.com` to be used when `environment` is not production or a custom realtime or REST host endpoint is being used. It is never valid to configure `fallbackHost` and set `fallbackHostsUseDefault` to `true`.
+ * END LEGACY DOCSTRING
  */
 @property (assign, nonatomic) BOOL fallbackHostsUseDefault DEPRECATED_MSG_ATTRIBUTE("Future library releases will ignore any supplied value.");
 
