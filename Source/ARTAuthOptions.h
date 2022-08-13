@@ -26,7 +26,13 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTAuthOptions : NSObject<NSCopying>
 
 /**
- Full Ably key string as obtained from dashboard.
+ * BEGIN CANONICAL DOCSTRING
+ * The full API key string, as obtained from the [Ably dashboard](https://ably.com/dashboard). Use this option if you wish to use Basic authentication, or wish to be able to issue Ably Tokens without needing to defer to a separate entity to sign Ably [`TokenRequest`s]{@link TokenRequest}. Read more about [Basic authentication](https://ably.com/docs/core-features/authentication#basic-authentication).
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Full Ably key string as obtained from dashboard.
+ * END LEGACY DOCSTRING
  */
 @property (nonatomic, copy, nullable) NSString *key;
 
