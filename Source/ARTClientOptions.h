@@ -196,7 +196,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) NSTimeInterval fallbackRetryTimeout;
 
 /**
- Max number of fallback host retries for HTTP requests that fail due to network issues or server problems.
+ * BEGIN CANONICAL DOCSTRING
+ * The maximum number of fallback hosts to use as a fallback when an HTTP request to the primary host is unreachable or indicates that it is unserviceable. The default value is 3.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Max number of fallback host retries for HTTP requests that fail due to network issues or server problems.
+ * END LEGACY DOCSTRING
  */
 @property (readwrite, assign, nonatomic) NSUInteger httpMaxRetryCount;
 
