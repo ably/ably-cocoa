@@ -272,11 +272,15 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, strong, nonatomic) dispatch_queue_t internalDispatchQueue;
 
 /**
- True when idempotent publishing is enabled for all messages published via REST.
-
- When this feature is enabled, the client library will add a unique ID to every published message (without an ID) ensuring any failed published attempts (due to failures such as HTTP requests failing mid-flight) that are automatically retried will not result in duplicate messages being published to the Ably platform.
-
- Note: This is a beta unsupported feature!
+ * BEGIN CANONICAL DOCSTRING
+ * When `true`, enables idempotent publishing by assigning a unique message ID client-side, allowing the Ably servers to discard automatic publish retries following a failure such as a network fault. The default is `true`.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * True when idempotent publishing is enabled for all messages published via REST.
+ * When this feature is enabled, the client library will add a unique ID to every published message (without an ID) ensuring any failed published attempts (due to failures such as HTTP requests failing mid-flight) that are automatically retried will not result in duplicate messages being published to the Ably platform.
+ * Note: This is a beta unsupported feature!
+ * END LEGACY DOCSTRING
  */
 @property (readwrite, assign, nonatomic) BOOL idempotentRestPublishing;
 
