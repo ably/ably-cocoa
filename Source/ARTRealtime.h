@@ -103,6 +103,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (BOOL)stats:(nullable ARTStatsQuery *)query callback:(ARTPaginatedStatsCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Calls [`connection.connect()`]{@link Connection#connect} and causes the connection to open, entering the connecting state. Explicitly calling `connect()` is unnecessary unless the [`autoConnect`]{@link ClientOptions#autoConnect} property is disabled.
+ * END CANONICAL DOCSTRING
+ */
 - (void)connect;
 
 /**
