@@ -81,7 +81,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSStringDictionary *authHeaders;
 
 /**
- Additional params to be included in any request made by the library to the authUrl, either as query params in the case of GET or in the body in the case of POST.
+ * BEGIN CANONICAL DOCSTRING
+ * A set of key-value pair params to be added to any request made to the `authUrl`. When the `authMethod` is `GET`, query params are added to the URL, whereas when `authMethod` is `POST`, the params are sent as URL encoded form data. Useful when an application requires these to be added to validate the request or implement the response.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Additional params to be included in any request made by the library to the authUrl, either as query params in the case of GET or in the body in the case of POST.
+ * END LEGACY DOCSTRING
  */
 @property (nonatomic, copy, nullable) NSArray<NSURLQueryItem *> *authParams;
 
