@@ -234,7 +234,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) BOOL idempotentRestPublishing;
 
 /**
- If enabled, every REST request to Ably includes a `request_id` query string parameter. This request ID remain the same if a request is retried to a fallback host.
+ * BEGIN CANONICAL DOCSTRING
+ * When `true`, every REST request to Ably should include a random string in the `request_id` query string parameter. The random string should be a url-safe base64-encoding sequence of at least 9 bytes, obtained from a source of randomness. This request ID must remain the same if a request is retried to a fallback host. Any log messages associated with the request should include the request ID. If the request fails, the request ID must be included in the [`ErrorInfo`]{@link ErrorInfo} returned to the user. The default is `false`.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * If enabled, every REST request to Ably includes a `request_id` query string parameter. This request ID remain the same if a request is retried to a fallback host.
+ * END LEGACY DOCSTRING
  */
 @property (readwrite, assign, nonatomic) BOOL addRequestIds;
 
