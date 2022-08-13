@@ -31,6 +31,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) ARTLogLevel logLevel;
 
 @property (readwrite, assign, nonatomic) BOOL queueMessages;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * If `false`, prevents messages originating from this connection being echoed back on the same connection. The default is `true`.
+ * END CANONICAL DOCSTRING
+ */
 @property (readwrite, assign, nonatomic) BOOL echoMessages;
 @property (readwrite, assign, nonatomic) BOOL useBinaryProtocol;
 
