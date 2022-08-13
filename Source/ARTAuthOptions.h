@@ -41,9 +41,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) ARTTokenDetails *tokenDetails;
 
 /**
- A callback to call to obtain a signed token request.
- 
- This enables a client to obtain token requests from another entity, so tokens can be renewed without the client requiring access to keys.
+ * BEGIN CANONICAL DOCSTRING
+ * Called when a new token is required. The role of the callback is to obtain a fresh token, one of: an Ably Token string (in plain text format); a signed [`TokenRequest`]{@link TokenRequest}; a [`TokenDetails`]{@link TokenDetails} (in JSON format); an [Ably JWT](https://ably.com/docs/core-features/authentication#ably-jwt). See [the authentication documentation](https://ably.com/docs/realtime/authentication) for details of the Ably [`TokenRequest`]{@link TokenRequest} format and associated API calls.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * A callback to call to obtain a signed token request. This enables a client to obtain token requests from another entity, so tokens can be renewed without the client requiring access to keys.
+ * END LEGACY DOCSTRING
  */
 @property (nonatomic, copy, nullable) ARTAuthCallback authCallback;
 
