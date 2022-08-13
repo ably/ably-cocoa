@@ -59,7 +59,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) NSURL *authUrl;
 
 /**
- The HTTP verb to be used when a request is made by the library to the authUrl. Defaults to GET, supports GET and POST.
+ * BEGIN CANONICAL DOCSTRING
+ * The HTTP verb to use for any request made to the `authUrl`, either `GET` or `POST`. The default value is `GET`.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * The HTTP verb to be used when a request is made by the library to the authUrl. Defaults to GET, supports GET and POST.
+ * END LEGACY DOCSTRING
  */
 @property (nonatomic, copy, null_resettable) NSString *authMethod;
 
