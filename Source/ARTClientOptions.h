@@ -152,7 +152,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) NSTimeInterval httpMaxRetryDuration;
 
 /**
- Optionally allows one or more fallback hosts to be used instead of the default fallback hosts.
+ * BEGIN CANONICAL DOCSTRING
+ * An array of fallback hosts to be used in the case of an error necessitating the use of an alternative host. If you have been provided a set of custom fallback hosts by Ably, please specify them here.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Optionally allows one or more fallback hosts to be used instead of the default fallback hosts.
+ * END LEGACY DOCSTRING
  */
 @property (nullable, nonatomic, copy) NSArray<NSString *> *fallbackHosts;
 
