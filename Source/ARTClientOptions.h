@@ -26,6 +26,12 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL DOCSTRING
  */
 @property (readwrite, strong, nonatomic) NSString *restHost;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Enables a non-default Ably host to be specified for realtime connections. For development environments only. The default value is `realtime.ably.io`.
+ * END CANONICAL DOCSTRING
+ */
 @property (readwrite, strong, nonatomic) NSString *realtimeHost;
 
 /**
