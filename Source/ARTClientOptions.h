@@ -168,7 +168,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) NSTimeInterval channelRetryTimeout;
 
 /**
- Timeout for opening the connection, available in the client library if supported by the transport.
+ * BEGIN CANONICAL DOCSTRING
+ * Timeout for opening the connection, available in the client library if supported by the transport.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Timeout for opening the connection, available in the client library if supported by the transport.
+ * END LEGACY DOCSTRING
  */
 @property (readwrite, assign, nonatomic) NSTimeInterval httpOpenTimeout;
 
