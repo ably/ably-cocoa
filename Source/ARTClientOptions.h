@@ -239,9 +239,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) BOOL addRequestIds;
 
 /**
- Additional parameters to be sent in the querystring when initiating a realtime connection. Keys are Strings, values are Stringifiable (a value that can be coerced to a string in order to be sent as a querystring parameter. Supported values should be at least strings, numbers, and booleans, with booleans stringified as true and false. If this is unidiomatic to the language, the implementer may consider this as equivalent to String).
- 
- Note:  If a key in transportParams is one the library sends by default (for example, v or heartbeats), the value in transportParams takes precedence.
+ * BEGIN CANONICAL DOCSTRING
+ * Can be used to pass in arbitrary connection parameters, such as [`heartbeatInterval`](https://ably.com/docs/realtime/connection#heartbeats) or [`remainPresentFor`](https://ably.com/docs/realtime/presence#unstable-connections).
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Additional parameters to be sent in the querystring when initiating a realtime connection. Keys are Strings, values are Stringifiable (a value that can be coerced to a string in order to be sent as a querystring parameter. Supported values should be at least strings, numbers, and booleans, with booleans stringified as true and false. If this is unidiomatic to the language, the implementer may consider this as equivalent to String).
+ * Note:  If a key in transportParams is one the library sends by default (for example, v or heartbeats), the value in transportParams takes precedence.
+ * END LEGACY DOCSTRING
  */
 @property (nonatomic, copy, nullable) NSDictionary<NSString *, ARTStringifiable *> *transportParams;
 
