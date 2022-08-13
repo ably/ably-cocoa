@@ -33,6 +33,12 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (readwrite, strong, nonatomic) NSString *environment;
 @property (nonatomic, assign) BOOL tls;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Controls the log output of the library. This is a function to handle each line of log output.
+ * END CANONICAL DOCSTRING
+ */
 @property (nonatomic, strong, readwrite) ARTLog *logHandler;
 @property (nonatomic, assign) ARTLogLevel logLevel;
 
