@@ -132,8 +132,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, strong, nonatomic, nullable) ARTTokenParams *defaultTokenParams;
 
 /**
- Represents the timeout (in seconds) to retry connection when it's disconnected.
- When the connection is in the DISCONNECTED state, how frequently the client library attempts to reconnect automatically.
+ * BEGIN CANONICAL DOCSTRING
+ * If the connection is still in the [`DISCONNECTED`]{@link ConnectionState#disconnected} state after this delay, the client library will attempt to reconnect automatically. The default is 15 seconds.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Represents the timeout (in seconds) to retry connection when it's disconnected.
+ * When the connection is in the DISCONNECTED state, how frequently the client library attempts to reconnect automatically.
+ * END LEGACY DOCSTRING
  */
 @property (readwrite, assign, nonatomic) NSTimeInterval disconnectedRetryTimeout;
 
