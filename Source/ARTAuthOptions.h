@@ -15,7 +15,13 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 /**
- ARTAuthOptions is used when making authentication requests. These options will supplement or override the corresponding options given when the library was instantiated.
+ * BEGIN CANONICAL DOCSTRING
+ * Passes authentication-specific properties in authentication requests to Ably. Properties set using `AuthOptions` are used instead of the default values set when the client library is instantiated, as opposed to being merged with them.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * ARTAuthOptions is used when making authentication requests. These options will supplement or override the corresponding options given when the library was instantiated.
+ * END LEGACY DOCSTRING
  */
 @interface ARTAuthOptions : NSObject<NSCopying>
 
