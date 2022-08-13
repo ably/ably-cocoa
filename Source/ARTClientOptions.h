@@ -20,6 +20,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface ARTClientOptions : ARTAuthOptions
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Enables a non-default Ably host to be specified. For development environments only. The default value is `rest.ably.io`.
+ * END CANONICAL DOCSTRING
+ */
 @property (readwrite, strong, nonatomic) NSString *restHost;
 @property (readwrite, strong, nonatomic) NSString *realtimeHost;
 
