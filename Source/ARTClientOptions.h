@@ -141,7 +141,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (assign, nonatomic) BOOL fallbackHostsUseDefault DEPRECATED_MSG_ATTRIBUTE("Future library releases will ignore any supplied value.");
 
 /**
- Report uncaught exceptions to Ably, together with the last lines of the logger. This helps Ably fix bugs. Set to nil to disable.
+ * BEGIN CANONICAL DOCSTRING
+ * DEPRECATED: this property is deprecated and will be removed in a future version. Defaults to a string value for an Ably error reporting DSN (Data Source Name), which is typically a URL in the format `https://[KEY]:[SECRET]@errors.ably.io/[ID]`. When set to `null`, `false` or an empty string (depending on what is idiomatic for the platform), exception reporting is disabled.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Report uncaught exceptions to Ably, together with the last lines of the logger. This helps Ably fix bugs. Set to nil to disable.
+ * END LEGACY DOCSTRING
  */
 @property (readwrite, strong, nonatomic, nullable) NSString *logExceptionReportingUrl;
 
