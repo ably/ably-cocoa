@@ -156,8 +156,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) NSTimeInterval suspendedRetryTimeout;
 
 /**
- Represents the timeout (in seconds) to re-attach the channel automatically.
- When a channel becomes SUSPENDED following a server initiated DETACHED, after this delay in milliseconds, if the channel is still SUSPENDED and the connection is CONNECTED, the client library will attempt to re-attach.
+ * BEGIN CANONICAL DOCSTRING
+ * When a channel becomes [`SUSPENDED`]{@link ConnectionState#suspended} following a server initiated [`DETACHED`]{@link ConnectionState#detached}, after this delay, if the channel is still [`SUSPENDED`]{@link ConnectionState#suspended} and the connection is [`CONNECTED`]{@link ConnectionState#connected}, the client library will attempt to re-attach the channel automatically. The default is 15 seconds.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Represents the timeout (in seconds) to re-attach the channel automatically.
+ * When a channel becomes SUSPENDED following a server initiated DETACHED, after this delay in milliseconds, if the channel is still SUSPENDED and the connection is CONNECTED, the client library will attempt to re-attach.
+ * END LEGACY DOCSTRING
  */
 @property (readwrite, assign, nonatomic) NSTimeInterval channelRetryTimeout;
 
