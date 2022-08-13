@@ -144,8 +144,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) NSTimeInterval disconnectedRetryTimeout;
 
 /**
- Represents the timeout (in seconds) to retry connection when it's suspended.
- When the connection is in the SUSPENDED state, how frequently the client library attempts to reconnect automatically.
+ * BEGIN CANONICAL DOCSTRING
+ * When the connection enters the [`SUSPENDED`]{@link ConnectionState#suspended} state, after this delay, if the state is still [`SUSPENDED`]{@link ConnectionState#suspended}, the client library attempts to reconnect automatically. The default is 30 seconds.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Represents the timeout (in seconds) to retry connection when it's suspended.
+ * When the connection is in the SUSPENDED state, how frequently the client library attempts to reconnect automatically.
+ * END LEGACY DOCSTRING
  */
 @property (readwrite, assign, nonatomic) NSTimeInterval suspendedRetryTimeout;
 
