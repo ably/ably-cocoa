@@ -33,6 +33,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) BOOL queueMessages;
 @property (readwrite, assign, nonatomic) BOOL echoMessages;
 @property (readwrite, assign, nonatomic) BOOL useBinaryProtocol;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * When `true`, the client connects to Ably as soon as it is instantiated. You can set this to `false` and explicitly connect to Ably using the [`connect()`]{@link Connection#connect} method. The default is `true`.
+ * END CANONICAL DOCSTRING
+ */
 @property (readwrite, assign, nonatomic) BOOL autoConnect;
 @property (nullable, readwrite, copy, nonatomic) NSString *recover;
 @property (readwrite, assign, nonatomic) BOOL pushFullWait;
