@@ -40,6 +40,12 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL DOCSTRING
  */
 @property (nonatomic, strong, readwrite) ARTLog *logHandler;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Controls the log output of the library. This is a number controlling the verbosity of the output. Valid values are: 0 (no logs), 1 (errors only), 2 (errors plus connection and channel state changes), 3 (abbreviated debug output), and 4 (full debug output).
+ * END CANONICAL DOCSTRING
+ */
 @property (nonatomic, assign) ARTLogLevel logLevel;
 
 @property (readwrite, assign, nonatomic) BOOL queueMessages;
