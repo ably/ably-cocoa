@@ -102,8 +102,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSArray<NSURLQueryItem *> *authParams;
 
 /**
- This may be set in instances that the library is to sign token requests based on a given key.
- If true, the library will query the Ably system for the current time instead of relying on a locally-available time of day.
+ * BEGIN CANONICAL DOCSTRING
+ * If `true`, the library queries the Ably servers for the current time when issuing [`TokenRequest`s]{@link TokenRequest} instead of relying on a locally-available time of day. Knowing the time accurately is needed to create valid signed Ably [`TokenRequest`s]{@link TokenRequest}, so this option is useful for library instances on auth servers where for some reason the server clock cannot be kept synchronized through normal means, such as an [NTP daemon](https://en.wikipedia.org/wiki/Ntpd). The server is queried for the current time once per client library instance (which stores the offset from the local clock), so if using this option you should avoid instancing a new version of the library for each request. The default is `false`.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * This may be set in instances that the library is to sign token requests based on a given key. If true, the library will query the Ably system for the current time instead of relying on a locally-available time of day.
+ * END LEGACY DOCSTRING
  */
 @property (nonatomic, assign, nonatomic) BOOL queryTime;
 
