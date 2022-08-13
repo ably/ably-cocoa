@@ -27,7 +27,13 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSTimeInterval)connectionStateTtl;
 
 /**
- When a realtime client library is establishing a connection with Ably, or sending a HEARTBEAT, CONNECT, ATTACH, DETACH or CLOSE ProtocolMessage to Ably, this is the amount of time that the client library will wait before considering that request as failed and triggering a suitable failure condition.
+ * BEGIN CANONICAL DOCSTRING
+ * Time before the client library considers a request as failed and triggers a failure condition. Requests includes establishing a connection with Ably or sending a `HEARTBEAT`, `CONNECT`, `ATTACH`, `DETACH` or `CLOSE` request.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * When a realtime client library is establishing a connection with Ably, or sending a HEARTBEAT, CONNECT, ATTACH, DETACH or CLOSE ProtocolMessage to Ably, this is the amount of time that the client library will wait before considering that request as failed and triggering a suitable failure condition.
+ * END LEGACY DOCSTRING
  */
 + (NSTimeInterval)realtimeRequestTimeout;
 
