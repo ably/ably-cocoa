@@ -48,6 +48,12 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL DOCSTRING
  */
 @property (readwrite, strong, nonatomic) NSString *environment;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * When `false`, the client will use an insecure connection. The default is `true`, meaning a TLS connection will be used to connect to Ably.
+ * END CANONICAL DOCSTRING
+ */
 @property (nonatomic, assign) BOOL tls;
 
 /**
