@@ -52,9 +52,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) ARTAuthCallback authCallback;
 
 /**
- A URL to queryto obtain a signed token request.
- 
- This enables a client to obtain token requests from another entity, so tokens can be renewed without the client requiring access to keys.
+ * BEGIN CANONICAL DOCSTRING
+ * A URL that the library may use to obtain a token string (in plain text format), or a signed [`TokenRequest`]{@link TokenRequest} or [`TokenDetails`]{@link TokenDetails} (in JSON format) from.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * A URL to queryto obtain a signed token request. This enables a client to obtain token requests from another entity, so tokens can be renewed without the client requiring access to keys.
+ * END LEGACY DOCSTRING
  */
 @property (nonatomic, strong, nullable) NSURL *authUrl;
 
