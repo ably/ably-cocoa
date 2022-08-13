@@ -64,7 +64,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, null_resettable) NSString *authMethod;
 
 /**
- Headers to be included in any request made by the library to the authURL.
+ * BEGIN CANONICAL DOCSTRING
+ * A set of key-value pair headers to be added to any request made to the `authUrl`. Useful when an application requires these to be added to validate the request or implement the response. If the `authHeaders` object contains an `authorization` key, then `withCredentials` is set on the XHR request.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Headers to be included in any request made by the library to the authURL.
+ * END LEGACY DOCSTRING
  */
 @property (nonatomic, copy, nullable) NSStringDictionary *authHeaders;
 
