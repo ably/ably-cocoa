@@ -125,7 +125,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign, nonatomic) BOOL queryTime;
 
 /**
- Forces authentication with token.
+ * BEGIN CANONICAL DOCSTRING
+ * When `true`, forces token authentication to be used by the library. If a `clientId` is not specified in the [`ClientOptions`]{@link ClientOptions} or [`TokenParams`]{@link TokenParams}, then the Ably Token issued is [anonymous](https://ably.com/docs/core-features/authentication#identified-clients).
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Forces authentication with token.
+ * END LEGACY DOCSTRING
  */
 @property (readwrite, assign, nonatomic) BOOL useTokenAuth;
 
