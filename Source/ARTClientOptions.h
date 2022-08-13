@@ -55,6 +55,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (readwrite, strong, nonatomic, nullable) NSString *clientId;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * When a [`TokenParams`]{@link TokenParams} object is provided, it overrides the client library defaults when issuing new Ably Tokens or Ably [`TokenRequest`s]{@link TokenRequest}.
+ * END CANONICAL DOCSTRING
+ */
 @property (readwrite, strong, nonatomic, nullable) ARTTokenParams *defaultTokenParams;
 
 /**
