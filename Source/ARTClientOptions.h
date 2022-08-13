@@ -328,9 +328,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)addAgent:(NSString *)agentName version:(NSString * _Nullable)version;
 
 /**
- All agents added with `addAgent:version:` method plus `[ARTDefault libraryAgent]` and `[ARTDefault platformAgent]`.
+ * BEGIN CANONICAL DOCSTRING
+ * For use only by other Ably-authored SDKs, on a need-to-have basis.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * All agents added with `addAgent:version:` method plus `[ARTDefault libraryAgent]` and `[ARTDefault platformAgent]`.
+ * END LEGACY DOCSTRING
  */
-
 - (NSString *)agents;
 
 @end
