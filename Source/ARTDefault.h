@@ -41,6 +41,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (NSString *)platformAgent;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The maximum size of messages that can be published in one go. For realtime publishes, the default can be overridden by the `maxMessageSize` in the [`ConnectionDetails`]{@link ConnectionDetails} object.
+ * END CANONICAL DOCSTRING
+ */
 + (NSInteger)maxMessageSize;
 
 @end
