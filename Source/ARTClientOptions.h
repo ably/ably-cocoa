@@ -25,6 +25,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) NSInteger port;
 @property (nonatomic, assign) NSInteger tlsPort;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Enables a [custom environment](https://ably.com/docs/platform-customization) to be used with the Ably service.
+ * END CANONICAL DOCSTRING
+ */
 @property (readwrite, strong, nonatomic) NSString *environment;
 @property (nonatomic, assign) BOOL tls;
 @property (nonatomic, strong, readwrite) ARTLog *logHandler;
