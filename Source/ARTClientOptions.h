@@ -190,8 +190,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) NSTimeInterval httpRequestTimeout;
 
 /**
- The period in seconds before HTTP requests are retried against the default endpoint.
- (After a failed request to the default endpoint, followed by a successful request to a fallback endpoint)
+ * BEGIN CANONICAL DOCSTRING
+ * The maximum time before HTTP requests are retried against the default endpoint. The default is 600 seconds.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * The period in seconds before HTTP requests are retried against the default endpoint. (After a failed request to the default endpoint, followed by a successful request to a fallback endpoint)
+ * END LEGACY DOCSTRING
  */
 @property (readwrite, assign, nonatomic) NSTimeInterval fallbackRetryTimeout;
 
