@@ -46,6 +46,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)requestToken:(ARTTokenDetailsCallback)callback;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Instructs the library to get a new token immediately. When using the realtime client, it upgrades the current realtime connection to use the new token, or if not connected, initiates a connection to Ably, once the new token has been obtained. Also stores any [`TokenParams`]{@link TokenParams} and [`AuthOptions`]{@link AuthOptions} passed in as the new defaults, to be used for all subsequent implicit or explicit token requests. Any [`TokenParams`]{@link TokenParams} and [`AuthOptions`]{@link AuthOptions} objects passed in entirely replace, as opposed to being merged with, the current client library saved values.
+ *
+ * @param tokenParams A [`TokenParams`]{@link TokenParams} object.
+ * @param authOptions An [`AuthOptions`]{@link AuthOptions} object.
+ *
+ * @return A [`TokenDetails`]{@link TokenDetails} object.
+ * END CANONICAL DOCSTRING
+ */
 - (void)authorize:(nullable ARTTokenParams *)tokenParams
           options:(nullable ARTAuthOptions *)authOptions
          callback:(ARTTokenDetailsCallback)callback;
