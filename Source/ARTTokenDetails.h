@@ -45,6 +45,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithToken:(NSString *)token;
 - (instancetype)initWithToken:(NSString *)token expires:(nullable NSDate *)expires issued:(nullable  NSDate *)issued capability:(nullable  NSString *)capability clientId:(nullable NSString *)clientId;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A static factory method to create a `TokenDetails` object from a deserialized `TokenDetails`-like object or a JSON stringified `TokenDetails` object. This method is provided to minimize bugs as a result of differing types by platform for fields such as `timestamp` or `ttl`. For example, in Ruby `ttl` in the `TokenDetails` object is exposed in seconds as that is idiomatic for the language, yet when serialized to JSON using `to_json` it is automatically converted to the Ably standard which is milliseconds. By using the `fromJson()` method when constructing a `TokenDetails` object, Ably ensures that all fields are consistently serialized and deserialized across platforms.
+ *
+ * @param json A deserialized `TokenDetails`-like object or a JSON stringified `TokenDetails` object.
+ *
+ * @return An Ably authentication token.
+ * END CANONICAL DOCSTRING
+ */
 + (ARTTokenDetails *_Nullable)fromJson:(id<ARTJsonCompatible>)json error:(NSError *_Nullable *_Nullable)error;
 
 @end
