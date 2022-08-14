@@ -64,6 +64,12 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL DOCSTRING
  */
 @property (readonly) ARTRestPresence *presence;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A [`PushChannel`]{@link PushChannel} object.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly) ARTPushChannel *push;
 
 @end
