@@ -24,6 +24,15 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) NSString *name;
 
 - (void)publish:(nullable NSString *)name data:(nullable id)data;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Sends a single message on this channel based on a given event name and payload. A callback may optionally be passed in to this call to be notified of success or failure of the operation.
+ *
+ * @param name The name of the message.
+ * @param data The payload of the message.
+ * END CANONICAL DOCSTRING
+ */
 - (void)publish:(nullable NSString *)name data:(nullable id)data callback:(nullable ARTCallback)callback;
 
 - (void)publish:(nullable NSString *)name data:(nullable id)data clientId:(NSString *)clientId;
