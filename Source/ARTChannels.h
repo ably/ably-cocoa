@@ -44,6 +44,14 @@
  * END CANONICAL DOCSTRING
  */
 - (ChannelType)get:(NSString *)name options:(ARTChannelOptions *)options;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Releases a [`RestChannel`]{@link RestChannel} or [`RealtimeChannel`]{@link RealtimeChannel} object, deleting it, and enabling it to be garbage collected. It also removes any listeners associated with the channel. To release a channel, the [`ChannelState`]{@link ChannelState} must be `INITIALIZED`, `DETACHED`, or `FAILED`.
+ *
+ * @param name The channel name.
+ * END CANONICAL DOCSTRING
+ */
 - (void)release:(NSString *)name;
 - (id<NSFastEnumeration>)copyIntoIteratorWithMapper:(id (^)(ChannelType))mapper;
 
