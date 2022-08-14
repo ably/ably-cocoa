@@ -32,6 +32,17 @@
  * END CANONICAL DOCSTRING
  */
 - (ChannelType)get:(NSString *)name;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Creates a new [`RestChannel`]{@link RestChannel} or [`RealtimeChannel`]{@link RealtimeChannel} object, with the specified [`ChannelOptions`]{@link ChannelOptions}, or returns the existing channel object.
+ *
+ * @param name The channel name.
+ * @param options A [`ChannelOptions`]{@link ChannelOptions} object.
+ * 
+ * @return A [`RestChannel`]{@link RestChannel} or [`RealtimeChannel`]{@link RealtimeChannel} object.
+ * END CANONICAL DOCSTRING
+ */
 - (ChannelType)get:(NSString *)name options:(ARTChannelOptions *)options;
 - (void)release:(NSString *)name;
 - (id<NSFastEnumeration>)copyIntoIteratorWithMapper:(id (^)(ChannelType))mapper;
