@@ -36,6 +36,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)publish:(nullable NSString *)name data:(nullable id)data clientId:(NSString *)clientId extras:(nullable id<ARTJsonCompatible>)extras callback:(nullable ARTCallback)callback;
 
 - (void)publish:(NSArray<ARTMessage *> *)messages;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Sends an array of messages on this channel. A callback may optionally be passed in to this call to be notified of success or failure of the operation.
+ *
+ * @param messages An array of [`Message`]{@link Message} objects.
+ * @param params Optional parameters, such as [`quickAck`](https://faqs.ably.com/why-are-some-rest-publishes-on-a-channel-slow-and-then-typically-faster-on-subsequent-publishes) sent as part of the query string.
+ * END CANONICAL DOCSTRING
+ */
 - (void)publish:(NSArray<ARTMessage *> *)messages callback:(nullable ARTCallback)callback;
 
 - (void)history:(ARTPaginatedMessagesCallback)callback;
