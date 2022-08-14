@@ -18,7 +18,13 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTTokenRequest : NSObject
 
 /**
- Identifier for the key (public).
+ * BEGIN CANONICAL DOCSTRING
+ * The name of the key against which this request is made. The key name is public, whereas the key secret is private.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Identifier for the key (public).
+ * END LEGACY DOCSTRING
  */
 @property (nonatomic, readonly, copy) NSString *keyName;
 
