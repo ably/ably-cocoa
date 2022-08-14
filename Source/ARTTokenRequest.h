@@ -78,7 +78,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) NSNumber *ttl;
 
 /**
- Timestamp (in millis since the epoch) of this request. Timestamps, in conjunction with the nonce, are used to prevent n requests from being replayed.
+ * BEGIN CANONICAL DOCSTRING
+ * The timestamp of this request as milliseconds since the Unix epoch.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Timestamp (in millis since the epoch) of this request. Timestamps, in conjunction with the nonce, are used to prevent n requests from being replayed.
+ * END LEGACY DOCSTRING
  */
 @property (nonatomic, strong) NSDate *timestamp;
 
