@@ -13,6 +13,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nullable) ARTChannelOptions *options;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Retrieves a [`PaginatedResult`]{@link PaginatedResult} object, containing an array of historical [`Message`]{@link Message} objects for the channel. If the channel is configured to persist messages, then messages can be retrieved from history for up to 72 hours in the past. If not, messages can only be retrieved from history for up to two minutes in the past.
+ *
+ * @param start The time from which messages are retrieved, specified as milliseconds since the Unix epoch.
+ * @param end The time until messages are retrieved, specified as milliseconds since the Unix epoch.
+ * @param direction The order for which messages are returned in. Valid values are `backwards` which orders messages from most recent to oldest, or `forwards` which orders messages from oldest to most recent. The default is `backwards`.
+ * @param limit An upper limit on the number of messages returned. The default is 100, and the maximum is 1000.
+ *
+ * @return A [`PaginatedResult`]{@link PaginatedResult} object containing an array of [`Message`]{@link Message} objects.
+ * END CANONICAL DOCSTRING
+ */
 - (BOOL)history:(nullable ARTDataQuery *)query callback:(ARTPaginatedMessagesCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
 - (void)status:(ARTChannelDetailsCallback)callback;
