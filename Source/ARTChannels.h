@@ -11,6 +11,15 @@
  */
 @interface ARTChannels<ChannelType> : NSObject
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Checks if a channel has been previously retrieved using the `get()` method.
+ *
+ * @param name The channel name.
+ *
+ * @return `true` if the channel exists, otherwise `false`.
+ * END CANONICAL DOCSTRING
+ */
 - (BOOL)exists:(NSString *)name;
 - (ChannelType)get:(NSString *)name;
 - (ChannelType)get:(NSString *)name options:(ARTChannelOptions *)options;
