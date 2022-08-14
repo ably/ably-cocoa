@@ -21,6 +21,16 @@
  * END CANONICAL DOCSTRING
  */
 - (BOOL)exists:(NSString *)name;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Creates a new [`RestChannel`]{@link RestChannel} or [`RealtimeChannel`]{@link RealtimeChannel} object, or returns the existing channel object.
+ *
+ * @param name The channel name.
+ *
+ * @return A [`RestChannel`]{@link RestChannel} or [`RealtimeChannel`]{@link RealtimeChannel} object.
+ * END CANONICAL DOCSTRING
+ */
 - (ChannelType)get:(NSString *)name;
 - (ChannelType)get:(NSString *)name options:(ARTChannelOptions *)options;
 - (void)release:(NSString *)name;
