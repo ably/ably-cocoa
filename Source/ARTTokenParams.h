@@ -8,7 +8,13 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- ARTTokenParams is used in the parameters of token authentication requests, corresponding to the desired attributes of the Ably Token.
+ * BEGIN CANONICAL DOCSTRING
+ * Defines the properties of an Ably Token.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * ARTTokenParams is used in the parameters of token authentication requests, corresponding to the desired attributes of the Ably Token.
+ * END LEGACY DOCSTRING
  */
 @interface ARTTokenParams : NSObject<NSCopying>
 
