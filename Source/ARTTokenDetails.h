@@ -32,7 +32,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, strong, nullable) NSDate *issued;
 
 /**
- Contains the capability JSON stringified.
+ * BEGIN CANONICAL DOCSTRING
+ * The capabilities associated with this Ably Token. The capabilities value is a JSON-encoded representation of the resource paths and associated operations. Read more about capabilities in the [capabilities docs](https://ably.com/docs/core-features/authentication/#capabilities-explained).
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Contains the capability JSON stringified.
+ * END LEGACY DOCSTRING
  */
 @property (nonatomic, readonly, copy, nullable) NSString *capability;
 
