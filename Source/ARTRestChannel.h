@@ -27,6 +27,13 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (BOOL)history:(nullable ARTDataQuery *)query callback:(ARTPaginatedMessagesCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Retrieves a [`ChannelDetails`]{@link ChannelDetails} object for the channel, which includes status and occupancy metrics.
+ *
+ * @return A [`ChannelDetails`]{@link ChannelDetails} object.
+ * END CANONICAL DOCSTRING
+ */
 - (void)status:(ARTChannelDetailsCallback)callback;
 
 - (void)setOptions:(ARTChannelOptions *_Nullable)options;
