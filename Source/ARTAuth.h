@@ -17,6 +17,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol ARTAuthProtocol
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A client ID, used for identifying this client when publishing messages or for presence purposes. The `clientId` can be any non-empty string, except it cannot contain a `*`. This option is primarily intended to be used in situations where the library is instantiated with a key. Note that a `clientId` may also be implicit in a token used to instantiate the library. An error is raised if a `clientId` specified here conflicts with the `clientId` implicit in the token. Find out more about [identified clients](https://ably.com/docs/core-features/authentication#identified-clients).
+ * END CANONICAL DOCSTRING
+ */
 @property (nullable, readonly) NSString *clientId;
 
 @property (nullable, readonly) ARTTokenDetails *tokenDetails;
