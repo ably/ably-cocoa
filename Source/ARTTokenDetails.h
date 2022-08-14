@@ -6,7 +6,13 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- ARTTokenDetails is a type providing details of Ably token string and its associated metadata.
+ * BEGIN CANONICAL DOCSTRING
+ * Contains an Ably Token and its associated metadata.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * ARTTokenDetails is a type providing details of Ably token string and its associated metadata.
+ * END LEGACY DOCSTRING
  */
 @interface ARTTokenDetails : NSObject<NSCopying>
 
