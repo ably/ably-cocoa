@@ -18,6 +18,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (ARTRestChannel *)get:(NSString *)name;
 - (ARTRestChannel *)get:(NSString *)name options:(ARTChannelOptions *)options;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Iterates through the existing channels.
+ *
+ * @return Each iteration returns a [`RestChannel`]{@link RestChannel} or [`RealtimeChannel`]{@link RealtimeChannel} object.
+ * END CANONICAL DOCSTRING
+ */
 - (id<NSFastEnumeration>)iterate;
 
 @end
