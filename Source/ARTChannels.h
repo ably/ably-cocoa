@@ -4,6 +4,11 @@
 @class ARTRestChannel;
 @class ARTChannelOptions;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Creates and destroys [`RestChannel`]{@link RestChannel} and [`RealtimeChannel`]{@link RealtimeChannel} objects.
+ * END CANONICAL DOCSTRING
+ */
 @interface ARTChannels<ChannelType> : NSObject
 
 - (BOOL)exists:(NSString *)name;
