@@ -73,7 +73,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSString *capability;
 
 /**
- Represents time to live (expiry) of this token as a NSTimeInterval.
+ * BEGIN CANONICAL DOCSTRING
+ * Requested time to live for the Ably Token in milliseconds. If the Ably `TokenRequest` is successful, the TTL of the returned Ably Token is less than or equal to this value, depending on application settings and the attributes of the issuing key. The default is 60 minutes.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Represents time to live (expiry) of this token as a NSTimeInterval.
+ * END LEGACY DOCSTRING
  */
 @property (nonatomic, strong, nullable) NSNumber *ttl;
 
