@@ -29,16 +29,24 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init NS_UNAVAILABLE;
 
 /**
- # (RSA8) Auth#requestToken
- 
- Implicitly creates a `TokenRequest` if required, and requests a token from Ably if required.
- 
- `TokenParams` and `AuthOptions` are optional.
- When provided, the values supersede matching client library configured params and options.
- 
- - Parameter tokenParams: Token params (optional).
- - Parameter authOptions: Authentication options (optional).
- - Parameter callback: Completion callback (ARTTokenDetails, NSError).
+ * BEGIN CANONICAL DOCSTRING
+ * Calls the `requestToken` REST API endpoint to obtain an Ably Token according to the specified [`TokenParams`]{@link TokenParams} and [`AuthOptions`]{@link AuthOptions}. Both [`TokenParams`]{@link TokenParams} and [`AuthOptions`]{@link AuthOptions} are optional. When omitted or `null`, the default token parameters and authentication options for the client library are used, as specified in the [`ClientOptions`]{@link ClientOptions} when the client library was instantiated, or later updated with an explicit `authorize` request. Values passed in are used instead of, rather than being merged with, the default values. To understand why an Ably [`TokenRequest`]{@link TokenRequest} may be issued to clients in favor of a token, see [Token Authentication explained](https://ably.com/docs/core-features/authentication/#token-authentication).
+ *
+ * @param tokenParams A [`TokenParams`]{@link TokenParams} object.
+ * @param authOptions An [`AuthOptions`]{@link AuthOptions} object.
+ *
+ * @return A [`TokenDetails`]{@link TokenDetails} object.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ *  # (RSA8) Auth#requestToken
+ *  Implicitly creates a `TokenRequest` if required, and requests a token from Ably if required.
+ *  `TokenParams` and `AuthOptions` are optional.
+ *  When provided, the values supersede matching client library configured params and options.
+ *  - Parameter tokenParams: Token params (optional).
+ *  - Parameter authOptions: Authentication options (optional).
+ *  - Parameter callback: Completion callback (ARTTokenDetails, NSError).
+ * END LEGACY DOCSTRING
  */
 - (void)requestToken:(nullable ARTTokenParams *)tokenParams
          withOptions:(nullable ARTAuthOptions *)authOptions
