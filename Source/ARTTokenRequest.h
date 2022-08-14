@@ -56,6 +56,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 - (instancetype)initWithTokenParams:(ARTTokenParams *)tokenParams keyName:(NSString *)keyName nonce:(NSString *)nonce mac:(NSString *)mac;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A static factory method to create a `TokenRequest` object from a deserialized `TokenRequest`-like object or a JSON stringified `TokenRequest` object. This method is provided to minimize bugs as a result of differing types by platform for fields such as `timestamp` or `ttl`. For example, in Ruby `ttl` in the `TokenRequest` object is exposed in seconds as that is idiomatic for the language, yet when serialized to JSON using `to_json` it is automatically converted to the Ably standard which is milliseconds. By using the `fromJson()` method when constructing a `TokenRequest` object, Ably ensures that all fields are consistently serialized and deserialized across platforms.
+ *
+ * @param json A deserialized `TokenRequest`-like object or a JSON stringified `TokenRequest` object to create a `TokenRequest`.
+ *
+ * @return An Ably token request object.
+ * END CANONICAL DOCSTRING
+ */
 + (ARTTokenRequest *_Nullable)fromJson:(id<ARTJsonCompatible>)json error:(NSError *_Nullable *_Nullable)error;
 
 @end
