@@ -38,7 +38,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, copy) NSString *mac;
 
 /**
- Contains the capability JSON stringified.
+ * BEGIN CANONICAL DOCSTRING
+ * Capability of the requested Ably Token. If the Ably `TokenRequest` is successful, the capability of the returned Ably Token will be the intersection of this capability with the capability of the issuing key. The capabilities value is a JSON-encoded representation of the resource paths and associated operations. Read more about capabilities in the [capabilities docs](https://ably.com/docs/realtime/authentication).
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Contains the capability JSON stringified.
+ * END LEGACY DOCSTRING
  */
 @property (nonatomic, copy, nullable) NSString *capability;
 
