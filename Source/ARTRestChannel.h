@@ -36,6 +36,13 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)status:(ARTChannelDetailsCallback)callback;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Sets the [`ChannelOptions`]{@link ChannelOptions} for the channel.
+ *
+ * @param options A [`ChannelOptions`]{@link ChannelOptions} object.
+ * END CANONICAL DOCSTRING
+ */
 - (void)setOptions:(ARTChannelOptions *_Nullable)options;
 
 @end
