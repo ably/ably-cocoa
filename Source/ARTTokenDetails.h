@@ -17,7 +17,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTTokenDetails : NSObject<NSCopying>
 
 /**
- Token string.
+ * BEGIN CANONICAL DOCSTRING
+ * The [Ably Token](https://ably.com/docs/core-features/authentication#ably-tokens) itself. A typical Ably Token string appears with the form `xVLyHw.A-pwh7wicf3afTfgiw4k2Ku33kcnSA7z6y8FjuYpe3QaNRTEo4`.
+ * END CANONICAL DOCSTRING
  */
 @property (nonatomic, readonly, copy) NSString *token;
 
