@@ -32,6 +32,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface ARTRestChannel : NSObject <ARTRestChannelProtocol>
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A [`RestPresence`]{@link RestPresence} object.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly) ARTRestPresence *presence;
 @property (readonly) ARTPushChannel *push;
 
