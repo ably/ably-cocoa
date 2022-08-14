@@ -23,7 +23,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, copy) NSString *keyName;
 
 /**
- A clientId to associate with this token.
+ * BEGIN CANONICAL DOCSTRING
+ * The client ID to associate with the requested Ably Token. When provided, the Ably Token may only be used to perform operations on behalf of that client ID.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * A clientId to associate with this token.
+ * END LEGACY DOCSTRING
  */
 @property (nullable, nonatomic, copy, readwrite) NSString *clientId;
 
