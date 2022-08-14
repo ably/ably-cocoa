@@ -22,7 +22,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, copy) NSString *token;
 
 /**
- Contains the expiry time in milliseconds.
+ * BEGIN CANONICAL DOCSTRING
+ * The timestamp at which this token expires as milliseconds since the Unix epoch.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Contains the expiry time in milliseconds.
+ * END LEGACY DOCSTRING
  */
 @property (nonatomic, readonly, strong, nullable) NSDate *expires;
 
