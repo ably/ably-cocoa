@@ -40,7 +40,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, copy, readwrite) NSString *clientId;
 
 /**
- Unique 16+ character nonce.
+ * BEGIN CANONICAL DOCSTRING
+ * A cryptographically secure random string of at least 16 characters, used to ensure the `TokenRequest` cannot be reused.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Unique 16+ character nonce.
+ * END LEGACY DOCSTRING
  */
 @property (nonatomic, readonly, copy) NSString *nonce;
 
