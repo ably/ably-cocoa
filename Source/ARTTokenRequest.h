@@ -45,7 +45,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, copy) NSString *nonce;
 
 /**
- Valid HMAC is created using the key secret.
+ * BEGIN CANONICAL DOCSTRING
+ * The Message Authentication Code for this request.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Valid HMAC is created using the key secret.
+ * END LEGACY DOCSTRING
  */
 @property (nonatomic, readonly, copy) NSString *mac;
 
