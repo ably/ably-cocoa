@@ -55,6 +55,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Creates Ably [`TokenRequest`]{@link TokenRequest} objects and obtains Ably Tokens from Ably to subsequently issue to less trusted clients.
+ * END CANONICAL DOCSTRING
+ */
 @interface ARTAuth : NSObject <ARTAuthProtocol>
 
 @end
