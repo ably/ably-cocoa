@@ -43,7 +43,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, copy, nullable) NSString *capability;
 
 /**
- Contains the clientId assigned to the token if provided.
+ * BEGIN CANONICAL DOCSTRING
+ * The client ID, if any, bound to this Ably Token. If a client ID is included, then the Ably Token authenticates its bearer as that client ID, and the Ably Token may only be used to perform operations on behalf of that client ID. The client is then considered to be an [identified client](https://ably.com/docs/core-features/authentication#identified-clients).
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Contains the clientId assigned to the token if provided.
+ * END LEGACY DOCSTRING
  */
 @property (nonatomic, readonly, copy, nullable) NSString *clientId;
 
