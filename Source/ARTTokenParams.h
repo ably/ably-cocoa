@@ -19,7 +19,13 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTTokenParams : NSObject<NSCopying>
 
 /**
- Represents time to live (expiry) of this token as a NSTimeInterval.
+ * BEGIN CANONICAL DOCSTRING
+ * Requested time to live for the token in milliseconds. The default is 60 minutes.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Represents time to live (expiry) of this token as a NSTimeInterval.
+ * END LEGACY DOCSTRING
  */
 @property (nonatomic, strong, nullable) NSNumber *ttl;
 
