@@ -16,6 +16,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol ARTChannelProtocol
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The channel name.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly) NSString *name;
 
 - (void)publish:(nullable NSString *)name data:(nullable id)data;
