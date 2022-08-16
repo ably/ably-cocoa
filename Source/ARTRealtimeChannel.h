@@ -34,6 +34,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nullable, getter=getOptions) ARTRealtimeChannelOptions *options;
 
 - (void)attach;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Attach to this channel ensuring the channel is created in the Ably system and all messages published on the channel are received by any channel listeners registered using [`subscribe()`]{@link RealtimeChannel#subscribe}. Any resulting channel state change will be emitted to any listeners registered using the on or once methods. As a convenience, `attach()` is called implicitly if [`subscribe()`]{@link RealtimeChannel#subscribe} for the channel is called, or [`enter()`]{@link RealtimePresence#enter} or [`subscribe()`]{@link RealtimePresence#subscribe} are called on the [`RealtimePresence`]{@link RealtimePresence} object for this channel.
+ * END CANONICAL DOCSTRING
+ */
 - (void)attach:(nullable ARTCallback)callback;
 
 - (void)detach;
