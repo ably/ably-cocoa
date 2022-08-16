@@ -140,7 +140,13 @@ NSString *_Nonnull ARTRealtimeChannelStateToStr(ARTRealtimeChannelState state);
 #pragma mark - ARTChannelEvent
 
 /**
- ARTChannelEvent is the enum emitted as the event in ARTRealtimeChannel.on; either a ChannelState or an Update event.
+ * BEGIN CANONICAL DOCSTRING
+ * Describes the events emitted by a [`RestChannel`]{@link RestChannel} or [`RealtimeChannel`]{@link RealtimeChannel} object. An event is either an `UPDATE` or a [`ChannelState`]{@link ChannelState}.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * ARTChannelEvent is the enum emitted as the event in ARTRealtimeChannel.on; either a ChannelState or an Update event.
+ * END LEGACY DOCSTRING
  */
 typedef NS_ENUM(NSUInteger, ARTChannelEvent) {
     ARTChannelEventInitialized,
@@ -150,6 +156,11 @@ typedef NS_ENUM(NSUInteger, ARTChannelEvent) {
     ARTChannelEventDetached,
     ARTChannelEventSuspended,
     ARTChannelEventFailed,
+    /**
+     * BEGIN CANONICAL DOCSTRING
+     * An event for changes to channel conditions that do not result in a change in [`ChannelState`]{@link ChannelState}.
+     * END CANONICAL DOCSTRING
+     */
     ARTChannelEventUpdate
 };
 
