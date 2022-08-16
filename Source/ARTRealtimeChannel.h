@@ -51,6 +51,13 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)detach:(nullable ARTCallback)callback;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Registers a listener for messages on this channel. The caller supplies a listener function, which is called each time one or more messages arrives on the channel. A callback may optionally be passed in to this call to be notified of success or failure of the channel [`attach()`]{@link RealtimeChannel#attach} operation.
+ *
+ * @param callback An event listener function.
+ * END CANONICAL DOCSTRING
+ */
 - (ARTEventListener *_Nullable)subscribe:(ARTMessageCallback)callback;
 - (ARTEventListener *_Nullable)subscribeWithAttachCallback:(nullable ARTCallback)onAttach callback:(ARTMessageCallback)cb;
 - (ARTEventListener *_Nullable)subscribe:(NSString *)name callback:(ARTMessageCallback)cb;
