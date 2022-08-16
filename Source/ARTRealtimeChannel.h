@@ -79,6 +79,15 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)unsubscribe;
 - (void)unsubscribe:(ARTEventListener *_Nullable)listener;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Deregisters the given listener for the specified event name. This removes an earlier event-specific subscription.
+ *
+ * @param name The event name.
+ * @param listener An event listener function.
+ * END CANONICAL DOCSTRING
+ */
 - (void)unsubscribe:(NSString *)name listener:(ARTEventListener *_Nullable)listener;
 
 /**
