@@ -72,6 +72,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (ARTEventListener *_Nullable)subscribe:(NSString *)name callback:(ARTMessageCallback)cb;
 - (ARTEventListener *_Nullable)subscribe:(NSString *)name onAttach:(nullable ARTCallback)onAttach callback:(ARTMessageCallback)cb;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Deregisters all listeners to messages on this channel. This removes all earlier subscriptions.
+ * END CANONICAL DOCSTRING
+ */
 - (void)unsubscribe;
 - (void)unsubscribe:(ARTEventListener *_Nullable)listener;
 - (void)unsubscribe:(NSString *)name listener:(ARTEventListener *_Nullable)listener;
