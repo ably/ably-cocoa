@@ -43,6 +43,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)attach:(nullable ARTCallback)callback;
 
 - (void)detach;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Detach from this channel. Any resulting channel state change is emitted to any listeners registered using the [`on`]{@link EventEmitter#on} or [`once`]{@link EventEmitter#once} methods of the [`EventEmitter`]{@link EventEmitter} object. Once all clients globally have detached from the channel, the channel will be released in the Ably service within two minutes.
+ * END CANONICAL DOCSTRING
+ */
 - (void)detach:(nullable ARTCallback)callback;
 
 - (ARTEventListener *_Nullable)subscribe:(ARTMessageCallback)callback;
