@@ -79,6 +79,11 @@ ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
  */
 @property (readonly) ARTRealtimePresence *presence;
 #if TARGET_OS_IPHONE
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A [`PushChannel`]{@link PushChannel} object.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly) ARTPushChannel *push;
 #endif
 
