@@ -113,6 +113,13 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (BOOL)history:(ARTRealtimeHistoryQuery *_Nullable)query callback:(ARTPaginatedMessagesCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Sets the [`ChannelOptions`]{@link ChannelOptions} for the channel.
+ *
+ * @param options A [`ChannelOptions`]{@link ChannelOptions} object.
+ * END CANONICAL DOCSTRING
+ */
 - (void)setOptions:(ARTRealtimeChannelOptions *_Nullable)options callback:(nullable ARTCallback)cb;
 
 /**
