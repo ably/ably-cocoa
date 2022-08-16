@@ -250,6 +250,11 @@ NSString *generateNonce(void);
                          reason:(ARTErrorInfo *_Nullable)reason
                         resumed:(BOOL)resumed;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The new current [`ChannelState`]{@link ChannelState}.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, nonatomic) ARTRealtimeChannelState current;
 @property (readonly, nonatomic) ARTRealtimeChannelState previous;
 @property (readonly, nonatomic) ARTChannelEvent event;
