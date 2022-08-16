@@ -232,6 +232,11 @@ NSString *generateNonce(void);
 
 #pragma mark - ARTChannelStateChange
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Contains state change information emitted by [`RestChannel`]{@link RestChannel} and [`RealtimeChannel`]{@link RealtimeChannel} objects.
+ * END CANONICAL DOCSTRING
+ */
 @interface ARTChannelStateChange : NSObject
 
 - (instancetype)initWithCurrent:(ARTRealtimeChannelState)current
