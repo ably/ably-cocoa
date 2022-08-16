@@ -256,6 +256,12 @@ NSString *generateNonce(void);
  * END CANONICAL DOCSTRING
  */
 @property (readonly, nonatomic) ARTRealtimeChannelState current;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The previous state. For the [`UPDATE`]{@link ChannelEvent#UPDATE} event, this is equal to the `current` [`ChannelState`]{@link ChannelState}.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, nonatomic) ARTRealtimeChannelState previous;
 
 /**
