@@ -12,6 +12,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init NS_UNAVAILABLE;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Subscribes the device to push notifications for the channel.
+ * END CANONICAL DOCSTRING
+ */
 - (void)subscribeDevice;
 - (void)subscribeDevice:(nullable ARTCallback)callback;
 - (void)subscribeClient;
