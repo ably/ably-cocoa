@@ -35,6 +35,12 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)unsubscribeDevice;
 - (void)unsubscribeDevice:(nullable ARTCallback)callback;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Unsubscribes all devices associated with the current device's `clientId` from receiving push notifications for the channel.
+ * END CANONICAL DOCSTRING
+ */
 - (void)unsubscribeClient;
 - (void)unsubscribeClient:(nullable ARTCallback)callback;
 
