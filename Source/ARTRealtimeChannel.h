@@ -19,6 +19,12 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol ARTRealtimeChannelProtocol <ARTChannelProtocol>
 
 @property (readonly) ARTRealtimeChannelState state;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * An [`ErrorInfo`]{@link ErrorInfo} object describing the last error which occurred on the channel, if any.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, nullable) ARTErrorInfo *errorReason;
 @property (readonly, nullable, getter=getOptions) ARTRealtimeChannelOptions *options;
 
