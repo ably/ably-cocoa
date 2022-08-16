@@ -28,6 +28,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Enables devices to subscribe to push notifications for a channel.
+ * END CANONICAL DOCSTRING
+ */
 @interface ARTPushChannel : NSObject <ARTPushChannelProtocol>
 
 @end
