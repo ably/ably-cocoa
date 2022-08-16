@@ -257,6 +257,12 @@ NSString *generateNonce(void);
  */
 @property (readonly, nonatomic) ARTRealtimeChannelState current;
 @property (readonly, nonatomic) ARTRealtimeChannelState previous;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The event that triggered this [`ChannelState`]{@link ChannelState} change.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, nonatomic) ARTChannelEvent event;
 @property (readonly, nonatomic, nullable) ARTErrorInfo *reason;
 @property (readonly, nonatomic) BOOL resumed;
