@@ -277,6 +277,12 @@ NSString *generateNonce(void);
  * END CANONICAL DOCSTRING
  */
 @property (readonly, nonatomic, nullable) ARTErrorInfo *reason;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Indicates whether message continuity on this channel is preserved, see [Nonfatal channel errors](https://ably.com/docs/realtime/channels#nonfatal-errors) for more info.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, nonatomic) BOOL resumed;
 
 @end
