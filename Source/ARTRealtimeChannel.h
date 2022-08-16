@@ -41,6 +41,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setOptions:(ARTRealtimeChannelOptions *_Nullable)options callback:(nullable ARTCallback)cb;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * `RealtimeChannel` implements [`EventEmitter`]{@link EventEmitter} and emits [`ChannelEvent`]{@link ChannelEvent} events, where a `ChannelEvent` is either a [`ChannelState`]{@link ChannelState} or an [`UPDATE`]{@link ChannelEvent#UPDATE}.
+ * END CANONICAL DOCSTRING
+ */
 ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
 
 @end
