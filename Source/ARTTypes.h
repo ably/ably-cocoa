@@ -270,6 +270,12 @@ NSString *generateNonce(void);
  * END CANONICAL DOCSTRING
  */
 @property (readonly, nonatomic) ARTChannelEvent event;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * An [`ErrorInfo`]{@link ErrorInfo} object containing any information relating to the transition.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, nonatomic, nullable) ARTErrorInfo *reason;
 @property (readonly, nonatomic) BOOL resumed;
 
