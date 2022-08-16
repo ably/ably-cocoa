@@ -18,6 +18,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol ARTRealtimeChannelProtocol <ARTChannelProtocol>
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The current [`ChannelState`]{@link ChannelState} of the channel.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly) ARTRealtimeChannelState state;
 
 /**
