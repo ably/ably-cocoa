@@ -46,8 +46,13 @@ ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
 @end
 
 /**
- ARTRealtimeChannel provides a straightforward API for publishing and subscribing to messages on a channel.
- In order to publish, subscribe to, or be present on a channel, you must first obtain a channel instance via ``ARTRealtime/channels/get``.
+ * BEGIN CANONICAL DOCSTRING
+ * Enables messages to be published and subscribed to. Also enables historic messages to be retrieved and provides access to the [`RealtimePresence`]{@link RealtimePresence} object of a channel.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * ARTRealtimeChannel provides a straightforward API for publishing and subscribing to messages on a channel. In order to publish, subscribe to, or be present on a channel, you must first obtain a channel instance via ``ARTRealtime/channels/get``.
+ * END LEGACY DOCSTRING
  */
 @interface ARTRealtimeChannel : NSObject <ARTRealtimeChannelProtocol>
 
