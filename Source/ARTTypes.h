@@ -296,6 +296,11 @@ NSString *generateNonce(void);
  */
 @interface ARTChannelMetrics : NSObject
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The number of realtime connections attached to the channel.
+ * END CANONICAL DOCSTRING
+ */
 @property (nonatomic, readonly) NSInteger connections;
 @property (nonatomic, readonly) NSInteger publishers;
 @property (nonatomic, readonly) NSInteger subscribers;
