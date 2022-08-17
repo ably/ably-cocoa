@@ -73,6 +73,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Contains the properties required to configure the encryption of [`Message`]{@link Message} payloads.
+ * END CANONICAL DOCSTRING
+ */
 @interface ARTCrypto : NSObject
 
 + (ARTCipherParams *)getDefaultParams:(NSDictionary *)values;
