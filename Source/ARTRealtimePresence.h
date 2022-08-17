@@ -59,6 +59,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)update:(id _Nullable)data;
 - (void)update:(id _Nullable)data callback:(nullable ARTCallback)cb;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Leaves the presence set for the channel. A client must have previously entered the presence set before they can leave it. An optional callback may be provided to notify of the success or failure of the operation.
+ *
+ * @param data The payload associated with the presence member.
+ * @param extras A JSON object of arbitrary key-value pairs that may contain metadata, and/or ancillary payloads.
+ * END CANONICAL DOCSTRING
+ */
 - (void)leave:(id _Nullable)data;
 - (void)leave:(id _Nullable)data callback:(nullable ARTCallback)cb;
 
