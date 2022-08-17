@@ -37,6 +37,12 @@ NS_ASSUME_NONNULL_BEGIN
  * END LEGACY DOCSTRING
  */
 @interface ARTCipherParams : NSObject <ARTCipherParamsCompatible>
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The algorithm to use for encryption. Only `AES` is supported and is the default value.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, strong, nonatomic) NSString *algorithm;
 @property (readonly, strong, nonatomic) NSData *key;
 @property (readonly, nonatomic) NSUInteger keyLength;
