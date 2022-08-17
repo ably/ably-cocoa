@@ -51,6 +51,12 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL DOCSTRING
  */
 @property (readonly, strong, nonatomic) NSData *key;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The length of the key in bits; for example 128 or 256.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, nonatomic) NSUInteger keyLength;
 @property (readonly, getter=getMode) NSString *mode;
 
