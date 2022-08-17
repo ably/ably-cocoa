@@ -90,6 +90,14 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL DOCSTRING
  */
 - (void)unsubscribe:(ARTEventListener *)listener;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Deregisters a specific listener that is registered to receive [`PresenceMessage`]{@link PresenceMessage} on the channel for a given [`PresenceAction`]{@link PresenceAction}.
+ *
+ * @param action A specific [`PresenceAction`]{@link PresenceAction} to deregister the listener for.
+ * END CANONICAL DOCSTRING
+ */
 - (void)unsubscribe:(ARTPresenceAction)action listener:(ARTEventListener *)listener;
 
 - (void)history:(ARTPaginatedPresenceCallback)callback;
