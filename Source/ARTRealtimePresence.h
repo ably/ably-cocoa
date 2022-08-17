@@ -77,6 +77,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (ARTEventListener *_Nullable)subscribe:(ARTPresenceAction)action callback:(ARTPresenceMessageCallback)cb;
 - (ARTEventListener *_Nullable)subscribe:(ARTPresenceAction)action onAttach:(nullable ARTCallback)onAttach callback:(ARTPresenceMessageCallback)cb;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Deregisters all listeners currently receiving [`PresenceMessage`]{@link PresenceMessage} for the channel.
+ * END CANONICAL DOCSTRING
+ */
 - (void)unsubscribe;
 - (void)unsubscribe:(ARTEventListener *)listener;
 - (void)unsubscribe:(ARTPresenceAction)action listener:(ARTEventListener *)listener;
