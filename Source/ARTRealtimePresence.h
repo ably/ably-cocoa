@@ -55,6 +55,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)leaveClient:(NSString *)clientId data:(id _Nullable)data;
 - (void)leaveClient:(NSString *)clientId data:(id _Nullable)data callback:(nullable ARTCallback)cb;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Registers a listener that is called each time a [`PresenceMessage`]{@link PresenceMessage} is received on the channel, such as a new member entering the presence set. A callback may optionally be passed in to this call to be notified of success or failure of the channel [`attach()`]{@link RealtimeChannel#attach} operation.
+ *
+ * @return An event listener function.
+ * END CANONICAL DOCSTRING
+ */
 - (ARTEventListener *_Nullable)subscribe:(ARTPresenceMessageCallback)callback;
 - (ARTEventListener *_Nullable)subscribeWithAttachCallback:(nullable ARTCallback)onAttach callback:(ARTPresenceMessageCallback)cb;
 - (ARTEventListener *_Nullable)subscribe:(ARTPresenceAction)action callback:(ARTPresenceMessageCallback)cb;
