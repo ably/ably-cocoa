@@ -44,6 +44,12 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL DOCSTRING
  */
 @property (readonly, strong, nonatomic) NSString *algorithm;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The private key used to encrypt and decrypt payloads.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, strong, nonatomic) NSData *key;
 @property (readonly, nonatomic) NSUInteger keyLength;
 @property (readonly, getter=getMode) NSString *mode;
