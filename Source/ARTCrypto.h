@@ -79,7 +79,15 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL DOCSTRING
  */
 @interface ARTCrypto : NSObject
-
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Returns a [`CipherParams`]{@link CipherParams} object, using the default values for any fields not supplied by the [`CipherParamOptions`]{@link CipherParamOptions} object.
+ *
+ * @param values A [`CipherParamOptions`]{@link CipherParamOptions} object.
+ *
+ * @return A [`CipherParams`]{@link CipherParams} object, using the default values for any fields not supplied.
+ * END CANONICAL DOCSTRING
+ */
 + (ARTCipherParams *)getDefaultParams:(NSDictionary *)values;
 + (NSData *)generateRandomKey;
 + (NSData *)generateRandomKey:(NSUInteger)length;
