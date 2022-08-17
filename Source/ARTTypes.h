@@ -319,6 +319,11 @@ NSString *generateNonce(void);
 
 #pragma mark - ARTChannelStatus
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Contains the status of a [`RestChannel`]{@link RestChannel} or [`RealtimeChannel`]{@link RealtimeChannel} object such as whether it is active and its [`ChannelOccupancy`]{@link ChannelOccupancy}.
+ * END CANONICAL DOCSTRING
+ */
 @interface ARTChannelStatus : NSObject
 
 @property (nonatomic, readonly) BOOL active;
