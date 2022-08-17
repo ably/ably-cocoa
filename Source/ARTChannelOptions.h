@@ -24,6 +24,16 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) ARTCipherParams *cipher;
 
 - (instancetype)initWithCipher:(id<ARTCipherParamsCompatible> _Nullable)cipherParams;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Constructor `withCipherKey`, that takes a key only.
+ *
+ * @param key A private key used to encrypt and decrypt payloads.
+ *
+ * @return A `ChannelOptions` object.
+ * END CANONICAL DOCSTRING
+ */
 - (instancetype)initWithCipherKey:(id<ARTCipherKeyCompatible>)key;
 
 @end
