@@ -338,6 +338,11 @@ NSString *generateNonce(void);
  */
 @interface ARTChannelDetails : NSObject
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The identifier of the channel.
+ * END CANONICAL DOCSTRING
+ */
 @property (nonatomic, strong, readonly) NSString *channelId;
 
 @property (nonatomic, strong, readonly) ARTChannelStatus *status;
