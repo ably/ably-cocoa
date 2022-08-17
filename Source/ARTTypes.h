@@ -331,6 +331,11 @@ NSString *generateNonce(void);
 
 #pragma mark - ARTChannelDetails
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Contains the details of a [`RestChannel`]{@link RestChannel} or [`RealtimeChannel`]{@link RealtimeChannel} object such as its ID and [`ChannelStatus`]{@link ChannelStatus}.
+ * END CANONICAL DOCSTRING
+ */
 @interface ARTChannelDetails : NSObject
 
 @property (nonatomic, strong, readonly) NSString *channelId;
