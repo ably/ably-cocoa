@@ -345,6 +345,11 @@ NSString *generateNonce(void);
  */
 @property (nonatomic, strong, readonly) NSString *channelId;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A [`ChannelStatus`]{@link ChannelStatus} object.
+ * END CANONICAL DOCSTRING
+ */
 @property (nonatomic, strong, readonly) ARTChannelStatus *status;
 
 - (instancetype)initWithChannelId:(NSString *)channelId status:(ARTChannelStatus *)status;
