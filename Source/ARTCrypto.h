@@ -58,6 +58,12 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL DOCSTRING
  */
 @property (readonly, nonatomic) NSUInteger keyLength;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The cipher mode. Only `CBC` is supported and is the default value.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, getter=getMode) NSString *mode;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
