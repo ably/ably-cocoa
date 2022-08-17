@@ -90,6 +90,16 @@ NS_ASSUME_NONNULL_BEGIN
  */
 + (ARTCipherParams *)getDefaultParams:(NSDictionary *)values;
 + (NSData *)generateRandomKey;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Generates a random key to be used in the encryption of the channel.
+ *
+ * @param length The length of the key, in bits, to be generated. If not specified, this is equal to the default `keyLength` of the default algorithm: for AES this is 256 bits.
+ *
+ * @return The key as a binary, for example, a byte array. If the language cryptographic randomness primitives are blocking or async, a callback is used. The callback returns the generated binary key.
+ * END CANONICAL DOCSTRING
+ */
 + (NSData *)generateRandomKey:(NSUInteger)length;
 
 @end
