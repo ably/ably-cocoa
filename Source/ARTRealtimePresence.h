@@ -23,6 +23,18 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) BOOL syncComplete;
 
 - (void)get:(ARTPresenceMessagesCallback)callback;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Retrieves the current members present on the channel and the metadata for each member, such as their [`PresenceAction`]{@link PresenceAction} and ID. Returns an array of [`PresenceMessage`]{@link PresenceMessage} objects.
+ *
+ * @param waitForSync Sets whether to wait for a full presence set synchronization between Ably and the clients on the channel to complete before returning the results. Synchronization begins as soon as the channel is [`ATTACHED`]{@link ChannelState#ATTACHED}. When set to `true` the results will be returned as soon as the sync is complete. When set to `false` the current list of members will be returned without the sync completing. The default is `true`.
+ * @param clientId Filters the array of returned presence members by a specific client using its ID.
+ * @param connectionId Filters the array of returned presence members by a specific connection using its ID.
+ *
+ * @return An array of [`PresenceMessage`]{@link PresenceMessage} objects.
+ * END CANONICAL DOCSTRING
+ */
 - (void)get:(ARTRealtimePresenceQuery *)query callback:(ARTPresenceMessagesCallback)callback;
 
 - (void)enter:(id _Nullable)data;
