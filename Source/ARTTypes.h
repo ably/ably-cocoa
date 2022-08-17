@@ -302,6 +302,12 @@ NSString *generateNonce(void);
  * END CANONICAL DOCSTRING
  */
 @property (nonatomic, readonly) NSInteger connections;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The number of realtime attachments permitted to publish messages to the channel. This requires the `publish` capability and for a client to not have specified a [`ChannelMode`]{@link ChannelMode} flag that excludes [`PUBLISH`]{@link ChannelMode#PUBLISH}.
+ * END CANONICAL DOCSTRING
+ */
 @property (nonatomic, readonly) NSInteger publishers;
 @property (nonatomic, readonly) NSInteger subscribers;
 
