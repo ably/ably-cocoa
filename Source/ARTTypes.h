@@ -326,6 +326,11 @@ NSString *generateNonce(void);
  */
 @interface ARTChannelStatus : NSObject
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * If `true`, the channel is active, otherwise `false`.
+ * END CANONICAL DOCSTRING
+ */
 @property (nonatomic, readonly) BOOL active;
 
 @property (nonatomic, strong, readonly) ARTChannelOccupancy *occupancy;
