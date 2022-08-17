@@ -316,6 +316,11 @@ NSString *generateNonce(void);
  */
 @interface ARTChannelOccupancy : NSObject
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A [`ChannelMetrics`]{@link ChannelMetrics} object.
+ * END CANONICAL DOCSTRING
+ */
 @property (nonatomic, strong, readonly) ARTChannelMetrics *metrics;
 
 - (instancetype)initWithMetrics:(ARTChannelMetrics *)metrics;
