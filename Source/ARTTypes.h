@@ -318,6 +318,12 @@ NSString *generateNonce(void);
  * END CANONICAL DOCSTRING
  */
 @property (nonatomic, readonly) NSInteger presenceMembers;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The number of realtime attachments receiving presence messages on the channel. This requires the `subscribe` capability and for a client to not have specified a [`ChannelMode`]{@link ChannelMode} flag that excludes [`PRESENCE_SUBSCRIBE`]{@link ChannelMode#PRESENCE_SUBSCRIBE}.
+ * END CANONICAL DOCSTRING
+ */
 @property (nonatomic, readonly) NSInteger presenceSubscribers;
 
 - (instancetype)initWithConnections:(NSInteger)connections
