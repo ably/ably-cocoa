@@ -52,6 +52,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Enables the presence set to be entered and subscribed to, and the historic presence set to be retrieved for a channel.
+ * END CANONICAL DOCSTRING
+ */
 @interface ARTRealtimePresence : ARTPresence <ARTRealtimePresenceProtocol>
 @end
 
