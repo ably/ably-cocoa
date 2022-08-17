@@ -48,6 +48,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)enter:(id _Nullable)data;
 - (void)enter:(id _Nullable)data callback:(nullable ARTCallback)cb;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Updates the `data` payload for a presence member. If called before entering the presence set, this is treated as an [`ENTER`]{@link PresenceAction#ENTER} event. An optional callback may be provided to notify of the success or failure of the operation.
+ *
+ * @param data The payload to update for the presence member.
+ * @param extras A JSON object of arbitrary key-value pairs that may contain metadata, and/or ancillary payloads.
+ * END CANONICAL DOCSTRING
+ */
 - (void)update:(id _Nullable)data;
 - (void)update:(id _Nullable)data callback:(nullable ARTCallback)cb;
 
