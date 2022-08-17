@@ -37,6 +37,14 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)get:(ARTRealtimePresenceQuery *)query callback:(ARTPresenceMessagesCallback)callback;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Enters the presence set for the channel, optionally passing a `data` payload. A `clientId` is required to be present on a channel. An optional callback may be provided to notify of the success or failure of the operation.
+ *
+ * @param data The payload associated with the presence member.
+ * @param extras A JSON object of arbitrary key-value pairs that may contain metadata, and/or ancillary payloads.
+ * END CANONICAL DOCSTRING
+ */
 - (void)enter:(id _Nullable)data;
 - (void)enter:(id _Nullable)data callback:(nullable ARTCallback)cb;
 
