@@ -333,6 +333,11 @@ NSString *generateNonce(void);
  */
 @property (nonatomic, readonly) BOOL active;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A [`ChannelOccupancy`]{@link ChannelOccupancy} object.
+ * END CANONICAL DOCSTRING
+ */
 @property (nonatomic, strong, readonly) ARTChannelOccupancy *occupancy;
 
 - (instancetype)initWithOccupancy:(ARTChannelOccupancy *)occupancy active:(BOOL)active;
