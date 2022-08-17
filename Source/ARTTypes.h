@@ -311,6 +311,12 @@ NSString *generateNonce(void);
  * END CANONICAL DOCSTRING
  */
 @property (nonatomic, readonly) NSInteger presenceConnections;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The number of members in the presence set of the channel.
+ * END CANONICAL DOCSTRING
+ */
 @property (nonatomic, readonly) NSInteger presenceMembers;
 @property (nonatomic, readonly) NSInteger presenceSubscribers;
 
