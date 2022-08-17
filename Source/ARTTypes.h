@@ -304,6 +304,12 @@ NSString *generateNonce(void);
 @property (nonatomic, readonly) NSInteger connections;
 @property (nonatomic, readonly) NSInteger publishers;
 @property (nonatomic, readonly) NSInteger subscribers;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The number of realtime connections attached to the channel with permission to enter the presence set, regardless of whether or not they have entered it. This requires the `presence` capability and for a client to not have specified a [`ChannelMode`]{@link ChannelMode} flag that excludes [`PRESENCE`]{@link ChannelMode#PRESENCE}.
+ * END CANONICAL DOCSTRING
+ */
 @property (nonatomic, readonly) NSInteger presenceConnections;
 @property (nonatomic, readonly) NSInteger presenceMembers;
 @property (nonatomic, readonly) NSInteger presenceSubscribers;
