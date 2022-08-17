@@ -29,6 +29,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Enables the retrieval of the current and historic presence set for a channel.
+ * END CANONICAL DOCSTRING
+ */
 @interface ARTRestPresence : ARTPresence <ARTRestPresenceProtocol>
 
 - (void)get:(ARTPaginatedPresenceCallback)callback;
