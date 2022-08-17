@@ -309,6 +309,11 @@ NSString *generateNonce(void);
 
 #pragma mark - ARTChannelOccupancy
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Contains the metrics of a [`RestChannel`]{@link RestChannel} or [`RealtimeChannel`]{@link RealtimeChannel} object.
+ * END CANONICAL DOCSTRING
+ */
 @interface ARTChannelOccupancy : NSObject
 
 @property (nonatomic, strong, readonly) ARTChannelMetrics *metrics;
