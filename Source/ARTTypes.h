@@ -289,6 +289,11 @@ NSString *generateNonce(void);
 
 #pragma mark - ARTChannelMetrics
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Contains the metrics associated with a [`RestChannel`]{@link RestChannel} or [`RealtimeChannel`]{@link RealtimeChannel}, such as the number of publishers, subscribers and connections it has.
+ * END CANONICAL DOCSTRING
+ */
 @interface ARTChannelMetrics : NSObject
 
 @property (nonatomic, readonly) NSInteger connections;
