@@ -6,7 +6,13 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- ARTChannelOptions are used for setting channel parameters and configuring encryption.
+ * BEGIN CANONICAL DOCSTRING
+ * Passes additional properties to a [`RestChannel`]{@link RestChannel} or [`RealtimeChannel`]{@link RealtimeChannel} object, such as encryption, [`ChannelMode`]{@link ChannelMode} and channel parameters.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * ARTChannelOptions are used for setting channel parameters and configuring encryption.
+ * END LEGACY DOCSTRING
  */
 @interface ARTChannelOptions : NSObject
 
