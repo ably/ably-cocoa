@@ -28,8 +28,13 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 /**
- ARTCipherParams contains configuration options for a channel cipher, including algorithm, mode, key length and key.
- Ably client libraries currently support AES with CBC, PKCS#7 with a default key length of 256 bits. All implementations also support AES128.
+ * BEGIN CANONICAL DOCSTRING
+ * Sets the properties to configure encryption for a [`RestChannel`]{@link RestChannel} or [`RealtimeChannel`]{@link RealtimeChannel} object.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * ARTCipherParams contains configuration options for a channel cipher, including algorithm, mode, key length and key. Ably client libraries currently support AES with CBC, PKCS#7 with a default key length of 256 bits. All implementations also support AES128.
+ * END LEGACY DOCSTRING
  */
 @interface ARTCipherParams : NSObject <ARTCipherParamsCompatible>
 @property (readonly, strong, nonatomic) NSString *algorithm;
