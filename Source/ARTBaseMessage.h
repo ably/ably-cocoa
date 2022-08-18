@@ -5,7 +5,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTBaseMessage : NSObject<NSCopying>
 
-/// A unique id for this message
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A Unique ID assigned by Ably to this message.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * A unique id for this message
+ * END LEGACY DOCSTRING
+ */
 @property (nullable, strong, nonatomic) NSString *id;
 
 /// The timestamp for this message
