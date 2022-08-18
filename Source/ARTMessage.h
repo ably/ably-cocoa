@@ -45,6 +45,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTMessage (Decoding)
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A static factory method to create a `Message` object from a deserialized Message-like object encoded using Ably's wire protocol.
+ *
+ * @param jsonObject A `Message`-like deserialized object.
+ * @param options A [`ChannelOptions`]{@link ChannelOptions} object. If you have an encrypted channel, use this to allow the library to decrypt the data.
+ *
+ * @return A `Message` object.
+ * END CANONICAL DOCSTRING
+ */
 + (nullable instancetype)fromEncoded:(NSDictionary *)jsonObject
                       channelOptions:(ARTChannelOptions *)options
                                error:(NSError *_Nullable *_Nullable)error;
