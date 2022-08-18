@@ -70,7 +70,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic) NSTimeInterval connectionStateTtl;
 
 /**
- Represents a unique identifier for the front-end server that the client has connected to. This server ID is only used for the purposes of debugging.
+ * BEGIN CANONICAL DOCSTRING
+ * A unique identifier for the front-end server that the client has connected to. This server ID is only used for the purposes of debugging.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Represents a unique identifier for the front-end server that the client has connected to. This server ID is only used for the purposes of debugging.
+ * END LEGACY DOCSTRING
  */
 @property (readonly, strong, nonatomic, nullable) NSString *serverId;
 
