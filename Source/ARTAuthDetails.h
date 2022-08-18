@@ -13,6 +13,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface ARTAuthDetails : NSObject<NSCopying>
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The authentication token string.
+ * END CANONICAL DOCSTRING
+ */
 @property (nonatomic, copy) NSString *accessToken;
 
 - (instancetype)initWithToken:(NSString *)token;
