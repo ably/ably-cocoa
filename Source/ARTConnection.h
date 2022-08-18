@@ -15,6 +15,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) int64_t serial;
 @property (readonly) NSInteger maxMessageSize;
 @property (readonly) ARTRealtimeConnectionState state;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * An [`ErrorInfo`]{@link ErrorInfo} object describing the last error received if a connection failure occurs.
+ * END CANONICAL DOCSTRING
+ */
 @property (nullable, readonly) ARTErrorInfo *errorReason;
 
 - (void)connect;
