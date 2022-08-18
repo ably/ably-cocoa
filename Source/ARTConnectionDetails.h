@@ -11,6 +11,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Contains the client ID assigned to the token. If `clientId` is `null` or omitted, then the client is prohibited from assuming a `clientId` in any operations, however if `clientId` is a wildcard string `*`, then the client is permitted to assume any `clientId`. Any other string value for `clientId` implies that the `clientId` is both enforced and assumed for all operations from this client.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, getter=getClientId, nullable) NSString *clientId;
 @property (readonly, getter=getConnectionKey, nullable) NSString *connectionKey;
 // In those, -1 means 'undefined'.
