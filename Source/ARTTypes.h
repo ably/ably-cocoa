@@ -42,7 +42,13 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
 #pragma mark - ARTRealtimeConnectionState
 
 /**
- ARTRealtimeConnectionState is an enum representing all the Realtime Connection states.
+ * BEGIN CANONICAL DOCSTRING
+ * Describes the realtime [`Connection`]{@link Connection} object states.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * ARTRealtimeConnectionState is an enum representing all the Realtime Connection states.
+ * END LEGACY DOCSTRING
  */
 typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
     ARTRealtimeInitialized,
