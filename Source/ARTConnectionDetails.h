@@ -34,7 +34,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic) NSInteger maxInboundRate;
 
 /**
- Represents the duration that Ably will persist the connection state when a Realtime client is abruptly disconnected.
+ * BEGIN CANONICAL DOCSTRING
+ * The duration that Ably will persist the connection state for when a Realtime client is abruptly disconnected.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Represents the duration that Ably will persist the connection state when a Realtime client is abruptly disconnected.
+ * END LEGACY DOCSTRING
  */
 @property (readonly, nonatomic) NSTimeInterval connectionStateTtl;
 
