@@ -48,7 +48,13 @@ NSString *_Nonnull ARTPresenceActionToStr(ARTPresenceAction action);
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- ARTPresenceMessage represents an individual presence update that is sent to or received from Ably.
+ * BEGIN CANONICAL DOCSTRING
+ * Contains an individual presence update sent to, or received from, Ably.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * ARTPresenceMessage represents an individual presence update that is sent to or received from Ably.
+ * END LEGACY DOCSTRING
  */
 @interface ARTPresenceMessage : ARTBaseMessage
 
