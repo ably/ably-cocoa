@@ -33,7 +33,15 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (strong, nonatomic) NSString *connectionId;
 
-/// Any transformation applied to the data for this message
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * This is typically empty, as all messages received from Ably are automatically decoded client-side using this value. However, if the message encoding cannot be processed, this attribute contains the remaining transformations not applied to the `data` payload.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Any transformation applied to the data for this message
+ * END LEGACY DOCSTRING
+ */
 @property (strong, nonatomic, nullable) NSString *encoding;
 
 /**
