@@ -65,6 +65,14 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL DOCSTRING
  */
 - (void)close;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * When connected, sends a heartbeat ping to the Ably server and executes the callback with any error and the response time in milliseconds when a heartbeat ping request is echoed from the server. This can be useful for measuring true round-trip latency to the connected Ably server.
+ *
+ * @return The response time in milliseconds.
+ * END CANONICAL DOCSTRING
+ */
 - (void)ping:(ARTCallback)cb;
 
 /**
