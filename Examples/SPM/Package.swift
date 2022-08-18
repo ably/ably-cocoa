@@ -18,9 +18,15 @@ let package = Package(
             name: "SPMIntegration",
             dependencies: [
                 .product(name: "Ably", package: "ably-cocoa")
+            ],
+            swiftSettings: [
+                .unsafeFlags(["-warnings-as-errors"])
             ]),
         .testTarget(
             name: "SPMTests",
-            dependencies: ["SPMIntegration"]),
+            dependencies: ["SPMIntegration"],
+            swiftSettings: [
+                .unsafeFlags(["-warnings-as-errors"])
+            ]),
     ]
 )
