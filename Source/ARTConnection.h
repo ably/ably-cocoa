@@ -58,6 +58,12 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL DOCSTRING
  */
 - (void)connect;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Causes the connection to close, entering the [`CLOSING`]{@link ConnectionState#CLOSING} state. Once closed, the library does not attempt to re-establish the connection without an explicit call to [`connect()`]{@link Connection#connect}.
+ * END CANONICAL DOCSTRING
+ */
 - (void)close;
 - (void)ping:(ARTCallback)cb;
 
