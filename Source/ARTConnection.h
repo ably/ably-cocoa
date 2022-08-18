@@ -29,6 +29,12 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL DOCSTRING
  */
 @property (nullable, readonly) NSString *recoveryKey;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The serial number of the last message to be received on this connection, used automatically by the library when recovering or resuming a connection. When recovering a connection explicitly, the `recoveryKey` is used in the recover client options as it contains both the key and the last message serial.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly) int64_t serial;
 @property (readonly) NSInteger maxMessageSize;
 @property (readonly) ARTRealtimeConnectionState state;
