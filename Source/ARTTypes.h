@@ -290,6 +290,11 @@ NSString *generateNonce(void);
  * END CANONICAL DOCSTRING
  */
 @property (readonly, nonatomic) ARTRealtimeConnectionState current;
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The previous [`ConnectionState`]{@link ConnectionState}. For the [`UPDATE`]{@link ConnectionEvent#UPDATE} event, this is equal to the current [`ConnectionState`]{@link ConnectionState}.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, nonatomic) ARTRealtimeConnectionState previous;
 /**
  * BEGIN CANONICAL DOCSTRING
