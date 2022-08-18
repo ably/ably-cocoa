@@ -16,7 +16,15 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nullable, strong, nonatomic) NSString *id;
 
-/// The timestamp for this message
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Timestamp of when the message was received by Ably, as milliseconds since the Unix epoch.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * The timestamp for this message
+ * END LEGACY DOCSTRING
+ */
 @property (strong, nonatomic, nullable) NSDate *timestamp;
 
 /**
