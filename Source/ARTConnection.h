@@ -37,6 +37,12 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (readonly) int64_t serial;
 @property (readonly) NSInteger maxMessageSize;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The current [`ConnectionState`]{@link ConnectionState} of the connection.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly) ARTRealtimeConnectionState state;
 
 /**
