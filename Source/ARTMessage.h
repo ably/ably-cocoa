@@ -29,6 +29,16 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL DOCSTRING
  */
 - (instancetype)initWithName:(nullable NSString *)name data:(id)data;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Construct a `Message` object with an event name, payload, and a unique client ID.
+ *
+ * @param name The event name.
+ * @param data The message payload.
+ * @param clientId The client ID of the publisher of this message.
+ * END CANONICAL DOCSTRING
+ */
 - (instancetype)initWithName:(nullable NSString *)name data:(id)data clientId:(NSString *)clientId;
 
 @end
