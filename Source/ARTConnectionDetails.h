@@ -29,7 +29,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic) NSInteger maxFrameSize;
 
 /**
- Represents the maximum allowable number of requests per second from a client or Ably. In the case of a realtime connection, this restriction applies to the number of ProtocolMessage objects sent, whereas in the case of REST, it is the total number of REST requests per second.
+ * BEGIN CANONICAL DOCSTRING
+ * The maximum allowable number of requests per second from a client or Ably. In the case of a realtime connection, this restriction applies to the number of messages sent, whereas in the case of REST, it is the total number of REST requests per second.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Represents the maximum allowable number of requests per second from a client or Ably. In the case of a realtime connection, this restriction applies to the number of ProtocolMessage objects sent, whereas in the case of REST, it is the total number of REST requests per second.
+ * END LEGACY DOCSTRING
  */
 @property (readonly, nonatomic) NSInteger maxInboundRate;
 
