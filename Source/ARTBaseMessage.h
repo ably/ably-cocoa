@@ -11,7 +11,15 @@ NS_ASSUME_NONNULL_BEGIN
 /// The timestamp for this message
 @property (strong, nonatomic, nullable) NSDate *timestamp;
 
-/// The id of the publisher of this message
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The client ID of the publisher of this message.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * The id of the publisher of this message
+ * END LEGACY DOCSTRING
+ */
 @property (strong, nonatomic, nullable) NSString *clientId;
 
 /// The connection id of the publisher of this message
