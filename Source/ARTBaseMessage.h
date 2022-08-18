@@ -22,7 +22,15 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (strong, nonatomic, nullable) NSString *clientId;
 
-/// The connection id of the publisher of this message
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The connection ID of the publisher of this message.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * The connection id of the publisher of this message
+ * END LEGACY DOCSTRING
+ */
 @property (strong, nonatomic) NSString *connectionId;
 
 /// Any transformation applied to the data for this message
