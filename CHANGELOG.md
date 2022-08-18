@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.2.13](https://github.com/ably/ably-cocoa/tree/1.2.13)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.12...1.2.13)
+
+**Fixed bugs:**
+
+- Warnings of the form `Umbrella header for module 'Ably' does not include header 'ARTPushActivationEvent.h'` (fixed by [\#1474](https://github.com/ably/ably-cocoa/pull/1474))
+
 ## [1.2.12](https://github.com/ably/ably-cocoa/tree/1.2.12)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.11...1.2.12)
