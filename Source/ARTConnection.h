@@ -22,6 +22,12 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL DOCSTRING
  */
 @property (nullable, readonly) NSString *key;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The recovery key string can be used by another client to recover this connection's state in the recover client options property. See [connection state recover options](https://ably.com/docs/realtime/connection#connection-state-recover-options) for more information.
+ * END CANONICAL DOCSTRING
+ */
 @property (nullable, readonly) NSString *recoveryKey;
 @property (readonly) int64_t serial;
 @property (readonly) NSInteger maxMessageSize;
