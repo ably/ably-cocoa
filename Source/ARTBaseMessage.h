@@ -51,6 +51,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (strong, nonatomic, nullable) id data;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A JSON object of arbitrary key-value pairs that may contain metadata, and/or ancillary payloads.
+ * END CANONICAL DOCSTRING
+ */
 @property (strong, nullable, nonatomic) id<ARTJsonCompatible> extras;
 
 - (NSString *)description;
