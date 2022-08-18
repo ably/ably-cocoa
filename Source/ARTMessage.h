@@ -20,6 +20,14 @@ NS_ASSUME_NONNULL_BEGIN
 /// The event name, if available
 @property (nullable, readwrite, strong, nonatomic) NSString *name;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Construct a `Message` object with an event name and payload.
+ *
+ * @param name The event name.
+ * @param data The message payload.
+ * END CANONICAL DOCSTRING
+ */
 - (instancetype)initWithName:(nullable NSString *)name data:(id)data;
 - (instancetype)initWithName:(nullable NSString *)name data:(id)data clientId:(NSString *)clientId;
 
