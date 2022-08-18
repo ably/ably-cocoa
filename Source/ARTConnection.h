@@ -9,6 +9,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol ARTConnectionProtocol <NSObject>
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A unique public identifier for this connection, used to identify this member.
+ * END CANONICAL DOCSTRING
+ */
 @property (nullable, readonly) NSString *id;
 @property (nullable, readonly) NSString *key;
 @property (nullable, readonly) NSString *recoveryKey;
