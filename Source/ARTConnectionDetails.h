@@ -35,6 +35,16 @@ NS_ASSUME_NONNULL_BEGIN
  * END LEGACY DOCSTRING
  */
 @property (readonly, nonatomic) NSInteger maxMessageSize;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Overrides the default `maxFrameSize`.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * -1 means 'undefined'.
+ * END LEGACY DOCSTRING
+ */
 @property (readonly, nonatomic) NSInteger maxFrameSize;
 
 /**
