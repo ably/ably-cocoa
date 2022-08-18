@@ -81,7 +81,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonatomic, nullable) NSString *serverId;
 
 /**
- Represents the maximum length of time in seconds that the server will allow no activity to occur in the server -> client direction. After such a period of inactivity, the server will send a HEARTBEAT or transport-level ping to the client. If the value is 0, the server will allow arbitrarily-long levels of inactivity.
+ * BEGIN CANONICAL DOCSTRING
+ * The maximum length of time in milliseconds that the server will allow no activity to occur in the server to client direction. After such a period of inactivity, the server will send a `HEARTBEAT` or transport-level ping to the client. If the value is 0, the server will allow arbitrarily-long levels of inactivity.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Represents the maximum length of time in seconds that the server will allow no activity to occur in the server -> client direction. After such a period of inactivity, the server will send a HEARTBEAT or transport-level ping to the client. If the value is 0, the server will allow arbitrarily-long levels of inactivity.
+ * END LEGACY DOCSTRING
  */
 @property (readonly, nonatomic) NSTimeInterval maxIdleInterval;
 
