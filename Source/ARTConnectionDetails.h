@@ -24,7 +24,16 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL DOCSTRING
  */
 @property (readonly, getter=getConnectionKey, nullable) NSString *connectionKey;
-// In those, -1 means 'undefined'.
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Overrides the default `maxMessageSize`.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * -1 means 'undefined'.
+ * END LEGACY DOCSTRING
+ */
 @property (readonly, nonatomic) NSInteger maxMessageSize;
 @property (readonly, nonatomic) NSInteger maxFrameSize;
 
