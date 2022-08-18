@@ -36,6 +36,11 @@ NS_ASSUME_NONNULL_BEGIN
 /// Any transformation applied to the data for this message
 @property (strong, nonatomic, nullable) NSString *encoding;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The message payload, if provided.
+ * END CANONICAL DOCSTRING
+ */
 @property (strong, nonatomic, nullable) id data;
 
 @property (strong, nullable, nonatomic) id<ARTJsonCompatible> extras;
