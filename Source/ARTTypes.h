@@ -309,6 +309,12 @@ NSString *generateNonce(void);
  * END CANONICAL DOCSTRING
  */
 @property (readonly, nonatomic, nullable) ARTErrorInfo *reason;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Duration in milliseconds, after which the client retries a connection where applicable.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, nonatomic) NSTimeInterval retryIn;
 
 @end
