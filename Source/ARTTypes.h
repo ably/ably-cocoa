@@ -107,7 +107,13 @@ NSString *_Nonnull ARTRealtimeConnectionStateToStr(ARTRealtimeConnectionState st
 #pragma mark - ARTRealtimeConnectionEvent
 
 /**
- ARTRealtimeConnectionEvent is an enum representing all the events that can be emitted be the Connection; either a Realtime Connection state or an Update event.
+ * BEGIN CANONICAL DOCSTRING
+ * Describes the events emitted by a [`Connection`]{@link} object. An event is either an `UPDATE` or a [`ConnectionState`]{@link ConnectionState}.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * ARTRealtimeConnectionEvent is an enum representing all the events that can be emitted be the Connection; either a Realtime Connection state or an Update event.
+ * END LEGACY DOCSTRING
  */
 typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionEvent) {
     ARTRealtimeConnectionEventInitialized,
@@ -118,6 +124,11 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionEvent) {
     ARTRealtimeConnectionEventClosing,
     ARTRealtimeConnectionEventClosed,
     ARTRealtimeConnectionEventFailed,
+    /**
+     * BEGIN CANONICAL DOCSTRING
+     * An event for changes to connection conditions for which the [`ConnectionState`]{@link ConnectionState} does not change.
+     * END CANONICAL DOCSTRING
+     */
     ARTRealtimeConnectionEventUpdate
 };
 
