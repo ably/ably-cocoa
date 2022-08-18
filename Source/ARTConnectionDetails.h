@@ -17,6 +17,12 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL DOCSTRING
  */
 @property (readonly, getter=getClientId, nullable) NSString *clientId;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The connection secret key string that is used to resume a connection and its state.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, getter=getConnectionKey, nullable) NSString *connectionKey;
 // In those, -1 means 'undefined'.
 @property (readonly, nonatomic) NSInteger maxMessageSize;
