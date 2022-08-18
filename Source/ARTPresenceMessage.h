@@ -58,6 +58,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface ARTPresenceMessage : ARTBaseMessage
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The type of [`PresenceAction`]{@link PresenceAction} the `PresenceMessage` is for.
+ * END CANONICAL DOCSTRING
+ */
 @property (readwrite, assign, nonatomic) ARTPresenceAction action;
 
 - (nonnull NSString *)memberKey;
