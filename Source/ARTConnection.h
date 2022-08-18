@@ -21,6 +21,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)close;
 - (void)ping:(ARTCallback)cb;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Embeds an [`EventEmitter`]{@link EventEmitter} object.
+ * END CANONICAL DOCSTRING
+ */
 ART_EMBED_INTERFACE_EVENT_EMITTER(ARTRealtimeConnectionEvent, ARTConnectionStateChange *)
 
 @end
