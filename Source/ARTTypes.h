@@ -284,6 +284,11 @@ NSString *generateNonce(void);
                          reason:(ARTErrorInfo *_Nullable)reason
                         retryIn:(NSTimeInterval)retryIn;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The new [`ConnectionState`]{@link ConnectionState}.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, nonatomic) ARTRealtimeConnectionState current;
 @property (readonly, nonatomic) ARTRealtimeConnectionState previous;
 @property (readonly, nonatomic) ARTRealtimeConnectionEvent event;
