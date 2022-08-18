@@ -2,6 +2,11 @@
 
 @class ARTProtocolMessage;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Contains any constraints a client should adhere to and provides additional metadata about a [`Connection`]{@link Connection}, such as if a request to [`publish()`]{@link RealtimeClient#publish} a message that exceeds the maximum message size should be rejected immediately without communicating with Ably.
+ * END CANONICAL DOCSTRING
+ */
 @interface ARTConnectionDetails : NSObject
 
 NS_ASSUME_NONNULL_BEGIN
