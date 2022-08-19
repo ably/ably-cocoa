@@ -206,6 +206,12 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  * END CANONICAL DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsRequestCount *tokenRequests;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A [`Stats.PushStats`]{@link Stats.PushStats} object containing a breakdown of stats on push notifications.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, strong, nonatomic) ARTStatsPushCount *pushes;
 @property (readonly, strong, nonatomic) NSString *inProgress;
 @property (readonly, assign, nonatomic) NSUInteger count;
