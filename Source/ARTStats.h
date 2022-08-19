@@ -119,6 +119,12 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 
 @property (readonly, strong, nonatomic) ARTStatsResourceCount *all;
 @property (readonly, strong, nonatomic) ARTStatsResourceCount *plain;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A [`Stats.ResourceCount`]{@link Stats.ResourceCount} object containing a breakdown of usage by scope over TLS connections.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, strong, nonatomic) ARTStatsResourceCount *tls;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
