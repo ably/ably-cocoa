@@ -151,6 +151,11 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 + (ARTStatsGranularity)granularityFromIntervalId:(NSString *)intervalId;
 + (NSString *)toIntervalId:(NSDate *)time granularity:(ARTStatsGranularity)granularity;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A [`Stats.MessageTypes`]{@link Stats.MessageTypes} object containing the aggregate count of all message stats.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *all;
 @property (readonly, strong, nonatomic) ARTStatsMessageTraffic *inbound;
 @property (readonly, strong, nonatomic) ARTStatsMessageTraffic *outbound;
