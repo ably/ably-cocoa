@@ -88,6 +88,12 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  * END CANONICAL DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageCount *all;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A [`Stats.MessageCount`]{@link Stats.MessageCount} object containing the count and byte value of messages.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, strong, nonatomic) ARTStatsMessageCount *messages;
 @property (readonly, strong, nonatomic) ARTStatsMessageCount *presence;
 
