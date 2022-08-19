@@ -178,6 +178,12 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  * END CANONICAL DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *persisted;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A [`Stats.ConnectionTypes`]{@link Stats.ConnectionTypes} object containing a breakdown of connection related stats, such as min, mean and peak connections.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, strong, nonatomic) ARTStatsConnectionTypes *connections;
 @property (readonly, strong, nonatomic) ARTStatsResourceCount *channels;
 @property (readonly, strong, nonatomic) ARTStatsRequestCount *apiRequests;
