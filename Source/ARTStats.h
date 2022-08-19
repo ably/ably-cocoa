@@ -75,6 +75,11 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 
 @end
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Contains a breakdown of summary stats data for different (channel vs presence) message types.
+ * END CANONICAL DOCSTRING
+ */
 @interface ARTStatsMessageTypes : NSObject
 
 @property (readonly, strong, nonatomic) ARTStatsMessageCount *all;
