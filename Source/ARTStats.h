@@ -46,6 +46,11 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 
 @end
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Contains the aggregate counts for messages and data transferred.
+ * END CANONICAL DOCSTRING
+ */
 @interface ARTStatsMessageCount : NSObject
 
 @property (readonly, assign, nonatomic) NSUInteger count;
