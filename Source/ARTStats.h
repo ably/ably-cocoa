@@ -5,12 +5,38 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- ARTStatsGranularity is an enum specifying the granularity of a ``ARTStats`` interval.
+ * BEGIN CANONICAL DOCSTRING
+ * Describes the interval unit over which statistics are gathered.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * ARTStatsGranularity is an enum specifying the granularity of a ``ARTStats`` interval.
+ * END LEGACY DOCSTRING
  */
 typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
+    /**
+     * BEGIN CANONICAL DOCSTRING
+     * Interval unit over which statistics are gathered as minutes.
+     * END CANONICAL DOCSTRING
+     */
     ARTStatsGranularityMinute,
+    /**
+     * BEGIN CANONICAL DOCSTRING
+     * Interval unit over which statistics are gathered as hours.
+     * END CANONICAL DOCSTRING
+     */
     ARTStatsGranularityHour,
+    /**
+     * BEGIN CANONICAL DOCSTRING
+     * Interval unit over which statistics are gathered as days.
+     * END CANONICAL DOCSTRING
+     */
     ARTStatsGranularityDay,
+    /**
+     * BEGIN CANONICAL DOCSTRING
+     * Interval unit over which statistics are gathered as months.
+     * END CANONICAL DOCSTRING
+     */
     ARTStatsGranularityMonth
 };
 
