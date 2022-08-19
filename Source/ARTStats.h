@@ -157,6 +157,12 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  * END CANONICAL DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *all;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A [`Stats.MessageTraffic`]{@link Stats.MessageTraffic} object containing the aggregate count of inbound message stats.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, strong, nonatomic) ARTStatsMessageTraffic *inbound;
 @property (readonly, strong, nonatomic) ARTStatsMessageTraffic *outbound;
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *persisted;
