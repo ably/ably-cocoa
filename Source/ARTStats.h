@@ -199,6 +199,12 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  * END CANONICAL DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsRequestCount *apiRequests;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A [`Stats.RequestCount`]{@link Stats.RequestCount} object containing a breakdown of Ably Token requests.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, strong, nonatomic) ARTStatsRequestCount *tokenRequests;
 @property (readonly, strong, nonatomic) ARTStatsPushCount *pushes;
 @property (readonly, strong, nonatomic) NSString *inProgress;
