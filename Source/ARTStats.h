@@ -110,6 +110,11 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 
 @end
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Contains a breakdown of summary stats data for different (TLS vs non-TLS) connection types.
+ * END CANONICAL DOCSTRING
+ */
 @interface ARTStatsConnectionTypes : NSObject
 
 @property (readonly, strong, nonatomic) ARTStatsResourceCount *all;
