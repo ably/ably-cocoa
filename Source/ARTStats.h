@@ -117,6 +117,11 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  */
 @interface ARTStatsConnectionTypes : NSObject
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A [`Stats.ResourceCount`]{@link Stats.ResourceCount} object containing a breakdown of usage by scope over TLS connections (both TLS and non-TLS).
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, strong, nonatomic) ARTStatsResourceCount *all;
 
 /**
