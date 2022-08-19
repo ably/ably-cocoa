@@ -184,6 +184,11 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
                       count:(NSUInteger)count
                  intervalId:(NSString *)intervalId;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Represents the `intervalId` as a time object.
+ * END CANONICAL DOCSTRING
+ */
 - (NSDate *)intervalTime;
 - (ARTStatsGranularity)intervalGranularity;
 - (NSDate *)dateFromInProgress;
