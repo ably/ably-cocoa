@@ -59,6 +59,12 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  * END CANONICAL DOCSTRING
  */
 @property (readonly, assign, nonatomic) NSUInteger count;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The total number of bytes transferred for all messages.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, assign, nonatomic) NSUInteger data;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
