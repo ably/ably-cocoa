@@ -95,6 +95,12 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  * END CANONICAL DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageCount *messages;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A [`Stats.MessageCount`]{@link Stats.MessageCount} object containing the count and byte value of presence messages.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, strong, nonatomic) ARTStatsMessageCount *presence;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
