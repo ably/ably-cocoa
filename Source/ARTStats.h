@@ -325,6 +325,12 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  * END CANONICAL DOCSTRING
  */
 @property (readonly, assign, nonatomic) NSUInteger messages;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Total number of direct publishes.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, assign, nonatomic) NSUInteger direct;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
