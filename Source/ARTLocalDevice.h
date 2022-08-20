@@ -12,6 +12,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface ARTLocalDevice : ARTDeviceDetails
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A unique device identity token used to communicate with APNS or FCM.
+ * END CANONICAL DOCSTRING
+ */
 @property (nullable, nonatomic, readonly) ARTDeviceIdentityTokenDetails *identityTokenDetails;
 
 /**
