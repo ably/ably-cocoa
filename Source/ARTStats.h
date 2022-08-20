@@ -292,6 +292,12 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 @interface ARTStatsPushCount : NSObject
 
 @property (readonly, assign, nonatomic) NSUInteger succeeded;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Total number of attempted push notifications which were rejected due to invalid request data.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, assign, nonatomic) NSUInteger invalid;
 @property (readonly, assign, nonatomic) NSUInteger attempted;
 @property (readonly, assign, nonatomic) NSUInteger failed;
