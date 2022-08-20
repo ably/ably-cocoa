@@ -10,6 +10,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init NS_UNAVAILABLE;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Registers or updates a [`DeviceDetails`]{@link DeviceDetails} object with Ably. Returns the new, or updated [`DeviceDetails`]{@link DeviceDetails} object.
+ *
+ * @param deviceDetails The [`DeviceDetails`]{@link DeviceDetails} object to create or update.
+ *
+ * @return A [`DeviceDetails`]{@link DeviceDetails} object.
+ * END CANONICAL DOCSTRING
+ */
 - (void)save:(ARTDeviceDetails *)deviceDetails callback:(ARTCallback)callback;
 
 /**
