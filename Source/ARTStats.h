@@ -233,6 +233,12 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  * END CANONICAL DOCSTRING
  */
 @property (readonly, assign, nonatomic) NSUInteger failed;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The number of requests that were refused, typically as a result of permissions or a limit being exceeded.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, assign, nonatomic) NSUInteger refused;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
