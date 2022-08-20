@@ -5,6 +5,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Contains the properties of a device registered for push notifications.
+ * END CANONICAL DOCSTRING
+ */
 @interface ARTDeviceDetails : NSObject
 
 @property (strong, nonatomic) ARTDeviceId *id;
