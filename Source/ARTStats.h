@@ -191,6 +191,12 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  * END CANONICAL DOCSTRING
  */
 @property (readonly, assign, nonatomic) NSUInteger min;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The number of resource requests refused within this period.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, assign, nonatomic) NSUInteger refused;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
