@@ -14,6 +14,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Enables the management of device registrations and push notification subscriptions. Also enables the publishing of push notifications to devices.
+ * END CANONICAL DOCSTRING
+ */
 @interface ARTPushAdmin : NSObject <ARTPushAdminProtocol>
 
 @property (nonatomic, readonly) ARTPushDeviceRegistrations *deviceRegistrations;
