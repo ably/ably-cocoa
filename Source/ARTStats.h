@@ -119,6 +119,11 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  */
 @interface ARTStatsMessageTraffic : NSObject
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Stats.MessageTypes ||| TS7d | A [`Stats.MessageTypes`]{@link Stats.MessageTypes} object containing a breakdown of usage by message type for all messages (includes `realtime`, `rest` and `webhook` messages).
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *all;
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *realtime;
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *rest;
