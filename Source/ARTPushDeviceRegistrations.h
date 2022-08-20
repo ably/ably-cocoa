@@ -21,6 +21,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Enables the management of push notification registrations with Ably.
+ * END CANONICAL DOCSTRING
+ */
 @interface ARTPushDeviceRegistrations : NSObject <ARTPushDeviceRegistrationsProtocol>
 
 @end
