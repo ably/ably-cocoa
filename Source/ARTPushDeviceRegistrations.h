@@ -51,6 +51,14 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL DOCSTRING
  */
 - (void)remove:(NSString *)deviceId callback:(ARTCallback)callback;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Removes all devices registered to receive push notifications from Ably matching the filter `params` provided.
+ *
+ * @param params An object containing key-value pairs to filter devices by. Can contain `clientId` and `deviceId`.
+ * END CANONICAL DOCSTRING
+ */
 - (void)removeWhere:(NSStringDictionary *)params callback:(ARTCallback)callback;
 
 @end
