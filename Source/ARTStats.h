@@ -157,6 +157,11 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 
 @end
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Contains the aggregate data for usage of a resource in a specific scope.
+ * END CANONICAL DOCSTRING
+ */
 @interface ARTStatsResourceCount : NSObject
 
 @property (readonly, assign, nonatomic) NSUInteger opened;
