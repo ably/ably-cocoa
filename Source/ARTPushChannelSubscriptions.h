@@ -44,6 +44,13 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)list:(NSStringDictionary *)params callback:(ARTPaginatedPushChannelCallback)callback;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Unsubscribes a device, or a group of devices sharing the same `clientId` from receiving push notifications on a channel.
+ *
+ * @param subscription A [`PushChannelSubscription`]{@link PushChannelSubscription} object.
+ * END CANONICAL DOCSTRING
+ */
 - (void)remove:(ARTPushChannelSubscription *)subscription callback:(ARTCallback)callback;
 - (void)removeWhere:(NSStringDictionary *)params callback:(ARTCallback)callback;
 
