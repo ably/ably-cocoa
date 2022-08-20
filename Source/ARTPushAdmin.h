@@ -38,6 +38,12 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL DOCSTRING
  */
 @property (nonatomic, readonly) ARTPushDeviceRegistrations *deviceRegistrations;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A [`PushChannelSubscriptions`]{@link PushChannelSubscriptions} object.
+ * END CANONICAL DOCSTRING
+ */
 @property (nonatomic, readonly) ARTPushChannelSubscriptions *channelSubscriptions;
 
 @end
