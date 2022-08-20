@@ -25,6 +25,12 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL DOCSTRING
  */
 @property (strong, nullable, nonatomic) NSString *clientId;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The [`DevicePlatform`]{@link DevicePlatform} associated with the device. Describes the platform the device uses, such as `android` or `ios`.
+ * END CANONICAL DOCSTRING
+ */
 @property (strong, nonatomic) NSString *platform;
 @property (strong, nonatomic) NSString *formFactor;
 @property (strong, nonatomic) NSDictionary<NSString *, NSString *> *metadata;
