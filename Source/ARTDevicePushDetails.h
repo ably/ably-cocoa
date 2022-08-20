@@ -18,6 +18,12 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (strong, nonatomic) NSMutableDictionary<NSString *, NSString *> *recipient;
 @property (strong, nullable, nonatomic) NSString *state;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * An [`ErrorInfo`]{@link ErrorInfo} object describing the most recent error when the `state` is `Failing` or `Failed`.
+ * END CANONICAL DOCSTRING
+ */
 @property (strong, nullable, nonatomic) ARTErrorInfo *errorReason;
 
 - (instancetype)init;
