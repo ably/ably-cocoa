@@ -5,6 +5,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Contains the device identity token and secret of a device. `LocalDevice` extends [`DeviceDetails`]{@link}.
+ * END CANONICAL DOCSTRING
+ */
 @interface ARTLocalDevice : ARTDeviceDetails
 
 @property (nullable, nonatomic, readonly) ARTDeviceIdentityTokenDetails *identityTokenDetails;
