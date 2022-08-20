@@ -79,7 +79,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)activate;
 
 /**
- Deactivating a device for push notifications and unregistering it with Ably. The unregistration process can be performed entirely from the device or from your own server using the optional `ablyPushCustomDeregister:deviceId:callback` method.
+ * BEGIN CANONICAL DOCSTRING
+ * Deactivates the device from receiving push notifications with Ably and FCM or APNS.
+ *
+ * @param ErrorInfo Describes why the deactivation was unsuccessful as an [`ErrorInfo`]{@link ErrorInfo} object.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Deactivating a device for push notifications and unregistering it with Ably. The unregistration process can be performed entirely from the device or from your own server using the optional `ablyPushCustomDeregister:deviceId:callback` method.
+ * END LEGACY DOCSTRING
  */
 - (void)deactivate;
 
