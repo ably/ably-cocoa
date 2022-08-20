@@ -11,6 +11,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init NS_UNAVAILABLE;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Subscribes a device, or a group of devices sharing the same `clientId` to push notifications on a channel. Returns a [`PushChannelSubscription`]{@link PushChannelSubscription} object.
+ *
+ * @param channelSubscription A [`PushChannelSubscription`]{@link PushChannelSubscription} object.
+ *
+ * @return A [`PushChannelSubscription`]{@link PushChannelSubscription} object describing the new or updated subscriptions.
+ * END CANONICAL DOCSTRING
+ */
 - (void)save:(ARTPushChannelSubscription *)channelSubscription callback:(ARTCallback)callback;
 
 - (void)listChannels:(ARTPaginatedTextCallback)callback;
