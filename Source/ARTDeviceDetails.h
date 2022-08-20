@@ -18,6 +18,12 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL DOCSTRING
  */
 @property (strong, nonatomic) ARTDeviceId *id;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The client ID the device is connected to Ably with.
+ * END CANONICAL DOCSTRING
+ */
 @property (strong, nullable, nonatomic) NSString *clientId;
 @property (strong, nonatomic) NSString *platform;
 @property (strong, nonatomic) NSString *formFactor;
