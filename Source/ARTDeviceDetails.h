@@ -39,6 +39,12 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL DOCSTRING
  */
 @property (strong, nonatomic) NSString *formFactor;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A JSON object of key-value pairs that contains metadata for the device.
+ * END CANONICAL DOCSTRING
+ */
 @property (strong, nonatomic) NSDictionary<NSString *, NSString *> *metadata;
 @property (strong, nonatomic) ARTDevicePushDetails *push;
 
