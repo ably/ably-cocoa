@@ -213,6 +213,11 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 
 @end
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Contains the aggregate counts for requests made.
+ * END CANONICAL DOCSTRING
+ */
 @interface ARTStatsRequestCount : NSObject
 
 @property (readonly, assign, nonatomic) NSUInteger succeeded;
