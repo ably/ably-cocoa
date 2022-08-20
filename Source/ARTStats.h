@@ -139,6 +139,12 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  * END CANONICAL DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *rest;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A [`Stats.MessageTypes`]{@link Stats.MessageTypes} object containing a breakdown of usage by message type for messages delivered using webhooks.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *webhook;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
