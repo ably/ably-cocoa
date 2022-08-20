@@ -299,6 +299,12 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  * END CANONICAL DOCSTRING
  */
 @property (readonly, assign, nonatomic) NSUInteger invalid;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Total number of attempted push notifications including notifications which were rejected as invalid or failed to publish.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, assign, nonatomic) NSUInteger attempted;
 @property (readonly, assign, nonatomic) NSUInteger failed;
 
