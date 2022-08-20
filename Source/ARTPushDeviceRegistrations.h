@@ -23,6 +23,15 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)get:(ARTDeviceId *)deviceId callback:(void (^)(ARTDeviceDetails *_Nullable,  ARTErrorInfo *_Nullable))callback;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Retrieves all devices matching the filter `params` provided. Returns a [`PaginatedResult`]{@link PaginatedResult} object, containing an array of [`DeviceDetails`]{@link DeviceDetails} objects.
+ *
+ * @param params An object containing key-value pairs to filter devices by. Can contain `clientId`, `deviceId` and a `limit` on the number of devices returned, up to 1,000.
+ *
+ * @return A [`PaginatedResult`]{@link PaginatedResult} object containing an array of [`DeviceDetails`]{@link DeviceDetails} objects.
+ * END CANONICAL DOCSTRING
+ */
 - (void)list:(NSStringDictionary *)params callback:(ARTPaginatedDeviceDetailsCallback)callback;
 
 - (void)remove:(NSString *)deviceId callback:(ARTCallback)callback;
