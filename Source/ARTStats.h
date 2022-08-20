@@ -112,6 +112,11 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 
 @end
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Contains a breakdown of summary stats data for traffic over various transport types.
+ * END CANONICAL DOCSTRING
+ */
 @interface ARTStatsMessageTraffic : NSObject
 
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *all;
