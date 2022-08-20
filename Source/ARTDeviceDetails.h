@@ -46,6 +46,12 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL DOCSTRING
  */
 @property (strong, nonatomic) NSDictionary<NSString *, NSString *> *metadata;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The [`DevicePushDetails`]{@link DevicePushDetails} object associated with the device. Describes the details of the push registration of the device.
+ * END CANONICAL DOCSTRING
+ */
 @property (strong, nonatomic) ARTDevicePushDetails *push;
 
 - (instancetype)init;
