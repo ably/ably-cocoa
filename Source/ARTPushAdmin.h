@@ -32,6 +32,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface ARTPushAdmin : NSObject <ARTPushAdminProtocol>
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A [`PushDeviceRegistrations`]{@link PushDeviceRegistrations} object.
+ * END CANONICAL DOCSTRING
+ */
 @property (nonatomic, readonly) ARTPushDeviceRegistrations *deviceRegistrations;
 @property (nonatomic, readonly) ARTPushChannelSubscriptions *channelSubscriptions;
 
