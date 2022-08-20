@@ -184,6 +184,12 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  * END CANONICAL DOCSTRING
  */
 @property (readonly, assign, nonatomic) NSUInteger mean;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The minimum total resources of this type used for this period.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, assign, nonatomic) NSUInteger min;
 @property (readonly, assign, nonatomic) NSUInteger refused;
 
