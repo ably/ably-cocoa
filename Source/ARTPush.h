@@ -66,7 +66,15 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error realtime:(ARTRealtime *)realtime;
 
 /**
- Activating a device for push notifications and registering it with Ably. The registration process can be performed entirely from the device or from your own server using the optional `ablyPushCustomRegister:deviceDetails:callback` method.
+ * BEGIN CANONICAL DOCSTRING
+ * Activates the device for push notifications with FCM or APNS, obtaining a unique identifier from them. Subsequently registers the device with Ably and stores the `deviceIdentityToken` in local storage.
+ *
+ * @param ErrorInfo Describes why the activation was unsuccessful as an [`ErrorInfo`]{@link ErrorInfo} object.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Activating a device for push notifications and registering it with Ably. The registration process can be performed entirely from the device or from your own server using the optional `ablyPushCustomRegister:deviceDetails:callback` method.
+ * END LEGACY DOCSTRING
  */
 - (void)activate;
 
