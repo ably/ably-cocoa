@@ -291,6 +291,11 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  */
 @interface ARTStatsPushCount : NSObject
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Total number of delivered push notifications.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, assign, nonatomic) NSUInteger succeeded;
 
 /**
