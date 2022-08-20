@@ -4,6 +4,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Contains the details of the push registration of a device.
+ * END CANONICAL DOCSTRING
+ */
 @interface ARTDevicePushDetails : NSObject
 
 @property (strong, nonatomic) NSMutableDictionary<NSString *, NSString *> *recipient;
