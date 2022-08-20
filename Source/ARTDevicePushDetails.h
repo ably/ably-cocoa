@@ -17,6 +17,12 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL DOCSTRING
  */
 @property (strong, nonatomic) NSMutableDictionary<NSString *, NSString *> *recipient;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The current state of the push registration.
+ * END CANONICAL DOCSTRING
+ */
 @property (strong, nullable, nonatomic) NSString *state;
 
 /**
