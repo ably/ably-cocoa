@@ -32,6 +32,12 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL DOCSTRING
  */
 @property (strong, nonatomic) NSString *platform;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The [`DeviceFormFactor`]{@link DeviceFormFactor} object associated with the device. Describes the type of the device, such as `phone` or `tablet`.
+ * END CANONICAL DOCSTRING
+ */
 @property (strong, nonatomic) NSString *formFactor;
 @property (strong, nonatomic) NSDictionary<NSString *, NSString *> *metadata;
 @property (strong, nonatomic) ARTDevicePushDetails *push;
