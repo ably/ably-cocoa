@@ -79,6 +79,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Enables a device to be registered and deregistered from receiving push notifications.
+ * END CANONICAL DOCSTRING
+ */
 @interface ARTPush : NSObject <ARTPushProtocol>
 
 @property (readonly) ARTPushAdmin *admin;
