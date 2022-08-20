@@ -86,6 +86,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface ARTPush : NSObject <ARTPushProtocol>
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A [`PushAdmin`]{@link PushAdmin} object.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly) ARTPushAdmin *admin;
 
 @end
