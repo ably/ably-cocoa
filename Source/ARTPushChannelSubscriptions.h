@@ -15,6 +15,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)listChannels:(ARTPaginatedTextCallback)callback;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Retrieves all push channel subscriptions matching the filter `params` provided. Returns a [`PaginatedResult`]{@link PaginatedResult} object, containing an array of [`PushChannelSubscription`]{@link PushChannelSubscription} objects.
+ *
+ * @param params An object containing key-value pairs to filter subscriptions by. Can contain `channel`, `clientId`, `deviceId` and a `limit` on the number of devices returned, up to 1,000.
+ *
+ * @return A [`PaginatedResult`]{@link PaginatedResult} object containing an array of [`PushChannelSubscription`]{@link PushChannelSubscription} objects.
+ * END CANONICAL DOCSTRING
+ */
 - (void)list:(NSStringDictionary *)params callback:(ARTPaginatedPushChannelCallback)callback;
 
 - (void)remove:(ARTPushChannelSubscription *)subscription callback:(ARTCallback)callback;
