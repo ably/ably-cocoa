@@ -22,6 +22,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Enables device push channel subscriptions.
+ * END CANONICAL DOCSTRING
+ */
 @interface ARTPushChannelSubscriptions : NSObject <ARTPushChannelSubscriptionsProtocol>
 
 @end
