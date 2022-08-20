@@ -52,6 +52,14 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL DOCSTRING
  */
 - (void)remove:(ARTPushChannelSubscription *)subscription callback:(ARTCallback)callback;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Unsubscribes all devices from receiving push notifications on a channel that match the filter `params` provided.
+ *
+ * @param params An object containing key-value pairs to filter subscriptions by. Can contain `channel`, and optionally either `clientId` or `deviceId`.
+ * END CANONICAL DOCSTRING
+ */
 - (void)removeWhere:(NSStringDictionary *)params callback:(ARTCallback)callback;
 
 @end
