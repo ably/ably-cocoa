@@ -220,6 +220,11 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  */
 @interface ARTStatsRequestCount : NSObject
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The number of requests that succeeded.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, assign, nonatomic) NSUInteger succeeded;
 @property (readonly, assign, nonatomic) NSUInteger failed;
 @property (readonly, assign, nonatomic) NSUInteger refused;
