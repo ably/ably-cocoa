@@ -9,7 +9,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init NS_UNAVAILABLE;
 
-/// Publish a push notification.
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Sends a push notification directly to a device, or a group of devices sharing the same `clientId`.
+ *
+ * @param recipient A JSON object containing the recipient details using `clientId`, `deviceId` or the underlying notifications service.
+ * @param data A JSON object containing the push notification payload.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Publish a push notification.
+ * END LEGACY DOCSTRING
+ */
 - (void)publish:(ARTPushRecipient *)recipient data:(ARTJsonObject *)data callback:(nullable ARTCallback)callback;
 
 @end
