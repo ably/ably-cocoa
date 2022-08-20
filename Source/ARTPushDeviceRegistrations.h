@@ -43,6 +43,13 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)list:(NSStringDictionary *)params callback:(ARTPaginatedDeviceDetailsCallback)callback;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Removes a device registered to receive push notifications from Ably using its `deviceId`.
+ *
+ * @param deviceId The unique ID of the device.
+ * END CANONICAL DOCSTRING
+ */
 - (void)remove:(NSString *)deviceId callback:(ARTCallback)callback;
 - (void)removeWhere:(NSStringDictionary *)params callback:(ARTCallback)callback;
 
