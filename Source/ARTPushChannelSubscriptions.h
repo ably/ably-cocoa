@@ -22,6 +22,15 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)save:(ARTPushChannelSubscription *)channelSubscription callback:(ARTCallback)callback;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Retrieves all channels with at least one device subscribed to push notifications. Returns a [`PaginatedResult`]{@link PaginatedResult} object, containing an array of channel names.
+ *
+ * @param params An object containing key-value pairs to filter channels by. Can contain a `limit` on the number of channels returned, up to 1,000.
+ *
+ * @return A [`PaginatedResult`]{@link PaginatedResult} object containing an array of channel names.
+ * END CANONICAL DOCSTRING
+ */
 - (void)listChannels:(ARTPaginatedTextCallback)callback;
 
 /**
