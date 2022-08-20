@@ -132,6 +132,12 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  * END CANONICAL DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *realtime;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A [`Stats.MessageTypes`]{@link Stats.MessageTypes} object containing a breakdown of usage by message type for messages transferred over a rest transport such as WebSocket.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *rest;
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *webhook;
 
