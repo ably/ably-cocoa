@@ -199,6 +199,12 @@ FOUNDATION_EXPORT NSString *const ARTAblyMessageNoMeansToRenewToken;
 @property (readonly) NSString *message;
 @property (nullable, readonly) NSString *reason;
 @property (readonly) NSInteger statusCode;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * This is included for REST responses to provide a URL for additional help on the error code.
+ * END CANONICAL DOCSTRING
+ */
 @property (nullable, readonly) NSString *href;
 @property (nullable, readonly) NSString *requestId;
 @property (nullable, readonly) ARTErrorInfo *cause;
