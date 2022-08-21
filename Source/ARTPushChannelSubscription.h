@@ -2,6 +2,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Contains the subscriptions of a device, or a group of devices sharing the same `clientId`, has to a channel in order to receive push notifications.
+ * END CANONICAL DOCSTRING
+ */
 @interface ARTPushChannelSubscription : NSObject
 
 @property (nullable, nonatomic, readonly) NSString *deviceId;
