@@ -26,7 +26,15 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, readonly) NSInteger statusCode;
 
-/// Returns true when the HTTP status code indicates success i.e. 200 <= statusCode < 300
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Whether `statusCode` indicates success. This is equivalent to `200 <= statusCode < 300`.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Returns true when the HTTP status code indicates success i.e. 200 <= statusCode < 300
+ * END LEGACY DOCSTRING
+ */
 @property (nonatomic, readonly) BOOL success;
 
 /// Returns the error code if the X-Ably-ErrorCode HTTP header is sent in the response
