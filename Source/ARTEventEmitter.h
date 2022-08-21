@@ -73,6 +73,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (ARTEventListener *)once:(void (^)(ItemType))cb;
 
 - (void)off:(EventType)event listener:(ARTEventListener *)listener;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Deregisters the specified listener. Removes all registrations matching the given listener, regardless of whether they are associated with an event or not.
+ *
+ * @param listener The event listener.
+ * END CANONICAL DOCSTRING
+ */
 - (void)off:(ARTEventListener *)listener;
 
 /**
