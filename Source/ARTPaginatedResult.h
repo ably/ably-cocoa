@@ -51,6 +51,14 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL DOCSTRING
  */
 - (void)first:(void (^)(ARTPaginatedResult<ItemType> *_Nullable result, ARTErrorInfo *_Nullable error))callback;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Returns a new `PaginatedResult` loaded with the next page of results. If there are no further pages, then `null` is returned.
+ *
+ * @return A page of results for message and presence history, stats, and REST presence requests.
+ * END CANONICAL DOCSTRING
+ */
 - (void)next:(void (^)(ARTPaginatedResult<ItemType> *_Nullable result, ARTErrorInfo *_Nullable error))callback;
 
 @end
