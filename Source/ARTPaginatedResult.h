@@ -31,6 +31,14 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL DOCSTRING
  */
 @property (nonatomic, readonly) BOOL hasNext;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Returns `true` if this page is the last page and returns `false` if there are more pages available by calling next available.
+ *
+ * @return Whether or not this is the last page of results.
+ * END CANONICAL DOCSTRING
+ */
 @property (nonatomic, readonly) BOOL isLast;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
