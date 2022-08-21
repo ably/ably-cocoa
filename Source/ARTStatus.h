@@ -212,6 +212,12 @@ FOUNDATION_EXPORT NSString *const ARTAblyMessageNoMeansToRenewToken;
  */
 @property (nullable, readonly) NSString *href;
 @property (nullable, readonly) NSString *requestId;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Information pertaining to what caused the error where available.
+ * END CANONICAL DOCSTRING
+ */
 @property (nullable, readonly) ARTErrorInfo *cause;
 
 + (ARTErrorInfo *)createWithCode:(NSInteger)code message:(NSString *)message;
