@@ -15,6 +15,12 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL DOCSTRING
  */
 @property (nullable, nonatomic, readonly) NSString *deviceId;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The ID of the client the device, or devices are associated to.
+ * END CANONICAL DOCSTRING
+ */
 @property (nullable, nonatomic, readonly) NSString *clientId;
 @property (nonatomic, readonly) NSString *channel;
 
