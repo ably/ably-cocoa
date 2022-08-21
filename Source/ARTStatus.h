@@ -186,7 +186,13 @@ FOUNDATION_EXPORT NSString *const ARTFallbackIncompatibleOptionsException;
 FOUNDATION_EXPORT NSString *const ARTAblyMessageNoMeansToRenewToken;
 
 /**
- ARTErrorInfo is a type encapsulating error information containing an Ably-specific error code and generic status code.
+ * BEGIN CANONICAL DOCSTRING
+ * A generic Ably error object that contains an Ably-specific status code, and a generic status code. Errors returned from the Ably server are compatible with the `ErrorInfo` structure and should result in errors that inherit from `ErrorInfo`.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * ARTErrorInfo is a type encapsulating error information containing an Ably-specific error code and generic status code.
+ * END LEGACY DOCSTRING
  */
 @interface ARTErrorInfo : NSError
 
