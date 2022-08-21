@@ -52,6 +52,15 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (ARTEventListener *)on:(void (^)(ItemType))cb;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Registers the provided listener for the first occurrence of a single named event specified as the `Event` argument. If `once()` is called more than once with the same listener, the listener is added multiple times to its listener registry. Therefore, as an example, assuming the same listener is registered twice using `once()`, and an event is emitted once, the listener would be invoked twice. However, all subsequent events emitted would not invoke the listener as `once()` ensures that each registration is only invoked once.
+ *
+ * @param event The named event to listen for.
+ *
+ * @return The event listener.
+ * END CANONICAL DOCSTRING
+ */
 - (ARTEventListener *)once:(EventType)event callback:(void (^)(ItemType))cb;
 
 /**
