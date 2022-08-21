@@ -15,7 +15,15 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface ARTHTTPPaginatedResponse : ARTPaginatedResult<NSDictionary *>
 
-/// Return the HTTP status code of the response
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The HTTP status code of the response.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Return the HTTP status code of the response
+ * END LEGACY DOCSTRING
+ */
 @property (nonatomic, readonly) NSInteger statusCode;
 
 /// Returns true when the HTTP status code indicates success i.e. 200 <= statusCode < 300
