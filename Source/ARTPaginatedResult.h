@@ -22,6 +22,14 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL DOCSTRING
  */
 @property (nonatomic, strong, readonly) NSArray<ItemType> *items;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Returns `true` if there are more pages available by calling next and returns `false` if this page is the last page available.
+ *
+ * @return Whether or not there are more pages of results.
+ * END CANONICAL DOCSTRING
+ */
 @property (nonatomic, readonly) BOOL hasNext;
 @property (nonatomic, readonly) BOOL isLast;
 
