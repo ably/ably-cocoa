@@ -14,6 +14,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSString *channel;
 
 - (instancetype)init NS_UNAVAILABLE;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A static factory method to create a `PushChannelSubscription` object for a channel and single device.
+ *
+ * @param deviceId The unique ID of the device.
+ * @param channelName The channel name.
+ *
+ * @return A `PushChannelSubscription` object.
+ * END CANONICAL DOCSTRING
+ */
 - (instancetype)initWithDeviceId:(NSString *)deviceId channel:(NSString *)channelName;
 - (instancetype)initWithClientId:(NSString *)clientId channel:(NSString *)channelName;
 
