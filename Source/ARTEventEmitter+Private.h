@@ -23,6 +23,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTEventEmitter<EventType, ItemType> ()
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Emits an event, calling registered listeners with the given event name and any other given arguments. If an exception is raised in any of the listeners, the exception is caught by the `EventEmitter` and the exception is logged to the Ably logger.
+ *
+ * @param event The named event.
+ * @param data The event listener.
+ * END CANONICAL DOCSTRING
+ */
 - (void)emit:(nullable EventType)event with:(nullable ItemType)data;
 
 @property (nonatomic, readonly) NSNotificationCenter *notificationCenter;
