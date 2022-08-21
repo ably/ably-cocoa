@@ -22,6 +22,12 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL DOCSTRING
  */
 @property (nullable, nonatomic, readonly) NSString *clientId;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The channel the push notification subscription is for.
+ * END CANONICAL DOCSTRING
+ */
 @property (nonatomic, readonly) NSString *channel;
 
 - (instancetype)init NS_UNAVAILABLE;
