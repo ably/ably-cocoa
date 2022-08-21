@@ -27,6 +27,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Returns a new `PaginatedResult` for the first page of results.
+ *
+ * @return A page of results for message and presence history, stats, and REST presence requests.
+ * END CANONICAL DOCSTRING
+ */
 - (void)first:(void (^)(ARTPaginatedResult<ItemType> *_Nullable result, ARTErrorInfo *_Nullable error))callback;
 - (void)next:(void (^)(ARTPaginatedResult<ItemType> *_Nullable result, ARTErrorInfo *_Nullable error))callback;
 
