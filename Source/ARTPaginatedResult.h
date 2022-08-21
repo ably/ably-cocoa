@@ -16,6 +16,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface ARTPaginatedResult<ItemType> : NSObject
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Contains the current page of results; for example, an array of [`Message`]{@link Message} or [`PresenceMessage`]{@link PresenceMessage} objects for a channel history request.
+ * END CANONICAL DOCSTRING
+ */
 @property (nonatomic, strong, readonly) NSArray<ItemType> *items;
 @property (nonatomic, readonly) BOOL hasNext;
 @property (nonatomic, readonly) BOOL isLast;
