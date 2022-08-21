@@ -217,6 +217,12 @@ FOUNDATION_EXPORT NSString *const ARTAblyMessageNoMeansToRenewToken;
  * END CANONICAL DOCSTRING
  */
 @property (nullable, readonly) NSString *href;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * If a request fails, the request ID must be included in the `ErrorInfo` returned to the user.
+ * END CANONICAL DOCSTRING
+ */
 @property (nullable, readonly) NSString *requestId;
 
 /**
