@@ -37,7 +37,15 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, readonly) BOOL success;
 
-/// Returns the error code if the X-Ably-ErrorCode HTTP header is sent in the response
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The error code if the `X-Ably-Errorcode` HTTP header is sent in the response.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Returns the error code if the X-Ably-ErrorCode HTTP header is sent in the response
+ * END LEGACY DOCSTRING
+ */
 @property (nonatomic, readonly) NSInteger errorCode;
 
 /// Returns error message if the X-Ably-ErrorMessage HTTP header is sent in the response
