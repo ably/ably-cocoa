@@ -23,6 +23,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - ARTEventEmitter
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * A generic interface for event registration and delivery used in a number of the types in the Realtime client library. For example, the [`Connection`]{@link} object emits events for connection state using the `EventEmitter` pattern.
+ * END CANONICAL DOCSTRING
+ */
 @interface ARTEventEmitter<EventType:id<ARTEventIdentification>, ItemType> : NSObject
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
