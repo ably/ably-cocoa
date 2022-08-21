@@ -48,7 +48,15 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, readonly) NSInteger errorCode;
 
-/// Returns error message if the X-Ably-ErrorMessage HTTP header is sent in the response
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The error message if the `X-Ably-Errormessage` HTTP header is sent in the response.
+ * END CANONICAL DOCSTRING
+ *
+ * BEGIN LEGACY DOCSTRING
+ * Returns error message if the X-Ably-ErrorMessage HTTP header is sent in the response
+ * END LEGACY DOCSTRING
+ */
 @property (nullable, nonatomic, readonly) NSString *errorMessage;
 
 /// Returns a dictionary containing all the HTTP header fields of the response header.
