@@ -74,6 +74,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)off:(EventType)event listener:(ARTEventListener *)listener;
 - (void)off:(ARTEventListener *)listener;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Deregisters all registrations, for all events and listeners.
+ * END CANONICAL DOCSTRING
+ */
 - (void)off;
 
 @end
