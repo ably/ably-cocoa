@@ -9,6 +9,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface ARTPushChannelSubscription : NSObject
 
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * The unique ID of the device.
+ * END CANONICAL DOCSTRING
+ */
 @property (nullable, nonatomic, readonly) NSString *deviceId;
 @property (nullable, nonatomic, readonly) NSString *clientId;
 @property (nonatomic, readonly) NSString *channel;
