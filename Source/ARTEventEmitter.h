@@ -33,6 +33,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
 - (ARTEventListener *)on:(EventType)event callback:(void (^)(ItemType))cb;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Registers the provided listener all events. If `on()` is called more than once with the same listener and event, the listener is added multiple times to its listener registry. Therefore, as an example, assuming the same listener is registered twice using `on()`, and an event is emitted once, the listener would be invoked twice.
+ *
+ * @return The event listener.
+ * END CANONICAL DOCSTRING
+ */
 - (ARTEventListener *)on:(void (^)(ItemType))cb;
 
 - (ARTEventListener *)once:(EventType)event callback:(void (^)(ItemType))cb;
