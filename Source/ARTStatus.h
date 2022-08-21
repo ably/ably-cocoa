@@ -203,6 +203,12 @@ FOUNDATION_EXPORT NSString *const ARTAblyMessageNoMeansToRenewToken;
  */
 @property (readonly) NSString *message;
 @property (nullable, readonly) NSString *reason;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * HTTP Status Code corresponding to this error, where applicable.
+ * END CANONICAL DOCSTRING
+ */
 @property (readonly) NSInteger statusCode;
 
 /**
