@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Overrides the default `maxMessageSize`.
+ * The maximum message size is an attribute of an Ably account and enforced by Ably servers. `maxMessageSize` indicates the maximum message size allowed by the Ably account this connection is using. Overrides the default value of [`ClientOptions.maxMessageSize`]{@link ClientOptions#maxMessageSize}.
  * END CANONICAL DOCSTRING
  *
  * BEGIN LEGACY DOCSTRING
