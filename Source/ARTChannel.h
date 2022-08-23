@@ -35,7 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Sends a single message on this channel based on a given event name and payload. A callback may optionally be passed in to this call to be notified of success or failure of the operation.
+ * Publishes a single message to the channel with the given event name and payload. A callback may optionally be passed in to this call to be notified of success or failure of the operation.
  *
  * @param name The name of the message.
  * @param data The payload of the message.
@@ -56,7 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Sends an array of messages on this channel. A callback may optionally be passed in to this call to be notified of success or failure of the operation.
+ * Publishes an array of messages to the channel. A callback may optionally be passed in to this call to be notified of success or failure of the operation.
  *
  * @param messages An array of [`Message`]{@link Message} objects.
  * @param params Optional parameters, such as [`quickAck`](https://faqs.ably.com/why-are-some-rest-publishes-on-a-channel-slow-and-then-typically-faster-on-subsequent-publishes) sent as part of the query string.
