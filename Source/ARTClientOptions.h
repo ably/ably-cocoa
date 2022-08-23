@@ -329,7 +329,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * For use only by other Ably-authored SDKs, on a need-to-have basis.
+ * A set of additional entries for the Ably agent header. Each entry can be a key string or set of key-value pairs.
  * END CANONICAL DOCSTRING
  *
  * BEGIN LEGACY DOCSTRING
