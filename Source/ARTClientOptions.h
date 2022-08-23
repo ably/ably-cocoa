@@ -71,7 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Controls the log output of the library. This is a number controlling the verbosity of the output. Valid values are: 0 (no logs), 1 (errors only), 2 (errors plus connection and channel state changes), 3 (abbreviated debug output), and 4 (full debug output).
+ * Controls the verbosity of the logs output from the library. Levels include `verbose`, `debug`, `info`, `warn` and `error`.
  * END CANONICAL DOCSTRING
  */
 @property (nonatomic, assign) ARTLogLevel logLevel;
