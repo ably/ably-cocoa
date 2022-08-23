@@ -180,7 +180,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Timeout for any single HTTP request and response.
+ * Timeout for a client performing a complete HTTP request to Ably, including the connection phase. The default is 10 seconds.
  * END CANONICAL DOCSTRING
  *
  * BEGIN LEGACY DOCSTRING
