@@ -169,7 +169,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Timeout for opening the connection, available in the client library if supported by the transport.
+ * Timeout for opening a connection to Ably to initiate an HTTP request. The default is 4 seconds.
  * END CANONICAL DOCSTRING
  *
  * BEGIN LEGACY DOCSTRING
