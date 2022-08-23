@@ -453,11 +453,6 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  */
 - (NSDate *)intervalTime;
 
-/**
- * BEGIN CANONICAL DOCSTRING
- * DEPRECATED: this property is deprecated and will be removed in a future version. An alias for `unit` that must be from the unit property of the JSON.
- * END CANONICAL DOCSTRING
- */
 - (ARTStatsGranularity)intervalGranularity;
 - (NSDate *)dateFromInProgress;
 
