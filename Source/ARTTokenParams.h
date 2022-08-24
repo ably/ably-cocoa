@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
  * Defines the properties of an Ably Token.
  * END CANONICAL DOCSTRING
  *
- * BEGIN LEGACY DOCSTRING
+ * BEGIN LEGACY DOCSTRING # useful?
  * ARTTokenParams is used in the parameters of token authentication requests, corresponding to the desired attributes of the Ably Token.
  * END LEGACY DOCSTRING
  */
@@ -44,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
  * The timestamp of this request as milliseconds since the Unix epoch. Timestamps, in conjunction with the `nonce`, are used to prevent requests from being replayed. `timestamp` is a "one-time" value, and is valid in a request, but is not validly a member of any default token params such as `ClientOptions.defaultTokenParams`.
  * END CANONICAL DOCSTRING
  *
- * BEGIN LEGACY DOCSTRING
+ * BEGIN LEGACY DOCSTRING # useful?
  * Timestamp (in millis since the epoch) of this request. Timestamps, in conjunction with the nonce, are used to prevent n requests from being replayed.
  * END LEGACY DOCSTRING
  */

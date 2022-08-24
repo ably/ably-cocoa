@@ -72,7 +72,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param ErrorInfo Describes why the activation was unsuccessful as an [`ErrorInfo`]{@link ErrorInfo} object.
  * END CANONICAL DOCSTRING
  *
- * BEGIN LEGACY DOCSTRING
+ * BEGIN LEGACY DOCSTRING # useful?
  * Activating a device for push notifications and registering it with Ably. The registration process can be performed entirely from the device or from your own server using the optional `ablyPushCustomRegister:deviceDetails:callback` method.
  * END LEGACY DOCSTRING
  */
@@ -85,7 +85,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param ErrorInfo Describes why the deactivation was unsuccessful as an [`ErrorInfo`]{@link ErrorInfo} object.
  * END CANONICAL DOCSTRING
  *
- * BEGIN LEGACY DOCSTRING
+ * BEGIN LEGACY DOCSTRING # useful?
  * Deactivating a device for push notifications and unregistering it with Ably. The unregistration process can be performed entirely from the device or from your own server using the optional `ablyPushCustomDeregister:deviceId:callback` method.
  * END LEGACY DOCSTRING
  */

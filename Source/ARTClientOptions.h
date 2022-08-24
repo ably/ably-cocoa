@@ -113,7 +113,7 @@ NS_ASSUME_NONNULL_BEGIN
  * A client ID, used for identifying this client when publishing messages or for presence purposes. The `clientId` can be any non-empty string, except it cannot contain a `*`. This option is primarily intended to be used in situations where the library is instantiated with a key. Note that a `clientId` may also be implicit in a token used to instantiate the library. An error will be raised if a `clientId` specified here conflicts with the `clientId` implicit in the token.
  * END CANONICAL DOCSTRING
  *
- * BEGIN LEGACY DOCSTRING
+ * BEGIN LEGACY DOCSTRING # useful?
  * The id of the client represented by this instance.
  * The clientId is relevant to presence operations, where the clientId is the principal identifier of the client in presence update messages. The clientId is also relevant to authentication; a token issued for a specific client may be used to authenticate the bearer of that token to the service.
  * END LEGACY DOCSTRING
@@ -167,7 +167,7 @@ NS_ASSUME_NONNULL_BEGIN
  * The maximum time before HTTP requests are retried against the default endpoint. The default is 600 seconds.
  * END CANONICAL DOCSTRING
  *
- * BEGIN LEGACY DOCSTRING
+ * BEGIN LEGACY DOCSTRING # useful?
  * The period in seconds before HTTP requests are retried against the default endpoint. (After a failed request to the default endpoint, followed by a successful request to a fallback endpoint)
  * END LEGACY DOCSTRING
  */
@@ -185,7 +185,7 @@ NS_ASSUME_NONNULL_BEGIN
  * The maximum elapsed time in which fallback host retries for HTTP requests will be attempted. The default is 15 seconds.
  * END CANONICAL DOCSTRING
  *
- * BEGIN LEGACY DOCSTRING
+ * BEGIN LEGACY DOCSTRING # useful?
  * Max elapsed time in which fallback host retries for HTTP requests will be attempted i.e. if the first default host attempt takes 5s, and then the subsequent fallback retry attempt takes 7s, no further fallback host attempts will be made as the total elapsed time of 12s exceeds the default 10s limit.
  * END LEGACY DOCSTRING
  */
@@ -196,7 +196,7 @@ NS_ASSUME_NONNULL_BEGIN
  * An array of fallback hosts to be used in the case of an error necessitating the use of an alternative host. If you have been provided a set of custom fallback hosts by Ably, please specify them here.
  * END CANONICAL DOCSTRING
  *
- * BEGIN LEGACY DOCSTRING
+ * BEGIN LEGACY DOCSTRING # useful?
  * Optionally allows one or more fallback hosts to be used instead of the default fallback hosts.
  * END LEGACY DOCSTRING
  */
@@ -237,7 +237,7 @@ NS_ASSUME_NONNULL_BEGIN
  * When `true`, enables idempotent publishing by assigning a unique message ID client-side, allowing the Ably servers to discard automatic publish retries following a failure such as a network fault. The default is `true`.
  * END CANONICAL DOCSTRING
  *
- * BEGIN LEGACY DOCSTRING
+ * BEGIN LEGACY DOCSTRING # useful?
  * True when idempotent publishing is enabled for all messages published via REST.
  * When this feature is enabled, the client library will add a unique ID to every published message (without an ID) ensuring any failed published attempts (due to failures such as HTTP requests failing mid-flight) that are automatically retried will not result in duplicate messages being published to the Ably platform.
  * Note: This is a beta unsupported feature!
@@ -257,7 +257,7 @@ NS_ASSUME_NONNULL_BEGIN
  * A set of key-value pairs that can be used to pass in arbitrary connection parameters, such as [`heartbeatInterval`](https://ably.com/docs/realtime/connection#heartbeats) or [`remainPresentFor`](https://ably.com/docs/realtime/presence#unstable-connections).
  * END CANONICAL DOCSTRING
  *
- * BEGIN LEGACY DOCSTRING
+ * BEGIN LEGACY DOCSTRING # useful?
  * Additional parameters to be sent in the querystring when initiating a realtime connection. Keys are Strings, values are Stringifiable (a value that can be coerced to a string in order to be sent as a querystring parameter. Supported values should be at least strings, numbers, and booleans, with booleans stringified as true and false. If this is unidiomatic to the language, the implementer may consider this as equivalent to String).
  * Note:  If a key in transportParams is one the library sends by default (for example, v or heartbeats), the value in transportParams takes precedence.
  * END LEGACY DOCSTRING
@@ -289,7 +289,7 @@ NS_ASSUME_NONNULL_BEGIN
  * A set of additional entries for the Ably agent header. Each entry can be a key string or set of key-value pairs.
  * END CANONICAL DOCSTRING
  *
- * BEGIN LEGACY DOCSTRING
+ * BEGIN LEGACY DOCSTRING # useful?
  * All agents added with `addAgent:version:` method plus `[ARTDefault libraryAgent]` and `[ARTDefault platformAgent]`.
  * END LEGACY DOCSTRING
  */

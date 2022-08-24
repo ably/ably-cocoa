@@ -39,7 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
  * The Message Authentication Code for this request.
  * END CANONICAL DOCSTRING
  *
- * BEGIN LEGACY DOCSTRING
+ * BEGIN LEGACY DOCSTRING # useful?
  * Valid HMAC is created using the key secret.
  * END LEGACY DOCSTRING
  */
@@ -64,7 +64,7 @@ NS_ASSUME_NONNULL_BEGIN
  * The timestamp of this request as milliseconds since the Unix epoch.
  * END CANONICAL DOCSTRING
  *
- * BEGIN LEGACY DOCSTRING
+ * BEGIN LEGACY DOCSTRING # useful?
  * Timestamp (in millis since the epoch) of this request. Timestamps, in conjunction with the nonce, are used to prevent n requests from being replayed.
  * END LEGACY DOCSTRING
  */

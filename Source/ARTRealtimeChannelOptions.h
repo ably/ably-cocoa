@@ -7,7 +7,7 @@
  * Describes the possible flags used to configure client capabilities, using [`ChannelOptions`]{@link ChannelOptions}.
  * END CANONICAL DOCSTRING
  *
- * BEGIN LEGACY DOCSTRING
+ * BEGIN LEGACY DOCSTRING # useful?
  * ARTChannelMode bitmask matching the ARTProtocolMessageFlag.
  * END LEGACY DOCSTRING
  */
