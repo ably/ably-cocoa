@@ -4,7 +4,7 @@
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Describes the possible flags used to configure client capabilities, using [`ChannelOptions`]{@link ChannelOptions}.
+ * Describes the possible flags used to configure client capabilities, using `ARTChannelOptions`.
  * END CANONICAL DOCSTRING
  *
  * BEGIN LEGACY DOCSTRING # useful?

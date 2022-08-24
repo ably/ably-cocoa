@@ -40,28 +40,28 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * The current [`ConnectionState`]{@link ConnectionState} of the connection.
+ * The current `ARTConnectionState` of the connection.
  * END CANONICAL DOCSTRING
  */
 @property (readonly) ARTRealtimeConnectionState state;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * An [`ErrorInfo`]{@link ErrorInfo} object describing the last error received if a connection failure occurs.
+ * An `ARTErrorInfo` object describing the last error received if a connection failure occurs.
  * END CANONICAL DOCSTRING
  */
 @property (nullable, readonly) ARTErrorInfo *errorReason;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Explicitly calling `connect()` is unnecessary unless the `autoConnect` attribute of the [`ClientOptions`]{@link ClientOptions} object is `false`. Unless already connected or connecting, this method causes the connection to open, entering the [`CONNECTING`]{@link ConnectionState#CONNECTING} state.
+ * Explicitly calling `connect()` is unnecessary unless the `autoConnect` attribute of the `ARTClientOptions` object is `false`. Unless already connected or connecting, this method causes the connection to open, entering the `ARTConnectionState.CONNECTING` state.
  * END CANONICAL DOCSTRING
  */
 - (void)connect;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Causes the connection to close, entering the [`CLOSING`]{@link ConnectionState#CLOSING} state. Once closed, the library does not attempt to re-establish the connection without an explicit call to [`connect()`]{@link Connection#connect}.
+ * Causes the connection to close, entering the `ARTConnectionState.CLOSING` state. Once closed, the library does not attempt to re-establish the connection without an explicit call to `-[ARTConnection connect]`.
  * END CANONICAL DOCSTRING
  */
 - (void)close;
@@ -77,7 +77,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Embeds an [`EventEmitter`]{@link EventEmitter} object.
+ * Embeds an `ARTEventEmitter` object.
  * END CANONICAL DOCSTRING
  */
 ART_EMBED_INTERFACE_EVENT_EMITTER(ARTRealtimeConnectionEvent, ARTConnectionStateChange *)

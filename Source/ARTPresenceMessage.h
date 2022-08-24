@@ -52,7 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * The type of [`PresenceAction`]{@link PresenceAction} the `PresenceMessage` is for.
+ * The type of `ARTPresenceAction` the `PresenceMessage` is for.
  * END CANONICAL DOCSTRING
  */
 @property (readwrite, assign, nonatomic) ARTPresenceAction action;

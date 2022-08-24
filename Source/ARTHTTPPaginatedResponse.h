@@ -6,7 +6,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A superset of [`PaginatedResult`]{@link PaginatedResult} which represents a page of results plus metadata indicating the relative queries available to it. `HttpPaginatedResponse` additionally carries information about the response to an HTTP request.
+ * A superset of `ARTPaginatedResult` which represents a page of results plus metadata indicating the relative queries available to it. `HttpPaginatedResponse` additionally carries information about the response to an HTTP request.
  * END CANONICAL DOCSTRING
  */
 @interface ARTHTTPPaginatedResponse : ARTPaginatedResult<NSDictionary *>

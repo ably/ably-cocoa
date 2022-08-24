@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Sets the properties to configure encryption for a [`RestChannel`]{@link RestChannel} or [`RealtimeChannel`]{@link RealtimeChannel} object.
+ * Sets the properties to configure encryption for a `ARTRestChannel` or `ARTRealtimeChannel` object.
  * END CANONICAL DOCSTRING
  *
  * BEGIN LEGACY DOCSTRING # useful?
@@ -75,17 +75,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Contains the properties required to configure the encryption of [`Message`]{@link Message} payloads.
+ * Contains the properties required to configure the encryption of `ARTMessage` payloads.
  * END CANONICAL DOCSTRING
  */
 @interface ARTCrypto : NSObject
 /**
  * BEGIN CANONICAL DOCSTRING
- * Returns a [`CipherParams`]{@link CipherParams} object, using the default values for any fields not supplied by the [`CipherParamOptions`]{@link CipherParamOptions} object.
+ * Returns a `ARTCipherParams` object, using the default values for any fields not supplied by the `ARTCipherParamOptions` object.
  *
- * @param values A [`CipherParamOptions`]{@link CipherParamOptions} object.
+ * @param values A `ARTCipherParamOptions` object.
  *
- * @return A [`CipherParams`]{@link CipherParams} object, using the default values for any fields not supplied.
+ * @return A `ARTCipherParams` object, using the default values for any fields not supplied.
  * END CANONICAL DOCSTRING
  */
 + (ARTCipherParams *)getDefaultParams:(NSDictionary *)values;

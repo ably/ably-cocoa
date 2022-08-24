@@ -28,14 +28,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * The [`DevicePlatform`]{@link DevicePlatform} associated with the device. Describes the platform the device uses, such as `android` or `ios`.
+ * The `ARTDevicePlatform` associated with the device. Describes the platform the device uses, such as `android` or `ios`.
  * END CANONICAL DOCSTRING
  */
 @property (strong, nonatomic) NSString *platform;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * The [`DeviceFormFactor`]{@link DeviceFormFactor} object associated with the device. Describes the type of the device, such as `phone` or `tablet`.
+ * The `ARTDeviceFormFactor` object associated with the device. Describes the type of the device, such as `phone` or `tablet`.
  * END CANONICAL DOCSTRING
  */
 @property (strong, nonatomic) NSString *formFactor;
@@ -49,7 +49,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * The [`DevicePushDetails`]{@link DevicePushDetails} object associated with the device. Describes the details of the push registration of the device.
+ * The `ARTDevicePushDetails` object associated with the device. Describes the details of the push registration of the device.
  * END CANONICAL DOCSTRING
  */
 @property (strong, nonatomic) ARTDevicePushDetails *push;

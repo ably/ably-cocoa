@@ -11,7 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Passes additional client-specific properties to the REST [`constructor()`]{@link RestClient#constructor} or the Realtime [`constructor()`]{@link RealtimeClient#constructor}.
+ * Passes additional client-specific properties to the REST `-[ARTRestClient constructor]` or the Realtime `-[ARTRealtimeClient constructor]`.
  * END CANONICAL DOCSTRING
  */
 @interface ARTClientOptions : ARTAuthOptions
@@ -95,7 +95,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * When `true`, the client connects to Ably as soon as it is instantiated. You can set this to `false` and explicitly connect to Ably using the [`connect()`]{@link Connection#connect} method. The default is `true`.
+ * When `true`, the client connects to Ably as soon as it is instantiated. You can set this to `false` and explicitly connect to Ably using the `-[ARTConnection connect]` method. The default is `true`.
  * END CANONICAL DOCSTRING
  */
 @property (readwrite, assign, nonatomic) BOOL autoConnect;
@@ -122,28 +122,28 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * When a [`TokenParams`]{@link TokenParams} object is provided, it overrides the client library defaults when issuing new Ably Tokens or Ably [`TokenRequest`s]{@link TokenRequest}.
+ * When a `ARTTokenParams` object is provided, it overrides the client library defaults when issuing new Ably Tokens or Ably `ARTTokenRequest`s.
  * END CANONICAL DOCSTRING
  */
 @property (readwrite, strong, nonatomic, nullable) ARTTokenParams *defaultTokenParams;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * If the connection is still in the [`DISCONNECTED`]{@link ConnectionState#disconnected} state after this delay, the client library will attempt to reconnect automatically. The default is 15 seconds.
+ * If the connection is still in the `ARTConnectionState.DISCONNECTED` state after this delay, the client library will attempt to reconnect automatically. The default is 15 seconds.
  * END CANONICAL DOCSTRING
  */
 @property (readwrite, assign, nonatomic) NSTimeInterval disconnectedRetryTimeout;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * When the connection enters the [`SUSPENDED`]{@link ConnectionState#suspended} state, after this delay, if the state is still [`SUSPENDED`]{@link ConnectionState#suspended}, the client library attempts to reconnect automatically. The default is 30 seconds.
+ * When the connection enters the `ARTConnectionState.SUSPENDED` state, after this delay, if the state is still `ARTConnectionState.SUSPENDED`, the client library attempts to reconnect automatically. The default is 30 seconds.
  * END CANONICAL DOCSTRING
  */
 @property (readwrite, assign, nonatomic) NSTimeInterval suspendedRetryTimeout;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * When a channel becomes [`SUSPENDED`]{@link ConnectionState#suspended} following a server initiated [`DETACHED`]{@link ConnectionState#detached}, after this delay, if the channel is still [`SUSPENDED`]{@link ConnectionState#suspended} and the connection is [`CONNECTED`]{@link ConnectionState#connected}, the client library will attempt to re-attach the channel automatically. The default is 15 seconds.
+ * When a channel becomes `ARTConnectionState.SUSPENDED` following a server initiated `ARTConnectionState.DETACHED`, after this delay, if the channel is still `ARTConnectionState.SUSPENDED` and the connection is `ARTConnectionState.CONNECTED`, the client library will attempt to re-attach the channel automatically. The default is 15 seconds.
  * END CANONICAL DOCSTRING
  */
 @property (readwrite, assign, nonatomic) NSTimeInterval channelRetryTimeout;
@@ -247,7 +247,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * When `true`, every REST request to Ably should include a random string in the `request_id` query string parameter. The random string should be a url-safe base64-encoding sequence of at least 9 bytes, obtained from a source of randomness. This request ID must remain the same if a request is retried to a fallback host. Any log messages associated with the request should include the request ID. If the request fails, the request ID must be included in the [`ErrorInfo`]{@link ErrorInfo} returned to the user. The default is `false`.
+ * When `true`, every REST request to Ably should include a random string in the `request_id` query string parameter. The random string should be a url-safe base64-encoding sequence of at least 9 bytes, obtained from a source of randomness. This request ID must remain the same if a request is retried to a fallback host. Any log messages associated with the request should include the request ID. If the request fails, the request ID must be included in the `ARTErrorInfo` returned to the user. The default is `false`.
  * END CANONICAL DOCSTRING
  */
 @property (readwrite, assign, nonatomic) BOOL addRequestIds;

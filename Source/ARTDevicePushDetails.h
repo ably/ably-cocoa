@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * An [`ErrorInfo`]{@link ErrorInfo} object describing the most recent error when the `state` is `Failing` or `Failed`.
+ * An `ARTErrorInfo` object describing the most recent error when the `state` is `Failing` or `Failed`.
  * END CANONICAL DOCSTRING
  */
 @property (strong, nullable, nonatomic) ARTErrorInfo *errorReason;

@@ -46,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
  * A static factory method to create a `Message` object from a deserialized Message-like object encoded using Ably's wire protocol.
  *
  * @param jsonObject A `Message`-like deserialized object.
- * @param options A [`ChannelOptions`]{@link ChannelOptions} object. If you have an encrypted channel, use this to allow the library to decrypt the data.
+ * @param options A `ARTChannelOptions` object. If you have an encrypted channel, use this to allow the library to decrypt the data.
  *
  * @return A `Message` object.
  * END CANONICAL DOCSTRING
@@ -60,9 +60,9 @@ NS_ASSUME_NONNULL_BEGIN
  * A static factory method to create an array of `Message` objects from an array of deserialized Message-like object encoded using Ably's wire protocol.
  *
  * @param jsonArray An array of `Message`-like deserialized objects.
- * @param options A [`ChannelOptions`]{@link ChannelOptions} object. If you have an encrypted channel, use this to allow the library to decrypt the data.
+ * @param options A `ARTChannelOptions` object. If you have an encrypted channel, use this to allow the library to decrypt the data.
  *
- * @return An array of [`Message`]{@link Message} objects.
+ * @return An array of `ARTMessage` objects.
  * END CANONICAL DOCSTRING
  */
 + (nullable NSArray<ARTMessage *> *)fromEncodedArray:(NSArray<NSDictionary *> *)jsonArray

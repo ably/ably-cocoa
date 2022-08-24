@@ -26,13 +26,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Retrieves the current members present on the channel and the metadata for each member, such as their [`PresenceAction`]{@link PresenceAction} and ID. Returns an array of [`PresenceMessage`]{@link PresenceMessage} objects.
+ * Retrieves the current members present on the channel and the metadata for each member, such as their `ARTPresenceAction` and ID. Returns an array of `ARTPresenceMessage` objects.
  *
- * @param waitForSync Sets whether to wait for a full presence set synchronization between Ably and the clients on the channel to complete before returning the results. Synchronization begins as soon as the channel is [`ATTACHED`]{@link ChannelState#ATTACHED}. When set to `true` the results will be returned as soon as the sync is complete. When set to `false` the current list of members will be returned without the sync completing. The default is `true`.
+ * @param waitForSync Sets whether to wait for a full presence set synchronization between Ably and the clients on the channel to complete before returning the results. Synchronization begins as soon as the channel is `ARTChannelState.ATTACHED`. When set to `true` the results will be returned as soon as the sync is complete. When set to `false` the current list of members will be returned without the sync completing. The default is `true`.
  * @param clientId Filters the array of returned presence members by a specific client using its ID.
  * @param connectionId Filters the array of returned presence members by a specific connection using its ID.
  *
- * @return An array of [`PresenceMessage`]{@link PresenceMessage} objects.
+ * @return An array of `ARTPresenceMessage` objects.
  * END CANONICAL DOCSTRING
  */
 - (void)get:(ARTRealtimePresenceQuery *)query callback:(ARTPresenceMessagesCallback)callback;
@@ -50,7 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Updates the `data` payload for a presence member. If called before entering the presence set, this is treated as an [`ENTER`]{@link PresenceAction#ENTER} event. An optional callback may be provided to notify of the success or failure of the operation.
+ * Updates the `data` payload for a presence member. If called before entering the presence set, this is treated as an `ARTPresenceAction.ENTER` event. An optional callback may be provided to notify of the success or failure of the operation.
  *
  * @param data The payload to update for the presence member.
  * @param extras A JSON object of arbitrary key-value pairs that may contain metadata, and/or ancillary payloads.
@@ -108,7 +108,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Registers a listener that is called each time a [`PresenceMessage`]{@link PresenceMessage} is received on the channel, such as a new member entering the presence set. A callback may optionally be passed in to this call to be notified of success or failure of the channel [`attach()`]{@link RealtimeChannel#attach} operation.
+ * Registers a listener that is called each time a `ARTPresenceMessage` is received on the channel, such as a new member entering the presence set. A callback may optionally be passed in to this call to be notified of success or failure of the channel `-[ARTRealtimeChannel attach]` operation.
  *
  * @return An event listener function.
  * END CANONICAL DOCSTRING
@@ -118,9 +118,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Registers a listener that is called each time a [`PresenceMessage`]{@link PresenceMessage} matching a given [`PresenceAction`]{@link PresenceAction}, or an action within an array of [`PresenceAction`s]{@link PresenceAction}, is received on the channel, such as a new member entering the presence set. A callback may optionally be passed in to this call to be notified of success or failure of the channel [`attach()`]{@link RealtimeChannel#attach} operation.
+ * Registers a listener that is called each time a `ARTPresenceMessage` matching a given `ARTPresenceAction`, or an action within an array of `ARTPresenceAction`s, is received on the channel, such as a new member entering the presence set. A callback may optionally be passed in to this call to be notified of success or failure of the channel `-[ARTRealtimeChannel attach]` operation.
  *
- * @param action A [`PresenceAction`]{@link PresenceAction} or an array of [`PresenceAction`s]{@link PresenceAction} to register the listener for.
+ * @param action A `ARTPresenceAction` or an array of `ARTPresenceAction`s to register the listener for.
  *
  * @return An event listener function.
  * END CANONICAL DOCSTRING
@@ -130,23 +130,23 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Deregisters all listeners currently receiving [`PresenceMessage`]{@link PresenceMessage} for the channel.
+ * Deregisters all listeners currently receiving `ARTPresenceMessage` for the channel.
  * END CANONICAL DOCSTRING
  */
 - (void)unsubscribe;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Deregisters a specific listener that is registered to receive [`PresenceMessage`]{@link PresenceMessage} on the channel.
+ * Deregisters a specific listener that is registered to receive `ARTPresenceMessage` on the channel.
  * END CANONICAL DOCSTRING
  */
 - (void)unsubscribe:(ARTEventListener *)listener;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Deregisters a specific listener that is registered to receive [`PresenceMessage`]{@link PresenceMessage} on the channel for a given [`PresenceAction`]{@link PresenceAction}.
+ * Deregisters a specific listener that is registered to receive `ARTPresenceMessage` on the channel for a given `ARTPresenceAction`.
  *
- * @param action A specific [`PresenceAction`]{@link PresenceAction} to deregister the listener for.
+ * @param action A specific `ARTPresenceAction` to deregister the listener for.
  * END CANONICAL DOCSTRING
  */
 - (void)unsubscribe:(ARTPresenceAction)action listener:(ARTEventListener *)listener;
@@ -155,14 +155,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Retrieves a [`PaginatedResult`]{@link PaginatedResult} object, containing an array of historical [`PresenceMessage`]{@link PresenceMessage} objects for the channel. If the channel is configured to persist messages, then presence messages can be retrieved from history for up to 72 hours in the past. If not, presence messages can only be retrieved from history for up to two minutes in the past.
+ * Retrieves a `ARTPaginatedResult` object, containing an array of historical `ARTPresenceMessage` objects for the channel. If the channel is configured to persist messages, then presence messages can be retrieved from history for up to 72 hours in the past. If not, presence messages can only be retrieved from history for up to two minutes in the past.
  *
  * @param start The time from which messages are retrieved, specified as milliseconds since the Unix epoch.
  * @param end The time until messages are retrieved, specified as milliseconds since the Unix epoch.
  * @param direction The order for which messages are returned in. Valid values are `backwards` which orders messages from most recent to oldest, or `forwards` which orders messages from oldest to most recent. The default is `backwards`.
  * @param limit An upper limit on the number of messages returned. The default is 100, and the maximum is 1000.
  *
- * @return A [`PaginatedResult`]{@link PaginatedResult} object containing an array of [`PresenceMessage`]{@link PresenceMessage} objects.
+ * @return A `ARTPaginatedResult` object containing an array of `ARTPresenceMessage` objects.
  * END CANONICAL DOCSTRING
  */
 - (BOOL)history:(ARTRealtimeHistoryQuery *_Nullable)query callback:(ARTPaginatedPresenceCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr;

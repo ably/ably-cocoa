@@ -43,7 +43,7 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Describes the realtime [`Connection`]{@link Connection} object states.
+ * Describes the realtime `ARTConnection` object states.
  * END CANONICAL DOCSTRING
  */
 typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
@@ -73,7 +73,7 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
     ARTRealtimeDisconnected,
     /**
      * BEGIN CANONICAL DOCSTRING
-     * A long term failure condition. No current connection exists because there is no network connectivity or no host is available. The suspended state is entered after a failed connection attempt if there has then been no connection for a period of two minutes. In the suspended state, the library will periodically attempt to open a new connection every 30 seconds. Developers are unable to publish messages in this state. A new connection attempt can also be triggered by an explicit call to [`connect()`]{@link Connection#connect}. Once the connection has been re-established, channels will be automatically re-attached. The client has been disconnected for too long for them to resume from where they left off, so if it wants to catch up on messages published by other clients while it was disconnected, it needs to use the [History API](https://ably.com/docs/realtime/history).
+     * A long term failure condition. No current connection exists because there is no network connectivity or no host is available. The suspended state is entered after a failed connection attempt if there has then been no connection for a period of two minutes. In the suspended state, the library will periodically attempt to open a new connection every 30 seconds. Developers are unable to publish messages in this state. A new connection attempt can also be triggered by an explicit call to `-[ARTConnection connect]`. Once the connection has been re-established, channels will be automatically re-attached. The client has been disconnected for too long for them to resume from where they left off, so if it wants to catch up on messages published by other clients while it was disconnected, it needs to use the [History API](https://ably.com/docs/realtime/history).
      * END CANONICAL DOCSTRING
      */
     ARTRealtimeSuspended,
@@ -85,13 +85,13 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
     ARTRealtimeClosing,
     /**
      * BEGIN CANONICAL DOCSTRING
-     * The connection has been explicitly closed by the client. In the closed state, no reconnection attempts are made automatically by the library, and clients may not publish messages. No connection state is preserved by the service or by the library. A new connection attempt can be triggered by an explicit call to [`connect()`]{@link Connection#connect}, which results in a new connection.
+     * The connection has been explicitly closed by the client. In the closed state, no reconnection attempts are made automatically by the library, and clients may not publish messages. No connection state is preserved by the service or by the library. A new connection attempt can be triggered by an explicit call to `-[ARTConnection connect]`, which results in a new connection.
      * END CANONICAL DOCSTRING
      */
     ARTRealtimeClosed,
     /**
      * BEGIN CANONICAL DOCSTRING
-     * This state is entered if the client library encounters a failure condition that it cannot recover from. This may be a fatal connection error received from the Ably service, for example an attempt to connect with an incorrect API key, or a local terminal error, for example the token in use has expired and the library does not have any way to renew it. In the failed state, no reconnection attempts are made automatically by the library, and clients may not publish messages. A new connection attempt can be triggered by an explicit call to [`connect()`]{@link Connection#connect}.
+     * This state is entered if the client library encounters a failure condition that it cannot recover from. This may be a fatal connection error received from the Ably service, for example an attempt to connect with an incorrect API key, or a local terminal error, for example the token in use has expired and the library does not have any way to renew it. In the failed state, no reconnection attempts are made automatically by the library, and clients may not publish messages. A new connection attempt can be triggered by an explicit call to `-[ARTConnection connect]`.
      * END CANONICAL DOCSTRING
      */
     ARTRealtimeFailed
@@ -104,7 +104,7 @@ NSString *_Nonnull ARTRealtimeConnectionStateToStr(ARTRealtimeConnectionState st
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Describes the events emitted by a [`Connection`]{@link} object. An event is either an `UPDATE` or a [`ConnectionState`]{@link ConnectionState}.
+ * Describes the events emitted by a `ARTConnection` object. An event is either an `UPDATE` or a `ARTConnectionState`.
  * END CANONICAL DOCSTRING
  */
 typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionEvent) {
@@ -118,7 +118,7 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionEvent) {
     ARTRealtimeConnectionEventFailed,
     /**
      * BEGIN CANONICAL DOCSTRING
-     * An event for changes to connection conditions for which the [`ConnectionState`]{@link ConnectionState} does not change.
+     * An event for changes to connection conditions for which the `ARTConnectionState` does not change.
      * END CANONICAL DOCSTRING
      */
     ARTRealtimeConnectionEventUpdate
@@ -131,7 +131,7 @@ NSString *_Nonnull ARTRealtimeConnectionEventToStr(ARTRealtimeConnectionEvent ev
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Describes the possible states of a [`RestChannel`]{@link RestChannel} or [`RealtimeChannel`]{@link RealtimeChannel} object.
+ * Describes the possible states of a `ARTRestChannel` or `ARTRealtimeChannel` object.
  * END CANONICAL DOCSTRING
  */
 typedef NS_ENUM(NSUInteger, ARTRealtimeChannelState) {
@@ -186,7 +186,7 @@ NSString *_Nonnull ARTRealtimeChannelStateToStr(ARTRealtimeChannelState state);
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Describes the events emitted by a [`RestChannel`]{@link RestChannel} or [`RealtimeChannel`]{@link RealtimeChannel} object. An event is either an `UPDATE` or a [`ChannelState`]{@link ChannelState}.
+ * Describes the events emitted by a `ARTRestChannel` or `ARTRealtimeChannel` object. An event is either an `UPDATE` or a `ARTChannelState`.
  * END CANONICAL DOCSTRING
  */
 typedef NS_ENUM(NSUInteger, ARTChannelEvent) {
@@ -199,7 +199,7 @@ typedef NS_ENUM(NSUInteger, ARTChannelEvent) {
     ARTChannelEventFailed,
     /**
      * BEGIN CANONICAL DOCSTRING
-     * An event for changes to channel conditions that do not result in a change in [`ChannelState`]{@link ChannelState}.
+     * An event for changes to channel conditions that do not result in a change in `ARTChannelState`.
      * END CANONICAL DOCSTRING
      */
     ARTChannelEventUpdate
@@ -248,7 +248,7 @@ NSString *generateNonce(void);
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Contains [`ConnectionState`]{@link} change information emitted by the [`Connection`]{@link} object.
+ * Contains `ARTConnectionState` change information emitted by the `ARTConnection` object.
  * END CANONICAL DOCSTRING
  *
  * BEGIN LEGACY DOCSTRING # useful?
@@ -270,26 +270,26 @@ NSString *generateNonce(void);
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * The new [`ConnectionState`]{@link ConnectionState}.
+ * The new `ARTConnectionState`.
  * END CANONICAL DOCSTRING
  */
 @property (readonly, nonatomic) ARTRealtimeConnectionState current;
 /**
  * BEGIN CANONICAL DOCSTRING
- * The previous [`ConnectionState`]{@link ConnectionState}. For the [`UPDATE`]{@link ConnectionEvent#UPDATE} event, this is equal to the current [`ConnectionState`]{@link ConnectionState}.
+ * The previous `ARTConnectionState`. For the `ARTConnectionEvent.UPDATE` event, this is equal to the current `ARTConnectionState`.
  * END CANONICAL DOCSTRING
  */
 @property (readonly, nonatomic) ARTRealtimeConnectionState previous;
 /**
  * BEGIN CANONICAL DOCSTRING
- * The event that triggered this [`ConnectionState`]{@link ConnectionState} change.
+ * The event that triggered this `ARTConnectionState` change.
  * END CANONICAL DOCSTRING
  */
 @property (readonly, nonatomic) ARTRealtimeConnectionEvent event;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * An [`ErrorInfo`]{@link ErrorInfo} object containing any information relating to the transition.
+ * An `ARTErrorInfo` object containing any information relating to the transition.
  * END CANONICAL DOCSTRING
  */
 @property (readonly, nonatomic, nullable) ARTErrorInfo *reason;
@@ -307,7 +307,7 @@ NSString *generateNonce(void);
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Contains state change information emitted by [`RestChannel`]{@link RestChannel} and [`RealtimeChannel`]{@link RealtimeChannel} objects.
+ * Contains state change information emitted by `ARTRestChannel` and `ARTRealtimeChannel` objects.
  * END CANONICAL DOCSTRING
  */
 @interface ARTChannelStateChange : NSObject
@@ -325,28 +325,28 @@ NSString *generateNonce(void);
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * The new current [`ChannelState`]{@link ChannelState}.
+ * The new current `ARTChannelState`.
  * END CANONICAL DOCSTRING
  */
 @property (readonly, nonatomic) ARTRealtimeChannelState current;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * The previous state. For the [`UPDATE`]{@link ChannelEvent#UPDATE} event, this is equal to the `current` [`ChannelState`]{@link ChannelState}.
+ * The previous state. For the `ARTChannelEvent.UPDATE` event, this is equal to the `current` `ARTChannelState`.
  * END CANONICAL DOCSTRING
  */
 @property (readonly, nonatomic) ARTRealtimeChannelState previous;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * The event that triggered this [`ChannelState`]{@link ChannelState} change.
+ * The event that triggered this `ARTChannelState` change.
  * END CANONICAL DOCSTRING
  */
 @property (readonly, nonatomic) ARTChannelEvent event;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * An [`ErrorInfo`]{@link ErrorInfo} object containing any information relating to the transition.
+ * An `ARTErrorInfo` object containing any information relating to the transition.
  * END CANONICAL DOCSTRING
  */
 @property (readonly, nonatomic, nullable) ARTErrorInfo *reason;
@@ -364,7 +364,7 @@ NSString *generateNonce(void);
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Contains the metrics associated with a [`RestChannel`]{@link RestChannel} or [`RealtimeChannel`]{@link RealtimeChannel}, such as the number of publishers, subscribers and connections it has.
+ * Contains the metrics associated with a `ARTRestChannel` or `ARTRealtimeChannel`, such as the number of publishers, subscribers and connections it has.
  * END CANONICAL DOCSTRING
  */
 @interface ARTChannelMetrics : NSObject
@@ -378,21 +378,21 @@ NSString *generateNonce(void);
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * The number of realtime attachments permitted to publish messages to the channel. This requires the `publish` capability and for a client to not have specified a [`ChannelMode`]{@link ChannelMode} flag that excludes [`PUBLISH`]{@link ChannelMode#PUBLISH}.
+ * The number of realtime attachments permitted to publish messages to the channel. This requires the `publish` capability and for a client to not have specified a `ARTChannelMode` flag that excludes `ARTChannelMode.PUBLISH`.
  * END CANONICAL DOCSTRING
  */
 @property (nonatomic, readonly) NSInteger publishers;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * The number of realtime attachments receiving messages on the channel. This requires the `subscribe` capability and for a client to not have specified a [`ChannelMode`]{@link ChannelMode} flag that excludes [`SUBSCRIBE`]{@link ChannelMode#SUBSCRIBE}.
+ * The number of realtime attachments receiving messages on the channel. This requires the `subscribe` capability and for a client to not have specified a `ARTChannelMode` flag that excludes `ARTChannelMode.SUBSCRIBE`.
  * END CANONICAL DOCSTRING
  */
 @property (nonatomic, readonly) NSInteger subscribers;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * The number of realtime connections attached to the channel with permission to enter the presence set, regardless of whether or not they have entered it. This requires the `presence` capability and for a client to not have specified a [`ChannelMode`]{@link ChannelMode} flag that excludes [`PRESENCE`]{@link ChannelMode#PRESENCE}.
+ * The number of realtime connections attached to the channel with permission to enter the presence set, regardless of whether or not they have entered it. This requires the `presence` capability and for a client to not have specified a `ARTChannelMode` flag that excludes `ARTChannelMode.PRESENCE`.
  * END CANONICAL DOCSTRING
  */
 @property (nonatomic, readonly) NSInteger presenceConnections;
@@ -406,7 +406,7 @@ NSString *generateNonce(void);
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * The number of realtime attachments receiving presence messages on the channel. This requires the `subscribe` capability and for a client to not have specified a [`ChannelMode`]{@link ChannelMode} flag that excludes [`PRESENCE_SUBSCRIBE`]{@link ChannelMode#PRESENCE_SUBSCRIBE}.
+ * The number of realtime attachments receiving presence messages on the channel. This requires the `subscribe` capability and for a client to not have specified a `ARTChannelMode` flag that excludes `ARTChannelMode.PRESENCE_SUBSCRIBE`.
  * END CANONICAL DOCSTRING
  */
 @property (nonatomic, readonly) NSInteger presenceSubscribers;
@@ -424,14 +424,14 @@ NSString *generateNonce(void);
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Contains the metrics of a [`RestChannel`]{@link RestChannel} or [`RealtimeChannel`]{@link RealtimeChannel} object.
+ * Contains the metrics of a `ARTRestChannel` or `ARTRealtimeChannel` object.
  * END CANONICAL DOCSTRING
  */
 @interface ARTChannelOccupancy : NSObject
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A [`ChannelMetrics`]{@link ChannelMetrics} object.
+ * A `ARTChannelMetrics` object.
  * END CANONICAL DOCSTRING
  */
 @property (nonatomic, strong, readonly) ARTChannelMetrics *metrics;
@@ -444,7 +444,7 @@ NSString *generateNonce(void);
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Contains the status of a [`RestChannel`]{@link RestChannel} or [`RealtimeChannel`]{@link RealtimeChannel} object such as whether it is active and its [`ChannelOccupancy`]{@link ChannelOccupancy}.
+ * Contains the status of a `ARTRestChannel` or `ARTRealtimeChannel` object such as whether it is active and its `ARTChannelOccupancy`.
  * END CANONICAL DOCSTRING
  */
 @interface ARTChannelStatus : NSObject
@@ -458,7 +458,7 @@ NSString *generateNonce(void);
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A [`ChannelOccupancy`]{@link ChannelOccupancy} object.
+ * A `ARTChannelOccupancy` object.
  * END CANONICAL DOCSTRING
  */
 @property (nonatomic, strong, readonly) ARTChannelOccupancy *occupancy;
@@ -471,7 +471,7 @@ NSString *generateNonce(void);
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Contains the details of a [`RestChannel`]{@link RestChannel} or [`RealtimeChannel`]{@link RealtimeChannel} object such as its ID and [`ChannelStatus`]{@link ChannelStatus}.
+ * Contains the details of a `ARTRestChannel` or `ARTRealtimeChannel` object such as its ID and `ARTChannelStatus`.
  * END CANONICAL DOCSTRING
  */
 @interface ARTChannelDetails : NSObject
@@ -485,7 +485,7 @@ NSString *generateNonce(void);
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A [`ChannelStatus`]{@link ChannelStatus} object.
+ * A `ARTChannelStatus` object.
  * END CANONICAL DOCSTRING
  */
 @property (nonatomic, strong, readonly) ARTChannelStatus *status;

@@ -6,7 +6,7 @@
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Creates and destroys [`RestChannel`]{@link RestChannel} and [`RealtimeChannel`]{@link RealtimeChannel} objects.
+ * Creates and destroys `ARTRestChannel` and `ARTRealtimeChannel` objects.
  * END CANONICAL DOCSTRING
  */
 @interface ARTChannels<ChannelType> : NSObject
@@ -24,30 +24,30 @@
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Creates a new [`RestChannel`]{@link RestChannel} or [`RealtimeChannel`]{@link RealtimeChannel} object, or returns the existing channel object.
+ * Creates a new `ARTRestChannel` or `ARTRealtimeChannel` object, or returns the existing channel object.
  *
  * @param name The channel name.
  *
- * @return A [`RestChannel`]{@link RestChannel} or [`RealtimeChannel`]{@link RealtimeChannel} object.
+ * @return A `ARTRestChannel` or `ARTRealtimeChannel` object.
  * END CANONICAL DOCSTRING
  */
 - (ChannelType)get:(NSString *)name;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Creates a new [`RestChannel`]{@link RestChannel} or [`RealtimeChannel`]{@link RealtimeChannel} object, with the specified [`ChannelOptions`]{@link ChannelOptions}, or returns the existing channel object.
+ * Creates a new `ARTRestChannel` or `ARTRealtimeChannel` object, with the specified `ARTChannelOptions`, or returns the existing channel object.
  *
  * @param name The channel name.
- * @param options A [`ChannelOptions`]{@link ChannelOptions} object.
+ * @param options A `ARTChannelOptions` object.
  * 
- * @return A [`RestChannel`]{@link RestChannel} or [`RealtimeChannel`]{@link RealtimeChannel} object.
+ * @return A `ARTRestChannel` or `ARTRealtimeChannel` object.
  * END CANONICAL DOCSTRING
  */
 - (ChannelType)get:(NSString *)name options:(ARTChannelOptions *)options;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Releases a [`RestChannel`]{@link RestChannel} or [`RealtimeChannel`]{@link RealtimeChannel} object, deleting it, and enabling it to be garbage collected. It also removes any listeners associated with the channel. To release a channel, the [`ChannelState`]{@link ChannelState} must be `INITIALIZED`, `DETACHED`, or `FAILED`.
+ * Releases a `ARTRestChannel` or `ARTRealtimeChannel` object, deleting it, and enabling it to be garbage collected. It also removes any listeners associated with the channel. To release a channel, the `ARTChannelState` must be `INITIALIZED`, `DETACHED`, or `FAILED`.
  *
  * @param name The channel name.
  * END CANONICAL DOCSTRING

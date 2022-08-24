@@ -30,12 +30,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Calls the `requestToken` REST API endpoint to obtain an Ably Token according to the specified [`TokenParams`]{@link TokenParams} and [`AuthOptions`]{@link AuthOptions}. Both [`TokenParams`]{@link TokenParams} and [`AuthOptions`]{@link AuthOptions} are optional. When omitted or `null`, the default token parameters and authentication options for the client library are used, as specified in the [`ClientOptions`]{@link ClientOptions} when the client library was instantiated, or later updated with an explicit `authorize` request. Values passed in are used instead of, rather than being merged with, the default values. To understand why an Ably [`TokenRequest`]{@link TokenRequest} may be issued to clients in favor of a token, see [Token Authentication explained](https://ably.com/docs/core-features/authentication/#token-authentication).
+ * Calls the `requestToken` REST API endpoint to obtain an Ably Token according to the specified `ARTTokenParams` and `ARTAuthOptions`. Both `ARTTokenParams` and `ARTAuthOptions` are optional. When omitted or `null`, the default token parameters and authentication options for the client library are used, as specified in the `ARTClientOptions` when the client library was instantiated, or later updated with an explicit `authorize` request. Values passed in are used instead of, rather than being merged with, the default values. To understand why an Ably `ARTTokenRequest` may be issued to clients in favor of a token, see [Token Authentication explained](https://ably.com/docs/core-features/authentication/#token-authentication).
  *
- * @param tokenParams A [`TokenParams`]{@link TokenParams} object.
- * @param authOptions An [`AuthOptions`]{@link AuthOptions} object.
+ * @param tokenParams A `ARTTokenParams` object.
+ * @param authOptions An `ARTAuthOptions` object.
  *
- * @return A [`TokenDetails`]{@link TokenDetails} object.
+ * @return A `ARTTokenDetails` object.
  * END CANONICAL DOCSTRING
  */
 - (void)requestToken:(nullable ARTTokenParams *)tokenParams
@@ -46,12 +46,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Instructs the library to get a new token immediately. When using the realtime client, it upgrades the current realtime connection to use the new token, or if not connected, initiates a connection to Ably, once the new token has been obtained. Also stores any [`TokenParams`]{@link TokenParams} and [`AuthOptions`]{@link AuthOptions} passed in as the new defaults, to be used for all subsequent implicit or explicit token requests. Any [`TokenParams`]{@link TokenParams} and [`AuthOptions`]{@link AuthOptions} objects passed in entirely replace, as opposed to being merged with, the current client library saved values.
+ * Instructs the library to get a new token immediately. When using the realtime client, it upgrades the current realtime connection to use the new token, or if not connected, initiates a connection to Ably, once the new token has been obtained. Also stores any `ARTTokenParams` and `ARTAuthOptions` passed in as the new defaults, to be used for all subsequent implicit or explicit token requests. Any `ARTTokenParams` and `ARTAuthOptions` objects passed in entirely replace, as opposed to being merged with, the current client library saved values.
  *
- * @param tokenParams A [`TokenParams`]{@link TokenParams} object.
- * @param authOptions An [`AuthOptions`]{@link AuthOptions} object.
+ * @param tokenParams A `ARTTokenParams` object.
+ * @param authOptions An `ARTAuthOptions` object.
  *
- * @return A [`TokenDetails`]{@link TokenDetails} object.
+ * @return A `ARTTokenDetails` object.
  * END CANONICAL DOCSTRING
  */
 - (void)authorize:(nullable ARTTokenParams *)tokenParams
@@ -62,12 +62,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Creates and signs an Ably [`TokenRequest`]{@link TokenRequest} based on the specified (or if none specified, the client library stored) [`TokenParams`]{@link TokenParams} and [`AuthOptions`]{@link AuthOptions}. Note this can only be used when the API `key` value is available locally. Otherwise, the Ably [`TokenRequest`]{@link TokenRequest} must be obtained from the key owner. Use this to generate an Ably [`TokenRequest`]{@link TokenRequest} in order to implement an Ably Token request callback for use by other clients. Both [`TokenParams`]{@link TokenParams} and [`AuthOptions`]{@link AuthOptions} are optional. When omitted or `null`, the default token parameters and authentication options for the client library are used, as specified in the [`ClientOptions`]{@link ClientOptions} when the client library was instantiated, or later updated with an explicit `authorize` request. Values passed in are used instead of, rather than being merged with, the default values. To understand why an Ably [`TokenRequest`]{@link TokenRequest} may be issued to clients in favor of a token, see [Token Authentication explained](https://ably.com/docs/core-features/authentication/#token-authentication).
+ * Creates and signs an Ably `ARTTokenRequest` based on the specified (or if none specified, the client library stored) `ARTTokenParams` and `ARTAuthOptions`. Note this can only be used when the API `key` value is available locally. Otherwise, the Ably `ARTTokenRequest` must be obtained from the key owner. Use this to generate an Ably `ARTTokenRequest` in order to implement an Ably Token request callback for use by other clients. Both `ARTTokenParams` and `ARTAuthOptions` are optional. When omitted or `null`, the default token parameters and authentication options for the client library are used, as specified in the `ARTClientOptions` when the client library was instantiated, or later updated with an explicit `authorize` request. Values passed in are used instead of, rather than being merged with, the default values. To understand why an Ably `ARTTokenRequest` may be issued to clients in favor of a token, see [Token Authentication explained](https://ably.com/docs/core-features/authentication/#token-authentication).
  *
- * @param tokenParams A [`TokenParams`]{@link TokenParams} object.
- * @param options An [`AuthOptions`]{@link AuthOptions} object.
+ * @param tokenParams A `ARTTokenParams` object.
+ * @param options An `ARTAuthOptions` object.
  *
- * @return A [`TokenRequest`]{@link TokenRequest} object.
+ * @return A `ARTTokenRequest` object.
  * END CANONICAL DOCSTRING
  */
 - (void)createTokenRequest:(nullable ARTTokenParams *)tokenParams
@@ -80,7 +80,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Creates Ably [`TokenRequest`]{@link TokenRequest} objects and obtains Ably Tokens from Ably to subsequently issue to less trusted clients.
+ * Creates Ably `ARTTokenRequest` objects and obtains Ably Tokens from Ably to subsequently issue to less trusted clients.
  * END CANONICAL DOCSTRING
  */
 @interface ARTAuth : NSObject <ARTAuthProtocol>

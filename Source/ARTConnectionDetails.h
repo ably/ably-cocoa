@@ -4,7 +4,7 @@
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Contains any constraints a client should adhere to and provides additional metadata about a [`Connection`]{@link Connection}, such as if a request to [`publish()`]{@link RealtimeClient#publish} a message that exceeds the maximum message size should be rejected immediately without communicating with Ably.
+ * Contains any constraints a client should adhere to and provides additional metadata about a `ARTConnection`, such as if a request to `-[ARTRealtimeClient publish]` a message that exceeds the maximum message size should be rejected immediately without communicating with Ably.
  * END CANONICAL DOCSTRING
  */
 @interface ARTConnectionDetails : NSObject
@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * The maximum message size is an attribute of an Ably account and enforced by Ably servers. `maxMessageSize` indicates the maximum message size allowed by the Ably account this connection is using. Overrides the default value of [`ClientOptions.maxMessageSize`]{@link ClientOptions#maxMessageSize}.
+ * The maximum message size is an attribute of an Ably account and enforced by Ably servers. `maxMessageSize` indicates the maximum message size allowed by the Ably account this connection is using. Overrides the default value of `ARTClientOptions.maxMessageSize`.
  * END CANONICAL DOCSTRING
  *
  * BEGIN LEGACY DOCSTRING # useful?

@@ -7,7 +7,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Passes additional properties to a [`RestChannel`]{@link RestChannel} or [`RealtimeChannel`]{@link RealtimeChannel} object, such as encryption, [`ChannelMode`]{@link ChannelMode} and channel parameters.
+ * Passes additional properties to a `ARTRestChannel` or `ARTRealtimeChannel` object, such as encryption, `ARTChannelMode` and channel parameters.
  * END CANONICAL DOCSTRING
  */
 @interface ARTChannelOptions : NSObject

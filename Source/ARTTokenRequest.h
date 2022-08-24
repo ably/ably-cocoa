@@ -8,7 +8,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Contains the properties of a request for a token to Ably. Tokens are generated using [`requestToken`]{@link Auth#requestToken}.
+ * Contains the properties of a request for a token to Ably. Tokens are generated using `ARTAuth.requestToken`.
  * END CANONICAL DOCSTRING
  */
 @interface ARTTokenRequest : NSObject

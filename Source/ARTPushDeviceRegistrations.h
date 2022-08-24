@@ -12,33 +12,33 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Registers or updates a [`DeviceDetails`]{@link DeviceDetails} object with Ably. Returns the new, or updated [`DeviceDetails`]{@link DeviceDetails} object.
+ * Registers or updates a `ARTDeviceDetails` object with Ably. Returns the new, or updated `ARTDeviceDetails` object.
  *
- * @param deviceDetails The [`DeviceDetails`]{@link DeviceDetails} object to create or update.
+ * @param deviceDetails The `ARTDeviceDetails` object to create or update.
  *
- * @return A [`DeviceDetails`]{@link DeviceDetails} object.
+ * @return A `ARTDeviceDetails` object.
  * END CANONICAL DOCSTRING
  */
 - (void)save:(ARTDeviceDetails *)deviceDetails callback:(ARTCallback)callback;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Retrieves the [`DeviceDetails`]{@link DeviceDetails} of a device registered to receive push notifications using its `deviceId`.
+ * Retrieves the `ARTDeviceDetails` of a device registered to receive push notifications using its `deviceId`.
  *
  * @param deviceId The unique ID of the device.
  *
- * @return A [`DeviceDetails`]{@link DeviceDetails} object.
+ * @return A `ARTDeviceDetails` object.
  * END CANONICAL DOCSTRING
  */
 - (void)get:(ARTDeviceId *)deviceId callback:(void (^)(ARTDeviceDetails *_Nullable,  ARTErrorInfo *_Nullable))callback;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Retrieves all devices matching the filter `params` provided. Returns a [`PaginatedResult`]{@link PaginatedResult} object, containing an array of [`DeviceDetails`]{@link DeviceDetails} objects.
+ * Retrieves all devices matching the filter `params` provided. Returns a `ARTPaginatedResult` object, containing an array of `ARTDeviceDetails` objects.
  *
  * @param params An object containing key-value pairs to filter devices by. Can contain `clientId`, `deviceId` and a `limit` on the number of devices returned, up to 1,000.
  *
- * @return A [`PaginatedResult`]{@link PaginatedResult} object containing an array of [`DeviceDetails`]{@link DeviceDetails} objects.
+ * @return A `ARTPaginatedResult` object containing an array of `ARTDeviceDetails` objects.
  * END CANONICAL DOCSTRING
  */
 - (void)list:(NSStringDictionary *)params callback:(ARTPaginatedDeviceDetailsCallback)callback;

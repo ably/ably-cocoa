@@ -80,21 +80,21 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A [`Stats.MessageCount`]{@link Stats.MessageCount} object containing the count and byte value of messages and presence messages.
+ * A `ARTStatsMessageCount` object containing the count and byte value of messages and presence messages.
  * END CANONICAL DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageCount *all;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A [`Stats.MessageCount`]{@link Stats.MessageCount} object containing the count and byte value of messages.
+ * A `ARTStatsMessageCount` object containing the count and byte value of messages.
  * END CANONICAL DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageCount *messages;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A [`Stats.MessageCount`]{@link Stats.MessageCount} object containing the count and byte value of presence messages.
+ * A `ARTStatsMessageCount` object containing the count and byte value of presence messages.
  * END CANONICAL DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageCount *presence;
@@ -117,28 +117,28 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Stats.MessageTypes ||| TS7d | A [`Stats.MessageTypes`]{@link Stats.MessageTypes} object containing a breakdown of usage by message type for all messages (includes `realtime`, `rest` and `webhook` messages).
+ * A `ARTStatsMessageTypes` object containing a breakdown of usage by message type for all messages (includes `realtime`, `rest` and `webhook` messages).
  * END CANONICAL DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *all;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A [`Stats.MessageTypes`]{@link Stats.MessageTypes} object containing a breakdown of usage by message type for messages transferred over a realtime transport such as WebSocket.
+ * A `ARTStatsMessageTypes` object containing a breakdown of usage by message type for messages transferred over a realtime transport such as WebSocket.
  * END CANONICAL DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *realtime;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A [`Stats.MessageTypes`]{@link Stats.MessageTypes} object containing a breakdown of usage by message type for messages transferred over a rest transport such as WebSocket.
+ * A `ARTStatsMessageTypes` object containing a breakdown of usage by message type for messages transferred over a rest transport such as WebSocket.
  * END CANONICAL DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *rest;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A [`Stats.MessageTypes`]{@link Stats.MessageTypes} object containing a breakdown of usage by message type for messages delivered using webhooks.
+ * A `ARTStatsMessageTypes` object containing a breakdown of usage by message type for messages delivered using webhooks.
  * END CANONICAL DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *webhook;
@@ -215,21 +215,21 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A [`Stats.ResourceCount`]{@link Stats.ResourceCount} object containing a breakdown of usage by scope over TLS connections (both TLS and non-TLS).
+ * A `ARTStatsResourceCount` object containing a breakdown of usage by scope over TLS connections (both TLS and non-TLS).
  * END CANONICAL DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsResourceCount *all;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A [`Stats.ResourceCount`]{@link Stats.ResourceCount} object containing a breakdown of usage by scope over non-TLS connections.
+ * A `ARTStatsResourceCount` object containing a breakdown of usage by scope over non-TLS connections.
  * END CANONICAL DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsResourceCount *plain;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A [`Stats.ResourceCount`]{@link Stats.ResourceCount} object containing a breakdown of usage by scope over TLS connections.
+ * A `ARTStatsResourceCount` object containing a breakdown of usage by scope over TLS connections.
  * END CANONICAL DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsResourceCount *tls;
@@ -358,63 +358,63 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A [`Stats.MessageTypes`]{@link Stats.MessageTypes} object containing the aggregate count of all message stats.
+ * A `ARTStatsMessageTypes` object containing the aggregate count of all message stats.
  * END CANONICAL DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *all;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A [`Stats.MessageTraffic`]{@link Stats.MessageTraffic} object containing the aggregate count of inbound message stats.
+ * A `ARTStatsMessageTraffic` object containing the aggregate count of inbound message stats.
  * END CANONICAL DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageTraffic *inbound;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A [`Stats.MessageTraffic`]{@link Stats.MessageTraffic} object containing the aggregate count of outbound message stats.
+ * A `ARTStatsMessageTraffic` object containing the aggregate count of outbound message stats.
  * END CANONICAL DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageTraffic *outbound;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A [`Stats.MessageTypes`]{@link Stats.MessageTypes} object containing the aggregate count of persisted message stats.
+ * A `ARTStatsMessageTypes` object containing the aggregate count of persisted message stats.
  * END CANONICAL DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *persisted;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A [`Stats.ConnectionTypes`]{@link Stats.ConnectionTypes} object containing a breakdown of connection related stats, such as min, mean and peak connections.
+ * A `ARTStatsConnectionTypes` object containing a breakdown of connection related stats, such as min, mean and peak connections.
  * END CANONICAL DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsConnectionTypes *connections;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A [`Stats.ResourceCount`]{@link Stats.ResourceCount} object containing a breakdown of channels.
+ * A `ARTStatsResourceCount` object containing a breakdown of channels.
  * END CANONICAL DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsResourceCount *channels;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A [`Stats.RequestCount`]{@link Stats.RequestCount} object containing a breakdown of API Requests.
+ * A `ARTStatsRequestCount` object containing a breakdown of API Requests.
  * END CANONICAL DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsRequestCount *apiRequests;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A [`Stats.RequestCount`]{@link Stats.RequestCount} object containing a breakdown of Ably Token requests.
+ * A `ARTStatsRequestCount` object containing a breakdown of Ably Token requests.
  * END CANONICAL DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsRequestCount *tokenRequests;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A [`Stats.PushStats`]{@link Stats.PushStats} object containing a breakdown of stats on push notifications.
+ * A `ARTStatsPushCount` object containing a breakdown of stats on push notifications.
  * END CANONICAL DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsPushCount *pushes;
