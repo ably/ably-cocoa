@@ -62,10 +62,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * The duration that Ably will persist the connection state for when a Realtime client is abruptly disconnected.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * Represents the duration that Ably will persist the connection state when a Realtime client is abruptly disconnected.
- * END LEGACY DOCSTRING
  */
 @property (readonly, nonatomic) NSTimeInterval connectionStateTtl;
 
@@ -73,10 +69,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * A unique identifier for the front-end server that the client has connected to. This server ID is only used for the purposes of debugging.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * Represents a unique identifier for the front-end server that the client has connected to. This server ID is only used for the purposes of debugging.
- * END LEGACY DOCSTRING
  */
 @property (readonly, strong, nonatomic, nullable) NSString *serverId;
 
@@ -84,10 +76,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * The maximum length of time in milliseconds that the server will allow no activity to occur in the server to client direction. After such a period of inactivity, the server will send a `HEARTBEAT` or transport-level ping to the client. If the value is 0, the server will allow arbitrarily-long levels of inactivity.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * Represents the maximum length of time in seconds that the server will allow no activity to occur in the server -> client direction. After such a period of inactivity, the server will send a HEARTBEAT or transport-level ping to the client. If the value is 0, the server will allow arbitrarily-long levels of inactivity.
- * END LEGACY DOCSTRING
  */
 @property (readonly, nonatomic) NSTimeInterval maxIdleInterval;
 

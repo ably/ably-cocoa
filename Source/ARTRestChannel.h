@@ -51,10 +51,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * Enables messages to be published and historic messages to be retrieved for a channel.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * ARTRestChannel object provides a straightforward API for publishing messages and retrieving message history from a channel.
- * END LEGACY DOCSTRING
  */
 @interface ARTRestChannel : NSObject <ARTRestChannelProtocol>
 

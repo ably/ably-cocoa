@@ -9,10 +9,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * Contains an Ably Token and its associated metadata.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * ARTTokenDetails is a type providing details of Ably token string and its associated metadata.
- * END LEGACY DOCSTRING
  */
 @interface ARTTokenDetails : NSObject<NSCopying>
 
@@ -27,10 +23,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * The timestamp at which this token expires as milliseconds since the Unix epoch.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * Contains the expiry time in milliseconds.
- * END LEGACY DOCSTRING
  */
 @property (nonatomic, readonly, strong, nullable) NSDate *expires;
 
@@ -38,10 +30,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * The timestamp at which this token was issued as milliseconds since the Unix epoch.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * Contains the time the token was issued in milliseconds.
- * END LEGACY DOCSTRING
  */
 @property (nonatomic, readonly, strong, nullable) NSDate *issued;
 
@@ -49,10 +37,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * The capabilities associated with this Ably Token. The capabilities value is a JSON-encoded representation of the resource paths and associated operations. Read more about capabilities in the [capabilities docs](https://ably.com/docs/core-features/authentication/#capabilities-explained).
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * Contains the capability JSON stringified.
- * END LEGACY DOCSTRING
  */
 @property (nonatomic, readonly, copy, nullable) NSString *capability;
 
@@ -60,10 +44,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * The client ID, if any, bound to this Ably Token. If a client ID is included, then the Ably Token authenticates its bearer as that client ID, and the Ably Token may only be used to perform operations on behalf of that client ID. The client is then considered to be an [identified client](https://ably.com/docs/core-features/authentication#identified-clients).
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * Contains the clientId assigned to the token if provided.
- * END LEGACY DOCSTRING
  */
 @property (nonatomic, readonly, copy, nullable) NSString *clientId;
 

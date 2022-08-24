@@ -9,10 +9,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * A Unique ID assigned by Ably to this message.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * A unique id for this message
- * END LEGACY DOCSTRING
  */
 @property (nullable, strong, nonatomic) NSString *id;
 
@@ -20,10 +16,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * Timestamp of when the message was received by Ably, as milliseconds since the Unix epoch.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * The timestamp for this message
- * END LEGACY DOCSTRING
  */
 @property (strong, nonatomic, nullable) NSDate *timestamp;
 
@@ -31,10 +23,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * The client ID of the publisher of this message.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * The id of the publisher of this message
- * END LEGACY DOCSTRING
  */
 @property (strong, nonatomic, nullable) NSString *clientId;
 
@@ -42,10 +30,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * The connection ID of the publisher of this message.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * The connection id of the publisher of this message
- * END LEGACY DOCSTRING
  */
 @property (strong, nonatomic) NSString *connectionId;
 
@@ -53,10 +37,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * This is typically empty, as all messages received from Ably are automatically decoded client-side using this value. However, if the message encoding cannot be processed, this attribute contains the remaining transformations not applied to the `data` payload.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * Any transformation applied to the data for this message
- * END LEGACY DOCSTRING
  */
 @property (strong, nonatomic, nullable) NSString *encoding;
 

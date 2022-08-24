@@ -30,10 +30,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * Timeout for the wait of acknowledgement for operations performed via a realtime connection, before the client library considers a request failed and triggers a failure condition. Operations include establishing a connection with Ably, or sending a `HEARTBEAT`, `CONNECT`, `ATTACH`, `DETACH` or `CLOSE` request. It is the equivalent of `httpRequestTimeout` but for realtime operations, rather than REST. The default is 10 seconds.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * When a realtime client library is establishing a connection with Ably, or sending a HEARTBEAT, CONNECT, ATTACH, DETACH or CLOSE ProtocolMessage to Ably, this is the amount of time that the client library will wait before considering that request as failed and triggering a suitable failure condition.
- * END LEGACY DOCSTRING
  */
 + (NSTimeInterval)realtimeRequestTimeout;
 

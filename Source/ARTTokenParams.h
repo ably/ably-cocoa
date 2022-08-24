@@ -22,10 +22,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * Requested time to live for the token in milliseconds. The default is 60 minutes.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * Represents time to live (expiry) of this token as a NSTimeInterval.
- * END LEGACY DOCSTRING
  */
 @property (nonatomic, strong, nullable) NSNumber *ttl;
 
@@ -33,10 +29,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * The capabilities associated with this Ably Token. The capabilities value is a JSON-encoded representation of the resource paths and associated operations. Read more about capabilities in the [capabilities docs](https://ably.com/docs/core-features/authentication/#capabilities-explained).
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * Contains the capability JSON stringified.
- * END LEGACY DOCSTRING
  */
 @property (nonatomic, copy, nullable) NSString *capability;
 
@@ -44,10 +36,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * A client ID, used for identifying this client when publishing messages or for presence purposes. The `clientId` can be any non-empty string, except it cannot contain a `*`. This option is primarily intended to be used in situations where the library is instantiated with a key. Note that a `clientId` may also be implicit in a token used to instantiate the library. An error is raised if a `clientId` specified here conflicts with the `clientId` implicit in the token. Find out more about [identified clients](https://ably.com/docs/core-features/authentication#identified-clients).
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * A clientId to associate with this token.
- * END LEGACY DOCSTRING
  */
 @property (nullable, nonatomic, copy, readwrite) NSString *clientId;
 

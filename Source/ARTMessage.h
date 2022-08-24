@@ -10,10 +10,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * Contains an individual message that is sent to, or received from, Ably.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * ARTMessage represents an individual message that is sent to or received from Ably.
- * END LEGACY DOCSTRING
  */
 @interface ARTMessage : ARTBaseMessage
 

@@ -60,11 +60,6 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @param options A [`ClientOptions`]{@link ClientOptions} object.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * Instantiates the Ably library with the given options.
- * :param options: see ``ARTClientOptions`` for options
- * END LEGACY DOCSTRING
  */
 - (instancetype)initWithOptions:(ARTClientOptions *)options;
 
@@ -74,11 +69,6 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @param keyOrTokenStr The Ably API key or token string used to validate the client.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * Instance the Ably library using a key only. This is simply a convenience constructor for the simplest case of instancing the library with a key for basic authentication and no other options.
- * :param key; String key (obtained from application dashboard)
- * END LEGACY DOCSTRING
  */
 - (instancetype)initWithKey:(NSString *)key;
 - (instancetype)initWithToken:(NSString *)token;
@@ -130,12 +120,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * A client that extends the functionality of the [`RestClient`]{@link RestClient} and provides additional realtime-specific features.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * The top-level class to be instanced for the Ably Realtime library.
- * The Ably Realtime library will open and maintain a connection to the Ably realtime servers as soon as it is instantiated.
- * The ``ARTConnection`` object provides a straightforward API to monitor and manage connection state.
- * END LEGACY DOCSTRING
  */
 @interface ARTRealtime : NSObject <ARTRealtimeProtocol>
 

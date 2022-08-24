@@ -8,10 +8,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * Describes the interval unit over which statistics are gathered.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * ARTStatsGranularity is an enum specifying the granularity of a ``ARTStats`` interval.
- * END LEGACY DOCSTRING
  */
 typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
     /**

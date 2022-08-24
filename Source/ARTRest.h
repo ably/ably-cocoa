@@ -27,11 +27,6 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @param options A [ClientOptions]{@link ClientOptions} object to configure the client connection to Ably.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * Instance the Ably library with the given options.
- * :param options: see ``ARTClientOptions`` for options
- * END LEGACY DOCSTRING
  */
 - (instancetype)initWithOptions:(ARTClientOptions *)options;
 
@@ -40,11 +35,6 @@ NS_ASSUME_NONNULL_BEGIN
  * Constructs a RestClient object using an Ably API key or token string.
  * @param keyOrTokenStr The Ably API key or token string used to validate the client.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * Instance the Ably library using a key only. This is simply a convenience constructor for the simplest case of instancing the library with a key for basic authentication and no other options.
- * :param key; String key (obtained from application dashboard)
- * END LEGACY DOCSTRING
  */
 - (instancetype)initWithKey:(NSString *)key;
 - (instancetype)initWithToken:(NSString *)tokenId;
@@ -114,10 +104,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * A client that offers a simple stateless API to interact directly with Ably's REST API.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * ARTRest object offers a simple stateless API to interact directly with Ably’s REST API.
- * END LEGACY DOCSTRING
  */
 @interface ARTRest : NSObject <ARTRestProtocol>
 

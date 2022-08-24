@@ -37,16 +37,6 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A [`TokenDetails`]{@link TokenDetails} object.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- *  # (RSA8) Auth#requestToken
- *  Implicitly creates a `TokenRequest` if required, and requests a token from Ably if required.
- *  `TokenParams` and `AuthOptions` are optional.
- *  When provided, the values supersede matching client library configured params and options.
- *  - Parameter tokenParams: Token params (optional).
- *  - Parameter authOptions: Authentication options (optional).
- *  - Parameter callback: Completion callback (ARTTokenDetails, NSError).
- * END LEGACY DOCSTRING
  */
 - (void)requestToken:(nullable ARTTokenParams *)tokenParams
          withOptions:(nullable ARTAuthOptions *)authOptions

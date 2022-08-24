@@ -16,10 +16,6 @@ NS_ASSUME_NONNULL_BEGIN
  * @param recipient A JSON object containing the recipient details using `clientId`, `deviceId` or the underlying notifications service.
  * @param data A JSON object containing the push notification payload.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * Publish a push notification.
- * END LEGACY DOCSTRING
  */
 - (void)publish:(ARTPushRecipient *)recipient data:(ARTJsonObject *)data callback:(nullable ARTCallback)callback;
 

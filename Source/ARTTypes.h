@@ -45,10 +45,6 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
  * BEGIN CANONICAL DOCSTRING
  * Describes the realtime [`Connection`]{@link Connection} object states.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * ARTRealtimeConnectionState is an enum representing all the Realtime Connection states.
- * END LEGACY DOCSTRING
  */
 typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
     /**
@@ -110,10 +106,6 @@ NSString *_Nonnull ARTRealtimeConnectionStateToStr(ARTRealtimeConnectionState st
  * BEGIN CANONICAL DOCSTRING
  * Describes the events emitted by a [`Connection`]{@link} object. An event is either an `UPDATE` or a [`ConnectionState`]{@link ConnectionState}.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * ARTRealtimeConnectionEvent is an enum representing all the events that can be emitted be the Connection; either a Realtime Connection state or an Update event.
- * END LEGACY DOCSTRING
  */
 typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionEvent) {
     ARTRealtimeConnectionEventInitialized,
@@ -141,10 +133,6 @@ NSString *_Nonnull ARTRealtimeConnectionEventToStr(ARTRealtimeConnectionEvent ev
  * BEGIN CANONICAL DOCSTRING
  * Describes the possible states of a [`RestChannel`]{@link RestChannel} or [`RealtimeChannel`]{@link RealtimeChannel} object.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * ARTRealtimeChannelState is an enum representing all the Realtime Channel states.
- * END LEGACY DOCSTRING
  */
 typedef NS_ENUM(NSUInteger, ARTRealtimeChannelState) {
     /**
@@ -200,10 +188,6 @@ NSString *_Nonnull ARTRealtimeChannelStateToStr(ARTRealtimeChannelState state);
  * BEGIN CANONICAL DOCSTRING
  * Describes the events emitted by a [`RestChannel`]{@link RestChannel} or [`RealtimeChannel`]{@link RealtimeChannel} object. An event is either an `UPDATE` or a [`ChannelState`]{@link ChannelState}.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * ARTChannelEvent is the enum emitted as the event in ARTRealtimeChannel.on; either a ChannelState or an Update event.
- * END LEGACY DOCSTRING
  */
 typedef NS_ENUM(NSUInteger, ARTChannelEvent) {
     ARTChannelEventInitialized,

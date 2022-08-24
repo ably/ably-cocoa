@@ -5,10 +5,6 @@
  * BEGIN CANONICAL DOCSTRING
  * Describes the possible actions members in the presence set can emit.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * ARTPresenceAction represents all actions an ``ARTPresenceMessage`` can indicate.
- * END LEGACY DOCSTRING
  */
 typedef NS_ENUM(NSUInteger, ARTPresenceAction) {
     /**
@@ -51,10 +47,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * Contains an individual presence update sent to, or received from, Ably.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * ARTPresenceMessage represents an individual presence update that is sent to or received from Ably.
- * END LEGACY DOCSTRING
  */
 @interface ARTPresenceMessage : ARTBaseMessage
 

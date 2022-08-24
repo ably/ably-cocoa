@@ -13,10 +13,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * Passes additional client-specific properties to the REST [`constructor()`]{@link RestClient#constructor} or the Realtime [`constructor()`]{@link RealtimeClient#constructor}.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * ARTClientOptions is used in the ``ARTRealtime`` object constructor’s argument.
- * END LEGACY DOCSTRING
  */
 @interface ARTClientOptions : ARTAuthOptions
 
@@ -135,11 +131,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * If the connection is still in the [`DISCONNECTED`]{@link ConnectionState#disconnected} state after this delay, the client library will attempt to reconnect automatically. The default is 15 seconds.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * Represents the timeout (in seconds) to retry connection when it's disconnected.
- * When the connection is in the DISCONNECTED state, how frequently the client library attempts to reconnect automatically.
- * END LEGACY DOCSTRING
  */
 @property (readwrite, assign, nonatomic) NSTimeInterval disconnectedRetryTimeout;
 
@@ -147,11 +138,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * When the connection enters the [`SUSPENDED`]{@link ConnectionState#suspended} state, after this delay, if the state is still [`SUSPENDED`]{@link ConnectionState#suspended}, the client library attempts to reconnect automatically. The default is 30 seconds.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * Represents the timeout (in seconds) to retry connection when it's suspended.
- * When the connection is in the SUSPENDED state, how frequently the client library attempts to reconnect automatically.
- * END LEGACY DOCSTRING
  */
 @property (readwrite, assign, nonatomic) NSTimeInterval suspendedRetryTimeout;
 
@@ -159,11 +145,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * When a channel becomes [`SUSPENDED`]{@link ConnectionState#suspended} following a server initiated [`DETACHED`]{@link ConnectionState#detached}, after this delay, if the channel is still [`SUSPENDED`]{@link ConnectionState#suspended} and the connection is [`CONNECTED`]{@link ConnectionState#connected}, the client library will attempt to re-attach the channel automatically. The default is 15 seconds.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * Represents the timeout (in seconds) to re-attach the channel automatically.
- * When a channel becomes SUSPENDED following a server initiated DETACHED, after this delay in milliseconds, if the channel is still SUSPENDED and the connection is CONNECTED, the client library will attempt to re-attach.
- * END LEGACY DOCSTRING
  */
 @property (readwrite, assign, nonatomic) NSTimeInterval channelRetryTimeout;
 
@@ -171,10 +152,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * Timeout for opening a connection to Ably to initiate an HTTP request. The default is 4 seconds.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * Timeout for opening the connection, available in the client library if supported by the transport.
- * END LEGACY DOCSTRING
  */
 @property (readwrite, assign, nonatomic) NSTimeInterval httpOpenTimeout;
 
@@ -182,10 +159,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * Timeout for a client performing a complete HTTP request to Ably, including the connection phase. The default is 10 seconds.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * Timeout for any single HTTP request and response.
- * END LEGACY DOCSTRING
  */
 @property (readwrite, assign, nonatomic) NSTimeInterval httpRequestTimeout;
 
@@ -204,10 +177,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * The maximum number of fallback hosts to use as a fallback when an HTTP request to the primary host is unreachable or indicates that it is unserviceable. The default value is 3.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * Max number of fallback host retries for HTTP requests that fail due to network issues or server problems.
- * END LEGACY DOCSTRING
  */
 @property (readwrite, assign, nonatomic) NSUInteger httpMaxRetryCount;
 
@@ -237,10 +206,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * DEPRECATED: this property is deprecated and will be removed in a future version. Enables default fallback hosts to be used.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * Optionally allows the default fallback hosts `[a-e].ably-realtime.com` to be used when `environment` is not production or a custom realtime or REST host endpoint is being used. It is never valid to configure `fallbackHost` and set `fallbackHostsUseDefault` to `true`.
- * END LEGACY DOCSTRING
  */
 @property (assign, nonatomic) BOOL fallbackHostsUseDefault DEPRECATED_MSG_ATTRIBUTE("Future library releases will ignore any supplied value.");
 
@@ -248,10 +213,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * DEPRECATED: this property is deprecated and will be removed in a future version. Defaults to a string value for an Ably error reporting DSN (Data Source Name), which is typically a URL in the format `https://[KEY]:[SECRET]@errors.ably.io/[ID]`. When set to `null`, `false` or an empty string (depending on what is idiomatic for the platform), exception reporting is disabled.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * Report uncaught exceptions to Ably, together with the last lines of the logger. This helps Ably fix bugs. Set to nil to disable.
- * END LEGACY DOCSTRING
  */
 @property (readwrite, strong, nonatomic, nullable) NSString *logExceptionReportingUrl;
 
@@ -288,10 +249,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * When `true`, every REST request to Ably should include a random string in the `request_id` query string parameter. The random string should be a url-safe base64-encoding sequence of at least 9 bytes, obtained from a source of randomness. This request ID must remain the same if a request is retried to a fallback host. Any log messages associated with the request should include the request ID. If the request fails, the request ID must be included in the [`ErrorInfo`]{@link ErrorInfo} returned to the user. The default is `false`.
  * END CANONICAL DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING
- * If enabled, every REST request to Ably includes a `request_id` query string parameter. This request ID remain the same if a request is retried to a fallback host.
- * END LEGACY DOCSTRING
  */
 @property (readwrite, assign, nonatomic) BOOL addRequestIds;
 
