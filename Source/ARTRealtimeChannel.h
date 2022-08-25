@@ -16,6 +16,9 @@ NS_ASSUME_NONNULL_BEGIN
 @class ARTPushChannel;
 #endif
 
+/**
+ The protocol upon which the `ARTRealtimeChannel` is implemented.
+ */
 @protocol ARTRealtimeChannelProtocol <ARTChannelProtocol>
 
 /**
