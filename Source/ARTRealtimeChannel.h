@@ -36,20 +36,34 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nullable) ARTErrorInfo *errorReason;
 @property (readonly, nullable, getter=getOptions) ARTRealtimeChannelOptions *options;
 
+/**
+ * BEGIN CANONICAL PROCESSED DOCSTRING
+ * A shortcut for the `-[ARTRealtimeChannelProtocol attach:]` method.
+ * END CANONICAL PROCESSED DOCSTRING
+ */
 - (void)attach;
 
 /**
  * BEGIN CANONICAL PROCESSED DOCSTRING
  * Attach to this channel ensuring the channel is created in the Ably system and all messages published on the channel are received by any channel listeners registered using `-[ARTRealtimeChannelProtocol subscribe:]`. Any resulting channel state change will be emitted to any listeners registered using the `-[ARTEventEmitter on:]` or `-[ARTEventEmitter once:]` methods. A callback may optionally be passed in to this call to be notified of success or failure of the operation. As a convenience, `-[ARTRealtimeChannelProtocol attach:]` is called implicitly if `-[ARTRealtimeChannelProtocol subscribe:]` for the channel is called, or `-[ARTRealtimePresenceProtocol enter:]` or `-[ARTRealtimePresenceProtocol subscribe:]` are called on the `ARTRealtimePresence` object for this channel.
+ *
+ * @param callback A success or failure callback function.
  * END CANONICAL PROCESSED DOCSTRING
  */
 - (void)attach:(nullable ARTCallback)callback;
 
+/**
+ * BEGIN CANONICAL PROCESSED DOCSTRING
+ * A shortcut for the `-[ARTRealtimeChannelProtocol detach:]` method.
+ * END CANONICAL PROCESSED DOCSTRING
+ */
 - (void)detach;
 
 /**
  * BEGIN CANONICAL PROCESSED DOCSTRING
  * Detach from this channel. Any resulting channel state change is emitted to any listeners registered using the `-[ARTEventEmitter on:]` or `-[ARTEventEmitter once:]` methods. A callback may optionally be passed in to this call to be notified of success or failure of the operation. Once all clients globally have detached from the channel, the channel will be released in the Ably service within two minutes.
+ *
+ * @param callback A success or failure callback function.
  * END CANONICAL PROCESSED DOCSTRING
  */
 - (void)detach:(nullable ARTCallback)callback;
@@ -163,6 +177,7 @@ ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
 /**
  * BEGIN CANONICAL PROCESSED DOCSTRING
  * Enables messages to be published and subscribed to. Also enables historic messages to be retrieved and provides access to the `ARTRealtimePresence` object of a channel.
+ * Also implements `ARTEventEmitter` interface and emits `ARTChannelEvent` events, where a `ARTChannelEvent` is either a `ARTRealtimeChannelState` or an `ARTChannelEventUpdate`.
  * END CANONICAL PROCESSED DOCSTRING
  */
 @interface ARTRealtimeChannel : NSObject <ARTRealtimeChannelProtocol>
