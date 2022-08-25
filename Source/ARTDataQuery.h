@@ -44,9 +44,9 @@ typedef NS_ENUM(NSUInteger, ARTQueryDirection) {
 @interface ARTRealtimeHistoryQuery : ARTDataQuery
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * When `true`, ensures message history is up until the point of the channel being attached. See [continuous history](https://ably.com/docs/realtime/history#continuous-history) for more info. Requires the `direction` to be `ARTQueryDirectionBackwards`. If the channel is not attached, or if `direction` is set to `ARTQueryDirectionForwards`, this option results in an error.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (nonatomic, assign) BOOL untilAttach;
 
