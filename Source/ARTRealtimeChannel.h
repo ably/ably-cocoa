@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * The current `ARTChannelState` of the channel.
+ * The current `ARTRealtimeChannelState` of the channel.
  * END CANONICAL DOCSTRING
  */
 @property (readonly) ARTRealtimeChannelState state;
@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Attach to this channel ensuring the channel is created in the Ably system and all messages published on the channel are received by any channel listeners registered using `-[ARTRealtimeChannel subscribe]`. Any resulting channel state change will be emitted to any listeners registered using the `-[ARTEventEmitter on]` or `-[ARTEventEmitter once]` methods. A callback may optionally be passed in to this call to be notified of success or failure of the operation. As a convenience, `attach()` is called implicitly if `-[ARTRealtimeChannel subscribe]` for the channel is called, or `-[ARTRealtimePresence enter]` or `-[ARTRealtimePresence subscribe]` are called on the `ARTRealtimePresence` object for this channel.
+ * Attach to this channel ensuring the channel is created in the Ably system and all messages published on the channel are received by any channel listeners registered using `-[ARTRealtimeChannelProtocol subscribe:]`. Any resulting channel state change will be emitted to any listeners registered using the `-[ARTEventEmitter on:]` or `-[ARTEventEmitter once:]` methods. A callback may optionally be passed in to this call to be notified of success or failure of the operation. As a convenience, `-[ARTRealtimeChannelProtocol attach:]` is called implicitly if `-[ARTRealtimeChannelProtocol subscribe:]` for the channel is called, or `-[ARTRealtimePresenceProtocol enter:]` or `-[ARTRealtimePresenceProtocol subscribe:]` are called on the `ARTRealtimePresence` object for this channel.
  * END CANONICAL DOCSTRING
  */
 - (void)attach:(nullable ARTCallback)callback;
@@ -46,31 +46,58 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Detach from this channel. Any resulting channel state change is emitted to any listeners registered using the `-[ARTEventEmitter on]` or `-[ARTEventEmitter once]` methods. A callback may optionally be passed in to this call to be notified of success or failure of the operation. Once all clients globally have detached from the channel, the channel will be released in the Ably service within two minutes.
+ * Detach from this channel. Any resulting channel state change is emitted to any listeners registered using the `-[ARTEventEmitter on:]` or `-[ARTEventEmitter once:]` methods. A callback may optionally be passed in to this call to be notified of success or failure of the operation. Once all clients globally have detached from the channel, the channel will be released in the Ably service within two minutes.
  * END CANONICAL DOCSTRING
  */
 - (void)detach:(nullable ARTCallback)callback;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Registers a listener for messages on this channel. The caller supplies a listener function, which is called each time one or more messages arrives on the channel. A callback may optionally be passed in to this call to be notified of success or failure of the channel `-[ARTRealtimeChannel attach]` operation.
+ * Registers a listener for messages on this channel. The caller supplies a listener function, which is called each time one or more messages arrives on the channel.
  *
  * @param callback An event listener function.
+ *
+ * @return An `ARTEventListener` object.
  * END CANONICAL DOCSTRING
  */
 - (ARTEventListener *_Nullable)subscribe:(ARTMessageCallback)callback;
-- (ARTEventListener *_Nullable)subscribeWithAttachCallback:(nullable ARTCallback)onAttach callback:(ARTMessageCallback)cb;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Registers a listener for messages with a given event name on this channel. The caller supplies a listener function, which is called each time one or more matching messages arrives on the channel. A callback may optionally be passed in to this call to be notified of success or failure of the channel `-[ARTRealtimeChannel attach]` operation.
+ * Registers a listener for messages on this channel. The caller supplies a listener function, which is called each time one or more messages arrives on the channel.
+ * An attach callback may optionally be passed in to this call to be notified of success or failure of the channel `-[ARTRealtimeChannel attach]` operation.
+ *
+ * @param onAttach An attach callback function.
+ * @param callback An event listener function.
+ *
+ * @return An `ARTEventListener` object.
+ * END CANONICAL DOCSTRING
+ */
+- (ARTEventListener *_Nullable)subscribeWithAttachCallback:(nullable ARTCallback)onAttach callback:(ARTMessageCallback)callback;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Registers a listener for messages with a given event `name` on this channel. The caller supplies a listener function, which is called each time one or more matching messages arrives on the channel.
  *
  * @param name The event name.
  * @param callback An event listener function.
+ *
+ * @return An `ARTEventListener` object.
  * END CANONICAL DOCSTRING
  */
-- (ARTEventListener *_Nullable)subscribe:(NSString *)name callback:(ARTMessageCallback)cb;
-- (ARTEventListener *_Nullable)subscribe:(NSString *)name onAttach:(nullable ARTCallback)onAttach callback:(ARTMessageCallback)cb;
+- (ARTEventListener *_Nullable)subscribe:(NSString *)name callback:(ARTMessageCallback)callback;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Registers a listener for messages with a given event `name` on this channel. The caller supplies a listener function, which is called each time one or more matching messages arrives on the channel. A callback may optionally be passed in to this call to be notified of success or failure of the channel `-[ARTRealtimeChannel attach]` operation.
+ *
+ * @param name The event name.
+ * @param callback An event listener function.
+ *
+ * @return An `ARTEventListener` object.
+ * END CANONICAL DOCSTRING
+ */
+- (ARTEventListener *_Nullable)subscribe:(NSString *)name onAttach:(nullable ARTCallback)onAttach callback:(ARTMessageCallback)callback;
 
 /**
  * BEGIN CANONICAL DOCSTRING
@@ -83,7 +110,7 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * Deregisters the given listener (for any/all event names). This removes an earlier subscription.
  *
- * @param listener An event listener function.
+ * @param listener An event listener object to unsubscribe.
  * END CANONICAL DOCSTRING
  */
 - (void)unsubscribe:(ARTEventListener *_Nullable)listener;
@@ -93,38 +120,37 @@ NS_ASSUME_NONNULL_BEGIN
  * Deregisters the given listener for the specified event name. This removes an earlier event-specific subscription.
  *
  * @param name The event name.
- * @param listener An event listener function.
+ * @param listener An event listener object to unsubscribe.
  * END CANONICAL DOCSTRING
  */
 - (void)unsubscribe:(NSString *)name listener:(ARTEventListener *_Nullable)listener;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Retrieves a `ARTPaginatedResult` object, containing an array of historical `ARTMessage` objects for the channel. If the channel is configured to persist messages, then messages can be retrieved from history for up to 72 hours in the past. If not, messages can only be retrieved from history for up to two minutes in the past.
+ * Retrieves an `ARTPaginatedResult` object, containing an array of historical `ARTMessage` objects for the channel. If the channel is configured to persist messages, then messages can be retrieved from history for up to 72 hours in the past. If not, messages can only be retrieved from history for up to two minutes in the past.
  *
- * @param start The time from which messages are retrieved, specified as milliseconds since the Unix epoch.
- * @param end The time until messages are retrieved, specified as milliseconds since the Unix epoch.
- * @param direction The order for which messages are returned in. Valid values are `backwards` which orders messages from most recent to oldest, or `forwards` which orders messages from oldest to most recent. The default is `backwards`.
- * @param limit An upper limit on the number of messages returned. The default is 100, and the maximum is 1000.
- * @param untilAttach When `true`, ensures message history is up until the point of the channel being attached. See [continuous history](https://ably.com/docs/realtime/history#continuous-history) for more info. Requires the `direction` to be `backwards`. If the channel is not attached, or if `direction` is set to `forwards`, this option results in an error.
+ * @param query An `ARTRealtimeHistoryQuery` object.
+ * @param callback A callback for retriving an `ARTPaginatedResult` object with an array of `ARTMessage` objects.
+ * @param errorPtr A reference to the `NSError` object where an error information will be saved in case of failure.
  *
- * @return A `ARTPaginatedResult` object containing an array of `ARTMessage` objects.
+ * @return In case of failure returns false and the error information can be retrived via the `error` parameter.
  * END CANONICAL DOCSTRING
  */
 - (BOOL)history:(ARTRealtimeHistoryQuery *_Nullable)query callback:(ARTPaginatedMessagesCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Sets the `ARTChannelOptions` for the channel. An optional callback may be provided to notify of the success or failure of the operation.
+ * Sets the `-[ARTRealtimeChannelProtocol options]` for the channel. An optional callback may be provided to notify of the success or failure of the operation.
  *
- * @param options A `ARTChannelOptions` object.
+ * @param options An `ARTRealtimeChannelOptions` object.
+ * @param callback A success or failure callback function.
  * END CANONICAL DOCSTRING
  */
-- (void)setOptions:(ARTRealtimeChannelOptions *_Nullable)options callback:(nullable ARTCallback)cb;
+- (void)setOptions:(ARTRealtimeChannelOptions *_Nullable)options callback:(nullable ARTCallback)callback;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * `RealtimeChannel` implements `ARTEventEmitter` and emits `ARTChannelEvent` events, where a `ChannelEvent` is either a `ARTChannelState` or an `ARTChannelEvent.UPDATE`.
+ * `ARTRealtimeChannel` implements `ARTEventEmitter` and emits `ARTChannelEvent` events, where a `ARTChannelEvent` is either a `ARTRealtimeChannelState` or an `ARTChannelEventUpdate`.
  * END CANONICAL DOCSTRING
  */
 ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
@@ -140,14 +166,14 @@ ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A `ARTRealtimePresence` object.
+ * An `ARTRealtimePresence` object.
  * END CANONICAL DOCSTRING
  */
 @property (readonly) ARTRealtimePresence *presence;
 #if TARGET_OS_IPHONE
 /**
  * BEGIN CANONICAL DOCSTRING
- * A `ARTPushChannel` object.
+ * An `ARTPushChannel` object.
  * END CANONICAL DOCSTRING
  */
 @property (readonly) ARTPushChannel *push;
