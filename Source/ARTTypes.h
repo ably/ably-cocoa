@@ -252,7 +252,7 @@ NSString *generateNonce(void);
  * END CANONICAL DOCSTRING
  *
  * BEGIN LEGACY DOCSTRING # useful?
- * ARTConnectionStateChange is a type encapsulating state change information emitted by the ``ARTConnection`` object. See ``ARTConnection/on`` to register a listener for one or more events.
+ * ARTConnectionStateChange is a type encapsulating state change information emitted by the `ARTConnection` object. See `-[ARTConnection on:]` to register a listener for one or more events.
  * END LEGACY DOCSTRING
  */
 @interface ARTConnectionStateChange : NSObject

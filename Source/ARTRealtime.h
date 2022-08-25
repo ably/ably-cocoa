@@ -30,7 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - ARTRealtime
 
 /**
- The protocol upon which the top level object ``ARTRealtime`` is implemented.
+ The protocol upon which the top level object `ARTRealtime` is implemented.
  */
 @protocol ARTRealtimeProtocol <NSObject>
 

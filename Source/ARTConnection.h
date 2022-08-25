@@ -90,7 +90,7 @@ ART_EMBED_INTERFACE_EVENT_EMITTER(ARTRealtimeConnectionEvent, ARTConnectionState
  * END CANONICAL DOCSTRING
  *
  * BEGIN LEGACY DOCSTRING # useful?
- * ARTConnection represents the connection associated with an ``ARTRealtime`` instance. It exposes the lifecycle and parameters of the realtime connection.
+ * ARTConnection represents the connection associated with an `ARTRealtime` instance. It exposes the lifecycle and parameters of the realtime connection.
  * END LEGACY DOCSTRING
  */
 @interface ARTConnection: NSObject <ARTConnectionProtocol>
