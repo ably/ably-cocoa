@@ -38,6 +38,11 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 
 @interface ARTStatsQuery : ARTDataQuery
 
+/**
+ * BEGIN CANONICAL EDITED DOCSTRING
+ * `ARTStatsGranularityMinute`, `ARTStatsGranularityHour`, `ARTStatsGranularityDay` or `ARTStatsGranularityMonth`. Based on the unit selected, the given `start` or `end` times are rounded down to the start of the relevant interval depending on the unit granularity of the query.
+ * END CANONICAL EDITED DOCSTRING
+ */
 @property (nonatomic, assign) ARTStatsGranularity unit;
 
 @end

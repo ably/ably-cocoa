@@ -36,115 +36,122 @@ NS_ASSUME_NONNULL_BEGIN
 
 #if TARGET_OS_IOS
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL EDITED DOCSTRING
  * Retrieves a `ARTLocalDevice` object that represents the current state of the device as a target for push notifications.
  *
- * @return A `ARTLocalDevice` object.
- * END CANONICAL DOCSTRING
+ * @return An `ARTLocalDevice` object.
+ * END CANONICAL EDITED DOCSTRING
  */
 @property (readonly) ARTLocalDevice *device;
 #endif
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL EDITED DOCSTRING
  * A client ID, used for identifying this client when publishing messages or for presence purposes. The `clientId` can be any non-empty string, except it cannot contain a `*`. This option is primarily intended to be used in situations where the library is instantiated with a key. A `clientId` may also be implicit in a token used to instantiate the library; an error will be raised if a `clientId` specified here conflicts with the `clientId` implicit in the token.
- * END CANONICAL DOCSTRING
+ * END CANONICAL EDITED DOCSTRING
  */
 @property (readonly, nullable) NSString *clientId;
 
 - (instancetype)init NS_UNAVAILABLE;
 
 /**
- * BEGIN CANONICAL DOCSTRING
- * Constructs a `RealtimeClient` object using an Ably `ARTClientOptions` object.
+ * BEGIN CANONICAL EDITED DOCSTRING
+ * Constructs an `ARTRealtime` object using an Ably `ARTClientOptions` object.
  *
- * @param options A `ARTClientOptions` object.
- * END CANONICAL DOCSTRING
+ * @param options An `ARTClientOptions` object.
+ * END CANONICAL EDITED DOCSTRING
  */
 - (instancetype)initWithOptions:(ARTClientOptions *)options;
 
 /**
- * BEGIN CANONICAL DOCSTRING
- * Constructs a `RealtimeClient` object using an Ably API key or token string.
+ * BEGIN CANONICAL EDITED DOCSTRING
+ * Constructs an `ARTRealtime` object using an Ably API key.
  *
- * @param keyOrTokenStr The Ably API key or token string used to validate the client.
- * END CANONICAL DOCSTRING
+ * @param key The Ably API key used to validate the client.
+ * END CANONICAL EDITED DOCSTRING
  */
 - (instancetype)initWithKey:(NSString *)key;
+
+/**
+ * BEGIN CANONICAL EDITED DOCSTRING
+ * Constructs an `ARTRealtime` object using an Ably token string.
+ *
+ * @param token The Ably token string used to validate the client.
+ * END CANONICAL EDITED DOCSTRING
+ */
 - (instancetype)initWithToken:(NSString *)token;
 
 /**
- * BEGIN CANONICAL DOCSTRING
- * Retrieves the time from the Ably service as milliseconds since the Unix epoch. Clients that do not have access to a sufficiently well maintained time source and wish to issue Ably `ARTTokenRequest`s with a more accurate timestamp should use the `ARTClientOptions.queryTime` property instead of this method.
+ * BEGIN CANONICAL EDITED DOCSTRING
+ * Retrieves the time from the Ably service. Clients that do not have access to a sufficiently well maintained time source and wish to issue Ably `ARTTokenRequest`s with a more accurate timestamp should use the `-[ARTClientOptions queryTime]` property instead of this method.
  *
- * @return The time as milliseconds since the Unix epoch.
- * END CANONICAL DOCSTRING
+ * @param callback A callback for receiving the time as a `NSDate` object.
+ * END CANONICAL EDITED DOCSTRING
  */
-- (void)time:(ARTDateTimeCallback)cb;
+- (void)time:(ARTDateTimeCallback)callback;
+
 - (void)ping:(ARTCallback)cb;
 
 - (BOOL)stats:(ARTPaginatedStatsCallback)callback;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL EDITED DOCSTRING
  * Queries the REST `/stats` API and retrieves your application's usage statistics. Returns a `ARTPaginatedResult` object, containing an array of `ARTStats` objects. See the [Stats docs](https://ably.com/docs/general/statistics).
  *
- * @param start The time from which stats are retrieved, specified as milliseconds since the Unix epoch.
- * @param end The time until stats are retrieved, specified as milliseconds since the Unix epoch.
- * @param direction The order for which stats are returned in. Valid values are `backwards` which orders stats from most recent to oldest, or `forwards` which orders stats from oldest to most recent. The default is `backwards`.
- * @param limit An upper limit on the number of stats returned. The default is 100, and the maximum is 1000.
- * @param unit `minute`, `hour`, `day` or `month`. Based on the unit selected, the given `start` or `end` times are rounded down to the start of the relevant interval depending on the unit granularity of the query.
+ * @param query An `ARTStatsQuery` object.
+ * @param callback A callback for retriving an `ARTPaginatedResult` object with an array of `ARTStats` objects.
+ * @param errorPtr A reference to the `NSError` object where an error information will be saved in case of failure.
  *
- * @return A `ARTPaginatedResult` object containing an array of `ARTStats` objects.
- * END CANONICAL DOCSTRING
+ * @return In case of failure returns false and the error information can be retrived via the `error` parameter.
+ * END CANONICAL EDITED DOCSTRING
  */
 - (BOOL)stats:(nullable ARTStatsQuery *)query callback:(ARTPaginatedStatsCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
 /**
- * BEGIN CANONICAL DOCSTRING
- * Calls `-[ARTConnection connect]` and causes the connection to open, entering the connecting state. Explicitly calling `connect()` is unnecessary unless the `ARTClientOptions.autoConnect` property is disabled.
- * END CANONICAL DOCSTRING
+ * BEGIN CANONICAL EDITED DOCSTRING
+ * Calls `-[ARTConnection connect]` and causes the connection to open, entering the connecting state. Explicitly calling `connect` is unnecessary unless the `-[ARTClientOptions autoConnect]` property is disabled.
+ * END CANONICAL EDITED DOCSTRING
  */
 - (void)connect;
 
 /**
- * BEGIN CANONICAL DOCSTRING
- * Calls `-[ARTConnection close]` and causes the connection to close, entering the closing state. Once closed, the library will not attempt to re-establish the connection without an explicit call to `-[ARTConnection connect]`.
- * END CANONICAL DOCSTRING
+ * BEGIN CANONICAL EDITED DOCSTRING
+ * Calls `-[ARTConnection close]` and causes the connection to close, entering the closing state. Once closed, the library will not attempt to re-establish the connection without an explicit call to `connect`.
+ * END CANONICAL EDITED DOCSTRING
  */
 - (void)close;
 
 @end
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL EDITED DOCSTRING
  * A client that extends the functionality of the `ARTRestClient` and provides additional realtime-specific features.
- * END CANONICAL DOCSTRING
+ * END CANONICAL EDITED DOCSTRING
  */
 @interface ARTRealtime : NSObject <ARTRealtimeProtocol>
 
 /**
- * BEGIN CANONICAL DOCSTRING
- * A `ARTConnection` object.
- * END CANONICAL DOCSTRING
+ * BEGIN CANONICAL EDITED DOCSTRING
+ * An `ARTConnection` object.
+ * END CANONICAL EDITED DOCSTRING
  */
 @property (readonly) ARTConnection *connection;
 /**
- * BEGIN CANONICAL DOCSTRING
- * A `ARTChannels` object.
- * END CANONICAL DOCSTRING
+ * BEGIN CANONICAL EDITED DOCSTRING
+ * An `ARTChannels` object.
+ * END CANONICAL EDITED DOCSTRING
  */
 @property (readonly) ARTRealtimeChannels *channels;
 /**
- * BEGIN CANONICAL DOCSTRING
- * A `ARTPush` object.
- * END CANONICAL DOCSTRING
+ * BEGIN CANONICAL EDITED DOCSTRING
+ * An `ARTPush` object.
+ * END CANONICAL EDITED DOCSTRING
  */
 @property (readonly) ARTPush *push;
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL EDITED DOCSTRING
  * An `ARTAuth` object.
- * END CANONICAL DOCSTRING
+ * END CANONICAL EDITED DOCSTRING
  */
 @property (readonly) ARTAuth *auth;
 
