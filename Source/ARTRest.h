@@ -17,6 +17,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/**
+ The protocol upon which the top level object `ARTRest` is implemented.
+ */
 @protocol ARTRestProtocol
 
 - (instancetype)init NS_UNAVAILABLE;
