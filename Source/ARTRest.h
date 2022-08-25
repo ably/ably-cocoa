@@ -25,34 +25,41 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init NS_UNAVAILABLE;
 
 /**
- * BEGIN CANONICAL DOCSTRING
- * Construct a RestClient object using an Ably `ARTClientOptions` object.
+ * BEGIN CANONICAL EDITED DOCSTRING
+ * Construct an `ARTRest` object using an Ably `ARTClientOptions` object.
  *
  * @param options A `ARTClientOptions` object to configure the client connection to Ably.
- * END CANONICAL DOCSTRING
+ * END CANONICAL EDITED DOCSTRING
  */
 - (instancetype)initWithOptions:(ARTClientOptions *)options;
 
 /**
- * BEGIN CANONICAL DOCSTRING
- * Constructs a RestClient object using an Ably API key or token string.
- * @param keyOrTokenStr The Ably API key or token string used to validate the client.
- * END CANONICAL DOCSTRING
+ * BEGIN CANONICAL EDITED DOCSTRING
+ * Constructs a `ARTRest` object using an Ably API key.
+ * @param key The Ably API key used to validate the client.
+ * END CANONICAL EDITED DOCSTRING
  */
 - (instancetype)initWithKey:(NSString *)key;
-- (instancetype)initWithToken:(NSString *)tokenId;
 
 /**
- * BEGIN CANONICAL DOCSTRING
- * Retrieves the time from the Ably service as milliseconds since the Unix epoch. Clients that do not have access to a sufficiently well maintained time source and wish to issue Ably `ARTTokenRequest`s with a more accurate timestamp should use the `ARTClientOptions.queryTime` property instead of this method.
+ * BEGIN CANONICAL EDITED DOCSTRING
+ * Constructs a `ARTRest` object using an Ably token string.
+ * @param token The Ably token string used to validate the client.
+ * END CANONICAL EDITED DOCSTRING
+ */
+- (instancetype)initWithToken:(NSString *)token;
+
+/**
+ * BEGIN CANONICAL EDITED DOCSTRING
+ * Retrieves the time from the Ably service. Clients that do not have access to a sufficiently well maintained time source and wish to issue Ably `ARTTokenRequest`s with a more accurate timestamp should use the `-[ARTClientOptions queryTime]` property instead of this method.
  *
- * @return The time as milliseconds since the Unix epoch.
- * END CANONICAL DOCSTRING
+ * @param callback A callback for receiving the time as a `NSDate` object.
+ * END CANONICAL EDITED DOCSTRING
  */
 - (void)time:(ARTDateTimeCallback)callback;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL EDITED DOCSTRING
  * Makes a REST request to a provided path. This is provided as a convenience for developers who wish to use REST API functionality that is either not documented or is not yet included in the public API, without having to directly handle features such as authentication, paging, fallback hosts, MsgPack and JSON support.
  *
  * @param method The request method to use, such as GET, POST.
@@ -60,8 +67,11 @@ NS_ASSUME_NONNULL_BEGIN
  * @param params The parameters to include in the URL query of the request. The parameters depend on the endpoint being queried. See the [REST API reference](https://ably.com/docs/api/rest-api) for the available parameters of each endpoint.
  * @param body The JSON body of the request.
  * @param headers Additional HTTP headers to include in the request.
- * @return An `ARTHttpPaginatedResponse` object returned by the HTTP request, containing an empty or JSON-encodable object.
- * END CANONICAL DOCSTRING
+ * @param callback A callback for retriving `ARTHttpPaginatedResponse` object returned by the HTTP request, containing an empty or JSON-encodable object.
+ * @param errorPtr A reference to the `NSError` object where an error information will be saved in case of failure.
+
+ * @return In case of failure returns false and the error information can be retrived via the `error` parameter.
+ * END CANONICAL EDITED DOCSTRING
  */
 - (BOOL)request:(NSString *)method
            path:(NSString *)path
@@ -74,17 +84,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)stats:(ARTPaginatedStatsCallback)callback;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL EDITED DOCSTRING
  * Queries the REST `/stats` API and retrieves your application's usage statistics. Returns a `ARTPaginatedResult` object, containing an array of `ARTStats` objects. See the [Stats docs](https://ably.com/docs/general/statistics).
  *
- * @param start The time from which stats are retrieved, specified as milliseconds since the Unix epoch.
- * @param end The time until stats are retrieved, specified as milliseconds since the Unix epoch.
- * @param direction The order for which stats are returned in. Valid values are `backwards` which orders stats from most recent to oldest, or `forwards` which orders stats from oldest to most recent. The default is `backwards`.
- * @param limit An upper limit on the number of stats returned. The default is 100, and the maximum is 1000.
- * @param unit `minute`, `hour`, `day` or `month`. Based on the unit selected, the given `start` or `end` times are rounded down to the start of the relevant interval depending on the unit granularity of the query.
+ * @param query An `ARTStatsQuery` object.
+ * @param callback A callback for retriving an `ARTPaginatedResult` object with an array of `ARTStats` objects.
+ * @param errorPtr A reference to the `NSError` object where an error information will be saved in case of failure.
  *
- * @return A `ARTPaginatedResult` object containing an array of `ARTStats` objects.
- * END CANONICAL DOCSTRING
+ * @return In case of failure returns false and the error information can be retrived via the `error` parameter.
+ * END CANONICAL EDITED DOCSTRING
  */
 - (BOOL)stats:(nullable ARTStatsQuery *)query
      callback:(ARTPaginatedStatsCallback)callback
@@ -92,11 +100,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 #if TARGET_OS_IOS
 /**
- * BEGIN CANONICAL DOCSTRING
- * Retrieves a `ARTLocalDevice` object that represents the current state of the device as a target for push notifications.
+ * BEGIN CANONICAL EDITED DOCSTRING
+ * Retrieves an `ARTLocalDevice` object that represents the current state of the device as a target for push notifications.
  *
- * @return A `ARTLocalDevice` object.
- * END CANONICAL DOCSTRING
+ * @return An `ARTLocalDevice` object.
+ * END CANONICAL EDITED DOCSTRING
  */
 @property (readonly) ARTLocalDevice *device;
 #endif
@@ -104,28 +112,28 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL EDITED DOCSTRING
  * A client that offers a simple stateless API to interact directly with Ably's REST API.
  * END CANONICAL DOCSTRING
  */
 @interface ARTRest : NSObject <ARTRestProtocol>
 
 /**
- * BEGIN CANONICAL DOCSTRING
- * A `ARTChannels` object.
- * END CANONICAL DOCSTRING
+ * BEGIN CANONICAL EDITED DOCSTRING
+ * An `ARTChannels` object.
+ * END CANONICAL EDITED DOCSTRING
  */
 @property (readonly) ARTRestChannels *channels;
 /**
- * BEGIN CANONICAL DOCSTRING
- * A `ARTPush` object.
- * END CANONICAL DOCSTRING
+ * BEGIN CANONICAL EDITED DOCSTRING
+ * An `ARTPush` object.
+ * END CANONICAL EDITED DOCSTRING
  */
 @property (readonly) ARTPush *push;
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL EDITED DOCSTRING
  * An `ARTAuth` object.
- * END CANONICAL DOCSTRING
+ * END CANONICAL EDITED DOCSTRING
  */
 @property (readonly) ARTAuth *auth;
 
