@@ -15,6 +15,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - ARTAuth
 
+/**
+ The protocol upon which the `ARTAuth` is implemented.
+ */
 @protocol ARTAuthProtocol
 
 /**
