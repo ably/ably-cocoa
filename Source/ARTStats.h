@@ -5,33 +5,33 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * Describes the interval unit over which statistics are gathered.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
     /**
-     * BEGIN CANONICAL DOCSTRING
+     * BEGIN CANONICAL PROCESSED DOCSTRING
      * Interval unit over which statistics are gathered as minutes.
-     * END CANONICAL DOCSTRING
+     * END CANONICAL PROCESSED DOCSTRING
      */
     ARTStatsGranularityMinute,
     /**
-     * BEGIN CANONICAL DOCSTRING
+     * BEGIN CANONICAL PROCESSED DOCSTRING
      * Interval unit over which statistics are gathered as hours.
-     * END CANONICAL DOCSTRING
+     * END CANONICAL PROCESSED DOCSTRING
      */
     ARTStatsGranularityHour,
     /**
-     * BEGIN CANONICAL DOCSTRING
+     * BEGIN CANONICAL PROCESSED DOCSTRING
      * Interval unit over which statistics are gathered as days.
-     * END CANONICAL DOCSTRING
+     * END CANONICAL PROCESSED DOCSTRING
      */
     ARTStatsGranularityDay,
     /**
-     * BEGIN CANONICAL DOCSTRING
+     * BEGIN CANONICAL PROCESSED DOCSTRING
      * Interval unit over which statistics are gathered as months.
-     * END CANONICAL DOCSTRING
+     * END CANONICAL PROCESSED DOCSTRING
      */
     ARTStatsGranularityMonth
 };
@@ -48,23 +48,23 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 @end
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * Contains the aggregate counts for messages and data transferred.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @interface ARTStatsMessageCount : NSObject
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * The count of all messages.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, assign, nonatomic) NSUInteger count;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * The total number of bytes transferred for all messages.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, assign, nonatomic) NSUInteger data;
 
@@ -77,30 +77,30 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 @end
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * Contains a breakdown of summary stats data for different (channel vs presence) message types.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @interface ARTStatsMessageTypes : NSObject
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * A `ARTStatsMessageCount` object containing the count and byte value of messages and presence messages.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageCount *all;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * A `ARTStatsMessageCount` object containing the count and byte value of messages.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageCount *messages;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * A `ARTStatsMessageCount` object containing the count and byte value of presence messages.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageCount *presence;
 
@@ -114,37 +114,37 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 @end
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * Contains a breakdown of summary stats data for traffic over various transport types.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @interface ARTStatsMessageTraffic : NSObject
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * A `ARTStatsMessageTypes` object containing a breakdown of usage by message type for all messages (includes `realtime`, `rest` and `webhook` messages).
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *all;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * A `ARTStatsMessageTypes` object containing a breakdown of usage by message type for messages transferred over a realtime transport such as web socket.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *realtime;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * A `ARTStatsMessageTypes` object containing a breakdown of usage by message type for messages transferred over a rest transport such as `ARTRest`.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *rest;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * A `ARTStatsMessageTypes` object containing a breakdown of usage by message type for messages delivered using webhooks.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *webhook;
 
@@ -159,44 +159,44 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 @end
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * Contains the aggregate data for usage of a resource in a specific scope.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @interface ARTStatsResourceCount : NSObject
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * The total number of resources opened of this type.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, assign, nonatomic) NSUInteger opened;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * The peak number of resources of this type used for this period.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, assign, nonatomic) NSUInteger peak;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * The average number of resources of this type used for this period.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, assign, nonatomic) NSUInteger mean;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * The minimum total resources of this type used for this period.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, assign, nonatomic) NSUInteger min;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * The number of resource requests refused within this period.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, assign, nonatomic) NSUInteger refused;
 
@@ -212,30 +212,30 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 @end
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * Contains a breakdown of summary stats data for different (TLS vs non-TLS) connection types.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @interface ARTStatsConnectionTypes : NSObject
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * A `ARTStatsResourceCount` object containing a breakdown of usage by scope over TLS connections (both TLS and non-TLS).
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsResourceCount *all;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * A `ARTStatsResourceCount` object containing a breakdown of usage by scope over non-TLS connections.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsResourceCount *plain;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * A `ARTStatsResourceCount` object containing a breakdown of usage by scope over TLS connections.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsResourceCount *tls;
 
@@ -249,30 +249,30 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 @end
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * Contains the aggregate counts for requests made.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @interface ARTStatsRequestCount : NSObject
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * The number of requests that succeeded.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, assign, nonatomic) NSUInteger succeeded;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * The number of requests that failed.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, assign, nonatomic) NSUInteger failed;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * The number of requests that were refused, typically as a result of permissions or a limit being exceeded.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, assign, nonatomic) NSUInteger refused;
 
@@ -286,51 +286,51 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 @end
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * Details the stats on push notifications.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @interface ARTStatsPushCount : NSObject
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * Total number of delivered push notifications.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, assign, nonatomic) NSUInteger succeeded;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * Total number of attempted push notifications which were rejected due to invalid request data.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, assign, nonatomic) NSUInteger invalid;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * Total number of attempted push notifications including notifications which were rejected as invalid or failed to publish.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, assign, nonatomic) NSUInteger attempted;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * Total number of refused push notifications.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, assign, nonatomic) NSUInteger failed;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * Total number of push messages.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, assign, nonatomic) NSUInteger messages;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * Total number of direct publishes.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, assign, nonatomic) NSUInteger direct;
 
@@ -347,9 +347,9 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 @end
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * Contains application statistics for a specified time interval and time period.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  *
  * BEGIN LEGACY DOCSTRING # useful?
  * ARTStats object represents an application’s statistics for the specified interval and time period. Ably aggregates statistics globally for all accounts and applications, and makes these available both through our statistics API as well as your application dashboard.
@@ -362,74 +362,74 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 + (NSString *)toIntervalId:(NSDate *)time granularity:(ARTStatsGranularity)granularity;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * A `ARTStatsMessageTypes` object containing the aggregate count of all message stats.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *all;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * A `ARTStatsMessageTraffic` object containing the aggregate count of inbound message stats.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageTraffic *inbound;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * A `ARTStatsMessageTraffic` object containing the aggregate count of outbound message stats.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageTraffic *outbound;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * A `ARTStatsMessageTypes` object containing the aggregate count of persisted message stats.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *persisted;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * A `ARTStatsConnectionTypes` object containing a breakdown of connection related stats, such as min, mean and peak connections.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsConnectionTypes *connections;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * A `ARTStatsResourceCount` object containing a breakdown of channels.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsResourceCount *channels;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * A `ARTStatsRequestCount` object containing a breakdown of API Requests.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsRequestCount *apiRequests;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * A `ARTStatsRequestCount` object containing a breakdown of Ably Token requests.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsRequestCount *tokenRequests;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * A `ARTStatsPushCount` object containing a breakdown of stats on push notifications.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsPushCount *pushes;
 @property (readonly, strong, nonatomic) NSString *inProgress;
 @property (readonly, assign, nonatomic) NSUInteger count;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * The UTC time at which the time period covered begins. If `unit` is set to `minute` this will be in the format `YYYY-mm-dd:HH:MM`, if `hour` it will be `YYYY-mm-dd:HH`, if `day` it will be `YYYY-mm-dd:00` and if `month` it will be `YYYY-mm-01:00`.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, strong, nonatomic) NSString *intervalId;
 
@@ -448,9 +448,9 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
                  intervalId:(NSString *)intervalId;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * Represents the `intervalId` as a time object.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 - (NSDate *)intervalTime;
 
