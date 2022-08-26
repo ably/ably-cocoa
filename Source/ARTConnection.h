@@ -7,6 +7,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/**
+ The protocol upon which the `ARTConnection` is implemented.
+ */
 @protocol ARTConnectionProtocol <NSObject>
 
 /**
