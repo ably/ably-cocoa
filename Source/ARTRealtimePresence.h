@@ -13,6 +13,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+/**
+ The protocol upon which the `ARTRealtimePresence` is implemented.
+ */
 @protocol ARTRealtimePresenceProtocol
 
 /**
