@@ -43,7 +43,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * The current `ARTConnectionState` of the connection.
+ * The current `ARTRealtimeConnectionState` of the connection.
  * END CANONICAL DOCSTRING
  */
 @property (readonly) ARTRealtimeConnectionState state;
@@ -57,26 +57,26 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Explicitly calling `connect()` is unnecessary unless the `autoConnect` attribute of the `ARTClientOptions` object is `false`. Unless already connected or connecting, this method causes the connection to open, entering the `ARTConnectionState.CONNECTING` state.
+ * Explicitly calling `connect` is unnecessary unless the `-[ARTClientOptions autoConnect]` is `false`. Unless already connected or connecting, this method causes the connection to open, entering the `ARTRealtimeConnecting` state.
  * END CANONICAL DOCSTRING
  */
 - (void)connect;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Causes the connection to close, entering the `ARTConnectionState.CLOSING` state. Once closed, the library does not attempt to re-establish the connection without an explicit call to `-[ARTConnection connect]`.
+ * Causes the connection to close, entering the `ARTRealtimeClosing` state. Once closed, the library does not attempt to re-establish the connection without an explicit call to `-[ARTConnectionProtocol connect]`.
  * END CANONICAL DOCSTRING
  */
 - (void)close;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * When connected, sends a heartbeat ping to the Ably server and executes the callback with any error and the response time in milliseconds when a heartbeat ping request is echoed from the server. This can be useful for measuring true round-trip latency to the connected Ably server.
+ * When connected, sends a heartbeat ping to the Ably server and executes the callback with an error if any. This can be useful for measuring true round-trip latency to the connected Ably server.
  *
- * @return The response time in milliseconds.
+ * @param callback A success or failure callback function.
  * END CANONICAL DOCSTRING
  */
-- (void)ping:(ARTCallback)cb;
+- (void)ping:(ARTCallback)callback;
 
 /**
  * BEGIN CANONICAL DOCSTRING
