@@ -129,14 +129,14 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A `ARTStatsMessageTypes` object containing a breakdown of usage by message type for messages transferred over a realtime transport such as WebSocket.
+ * A `ARTStatsMessageTypes` object containing a breakdown of usage by message type for messages transferred over a realtime transport such as web socket.
  * END CANONICAL DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *realtime;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A `ARTStatsMessageTypes` object containing a breakdown of usage by message type for messages transferred over a rest transport such as WebSocket.
+ * A `ARTStatsMessageTypes` object containing a breakdown of usage by message type for messages transferred over a rest transport such as `ARTRest`.
  * END CANONICAL DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *rest;
