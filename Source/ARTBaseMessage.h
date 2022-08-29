@@ -3,6 +3,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/**
+ A base interface for an `ARTMessage` and an `ARTPresenceMessage` objects.
+ */
 @interface ARTBaseMessage : NSObject<NSCopying>
 
 /**
