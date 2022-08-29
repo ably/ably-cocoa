@@ -21,14 +21,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * The timestamp at which this token expires as milliseconds since the Unix epoch.
+ * The timestamp at which this token expires as a `NSDate` object.
  * END CANONICAL DOCSTRING
  */
 @property (nonatomic, readonly, strong, nullable) NSDate *expires;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * The timestamp at which this token was issued as milliseconds since the Unix epoch.
+ * The timestamp at which this token was issued as a `NSDate` object.
  * END CANONICAL DOCSTRING
  */
 @property (nonatomic, readonly, strong, nullable) NSDate *issued;
@@ -53,14 +53,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A static factory method to create a `TokenDetails` object from a deserialized `TokenDetails`-like object or a JSON stringified `TokenDetails` object. This method is provided to minimize bugs as a result of differing types by platform for fields such as `timestamp` or `ttl`. For example, in Ruby `ttl` in the `TokenDetails` object is exposed in seconds as that is idiomatic for the language, yet when serialized to JSON using `to_json` it is automatically converted to the Ably standard which is milliseconds. By using the `fromJson()` method when constructing a `TokenDetails` object, Ably ensures that all fields are consistently serialized and deserialized across platforms.
+ * A static factory method to create an `ARTTokenDetails` object from a deserialized `TokenDetails`-like object or a JSON stringified `TokenDetails` object. This method is provided to minimize bugs as a result of differing types by platform for fields such as `timestamp` or `ttl`. For example, in Ruby `ttl` in the `TokenDetails` object is exposed in seconds as that is idiomatic for the language, yet when serialized to JSON using `to_json` it is automatically converted to the Ably standard which is milliseconds. By using the `fromJson()` method when constructing an `ARTTokenDetails` object, Ably ensures that all fields are consistently serialized and deserialized across platforms.
  *
  * @param json A deserialized `TokenDetails`-like object or a JSON stringified `TokenDetails` object.
+ * @param errorPtr A reference to the `NSError` object where an error information will be saved in case of failure.
  *
  * @return An Ably authentication token.
  * END CANONICAL DOCSTRING
  */
-+ (ARTTokenDetails *_Nullable)fromJson:(id<ARTJsonCompatible>)json error:(NSError *_Nullable *_Nullable)error;
++ (ARTTokenDetails *_Nullable)fromJson:(id<ARTJsonCompatible>)json error:(NSError *_Nullable *_Nullable)errorPtr;
 
 @end
 
