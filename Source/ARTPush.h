@@ -67,9 +67,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Activates the device for push notifications with FCM or APNS, obtaining a unique identifier from them. Subsequently registers the device with Ably and stores the `deviceIdentityToken` in local storage.
- *
- * @param ErrorInfo Describes why the activation was unsuccessful as an `ARTErrorInfo` object.
+ * Activates the device for push notifications with APNS, obtaining a unique identifier from it. Subsequently registers the device with Ably and stores the `-[ARTLocalDevice identityTokenDetails]` in local storage.
+ * You should implement -[ARTPushRegistererDelegate didActivateAblyPush:] to handle success or failure of this operation.
  * END CANONICAL DOCSTRING
  *
  * BEGIN LEGACY DOCSTRING # useful?
@@ -80,9 +79,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Deactivates the device from receiving push notifications with Ably and FCM or APNS.
- *
- * @param ErrorInfo Describes why the deactivation was unsuccessful as an `ARTErrorInfo` object.
+ * Deactivates the device from receiving push notifications with Ably.
+ * You should implement -[ARTPushRegistererDelegate didDeactivateAblyPush:] to handle success or failure of this operation.
  * END CANONICAL DOCSTRING
  *
  * BEGIN LEGACY DOCSTRING # useful?
@@ -104,7 +102,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A `ARTPushAdmin` object.
+ * An `ARTPushAdmin` object.
  * END CANONICAL DOCSTRING
  */
 @property (readonly) ARTPushAdmin *admin;
