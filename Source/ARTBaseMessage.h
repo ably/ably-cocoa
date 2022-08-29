@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Timestamp of when the message was received by Ably, as milliseconds since the Unix epoch.
+ * Timestamp of when the message was received by Ably, as a `NSDate` object.
  * END CANONICAL DOCSTRING
  */
 @property (strong, nonatomic, nullable) NSDate *timestamp;
