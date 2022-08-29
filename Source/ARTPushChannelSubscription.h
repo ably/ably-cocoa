@@ -34,24 +34,24 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A static factory method to create a `PushChannelSubscription` object for a channel and single device.
+ * A static factory method to create a `ARTPushChannelSubscription` object for a channel and single device.
  *
  * @param deviceId The unique ID of the device.
  * @param channelName The channel name.
  *
- * @return A `PushChannelSubscription` object.
+ * @return An `ARTPushChannelSubscription` object.
  * END CANONICAL DOCSTRING
  */
 - (instancetype)initWithDeviceId:(NSString *)deviceId channel:(NSString *)channelName;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A static factory method to create a `PushChannelSubscription` object for a channel and group of devices sharing the same `clientId`.
+ * A static factory method to create a `ARTPushChannelSubscription` object for a channel and group of devices sharing the same `clientId`.
  *
  * @param clientId The ID of the client.
  * @param channelName The channel name.
  *
- * @return A `PushChannelSubscription` object.
+ * @return An `ARTPushChannelSubscription` object.
  * END CANONICAL DOCSTRING
  */
 - (instancetype)initWithClientId:(NSString *)clientId channel:(NSString *)channelName;
