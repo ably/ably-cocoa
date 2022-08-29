@@ -14,6 +14,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/**
+ The protocol upon which the `ARTChannel` is implemented.
+ */
 @protocol ARTChannelProtocol
 
 /**
