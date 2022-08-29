@@ -12,11 +12,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Registers or updates a `ARTDeviceDetails` object with Ably. Returns the new, or updated `ARTDeviceDetails` object.
+ * Registers or updates a `ARTDeviceDetails` object with Ably.
  *
  * @param deviceDetails The `ARTDeviceDetails` object to create or update.
- *
- * @return A `ARTDeviceDetails` object.
+ * @param callback A success or failure callback function.
  * END CANONICAL DOCSTRING
  */
 - (void)save:(ARTDeviceDetails *)deviceDetails callback:(ARTCallback)callback;
@@ -26,8 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
  * Retrieves the `ARTDeviceDetails` of a device registered to receive push notifications using its `deviceId`.
  *
  * @param deviceId The unique ID of the device.
- *
- * @return A `ARTDeviceDetails` object.
+ * @param callback A callback for receiving the `ARTDeviceDetails` object.
  * END CANONICAL DOCSTRING
  */
 - (void)get:(ARTDeviceId *)deviceId callback:(void (^)(ARTDeviceDetails *_Nullable,  ARTErrorInfo *_Nullable))callback;
@@ -37,8 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
  * Retrieves all devices matching the filter `params` provided. Returns a `ARTPaginatedResult` object, containing an array of `ARTDeviceDetails` objects.
  *
  * @param params An object containing key-value pairs to filter devices by. Can contain `clientId`, `deviceId` and a `limit` on the number of devices returned, up to 1,000.
- *
- * @return A `ARTPaginatedResult` object containing an array of `ARTDeviceDetails` objects.
+ * @param callback A callback for retriving an `ARTPaginatedResult` object with an array of `ARTDeviceDetails` objects.
  * END CANONICAL DOCSTRING
  */
 - (void)list:(NSStringDictionary *)params callback:(ARTPaginatedDeviceDetailsCallback)callback;
@@ -48,6 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
  * Removes a device registered to receive push notifications from Ably using its `deviceId`.
  *
  * @param deviceId The unique ID of the device.
+ * @param callback A success or failure callback function.
  * END CANONICAL DOCSTRING
  */
 - (void)remove:(NSString *)deviceId callback:(ARTCallback)callback;
@@ -57,6 +55,7 @@ NS_ASSUME_NONNULL_BEGIN
  * Removes all devices registered to receive push notifications from Ably matching the filter `params` provided.
  *
  * @param params An object containing key-value pairs to filter devices by. Can contain `clientId` and `deviceId`.
+ * @param callback A success or failure callback function.
  * END CANONICAL DOCSTRING
  */
 - (void)removeWhere:(NSStringDictionary *)params callback:(ARTCallback)callback;
