@@ -3,9 +3,9 @@
 #import <Ably/ARTChannelOptions.h>
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * Describes the possible flags used to configure client capabilities, using `ARTChannelOptions`.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  *
  * BEGIN LEGACY DOCSTRING # useful?
  * ARTChannelMode bitmask matching the ARTProtocolMessageFlag.
@@ -13,27 +13,27 @@
  */
 typedef NS_OPTIONS(NSUInteger, ARTChannelMode) {
     /**
-     * BEGIN CANONICAL DOCSTRING
+     * BEGIN CANONICAL PROCESSED DOCSTRING
      * The client can enter the presence set.
-     * END CANONICAL DOCSTRING
+     * END CANONICAL PROCESSED DOCSTRING
      */
     ARTChannelModePresence = 1 << 16,
     /**
-     * BEGIN CANONICAL DOCSTRING
+     * BEGIN CANONICAL PROCESSED DOCSTRING
      * The client can publish messages.
-     * END CANONICAL DOCSTRING
+     * END CANONICAL PROCESSED DOCSTRING
      */
     ARTChannelModePublish = 1 << 17,
     /**
-     * BEGIN CANONICAL DOCSTRING
+     * BEGIN CANONICAL PROCESSED DOCSTRING
      * The client can subscribe to messages.
-     * END CANONICAL DOCSTRING
+     * END CANONICAL PROCESSED DOCSTRING
      */
     ARTChannelModeSubscribe = 1 << 18,
     /**
-     * BEGIN CANONICAL DOCSTRING
+     * BEGIN CANONICAL PROCESSED DOCSTRING
      * The client can receive presence messages.
-     * END CANONICAL DOCSTRING
+     * END CANONICAL PROCESSED DOCSTRING
      */
     ARTChannelModePresenceSubscribe = 1 << 19
 };
