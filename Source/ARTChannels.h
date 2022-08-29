@@ -38,7 +38,7 @@
  * Creates a new `ARTRestChannel` or `ARTRealtimeChannel` object, with the specified `ARTChannelOptions`, or returns the existing channel object.
  *
  * @param name The channel name.
- * @param options A `ARTChannelOptions` object.
+ * @param options An `ARTChannelOptions` object.
  * 
  * @return A `ARTRestChannel` or `ARTRealtimeChannel` object.
  * END CANONICAL DOCSTRING
@@ -47,7 +47,8 @@
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Releases a `ARTRestChannel` or `ARTRealtimeChannel` object, deleting it, and enabling it to be garbage collected. It also removes any listeners associated with the channel. To release a channel, the `ARTChannelState` must be `INITIALIZED`, `DETACHED`, or `FAILED`.
+ * Releases an `ARTRestChannel` or an `ARTRealtimeChannel` object by deleting it. It also removes any listeners associated with the channel.
+ * To release an `ARTRealtimeChannel` channel, the `-[ARTRealtimeChannel state]` must be `ARTRealtimeChannelInitialized`, `ARTRealtimeChannelDetached`, or `ARTRealtimeChannelFailed`.
  *
  * @param name The channel name.
  * END CANONICAL DOCSTRING
