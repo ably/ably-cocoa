@@ -3,16 +3,16 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * Contains the token string used to authenticate a client with Ably.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @interface ARTAuthDetails : NSObject<NSCopying>
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * The authentication token string.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (nonatomic, copy) NSString *accessToken;
 
