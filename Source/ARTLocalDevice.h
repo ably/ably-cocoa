@@ -7,14 +7,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Contains the device identity token and secret of a device. `LocalDevice` extends `ARTDeviceDetails`.
+ * Contains the device identity token and secret of a device. `ARTLocalDevice` extends `ARTDeviceDetails`.
  * END CANONICAL DOCSTRING
  */
 @interface ARTLocalDevice : ARTDeviceDetails
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A unique device identity token used to communicate with APNS or FCM.
+ * A unique device identity token used to communicate with APNS.
  * END CANONICAL DOCSTRING
  */
 @property (nullable, nonatomic, readonly) ARTDeviceIdentityTokenDetails *identityTokenDetails;
