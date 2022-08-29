@@ -15,6 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @param recipient A JSON object containing the recipient details using `clientId`, `deviceId` or the underlying notifications service.
  * @param data A JSON object containing the push notification payload.
+ * @param callback A success or failure callback function.
  * END CANONICAL DOCSTRING
  */
 - (void)publish:(ARTPushRecipient *)recipient data:(ARTJsonObject *)data callback:(nullable ARTCallback)callback;
@@ -30,14 +31,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A `ARTPushDeviceRegistrations` object.
+ * An `ARTPushDeviceRegistrations` object.
  * END CANONICAL DOCSTRING
  */
 @property (nonatomic, readonly) ARTPushDeviceRegistrations *deviceRegistrations;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A `ARTPushChannelSubscriptions` object.
+ * An `ARTPushChannelSubscriptions` object.
  * END CANONICAL DOCSTRING
  */
 @property (nonatomic, readonly) ARTPushChannelSubscriptions *channelSubscriptions;
