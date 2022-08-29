@@ -4,7 +4,7 @@
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Contains any constraints a client should adhere to and provides additional metadata about a `ARTConnection`, such as if a request to `-[ARTRealtimeClient publish]` a message that exceeds the maximum message size should be rejected immediately without communicating with Ably.
+ * Contains any constraints a client should adhere to and provides additional metadata about a `ARTConnection`, such as if a request to `-[ARTChannel publish:]` a message that exceeds the maximum message size should be rejected immediately without communicating with Ably.
  * END CANONICAL DOCSTRING
  */
 @interface ARTConnectionDetails : NSObject
@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Contains the client ID assigned to the token. If `clientId` is `null` or omitted, then the client is prohibited from assuming a `clientId` in any operations, however if `clientId` is a wildcard string `*`, then the client is permitted to assume any `clientId`. Any other string value for `clientId` implies that the `clientId` is both enforced and assumed for all operations from this client.
+ * Contains the client ID assigned to the token. If `clientId` is `nil` or omitted, then the client is prohibited from assuming a `clientId` in any operations, however if `clientId` is a wildcard string `*`, then the client is permitted to assume any `clientId`. Any other string value for `clientId` implies that the `clientId` is both enforced and assumed for all operations from this client.
  * END CANONICAL DOCSTRING
  */
 @property (readonly, getter=getClientId, nullable) NSString *clientId;
@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * The maximum message size is an attribute of an Ably account and enforced by Ably servers. `maxMessageSize` indicates the maximum message size allowed by the Ably account this connection is using. Overrides the default value of `ARTClientOptions.maxMessageSize`.
+ * The maximum message size is an attribute of an Ably account and enforced by Ably servers. `maxMessageSize` indicates the maximum message size allowed by the Ably account this connection is using. Overrides the default value of `-[ARTClientOptions maxMessageSize]`.
  * END CANONICAL DOCSTRING
  *
  * BEGIN LEGACY DOCSTRING # useful?
@@ -61,6 +61,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * BEGIN CANONICAL DOCSTRING
  * The duration that Ably will persist the connection state for when a Realtime client is abruptly disconnected.
+ * @seealso -[ARTDefault connectionStateTtl]
  * END CANONICAL DOCSTRING
  */
 @property (readonly, nonatomic) NSTimeInterval connectionStateTtl;
@@ -74,7 +75,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * The maximum length of time in milliseconds that the server will allow no activity to occur in the server to client direction. After such a period of inactivity, the server will send a `HEARTBEAT` or transport-level ping to the client. If the value is 0, the server will allow arbitrarily-long levels of inactivity.
+ * The maximum length of time in milliseconds that the server will allow no activity to occur in the server to client direction. After such a period of inactivity, the server will send a `ARTProtocolMessageHeartbeat` or transport-level ping to the client. If the value is `0`, the server will allow arbitrarily-long levels of inactivity.
  * END CANONICAL DOCSTRING
  */
 @property (readonly, nonatomic) NSTimeInterval maxIdleInterval;
