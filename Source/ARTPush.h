@@ -66,10 +66,10 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error realtime:(ARTRealtime *)realtime;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * Activates the device for push notifications with APNS, obtaining a unique identifier from it. Subsequently registers the device with Ably and stores the `-[ARTLocalDevice identityTokenDetails]` in local storage.
  * You should implement -[ARTPushRegistererDelegate didActivateAblyPush:] to handle success or failure of this operation.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  *
  * BEGIN LEGACY DOCSTRING # useful?
  * Activating a device for push notifications and registering it with Ably. The registration process can be performed entirely from the device or from your own server using the optional `ablyPushCustomRegister:deviceDetails:callback` method.
@@ -78,10 +78,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)activate;
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * Deactivates the device from receiving push notifications with Ably.
  * You should implement -[ARTPushRegistererDelegate didDeactivateAblyPush:] to handle success or failure of this operation.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  *
  * BEGIN LEGACY DOCSTRING # useful?
  * Deactivating a device for push notifications and unregistering it with Ably. The unregistration process can be performed entirely from the device or from your own server using the optional `ablyPushCustomDeregister:deviceId:callback` method.
@@ -94,16 +94,16 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * Enables a device to be registered and deregistered from receiving push notifications.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @interface ARTPush : NSObject <ARTPushProtocol>
 
 /**
- * BEGIN CANONICAL DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * An `ARTPushAdmin` object.
- * END CANONICAL DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly) ARTPushAdmin *admin;
 
