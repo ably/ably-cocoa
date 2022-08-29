@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Construct a `Message` object with an event name and payload.
+ * Construct an `ARTMessage` object with an event name and payload.
  *
  * @param name The event name.
  * @param data The message payload.
@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Construct a `Message` object with an event name, payload, and a unique client ID.
+ * Construct an `ARTMessage` object with an event name, payload, and a unique client ID.
  *
  * @param name The event name.
  * @param data The message payload.
@@ -43,12 +43,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A static factory method to create a `Message` object from a deserialized Message-like object encoded using Ably's wire protocol.
+ * A static factory method to create an `ARTMessage` object from a deserialized Message-like object encoded using Ably's wire protocol.
  *
  * @param jsonObject A `Message`-like deserialized object.
- * @param options A `ARTChannelOptions` object. If you have an encrypted channel, use this to allow the library to decrypt the data.
+ * @param options An `ARTChannelOptions` object. If you have an encrypted channel, use this to allow the library to decrypt the data.
  *
- * @return A `Message` object.
+ * @return An `ARTMessage` object.
  * END CANONICAL DOCSTRING
  */
 + (nullable instancetype)fromEncoded:(NSDictionary *)jsonObject
@@ -57,10 +57,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A static factory method to create an array of `Message` objects from an array of deserialized Message-like object encoded using Ably's wire protocol.
+ * A static factory method to create an array of `ARTMessage` objects from an array of deserialized Message-like object encoded using Ably's wire protocol.
  *
  * @param jsonArray An array of `Message`-like deserialized objects.
- * @param options A `ARTChannelOptions` object. If you have an encrypted channel, use this to allow the library to decrypt the data.
+ * @param options An `ARTChannelOptions` object. If you have an encrypted channel, use this to allow the library to decrypt the data.
  *
  * @return An array of `ARTMessage` objects.
  * END CANONICAL DOCSTRING
