@@ -13,11 +13,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Subscribes a device, or a group of devices sharing the same `clientId` to push notifications on a channel. Returns a `ARTPushChannelSubscription` object.
+ * Subscribes a device, or a group of devices sharing the same `clientId` to push notifications on a channel.
  *
- * @param channelSubscription A `ARTPushChannelSubscription` object.
- *
- * @return A `ARTPushChannelSubscription` object describing the new or updated subscriptions.
+ * @param channelSubscription An `ARTPushChannelSubscription` object.
+ * @param callback A success or failure callback function.
  * END CANONICAL DOCSTRING
  */
 - (void)save:(ARTPushChannelSubscription *)channelSubscription callback:(ARTCallback)callback;
@@ -26,9 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * Retrieves all channels with at least one device subscribed to push notifications. Returns a `ARTPaginatedResult` object, containing an array of channel names.
  *
- * @param params An object containing key-value pairs to filter channels by. Can contain a `limit` on the number of channels returned, up to 1,000.
- *
- * @return A `ARTPaginatedResult` object containing an array of channel names.
+ * @param callback A callback for retriving an `ARTPaginatedResult` object with an array of channel names.
  * END CANONICAL DOCSTRING
  */
 - (void)listChannels:(ARTPaginatedTextCallback)callback;
@@ -39,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @param params An object containing key-value pairs to filter subscriptions by. Can contain `channel`, `clientId`, `deviceId` and a `limit` on the number of devices returned, up to 1,000.
  *
- * @return A `ARTPaginatedResult` object containing an array of `ARTPushChannelSubscription` objects.
+ * @param callback A callback for retriving an `ARTPaginatedResult` object with an array of `ARTPushChannelSubscription` objects.
  * END CANONICAL DOCSTRING
  */
 - (void)list:(NSStringDictionary *)params callback:(ARTPaginatedPushChannelCallback)callback;
@@ -48,7 +45,8 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL DOCSTRING
  * Unsubscribes a device, or a group of devices sharing the same `clientId` from receiving push notifications on a channel.
  *
- * @param subscription A `ARTPushChannelSubscription` object.
+ * @param subscription An `ARTPushChannelSubscription` object.
+ * @param callback A success or failure callback function.
  * END CANONICAL DOCSTRING
  */
 - (void)remove:(ARTPushChannelSubscription *)subscription callback:(ARTCallback)callback;
@@ -58,6 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
  * Unsubscribes all devices from receiving push notifications on a channel that match the filter `params` provided.
  *
  * @param params An object containing key-value pairs to filter subscriptions by. Can contain `channel`, and optionally either `clientId` or `deviceId`.
+ * @param callback A success or failure callback function.
  * END CANONICAL DOCSTRING
  */
 - (void)removeWhere:(NSStringDictionary *)params callback:(ARTCallback)callback;
