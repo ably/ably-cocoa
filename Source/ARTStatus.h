@@ -187,7 +187,7 @@ FOUNDATION_EXPORT NSString *const ARTAblyMessageNoMeansToRenewToken;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A generic Ably error object that contains an Ably-specific status code, and a generic status code. Errors returned from the Ably server are compatible with the `ErrorInfo` structure and should result in errors that inherit from `ErrorInfo`.
+ * A generic Ably error object that contains an Ably-specific status code, and a generic status code. Errors returned from the Ably server are compatible with the `ARTErrorInfo` structure and should result in errors that inherit from `ARTErrorInfo`.
  * END CANONICAL DOCSTRING
  */
 @interface ARTErrorInfo : NSError
@@ -220,7 +220,7 @@ FOUNDATION_EXPORT NSString *const ARTAblyMessageNoMeansToRenewToken;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * If a request fails, the request ID must be included in the `ErrorInfo` returned to the user.
+ * If a request fails, the request ID must be included in the `ARTErrorInfo` returned to the user.
  * END CANONICAL DOCSTRING
  */
 @property (nullable, readonly) NSString *requestId;
