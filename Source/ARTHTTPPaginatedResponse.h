@@ -6,7 +6,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * A superset of `ARTPaginatedResult` which represents a page of results plus metadata indicating the relative queries available to it. `HttpPaginatedResponse` additionally carries information about the response to an HTTP request.
+ * A superset of `ARTPaginatedResult` which represents a page of results plus metadata indicating the relative queries available to it. `ARTHttpPaginatedResponse` additionally carries information about the response to an HTTP request.
  * END CANONICAL DOCSTRING
  */
 @interface ARTHTTPPaginatedResponse : ARTPaginatedResult<NSDictionary *>
@@ -27,14 +27,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * The error code if the `X-Ably-Errorcode` HTTP header is sent in the response.
+ * The error code if the `x-ably-errorcode` HTTP header is sent in the response.
  * END CANONICAL DOCSTRING
  */
 @property (nonatomic, readonly) NSInteger errorCode;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * The error message if the `X-Ably-Errormessage` HTTP header is sent in the response.
+ * The error message if the `x-ably-errormessage` HTTP header is sent in the response.
  * END CANONICAL DOCSTRING
  */
 @property (nullable, nonatomic, readonly) NSString *errorMessage;
