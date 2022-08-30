@@ -38,9 +38,6 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @param query An `ARTRealtimePresenceQuery` object.
  * @param callback A callback for retriving an `ARTPaginatedResult` object with an array of `ARTPresenceMessage` objects.
- * @param errorPtr A reference to the `NSError` object where an error information will be saved in case of failure.
- *
- * @return In case of failure returns false and the error information can be retrived via the `error` parameter.
  * END CANONICAL PROCESSED DOCSTRING
  */
 - (void)get:(ARTRealtimePresenceQuery *)query callback:(ARTPresenceMessagesCallback)callback;
@@ -186,7 +183,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return An event listener object.
  * END CANONICAL PROCESSED DOCSTRING
  */
-- (ARTEventListener *_Nullable)subscribeWithAttachCallback:(nullable ARTCallback)onAttach callback:(ARTPresenceMessageCallback)cb;
+- (ARTEventListener *_Nullable)subscribeWithAttachCallback:(nullable ARTCallback)onAttach callback:(ARTPresenceMessageCallback)callback;
 
 /**
  * BEGIN CANONICAL PROCESSED DOCSTRING
@@ -224,7 +221,7 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL PROCESSED DOCSTRING
  * Deregisters a specific listener that is registered to receive `ARTPresenceMessage` on the channel.
  *
- * @param An event listener to unsubscribe.
+ * @param listener An event listener to unsubscribe.
  * END CANONICAL PROCESSED DOCSTRING
  */
 - (void)unsubscribe:(ARTEventListener *)listener;
@@ -234,7 +231,7 @@ NS_ASSUME_NONNULL_BEGIN
  * Deregisters a specific listener that is registered to receive `ARTPresenceMessage` on the channel for a given `ARTPresenceAction`.
  *
  * @param action A specific `ARTPresenceAction` to deregister the listener for.
- * @param An event listener to unsubscribe.
+ * @param listener An event listener to unsubscribe.
  * END CANONICAL PROCESSED DOCSTRING
  */
 - (void)unsubscribe:(ARTPresenceAction)action listener:(ARTEventListener *)listener;
