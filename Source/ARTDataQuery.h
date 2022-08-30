@@ -12,30 +12,30 @@ typedef NS_ENUM(NSUInteger, ARTQueryDirection) {
 @interface ARTDataQuery : NSObject
 
 /**
- * BEGIN CANONICAL EDITED DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * The time from which the data items are retrieved.
- * END CANONICAL EDITED DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (nonatomic, strong, nullable) NSDate *start;
 
 /**
- * BEGIN CANONICAL EDITED DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * The time until the data items are retrieved.
- * END CANONICAL EDITED DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (nonatomic, strong, nullable) NSDate *end;
 
 /**
- * BEGIN CANONICAL EDITED DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * An upper limit on the number of the data items returned. The default is 100, and the maximum is 1000.
- * END CANONICAL EDITED DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (nonatomic, assign) uint16_t limit;
 
 /**
- * BEGIN CANONICAL EDITED DOCSTRING
+ * BEGIN CANONICAL PROCESSED DOCSTRING
  * The order for which the data is returned in. Valid values are `ARTQueryDirectionBackwards` which orders items from most recent to oldest, or `ARTQueryDirectionForwards` which orders items from oldest to most recent. The default is `ARTQueryDirectionBackwards`.
- * END CANONICAL EDITED DOCSTRING
+ * END CANONICAL PROCESSED DOCSTRING
  */
 @property (nonatomic, assign) ARTQueryDirection direction;
 
