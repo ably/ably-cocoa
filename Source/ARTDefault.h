@@ -2,6 +2,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/**
+ Represents default library settings.
+ */
 @interface ARTDefault : NSObject
 
 + (NSString *)apiVersion;
