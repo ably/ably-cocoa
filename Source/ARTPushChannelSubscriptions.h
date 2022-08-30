@@ -7,6 +7,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/**
+ The protocol upon which the `ARTPushChannelSubscriptions` is implemented.
+ */
 @protocol ARTPushChannelSubscriptionsProtocol
 
 - (instancetype)init NS_UNAVAILABLE;

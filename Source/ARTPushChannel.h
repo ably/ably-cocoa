@@ -8,6 +8,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/**
+ The protocol upon which the `ARTPushChannel` is implemented.
+ */
 @protocol ARTPushChannelProtocol
 
 - (instancetype)init NS_UNAVAILABLE;

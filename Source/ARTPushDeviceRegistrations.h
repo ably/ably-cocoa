@@ -6,6 +6,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/**
+ The protocol upon which the `ARTPushDeviceRegistrations` is implemented.
+ */
 @protocol ARTPushDeviceRegistrationsProtocol
 
 - (instancetype)init NS_UNAVAILABLE;

@@ -51,6 +51,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark ARTPush type
 
+/**
+ The protocol upon which the `ARTPush` is implemented.
+ */
 @protocol ARTPushProtocol
 
 - (instancetype)init NS_UNAVAILABLE;

@@ -5,6 +5,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/**
+ The protocol upon which the `ARTPushAdmin` is implemented.
+ */
 @protocol ARTPushAdminProtocol
 
 - (instancetype)init NS_UNAVAILABLE;

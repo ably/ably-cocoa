@@ -36,6 +36,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+/**
+ The protocol upon which the `ARTRestPresence` is implemented.
+ */
 @protocol ARTRestPresenceProtocol
 
 - (void)get:(ARTPaginatedPresenceCallback)callback;
