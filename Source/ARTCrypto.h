@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Sets the properties to configure encryption for a `ARTRestChannel` or `ARTRealtimeChannel` object.
+ * Sets the properties to configure encryption for an `ARTRestChannel` or `ARTRealtimeChannel` object.
  * END CANONICAL DOCSTRING
  *
  * BEGIN LEGACY DOCSTRING # useful?
@@ -81,26 +81,35 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTCrypto : NSObject
 /**
  * BEGIN CANONICAL DOCSTRING
- * Returns a `ARTCipherParams` object, using the default values for any fields not supplied by the `ARTCipherParamOptions` object.
+ * Returns an `ARTCipherParams` object, using the default values for any fields not supplied by the `ARTCipherParamOptions` object.
  *
- * @param values A `ARTCipherParamOptions` object.
+ * @param values An `ARTCipherParams`-like dictionary object.
  *
- * @return A `ARTCipherParams` object, using the default values for any fields not supplied.
+ * @return An `ARTCipherParams` object, using the default values for any fields not supplied.
  * END CANONICAL DOCSTRING
  */
 + (ARTCipherParams *)getDefaultParams:(NSDictionary *)values;
-+ (NSData *)generateRandomKey;
 
 /**
  * BEGIN CANONICAL DOCSTRING
- * Generates a random key to be used in the encryption of the channel. If the language cryptographic randomness primitives are blocking or async, a callback is used. The callback returns a generated binary key.
+ * Generates a random key to be used in the encryption of the channel.
  *
- * @param length The length of the key, in bits, to be generated. If not specified, this is equal to the default `keyLength` of the default algorithm: for AES this is 256 bits.
+ * @param length The length of the key, in bits, to be generated.
  *
- * @return The key as a binary, for example, a byte array.
+ * @return The key as a binary `NSData`.
  * END CANONICAL DOCSTRING
  */
 + (NSData *)generateRandomKey:(NSUInteger)length;
+
+/**
+ * BEGIN CANONICAL DOCSTRING
+ * Generates a random key to be used in the encryption of the channel.
+ * Here the default key length of the default algorithm is used: for `AES` this is 256 bits.
+ *
+ * @return The key as a binary `NSData`.
+ * END CANONICAL DOCSTRING
+ */
++ (NSData *)generateRandomKey;
 
 @end
 
