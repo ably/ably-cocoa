@@ -198,6 +198,10 @@ FOUNDATION_EXPORT NSString *const ARTAblyMessageNoMeansToRenewToken;
  * END CANONICAL DOCSTRING
  */
 @property (readonly) NSString *message;
+
+/**
+ * The reason why the error occured, where available.
+ */
 @property (nullable, readonly) NSString *reason;
 
 /**
