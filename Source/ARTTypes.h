@@ -38,9 +38,6 @@ typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
     ARTAuthMethodToken
 };
 
-
-#pragma mark - ARTRealtimeConnectionState
-
 /**
  * BEGIN CANONICAL PROCESSED DOCSTRING
  * Describes the realtime `ARTConnection` object states.
@@ -99,9 +96,6 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
 
 NSString *_Nonnull ARTRealtimeConnectionStateToStr(ARTRealtimeConnectionState state);
 
-
-#pragma mark - ARTRealtimeConnectionEvent
-
 /**
  * BEGIN CANONICAL PROCESSED DOCSTRING
  * Describes the events emitted by a `ARTConnection` object. An event is either an `ARTRealtimeConnectionEventUpdate` or an `ARTRealtimeConnectionState`.
@@ -125,9 +119,6 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionEvent) {
 };
 
 NSString *_Nonnull ARTRealtimeConnectionEventToStr(ARTRealtimeConnectionEvent event);
-
-
-#pragma mark - ARTRealtimeChannelState
 
 /**
  * BEGIN CANONICAL PROCESSED DOCSTRING
@@ -180,9 +171,6 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeChannelState) {
 };
 
 NSString *_Nonnull ARTRealtimeChannelStateToStr(ARTRealtimeChannelState state);
-
-
-#pragma mark - ARTChannelEvent
 
 /**
  * BEGIN CANONICAL PROCESSED DOCSTRING
@@ -245,8 +233,6 @@ NSString *generateNonce(void);
 - (void)cancel;
 @end
 
-#pragma mark - ARTConnectionStateChange
-
 /**
  * BEGIN CANONICAL PROCESSED DOCSTRING
  * Contains `ARTRealtimeConnectionState` change information emitted by the `ARTConnection` object.
@@ -304,8 +290,6 @@ NSString *generateNonce(void);
 
 @end
 
-#pragma mark - ARTChannelStateChange
-
 /**
  * BEGIN CANONICAL PROCESSED DOCSTRING
  * Contains state change information emitted by an `ARTRealtimeChannel` object.
@@ -360,8 +344,6 @@ NSString *generateNonce(void);
 @property (readonly, nonatomic) BOOL resumed;
 
 @end
-
-#pragma mark - ARTChannelMetrics
 
 /**
  * BEGIN CANONICAL PROCESSED DOCSTRING
@@ -421,8 +403,6 @@ NSString *generateNonce(void);
 
 @end
 
-#pragma mark - ARTChannelOccupancy
-
 /**
  * BEGIN CANONICAL PROCESSED DOCSTRING
  * Contains the metrics of a `ARTRestChannel` or `ARTRealtimeChannel` object.
@@ -440,8 +420,6 @@ NSString *generateNonce(void);
 - (instancetype)initWithMetrics:(ARTChannelMetrics *)metrics;
 
 @end
-
-#pragma mark - ARTChannelStatus
 
 /**
  * BEGIN CANONICAL PROCESSED DOCSTRING
@@ -468,8 +446,6 @@ NSString *generateNonce(void);
 
 @end
 
-#pragma mark - ARTChannelDetails
-
 /**
  * BEGIN CANONICAL PROCESSED DOCSTRING
  * Contains the details of a `ARTRestChannel` or `ARTRealtimeChannel` object such as its ID and `ARTChannelStatus`.
@@ -494,8 +470,6 @@ NSString *generateNonce(void);
 - (instancetype)initWithChannelId:(NSString *)channelId status:(ARTChannelStatus *)status;
 
 @end
-
-#pragma mark - ARTJsonCompatible
 
 /// :nodoc:
 @protocol ARTJsonCompatible <NSObject>
@@ -552,8 +526,6 @@ NSString *generateNonce(void);
 @interface NSURLSessionTask (ARTCancellable) <ARTCancellable>
 @end
 
-#pragma mark - Typedefs
-
 typedef NSDictionary<NSString *, NSString *> NSStringDictionary;
 
 /**
@@ -584,8 +556,6 @@ typedef void (^ARTPaginatedPushChannelCallback)(ARTPaginatedResult<ARTPushChanne
 typedef void (^ARTPaginatedMessagesCallback)(ARTPaginatedResult<ARTMessage *> *_Nullable result, ARTErrorInfo *_Nullable error);
 typedef void (^ARTPaginatedDeviceDetailsCallback)(ARTPaginatedResult<ARTDeviceDetails *> *_Nullable result, ARTErrorInfo *_Nullable error);
 typedef void (^ARTPaginatedTextCallback)(ARTPaginatedResult<NSString *> *_Nullable result, ARTErrorInfo *_Nullable error);
-
-#pragma mark - Functions
 
 /**
  Wraps the given callback in an ARTCancellable, offering the following

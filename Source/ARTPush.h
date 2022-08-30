@@ -9,8 +9,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-#pragma mark ARTPushRegisterer interface
-
 #if TARGET_OS_IOS
 
 /**
@@ -47,9 +45,6 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 #endif
-
-
-#pragma mark ARTPush type
 
 /**
  The protocol upon which the `ARTPush` is implemented.

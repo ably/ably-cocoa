@@ -23,8 +23,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTEventListener : NSObject
 @end
 
-#pragma mark - ARTEventEmitter
-
 /**
  * BEGIN CANONICAL PROCESSED DOCSTRING
  * A generic interface for event registration and delivery used in a number of the types in the Realtime client library. For example, the `ARTConnection` object emits events for connection state using the `ARTEventEmitter` pattern.
