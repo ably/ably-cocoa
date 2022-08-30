@@ -57,7 +57,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL PROCESSED DOCSTRING
- * Explicitly calling `connect` is unnecessary unless the `-[ARTClientOptions autoConnect]` is `false`. Unless already connected or connecting, this method causes the connection to open, entering the `ARTRealtimeConnecting` state.
+ * Explicitly calling `connect` is unnecessary unless the `ARTClientOptions.autoConnect` is `false`. Unless already connected or connecting, this method causes the connection to open, entering the `ARTRealtimeConnecting` state.
  * END CANONICAL PROCESSED DOCSTRING
  */
 - (void)connect;

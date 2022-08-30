@@ -95,7 +95,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL PROCESSED DOCSTRING
- * When `true`, the client connects to Ably as soon as it is instantiated. You can set this to `false` and explicitly connect to Ably using the `-[ARTConnection connect]` method. The default is `true`.
+ * When `true`, the client connects to Ably as soon as it is instantiated. You can set this to `false` and explicitly connect to Ably using the `-[ARTConnectionProtocol connect]` method. The default is `true`.
  * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readwrite, assign, nonatomic) BOOL autoConnect;

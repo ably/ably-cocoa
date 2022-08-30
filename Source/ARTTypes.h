@@ -73,7 +73,7 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
     ARTRealtimeDisconnected,
     /**
      * BEGIN CANONICAL PROCESSED DOCSTRING
-     * A long term failure condition. No current connection exists because there is no network connectivity or no host is available. The suspended state is entered after a failed connection attempt if there has then been no connection for a period of two minutes. In the suspended state, the library will periodically attempt to open a new connection every 30 seconds. Developers are unable to publish messages in this state. A new connection attempt can also be triggered by an explicit call to `-[ARTConnection connect]`. Once the connection has been re-established, channels will be automatically re-attached. The client has been disconnected for too long for them to resume from where they left off, so if it wants to catch up on messages published by other clients while it was disconnected, it needs to use the [History API](https://ably.com/docs/realtime/history).
+     * A long term failure condition. No current connection exists because there is no network connectivity or no host is available. The suspended state is entered after a failed connection attempt if there has then been no connection for a period of two minutes. In the suspended state, the library will periodically attempt to open a new connection every 30 seconds. Developers are unable to publish messages in this state. A new connection attempt can also be triggered by an explicit call to `-[ARTConnectionProtocol connect]`. Once the connection has been re-established, channels will be automatically re-attached. The client has been disconnected for too long for them to resume from where they left off, so if it wants to catch up on messages published by other clients while it was disconnected, it needs to use the [History API](https://ably.com/docs/realtime/history).
      * END CANONICAL PROCESSED DOCSTRING
      */
     ARTRealtimeSuspended,
@@ -85,13 +85,13 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
     ARTRealtimeClosing,
     /**
      * BEGIN CANONICAL PROCESSED DOCSTRING
-     * The connection has been explicitly closed by the client. In the closed state, no reconnection attempts are made automatically by the library, and clients may not publish messages. No connection state is preserved by the service or by the library. A new connection attempt can be triggered by an explicit call to `-[ARTConnection connect]`, which results in a new connection.
+     * The connection has been explicitly closed by the client. In the closed state, no reconnection attempts are made automatically by the library, and clients may not publish messages. No connection state is preserved by the service or by the library. A new connection attempt can be triggered by an explicit call to `-[ARTConnectionProtocol connect]`, which results in a new connection.
      * END CANONICAL PROCESSED DOCSTRING
      */
     ARTRealtimeClosed,
     /**
      * BEGIN CANONICAL PROCESSED DOCSTRING
-     * This state is entered if the client library encounters a failure condition that it cannot recover from. This may be a fatal connection error received from the Ably service, for example an attempt to connect with an incorrect API key, or a local terminal error, for example the token in use has expired and the library does not have any way to renew it. In the failed state, no reconnection attempts are made automatically by the library, and clients may not publish messages. A new connection attempt can be triggered by an explicit call to `-[ARTConnection connect]`.
+     * This state is entered if the client library encounters a failure condition that it cannot recover from. This may be a fatal connection error received from the Ably service, for example an attempt to connect with an incorrect API key, or a local terminal error, for example the token in use has expired and the library does not have any way to renew it. In the failed state, no reconnection attempts are made automatically by the library, and clients may not publish messages. A new connection attempt can be triggered by an explicit call to `-[ARTConnectionProtocol connect]`.
      * END CANONICAL PROCESSED DOCSTRING
      */
     ARTRealtimeFailed
@@ -104,7 +104,7 @@ NSString *_Nonnull ARTRealtimeConnectionStateToStr(ARTRealtimeConnectionState st
 
 /**
  * BEGIN CANONICAL PROCESSED DOCSTRING
- * Describes the events emitted by a `ARTConnection` object. An event is either an `ARTRealtimeConnectionEventUpdate` or a `ARTConnectionState`.
+ * Describes the events emitted by a `ARTConnection` object. An event is either an `ARTRealtimeConnectionEventUpdate` or an `ARTRealtimeConnectionState`.
  * END CANONICAL PROCESSED DOCSTRING
  */
 typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionEvent) {
@@ -118,7 +118,7 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionEvent) {
     ARTRealtimeConnectionEventFailed,
     /**
      * BEGIN CANONICAL PROCESSED DOCSTRING
-     * An event for changes to connection conditions for which the `ARTConnectionState` does not change.
+     * An event for changes to connection conditions for which the `ARTRealtimeConnectionState` does not change.
      * END CANONICAL PROCESSED DOCSTRING
      */
     ARTRealtimeConnectionEventUpdate
