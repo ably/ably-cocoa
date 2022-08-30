@@ -266,7 +266,9 @@ FOUNDATION_EXPORT NSString *const ARTAblyMessageNoMeansToRenewToken;
 @end
 
 /**
- Support of ARTErrorInfo's properties for NSError
+ * :nodoc:
+ *
+ * Support of ARTErrorInfo's properties for NSError
  */
 @interface NSError (ARTErrorInfo)
 

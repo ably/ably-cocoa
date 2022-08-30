@@ -102,6 +102,7 @@ ART_EMBED_INTERFACE_EVENT_EMITTER(ARTRealtimeConnectionEvent, ARTConnectionState
 
 #pragma mark - ARTEvent
 
+/// :nodoc:
 @interface ARTEvent (ConnectionEvent)
 - (instancetype)initWithConnectionEvent:(ARTRealtimeConnectionEvent)value;
 + (instancetype)newWithConnectionEvent:(ARTRealtimeConnectionEvent)value;

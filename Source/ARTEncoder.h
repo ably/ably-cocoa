@@ -20,6 +20,7 @@ typedef NS_ENUM(NSUInteger, ARTEncoderFormat) {
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// :nodoc:
 @protocol ARTEncoder
 
 - (NSString *)mimeType;

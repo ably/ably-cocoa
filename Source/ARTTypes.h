@@ -240,6 +240,7 @@ NSTimeInterval millisecondsToTimeInterval(uint64_t msecs);
 
 NSString *generateNonce(void);
 
+/// :nodoc:
 @protocol ARTCancellable
 - (void)cancel;
 @end
@@ -496,47 +497,58 @@ NSString *generateNonce(void);
 
 #pragma mark - ARTJsonCompatible
 
+/// :nodoc:
 @protocol ARTJsonCompatible <NSObject>
 - (NSDictionary *_Nullable)toJSON:(NSError *_Nullable *_Nullable)error;
 - (NSString *_Nullable)toJSONString;
 @end
 
+/// :nodoc:
 @interface NSString (ARTEventIdentification) <ARTEventIdentification>
 @end
 
+/// :nodoc:
 @interface NSString (ARTJsonCompatible) <ARTJsonCompatible>
 @end
 
+/// :nodoc:
 @interface NSString (ARTUtilities)
 - (NSString *)art_shortString NS_SWIFT_NAME(shortString());
 - (NSString *)art_base64Encoded NS_SWIFT_NAME(base64Encoded());
 @end
 
+/// :nodoc:
 @interface NSDate (ARTUtilities)
 + (NSDate *)art_dateWithMillisecondsSince1970:(uint64_t)msecs NS_SWIFT_NAME(date(withMillisecondsSince1970:));
 @end
 
+/// :nodoc:
 @interface NSDictionary (ARTJsonCompatible) <ARTJsonCompatible>
 @end
 
+/// :nodoc:
 @interface NSURL (ARTLog)
 @end
 
+/// :nodoc:
 @interface NSDictionary (ARTURLQueryItemAdditions)
 @property (nonatomic, readonly) NSArray<NSURLQueryItem *> *art_asURLQueryItems;
 @end
 
+/// :nodoc:
 @interface NSMutableArray (ARTQueueAdditions)
 - (void)art_enqueue:(id)object;
 - (nullable id)art_dequeue;
 - (nullable id)art_peek;
 @end
 
+/// :nodoc:
 @interface NSObject (ARTArchive)
 - (nullable NSData *)art_archive;
 + (nullable id)art_unarchiveFromData:(NSData *)data;
 @end
 
+/// :nodoc:
 @interface NSURLSessionTask (ARTCancellable) <ARTCancellable>
 @end
 

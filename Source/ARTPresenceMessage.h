@@ -74,6 +74,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - ARTEvent
 
+/// :nodoc:
 @interface ARTEvent (PresenceAction)
 - (instancetype)initWithPresenceAction:(ARTPresenceAction)value;
 + (instancetype)newWithPresenceAction:(ARTPresenceAction)value;

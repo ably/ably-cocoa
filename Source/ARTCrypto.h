@@ -5,24 +5,29 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// :nodoc:
 @protocol ARTCipherKeyCompatible <NSObject>
 - (NSData *)toData;
 @end
 
+/// :nodoc:
 @interface NSString (ARTCipherKeyCompatible) <ARTCipherKeyCompatible>
 - (NSData *)toData;
 @end
 
+/// :nodoc:
 @interface NSData (ARTCipherKeyCompatible) <ARTCipherKeyCompatible>
 - (NSData *)toData;
 @end
 
 @class ARTCipherParams;
 
+/// :nodoc:
 @protocol ARTCipherParamsCompatible <NSObject>
 - (ARTCipherParams *)toCipherParams;
 @end
 
+/// :nodoc:
 @interface NSDictionary (ARTCipherParamsCompatible) <ARTCipherParamsCompatible>
 - (ARTCipherParams *)toCipherParams;
 @end

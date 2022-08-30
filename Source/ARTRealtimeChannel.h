@@ -201,6 +201,7 @@ ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
 
 #pragma mark - ARTEvent
 
+/// :nodoc:
 @interface ARTEvent (ChannelEvent)
 - (instancetype)initWithChannelEvent:(ARTChannelEvent)value;
 + (instancetype)newWithChannelEvent:(ARTChannelEvent)value;

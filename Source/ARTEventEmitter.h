@@ -5,12 +5,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// :nodoc:
 @protocol ARTEventIdentification
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;
 - (NSString *)identification;
 @end
 
+/// :nodoc:
 @interface ARTEvent : NSObject<ARTEventIdentification>
 
 - (instancetype)initWithString:(NSString *)value;

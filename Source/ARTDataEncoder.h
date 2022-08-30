@@ -27,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+/// :nodoc:
 @interface NSString (ARTDataEncoder)
 
 + (NSString *)artAddEncoding:(NSString *)encoding toString:(NSString *_Nullable)s;
