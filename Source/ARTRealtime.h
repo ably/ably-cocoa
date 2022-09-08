@@ -36,8 +36,6 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * BEGIN CANONICAL PROCESSED DOCSTRING
  * Retrieves a `ARTLocalDevice` object that represents the current state of the device as a target for push notifications.
- *
- * @return An `ARTLocalDevice` object.
  * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly) ARTLocalDevice *device;
