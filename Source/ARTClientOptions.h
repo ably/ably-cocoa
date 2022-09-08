@@ -11,7 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL PROCESSED DOCSTRING
- * Passes additional client-specific properties to the REST `-[ARTRestClient initWithOptions:]` or the Realtime `-[ARTRealtimeClient initWithOptions:]`.
+ * Passes additional client-specific properties to the REST `-[ARTRest initWithOptions:]` or the Realtime `-[ARTRealtime initWithOptions:]`.
  * END CANONICAL PROCESSED DOCSTRING
  */
 @interface ARTClientOptions : ARTAuthOptions

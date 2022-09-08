@@ -123,7 +123,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL PROCESSED DOCSTRING
- * A client that extends the functionality of the `ARTRestClient` and provides additional realtime-specific features.
+ * A client that extends the functionality of the `ARTRest` and provides additional realtime-specific features.
  * END CANONICAL PROCESSED DOCSTRING
  */
 @interface ARTRealtime : NSObject <ARTRealtimeProtocol>
