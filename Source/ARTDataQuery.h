@@ -9,6 +9,9 @@ typedef NS_ENUM(NSUInteger, ARTQueryDirection) {
     ARTQueryDirectionBackwards
 };
 
+/**
+ This object is used for providing parameters into methods with paginated results.
+ */
 @interface ARTDataQuery : NSObject
 
 /**
