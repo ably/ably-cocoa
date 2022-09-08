@@ -449,7 +449,7 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 
 /**
  * BEGIN CANONICAL PROCESSED DOCSTRING
- * Represents the `intervalId` as a time object.
+ * Represents the `intervalId` as a `NSDate` object.
  * END CANONICAL PROCESSED DOCSTRING
  */
 - (NSDate *)intervalTime;
