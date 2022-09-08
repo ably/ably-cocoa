@@ -39,6 +39,10 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly) int64_t serial;
+
+/**
+ * The maximum message size is an attribute of an Ably account and enforced by Ably servers. `maxMessageSize` indicates the maximum message size allowed by the Ably account this connection is using. Overrides the default value of `-[ARTDefault maxMessageSize]`.
+ */
 @property (readonly) NSInteger maxMessageSize;
 
 /**
