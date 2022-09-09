@@ -13,7 +13,7 @@
 
 /**
  * BEGIN CANONICAL PROCESSED DOCSTRING
- * Checks if a channel has been previously retrieved using the `get()` method.
+ * Checks if a channel has been previously retrieved using the `-[ARTChannels get:]` method.
  *
  * @param name The channel name.
  *
