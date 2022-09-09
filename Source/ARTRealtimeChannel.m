@@ -413,24 +413,6 @@ dispatch_sync(_queue, ^{
     } ackCallback:nil];
 }
 
-- (void)requestContinueSync {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) requesting to continue sync operation after reconnect using msgSerial %lld and channelSerial %@", _realtime, self, self.name, self.presenceMap.syncMsgSerial, self.presenceMap.syncChannelSerial];
-
-    ARTProtocolMessage * msg = [[ARTProtocolMessage alloc] init];
-    msg.action = ARTProtocolMessageSync;
-    msg.msgSerial = [NSNumber numberWithLongLong:self.presenceMap.syncMsgSerial];
-    msg.channelSerial = self.presenceMap.syncChannelSerial;
-    msg.channel = self.name;
-
-    [self.presenceMap startSync];
-    [self.realtime send:msg sentCallback:^(ARTErrorInfo *error) {
-        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) continue sync, error is %@", self->_realtime, self, self.name, error];
-        if (error) {
-            [self.presenceMap endSync];
-        }
-    } ackCallback:nil];
-}
-
 - (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(ARTStatusCallback)cb {
     switch (self.state_nosync) {
         case ARTRealtimeChannelSuspended:
