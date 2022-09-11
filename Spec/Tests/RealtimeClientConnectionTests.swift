@@ -3584,7 +3584,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         afterEach__Connection__Host_Fallback()
     }
 
-    func test__101__Connection__Host_Fallback__should_move_to_disconnected_when_there_s_no_internet__with_NSPOSIXErrorDomain_with_code_50() {
+    func skipped__test__101__Connection__Host_Fallback__should_move_to_disconnected_when_there_s_no_internet__with_NSPOSIXErrorDomain_with_code_50() {
         beforeEach__Connection__Host_Fallback()
 
         testMovesToDisconnectedWithNetworkingError(NSError(domain: "NSPOSIXErrorDomain", code: 50, userInfo: [NSLocalizedDescriptionKey: "shouldn't matter"]))
