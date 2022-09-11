@@ -7,7 +7,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * BEGIN CANONICAL PROCESSED DOCSTRING
- * Passes additional properties to an `ARTRestChannel` or an `ARTRealtimeChannel` object, such as encryption, an `ARTChannelMode` and channel parameters.
+ * Passes additional properties to an `ARTRestChannel` object, such as encryption.
  * END CANONICAL PROCESSED DOCSTRING
  */
 @interface ARTChannelOptions : NSObject

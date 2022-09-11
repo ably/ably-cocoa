@@ -44,6 +44,9 @@ typedef NS_ENUM(NSUInteger, ARTQueryDirection) {
 
 @end
 
+/**
+ This object is used for providing parameters into `ARTRealtimePresence`'s methods with paginated results.
+ */
 @interface ARTRealtimeHistoryQuery : ARTDataQuery
 
 /**

@@ -36,6 +36,9 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
     ARTStatsGranularityMonth
 };
 
+/**
+ This object is used for providing parameters into `ARTStats`'s methods with paginated results.
+ */
 @interface ARTStatsQuery : ARTDataQuery
 
 /**
@@ -454,6 +457,11 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  */
 - (NSDate *)intervalTime;
 
+/**
+ * BEGIN CANONICAL PROCESSED DOCSTRING
+ * DEPRECATED: this property is deprecated and will be removed in a future version. An alias for `unit` that must be from the unit property of the JSON.
+ * END CANONICAL PROCESSED DOCSTRING
+ */
 - (ARTStatsGranularity)intervalGranularity;
 - (NSDate *)dateFromInProgress;
 

@@ -40,9 +40,25 @@ typedef NS_OPTIONS(NSUInteger, ARTChannelMode) {
 
 NS_ASSUME_NONNULL_BEGIN
 
+/**
+ * BEGIN CANONICAL PROCESSED DOCSTRING
+ * Passes additional properties to an `ARTRealtimeChannel` object, such as encryption, an `ARTChannelMode` and channel parameters.
+ * END CANONICAL PROCESSED DOCSTRING
+ */
 @interface ARTRealtimeChannelOptions : ARTChannelOptions
 
+/**
+ * BEGIN CANONICAL PROCESSED DOCSTRING
+ * [Channel Parameters](https://ably.com/docs/realtime/channels/channel-parameters/overview) that configure the behavior of the channel.
+ * END CANONICAL PROCESSED DOCSTRING
+ */
 @property (nonatomic, strong, nullable) NSStringDictionary *params;
+
+/**
+ * BEGIN CANONICAL PROCESSED DOCSTRING
+ * An array of `ARTChannelMode` objects.
+ * END CANONICAL PROCESSED DOCSTRING
+ */
 @property (nonatomic, assign) ARTChannelMode modes;
 
 @end
