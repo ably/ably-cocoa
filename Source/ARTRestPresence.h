@@ -78,13 +78,6 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL PROCESSED DOCSTRING
  */
 @interface ARTRestPresence : ARTPresence <ARTRestPresenceProtocol>
-
-- (void)get:(ARTPaginatedPresenceCallback)callback;
-- (BOOL)get:(ARTPaginatedPresenceCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr;
-- (BOOL)get:(ARTPresenceQuery *)query callback:(ARTPaginatedPresenceCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr;
-
-- (BOOL)history:(nullable ARTDataQuery *)query callback:(ARTPaginatedPresenceCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr;
-
 @end
 
 NS_ASSUME_NONNULL_END
