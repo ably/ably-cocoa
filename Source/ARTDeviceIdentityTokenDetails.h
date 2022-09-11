@@ -2,6 +2,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/**
+ * An object representing a unique device identity token used to communicate with APNS.
+ */
 @interface ARTDeviceIdentityTokenDetails : NSObject <NSSecureCoding>
 
 /**
