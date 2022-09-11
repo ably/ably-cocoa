@@ -10,7 +10,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// :nodoc:
 @protocol ARTHTTPExecutor
 
 - (ARTLog *)logger;
@@ -18,7 +17,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-/// :nodoc:
 @protocol ARTHTTPAuthenticatedExecutor <ARTHTTPExecutor>
 
 - (ARTClientOptions *)options;
@@ -29,7 +27,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-/// :nodoc:
 @interface ARTHttp : NSObject<ARTHTTPExecutor>
 
 + (void)setURLSessionClass:(Class)urlSessionClass;

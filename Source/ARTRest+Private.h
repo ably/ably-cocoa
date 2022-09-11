@@ -1,7 +1,7 @@
 #import <Ably/ARTRest.h>
-#import <Ably/ARTHttp.h>
 #import "ARTRestChannels+Private.h"
 #import "ARTPush+Private.h"
+#import "ARTHttp.h"
 
 @protocol ARTEncoder;
 @protocol ARTHTTPExecutor;
