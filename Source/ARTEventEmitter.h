@@ -20,6 +20,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+/**
+ An object representing a listener returned by `ARTEventEmitter` methods.
+ */
 @interface ARTEventListener : NSObject
 @end
 
