@@ -33,8 +33,13 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nullable, nonatomic, strong, readwrite) NSString *connectionId;
 
+/// :nodoc:
 - (instancetype)init;
+
+/// :nodoc:
 - (instancetype)initWithClientId:(NSString *_Nullable)clientId connectionId:(NSString *_Nullable)connectionId;
+
+/// :nodoc:
 - (instancetype)initWithLimit:(NSUInteger)limit clientId:(NSString *_Nullable)clientId connectionId:(NSString *_Nullable)connectionId;
 
 @end

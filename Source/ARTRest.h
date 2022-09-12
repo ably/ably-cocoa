@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @protocol ARTRestProtocol
 
+/// :nodoc:
 - (instancetype)init NS_UNAVAILABLE;
 
 /**
@@ -122,12 +123,14 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly) ARTRestChannels *channels;
+
 /**
  * BEGIN CANONICAL PROCESSED DOCSTRING
  * An `ARTPush` object.
  * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly) ARTPush *push;
+
 /**
  * BEGIN CANONICAL PROCESSED DOCSTRING
  * An `ARTAuth` object.
@@ -135,8 +138,13 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (readonly) ARTAuth *auth;
 
+/// :nodoc:
 + (instancetype)createWithOptions:(ARTClientOptions *)options NS_SWIFT_UNAVAILABLE("Use instance initializer instead");
+
+/// :nodoc:
 + (instancetype)createWithKey:(NSString *)key NS_SWIFT_UNAVAILABLE("Use instance initializer instead");
+
+/// :nodoc:
 + (instancetype)createWithToken:(NSString *)tokenId NS_SWIFT_UNAVAILABLE("Use instance initializer instead");
 
 @end

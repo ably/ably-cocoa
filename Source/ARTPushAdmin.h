@@ -10,6 +10,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @protocol ARTPushAdminProtocol
 
+/// :nodoc:
 - (instancetype)init NS_UNAVAILABLE;
 
 /**

@@ -48,6 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (readonly, nullable) NSString *clientId;
 
+/// :nodoc:
 - (instancetype)init NS_UNAVAILABLE;
 
 /**
@@ -86,6 +87,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)time:(ARTDateTimeCallback)callback;
 
+/// :nodoc:
 - (void)ping:(ARTCallback)cb;
 
 - (BOOL)stats:(ARTPaginatedStatsCallback)callback;
@@ -151,8 +153,13 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (readonly) ARTAuth *auth;
 
+/// :nodoc:
 + (instancetype)createWithOptions:(ARTClientOptions *)options NS_SWIFT_UNAVAILABLE("Use instance initializer instead");
+
+/// :nodoc:
 + (instancetype)createWithKey:(NSString *)key NS_SWIFT_UNAVAILABLE("Use instance initializer instead");
+
+/// :nodoc:
 + (instancetype)createWithToken:(NSString *)tokenId NS_SWIFT_UNAVAILABLE("Use instance initializer instead");
 
 @end

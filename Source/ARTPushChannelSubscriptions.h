@@ -12,6 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @protocol ARTPushChannelSubscriptionsProtocol
 
+/// :nodoc:
 - (instancetype)init NS_UNAVAILABLE;
 
 /**

@@ -51,6 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @protocol ARTPushProtocol
 
+/// :nodoc:
 - (instancetype)init NS_UNAVAILABLE;
 
 #if TARGET_OS_IOS

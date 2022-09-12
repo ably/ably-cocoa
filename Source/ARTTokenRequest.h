@@ -70,8 +70,10 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, strong) NSDate *timestamp;
 
-
+/// :nodoc:
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
+
+/// :nodoc:
 - (instancetype)initWithTokenParams:(ARTTokenParams *)tokenParams keyName:(NSString *)keyName nonce:(NSString *)nonce mac:(NSString *)mac;
 
 /**

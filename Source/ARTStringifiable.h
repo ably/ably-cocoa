@@ -3,6 +3,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 
+/// :nodoc:
 @interface ARTStringifiable : NSObject
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;

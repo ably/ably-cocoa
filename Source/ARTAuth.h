@@ -27,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, readonly) ARTTokenDetails *tokenDetails;
 
+/// :nodoc:
 - (instancetype)init NS_UNAVAILABLE;
 
 /**

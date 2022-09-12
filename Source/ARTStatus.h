@@ -232,22 +232,40 @@ FOUNDATION_EXPORT NSString *const ARTAblyMessageNoMeansToRenewToken;
  */
 @property (nullable, readonly) ARTErrorInfo *cause;
 
+/// :nodoc:
 + (ARTErrorInfo *)createWithCode:(NSInteger)code message:(NSString *)message;
+
+/// :nodoc:
 + (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message;
+
+/// :nodoc:
 + (ARTErrorInfo *)createFromNSError:(NSError *)error;
+
+/// :nodoc:
 + (ARTErrorInfo *)createFromNSException:(NSException *)error;
+
+/// :nodoc:
 + (ARTErrorInfo *)createWithCode:(NSInteger)code message:(NSString *)message requestId:(nullable NSString *)requestId;
+
+/// :nodoc:
 + (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message requestId:(nullable NSString *)requestId;
+
+/// :nodoc:
 + (ARTErrorInfo *)createFromNSException:(NSException *)error requestId:(nullable NSString *)requestId;
+
+/// :nodoc:
 + (ARTErrorInfo *)createUnknownError;
+
+/// :nodoc:
 + (ARTErrorInfo *)wrap:(ARTErrorInfo *)error prepend:(NSString *)prepend;
 
+/// :nodoc:
 - (NSString *)description;
 
 @end
 
 /**
- Ably client status class
+ An object representing a status of an operation.
  */
 @interface ARTStatus : NSObject
 
@@ -262,14 +280,11 @@ FOUNDATION_EXPORT NSString *const ARTAblyMessageNoMeansToRenewToken;
 
 @end
 
+/// :nodoc:
 @interface ARTException : NSException
 @end
 
-/**
- * :nodoc:
- *
- * Support of ARTErrorInfo's properties for NSError
- */
+/// :nodoc:
 @interface NSError (ARTErrorInfo)
 
 - (NSInteger)artStatusCode;

@@ -33,6 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, readonly) BOOL isLast;
 
+/// :nodoc:
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
 /**

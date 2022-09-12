@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, copy) NSString *accessToken;
 
+/// :nodoc:
 - (instancetype)initWithToken:(NSString *)token;
 
 @end

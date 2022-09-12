@@ -13,6 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @protocol ARTPushChannelProtocol
 
+/// :nodoc:
 - (instancetype)init NS_UNAVAILABLE;
 
 /**

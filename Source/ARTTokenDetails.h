@@ -47,8 +47,13 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, readonly, copy, nullable) NSString *clientId;
 
+/// :nodoc:
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
+
+/// :nodoc:
 - (instancetype)initWithToken:(NSString *)token;
+
+/// :nodoc:
 - (instancetype)initWithToken:(NSString *)token expires:(nullable NSDate *)expires issued:(nullable  NSDate *)issued capability:(nullable  NSString *)capability clientId:(nullable NSString *)clientId;
 
 /**

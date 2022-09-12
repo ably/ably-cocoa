@@ -30,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, readonly) NSString *channel;
 
+/// :nodoc:
 - (instancetype)init NS_UNAVAILABLE;
 
 /**

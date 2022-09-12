@@ -71,10 +71,14 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  */
 @property (readonly, assign, nonatomic) NSUInteger data;
 
+/// :nodoc:
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
+
+/// :nodoc:
 - (instancetype)initWithCount:(NSUInteger)count
                          data:(NSUInteger)data;
 
+/// :nodoc:
 + (instancetype)empty;
 
 @end
@@ -107,11 +111,15 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageCount *presence;
 
+/// :nodoc:
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
+
+/// :nodoc:
 - (instancetype)initWithAll:(nullable ARTStatsMessageCount *)all
                    messages:(nullable ARTStatsMessageCount *)messages
                    presence:(nullable ARTStatsMessageCount *)presence;
 
+/// :nodoc:
 + (instancetype)empty;
 
 @end
@@ -151,12 +159,16 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  */
 @property (readonly, strong, nonatomic) ARTStatsMessageTypes *webhook;
 
+/// :nodoc:
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
+
+/// :nodoc:
 - (instancetype)initWithAll:(nullable ARTStatsMessageTypes *)all
                    realtime:(nullable ARTStatsMessageTypes *)realtime
                        rest:(nullable ARTStatsMessageTypes *)rest
                     webhook:(nullable ARTStatsMessageTypes *)webhook;
 
+/// :nodoc:
 + (instancetype)empty;
 
 @end
@@ -203,13 +215,17 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  */
 @property (readonly, assign, nonatomic) NSUInteger refused;
 
+/// :nodoc:
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
+
+/// :nodoc:
 - (instancetype)initWithOpened:(NSUInteger)opened
                           peak:(NSUInteger)peak
                           mean:(NSUInteger)mean
                            min:(NSUInteger)min
                        refused:(NSUInteger)refused;
 
+/// :nodoc:
 + (instancetype)empty;
 
 @end
@@ -242,11 +258,15 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  */
 @property (readonly, strong, nonatomic) ARTStatsResourceCount *tls;
 
+/// :nodoc:
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
+
+/// :nodoc:
 - (instancetype)initWithAll:(nullable ARTStatsResourceCount *)all
                       plain:(nullable ARTStatsResourceCount *)plain
                         tls:(nullable ARTStatsResourceCount *)tls;
 
+/// :nodoc:
 + (instancetype)empty;
 
 @end
@@ -279,11 +299,15 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  */
 @property (readonly, assign, nonatomic) NSUInteger refused;
 
+/// :nodoc:
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
+
+/// :nodoc:
 - (instancetype)initWithSucceeded:(NSUInteger)succeeded
                            failed:(NSUInteger)failed
                           refused:(NSUInteger)refused;
 
+/// :nodoc:
 + (instancetype)empty;
 
 @end
@@ -337,7 +361,10 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  */
 @property (readonly, assign, nonatomic) NSUInteger direct;
 
+/// :nodoc:
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
+
+/// :nodoc:
 - (instancetype)initWithSucceeded:(NSUInteger)succeeded
                           invalid:(NSUInteger)invalid
                         attempted:(NSUInteger)attempted
@@ -345,6 +372,7 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
                          messages:(NSUInteger)messages
                            direct:(NSUInteger)direct;
 
+/// :nodoc:
 + (instancetype)empty;
 
 @end
@@ -360,8 +388,13 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  */
 @interface ARTStats : NSObject
 
+/// :nodoc:
 + (NSDate *)dateFromIntervalId:(NSString *)intervalId;
+
+/// :nodoc:
 + (ARTStatsGranularity)granularityFromIntervalId:(NSString *)intervalId;
+
+/// :nodoc:
 + (NSString *)toIntervalId:(NSDate *)time granularity:(ARTStatsGranularity)granularity;
 
 /**
@@ -436,7 +469,10 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  */
 @property (readonly, strong, nonatomic) NSString *intervalId;
 
+/// :nodoc:
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
+
+/// :nodoc:
 - (instancetype)initWithAll:(ARTStatsMessageTypes *)all
                     inbound:(ARTStatsMessageTraffic *)inbound
                    outbound:(ARTStatsMessageTraffic *)outbound
@@ -463,6 +499,8 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  * END CANONICAL PROCESSED DOCSTRING
  */
 - (ARTStatsGranularity)intervalGranularity;
+
+/// :nodoc:
 - (NSDate *)dateFromInProgress;
 
 @end

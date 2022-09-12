@@ -57,14 +57,28 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nullable, nonatomic, readonly, strong) NSString *nonce;
 
+/// :nodoc:
 - (instancetype)init;
+
+/// :nodoc:
 - (instancetype)initWithClientId:(NSString *_Nullable)clientId;
+
+/// :nodoc:
 - (instancetype)initWithClientId:(NSString *_Nullable)clientId nonce:(NSString *_Nullable)nonce;
+
+/// :nodoc:
 - (instancetype)initWithOptions:(ARTClientOptions *)options;
+
+/// :nodoc:
 - (instancetype)initWithTokenParams:(ARTTokenParams *)tokenParams;
 
+/// :nodoc:
 - (NSMutableArray<NSURLQueryItem *> *)toArray;
+
+/// :nodoc:
 - (NSArray<NSURLQueryItem *> *)toArrayWithUnion:(NSArray *)items;
+
+/// :nodoc:
 - (NSStringDictionary *)toDictionaryWithUnion:(NSArray<NSURLQueryItem *> *)items;
 
 @end
