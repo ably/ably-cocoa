@@ -61,7 +61,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * BEGIN CANONICAL PROCESSED DOCSTRING
  * The duration that Ably will persist the connection state for when a Realtime client is abruptly disconnected.
- * @seealso -[ARTDefault connectionStateTtl]
+ * @see `+[ARTDefault connectionStateTtl]`
  * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, nonatomic) NSTimeInterval connectionStateTtl;
