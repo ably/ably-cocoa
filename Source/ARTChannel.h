@@ -20,30 +20,24 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol ARTChannelProtocol
 
 /**
- * BEGIN CANONICAL PROCESSED DOCSTRING
  * The channel name.
- * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly) NSString *name;
 
 /**
- * BEGIN CANONICAL PROCESSED DOCSTRING
  * Publishes a single message to the channel with the given event name and payload. When publish is called with this client library, it won't attempt to implicitly attach to the channel, so long as [transient publishing](https://ably.com/docs/realtime/channels#transient-publish) is available in the library. Otherwise, the client will implicitly attach.
  *
  * @param name The name of the message.
  * @param data The payload of the message.
- * END CANONICAL PROCESSED DOCSTRING
  */
 - (void)publish:(nullable NSString *)name data:(nullable id)data;
 
 /**
- * BEGIN CANONICAL PROCESSED DOCSTRING
  * Publishes a single message to the channel with the given event name and payload. A callback may optionally be passed in to this call to be notified of success or failure of the operation. When publish is called with this client library, it won't attempt to implicitly attach to the channel, so long as [transient publishing](https://ably.com/docs/realtime/channels#transient-publish) is available in the library. Otherwise, the client will implicitly attach.
  *
  * @param name The name of the message.
  * @param data The payload of the message.
  * @param callback A success or failure callback function.
- * END CANONICAL PROCESSED DOCSTRING
  */
 - (void)publish:(nullable NSString *)name data:(nullable id)data callback:(nullable ARTCallback)callback;
 
@@ -69,12 +63,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)publish:(NSArray<ARTMessage *> *)messages;
 
 /**
- * BEGIN CANONICAL PROCESSED DOCSTRING
  * Publishes an array of messages to the channel. A callback may optionally be passed in to this call to be notified of success or failure of the operation.
  *
  * @param messages An array of `ARTMessage` objects.
  * @param callback A success or failure callback function.
- * END CANONICAL PROCESSED DOCSTRING
  */
 - (void)publish:(NSArray<ARTMessage *> *)messages callback:(nullable ARTCallback)callback;
 

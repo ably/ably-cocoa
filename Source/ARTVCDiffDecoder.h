@@ -3,14 +3,11 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- * BEGIN CANONICAL PROCESSED DOCSTRING
  * Enables `vcdiff` encoded messages to be decoded.
- * END CANONICAL PROCESSED DOCSTRING
  */
 @protocol ARTVCDiffDecoder
 
 /**
- * BEGIN CANONICAL PROCESSED DOCSTRING
  * Decodes `vcdiff` encoded messages.
  *
  * @param delta The delta encoded data.
@@ -18,7 +15,6 @@ NS_ASSUME_NONNULL_BEGIN
  * @param errorPtr A reference to the `NSError` object where an error information will be saved in case of failure.
  *
  * @return The decoded data.
- * END CANONICAL PROCESSED DOCSTRING
  */
 - (nullable NSData *)decode:(NSData *)delta base:(NSData *)base error:(NSError *__autoreleasing _Nullable * _Nullable)errorPtr;
 @end

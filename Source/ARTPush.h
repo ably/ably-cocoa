@@ -74,18 +74,14 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error realtime:(ARTRealtime *)realtime;
 
 /**
- * BEGIN CANONICAL PROCESSED DOCSTRING
  * Activates the device for push notifications with APNS, obtaining a unique identifier from it. Subsequently registers the device with Ably and stores the `-[ARTLocalDevice identityTokenDetails]` in local storage.
  * You should implement -[ARTPushRegistererDelegate didActivateAblyPush:] to handle success or failure of this operation.
- * END CANONICAL PROCESSED DOCSTRING
  */
 - (void)activate;
 
 /**
- * BEGIN CANONICAL PROCESSED DOCSTRING
  * Deactivates the device from receiving push notifications with Ably.
  * You should implement -[ARTPushRegistererDelegate didDeactivateAblyPush:] to handle success or failure of this operation.
- * END CANONICAL PROCESSED DOCSTRING
  */
 - (void)deactivate;
 
@@ -94,16 +90,12 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 /**
- * BEGIN CANONICAL PROCESSED DOCSTRING
  * Enables a device to be registered and deregistered from receiving push notifications.
- * END CANONICAL PROCESSED DOCSTRING
  */
 @interface ARTPush : NSObject <ARTPushProtocol>
 
 /**
- * BEGIN CANONICAL PROCESSED DOCSTRING
  * An `ARTPushAdmin` object.
- * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly) ARTPushAdmin *admin;
 

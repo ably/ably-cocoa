@@ -23,11 +23,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (ARTRealtimeChannel *)get:(NSString *)name options:(ARTRealtimeChannelOptions *)options;
 
 /**
- * BEGIN CANONICAL PROCESSED DOCSTRING
  * Iterates through the existing channels.
  *
  * @return Each iteration returns an `ARTRealtimeChannel` object.
- * END CANONICAL PROCESSED DOCSTRING
  */
 - (id<NSFastEnumeration>)iterate;
 

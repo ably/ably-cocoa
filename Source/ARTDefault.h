@@ -30,9 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSTimeInterval)connectionStateTtl;
 
 /**
- * BEGIN CANONICAL PROCESSED DOCSTRING
  * Timeout for the wait of acknowledgement for operations performed via a realtime connection, before the client library considers a request failed and triggers a failure condition. Operations include establishing a connection with Ably, or sending a `ARTProtocolMessageHeartbeat`, `ARTProtocolMessageConnect`, `ARTProtocolMessageAttach`, `ARTProtocolMessageDetach` or `ARTProtocolMessageClose` request. It is the equivalent of `-[ARTClientOptions httpRequestTimeout]` but for realtime operations, rather than REST. The default is 10 seconds.
- * END CANONICAL PROCESSED DOCSTRING
  */
 + (NSTimeInterval)realtimeRequestTimeout;
 
@@ -41,9 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSString *)platformAgent;
 
 /**
- * BEGIN CANONICAL PROCESSED DOCSTRING
  * The maximum size of messages that can be published in one go. For realtime publishes, the default can be overridden by the `maxMessageSize` in the `ARTConnectionDetails` object.
- * END CANONICAL PROCESSED DOCSTRING
  */
 + (NSInteger)maxMessageSize;
 
