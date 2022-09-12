@@ -82,6 +82,7 @@ NS_ASSUME_NONNULL_BEGIN
        callback:(ARTHTTPPaginatedCallback)callback
           error:(NSError *_Nullable *_Nullable)errorPtr;
 
+/// :nodoc: TODO: docstring
 - (BOOL)stats:(ARTPaginatedStatsCallback)callback;
 
 /**

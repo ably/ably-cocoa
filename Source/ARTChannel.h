@@ -47,15 +47,25 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)publish:(nullable NSString *)name data:(nullable id)data callback:(nullable ARTCallback)callback;
 
+/// :nodoc: TODO: docstring
 - (void)publish:(nullable NSString *)name data:(nullable id)data clientId:(NSString *)clientId;
+
+/// :nodoc: TODO: docstring
 - (void)publish:(nullable NSString *)name data:(nullable id)data clientId:(NSString *)clientId callback:(nullable ARTCallback)callback;
 
+/// :nodoc: TODO: docstring
 - (void)publish:(nullable NSString *)name data:(nullable id)data extras:(nullable id<ARTJsonCompatible>)extras;
+
+/// :nodoc: TODO: docstring
 - (void)publish:(nullable NSString *)name data:(nullable id)data extras:(nullable id<ARTJsonCompatible>)extras callback:(nullable ARTCallback)callback;
 
+/// :nodoc: TODO: docstring
 - (void)publish:(nullable NSString *)name data:(nullable id)data clientId:(NSString *)clientId extras:(nullable id<ARTJsonCompatible>)extras;
+
+/// :nodoc: TODO: docstring
 - (void)publish:(nullable NSString *)name data:(nullable id)data clientId:(NSString *)clientId extras:(nullable id<ARTJsonCompatible>)extras callback:(nullable ARTCallback)callback;
 
+/// :nodoc: TODO: docstring
 - (void)publish:(NSArray<ARTMessage *> *)messages;
 
 /**
@@ -68,6 +78,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)publish:(NSArray<ARTMessage *> *)messages callback:(nullable ARTCallback)callback;
 
+/// :nodoc: TODO: docstring
 - (void)history:(ARTPaginatedMessagesCallback)callback;
 
 @end

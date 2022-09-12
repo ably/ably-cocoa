@@ -54,6 +54,8 @@
  * END CANONICAL PROCESSED DOCSTRING
  */
 - (void)release:(NSString *)name;
+
+/// :nodoc:
 - (id<NSFastEnumeration>)copyIntoIteratorWithMapper:(id (^)(ChannelType))mapper;
 
 @end

@@ -33,6 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (readonly) BOOL syncComplete;
 
+/// :nodoc: TODO: docstring
 - (void)get:(ARTPresenceMessagesCallback)callback;
 
 /**
@@ -239,6 +240,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)unsubscribe:(ARTPresenceAction)action listener:(ARTEventListener *)listener;
 
+/// :nodoc:
 - (void)history:(ARTPaginatedPresenceCallback)callback;
 
 /**

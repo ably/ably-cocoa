@@ -49,7 +49,10 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @protocol ARTRestPresenceProtocol
 
+/// :nodoc: TODO: docstring
 - (void)get:(ARTPaginatedPresenceCallback)callback;
+
+/// :nodoc: TODO: docstring
 - (BOOL)get:(ARTPaginatedPresenceCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
 /**

@@ -67,8 +67,10 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (nonnull NSString *)memberKey;
 
+/// :nodoc:
 - (BOOL)isEqualToPresenceMessage:(nonnull ARTPresenceMessage *)presence;
 
+/// :nodoc:
 - (BOOL)isNewerThan:(ARTPresenceMessage *)latest __attribute__((warn_unused_result));
 
 @end

@@ -80,6 +80,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (readonly, nonatomic) NSTimeInterval maxIdleInterval;
 
+/// :nodoc:
 - (instancetype)initWithClientId:(NSString *_Nullable)clientId
                    connectionKey:(NSString *_Nullable)connectionKey
                   maxMessageSize:(NSInteger)maxMessageSize

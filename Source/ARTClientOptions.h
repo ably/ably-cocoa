@@ -107,6 +107,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nullable, readwrite, copy, nonatomic) NSString *recover;
 
+/// :nodoc:
 @property (readwrite, assign, nonatomic) BOOL pushFullWait;
 
 /**
@@ -270,8 +271,13 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nullable, weak, nonatomic) id<ARTPushRegistererDelegate, NSObject> pushRegistererDelegate;
 
+/// :nodoc:
 - (BOOL)isBasicAuth;
+
+/// :nodoc:
 - (NSURL *)restUrl;
+
+/// :nodoc:
 - (NSURL *)realtimeUrl;
 
 /**

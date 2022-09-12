@@ -459,7 +459,11 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, strong, nonatomic) ARTStatsPushCount *pushes;
+
+/// :nodoc: TODO: docstring
 @property (readonly, strong, nonatomic) NSString *inProgress;
+
+/// :nodoc: TODO: docstring
 @property (readonly, assign, nonatomic) NSUInteger count;
 
 /**

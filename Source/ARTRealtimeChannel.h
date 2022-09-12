@@ -34,6 +34,8 @@ NS_ASSUME_NONNULL_BEGIN
  * END CANONICAL PROCESSED DOCSTRING
  */
 @property (readonly, nullable) ARTErrorInfo *errorReason;
+
+/// :nodoc: TODO: docstring
 @property (readonly, nullable, getter=getOptions) ARTRealtimeChannelOptions *options;
 
 /**

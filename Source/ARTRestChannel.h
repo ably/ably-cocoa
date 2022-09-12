@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @protocol ARTRestChannelProtocol <ARTChannelProtocol>
 
+/// :nodoc: TODO: docstring
 @property (readonly, nullable) ARTChannelOptions *options;
 
 /**

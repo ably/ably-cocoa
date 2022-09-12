@@ -32,6 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (strong, nullable, nonatomic) ARTErrorInfo *errorReason;
 
+/// :nodoc:
 - (instancetype)init;
 
 @end

@@ -264,7 +264,8 @@ FOUNDATION_EXPORT NSString *const ARTAblyMessageNoMeansToRenewToken;
 @end
 
 /**
- An object representing a status of an operation.
+ * :nodoc: TODO: docstring
+ * An object representing a status of an operation.
  */
 @interface ARTStatus : NSObject
 

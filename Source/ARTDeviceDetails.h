@@ -54,7 +54,10 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (strong, nonatomic) ARTDevicePushDetails *push;
 
+/// :nodoc:
 - (instancetype)init;
+
+/// :nodoc:
 - (instancetype)initWithId:(ARTDeviceId *)deviceId;
 
 @end

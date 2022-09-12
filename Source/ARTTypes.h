@@ -271,11 +271,13 @@ NSString *generateNonce(void);
  */
 @interface ARTConnectionStateChange : NSObject
 
+/// :nodoc:
 - (instancetype)initWithCurrent:(ARTRealtimeConnectionState)current
                        previous:(ARTRealtimeConnectionState)previous
                           event:(ARTRealtimeConnectionEvent)event
                          reason:(ARTErrorInfo *_Nullable)reason;
 
+/// :nodoc:
 - (instancetype)initWithCurrent:(ARTRealtimeConnectionState)current
                        previous:(ARTRealtimeConnectionState)previous
                           event:(ARTRealtimeConnectionEvent)event
@@ -324,11 +326,13 @@ NSString *generateNonce(void);
  */
 @interface ARTChannelStateChange : NSObject
 
+/// :nodoc:
 - (instancetype)initWithCurrent:(ARTRealtimeChannelState)current
                        previous:(ARTRealtimeChannelState)previous
                           event:(ARTChannelEvent)event
                          reason:(ARTErrorInfo *_Nullable)reason;
 
+/// :nodoc:
 - (instancetype)initWithCurrent:(ARTRealtimeChannelState)current
                        previous:(ARTRealtimeChannelState)previous
                           event:(ARTChannelEvent)event
@@ -421,6 +425,7 @@ NSString *generateNonce(void);
  */
 @property (nonatomic, readonly) NSInteger presenceSubscribers;
 
+/// :nodoc:
 - (instancetype)initWithConnections:(NSInteger)connections
                          publishers:(NSInteger)publishers
                         subscribers:(NSInteger)subscribers
@@ -444,6 +449,7 @@ NSString *generateNonce(void);
  */
 @property (nonatomic, strong, readonly) ARTChannelMetrics *metrics;
 
+/// :nodoc:
 - (instancetype)initWithMetrics:(ARTChannelMetrics *)metrics;
 
 @end
@@ -469,6 +475,7 @@ NSString *generateNonce(void);
  */
 @property (nonatomic, strong, readonly) ARTChannelOccupancy *occupancy;
 
+/// :nodoc:
 - (instancetype)initWithOccupancy:(ARTChannelOccupancy *)occupancy active:(BOOL)active;
 
 @end
@@ -494,6 +501,7 @@ NSString *generateNonce(void);
  */
 @property (nonatomic, strong, readonly) ARTChannelStatus *status;
 
+/// :nodoc:
 - (instancetype)initWithChannelId:(NSString *)channelId status:(ARTChannelStatus *)status;
 
 @end

@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nullable, readonly) NSString *clientId;
 
+/// :nodoc:
 @property (nullable, readonly) ARTTokenDetails *tokenDetails;
 
 /// :nodoc:

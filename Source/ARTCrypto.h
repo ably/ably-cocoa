@@ -71,9 +71,13 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (readonly, getter=getMode) NSString *mode;
 
+/// :nodoc:
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
+
+/// :nodoc:
 - (instancetype)initWithAlgorithm:(NSString *)algorithm key:(id<ARTCipherKeyCompatible>)key;
 
+/// :nodoc:
 - (ARTCipherParams *)toCipherParams;
 
 @end

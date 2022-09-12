@@ -109,16 +109,28 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (readwrite, assign, nonatomic) BOOL useTokenAuth;
 
+/// :nodoc:
 - (instancetype)init;
+
+/// :nodoc:
 - (instancetype)initWithKey:(NSString *)key;
+
+/// :nodoc:
 - (instancetype)initWithToken:(NSString *)token;
+
+/// :nodoc:
 - (instancetype)initWithTokenDetails:(ARTTokenDetails *)tokenDetails;
 
+/// :nodoc:
 - (NSString *)description;
 
+/// :nodoc:
 - (ARTAuthOptions *)mergeWith:(ARTAuthOptions *)precedenceOptions;
 
+/// :nodoc:
 - (BOOL)isMethodGET;
+
+/// :nodoc:
 - (BOOL)isMethodPOST;
 
 @end

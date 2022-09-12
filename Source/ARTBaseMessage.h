@@ -57,8 +57,10 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (strong, nullable, nonatomic) id<ARTJsonCompatible> extras;
 
+/// :nodoc:
 - (NSString *)description;
 
+/// :nodoc:
 - (NSInteger)messageSize;
 
 @end

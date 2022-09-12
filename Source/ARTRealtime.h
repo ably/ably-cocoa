@@ -87,9 +87,10 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)time:(ARTDateTimeCallback)callback;
 
-/// :nodoc:
+/// :nodoc: TODO: docstring
 - (void)ping:(ARTCallback)cb;
 
+/// :nodoc: TODO: docstring
 - (BOOL)stats:(ARTPaginatedStatsCallback)callback;
 
 /**
