@@ -46,7 +46,22 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, readonly) NSStringDictionary *headers;
 
+/**
+ * BEGIN CANONICAL PROCESSED DOCSTRING
+ * Returns a new `ARTHTTPPaginatedResponse` for the first page of results.
+ *
+ * @param callback A callback for retriving an `ARTHTTPPaginatedResponse` object with an array of `NSDictionary` objects.
+ * END CANONICAL PROCESSED DOCSTRING
+ */
 - (void)first:(ARTHTTPPaginatedCallback)callback;
+
+/**
+ * BEGIN CANONICAL PROCESSED DOCSTRING
+ * Returns a new `ARTHTTPPaginatedResponse` loaded with the next page of results. If there are no further pages, then `nil` is returned.
+ *
+ * @param callback A callback for retriving an `ARTHTTPPaginatedResponse` object with an array of `NSDictionary` objects.
+ * END CANONICAL PROCESSED DOCSTRING
+ */
 - (void)next:(ARTHTTPPaginatedCallback)callback;
 
 @end
