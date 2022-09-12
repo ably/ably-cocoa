@@ -9,6 +9,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/**
+ The protocol upon which the `ARTRestChannel` is implemented.
+ */
 @protocol ARTRestChannelProtocol <ARTChannelProtocol>
 
 @property (readonly, nullable) ARTChannelOptions *options;
