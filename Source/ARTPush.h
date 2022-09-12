@@ -28,6 +28,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @optional
 
+/**
+ Ably will call the implementation of this method when the registration process is completed with failure.
+ */
 - (void)didAblyPushRegistrationFail:(nullable ARTErrorInfo *)error;
 
 /**
