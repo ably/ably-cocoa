@@ -38,10 +38,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL PROCESSED DOCSTRING
  * The Message Authentication Code for this request.
  * END CANONICAL PROCESSED DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING # useful?
- * Valid HMAC is created using the key secret.
- * END LEGACY DOCSTRING
  */
 @property (nonatomic, readonly, copy) NSString *mac;
 
@@ -63,10 +59,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL PROCESSED DOCSTRING
  * The timestamp of this request as `NSDate` object.
  * END CANONICAL PROCESSED DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING # useful?
- * Timestamp (in millis since the epoch) of this request. Timestamps, in conjunction with the nonce, are used to prevent n requests from being replayed.
- * END LEGACY DOCSTRING
  */
 @property (nonatomic, strong) NSDate *timestamp;
 

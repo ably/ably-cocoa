@@ -381,10 +381,6 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
  * BEGIN CANONICAL PROCESSED DOCSTRING
  * Contains application statistics for a specified time interval and time period.
  * END CANONICAL PROCESSED DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING # useful?
- * ARTStats object represents an application’s statistics for the specified interval and time period. Ably aggregates statistics globally for all accounts and applications, and makes these available both through our statistics API as well as your application dashboard.
- * END LEGACY DOCSTRING
  */
 @interface ARTStats : NSObject
 

@@ -34,10 +34,6 @@ NS_ASSUME_NONNULL_BEGIN
  * An authenticated token. This is a token string obtained from the `-[ARTTokenDetails token]` property of a `ARTTokenDetails` component of an Ably `ARTTokenRequest` response, or a JSON Web Token satisfying [the Ably requirements for JWTs](https://ably.com/docs/core-features/authentication#ably-jwt).
  * This option is mostly useful for testing: since tokens are short-lived, in production you almost always want to use an authentication method that enables the client library to renew the token automatically when the previous one expires, such as `authUrl` or `authCallback`. Read more about [Token authentication](https://ably.com/docs/core-features/authentication#token-authentication).
  * END CANONICAL PROCESSED DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING # useful?
- * An authentication token issued for this application against a specific key and `TokenParams`.
- * END LEGACY DOCSTRING
  */
 @property (nonatomic, copy, nullable) NSString *token;
 
@@ -45,10 +41,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL PROCESSED DOCSTRING
  * An authenticated `ARTTokenDetails` object (most commonly obtained from an Ably Token Request response). This option is mostly useful for testing: since tokens are short-lived, in production you almost always want to use an authentication method that enables the client library to renew the token automatically when the previous one expires, such as `authUrl` or `authCallback`. Use this option if you wish to use Token authentication. Read more about [Token authentication](https://ably.com/docs/core-features/authentication#token-authentication).
  * END CANONICAL PROCESSED DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING # useful?
- * An authentication token issued for this application against a specific key and `TokenParams`.
- * END LEGACY DOCSTRING
  */
 @property (nonatomic, strong, nullable) ARTTokenDetails *tokenDetails;
 
@@ -56,10 +48,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL PROCESSED DOCSTRING
  * Called when a new token is required. The role of the callback is to obtain a fresh token, one of: an Ably Token string (in plain text format); a signed `ARTTokenRequest`; a `ARTTokenDetails` (in JSON format); an [Ably JWT](https://ably.com/docs/core-features/authentication#ably-jwt). See [the authentication documentation](https://ably.com/docs/realtime/authentication) for details of the Ably `ARTTokenRequest` format and associated API calls.
  * END CANONICAL PROCESSED DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING # useful?
- * A callback to call to obtain a signed token request. This enables a client to obtain token requests from another entity, so tokens can be renewed without the client requiring access to keys.
- * END LEGACY DOCSTRING
  */
 @property (nonatomic, copy, nullable) ARTAuthCallback authCallback;
 
@@ -67,10 +55,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL PROCESSED DOCSTRING
  * A URL that the library may use to obtain a token string (in plain text format), or a signed `ARTTokenRequest` or `ARTTokenDetails` (in JSON format) from.
  * END CANONICAL PROCESSED DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING # useful?
- * A URL to queryto obtain a signed token request. This enables a client to obtain token requests from another entity, so tokens can be renewed without the client requiring access to keys.
- * END LEGACY DOCSTRING
  */
 @property (nonatomic, strong, nullable) NSURL *authUrl;
 

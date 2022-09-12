@@ -29,10 +29,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL PROCESSED DOCSTRING
  * The maximum message size is an attribute of an Ably account and enforced by Ably servers. `maxMessageSize` indicates the maximum message size allowed by the Ably account this connection is using. Overrides the default value of `-[ARTDefault maxMessageSize]`.
  * END CANONICAL PROCESSED DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING # useful?
- * -1 means 'undefined'.
- * END LEGACY DOCSTRING
  */
 @property (readonly, nonatomic) NSInteger maxMessageSize;
 
@@ -40,10 +36,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL PROCESSED DOCSTRING
  * Overrides the default `maxFrameSize`.
  * END CANONICAL PROCESSED DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING # useful?
- * -1 means 'undefined'.
- * END LEGACY DOCSTRING
  */
 @property (readonly, nonatomic) NSInteger maxFrameSize;
 
@@ -51,10 +43,6 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL PROCESSED DOCSTRING
  * The maximum allowable number of requests per second from a client or Ably. In the case of a realtime connection, this restriction applies to the number of messages sent, whereas in the case of REST, it is the total number of REST requests per second.
  * END CANONICAL PROCESSED DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING # useful?
- * Represents the maximum allowable number of requests per second from a client or Ably. In the case of a realtime connection, this restriction applies to the number of ProtocolMessage objects sent, whereas in the case of REST, it is the total number of REST requests per second.
- * END LEGACY DOCSTRING
  */
 @property (readonly, nonatomic) NSInteger maxInboundRate;
 

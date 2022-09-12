@@ -6,10 +6,6 @@
  * BEGIN CANONICAL PROCESSED DOCSTRING
  * Describes the possible flags used to configure client capabilities, using `ARTChannelOptions`.
  * END CANONICAL PROCESSED DOCSTRING
- *
- * BEGIN LEGACY DOCSTRING # useful?
- * ARTChannelMode bitmask matching the ARTProtocolMessageFlag.
- * END LEGACY DOCSTRING
  */
 typedef NS_OPTIONS(NSUInteger, ARTChannelMode) {
     /**

@@ -96,10 +96,6 @@ ART_EMBED_INTERFACE_EVENT_EMITTER(ARTRealtimeConnectionEvent, ARTConnectionState
  * Enables the management of a connection to Ably.
  * END CANONICAL PROCESSED DOCSTRING
  *
- * BEGIN LEGACY DOCSTRING # useful?
- * ARTConnection represents the connection associated with an `ARTRealtime` instance. It exposes the lifecycle and parameters of the realtime connection.
- * END LEGACY DOCSTRING
- *
  * @see See `ARTConnectionProtocol` for details.
  */
 @interface ARTConnection: NSObject <ARTConnectionProtocol>
