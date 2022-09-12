@@ -4,6 +4,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// :nodoc:
 typedef NS_ENUM(NSUInteger, ARTQueryDirection) {
     ARTQueryDirectionForwards,
     ARTQueryDirectionBackwards

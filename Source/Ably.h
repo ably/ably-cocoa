@@ -1,9 +1,15 @@
 #import <Foundation/Foundation.h>
 
-//! Project version number for ably-ios.
+/**
+ * :nodoc:
+ * Project version number for ably-ios.
+ */
 FOUNDATION_EXPORT double ablyVersionNumber;
 
-//! Project version string for ably-ios.
+/**
+ * :nodoc:
+ * Project version string for ably-ios.
+ */
 FOUNDATION_EXPORT const unsigned char ablyVersionString[];
 
 #import <Ably/ARTLog.h>

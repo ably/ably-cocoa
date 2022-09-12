@@ -7,6 +7,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// :nodoc:
 @protocol ARTTokenDetailsCompatible <NSObject>
 - (void)toTokenDetails:(ARTAuth *)auth callback:(ARTTokenDetailsCallback)callback;
 @end

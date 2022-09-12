@@ -39,6 +39,7 @@ typedef NS_ENUM(NSUInteger, ARTPresenceAction) {
     ARTPresenceUpdate
 };
 
+/// :nodoc:
 NSString *_Nonnull ARTPresenceActionToStr(ARTPresenceAction action);
 
 NS_ASSUME_NONNULL_BEGIN

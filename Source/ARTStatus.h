@@ -1,5 +1,6 @@
 #import <Foundation/Foundation.h>
 
+/// :nodoc:
 typedef NS_ENUM(NSUInteger, ARTState) {
     ARTStateOk = 0,
     ARTStateConnectionClosedByClient,
@@ -171,18 +172,16 @@ typedef CF_ENUM(NSUInteger, ARTClientCodeError) {
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// :nodoc:
 FOUNDATION_EXPORT NSString *const ARTErrorInfoRequestIdKey;
 
+/// :nodoc:
 FOUNDATION_EXPORT NSString *const ARTAblyErrorDomain;
 
-/**
- Ably client exception names
- */
+/// :nodoc:
 FOUNDATION_EXPORT NSString *const ARTFallbackIncompatibleOptionsException;
 
-/**
- Ably client error messages
- */
+/// :nodoc:
 FOUNDATION_EXPORT NSString *const ARTAblyMessageNoMeansToRenewToken;
 
 /**

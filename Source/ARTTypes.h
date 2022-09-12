@@ -18,13 +18,22 @@
 @class ARTDeviceDetails;
 @protocol ARTTokenDetailsCompatible;
 
-// More context
+/// :nodoc:
 typedef NSDictionary<NSString *, id> ARTJsonObject;
+
+/// :nodoc:
 typedef NSString ARTDeviceId;
+
+/// :nodoc:
 typedef NSString ARTDeviceSecret;
+
+/// :nodoc:
 typedef NSData ARTDeviceToken;
+
+/// :nodoc:
 typedef ARTJsonObject ARTPushRecipient;
 
+/// :nodoc:
 typedef NS_ENUM(NSUInteger, ARTAuthentication) {
     ARTAuthenticationOff,
     ARTAuthenticationOn,
@@ -33,6 +42,7 @@ typedef NS_ENUM(NSUInteger, ARTAuthentication) {
     ARTAuthenticationTokenRetry
 };
 
+/// :nodoc:
 typedef NS_ENUM(NSUInteger, ARTAuthMethod) {
     ARTAuthMethodBasic,
     ARTAuthMethodToken
@@ -94,6 +104,7 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionState) {
     ARTRealtimeFailed
 };
 
+/// :nodoc:
 NSString *_Nonnull ARTRealtimeConnectionStateToStr(ARTRealtimeConnectionState state);
 
 /**
@@ -118,6 +129,7 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeConnectionEvent) {
     ARTRealtimeConnectionEventUpdate
 };
 
+/// :nodoc:
 NSString *_Nonnull ARTRealtimeConnectionEventToStr(ARTRealtimeConnectionEvent event);
 
 /**
@@ -170,6 +182,7 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeChannelState) {
     ARTRealtimeChannelFailed
 };
 
+/// :nodoc:
 NSString *_Nonnull ARTRealtimeChannelStateToStr(ARTRealtimeChannelState state);
 
 /**
@@ -193,9 +206,11 @@ typedef NS_ENUM(NSUInteger, ARTChannelEvent) {
     ARTChannelEventUpdate
 };
 
+/// :nodoc:
 NSString *_Nonnull ARTChannelEventToStr(ARTChannelEvent event);
 
 
+/// :nodoc:
 typedef NS_ENUM(NSInteger, ARTDataQueryError) {
     ARTDataQueryErrorLimit = 1,
     ARTDataQueryErrorTimestampRange = 2,
@@ -204,10 +219,12 @@ typedef NS_ENUM(NSInteger, ARTDataQueryError) {
     ARTDataQueryErrorDeviceInactive = 5,
 };
 
+/// :nodoc:
 typedef NS_ENUM(NSInteger, ARTRealtimeHistoryError) {
     ARTRealtimeHistoryErrorNotAttached = ARTDataQueryErrorTimestampRange + 1
 };
 
+/// :nodoc:
 typedef NS_ENUM(NSInteger, ARTCustomRequestError) {
     ARTCustomRequestErrorInvalidMethod = 1,
     ARTCustomRequestErrorInvalidBody = 2,
@@ -216,16 +233,26 @@ typedef NS_ENUM(NSInteger, ARTCustomRequestError) {
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// :nodoc:
 /// Decompose API key
 NSArray<NSString *> *decomposeKey(NSString *key);
 
+/// :nodoc:
 NSString *encodeBase64(NSString *value);
+
+/// :nodoc:
 NSString *decodeBase64(NSString *base64);
 
+/// :nodoc:
 uint64_t dateToMilliseconds(NSDate *date);
+
+/// :nodoc:
 uint64_t timeIntervalToMilliseconds(NSTimeInterval seconds);
+
+/// :nodoc:
 NSTimeInterval millisecondsToTimeInterval(uint64_t msecs);
 
+/// :nodoc:
 NSString *generateNonce(void);
 
 /// :nodoc:
@@ -526,48 +553,84 @@ NSString *generateNonce(void);
 @interface NSURLSessionTask (ARTCancellable) <ARTCancellable>
 @end
 
+/// :nodoc:
 typedef NSDictionary<NSString *, NSString *> NSStringDictionary;
 
-/**
- Signatures of completion handlers to improve readability and maintainability in properties and method parameters.
- Either result/response or error can be nil but not both.
- */
+// Below are the typedefs of completion handlers to improve readability and maintainability in properties and method parameters.
+// Either result/response or error can be nil but not both.
+
+/// :nodoc:
 typedef void (^ARTCallback)(ARTErrorInfo *_Nullable error);
+
+/// :nodoc:
 typedef void (^ARTResultCallback)(id _Nullable result, NSError *_Nullable error);
+
+/// :nodoc:
 typedef void (^ARTDateTimeCallback)(NSDate *_Nullable result, NSError *_Nullable error);
 
+/// :nodoc:
 typedef void (^ARTMessageCallback)(ARTMessage *message);
+
+/// :nodoc:
 typedef void (^ARTChannelStateCallback)(ARTChannelStateChange *stateChange);
+
+/// :nodoc:
 typedef void (^ARTConnectionStateCallback)(ARTConnectionStateChange *stateChange);
+
+/// :nodoc:
 typedef void (^ARTPresenceMessageCallback)(ARTPresenceMessage *message);
+
+/// :nodoc:
 typedef void (^ARTPresenceMessagesCallback)(NSArray<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error);
+
+/// :nodoc:
 typedef void (^ARTChannelDetailsCallback)(ARTChannelDetails *_Nullable details, ARTErrorInfo *_Nullable error);
 
+/// :nodoc:
 typedef void (^ARTStatusCallback)(ARTStatus *status);
+
+/// :nodoc:
 typedef void (^ARTURLRequestCallback)(NSHTTPURLResponse *_Nullable result, NSData *_Nullable data, NSError *_Nullable error);
+
+/// :nodoc:
 typedef void (^ARTTokenDetailsCallback)(ARTTokenDetails *_Nullable result, NSError *_Nullable error);
+
+/// :nodoc:
 typedef void (^ARTTokenDetailsCompatibleCallback)(id<ARTTokenDetailsCompatible> _Nullable result, NSError *_Nullable error);
+
+/// :nodoc:
 typedef void (^ARTAuthCallback)(ARTTokenParams *params, ARTTokenDetailsCompatibleCallback callback);
 
+/// :nodoc:
 typedef void (^ARTHTTPPaginatedCallback)(ARTHTTPPaginatedResponse *_Nullable response, ARTErrorInfo *_Nullable error);
+
+/// :nodoc:
 typedef void (^ARTPaginatedStatsCallback)(ARTPaginatedResult<ARTStats *> *_Nullable result, ARTErrorInfo *_Nullable error);
+
+/// :nodoc:
 typedef void (^ARTPaginatedPresenceCallback)(ARTPaginatedResult<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error);
+
+/// :nodoc:
 typedef void (^ARTPaginatedPushChannelCallback)(ARTPaginatedResult<ARTPushChannelSubscription *> *_Nullable result, ARTErrorInfo *_Nullable error);
+
+/// :nodoc:
 typedef void (^ARTPaginatedMessagesCallback)(ARTPaginatedResult<ARTMessage *> *_Nullable result, ARTErrorInfo *_Nullable error);
+
+/// :nodoc:
 typedef void (^ARTPaginatedDeviceDetailsCallback)(ARTPaginatedResult<ARTDeviceDetails *> *_Nullable result, ARTErrorInfo *_Nullable error);
+
+/// :nodoc:
 typedef void (^ARTPaginatedTextCallback)(ARTPaginatedResult<NSString *> *_Nullable result, ARTErrorInfo *_Nullable error);
 
 /**
- Wraps the given callback in an ARTCancellable, offering the following
- protections:
- 
- 1) If the cancel method is called on the returned instance then the callback
-    will not be invoked.
- 2) The callback will only ever be invoked once.
- 
- To make use of these benefits the caller needs to use the returned wrapper
- to invoke the callback. The wrapper will only work for as long as the returned
- instance remains allocated (i.e. has a strong reference to it somewhere).
+ * :nodoc:
+ *
+ * Wraps the given callback in an ARTCancellable, offering the following protections:
+ *
+ * 1) If the cancel method is called on the returned instance then the callback will not be invoked.
+ * 2) The callback will only ever be invoked once.
+ *
+ * To make use of these benefits the caller needs to use the returned wrapper to invoke the callback. The wrapper will only work for as long as the returned instance remains allocated (i.e. has a strong reference to it somewhere).
  */
 NSObject<ARTCancellable> * artCancellableFromCallback(ARTResultCallback callback, _Nonnull ARTResultCallback *_Nonnull wrapper);
 

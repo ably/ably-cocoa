@@ -9,6 +9,7 @@
 @class ARTMessage;
 @class ARTPresenceMessage;
 
+/// :nodoc:
 typedef NS_ENUM(NSUInteger, ARTProtocolMessageAction) {
     ARTProtocolMessageHeartbeat = 0,
     ARTProtocolMessageAck = 1,
@@ -30,6 +31,7 @@ typedef NS_ENUM(NSUInteger, ARTProtocolMessageAction) {
     ARTProtocolMessageAuth = 17,
 };
 
+/// :nodoc:
 NSString *_Nonnull ARTProtocolMessageActionToStr(ARTProtocolMessageAction action);
 
 NS_ASSUME_NONNULL_BEGIN

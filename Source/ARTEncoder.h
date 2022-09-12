@@ -13,6 +13,7 @@
 
 @protocol ARTPushRecipient;
 
+/// :nodoc:
 typedef NS_ENUM(NSUInteger, ARTEncoderFormat) {
     ARTEncoderFormatJson,
     ARTEncoderFormatMsgPack
