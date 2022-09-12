@@ -260,6 +260,8 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL PROCESSED DOCSTRING
  * Enables the presence set to be entered and subscribed to, and the historic presence set to be retrieved for a channel.
  * END CANONICAL PROCESSED DOCSTRING
+ *
+ * @see See `ARTRealtimePresenceProtocol` for details.
  */
 @interface ARTRealtimePresence : ARTPresence <ARTRealtimePresenceProtocol>
 @end

@@ -101,6 +101,8 @@ NS_ASSUME_NONNULL_BEGIN
  * BEGIN CANONICAL PROCESSED DOCSTRING
  * Enables devices to subscribe to push notifications for a channel.
  * END CANONICAL PROCESSED DOCSTRING
+ *
+ * @see See `ARTPushChannelProtocol` for details.
  */
 @interface ARTPushChannel : NSObject <ARTPushChannelProtocol>
 

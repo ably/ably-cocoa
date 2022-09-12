@@ -101,6 +101,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * BEGIN CANONICAL PROCESSED DOCSTRING
  * Creates Ably `ARTTokenRequest` objects and obtains Ably Tokens from Ably to subsequently issue to less trusted clients.
+ *
+ * @see See `ARTAuthProtocol` for details.
  * END CANONICAL PROCESSED DOCSTRING
  */
 @interface ARTAuth : NSObject <ARTAuthProtocol>

@@ -73,11 +73,14 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 /**
- The base class for `ARTRestChannel` and `ARTRealtimeChannel`.
- Ably platform service organizes the message traffic within applications into named channels. Channels are the medium through which messages are distributed; clients attach to channels to subscribe to messages, and every message published to a unique channel is broadcast by Ably to all subscribers.
+ * The base class for `ARTRestChannel` and `ARTRealtimeChannel`.
+ * Ably platform service organizes the message traffic within applications into named channels. Channels are the medium through which messages are distributed; clients attach to channels to subscribe to messages, and every message published to a unique channel is broadcast by Ably to all subscribers.
+ *
+ * @see See `ARTChannelProtocol` for details.
  */
 @interface ARTChannel : NSObject<ARTChannelProtocol>
 
+/// :nodoc:
 @property (nonatomic, strong, readonly) NSString *name;
 
 @end
