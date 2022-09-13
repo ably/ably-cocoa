@@ -652,9 +652,9 @@
 		D737F829263AF4CE0064FA05 /* ARTFallbackHosts.m in Sources */ = {isa = PBXBuildFile; fileRef = D737F825263AF4CE0064FA05 /* ARTFallbackHosts.m */; };
 		D737F82A263AF4CE0064FA05 /* ARTFallbackHosts.m in Sources */ = {isa = PBXBuildFile; fileRef = D737F825263AF4CE0064FA05 /* ARTFallbackHosts.m */; };
 		D737F82B263AF4CE0064FA05 /* ARTFallbackHosts.m in Sources */ = {isa = PBXBuildFile; fileRef = D737F825263AF4CE0064FA05 /* ARTFallbackHosts.m */; };
-		D73B655523EF2B2900D459A6 /* ARTDeltaCodec.h in Headers */ = {isa = PBXBuildFile; fileRef = D73B655323EF2B2900D459A6 /* ARTDeltaCodec.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		D73B655623EF2B2900D459A6 /* ARTDeltaCodec.h in Headers */ = {isa = PBXBuildFile; fileRef = D73B655323EF2B2900D459A6 /* ARTDeltaCodec.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		D73B655723EF2B2900D459A6 /* ARTDeltaCodec.h in Headers */ = {isa = PBXBuildFile; fileRef = D73B655323EF2B2900D459A6 /* ARTDeltaCodec.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		D73B655523EF2B2900D459A6 /* ARTDeltaCodec.h in Headers */ = {isa = PBXBuildFile; fileRef = D73B655323EF2B2900D459A6 /* ARTDeltaCodec.h */; };
+		D73B655623EF2B2900D459A6 /* ARTDeltaCodec.h in Headers */ = {isa = PBXBuildFile; fileRef = D73B655323EF2B2900D459A6 /* ARTDeltaCodec.h */; };
+		D73B655723EF2B2900D459A6 /* ARTDeltaCodec.h in Headers */ = {isa = PBXBuildFile; fileRef = D73B655323EF2B2900D459A6 /* ARTDeltaCodec.h */; };
 		D73B655823EF2B2900D459A6 /* ARTDeltaCodec.m in Sources */ = {isa = PBXBuildFile; fileRef = D73B655423EF2B2900D459A6 /* ARTDeltaCodec.m */; };
 		D73B655923EF2B2900D459A6 /* ARTDeltaCodec.m in Sources */ = {isa = PBXBuildFile; fileRef = D73B655423EF2B2900D459A6 /* ARTDeltaCodec.m */; };
 		D73B655A23EF2B2900D459A6 /* ARTDeltaCodec.m in Sources */ = {isa = PBXBuildFile; fileRef = D73B655423EF2B2900D459A6 /* ARTDeltaCodec.m */; };
