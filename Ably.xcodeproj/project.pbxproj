@@ -1112,8 +1112,8 @@
 		D73691FE1DB788C40062C150 /* ARTAuthDetails.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTAuthDetails.m; sourceTree = "<group>"; };
 		D737F824263AF4CE0064FA05 /* ARTFallbackHosts.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTFallbackHosts.h; sourceTree = "<group>"; };
 		D737F825263AF4CE0064FA05 /* ARTFallbackHosts.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTFallbackHosts.m; sourceTree = "<group>"; };
-		D73B655323EF2B2900D459A6 /* ARTDeltaCodec.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTDeltaCodec.h; sourceTree = "<group>"; };
-		D73B655423EF2B2900D459A6 /* ARTDeltaCodec.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTDeltaCodec.m; sourceTree = "<group>"; };
+		D73B655323EF2B2900D459A6 /* ARTDeltaCodec.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTDeltaCodec.h; path = Private/ARTDeltaCodec.h; sourceTree = "<group>"; };
+		D73B655423EF2B2900D459A6 /* ARTDeltaCodec.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = ARTDeltaCodec.m; path = Private/ARTDeltaCodec.m; sourceTree = "<group>"; };
 		D746AE1A1BBB5207003ECEF8 /* ARTDataQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTDataQuery.h; sourceTree = "<group>"; };
 		D746AE1B1BBB5207003ECEF8 /* ARTDataQuery+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTDataQuery+Private.h"; sourceTree = "<group>"; };
 		D746AE1C1BBB5207003ECEF8 /* ARTDataQuery.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTDataQuery.m; sourceTree = "<group>"; };
