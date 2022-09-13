@@ -23,19 +23,21 @@ NS_ASSUME_NONNULL_BEGIN
 + (NSTimeInterval)ttl;
 
 /**
- When the client is in the `ARTRealtimeDisconnected` state, once this TTL has passed, the client should change the state to the `ARTRealtimeSuspended` state signifying that the state is now lost i.e. channels need to be reattached manually.
+ When the client is in the `ARTRealtimeConnectionState.ARTRealtimeDisconnected` state, once this TTL has passed, the client should change the state to the `ARTRealtimeConnectionState.ARTRealtimeSuspended` state signifying that the state is now lost i.e. channels need to be reattached manually.
  
  Note that this default is override by any `ARTConnectionDetails.connectionStateTtl` of the `ARTProtocolMessageConnected` of the `ARTProtocolMessage`.
  */
 + (NSTimeInterval)connectionStateTtl;
 
 /**
- * Timeout for the wait of acknowledgement for operations performed via a realtime connection, before the client library considers a request failed and triggers a failure condition. Operations include establishing a connection with Ably, or sending a `ARTProtocolMessageHeartbeat`, `ARTProtocolMessageConnect`, `ARTProtocolMessageAttach`, `ARTProtocolMessageDetach` or `ARTProtocolMessageClose` request. It is the equivalent of `-[ARTClientOptions httpRequestTimeout]` but for realtime operations, rather than REST. The default is 10 seconds.
+ * Timeout for the wait of acknowledgement for operations performed via a realtime connection, before the client library considers a request failed and triggers a failure condition. Operations include establishing a connection with Ably, or sending a `ARTProtocolMessageHeartbeat`, `ARTProtocolMessageConnect`, `ARTProtocolMessageAttach`, `ARTProtocolMessageDetach` or `ARTProtocolMessageClose` request. It is the equivalent of `ARTClientOptions.httpRequestTimeout` but for realtime operations, rather than REST. The default is 10 seconds.
  */
 + (NSTimeInterval)realtimeRequestTimeout;
 
+/// :nodoc: TODO: docstring
 + (NSString *)libraryAgent;
 
+/// :nodoc: TODO: docstring
 + (NSString *)platformAgent;
 
 /**

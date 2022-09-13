@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init NS_UNAVAILABLE;
 
 /**
- * A static factory method to create a `ARTPushChannelSubscription` object for a channel and single device.
+ * Creates an `ARTPushChannelSubscription` object for a channel and single device.
  *
  * @param deviceId The unique ID of the device.
  * @param channelName The channel name.
@@ -36,7 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDeviceId:(NSString *)deviceId channel:(NSString *)channelName;
 
 /**
- * A static factory method to create a `ARTPushChannelSubscription` object for a channel and group of devices sharing the same `clientId`.
+ * Creates an `ARTPushChannelSubscription` object for a channel and group of devices sharing the same `clientId`.
  *
  * @param clientId The ID of the client.
  * @param channelName The channel name.

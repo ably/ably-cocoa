@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSString *key;
 
 /**
- * An authenticated token. This is a token string obtained from the `-[ARTTokenDetails token]` property of a `ARTTokenDetails` component of an Ably `ARTTokenRequest` response, or a JSON Web Token satisfying [the Ably requirements for JWTs](https://ably.com/docs/core-features/authentication#ably-jwt).
+ * An authenticated token. This is a token string obtained from the `ARTTokenDetails.token` property of an `ARTTokenDetails` component of an Ably `ARTTokenRequest` response, or a JSON Web Token satisfying [the Ably requirements for JWTs](https://ably.com/docs/core-features/authentication#ably-jwt).
  * This option is mostly useful for testing: since tokens are short-lived, in production you almost always want to use an authentication method that enables the client library to renew the token automatically when the previous one expires, such as `authUrl` or `authCallback`. Read more about [Token authentication](https://ably.com/docs/core-features/authentication#token-authentication).
  */
 @property (nonatomic, copy, nullable) NSString *token;
@@ -52,7 +52,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, null_resettable) NSString *authMethod;
 
 /**
- * A set of key-value pair headers to be added to any request made to the `authUrl`. Useful when an application requires these to be added to validate the request or implement the response. If the `authHeaders` object contains an `authorization` key, then `withCredentials` is set on the XHR request.
+ * A set of key-value pair headers to be added to any request made to the `authUrl`. Useful when an application requires these to be added to validate the request or implement the response. If the `authHeaders` object contains an "authorization" key, then "withCredentials" is set on the XHR request.
  */
 @property (nonatomic, copy, nullable) NSStringDictionary *authHeaders;
 

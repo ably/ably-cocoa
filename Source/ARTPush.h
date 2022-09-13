@@ -74,14 +74,14 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error realtime:(ARTRealtime *)realtime;
 
 /**
- * Activates the device for push notifications with APNS, obtaining a unique identifier from it. Subsequently registers the device with Ably and stores the `-[ARTLocalDevice identityTokenDetails]` in local storage.
- * You should implement -[ARTPushRegistererDelegate didActivateAblyPush:] to handle success or failure of this operation.
+ * Activates the device for push notifications with APNS, obtaining a unique identifier from it. Subsequently registers the device with Ably and stores the `ARTLocalDevice.identityTokenDetails` in local storage.
+ * You should implement `-[ARTPushRegistererDelegate didActivateAblyPush:]` to handle success or failure of this operation.
  */
 - (void)activate;
 
 /**
  * Deactivates the device from receiving push notifications with Ably.
- * You should implement -[ARTPushRegistererDelegate didDeactivateAblyPush:] to handle success or failure of this operation.
+ * You should implement `-[ARTPushRegistererDelegate didDeactivateAblyPush:]` to handle success or failure of this operation.
  */
 - (void)deactivate;
 

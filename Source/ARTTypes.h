@@ -241,7 +241,7 @@ NSString *generateNonce(void);
  */
 @property (readonly, nonatomic) ARTRealtimeConnectionState current;
 /**
- * The previous `ARTRealtimeConnectionState`. For the `ARTRealtimeConnectionEventUpdate` event, this is equal to the `-[ARTRealtimeConnectionState current]` state.
+ * The previous `ARTRealtimeConnectionState`. For the `ARTRealtimeConnectionEvent.ARTRealtimeConnectionEventUpdate` event, this is equal to the `current` state.
  */
 @property (readonly, nonatomic) ARTRealtimeConnectionState previous;
 /**
@@ -285,7 +285,7 @@ NSString *generateNonce(void);
 @property (readonly, nonatomic) ARTRealtimeChannelState current;
 
 /**
- * The previous state. For the `ARTChannelEventUpdate` event, this is equal to the `-[ARTRealtimeChannelState current]` state.
+ * The previous state. For the `ARTChannelEvent.ARTChannelEventUpdate` event, this is equal to the `current` state.
  */
 @property (readonly, nonatomic) ARTRealtimeChannelState previous;
 
@@ -317,17 +317,17 @@ NSString *generateNonce(void);
 @property (nonatomic, readonly) NSInteger connections;
 
 /**
- * The number of realtime attachments permitted to publish messages to the channel. This requires the `publish` capability and for a client to not have specified a `ARTChannelMode` flag that excludes `ARTChannelModePublish`.
+ * The number of realtime attachments permitted to publish messages to the channel. This requires the `publish` capability and for a client to not have specified a `ARTChannelMode` flag that excludes `ARTChannelMode.ARTChannelModePublish`.
  */
 @property (nonatomic, readonly) NSInteger publishers;
 
 /**
- * The number of realtime attachments receiving messages on the channel. This requires the `subscribe` capability and for a client to not have specified a `ARTChannelMode` flag that excludes `ARTChannelModeSubscribe`.
+ * The number of realtime attachments receiving messages on the channel. This requires the `subscribe` capability and for a client to not have specified a `ARTChannelMode` flag that excludes `ARTChannelMode.ARTChannelModeSubscribe`.
  */
 @property (nonatomic, readonly) NSInteger subscribers;
 
 /**
- * The number of realtime connections attached to the channel with permission to enter the presence set, regardless of whether or not they have entered it. This requires the `presence` capability and for a client to not have specified a `ARTChannelMode` flag that excludes `ARTChannelModePresence`.
+ * The number of realtime connections attached to the channel with permission to enter the presence set, regardless of whether or not they have entered it. This requires the `presence` capability and for a client to not have specified a `ARTChannelMode` flag that excludes `ARTChannelMode.ARTChannelModePresence`.
  */
 @property (nonatomic, readonly) NSInteger presenceConnections;
 
@@ -337,7 +337,7 @@ NSString *generateNonce(void);
 @property (nonatomic, readonly) NSInteger presenceMembers;
 
 /**
- * The number of realtime attachments receiving presence messages on the channel. This requires the `subscribe` capability and for a client to not have specified a `ARTChannelMode` flag that excludes `ARTChannelModePresenceSubscribe`.
+ * The number of realtime attachments receiving presence messages on the channel. This requires the `subscribe` capability and for a client to not have specified a `ARTChannelMode` flag that excludes `ARTChannelMode.ARTChannelModePresenceSubscribe`.
  */
 @property (nonatomic, readonly) NSInteger presenceSubscribers;
 

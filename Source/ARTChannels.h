@@ -39,7 +39,7 @@
 
 /**
  * Releases an `ARTRestChannel` or an `ARTRealtimeChannel` object by deleting it. It also removes any listeners associated with the channel.
- * To release an `ARTRealtimeChannel` channel, the `-[ARTRealtimeChannel state]` must be `ARTRealtimeChannelInitialized`, `ARTRealtimeChannelDetached`, or `ARTRealtimeChannelFailed`.
+ * To release an `ARTRealtimeChannel` channel, the `ARTRealtimeChannelProtocol.state` must be `ARTRealtimeChannelState.ARTRealtimeChannelInitialized`, `ARTRealtimeChannelState.ARTRealtimeChannelDetached`, or `ARTRealtimeChannelState.ARTRealtimeChannelFailed`.
  *
  * @param name The channel name.
  */

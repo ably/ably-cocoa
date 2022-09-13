@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, copy, readwrite) NSString *clientId;
 
 /**
- * The timestamp of this request as `NSDate` object. Timestamps, in conjunction with the `nonce`, are used to prevent requests from being replayed. `timestamp` is a "one-time" value, and is valid in a request, but is not validly a member of any default token params such as `-[ClientOptions defaultTokenParams]`.
+ * The timestamp of this request as `NSDate` object. Timestamps, in conjunction with the `nonce`, are used to prevent requests from being replayed. `timestamp` is a "one-time" value, and is valid in a request, but is not validly a member of any default token params such as `ARTClientOptions.defaultTokenParams`.
  */
 @property (nullable, nonatomic, copy, readwrite) NSDate *timestamp;
 

@@ -15,6 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, strong, nullable) ARTCipherParams *cipher;
 
+/// :nodoc: TODO: docstring
 - (instancetype)initWithCipher:(id<ARTCipherParamsCompatible> _Nullable)cipherParams;
 
 /**

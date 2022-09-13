@@ -69,7 +69,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Registers a listener for messages on this channel. The caller supplies a listener function, which is called each time one or more messages arrives on the channel.
- * An attach callback may optionally be passed in to this call to be notified of success or failure of the channel `-[ARTRealtimeChannel attach]` operation.
+ * An attach callback may optionally be passed in to this call to be notified of success or failure of the channel `-[ARTRealtimeChannelProtocol attach]` operation.
  *
  * @param onAttach An attach callback function.
  * @param callback An event listener function.
@@ -89,7 +89,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (ARTEventListener *_Nullable)subscribe:(NSString *)name callback:(ARTMessageCallback)callback;
 
 /**
- * Registers a listener for messages with a given event `name` on this channel. The caller supplies a listener function, which is called each time one or more matching messages arrives on the channel. A callback may optionally be passed in to this call to be notified of success or failure of the channel `-[ARTRealtimeChannel attach]` operation.
+ * Registers a listener for messages with a given event `name` on this channel. The caller supplies a listener function, which is called each time one or more matching messages arrives on the channel. A callback may optionally be passed in to this call to be notified of success or failure of the channel `-[ARTRealtimeChannelProtocol attach]` operation.
  *
  * @param name The event name.
  * @param callback An event listener function.
@@ -146,7 +146,7 @@ ART_EMBED_INTERFACE_EVENT_EMITTER(ARTChannelEvent, ARTChannelStateChange *)
 
 /**
  * Enables messages to be published and subscribed to. Also enables historic messages to be retrieved and provides access to the `ARTRealtimePresence` object of a channel.
- * Also implements `ARTEventEmitter` interface and emits `ARTChannelEvent` events, where a `ARTChannelEvent` is either a `ARTRealtimeChannelState` or an `ARTChannelEventUpdate`.
+ * Also implements `ARTEventEmitter` interface and emits `ARTChannelEvent` events, where a `ARTChannelEvent` is either a `ARTRealtimeChannelState` or an `ARTChannelEvent.ARTChannelEventUpdate`.
  */
 @interface ARTRealtimeChannel : NSObject <ARTRealtimeChannelProtocol>
 

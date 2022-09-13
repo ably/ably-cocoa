@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTRealtimePresenceQuery : ARTPresenceQuery
 
 /**
- * Sets whether to wait for a full presence set synchronization between Ably and the clients on the channel to complete before returning the results. Synchronization begins as soon as the channel is `ARTRealtimeChannelAttached`. When set to `true` the results will be returned as soon as the sync is complete. When set to `false` the current list of members will be returned without the sync completing. The default is `true`.
+ * Sets whether to wait for a full presence set synchronization between Ably and the clients on the channel to complete before returning the results. Synchronization begins as soon as the channel is `ARTRealtimeChannelState.ARTRealtimeChannelAttached`. When set to `true` the results will be returned as soon as the sync is complete. When set to `false` the current list of members will be returned without the sync completing. The default is `true`.
  */
 @property (readwrite, nonatomic) BOOL waitForSync;
 
@@ -146,7 +146,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (ARTEventListener *_Nullable)subscribe:(ARTPresenceMessageCallback)callback;
 
 /**
- * Registers a listener that is called each time a `ARTPresenceMessage` is received on the channel, such as a new member entering the presence set. A callback may optionally be passed in to this call to be notified of success or failure of the channel `-[ARTRealtimeChannel attach]` operation.
+ * Registers a listener that is called each time a `ARTPresenceMessage` is received on the channel, such as a new member entering the presence set. A callback may optionally be passed in to this call to be notified of success or failure of the channel `-[ARTRealtimeChannelProtocol attach]` operation.
  *
  * @param onAttach An attach callback function.
  * @param callback An event listener function.
@@ -166,7 +166,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (ARTEventListener *_Nullable)subscribe:(ARTPresenceAction)action callback:(ARTPresenceMessageCallback)callback;
 
 /**
- * Registers a listener that is called each time a `ARTPresenceMessage` matching a given `ARTPresenceAction` is received on the channel, such as a new member entering the presence set. A callback may optionally be passed in to this call to be notified of success or failure of the channel `-[ARTRealtimeChannel attach]` operation.
+ * Registers a listener that is called each time a `ARTPresenceMessage` matching a given `ARTPresenceAction` is received on the channel, such as a new member entering the presence set. A callback may optionally be passed in to this call to be notified of success or failure of the channel `-[ARTRealtimeChannelProtocol attach]` operation.
  *
  * @param action A `ARTPresenceAction` to register the listener for.
  * @param onAttach An attach callback function.

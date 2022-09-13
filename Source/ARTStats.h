@@ -9,20 +9,20 @@ NS_ASSUME_NONNULL_BEGIN
  */
 typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
     /**
-         * Interval unit over which statistics are gathered as minutes.
-         */
+     * Interval unit over which statistics are gathered as minutes.
+     */
     ARTStatsGranularityMinute,
     /**
-         * Interval unit over which statistics are gathered as hours.
-         */
+     * Interval unit over which statistics are gathered as hours.
+     */
     ARTStatsGranularityHour,
     /**
-         * Interval unit over which statistics are gathered as days.
-         */
+     * Interval unit over which statistics are gathered as days.
+     */
     ARTStatsGranularityDay,
     /**
-         * Interval unit over which statistics are gathered as months.
-         */
+     * Interval unit over which statistics are gathered as months.
+     */
     ARTStatsGranularityMonth
 };
 
@@ -32,7 +32,7 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 @interface ARTStatsQuery : ARTDataQuery
 
 /**
- * `ARTStatsGranularityMinute`, `ARTStatsGranularityHour`, `ARTStatsGranularityDay` or `ARTStatsGranularityMonth`. Based on the unit selected, the given `start` or `end` times are rounded down to the start of the relevant interval depending on the unit granularity of the query.
+ * `ARTStatsGranularity.ARTStatsGranularityMinute`, `ARTStatsGranularity.ARTStatsGranularityHour`, `ARTStatsGranularity.ARTStatsGranularityDay` or `ARTStatsGranularity.ARTStatsGranularityMonth`. Based on the unit selected, the given `start` or `end` times are rounded down to the start of the relevant interval depending on the unit granularity of the query.
  */
 @property (nonatomic, assign) ARTStatsGranularity unit;
 
@@ -183,22 +183,22 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 @end
 
 /**
- * Contains a breakdown of summary stats data for different (TLS vs non-TLS) connection types.
+ * Contains a breakdown of summary stats data for different (`TLS` vs non-`TLS`) connection types.
  */
 @interface ARTStatsConnectionTypes : NSObject
 
 /**
- * A `ARTStatsResourceCount` object containing a breakdown of usage by scope over TLS connections (both TLS and non-TLS).
+ * A `ARTStatsResourceCount` object containing a breakdown of usage by scope over `TLS` connections (both `TLS` and non-`TLS`).
  */
 @property (readonly, strong, nonatomic) ARTStatsResourceCount *all;
 
 /**
- * A `ARTStatsResourceCount` object containing a breakdown of usage by scope over non-TLS connections.
+ * A `ARTStatsResourceCount` object containing a breakdown of usage by scope over non-`TLS` connections.
  */
 @property (readonly, strong, nonatomic) ARTStatsResourceCount *plain;
 
 /**
- * A `ARTStatsResourceCount` object containing a breakdown of usage by scope over TLS connections.
+ * A `ARTStatsResourceCount` object containing a breakdown of usage by scope over `TLS` connections.
  */
 @property (readonly, strong, nonatomic) ARTStatsResourceCount *tls;
 

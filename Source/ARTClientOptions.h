@@ -10,7 +10,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- * Passes additional client-specific properties to the REST `-[ARTRest initWithOptions:]` or the Realtime `-[ARTRealtime initWithOptions:]`.
+ * Passes additional client-specific properties to the REST `-[ARTRestProtocol initWithOptions:]` or the Realtime `-[ARTRealtimeProtocol initWithOptions:]`.
  */
 @interface ARTClientOptions : ARTAuthOptions
 
@@ -75,7 +75,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) BOOL autoConnect;
 
 /**
- * Enables a connection to inherit the state of a previous connection that may have existed under a different instance of the Realtime library. This might happen upon the app restart where a recovery key string can be explicitly provided to the `-[ARTRealtime initWithOptions:]` initializer. See [connection state recovery](https://ably.com/docs/realtime/connection/#connection-state-recovery) for further information.
+ * Enables a connection to inherit the state of a previous connection that may have existed under a different instance of the Realtime library. This might happen upon the app restart where a recovery key string can be explicitly provided to the `-[ARTRealtimeProtocol initWithOptions:]` initializer. See [connection state recovery](https://ably.com/docs/realtime/connection/#connection-state-recovery) for further information.
  */
 @property (nullable, readwrite, copy, nonatomic) NSString *recover;
 
@@ -93,17 +93,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, strong, nonatomic, nullable) ARTTokenParams *defaultTokenParams;
 
 /**
- * If the connection is still in the `ARTRealtimeDisconnected` state after this delay, the client library will attempt to reconnect automatically. The default is 15 seconds.
+ * If the connection is still in the `ARTRealtimeConnectionState.ARTRealtimeDisconnected` state after this delay, the client library will attempt to reconnect automatically. The default is 15 seconds.
  */
 @property (readwrite, assign, nonatomic) NSTimeInterval disconnectedRetryTimeout;
 
 /**
- * When the connection enters the `ARTRealtimeSuspended` state, after this delay, if the state is still `ARTRealtimeSuspended`, the client library attempts to reconnect automatically. The default is 30 seconds.
+ * When the connection enters the `ARTRealtimeConnectionState.ARTRealtimeSuspended` state, after this delay, if the state is still `ARTRealtimeConnectionState.ARTRealtimeSuspended`, the client library attempts to reconnect automatically. The default is 30 seconds.
  */
 @property (readwrite, assign, nonatomic) NSTimeInterval suspendedRetryTimeout;
 
 /**
- * When a channel becomes `ARTRealtimeChannelSuspended` following a server initiated `ARTRealtimeChannelDetached`, after this delay, if the channel is still `ARTRealtimeChannelSuspended` and the connection is `ARTRealtimeConnected`, the client library will attempt to re-attach the channel automatically. The default is 15 seconds.
+ * When a channel becomes `ARTRealtimeChannelState.ARTRealtimeChannelSuspended` following a server initiated `ARTRealtimeChannelState.ARTRealtimeChannelDetached`, after this delay, if the channel is still `ARTRealtimeChannelState.ARTRealtimeChannelSuspended` and the connection is `ARTRealtimeConnectionState.ARTRealtimeConnected`, the client library will attempt to re-attach the channel automatically. The default is 15 seconds.
  */
 @property (readwrite, assign, nonatomic) NSTimeInterval channelRetryTimeout;
 

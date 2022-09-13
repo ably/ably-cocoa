@@ -98,7 +98,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)connect;
 
 /**
- * Calls `-[ARTConnection close]` and causes the connection to close, entering the closing state. Once closed, the library will not attempt to re-establish the connection without an explicit call to `connect`.
+ * Calls `-[ARTConnectionProtocol close]` and causes the connection to close, entering the closing state. Once closed, the library will not attempt to re-establish the connection without an explicit call to `connect`.
  */
 - (void)close;
 

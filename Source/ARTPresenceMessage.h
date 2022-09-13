@@ -43,9 +43,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) ARTPresenceAction action;
 
 /**
- * Combines `clientId` and `connectionId` to ensure that multiple connected clients with an identical `clientId` are uniquely identifiable. A string function that returns the combined `clientId` and `connectionId`.
+ * Combines `ARTBaseMessage.clientId` and `ARTBaseMessage.connectionId` to ensure that multiple connected clients with an identical `clientId` are uniquely identifiable.
  *
- * @return A combination of `clientId` and `connectionId`.
+ * @return A combination of `ARTBaseMessage.clientId` and `ARTBaseMessage.connectionId`.
  */
 - (nonnull NSString *)memberKey;
 

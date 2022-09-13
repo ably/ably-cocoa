@@ -73,13 +73,13 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface ARTCrypto : NSObject
 /**
- * Returns an `ARTCipherParams` object, using the default values for any fields not supplied by the `ARTCipherParamOptions` object.
+ * Returns an `ARTCipherParams` object, using the default values for any fields not supplied by the `cipherParams` dictionary.
  *
- * @param values An `ARTCipherParams`-like dictionary object.
+ * @param cipherParams An `ARTCipherParams`-like dictionary object.
  *
  * @return An `ARTCipherParams` object, using the default values for any fields not supplied.
  */
-+ (ARTCipherParams *)getDefaultParams:(NSDictionary *)values;
++ (ARTCipherParams *)getDefaultParams:(NSDictionary *)cipherParams;
 
 /**
  * Generates a random key to be used in the encryption of the channel.
