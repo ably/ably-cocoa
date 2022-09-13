@@ -4,6 +4,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// :nodoc:
 @protocol ARTRestChannelsProtocol
 
 // We copy this from the parent class and replace ChannelType by ARTRestChannel * because
@@ -14,10 +15,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+/// :nodoc:
 @interface ARTRestChannels : NSObject<ARTRestChannelsProtocol>
 
 - (ARTRestChannel *)get:(NSString *)name;
 - (ARTRestChannel *)get:(NSString *)name options:(ARTChannelOptions *)options;
+
+/**
+ * Iterates through the existing channels.
+ *
+ * @return Each iteration returns an `ARTRestChannel` object.
+ */
 - (id<NSFastEnumeration>)iterate;
 
 @end

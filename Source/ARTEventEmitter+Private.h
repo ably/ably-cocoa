@@ -23,6 +23,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTEventEmitter<EventType, ItemType> ()
 
+/**
+ * Emits an event, calling registered listeners with the given event name and any other given arguments. If an exception is raised in any of the listeners, the exception is caught by the `ARTEventEmitter` and the exception is logged to the Ably logger.
+ * This method is internal and should not be called manually.
+ *
+ * @param event The named event.
+ * @param data The event payload.
+ */
 - (void)emit:(nullable EventType)event with:(nullable ItemType)data;
 
 @property (nonatomic, readonly) NSNotificationCenter *notificationCenter;

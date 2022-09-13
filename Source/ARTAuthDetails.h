@@ -2,11 +2,17 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// Used with an AUTH protocol messages to send authentication details
+/**
+ * Contains the token string used to authenticate a client with Ably.
+ */
 @interface ARTAuthDetails : NSObject<NSCopying>
 
+/**
+ * The authentication token string.
+ */
 @property (nonatomic, copy) NSString *accessToken;
 
+/// :nodoc:
 - (instancetype)initWithToken:(NSString *)token;
 
 @end

@@ -9,6 +9,7 @@
 @class ARTMessage;
 @class ARTPresenceMessage;
 
+/// :nodoc:
 typedef NS_ENUM(NSUInteger, ARTProtocolMessageAction) {
     ARTProtocolMessageHeartbeat = 0,
     ARTProtocolMessageAck = 1,
@@ -30,14 +31,16 @@ typedef NS_ENUM(NSUInteger, ARTProtocolMessageAction) {
     ARTProtocolMessageAuth = 17,
 };
 
+/// :nodoc:
 NSString *_Nonnull ARTProtocolMessageActionToStr(ARTProtocolMessageAction action);
 
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- A message sent and received over the Realtime protocol.
- ARTProtocolMessage always relates to a single channel only, but can contain multiple individual messages or presence messages.
- ARTProtocolMessage are serially numbered on a connection.
+ * :nodoc:
+ * A message sent and received over the Realtime protocol.
+ * ARTProtocolMessage always relates to a single channel only, but can contain multiple individual messages or presence messages.
+ * ARTProtocolMessage are serially numbered on a connection.
  */
 @interface ARTProtocolMessage : NSObject
 

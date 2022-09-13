@@ -3,6 +3,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// :nodoc:
 @interface ARTDeltaCodec (ARTDeltaCodec_VCDiffDecoder) <ARTVCDiffDecoder>
 @end
 

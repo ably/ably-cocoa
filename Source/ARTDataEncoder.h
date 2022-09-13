@@ -8,6 +8,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// :nodoc:
 @interface ARTDataEncoderOutput : NSObject
 
 @property (readonly, nonatomic, nullable) id data;
@@ -18,7 +19,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface ARTDataEncoder : NSObject 
+/// :nodoc:
+@interface ARTDataEncoder : NSObject
 
 - (instancetype)initWithCipherParams:(ARTCipherParams *_Nullable)params error:(NSError *_Nullable*_Nullable)error;
 - (ARTDataEncoderOutput *)encode:(id _Nullable)data;
@@ -27,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+/// :nodoc:
 @interface NSString (ARTDataEncoder)
 
 + (NSString *)artAddEncoding:(NSString *)encoding toString:(NSString *_Nullable)s;

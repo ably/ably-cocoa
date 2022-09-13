@@ -4,6 +4,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// :nodoc:
 typedef NS_ENUM(NSUInteger, ARTLogLevel) {
     ARTLogLevelVerbose,
     ARTLogLevelDebug,
@@ -13,6 +14,7 @@ typedef NS_ENUM(NSUInteger, ARTLogLevel) {
     ARTLogLevelNone
 };
 
+/// :nodoc:
 @interface ARTLog : NSObject
 
 @property (nonatomic, assign) ARTLogLevel logLevel;
@@ -28,6 +30,7 @@ typedef NS_ENUM(NSUInteger, ARTLogLevel) {
 
 @end
 
+/// :nodoc:
 @interface ARTLog (Shorthand)
 
 - (void)verbose:(NSString *)format, ... NS_FORMAT_FUNCTION(1,2);

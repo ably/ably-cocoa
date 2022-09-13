@@ -9,8 +9,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-#pragma mark ARTPushRegisterer interface
-
 #if TARGET_OS_IOS
 
 /**
@@ -30,6 +28,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @optional
 
+/**
+ Ably will call the implementation of this method when the registration process is completed with failure.
+ */
 - (void)didAblyPushRegistrationFail:(nullable ARTErrorInfo *)error;
 
 /**
@@ -48,30 +49,39 @@ NS_ASSUME_NONNULL_BEGIN
 
 #endif
 
-
-#pragma mark ARTPush type
-
+/**
+ The protocol upon which the `ARTPush` is implemented.
+ */
 @protocol ARTPushProtocol
 
+/// :nodoc:
 - (instancetype)init NS_UNAVAILABLE;
 
 #if TARGET_OS_IOS
 
-/// Push Registration token
+// Push Registration token
 
+/// See [iOS push notifications tutorial](https://ably.com/tutorials/ios-push-notifications#step7-register-push-ably) for details.
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken rest:(ARTRest *)rest;
+
+/// See [iOS push notifications tutorial](https://ably.com/tutorials/ios-push-notifications#step7-register-push-ably) for details.
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken realtime:(ARTRealtime *)realtime;
 
+/// See [iOS push notifications tutorial](https://ably.com/tutorials/ios-push-notifications#step7-register-push-ably) for details.
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error rest:(ARTRest *)rest;
+
+/// See [iOS push notifications tutorial](https://ably.com/tutorials/ios-push-notifications#step7-register-push-ably) for details.
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error realtime:(ARTRealtime *)realtime;
 
 /**
- Activating a device for push notifications and registering it with Ably. The registration process can be performed entirely from the device or from your own server using the optional `ablyPushCustomRegister:deviceDetails:callback` method.
+ * Activates the device for push notifications with APNS, obtaining a unique identifier from it. Subsequently registers the device with Ably and stores the `ARTLocalDevice.identityTokenDetails` in local storage.
+ * You should implement `-[ARTPushRegistererDelegate didActivateAblyPush:]` to handle success or failure of this operation.
  */
 - (void)activate;
 
 /**
- Deactivating a device for push notifications and unregistering it with Ably. The unregistration process can be performed entirely from the device or from your own server using the optional `ablyPushCustomDeregister:deviceId:callback` method.
+ * Deactivates the device from receiving push notifications with Ably.
+ * You should implement `-[ARTPushRegistererDelegate didDeactivateAblyPush:]` to handle success or failure of this operation.
  */
 - (void)deactivate;
 
@@ -79,8 +89,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+/**
+ * Enables a device to be registered and deregistered from receiving push notifications.
+ */
 @interface ARTPush : NSObject <ARTPushProtocol>
 
+/**
+ * An `ARTPushAdmin` object.
+ */
 @property (readonly) ARTPushAdmin *admin;
 
 @end

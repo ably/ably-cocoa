@@ -322,12 +322,12 @@
     return hash;
 }
 
-+ (ARTCipherParams *)getDefaultParams:(NSDictionary *)values {
-    NSString *algorithm = values[@"algorithm"];
++ (ARTCipherParams *)getDefaultParams:(NSDictionary *)cipherParams {
+    NSString *algorithm = cipherParams[@"algorithm"];
     if (algorithm == nil) {
         algorithm = [ARTCrypto defaultAlgorithm];
     }
-    NSString *key = values[@"key"];
+    NSString *key = cipherParams[@"key"];
     if (key == nil) {
         [ARTException raise:NSInvalidArgumentException format:@"missing key parameter"];
     }

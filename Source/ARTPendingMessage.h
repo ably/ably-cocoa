@@ -3,6 +3,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// :nodoc:
 @interface ARTPendingMessage : ARTQueuedMessage
 
 - (instancetype)initWithProtocolMessage:(ARTProtocolMessage *)msg sentCallback:(nullable ARTCallback)sentCallback ackCallback:(nullable ARTStatusCallback)ackCallback UNAVAILABLE_ATTRIBUTE;

@@ -5,6 +5,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class ARTHttpResponse;
 @class ARTClientOptions;
 
+/// :nodoc:
 @interface ARTFallback : NSObject
 
 /**

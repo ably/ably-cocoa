@@ -1,5 +1,6 @@
 #import <Foundation/Foundation.h>
 
+/// :nodoc:
 typedef NS_ENUM(NSUInteger, ARTState) {
     ARTStateOk = 0,
     ARTStateConnectionClosedByClient,
@@ -171,48 +172,88 @@ typedef CF_ENUM(NSUInteger, ARTClientCodeError) {
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// :nodoc:
 FOUNDATION_EXPORT NSString *const ARTErrorInfoRequestIdKey;
 
+/// :nodoc:
 FOUNDATION_EXPORT NSString *const ARTAblyErrorDomain;
 
-/**
- Ably client exception names
- */
+/// :nodoc:
 FOUNDATION_EXPORT NSString *const ARTFallbackIncompatibleOptionsException;
 
-/**
- Ably client error messages
- */
+/// :nodoc:
 FOUNDATION_EXPORT NSString *const ARTAblyMessageNoMeansToRenewToken;
 
 /**
- ARTErrorInfo is a type encapsulating error information containing an Ably-specific error code and generic status code.
+ * A generic Ably error object that contains an Ably-specific status code, and a generic status code. Errors returned from the Ably server are compatible with the `ARTErrorInfo` structure and should result in errors that inherit from `ARTErrorInfo`.
  */
 @interface ARTErrorInfo : NSError
 
+/**
+ * Additional message information, where available.
+ */
 @property (readonly) NSString *message;
+
+/**
+ * The reason why the error occured, where available.
+ */
 @property (nullable, readonly) NSString *reason;
+
+/**
+ * HTTP Status Code corresponding to this error, where applicable.
+ */
 @property (readonly) NSInteger statusCode;
+
+/**
+ * This is included for REST responses to provide a URL for additional help on the error code.
+ */
 @property (nullable, readonly) NSString *href;
+
+/**
+ * If a request fails, the request ID must be included in the `ARTErrorInfo` returned to the user.
+ */
 @property (nullable, readonly) NSString *requestId;
+
+/**
+ * Information pertaining to what caused the error where available.
+ */
 @property (nullable, readonly) ARTErrorInfo *cause;
 
+/// :nodoc:
 + (ARTErrorInfo *)createWithCode:(NSInteger)code message:(NSString *)message;
+
+/// :nodoc:
 + (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message;
+
+/// :nodoc:
 + (ARTErrorInfo *)createFromNSError:(NSError *)error;
+
+/// :nodoc:
 + (ARTErrorInfo *)createFromNSException:(NSException *)error;
+
+/// :nodoc:
 + (ARTErrorInfo *)createWithCode:(NSInteger)code message:(NSString *)message requestId:(nullable NSString *)requestId;
+
+/// :nodoc:
 + (ARTErrorInfo *)createWithCode:(NSInteger)code status:(NSInteger)status message:(NSString *)message requestId:(nullable NSString *)requestId;
+
+/// :nodoc:
 + (ARTErrorInfo *)createFromNSException:(NSException *)error requestId:(nullable NSString *)requestId;
+
+/// :nodoc:
 + (ARTErrorInfo *)createUnknownError;
+
+/// :nodoc:
 + (ARTErrorInfo *)wrap:(ARTErrorInfo *)error prepend:(NSString *)prepend;
 
+/// :nodoc:
 - (NSString *)description;
 
 @end
 
 /**
- Ably client status class
+ * :nodoc: TODO: docstring
+ * An object representing a status of an operation.
  */
 @interface ARTStatus : NSObject
 
@@ -227,12 +268,11 @@ FOUNDATION_EXPORT NSString *const ARTAblyMessageNoMeansToRenewToken;
 
 @end
 
+/// :nodoc:
 @interface ARTException : NSException
 @end
 
-/**
- Support of ARTErrorInfo's properties for NSError
- */
+/// :nodoc:
 @interface NSError (ARTErrorInfo)
 
 - (NSInteger)artStatusCode;
