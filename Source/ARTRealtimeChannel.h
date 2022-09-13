@@ -17,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 #endif
 
 /**
- The protocol upon which the `ARTRealtimeChannel` is implemented.
+ The protocol upon which the `ARTRealtimeChannel` is implemented. Also embeds `ARTEventEmitter`.
  */
 @protocol ARTRealtimeChannelProtocol <ARTChannelProtocol>
 
@@ -40,7 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)attach;
 
 /**
- * Attach to this channel ensuring the channel is created in the Ably system and all messages published on the channel are received by any channel listeners registered using `-[ARTRealtimeChannelProtocol subscribe:]`. Any resulting channel state change will be emitted to any listeners registered using the `-[ARTEventEmitter on:]` or `-[ARTEventEmitter once:]` methods. A callback may optionally be passed in to this call to be notified of success or failure of the operation. As a convenience, `-[ARTRealtimeChannelProtocol attach:]` is called implicitly if `-[ARTRealtimeChannelProtocol subscribe:]` for the channel is called, or `-[ARTRealtimePresenceProtocol enter:]` or `-[ARTRealtimePresenceProtocol subscribe:]` are called on the `ARTRealtimePresence` object for this channel.
+ * Attach to this channel ensuring the channel is created in the Ably system and all messages published on the channel are received by any channel listeners registered using `-[ARTRealtimeChannelProtocol subscribe:]`. Any resulting channel state change will be emitted to any listeners registered using the `-[ARTEventEmitter on:]` or `-[ARTEventEmitter once:]` methods. A callback may optionally be passed in to this call to be notified of success or failure of the operation. As a convenience, `attach:` is called implicitly if `-[ARTRealtimeChannelProtocol subscribe:]` for the channel is called, or `-[ARTRealtimePresenceProtocol enter:]` or `-[ARTRealtimePresenceProtocol subscribe:]` are called on the `ARTRealtimePresence` object for this channel.
  *
  * @param callback A success or failure callback function.
  */
@@ -125,17 +125,19 @@ NS_ASSUME_NONNULL_BEGIN
  * @param callback A callback for retriving an `ARTPaginatedResult` object with an array of `ARTMessage` objects.
  * @param errorPtr A reference to the `NSError` object where an error information will be saved in case of failure.
  *
- * @return In case of failure returns false and the error information can be retrived via the `error` parameter.
+ * @return In case of failure returns `false` and the error information can be retrived via the `error` parameter.
  */
 - (BOOL)history:(ARTRealtimeHistoryQuery *_Nullable)query callback:(ARTPaginatedMessagesCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr;
 
 /**
- * Sets the `-[ARTRealtimeChannelProtocol options]` for the channel. An optional callback may be provided to notify of the success or failure of the operation.
+ * Sets the `ARTRealtimeChannelOptions` for the channel. An optional callback may be provided to notify of the success or failure of the operation.
  *
  * @param options An `ARTRealtimeChannelOptions` object.
  * @param callback A success or failure callback function.
  */
 - (void)setOptions:(ARTRealtimeChannelOptions *_Nullable)options callback:(nullable ARTCallback)callback;
+
+#pragma mark ARTEventEmitter
 
 /**
  * `ARTRealtimeChannel` implements `ARTEventEmitter` and emits `ARTChannelEvent` events, where a `ARTChannelEvent` is either a `ARTRealtimeChannelState` or an `ARTChannelEventUpdate`.

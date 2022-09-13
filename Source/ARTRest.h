@@ -45,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithToken:(NSString *)token;
 
 /**
- * Retrieves the time from the Ably service. Clients that do not have access to a sufficiently well maintained time source and wish to issue Ably `ARTTokenRequest`s with a more accurate timestamp should use the `-[ARTClientOptions queryTime]` property instead of this method.
+ * Retrieves the time from the Ably service. Clients that do not have access to a sufficiently well maintained time source and wish to issue Ably `ARTTokenRequest`s with a more accurate timestamp should use the `ARTAuthOptions.queryTime` property instead of this method.
  *
  * @param callback A callback for receiving the time as a `NSDate` object.
  */
@@ -62,7 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param callback A callback for retriving `ARTHttpPaginatedResponse` object returned by the HTTP request, containing an empty or JSON-encodable object.
  * @param errorPtr A reference to the `NSError` object where an error information will be saved in case of failure.
 
- * @return In case of failure returns false and the error information can be retrived via the `error` parameter.
+ * @return In case of failure returns `false` and the error information can be retrived via the `error` parameter.
  */
 - (BOOL)request:(NSString *)method
            path:(NSString *)path
@@ -82,7 +82,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param callback A callback for retriving an `ARTPaginatedResult` object with an array of `ARTStats` objects.
  * @param errorPtr A reference to the `NSError` object where an error information will be saved in case of failure.
  *
- * @return In case of failure returns false and the error information can be retrived via the `error` parameter.
+ * @return In case of failure returns `false` and the error information can be retrived via the `error` parameter.
  */
 - (BOOL)stats:(nullable ARTStatsQuery *)query
      callback:(ARTPaginatedStatsCallback)callback

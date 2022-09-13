@@ -56,14 +56,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)enter:(id _Nullable)data callback:(nullable ARTCallback)callback;
 
 /**
- * Updates the `data` payload for a presence member. If called before entering the presence set, this is treated as an `ARTPresenceEnter` event.
+ * Updates the `data` payload for a presence member. If called before entering the presence set, this is treated as an `ARTPresenceAction.ARTPresenceEnter` event.
  *
  * @param data The payload to update for the presence member.
  */
 - (void)update:(id _Nullable)data;
 
 /**
- * Updates the `data` payload for a presence member. If called before entering the presence set, this is treated as an `ARTPresenceEnter` event. An optional callback may be provided to notify of the success or failure of the operation.
+ * Updates the `data` payload for a presence member. If called before entering the presence set, this is treated as an `ARTPresenceAction.ARTPresenceEnter` event. An optional callback may be provided to notify of the success or failure of the operation.
  *
  * @param data The payload to update for the presence member.
  * @param callback A success or failure callback function.
@@ -206,7 +206,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param callback A callback for retriving an `ARTPaginatedResult` object with an array of `ARTPresenceMessage` objects.
  * @param errorPtr A reference to the `NSError` object where an error information will be saved in case of failure.
  *
- * @return In case of failure returns false and the error information can be retrived via the `error` parameter.
+ * @return In case of failure returns `false` and the error information can be retrived via the `error` parameter.
  */
 - (BOOL)history:(ARTRealtimeHistoryQuery *_Nullable)query callback:(ARTPaginatedPresenceCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr;
 

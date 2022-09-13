@@ -8,7 +8,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- The protocol upon which the `ARTConnection` is implemented.
+ The protocol upon which the `ARTConnection` is implemented. Also embeds `ARTEventEmitter`.
  */
 @protocol ARTConnectionProtocol <NSObject>
 
@@ -48,12 +48,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, readonly) ARTErrorInfo *errorReason;
 
 /**
- * Explicitly calling `connect` is unnecessary unless the `ARTClientOptions.autoConnect` is `false`. Unless already connected or connecting, this method causes the connection to open, entering the `ARTRealtimeConnecting` state.
+ * Explicitly calling `connect` is unnecessary unless the `ARTClientOptions.autoConnect` is `false`. Unless already connected or connecting, this method causes the connection to open, entering the `ARTRealtimeConnectionState.ARTRealtimeConnecting` state.
  */
 - (void)connect;
 
 /**
- * Causes the connection to close, entering the `ARTRealtimeClosing` state. Once closed, the library does not attempt to re-establish the connection without an explicit call to `-[ARTConnectionProtocol connect]`.
+ * Causes the connection to close, entering the `ARTRealtimeConnectionState.ARTRealtimeClosing` state. Once closed, the library does not attempt to re-establish the connection without an explicit call to `-[ARTConnectionProtocol connect]`.
  */
 - (void)close;
 
@@ -63,6 +63,8 @@ NS_ASSUME_NONNULL_BEGIN
  * @param callback A success or failure callback function.
  */
 - (void)ping:(ARTCallback)callback;
+
+#pragma mark ARTEventEmitter
 
 /**
  * Embeds an `ARTEventEmitter` object.

@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 /**
- * A generic interface for event registration and delivery used in a number of the types in the Realtime client library. For example, the `ARTConnection` object emits events for connection state using the `ARTEventEmitter` pattern.
+ * A generic interface for event registration and delivery used in a number of the types in the Realtime client library. For example, the `ARTConnection` and `ARTRealtimeChannel` objects emit events for their state using the `ARTEventEmitter` pattern.
  */
 @interface ARTEventEmitter<EventType:id<ARTEventIdentification>, ItemType> : NSObject
 

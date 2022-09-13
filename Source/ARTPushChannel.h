@@ -71,7 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param callback A callback for retriving an `ARTPaginatedResult` object with an array of `ARTPushChannelSubscription` objects.
  * @param errorPtr A reference to the `NSError` object where an error information will be saved in case of failure.
  *
- * @return In case of failure returns false and the error information can be retrived via the `error` parameter.
+ * @return In case of failure returns `false` and the error information can be retrived via the `error` parameter.
  */
 - (BOOL)listSubscriptions:(NSStringDictionary *)params
                  callback:(ARTPaginatedPushChannelCallback)callback
