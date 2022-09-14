@@ -220,7 +220,6 @@
     __GENERIC(ARTEventEmitter, ARTEvent *, ARTErrorInfo *) *_attachedEventEmitter;
     __GENERIC(ARTEventEmitter, ARTEvent *, ARTErrorInfo *) *_detachedEventEmitter;
     NSString * _Nullable _lastPayloadMessageId;
-    NSString * _Nullable _lastPayloadProtocolMessageChannelSerial;
     BOOL _decodeFailureRecoveryInProgress;
 }
 
@@ -241,6 +240,7 @@
         _restChannel = [_realtime.rest.channels _getChannel:self.name options:options addPrefix:true];
         _state = ARTRealtimeChannelInitialized;
         _attachSerial = nil;
+        _channelSerial = nil;
         _presenceMap = [[ARTPresenceMap alloc] initWithQueue:_queue logger:self.logger];
         _presenceMap.delegate = self;
         _statesEventEmitter = [[ARTPublicEventEmitter alloc] initWithRest:_realtime.rest];
@@ -800,7 +800,7 @@ dispatch_sync(_queue, ^{
                 for (int j = i + 1; j < pm.messages.count; j++) {
                     [self.logger verbose:@"R:%p C:%p (%@) message skipped %@", _realtime, self, self.name, pm.messages[j]];
                 }
-                [self startDecodeFailureRecoveryWithChannelSerial:_lastPayloadProtocolMessageChannelSerial error:incompatibleIdError];
+                [self startDecodeFailureRecoveryWithChannelSerial : incompatibleIdError];
                 return;
             }
         }
@@ -821,7 +821,7 @@ dispatch_sync(_queue, ^{
                 [self emit:stateChange.event with:stateChange];
 
                 if (decodeError.code == ARTErrorUnableToDecodeMessage) {
-                    [self startDecodeFailureRecoveryWithChannelSerial:_lastPayloadProtocolMessageChannelSerial error:errorInfo];
+                    [self startDecodeFailureRecoveryWithChannelSerial : errorInfo];
                     return;
                 }
             }
@@ -835,13 +835,16 @@ dispatch_sync(_queue, ^{
         }
 
         _lastPayloadMessageId = msg.id;
+        
+        // RTL15b
+        self.channelSerial = pm.channelSerial;
 
         [self.messagesEventEmitter emit:msg.name with:msg];
 
         ++i;
     }
 
-    _lastPayloadProtocolMessageChannelSerial = pm.channelSerial;
+    self.channelSerial = pm.channelSerial;
 }
 
 - (void)onPresence:(ARTProtocolMessage *)message {
@@ -866,11 +869,14 @@ dispatch_sync(_queue, ^{
         if (!presence.id) {
             presence.id = [NSString stringWithFormat:@"%@:%d", message.id, i];
         }
-
+      
         if ([self.presenceMap add:presence]) {
             [self broadcastPresence:presence];
         }
-
+        
+        // RTL15b
+        self.channelSerial = message.channelSerial;
+        
         ++i;
     }
 }
@@ -994,7 +1000,7 @@ dispatch_sync(_queue, ^{
     ARTProtocolMessage *attachMessage = [[ARTProtocolMessage alloc] init];
     attachMessage.action = ARTProtocolMessageAttach;
     attachMessage.channel = self.name;
-    attachMessage.channelSerial = channelSerial;
+    attachMessage.channelSerial = self.channelSerial;
     attachMessage.params = self.options_nosync.params;
     attachMessage.flags = self.options_nosync.modes;
 
@@ -1145,7 +1151,7 @@ dispatch_sync(_queue, ^{
     return [_restChannel history:query callback:callback error:errorPtr];
 }
 
-- (void)startDecodeFailureRecoveryWithChannelSerial:(NSString *)channelSerial error:(ARTErrorInfo *)error {
+- (void)startDecodeFailureRecoveryWithChannelSerial:(ARTErrorInfo *)error {
     if (_decodeFailureRecoveryInProgress) {
         return;
     }
@@ -1154,7 +1160,7 @@ dispatch_sync(_queue, ^{
     _decodeFailureRecoveryInProgress = true;
     [self internalAttach:^(ARTErrorInfo *e) {
         self->_decodeFailureRecoveryInProgress = false;
-    } channelSerial:channelSerial reason:error];
+    } channelSerial:self.channelSerial reason:error];
 }
 
 #pragma mark - ARTPresenceMapDelegate

@@ -35,6 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, weak, nonatomic) ARTRealtimeInternal *realtime; // weak because realtime owns self
 @property (readonly, strong, nonatomic) ARTRestChannelInternal *restChannel;
 @property (readwrite, strong, nonatomic, nullable) NSString *attachSerial;
+@property (readwrite, strong, nonatomic, nullable) NSString *channelSerial;
 @property (readonly, nullable, getter=getClientId) NSString *clientId;
 @property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTChannelStateChange *> *internalEventEmitter;
 @property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTChannelStateChange *> *statesEventEmitter;
