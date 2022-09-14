@@ -21,7 +21,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable NSString *)id_nosync;
 - (nullable NSString *)key_nosync;
-- (int64_t)serial_nosync;
 - (BOOL)isActive_nosync;
 - (ARTRealtimeConnectionState)state_nosync;
 - (nullable ARTErrorInfo *)errorReason_nosync;
@@ -33,7 +32,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setId:(NSString *_Nullable)newId;
 - (void)setKey:(NSString *_Nullable)key;
-- (void)setSerial:(int64_t)serial;
 - (void)setMaxMessageSize:(NSInteger)maxMessageSize;
 - (void)setState:(ARTRealtimeConnectionState)state;
 - (void)setErrorReason:(ARTErrorInfo *_Nullable)errorReason;

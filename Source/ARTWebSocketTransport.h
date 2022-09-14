@@ -13,7 +13,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
 @property (readonly, strong, nonatomic) NSString *resumeKey;
-@property (readonly, strong, nonatomic) NSNumber *connectionSerial;
 @property (readonly, strong, nonatomic) ARTLog *protocolMessagesLogger;
 
 @end

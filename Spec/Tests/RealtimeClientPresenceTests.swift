@@ -205,16 +205,11 @@ class RealtimeClientPresenceTests: XCTestCase {
                 }
             }
 
-            guard let lastConnectionSerial = transport.protocolMessagesReceived.last?.connectionSerial else {
-                fail("No protocol message has been received yet"); done(); return
-            }
-
             // Inject a SYNC Presence message (first page)
             let sync1Message = ARTProtocolMessage()
             sync1Message.action = .sync
             sync1Message.channel = channel.name
             sync1Message.channelSerial = "sequenceid:cursor"
-            sync1Message.connectionSerial = lastConnectionSerial + 1
             sync1Message.timestamp = Date()
             sync1Message.presence = [
                 ARTPresenceMessage(clientId: "a", action: .present, connectionId: "another", id: "another:0:0"),
@@ -227,7 +222,6 @@ class RealtimeClientPresenceTests: XCTestCase {
             sync2Message.action = .sync
             sync2Message.channel = channel.name
             sync2Message.channelSerial = "sequenceid:" // indicates SYNC is complete
-            sync2Message.connectionSerial = lastConnectionSerial + 2
             sync2Message.timestamp = Date()
             sync2Message.presence = [
                 ARTPresenceMessage(clientId: "a", action: .leave, connectionId: "another", id: "another:1:0"),
@@ -282,15 +276,10 @@ class RealtimeClientPresenceTests: XCTestCase {
                 done()
             }
 
-            guard let lastConnectionSerial = transport.protocolMessagesReceived.last?.connectionSerial else {
-                fail("No protocol message has been received yet"); done(); return
-            }
-
             // Inject a SYNC Presence message (entirely contained)
             let syncMessage = ARTProtocolMessage()
             syncMessage.action = .sync
             syncMessage.channel = channel.name
-            syncMessage.connectionSerial = lastConnectionSerial + 1
             syncMessage.timestamp = Date()
             syncMessage.presence = [
                 ARTPresenceMessage(clientId: "a", action: .present, connectionId: "another", id: "another:0:0"),
@@ -1466,7 +1455,6 @@ class RealtimeClientPresenceTests: XCTestCase {
                     let presenceMessage = ARTProtocolMessage()
                     presenceMessage.action = .presence
                     presenceMessage.channel = protocolMessage.channel
-                    presenceMessage.connectionSerial = protocolMessage.connectionSerial + 1
                     presenceMessage.timestamp = Date()
                     presenceMessage.presence = presenceData
 
@@ -1477,7 +1465,6 @@ class RealtimeClientPresenceTests: XCTestCase {
                     endSyncMessage.action = .sync
                     endSyncMessage.channel = protocolMessage.channel
                     endSyncMessage.channelSerial = "validserialprefix:" // with no part after the `:` this indicates the end to the SYNC
-                    endSyncMessage.connectionSerial = protocolMessage.connectionSerial + 2
                     endSyncMessage.timestamp = Date()
 
                     transport.setAfterIncomingMessageModifier(nil)
@@ -1545,7 +1532,6 @@ class RealtimeClientPresenceTests: XCTestCase {
                     let presenceMessage = ARTProtocolMessage()
                     presenceMessage.action = .presence
                     presenceMessage.channel = protocolMessage.channel
-                    presenceMessage.connectionSerial = protocolMessage.connectionSerial + 1
                     presenceMessage.timestamp = Date()
                     presenceMessage.presence = presenceData
 
@@ -1556,7 +1542,6 @@ class RealtimeClientPresenceTests: XCTestCase {
                     endSyncMessage.action = .sync
                     endSyncMessage.channel = protocolMessage.channel
                     endSyncMessage.channelSerial = "validserialprefix:" // with no part after the `:` this indicates the end to the SYNC
-                    endSyncMessage.connectionSerial = protocolMessage.connectionSerial + 2
                     endSyncMessage.timestamp = Date()
 
                     transport.setAfterIncomingMessageModifier(nil)
@@ -1866,7 +1851,6 @@ class RealtimeClientPresenceTests: XCTestCase {
                 let leaveMessage = ARTProtocolMessage()
                 leaveMessage.action = .presence
                 leaveMessage.channel = channel.name
-                leaveMessage.connectionSerial = client.connection.internal.serial_nosync() + 1
                 leaveMessage.timestamp = Date()
                 leaveMessage.presence = [
                     ARTPresenceMessage(clientId: "user11", action: .leave, connectionId: "another", id: "another:123:0", timestamp: Date()),
@@ -3534,7 +3518,6 @@ class RealtimeClientPresenceTests: XCTestCase {
                     let presenceMessage = ARTProtocolMessage()
                     presenceMessage.action = .presence
                     presenceMessage.channel = protocolMessage.channel
-                    presenceMessage.connectionSerial = protocolMessage.connectionSerial + 1
                     presenceMessage.timestamp = Date()
                     presenceMessage.presence = presenceData
 
@@ -3545,7 +3528,6 @@ class RealtimeClientPresenceTests: XCTestCase {
                     endSyncMessage.action = .sync
                     endSyncMessage.channel = protocolMessage.channel
                     endSyncMessage.channelSerial = "validserialprefix:" // with no part after the `:` this indicates the end to the SYNC
-                    endSyncMessage.connectionSerial = protocolMessage.connectionSerial + 2
                     endSyncMessage.timestamp = Date()
 
                     transport.setAfterIncomingMessageModifier(nil)

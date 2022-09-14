@@ -28,11 +28,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, readonly) NSString *recoveryKey;
 
 /**
- * The serial number of the last message to be received on this connection, used automatically by the library when recovering or resuming a connection. When recovering a connection explicitly, the `recoveryKey` is used in the recover client options as it contains both the key and the last message serial.
- */
-@property (readonly) int64_t serial;
-
-/**
  * The maximum message size is an attribute of an Ably account and enforced by Ably servers. `maxMessageSize` indicates the maximum message size allowed by the Ably account this connection is using. Overrides the default value of `+[ARTDefault maxMessageSize]`.
  */
 @property (readonly) NSInteger maxMessageSize;

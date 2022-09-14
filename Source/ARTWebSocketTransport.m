@@ -55,7 +55,7 @@ Class configuredWebsocketClass = nil;
     configuredWebsocketClass = webSocketClass;
 }
 
-- (instancetype)initWithRest:(ARTRestInternal *)rest options:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial {
+- (instancetype)initWithRest:(ARTRestInternal *)rest options:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey {
     self = [super init];
     if (self) {
         _workQueue = rest.queue;
@@ -66,7 +66,6 @@ Class configuredWebsocketClass = nil;
         _protocolMessagesLogger = [[ARTLog alloc] initCapturingOutput:false historyLines:50];
         _options = [options copy];
         _resumeKey = resumeKey;
-        _connectionSerial = connectionSerial;
         _stateEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_workQueue];
 
         [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p WS:%p alloc", _delegate, self];
@@ -122,7 +121,7 @@ Class configuredWebsocketClass = nil;
     _state = ARTRealtimeTransportStateOpening;
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket connect with key", _delegate, self];
     NSURLQueryItem *keyParam = [NSURLQueryItem queryItemWithName:@"key" value:key];
-    [self setupWebSocket:@{keyParam.name: keyParam} withOptions:self.options resumeKey:self.resumeKey connectionSerial:self.connectionSerial];
+    [self setupWebSocket:@{keyParam.name: keyParam} withOptions:self.options resumeKey:self.resumeKey];
     // Connect
     [self.websocket open];
 }
@@ -131,12 +130,12 @@ Class configuredWebsocketClass = nil;
     _state = ARTRealtimeTransportStateOpening;
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket connect with token", _delegate, self];
     NSURLQueryItem *accessTokenParam = [NSURLQueryItem queryItemWithName:@"accessToken" value:token];
-    [self setupWebSocket:@{accessTokenParam.name: accessTokenParam} withOptions:self.options resumeKey:self.resumeKey connectionSerial:self.connectionSerial];
+    [self setupWebSocket:@{accessTokenParam.name: accessTokenParam} withOptions:self.options resumeKey:self.resumeKey];
     // Connect
     [self.websocket open];
 }
 
-- (NSURL *)setupWebSocket:(NSDictionary<NSString *, NSURLQueryItem *> *)params withOptions:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial {
+- (NSURL *)setupWebSocket:(NSDictionary<NSString *, NSURLQueryItem *> *)params withOptions:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey {
     __block NSMutableDictionary<NSString*, NSURLQueryItem*> *queryItems = [params mutableCopy];
     
     // ClientID
@@ -169,9 +168,8 @@ Class configuredWebsocketClass = nil;
             [self.logger error:@"R:%p WS:%p ARTWebSocketTransport: recovery string is malformed, ignoring: '%@'", _delegate, self, options.recover];
         }
     }
-    else if (resumeKey != nil && connectionSerial != nil) {
+    else if (resumeKey != nil) {
         [queryItems addValueAsURLQueryItem:resumeKey forKey:@"resume"];
-        [queryItems addValueAsURLQueryItem:[NSString stringWithFormat:@"%lld", (long long)[connectionSerial integerValue]] forKey:@"connectionSerial"];
     }
 
     [queryItems addValueAsURLQueryItem:[ARTDefault apiVersion] forKey:@"v"];

@@ -1433,111 +1433,6 @@ class RealtimeClientConnectionTests: XCTestCase {
         expect(keys).to(haveCount(max))
     }
 
-    // RTN10
-
-    // RTN10a
-    func test__042__Connection__serial__should_be_minus_1_once_connected() {
-        let client = ARTRealtime(options: AblyTests.commonAppSetup())
-        defer {
-            client.dispose()
-            client.close()
-        }
-        waitUntil(timeout: testTimeout) { done in
-            client.connection.on { stateChange in
-                let state = stateChange.current
-                let error = stateChange.reason
-                expect(error).to(beNil())
-                if state == .connected {
-                    expect(client.connection.serial).to(equal(-1))
-                    done()
-                }
-            }
-        }
-    }
-
-    // RTN10b
-    func test__043__Connection__serial__should_not_update_when_a_message_is_sent_but_increments_by_one_when_ACK_is_received() {
-        let client = ARTRealtime(options: AblyTests.commonAppSetup())
-        defer {
-            client.dispose()
-            client.close()
-        }
-        let channel = client.channels.get(uniqueChannelName())
-
-        expect(client.connection.serial).to(equal(-1))
-        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
-        expect(client.connection.serial).to(equal(-1))
-
-        for index in 0 ... 3 {
-            waitUntil(timeout: testTimeout) { done in
-                let partialDone = AblyTests.splitDone(2, done: done)
-                channel.publish(nil, data: "message", callback: { errorInfo in
-                    expect(errorInfo).to(beNil())
-                    partialDone()
-                })
-                channel.subscribe { _ in
-                    // Updated
-                    expect(client.connection.serial).to(equal(Int64(index)))
-                    channel.unsubscribe()
-                    partialDone()
-                }
-                // Not updated
-                expect(client.connection.serial).to(equal(Int64(index - 1)))
-            }
-        }
-    }
-
-    func test__044__Connection__serial__should_have_last_known_connection_serial_from_restored_connection() {
-        let options = AblyTests.commonAppSetup()
-        let client = ARTRealtime(options: options)
-        defer {
-            client.dispose()
-            client.close()
-        }
-        let channelName = uniqueChannelName()
-        let channel = client.channels.get(channelName)
-
-        // Attach first to avoid bundling publishes in the same ProtocolMessage.
-        channel.attach()
-        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
-
-        for _ in 1 ... 5 {
-            waitUntil(timeout: testTimeout) { done in
-                let partialDone = AblyTests.splitDone(2, done: done)
-                channel.publish(nil, data: "message", callback: { errorInfo in
-                    expect(errorInfo).to(beNil())
-                    partialDone()
-                })
-                channel.subscribe { _ in
-                    channel.unsubscribe()
-                    partialDone()
-                }
-            }
-        }
-        let lastSerial = client.connection.serial
-        expect(lastSerial).to(equal(4))
-
-        options.recover = client.connection.recoveryKey
-        client.internal.onError(AblyTests.newErrorProtocolMessage())
-
-        let recoveredClient = ARTRealtime(options: options)
-        defer { recoveredClient.close() }
-        expect(recoveredClient.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
-
-        waitUntil(timeout: testTimeout) { done in
-            expect(recoveredClient.connection.serial).to(equal(lastSerial))
-            let recoveredChannel = recoveredClient.channels.get(channelName)
-            recoveredChannel.publish(nil, data: "message", callback: { errorInfo in
-                expect(errorInfo).to(beNil())
-            })
-            recoveredChannel.subscribe { _ in
-                expect(recoveredClient.connection.serial).to(equal(lastSerial + 1))
-                recoveredChannel.unsubscribe()
-                done()
-            }
-        }
-    }
-
     // RTN11b
     func test__007__Connection__should_make_a_new_connection_with_a_new_transport_instance_if_the_state_is_CLOSING() {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
@@ -2517,7 +2412,6 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
         let expectedConnectionKey = client.connection.key!
-        let expectedConnectionSerial = client.connection.serial
         client.internal.onDisconnected()
 
         waitUntil(timeout: testTimeout) { done in
@@ -2525,7 +2419,6 @@ class RealtimeClientConnectionTests: XCTestCase {
                 let transport = client.internal.transport as! TestProxyTransport
                 let query = transport.lastUrl!.query
                 expect(query).to(haveParam("resume", withValue: expectedConnectionKey))
-                expect(query).to(haveParam("connectionSerial", withValue: "\(expectedConnectionSerial)"))
                 done()
             }
         }
@@ -3183,37 +3076,6 @@ class RealtimeClientConnectionTests: XCTestCase {
                 done()
             }
         }
-    }
-
-    // RTN16b
-    func test__081__Connection__Connection_recovery__Connection_recoveryKey_should_be_composed_with_the_connection_key_and_latest_serial_received_and_msgSerial() {
-        let options = AblyTests.commonAppSetup()
-        let client = ARTRealtime(options: options)
-        defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName())
-        waitUntil(timeout: testTimeout) { done in
-            let partialDone = AblyTests.splitDone(3, done: done)
-            client.connection.once(.connected) { _ in
-                expect(client.connection.serial).to(equal(-1))
-                expect(client.connection.recoveryKey).to(equal("\(client.connection.key!):\(client.connection.serial):\(client.internal.msgSerial)"))
-                partialDone()
-            }
-            channel.subscribe(attachCallback: { error in
-                expect(error).to(beNil())
-                
-                channel.publish(nil, data: "message") { error in
-                    expect(error).to(beNil())
-                    partialDone()
-                }
-            }, callback: { message in
-                expect(message.data as? String).to(equal("message"))
-                expect(client.connection.serial).to(equal(0))
-                channel.unsubscribe()
-                partialDone()
-            })
-        }
-        expect(client.internal.msgSerial) == 1
-        expect(client.connection.recoveryKey).to(equal("\(client.connection.key!):\(client.connection.serial):\(client.internal.msgSerial)"))
     }
 
     // RTN16d

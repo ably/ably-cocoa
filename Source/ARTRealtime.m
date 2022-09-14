@@ -250,7 +250,7 @@
         // Halt the current connection and reconnect with the most recent token
         [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p halt current connection and reconnect with %@", self.rest, tokenDetails];
         [self abortAndReleaseTransport:[ARTStatus state:ARTStateOk]];
-        [self setTransportWithResumeKey:self->_transport.resumeKey connectionSerial:self->_transport.connectionSerial];
+        [self setTransportWithResumeKey:self->_transport.resumeKey];
         [self->_transport connectWithToken:tokenDetails.token];
         [self cancelAllPendingAuthorizations];
         waitForResponse();
@@ -539,7 +539,6 @@
                 if (intervalSinceLast > (_maxIdleInterval + _connectionStateTtl)) {
                     [self.connection setId:nil];
                     [self.connection setKey:nil];
-                    [self.connection setSerial:0];
                 }
             }
             
@@ -554,15 +553,13 @@
             
             if (!_transport) {
                 NSString *resumeKey = nil;
-                NSNumber *connectionSerial = nil;
                 if (stateChange.previous == ARTRealtimeFailed ||
                     stateChange.previous == ARTRealtimeDisconnected ||
                     stateChange.previous == ARTRealtimeSuspended) {
                     resumeKey = self.connection.key_nosync;
-                    connectionSerial = [NSNumber numberWithLongLong:self.connection.serial_nosync];
                     _resuming = true;
                 }
-                [self setTransportWithResumeKey:resumeKey connectionSerial:connectionSerial];
+                [self setTransportWithResumeKey:resumeKey];
                 [self transportConnectForcingNewToken:_renewingToken newConnection:true];
             }
             
@@ -742,13 +739,13 @@
     }
 }
 
-- (void)resetTransportWithResumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial {
+- (void)resetTransportWithResumeKey:(NSString *)resumeKey {
     [self closeAndReleaseTransport];
-    [self setTransportWithResumeKey:resumeKey connectionSerial:connectionSerial];
+    [self setTransportWithResumeKey:resumeKey];
 }
 
-- (void)setTransportWithResumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial {
-    _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:resumeKey connectionSerial:connectionSerial];
+- (void)setTransportWithResumeKey:(NSString *)resumeKey {
+    _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:resumeKey];
     _transport.delegate = self;
 }
 
@@ -809,7 +806,6 @@
             [self.connection setId:message.connectionId];
             [self.connection setKey:message.connectionKey];
             [self.connection setMaxMessageSize:message.connectionDetails.maxMessageSize];
-            [self.connection setSerial:message.connectionSerial];
             
             if (message.connectionDetails && message.connectionDetails.connectionStateTtl) {
                 _connectionStateTtl = message.connectionDetails.connectionStateTtl;
@@ -963,14 +959,14 @@
 }
 
 - (void)transportReconnectWithHost:(NSString *)host {
-    [self resetTransportWithResumeKey:_transport.resumeKey connectionSerial:_transport.connectionSerial];
+    [self resetTransportWithResumeKey:_transport.resumeKey];
     [self.transport setHost:host];
     [self transportConnectForcingNewToken:false newConnection:true];
 }
 
 - (void)transportReconnectWithRenewedToken {
     _renewingToken = true;
-    [self resetTransportWithResumeKey:_transport.resumeKey connectionSerial:_transport.connectionSerial];
+    [self resetTransportWithResumeKey:_transport.resumeKey];
     [_connectingTimeoutListener restartTimer];
     [self transportConnectForcingNewToken:true newConnection:true];
 }
@@ -1027,7 +1023,7 @@
                     }
                     
                     if (forceNewToken && newConnection) {
-                        [self resetTransportWithResumeKey:self->_transport.resumeKey connectionSerial:self->_transport.connectionSerial];
+                        [self resetTransportWithResumeKey:self->_transport.resumeKey];
                     }
                     if (newConnection) {
                         [self.transport connectWithToken:tokenDetails.token];
@@ -1422,10 +1418,7 @@
     }
     
     NSAssert(transport == self.transport, @"Unexpected transport");
-    if (message.hasConnectionSerial) {
-        [self.connection setSerial:message.connectionSerial];
-    }
-    
+   
     switch (message.action) {
         case ARTProtocolMessageHeartbeat:
             [self onHeartbeat];

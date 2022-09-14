@@ -24,10 +24,6 @@
     return _internal.recoveryKey;
 }
 
-- (int64_t)serial {
-    return _internal.serial;
-}
-
 - (NSInteger)maxMessageSize {
     return _internal.maxMessageSize;
 }
@@ -96,7 +92,6 @@
     NSString *_id;
     NSString *_key;
     NSInteger _maxMessageSize;
-    int64_t _serial;
     ARTRealtimeConnectionState _state;
     ARTErrorInfo *_errorReason;
 }
@@ -106,7 +101,6 @@
         _eventEmitter = [[ARTPublicEventEmitter alloc] initWithRest:realtime.rest];
         _realtime = realtime;
         _queue = _realtime.rest.queue;
-        _serial = -1;
     }
     return self;
 }
@@ -135,14 +129,6 @@ dispatch_sync(_queue, ^{
     __block NSString *ret;   
 dispatch_sync(_queue, ^{
     ret = [self key_nosync];
-});
-    return ret;
-} 
-
-- (int64_t)serial {
-    __block int64_t ret;   
-dispatch_sync(_queue, ^{
-    ret = [self serial_nosync];
 });
     return ret;
 } 
@@ -195,10 +181,6 @@ dispatch_sync(_queue, ^{
     return _key;
 } 
 
-- (int64_t)serial_nosync {
-    return _serial;
-} 
-
 - (ARTRealtimeConnectionState)state_nosync {
     return _state;
 }
@@ -213,10 +195,6 @@ dispatch_sync(_queue, ^{
 
 - (void)setKey:(NSString *)key {
     _key = key;
-}
-
-- (void)setSerial:(int64_t)serial {
-    _serial = serial;
 }
 
 - (void)setMaxMessageSize:(NSInteger)maxMessageSize {
@@ -239,13 +217,14 @@ dispatch_sync(_queue, ^{
     return ret;
 }
 
+//This will need revisiting - serial has been scrapped
 - (NSString *)recoveryKey_nosync {
     switch(self.state_nosync) {
         case ARTRealtimeConnecting:
         case ARTRealtimeConnected:
         case ARTRealtimeDisconnected:
         case ARTRealtimeSuspended: {
-            return [self.key_nosync stringByAppendingString:[NSString stringWithFormat:@":%ld:%ld", (long)self.serial_nosync, (long)_realtime.msgSerial]];
+            return [self.key_nosync stringByAppendingString:[NSString stringWithFormat:@":%ld", (long)_realtime.msgSerial]];
         }
         default: {
             return nil;
