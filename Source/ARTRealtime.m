@@ -782,11 +782,9 @@
                 }
             }
             _resuming = false;
-        }
-        
-        else if (message.error) {
+        } else if (message.error) { //RTN15c7
             [self.logger warn:@"RT:%p connection \"%@\" has resumed with non-fatal error \"%@\"", self, message.connectionId, message.error.message];
-            // The error will be emitted on `transition`
+            self.msgSerial = 0;
         }
         else {
             [self.logger debug:@"RT:%p connection \"%@\" has reconnected and resumed successfully", self, message.connectionId];
