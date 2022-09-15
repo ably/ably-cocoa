@@ -778,6 +778,7 @@
             // Reattach all channels with specified states
             for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
                 if (channel.state == ARTRealtimeChannelAttaching || channel.state == ARTRealtimeChannelAttached || channel.state == ARTRealtimeChannelSuspended) {
+                    channel.state = ARTRealtimeChannelAttaching;
                     [channel reattachWithReason:message.error callback:nil];
                 }
             }
