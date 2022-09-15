@@ -773,14 +773,17 @@
     
     // Resuming
     if (_resuming) {
-        if (![message.connectionId isEqualToString:self.connection.id_nosync]) { // RTN15c3
-            [self.logger warn:@"RT:%p connection \"%@\" has reconnected, but resume failed. Reattaching any attached channels", self, message.connectionId];
-            // Reattach all channels
+        if ([message.connectionId isEqualToString:self.connection.id_nosync]) { // RTN15c6
+            [self.logger debug:@"RT:%p connection \"%@\" has reconnected and resumed successfully", self, message.connectionId];
+            // Reattach all channels with specified states
             for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
-                [channel reattachWithReason:message.error callback:nil];
+                if (channel.state == ARTRealtimeChannelAttaching || channel.state == ARTRealtimeChannelAttached || channel.state == ARTRealtimeChannelSuspended) {
+                    [channel reattachWithReason:message.error callback:nil];
+                }
             }
             _resuming = false;
         }
+        
         else if (message.error) {
             [self.logger warn:@"RT:%p connection \"%@\" has resumed with non-fatal error \"%@\"", self, message.connectionId, message.error.message];
             // The error will be emitted on `transition`
