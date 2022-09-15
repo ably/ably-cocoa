@@ -37,6 +37,8 @@
 #import "ARTRealtimeChannels+Private.h"
 #import "ARTPush+Private.h"
 #import "ARTQueuedDealloc.h"
+#import "ARTTypes.h"
+#import "ARTChannels.h"
 
 @interface ARTConnectionStateChange ()
 
@@ -776,19 +778,15 @@
         if ([message.connectionId isEqualToString:self.connection.id_nosync]) { // RTN15c6
             [self.logger debug:@"RT:%p connection \"%@\" has reconnected and resumed successfully", self, message.connectionId];
             // Reattach all channels with specified states
-            for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
-                if (channel.state == ARTRealtimeChannelAttaching || channel.state == ARTRealtimeChannelAttached || channel.state == ARTRealtimeChannelSuspended) {
-                    channel.state = ARTRealtimeChannelAttaching;
-                    [channel reattachWithReason:message.error callback:nil];
-                }
-            }
+            [self reattachChannelsOnResume:message];
             _resuming = false;
-        } else if (message.error) { //RTN15c7
+        } else if (message.error && [message.connectionId isEqualToString:self.connection.id_nosync]) { //RTN15c7
             [self.logger warn:@"RT:%p connection \"%@\" has resumed with non-fatal error \"%@\"", self, message.connectionId, message.error.message];
             self.msgSerial = 0;
         }
         else {
             [self.logger debug:@"RT:%p connection \"%@\" has reconnected and resumed successfully", self, message.connectionId];
+            [self reattachChannelsOnResume:message];
         }
     }
     
@@ -829,6 +827,16 @@
     }
     
     _resuming = false;
+}
+
+//For RTN15c6, RTN15c7
+- (void)reattachChannelsOnResume:(ARTProtocolMessage *)message {
+    for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
+        if (channel.state == ARTRealtimeChannelAttaching || channel.state == ARTRealtimeChannelAttached || channel.state == ARTRealtimeChannelSuspended) {
+            channel.state = ARTRealtimeChannelAttaching;
+            [channel reattachWithReason:message.error callback:nil];
+        }
+    }
 }
 
 - (void)onDisconnected {
