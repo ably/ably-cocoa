@@ -12,4 +12,5 @@ jazzy \
   --framework-root Source \
   --module Ably \
   --sdk iphonesimulator \
+  --readme Docs/Main.md \
   --output Docs/jazzy
