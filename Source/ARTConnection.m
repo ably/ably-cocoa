@@ -20,8 +20,8 @@
     return _internal.key;
 }
 
-- (NSString *)recoveryKey {
-    return _internal.recoveryKey;
+- (ARTConnectionRecoveryKey *)getRecoveryKey {
+    return [_internal getRecoveryKey];
 }
 
 - (NSInteger)maxMessageSize {
@@ -209,29 +209,6 @@ dispatch_sync(_queue, ^{
     _errorReason = errorReason;
 }
 
-- (NSString *)recoveryKey {
-    __block NSString *ret;
-dispatch_sync(_queue, ^{
-    ret = [self recoveryKey_nosync];
-});
-    return ret;
-}
-
-//This will need revisiting - serial has been scrapped
-- (NSString *)recoveryKey_nosync {
-    switch(self.state_nosync) {
-        case ARTRealtimeConnecting:
-        case ARTRealtimeConnected:
-        case ARTRealtimeDisconnected:
-        case ARTRealtimeSuspended: {
-            return [self.key_nosync stringByAppendingString:[NSString stringWithFormat:@":%ld", (long)_realtime.msgSerial]];
-        }
-        default: {
-            return nil;
-        }
-    }
-}
-
 - (ARTEventListener *)on:(ARTRealtimeConnectionEvent)event callback:(ARTConnectionStateCallback)cb {
     return [_eventEmitter on:[ARTEvent newWithConnectionEvent:event] callback:cb];
 }
@@ -263,6 +240,11 @@ dispatch_sync(_queue, ^{
     [_eventEmitter off:listener];
 }
 
+- (ARTConnectionRecoveryKey *)getRecoveryKey{
+    return [[ARTConnectionRecoveryKey alloc] init];
+}
+
+
 - (void)emit:(ARTRealtimeConnectionEvent)event with:(ARTConnectionStateChange *)data {
     [_eventEmitter emit:[ARTEvent newWithConnectionEvent:event] with:data];
 }
@@ -279,6 +261,24 @@ dispatch_sync(_queue, ^{
 
 + (instancetype)newWithConnectionEvent:(ARTRealtimeConnectionEvent)value {
     return [[self alloc] initWithConnectionEvent:value];
+}
+
+@end
+
+@implementation ARTConnectionRecoveryKey
+
+- (NSString *)asJson{
+    NSError *error;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:_serials
+                                                       options:0
+                                                         error:&error];
+
+    if (! jsonData) {
+        NSLog(@"Got an error: %@", error);
+    } else {
+        return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    }
+    return nil;
 }
 
 @end

@@ -214,8 +214,24 @@
         if (options.autoConnect) {
             [self _connect];
         }
+        
+        if (options.recover) { //RTN16f
+            _msgSerial = [_connection getRecoveryKey].msgSerial;
+            
+            [self recoverChannels]; //RTN16k
+        }else{
+            _msgSerial = 0;
+        }
     }
     return self;
+}
+
+-(void)recoverChannels{
+    ARTConnectionRecoveryKey *recoveryKey = [_connection getRecoveryKey];
+    for (NSString *channelName in recoveryKey.serials) {
+        ARTRealtimeChannelInternal *channel = [_channels get: channelName];
+        channel.channelSerial = recoveryKey.serials[channelName];
+    }
 }
 
 #pragma mark - ARTAuthDelegate
