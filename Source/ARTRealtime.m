@@ -221,7 +221,7 @@
         if (options.recover) { //RTN16f
             ARTConnectionRecoveryKey *recoveryKey = [ARTConnectionRecoveryKey fromJson:options.recover];
             _msgSerial = recoveryKey.msgSerial;
-            [self recoverChannels: recoveryKey]; //RTN16k
+            [self recoverChannels: recoveryKey]; //RTN16j
         }else{
             _msgSerial = 0;
         }
