@@ -243,7 +243,15 @@ dispatch_sync(_queue, ^{
 }
 
 - (NSString *)getRecoveryKey{
-    
+    // RTN16h
+    if (_state == ARTRealtimeClosing
+        || _state == ARTRealtimeClosed
+        || _state == ARTRealtimeFailed
+        || _state == ARTRealtimeSuspended
+        || (!_key && !_id)
+        ) {
+        return nil;
+    }
     ARTConnectionRecoveryKey *recoveryKey = [[ARTConnectionRecoveryKey alloc] init];
     recoveryKey.connectionKey = _key;
     recoveryKey.msgSerial = _serial;
