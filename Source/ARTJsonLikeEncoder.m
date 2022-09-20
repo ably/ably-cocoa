@@ -471,7 +471,8 @@
         output[@"channel"] = message.channel;
     }
 
-    if (message.channelSerial) {
+    //RTL4c1
+    if (message.channelSerial && message.action == ARTProtocolMessageAttach) {
         output[@"channelSerial"] = message.channelSerial;
     }
 
