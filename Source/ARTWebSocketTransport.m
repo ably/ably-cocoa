@@ -55,7 +55,8 @@ Class configuredWebsocketClass = nil;
     configuredWebsocketClass = webSocketClass;
 }
 
-- (instancetype)initWithRest:(ARTRestInternal *)rest options:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey {
+- (instancetype)initWithRest:(ARTRestInternal *)rest options:(ARTClientOptions *)options
+                   resumeKey:(NSString *)resumeKey recoveryKey:(nullable NSString *)recoveryKey{
     self = [super init];
     if (self) {
         _workQueue = rest.queue;
@@ -66,6 +67,7 @@ Class configuredWebsocketClass = nil;
         _protocolMessagesLogger = [[ARTLog alloc] initCapturingOutput:false historyLines:50];
         _options = [options copy];
         _resumeKey = resumeKey;
+        _recoveryKey = recoveryKey;
         _stateEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_workQueue];
 
         [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p WS:%p alloc", _delegate, self];
@@ -150,24 +152,9 @@ Class configuredWebsocketClass = nil;
     [queryItems addValueAsURLQueryItem:[_encoder formatAsString] forKey:@"format"];
 
     if (options.recover) {
-        NSArray *recoverParts = [options.recover componentsSeparatedByString:@":"];
-        if (recoverParts.count > 1 && recoverParts.count <= 3) {
-            NSString *key = [recoverParts objectAtIndex:0];
-            NSString *serial = [recoverParts objectAtIndex:1];
-            [self.logger info:@"R:%p WS:%p ARTWebSocketTransport: attempting recovery of connection %@", _delegate, self, key];
-
-            [queryItems addValueAsURLQueryItem:key forKey:@"recover"];
-            [queryItems addValueAsURLQueryItem:serial forKey:@"connectionSerial"];
-
-            int64_t msgSerial = [[recoverParts lastObject] longLongValue];
-            if (msgSerial) {
-                [_delegate realtimeTransportSetMsgSerial:self msgSerial:msgSerial];
-            }
-        }
-        else {
-            [self.logger error:@"R:%p WS:%p ARTWebSocketTransport: recovery string is malformed, ignoring: '%@'", _delegate, self, options.recover];
-        }
+        [queryItems addValueAsURLQueryItem:_recoveryKey forKey:@"recover"];
     }
+    
     else if (resumeKey != nil) {
         [queryItems addValueAsURLQueryItem:resumeKey forKey:@"resume"];
     }

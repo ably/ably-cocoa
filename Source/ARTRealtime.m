@@ -39,6 +39,9 @@
 #import "ARTQueuedDealloc.h"
 #import "ARTTypes.h"
 #import "ARTChannels.h"
+#import "ARTConstants.h"
+#import "ARTCrypto.h"
+#import "ARTDeviceIdentityTokenDetails.h"
 
 @interface ARTConnectionStateChange ()
 
@@ -216,9 +219,9 @@
         }
         
         if (options.recover) { //RTN16f
-            _msgSerial = [ARTConnectionRecoveryKey fromJson:[_connection getRecoveryKey]].msgSerial;
-            
-            [self recoverChannels]; //RTN16k
+            ARTConnectionRecoveryKey *recoveryKey = [ARTConnectionRecoveryKey fromJson:options.recover];
+            _msgSerial = recoveryKey.msgSerial;
+            [self recoverChannels: recoveryKey]; //RTN16k
         }else{
             _msgSerial = 0;
         }
@@ -226,8 +229,7 @@
     return self;
 }
 
--(void)recoverChannels{
-    ARTConnectionRecoveryKey *recoveryKey = [ARTConnectionRecoveryKey fromJson: [_connection getRecoveryKey]];
+-(void)recoverChannels : (ARTConnectionRecoveryKey *) recoveryKey{
     for (NSString *channelName in recoveryKey.serials) {
         ARTRealtimeChannelInternal *channel = [_channels get: channelName];
         channel.channelSerial = recoveryKey.serials[channelName];
@@ -268,7 +270,7 @@
         // Halt the current connection and reconnect with the most recent token
         [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p halt current connection and reconnect with %@", self.rest, tokenDetails];
         [self abortAndReleaseTransport:[ARTStatus state:ARTStateOk]];
-        [self setTransportWithResumeKey:self->_transport.resumeKey];
+        [self setTransportWithResumeKey:self->_transport.resumeKey orRecoveryKey:nil];
         [self->_transport connectWithToken:tokenDetails.token];
         [self cancelAllPendingAuthorizations];
         waitForResponse();
@@ -571,13 +573,16 @@
             
             if (!_transport) {
                 NSString *resumeKey = nil;
+                NSString *recoveryKey = nil;
                 if (stateChange.previous == ARTRealtimeFailed ||
                     stateChange.previous == ARTRealtimeDisconnected ||
                     stateChange.previous == ARTRealtimeSuspended) {
                     resumeKey = self.connection.key_nosync;
                     _resuming = true;
+                } else if (self.options.recover){ //RTN16k
+                    recoveryKey = [ARTConnectionRecoveryKey fromJson:self.options.recover].connectionKey;
                 }
-                [self setTransportWithResumeKey:resumeKey];
+                [self setTransportWithResumeKey:resumeKey orRecoveryKey:nil];
                 [self transportConnectForcingNewToken:_renewingToken newConnection:true];
             }
             
@@ -759,11 +764,14 @@
 
 - (void)resetTransportWithResumeKey:(NSString *)resumeKey {
     [self closeAndReleaseTransport];
-    [self setTransportWithResumeKey:resumeKey];
+    [self setTransportWithResumeKey:resumeKey orRecoveryKey:nil];
 }
 
-- (void)setTransportWithResumeKey:(NSString *)resumeKey {
-    _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:resumeKey];
+- (void)setTransportWithResumeKey:(NSString *)resumeKey orRecoveryKey:(NSString *)recoveryKey {
+    _transport = [[_transportClass alloc] initWithRest:self.rest
+                                               options:self.options
+                                             resumeKey:resumeKey
+                                           recoveryKey:recoveryKey];
     _transport.delegate = self;
 }
 
