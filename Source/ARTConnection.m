@@ -274,11 +274,34 @@ dispatch_sync(_queue, ^{
                                                          error:&error];
 
     if (! jsonData) {
-        NSLog(@"Got an error: %@", error);
+        NSLog(@"Got an error while creating JSON for recovery key: %@", error);
     } else {
         return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
     }
     return nil;
+}
+
+-(ARTConnectionRecoveryKey *)fromJson:(NSString *)json{
+        NSData* jsonData = [json dataUsingEncoding:NSUTF8StringEncoding];
+
+        NSError *error = nil;
+        NSDictionary  *object = [NSJSONSerialization
+                                 JSONObjectWithData:jsonData
+                                 options:0
+                                 error:&error];
+
+        if(!error) {
+            ARTConnectionRecoveryKey *recoveryKey = [[ARTConnectionRecoveryKey alloc] init];
+            recoveryKey.msgSerial = [[object valueForKey:@"msgSerial"] integerValue];
+            recoveryKey.connectionKey = [[object valueForKey:@"connectionKey"] stringValue];
+            recoveryKey.serials = [object valueForKey:@"serials"];
+            return recoveryKey;
+            
+        } else {
+            NSLog(@"Error when parsing JSON to create recovery key : %@", error);
+        }
+    return nil;
+    
 }
 
 @end

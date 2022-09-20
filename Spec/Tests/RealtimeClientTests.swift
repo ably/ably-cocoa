@@ -115,7 +115,7 @@ class RealtimeClientTests: XCTestCase {
                 case .connected:
                     self.checkError(errorInfo)
                     expect(client.connection.getRecoveryKey().asJson).to(equal("\(client.connection.key ?? ""):\(client.internal.msgSerial)"), description: "recoveryKey wrong formed")
-                    options.recover = client.connection.getRecoveryKey().asJson
+                    options.recover = client.connection.getRecoveryKey().asJson()
                     done()
                 default:
                     break
