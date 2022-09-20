@@ -3,6 +3,8 @@
 #import "ARTRealtime+Private.h"
 #import "ARTEventEmitter+Private.h"
 #import "ARTQueuedDealloc.h"
+#import "ARTRealtimeChannels+Private.h"
+#import "ARTRealtimeChannel+Private.h"
 
 @implementation ARTConnection {
     ARTQueuedDealloc *_dealloc;
@@ -20,7 +22,7 @@
     return _internal.key;
 }
 
-- (ARTConnectionRecoveryKey *)getRecoveryKey {
+- (NSString *)getRecoveryKey {
     return [_internal getRecoveryKey];
 }
 
@@ -240,8 +242,16 @@ dispatch_sync(_queue, ^{
     [_eventEmitter off:listener];
 }
 
-- (ARTConnectionRecoveryKey *)getRecoveryKey{
-    return [[ARTConnectionRecoveryKey alloc] init];
+- (NSString *)getRecoveryKey{
+    
+    ARTConnectionRecoveryKey *recoveryKey = [[ARTConnectionRecoveryKey alloc] init];
+    recoveryKey.connectionKey = _key;
+    recoveryKey.msgSerial = _serial;
+    
+    for(ARTRealtimeChannelInternal *channel in _realtime.channels.collection){
+        recoveryKey.serials[channel.name] = channel.channelSerial;
+    }
+    return [recoveryKey asJson];
 }
 
 
@@ -281,7 +291,7 @@ dispatch_sync(_queue, ^{
     return nil;
 }
 
--(ARTConnectionRecoveryKey *)fromJson:(NSString *)json{
++(ARTConnectionRecoveryKey *)fromJson:(NSString *)json{
         NSData* jsonData = [json dataUsingEncoding:NSUTF8StringEncoding];
 
         NSError *error = nil;

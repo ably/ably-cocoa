@@ -58,7 +58,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * The recovery key string can be used by another client to recover this connection's state in the recover client options property. See [connection state recover options](https://ably.com/docs/realtime/connection#connection-state-recover-options) for more information.
  */
-- (ARTConnectionRecoveryKey *) getRecoveryKey;
+// RTN16g - recovery key as a JSON serialized version of [ARTConnectionRecoveryKey]
+- (NSString *) getRecoveryKey;
 
 #pragma mark ARTEventEmitter
 

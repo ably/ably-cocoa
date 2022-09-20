@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) NSMutableDictionary<NSString *, NSString *>* serials;
 
 - (NSString *)asJson;
-- (ARTConnectionRecoveryKey *)fromJson:(NSString *)json;
++ (ARTConnectionRecoveryKey *)fromJson:(NSString *)json;
 @end
 
 @interface ARTConnectionInternal : NSObject<ARTConnectionProtocol>

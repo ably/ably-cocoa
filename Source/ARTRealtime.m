@@ -216,7 +216,7 @@
         }
         
         if (options.recover) { //RTN16f
-            _msgSerial = [_connection getRecoveryKey].msgSerial;
+            _msgSerial = [ARTConnectionRecoveryKey fromJson:[_connection getRecoveryKey]].msgSerial;
             
             [self recoverChannels]; //RTN16k
         }else{
@@ -227,7 +227,7 @@
 }
 
 -(void)recoverChannels{
-    ARTConnectionRecoveryKey *recoveryKey = [_connection getRecoveryKey];
+    ARTConnectionRecoveryKey *recoveryKey = [ARTConnectionRecoveryKey fromJson: [_connection getRecoveryKey]];
     for (NSString *channelName in recoveryKey.serials) {
         ARTRealtimeChannelInternal *channel = [_channels get: channelName];
         channel.channelSerial = recoveryKey.serials[channelName];
