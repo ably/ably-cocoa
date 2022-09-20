@@ -248,8 +248,7 @@ dispatch_sync(_queue, ^{
         || _state == ARTRealtimeClosed
         || _state == ARTRealtimeFailed
         || _state == ARTRealtimeSuspended
-        || (!_key && !_id)
-        ) {
+        || (!_key && !_id)) {
         return nil;
     }
     ARTConnectionRecoveryKey *recoveryKey = [[ARTConnectionRecoveryKey alloc] init];
