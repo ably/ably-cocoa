@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.2.14](https://github.com/ably/ably-cocoa/tree/1.2.14)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.13...1.2.14)
+
+**Documentation:**
+
+- Docstring comments added for documentation generation with Jazzy ([\#1491](https://github.com/ably/ably-cocoa/pull/1491))
+
 ## [1.2.13](https://github.com/ably/ably-cocoa/tree/1.2.13)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.12...1.2.13)
