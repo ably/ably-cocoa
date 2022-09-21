@@ -595,9 +595,13 @@ dispatch_sync(_queue, ^{
     if (status.storeErrorInfo) {
         _errorReason = status.errorInfo;
     }
-    //RTP17f
+    //RTP17f, RTP17g
     if (self.state == ARTRealtimeChannelAttached && previousState != ARTRealtimeChannelAttached) {
-        [self.presence enter:self];
+        
+        for (ARTPresenceMessage *localMember in _presenceMap.members) {
+            ARTPresenceMessage *reenter = [localMember copy];
+            [self map:self.presenceMap shouldReenterLocalMember:reenter];
+        }
     }
 
     ARTEventListener *channelRetryListener = nil;
