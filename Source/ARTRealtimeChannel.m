@@ -588,11 +588,16 @@ dispatch_sync(_queue, ^{
 
 - (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status {
     [self.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) channel state transitions from %tu - %@ to %tu - %@", _realtime, self, self.name, self.state_nosync, ARTRealtimeChannelStateToStr(self.state_nosync), state, ARTRealtimeChannelStateToStr(state)];
-    ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:state previous:self.state_nosync event:(ARTChannelEvent)state reason:status.errorInfo];
+    ARTRealtimeChannelState previousState = self.state_nosync;
+    ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:state previous:previousState event:(ARTChannelEvent)state reason:status.errorInfo];
     self.state = state;
 
     if (status.storeErrorInfo) {
         _errorReason = status.errorInfo;
+    }
+    //RTP17f
+    if (self.state == ARTRealtimeChannelAttached && previousState != ARTRealtimeChannelAttached) {
+        [self.presence enter:self];
     }
 
     ARTEventListener *channelRetryListener = nil;
