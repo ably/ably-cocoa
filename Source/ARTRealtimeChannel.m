@@ -750,7 +750,7 @@ dispatch_sync(_queue, ^{
         case ARTRealtimeChannelAttached:
         case ARTRealtimeChannelSuspended:
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) reattach initiated by DETACHED message", _realtime, self, self.name];
-            _channelSerial = nil;
+            _channelSerial = nil; //RTP5a1
             [self reattachWithReason:message.error callback:nil];
             return;
         case ARTRealtimeChannelAttaching: {
@@ -761,9 +761,9 @@ dispatch_sync(_queue, ^{
             return;
         }
         case ARTRealtimeChannelFailed:
-            _channelSerial = nil;
+            _channelSerial = nil; // RTP5a1
         case ARTRealtimeChannelDetached:
-            _channelSerial = nil;
+            _channelSerial = nil; // RTP5a1
         default:
             break;
     }
