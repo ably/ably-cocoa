@@ -2458,8 +2458,8 @@ class RealtimeClientConnectionTests: XCTestCase {
                 let transport = client.internal.transport as! TestProxyTransport
                 let connectedPM = transport.protocolMessagesReceived.filter { $0.action == .connected }[0]
                 expect(connectedPM.connectionId).to(equal(expectedConnectionId))
-                //todo remove next line and 
-                assertToTempErrorUntil_2_0_is_ready(errorReason: stateChange.reason)
+                //todo remove next line and
+                self.assertToTempErrorUntil_2_0_is_ready(errorReason: stateChange.reason)
                 // expect(stateChange.reason).to(beNil())
                 done()
             }
