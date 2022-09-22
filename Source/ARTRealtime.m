@@ -799,16 +799,17 @@
     
     // Resuming
     if (_resuming) {
-        if ([message.connectionId isEqualToString:self.connection.id_nosync]) { // RTN15c6
-            [self.logger debug:@"RT:%p connection \"%@\" has reconnected and resumed successfully", self, message.connectionId];
-            // Reattach all channels with specified states
-            [self reattachChannelsOnResume:message];
-            _resuming = false;
-        } else if (message.error && [message.connectionId isEqualToString:self.connection.id_nosync]) { //RTN15c7
-            [self.logger warn:@"RT:%p connection \"%@\" has resumed with non-fatal error \"%@\"", self, message.connectionId, message.error.message];
-            self.msgSerial = 0;
-        }
-        else {
+        if ([message.connectionId isEqualToString:self.connection.id_nosync]) {
+            if (!message.error) {
+                // RTN15c6
+                [self reattachChannelsOnResume:message];
+                [self.logger debug:@"RT:%p connection \"%@\" has reconnected and resumed successfully", self, message.connectionId];
+                _resuming = false;
+            }else { //RTN15c7
+                [self.logger warn:@"RT:%p connection \"%@\" has resumed with non-fatal error \"%@\"", self, message.connectionId, message.error.message];
+                self.msgSerial = 0;
+            }
+        } else {
             [self.logger debug:@"RT:%p connection \"%@\" has reconnected and resumed successfully", self, message.connectionId];
             [self reattachChannelsOnResume:message];
         }
