@@ -1,5 +1,14 @@
 # Change Log
 
+## [1.2.15](https://github.com/ably/ably-cocoa/tree/1.2.15)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.14...1.2.15)
+
+**Closed issues:**
+
+- Make docs workflow run for all tags [\#1440](https://github.com/ably/ably-cocoa/issues/1440), in: [\#1501](https://github.com/ably/ably-cocoa/pull/1501) ([maratal](https://github.com/maratal))
+- Link to Ably error codes in ARTErrorInfo docstrings [\#1502](https://github.com/ably/ably-cocoa/issues/1502), in: [\#1503](https://github.com/ably/ably-cocoa/pull/1503) ([maratal](https://github.com/maratal))
+
 ## [1.2.14](https://github.com/ably/ably-cocoa/tree/1.2.14)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.13...1.2.14)
