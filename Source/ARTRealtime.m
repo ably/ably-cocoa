@@ -856,7 +856,8 @@
 //For RTN15c6, RTN15c7
 - (void)reattachChannelsOnResume:(ARTProtocolMessage *)message {
     for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
-        if (channel.state == ARTRealtimeChannelAttaching || channel.state == ARTRealtimeChannelAttached || channel.state == ARTRealtimeChannelSuspended) {
+        ARTRealtimeChannelState channelState = channel.state_nosync;
+        if (channelState == ARTRealtimeChannelAttaching || channelState== ARTRealtimeChannelAttached || channelState == ARTRealtimeChannelSuspended) {
             channel.state = ARTRealtimeChannelAttaching;
             [channel reattachWithReason:message.error callback:nil];
         }
