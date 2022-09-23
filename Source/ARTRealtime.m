@@ -797,6 +797,11 @@
 - (void)onConnected:(ARTProtocolMessage *)message {
     _renewingToken = false;
     
+    //supress no-conn serial message
+    if (message.error && message.error.code == 80018) {
+        message.error = nil;
+    }
+    
     // Resuming
     if (_resuming) {
         if ([message.connectionId isEqualToString:self.connection.id_nosync] && !message.error) {  // RTN15c6

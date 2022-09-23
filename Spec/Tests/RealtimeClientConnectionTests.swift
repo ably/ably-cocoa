@@ -1921,9 +1921,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                     let errorInfo = stateChange.reason
                     switch state {
                     case .connected:
-                        self.assertToTempErrorUntil_2_0_is_ready(errorReason: errorInfo)
-                        //todo activate below and remove above after 2.0 changes after rt update
-                       // expect(errorInfo).to(beNil())
+                        expect(errorInfo).to(beNil())
                         // New token
                         expect(client.auth.tokenDetails!.token).toNot(equal(options.token))
                         done()
@@ -2265,20 +2263,10 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         client.connection.off()
         
-        //todo - activate this after changes in rt 2.0 is done and remove the next line
-       // expect(client.connection.errorReason).to(beNil())
-        assertToTempErrorUntil_2_0_is_ready(errorReason: client.connection.errorReason)
+        expect(client.connection.errorReason).to(beNil())
         expect(client.connection.state).to(equal(.connected))
     }
     
-    //temporary function to test system while rt backend is in development
-    private func assertToTempErrorUntil_2_0_is_ready(errorReason : ARTErrorInfo?){
-        guard let errorReason = errorReason else {
-            return
-        }
-        expect(errorReason.code).to(equal(80018))
-    }
-
     func test__062__Connection__connection_request_fails__on_CLOSE_the_connection_should_stop_connection_retries() {
         let options = AblyTests.commonAppSetup()
         // to avoid waiting for the default 15s before trying a reconnection
@@ -2438,7 +2426,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
     // RTN15c
 
-    // RTN15c1
+    // RTN15c1 - replace with RTN15c6
     func test__068__Connection__connection_failures_once_CONNECTED__System_s_response_to_a_resume_request__CONNECTED_ProtocolMessage_with_the_same_connectionId_as_the_current_client__and_no_error() {
         let options = AblyTests.commonAppSetup()
         let client = AblyTests.newRealtime(options)
@@ -2458,9 +2446,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 let transport = client.internal.transport as! TestProxyTransport
                 let connectedPM = transport.protocolMessagesReceived.filter { $0.action == .connected }[0]
                 expect(connectedPM.connectionId).to(equal(expectedConnectionId))
-                //todo remove next line and
-                self.assertToTempErrorUntil_2_0_is_ready(errorReason: stateChange.reason)
-                // expect(stateChange.reason).to(beNil())
+                expect(stateChange.reason).to(beNil())
                 done()
             }
         }
@@ -4268,8 +4254,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { stateChange in
-               // expect(stateChange.reason).to(beNil())
-                self.assertToTempErrorUntil_2_0_is_ready(errorReason: stateChange.reason)
+                expect(stateChange.reason).to(beNil())
                 expect(initialToken).toNot(equal(client.auth.tokenDetails?.token))
                 done()
             }
