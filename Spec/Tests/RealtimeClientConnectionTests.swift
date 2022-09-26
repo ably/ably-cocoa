@@ -2514,51 +2514,6 @@ class RealtimeClientConnectionTests: XCTestCase {
         expect(client.internal.queuedMessages).toEventually(haveCount(0), timeout: testTimeout)
     }
 
-    // RTN15c3
-    func test__070__Connection__connection_failures_once_CONNECTED__System_s_response_to_a_resume_request__CONNECTED_ProtocolMessage_with_a_new_connectionId_and_an_error() {
-        let options = AblyTests.commonAppSetup()
-        let client = AblyTests.newRealtime(options)
-        defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName())
-
-        waitUntil(timeout: testTimeout) { done in
-            channel.attach { error in
-                expect(error).to(beNil())
-                done()
-            }
-        }
-
-        let oldConnectionId = client.connection.id
-
-        waitUntil(timeout: testTimeout) { done in
-            let partialDone = AblyTests.splitDone(2, done: done)
-
-            channel.once(.attaching) { _ in
-                expect(channel.errorReason).to(beNil())
-                partialDone()
-            }
-
-            client.connection.once(.connected) { stateChange in
-                guard let error = stateChange.reason else {
-                    fail("Connection resume failed and error should be propagated to the channel"); done(); return
-                }
-                expect(error.code).to(equal(ARTErrorCode.unableToRecoverConnectionExpired.intValue))
-                expect(error.message).to(contain("Unable to recover connection"))
-                expect(client.connection.errorReason).to(beIdenticalTo(stateChange.reason))
-                partialDone()
-            }
-
-            client.simulateLostConnectionAndState()
-        }
-
-        let transport = client.internal.transport as! TestProxyTransport
-        let connectedPM = transport.protocolMessagesReceived.filter { $0.action == .connected }[0]
-        expect(connectedPM.connectionId).toNot(equal(oldConnectionId))
-        expect(client.connection.id).to(equal(connectedPM.connectionId))
-        expect(client.internal.msgSerial).to(equal(0))
-
-        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
-    }
 
     // RTN15c4
     func test__071__Connection__connection_failures_once_CONNECTED__System_s_response_to_a_resume_request__ERROR_ProtocolMessage_indicating_a_fatal_error_in_the_connection() {
