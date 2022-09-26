@@ -582,7 +582,7 @@
                 } else if (self.options.recover){ //RTN16k
                     recoveryKey = [ARTConnectionRecoveryKey fromJson:self.options.recover].connectionKey;
                 }
-                [self setTransportWithResumeKey:resumeKey orRecoveryKey:nil];
+                [self setTransportWithResumeKey:resumeKey orRecoveryKey:recoveryKey];
                 [self transportConnectForcingNewToken:_renewingToken newConnection:true];
             }
             
