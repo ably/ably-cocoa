@@ -3083,10 +3083,14 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
     }
 
-    // RTN16e
+    // RTN16e - replace with RTN
     func test__084__Connection__Connection_recovery__should_connect_anyway_if_the_recoverKey_is_no_longer_valid() {
         let options = AblyTests.commonAppSetup()
-        options.recover = "99999!xxxxxx-xxxxxxxxx-xxxxxxxxx:-1"
+        let recoveryKey = ARTConnectionRecoveryKey()
+        recoveryKey.msgSerial = 2;
+        recoveryKey.connectionKey = "xxx-adfafa-xxx"
+        recoveryKey.serials["channel1"] = ARTRealtimeChannel()
+        options.recover = recoveryKey.asJson()
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
         waitUntil(timeout: testTimeout) { done in
@@ -3105,7 +3109,13 @@ class RealtimeClientConnectionTests: XCTestCase {
     func test__085__Connection__Connection_recovery__should_use_msgSerial_from_recoveryKey_to_set_the_client_internal_msgSerial_but_is_not_sent_to_Ably() {
         let options = AblyTests.commonAppSetup()
         options.autoConnect = false
-        options.recover = "99999!xxxxxx-xxxxxxxxx-xxxxxxxxx:-1:7"
+        
+        let recoveryKey = ARTConnectionRecoveryKey()
+        recoveryKey.msgSerial = 2;
+        recoveryKey.connectionKey = "xxx-adfafa-xxx"
+        recoveryKey.serials["channel1"] = ARTRealtimeChannel()
+        
+        options.recover = recoveryKey.asJson()
 
         let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
