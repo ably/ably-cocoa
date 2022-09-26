@@ -242,7 +242,7 @@ dispatch_sync(_queue, ^{
     [_eventEmitter off:listener];
 }
 
-- (NSString *)getRecoveryKey{
+- (NSString *)getRecoveryKey {
     // RTN16h
     if (_state == ARTRealtimeClosing
         || _state == ARTRealtimeClosed
@@ -255,9 +255,12 @@ dispatch_sync(_queue, ^{
     recoveryKey.connectionKey = _key;
     recoveryKey.msgSerial = _serial;
     
+    NSMutableDictionary *serials = @{}.mutableCopy;
     for(ARTRealtimeChannelInternal *channel in _realtime.channels.collection){
-        recoveryKey.serials[channel.name] = channel.channelSerial;
+        serials[channel.name] = channel.channelSerial;
     }
+    
+    recoveryKey.serials = serials;
     return [recoveryKey asJson];
 }
 
@@ -286,11 +289,17 @@ dispatch_sync(_queue, ^{
 
 - (NSString *)asJson{
     NSError *error;
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:_serials
+    NSDictionary *object = @{
+        @"msgSerial": [[NSNumber alloc] initWithLongLong:self.msgSerial],
+        @"connectionKey": self.connectionKey,
+        @"serials": self.serials
+    };
+    
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:object
                                                        options:0
                                                          error:&error];
 
-    if (! jsonData) {
+    if (!jsonData) {
         NSLog(@"Got an error while creating JSON for recovery key: %@", error);
     } else {
         return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
@@ -309,8 +318,8 @@ dispatch_sync(_queue, ^{
 
         if(!error) {
             ARTConnectionRecoveryKey *recoveryKey = [[ARTConnectionRecoveryKey alloc] init];
-            recoveryKey.msgSerial = [[object valueForKey:@"msgSerial"] integerValue];
-            recoveryKey.connectionKey = [[object valueForKey:@"connectionKey"] stringValue];
+            recoveryKey.msgSerial = [[object valueForKey:@"msgSerial"] longLongValue];
+            recoveryKey.connectionKey = [object valueForKey:@"connectionKey"];
             recoveryKey.serials = [object valueForKey:@"serials"];
             return recoveryKey;
             
