@@ -290,9 +290,9 @@ dispatch_sync(_queue, ^{
 - (NSString *)asJson{
     NSError *error;
     NSDictionary *object = @{
-        @"msgSerial": [[NSNumber alloc] initWithLongLong:self.msgSerial],
-        @"connectionKey": self.connectionKey,
-        @"serials": self.serials
+        @"msgSerial": @(_msgSerial),
+        @"connectionKey": _connectionKey,
+        @"serials": _serials ? _serials : @{}
     };
     
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:object
