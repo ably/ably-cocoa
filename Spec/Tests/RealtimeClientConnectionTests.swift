@@ -2424,9 +2424,8 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
     }
 
-    // RTN15c
-
     // RTN15c1 - replace with RTN15c6
+    //todo check whetehr this test is relevant anymore
     func test__068__Connection__connection_failures_once_CONNECTED__System_s_response_to_a_resume_request__CONNECTED_ProtocolMessage_with_the_same_connectionId_as_the_current_client__and_no_error() {
         let options = AblyTests.commonAppSetup()
         let client = AblyTests.newRealtime(options)
@@ -2454,12 +2453,13 @@ class RealtimeClientConnectionTests: XCTestCase {
         expect(client.internal.queuedMessages).toEventually(haveCount(0), timeout: testTimeout)
     }
 
-    // RTN15c2
-    func test__069__Connection__connection_failures_once_CONNECTED__System_s_response_to_a_resume_request__CONNECTED_ProtocolMessage_with_the_same_connectionId_as_the_current_client_and_an_non_fatal_error() {
+    //RTN15c7
+    func test__069__Connection__connection_failures_once_CONNECTED__System_s_response_to_a_resume_request__CONNECTED_ProtocolMessage_with_the_different_connectionId_than_the_current_client_and_an_non_fatal_error() {
         let options = AblyTests.commonAppSetup()
         let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName())
+        let channelNeme = uniqueChannelName()
+        let channel = client.channels.get(channelNeme)
 
         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
 
@@ -2485,6 +2485,9 @@ class RealtimeClientConnectionTests: XCTestCase {
                 }
             }
         }
+        
+        expect(client.internal.msgSerial).to(equal(0))
+        expect(client.channels.get(channelNeme).state).to(equal(ARTRealtimeChannelState.attaching))
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
@@ -2493,8 +2496,9 @@ class RealtimeClientConnectionTests: XCTestCase {
                 expect(client.connection.errorReason).to(beIdenticalTo(stateChange.reason))
                 let transport = client.internal.transport as! TestProxyTransport
                 let connectedPM = transport.protocolMessagesReceived.filter { $0.action == .connected }[0]
-                expect(connectedPM.connectionId).to(equal(expectedConnectionId))
-                expect(client.connection.id).to(equal(expectedConnectionId))
+                expect(connectedPM.connectionId).toNot(equal(expectedConnectionId))
+                expect(client.connection.id).toNot(equal(expectedConnectionId))
+
                 partialDone()
             }
             channel.once(.attached) { stateChange in
