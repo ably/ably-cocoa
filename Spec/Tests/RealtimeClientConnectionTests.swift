@@ -1028,7 +1028,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
         }
 
-       expect(client.internal.msgSerial) == 4
+        expect(client.internal.msgSerial) == 5
         
         client.internal.onDisconnected()
         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.disconnected), timeout: testTimeout)
@@ -3087,98 +3087,76 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
         }
     }
-    /*
-     @(RTN16e)@ If the @recover@ option is missing or no longer valid when connecting to Ably, the client will connect anyway, but emit a @ConnectionStateChange@ with a @reason@, and will additionally set the @Connection#errorReason@ with an @ErrorInfo@ object describing the failure
-     */
-    /*** @(RTN16l)@ Recovery failures should be handled identically to resume failures, per "RTN15c7":#RTN15c7, "RTN15c5":#RTN15c5, and "RTN15c4":#RTN15c4.*
-     */
-    // RTN16e - replace with RTN16l
+    
+    // RTN16l
     func test__084__Connection__Connection_recovery__should_throw_error_if_recovery_key_is_broken() {
         
         let options = AblyTests.commonAppSetup()
-        let client = AblyTests.newRealtime(options)
-        defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName())
-        options.recover = "nonsense-key"
 
-       // expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
-        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.failed), timeout: testTimeout)
+        let clientSend = ARTRealtime(options: options)
+        defer { clientSend.close() }
+        
+        let channelName = uniqueChannelName()
+        let channelSend = clientSend.channels.get(channelName)
 
-      //  client.internal.onDisconnected()
-
-        let protocolError = AblyTests.newErrorProtocolMessage()
-        client.connection.once(.connecting) { _ in
-            // Resuming
-            guard let transport = client.internal.transport as? TestProxyTransport else {
-                fail("Recovery key is invalid"); return
-            }
-            transport.actionsIgnored += [.connected]
-            client.internal.onError(protocolError)
-        }
+        let clientReceive = ARTRealtime(options: options)
+        defer { clientReceive.close() }
+        let channelReceive = clientReceive.channels.get(channelName)
 
         waitUntil(timeout: testTimeout) { done in
-            client.connection.once(.failed) { stateChange in
-                expect(stateChange.reason).to(beIdenticalTo(protocolError.error))
-                expect(client.connection.errorReason).to(beIdenticalTo(protocolError.error))
+            channelReceive.subscribe(attachCallback: { error in
+                expect(error).to(beNil())
+                channelSend.publish(nil, data: "message") { error in
+                    expect(error).to(beNil())
+                }
+            }, callback: { message in
+                expect(message.data as? String).to(equal("message"))
+                done()
+            })
+        }
+
+        options.recover = "\(String(describing: clientReceive.connection.getRecoveryKey()))-some-nonsese"
+        clientReceive.internal.onError(AblyTests.newErrorProtocolMessage())
+
+        waitUntil(timeout: testTimeout) { done in
+            channelSend.publish(nil, data: "queue a message") { error in
+                expect(error).to(beNil())
                 done()
             }
         }
-        expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
-        expect(channel.errorReason).to(beIdenticalTo(protocolError.error))
+
+        let clientRecover = ARTRealtime(options: options)
+        defer { clientRecover.close() }
+        
+        waitUntil(timeout: testTimeout) { done in
+            clientRecover.connection.once(.failed) { stateChange in
+                expect(stateChange.reason).toNot(beNil())
+                done()
+            }
+        }
+        
     }
 
     // RTN16f
-    func test__085__Connection__Connection_recovery__should_use_msgSerial_from_recoveryKey_to_set_the_client_internal_msgSerial_but_is_not_sent_to_Ably() {
+    func test__085__Connection__Connection_recovery__should_set_internal_message_serial_to_component_in_recovery_key() {
         let options = AblyTests.commonAppSetup()
-        options.autoConnect = false
         
-        let recoveryKey = ARTConnectionRecoveryKey()
-        recoveryKey.msgSerial = 2;
-        recoveryKey.connectionKey = "xxx-adfafa-xxx"
-        recoveryKey.serials["channel1"] = ARTRealtimeChannel()
-        
-        options.recover = recoveryKey.asJson()
-
         let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
 
-        var urlConnections = [URL]()
-        TestProxyTransport.networkConnectEvent = { transport, url in
-            if client.internal.transport !== transport {
-                return
-            }
-            urlConnections.append(url)
-            if urlConnections.count == 1 {
-                TestProxyTransport.networkConnectEvent = nil
-            }
-        }
-        defer { TestProxyTransport.networkConnectEvent = nil }
-
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { stateChange in
-                guard let reason = stateChange.reason else {
-                    fail("Reason is empty"); done(); return
-                }
-
-                expect(urlConnections.count) == 1
-                guard let urlConnectionQuery = urlConnections.first?.query else {
-                    fail("Missing URL Connection query"); done(); return
-                }
-
-                expect(urlConnectionQuery).to(haveParam("recover", withValue: "99999!xxxxxx-xxxxxxxxx-xxxxxxxxx"))
-                expect(urlConnectionQuery).to(haveParam("connectionSerial", withValue: "-1"))
-                expect(urlConnectionQuery).toNot(haveParam("msgSerial"))
-
-                // recover fails, the counter should be reset to 0
-                expect(client.internal.msgSerial) == 0
-
-                expect(reason.message).to(contain("Unable to recover connection"))
-                expect(client.connection.errorReason).to(beIdenticalTo(reason))
                 done()
             }
-            client.connect()
-            expect(client.internal.msgSerial) == 7
         }
+        expect(client.connection.getRecoveryKey()).toNot(beNil())
+        
+        
+        let recoverOptions = options
+        recoverOptions.recover = client.connection.getRecoveryKey()
+        let recoveryKey = ARTConnectionRecoveryKey.fromJson(client.connection.getRecoveryKey()!)
+        let recoverClient = AblyTests.newRealtime(recoverOptions)
+        expect (recoverClient.internal.msgSerial).to(equal(recoveryKey?.msgSerial))
     }
 
     // RTN17
