@@ -2994,7 +2994,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
     // RTN16
 
-    // RTN16a
+    // RTN16i
     func test__080__Connection__Connection_recovery__connection_state_should_recover_explicitly_with_a_recover_key() {
         let options = AblyTests.commonAppSetup()
 
