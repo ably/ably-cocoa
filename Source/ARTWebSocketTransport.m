@@ -110,11 +110,6 @@ Class configuredWebsocketClass = nil;
 
 - (void)receive:(ARTProtocolMessage *)msg {
     [_protocolMessagesLogger info:@"recv %@", [msg description]];
-    
-    //TODO, remove this after error in realtime side is fixed
-    if (msg.error && msg.error.code == 80018) {
-        msg.error = nil;
-    }
     [self.delegate realtimeTransport:self didReceiveMessage:msg];
 }
 
