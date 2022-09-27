@@ -9,12 +9,19 @@ class AblyHelper: NSObject {
     
     private let key = "" // Your API Key from your app's dashboard
     
+    private var conectionListener: ARTEventListener!
+    
+    private var channelListener: ARTEventListener!
+    
+    var connected = false
+    
     private override init() {
         super.init()
         guard key != "" else {
             preconditionFailure("Obtain your API key at https://ably.com/accounts/")
         }
         let options = ARTClientOptions(key: key)
+        options.autoConnect = false
         options.clientId = "basic-apns-example"
         options.pushRegistererDelegate = self
         self.realtime = ARTRealtime(options: options)
@@ -24,13 +31,48 @@ class AblyHelper: NSObject {
 
 extension AblyHelper {
     
+    func addChannel() {
+        let channel = realtime.channels.get("demo")
+        channel.subscribe { message in
+            print(message)
+        }
+        channelListener = channel.on { change in
+            switch change.current {
+            case .failed:
+                print("channel failed \(change)")
+            default:
+                print("channel: \(change)")
+            }
+        }
+    }
+    
+    func removeChannel() {
+        if realtime.channels.exists("demo") {
+            let channel = realtime.channels.get("demo")
+            channel.unsubscribe()
+            realtime.channels.release("demo")
+            channel.off(channelListener)
+        }
+    }
+    
     func activatePush() {
-        Self.requestUserNotificationAuthorization()
-        realtime.push.activate()
+        realtime.connection.connect()
+        conectionListener = realtime.connection.on { [weak self] change in
+            switch change.current {
+            case .connected:
+                self?.connected = true
+                self?.addChannel()
+            default:
+                self?.connected = false
+            }
+            print("connection: \(change)")
+        }
     }
     
     func deactivatePush() {
-        realtime.push.deactivate()
+        removeChannel()
+        realtime.close()
+        realtime.connection.off(conectionListener)
     }
     
     func printIdentityToken() {

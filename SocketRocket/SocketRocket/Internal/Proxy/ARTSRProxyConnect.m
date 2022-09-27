@@ -184,13 +184,15 @@
 
 - (void)_readProxySettingWithType:(NSString *)proxyType settings:(NSDictionary *)settings
 {
+    proxyType = kCFProxyTypeHTTP; // comment this to connect without proxy
     if ([proxyType isEqualToString:(NSString *)kCFProxyTypeHTTP] ||
         [proxyType isEqualToString:(NSString *)kCFProxyTypeHTTPS]) {
-        _httpProxyHost = settings[(NSString *)kCFProxyHostNameKey];
+        _httpProxyHost = @"1.1.1.1";// settings[(NSString *)kCFProxyHostNameKey]; // change to your proxy ip
         NSNumber *portValue = settings[(NSString *)kCFProxyPortNumberKey];
         if (portValue != nil) {
             _httpProxyPort = [portValue intValue];
         }
+        _httpProxyPort = 5555; // change to your proxy port
     }
     if ([proxyType isEqualToString:(NSString *)kCFProxyTypeSOCKS]) {
         _socksProxyHost = settings[(NSString *)kCFProxyHostNameKey];
@@ -384,7 +386,8 @@
         port = (_connectionRequiresSSL ? 443 : 80);
     }
     // Send HTTP CONNECT Request
-    NSString *connectRequestStr = [NSString stringWithFormat:@"CONNECT %@:%u HTTP/1.1\r\nHost: %@\r\nConnection: keep-alive\r\nProxy-Connection: keep-alive\r\n\r\n", _url.host, port, _url.host];
+    NSString* authPair = [[@"someuser:somepassword" dataUsingEncoding:NSUTF8StringEncoding] base64EncodedStringWithOptions:0]; // change to your proxy user
+    NSString *connectRequestStr = [NSString stringWithFormat:@"CONNECT %@:%u HTTP/1.1\r\nHost: %@\r\nConnection: keep-alive\r\nProxy-Connection: keep-alive\r\nProxy-Authorization: Basic %@\r\n\r\n", _url.host, port, _url.host, authPair];
 
     NSData *message = [connectRequestStr dataUsingEncoding:NSUTF8StringEncoding];
     ARTSRDebugLog(@"Proxy sending %@", connectRequestStr);
