@@ -198,7 +198,6 @@
         _transport = nil;
         _transportClass = [ARTWebSocketTransport class];
         _reachabilityClass = [ARTOSReachability class];
-        _msgSerial = 0;
         _queuedMessages = [NSMutableArray array];
         _pendingMessages = [NSMutableArray array];
         _pendingMessageStartSerial = 0;
