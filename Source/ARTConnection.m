@@ -256,7 +256,7 @@ dispatch_sync(_queue, ^{
     recoveryKey.msgSerial = _serial;
     
     NSMutableDictionary *serials = @{}.mutableCopy;
-    for(ARTRealtimeChannelInternal *channel in _realtime.channels.collection){
+    for(ARTRealtimeChannelInternal *channel in _realtime.channels.nosyncIterable){
         serials[channel.name] = channel.channelSerial;
     }
     
