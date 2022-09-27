@@ -1028,7 +1028,10 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
         }
 
-        expect(client.internal.msgSerial) == 5
+       expect(client.internal.msgSerial) == 4
+        
+        client.internal.onDisconnected()
+        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.disconnected), timeout: testTimeout)
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.disconnected) { stateChange in
@@ -2481,6 +2484,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                     } else if protocolMessage.action == .attached {
                         protocolMessage.error = .create(withCode: 0, message: "Channel injected error")
                     }
+                    protocolMessage.connectionId = "nonsense"
                     return protocolMessage
                 }
             }
@@ -2495,6 +2499,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 expect(stateChange.reason?.message).to(equal("Injected error"))
                 expect(client.connection.errorReason).to(beIdenticalTo(stateChange.reason))
                 let transport = client.internal.transport as! TestProxyTransport
+                
                 let connectedPM = transport.protocolMessagesReceived.filter { $0.action == .connected }[0]
                 expect(connectedPM.connectionId).toNot(equal(expectedConnectionId))
                 expect(client.connection.id).toNot(equal(expectedConnectionId))
@@ -3082,27 +3087,44 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
         }
     }
-
-    // RTN16e - replace with RTN
-    func test__084__Connection__Connection_recovery__should_connect_anyway_if_the_recoverKey_is_no_longer_valid() {
+    /*
+     @(RTN16e)@ If the @recover@ option is missing or no longer valid when connecting to Ably, the client will connect anyway, but emit a @ConnectionStateChange@ with a @reason@, and will additionally set the @Connection#errorReason@ with an @ErrorInfo@ object describing the failure
+     */
+    /*** @(RTN16l)@ Recovery failures should be handled identically to resume failures, per "RTN15c7":#RTN15c7, "RTN15c5":#RTN15c5, and "RTN15c4":#RTN15c4.*
+     */
+    // RTN16e - replace with RTN16l
+    func test__084__Connection__Connection_recovery__should_throw_error_if_recovery_key_is_broken() {
+        
         let options = AblyTests.commonAppSetup()
-        let recoveryKey = ARTConnectionRecoveryKey()
-        recoveryKey.msgSerial = 2;
-        recoveryKey.connectionKey = "xxx-adfafa-xxx"
-        recoveryKey.serials["channel1"] = ARTRealtimeChannel()
-        options.recover = recoveryKey.asJson()
-        let client = ARTRealtime(options: options)
+        let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
+        let channel = client.channels.get(uniqueChannelName())
+        options.recover = "nonsense-key"
+
+       // expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.failed), timeout: testTimeout)
+
+      //  client.internal.onDisconnected()
+
+        let protocolError = AblyTests.newErrorProtocolMessage()
+        client.connection.once(.connecting) { _ in
+            // Resuming
+            guard let transport = client.internal.transport as? TestProxyTransport else {
+                fail("Recovery key is invalid"); return
+            }
+            transport.actionsIgnored += [.connected]
+            client.internal.onError(protocolError)
+        }
+
         waitUntil(timeout: testTimeout) { done in
-            client.connection.once(.connected) { stateChange in
-                guard let reason = stateChange.reason else {
-                    fail("Reason is empty"); done(); return
-                }
-                expect(reason.message).to(contain("Unable to recover connection"))
-                expect(client.connection.errorReason).to(beIdenticalTo(reason))
+            client.connection.once(.failed) { stateChange in
+                expect(stateChange.reason).to(beIdenticalTo(protocolError.error))
+                expect(client.connection.errorReason).to(beIdenticalTo(protocolError.error))
                 done()
             }
         }
+        expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
+        expect(channel.errorReason).to(beIdenticalTo(protocolError.error))
     }
 
     // RTN16f
