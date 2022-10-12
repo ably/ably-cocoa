@@ -2448,7 +2448,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 let connectedPM = transport.protocolMessagesReceived.filter { $0.action == .connected }[0]
                 expect(connectedPM.connectionId).to(equal(expectedConnectionId))
                 expect(stateChange.reason).to(beNil())
-                //reattach
+                //attach should be 2 as 1 above and one reattach
                 expect(transport.protocolMessagesSent.filter { $0.action == .attach }).to(haveCount(2))
               
                 expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
@@ -2510,7 +2510,8 @@ class RealtimeClientConnectionTests: XCTestCase {
                 let connectedPM = transport.protocolMessagesReceived.filter { $0.action == .connected }[0]
                 expect(connectedPM.connectionId).toNot(equal(expectedConnectionId))
                 expect(client.connection.id).toNot(equal(expectedConnectionId))
-
+                //ensure reattach
+                expect(transport.protocolMessagesSent.filter { $0.action == .attach }).to(haveCount(1))
                 partialDone()
             }
             channel.once(.attached) { stateChange in
@@ -2522,7 +2523,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 partialDone()
             }
         }
-
+        
         expect(client.internal.queuedMessages).toEventually(haveCount(0), timeout: testTimeout)
     }
 
