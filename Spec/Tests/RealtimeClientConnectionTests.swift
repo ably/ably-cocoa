@@ -2427,8 +2427,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
     }
 
-    // RTN15c1 - replace with RTN15c6
-    //todo check whetehr this test is relevant anymore
+    //RTN15c6
     func test__068__Connection__connection_failures_once_CONNECTED__System_s_response_to_a_resume_request__CONNECTED_ProtocolMessage_with_the_same_connectionId_as_the_current_client__and_no_error() {
         let options = AblyTests.commonAppSetup()
         let client = AblyTests.newRealtime(options)
@@ -2449,11 +2448,19 @@ class RealtimeClientConnectionTests: XCTestCase {
                 let connectedPM = transport.protocolMessagesReceived.filter { $0.action == .connected }[0]
                 expect(connectedPM.connectionId).to(equal(expectedConnectionId))
                 expect(stateChange.reason).to(beNil())
+                //reattach
+                expect(transport.protocolMessagesSent.filter { $0.action == .attach }).to(haveCount(2))
+              
+                expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
                 done()
             }
         }
+        
+        
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
+        //The connection should also process any messages queued per @RTL6c2@
         expect(client.internal.queuedMessages).toEventually(haveCount(0), timeout: testTimeout)
+        
     }
 
     //RTN15c7
