@@ -3979,6 +3979,51 @@ class RealtimeClientConnectionTests: XCTestCase {
         //The connection should also process any messages queued per @RTL6c2@
         expect(client.internal.queuedMessages).toEventually(haveCount(0), timeout: testTimeout)
     }
+    
+    // RTN19a2
+    func test__103__Connection__Transport_disconnected_side_effects_message_serial_for_pending_message_must_remain_the_same_that_is_awaiting_a_ACK_NACK() {
+        let options = AblyTests.commonAppSetup()
+        let client = AblyTests.newRealtime(options)
+       
+        defer { client.dispose(); client.close() }
+        let channel = client.channels.get(uniqueChannelName())
+        let transport = client.internal.transport as! TestProxyTransport
+        
+        var connectionId: String?
+        
+        waitUntil(timeout: testTimeout) { done in
+            channel.attach { _ in
+                let connectedPM = transport.protocolMessagesReceived.filter { $0.action == .connected }[0]
+                connectionId = connectedPM.connectionId
+                done()
+            }
+        }
+
+        waitUntil(timeout: testTimeout) { done in
+            channel.publish(nil, data: "message") { error in
+              expect(error).to(beNil())
+                guard let newTransport = client.internal.transport as? TestProxyTransport else {
+                    fail("Transport is nil"); done(); return
+                }
+                expect(newTransport).toNot(beIdenticalTo(transport))
+               
+                let msgSerial1 = transport.protocolMessagesSent.filter { $0.action == .message }[0].msgSerial
+                let msgSerial2 = newTransport.protocolMessagesSent.filter { $0.action == .message }[0].msgSerial
+                expect(msgSerial1).to(equal(msgSerial2))
+              
+                done()
+            }
+            
+            client.connection.once(.connected){ stateChange in
+                //ensure same connnection id and no error
+                let transport = client.internal.transport as! TestProxyTransport
+                let connectedPM = transport.protocolMessagesReceived.filter { $0.action == .connected }[0]
+                expect(connectedPM.error).to(beNil())
+                expect(connectedPM.connectionId).to(equal(connectionId))
+            }
+            client.internal.onDisconnected()
+        }
+    }
 
 
     // RTN19b
