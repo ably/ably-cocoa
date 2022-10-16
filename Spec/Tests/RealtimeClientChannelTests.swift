@@ -499,13 +499,12 @@ class RealtimeClientChannelTests: XCTestCase {
     // RTL2f
     func test__011__Channel__EventEmitter__channel_states_and_events__ChannelStateChange_will_contain_a_resumed_boolean_attribute_with_value__true__if_the_bit_flag_RESUMED_was_included() {
         let options = AblyTests.commonAppSetup()
-        //     options.tokenDetails = getTestTokenDetails(ttl: 5.0)
+        options.tokenDetails = getTestTokenDetails(ttl: 5.0)
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(uniqueChannelName())
-        
-        //first attach not to have resume flag
-        waitUntil(timeout: testTimeout){done in
+
+        waitUntil(timeout: testTimeout) { done in
             channel.on { stateChange in
                 switch stateChange.current {
                 case .attached:
@@ -513,16 +512,14 @@ class RealtimeClientChannelTests: XCTestCase {
                 default:
                     expect(stateChange.resumed).to(beFalse())
                 }
-                done()
             }
-            channel.attach()
-        }
-        //now disconnect
-        waitUntil(timeout: testTimeout) { done in
             client.connection.once(.disconnected) { stateChange in
                 channel.off()
-                
-                
+                guard let error = stateChange.reason else {
+                    fail("Error is nil"); done(); return
+                }
+                expect(error.code) == ARTErrorCode.tokenExpired.intValue
+
                 channel.on { stateChange in
                     if stateChange.current == .attached {
                         expect(stateChange.resumed).to(beTrue())
@@ -533,56 +530,56 @@ class RealtimeClientChannelTests: XCTestCase {
                     }
                 }
             }
-            client.internal.onDisconnected()
+            channel.attach()
         }
     }
 
-           // RTL2f, TR4i
-           func test__012__Channel__EventEmitter__channel_states_and_events__bit_flag_RESUMED_was_included() {
-               let options = AblyTests.commonAppSetup()
-               let client = ARTRealtime(options: options)
-               defer { client.dispose(); client.close() }
-               let channel = client.channels.get(uniqueChannelName())
+    // RTL2f, TR4i
+    func test__012__Channel__EventEmitter__channel_states_and_events__bit_flag_RESUMED_was_included() {
+        let options = AblyTests.commonAppSetup()
+        let client = ARTRealtime(options: options)
+        defer { client.dispose(); client.close() }
+        let channel = client.channels.get(uniqueChannelName())
 
-               waitUntil(timeout: testTimeout) { done in
-                   channel.once(.attached) { stateChange in
-                       expect(stateChange.resumed).to(beFalse())
-                       expect(stateChange.reason).to(beNil())
-                       done()
-                   }
-                   channel.attach()
-               }
+        waitUntil(timeout: testTimeout) { done in
+            channel.once(.attached) { stateChange in
+                expect(stateChange.resumed).to(beFalse())
+                expect(stateChange.reason).to(beNil())
+                done()
+            }
+            channel.attach()
+        }
 
-               let attachedMessage = ARTProtocolMessage()
-               attachedMessage.action = .attached
-               attachedMessage.channel = channel.name
-               attachedMessage.flags = 4 // Resumed
+        let attachedMessage = ARTProtocolMessage()
+        attachedMessage.action = .attached
+        attachedMessage.channel = channel.name
+        attachedMessage.flags = 4 // Resumed
 
-               waitUntil(timeout: testTimeout) { done in
-                   channel.once(.update) { stateChange in
-                       expect(stateChange.resumed).to(beTrue())
-                       expect(stateChange.reason).to(beNil())
-                       expect(stateChange.current).to(equal(ARTRealtimeChannelState.attached))
-                       expect(stateChange.previous).to(equal(ARTRealtimeChannelState.attached))
-                       done()
-                   }
-                   client.internal.transport?.receive(attachedMessage)
-               }
-           }
+        waitUntil(timeout: testTimeout) { done in
+            channel.once(.update) { stateChange in
+                expect(stateChange.resumed).to(beTrue())
+                expect(stateChange.reason).to(beNil())
+                expect(stateChange.current).to(equal(ARTRealtimeChannelState.attached))
+                expect(stateChange.previous).to(equal(ARTRealtimeChannelState.attached))
+                done()
+            }
+            client.internal.transport?.receive(attachedMessage)
+        }
+    }
 
-           // RTL3
+    // RTL3
 
-           // RTL3a
+    // RTL3a
 
-           func test__017__Channel__connection_state__changes_to_FAILED__ATTACHING_channel_should_transition_to_FAILED() {
-               let options = AblyTests.commonAppSetup()
-               options.autoConnect = false
-               let client = ARTRealtime(options: options)
-               client.internal.setTransport(TestProxyTransport.self)
-               client.connect()
-               defer { client.dispose(); client.close() }
+    func test__017__Channel__connection_state__changes_to_FAILED__ATTACHING_channel_should_transition_to_FAILED() {
+        let options = AblyTests.commonAppSetup()
+        options.autoConnect = false
+        let client = ARTRealtime(options: options)
+        client.internal.setTransport(TestProxyTransport.self)
+        client.connect()
+        defer { client.dispose(); client.close() }
 
-               let channel = client.channels.get(uniqueChannelName())
+        let channel = client.channels.get(uniqueChannelName())
         channel.attach()
         let transport = client.internal.transport as! TestProxyTransport
         transport.actionsIgnored += [.attached]
