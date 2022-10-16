@@ -1237,56 +1237,6 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
     }
 
-    func test__037__Connection__ACK_and_NACK__should_trigger_the_failure_callback_for_the_remaining_pending_messages_if__lost_connection_state() {
-        let options = AblyTests.commonAppSetup()
-        options.autoConnect = false
-        let client = ARTRealtime(options: options)
-        client.internal.setTransport(TestProxyTransport.self)
-        client.connect()
-        defer {
-            client.dispose()
-            client.close()
-        }
-
-        let channel = client.channels.get(uniqueChannelName())
-
-        let transport = client.internal.transport as! TestProxyTransport
-        transport.actionsIgnored += [.ack, .nack]
-
-        waitUntil(timeout: testTimeout) { done in
-            channel.attach { _ in
-                done()
-            }
-        }
-
-        waitUntil(timeout: testTimeout) { done in
-            let partialDone = AblyTests.splitDone(3, done: done)
-
-            channel.publish(nil, data: "message") { error in
-                guard let error = error else {
-                    fail("Error is nil"); return
-                }
-                expect(error.code) == ARTErrorCode.unableToRecoverConnectionExpired.intValue
-                expect(error.message).to(contain("Unable to recover connection"))
-                partialDone()
-            }
-
-            let oldConnectionId = client.connection.id!
-
-            // Wait until the message is pushed to Ably first
-            delay(1.0) {
-                client.connection.once(.disconnected) { _ in
-                    partialDone()
-                }
-                client.connection.once(.connected) { _ in
-                    expect(client.connection.id).toNot(equal(oldConnectionId))
-                    partialDone()
-                }
-                client.simulateLostConnectionAndState()
-            }
-        }
-    }
-
     // RTN8
 
     // RTN8a
@@ -2716,67 +2666,6 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
     }
 
-    // RTN15f
-    func test__066__Connection__connection_failures_once_CONNECTED__ACK_and_NACK_responses_for_published_messages_can_only_ever_be_received_on_the_transport_connection_on_which_those_messages_were_sent() {
-        let options = AblyTests.commonAppSetup()
-        let client = AblyTests.newRealtime(options)
-        defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName())
-
-        var resumed = false
-        waitUntil(timeout: testTimeout) { done in
-            client.connection.once(.connected) { _ in
-                done()
-            }
-        }
-
-        waitUntil(timeout: testTimeout) { done in
-            let partialDone = AblyTests.splitDone(2, done: done)
-
-            guard let transport1 = client.internal.transport as? TestProxyTransport else {
-                fail("TestProxyTransport not setup"); done(); return
-            }
-
-            var sentPendingMessage: ARTMessage?
-            channel.publish(nil, data: "message") { _ in
-                if resumed {
-                    guard let transport2 = client.internal.transport as? TestProxyTransport else {
-                        fail("TestProxyTransport not setup"); done(); return
-                    }
-                    expect(transport2.protocolMessagesReceived.filter { $0.action == .ack }).to(haveCount(1))
-
-                    guard let _ = transport1.protocolMessagesSent.filter({ $0.action == .message }).first?.messages?.first else {
-                        fail("Message that has been re-sent isn't available"); done(); return
-                    }
-                    guard let sentTransportMessage2 = transport2.protocolMessagesSent.filter({ $0.action == .message }).first?.messages?.first else {
-                        fail("Message that has been re-sent isn't available"); done(); return
-                    }
-
-                    expect(transport1).toNot(beIdenticalTo(transport2))
-                    expect(sentPendingMessage).to(beIdenticalTo(sentTransportMessage2))
-
-                    partialDone()
-                } else {
-                    fail("Shouldn't be called")
-                }
-            }
-            AblyTests.queue.async {
-                client.internal.onDisconnected()
-            }
-            client.connection.once(.connected) { _ in
-                resumed = true
-            }
-            client.internal.testSuite_injectIntoMethod(before: Selector(("resendPendingMessages"))) {
-                expect(client.internal.pendingMessages.count).to(equal(1))
-                let pm: ARTProtocolMessage? = (client.internal.pendingMessages.firstObject as? ARTPendingMessage)?.msg
-                sentPendingMessage = pm?.messages?[0]
-            }
-            client.internal.testSuite_injectIntoMethod(after: Selector(("resendPendingMessages"))) {
-                partialDone()
-            }
-        }
-    }
-
     // RTN15g RTN15g1
 
     func skipped__test__074__Connection__connection_failures_once_CONNECTED__when_connection__ttl_plus_idle_interval__period_has_passed_since_last_activity__uses_a_new_connection() {
@@ -3884,19 +3773,83 @@ class RealtimeClientConnectionTests: XCTestCase {
         expect(realtime.auth.clientId).to(equal(connectedProtocolMessage.connectionDetails!.clientId))
         expect(realtime.connection.key).to(equal(connectedProtocolMessage.connectionDetails!.connectionKey))
     }
-
+    
     // RTN19a
-    func skipped__test__103__Connection__Transport_disconnected_side_effects__should_resend_any_ProtocolMessage_that_is_awaiting_a_ACK_NACK() {
+       func test__066__Connection__connection_failures_once_CONNECTED__ACK_and_NACK_responses_for_published_messages_can_only_ever_be_received_on_the_transport_connection_on_which_those_messages_were_sent() {
+           let options = AblyTests.commonAppSetup()
+           let client = AblyTests.newRealtime(options)
+           defer { client.dispose(); client.close() }
+           let channel = client.channels.get(uniqueChannelName())
+
+           var resumed = false
+           waitUntil(timeout: testTimeout) { done in
+               client.connection.once(.connected) { _ in
+                   done()
+               }
+           }
+
+           waitUntil(timeout: testTimeout) { done in
+               let partialDone = AblyTests.splitDone(2, done: done)
+
+               guard let transport1 = client.internal.transport as? TestProxyTransport else {
+                   fail("TestProxyTransport not setup"); done(); return
+               }
+
+               var sentPendingMessage: ARTMessage?
+               channel.publish(nil, data: "message") { _ in
+                   if resumed {
+                       guard let transport2 = client.internal.transport as? TestProxyTransport else {
+                           fail("TestProxyTransport not setup"); done(); return
+                       }
+                       expect(transport2.protocolMessagesReceived.filter { $0.action == .ack }).to(haveCount(1))
+
+                       guard let _ = transport1.protocolMessagesSent.filter({ $0.action == .message }).first?.messages?.first else {
+                           fail("Message that has been re-sent isn't available"); done(); return
+                       }
+                       guard let sentTransportMessage2 = transport2.protocolMessagesSent.filter({ $0.action == .message }).first?.messages?.first else {
+                           fail("Message that has been re-sent isn't available"); done(); return
+                       }
+
+                       expect(transport1).toNot(beIdenticalTo(transport2))
+                       expect(sentPendingMessage).to(beIdenticalTo(sentTransportMessage2))
+
+                       partialDone()
+                   } else {
+                       fail("Shouldn't be called")
+                   }
+               }
+               AblyTests.queue.async {
+                   client.internal.onDisconnected()
+               }
+               client.connection.once(.connected) { _ in
+                   resumed = true
+               }
+               client.internal.testSuite_injectIntoMethod(before: Selector(("resendPendingMessages"))) {
+                   expect(client.internal.pendingMessages.count).to(equal(1))
+                   let pm: ARTProtocolMessage? = (client.internal.pendingMessages.firstObject as? ARTPendingMessage)?.msg
+                   sentPendingMessage = pm?.messages?[0]
+               }
+               client.internal.testSuite_injectIntoMethod(after: Selector(("resendPendingMessages"))) {
+                   partialDone()
+               }
+               
+           }
+       }
+    
+    // RTN19a1
+    func test__103__Connection__Transport_disconnected_side_effects__should_resend_any_ProtocolMessage_by_proecessing_connection_wide_pending_messages() {
         let options = AblyTests.commonAppSetup()
         let client = AblyTests.newRealtime(options)
+        
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(uniqueChannelName())
         let transport = client.internal.transport as! TestProxyTransport
-
+    
         waitUntil(timeout: testTimeout) { done in
             channel.attach { _ in done() }
         }
 
+       
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "message") { error in
                 expect(error).to(beNil())
@@ -3911,9 +3864,122 @@ class RealtimeClientConnectionTests: XCTestCase {
                 expect(newTransport.protocolMessagesSent.filter { $0.action == .message }).to(haveCount(1))
                 done()
             }
+            client.connection.once(.disconnected) { _ in
+                expect(client.internal.pendingMessages).to(haveCount(1))
+                print("Disconnected");
+            }
+            //reconnected
+            client.connection.once(.connected) { _ in
+                expect(client.internal.pendingMessages).to(haveCount(1))
+            }
+            client.internal.onDisconnected()
+        }
+        
+        //The connection should also process any messages queued per @RTL6c2@
+        expect(client.internal.queuedMessages).toEventually(haveCount(0), timeout: testTimeout)
+    }
+    
+    // RTN19a1 for resumable cases
+    func test__103__Connection__Transport_disconnected_side_effects__should_resend_any_ProtocolMessage_for_resumable_cases_that_is_awaiting_a_ACK_NACK() {
+        let options = AblyTests.commonAppSetup()
+        let client = AblyTests.newRealtime(options)
+       
+        defer { client.dispose(); client.close() }
+        let channel = client.channels.get(uniqueChannelName())
+        let transport = client.internal.transport as! TestProxyTransport
+        
+        var connectionId: String?
+        
+        waitUntil(timeout: testTimeout) { done in
+            channel.attach { _ in
+                let connectedPM = transport.protocolMessagesReceived.filter { $0.action == .connected }[0]
+                connectionId = connectedPM.connectionId
+                done()
+            }
+        }
+
+        waitUntil(timeout: testTimeout) { done in
+            channel.publish(nil, data: "message") { error in
+              expect(error).to(beNil())
+                guard let newTransport = client.internal.transport as? TestProxyTransport else {
+                    fail("Transport is nil"); done(); return
+                }
+                expect(newTransport).toNot(beIdenticalTo(transport))
+                expect(transport.protocolMessagesSent.filter { $0.action == .message }).to(haveCount(1))
+                expect(transport.protocolMessagesReceived.filter { $0.action == .connected }).to(haveCount(1))
+                expect(newTransport.protocolMessagesReceived.filter { $0.action == .connected }).to(haveCount(1))
+                expect(transport.protocolMessagesReceived.filter { $0.action == .connected }).to(haveCount(1))
+                expect(newTransport.protocolMessagesSent.filter { $0.action == .message }).to(haveCount(1))
+                done()
+            }
+            
+            client.connection.once(.connected){ stateChange in
+                //ensure same connnection id and no error
+                let transport = client.internal.transport as! TestProxyTransport
+                let connectedPM = transport.protocolMessagesReceived.filter { $0.action == .connected }[0]
+                expect(connectedPM.error).to(beNil())
+                expect(connectedPM.connectionId).to(equal(connectionId))
+            }
             client.internal.onDisconnected()
         }
     }
+    
+    // RTN19a1 for resume failure case
+    func test__103__Connection__Transport_disconnected_side_effects__should_resend_any_ProtocolMessage_by_proecessing_connection_wide_pending_messages_when_resume_fails() {
+        let options = AblyTests.commonAppSetup()
+        let client = AblyTests.newRealtime(options)
+        
+        defer { client.dispose(); client.close() }
+        let channel = client.channels.get(uniqueChannelName())
+        let transport = client.internal.transport as! TestProxyTransport
+    
+        waitUntil(timeout: testTimeout) { done in
+            channel.attach { _ in done() }
+        }
+
+       
+        waitUntil(timeout: testTimeout) { done in
+            channel.publish(nil, data: "message") { error in
+                expect(error?.message).to(equal("Injected error"))
+                guard let newTransport = client.internal.transport as? TestProxyTransport else {
+                    fail("Transport is nil"); done(); return
+                }
+                expect(newTransport).toNot(beIdenticalTo(transport))
+                expect(transport.protocolMessagesSent.filter { $0.action == .message }).to(haveCount(1))
+                expect(transport.protocolMessagesReceived.filter { $0.action == .connected }).to(haveCount(1))
+                expect(newTransport.protocolMessagesReceived.filter { $0.action == .connected }).to(haveCount(1))
+                expect(transport.protocolMessagesReceived.filter { $0.action == .connected }).to(haveCount(1))
+                expect(newTransport.protocolMessagesSent.filter { $0.action == .message }).to(haveCount(1))
+                done()
+            }
+            client.connection.once(.disconnected) { _ in
+                expect(client.internal.pendingMessages).to(haveCount(1))
+            }
+            client.connection.once(.connecting) { _ in
+                expect(client.internal.pendingMessages).to(haveCount(1))
+                let transport = client.internal.transport as! TestProxyTransport
+                transport.setBeforeIncomingMessageModifier { protocolMessage in
+                    protocolMessage.connectionId = "nonsense"
+                    protocolMessage.error = .create(withCode: 0, message: "Injected error")
+                    return protocolMessage
+                }
+                print("Disconnected");
+            }
+            
+            //reconnected
+            client.connection.once(.connected) { stateChange in
+            
+                expect(stateChange.reason?.message).to(equal("Injected error"))
+
+                expect(client.internal.pendingMessages).to(haveCount(1))
+            }
+            client.internal.onDisconnected()
+        }
+        
+        //The connection should also process any messages queued per @RTL6c2@
+        expect(client.internal.queuedMessages).toEventually(haveCount(0), timeout: testTimeout)
+    }
+
 
     // RTN19b
     func skipped__test__104__Connection__Transport_disconnected_side_effects__should_resend_the_ATTACH_message_if_there_are_any_pending_channels() {

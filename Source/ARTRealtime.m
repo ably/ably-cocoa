@@ -677,13 +677,9 @@
         case ARTRealtimeConnected: {
             _fallbacks = nil;
             _connectionLostAt = nil;
-            if (stateChange.reason) {
-                ARTStatus *status = [ARTStatus state:ARTStateError info:[stateChange.reason copy]];
-                [self failPendingMessages:status];
-            }
-            else {
-                [self resendPendingMessages];
-            }
+             //resend regardless of resumption result
+             [self resendPendingMessages];
+           
             [_connectedEventEmitter emit:nil with:nil];
             break;
         }
