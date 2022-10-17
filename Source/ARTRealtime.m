@@ -795,15 +795,13 @@
     // Resuming
     if (_resuming) {
         if ([message.connectionId isEqualToString:self.connection.id_nosync] && !message.error) {  // RTN15c6
-            [self reattachChannelsOnResume:message];
+            [self reattachChannelsOnResumeResult:message];
             [self.logger debug:@"RT:%p connection \"%@\" has reconnected and resumed successfully", self, message.connectionId];
             _resuming = false;
         }else if(![message.connectionId isEqualToString:self.connection.id_nosync] && message.error){ //RTN15c7
             [self.logger warn:@"RT:%p connection \"%@\" has resumed with non-fatal error \"%@\"", self, message.connectionId, message.error.message];
             self.msgSerial = 0;
-        } else {
-            [self.logger debug:@"RT:%p connection \"%@\" has reconnected and resumed successfully", self, message.connectionId];
-            [self reattachChannelsOnResume:message];
+            [self reattachChannelsOnResumeResult:message];
         }
     }
     
@@ -847,7 +845,7 @@
 }
 
 //For RTN15c6, RTN15c7
-- (void)reattachChannelsOnResume:(ARTProtocolMessage *)message {
+- (void)reattachChannelsOnResumeResult:(ARTProtocolMessage *)message {
     for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
         ARTRealtimeChannelState channelState = channel.state_nosync;
         if (channelState == ARTRealtimeChannelAttaching || channelState== ARTRealtimeChannelAttached || channelState == ARTRealtimeChannelSuspended) {
