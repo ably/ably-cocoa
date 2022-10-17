@@ -798,8 +798,10 @@
             [self reattachChannelsOnResumeResult:message];
             [self.logger debug:@"RT:%p connection \"%@\" has reconnected and resumed successfully", self, message.connectionId];
             _resuming = false;
-        }else if(![message.connectionId isEqualToString:self.connection.id_nosync] && message.error){ //RTN15c7
-            [self.logger warn:@"RT:%p connection \"%@\" has resumed with non-fatal error \"%@\"", self, message.connectionId, message.error.message];
+        }else if(![message.connectionId isEqualToString:self.connection.id_nosync]){ //RTN15c7
+            if (message.error) {
+                [self.logger warn:@"RT:%p connection \"%@\" has resumed with non-fatal error \"%@\"", self, message.connectionId, message.error.message];
+            }
             self.msgSerial = 0;
             [self reattachChannelsOnResumeResult:message];
         }
