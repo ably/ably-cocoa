@@ -2416,19 +2416,21 @@ class RealtimeClientConnectionTests: XCTestCase {
     //RTN15c7
     func test__069__Connection__connection_failures_once_CONNECTED__System_s_response_to_a_resume_request__CONNECTED_ProtocolMessage_with_the_different_connectionId_than_the_current_client_and_an_non_fatal_error() {
         let options = AblyTests.commonAppSetup()
+        options.logLevel = .debug
         let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
-        let channelNeme = uniqueChannelName()
-        let channel = client.channels.get(channelNeme)
-
+        
         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
-
+       
+        let channelName = uniqueChannelName()
+        let channel = client.channels.get(channelName)
+      
         let expectedConnectionId = client.connection.id
+        
         client.internalAsync { _internal in
             _internal.onDisconnected()
         }
-
-        channel.attach()
+        
         channel.publish(nil, data: "queued message")
         expect(client.internal.queuedMessages).toEventually(haveCount(1), timeout: testTimeout)
 
@@ -2448,8 +2450,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
         
         expect(client.internal.msgSerial).to(equal(0))
-        expect(client.channels.get(channelNeme).state).to(equal(ARTRealtimeChannelState.attaching))
-
+        
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
             client.connection.once(.connected) { stateChange in
