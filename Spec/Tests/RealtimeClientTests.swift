@@ -49,7 +49,7 @@ class RealtimeClientTests: XCTestCase {
 
                 // This test should not directly validate version against ARTDefault.version(), as
                 // ultimately the version header has been derived from that value.
-                expect(transport.lastUrl!.query).to(haveParam("v", withValue: "1.2"))
+                expect(transport.lastUrl!.query).to(haveParam("v", withValue: "2.0"))
 
                 done()
             }
