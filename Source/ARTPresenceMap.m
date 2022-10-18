@@ -155,6 +155,17 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
     _localMembers = [NSMutableSet set];
 }
 
+- (void)reenterLocalMembersMissingFromSync {
+    [_logger debug:__FILE__ line:__LINE__ message:@"%p reentering local members missed from sync (syncSessionId=%lu)", self, (unsigned long)_syncSessionId];
+    NSSet *filteredLocalMembers = [_localMembers filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"syncSessionId != %lu", (unsigned long)_syncSessionId]];
+    for (ARTPresenceMessage *localMember in filteredLocalMembers) {
+        ARTPresenceMessage *reenter = [localMember copy];
+        [self internalRemove:localMember];
+        [self.delegate map:self shouldReenterLocalMember:reenter];
+    }
+    [self cleanUpAbsentMembers];
+}
+
 - (void)startSync {
     [_logger debug:__FILE__ line:__LINE__ message:@"%p PresenceMap sync started", self];
     _syncSessionId++;
@@ -167,6 +178,12 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
     [self cleanUpAbsentMembers];
     [self leaveMembersNotPresentInSync];
     _syncState = ARTPresenceSyncEnded;
+    //RTP17f, RTP17g
+    //todo check previous state is not attached
+    if (_syncState == ARTRealtimeChannelAttached ) {
+        [self reenterLocalMembersMissingFromSync];
+    }
+    
     [_syncEventEmitter emit:[ARTEvent newWithPresenceSyncState:ARTPresenceSyncEnded] with:[_members allValues]];
     [_syncEventEmitter off];
     [_logger debug:__FILE__ line:__LINE__ message:@"%p PresenceMap sync ended", self];
