@@ -2276,55 +2276,49 @@ class RealtimeClientConnectionTests: XCTestCase {
     // RTN15a
     func test__063__Connection__connection_failures_once_CONNECTED__should_not_receive_published_messages_until_the_connection_reconnects_successfully() {
         let options = AblyTests.commonAppSetup()
-        options.autoConnect = false
 
-        let client1 = ARTRealtime(options: options)
-        defer { client1.close() }
+        let clientSend = ARTRealtime(options: options)
+        defer { clientSend.close() }
         
         let channelName = uniqueChannelName()
-        let channel1 = client1.channels.get(channelName)
+        let channelSend = clientSend.channels.get(channelName)
 
-        var states = [ARTRealtimeConnectionState]()
-        client1.connection.on { stateChange in
-            states = states + [stateChange.current]
-        }
-        client1.connect()
-
-        let client2 = ARTRealtime(options: options)
-        client2.connect()
-        defer { client2.close() }
-        let channel2 = client2.channels.get(channelName)
-
-        channel1.subscribe { _ in
-            fail("Shouldn't receive the messsage")
-        }
-
-        expect(channel1.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
-
-        let firstConnection: (id: String, key: String) = (client1.connection.id!, client1.connection.key!)
-
-        // Connection state cannot be resumed
-        client1.simulateLostConnectionAndState()
-
-        channel2.publish(nil, data: "message") { errorInfo in
-            expect(errorInfo).to(beNil())
-        }
+        let clientReceive = ARTRealtime(options: options)
+        defer { clientReceive.close() }
+        let channelReceive = clientReceive.channels.get(channelName)
 
         waitUntil(timeout: testTimeout) { done in
-            let partialDone = AblyTests.splitDone(2, done: done)
-            client1.connection.once(.connecting) { _ in
-                expect(client1.internal.resuming).to(beTrue())
-                partialDone()
-            }
-            client1.connection.once(.connected) { _ in
-                expect(client1.internal.resuming).to(beFalse())
-                expect(client1.connection.id).toNot(equal(firstConnection.id))
-                expect(client1.connection.key).toNot(equal(firstConnection.key))
-                partialDone()
+            channelReceive.subscribe(attachCallback: { error in
+                expect(error).to(beNil())
+                channelSend.publish(nil, data: "message") { error in
+                    expect(error).to(beNil())
+                }
+            }, callback: { message in
+                expect(message.data as? String).to(equal("message"))
+                done()
+            })
+        }
+
+        options.recover = clientReceive.connection.getRecoveryKey()
+        clientReceive.internal.onError(AblyTests.newErrorProtocolMessage())
+
+        waitUntil(timeout: testTimeout) { done in
+            channelSend.publish(nil, data: "queue a message") { error in
+                expect(error).to(beNil())
+                done()
             }
         }
 
-        expect(states).toEventually(equal([.connecting, .connected, .disconnected, .connecting, .connected]), timeout: testTimeout)
+        let clientRecover = ARTRealtime(options: options)
+        defer { clientRecover.close() }
+        let channelRecover = clientRecover.channels.get(channelName)
+
+        waitUntil(timeout: testTimeout) { done in
+            channelRecover.subscribe { message in
+                expect(message.data as? String).to(equal("queue a message"))
+                done()
+            }
+        }
     }
 
     // RTN15a
