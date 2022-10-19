@@ -1242,6 +1242,54 @@ class RealtimeClientChannelTests: XCTestCase {
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
         expect(transport.protocolMessagesReceived.filter { $0.action == .attached }).to(haveCount(1))
     }
+    
+    // RTL4c1
+    func test__0300__Channel__attach__should_send_an_channel_serial_as_received_from_latest_protocl_message_or_omitted_if_no_previous_protool_message() {
+        let options = AblyTests.commonAppSetup()
+        options.autoConnect = false
+        let client = ARTRealtime(options: options)
+        client.internal.setTransport(TestProxyTransport.self)
+        client.connect()
+        defer { client.dispose(); client.close() }
+
+        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+        let transport = client.internal.transport as! TestProxyTransport
+
+        let channel = client.channels.get(uniqueChannelName())
+        channel.attach()
+
+        expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
+        expect(transport.protocolMessagesSent.filter { $0.action == .attach }).to(haveCount(1))
+        let firstProtocolMessage = transport.protocolMessagesSent.filter { $0.action == .attach }[0]
+        expect(firstProtocolMessage.channelSerial).to(beNil())
+        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
+        
+        waitUntil(timeout: testTimeout) { done in
+            channel.publish([ARTMessage(id: "no-id", data: "hey hello")])
+            {_ in
+                done()
+            }
+        }
+        expect(channel.internal.channelSerial).toEventuallyNot(beNil())
+        let channelSerial = channel.internal.channelSerial
+        waitUntil(timeout: testTimeout) { done in
+            let partialDone = AblyTests.splitDone(3, done: done)
+            client.connection.once(.disconnected){_ in
+                partialDone()
+            }
+            //reconnected
+            client.connection.once(.connected){_ in
+                partialDone()
+            }
+            channel.once(.attached){_ in
+                let transport = client.internal.transport as! TestProxyTransport
+                let attachPM =  transport.protocolMessagesSent.filter { $0.action == .attach }[0]
+                expect(attachPM.channelSerial).to(equal(channelSerial))
+                partialDone()
+            }
+            client.internal.onDisconnected()
+        }
+    }
 
     // RTL4e
     func test__031__Channel__attach__should_transition_the_channel_state_to_FAILED_if_the_user_does_not_have_sufficient_permissions() {
