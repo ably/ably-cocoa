@@ -740,7 +740,8 @@ class RealtimeClientChannelTests: XCTestCase {
         }
 
         channel.off()
-        expect(channel.state).to(equal(.attached))
+        let expectedStates = [ARTRealtimeChannelState.attaching, ARTRealtimeChannelState.attached]
+        expect(expectedStates).to(contain(channel.state))
     }
 
     // RTL3b
