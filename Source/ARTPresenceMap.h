@@ -43,7 +43,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)reset;
 
 - (void)startSync;
-- (void)endSync;
+- (void)endSync: (BOOL)reenter ;
 - (void)failsSync:(ARTErrorInfo *)error;
 
 - (void)onceSyncEnds:(void (^)(NSArray<ARTPresenceMessage *> *))callback;

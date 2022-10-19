@@ -173,14 +173,13 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
     [_syncEventEmitter emit:[ARTEvent newWithPresenceSyncState:_syncState] with:nil];
 }
 
-- (void)endSync {
+- (void)endSync: (BOOL)reenter {
     [_logger verbose:__FILE__ line:__LINE__ message:@"%p PresenceMap sync ending", self];
     [self cleanUpAbsentMembers];
     [self leaveMembersNotPresentInSync];
     _syncState = ARTPresenceSyncEnded;
-    //RTP17f, RTP17g
-    //todo check previous state is not attached
-    if (_syncState == ARTRealtimeChannelAttached ) {
+    
+    if (reenter) {
         [self reenterLocalMembersMissingFromSync];
     }
     
