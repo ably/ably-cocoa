@@ -634,6 +634,7 @@
     dictionary[@"id"] = deviceDetails.id;
     dictionary[@"platform"] = deviceDetails.platform;
     dictionary[@"formFactor"] = deviceDetails.formFactor;
+    dictionary[@"deviceSecret"] = deviceDetails.secret;
 
     if (deviceDetails.clientId) {
         dictionary[@"clientId"] = deviceDetails.clientId;

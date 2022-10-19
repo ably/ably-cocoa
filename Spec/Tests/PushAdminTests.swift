@@ -27,6 +27,7 @@ class PushAdminTests: XCTestCase {
         deviceDetails.platform = "ios"
         deviceDetails.formFactor = "phone"
         deviceDetails.metadata = [String : String]()
+        deviceDetails.secret =  "testdevicesecret=="
         deviceDetails.push.recipient = [
             "transportType": "apns",
             "deviceToken": "foo",
@@ -40,6 +41,7 @@ class PushAdminTests: XCTestCase {
         deviceDetails.formFactor = "tablet"
         deviceDetails.clientId = "clientA"
         deviceDetails.metadata = [String : String]()
+        deviceDetails.secret =  "testdevicesecret=="
         deviceDetails.push.recipient = [
             "transportType": "gcm",
             "registrationToken": "qux",
@@ -53,6 +55,7 @@ class PushAdminTests: XCTestCase {
         deviceDetails.formFactor = "tablet"
         deviceDetails.clientId = "clientA"
         deviceDetails.metadata = [String : String]()
+        deviceDetails.secret =  "testdevicesecret=="
         deviceDetails.push.recipient = [
             "transportType": "gcm",
             "registrationToken": "qux",
@@ -66,6 +69,7 @@ class PushAdminTests: XCTestCase {
         deviceDetails.formFactor = "tablet"
         deviceDetails.clientId = "clientB"
         deviceDetails.metadata = [String : String]()
+        deviceDetails.secret =  "testdevicesecret=="
         deviceDetails.push.recipient = [
             "transportType": "gcm",
             "registrationToken": "qux",
@@ -181,6 +185,7 @@ class PushAdminTests: XCTestCase {
         storage = MockDeviceStorage()
         rest.internal.storage = storage
         localDevice = rest.device
+        localDevice.secret = "testdevicesecret=="
     }
 
     // RSH1a
