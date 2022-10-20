@@ -708,6 +708,7 @@ dispatch_sync(_queue, ^{
     }
 
     self.attachSerial = message.channelSerial;
+    self.channelSerial = message.channelSerial;
 
     if (message.hasPresence) {
         [self.presenceMap startSync];
