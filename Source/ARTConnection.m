@@ -253,7 +253,7 @@ dispatch_sync(_queue, ^{
     }
     ARTConnectionRecoveryKey *recoveryKey = [[ARTConnectionRecoveryKey alloc] init];
     recoveryKey.connectionKey = _key;
-    recoveryKey.msgSerial = _serial;
+    recoveryKey.msgSerial = _latestMessageSerial;
     
     NSMutableDictionary *serials = @{}.mutableCopy;
     for(ARTRealtimeChannelInternal *channel in _realtime.channels.nosyncIterable){

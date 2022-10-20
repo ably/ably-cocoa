@@ -219,10 +219,12 @@
         
         if (options.recover) { //RTN16f
             ARTConnectionRecoveryKey *recoveryKey = [ARTConnectionRecoveryKey fromJson:options.recover];
-            _msgSerial = recoveryKey.msgSerial;
+            self.msgSerial = recoveryKey.msgSerial;
+            self.connection.latestMessageSerial = self.msgSerial;
             [self recoverChannels: recoveryKey]; //RTN16j
         }else{
-            _msgSerial = 0;
+            self.msgSerial = 0;
+            self.connection.latestMessageSerial = 0;
         }
     }
     return self;
@@ -803,6 +805,7 @@
                 [self.logger warn:@"RT:%p connection \"%@\" has resumed with non-fatal error \"%@\"", self, message.connectionId, message.error.message];
             }
             self.msgSerial = 0;
+            self.connection.latestMessageSerial = 0;
             [self reattachChannelsOnResumeResult:message];
         }
     }
@@ -817,6 +820,7 @@
             if (connIdChanged || recoverFailure) {
                 [self.logger debug:@"RT:%p msgSerial of connection \"%@\" has been reset", self, self.connection.id_nosync];
                 self.msgSerial = 0;
+                self.connection.latestMessageSerial = 0;
                 self.pendingMessageStartSerial = 0;
             }
             
@@ -1186,6 +1190,7 @@
     
     if (pm.ackRequired) {
         self.msgSerial++;
+        self.connection.latestMessageSerial = self.msgSerial;
         ARTPendingMessage *pendingMessage = [[ARTPendingMessage alloc] initWithProtocolMessage:pm ackCallback:ackCallback];
         [self.pendingMessages addObject:pendingMessage];
     }
@@ -1594,6 +1599,7 @@
     }
     
     self.msgSerial = msgSerial;
+    self.connection.latestMessageSerial = msgSerial;
 }
 
 #if TARGET_OS_IOS
