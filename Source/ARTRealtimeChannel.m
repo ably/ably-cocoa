@@ -708,7 +708,10 @@ dispatch_sync(_queue, ^{
     }
 
     self.attachSerial = message.channelSerial;
-    self.channelSerial = message.channelSerial;
+    //RTL15b
+    if (message.channelSerial){
+        self.channelSerial = message.channelSerial;
+    }
 
     if (message.hasPresence) {
         [self.presenceMap startSync];
@@ -849,7 +852,9 @@ dispatch_sync(_queue, ^{
     }
 
    // RTL15b
-    self.channelSerial = pm.channelSerial;
+    if (pm.channelSerial) {
+        self.channelSerial = pm.channelSerial;
+    }
 }
 
 - (void)onPresence:(ARTProtocolMessage *)message {
@@ -878,11 +883,12 @@ dispatch_sync(_queue, ^{
         if ([self.presenceMap add:presence]) {
             [self broadcastPresence:presence];
         }
-        
-        // RTL15b
-        self.channelSerial = message.channelSerial;
-        
         ++i;
+    }
+
+    // RTL15b
+    if (message.channelSerial){
+        self.channelSerial = message.channelSerial;
     }
 }
 
