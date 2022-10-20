@@ -841,15 +841,13 @@ dispatch_sync(_queue, ^{
         }
 
         _lastPayloadMessageId = msg.id;
-        
-        // RTL15b
-        self.channelSerial = pm.channelSerial;
 
         [self.messagesEventEmitter emit:msg.name with:msg];
 
         ++i;
     }
 
+   // RTL15b
     self.channelSerial = pm.channelSerial;
 }
 
