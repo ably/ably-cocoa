@@ -1266,30 +1266,30 @@ class RealtimeClientChannelTests: XCTestCase {
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
         
         waitUntil(timeout: testTimeout) { done in
-            channel.publish([ARTMessage(id: "no-id", data: "hey hello")])
-            {_ in
-                done()
+            
+            let partialDone = AblyTests.splitDone(2, done: done)
+            //receive message on the channel
+            channel.subscribe { _in in
+                partialDone()
             }
+            channel.publish([ARTMessage(id: "no-id", data: "hey hello")]){_ in
+                partialDone()
+            }
+        
         }
         expect(channel.internal.channelSerial).toEventuallyNot(beNil())
         let channelSerial = channel.internal.channelSerial
         waitUntil(timeout: testTimeout) { done in
-            let partialDone = AblyTests.splitDone(3, done: done)
-            client.connection.once(.disconnected){_ in
-                partialDone()
-            }
             //reconnected
             client.connection.once(.connected){_ in
-                partialDone()
-            }
-            channel.once(.attached){_ in
-                let transport = client.internal.transport as! TestProxyTransport
-                let attachPM =  transport.protocolMessagesSent.filter { $0.action == .attach }[0]
-                expect(attachPM.channelSerial).to(equal(channelSerial))
-                partialDone()
+               done()
             }
             client.internal.onDisconnected()
         }
+        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
+        expect(channel.internal.channelSerial).toEventuallyNot(beNil())
+        let secondSerial = channel.internal.channelSerial
+        expect(secondSerial).to(equal(channelSerial))
     }
 
     // RTL4e
