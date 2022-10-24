@@ -1277,8 +1277,8 @@ class RealtimeClientChannelTests: XCTestCase {
             }
         
         }
-        expect(channel.internal.channelSerial).toEventuallyNot(beNil())
-        let channelSerial = channel.internal.channelSerial
+        expect(channel.internal.serial).toEventuallyNot(beNil())
+        let channelSerial = channel.internal.serial
         waitUntil(timeout: testTimeout) { done in
             //reconnected
             client.connection.once(.connected){_ in
@@ -1287,8 +1287,8 @@ class RealtimeClientChannelTests: XCTestCase {
             client.internal.onDisconnected()
         }
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
-        expect(channel.internal.channelSerial).toEventuallyNot(beNil())
-        let secondSerial = channel.internal.channelSerial
+        expect(channel.internal.serial).toEventuallyNot(beNil())
+        let secondSerial = channel.internal.serial
         expect(secondSerial).to(equal(channelSerial))
     }
 

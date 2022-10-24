@@ -231,9 +231,9 @@
 }
 
 - (void)recoverChannels:(ARTConnectionRecoveryKey *)recoveryKey {
-    for (NSString *channelName in recoveryKey.serials) {
+    for (NSString *channelName in recoveryKey.channelSerials) {
         ARTRealtimeChannelInternal *channel = [_channels get:channelName];
-        channel.channelSerial = recoveryKey.serials[channelName];
+        channel.serial = recoveryKey.channelSerials[channelName];
     }
 }
 

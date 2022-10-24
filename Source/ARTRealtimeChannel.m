@@ -240,7 +240,7 @@
         _restChannel = [_realtime.rest.channels _getChannel:self.name options:options addPrefix:true];
         _state = ARTRealtimeChannelInitialized;
         _attachSerial = nil;
-        _channelSerial = nil;
+        _serial = nil;
         _presenceMap = [[ARTPresenceMap alloc] initWithQueue:_queue logger:self.logger];
         _presenceMap.delegate = self;
         _statesEventEmitter = [[ARTPublicEventEmitter alloc] initWithRest:_realtime.rest];
@@ -710,7 +710,7 @@ dispatch_sync(_queue, ^{
     self.attachSerial = message.channelSerial;
     //RTL15b
     if (message.channelSerial) {
-        self.channelSerial = message.channelSerial;
+        self.serial = message.channelSerial;
     }
 
     if (message.hasPresence) {
@@ -748,7 +748,7 @@ dispatch_sync(_queue, ^{
         case ARTRealtimeChannelAttached:
         case ARTRealtimeChannelSuspended:
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) reattach initiated by DETACHED message", _realtime, self, self.name];
-            _channelSerial = nil; //RTP5a1
+            _serial = nil; //RTP5a1
             [self reattachWithReason:message.error callback:nil];
             return;
         case ARTRealtimeChannelAttaching: {
@@ -759,9 +759,9 @@ dispatch_sync(_queue, ^{
             return;
         }
         case ARTRealtimeChannelFailed:
-            _channelSerial = nil; // RTP5a1
+            _serial = nil; // RTP5a1
         case ARTRealtimeChannelDetached:
-            _channelSerial = nil; // RTP5a1
+            _serial = nil; // RTP5a1
         default:
             break;
     }
@@ -853,7 +853,7 @@ dispatch_sync(_queue, ^{
 
    // RTL15b
     if (pm.channelSerial) {
-        self.channelSerial = pm.channelSerial;
+        self.serial = pm.channelSerial;
     }
 }
 
@@ -888,7 +888,7 @@ dispatch_sync(_queue, ^{
 
     // RTL15b
     if (message.channelSerial) {
-        self.channelSerial = message.channelSerial;
+        self.serial = message.channelSerial;
     }
 }
 
@@ -1011,7 +1011,7 @@ dispatch_sync(_queue, ^{
     ARTProtocolMessage *attachMessage = [[ARTProtocolMessage alloc] init];
     attachMessage.action = ARTProtocolMessageAttach;
     attachMessage.channel = self.name;
-    attachMessage.channelSerial = self.channelSerial;
+    attachMessage.channelSerial = self.serial;
     attachMessage.params = self.options_nosync.params;
     attachMessage.flags = self.options_nosync.modes;
 
@@ -1171,7 +1171,7 @@ dispatch_sync(_queue, ^{
     _decodeFailureRecoveryInProgress = true;
     [self internalAttach:^(ARTErrorInfo *e) {
         self->_decodeFailureRecoveryInProgress = false;
-    } channelSerial:self.channelSerial reason:error];
+    } channelSerial:self.serial reason:error];
 }
 
 #pragma mark - ARTPresenceMapDelegate

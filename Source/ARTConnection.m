@@ -257,10 +257,10 @@ dispatch_sync(_queue, ^{
     
     NSMutableDictionary *serials = @{}.mutableCopy;
     for(ARTRealtimeChannelInternal *channel in _realtime.channels.nosyncIterable){
-        serials[channel.name] = channel.channelSerial;
+        serials[channel.name] = channel.serial;
     }
     
-    recoveryKey.serials = serials;
+    recoveryKey.channelSerials = serials;
     return [recoveryKey asJson];
 }
 
@@ -292,7 +292,7 @@ dispatch_sync(_queue, ^{
     NSDictionary *object = @{
         @"msgSerial": @(_msgSerial),
         @"connectionKey": _connectionKey,
-        @"serials": _serials ? _serials : @{}
+        @"serials": _channelSerials ? _channelSerials : @{}
     };
     
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:object
@@ -320,7 +320,7 @@ dispatch_sync(_queue, ^{
             ARTConnectionRecoveryKey *recoveryKey = [[ARTConnectionRecoveryKey alloc] init];
             recoveryKey.msgSerial = [[object valueForKey:@"msgSerial"] longLongValue];
             recoveryKey.connectionKey = [object valueForKey:@"connectionKey"];
-            recoveryKey.serials = [object valueForKey:@"serials"];
+            recoveryKey.channelSerials = [object valueForKey:@"serials"];
             return recoveryKey;
             
         } else {
