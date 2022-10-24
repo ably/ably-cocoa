@@ -114,7 +114,7 @@ class RealtimeClientTests: XCTestCase {
                     done()
                 case .connected:
                     self.checkError(errorInfo)
-                    let recoveryKey = ARTConnectionRecoveryKey.fromJson(client.connection.getRecoveryKey() ?? "invalid")
+                    let recoveryKey = ARTConnectionRecoveryKey.fromJsonString(client.connection.getRecoveryKey() ?? "invalid")
                     expect(recoveryKey?.connectionKey).to(equal(client.internal.connection.key))
                     expect(recoveryKey?.msgSerial).to(equal(client.internal.msgSerial))
                     options.recover = client.connection.getRecoveryKey()

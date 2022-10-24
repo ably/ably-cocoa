@@ -261,7 +261,7 @@ dispatch_sync(_queue, ^{
     }
     
     recoveryKey.channelSerials = serials;
-    return [recoveryKey asJson];
+    return [recoveryKey jsonString];
 }
 
 
@@ -287,7 +287,7 @@ dispatch_sync(_queue, ^{
 
 @implementation ARTConnectionRecoveryKey
 
-- (NSString *)asJson{
+- (NSString *)jsonString{
     NSError *error;
     NSDictionary *object = @{
         @"msgSerial": @(_msgSerial),
@@ -307,7 +307,7 @@ dispatch_sync(_queue, ^{
     return nil;
 }
 
-+(ARTConnectionRecoveryKey *)fromJson:(NSString *)json{
++(ARTConnectionRecoveryKey *)fromJsonString:(NSString *)json{
         NSData* jsonData = [json dataUsingEncoding:NSUTF8StringEncoding];
 
         NSError *error = nil;

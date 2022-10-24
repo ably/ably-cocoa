@@ -2960,7 +2960,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         
         let recoverOptions = options
         recoverOptions.recover = client.connection.getRecoveryKey()
-        let recoveryKey = ARTConnectionRecoveryKey.fromJson(client.connection.getRecoveryKey()!)
+        let recoveryKey = ARTConnectionRecoveryKey.fromJsonString(client.connection.getRecoveryKey()!)
         let recoverClient = AblyTests.newRealtime(recoverOptions)
         expect (recoverClient.internal.msgSerial).to(equal(recoveryKey?.msgSerial))
     }

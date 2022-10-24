@@ -218,7 +218,7 @@
         }
         
         if (options.recover) { //RTN16f
-            ARTConnectionRecoveryKey *recoveryKey = [ARTConnectionRecoveryKey fromJson:options.recover];
+            ARTConnectionRecoveryKey *recoveryKey = [ARTConnectionRecoveryKey fromJsonString:options.recover];
             self.msgSerial = recoveryKey.msgSerial;
             self.connection.latestMessageSerial = self.msgSerial;
             [self recoverChannels: recoveryKey]; //RTN16j
@@ -581,7 +581,7 @@
                     resumeKey = self.connection.key_nosync;
                     _resuming = true;
                 } else if (self.options.recover) { //RTN16k
-                    recoveryKey = [ARTConnectionRecoveryKey fromJson:self.options.recover].connectionKey;
+                    recoveryKey = [ARTConnectionRecoveryKey fromJsonString:self.options.recover].connectionKey;
                 }
                 [self setTransportWithResumeKey:resumeKey orRecoveryKey:recoveryKey];
                 [self transportConnectForcingNewToken:_renewingToken newConnection:true];
