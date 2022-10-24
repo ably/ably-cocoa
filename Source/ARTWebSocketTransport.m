@@ -56,7 +56,7 @@ Class configuredWebsocketClass = nil;
 }
 
 - (instancetype)initWithRest:(ARTRestInternal *)rest options:(ARTClientOptions *)options
-                   resumeKey:(NSString *)resumeKey recoveryKey:(nullable NSString *)recoveryKey{
+                   resumeKey:(NSString *)resumeKey recoveryKey:(nullable NSString *)recoveryKey {
     self = [super init];
     if (self) {
         _workQueue = rest.queue;

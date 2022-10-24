@@ -222,7 +222,7 @@
             self.msgSerial = recoveryKey.msgSerial;
             self.connection.latestMessageSerial = self.msgSerial;
             [self recoverChannels: recoveryKey]; //RTN16j
-        }else{
+        } else {
             self.msgSerial = 0;
             self.connection.latestMessageSerial = 0;
         }
@@ -230,9 +230,9 @@
     return self;
 }
 
--(void)recoverChannels : (ARTConnectionRecoveryKey *) recoveryKey{
+- (void)recoverChannels:(ARTConnectionRecoveryKey *)recoveryKey {
     for (NSString *channelName in recoveryKey.serials) {
-        ARTRealtimeChannelInternal *channel = [_channels get: channelName];
+        ARTRealtimeChannelInternal *channel = [_channels get:channelName];
         channel.channelSerial = recoveryKey.serials[channelName];
     }
 }
@@ -580,7 +580,7 @@
                     stateChange.previous == ARTRealtimeSuspended) {
                     resumeKey = self.connection.key_nosync;
                     _resuming = true;
-                } else if (self.options.recover){ //RTN16k
+                } else if (self.options.recover) { //RTN16k
                     recoveryKey = [ARTConnectionRecoveryKey fromJson:self.options.recover].connectionKey;
                 }
                 [self setTransportWithResumeKey:resumeKey orRecoveryKey:recoveryKey];
@@ -679,8 +679,8 @@
         case ARTRealtimeConnected: {
             _fallbacks = nil;
             _connectionLostAt = nil;
-             //resend regardless of resumption result
-             [self resendPendingMessages];
+            // resend regardless of resumption result
+            [self resendPendingMessages];
            
             [_connectedEventEmitter emit:nil with:nil];
             break;
@@ -800,7 +800,7 @@
             [self reattachChannelsOnResumeResult:message];
             [self.logger debug:@"RT:%p connection \"%@\" has reconnected and resumed successfully", self, message.connectionId];
             _resuming = false;
-        }else if(![message.connectionId isEqualToString:self.connection.id_nosync]){ //RTN15c7
+        } else if (![message.connectionId isEqualToString:self.connection.id_nosync]) { // RTN15c7
             if (message.error) {
                 [self.logger warn:@"RT:%p connection \"%@\" has resumed with non-fatal error \"%@\"", self, message.connectionId, message.error.message];
             }

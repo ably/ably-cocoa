@@ -709,7 +709,7 @@ dispatch_sync(_queue, ^{
 
     self.attachSerial = message.channelSerial;
     //RTL15b
-    if (message.channelSerial){
+    if (message.channelSerial) {
         self.channelSerial = message.channelSerial;
     }
 
@@ -722,7 +722,7 @@ dispatch_sync(_queue, ^{
             //RTP17f, RTP17g
             BOOL reenter = self.state_nosync == ARTRealtimeChannelAttaching;
             [self.presenceMap startSync];
-            [self.presenceMap endSync: reenter];
+            [self.presenceMap endSync:reenter];
             [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) PresenceMap has been reset", _realtime, self, self.name];
         }
     }
@@ -810,7 +810,7 @@ dispatch_sync(_queue, ^{
                 for (int j = i + 1; j < pm.messages.count; j++) {
                     [self.logger verbose:@"R:%p C:%p (%@) message skipped %@", _realtime, self, self.name, pm.messages[j]];
                 }
-                [self startDecodeFailureRecoveryWithChannelSerial : incompatibleIdError];
+                [self startDecodeFailureRecoveryWithChannelSerial:incompatibleIdError];
                 return;
             }
         }
@@ -831,7 +831,7 @@ dispatch_sync(_queue, ^{
                 [self emit:stateChange.event with:stateChange];
 
                 if (decodeError.code == ARTErrorUnableToDecodeMessage) {
-                    [self startDecodeFailureRecoveryWithChannelSerial : errorInfo];
+                    [self startDecodeFailureRecoveryWithChannelSerial:errorInfo];
                     return;
                 }
             }
@@ -887,7 +887,7 @@ dispatch_sync(_queue, ^{
     }
 
     // RTL15b
-    if (message.channelSerial){
+    if (message.channelSerial) {
         self.channelSerial = message.channelSerial;
     }
 }
