@@ -22,8 +22,8 @@ private let quxChannelName = "pushenabled:qux"
 private let subscription = ARTPushChannelSubscription(clientId: "newClient", channel: quxChannelName)
 
 class PushAdminTests: XCTestCase {
-    private static let deviceDetails: ARTDeviceDetails = {
-        let deviceDetails = ARTDeviceDetails(id: "testDeviceDetails")
+    private static let deviceDetails: ARTLocalDevice = {
+        let deviceDetails = ARTLocalDevice(id: "testDeviceDetails")
         deviceDetails.platform = "ios"
         deviceDetails.formFactor = "phone"
         deviceDetails.metadata = [String : String]()
@@ -35,8 +35,8 @@ class PushAdminTests: XCTestCase {
         return deviceDetails
     }()
 
-    private static let deviceDetails1ClientA: ARTDeviceDetails = {
-        let deviceDetails = ARTDeviceDetails(id: "deviceDetails1ClientA")
+    private static let deviceDetails1ClientA: ARTLocalDevice = {
+        let deviceDetails = ARTLocalDevice(id: "deviceDetails1ClientA")
         deviceDetails.platform = "android"
         deviceDetails.formFactor = "tablet"
         deviceDetails.clientId = "clientA"
@@ -49,8 +49,8 @@ class PushAdminTests: XCTestCase {
         return deviceDetails
     }()
 
-    private static let deviceDetails2ClientA: ARTDeviceDetails = {
-        let deviceDetails = ARTDeviceDetails(id: "deviceDetails2ClientA")
+    private static let deviceDetails2ClientA: ARTLocalDevice = {
+        let deviceDetails = ARTLocalDevice(id: "deviceDetails2ClientA")
         deviceDetails.platform = "android"
         deviceDetails.formFactor = "tablet"
         deviceDetails.clientId = "clientA"
@@ -63,8 +63,8 @@ class PushAdminTests: XCTestCase {
         return deviceDetails
     }()
 
-    private static let deviceDetails3ClientB: ARTDeviceDetails = {
-        let deviceDetails = ARTDeviceDetails(id: "deviceDetails3ClientB")
+    private static let deviceDetails3ClientB: ARTLocalDevice = {
+        let deviceDetails = ARTLocalDevice(id: "deviceDetails3ClientB")
         deviceDetails.platform = "android"
         deviceDetails.formFactor = "tablet"
         deviceDetails.clientId = "clientB"
@@ -77,7 +77,7 @@ class PushAdminTests: XCTestCase {
         return deviceDetails
     }()
 
-    private static let allDeviceDetails: [ARTDeviceDetails] = [
+    private static let allDeviceDetails: [ARTLocalDevice] = [
         deviceDetails,
         deviceDetails1ClientA,
         deviceDetails2ClientA,

@@ -128,7 +128,7 @@
     return [self encode:[self tokenDetailsToDictionary:tokenDetails] error:error];
 }
 
-- (NSData *)encodeDeviceDetails:(ARTDeviceDetails *)deviceDetails error:(NSError **)error {
+- (NSData *)encodeDeviceDetails:(ARTLocalDevice *)deviceDetails error:(NSError **)error {
     return [self encode:[self deviceDetailsToDictionary:deviceDetails] error:error];
 }
 
@@ -628,7 +628,7 @@
     return dictionary;
 }
 
-- (NSDictionary *)deviceDetailsToDictionary:(ARTDeviceDetails *)deviceDetails {
+- (NSDictionary *)deviceDetailsToDictionary:(ARTLocalDevice *)deviceDetails {
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
 
     dictionary[@"id"] = deviceDetails.id;
