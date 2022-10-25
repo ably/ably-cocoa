@@ -155,22 +155,15 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
     _localMembers = [NSMutableDictionary dictionary];
 }
 
-- (void)reenterLocalMembersMissingFromSync {
-    [_logger debug:__FILE__ line:__LINE__ message:@"%p reentering local members missed from sync (syncSessionId=%lu)", self, (unsigned long)_syncSessionId];
-    NSMutableDictionary<NSString *, ARTPresenceMessage *> *filteredLocalMembers = [NSMutableDictionary dictionary];
-    
-    [_localMembers enumerateKeysAndObjectsUsingBlock:^(NSString *key, ARTPresenceMessage *message, BOOL* stop) {
-        if ((unsigned long)_syncSessionId != message.syncSessionId) {
-            filteredLocalMembers[key] = message;
-        }
-      NSLog(@"%@ => %@", key, message);
-    }];
-    
-    for (ARTPresenceMessage *localMember in filteredLocalMembers) {
+- (void)reenterLocalMembers {
+    [_localMembers enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key,
+                                                       ARTPresenceMessage * _Nonnull localMember,
+                                                       BOOL * _Nonnull stop) {
         ARTPresenceMessage *reenter = [localMember copy];
         [self internalRemove:localMember];
         [self.delegate map:self shouldReenterLocalMember:reenter];
-    }
+    }];
+    
     [self cleanUpAbsentMembers];
 }
 
@@ -181,16 +174,12 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
     [_syncEventEmitter emit:[ARTEvent newWithPresenceSyncState:_syncState] with:nil];
 }
 
-- (void)endSync:(BOOL)reenter {
+- (void)endSync {
     [_logger verbose:__FILE__ line:__LINE__ message:@"%p PresenceMap sync ending", self];
     [self cleanUpAbsentMembers];
     [self leaveMembersNotPresentInSync];
     _syncState = ARTPresenceSyncEnded;
-    
-    if (reenter) {
-        [self reenterLocalMembersMissingFromSync];
-    }
-    
+
     [_syncEventEmitter emit:[ARTEvent newWithPresenceSyncState:ARTPresenceSyncEnded] with:[_members allValues]];
     [_syncEventEmitter off];
     [_logger debug:__FILE__ line:__LINE__ message:@"%p PresenceMap sync ended", self];

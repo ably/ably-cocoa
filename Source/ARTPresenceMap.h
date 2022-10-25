@@ -43,7 +43,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)reset;
 
 - (void)startSync;
-- (void)endSync: (BOOL)reenter ;
+- (void)endSync;
 - (void)failsSync:(ARTErrorInfo *)error;
 
 - (void)onceSyncEnds:(void (^)(NSArray<ARTPresenceMessage *> *))callback;
@@ -51,6 +51,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)internalAdd:(ARTPresenceMessage *)message;
 - (void)internalAdd:(ARTPresenceMessage *)message withSessionId:(NSUInteger)sessionId;
+
+- (void)reenterLocalMembers;
 
 @end
 

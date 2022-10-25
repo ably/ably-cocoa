@@ -403,7 +403,7 @@ dispatch_sync(_queue, ^{
     [self.realtime send:msg sentCallback:^(ARTErrorInfo *error) {
         if (error) {
             [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) SYNC request failed with %@", self->_realtime, self, self.name, error];
-            [self.presenceMap endSync:YES];
+            [self.presenceMap endSync];
             if (callback) callback(error);
         }
         else {
@@ -715,16 +715,18 @@ dispatch_sync(_queue, ^{
 
     if (message.hasPresence) {
         [self.presenceMap startSync];
-    }
-    else if ([self.presenceMap.members count] > 0 || [self.presenceMap.localMembers count] > 0) {
+    } else if ([self.presenceMap.members count] > 0 || [self.presenceMap.localMembers count] > 0) {
         if (!message.resumed) {
             // When an ATTACHED message is received without a HAS_PRESENCE flag and PresenceMap has existing members
-            //RTP17f, RTP17g
-            BOOL reenter = self.state_nosync == ARTRealtimeChannelAttaching;
             [self.presenceMap startSync];
-            [self.presenceMap endSync:reenter];
+            [self.presenceMap endSync];
             [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) PresenceMap has been reset", _realtime, self, self.name];
         }
+    }
+
+    //RTP17f, RTP17g
+    if (self.state_nosync == ARTRealtimeChannelAttaching){
+        [self.presenceMap reenterLocalMembers];
     }
 
     if (self.state_nosync == ARTRealtimeChannelAttached) {
@@ -911,7 +913,7 @@ dispatch_sync(_queue, ^{
     }
 
     if ([self isLastChannelSerial:message.channelSerial]) {
-        [self.presenceMap endSync:YES];
+        [self.presenceMap endSync];
         self.presenceMap.syncChannelSerial = nil;
         [self.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) PresenceMap sync ended", _realtime, self, self.name];
     }
