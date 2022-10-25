@@ -277,6 +277,7 @@ dispatch_sync(_queue, ^{
     return _state;
 }
 
+//RTN15c6
 - (BOOL)canBeReattached {
     switch (self.state_nosync) {
         case ARTRealtimeChannelAttaching:
