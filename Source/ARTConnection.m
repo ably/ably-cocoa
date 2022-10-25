@@ -287,7 +287,7 @@ dispatch_sync(_queue, ^{
 
 @implementation ARTConnectionRecoveryKey
 
-- (NSString *)jsonString{
+- ( NSString *)jsonString{
     NSError *error;
     NSDictionary *object = @{
         @"msgSerial": @(_msgSerial),
@@ -298,9 +298,8 @@ dispatch_sync(_queue, ^{
     NSData *jsonData = [NSJSONSerialization dataWithJSONObject:object
                                                        options:0
                                                          error:&error];
-
-    if (!jsonData) {
-        NSLog(@"Got an error while creating JSON for recovery key: %@", error);
+    if (error) {
+        return nil;
     } else {
         return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
     }
