@@ -500,14 +500,16 @@ dispatch_sync(_queue, ^{
 }
 
 - (void)publishPresence:(ARTPresenceMessage *)msg callback:(ARTCallback)callback {
-    if (!msg.clientId && !_channel.realtime.auth.clientId_nosync) {
-        if (callback) callback([ARTErrorInfo createWithCode:ARTStateNoClientId message:@"attempted to publish presence message without clientId"]);
-        return;
-    }
-
-    if (!_channel.realtime.connection.isActive_nosync) {
-        if (callback) callback([_channel.realtime.connection error_nosync]);
-        return;
+    NSString *authClientId = _channel.realtime.auth.clientId_nosync;
+    BOOL connected = _channel.realtime.connection.state_nosync == ARTRealtimeConnected;
+    
+    if (connected && (authClientId == nil || [authClientId isEqualToString:@"*"])) {
+        if (msg.clientId == nil) {
+            if (callback) {
+                callback([ARTErrorInfo createWithCode:ARTStateNoClientId message:@"Invalid attempt to enter without clientId."]);
+            }
+            return;
+        }
     }
 
     if ([_channel exceedMaxSize:@[msg]]) {
