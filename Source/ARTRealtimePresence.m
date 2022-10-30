@@ -10,6 +10,7 @@
 #import "ARTDataQuery+Private.h"
 #import "ARTConnection+Private.h"
 #import "ARTNSArray+ARTFunctional.h"
+#import "ARTClientOptions.h"
 
 #pragma mark - ARTRealtimePresenceQuery
 
@@ -543,11 +544,19 @@ dispatch_sync(_queue, ^{
         case ARTRealtimeChannelDetached:
             [_channel _attach:nil];
         case ARTRealtimeChannelAttaching: {
-            [self addPendingPresence:pm callback:^(ARTStatus *status) {
+            if (_channel.realtime.options.queueMessages) { // RTP16b
+                [self addPendingPresence:pm callback:^(ARTStatus *status) {
+                    if (callback) {
+                        callback(status.errorInfo);
+                    }
+                }];
+            }
+            else { // RTP16c
                 if (callback) {
-                    callback(status.errorInfo);
+                    ARTErrorInfo *invalidChannelError = [ARTErrorInfo createWithCode:ARTErrorChannelOperationFailedInvalidState message:[NSString stringWithFormat:@"channel operation failed (invalid channel state: %@)", ARTRealtimeChannelStateToStr(channelState)]];
+                    callback(invalidChannelError);
                 }
-            }];
+            }
             break;
         }
         case ARTRealtimeChannelAttached: {
