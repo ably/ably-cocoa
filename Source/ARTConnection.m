@@ -22,8 +22,8 @@
     return _internal.key;
 }
 
-- (NSString *)getRecoveryKey {
-    return [_internal getRecoveryKey];
+- (NSString *)createRecoveryKey {
+    return [_internal createRecoveryKey];
 }
 
 - (NSInteger)maxMessageSize {
@@ -242,7 +242,7 @@ dispatch_sync(_queue, ^{
     [_eventEmitter off:listener];
 }
 
-- (NSString *)getRecoveryKey {
+- (NSString *)createRecoveryKey {
     // RTN16h
     if (_state == ARTRealtimeClosing
         || _state == ARTRealtimeClosed
