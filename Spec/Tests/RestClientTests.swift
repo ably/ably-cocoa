@@ -1668,7 +1668,7 @@ class RestClientTests: XCTestCase {
                 let headerAgent = testHTTPExecutor.requests.first!.allHTTPHeaderFields?["Ably-Agent"]
                 let ablyAgent = options.agents()
                 expect(headerAgent).to(equal(ablyAgent))
-                expect(headerAgent!.hasPrefix("ably-cocoa/1.2.15")).to(beTrue())
+                expect(headerAgent!.hasPrefix("ably-cocoa/1.2.16")).to(beTrue())
                 done()
             }
         }
