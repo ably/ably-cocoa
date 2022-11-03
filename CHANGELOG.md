@@ -1,5 +1,18 @@
 # Change Log
 
+## [1.2.16](https://github.com/ably/ably-cocoa/tree/1.2.16)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.15...1.2.16)
+
+**Closed issues:**
+
+- SDK tests are not running on MacBook Pro M1 [\#1506](https://github.com/ably/ably-cocoa/issues/1506)
+- Create Feature Compliance Manifest for `ably-cocoa` [\#1443](https://github.com/ably/ably-cocoa/issues/1443)
+
+**Implemented features:**
+
+- Implement [RTP8j spec point](https://sdk.ably.com/builds/ably/specification/main/features/#RTP8j) [\#1517](https://github.com/ably/ably-cocoa/pull/1517)
+
 ## [1.2.15](https://github.com/ably/ably-cocoa/tree/1.2.15)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.14...1.2.15)
