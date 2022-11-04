@@ -163,7 +163,6 @@
 @end
 
 @implementation ARTRealtimeInternal {
-    BOOL _resuming;
     BOOL _renewingToken;
     BOOL _shouldImmediatelyReconnect;
     ARTEventEmitter<ARTEvent *, ARTErrorInfo *> *_pingEventEmitter;
@@ -579,7 +578,7 @@
                     stateChange.previous == ARTRealtimeDisconnected ||
                     stateChange.previous == ARTRealtimeSuspended) {
                     resumeKey = self.connection.key_nosync;
-                    _resuming = true;
+                   
                 } else if (self.options.recover) { //RTN16k
                     recoveryKey = [ARTConnectionRecoveryKey fromJsonString:self.options.recover].connectionKey;
                 }
@@ -793,37 +792,28 @@
 
 - (void)onConnected:(ARTProtocolMessage *)message {
     _renewingToken = false;
-    
-    // Resuming
-    if (_resuming) {
-        if ([message.connectionId isEqualToString:self.connection.id_nosync] && !message.error) {  // RTN15c6
-            [self reattachChannelsOnResumeResult:message];
-            [self.logger debug:@"RT:%p connection \"%@\" has reconnected and resumed successfully", self, message.connectionId];
-            _resuming = false;
-        } else if (![message.connectionId isEqualToString:self.connection.id_nosync]) { // RTN15c7
-            if (message.error) {
-                [self.logger warn:@"RT:%p connection \"%@\" has resumed with non-fatal error \"%@\"", self, message.connectionId, message.error.message];
-            }
-            self.msgSerial = 0;
-            self.connection.latestMessageSerial = 0;
-            [self reattachChannelsOnResumeResult:message];
-        }
-    }
-    
+
     switch (self.connection.state_nosync) {
         case ARTRealtimeConnecting: {
-            // If there's no previous connectionId, then don't reset the msgSerial
-            //as it may have been set by recover data (unless the recover failed).
-            NSString *prevConnId = self.connection.id_nosync;
-            BOOL connIdChanged = prevConnId && ![message.connectionId isEqualToString:prevConnId];
-            BOOL recoverFailure = !prevConnId && message.error;
-            if (connIdChanged || recoverFailure) {
-                [self.logger debug:@"RT:%p msgSerial of connection \"%@\" has been reset", self, self.connection.id_nosync];
-                self.msgSerial = 0;
-                self.connection.latestMessageSerial = 0;
-                self.pendingMessageStartSerial = 0;
+            BOOL recoverFailure = !self.connection.id_nosync && message.error;
+            if ([message.connectionId isEqualToString:self.connection.id_nosync] && !message.error) {  // RTN15c6
+                [self reattachChannelsOnResumeResult:message];
+                [self.logger debug:@"RT:%p connection \"%@\" has reconnected and resumed successfully", self, message.connectionId];
+                _resuming = false;
+                //make sure that a connection id exists for resume failure
+            } else if (![message.connectionId isEqualToString:self.connection.id_nosync] ) { // RTN15c7
+                if (message.error) {
+                    [self.logger warn:@"RT:%p connection \"%@\" has resumed with non-fatal error \"%@\"", self, message.connectionId, message.error.message];
+                }
+                if (self.connection.id_nosync || recoverFailure) {
+                    self.msgSerial = 0;
+                    self.connection.latestMessageSerial = 0;
+                    self.pendingMessageStartSerial = 0;
+                }
+                
+                [self reattachChannelsOnResumeResult:message];
             }
-            
+           
             [self.connection setId:message.connectionId];
             [self.connection setKey:message.connectionKey];
             [self.connection setMaxMessageSize:message.connectionDetails.maxMessageSize];
