@@ -797,7 +797,6 @@
         case ARTRealtimeConnecting: {
             BOOL recoverFailure = !self.connection.id_nosync && message.error;
             if ([message.connectionId isEqualToString:self.connection.id_nosync] && !message.error) {  // RTN15c6
-                [self reattachChannels:message];
                 [self.logger debug:@"RT:%p connection \"%@\" has reconnected and resumed successfully", self, message.connectionId];
                 //make sure that a connection id exists for resume failure
             } else if (![message.connectionId isEqualToString:self.connection.id_nosync] ) { // RTN15c7
@@ -809,9 +808,9 @@
                     self.connection.latestMessageSerial = 0;
                     self.pendingMessageStartSerial = 0;
                 }
-                
-                [self reattachChannels:message];
             }
+            
+            [self reattachChannels:message];
            
             [self.connection setId:message.connectionId];
             [self.connection setKey:message.connectionKey];
