@@ -2213,7 +2213,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             })
         }
 
-        options.recover = clientReceive.connection.getRecoveryKey()
+        options.recover = clientReceive.connection.createRecoveryKey()
         clientReceive.internal.onError(AblyTests.newErrorProtocolMessage())
 
         waitUntil(timeout: testTimeout) { done in
@@ -2826,7 +2826,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             })
         }
 
-        options.recover = clientReceive.connection.getRecoveryKey()
+        options.recover = clientReceive.connection.createRecoveryKey()
         clientReceive.internal.onError(AblyTests.newErrorProtocolMessage())
 
         waitUntil(timeout: testTimeout) { done in
@@ -2858,7 +2858,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         let expectedConnectionId = clientOriginal.connection.id
 
-        options.recover = clientOriginal.connection.getRecoveryKey()
+        options.recover = clientOriginal.connection.createRecoveryKey()
         clientOriginal.internal.onError(AblyTests.newErrorProtocolMessage())
 
         let clientRecover = AblyTests.newRealtime(options)
@@ -2884,7 +2884,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { _ in
                 client.connection.once(.closed) { _ in
-                    expect(client.connection.getRecoveryKey()).to(beNil())
+                    expect(client.connection.createRecoveryKey()).to(beNil())
                     expect(client.connection.key).to(beNil())
                     expect(client.connection.id).to(beNil())
                     done()
@@ -2921,7 +2921,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             })
         }
 
-        options.recover = "\(String(describing: clientReceive.connection.getRecoveryKey()))-some-nonsese"
+        options.recover = "\(String(describing: clientReceive.connection.createRecoveryKey()))-some-nonsese"
         clientReceive.internal.onError(AblyTests.newErrorProtocolMessage())
 
         waitUntil(timeout: testTimeout) { done in
@@ -2955,12 +2955,12 @@ class RealtimeClientConnectionTests: XCTestCase {
                 done()
             }
         }
-        expect(client.connection.getRecoveryKey()).toNot(beNil())
+        expect(client.connection.createRecoveryKey()).toNot(beNil())
         
         
         let recoverOptions = options
-        recoverOptions.recover = client.connection.getRecoveryKey()
-        let recoveryKey = ARTConnectionRecoveryKey.fromJsonString(client.connection.getRecoveryKey()!)
+        recoverOptions.recover = client.connection.createRecoveryKey()
+        let recoveryKey = ARTConnectionRecoveryKey.fromJsonString(client.connection.createRecoveryKey()!)
         let recoverClient = AblyTests.newRealtime(recoverOptions)
         expect (recoverClient.internal.msgSerial).to(equal(recoveryKey?.msgSerial))
     }
