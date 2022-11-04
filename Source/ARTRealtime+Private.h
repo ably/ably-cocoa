@@ -82,9 +82,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// First `msgSerial` pending message.
 @property (readwrite, assign, nonatomic) int64_t pendingMessageStartSerial;
 
-/// Client is trying to resume the last connection
-@property (readwrite, assign, nonatomic) BOOL resuming;
-
 @property (readonly, getter=getClientOptions) ARTClientOptions *options;
 
 /// Suspend the behavior defined in RTN15a, that is trying to immediately reconnect after a disconnection

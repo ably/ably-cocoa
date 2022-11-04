@@ -799,7 +799,6 @@
             if ([message.connectionId isEqualToString:self.connection.id_nosync] && !message.error) {  // RTN15c6
                 [self reattachChannels:message];
                 [self.logger debug:@"RT:%p connection \"%@\" has reconnected and resumed successfully", self, message.connectionId];
-                _resuming = false;
                 //make sure that a connection id exists for resume failure
             } else if (![message.connectionId isEqualToString:self.connection.id_nosync] ) { // RTN15c7
                 if (message.error) {
@@ -836,8 +835,6 @@
         default:
             break;
     }
-    
-    _resuming = false;
 }
 
 //For RTN15c6, RTN15c7
