@@ -815,7 +815,7 @@
                 [self resetSerials];
             }
             //do not reattach on a completely new connection
-            BOOL newConnection = !self.connection.id_nosync && !message.error;
+            BOOL newConnection = !self.connection.id_nosync && !message.error && !_connectionLostAt;
             if (!newConnection) {
                 [self reattachChannels:message];
             }
