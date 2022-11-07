@@ -180,6 +180,13 @@ dispatch_sync(_queue, ^{
 } 
 
 - (NSString *)key_nosync {
+    ARTRealtimeConnectionState state = [self state_nosync];
+    if (state == ARTRealtimeClosed ||
+        state == ARTRealtimeClosing ||
+        state == ARTRealtimeFailed ||
+        state == ARTRealtimeSuspended) {//RTN9c
+        return nil;
+    }
     return _key;
 } 
 
