@@ -55,7 +55,8 @@ Class configuredWebsocketClass = nil;
     configuredWebsocketClass = webSocketClass;
 }
 
-- (instancetype)initWithRest:(ARTRestInternal *)rest options:(ARTClientOptions *)options
+- (instancetype)initWithRest:(ARTRestInternal *)rest
+                     options:(ARTClientOptions *)options
                    resumeKey:(NSString *)resumeKey recoveryKey:(nullable NSString *)recoveryKey {
     self = [super init];
     if (self) {
