@@ -813,7 +813,7 @@ dispatch_sync(_queue, ^{
                 for (int j = i + 1; j < pm.messages.count; j++) {
                     [self.logger verbose:@"R:%p C:%p (%@) message skipped %@", _realtime, self, self.name, pm.messages[j]];
                 }
-                [self startDecodeFailureRecoveryWithChannelSerial:incompatibleIdError];
+                [self startDecodeFailureRecoveryWithErrorInfo:incompatibleIdError];
                 return;
             }
         }
@@ -834,7 +834,7 @@ dispatch_sync(_queue, ^{
                 [self emit:stateChange.event with:stateChange];
 
                 if (decodeError.code == ARTErrorUnableToDecodeMessage) {
-                    [self startDecodeFailureRecoveryWithChannelSerial:errorInfo];
+                    [self startDecodeFailureRecoveryWithErrorInfo:errorInfo];
                     return;
                 }
             }
@@ -1165,7 +1165,7 @@ dispatch_sync(_queue, ^{
     return [_restChannel history:query callback:callback error:errorPtr];
 }
 
-- (void)startDecodeFailureRecoveryWithChannelSerial:(ARTErrorInfo *)error {
+- (void)startDecodeFailureRecoveryWithErrorInfo:(ARTErrorInfo *)error {
     if (_decodeFailureRecoveryInProgress) {
         return;
     }
