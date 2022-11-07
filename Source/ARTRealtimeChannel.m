@@ -854,7 +854,7 @@ dispatch_sync(_queue, ^{
         ++i;
     }
 
-   // RTL15b
+    // RTL15b
     if (pm.channelSerial) {
         self.serial = pm.channelSerial;
     }
