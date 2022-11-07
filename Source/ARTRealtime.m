@@ -814,9 +814,12 @@
             }else if (!self.connection.id_nosync && message.error){ //recover failure
                 [self resetSerials];
             }
+            //do not reattach on a completely new connection
+            BOOL newConnection = !self.connection.id_nosync && !message.error;
+            if (!newConnection) {
+                [self reattachChannels:message];
+            }
             
-            [self reattachChannels:message];
-           
             [self.connection setId:message.connectionId];
             [self.connection setKey:message.connectionKey];
             [self.connection setMaxMessageSize:message.connectionDetails.maxMessageSize];
