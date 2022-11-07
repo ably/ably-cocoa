@@ -790,24 +790,29 @@
     [_pingEventEmitter emit:nil with:nil];
 }
 
+-(void)resetSerials{
+    self.msgSerial = 0;
+    self.connection.latestMessageSerial = 0;
+    self.pendingMessageStartSerial = 0;
+}
+
 - (void)onConnected:(ARTProtocolMessage *)message {
     _renewingToken = false;
 
     switch (self.connection.state_nosync) {
         case ARTRealtimeConnecting: {
-            BOOL recoverFailure = !self.connection.id_nosync && message.error;
             if ([message.connectionId isEqualToString:self.connection.id_nosync] && !message.error) {  // RTN15c6
                 [self.logger debug:@"RT:%p connection \"%@\" has reconnected and resumed successfully", self, message.connectionId];
                 //make sure that a connection id exists for resume failure
-            } else if (![message.connectionId isEqualToString:self.connection.id_nosync] ) { // RTN15c7
-                if (message.error) {
-                    [self.logger warn:@"RT:%p connection \"%@\" has resumed with non-fatal error \"%@\"", self, message.connectionId, message.error.message];
-                }
-                if (self.connection.id_nosync || recoverFailure) {
-                    self.msgSerial = 0;
-                    self.connection.latestMessageSerial = 0;
-                    self.pendingMessageStartSerial = 0;
-                }
+            } else if (self.connection.id_nosync &&
+                       ![message.connectionId isEqualToString:self.connection.id_nosync]
+                       && message.error) { // RTN15c7
+                
+                [self.logger warn:@"RT:%p connection \"%@\" has resumed with non-fatal error \"%@\"", self, message.connectionId, message.error.message];
+                [self resetSerials];
+                
+            }else if (!self.connection.id_nosync && message.error){ //recover failure
+                [self resetSerials];
             }
             
             [self reattachChannels:message];
