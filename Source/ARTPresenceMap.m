@@ -170,7 +170,6 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
     [_logger debug:__FILE__ line:__LINE__ message:@"%p PresenceMap sync started", self];
     _syncSessionId++;
     _syncState = ARTPresenceSyncStarted;
-    NSLog(@"emitting events");
     [_syncEventEmitter emit:[ARTEvent newWithPresenceSyncState:_syncState] with:nil];
 }
 
@@ -180,7 +179,6 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
     [self leaveMembersNotPresentInSync];
     _syncState = ARTPresenceSyncEnded;
 
-    NSLog(@"emitting events");
     [_syncEventEmitter emit:[ARTEvent newWithPresenceSyncState:ARTPresenceSyncEnded] with:[_members allValues]];
     [_syncEventEmitter off];
     [_logger debug:__FILE__ line:__LINE__ message:@"%p PresenceMap sync ended", self];
@@ -189,7 +187,6 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
 - (void)failsSync:(ARTErrorInfo *)error {
     [self reset];
     _syncState = ARTPresenceSyncFailed;
-    NSLog(@"emitting events");
     [_syncEventEmitter emit:[ARTEvent newWithPresenceSyncState:ARTPresenceSyncFailed] with:error];
     [_syncEventEmitter off];
 }
