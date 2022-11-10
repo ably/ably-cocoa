@@ -720,14 +720,14 @@ dispatch_sync(_queue, ^{
         if (!message.resumed) {
             // When an ATTACHED message is received without a HAS_PRESENCE flag and PresenceMap has existing members
             [self.presenceMap startSync];
+            
+            //RTP17f, RTP17g
+            if (self.state_nosync != ARTRealtimeChannelAttached){
+                [self.presenceMap reenterLocalMembers];
+            }
             [self.presenceMap endSync];
             [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) PresenceMap has been reset", _realtime, self, self.name];
         }
-    }
-
-    //RTP17f, RTP17g
-    if (self.state_nosync == ARTRealtimeChannelAttaching){
-        [self.presenceMap reenterLocalMembers];
     }
 
     if (self.state_nosync == ARTRealtimeChannelAttached) {
