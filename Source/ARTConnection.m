@@ -22,6 +22,7 @@
     return _internal.key;
 }
 
+// RTN16g - recovery key as a JSON serialized version of [ARTConnectionRecoveryKey]
 - (NSString *)createRecoveryKey {
     return [_internal createRecoveryKey];
 }
