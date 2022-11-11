@@ -121,34 +121,34 @@
 }
 
 - (NSString *)id {
-    __block NSString *ret;   
-dispatch_sync(_queue, ^{
-    ret = [self id_nosync];
-});
+    __block NSString *ret;
+    dispatch_sync(_queue, ^{
+        ret = [self id_nosync];
+    });
     return ret;
 } 
 
 - (NSString *)key {
-    __block NSString *ret;   
-dispatch_sync(_queue, ^{
-    ret = [self key_nosync];
-});
+    __block NSString *ret;
+    dispatch_sync(_queue, ^{
+        ret = [self key_nosync];
+    });
     return ret;
 } 
 
 - (ARTRealtimeConnectionState)state {
-    __block ARTRealtimeConnectionState ret;   
-dispatch_sync(_queue, ^{
-    ret = [self state_nosync];
-});
+    __block ARTRealtimeConnectionState ret;
+    dispatch_sync(_queue, ^{
+        ret = [self state_nosync];
+    });
     return ret;
 }
 
 - (ARTErrorInfo *)errorReason {
-    __block ARTErrorInfo *ret;   
-dispatch_sync(_queue, ^{
-    ret = [self errorReason_nosync];
-});
+    __block ARTErrorInfo *ret;
+    dispatch_sync(_queue, ^{
+        ret = [self errorReason_nosync];
+    });
     return ret;
 }
 
@@ -307,33 +307,29 @@ dispatch_sync(_queue, ^{
                                                        options:0
                                                          error:&error];
     if (error) {
-        return nil;
-    } else {
-        return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        @throw error;
     }
-    return nil;
+    
+    return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
 }
 
 +(ARTConnectionRecoveryKey *)fromJsonString:(NSString *)json{
-        NSData* jsonData = [json dataUsingEncoding:NSUTF8StringEncoding];
-
-        NSError *error = nil;
-        NSDictionary  *object = [NSJSONSerialization
-                                 JSONObjectWithData:jsonData
-                                 options:0
-                                 error:&error];
-
-        if(!error) {
-            ARTConnectionRecoveryKey *recoveryKey = [[ARTConnectionRecoveryKey alloc] init];
-            recoveryKey.msgSerial = [[object valueForKey:@"msgSerial"] longLongValue];
-            recoveryKey.connectionKey = [object valueForKey:@"connectionKey"];
-            recoveryKey.channelSerials = [object valueForKey:@"serials"];
-            return recoveryKey;
-            
-        } else {
-            NSLog(@"Error when parsing JSON to create recovery key : %@", error);
-        }
-    return nil;
+    NSData* jsonData = [json dataUsingEncoding:NSUTF8StringEncoding];
+    
+    NSError *error = nil;
+    NSDictionary  *object = [NSJSONSerialization
+                             JSONObjectWithData:jsonData
+                             options:0
+                             error:&error];
+    if (error) {
+        @throw error;
+    }
+    
+    ARTConnectionRecoveryKey *recoveryKey = [[ARTConnectionRecoveryKey alloc] init];
+    recoveryKey.msgSerial = [[object valueForKey:@"msgSerial"] longLongValue];
+    recoveryKey.connectionKey = [object valueForKey:@"connectionKey"];
+    recoveryKey.channelSerials = [object valueForKey:@"serials"];
+    return recoveryKey;
     
 }
 
