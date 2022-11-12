@@ -605,12 +605,7 @@ dispatch_sync(_queue, ^{
             if (self.realtime.shouldSendEvents) {
                 channelRetryListener = [self unlessStateChangesBefore:self.realtime.options.channelRetryTimeout do:^{
                     [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) reattach initiated by retry timeout", self->_realtime, self, self.name];
-                    [self reattachWithReason:nil callback:^(ARTErrorInfo *errorInfo) {
-                        if (errorInfo) {
-                            ARTStatus *status = [ARTStatus state:ARTStateError info:errorInfo];
-                            [self setSuspended:status];
-                        }
-                    }];
+                    [self reattachWithReason:nil callback:nil];
                 }];
             }
             break;
