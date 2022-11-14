@@ -2894,54 +2894,6 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
     }
     
-    // RTN16l
-    func test__084__Connection__Connection_recovery__should_throw_error_if_recovery_key_is_broken() {
-        
-        let options = AblyTests.commonAppSetup()
-
-        let clientSend = ARTRealtime(options: options)
-        defer { clientSend.close() }
-        
-        let channelName = uniqueChannelName()
-        let channelSend = clientSend.channels.get(channelName)
-
-        let clientReceive = ARTRealtime(options: options)
-        defer { clientReceive.close() }
-        let channelReceive = clientReceive.channels.get(channelName)
-
-        waitUntil(timeout: testTimeout) { done in
-            channelReceive.subscribe(attachCallback: { error in
-                expect(error).to(beNil())
-                channelSend.publish(nil, data: "message") { error in
-                    expect(error).to(beNil())
-                }
-            }, callback: { message in
-                expect(message.data as? String).to(equal("message"))
-                done()
-            })
-        }
-
-        options.recover = "\(String(describing: clientReceive.connection.createRecoveryKey()))-some-nonsese"
-        clientReceive.internal.onError(AblyTests.newErrorProtocolMessage())
-
-        waitUntil(timeout: testTimeout) { done in
-            channelSend.publish(nil, data: "queue a message") { error in
-                expect(error).to(beNil())
-                done()
-            }
-        }
-
-        let clientRecover = ARTRealtime(options: options)
-        defer { clientRecover.close() }
-        
-        waitUntil(timeout: testTimeout) { done in
-            clientRecover.connection.once(.failed) { stateChange in
-                expect(stateChange.reason).toNot(beNil())
-                done()
-            }
-        }
-        
-    }
 
     // RTN16f
     func test__085__Connection__Connection_recovery__should_set_internal_message_serial_to_component_in_recovery_key() {
