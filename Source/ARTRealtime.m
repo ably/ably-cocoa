@@ -815,8 +815,8 @@
                 [self resetSerials];
             }
             //do not reattach on a completely new connection
-            BOOL newConnection = !self.connection.id_nosync && !message.error && !_connectionLostAt;
-            if (!newConnection) {
+            const BOOL isNewConnection = !self.connection.id_nosync && !message.error && !_connectionLostAt;
+            if (!isNewConnection) {
                 [self reattachChannels:message];
             }
             
