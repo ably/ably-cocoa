@@ -17,6 +17,7 @@
 #import "NSURLQueryItem+Stringifiable.h"
 #import "ARTNSMutableDictionary+ARTDictionaryUtil.h"
 #import "ARTStringifiable.h"
+#import "ARTClientInformation.h"
 
 enum {
     ARTWsNeverConnected = -1,
@@ -178,7 +179,7 @@ Class configuredWebsocketClass = nil;
     [queryItems addValueAsURLQueryItem:[ARTDefault apiVersion] forKey:@"v"];
     
     // Lib
-    [queryItems addValueAsURLQueryItem:[options agentLibraryIdentifier] forKey:@"agent"];
+    [queryItems addValueAsURLQueryItem:[ARTClientInformation agentIdentifierWithAdditionalAgents:options.agents] forKey:@"agent"];
 
     // Transport Params
     if (options.transportParams != nil) {
