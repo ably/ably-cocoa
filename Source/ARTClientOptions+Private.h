@@ -17,6 +17,5 @@
 + (void)setDefaultEnvironment:(NSString *_Nullable)environment;
 + (BOOL)getDefaultIdempotentRestPublishingForVersion:(NSString *_Nonnull)version;
 - (NSURLComponents *_Nonnull)restUrlComponents;
-- (NSString *_Nonnull)agentLibraryIdentifier;
 
 @end

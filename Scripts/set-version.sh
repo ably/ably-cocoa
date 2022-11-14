@@ -29,8 +29,9 @@ git add Version.xcconfig
 other_files=(
   "README.md"
   "Scripts/jazzy.sh"
-  "Source/ARTDefault.m"
+  "Source/ARTClientInformation.m"
   "Spec/Tests/ARTDefaultTests.swift"
+  "Spec/Tests/ClientInformationTests.swift"
   "Spec/Tests/RealtimeClientConnectionTests.swift"
   "Spec/Tests/RestClientTests.swift"
 )

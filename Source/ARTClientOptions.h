@@ -10,11 +10,6 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- * Use this pointer as a dictionary value in the `ARTClientOptions.agents` property to indicate that an agent does not have a version.
- */
-extern NSString *const ARTClientOptionsAgentNotVersioned;
-
-/**
  * Passes additional client-specific properties to the REST `-[ARTRestProtocol initWithOptions:]` or the Realtime `-[ARTRealtimeProtocol initWithOptions:]`.
  */
 @interface ARTClientOptions : ARTAuthOptions
@@ -198,7 +193,7 @@ extern NSString *const ARTClientOptionsAgentNotVersioned;
 - (NSURL *)realtimeUrl;
 
 /**
- * A set of additional entries for the Ably agent header. Each entry can be a key string or set of key-value pairs. This should only be used by Ably-authored SDKs. If an agent does not have a version, represent this by using the `ARTClientOptionsAgentNotVersioned` pointer as the version.
+ * A set of additional entries for the Ably agent header. Each entry can be a key string or set of key-value pairs. This should only be used by Ably-authored SDKs. If an agent does not have a version, represent this by using the `ARTClientInformationAgentNotVersioned` pointer as the version.
  */
 @property (nonatomic, copy, nullable) NSDictionary<NSString *, NSString *> *agents;
 

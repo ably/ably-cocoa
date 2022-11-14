@@ -9,7 +9,6 @@
 #import "ARTNSString+ARTUtil.h"
 
 NSString *ARTDefaultEnvironment = nil;
-NSString *const ARTClientOptionsAgentNotVersioned = @"ARTClientOptionsAgentNotVersioned";
 
 @interface ARTClientOptions ()
 
@@ -220,26 +219,6 @@ NSString *const ARTClientOptionsAgentNotVersioned = @"ARTClientOptionsAgentNotVe
 
 - (NSString *)host:(NSString *)host forEnvironment:(NSString *)environment {
     return [NSString stringWithFormat:@"%@-%@", environment, host];
-}
-
-- (NSString *)agentLibraryIdentifier {
-    NSMutableString *agents = [NSMutableString string];
-    [agents appendFormat:@"%@ ", [ARTDefault libraryAgent]];
-    
-    // We sort the agent names so that we have a predictable order when testing.
-    NSArray<NSString *> *sortedAgentNames = [self.agents.allKeys sortedArrayUsingSelector:@selector(compare:)];
-    for (NSString *name in sortedAgentNames) {
-        NSString *const version = self.agents[name];
-        if (version == ARTClientOptionsAgentNotVersioned) {
-            [agents appendFormat:@"%@ ", name];
-        } else {
-            [agents appendFormat:@"%@/%@ ", name, version];
-        }
-    }
-    
-    [agents appendFormat:@"%@", [ARTDefault platformAgent]];
-    
-    return agents;
 }
 
 @end

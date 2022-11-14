@@ -38,6 +38,7 @@
 #import "ARTNSMutableURLRequest+ARTUtils.h"
 #import "ARTNSURL+ARTUtils.h"
 #import "ARTTime.h"
+#import "ARTClientInformation.h"
 
 @implementation ARTRest {
     ARTQueuedDealloc *_dealloc;
@@ -315,7 +316,7 @@
         [mutableRequest setAcceptHeader:self.defaultEncoder encoders:self.encoders];
         [mutableRequest setTimeoutInterval:_options.httpRequestTimeout];
         [mutableRequest setValue:[ARTDefault apiVersion] forHTTPHeaderField:@"X-Ably-Version"];
-        [mutableRequest setValue:[_options agentLibraryIdentifier] forHTTPHeaderField:@"Ably-Agent"];
+        [mutableRequest setValue:[ARTClientInformation agentIdentifierWithAdditionalAgents:_options.agents] forHTTPHeaderField:@"Ably-Agent"];
         if (_options.clientId && !self.auth.isTokenAuth) {
             [mutableRequest setValue:encodeBase64(_options.clientId) forHTTPHeaderField:@"X-Ably-ClientId"];
         }
