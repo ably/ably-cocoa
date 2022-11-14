@@ -314,10 +314,10 @@
 }
 
 +(ARTConnectionRecoveryKey *)fromJsonString:(NSString *)json{
-    NSData* jsonData = [json dataUsingEncoding:NSUTF8StringEncoding];
+    NSData *const jsonData = [json dataUsingEncoding:NSUTF8StringEncoding];
     
     NSError *error = nil;
-    NSDictionary  *object = [NSJSONSerialization
+    NSDictionary *const object = [NSJSONSerialization
                              JSONObjectWithData:jsonData
                              options:0
                              error:&error];
