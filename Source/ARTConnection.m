@@ -295,7 +295,7 @@
 
 @implementation ARTConnectionRecoveryKey
 
-- ( NSString *)jsonString{
+- (NSString *)jsonString{
     NSError *error;
     NSDictionary *const object = @{
         @"msgSerial": @(_msgSerial),

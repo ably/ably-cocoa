@@ -12,8 +12,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) int64_t msgSerial;
 @property (readwrite, strong, nonatomic) NSMutableDictionary<NSString *, NSString *> *channelSerials;
  
-- (nullable NSString *)jsonString;
-+ (nullable ARTConnectionRecoveryKey *)fromJsonString:(NSString *)json;
+- (NSString *)jsonString;
++ (ARTConnectionRecoveryKey *)fromJsonString:(NSString *)json;
 @end
 
 @interface ARTConnectionInternal : NSObject<ARTConnectionProtocol>
