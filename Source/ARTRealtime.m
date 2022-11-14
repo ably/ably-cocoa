@@ -573,7 +573,7 @@
             
             if (!_transport) {
                 NSString *resumeKey = nil;
-                NSString *const recoveryKey = nil;
+                NSString *recoveryKey = nil;
                 if (stateChange.previous == ARTRealtimeFailed ||
                     stateChange.previous == ARTRealtimeDisconnected ||
                     stateChange.previous == ARTRealtimeSuspended) {
