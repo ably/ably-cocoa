@@ -181,7 +181,7 @@
 } 
 
 - (NSString *)key_nosync {
-    ARTRealtimeConnectionState state = [self state_nosync];
+    const ARTRealtimeConnectionState state = [self state_nosync];
     if (state == ARTRealtimeClosed ||
         state == ARTRealtimeClosing ||
         state == ARTRealtimeFailed ||
@@ -259,7 +259,7 @@
         || (!_key && !_id)) {
         return nil;
     }
-    ARTConnectionRecoveryKey *recoveryKey = [[ARTConnectionRecoveryKey alloc] init];
+    ARTConnectionRecoveryKey *const recoveryKey = [[ARTConnectionRecoveryKey alloc] init];
     recoveryKey.connectionKey = _key;
     recoveryKey.msgSerial = _latestMessageSerial;
     
@@ -297,13 +297,13 @@
 
 - ( NSString *)jsonString{
     NSError *error;
-    NSDictionary *object = @{
+    NSDictionary *const object = @{
         @"msgSerial": @(_msgSerial),
         @"connectionKey": _connectionKey,
         @"serials": _channelSerials ? _channelSerials : @{}
     };
     
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:object
+    NSData *const jsonData = [NSJSONSerialization dataWithJSONObject:object
                                                        options:0
                                                          error:&error];
     if (error) {

@@ -151,13 +151,13 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
 }
 
 - (void)reset {
-    _members = [NSMutableDictionary dictionary];
-    _localMembers = [NSMutableDictionary dictionary];
+    _members = [NSMutableDictionary new];
+    _localMembers = [NSMutableDictionary new];
 }
 
 - (void)reenterLocalMembers {
     [_localMembers enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key,
-                                                       ARTPresenceMessage * _Nonnull localMember,
+                                                       ARTPresenceMessage *const _Nonnull localMember,
                                                        BOOL * _Nonnull stop) {
         ARTPresenceMessage *reenter = [localMember copy];
         [self.delegate map:self shouldReenterLocalMember:reenter];

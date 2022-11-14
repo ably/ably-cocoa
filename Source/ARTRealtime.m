@@ -217,7 +217,7 @@
         }
         
         if (options.recover) { //RTN16f
-            ARTConnectionRecoveryKey *recoveryKey = [ARTConnectionRecoveryKey fromJsonString:options.recover];
+            ARTConnectionRecoveryKey *const recoveryKey = [ARTConnectionRecoveryKey fromJsonString:options.recover];
             self.msgSerial = recoveryKey.msgSerial;
             self.connection.latestMessageSerial = self.msgSerial;
             [self recoverChannels: recoveryKey]; //RTN16j
@@ -230,8 +230,8 @@
 }
 
 - (void)recoverChannels:(ARTConnectionRecoveryKey *)recoveryKey {
-    for (NSString *channelName in recoveryKey.channelSerials) {
-        ARTRealtimeChannelInternal *channel = [_channels get:channelName];
+    for (NSString *const channelName in recoveryKey.channelSerials) {
+        ARTRealtimeChannelInternal *const channel = [_channels get:channelName];
         channel.serial = recoveryKey.channelSerials[channelName];
     }
 }
@@ -573,7 +573,7 @@
             
             if (!_transport) {
                 NSString *resumeKey = nil;
-                NSString *recoveryKey = nil;
+                NSString *const recoveryKey = nil;
                 if (stateChange.previous == ARTRealtimeFailed ||
                     stateChange.previous == ARTRealtimeDisconnected ||
                     stateChange.previous == ARTRealtimeSuspended) {
@@ -758,12 +758,12 @@
     }
 }
 
-- (void)resetTransportWithResumeKey:(NSString *)resumeKey {
+- (void)resetTransportWithResumeKey:(NSString *const)resumeKey {
     [self closeAndReleaseTransport];
     [self setTransportWithResumeKey:resumeKey orRecoveryKey:nil];
 }
 
-- (void)setTransportWithResumeKey:(NSString *)resumeKey orRecoveryKey:(NSString *)recoveryKey {
+- (void)setTransportWithResumeKey:(NSString *const)resumeKey orRecoveryKey:(NSString *const)recoveryKey {
     _transport = [[_transportClass alloc] initWithRest:self.rest
                                                options:self.options
                                              resumeKey:resumeKey
@@ -811,7 +811,7 @@
                 [self.logger warn:@"RT:%p connection \"%@\" has resumed with non-fatal error \"%@\"", self, message.connectionId, message.error.message];
                 [self resetSerials];
                 
-            }else if (!self.connection.id_nosync && message.error){ //recover failure
+            } else if (!self.connection.id_nosync && message.error) { //recover failure
                 [self resetSerials];
             }
             //do not reattach on a completely new connection
@@ -844,9 +844,9 @@
     }
 }
 
-//For RTN15c6, RTN15c7
-- (void)reattachChannels:(ARTProtocolMessage *)message {
-    for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
+// For RTN15c6, RTN15c7
+- (void)reattachChannels:(ARTProtocolMessage *const)message {
+    for (ARTRealtimeChannelInternal *const channel in self.channels.nosyncIterable) {
         [channel reattachWithReason:message.error callback:nil];
     }
 }

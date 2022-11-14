@@ -589,8 +589,8 @@ dispatch_sync(_queue, ^{
 
 - (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status {
     [self.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) channel state transitions from %tu - %@ to %tu - %@", _realtime, self, self.name, self.state_nosync, ARTRealtimeChannelStateToStr(self.state_nosync), state, ARTRealtimeChannelStateToStr(state)];
-    ARTRealtimeChannelState previousState = self.state_nosync;
-    ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:state previous:previousState event:(ARTChannelEvent)state reason:status.errorInfo];
+    const ARTRealtimeChannelState previousState = self.state_nosync;
+    ARTChannelStateChange *const stateChange = [[ARTChannelStateChange alloc] initWithCurrent:state previous:previousState event:(ARTChannelEvent)state reason:status.errorInfo];
     self.state = state;
 
     if (status.storeErrorInfo) {
