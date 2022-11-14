@@ -4,11 +4,16 @@ import Ably.ARTClientOptions
 
 class ClientOptionsTests: XCTestCase {
     
-    func testAddAgent() {
+    func testAgentLibraryIdentifier() {
+        let agents = [
+            "demolib": "0.0.1",
+            "morelib": "1.0.3"
+        ]
+        
         let options = ARTClientOptions()
-        options.addAgent("demolib", version: "0.0.1")
-        options.addAgent("morelib", version: nil)
-        let agents = "\(ARTDefault.libraryAgent()) demolib/0.0.1 morelib \(ARTDefault.platformAgent())"
-        XCTAssertEqual(options.agents(), agents)
+        options.agents = agents
+        
+        let expectedIdentifier = "\(ARTDefault.libraryAgent()) demolib/0.0.1 morelib/1.0.3 \(ARTDefault.platformAgent())"
+        XCTAssertEqual(options.agentLibraryIdentifier(), expectedIdentifier)
     }
 }
