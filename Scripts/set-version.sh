@@ -29,7 +29,10 @@ git add Version.xcconfig
 other_files=(
   "README.md"
   "Scripts/jazzy.sh"
+  "Source/ARTDefault.m"
+  "Spec/Tests/ARTDefaultTests.swift"
   "Spec/Tests/RealtimeClientConnectionTests.swift"
+  "Spec/Tests/RestClientTests.swift"
 )
 
 for file in ${other_files[@]};
