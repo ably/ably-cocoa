@@ -8,14 +8,14 @@ static inline UInt32 conformVersionComponent(const NSInteger component) {
     return (component < 0) ? 0 : (UInt32)component;
 }
 
-NSString *const ARTDefault_apiVersion = @"1.2";
-NSString *const ARTDefault_libraryVersion = @"1.2.16";
+static NSString *const ARTDefault_apiVersion = @"1.2";
+static NSString *const ARTDefault_libraryVersion = @"1.2.16";
 
 NSString *const ARTDefaultProduction = @"production";
 
-NSString *const ARTDefault_restHost = @"rest.ably.io";
-NSString *const ARTDefault_realtimeHost = @"realtime.ably.io";
-NSString *const ARTDefault_libraryName = @"ably-cocoa";
+static NSString *const ARTDefault_restHost = @"rest.ably.io";
+static NSString *const ARTDefault_realtimeHost = @"realtime.ably.io";
+static NSString *const ARTDefault_libraryName = @"ably-cocoa";
 
 static NSTimeInterval _realtimeRequestTimeout = 10.0;
 static NSTimeInterval _connectionStateTtl = 60.0;
