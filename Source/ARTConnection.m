@@ -264,7 +264,7 @@
     recoveryKey.msgSerial = _latestMessageSerial;
     
     NSMutableDictionary *serials = @{}.mutableCopy;
-    for(ARTRealtimeChannelInternal *channel in _realtime.channels.nosyncIterable){
+    for(ARTRealtimeChannelInternal *const channel in _realtime.channels.nosyncIterable){
         serials[channel.name] = channel.serial;
     }
     
