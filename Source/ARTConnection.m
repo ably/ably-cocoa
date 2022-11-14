@@ -259,16 +259,15 @@
         || (!_key && !_id)) {
         return nil;
     }
-    ARTConnectionRecoveryKey *const recoveryKey = [[ARTConnectionRecoveryKey alloc] init];
-    recoveryKey.connectionKey = _key;
-    recoveryKey.msgSerial = _latestMessageSerial;
-    
-    NSMutableDictionary *serials = @{}.mutableCopy;
+  
+    NSMutableDictionary<NSString *,NSString *> *serials = @{}.mutableCopy;
     for(ARTRealtimeChannelInternal *const channel in _realtime.channels.nosyncIterable){
         serials[channel.name] = channel.serial;
     }
     
-    recoveryKey.channelSerials = serials;
+    ARTConnectionRecoveryKey *const recoveryKey = [[ARTConnectionRecoveryKey alloc] initWithConnectionKey:_key
+                                                                                            messageSerial:_latestMessageSerial channelSerials:serials];
+    
     return [recoveryKey jsonString];
 }
 
@@ -294,6 +293,19 @@
 @end
 
 @implementation ARTConnectionRecoveryKey
+
+- (instancetype)initWithConnectionKey:(NSString *)connectionKey
+                        messageSerial:(int64_t)messageSerial
+                       channelSerials:(NSDictionary<NSString *,NSString *> *)channelSerials {
+    self = [super init];
+    if (self) {
+        _connectionKey = connectionKey;
+        _msgSerial = messageSerial;
+        _channelSerials = channelSerials;
+    }
+    return self;
+    
+}
 
 - (NSString *)jsonString{
     NSError *error;
@@ -324,11 +336,13 @@
     if (error) {
         @throw error;
     }
-    
-    ARTConnectionRecoveryKey *recoveryKey = [[ARTConnectionRecoveryKey alloc] init];
-    recoveryKey.msgSerial = [[object valueForKey:@"msgSerial"] longLongValue];
-    recoveryKey.connectionKey = [object valueForKey:@"connectionKey"];
-    recoveryKey.channelSerials = [object valueForKey:@"serials"];
+    const int64_t messageSerial = [[object valueForKey:@"msgSerial"] longLongValue];
+    NSString *connectionKey = [object valueForKey:@"connectionKey"];
+    NSDictionary<NSString *, NSString *> *channelSerials = [object valueForKey:@"serials"];
+    ARTConnectionRecoveryKey *recoveryKey = [[ARTConnectionRecoveryKey alloc] initWithConnectionKey:connectionKey
+                                                                                      messageSerial:messageSerial
+                                                                                     channelSerials:channelSerials];
+
     return recoveryKey;
     
 }

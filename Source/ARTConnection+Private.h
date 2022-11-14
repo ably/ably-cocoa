@@ -8,10 +8,14 @@ NS_ASSUME_NONNULL_BEGIN
 @class ARTRealtimeInternal;
 
 @interface ARTConnectionRecoveryKey : NSObject
-@property (nullable, readwrite, strong, nonatomic) NSString *connectionKey;
-@property (readwrite, assign, nonatomic) int64_t msgSerial;
-@property (readwrite, strong, nonatomic) NSMutableDictionary<NSString *, NSString *> *channelSerials;
+@property (nullable, readonly, strong, nonatomic) NSString *connectionKey;
+@property (readonly, assign, nonatomic) int64_t msgSerial;
+@property (readonly, strong, nonatomic) NSDictionary<NSString *, NSString *> *channelSerials;
  
+-(instancetype)initWithConnectionKey:(nullable NSString *) connectionKey
+                       messageSerial:(int64_t) messageSerial
+                      channelSerials:(NSDictionary<NSString *, NSString *> *) channelSerials;
+
 - (NSString *)jsonString;
 + (ARTConnectionRecoveryKey *)fromJsonString:(NSString *)json;
 @end
