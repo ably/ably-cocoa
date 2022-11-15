@@ -172,7 +172,9 @@
 
         _queue = options.internalDispatchQueue;
         _userQueue = options.dispatchQueue;
+#if TARGET_OS_IOS
         _storage = [ARTLocalDeviceStorage newWithLogger:_logger];
+#endif
         _http = [[ARTHttp alloc] init:_queue logger:_logger];
         [_logger verbose:__FILE__ line:__LINE__ message:@"RS:%p %p alloc HTTP", self, _http];
         _httpExecutor = _http;
