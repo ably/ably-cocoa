@@ -1666,9 +1666,9 @@ class RestClientTests: XCTestCase {
             channel.publish(nil, data: "message") { error in
                 expect(error).to(beNil())
                 let headerAgent = testHTTPExecutor.requests.first!.allHTTPHeaderFields?["Ably-Agent"]
-                let ablyAgent = options.agents()
+                let ablyAgent = options.agentLibraryIdentifier()
                 expect(headerAgent).to(equal(ablyAgent))
-                expect(headerAgent!.hasPrefix("ably-cocoa/1.2.13")).to(beTrue())
+                expect(headerAgent!.hasPrefix("ably-cocoa/1.2.16")).to(beTrue())
                 done()
             }
         }

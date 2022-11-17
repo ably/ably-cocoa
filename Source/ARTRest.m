@@ -172,7 +172,9 @@
 
         _queue = options.internalDispatchQueue;
         _userQueue = options.dispatchQueue;
+#if TARGET_OS_IOS
         _storage = [ARTLocalDeviceStorage newWithLogger:_logger];
+#endif
         _http = [[ARTHttp alloc] init:_queue logger:_logger];
         [_logger verbose:__FILE__ line:__LINE__ message:@"RS:%p %p alloc HTTP", self, _http];
         _httpExecutor = _http;
@@ -313,7 +315,7 @@
         [mutableRequest setAcceptHeader:self.defaultEncoder encoders:self.encoders];
         [mutableRequest setTimeoutInterval:_options.httpRequestTimeout];
         [mutableRequest setValue:[ARTDefault apiVersion] forHTTPHeaderField:@"X-Ably-Version"];
-        [mutableRequest setValue:[_options agents] forHTTPHeaderField:@"Ably-Agent"];
+        [mutableRequest setValue:[_options agentLibraryIdentifier] forHTTPHeaderField:@"Ably-Agent"];
         if (_options.clientId && !self.auth.isTokenAuth) {
             [mutableRequest setValue:encodeBase64(_options.clientId) forHTTPHeaderField:@"X-Ably-ClientId"];
         }

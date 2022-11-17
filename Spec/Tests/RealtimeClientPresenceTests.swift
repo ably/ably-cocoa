@@ -1044,21 +1044,39 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     // RTP8
 
-    // RTP8f
-    func test__033__Presence__enter__should_result_in_an_error_immediately_if_the_client_is_anonymous() {
+    // RTP8j (former RTP8f)
+    func test__033__Presence__enter__should_result_in_an_error_immediately_if_the_connection_state_is_connected_and_the_client_is_anonymous() {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(uniqueChannelName())
-
+        
+        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected))
+        
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enter(nil) { error in
-                expect(error!.message).to(contain("attempted to publish presence message without clientId"))
+                expect(error?.code) == Int(ARTState.noClientId.rawValue)
                 done()
             }
         }
     }
-
-    // RTP8
+    
+    // RTP8j
+    func test__033__Presence__enter__should_result_in_an_error_immediately_if_the_connection_state_is_connected_and_the_client_is_wildcard() {
+        let options = AblyTests.commonAppSetup()
+        let client = ARTRealtime(options: options)
+        options.clientId = "*"
+        defer { client.dispose(); client.close() }
+        let channel = client.channels.get(uniqueChannelName())
+        
+        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected))
+        
+        waitUntil(timeout: testTimeout) { done in
+            channel.presence.enter(nil) { error in
+                expect(error?.code) == Int(ARTState.noClientId.rawValue)
+                done()
+            }
+        }
+    }
 
     // RTP8g
     func test__034__Presence__enter__should_result_in_an_error_immediately_if_the_channel_is_DETACHED() {
@@ -1109,8 +1127,6 @@ class RealtimeClientPresenceTests: XCTestCase {
         }
     }
 
-    // RTP8
-
     // RTP8i
     func test__036__Presence__enter__should_result_in_an_error_if_Ably_service_determines_that_the_client_is_unidentified() {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
@@ -1119,7 +1135,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enter(nil) { error in
-                expect(error!.message).to(contain("presence message without clientId"))
+                expect(error?.code) == Int(ARTErrorCode.invalidClientId.rawValue)
                 done()
             }
         }
@@ -1926,7 +1942,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.update(nil) { error in
-                expect(error!.message).to(contain("attempted to publish presence message without clientId"))
+                expect(error?.code) == Int(ARTErrorCode.invalidClientId.rawValue)
                 done()
             }
         }
@@ -2000,10 +2016,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.update(nil) { error in
-                guard let error = error else {
-                    fail("Error is nil"); done(); return
-                }
-                expect(error.message).to(contain("presence message without clientId"))
+                expect(error?.code) == Int(ARTErrorCode.invalidClientId.rawValue)
                 done()
             }
         }
@@ -2068,11 +2081,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.presence.leave("offline") { error in
-                guard let error = error else {
-                    fail("Error is nil"); done(); return
-                }
-                expect(error.code) == Int(ARTState.noClientId.rawValue)
-                expect(error.message).to(contain("message without clientId"))
+                expect(error?.code) == Int(ARTErrorCode.invalidClientId.rawValue)
                 done()
             }
         }
@@ -2223,7 +2232,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.leave(nil) { error in
-                expect(error!.message).to(contain("attempted to publish presence message without clientId"))
+                expect(error?.code) == Int(ARTErrorCode.invalidClientId.rawValue)
                 done()
             }
         }
@@ -2306,7 +2315,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.leave(nil) { error in
-                expect(error!.message).to(contain("presence message without clientId"))
+                expect(error?.code) == Int(ARTErrorCode.invalidClientId.rawValue)
                 done()
             }
         }

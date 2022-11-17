@@ -1,5 +1,35 @@
 # Change Log
 
+## [1.2.16](https://github.com/ably/ably-cocoa/tree/1.2.16)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.15...1.2.16)
+
+**Closed issues:**
+
+- SDK tests are not running on MacBook Pro M1 [\#1506](https://github.com/ably/ably-cocoa/issues/1506)
+- Create Feature Compliance Manifest for `ably-cocoa` [\#1443](https://github.com/ably/ably-cocoa/issues/1443)
+
+**Implemented features:**
+
+- Implement [RTP8j spec point](https://sdk.ably.com/builds/ably/specification/main/features/#RTP8j) [\#1517](https://github.com/ably/ably-cocoa/pull/1517)
+
+## [1.2.15](https://github.com/ably/ably-cocoa/tree/1.2.15)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.14...1.2.15)
+
+**Closed issues:**
+
+- Make docs workflow run for all tags [\#1440](https://github.com/ably/ably-cocoa/issues/1440), in: [\#1501](https://github.com/ably/ably-cocoa/pull/1501) ([maratal](https://github.com/maratal))
+- Link to Ably error codes in ARTErrorInfo docstrings [\#1502](https://github.com/ably/ably-cocoa/issues/1502), in: [\#1503](https://github.com/ably/ably-cocoa/pull/1503) ([maratal](https://github.com/maratal))
+
+## [1.2.14](https://github.com/ably/ably-cocoa/tree/1.2.14)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.13...1.2.14)
+
+**Documentation:**
+
+- Docstring comments added for documentation generation with Jazzy ([\#1491](https://github.com/ably/ably-cocoa/pull/1491))
+
 ## [1.2.13](https://github.com/ably/ably-cocoa/tree/1.2.13)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.12...1.2.13)

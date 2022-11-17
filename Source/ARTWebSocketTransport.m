@@ -4,6 +4,7 @@
 #import "ARTRest+Private.h"
 #import "ARTProtocolMessage.h"
 #import "ARTClientOptions.h"
+#import "ARTClientOptions+Private.h"
 #import "ARTTokenParams.h"
 #import "ARTTokenDetails.h"
 #import "ARTStatus.h"
@@ -163,7 +164,7 @@ Class configuredWebsocketClass = nil;
     [queryItems addValueAsURLQueryItem:[ARTDefault apiVersion] forKey:@"v"];
     
     // Lib
-    [queryItems addValueAsURLQueryItem:[options agents] forKey:@"agent"];
+    [queryItems addValueAsURLQueryItem:[options agentLibraryIdentifier] forKey:@"agent"];
 
     // Transport Params
     if (options.transportParams != nil) {

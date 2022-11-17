@@ -12,6 +12,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Select Specific Xcode Version (13.4.1)
+        run: |
+          sudo xcode-select -s /Applications/Xcode_13.4.1.app
+          echo "Selected Xcode version:"
+          xcodebuild -version
+
       # Run the steps we document in the Release Process.
       # unzip commands included as proof-of-life for the Carthage output.
       - name: Print Ruby version
@@ -34,3 +40,19 @@ jobs:
           unzip -l Ably.framework.zip | grep 'iOS/Ably.framework'
       - name: Validate pod
         run: pod lib lint
+        # We move Ably.framework.zip into a directory. This is because, by
+        # default, macOS’s Archive Utility unzips directly-nested zip files, so
+        # if Ably.framework.zip were at the top level of the zip file that
+        # actions/upload-artifact creates, then Archive Utility would unzip
+        # Ably.framework.zip too, which we don’t want, since we want this file
+        # to be kept intact so that we can upload it to GitHub releases as
+        # described in CONTRIBUTING.md.
+      - name: Prepare built framework for archiving
+        run: |
+          mkdir -p carthage-built-framework-artifact-contents/carthage-built-framework
+          mv Ably.framework.zip carthage-built-framework-artifact-contents/carthage-built-framework
+      - name: Archive built framework
+        uses: actions/upload-artifact@v3
+        with:
+          name: carthage-built-framework
+          path: carthage-built-framework-artifact-contents
