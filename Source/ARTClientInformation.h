@@ -22,7 +22,7 @@ extern NSString *const ARTClientInformationAgentNotVersioned;
 /**
  * Returns the `Agent` library identifier. This method should only be used by Ably-authored SDKs.
  *
- * @param additionalAgents A set of additional entries for the `Agent` library identifier. Its keys are the names of the agents, and its values are their optional versions.
+ * @param additionalAgents A set of additional entries for the `Agent` library identifier. Its keys are the names of the agents, and its values are their optional versions. Pass `ARTClientInformationAgentNotVersioned` as the dictionary value for an agent that does not have a version.
  *
  * @return The `Agent` library identifier.
  */
