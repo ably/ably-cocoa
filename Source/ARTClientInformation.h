@@ -7,6 +7,9 @@ NS_ASSUME_NONNULL_BEGIN
  */
 extern NSString *ARTClientInformationAgentNotVersioned;
 
+/**
+ Provides information about the Ably client library and the environment in which it’s running.
+ */
 @interface ARTClientInformation : NSObject
 
 - (instancetype)init NS_UNAVAILABLE;
