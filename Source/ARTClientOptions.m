@@ -9,7 +9,7 @@
 #import "ARTNSString+ARTUtil.h"
 
 NSString *ARTDefaultEnvironment = nil;
-NSString *ARTClientOptionsAgentNotVersioned = @"ARTClientOptionsAgentNotVersioned";
+NSString *const ARTClientOptionsAgentNotVersioned = @"ARTClientOptionsAgentNotVersioned";
 
 @interface ARTClientOptions ()
 

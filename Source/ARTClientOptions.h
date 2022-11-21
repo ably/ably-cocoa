@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Use this pointer as a dictionary value in the `ARTClientOptions.agents` property to indicate that an agent does not have a version.
  */
-extern NSString *ARTClientOptionsAgentNotVersioned;
+extern NSString *const ARTClientOptionsAgentNotVersioned;
 
 /**
  * Passes additional client-specific properties to the REST `-[ARTRestProtocol initWithOptions:]` or the Realtime `-[ARTRealtimeProtocol initWithOptions:]`.
