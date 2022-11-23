@@ -29,6 +29,10 @@
     dispatch_once(&onceToken, ^{
         thread = [[ARTSRRunLoopThread alloc] init];
         thread.name = @"io.ably.socketrocket.NetworkThread";
+        // To avoid runtime warning "Thread running at QOS_CLASS_USER_INTERACTIVE waiting on a lower QoS thread running at QOS_CLASS_DEFAULT.
+        // Investigate ways to avoid priority inversions". Since `dispatch_group_wait(...)` will be called on a main thread which is
+        // QOS_CLASS_USER_INTERACTIVE.
+        thread.qualityOfService = NSQualityOfServiceUserInteractive;
         [thread start];
     });
     return thread;
