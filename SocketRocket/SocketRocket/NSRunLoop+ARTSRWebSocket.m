@@ -24,4 +24,11 @@ void import_NSRunLoop_ARTSRWebSocket() { }
     return [ARTSRRunLoopThread sharedThread].runLoop;
 }
 
++ (void)ARTSR_waitForNetworkRunLoop
+{
+    while ([ARTSRRunLoopThread sharedThread].runLoop == nil) {
+        usleep(1);
+    }
+}
+
 @end

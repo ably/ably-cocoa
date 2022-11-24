@@ -158,7 +158,7 @@
     NSArray *proxies = CFBridgingRelease(CFNetworkCopyProxiesForURL((__bridge CFURLRef)httpURL, (__bridge CFDictionaryRef)proxySettings));
     if (proxies.count == 0) {
         ARTSRDebugLog(@"configureProxy no proxies");
-        [self _openConnection];
+        [self openConnection];
         return;                 // no proxy
     }
     NSDictionary *settings = [proxies objectAtIndex:0];
@@ -179,7 +179,7 @@
     }
     [self _readProxySettingWithType:proxyType settings:settings];
 
-    [self _openConnection];
+    [self openConnection];
 }
 
 - (void)_readProxySettingWithType:(NSString *)proxyType settings:(NSDictionary *)settings
@@ -220,7 +220,7 @@
                                                        error:&error];
 
         if (error) {
-            [self _openConnection];
+            [self openConnection];
         } else {
             [self _runPACScript:script withProxySettings:proxySettings];
         }
@@ -231,7 +231,7 @@
     if (![scheme isEqualToString:@"http"] && ![scheme isEqualToString:@"https"]) {
         // Don't know how to read data from this URL, we'll have to give up
         // We'll simply assume no proxies, and start the request as normal
-        [self _openConnection];
+        [self openConnection];
         return;
     }
     __weak typeof(self) wself = self;
@@ -253,7 +253,7 @@
             NSString *script = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
             [sself _runPACScript:script withProxySettings:proxySettings];
         } else {
-            [sself _openConnection];
+            [sself openConnection];
         }
     }] resume];
 }
@@ -261,7 +261,7 @@
 - (void)_runPACScript:(NSString *)script withProxySettings:(NSDictionary *)proxySettings
 {
     if (!script) {
-        [self _openConnection];
+        [self openConnection];
         return;
     }
     ARTSRDebugLog(@"runPACScript");
@@ -287,7 +287,28 @@
         NSString *proxyType = settings[(NSString *)kCFProxyTypeKey];
         [self _readProxySettingWithType:proxyType settings:settings];
     }
-    [self _openConnection];
+    [self openConnection];
+}
+
+- (void)openConnection
+{
+    if ([NSRunLoop ARTSR_networkRunLoop] != nil) {
+        [self _openConnection];
+    }
+    else {
+        if ([NSThread isMainThread]) {
+            dispatch_async(_writeQueue, ^{
+                [NSRunLoop ARTSR_waitForNetworkRunLoop];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self _openConnection];
+                });
+            });
+        }
+        else {
+            [NSRunLoop ARTSR_waitForNetworkRunLoop];
+            [self _openConnection];
+        }
+    }
 }
 
 - (void)_openConnection
