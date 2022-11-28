@@ -18,6 +18,7 @@
 #import "ARTNSMutableDictionary+ARTDictionaryUtil.h"
 #import "ARTStringifiable.h"
 #import "ARTClientInformation.h"
+#import "ARTURLSessionWebSocket.h"
 
 enum {
     ARTWsNeverConnected = -1,
@@ -34,7 +35,7 @@ enum {
     ARTWsTlsError = 1015
 };
 
-NSString *WebSocketStateToStr(ARTSRReadyState state);
+NSString *WebSocketStateToStr(ARTWebSocketState state);
 
 @interface ARTSRWebSocket () <ARTWebSocket>
 @end
@@ -84,7 +85,7 @@ Class configuredWebsocketClass = nil;
 }
 
 - (BOOL)send:(NSData *)data withSource:(id)decodedObject {
-    if (self.websocket.readyState == ARTSR_OPEN) {
+    if (self.websocket.readyState == ARTWS_OPEN) {
         if ([decodedObject isKindOfClass:[ARTProtocolMessage class]]) {
             [_protocolMessagesLogger info:@"send %@", [decodedObject description]];
         }
@@ -197,8 +198,13 @@ Class configuredWebsocketClass = nil;
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
 
-    const Class websocketClass = configuredWebsocketClass ? configuredWebsocketClass : [ARTSRWebSocket class];
-    self.websocket = [[websocketClass alloc] initWithURLRequest:request];
+    if (@available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)) {
+        const Class websocketClass = configuredWebsocketClass ?: [ARTURLSessionWebSocket class];
+        self.websocket = [[websocketClass alloc] initWithURLRequest:request];
+    } else {
+        const Class websocketClass = configuredWebsocketClass ? configuredWebsocketClass : [ARTSRWebSocket class];
+        self.websocket = [[websocketClass alloc] initWithURLRequest:request];
+    }
     [self.websocket setDelegateDispatchQueue:_workQueue];
     self.websocket.delegate = self;
     self.websocketURL = url;
@@ -248,7 +254,7 @@ Class configuredWebsocketClass = nil;
 }
 
 - (ARTRealtimeTransportState)state {
-    if (self.websocket.readyState == ARTSR_OPEN) {
+    if (self.websocket.readyState == ARTWS_OPEN) {
         return ARTRealtimeTransportStateOpened;
     }
     return _state;
@@ -340,7 +346,7 @@ Class configuredWebsocketClass = nil;
 - (void)webSocket:(id<ARTWebSocket>)webSocket didReceiveMessage:(id)message {
     [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket did receive message", _delegate, self];
 
-    if (self.websocket.readyState == ARTSR_CLOSED) {
+    if (self.websocket.readyState == ARTWS_CLOSED) {
         [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket is closed, message has been ignored", _delegate, self];
         return;
     }
@@ -377,17 +383,18 @@ Class configuredWebsocketClass = nil;
 
 @end
 
-NSString *WebSocketStateToStr(ARTSRReadyState state) {
+NSString *WebSocketStateToStr(ARTWebSocketState state) {
     switch (state) {
-        case ARTSR_CONNECTING:
+        case ARTWS_CONNECTING:
             return @"Connecting"; //0
-        case ARTSR_OPEN:
+        case ARTWS_OPEN:
             return @"Open"; //1
-        case ARTSR_CLOSING:
+        case ARTWS_CLOSING:
             return @"Closing"; //2
-        case ARTSR_CLOSED:
+        case ARTWS_CLOSED:
             return @"Closed"; //3
     }
+    return @"Unknown";
 }
 
 NSString *ARTRealtimeTransportStateToStr(ARTRealtimeTransportState state) {

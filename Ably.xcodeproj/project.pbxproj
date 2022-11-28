@@ -112,6 +112,12 @@
 		8412FDFE2661AC7B001FE9E6 /* Nimble.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF42661AC7B001FE9E6 /* Nimble.xcframework */; };
 		8412FDFF2661AC7B001FE9E6 /* Nimble.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF42661AC7B001FE9E6 /* Nimble.xcframework */; };
 		8412FE002661AC7B001FE9E6 /* Nimble.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF42661AC7B001FE9E6 /* Nimble.xcframework */; };
+		84767F682933FF7700899C1A /* ARTURLSessionWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 84767F662933FF7700899C1A /* ARTURLSessionWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		84767F692933FF7700899C1A /* ARTURLSessionWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 84767F662933FF7700899C1A /* ARTURLSessionWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		84767F6A2933FF7700899C1A /* ARTURLSessionWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 84767F662933FF7700899C1A /* ARTURLSessionWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		84767F6B2933FF7700899C1A /* ARTURLSessionWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 84767F672933FF7700899C1A /* ARTURLSessionWebSocket.m */; };
+		84767F6C2933FF7700899C1A /* ARTURLSessionWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 84767F672933FF7700899C1A /* ARTURLSessionWebSocket.m */; };
+		84767F6D2933FF7700899C1A /* ARTURLSessionWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 84767F672933FF7700899C1A /* ARTURLSessionWebSocket.m */; };
 		848ED97326E50D0F0087E800 /* ObjcppTest.mm in Sources */ = {isa = PBXBuildFile; fileRef = 848ED97226E50D0F0087E800 /* ObjcppTest.mm */; settings = {COMPILER_FLAGS = "-fmodules"; }; };
 		848ED97426E50D0F0087E800 /* ObjcppTest.mm in Sources */ = {isa = PBXBuildFile; fileRef = 848ED97226E50D0F0087E800 /* ObjcppTest.mm */; settings = {COMPILER_FLAGS = "-fmodules"; }; };
 		848ED97526E50D0F0087E800 /* ObjcppTest.mm in Sources */ = {isa = PBXBuildFile; fileRef = 848ED97226E50D0F0087E800 /* ObjcppTest.mm */; settings = {COMPILER_FLAGS = "-fmodules"; }; };
@@ -1023,6 +1029,8 @@
 		8412FDF12661AC7A001FE9E6 /* Aspects.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Aspects.xcframework; path = Carthage/Build/Aspects.xcframework; sourceTree = "<group>"; };
 		8412FDF22661AC7B001FE9E6 /* SwiftyJSON.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SwiftyJSON.xcframework; path = Carthage/Build/SwiftyJSON.xcframework; sourceTree = "<group>"; };
 		8412FDF42661AC7B001FE9E6 /* Nimble.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Nimble.xcframework; path = Carthage/Build/Nimble.xcframework; sourceTree = "<group>"; };
+		84767F662933FF7700899C1A /* ARTURLSessionWebSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTURLSessionWebSocket.h; sourceTree = "<group>"; };
+		84767F672933FF7700899C1A /* ARTURLSessionWebSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTURLSessionWebSocket.m; sourceTree = "<group>"; };
 		848ED97226E50D0F0087E800 /* ObjcppTest.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ObjcppTest.mm; sourceTree = "<group>"; };
 		850BFB4A1B79323C009D0ADD /* ARTPaginatedResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARTPaginatedResult.h; sourceTree = "<group>"; };
 		850BFB4B1B79323C009D0ADD /* ARTPaginatedResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTPaginatedResult.m; sourceTree = "<group>"; };
@@ -1695,6 +1703,8 @@
 				96E408461A3895E800087F77 /* ARTWebSocketTransport.m */,
 				EB20F8D61C653F1E00EF3978 /* ARTPresence+Private.h */,
 				EBB721C42376A948001C3550 /* ARTWebSocket.h */,
+				84767F662933FF7700899C1A /* ARTURLSessionWebSocket.h */,
+				84767F672933FF7700899C1A /* ARTURLSessionWebSocket.m */,
 			);
 			name = Transport;
 			sourceTree = "<group>";
@@ -2021,6 +2031,7 @@
 				D5BB210B26AA98A200AA5F3E /* ARTStringifiable+Private.h in Headers */,
 				EB4B1A0C1F2190BB00467F07 /* ARTRestChannels+Private.h in Headers */,
 				D785C4291E549E33008FEC05 /* ARTPushChannelSubscription.h in Headers */,
+				84767F682933FF7700899C1A /* ARTURLSessionWebSocket.h in Headers */,
 				D7F1D3731BF4DE07001A4B5E /* ARTRestPresence.h in Headers */,
 				D7B17EE31C07208B00A6958E /* ARTConnectionDetails.h in Headers */,
 				D7F2B8B21E42410D00B65151 /* ARTPresenceMessage+Private.h in Headers */,
@@ -2173,6 +2184,7 @@
 				D710D50421949C18008F54AD /* ARTRealtime+Private.h in Headers */,
 				D710D58D21949D29008F54AD /* ARTPresenceMap.h in Headers */,
 				D5BB210E26AA98A800AA5F3E /* ARTStringifiable.h in Headers */,
+				84767F692933FF7700899C1A /* ARTURLSessionWebSocket.h in Headers */,
 				D710D56B21949CB9008F54AD /* ARTPushDeviceRegistrations.h in Headers */,
 				D710D62021949DEC008F54AD /* ARTNSMutableURLRequest+ARTPaginated.h in Headers */,
 				D710D4B021949AF8008F54AD /* ARTAuth.h in Headers */,
@@ -2317,6 +2329,7 @@
 				D710D51021949C19008F54AD /* ARTRealtime+Private.h in Headers */,
 				D710D5B321949D2A008F54AD /* ARTPresenceMap.h in Headers */,
 				D710D57121949CBA008F54AD /* ARTPushDeviceRegistrations.h in Headers */,
+				84767F6A2933FF7700899C1A /* ARTURLSessionWebSocket.h in Headers */,
 				D710D62C21949DED008F54AD /* ARTNSMutableURLRequest+ARTPaginated.h in Headers */,
 				D710D4B221949AF9008F54AD /* ARTAuth.h in Headers */,
 				D710D5B121949D2A008F54AD /* ARTPresence.h in Headers */,
@@ -2728,6 +2741,7 @@
 				1C55427D1B148306003068DB /* ARTStatus.m in Sources */,
 				D785C42A1E549E33008FEC05 /* ARTPushChannelSubscription.m in Sources */,
 				D7B17EE41C07208B00A6958E /* ARTConnectionDetails.m in Sources */,
+				84767F6B2933FF7700899C1A /* ARTURLSessionWebSocket.m in Sources */,
 				96BF61591A35B52C004CF2B3 /* ARTHttp.m in Sources */,
 				217D1833254222F600DFF07E /* ARTSRPinningSecurityPolicy.m in Sources */,
 				D3AD0EBE215E2FB000312105 /* ARTNSString+ARTUtil.m in Sources */,
@@ -2907,6 +2921,7 @@
 				D710D5D921949D78008F54AD /* ARTProtocolMessage.m in Sources */,
 				D710D53721949C54008F54AD /* ARTLocalDevice.m in Sources */,
 				D710D53621949C54008F54AD /* ARTDeviceIdentityTokenDetails.m in Sources */,
+				84767F6C2933FF7700899C1A /* ARTURLSessionWebSocket.m in Sources */,
 				D710D4C821949BAA008F54AD /* ARTRealtimeTransport.m in Sources */,
 				217D184A254222F700DFF07E /* ARTSRPinningSecurityPolicy.m in Sources */,
 				D710D49821949ACA008F54AD /* ARTRestChannel.m in Sources */,
@@ -3018,6 +3033,7 @@
 				D54C55AC26957FDE00729EC4 /* ARTNSURL+ARTUtils.m in Sources */,
 				D710D54921949C55008F54AD /* ARTLocalDevice.m in Sources */,
 				D710D54821949C55008F54AD /* ARTDeviceIdentityTokenDetails.m in Sources */,
+				84767F6D2933FF7700899C1A /* ARTURLSessionWebSocket.m in Sources */,
 				D710D4CC21949BAB008F54AD /* ARTRealtimeTransport.m in Sources */,
 				217D1861254222FA00DFF07E /* ARTSRPinningSecurityPolicy.m in Sources */,
 				D710D4A221949ACB008F54AD /* ARTRestChannel.m in Sources */,
@@ -3414,6 +3430,7 @@
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OBJC_BRIDGING_HEADER = "Spec/AblySpec-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;

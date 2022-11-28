@@ -7,6 +7,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 @protocol ARTWebSocketDelegate;
 
+typedef NS_ENUM(NSInteger, ARTWebSocketState) {
+    ARTWS_CONNECTING   = 0,
+    ARTWS_OPEN         = 1,
+    ARTWS_CLOSING      = 2,
+    ARTWS_CLOSED       = 3,
+};
+
 /**
  This protocol has the subset of ARTSRWebSocket we actually use.
  */
@@ -14,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, weak) id <ARTWebSocketDelegate> _Nullable delegate;
 @property (nullable, nonatomic, strong) dispatch_queue_t delegateDispatchQueue;
-@property (atomic, assign, readonly) ARTSRReadyState readyState;
+@property (atomic, assign, readonly) ARTWebSocketState readyState;
 
 - (instancetype)initWithURLRequest:(NSURLRequest *)request;
 
