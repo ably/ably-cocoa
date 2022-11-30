@@ -2,14 +2,14 @@ default_platform(:ios)
 
 platform :ios do
 
-  lane :test_iOS16_1 do
+  lane :test_iOS16 do
     run_tests(
       scheme: "Ably-iOS-Tests",
       derived_data_path: "derived_data",
-      devices: ["iPhone 14 (16.1)"],
+      devices: ["iPhone 14 (16.0)"],
       test_without_building: false,
       xcargs: { ABLY_ENV: ENV['ABLY_ENV'], CLANG_ANALYZER_OUTPUT: 'plist-html' },
-      output_directory: "fastlane/test_output/sdk/test_iOS16_1"
+      output_directory: "fastlane/test_output/sdk/test_iOS16"
     )
   end
 
