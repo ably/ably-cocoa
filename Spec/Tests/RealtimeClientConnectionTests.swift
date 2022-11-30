@@ -1395,6 +1395,103 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         expect(keys).to(haveCount(max))
     }
+    
+    //RTN9c - closing, closed
+    func test__139__Connection__connection_key__should_be_nil_when_sdk_is_in_closing_and_closed_states() {
+            let options = AblyTests.commonAppSetup()
+            options.autoConnect = false
+            let client = ARTRealtime(options: options)
+            let connection = client.connection
+            defer {
+                client.dispose()
+                client.close()
+            }
+
+            waitUntil(timeout: testTimeout) { done in
+                let partialDone = AblyTests.splitDone(3, done: done)
+
+                connection.on { stateChange in
+                    let state = stateChange.current
+                    let errorInfo = stateChange.reason
+                    expect(errorInfo).to(beNil())
+                    if state == .connected {
+                        expect(connection.key).toNot(beNil())
+                        client.internal.close()
+                        partialDone()
+                    }else if stateChange.current == .closing  {
+                        expect(connection.key).to(beNil())
+                        partialDone()
+                    }else if stateChange.current == .closed {
+                        expect(connection.key).to(beNil())
+                        partialDone()
+                    }
+                }
+                client.connect()
+            }
+        }
+
+        // RTN9c - suspended
+        func test__140__Connection__connection_key__should_be_nil_when_sdk_is_in_suspended() {
+            let options = AblyTests.commonAppSetup()
+            options.autoConnect = false
+            let client = ARTRealtime(options: options)
+            let connection = client.connection
+            defer {
+                client.dispose()
+                client.close()
+            }
+
+            waitUntil(timeout: testTimeout) { done in
+                let partialDone = AblyTests.splitDone(2, done: done)
+
+                connection.on { stateChange in
+                    let state = stateChange.current
+                    let errorInfo = stateChange.reason
+                    expect(errorInfo).to(beNil())
+                    if state == .connected {
+                        expect(connection.key).toNot(beNil())
+                        client.internal.onSuspended()
+                        partialDone()
+                    }else if stateChange.current == .suspended  {
+                        expect(connection.key).to(beNil())
+                        partialDone()
+                    }
+                }
+                client.connect()
+            }
+        }
+
+        // RTN9c - failed
+        func test__141__Connection__connection_key__should_be_nil_when_sdk_is_in_failed() {
+            let options = AblyTests.commonAppSetup()
+            options.autoConnect = false
+            let client = ARTRealtime(options: options)
+            let connection = client.connection
+            defer {
+                client.dispose()
+                client.close()
+            }
+
+            waitUntil(timeout: testTimeout) { done in
+                let partialDone = AblyTests.splitDone(2, done: done)
+
+                connection.on { stateChange in
+                    let state = stateChange.current
+                    let errorInfo = stateChange.reason
+                    expect(errorInfo).to(beNil())
+                    if state == .connected {
+                        expect(connection.key).toNot(beNil())
+                        client.internal.onError(ARTProtocolMessage())
+                        partialDone()
+                    }else if stateChange.current == .failed  {
+                        expect(connection.key).to(beNil())
+                        partialDone()
+                    }
+                }
+                client.connect()
+            }
+        }
+
 
     // RTN11b
     func test__007__Connection__should_make_a_new_connection_with_a_new_transport_instance_if_the_state_is_CLOSING() {
