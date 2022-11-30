@@ -7,9 +7,10 @@ jazzy \
   --objc \
   --clean \
   --author Ably \
-  --module-version 1.2.13 \
+  --module-version 1.2.16 \
   --umbrella-header Source/Ably.h \
   --framework-root Source \
   --module Ably \
   --sdk iphonesimulator \
+  --readme Docs/Main.md \
   --output Docs/jazzy

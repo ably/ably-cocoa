@@ -9,10 +9,9 @@
 #import "ARTNSString+ARTUtil.h"
 
 NSString *ARTDefaultEnvironment = nil;
+NSString *ARTClientOptionsAgentNotVersioned = @"ARTClientOptionsAgentNotVersioned";
 
 @interface ARTClientOptions ()
-
-@property (nullable, strong, nonatomic) NSMutableArray<NSString *> *additionalAgents;
 
 - (instancetype)initDefaults;
 
@@ -49,7 +48,6 @@ NSString *ARTDefaultEnvironment = nil;
     _idempotentRestPublishing = [ARTClientOptions getDefaultIdempotentRestPublishingForVersion:[ARTDefault apiVersion]];
     _addRequestIds = false;
     _pushRegistererDelegate = nil;
-    _additionalAgents = [NSMutableArray array];
     return self;
 }
 
@@ -139,7 +137,7 @@ NSString *ARTDefaultEnvironment = nil;
     options.addRequestIds = self.addRequestIds;
     options.pushRegistererDelegate = self.pushRegistererDelegate;
     options.transportParams = self.transportParams;
-    options.additionalAgents = self.additionalAgents;
+    options.agents = self.agents;
 
     return options;
 }
@@ -224,21 +222,23 @@ NSString *ARTDefaultEnvironment = nil;
     return [NSString stringWithFormat:@"%@-%@", environment, host];
 }
 
-- (void)addAgent:(NSString *)agentName version:(NSString * _Nullable)version {
-    NSString* agentString = version == nil ? agentName : [NSString stringWithFormat:@"%@/%@", agentName, version];
-    if ([_additionalAgents containsObject:agentString]) {
-        [ARTException raise:ARTFallbackIncompatibleOptionsException format:@"This agent string is already in the list."];
-    }
-    [_additionalAgents addObject:agentString];
-}
-
-- (NSString *)agents {
+- (NSString *)agentLibraryIdentifier {
     NSMutableString *agents = [NSMutableString string];
     [agents appendFormat:@"%@ ", [ARTDefault libraryAgent]];
-    for (NSString *agent in _additionalAgents) {
-        [agents appendFormat:@"%@ ", agent];
+    
+    // We sort the agent names so that we have a predictable order when testing.
+    NSArray<NSString *> *sortedAgentNames = [self.agents.allKeys sortedArrayUsingSelector:@selector(compare:)];
+    for (NSString *name in sortedAgentNames) {
+        NSString *const version = self.agents[name];
+        if (version == ARTClientOptionsAgentNotVersioned) {
+            [agents appendFormat:@"%@ ", name];
+        } else {
+            [agents appendFormat:@"%@/%@ ", name, version];
+        }
     }
+    
     [agents appendFormat:@"%@", [ARTDefault platformAgent]];
+    
     return agents;
 }
 

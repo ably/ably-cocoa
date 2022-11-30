@@ -186,6 +186,8 @@ FOUNDATION_EXPORT NSString *const ARTAblyMessageNoMeansToRenewToken;
 
 /**
  * A generic Ably error object that contains an Ably-specific status code, and a generic status code. Errors returned from the Ably server are compatible with the `ARTErrorInfo` structure and should result in errors that inherit from `ARTErrorInfo`.
+ *
+ * @see For possible `NSError.code` see Ably [error codes](https://github.com/ably/ably-common/blob/main/protocol/errors.json).
  */
 @interface ARTErrorInfo : NSError
 
