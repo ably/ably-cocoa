@@ -296,9 +296,10 @@
         [self _openConnection];
     }
     else {
-        if ([NSThread isMainThread]) { // Due to`dispatch_get_main_queue()` below.
+        if ([NSThread isMainThread]) {
             dispatch_async(_writeQueue, ^{
                 [NSRunLoop ARTSR_waitForNetworkRunLoop];
+                // Dispatch back to main:
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [self _openConnection];
                 });
