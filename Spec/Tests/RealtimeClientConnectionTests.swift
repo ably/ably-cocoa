@@ -1226,6 +1226,102 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         expect(ids).to(haveCount(max))
     }
+    
+    //RTN8c - closing, closed
+    func test__139__Connection__connection_id__should_be_nil_when_sdk_is_in_closing_and_closed_states() {
+            let options = AblyTests.commonAppSetup()
+            options.autoConnect = false
+            let client = ARTRealtime(options: options)
+            let connection = client.connection
+            defer {
+                client.dispose()
+                client.close()
+            }
+
+            waitUntil(timeout: testTimeout) { done in
+                let partialDone = AblyTests.splitDone(3, done: done)
+
+                connection.on { stateChange in
+                    let state = stateChange.current
+                    let errorInfo = stateChange.reason
+                    expect(errorInfo).to(beNil())
+                    if state == .connected {
+                        expect(connection.id).toNot(beNil())
+                        client.internal.close()
+                        partialDone()
+                    }else if stateChange.current == .closing  {
+                        expect(connection.id).to(beNil())
+                        partialDone()
+                    }else if stateChange.current == .closed {
+                        expect(connection.id).to(beNil())
+                        partialDone()
+                    }
+                }
+                client.connect()
+            }
+        }
+
+        // RTN8c - suspended
+        func test__140__Connection__connection_id__should_be_nil_when_sdk_is_in_suspended() {
+            let options = AblyTests.commonAppSetup()
+            options.autoConnect = false
+            let client = ARTRealtime(options: options)
+            let connection = client.connection
+            defer {
+                client.dispose()
+                client.close()
+            }
+
+            waitUntil(timeout: testTimeout) { done in
+                let partialDone = AblyTests.splitDone(2, done: done)
+
+                connection.on { stateChange in
+                    let state = stateChange.current
+                    let errorInfo = stateChange.reason
+                    expect(errorInfo).to(beNil())
+                    if state == .connected {
+                        expect(connection.id).toNot(beNil())
+                        client.internal.onSuspended()
+                        partialDone()
+                    }else if stateChange.current == .suspended  {
+                        expect(connection.id).to(beNil())
+                        partialDone()
+                    }
+                }
+                client.connect()
+            }
+        }
+
+        // RTN8c - failed
+        func test__141__Connection__connection_id__should_be_nil_when_sdk_is_in_failed() {
+            let options = AblyTests.commonAppSetup()
+            options.autoConnect = false
+            let client = ARTRealtime(options: options)
+            let connection = client.connection
+            defer {
+                client.dispose()
+                client.close()
+            }
+
+            waitUntil(timeout: testTimeout) { done in
+                let partialDone = AblyTests.splitDone(2, done: done)
+
+                connection.on { stateChange in
+                    let state = stateChange.current
+                    let errorInfo = stateChange.reason
+                    expect(errorInfo).to(beNil())
+                    if state == .connected {
+                        expect(connection.id).toNot(beNil())
+                        client.internal.onError(ARTProtocolMessage())
+                        partialDone()
+                    }else if stateChange.current == .failed  {
+                        expect(connection.id).to(beNil())
+                        partialDone()
+                    }
+                }
+                client.connect()
+            }
+        }
 
     // RTN9
 
