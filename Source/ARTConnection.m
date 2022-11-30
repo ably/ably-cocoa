@@ -225,13 +225,6 @@ dispatch_sync(_queue, ^{
 
 - (void)setState:(ARTRealtimeConnectionState)state {
     _state = state;
-    //RTN8c
-    if (state == ARTRealtimeClosing ||
-        state == ARTRealtimeClosed ||
-        state == ARTRealtimeFailed ||
-        state == ARTRealtimeSuspended) {
-        _id = nil;
-    }
 }
 
 - (void)setErrorReason:(ARTErrorInfo *_Nullable)errorReason {
