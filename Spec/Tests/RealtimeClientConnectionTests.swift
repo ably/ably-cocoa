@@ -3142,6 +3142,66 @@ class RealtimeClientConnectionTests: XCTestCase {
         expect(recoveredChannel).toNot(beNil())
         expect(recoveredChannel.internal.serial).to(equal(expectedChannelSerial))
     }
+  
+    // RTN16k
+    func test__090__Connection__Connection_recovery__library_provides_additional_querystring_when_recover_is_provided() {
+        let options = AblyTests.commonAppSetup()
+        options.autoConnect = false
+        
+        let client = AblyTests.newRealtime(options)
+        defer { client.dispose(); client.close() }
+        
+        waitUntil(timeout: testTimeout) { done in
+            client.connection.once(.connecting){_ in
+                guard let webSocketTransport = client.internal.transport as? ARTWebSocketTransport else {
+                    fail("Transport should be of type ARTWebSocketTransport"); done()
+                    return
+                }
+                expect(webSocketTransport.websocketURL).toNot(beNil())
+                let query = webSocketTransport.websocketURL?.query
+                let parts = query?
+                    .components(separatedBy: "&")
+                let recoverPart = parts?.filter({ part in
+                    part.contains("recover")
+                })
+                expect(recoverPart).to(beEmpty())
+            }
+            client.connection.once(.connected) { stateChange in
+                done()
+            }
+            client.connect()
+        }
+
+        let recoverOptions = options
+        recoverOptions.recover = client.connection.createRecoveryKey()
+        recoverOptions.autoConnect = false
+        recoverOptions.logLevel = .debug
+        let recoverClient = AblyTests.newRealtime(recoverOptions)
+        defer { recoverClient.dispose(); recoverClient.close() }
+        
+        waitUntil(timeout: testTimeout) { done in
+            recoverClient.connection.once(.connecting){_ in
+                guard let webSocketTransport = recoverClient.internal.transport as? ARTWebSocketTransport else {
+                    fail("Transport should be of type ARTWebSocketTransport"); done()
+                    return
+                }
+                expect(webSocketTransport.websocketURL).toNot(beNil())
+                let query = webSocketTransport.websocketURL?.query
+                let parts = query?
+                    .components(separatedBy: "&")
+                let recoverPart = parts?.filter({ part in
+                    part.contains("recover")
+                })[0]
+                expect(recoverPart).toNot(beNil())
+                let recoverValue = recoverPart?
+                    .components(separatedBy: "=")[1]
+                expect(recoverValue).to(equal(client.connection.key))
+                done()
+            }
+            recoverClient.connect()
+        }
+    }
+    
 
     // RTN17
 
