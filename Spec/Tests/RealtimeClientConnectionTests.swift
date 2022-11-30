@@ -3087,6 +3087,63 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
     }
     
+    // RTN16g
+    func test__110__Connection__Connection_recovery__connection_recovery_key_is_correctly_constructed_from_defined_parts() {
+        let options = AblyTests.commonAppSetup()
+        
+        let client = AblyTests.newRealtime(options)
+        defer { client.dispose(); client.close() }
+        
+        let firstChannelName = uniqueChannelName()
+        let secondChannelName = uniqueChannelName()
+        var firstChannelSerial:String?
+        var secondChannelSerial:String?
+        waitUntil(timeout: testTimeout) { done in
+            let partialDone = AblyTests.splitDone(4, done: done)
+            client.connection.once(.connected) { stateChange in
+                let firstChannel = client.channels.get(firstChannelName)
+                firstChannel.on(.attached){_ in
+                    firstChannelSerial = firstChannel.internal.serial
+                    partialDone()
+                }
+                let secondChannel = client.channels.get(secondChannelName)
+                secondChannel.on(.attached){_ in
+                    secondChannelSerial = secondChannel.internal.serial
+                    
+                    secondChannel.publish(nil, data: "message") { error in
+                        expect(error).to(beNil())
+                        partialDone()
+                    }
+                    partialDone()
+                }
+                firstChannel.attach()
+                secondChannel.attach()
+                partialDone()
+            }
+            
+        }
+       
+        guard let recoveryKeyString = client.connection.createRecoveryKey() else {
+            fail("recoveryKeyString shouldn't be null")
+            return
+        }
+        
+        let recoveryKey = ARTConnectionRecoveryKey.fromJsonString(recoveryKeyString)
+        expect(recoveryKey).toNot(beNil())
+        expect(recoveryKey.connectionKey).to(equal(client.connection.key))
+        expect(recoveryKey.channelSerials.count).to(equal(2))
+        recoveryKey.channelSerials.keys.forEach { key in
+            let serial = recoveryKey.channelSerials[key]
+            expect(serial).toNot(beNil())
+            if key == firstChannelName{
+                expect(serial).to(equal(firstChannelSerial))
+            } else if key == secondChannelName {
+                expect(serial).to(equal(secondChannelSerial))
+            }
+        }
+        expect(recoveryKey.msgSerial).to(equal(client.connection.internal.latestMessageSerial))
+    }
+    
 
     // RTN16f
     func test__085__Connection__Connection_recovery__should_set_internal_message_serial_to_component_in_recovery_key() {
