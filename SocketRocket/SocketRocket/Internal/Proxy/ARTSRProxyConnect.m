@@ -296,7 +296,7 @@
         [self _openConnection];
     }
     else {
-        if ([NSThread isMainThread]) {
+        if ([NSThread isMainThread]) { // Due to`dispatch_get_main_queue()` below.
             dispatch_async(_writeQueue, ^{
                 [NSRunLoop ARTSR_waitForNetworkRunLoop];
                 dispatch_async(dispatch_get_main_queue(), ^{
@@ -305,6 +305,7 @@
             });
         }
         else {
+            // Here goes some background thread in which we can call `ARTSR_waitForNetworkRunLoop` without blocking the main thread (in case user decided to call `ARTRealtime` methods from not the main thread).
             [NSRunLoop ARTSR_waitForNetworkRunLoop];
             [self _openConnection];
         }
