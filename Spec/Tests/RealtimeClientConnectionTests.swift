@@ -3109,6 +3109,39 @@ class RealtimeClientConnectionTests: XCTestCase {
         let recoverClient = AblyTests.newRealtime(recoverOptions)
         expect (recoverClient.internal.msgSerial).to(equal(recoveryKey.msgSerial))
     }
+    
+    // RTN16j
+    func test__086__Connection__Connection_recovery__library_should_create_channel_with_corresponding_serial_in_given_recovery_key() {
+        let options = AblyTests.commonAppSetup()
+        
+        let client = AblyTests.newRealtime(options)
+        defer { client.dispose(); client.close() }
+        
+        let channelName = uniqueChannelName()
+        var expectedChannelSerial:String?
+        waitUntil(timeout: testTimeout) { done in
+            let partialDone = AblyTests.splitDone(2, done: done)
+            client.connection.once(.connected) { stateChange in
+                let channel = client.channels.get(channelName)
+                channel.on(.attached){_ in
+                    expectedChannelSerial = channel.internal.serial
+                    partialDone()
+                }
+                channel.attach()
+                partialDone()
+            }
+            
+        }
+
+        let recoverOptions = options
+        recoverOptions.recover = client.connection.createRecoveryKey()
+        let recoverClient = AblyTests.newRealtime(recoverOptions)
+        defer { recoverClient.dispose(); recoverClient.close() }
+        expect(recoverClient.connection.state).toEventually(equal(.connected),timeout: testTimeout)
+        let recoveredChannel = recoverClient.channels.get(channelName)
+        expect(recoveredChannel).toNot(beNil())
+        expect(recoveredChannel.internal.serial).to(equal(expectedChannelSerial))
+    }
 
     // RTN17
 
