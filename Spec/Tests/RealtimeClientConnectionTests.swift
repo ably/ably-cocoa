@@ -3144,6 +3144,126 @@ class RealtimeClientConnectionTests: XCTestCase {
         expect(recoveryKey.msgSerial).to(equal(client.connection.internal.latestMessageSerial))
     }
     
+    // RTN16g1
+    func test__111__Connection__Connection_recovery__connection_recovery_key_is_properly_serializing_any_unicode_channel_name() {
+        let options = AblyTests.commonAppSetup()
+        
+        let client = AblyTests.newRealtime(options)
+        defer { client.dispose(); client.close() }
+        
+        let sanskritChannelName = "channel_खगौघाङचिच्छौजाझाञ्ज्ञोऽटौठीडडण्ढणः।"
+        let koreanChannelName = "channel_키스의고유조건은"
+        var firstChannelSerial:String?
+        var secondChannelSerial:String?
+        waitUntil(timeout: testTimeout) { done in
+            let partialDone = AblyTests.splitDone(4, done: done)
+            client.connection.once(.connected) { stateChange in
+                let firstChannel = client.channels.get(sanskritChannelName)
+                firstChannel.on(.attached){_ in
+                    firstChannelSerial = firstChannel.internal.serial
+                    partialDone()
+                }
+                let secondChannel = client.channels.get(koreanChannelName)
+                secondChannel.on(.attached){_ in
+                    secondChannelSerial = secondChannel.internal.serial
+                    
+                    secondChannel.publish(nil, data: "message") { error in
+                        expect(error).to(beNil())
+                        partialDone()
+                    }
+                    partialDone()
+                }
+                firstChannel.attach()
+                secondChannel.attach()
+                partialDone()
+            }
+            
+        }
+       
+        guard let recoveryKeyString = client.connection.createRecoveryKey() else {
+            fail("recoveryKeyString shouldn't be null")
+            return
+        }
+        
+        let recoveryKey = ARTConnectionRecoveryKey.fromJsonString(recoveryKeyString)
+        expect(recoveryKey).toNot(beNil())
+        expect(recoveryKey.connectionKey).to(equal(client.connection.key))
+        expect(recoveryKey.channelSerials.count).to(equal(2))
+        recoveryKey.channelSerials.keys.forEach { key in
+            let serial = recoveryKey.channelSerials[key]
+            expect(serial).toNot(beNil())
+            if key == sanskritChannelName{
+                expect(serial).to(equal(firstChannelSerial))
+            } else if key == koreanChannelName {
+                expect(serial).to(equal(secondChannelSerial))
+            }
+        }
+        expect(recoveryKey.msgSerial).to(equal(client.connection.internal.latestMessageSerial))
+    }
+    
+
+    
+    // RTN16g2 - closing, closed
+    func test__112__Connection__Connection_recovery__connection_recovery_key_is_null_when_connection_is_in_invalid_state() {
+        let options = AblyTests.commonAppSetup()
+        
+        let client = AblyTests.newRealtime(options)
+        defer { client.dispose(); client.close() }
+        
+        waitUntil(timeout: testTimeout) { done in
+            let partialDone = AblyTests.splitDone(2, done: done)
+            client.connection.once(.connected) { stateChange in
+                expect(client.connection.createRecoveryKey()).notTo(beNil())
+                client.internal.close()
+            }
+            client.connection.once(.closing) { stateChange in
+                expect(client.connection.createRecoveryKey()).to(beNil())
+                partialDone()
+            }
+            client.connection.once(.closed) { stateChange in
+                expect(client.connection.createRecoveryKey()).to(beNil())
+                partialDone()
+            }
+        }
+    }
+
+    // RTN16g2 - suspended
+    func test__113__Connection__Connection_recovery__connection_recovery_key_is_null_when_connection_is_in_suspended_state() {
+        let options = AblyTests.commonAppSetup()
+        
+        let client = AblyTests.newRealtime(options)
+        defer { client.dispose(); client.close() }
+        
+        waitUntil(timeout: testTimeout) { done in
+            client.connection.once(.connected) { stateChange in
+                expect(client.connection.createRecoveryKey()).notTo(beNil())
+                client.internal.onSuspended()
+            }
+            client.connection.once(.suspended) { stateChange in
+                expect(client.connection.createRecoveryKey()).to(beNil())
+                done()
+            }
+        }
+    }
+    
+    // RTN16g2 - failed
+    func test__114__Connection__Connection_recovery__connection_recovery_key_is_null_when_connection_is_in_failed_state() {
+        let options = AblyTests.commonAppSetup()
+        
+        let client = AblyTests.newRealtime(options)
+        defer { client.dispose(); client.close() }
+        
+        waitUntil(timeout: testTimeout) { done in
+            client.connection.once(.connected) { stateChange in
+                expect(client.connection.createRecoveryKey()).notTo(beNil())
+                client.internal.onError(ARTProtocolMessage())
+            }
+            client.connection.once(.failed) { stateChange in
+                expect(client.connection.createRecoveryKey()).to(beNil())
+                done()
+            }
+        }
+    }
 
     // RTN16f
     func test__085__Connection__Connection_recovery__should_set_internal_message_serial_to_component_in_recovery_key() {
