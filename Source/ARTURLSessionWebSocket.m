@@ -1,5 +1,11 @@
 #import "ARTURLSessionWebSocket.h"
 
+@interface ARTURLSessionWebSocket ()
+
+@property (atomic, assign, readwrite) ARTWebSocketState readyState;
+
+@end
+
 @implementation ARTURLSessionWebSocket {
     NSURLSession *_urlSession;
     NSURLSessionWebSocketTask *_webSocketTask;
@@ -65,22 +71,28 @@
 }
 
 - (void)closeWithCode:(NSInteger)code reason:(nullable NSString *)reason {
-    _readyState = ARTWS_CLOSING;
+    if (self.readyState != ARTWS_CLOSED) {
+        self.readyState = ARTWS_CLOSING;
+    }
     [_webSocketTask cancelWithCloseCode:code reason:[reason dataUsingEncoding:NSUTF8StringEncoding]];
 }
 
 - (void)URLSession:(NSURLSession *)session webSocketTask:(NSURLSessionWebSocketTask *)webSocketTask didOpenWithProtocol:(NSString *) protocol {
+    self.readyState = ARTWS_OPEN;
     dispatch_async(self->_delegateQueue, ^{
-        self->_readyState = ARTWS_OPEN;
         [self->_delegate webSocketDidOpen:self];
     });
 }
 
-- (void)URLSession:(NSURLSession *)session webSocketTask:(NSURLSessionWebSocketTask *)webSocketTask didCloseWithCode:(NSURLSessionWebSocketCloseCode)closeCode reason:(NSData *)reason {
+- (void)URLSession:(NSURLSession *)session
+     webSocketTask:(NSURLSessionWebSocketTask *)webSocketTask
+  didCloseWithCode:(NSURLSessionWebSocketCloseCode)closeCode reason:(NSData *)reasonData {
+    if (self.readyState == ARTWS_CLOSING || self.readyState == ARTWS_OPEN) {
+        self.readyState = ARTWS_CLOSED;
+    }
     dispatch_async(self->_delegateQueue, ^{
-        self->_readyState = ARTWS_CLOSED;
-        NSString *reasonString = [[NSString alloc] initWithData:reason encoding:NSUTF8StringEncoding];
-        [self->_delegate webSocket:self didCloseWithCode:closeCode reason:reasonString wasClean:YES];
+        NSString *reason = [[NSString alloc] initWithData:reasonData encoding:NSUTF8StringEncoding];
+        [self->_delegate webSocket:self didCloseWithCode:closeCode reason:reason wasClean:YES];
     });
 }
 
