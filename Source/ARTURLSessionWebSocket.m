@@ -1,4 +1,5 @@
 #import "ARTURLSessionWebSocket.h"
+#import "ARTLog.h"
 
 @interface ARTURLSessionWebSocket ()
 
@@ -15,6 +16,7 @@
 @synthesize delegate = _delegate;
 @synthesize readyState = _readyState;
 @synthesize delegateDispatchQueue = _delegateDispatchQueue;
+@synthesize logger = _logger;
 
 - (nonnull instancetype)initWithURLRequest:(nonnull NSURLRequest *)request {
     if (self = [super init]) {
@@ -31,42 +33,58 @@
 }
 
 - (void)listenForMessage {
+    __weak ARTURLSessionWebSocket *weakSelf = self;
     [_webSocketTask receiveMessageWithCompletionHandler:^(NSURLSessionWebSocketMessage *message, NSError *error) {
-        if (error != nil) {
-            NSLog(@"Error: %@", error);
-            return;
+        ARTURLSessionWebSocket *strongSelf = weakSelf;
+        if (strongSelf) {
+            dispatch_async(strongSelf->_delegateQueue, ^{
+                /*
+                 * We will ignore `error` object here, relying only on `message` object presence, since:
+                 * 1) there is additional handler for connectivity issues (`URLSession:task:didCompleteWithError:`) and
+                 * 2) the `ARTWebSocketTransport` is not very welcoming for error emerging from here, causing some tests to fail.
+                 */
+                if (error != nil) {
+                    [strongSelf->_logger debug:__FILE__ line:__LINE__ message:@"Receive message error: %@, task state = %@", error, @(strongSelf->_webSocketTask.state)];
+                }
+                if (message != nil) {
+                    switch (message.type) {
+                        case NSURLSessionWebSocketMessageTypeData:
+                            [strongSelf->_delegate webSocket:strongSelf didReceiveMessage:[message data]];
+                            break;
+                        case NSURLSessionWebSocketMessageTypeString:
+                            [strongSelf->_delegate webSocket:strongSelf didReceiveMessage:[message string]];
+                            break;
+                    }
+                }
+                if (strongSelf.readyState == ARTWS_OPEN) {
+                    [strongSelf listenForMessage];
+                }
+            });
         }
-        dispatch_async(self->_delegateQueue, ^{
-            switch (message.type) {
-                case NSURLSessionWebSocketMessageTypeData:
-                    [self->_delegate webSocket:self didReceiveMessage:[message data]];
-                    break;
-                case NSURLSessionWebSocketMessageTypeString:
-                    [self->_delegate webSocket:self didReceiveMessage:[message string]];
-                    break;
-            }
-        });
-        [self listenForMessage];
     }];
 }
 
 - (void)open {
     assert(_delegateQueue);
     _readyState = ARTWS_CONNECTING;
-    [self listenForMessage];
     [_webSocketTask resume];
 }
 
 - (void)send:(nullable id)data {
+    assert(_delegateQueue);
     NSURLSessionWebSocketMessage *wsMessage = [data isKindOfClass:[NSString class]] ?
                                                 [[NSURLSessionWebSocketMessage alloc] initWithString:data] :
                                                 [[NSURLSessionWebSocketMessage alloc] initWithData:data];
-    [_webSocketTask sendMessage:wsMessage completionHandler: ^(NSError *error) {
-        dispatch_async(self->_delegateQueue, ^{
-            if (error != nil) {
-                [self->_delegate webSocket:self didFailWithError:error];
-            }
-        });
+    __weak ARTURLSessionWebSocket *weakSelf = self;
+    [_webSocketTask sendMessage:wsMessage completionHandler:^(NSError *error) {
+        ARTURLSessionWebSocket *strongSelf = weakSelf;
+        if (strongSelf) {
+            dispatch_async(strongSelf->_delegateQueue, ^{
+                if (error != nil) {
+                    [strongSelf->_delegate webSocket:strongSelf didFailWithError:error];
+                }
+            });
+        }
     }];
 }
 
@@ -79,6 +97,7 @@
 
 - (void)URLSession:(NSURLSession *)session webSocketTask:(NSURLSessionWebSocketTask *)webSocketTask didOpenWithProtocol:(NSString *) protocol {
     self.readyState = ARTWS_OPEN;
+    [self listenForMessage];
     dispatch_async(self->_delegateQueue, ^{
         [self->_delegate webSocketDidOpen:self];
     });
@@ -94,6 +113,19 @@
         NSString *reason = [[NSString alloc] initWithData:reasonData encoding:NSUTF8StringEncoding];
         [self->_delegate webSocket:self didCloseWithCode:closeCode reason:reason wasClean:YES];
     });
+}
+
+- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error {
+    self.readyState = ARTWS_CLOSED;
+    if (error != nil) {
+        [_logger debug:__FILE__ line:__LINE__ message:@"Session completion error: %@, task state = %@", error, @(_webSocketTask.state)];
+        dispatch_async(self->_delegateQueue, ^{
+            [self->_delegate webSocket:self didFailWithError:error];
+        });
+    }
+    else {
+        [_logger debug:__FILE__ line:__LINE__ message:@"Session completion task state = %@", @(_webSocketTask.state)];
+    }
 }
 
 @end
