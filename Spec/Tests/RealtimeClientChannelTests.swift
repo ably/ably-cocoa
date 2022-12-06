@@ -3920,7 +3920,7 @@ class RealtimeClientChannelTests: XCTestCase {
         detachedMessageWithError.channel = channel.name
         
         var retryNumber = 1
-        let maxRetryCount = 5
+        let numberOfRetriesToWaitFor = 5 // An arbitrary number to finish test before timeout for `waitUntil` fires
         
         waitUntil(timeout: testTimeout) { done in
             channel.on(.attaching) { stateChange in
@@ -3930,7 +3930,7 @@ class RealtimeClientChannelTests: XCTestCase {
             channel.on(.suspended) { stateChange in
                 expect(stateChange.previous).to(equal(ARTRealtimeChannelState.attaching))
                 expect(stateChange.reason).toNot(beNil())
-                if retryNumber > maxRetryCount {
+                if retryNumber > numberOfRetriesToWaitFor {
                     done()
                 }
             }
