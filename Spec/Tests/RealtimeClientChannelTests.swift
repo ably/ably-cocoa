@@ -512,7 +512,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 switch stateChange.current {
                 case .attached:
                     expect(stateChange.resumed).to(beFalse())
-                    recoverOptions.recover = client.connection.createRecoveryKey()
+                    recoverOptions.recover = client.connection.recoveryKey
                 default:
                     expect(stateChange.resumed).to(beFalse())
                 }

@@ -23,8 +23,8 @@
 }
 
 // RTN16g - recovery key as a JSON serialized version of [ARTConnectionRecoveryKey]
-- (NSString *)createRecoveryKey {
-    return [_internal createRecoveryKey];
+- (NSString *)recoveryKey {
+    return [_internal recoveryKey];
 }
 
 - (NSInteger)maxMessageSize {
@@ -258,7 +258,7 @@
     [_eventEmitter off:listener];
 }
 
-- (NSString *)createRecoveryKey {
+- (NSString *)recoveryKey {
     // RTN16h
     if (_state == ARTRealtimeClosing
         || _state == ARTRealtimeClosed

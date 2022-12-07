@@ -39,6 +39,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, readonly) ARTErrorInfo *errorReason;
 
 /**
+ * The recovery key string can be used by another client to recover this connection's state in the recover client options property. See [connection state recover options](https://ably.com/docs/realtime/connection#connection-state-recover-options) for more information.
+ * This wil be nil if connection is in  CLOSED, CLOSING, FAILED, or SUSPENDED states, or when it does not have a connectionKey (for example, it has not yet become connected).
+ */
+@property (nullable, readonly) NSString *recoveryKey;
+
+/**
  * Explicitly calling `connect` is unnecessary unless the `ARTClientOptions.autoConnect` is `false`. Unless already connected or connecting, this method causes the connection to open, entering the `ARTRealtimeConnectionState.ARTRealtimeConnecting` state.
  */
 - (void)connect;
@@ -55,11 +61,6 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)ping:(ARTCallback)callback;
 
-/**
- * The recovery key string can be used by another client to recover this connection's state in the recover client options property. See [connection state recover options](https://ably.com/docs/realtime/connection#connection-state-recover-options) for more information.
- * This wil return nil if connection is in  CLOSED, CLOSING, FAILED, or SUSPENDED states, or when it does not have a connectionKey (for example, it has not yet become connected).
- */
-- (nullable NSString *) createRecoveryKey;
 
 #pragma mark ARTEventEmitter
 
