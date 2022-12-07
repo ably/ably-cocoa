@@ -262,6 +262,10 @@
     [_eventEmitter off:listener];
 }
 
+-(NSString *)recoveryKey{
+    return [self createRecoveryKey];
+}
+
 - (NSString *)createRecoveryKey {
     // RTN16h
     if (_state == ARTRealtimeClosing
