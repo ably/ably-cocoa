@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, strong) dispatch_queue_t delegateDispatchQueue;
 @property (atomic, assign, readonly) ARTSRReadyState readyState;
 
-- (instancetype)initWithURLRequest:(NSURLRequest *)request;
+- (instancetype)initWithURLRequest:(NSURLRequest *)request logger:(nullable ARTLog *)logger;
 
 - (void)setDelegateDispatchQueue:(dispatch_queue_t)queue;
 
