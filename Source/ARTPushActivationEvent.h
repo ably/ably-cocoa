@@ -3,13 +3,14 @@
 @class ARTErrorInfo;
 @class ARTPushActivationState;
 @class ARTDeviceIdentityTokenDetails;
+@class ARTLog;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTPushActivationEvent : NSObject <NSSecureCoding>
 
-- (NSData *)archive;
-+ (nullable ARTPushActivationState *)unarchive:(NSData *)data;
+- (NSData *)archiveWithLogger:(nullable ARTLog *)logger;
++ (nullable ARTPushActivationState *)unarchive:(NSData *)data withLogger:(nullable ARTLog *)logger;
 
 @end
 

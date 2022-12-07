@@ -25,18 +25,25 @@ NSString *const ARTDeviceFormFactor = @"embedded";
 
 NSString *const ARTDevicePushTransportType = @"apns";
 
+@interface ARTLocalDevice ()
+
+@property (nullable, nonatomic, readonly, strong) ARTLog *logger;
+
+@end
+
 @implementation ARTLocalDevice
 
-- (instancetype)initWithClientId:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage {
+- (instancetype)initWithClientId:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage logger:(nullable ARTLog *)logger {
     if (self = [super init]) {
         self.clientId = clientId;
         self.storage = storage;
+        _logger = logger;
     }
     return self;
 }
 
-+ (ARTLocalDevice *)load:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage {
-    ARTLocalDevice *device = [[ARTLocalDevice alloc] initWithClientId:clientId storage:storage];
++ (ARTLocalDevice *)load:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage logger:(nullable ARTLog *)logger {
+    ARTLocalDevice *device = [[ARTLocalDevice alloc] initWithClientId:clientId storage:storage logger:logger];
     device.platform = ARTDevicePlatform;
     #if TARGET_OS_IOS
     switch ([[UIDevice currentDevice] userInterfaceIdiom]) {
@@ -67,7 +74,7 @@ NSString *const ARTDevicePushTransportType = @"apns";
     device.secret = deviceSecret;
 
     id identityTokenDetailsInfo = [storage objectForKey:ARTDeviceIdentityTokenKey];
-    ARTDeviceIdentityTokenDetails *identityTokenDetails = [ARTDeviceIdentityTokenDetails unarchive:identityTokenDetailsInfo];
+    ARTDeviceIdentityTokenDetails *identityTokenDetails = [ARTDeviceIdentityTokenDetails unarchive:identityTokenDetailsInfo withLogger:logger];
     device->_identityTokenDetails = identityTokenDetails;
 
     [device setAPNSDeviceToken:[storage objectForKey:ARTAPNSDeviceTokenKey]];
@@ -99,7 +106,8 @@ NSString *const ARTDevicePushTransportType = @"apns";
 }
 
 - (void)setAndPersistIdentityTokenDetails:(ARTDeviceIdentityTokenDetails *)tokenDetails {
-    [self.storage setObject:[tokenDetails archive] forKey:ARTDeviceIdentityTokenKey];
+    [self.storage setObject:[tokenDetails archiveWithLogger:self.logger]
+                     forKey:ARTDeviceIdentityTokenKey];
     _identityTokenDetails = tokenDetails;
     if (self.clientId == nil) {
         self.clientId = tokenDetails.clientId;

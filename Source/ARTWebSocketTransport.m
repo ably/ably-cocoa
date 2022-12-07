@@ -192,7 +192,7 @@ Class configuredWebsocketClass = nil;
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
 
     const Class websocketClass = configuredWebsocketClass ? configuredWebsocketClass : [ARTSRWebSocket class];
-    self.websocket = [[websocketClass alloc] initWithURLRequest:request];
+    self.websocket = [[websocketClass alloc] initWithURLRequest:request logger:self.logger];
     [self.websocket setDelegateDispatchQueue:_workQueue];
     self.websocket.delegate = self;
     self.websocketURL = url;

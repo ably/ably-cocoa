@@ -31,12 +31,12 @@ NSString *const ARTCoderIdentityTokenDetailsKey = @"identityTokenDetails";
 
 #pragma mark - Archive/Unarchive
 
-- (NSData *)archive {
-    return [self art_archive];
+- (NSData *)archiveWithLogger:(nullable ARTLog *)logger {
+    return [self art_archiveWithLogger:logger];
 }
 
-+ (ARTPushActivationEvent *)unarchive:(NSData *)data {
-    return [self art_unarchiveFromData:data];
++ (ARTPushActivationEvent *)unarchive:(NSData *)data withLogger:(nullable ARTLog *)logger {
+    return [self art_unarchiveFromData:data withLogger:logger];
 }
 
 @end

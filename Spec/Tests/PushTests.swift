@@ -221,7 +221,7 @@ class PushTests: XCTestCase {
         let rest = ARTRest(key: "fake:key")
         rest.internal.storage = storage
         storage.simulateOnNextRead(string: testToken, for: ARTAPNSDeviceTokenKey)
-        storage.simulateOnNextRead(data: testIdentity.archive(), for: ARTDeviceIdentityTokenKey)
+        storage.simulateOnNextRead(data: testIdentity.archive(withLogger: nil), for: ARTDeviceIdentityTokenKey)
 
         let device = rest.device
 
@@ -319,7 +319,7 @@ class PushTests: XCTestCase {
         stateMachine.delegate = delegate
 
         storage.simulateOnNextRead(string: testDeviceToken, for: ARTAPNSDeviceTokenKey)
-        storage.simulateOnNextRead(data: testDeviceIdentity.archive(), for: ARTDeviceIdentityTokenKey)
+        storage.simulateOnNextRead(data: testDeviceIdentity.archive(withLogger: nil), for: ARTDeviceIdentityTokenKey)
 
         expect(realtime.device.clientId).to(beNil())
 
