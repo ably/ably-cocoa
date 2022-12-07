@@ -4027,6 +4027,59 @@ class RealtimeClientChannelTests: XCTestCase {
 
         expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
     }
+    
+    // RTL15
+    
+    // RTL15b
+    func test__200__channel_serial_is_updated_whenever_a_protocol_message_with_either_message_presence_or_attached_actions_is_received_in_a_channel() {
+        let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
+        defer { client.dispose(); client.close() }
+        let channel = client.channels.get(uniqueChannelName())
+        
+        waitUntil(timeout: testTimeout) { done in
+            client.connection.once(.connected) { _ in
+                done()
+            }
+        }
+
+        guard let transport = client.internal.transport as? TestProxyTransport else {
+            fail("Expecting TestProxyTransport"); return
+        }
+
+        
+        waitUntil(timeout: testTimeout) { done in
+            let partialDone = AblyTests.splitDone(3, done: done)
+            channel.attach { error in
+                expect(error).to(beNil())
+                let attachMessage = transport.protocolMessagesReceived.filter { $0.action == .attached }[0]
+                if attachMessage.channelSerial != nil {
+                    expect(attachMessage.channelSerial).to(equal(channel.internal.serial))
+                }
+                
+                partialDone()
+                channel.subscribe { message in
+                    let messageMessage = transport.protocolMessagesReceived.filter { $0.action == .message }[0]
+                    if messageMessage.channelSerial != nil {
+                        expect(messageMessage.channelSerial).to(equal(channel.internal.serial))
+                    }
+                    
+                    channel.presence.enterClient("client1", data: "Hey")
+                    partialDone()
+
+                }
+                channel.presence.subscribe { presenceMessage in
+                    let presenceMessage = transport.protocolMessagesReceived.filter { $0.action == .presence }[0]
+                    if presenceMessage.channelSerial != nil {
+                        expect(presenceMessage.channelSerial).to(equal(channel.internal.serial))
+                    }
+                    partialDone()
+                }
+                channel.publish([ARTMessage()])
+            }
+        }
+
+    
+    }
 
     // RTL16
 
