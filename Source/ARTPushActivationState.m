@@ -56,11 +56,11 @@
 #pragma mark - Archive/Unarchive
 
 - (NSData *)archive {
-    return [self art_archive];
+    return [self art_archiveWithLogger:self.machine.rest.logger];
 }
 
-+ (ARTPushActivationState *)unarchive:(NSData *)data {
-    return [self art_unarchiveFromData:data];
++ (ARTPushActivationState *)unarchive:(NSData *)data withLogger:(nullable ARTLog *)logger {
+    return [self art_unarchiveFromData:data withLogger:logger];
 }
 
 @end
