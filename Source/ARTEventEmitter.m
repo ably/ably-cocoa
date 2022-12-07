@@ -332,7 +332,7 @@
                                                  object:nil
                                                   queue:nil
                                              usingBlock:^(NSNotification *notification) {
-                                                 NSLog(@"VERBOSE: PublicEventEmitter Notification emitted %@", notification.name);
+                                                 [rest.logger verbose:@"PublicEventEmitter Notification emitted %@", notification.name];
                                              }];
         }
     }
