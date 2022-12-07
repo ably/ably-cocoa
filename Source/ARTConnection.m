@@ -22,9 +22,8 @@
     return _internal.key;
 }
 
-// RTN16g - recovery key as a JSON serialized version of [ARTConnectionRecoveryKey]
 - (NSString *)recoveryKey {
-    return _internal.recoveryKey;
+    return [_internal createRecoveryKey];
 }
 
 // RTN16g - recovery key as a JSON serialized version of [ARTConnectionRecoveryKey]
@@ -263,7 +262,7 @@
     [_eventEmitter off:listener];
 }
 
-- (NSString *)recoveryKey {
+- (NSString *)createRecoveryKey {
     // RTN16h
     if (_state == ARTRealtimeClosing
         || _state == ARTRealtimeClosed

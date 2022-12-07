@@ -52,12 +52,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable NSString *) createRecoveryKey;
 
 /**
- * The recovery key string can be used by another client to recover this connection's state in the recover client options property. See [connection state recover options](https://ably.com/docs/realtime/connection#connection-state-recover-options) for more information.
- * This wil return nil if connection is in  CLOSED, CLOSING, FAILED, or SUSPENDED states, or when it does not have a connectionKey (for example, it has not yet become connected).
- */
-- (nullable NSString *) createRecoveryKey;
-
-/**
  * Explicitly calling `connect` is unnecessary unless the `ARTClientOptions.autoConnect` is `false`. Unless already connected or connecting, this method causes the connection to open, entering the `ARTRealtimeConnectionState.ARTRealtimeConnecting` state.
  */
 - (void)connect;
