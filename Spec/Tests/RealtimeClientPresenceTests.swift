@@ -2775,7 +2775,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     
     /***
         Following test is skipped as a result of two things - and we first need to fix underlying issues to be able to make this test pass
-         1 . Transport sends 3 'enter's (client2( is enetered twiice before reattaching. That's why
+         1 . Transport sends 3 'enter's (client2( is entered twice before reattaching. This should be only 2  but this is not the test to fix this particular issue.
          2.  let sentPresenceMessages = transport.protocolMessagesSent.filter { $0.action == .presence } will incorrectly return 3 which is only the number of presence messages (incorrect still) before reattaching.
      ***/
     // RTP17g
