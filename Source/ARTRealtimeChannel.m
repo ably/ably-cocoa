@@ -717,17 +717,18 @@ dispatch_sync(_queue, ^{
     if (message.hasPresence) {
         [self.presenceMap startSync];
     } else if ([self.presenceMap.members count] > 0 || [self.presenceMap.localMembers count] > 0) {
-        if (!message.resumed) {
+         if (!message.resumed) {
             // When an ATTACHED message is received without a HAS_PRESENCE flag and PresenceMap has existing members
             [self.presenceMap startSync];
             
-            //RTP17f, RTP17g
-            if (self.state_nosync != ARTRealtimeChannelAttached){
-                [self.presenceMap reenterLocalMembers];
-            }
             [self.presenceMap endSync];
             [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) PresenceMap has been reset", _realtime, self, self.name];
         }
+    }
+    
+    //RTP17f, RTP17g
+    if (self.state_nosync != ARTRealtimeChannelAttached){
+        [self.presenceMap reenterLocalMembers];
     }
 
     if (self.state_nosync == ARTRealtimeChannelAttached) {
@@ -1195,6 +1196,9 @@ dispatch_sync(_queue, ^{
     [self.presence enterClient:presence.clientId data:presence.data callback:^(ARTErrorInfo *error) {
         NSString *message = [NSString stringWithFormat:@"Re-entering member \"%@\" as failed with code %ld (%@)", presence.clientId, (long)error.code, error.message];
         ARTErrorInfo *reenterError = [ARTErrorInfo createWithCode:ARTErrorUnableToAutomaticallyReEnterPresenceChannel message:message];
+        if (reenterError) {
+            [self.logger logWithError:reenterError];
+        }
         ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:self.state_nosync previous:self.state_nosync event:ARTChannelEventUpdate reason:reenterError resumed:true];
         [self emit:stateChange.event with:stateChange];
     }];

@@ -2729,6 +2729,49 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
         }
     }
+    
+    // RTP17f
+    func test_200_presence_object_should_perform_re_entr_whenever_a_channel_move_into_attached_state() {
+        let options = AblyTests.commonAppSetup()
+        options.logLevel = .error
+        let client = AblyTests.newRealtime(options)
+        defer { client.dispose(); client.close() }
+
+        let channel = client.channels.get(uniqueChannelName())
+        let firstClient = "client1"
+        let secondClient = "client2"
+        waitUntil(timeout: testTimeout) { done in
+            let partialDone = AblyTests.splitDone(2, done: done)
+            channel.once(.attached) { stateChange in
+                channel.presence.enterClient(firstClient, data: "client1data")
+                channel.presence.enterClient(secondClient, data: "client2data")
+            }
+            channel.presence.subscribe(.enter) { presenceMessage in
+                if presenceMessage.clientId == firstClient {
+                    partialDone()
+                } else if presenceMessage.clientId == secondClient {
+                    partialDone()
+                }
+            }
+
+            channel.attach()
+        }
+        expect(channel.internal.presenceMap.localMembers).to(haveCount(2))
+        channel.presence.unsubscribe()
+        
+        //simulate disconnection and reconnection
+        waitUntil(timeout: testTimeout) { done in
+            client.connection.once(.disconnected) { _ in
+                channel.once(.attached) { _ in
+                    done()
+                }
+            }
+            client.internal.onDisconnected()
+        }
+        
+        expect(channel.internal.presenceMap.localMembers).toEventually(haveCount(2),timeout: testTimeout)
+        
+    }
 
     func skipped__test__083__Presence__private_and_internal_PresenceMap_containing_only_members_that_match_the_current_connectionId__events_applied_to_presence_map__should_be_applied_to_any_LEAVE_event_with_a_connectionId_that_matches_the_current_client_s_connectionId_and_is_not_a_synthesized() {
         let options = AblyTests.commonAppSetup()
