@@ -2772,6 +2772,65 @@ class RealtimeClientPresenceTests: XCTestCase {
         expect(channel.internal.presenceMap.localMembers).toEventually(haveCount(2),timeout: testTimeout)
         
     }
+    
+    /***
+        Following test is skipped as a result of two things - and we first need to fix underlying issues to be able to make this test pass
+         1 . Transport sends 3 'enter's (client2( is enetered twiice before reattaching. That's why
+         2.  let sentPresenceMessages = transport.protocolMessagesSent.filter { $0.action == .presence } will incorrectly return 3 which is only the number of presence messages (incorrect still) before reattaching.
+     ***/
+    // RTP17g
+    func skipped_test_201_presence_reentry_consists_of_enter_action_with_client_id_and_data_associated() {
+        let options = AblyTests.commonAppSetup()
+        options.logLevel = .error
+        let client = AblyTests.newRealtime(options)
+        defer { client.dispose(); client.close() }
+
+        let channel = client.channels.get(uniqueChannelName())
+        let firstClient = "client1"
+        let firstClientData = "client1data"
+        let secondClientData = "client2data"
+        let secondClient = "client2"
+        waitUntil(timeout: testTimeout) { done in
+            channel.once(.attached) { stateChange in
+                channel.presence.enterClient(firstClient, data: firstClientData)
+                channel.presence.enterClient(secondClient, data: secondClientData)
+                
+                done()
+            }
+            channel.attach()
+        }
+        expect(channel.internal.presenceMap.localMembers).toEventually(haveCount(2),timeout: testTimeout)
+      
+        //simulate disconnection and reconnection
+        waitUntil(timeout: testTimeout) { done in
+            client.connection.once(.disconnected) { _ in
+                let partialDone = AblyTests.splitDone(3, done: done)
+                channel.once(.attached) { _ in
+                    //delay to wait for presence messages to keep up
+                    partialDone()
+                }
+                
+                channel.presence.subscribe(.update) { presenceMessage in
+                    if presenceMessage.clientId == firstClient {
+                        partialDone()
+                    } else if presenceMessage.clientId == secondClient {
+                        partialDone()
+                    }
+                }
+            }
+            client.internal.onDisconnected()
+        }
+        
+        expect(channel.internal.presenceMap.localMembers).toEventually(haveCount(2),timeout: testTimeout)
+        let transport = client.internal.transport as! TestProxyTransport
+        let sentPresenceMessages = transport.protocolMessagesSent.filter { $0.action == .presence }
+        print("Protocol message appending : about to set expectation")
+        expect(sentPresenceMessages).to(haveCount(4))
+        sentPresenceMessages.forEach { sentMessage in
+            expect(sentMessage.presence).notTo(beNil())
+        }
+       
+    }
 
     func skipped__test__083__Presence__private_and_internal_PresenceMap_containing_only_members_that_match_the_current_connectionId__events_applied_to_presence_map__should_be_applied_to_any_LEAVE_event_with_a_connectionId_that_matches_the_current_client_s_connectionId_and_is_not_a_synthesized() {
         let options = AblyTests.commonAppSetup()
