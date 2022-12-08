@@ -2772,7 +2772,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
     }
 
-    // FIXME: Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1.2.182436085700
+    // FIXME: Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
     // RTN15d
     func skipped__test__065__Connection__connection_failures_once_CONNECTED__should_recover_from_disconnection_and_messages_should_be_delivered_once_the_connection_is_resumed() {
         let options = AblyTests.commonAppSetup()
