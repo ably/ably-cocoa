@@ -603,6 +603,7 @@ dispatch_sync(_queue, ^{
             self.attachResume = true;
             break;
         case ARTRealtimeChannelSuspended:
+            self.serial = nil; //RTP5a1
             [_attachedEventEmitter emit:nil with:status.errorInfo];
             if (self.realtime.shouldSendEvents) {
                 channelRetryListener = [self unlessStateChangesBefore:self.realtime.options.channelRetryTimeout do:^{
@@ -620,9 +621,11 @@ dispatch_sync(_queue, ^{
             self.attachResume = false;
             break;
         case ARTRealtimeChannelDetached:
+            self.serial = nil; //RTP5a1
             [self.presenceMap failsSync:status.errorInfo];
             break;
         case ARTRealtimeChannelFailed:
+            self.serial = nil; //RTP5a1
             self.attachResume = false;
             [_attachedEventEmitter emit:nil with:status.errorInfo];
             [_detachedEventEmitter emit:nil with:status.errorInfo];
@@ -752,7 +755,6 @@ dispatch_sync(_queue, ^{
         case ARTRealtimeChannelAttached:
         case ARTRealtimeChannelSuspended:
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) reattach initiated by DETACHED message", _realtime, self, self.name];
-            _serial = nil; //RTP5a1
             [self reattachWithReason:message.error callback:nil];
             return;
         case ARTRealtimeChannelAttaching: {
@@ -762,10 +764,6 @@ dispatch_sync(_queue, ^{
             [self setSuspended:status];
             return;
         }
-        case ARTRealtimeChannelFailed:
-            _serial = nil; // RTP5a1
-        case ARTRealtimeChannelDetached:
-            _serial = nil; // RTP5a1
         default:
             break;
     }
