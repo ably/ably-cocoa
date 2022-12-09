@@ -4046,7 +4046,6 @@ class RealtimeClientChannelTests: XCTestCase {
             fail("Expecting TestProxyTransport"); return
         }
 
-        
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(3, done: done)
             channel.attach { error in
@@ -4077,8 +4076,91 @@ class RealtimeClientChannelTests: XCTestCase {
                 channel.publish([ARTMessage()])
             }
         }
-
+    }
     
+    //RTP5a1
+    func test__201__channel_serial_is_cleared_whenever_a_channel_entered_into_detached_suspended_or_failed_state() {
+        let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
+        defer { client.dispose(); client.close() }
+        let channel = client.channels.get(uniqueChannelName())
+        
+        waitUntil(timeout: testTimeout) { done in
+            client.connection.once(.connected) { _ in
+                done()
+            }
+        }
+
+        guard let transport = client.internal.transport as? TestProxyTransport else {
+            fail("Expecting TestProxyTransport"); return
+        }
+        //first re-run for RTL15b
+        waitUntil(timeout: testTimeout) { done in
+            let partialDone = AblyTests.splitDone(3, done: done)
+            channel.attach { error in
+                expect(error).to(beNil())
+                let attachMessage = transport.protocolMessagesReceived.filter { $0.action == .attached }[0]
+                if attachMessage.channelSerial != nil {
+                    expect(attachMessage.channelSerial).to(equal(channel.internal.serial))
+                }
+                
+                partialDone()
+                channel.subscribe { message in
+                    let messageMessage = transport.protocolMessagesReceived.filter { $0.action == .message }[0]
+                    if messageMessage.channelSerial != nil {
+                        expect(messageMessage.channelSerial).to(equal(channel.internal.serial))
+                    }
+                    
+                    channel.presence.enterClient("client1", data: "Hey")
+                    partialDone()
+
+                }
+                channel.presence.subscribe { presenceMessage in
+                    let presenceMessage = transport.protocolMessagesReceived.filter { $0.action == .presence }[0]
+                    if presenceMessage.channelSerial != nil {
+                        expect(presenceMessage.channelSerial).to(equal(channel.internal.serial))
+                    }
+                    partialDone()
+                }
+                channel.publish([ARTMessage()])
+            }
+        }
+        
+        channel.presence.unsubscribe()
+        
+        //detach
+        waitUntil(timeout: testTimeout) { done in
+            channel.once(.detached) { _ in
+                expect(channel.internal.serial).to(beNil())
+                done()
+            }
+            channel.detach()
+        }
+        
+        //suspend
+        waitUntil(timeout: testTimeout) { done in
+            //reattach
+            channel.once(.attached) { _ in
+                expect(channel.internal.serial).notTo(beNil())
+               done()
+            }
+            channel.attach()
+        }
+        channel.internal.setSuspended(ARTStatus.state(.ok))
+        expect(channel.state).to(equal(ARTRealtimeChannelState.suspended))
+        expect(channel.internal.serial).to(beNil())
+        
+        //fail
+        waitUntil(timeout: testTimeout) { done in
+            //reattach
+            channel.once(.attached) { _ in
+                expect(channel.internal.serial).notTo(beNil())
+               done()
+            }
+            channel.attach()
+        }
+        channel.internal.setFailed(ARTStatus.state(.ok))
+        expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
+        expect(channel.internal.serial).to(beNil())
     }
 
     // RTL16
