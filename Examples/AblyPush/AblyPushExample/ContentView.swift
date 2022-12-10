@@ -10,39 +10,54 @@ struct ContentView: View {
     var body: some View {
         VStack {
             Spacer()
-            Button("Activate") {
-                AblyHelper.shared.activatePush()
+            Group {
+                Text("Push Notifications")
+                .padding()
+                Button("Activate") {
+                    AblyHelper.shared.activatePush()
+                }
+                .padding()
+                Button("Deactivate") {
+                    AblyHelper.shared.deactivatePush()
+                }
+                .padding()
+                Button("Print Token") {
+                    AblyHelper.shared.printIdentityToken()
+                }
+                .padding()
+                Button("Device Details") {
+                    AblyHelper.shared.getDeviceDetails { details, error in
+                        deviceDetails = details
+                        deviceDetailsError = error
+                        showDeviceDetailsAlert = true
+                    }
+                }
+                .alert(isPresented: $showDeviceDetailsAlert) {
+                    if deviceDetails != nil {
+                        return Alert(title: Text("Device Details"), message: Text("\(deviceDetails!)"))
+                    }
+                    else if deviceDetailsError != nil {
+                        return Alert(title: Text("Device Details Error"), message: Text("\(deviceDetailsError!)"))
+                    }
+                    return Alert(title: Text("Device Details Error"), message: Text("Unknown result."))
+                }
+                .padding()
+                Button("Send Push") {
+                    AblyHelper.shared.sendAdminPush(title: "Hello", body: "This push was sent with deviceId")
+                }
+                .padding()
             }
-            .padding()
-            Button("Dectivate") {
-                AblyHelper.shared.deactivatePush()
-            }
-            .padding()
-            Button("Print Token") {
-                AblyHelper.shared.printIdentityToken()
-            }
-            .padding()
-            Button("Device Details") {
-                AblyHelper.shared.getDeviceDetails { details, error in
-                    deviceDetails = details
-                    deviceDetailsError = error
-                    showDeviceDetailsAlert = true
+            Group {
+                Text("Basic Messaging")
+                .padding()
+                Button("Subscribe") {
+                    AblyHelper.shared.subscribe(event: "test")
+                }
+                .padding()
+                Button("Publish") {
+                    AblyHelper.shared.publish(event: "test", message: "Hi there!")
                 }
             }
-            .alert(isPresented: $showDeviceDetailsAlert) {
-                if deviceDetails != nil {
-                    return Alert(title: Text("Device Details"), message: Text("\(deviceDetails!)"))
-                }
-                else if deviceDetailsError != nil {
-                    return Alert(title: Text("Device Details Error"), message: Text("\(deviceDetailsError!)"))
-                }
-                return Alert(title: Text("Device Details Error"), message: Text("Unknown result."))
-            }
-            .padding()
-            Button("Send Push") {
-                AblyHelper.shared.sendAdminPush(title: "Hello", body: "This push was sent with deviceId")
-            }
-            .padding()
             Spacer()
         }
     }

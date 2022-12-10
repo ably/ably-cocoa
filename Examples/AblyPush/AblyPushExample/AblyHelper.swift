@@ -3,19 +3,23 @@ import UIKit
 
 class AblyHelper: NSObject {
     
-    static let shared = AblyHelper()
+    static let shared = AblyHelper(clientId: UIDevice.current.name)
     
     private(set) var realtime: ARTRealtime!
     
+    private var testChannel: ARTRealtimeChannel {
+        realtime.channels.get("testChannel")
+    }
+    
     private let key = "" // Your API Key from your app's dashboard
     
-    private override init() {
-        super.init()
+    private convenience init(clientId: String) {
+        self.init()
         guard key != "" else {
             preconditionFailure("Obtain your API key at https://ably.com/accounts/")
         }
         let options = ARTClientOptions(key: key)
-        options.clientId = "basic-apns-example"
+        options.clientId = clientId
         options.pushRegistererDelegate = self
         self.realtime = ARTRealtime(options: options)
         UNUserNotificationCenter.current().delegate = self
@@ -65,6 +69,22 @@ extension AblyHelper {
         ]
         realtime.push.admin.publish(recipient, data: data) { error in
             print("Publish result: \(error?.localizedDescription ?? "Success")")
+        }
+    }
+    
+    func subscribe(event: String) {
+        testChannel.subscribe(event) { m in
+            print("Received a '\(m.name!)' message: '\(m.data!)' from \(m.clientId!)")
+        }
+    }
+    
+    func publish(event: String, message: String) {
+        testChannel.publish(event, data: message) { error in
+            if let error = error {
+                print("Message '\(event)' send error: \(error.localizedDescription)")
+            } else {
+                print("Message '\(event)' sent from \(UIDevice.current.name)")
+            }
         }
     }
 }
