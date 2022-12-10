@@ -31,7 +31,16 @@ let package = Package(
                 .headerSearchPath("Internal/Utilities"),
                 .headerSearchPath("Internal/RunLoop"),
                 .headerSearchPath("Internal/Delegate"),
-                .headerSearchPath("Internal/IOConsumer")
+                .headerSearchPath("Internal/IOConsumer"),
+                /*
+                This is a quick solution that allows us to access the Ably
+                logger types from inside SocketRocket. I think a neater
+                solution might be to remove this separation and move the
+                SocketRocket code into the Ably target so that they can share
+                types freely, but I think this is OK for now.
+                */
+                .headerSearchPath("../../Source/include/Ably"), // For the #import "ARTLog.h" in ARTSRLog.m
+                .headerSearchPath("../../Source/include") // For the #import <Ably/ARTTypes.h> in the ARTLog.h imported by ARTSRLog.m
             ]
         ),
         .target(

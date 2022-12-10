@@ -66,7 +66,6 @@ Class configuredWebsocketClass = nil;
         _state = ARTRealtimeTransportStateClosed;
         _encoder = rest.defaultEncoder;
         _logger = rest.logger;
-        _protocolMessagesLogger = [[ARTLog alloc] initCapturingOutput:false historyLines:50];
         _options = [options copy];
         _resumeKey = resumeKey;
         _connectionSerial = connectionSerial;
@@ -86,9 +85,6 @@ Class configuredWebsocketClass = nil;
 
 - (BOOL)send:(NSData *)data withSource:(id)decodedObject {
     if (self.websocket.readyState == ARTWS_OPEN) {
-        if ([decodedObject isKindOfClass:[ARTProtocolMessage class]]) {
-            [_protocolMessagesLogger info:@"send %@", [decodedObject description]];
-        }
         [self.websocket send:data];
         return true;
     }
@@ -105,13 +101,11 @@ Class configuredWebsocketClass = nil;
 
 - (void)internalSend:(ARTProtocolMessage *)msg {
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket sending action %tu - %@", _delegate, self, msg.action, ARTProtocolMessageActionToStr(msg.action)];
-    [_protocolMessagesLogger info:@"send %@", [msg description]];
     NSData *data = [self.encoder encodeProtocolMessage:msg error:nil];
     [self send:data withSource:msg];
 }
 
 - (void)receive:(ARTProtocolMessage *)msg {
-    [_protocolMessagesLogger info:@"recv %@", [msg description]];
     [self.delegate realtimeTransport:self didReceiveMessage:msg];
 }
 
@@ -200,10 +194,10 @@ Class configuredWebsocketClass = nil;
 
     if (@available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)) {
         const Class websocketClass = configuredWebsocketClass ?: [ARTURLSessionWebSocket class];
-        self.websocket = [[websocketClass alloc] initWithURLRequest:request];
+        self.websocket = [[websocketClass alloc] initWithURLRequest:request logger:self.logger];
     } else {
         const Class websocketClass = configuredWebsocketClass ? configuredWebsocketClass : [ARTSRWebSocket class];
-        self.websocket = [[websocketClass alloc] initWithURLRequest:request];
+        self.websocket = [[websocketClass alloc] initWithURLRequest:request logger:self.logger];
     }
     [self.websocket setDelegateDispatchQueue:_workQueue];
     self.websocket.delegate = self;

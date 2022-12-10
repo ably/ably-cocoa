@@ -1,4 +1,5 @@
 #import "ARTTypes.h"
+#import "ARTLog.h"
 
 // MARK: Global helper functions
 
@@ -430,12 +431,12 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
 
 @implementation NSObject (ARTArchive)
 
-- (nullable NSData *)art_archive {
+- (nullable NSData *)art_archiveWithLogger:(nullable ARTLog *)logger {
 #if TARGET_OS_MACCATALYST // if (@available(iOS 13.0, macCatalyst 13.0, ... doesn't help
     NSError *error;
     NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self requiringSecureCoding:false error:&error];
     if (error) {
-        NSLog(@"%@ archive failed: %@", [self class], error);
+        [logger error:@"%@ archive failed: %@", [self class], error];
     }
     return data;
 #else
@@ -443,7 +444,7 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
         NSError *error;
         NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self requiringSecureCoding:false error:&error];
         if (error) {
-            NSLog(@"%@ archive failed: %@", [self class], error);
+            [logger error:@"%@ archive failed: %@", [self class], error];
         }
         return data;
     }
@@ -453,13 +454,13 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
 #endif
 }
 
-+ (nullable id)art_unarchiveFromData:(NSData *)data {
++ (nullable id)art_unarchiveFromData:(NSData *)data withLogger:(nullable ARTLog *)logger {
     NSSet* allowedTypes = [NSSet setWithArray:@[ [NSArray class], [NSDictionary class], self]];
 #if TARGET_OS_MACCATALYST
     NSError *error;
     id result = [NSKeyedUnarchiver unarchivedObjectOfClasses:allowedTypes fromData:data error:&error];
     if (error) {
-        NSLog(@"%@ unarchive failed: %@", self, error);
+        [logger error:@"%@ unarchive failed: %@", self, error];
     }
     return result;
 #else
@@ -467,7 +468,7 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
         NSError *error;
         id result = [NSKeyedUnarchiver unarchivedObjectOfClasses:allowedTypes fromData:data error:&error];
         if (error) {
-            NSLog(@"%@ unarchive failed: %@", self, error);
+            [logger error:@"%@ unarchive failed: %@", self, error];
         }
         return result;
     }

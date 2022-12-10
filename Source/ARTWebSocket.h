@@ -5,6 +5,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class ARTLog;
 @protocol ARTWebSocketDelegate;
 
 typedef NS_ENUM(NSInteger, ARTWebSocketState) {
@@ -23,7 +24,7 @@ typedef NS_ENUM(NSInteger, ARTWebSocketState) {
 @property (nullable, nonatomic, strong) dispatch_queue_t delegateDispatchQueue;
 @property (atomic, assign, readonly) ARTWebSocketState readyState;
 
-- (instancetype)initWithURLRequest:(NSURLRequest *)request;
+- (instancetype)initWithURLRequest:(NSURLRequest *)request logger:(nullable ARTLog *)logger;
 
 - (void)setDelegateDispatchQueue:(dispatch_queue_t)queue;
 

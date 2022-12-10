@@ -11,19 +11,20 @@
     NSURLSession *_urlSession;
     NSURLSessionWebSocketTask *_webSocketTask;
     dispatch_queue_t _delegateQueue;
+    ARTLog *_logger;
 }
 
 @synthesize delegate = _delegate;
 @synthesize readyState = _readyState;
 @synthesize delegateDispatchQueue = _delegateDispatchQueue;
-@synthesize logger = _logger;
 
-- (nonnull instancetype)initWithURLRequest:(nonnull NSURLRequest *)request {
+- (nonnull instancetype)initWithURLRequest:(nonnull NSURLRequest *)request logger:(ARTLog *)logger {
     if (self = [super init]) {
         NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
         _urlSession = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:nil];
         _webSocketTask = [_urlSession webSocketTaskWithRequest:request];
         _readyState = ARTWS_CLOSED;
+        _logger = logger;
     }
     return self;
 }

@@ -25,9 +25,9 @@
         [[ARTPushActivationStateAfterRegistrationSyncFailed alloc] initWithMachine:stateMachine]
     ]];
     
-    NSData* data = [initialStates art_archive];
+    NSData* data = [initialStates art_archiveWithLogger:nil];
     
-    NSArray* unarchivedStates = [ARTPushActivationState art_unarchiveFromData:data];
+    NSArray* unarchivedStates = [ARTPushActivationState art_unarchiveFromData:data withLogger:nil];
     
     XCTAssert([unarchivedStates[0] isKindOfClass:[ARTPushActivationStateNotActivated class]]);
     XCTAssert([unarchivedStates[1] isKindOfClass:[ARTPushActivationStateWaitingForPushDeviceDetails class]]);

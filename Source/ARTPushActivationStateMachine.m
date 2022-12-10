@@ -37,7 +37,7 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
         _userQueue = _rest.userQueue;
         // Unarchiving
         NSData *stateData = [rest.storage objectForKey:ARTPushActivationCurrentStateKey];
-        _current = [ARTPushActivationState art_unarchiveFromData:stateData];
+        _current = [ARTPushActivationState art_unarchiveFromData:stateData withLogger:rest.logger];
         if (!_current) {
             _current = [[ARTPushActivationStateNotActivated alloc] initWithMachine:self];
         } else {
@@ -47,7 +47,7 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
             _current.machine = self;
         }
         NSData *pendingEventsData = [rest.storage objectForKey:ARTPushActivationPendingEventsKey];
-        _pendingEvents = [ARTPushActivationEvent art_unarchiveFromData:pendingEventsData];
+        _pendingEvents = [ARTPushActivationEvent art_unarchiveFromData:pendingEventsData withLogger:rest.logger];
         if (!_pendingEvents) {
             _pendingEvents = [NSMutableArray array];
         }
@@ -132,9 +132,11 @@ dispatch_async(_queue, ^{
 - (void)persist {
     // Archiving
     if ([_current isKindOfClass:[ARTPushActivationPersistentState class]]) {
-        [self.rest.storage setObject:[_current art_archive] forKey:ARTPushActivationCurrentStateKey];
+        [self.rest.storage setObject:[_current art_archiveWithLogger:self.rest.logger]
+                              forKey:ARTPushActivationCurrentStateKey];
     }
-    [self.rest.storage setObject:[_pendingEvents art_archive] forKey:ARTPushActivationPendingEventsKey];
+    [self.rest.storage setObject:[_pendingEvents art_archiveWithLogger:self.rest.logger]
+                          forKey:ARTPushActivationPendingEventsKey];
 }
 
 - (void)deviceRegistration:(ARTErrorInfo *)error {
