@@ -18,7 +18,7 @@
 @synthesize readyState = _readyState;
 @synthesize delegateDispatchQueue = _delegateDispatchQueue;
 
-- (nonnull instancetype)initWithURLRequest:(nonnull NSURLRequest *)request logger:(ARTLog *)logger {
+- (instancetype)initWithURLRequest:(NSURLRequest *)request logger:(ARTLog *)logger {
     if (self = [super init]) {
         NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
         _urlSession = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:nil];
@@ -29,7 +29,7 @@
     return self;
 }
 
-- (void)setDelegateDispatchQueue:(nonnull dispatch_queue_t)queue {
+- (void)setDelegateDispatchQueue:(dispatch_queue_t)queue {
     _delegateQueue = queue;
 }
 
@@ -71,7 +71,7 @@
     [_webSocketTask resume];
 }
 
-- (void)send:(nullable id)data {
+- (void)send:(id)data {
     assert(_delegateQueue);
     NSURLSessionWebSocketMessage *wsMessage = [data isKindOfClass:[NSString class]] ?
                                                 [[NSURLSessionWebSocketMessage alloc] initWithString:data] :
@@ -89,7 +89,7 @@
     }];
 }
 
-- (void)closeWithCode:(NSInteger)code reason:(nullable NSString *)reason {
+- (void)closeWithCode:(NSInteger)code reason:(NSString *)reason {
     if (self.readyState != ARTWS_CLOSED) {
         self.readyState = ARTWS_CLOSING;
     }
