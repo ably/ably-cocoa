@@ -3378,8 +3378,35 @@ class RealtimeClientConnectionTests: XCTestCase {
             recoverClient.connect()
         }
     }
-    
 
+    // RTN16l
+    func test__200__Connection__Connection_recovery__failures_system_response_to_unrecoverable_token_error() {
+        let options = AblyTests.commonAppSetup()
+        let client = AblyTests.newRealtime(options)
+        expect(client.internal.connection.state).toEventually(equal(.connected), timeout: testTimeout)
+        
+        let recoverOptions = AblyTests.commonAppSetup()
+        recoverOptions.recover = client.connection.createRecoveryKey()
+        recoverOptions.autoConnect = false
+        let key = recoverOptions.key
+        // set the key to nil so that the client can't sign further token requests
+        recoverOptions.key = nil
+        let tokenTtl = 3.0
+        let tokenDetails = getTestTokenDetails(key: key, ttl: tokenTtl)!
+        recoverOptions.token = tokenDetails.token
+        let recoverClient = ARTRealtime(options: recoverOptions)
+        defer { recoverClient.dispose(); recoverClient.close() }
+
+        waitUntil(timeout: testTimeout) { done in
+            recoverClient.connection.once(.failed) { stateChange in
+                expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.connected))
+                expect(stateChange.reason?.code).to(equal(ARTErrorCode.tokenExpired.intValue))
+                done()
+            }
+            recoverClient.connect()
+        }
+    }
+    
     // RTN17
 
     func beforeEach__Connection__Host_Fallback() {
