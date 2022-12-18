@@ -210,7 +210,7 @@
         self.rest.prioritizedHost = nil;
         
         if (options.autoConnect) {
-            [self _connect];
+            [self connect];
         }
     }
     return self;
