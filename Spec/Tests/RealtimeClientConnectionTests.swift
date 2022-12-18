@@ -3407,6 +3407,50 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
     }
     
+    // RTN16l for (RTN15c7)
+    func test__201__Connection__Connection_recovery__failures_once_CONNECTED__System_s_response_to_a_resume_request__CONNECTED_ProtocolMessage_with_the_different_connectionId_than_the_current_client_and_an_non_fatal_error() {
+        let options = AblyTests.commonAppSetup()
+        let client = AblyTests.newRealtime(options)
+        defer { client.dispose(); client.close() }
+        
+        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+        
+        let expectedConnectionId = client.connection.id
+        
+        let recoverOptions = AblyTests.commonAppSetup()
+        recoverOptions.recover = client.connection.createRecoveryKey()
+        recoverOptions.autoConnect = false
+        let recoverClient = AblyTests.newRealtime(recoverOptions)
+        defer { recoverClient.dispose(); recoverClient.close() }
+        
+        waitUntil(timeout: testTimeout) { done in
+            
+            recoverClient.connection.once(.connecting) { _ in
+                let transport = recoverClient.internal.transport as! TestProxyTransport
+                transport.setBeforeIncomingMessageModifier { protocolMessage in
+                    protocolMessage.connectionId = "nonsense"
+                    protocolMessage.error = .create(withCode: 0, message: "Injected error")
+                    return protocolMessage
+                }
+            }
+            
+            recoverClient.connection.once(.connected) { stateChange in
+                expect(stateChange.reason?.message).to(equal("Injected error"))
+                expect(recoverClient.connection.errorReason).to(beIdenticalTo(stateChange.reason))
+                let transport = recoverClient.internal.transport as! TestProxyTransport
+                
+                let connectedPM = transport.protocolMessagesReceived.filter { $0.action == .connected }[0]
+                expect(connectedPM.connectionId).toNot(equal(expectedConnectionId))
+                expect(recoverClient.connection.id).toNot(equal(expectedConnectionId))
+                done()
+            }
+            
+            recoverClient.connect()
+            
+        }
+        
+    }
+    
     // RTN17
 
     func beforeEach__Connection__Host_Fallback() {
