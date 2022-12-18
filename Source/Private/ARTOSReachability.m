@@ -43,20 +43,24 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
     _reachabilityRef = SCNetworkReachabilityCreateWithName(NULL, [host UTF8String]);
     SCNetworkReachabilityContext context = {0, (__bridge void *)(self), NULL, NULL, NULL};
     
-    if (SCNetworkReachabilitySetCallback(_reachabilityRef, ARTOSReachability_Callback, &context)) {
-        if (SCNetworkReachabilityScheduleWithRunLoop(_reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode)) {
-            [_logger info:@"Reachability: started listening for host %@", _host];
-        }
-        else {
-            [_logger warn:@"Reachability: failed starting listener for host %@", _host];
-        }
+    if (SCNetworkReachabilitySetCallback(_reachabilityRef, ARTOSReachability_Callback, &context) &&
+        SCNetworkReachabilitySetDispatchQueue(_reachabilityRef, _queue)) {
+        [_logger info:@"Reachability: started listening for host %@", _host];
+    }
+    else {
+        [_logger warn:@"Reachability: failed starting listener for host %@", _host];
     }
 }
 
 - (void)off {
     if (_reachabilityRef != NULL) {
-        [_logger info:@"Reachability: stopped listening for host %@", _host];
-        SCNetworkReachabilityUnscheduleFromRunLoop(_reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
+        if (SCNetworkReachabilitySetDispatchQueue(_reachabilityRef, NULL) &&
+            SCNetworkReachabilitySetCallback(_reachabilityRef, NULL, NULL)) {
+            [_logger info:@"Reachability: stopped listening for host %@", _host];
+        }
+        else {
+            [_logger warn:@"Reachability: failed stopping listener for host %@", _host];
+        }
         CFRelease(_reachabilityRef);
         _reachabilityRef = NULL;
     }
@@ -66,9 +70,9 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
 
 - (void)internalCallback:(BOOL)reachable {
     [_logger info:@"Reachability: host %@ is reachable: %@", _host, reachable ? @"true" : @"false"];
-    dispatch_async(_queue, ^{
-        if (self->_callback) self->_callback(reachable);
-    });
+    if (_callback) {
+        _callback(reachable);
+    }
 }
 
 - (void)dealloc {
