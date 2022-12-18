@@ -753,10 +753,17 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(4, done: done)
+            var updateReceived = false
             channel.presence.subscribe { presence in
-                expect(presence.action).to(equal(ARTPresenceAction.leave))
-                expect(presence.clientId).to(equal("tester"))
-                partialDone()
+                //update after attach is received now we just expect leave event
+                if(updateReceived){
+                    expect(presence.action).to(equal(ARTPresenceAction.leave))
+                    expect(presence.clientId).to(equal("tester"))
+                    partialDone()
+                }
+                if(presence.action == ARTPresenceAction.update){
+                    updateReceived = true
+                }
             }
             channel.once(.suspended) { _ in
                 channel.internalSync { _internal in
