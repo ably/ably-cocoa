@@ -60,11 +60,8 @@ For each release, the following needs to be done:
 * Push both commits to origin: `git push -u origin release/x.x.x`
 * Make a pull request against `main` and await approval of reviewer(s)
 * Once approved and/or any additional commits have been added, merge the PR (f you do this from Github's web interface then use the "Rebase and merge" option)
-* Steps to perform *before* pushing a release tag up:
-    1. Make sure that all CI jobs for `main` have passed
-    2. Checkout `main` locally, pulling in changes from above using `git checkout main && git pull`
-    3. Make sure you are using Xcode 13.4.1 as your active developer directory (see message of commit [`3771408`](https://github.com/ably/ably-cocoa/commit/37714080f6dbca55b3a43674ebe0962bdae71234) for more information on this temporary requirement) – run `xcode-select --print-path` to confirm
-    4. Validate that the CocoaPods build should succeed using `pod lib lint`
+* After merging the PR, wait for all CI jobs for `main` to pass.
+* Checkout `main` locally, pulling in changes from above using `git checkout main && git pull`
 * If any fixes are needed (e.g. the lint fails with warnings) then either commit them to `main` branch now if they are simple warning fixes or perhaps consider raising a new PR if they are complex or likely to need review.
 * Create a tag for this version number using `git tag x.x.x`
 * Push the tag using `git push origin x.x.x`

@@ -82,6 +82,8 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 
 @property (nonatomic, strong, readonly) ARTSRDelegateController *delegateController;
 
+@property (nonatomic, strong, readonly, nullable) ARTLog * logger;
+
 @end
 
 @implementation ARTSRWebSocket {
@@ -147,7 +149,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 #pragma mark - Init
 ///--------------------------------------
 
-- (instancetype)initWithURLRequest:(NSURLRequest *)request protocols:(NSArray<NSString *> *)protocols securityPolicy:(ARTSRSecurityPolicy *)securityPolicy
+- (instancetype)initWithURLRequest:(NSURLRequest *)request protocols:(NSArray<NSString *> *)protocols securityPolicy:(ARTSRSecurityPolicy *)securityPolicy logger:(nullable ARTLog *)logger
 {
     self = [super init];
     if (!self) return self;
@@ -158,6 +160,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
     _requestedProtocols = [protocols copy];
     _securityPolicy = securityPolicy;
     _requestRequiresSSL = ARTSRURLRequiresSSL(_url);
+    _logger = logger;
 
     _readyState = ARTSR_CONNECTING;
 
@@ -184,7 +187,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
     return self;
 }
 
-- (instancetype)initWithURLRequest:(NSURLRequest *)request protocols:(NSArray<NSString *> *)protocols allowsUntrustedSSLCertificates:(BOOL)allowsUntrustedSSLCertificates
+- (instancetype)initWithURLRequest:(NSURLRequest *)request protocols:(NSArray<NSString *> *)protocols allowsUntrustedSSLCertificates:(BOOL)allowsUntrustedSSLCertificates logger:(nullable ARTLog *)logger
 {
     ARTSRSecurityPolicy *securityPolicy;
     BOOL certificateChainValidationEnabled = !allowsUntrustedSSLCertificates;
@@ -196,54 +199,54 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 
 #pragma clang diagnostic pop
 
-    return [self initWithURLRequest:request protocols:protocols securityPolicy:securityPolicy];
+    return [self initWithURLRequest:request protocols:protocols securityPolicy:securityPolicy logger:logger];
 }
 
-- (instancetype)initWithURLRequest:(NSURLRequest *)request securityPolicy:(ARTSRSecurityPolicy *)securityPolicy
+- (instancetype)initWithURLRequest:(NSURLRequest *)request securityPolicy:(ARTSRSecurityPolicy *)securityPolicy logger:(nullable ARTLog *)logger
 {
-    return [self initWithURLRequest:request protocols:nil securityPolicy:securityPolicy];
+    return [self initWithURLRequest:request protocols:nil securityPolicy:securityPolicy logger:logger];
 }
 
-- (instancetype)initWithURLRequest:(NSURLRequest *)request protocols:(NSArray<NSString *> *)protocols
-{
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated"
-
-    return [self initWithURLRequest:request protocols:protocols allowsUntrustedSSLCertificates:NO];
-
-#pragma clang diagnostic pop
-}
-
-- (instancetype)initWithURLRequest:(NSURLRequest *)request
-{
-    return [self initWithURLRequest:request protocols:nil];
-}
-
-- (instancetype)initWithURL:(NSURL *)url;
-{
-    return [self initWithURL:url protocols:nil];
-}
-
-- (instancetype)initWithURL:(NSURL *)url protocols:(NSArray<NSString *> *)protocols;
+- (instancetype)initWithURLRequest:(NSURLRequest *)request protocols:(NSArray<NSString *> *)protocols logger:(nullable ARTLog *)logger
 {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated"
 
-    return [self initWithURL:url protocols:protocols allowsUntrustedSSLCertificates:NO];
+    return [self initWithURLRequest:request protocols:protocols allowsUntrustedSSLCertificates:NO logger:logger];
 
 #pragma clang diagnostic pop
 }
 
-- (instancetype)initWithURL:(NSURL *)url securityPolicy:(ARTSRSecurityPolicy *)securityPolicy
+- (instancetype)initWithURLRequest:(NSURLRequest *)request logger:(nullable ARTLog *)logger
 {
-    NSURLRequest *request = [NSURLRequest requestWithURL:url];
-    return [self initWithURLRequest:request protocols:nil securityPolicy:securityPolicy];
+    return [self initWithURLRequest:request protocols:nil logger:logger];
 }
 
-- (instancetype)initWithURL:(NSURL *)url protocols:(NSArray<NSString *> *)protocols allowsUntrustedSSLCertificates:(BOOL)allowsUntrustedSSLCertificates
+- (instancetype)initWithURL:(NSURL *)url logger:(nullable ARTLog *)logger;
+{
+    return [self initWithURL:url protocols:nil logger:logger];
+}
+
+- (instancetype)initWithURL:(NSURL *)url protocols:(NSArray<NSString *> *)protocols logger:(nullable ARTLog *)logger;
+{
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated"
+
+    return [self initWithURL:url protocols:protocols allowsUntrustedSSLCertificates:NO logger:logger];
+
+#pragma clang diagnostic pop
+}
+
+- (instancetype)initWithURL:(NSURL *)url securityPolicy:(ARTSRSecurityPolicy *)securityPolicy logger:(nullable ARTLog *)logger
 {
     NSURLRequest *request = [NSURLRequest requestWithURL:url];
-    return [self initWithURLRequest:request protocols:protocols allowsUntrustedSSLCertificates:allowsUntrustedSSLCertificates];
+    return [self initWithURLRequest:request protocols:nil securityPolicy:securityPolicy logger:logger];
+}
+
+- (instancetype)initWithURL:(NSURL *)url protocols:(NSArray<NSString *> *)protocols allowsUntrustedSSLCertificates:(BOOL)allowsUntrustedSSLCertificates logger:(nullable ARTLog *)logger
+{
+    NSURLRequest *request = [NSURLRequest requestWithURL:url];
+    return [self initWithURLRequest:request protocols:protocols allowsUntrustedSSLCertificates:allowsUntrustedSSLCertificates logger:logger];
 }
 
 - (void)assertOnWorkQueue;
@@ -328,7 +331,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
         });
     }
 
-    _proxyConnect = [[ARTSRProxyConnect alloc] initWithURL:_url];
+    _proxyConnect = [[ARTSRProxyConnect alloc] initWithURL:_url logger:self.logger];
 
     __weak typeof(self) wself = self;
     [_proxyConnect openNetworkStreamWithCompletion:^(NSError *error, NSInputStream *readStream, NSOutputStream *writeStream) {
@@ -385,7 +388,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 {
     NSInteger responseCode = CFHTTPMessageGetResponseStatusCode(_receivedHTTPHeaders);
     if (responseCode >= 400) {
-        ARTSRDebugLog(@"Request failed with response code %d", responseCode);
+        ARTSRDebugLog(self.logger, @"Request failed with response code %d", responseCode);
         NSError *error = ARTSRHTTPErrorWithCodeDescription(responseCode, 2132,
                                                         [NSString stringWithFormat:@"Received bad response code from server: %d.",
                                                          (int)responseCode]);
@@ -435,7 +438,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
         CFHTTPMessageAppendBytes(self->_receivedHTTPHeaders, (const UInt8 *)data.bytes, data.length);
 
         if (CFHTTPMessageIsHeaderComplete(self->_receivedHTTPHeaders)) {
-            ARTSRDebugLog(@"Finished reading headers %@", CFBridgingRelease(CFHTTPMessageCopyAllHeaderFields(self->_receivedHTTPHeaders)));
+            ARTSRDebugLog(self.logger, @"Finished reading headers %@", CFBridgingRelease(CFHTTPMessageCopyAllHeaderFields(self->_receivedHTTPHeaders)));
             [self _HTTPHeadersDidFinish];
         } else {
             [self _readHTTPHeader];
@@ -445,7 +448,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 
 - (void)didConnect;
 {
-    ARTSRDebugLog(@"Connected");
+    ARTSRDebugLog(self.logger, @"Connected");
 
     _secKey = ARTSRBase64EncodedStringFromData(ARTSRRandomData(16));
     assert([_secKey length] == 24);
@@ -467,7 +470,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 - (void)_updateSecureStreamOptions
 {
     if (_requestRequiresSSL) {
-        ARTSRDebugLog(@"Setting up security for streams.");
+        ARTSRDebugLog(self.logger, @"Setting up security for streams.");
         [_securityPolicy updateSecurityOptionsInStream:_inputStream];
         [_securityPolicy updateSecurityOptionsInStream:_outputStream];
     }
@@ -512,7 +515,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 
         self.readyState = ARTSR_CLOSING;
 
-        ARTSRDebugLog(@"Closing with code %d reason %@", code, reason);
+        ARTSRDebugLog(self.logger, @"Closing with code %d reason %@", code, reason);
 
         if (wasConnecting) {
             [self closeConnection];
@@ -570,7 +573,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 
             self.readyState = ARTSR_CLOSED;
 
-            ARTSRDebugLog(@"Failing with error %@", error.localizedDescription);
+            ARTSRDebugLog(self.logger, @"Failing with error %@", error.localizedDescription);
 
             [self closeConnection];
             [self _scheduleCleanup];
@@ -614,7 +617,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
         if (error) {
             *error = ARTSRErrorWithCodeDescription(2134, message);
         }
-        ARTSRDebugLog(message);
+        ARTSRDebugLog(self.logger, message);
         return NO;
     }
 
@@ -638,7 +641,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
         if (error) {
             *error = ARTSRErrorWithCodeDescription(2134, message);
         }
-        ARTSRDebugLog(message);
+        ARTSRDebugLog(self.logger, message);
         return NO;
     }
 
@@ -659,7 +662,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
         if (error) {
             *error = ARTSRErrorWithCodeDescription(2134, message);
         }
-        ARTSRDebugLog(message);
+        ARTSRDebugLog(self.logger, message);
         return NO;
     }
 
@@ -685,7 +688,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 
 - (void)handlePong:(NSData *)pongData;
 {
-    ARTSRDebugLog(@"Received pong");
+    ARTSRDebugLog(self.logger, @"Received pong");
     [self.delegateController performDelegateBlock:^(id<ARTSRWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
         if (availableMethods.didReceivePong) {
             [delegate webSocket:self didReceivePong:pongData];
@@ -733,7 +736,7 @@ static inline BOOL closeCodeIsValid(int closeCode) {
     size_t dataSize = data.length;
     __block uint16_t closeCode = 0;
 
-    ARTSRDebugLog(@"Received close frame");
+    ARTSRDebugLog(self.logger, @"Received close frame");
 
     if (dataSize == 1) {
         // TODO handle error
@@ -770,7 +773,7 @@ static inline BOOL closeCodeIsValid(int closeCode) {
 - (void)closeConnection;
 {
     [self assertOnWorkQueue];
-    ARTSRDebugLog(@"Trying to disconnect");
+    ARTSRDebugLog(self.logger, @"Trying to disconnect");
     _closeWhenFinishedWriting = YES;
     [self _pumpWriting];
 }
@@ -802,7 +805,7 @@ static inline BOOL closeCodeIsValid(int closeCode) {
                 });
                 return;
             }
-            ARTSRDebugLog(@"Received text message.");
+            ARTSRDebugLog(self.logger, @"Received text message.");
             [self.delegateController performDelegateBlock:^(id<ARTSRWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
                 // Don't convert into string - iff `delegate` tells us not to. Otherwise - create UTF8 string and handle that.
                 if (availableMethods.shouldConvertTextFrameToString && ![delegate webSocketShouldConvertTextFrameToString:self]) {
@@ -824,7 +827,7 @@ static inline BOOL closeCodeIsValid(int closeCode) {
             break;
         }
         case ARTSROpCodeBinaryFrame: {
-            ARTSRDebugLog(@"Received data message.");
+            ARTSRDebugLog(self.logger, @"Received data message.");
             [self.delegateController performDelegateBlock:^(id<ARTSRWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
                 if (availableMethods.didReceiveMessage) {
                     [delegate webSocket:self didReceiveMessage:frameData];
@@ -1434,7 +1437,7 @@ static const size_t ARTSRFrameHeaderOverhead = 32;
 {
     switch (eventCode) {
         case NSStreamEventOpenCompleted: {
-            ARTSRDebugLog(@"NSStreamEventOpenCompleted %@", aStream);
+            ARTSRDebugLog(self.logger, @"NSStreamEventOpenCompleted %@", aStream);
             if (self.readyState >= ARTSR_CLOSING) {
                 return;
             }
@@ -1451,7 +1454,7 @@ static const size_t ARTSRFrameHeaderOverhead = 32;
         }
 
         case NSStreamEventErrorOccurred: {
-            ARTSRDebugLog(@"NSStreamEventErrorOccurred %@ %@", aStream, [[aStream streamError] copy]);
+            ARTSRDebugLog(self.logger, @"NSStreamEventErrorOccurred %@ %@", aStream, [[aStream streamError] copy]);
             /// TODO specify error better!
             [self _failWithError:aStream.streamError];
             _readBufferOffset = 0;
@@ -1462,7 +1465,7 @@ static const size_t ARTSRFrameHeaderOverhead = 32;
 
         case NSStreamEventEndEncountered: {
             [self _pumpScanner];
-            ARTSRDebugLog(@"NSStreamEventEndEncountered %@", aStream);
+            ARTSRDebugLog(self.logger, @"NSStreamEventEndEncountered %@", aStream);
             if (aStream.streamError) {
                 [self _failWithError:aStream.streamError];
             } else {
@@ -1491,7 +1494,7 @@ static const size_t ARTSRFrameHeaderOverhead = 32;
         }
 
         case NSStreamEventHasBytesAvailable: {
-            ARTSRDebugLog(@"NSStreamEventHasBytesAvailable %@", aStream);
+            ARTSRDebugLog(self.logger, @"NSStreamEventHasBytesAvailable %@", aStream);
             uint8_t buffer[ARTSRDefaultBufferSize()];
 
             while (_inputStream.hasBytesAvailable) {
@@ -1514,13 +1517,13 @@ static const size_t ARTSRFrameHeaderOverhead = 32;
         }
 
         case NSStreamEventHasSpaceAvailable: {
-            ARTSRDebugLog(@"NSStreamEventHasSpaceAvailable %@", aStream);
+            ARTSRDebugLog(self.logger, @"NSStreamEventHasSpaceAvailable %@", aStream);
             [self _pumpWriting];
             break;
         }
 
         case NSStreamEventNone:
-            ARTSRDebugLog(@"(default)  %@", aStream);
+            ARTSRDebugLog(self.logger, @"(default)  %@", aStream);
             break;
     }
 }

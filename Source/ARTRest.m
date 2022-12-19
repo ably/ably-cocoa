@@ -760,7 +760,7 @@ static BOOL sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = YES;
 
     static id device;
     if (sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue) {
-        device = [ARTLocalDevice load:clientId storage:self.storage];
+        device = [ARTLocalDevice load:clientId storage:self.storage logger:self.logger];
         sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = NO;
     }
     return device;

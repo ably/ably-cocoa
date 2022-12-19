@@ -18,12 +18,13 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTSRPinningSecurityPolicy ()
 
 @property (nonatomic, copy, readonly) NSArray *pinnedCertificates;
+@property (nonatomic, strong, readonly, nullable) ARTLog * logger;
 
 @end
 
 @implementation ARTSRPinningSecurityPolicy
 
-- (instancetype)initWithCertificates:(NSArray *)pinnedCertificates
+- (instancetype)initWithCertificates:(NSArray *)pinnedCertificates logger:(nullable ARTLog *)logger;
 {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated"
@@ -41,13 +42,14 @@ NS_ASSUME_NONNULL_BEGIN
                                      userInfo:nil];
     }
     _pinnedCertificates = [pinnedCertificates copy];
+    _logger = logger;
 
     return self;
 }
 
 - (BOOL)evaluateServerTrust:(SecTrustRef)serverTrust forDomain:(NSString *)domain
 {
-    ARTSRDebugLog(@"Pinned cert count: %d", self.pinnedCertificates.count);
+    ARTSRDebugLog(self.logger, @"Pinned cert count: %d", self.pinnedCertificates.count);
     NSUInteger requiredCertCount = self.pinnedCertificates.count;
 
     NSUInteger validatedCertCount = 0;
