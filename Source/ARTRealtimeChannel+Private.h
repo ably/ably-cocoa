@@ -50,7 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (bool)isLastChannelSerial:(NSString *)channelSerial;
 
-- (void)reattachWithReason:(nullable ARTErrorInfo *)reason callback:(nullable ARTCallback)callback;
+- (void)reattachWithReason:(nullable ARTErrorInfo *)reason;
 
 - (void)_attach:(nullable ARTCallback)callback;
 - (void)_detach:(nullable ARTCallback)callback;

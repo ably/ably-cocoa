@@ -72,7 +72,6 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportState) {
 @property (readonly, strong, nonatomic) NSString *resumeKey;
 @property (readonly, assign, nonatomic) ARTRealtimeTransportState state;
 @property (nullable, readwrite, strong, nonatomic) id<ARTRealtimeTransportDelegate> delegate;
-@property (readonly, strong, nonatomic) ARTLog *protocolMessagesLogger;
 @property (nonatomic, readonly) ARTEventEmitter<ARTEvent *, id> *stateEmitter;
 
 - (BOOL)send:(NSData *)data withSource:(nullable id)decodedObject;

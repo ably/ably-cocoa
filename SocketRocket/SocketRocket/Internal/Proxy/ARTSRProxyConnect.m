@@ -20,6 +20,7 @@
 @property (nonatomic, strong) NSURL *url;
 @property (nonatomic, strong) NSInputStream *inputStream;
 @property (nonatomic, strong) NSOutputStream *outputStream;
+@property (nonatomic, strong, readonly, nullable) ARTLog * logger;
 
 @end
 
@@ -47,7 +48,7 @@
 #pragma mark - Init
 ///--------------------------------------
 
--(instancetype)initWithURL:(NSURL *)url
+-(instancetype)initWithURL:(NSURL *)url logger:(nullable ARTLog *)logger;
 {
     self = [super init];
     if (!self) return self;
@@ -57,6 +58,7 @@
 
     _writeQueue = dispatch_queue_create("io.ably.socketrocket.proxyconnect.write", DISPATCH_QUEUE_SERIAL);
     _inputQueue = [NSMutableArray arrayWithCapacity:2];
+    _logger = logger;
 
     return self;
 }
@@ -91,11 +93,11 @@
 
 - (void)_didConnect
 {
-    ARTSRDebugLog(@"_didConnect, return streams");
+    ARTSRDebugLog(self.logger, @"_didConnect, return streams");
     if (_connectionRequiresSSL) {
         if (_httpProxyHost) {
             // Must set the real peer name before turning on SSL
-            ARTSRDebugLog(@"proxy set peer name to real host %@", self.url.host);
+            ARTSRDebugLog(self.logger, @"proxy set peer name to real host %@", self.url.host);
             [self.outputStream setProperty:self.url.host forKey:@"_kCFStreamPropertySocketPeerName"];
         }
     }
@@ -119,7 +121,7 @@
 
 - (void)_failWithError:(NSError *)error
 {
-    ARTSRDebugLog(@"_failWithError, return error");
+    ARTSRDebugLog(self.logger, @"_failWithError, return error");
     if (!error) {
         error = ARTSRHTTPErrorWithCodeDescription(500, 2132,@"Proxy Error");
     }
@@ -144,7 +146,7 @@
 // get proxy setting from device setting
 - (void)_configureProxy
 {
-    ARTSRDebugLog(@"configureProxy");
+    ARTSRDebugLog(self.logger, @"configureProxy");
     NSDictionary *proxySettings = CFBridgingRelease(CFNetworkCopySystemProxySettings());
 
     // CFNetworkCopyProxiesForURL doesn't understand ws:// or wss://
@@ -157,8 +159,8 @@
 
     NSArray *proxies = CFBridgingRelease(CFNetworkCopyProxiesForURL((__bridge CFURLRef)httpURL, (__bridge CFDictionaryRef)proxySettings));
     if (proxies.count == 0) {
-        ARTSRDebugLog(@"configureProxy no proxies");
-        [self _openConnection];
+        ARTSRDebugLog(self.logger, @"configureProxy no proxies");
+        [self openConnection];
         return;                 // no proxy
     }
     NSDictionary *settings = [proxies objectAtIndex:0];
@@ -179,7 +181,7 @@
     }
     [self _readProxySettingWithType:proxyType settings:settings];
 
-    [self _openConnection];
+    [self openConnection];
 }
 
 - (void)_readProxySettingWithType:(NSString *)proxyType settings:(NSDictionary *)settings
@@ -201,17 +203,17 @@
         _socksProxyPassword = settings[(NSString *)kCFProxyPasswordKey];
     }
     if (_httpProxyHost) {
-        ARTSRDebugLog(@"Using http proxy %@:%u", _httpProxyHost, _httpProxyPort);
+        ARTSRDebugLog(self.logger, @"Using http proxy %@:%u", _httpProxyHost, _httpProxyPort);
     } else if (_socksProxyHost) {
-        ARTSRDebugLog(@"Using socks proxy %@:%u", _socksProxyHost, _socksProxyPort);
+        ARTSRDebugLog(self.logger, @"Using socks proxy %@:%u", _socksProxyHost, _socksProxyPort);
     } else {
-        ARTSRDebugLog(@"configureProxy no proxies");
+        ARTSRDebugLog(self.logger, @"configureProxy no proxies");
     }
 }
 
 - (void)_fetchPAC:(NSURL *)PACurl withProxySettings:(NSDictionary *)proxySettings
 {
-    ARTSRDebugLog(@"ARTSRWebSocket fetchPAC:%@", PACurl);
+    ARTSRDebugLog(self.logger, @"ARTSRWebSocket fetchPAC:%@", PACurl);
 
     if ([PACurl isFileURL]) {
         NSError *error = nil;
@@ -220,7 +222,7 @@
                                                        error:&error];
 
         if (error) {
-            [self _openConnection];
+            [self openConnection];
         } else {
             [self _runPACScript:script withProxySettings:proxySettings];
         }
@@ -231,7 +233,7 @@
     if (![scheme isEqualToString:@"http"] && ![scheme isEqualToString:@"https"]) {
         // Don't know how to read data from this URL, we'll have to give up
         // We'll simply assume no proxies, and start the request as normal
-        [self _openConnection];
+        [self openConnection];
         return;
     }
     __weak typeof(self) wself = self;
@@ -253,7 +255,7 @@
             NSString *script = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
             [sself _runPACScript:script withProxySettings:proxySettings];
         } else {
-            [sself _openConnection];
+            [sself openConnection];
         }
     }] resume];
 }
@@ -261,10 +263,10 @@
 - (void)_runPACScript:(NSString *)script withProxySettings:(NSDictionary *)proxySettings
 {
     if (!script) {
-        [self _openConnection];
+        [self openConnection];
         return;
     }
-    ARTSRDebugLog(@"runPACScript");
+    ARTSRDebugLog(self.logger, @"runPACScript");
     // From: http://developer.apple.com/samplecode/CFProxySupportTool/listing1.html
     // Work around <rdar://problem/5530166>.  This dummy call to
     // CFNetworkCopyProxiesForURL initialise some state within CFNetwork
@@ -287,7 +289,30 @@
         NSString *proxyType = settings[(NSString *)kCFProxyTypeKey];
         [self _readProxySettingWithType:proxyType settings:settings];
     }
-    [self _openConnection];
+    [self openConnection];
+}
+
+- (void)openConnection
+{
+    if ([NSRunLoop ARTSR_networkRunLoop] != nil) {
+        [self _openConnection];
+    }
+    else {
+        if ([NSThread isMainThread]) {
+            dispatch_async(_writeQueue, ^{
+                [NSRunLoop ARTSR_waitForNetworkRunLoop];
+                // Dispatch back to main:
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self _openConnection];
+                });
+            });
+        }
+        else {
+            // Here goes some background thread in which we can call `ARTSR_waitForNetworkRunLoop` without blocking the main thread (in case user decided to call `ARTRealtime` methods from not the main thread).
+            [NSRunLoop ARTSR_waitForNetworkRunLoop];
+            [self _openConnection];
+        }
+    }
 }
 
 - (void)_openConnection
@@ -319,14 +344,14 @@
     CFReadStreamRef readStream = NULL;
     CFWriteStreamRef writeStream = NULL;
 
-    ARTSRDebugLog(@"ProxyConnect connect stream to %@:%u", host, port);
+    ARTSRDebugLog(self.logger, @"ProxyConnect connect stream to %@:%u", host, port);
     CFStreamCreatePairWithSocketToHost(NULL, (__bridge CFStringRef)host, port, &readStream, &writeStream);
 
     self.outputStream = CFBridgingRelease(writeStream);
     self.inputStream = CFBridgingRelease(readStream);
 
     if (_socksProxyHost) {
-        ARTSRDebugLog(@"ProxyConnect set sock property stream to %@:%u user %@ password %@", _socksProxyHost, _socksProxyPort, _socksProxyUsername, _socksProxyPassword);
+        ARTSRDebugLog(self.logger, @"ProxyConnect set sock property stream to %@:%u user %@ password %@", _socksProxyHost, _socksProxyPort, _socksProxyUsername, _socksProxyPassword);
         NSMutableDictionary *settings = [NSMutableDictionary dictionaryWithCapacity:4];
         settings[NSStreamSOCKSProxyHostKey] = _socksProxyHost;
         if (_socksProxyPort) {
@@ -347,7 +372,7 @@
 
 - (void)stream:(NSStream *)aStream handleEvent:(NSStreamEvent)eventCode;
 {
-    ARTSRDebugLog(@"stream handleEvent %u", eventCode);
+    ARTSRDebugLog(self.logger, @"stream handleEvent %u", eventCode);
     switch (eventCode) {
         case NSStreamEventOpenCompleted: {
             if (aStream == self.inputStream) {
@@ -371,14 +396,14 @@
         } break;
         case NSStreamEventHasSpaceAvailable:
         case NSStreamEventNone:
-            ARTSRDebugLog(@"(default)  %@", aStream);
+            ARTSRDebugLog(self.logger, @"(default)  %@", aStream);
             break;
     }
 }
 
 - (void)_proxyDidConnect
 {
-    ARTSRDebugLog(@"Proxy Connected");
+    ARTSRDebugLog(self.logger, @"Proxy Connected");
     uint32_t port = _url.port.unsignedIntValue;
     if (port == 0) {
         port = (_connectionRequiresSSL ? 443 : 80);
@@ -387,7 +412,7 @@
     NSString *connectRequestStr = [NSString stringWithFormat:@"CONNECT %@:%u HTTP/1.1\r\nHost: %@\r\nConnection: keep-alive\r\nProxy-Connection: keep-alive\r\n\r\n", _url.host, port, _url.host];
 
     NSData *message = [connectRequestStr dataUsingEncoding:NSUTF8StringEncoding];
-    ARTSRDebugLog(@"Proxy sending %@", connectRequestStr);
+    ARTSRDebugLog(self.logger, @"Proxy sending %@", connectRequestStr);
 
     [self _writeData:message];
 }
@@ -434,7 +459,7 @@
 
     CFHTTPMessageAppendBytes(_receivedHTTPHeaders, (const UInt8 *)data.bytes, data.length);
     if (CFHTTPMessageIsHeaderComplete(_receivedHTTPHeaders)) {
-        ARTSRDebugLog(@"Finished reading headers %@", CFBridgingRelease(CFHTTPMessageCopyAllHeaderFields(_receivedHTTPHeaders)));
+        ARTSRDebugLog(self.logger, @"Finished reading headers %@", CFBridgingRelease(CFHTTPMessageCopyAllHeaderFields(_receivedHTTPHeaders)));
         [self _proxyHTTPHeadersDidFinish];
         return YES;
     }
@@ -447,14 +472,14 @@
     NSInteger responseCode = CFHTTPMessageGetResponseStatusCode(_receivedHTTPHeaders);
 
     if (responseCode >= 299) {
-        ARTSRDebugLog(@"Connect to Proxy Request failed with response code %d", responseCode);
+        ARTSRDebugLog(self.logger, @"Connect to Proxy Request failed with response code %d", responseCode);
         NSError *error = ARTSRHTTPErrorWithCodeDescription(responseCode, 2132,
                                                         [NSString stringWithFormat:@"Received bad response code from proxy server: %d.",
                                                          (int)responseCode]);
         [self _failWithError:error];
         return;
     }
-    ARTSRDebugLog(@"proxy connect return %d, call socket connect", responseCode);
+    ARTSRDebugLog(self.logger, @"proxy connect return %d, call socket connect", responseCode);
     [self _didConnect];
 }
 

@@ -215,7 +215,7 @@
         if (options.autoConnect) {
             [self _connect];
         }
-        
+
         if (options.recover) { //RTN16f
             ARTConnectionRecoveryKey *const recoveryKey = [ARTConnectionRecoveryKey fromJsonString:options.recover];
             self.msgSerial = recoveryKey.msgSerial;
@@ -578,7 +578,7 @@
                     stateChange.previous == ARTRealtimeDisconnected ||
                     stateChange.previous == ARTRealtimeSuspended) {
                     resumeKey = self.connection.key_nosync;
-                   
+
                 } else if (self.options.recover) { //RTN16k
                     recoveryKey = [ARTConnectionRecoveryKey fromJsonString:self.options.recover].connectionKey;
                 }
@@ -680,7 +680,7 @@
             _connectionLostAt = nil;
             // resend regardless of resumption result
             [self resendPendingMessages];
-           
+
             [_connectedEventEmitter emit:nil with:nil];
             break;
         }
@@ -807,10 +807,10 @@
             } else if (self.connection.id_nosync &&
                        ![message.connectionId isEqualToString:self.connection.id_nosync]
                        && message.error) { // RTN15c7
-                
+
                 [self.logger warn:@"RT:%p connection \"%@\" has resumed with non-fatal error \"%@\"", self, message.connectionId, message.error.message];
                 [self resetSerials];
-                
+
             } else if (!self.connection.id_nosync && message.error) { //recover failure
                 [self resetSerials];
             }
@@ -1441,7 +1441,7 @@
     }
     
     NSAssert(transport == self.transport, @"Unexpected transport");
-   
+
     switch (message.action) {
         case ARTProtocolMessageHeartbeat:
             [self onHeartbeat];

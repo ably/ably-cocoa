@@ -1,12 +1,7 @@
 #import "Ably.h"
 #import "ARTDefault+Private.h"
 #import "ARTNSArray+ARTFunctional.h"
-#import <sys/utsname.h>
-
-// NSOperatingSystemVersion has NSInteger as version components for some reason, so mitigate it here.
-static inline UInt32 conformVersionComponent(const NSInteger component) {
-    return (component < 0) ? 0 : (UInt32)component;
-}
+#import "ARTClientInformation+Private.h"
 
 NSString *const ARTDefault_apiVersion = @"2";
 static NSString *const ARTDefault_libraryVersion = @"1.2.16";
@@ -15,7 +10,6 @@ NSString *const ARTDefaultProduction = @"production";
 
 static NSString *const ARTDefault_restHost = @"rest.ably.io";
 static NSString *const ARTDefault_realtimeHost = @"realtime.ably.io";
-static NSString *const ARTDefault_libraryName = @"ably-cocoa";
 
 static NSTimeInterval _realtimeRequestTimeout = 10.0;
 static NSTimeInterval _connectionStateTtl = 60.0;
@@ -28,7 +22,7 @@ static NSInteger _maxMessageSize = 65536;
 }
 
 + (NSString *)libraryVersion {
-    return ARTDefault_libraryVersion;
+    return ARTClientInformation_libraryVersion;
 }
 
 + (NSArray*)fallbackHostsWithEnvironment:(NSString *)environment {
@@ -99,55 +93,12 @@ static NSInteger _maxMessageSize = 65536;
     }
 }
 
-+ (NSString *)osName {
-    return
-        #if TARGET_OS_IOS
-            @"iOS"
-        #elif TARGET_OS_TV
-            @"tvOS"
-        #elif TARGET_OS_WATCH
-            @"watchOS"
-        #elif TARGET_OS_OSX
-            @"macOS"
-        #else
-            nil
-        #endif
-        ;
-}
-
-+ (NSString *)osVersionString {
-    static NSString *versionString;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        NSOperatingSystemVersion version = [[NSProcessInfo processInfo] operatingSystemVersion];
-        versionString = [NSString stringWithFormat:@"%lu.%lu.%lu",
-             (unsigned long)conformVersionComponent(version.majorVersion),
-             (unsigned long)conformVersionComponent(version.minorVersion),
-             (unsigned long)conformVersionComponent(version.patchVersion)];
-    });
-    return versionString;
-}
-
-+ (NSString *)deviceModel {
-    struct utsname systemInfo;
-    if (uname(&systemInfo) < 0) {
-        return nil;
-    }
-    return [NSString stringWithCString:systemInfo.machine encoding:NSUTF8StringEncoding];
-}
-
 + (NSString *)libraryAgent {
-    NSMutableString *agent = [NSMutableString stringWithFormat:@"%@/%@", ARTDefault_libraryName, ARTDefault_libraryVersion];
-    return agent;
+    return [ARTClientInformation libraryAgentIdentifier];
 }
 
 + (NSString *)platformAgent {
-    NSMutableString *agent = [NSMutableString string];
-    NSString *osName = [self osName];
-    if (osName != nil) {
-        [agent appendFormat:@"%@/%@", osName, [self osVersionString]];
-    }
-    return agent;
+    return [ARTClientInformation platformAgentIdentifier];
 }
 
 @end

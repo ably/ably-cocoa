@@ -17,6 +17,7 @@
 #import "NSURLQueryItem+Stringifiable.h"
 #import "ARTNSMutableDictionary+ARTDictionaryUtil.h"
 #import "ARTStringifiable.h"
+#import "ARTClientInformation.h"
 
 enum {
     ARTWsNeverConnected = -1,
@@ -66,7 +67,6 @@ Class configuredWebsocketClass = nil;
         _state = ARTRealtimeTransportStateClosed;
         _encoder = rest.defaultEncoder;
         _logger = rest.logger;
-        _protocolMessagesLogger = [[ARTLog alloc] initCapturingOutput:false historyLines:50];
         _options = [options copy];
         _resumeKey = resumeKey;
         _recoveryKey = recoveryKey;
@@ -86,9 +86,6 @@ Class configuredWebsocketClass = nil;
 
 - (BOOL)send:(NSData *)data withSource:(id)decodedObject {
     if (self.websocket.readyState == ARTSR_OPEN) {
-        if ([decodedObject isKindOfClass:[ARTProtocolMessage class]]) {
-            [_protocolMessagesLogger info:@"send %@", [decodedObject description]];
-        }
         [self.websocket send:data];
         return true;
     }
@@ -105,13 +102,11 @@ Class configuredWebsocketClass = nil;
 
 - (void)internalSend:(ARTProtocolMessage *)msg {
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket sending action %tu - %@", _delegate, self, msg.action, ARTProtocolMessageActionToStr(msg.action)];
-    [_protocolMessagesLogger info:@"send %@", [msg description]];
     NSData *data = [self.encoder encodeProtocolMessage:msg error:nil];
     [self send:data withSource:msg];
 }
 
 - (void)receive:(ARTProtocolMessage *)msg {
-    [_protocolMessagesLogger info:@"recv %@", [msg description]];
     [self.delegate realtimeTransport:self didReceiveMessage:msg];
 }
 
@@ -164,7 +159,7 @@ Class configuredWebsocketClass = nil;
     [queryItems addValueAsURLQueryItem:[ARTDefault apiVersion] forKey:@"v"];
     
     // Lib
-    [queryItems addValueAsURLQueryItem:[options agentLibraryIdentifier] forKey:@"agent"];
+    [queryItems addValueAsURLQueryItem:[ARTClientInformation agentIdentifierWithAdditionalAgents:options.agents] forKey:@"agent"];
 
     // Transport Params
     if (options.transportParams != nil) {
@@ -183,7 +178,7 @@ Class configuredWebsocketClass = nil;
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
 
     const Class websocketClass = configuredWebsocketClass ? configuredWebsocketClass : [ARTSRWebSocket class];
-    self.websocket = [[websocketClass alloc] initWithURLRequest:request];
+    self.websocket = [[websocketClass alloc] initWithURLRequest:request logger:self.logger];
     [self.websocket setDelegateDispatchQueue:_workQueue];
     self.websocket.delegate = self;
     self.websocketURL = url;
