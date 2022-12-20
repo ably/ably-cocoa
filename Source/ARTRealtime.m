@@ -847,7 +847,7 @@
 // For RTN15c6, RTN15c7
 - (void)reattachChannels:(ARTProtocolMessage *const)message {
     for (ARTRealtimeChannelInternal *const channel in self.channels.nosyncIterable) {
-        [channel reattachWithReason:message.error callback:nil];
+        [channel reattachWithReason:message.error];
     }
 }
 
