@@ -1,8 +1,5 @@
 #import <Foundation/Foundation.h>
-
 #import "ARTWebSocket.h"
-
-@class ARTLog;
 
 NS_ASSUME_NONNULL_BEGIN
 
