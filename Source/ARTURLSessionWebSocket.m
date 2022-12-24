@@ -1,7 +1,7 @@
 #import "ARTURLSessionWebSocket.h"
 #import "ARTLog.h"
 
-@interface ARTURLSessionWebSocket ()
+@interface ARTURLSessionWebSocket () <NSURLSessionWebSocketDelegate>
 
 @property (atomic, assign, readwrite) ARTWebSocketState readyState;
 
