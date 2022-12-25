@@ -9,10 +9,10 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol ARTWebSocketDelegate;
 
 typedef NS_ENUM(NSInteger, ARTWebSocketState) {
-    ARTWS_CONNECTING   = 0,
-    ARTWS_OPEN         = 1,
-    ARTWS_CLOSING      = 2,
-    ARTWS_CLOSED       = 3,
+    ARTWebSocketStateConnecting   = 0,
+    ARTWebSocketStateOpened       = 1,
+    ARTWebSocketStateClosing      = 2,
+    ARTWebSocketStateClosed       = 3,
 };
 
 /**

@@ -22,7 +22,7 @@
         NSURLSessionConfiguration *config = [NSURLSessionConfiguration defaultSessionConfiguration];
         _urlSession = [NSURLSession sessionWithConfiguration:config delegate:self delegateQueue:nil];
         _webSocketTask = [_urlSession webSocketTaskWithRequest:request];
-        _readyState = ARTWS_CLOSED;
+        _readyState = ARTWebSocketStateClosed;
         _logger = logger;
     }
     return self;
@@ -56,7 +56,7 @@
                             break;
                     }
                 }
-                if (strongSelf.readyState == ARTWS_OPEN) {
+                if (strongSelf.readyState == ARTWebSocketStateOpened) {
                     [strongSelf listenForMessage];
                 }
             });
@@ -65,7 +65,7 @@
 }
 
 - (void)open {
-    _readyState = ARTWS_CONNECTING;
+    _readyState = ARTWebSocketStateConnecting;
     [_webSocketTask resume];
 }
 
@@ -87,14 +87,14 @@
 }
 
 - (void)closeWithCode:(NSInteger)code reason:(NSString *)reason {
-    if (self.readyState != ARTWS_CLOSED) {
-        self.readyState = ARTWS_CLOSING;
+    if (self.readyState != ARTWebSocketStateClosed) {
+        self.readyState = ARTWebSocketStateClosing;
     }
     [_webSocketTask cancelWithCloseCode:code reason:[reason dataUsingEncoding:NSUTF8StringEncoding]];
 }
 
 - (void)URLSession:(NSURLSession *)session webSocketTask:(NSURLSessionWebSocketTask *)webSocketTask didOpenWithProtocol:(NSString *)protocol {
-    self.readyState = ARTWS_OPEN;
+    self.readyState = ARTWebSocketStateOpened;
     [self listenForMessage];
     dispatch_async([self getDelegateDispatchQueue], ^{
         [self->_delegate webSocketDidOpen:self];
@@ -104,8 +104,8 @@
 - (void)URLSession:(NSURLSession *)session
      webSocketTask:(NSURLSessionWebSocketTask *)webSocketTask
   didCloseWithCode:(NSURLSessionWebSocketCloseCode)closeCode reason:(NSData *)reasonData {
-    if (self.readyState == ARTWS_CLOSING || self.readyState == ARTWS_OPEN) {
-        self.readyState = ARTWS_CLOSED;
+    if (self.readyState == ARTWebSocketStateClosing || self.readyState == ARTWebSocketStateOpened) {
+        self.readyState = ARTWebSocketStateClosed;
     }
     dispatch_async([self getDelegateDispatchQueue], ^{
         NSString *reason = [[NSString alloc] initWithData:reasonData encoding:NSUTF8StringEncoding];
@@ -114,7 +114,7 @@
 }
 
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error {
-    self.readyState = ARTWS_CLOSED;
+    self.readyState = ARTWebSocketStateClosed;
     if (error != nil) {
         [_logger debug:__FILE__ line:__LINE__ message:@"Session completion error: %@, task state = %@", error, @(_webSocketTask.state)];
         dispatch_async([self getDelegateDispatchQueue], ^{
