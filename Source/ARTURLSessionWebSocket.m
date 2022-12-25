@@ -1,4 +1,5 @@
 #import "ARTURLSessionWebSocket.h"
+#import "ARTRealtimeTransport.h"
 #import "ARTLog.h"
 
 @interface ARTURLSessionWebSocket () <NSURLSessionWebSocketDelegate>
@@ -12,6 +13,8 @@
     NSURLSessionWebSocketTask *_webSocketTask;
     ARTLog *_logger;
 }
+
+#pragma mark - ARTWebSocket
 
 @synthesize delegate = _delegate;
 @synthesize readyState = _readyState;
@@ -92,6 +95,29 @@
     }
     [_webSocketTask cancelWithCloseCode:code reason:[reason dataUsingEncoding:NSUTF8StringEncoding]];
 }
+
+- (ARTRealtimeTransportError *)classifyError:(NSError *)error {
+    ARTRealtimeTransportErrorType type = ARTRealtimeTransportErrorTypeOther;
+    
+    if ([error.domain isEqualToString:(NSString *)kCFErrorDomainCFNetwork]) {
+        type = ARTRealtimeTransportErrorTypeHostUnreachable;
+    }
+    else if ([error.domain isEqualToString:@"NSPOSIXErrorDomain"] && (error.code == 57 || error.code == 50)) {
+        type = ARTRealtimeTransportErrorTypeNoInternet;
+    }
+    else if ([error.domain isEqualToString:@"NSURLErrorDomain"] && (error.code == NSURLErrorNotConnectedToInternet)) {
+        type = ARTRealtimeTransportErrorTypeNoInternet;
+    }
+    else if ([error.domain isEqualToString:@"NSURLErrorDomain"] && (error.code == NSURLErrorTimedOut)) {
+        type = ARTRealtimeTransportErrorTypeTimeout;
+    }
+    else if ([error.domain isEqualToString:@"NSURLErrorDomain"] && (error.code == NSURLErrorBadServerResponse)) {
+        type = ARTRealtimeTransportErrorTypeBadResponse;
+    }
+    return [[ARTRealtimeTransportError alloc] initWithError:error type:type url:_webSocketTask.originalRequest.URL];
+}
+
+#pragma mark - NSURLSessionWebSocketDelegate
 
 - (void)URLSession:(NSURLSession *)session webSocketTask:(NSURLSessionWebSocketTask *)webSocketTask didOpenWithProtocol:(NSString *)protocol {
     self.readyState = ARTWebSocketStateOpened;

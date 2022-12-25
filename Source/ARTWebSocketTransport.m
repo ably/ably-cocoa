@@ -37,7 +37,7 @@ enum {
 
 NSString *WebSocketStateToStr(ARTWebSocketState state);
 
-@interface ARTSRWebSocket () <ARTWebSocket>
+@interface ARTSRWebSocket (ARTWebSocket) <ARTWebSocket>
 @end
 
 Class configuredWebsocketClass = nil;
@@ -258,7 +258,7 @@ Class configuredWebsocketClass = nil;
     _state = state;
 }
 
-#pragma mark - ARTSRWebSocketDelegate
+#pragma mark - ARTWebSocketDelegate
 
 // All delegate methods from SocketRocket are called from rest's serial queue,
 // since we pass it as delegate queue on setupWebSocket. So we can safely
@@ -312,31 +312,8 @@ Class configuredWebsocketClass = nil;
 - (void)webSocket:(id<ARTWebSocket>)webSocket didFailWithError:(NSError *)error {
     [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket did receive error %@", _delegate, self, error];
 
-    [_delegate realtimeTransportFailed:self withError:[self classifyError:error]];
+    [_delegate realtimeTransportFailed:self withError:[webSocket classifyError:error]];
     _state = ARTRealtimeTransportStateClosed;
-}
-
-- (ARTRealtimeTransportError *)classifyError:(NSError *)error {
-    ARTRealtimeTransportErrorType type = ARTRealtimeTransportErrorTypeOther;
-
-    if ([error.domain isEqualToString:@"com.squareup.SocketRocket"] && error.code == 504) {
-        type = ARTRealtimeTransportErrorTypeTimeout;
-    } else if ([error.domain isEqualToString:(NSString *)kCFErrorDomainCFNetwork]) {
-        type = ARTRealtimeTransportErrorTypeHostUnreachable;
-    } else if ([error.domain isEqualToString:@"NSPOSIXErrorDomain"] && (error.code == 57 || error.code == 50)) {
-        type = ARTRealtimeTransportErrorTypeNoInternet;
-    } else if ([error.domain isEqualToString:@"NSURLErrorDomain"] && (error.code == NSURLErrorNotConnectedToInternet)) {
-        type = ARTRealtimeTransportErrorTypeNoInternet;
-    } else if ([error.domain isEqualToString:ARTSRWebSocketErrorDomain] && error.code == 2132) {
-        id status = error.userInfo[ARTSRHTTPResponseErrorKey];
-        if (status) {
-            return [[ARTRealtimeTransportError alloc] initWithError:error
-                                                    badResponseCode:[(NSNumber *)status integerValue]
-                                                                url:self.websocketURL];
-        }
-    }
-
-    return [[ARTRealtimeTransportError alloc] initWithError:error type:type url:self.websocketURL];
 }
 
 - (void)webSocket:(id<ARTWebSocket>)webSocket didReceiveMessage:(id)message {
@@ -416,6 +393,34 @@ NSString *ARTRealtimeTransportStateToStr(ARTRealtimeTransportState state) {
 
 + (instancetype)newWithTransportState:(ARTRealtimeTransportState)value {
     return [[self alloc] initWithTransportState:value];
+}
+
+@end
+
+@implementation ARTSRWebSocket (ARTWebSocket)
+
+- (ARTRealtimeTransportError *)classifyError:(NSError *)error {
+    ARTRealtimeTransportErrorType type = ARTRealtimeTransportErrorTypeOther;
+    
+    if ([error.domain isEqualToString:@"com.squareup.SocketRocket"] && error.code == 504) {
+        type = ARTRealtimeTransportErrorTypeTimeout;
+    }
+    else if ([error.domain isEqualToString:(NSString *)kCFErrorDomainCFNetwork]) {
+        type = ARTRealtimeTransportErrorTypeHostUnreachable;
+    }
+    else if ([error.domain isEqualToString:@"NSPOSIXErrorDomain"] && (error.code == 57 || error.code == 50)) {
+        type = ARTRealtimeTransportErrorTypeNoInternet;
+    }
+    else if ([error.domain isEqualToString:@"NSURLErrorDomain"] && (error.code == NSURLErrorNotConnectedToInternet)) {
+        type = ARTRealtimeTransportErrorTypeNoInternet;
+    }
+    else if ([error.domain isEqualToString:ARTSRWebSocketErrorDomain] && error.code == 2132) {
+        NSNumber *status = error.userInfo[ARTSRHTTPResponseErrorKey];
+        if (status != nil) {
+            return [[ARTRealtimeTransportError alloc] initWithError:error badResponseCode:status.integerValue url:self.url];
+        }
+    }
+    return [[ARTRealtimeTransportError alloc] initWithError:error type:type url:self.url];
 }
 
 @end

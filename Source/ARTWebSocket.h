@@ -6,6 +6,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class ARTLog;
+@class ARTRealtimeTransportError;
 @protocol ARTWebSocketDelegate;
 
 typedef NS_ENUM(NSInteger, ARTWebSocketState) {
@@ -68,6 +69,13 @@ typedef NS_ENUM(NSInteger, ARTWebSocketState) {
  * @param message UTF-8 `NSString` or `NSData` to send.
  */
 - (void)send:(id)message;
+
+/**
+ * Classifies error for reconnection attemts.
+ *
+ * @param error An error object to classify for reconnection.
+ */
+- (ARTRealtimeTransportError *)classifyError:(NSError *)error;
 
 @end
 
