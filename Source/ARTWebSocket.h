@@ -26,8 +26,6 @@ typedef NS_ENUM(NSInteger, ARTWebSocketState) {
 
 - (instancetype)initWithURLRequest:(NSURLRequest *)request logger:(nullable ARTLog *)logger;
 
-- (void)setDelegateDispatchQueue:(dispatch_queue_t)queue;
-
 - (void)open;
 - (void)closeWithCode:(NSInteger)code reason:(nullable NSString *)reason;
 - (void)send:(nullable id)message;
