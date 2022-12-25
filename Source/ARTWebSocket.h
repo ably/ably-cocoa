@@ -20,7 +20,7 @@ typedef NS_ENUM(NSInteger, ARTWebSocketState) {
  */
 @protocol ARTWebSocket <NSObject>
 
-@property (nonatomic, weak) id <ARTWebSocketDelegate> _Nullable delegate;
+@property (nullable, nonatomic, weak) id<ARTWebSocketDelegate> delegate;
 @property (nullable, nonatomic, strong) dispatch_queue_t delegateDispatchQueue;
 @property (atomic, assign, readonly) ARTWebSocketState readyState;
 
@@ -28,14 +28,14 @@ typedef NS_ENUM(NSInteger, ARTWebSocketState) {
 
 - (void)open;
 - (void)closeWithCode:(NSInteger)code reason:(nullable NSString *)reason;
-- (void)send:(nullable id)message;
+- (void)send:(id)message;
 
 @end
 
 @protocol ARTWebSocketDelegate <NSObject>
 
 - (void)webSocketDidOpen:(id<ARTWebSocket>)websocket;
-- (void)webSocket:(id<ARTWebSocket>)webSocket didCloseWithCode:(NSInteger)code reason:(NSString * _Nullable)reason wasClean:(BOOL)wasClean;
+- (void)webSocket:(id<ARTWebSocket>)webSocket didCloseWithCode:(NSInteger)code reason:(nullable NSString *)reason wasClean:(BOOL)wasClean;
 - (void)webSocket:(id<ARTWebSocket>)webSocket didFailWithError:(NSError *)error;
 - (void)webSocket:(id<ARTWebSocket>)webSocket didReceiveMessage:(id)message;
 
