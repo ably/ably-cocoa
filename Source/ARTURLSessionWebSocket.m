@@ -10,7 +10,6 @@
 @implementation ARTURLSessionWebSocket {
     NSURLSession *_urlSession;
     NSURLSessionWebSocketTask *_webSocketTask;
-    dispatch_queue_t _delegateQueue;
     ARTLog *_logger;
 }
 
@@ -29,8 +28,8 @@
     return self;
 }
 
-- (void)setDelegateDispatchQueue:(dispatch_queue_t)queue {
-    _delegateQueue = queue;
+- (dispatch_queue_t)getDelegateDispatchQueue {
+    return _delegateDispatchQueue ?: dispatch_get_main_queue();
 }
 
 - (void)listenForMessage {
@@ -38,7 +37,7 @@
     [_webSocketTask receiveMessageWithCompletionHandler:^(NSURLSessionWebSocketMessage *message, NSError *error) {
         ARTURLSessionWebSocket *strongSelf = weakSelf;
         if (strongSelf) {
-            dispatch_async(strongSelf->_delegateQueue, ^{
+            dispatch_async([strongSelf getDelegateDispatchQueue], ^{
                 /*
                  * We will ignore `error` object here, relying only on `message` object presence, since:
                  * 1) there is additional handler for connectivity issues (`URLSession:task:didCompleteWithError:`) and
@@ -66,13 +65,11 @@
 }
 
 - (void)open {
-    assert(_delegateQueue);
     _readyState = ARTWS_CONNECTING;
     [_webSocketTask resume];
 }
 
 - (void)send:(id)data {
-    assert(_delegateQueue);
     NSURLSessionWebSocketMessage *wsMessage = [data isKindOfClass:[NSString class]] ?
                                                 [[NSURLSessionWebSocketMessage alloc] initWithString:data] :
                                                 [[NSURLSessionWebSocketMessage alloc] initWithData:data];
@@ -80,7 +77,7 @@
     [_webSocketTask sendMessage:wsMessage completionHandler:^(NSError *error) {
         ARTURLSessionWebSocket *strongSelf = weakSelf;
         if (strongSelf) {
-            dispatch_async(strongSelf->_delegateQueue, ^{
+            dispatch_async([strongSelf getDelegateDispatchQueue], ^{
                 if (error != nil) {
                     [strongSelf->_delegate webSocket:strongSelf didFailWithError:error];
                 }
@@ -96,10 +93,10 @@
     [_webSocketTask cancelWithCloseCode:code reason:[reason dataUsingEncoding:NSUTF8StringEncoding]];
 }
 
-- (void)URLSession:(NSURLSession *)session webSocketTask:(NSURLSessionWebSocketTask *)webSocketTask didOpenWithProtocol:(NSString *) protocol {
+- (void)URLSession:(NSURLSession *)session webSocketTask:(NSURLSessionWebSocketTask *)webSocketTask didOpenWithProtocol:(NSString *)protocol {
     self.readyState = ARTWS_OPEN;
     [self listenForMessage];
-    dispatch_async(self->_delegateQueue, ^{
+    dispatch_async([self getDelegateDispatchQueue], ^{
         [self->_delegate webSocketDidOpen:self];
     });
 }
@@ -110,7 +107,7 @@
     if (self.readyState == ARTWS_CLOSING || self.readyState == ARTWS_OPEN) {
         self.readyState = ARTWS_CLOSED;
     }
-    dispatch_async(self->_delegateQueue, ^{
+    dispatch_async([self getDelegateDispatchQueue], ^{
         NSString *reason = [[NSString alloc] initWithData:reasonData encoding:NSUTF8StringEncoding];
         [self->_delegate webSocket:self didCloseWithCode:closeCode reason:reason wasClean:YES];
     });
@@ -120,7 +117,7 @@
     self.readyState = ARTWS_CLOSED;
     if (error != nil) {
         [_logger debug:__FILE__ line:__LINE__ message:@"Session completion error: %@, task state = %@", error, @(_webSocketTask.state)];
-        dispatch_async(self->_delegateQueue, ^{
+        dispatch_async([self getDelegateDispatchQueue], ^{
             [self->_delegate webSocket:self didFailWithError:error];
         });
     }
