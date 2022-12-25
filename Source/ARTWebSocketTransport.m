@@ -325,7 +325,7 @@ Class configuredWebsocketClass = nil;
         type = ARTRealtimeTransportErrorTypeHostUnreachable;
     } else if ([error.domain isEqualToString:@"NSPOSIXErrorDomain"] && (error.code == 57 || error.code == 50)) {
         type = ARTRealtimeTransportErrorTypeNoInternet;
-    } else if ([error.domain isEqualToString:@"NSURLErrorDomain"] && (error.code == -1009)) {
+    } else if ([error.domain isEqualToString:@"NSURLErrorDomain"] && (error.code == NSURLErrorNotConnectedToInternet)) {
         type = ARTRealtimeTransportErrorTypeNoInternet;
     } else if ([error.domain isEqualToString:ARTSRWebSocketErrorDomain] && error.code == 2132) {
         id status = error.userInfo[ARTSRHTTPResponseErrorKey];
