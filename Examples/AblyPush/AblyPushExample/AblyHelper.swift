@@ -5,6 +5,8 @@ class AblyHelper: NSObject {
     
     static let shared = AblyHelper(clientId: UIDevice.current.name)
     
+    private var clientId: String!
+    
     private(set) var realtime: ARTRealtime!
     
     private var testChannel: ARTRealtimeChannel {
@@ -13,15 +15,20 @@ class AblyHelper: NSObject {
     
     private let key = "" // Your API Key from your app's dashboard
     
+    func createRealtime() {
+        self.realtime?.close()
+        let options = ARTClientOptions(key: key)
+        options.clientId = clientId
+        options.pushRegistererDelegate = self
+        self.realtime = ARTRealtime(options: options)
+    }
+    
     private convenience init(clientId: String) {
         self.init()
         guard key != "" else {
             preconditionFailure("Obtain your API key at https://ably.com/accounts/")
         }
-        let options = ARTClientOptions(key: key)
-        options.clientId = clientId
-        options.pushRegistererDelegate = self
-        self.realtime = ARTRealtime(options: options)
+        self.clientId = clientId
         UNUserNotificationCenter.current().delegate = self
     }
 }
