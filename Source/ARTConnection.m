@@ -262,7 +262,7 @@
     [_eventEmitter off:listener];
 }
 
--(NSString *)recoveryKey{
+- (NSString *)recoveryKey {
     return [self createRecoveryKey];
 }
 
