@@ -725,7 +725,7 @@ dispatch_sync(_queue, ^{
     }
     
     //RTP17f, RTP17g
-    if (self.state_nosync != ARTRealtimeChannelAttached){
+    if (self.state_nosync != ARTRealtimeChannelAttached) {
         [self.presenceMap reenterLocalMembers];
     }
 

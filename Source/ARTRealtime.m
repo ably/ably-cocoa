@@ -790,7 +790,7 @@
     [_pingEventEmitter emit:nil with:nil];
 }
 
--(void)resetSerials{
+- (void)resetSerials {
     self.msgSerial = 0;
     self.connection.latestMessageSerial = 0;
     self.pendingMessageStartSerial = 0;

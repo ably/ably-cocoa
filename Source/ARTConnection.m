@@ -276,8 +276,8 @@
         return nil;
     }
   
-    NSMutableDictionary<NSString *,NSString *> *serials = @{}.mutableCopy;
-    for(ARTRealtimeChannelInternal *const channel in _realtime.channels.nosyncIterable){
+    NSMutableDictionary<NSString *,NSString *> *serials = [NSMutableDictionary new];
+    for (ARTRealtimeChannelInternal *const channel in _realtime.channels.nosyncIterable) {
         serials[channel.name] = channel.serial;
     }
     
@@ -323,7 +323,7 @@
     
 }
 
-- (NSString *)jsonString{
+- (NSString *)jsonString {
     NSError *error;
     NSDictionary *const object = @{
         @"msgSerial": @(_msgSerial),
@@ -341,7 +341,7 @@
     return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
 }
 
-+(ARTConnectionRecoveryKey *)fromJsonString:(NSString *)json{
++ (ARTConnectionRecoveryKey *)fromJsonString:(NSString *)json {
     NSData *const jsonData = [json dataUsingEncoding:NSUTF8StringEncoding];
     
     NSError *error = nil;
