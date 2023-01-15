@@ -1245,7 +1245,7 @@ class RealtimeClientChannelTests: XCTestCase {
     }
     
     // RTL4c1
-    func test__0300__Channel__attach__should_send_an_channel_serial_as_received_from_latest_protocl_message_or_omitted_if_no_previous_protool_message() {
+    func test__202__Channel__attach__should_send_an_channel_serial_as_received_from_latest_protocl_message_or_omitted_if_no_previous_protool_message() {
         let options = AblyTests.commonAppSetup()
         options.autoConnect = false
         let client = ARTRealtime(options: options)
