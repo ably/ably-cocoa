@@ -20,7 +20,6 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (strong, nullable, nonatomic) ARTDeviceSecret *secret;
 
-
 /// :nodoc:
 - (instancetype)init NS_UNAVAILABLE;
 
