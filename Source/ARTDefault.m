@@ -3,8 +3,7 @@
 #import "ARTNSArray+ARTFunctional.h"
 #import "ARTClientInformation+Private.h"
 
-NSString *const ARTDefault_apiVersion = @"2";
-static NSString *const ARTDefault_libraryVersion = @"1.2.16";
+static NSString *const ARTDefault_apiVersion = @"2";
 
 NSString *const ARTDefaultProduction = @"production";
 
