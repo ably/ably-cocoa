@@ -128,7 +128,7 @@
     return [self encode:[self tokenDetailsToDictionary:tokenDetails] error:error];
 }
 
-- (NSData *)encodeDeviceDetails:(ARTLocalDevice *const)deviceDetails error:(NSError **)error {
+- (NSData *)encodeDeviceDetails:(ARTDeviceDetails *)deviceDetails error:(NSError **)error {
     return [self encode:[self deviceDetailsToDictionary:deviceDetails] error:error];
 }
 
@@ -628,13 +628,12 @@
     return dictionary;
 }
 
-- (NSDictionary *)deviceDetailsToDictionary:(ARTLocalDevice *const)deviceDetails {
+- (NSDictionary *)deviceDetailsToDictionary:(ARTDeviceDetails *)deviceDetails {
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
 
     dictionary[@"id"] = deviceDetails.id;
     dictionary[@"platform"] = deviceDetails.platform;
     dictionary[@"formFactor"] = deviceDetails.formFactor;
-    dictionary[@"deviceSecret"] = deviceDetails.secret;
 
     if (deviceDetails.clientId) {
         dictionary[@"clientId"] = deviceDetails.clientId;
