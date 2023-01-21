@@ -39,7 +39,7 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
     ARTPresenceSyncState _syncState;
     ARTEventEmitter<ARTEvent * /*ARTSyncState*/, id> *_syncEventEmitter;
     NSMutableDictionary<NSString *, ARTPresenceMessage *> *_members;
-    NSMutableDictionary<NSString *, ARTPresenceMessage *> *_localMembers; // clientId:PresenceMessage RTP17h
+    NSMutableDictionary<NSString *, ARTPresenceMessage *> *_localMembers; // RTP17h
 }
 
 @end
