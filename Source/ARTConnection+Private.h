@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSString *)jsonString;
 + (ARTConnectionRecoveryKey *)fromJsonString:(NSString *)json;
+
 @end
 
 @interface ARTConnectionInternal : NSObject<ARTConnectionProtocol>

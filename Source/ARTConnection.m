@@ -343,21 +343,15 @@
     NSData *const jsonData = [json dataUsingEncoding:NSUTF8StringEncoding];
     
     NSError *error = nil;
-    NSDictionary *const object = [NSJSONSerialization
-                             JSONObjectWithData:jsonData
-                             options:0
-                             error:&error];
+    NSDictionary *const object = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
+    
     if (error) {
         @throw error;
     }
-    const int64_t messageSerial = [[object valueForKey:@"msgSerial"] longLongValue];
-    NSString *connectionKey = [object valueForKey:@"connectionKey"];
-    NSDictionary<NSString *, NSString *> *channelSerials = [object valueForKey:@"serials"];
-    ARTConnectionRecoveryKey *recoveryKey = [[ARTConnectionRecoveryKey alloc] initWithConnectionKey:connectionKey
-                                                                                      messageSerial:messageSerial
-                                                                                     channelSerials:channelSerials];
-    return recoveryKey;
     
+    return [[ARTConnectionRecoveryKey alloc] initWithConnectionKey:[object valueForKey:@"connectionKey"]
+                                                     messageSerial:[[object valueForKey:@"msgSerial"] longLongValue]
+                                                    channelSerials:[object valueForKey:@"serials"]];
 }
 
 @end
