@@ -794,24 +794,21 @@
 
     switch (self.connection.state_nosync) {
         case ARTRealtimeConnecting: {
-            if ([message.connectionId isEqualToString:self.connection.id_nosync] && !message.error) {  // RTN15c6
+            // RTN15c6
+            if ([message.connectionId isEqualToString:self.connection.id_nosync] && !message.error) {
                 [self.logger debug:@"RT:%p connection \"%@\" has reconnected and resumed successfully", self, message.connectionId];
-                //make sure that a connection id exists for resume failure
-            } else if (self.connection.id_nosync &&
-                       ![message.connectionId isEqualToString:self.connection.id_nosync]
-                       && message.error) { // RTN15c7
-
+            }
+            // RTN15c7
+            else if (self.connection.id_nosync && ![message.connectionId isEqualToString:self.connection.id_nosync] && message.error) {
                 [self.logger warn:@"RT:%p connection \"%@\" has resumed with non-fatal error \"%@\"", self, message.connectionId, message.error.message];
                 [self resetSerials];
-
-            } else if (!self.connection.id_nosync && message.error) { //recover failure
+            }
+            else if (!self.connection.id_nosync && message.error) { // Recover failure
                 [self resetSerials];
             }
-            //do not reattach on a completely new connection
-            const BOOL isNewConnection = !self.connection.id_nosync && !message.error && !_connectionLostAt;
-            if (!isNewConnection) {
-                [self reattachChannels:message];
-            }
+            
+            // RTN15c6, RTN15c7 (reattach channels regardless resume success or failure)
+            [self reattachChannelsWithReason:message.error];
             
             [self.connection setId:message.connectionId];
             [self.connection setKey:message.connectionKey];
@@ -837,10 +834,9 @@
     }
 }
 
-// For RTN15c6, RTN15c7
-- (void)reattachChannels:(ARTProtocolMessage *const)message {
+- (void)reattachChannelsWithReason:(ARTErrorInfo *)reason {
     for (ARTRealtimeChannelInternal *const channel in self.channels.nosyncIterable) {
-        [channel reattachWithReason:message.error];
+        [channel reattachWithReason:reason];
     }
 }
 
