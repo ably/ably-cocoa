@@ -18,6 +18,7 @@
 #import "ARTNSMutableDictionary+ARTDictionaryUtil.h"
 #import "ARTStringifiable.h"
 #import "ARTClientInformation.h"
+#import "ARTConnection+Private.h"
 
 enum {
     ARTWsNeverConnected = -1,
@@ -59,7 +60,7 @@ Class configuredWebsocketClass = nil;
 
 - (instancetype)initWithRest:(ARTRestInternal *)rest
                      options:(ARTClientOptions *)options
-                   resumeKey:(NSString *)resumeKey recoveryKey:(nullable NSString *)recoveryKey {
+                   resumeKey:(NSString *)resumeKey {
     self = [super init];
     if (self) {
         _workQueue = rest.queue;
@@ -69,7 +70,6 @@ Class configuredWebsocketClass = nil;
         _logger = rest.logger;
         _options = [options copy];
         _resumeKey = resumeKey;
-        _recoveryKey = recoveryKey;
         _stateEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_workQueue];
 
         [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p WS:%p alloc", _delegate, self];
@@ -148,10 +148,11 @@ Class configuredWebsocketClass = nil;
     // Format: MsgPack, JSON
     [queryItems addValueAsURLQueryItem:[_encoder formatAsString] forKey:@"format"];
 
-    if (options.recover) {
-        [queryItems addValueAsURLQueryItem:_recoveryKey forKey:@"recover"];
+    // RTN16k
+    if (options.recover != nil) {
+        ARTConnectionRecoveryKey *const recoveryKey = [ARTConnectionRecoveryKey fromJsonString:options.recover];
+        [queryItems addValueAsURLQueryItem:recoveryKey.connectionKey forKey:@"recover"];
     }
-    
     else if (resumeKey != nil) {
         [queryItems addValueAsURLQueryItem:resumeKey forKey:@"resume"];
     }

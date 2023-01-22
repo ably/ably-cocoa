@@ -282,7 +282,8 @@
     }
     
     ARTConnectionRecoveryKey *const recoveryKey = [[ARTConnectionRecoveryKey alloc] initWithConnectionKey:_key
-                                                                                            messageSerial:_latestMessageSerial channelSerials:serials];
+                                                                                            messageSerial:_latestMessageSerial
+                                                                                           channelSerials:serials];
     return [recoveryKey jsonString];
 }
 

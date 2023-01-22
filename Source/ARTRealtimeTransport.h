@@ -66,8 +66,7 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportState) {
 
 - (instancetype)initWithRest:(ARTRestInternal *)rest
                      options:(ARTClientOptions *)options
-                   resumeKey:(nullable NSString *)resumeKey
-                 recoveryKey:(nullable NSString *)recoveryKey;
+                   resumeKey:(nullable NSString *)resumeKey;
 
 @property (readonly, strong, nonatomic) NSString *resumeKey;
 @property (readonly, assign, nonatomic) ARTRealtimeTransportState state;

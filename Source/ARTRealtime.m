@@ -270,7 +270,7 @@
         // Halt the current connection and reconnect with the most recent token
         [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p halt current connection and reconnect with %@", self.rest, tokenDetails];
         [self abortAndReleaseTransport:[ARTStatus state:ARTStateOk]];
-        [self setTransportWithResumeKey:self->_transport.resumeKey orRecoveryKey:nil];
+        [self setTransportWithResumeKey:self->_transport.resumeKey];
         [self->_transport connectWithToken:tokenDetails.token];
         [self cancelAllPendingAuthorizations];
         waitForResponse();
@@ -573,16 +573,12 @@
             
             if (!_transport) {
                 NSString *resumeKey = nil;
-                NSString *recoveryKey = nil;
                 if (stateChange.previous == ARTRealtimeFailed ||
                     stateChange.previous == ARTRealtimeDisconnected ||
                     stateChange.previous == ARTRealtimeSuspended) {
                     resumeKey = self.connection.key_nosync;
-
-                } else if (self.options.recover) { //RTN16k
-                    recoveryKey = [ARTConnectionRecoveryKey fromJsonString:self.options.recover].connectionKey;
                 }
-                [self setTransportWithResumeKey:resumeKey orRecoveryKey:recoveryKey];
+                [self setTransportWithResumeKey:resumeKey];
                 [self transportConnectForcingNewToken:_renewingToken newConnection:true];
             }
             
@@ -760,14 +756,11 @@
 
 - (void)resetTransportWithResumeKey:(NSString *const)resumeKey {
     [self closeAndReleaseTransport];
-    [self setTransportWithResumeKey:resumeKey orRecoveryKey:nil];
+    [self setTransportWithResumeKey:resumeKey];
 }
 
-- (void)setTransportWithResumeKey:(NSString *const)resumeKey orRecoveryKey:(NSString *const)recoveryKey {
-    _transport = [[_transportClass alloc] initWithRest:self.rest
-                                               options:self.options
-                                             resumeKey:resumeKey
-                                           recoveryKey:recoveryKey];
+- (void)setTransportWithResumeKey:(NSString *const)resumeKey {
+    _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:resumeKey];
     _transport.delegate = self;
 }
 
