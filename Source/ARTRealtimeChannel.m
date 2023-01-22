@@ -707,24 +707,24 @@ dispatch_sync(_queue, ^{
     }
 
     self.attachSerial = message.channelSerial;
-    //RTL15b
+    // RTL15b
     if (message.channelSerial) {
         self.serial = message.channelSerial;
     }
 
     if (message.hasPresence) {
         [self.presenceMap startSync];
-    } else if ([self.presenceMap.members count] > 0 || [self.presenceMap.localMembers count] > 0) {
+    }
+    else if ([self.presenceMap.members count] > 0 || [self.presenceMap.localMembers count] > 0) {
          if (!message.resumed) {
             // When an ATTACHED message is received without a HAS_PRESENCE flag and PresenceMap has existing members
             [self.presenceMap startSync];
-            
             [self.presenceMap endSync];
             [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p C:%p (%@) PresenceMap has been reset", _realtime, self, self.name];
         }
     }
     
-    //RTP17f, RTP17g
+    // RTP17f, RTP17g
     if (self.state_nosync != ARTRealtimeChannelAttached) {
         [self.presenceMap reenterLocalMembers];
     }
