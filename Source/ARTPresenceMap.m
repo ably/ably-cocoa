@@ -156,13 +156,11 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
 }
 
 - (void)reenterLocalMembers {
-    [_localMembers enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key,
-                                                       ARTPresenceMessage *const _Nonnull localMember,
-                                                       BOOL * _Nonnull stop) {
+    [_logger debug:__FILE__ line:__LINE__ message:@"%p reentering local members", self];
+    for (ARTPresenceMessage *localMember in _localMembers) {
         ARTPresenceMessage *reenter = [localMember copy];
         [self.delegate map:self shouldReenterLocalMember:reenter];
-    }];
-    
+    }
     [self cleanUpAbsentMembers];
 }
 
