@@ -967,14 +967,10 @@ dispatch_sync(_queue, ^{
 }
 
 - (void)internalAttach:(ARTCallback)callback withReason:(ARTErrorInfo *)reason {
-    [self internalAttach:callback reason:reason storeErrorInfo:false channelSerial:nil];
+    [self internalAttach:callback withReason:reason storeErrorInfo:false];
 }
 
-- (void)internalAttach:(ARTCallback)callback channelSerial:(NSString *)channelSerial reason:(ARTErrorInfo *)reason {
-    [self internalAttach:callback reason:reason storeErrorInfo:false channelSerial:channelSerial];
-}
-
-- (void)internalAttach:(ARTCallback)callback reason:(ARTErrorInfo *)reason storeErrorInfo:(BOOL)storeErrorInfo channelSerial:(NSString *)channelSerial {
+- (void)internalAttach:(ARTCallback)callback withReason:(ARTErrorInfo *)reason storeErrorInfo:(BOOL)storeErrorInfo {
     switch (self.state_nosync) {
         case ARTRealtimeChannelDetaching: {
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) attach after the completion of Detaching", _realtime, self, self.name];
@@ -1001,10 +997,10 @@ dispatch_sync(_queue, ^{
     status.storeErrorInfo = storeErrorInfo;
     [self transition:ARTRealtimeChannelAttaching status:status];
 
-    [self attachAfterChecks:callback channelSerial:channelSerial];
+    [self attachAfterChecks:callback];
 }
 
-- (void)attachAfterChecks:(ARTCallback)callback channelSerial:(NSString *)channelSerial {
+- (void)attachAfterChecks:(ARTCallback)callback {
     ARTProtocolMessage *attachMessage = [[ARTProtocolMessage alloc] init];
     attachMessage.action = ARTProtocolMessageAttach;
     attachMessage.channel = self.name;
@@ -1032,7 +1028,7 @@ dispatch_sync(_queue, ^{
     if (![self.realtime shouldQueueEvents]) {
         ARTEventListener *reconnectedListener = [self.realtime.connectedEventEmitter once:^(NSNull *n) {
             // Disconnected and connected while attaching, re-attach.
-            [self attachAfterChecks:callback channelSerial:channelSerial];
+            [self attachAfterChecks:callback];
         }];
         [_attachedEventEmitter once:^(ARTErrorInfo *err) {
             [self.realtime.connectedEventEmitter off:reconnectedListener];
@@ -1168,7 +1164,7 @@ dispatch_sync(_queue, ^{
     _decodeFailureRecoveryInProgress = true;
     [self internalAttach:^(ARTErrorInfo *e) {
         self->_decodeFailureRecoveryInProgress = false;
-    } channelSerial:self.serial reason:error];
+    } withReason:error];
 }
 
 #pragma mark - ARTPresenceMapDelegate
