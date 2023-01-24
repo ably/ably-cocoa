@@ -807,8 +807,12 @@
                 [self resetSerials];
             }
             
-            // RTN15c6, RTN15c7 (reattach channels regardless resume success or failure)
-            [self reattachChannelsWithReason:message.error];
+            // Do not reattach on a completely new connection
+            const BOOL isNewConnection = !self.connection.id_nosync && !message.error && !_connectionLostAt;
+            if (!isNewConnection) {
+                // RTN15c6, RTN15c7 (reattach channels regardless resume success or failure)
+                [self reattachChannelsWithReason:message.error];
+            }
             
             [self.connection setId:message.connectionId];
             [self.connection setKey:message.connectionKey];
