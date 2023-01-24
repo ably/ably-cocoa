@@ -157,7 +157,7 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
 
 - (void)reenterLocalMembers {
     [_logger debug:__FILE__ line:__LINE__ message:@"%p reentering local members", self];
-    for (ARTPresenceMessage *localMember in _localMembers) {
+    for (ARTPresenceMessage *localMember in [_localMembers allValues]) {
         ARTPresenceMessage *reenter = [localMember copy];
         [self.delegate map:self shouldReenterLocalMember:reenter];
     }
