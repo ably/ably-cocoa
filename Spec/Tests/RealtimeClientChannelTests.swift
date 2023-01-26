@@ -949,7 +949,7 @@ class RealtimeClientChannelTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { stateChange in
-                expect(stateChange.reason).notTo(beNil()) // didn't resumed
+                expect(stateChange.reason?.code).to(equal(ARTErrorCode.invalidConnectionIdInvalidFormat.intValue)) // didn't resumed
                 done()
             }
             client.simulateRestoreInternetConnection(after: 1.0)
