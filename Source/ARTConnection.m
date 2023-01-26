@@ -337,8 +337,8 @@
     };
     
     NSData *const jsonData = [NSJSONSerialization dataWithJSONObject:object
-                                                       options:0
-                                                         error:&error];
+                                                             options:0
+                                                               error:&error];
     if (error) {
         @throw error;
     }
