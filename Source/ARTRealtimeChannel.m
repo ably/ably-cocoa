@@ -716,7 +716,7 @@ dispatch_sync(_queue, ^{
         [self.presenceMap startSync];
     }
     else if ([self.presenceMap.members count] > 0 || [self.presenceMap.localMembers count] > 0) {
-         if (!message.resumed) {
+        if (!message.resumed) {
             // When an ATTACHED message is received without a HAS_PRESENCE flag and PresenceMap has existing members
             [self.presenceMap startSync];
             [self.presenceMap endSync];
@@ -876,7 +876,7 @@ dispatch_sync(_queue, ^{
         if (!presence.id) {
             presence.id = [NSString stringWithFormat:@"%@:%d", message.id, i];
         }
-      
+
         if ([self.presenceMap add:presence]) {
             [self broadcastPresence:presence];
         }

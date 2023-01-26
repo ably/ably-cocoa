@@ -129,33 +129,33 @@
 
 - (NSString *)id {
     __block NSString *ret;
-    dispatch_sync(_queue, ^{
-        ret = [self id_nosync];
-    });
+dispatch_sync(_queue, ^{
+    ret = [self id_nosync];
+});
     return ret;
 } 
 
 - (NSString *)key {
     __block NSString *ret;
-    dispatch_sync(_queue, ^{
-        ret = [self key_nosync];
-    });
+dispatch_sync(_queue, ^{
+    ret = [self key_nosync];
+});
     return ret;
 } 
 
 - (ARTRealtimeConnectionState)state {
     __block ARTRealtimeConnectionState ret;
-    dispatch_sync(_queue, ^{
-        ret = [self state_nosync];
-    });
+dispatch_sync(_queue, ^{
+    ret = [self state_nosync];
+});
     return ret;
 }
 
 - (ARTErrorInfo *)errorReason {
     __block ARTErrorInfo *ret;
-    dispatch_sync(_queue, ^{
-        ret = [self errorReason_nosync];
-    });
+dispatch_sync(_queue, ^{
+    ret = [self errorReason_nosync];
+});
     return ret;
 }
 
