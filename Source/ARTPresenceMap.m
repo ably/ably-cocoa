@@ -150,11 +150,6 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
     }
 }
 
-- (void)reset {
-    _members = [NSMutableDictionary new];
-    _localMembers = [NSMutableDictionary new];
-}
-
 - (void)reenterLocalMembers {
     [_logger debug:__FILE__ line:__LINE__ message:@"%p reentering local members", self];
     for (ARTPresenceMessage *localMember in [_localMembers allValues]) {
@@ -162,6 +157,11 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
         [self.delegate map:self shouldReenterLocalMember:reenter];
     }
     [self cleanUpAbsentMembers];
+}
+
+- (void)reset {
+    _members = [NSMutableDictionary new];
+    _localMembers = [NSMutableDictionary new];
 }
 
 - (void)startSync {
