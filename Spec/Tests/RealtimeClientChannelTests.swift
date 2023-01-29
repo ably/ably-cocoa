@@ -4135,80 +4135,31 @@ class RealtimeClientChannelTests: XCTestCase {
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(uniqueChannelName())
         
-        waitUntil(timeout: testTimeout) { done in
-            client.connection.once(.connected) { _ in
-                done()
-            }
-        }
-
-        guard let transport = client.internal.transport as? TestProxyTransport else {
-            fail("Expecting TestProxyTransport"); return
-        }
-        //first re-run for RTL15b
-        waitUntil(timeout: testTimeout) { done in
-            let partialDone = AblyTests.splitDone(3, done: done)
-            channel.attach { error in
-                expect(error).to(beNil())
-                let attachMessage = transport.protocolMessagesReceived.filter { $0.action == .attached }[0]
-                if attachMessage.channelSerial != nil {
-                    expect(attachMessage.channelSerial).to(equal(channel.internal.serial))
-                }
-                
-                partialDone()
-                channel.subscribe { message in
-                    let messageMessage = transport.protocolMessagesReceived.filter { $0.action == .message }[0]
-                    if messageMessage.channelSerial != nil {
-                        expect(messageMessage.channelSerial).to(equal(channel.internal.serial))
-                    }
-                    
-                    channel.presence.enterClient("client1", data: "Hey")
-                    partialDone()
-
-                }
-                channel.presence.subscribe { presenceMessage in
-                    let presenceMessage = transport.protocolMessagesReceived.filter { $0.action == .presence }[0]
-                    if presenceMessage.channelSerial != nil {
-                        expect(presenceMessage.channelSerial).to(equal(channel.internal.serial))
-                    }
-                    partialDone()
-                }
-                channel.publish([ARTMessage()])
-            }
-        }
+        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
         
-        channel.presence.unsubscribe()
+        // Case for detached
+        channel.attach()
+        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
+        expect(channel.internal.serial).toNot(beNil())
         
-        //detach
-        waitUntil(timeout: testTimeout) { done in
-            channel.once(.detached) { _ in
-                expect(channel.internal.serial).to(beNil())
-                done()
-            }
-            channel.detach()
-        }
+        channel.detach()
+        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.detached), timeout: testTimeout)
+        expect(channel.internal.serial).to(beNil())
         
-        //suspend
-        waitUntil(timeout: testTimeout) { done in
-            //reattach
-            channel.once(.attached) { _ in
-                expect(channel.internal.serial).notTo(beNil())
-               done()
-            }
-            channel.attach()
-        }
+        // Case for suspended
+        channel.attach()
+        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
+        expect(channel.internal.serial).toNot(beNil())
+        
         channel.internal.setSuspended(ARTStatus.state(.ok))
         expect(channel.state).to(equal(ARTRealtimeChannelState.suspended))
         expect(channel.internal.serial).to(beNil())
         
-        //fail
-        waitUntil(timeout: testTimeout) { done in
-            //reattach
-            channel.once(.attached) { _ in
-                expect(channel.internal.serial).notTo(beNil())
-               done()
-            }
-            channel.attach()
-        }
+        // Case for failed
+        channel.attach()
+        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
+        expect(channel.internal.serial).toNot(beNil())
+        
         channel.internal.setFailed(ARTStatus.state(.ok))
         expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
         expect(channel.internal.serial).to(beNil())
