@@ -2738,7 +2738,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     }
     
     // RTP17f
-    func test_200_presence_object_should_perform_re_entr_whenever_a_channel_move_into_attached_state() {
+    func test_200_presence_object_should_perform_re_entry_whenever_a_channel_moves_into_the_attached_state() {
         let options = AblyTests.commonAppSetup()
         options.logLevel = .error
         let client = AblyTests.newRealtime(options)
@@ -2756,28 +2756,30 @@ class RealtimeClientPresenceTests: XCTestCase {
             channel.presence.subscribe(.enter) { presenceMessage in
                 if presenceMessage.clientId == firstClient {
                     partialDone()
-                } else if presenceMessage.clientId == secondClient {
+                }
+                else if presenceMessage.clientId == secondClient {
                     partialDone()
                 }
             }
-
             channel.attach()
         }
         expect(channel.internal.presenceMap.localMembers).to(haveCount(2))
         channel.presence.unsubscribe()
         
-        //simulate disconnection and reconnection
-        waitUntil(timeout: testTimeout) { done in
-            client.connection.once(.disconnected) { _ in
-                channel.once(.attached) { _ in
-                    done()
-                }
-            }
-            client.internal.onDisconnected()
-        }
+        client.simulateNoInternetConnection()
+        client.simulateRestoreInternetConnection(after: 0.1)
         
+        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
         expect(channel.internal.presenceMap.localMembers).toEventually(haveCount(2),timeout: testTimeout)
         
+        let transport = client.internal.transport as! TestProxyTransport
+        let sentPresenceMessages = transport.protocolMessagesSent.filter({ $0.action == .presence }).compactMap { $0.presence?.first }
+        let client1PresenceMessage = try! XCTUnwrap(sentPresenceMessages.first(where: { $0.clientId == firstClient }))
+        let client2PresenceMessage = try! XCTUnwrap(sentPresenceMessages.first(where: { $0.clientId == secondClient }))
+        
+        expect(client1PresenceMessage.action).to(equal(ARTPresenceAction.enter))
+        expect(client2PresenceMessage.action).to(equal(ARTPresenceAction.enter))
     }
     
     /***
