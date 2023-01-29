@@ -524,8 +524,7 @@ class RealtimeClientChannelTests: XCTestCase {
                     if stateChange.current == .attached {
                         expect(stateChange.resumed).to(beTrue())
                         expect(stateChange.reason).to(beNil())
-                        expect(stateChange.current).to(equal(ARTRealtimeChannelState.attached))
-                        expect(stateChange.previous).to(equal(ARTRealtimeChannelState.attached))
+                        expect(stateChange.previous).to(equal(ARTRealtimeChannelState.attaching)) // RTN15c1 -> RTN15c6
                         done()
                     }
                 }
@@ -1246,7 +1245,7 @@ class RealtimeClientChannelTests: XCTestCase {
     }
     
     // RTL4c1
-    func test__202__Channel__attach__should_send_an_channel_serial_as_received_from_latest_protocl_message_or_omitted_if_no_previous_protool_message() {
+    func test__202__Channel__attach__protocol_message_channelSerial_must_be_set_to_channelSerial_of_the_most_recent_protocol_message_or_omitted_if_no_previous_protocol_message_received() {
         let options = AblyTests.commonAppSetup()
         options.autoConnect = false
         let client = ARTRealtime(options: options)
