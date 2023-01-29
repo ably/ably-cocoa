@@ -65,6 +65,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTRealtimeChannelInternal (Private)
 
 - (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status;
+- (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status resumed:(BOOL)resumed;
 
 - (void)onChannelMessage:(ARTProtocolMessage *)message;
 - (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(ARTStatusCallback)cb;

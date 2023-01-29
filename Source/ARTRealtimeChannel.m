@@ -587,10 +587,10 @@ dispatch_sync(_queue, ^{
     [self.internalEventEmitter emit:[ARTEvent newWithChannelEvent:event] with:data];
 }
 
-- (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status {
+- (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status resumed:(BOOL)resumed {
     [self.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) channel state transitions from %tu - %@ to %tu - %@", _realtime, self, self.name, self.state_nosync, ARTRealtimeChannelStateToStr(self.state_nosync), state, ARTRealtimeChannelStateToStr(state)];
     const ARTRealtimeChannelState previousState = self.state_nosync;
-    ARTChannelStateChange *const stateChange = [[ARTChannelStateChange alloc] initWithCurrent:state previous:previousState event:(ARTChannelEvent)state reason:status.errorInfo];
+    ARTChannelStateChange *const stateChange = [[ARTChannelStateChange alloc] initWithCurrent:state previous:previousState event:(ARTChannelEvent)state reason:status.errorInfo resumed:resumed];
     self.state = state;
 
     if (status.storeErrorInfo) {
@@ -635,6 +635,10 @@ dispatch_sync(_queue, ^{
     if (channelRetryListener) {
         [channelRetryListener startTimer];
     }
+}
+
+- (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status {
+    [self transition:state status:status resumed:NO];
 }
 
 - (ARTEventListener *)unlessStateChangesBefore:(NSTimeInterval)deadline do:(void(^)(void))callback {
@@ -739,7 +743,7 @@ dispatch_sync(_queue, ^{
     }
 
     ARTStatus *status = message.error ? [ARTStatus state:ARTStateError info:message.error] : [ARTStatus state:ARTStateOk];
-    [self transition:ARTRealtimeChannelAttached status:status];
+    [self transition:ARTRealtimeChannelAttached status:status resumed:message.resumed];
     [_attachedEventEmitter emit:nil with:nil];
 
     [self.presence sendPendingPresence];
