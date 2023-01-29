@@ -1250,46 +1250,51 @@ class RealtimeClientChannelTests: XCTestCase {
         options.autoConnect = false
         let client = ARTRealtime(options: options)
         client.internal.setTransport(TestProxyTransport.self)
+        client.internal.setReachabilityClass(TestReachability.self)
         client.connect()
         defer { client.dispose(); client.close() }
 
+        let latestAttachProtocolMessage = {
+            let transport = try! XCTUnwrap(client.internal.transport as? TestProxyTransport)
+            let protocolAttachMessagesSent = transport.protocolMessagesSent.filter { $0.action == .attach }
+            return try! XCTUnwrap(protocolAttachMessagesSent.last)
+        }
+        
         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
-        let transport = client.internal.transport as! TestProxyTransport
-
+        
         let channel = client.channels.get(uniqueChannelName())
         channel.attach()
 
         expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
-        expect(transport.protocolMessagesSent.filter { $0.action == .attach }).to(haveCount(1))
-        let firstProtocolMessage = transport.protocolMessagesSent.filter { $0.action == .attach }[0]
-        expect(firstProtocolMessage.channelSerial).to(beNil())
+        
+        let firstProtocolAttachMessage = latestAttachProtocolMessage()
+        expect(firstProtocolAttachMessage.channelSerial).to(beNil())
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
         
         waitUntil(timeout: testTimeout) { done in
-            
             let partialDone = AblyTests.splitDone(2, done: done)
-            //receive message on the channel
-            channel.subscribe { _in in
+            channel.subscribe { message in
+                expect(message.data as? String).to(equal("message"))
                 partialDone()
             }
-            channel.publish([ARTMessage(id: "no-id", data: "hey hello")]){_ in
+            channel.publish(nil, data: "message") { error in
+                expect(error).to(beNil())
                 partialDone()
             }
+        }
+        expect(channel.internal.serial).toEventuallyNot(beNil())
         
-        }
-        expect(channel.internal.serial).toEventuallyNot(beNil())
-        let channelSerial = channel.internal.serial
-        waitUntil(timeout: testTimeout) { done in
-            //reconnected
-            client.connection.once(.connected){_ in
-               done()
-            }
-            client.internal.onDisconnected()
-        }
+        client.simulateNoInternetConnection()
+        client.simulateRestoreInternetConnection(after: 0.1)
+        
+        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.disconnected), timeout: testTimeout)
+        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+        
+        expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
-        expect(channel.internal.serial).toEventuallyNot(beNil())
-        let secondSerial = channel.internal.serial
-        expect(secondSerial).to(equal(channelSerial))
+        
+        let secondProtocolAttachMessage = latestAttachProtocolMessage()
+        expect(secondProtocolAttachMessage.channelSerial).to(equal(channel.internal.serial))
     }
 
     // RTL4e
