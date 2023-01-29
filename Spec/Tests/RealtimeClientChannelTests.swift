@@ -502,32 +502,33 @@ class RealtimeClientChannelTests: XCTestCase {
         options.tokenDetails = getTestTokenDetails(ttl: 5.0)
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channelName = uniqueChannelName()
-        let channel = client.channels.get(channelName)
-        
-        let recoverOptions = AblyTests.commonAppSetup()
+        let channel = client.channels.get(uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.on { stateChange in
                 switch stateChange.current {
                 case .attached:
                     expect(stateChange.resumed).to(beFalse())
-                    recoverOptions.recover = client.connection.createRecoveryKey()
                 default:
                     expect(stateChange.resumed).to(beFalse())
                 }
             }
             client.connection.once(.disconnected) { stateChange in
-                let recoverClient = ARTRealtime(options: recoverOptions)
-                defer { recoverClient.dispose(); recoverClient.close() }
-                let recoverChannel = recoverClient.channels.get(uniqueChannelName())
-                recoverChannel.on{stateChange in
-                    if(stateChange.current == .attached){
+                channel.off()
+                guard let error = stateChange.reason else {
+                    fail("Error is nil"); done(); return
+                }
+                expect(error.code) == ARTErrorCode.tokenExpired.intValue
+
+                channel.on { stateChange in
+                    if stateChange.current == .attached {
                         expect(stateChange.resumed).to(beTrue())
                         expect(stateChange.reason).to(beNil())
+                        expect(stateChange.current).to(equal(ARTRealtimeChannelState.attached))
+                        expect(stateChange.previous).to(equal(ARTRealtimeChannelState.attached))
+                        done()
                     }
                 }
-                done()
             }
             channel.attach()
         }
