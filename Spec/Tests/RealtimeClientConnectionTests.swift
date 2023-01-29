@@ -3295,27 +3295,28 @@ class RealtimeClientConnectionTests: XCTestCase {
         defer { client.dispose(); client.close() }
         
         let channelName = uniqueChannelName()
-        var expectedChannelSerial:String?
+        var expectedChannelSerial: String?
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
             client.connection.once(.connected) { stateChange in
                 let channel = client.channels.get(channelName)
-                channel.on(.attached){_ in
+                channel.on(.attached) { _ in
                     expectedChannelSerial = channel.internal.serial
                     partialDone()
                 }
                 channel.attach()
                 partialDone()
             }
-            
         }
 
         let recoverOptions = options
         recoverOptions.recover = client.connection.createRecoveryKey()
-        let recoverClient = AblyTests.newRealtime(recoverOptions)
-        defer { recoverClient.dispose(); recoverClient.close() }
-        expect(recoverClient.connection.state).toEventually(equal(.connected),timeout: testTimeout)
-        let recoveredChannel = recoverClient.channels.get(channelName)
+        
+        let recoveredClient = AblyTests.newRealtime(recoverOptions)
+        defer { recoveredClient.dispose(); recoveredClient.close() }
+        expect(recoveredClient.connection.state).toEventually(equal(.connected), timeout: testTimeout)
+        
+        let recoveredChannel = recoveredClient.channels.get(channelName)
         expect(recoveredChannel).toNot(beNil())
         expect(recoveredChannel.internal.serial).to(equal(expectedChannelSerial))
     }
