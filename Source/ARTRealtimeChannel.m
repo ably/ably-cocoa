@@ -1186,17 +1186,17 @@ dispatch_sync(_queue, ^{
 }
 
 - (void)map:(ARTPresenceMap *)map shouldReenterLocalMember:(ARTPresenceMessage *)presence {
-    [self.presence enterClient:presence.clientId data:presence.data callback:^(ARTErrorInfo *error) {
+    [self.presence reenterWithPresenceMessage:presence callback:^(ARTErrorInfo *error) {
         if (error != nil) {
             NSString *message = [NSString stringWithFormat:@"Re-entering member \"%@\" is failed with code %ld (%@)", presence.clientId, (long)error.code, error.message];
             ARTErrorInfo *reenterError = [ARTErrorInfo createWithCode:ARTErrorUnableToAutomaticallyReEnterPresenceChannel message:message];
             [self.logger logWithError:reenterError];
-            ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:self.state_nosync previous:self.state_nosync event:ARTChannelEventFailed reason:reenterError resumed:false];
+            ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:self.state_nosync previous:self.state_nosync event:ARTChannelEventUpdate reason:reenterError resumed:true]; // RTP17e
             [self emit:stateChange.event with:stateChange];
+            [self.logger warn:@"RT:%p C:%p (%@) Re-entering member \"%@\" is failed with code %ld (%@)", self->_realtime, self, self.name, presence.memberKey, (long)error.code, error.message];
         }
         else {
-            ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:self.state_nosync previous:self.state_nosync event:ARTChannelEventUpdate reason:nil resumed:true];
-            [self emit:stateChange.event with:stateChange];
+            [self.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) re-entered local member \"%@\"", self->_realtime, self, self.name, presence.memberKey];
         }
     }];
     [self.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) re-entering local member \"%@\"", _realtime, self, self.name, presence.memberKey];

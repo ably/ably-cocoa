@@ -271,6 +271,20 @@ dispatch_async(_queue, ^{
 });
 }
 
+- (void)reenterWithPresenceMessage:(ARTPresenceMessage *)message callback:(ARTCallback)cb {
+    if (cb) {
+        ARTCallback userCallback = cb;
+        cb = ^(ARTErrorInfo *_Nullable error) {
+            dispatch_async(self->_userQueue, ^{
+                userCallback(error);
+            });
+        };
+    }
+dispatch_async(_queue, ^{
+    [self reenterAfterChecksWithPresenceMessage:message callback:cb];
+});
+}
+
 - (void)update:(id)data {
     [self update:data callback:nil];
 }
@@ -327,6 +341,30 @@ dispatch_async(_queue, ^{
     msg.action = action;
     msg.clientId = clientId;
     msg.data = data;
+    msg.connectionId = _channel.realtime.connection.id_nosync;
+
+    [self publishPresence:msg callback:cb];
+}
+
+- (void)reenterAfterChecksWithPresenceMessage:(ARTPresenceMessage *)message callback:(ARTCallback)cb {
+    switch (_channel.state_nosync) {
+        case ARTRealtimeChannelDetached:
+        case ARTRealtimeChannelFailed: {
+            if (cb) {
+                ARTErrorInfo *channelError = [ARTErrorInfo createWithCode:ARTErrorChannelOperationFailedInvalidState message:[NSString stringWithFormat:@"unable to enter presence channel (incompatible channel state: %@)", ARTRealtimeChannelStateToStr(_channel.state_nosync)]];
+                cb(channelError);
+            }
+            return;
+        }
+        default:
+            break;
+    }
+
+    ARTPresenceMessage *msg = [[ARTPresenceMessage alloc] init];
+    msg.action = ARTPresenceEnter;
+    msg.id = message.id; // RTP17g
+    msg.clientId = message.clientId;
+    msg.data = message.data;
     msg.connectionId = _channel.realtime.connection.id_nosync;
 
     [self publishPresence:msg callback:cb];
