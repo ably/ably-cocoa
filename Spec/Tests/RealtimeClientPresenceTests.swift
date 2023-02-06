@@ -2764,21 +2764,25 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
             channel.attach()
         }
-        expect(channel.internal.presenceMap.localMembers).to(haveCount(2))
         channel.presence.unsubscribe()
         
-        client.simulateNoInternetConnection()
-        client.simulateRestoreInternetConnection(after: 0.1)
+        expect(channel.internal.presenceMap.localMembers).to(haveCount(2))
+        
+        // All pending messages should complete (receive ACK or NACK) before disconnect for valid count of transport.protocolMessagesSent
+        client.waitForPendingMessages()
+        client.simulateLostConnection()
         
         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+        
+        // RTP17f
+        
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
-        expect(channel.internal.presenceMap.localMembers).toEventually(haveCount(2),timeout: testTimeout)
+        expect(channel.internal.presenceMap.localMembers).to(haveCount(2))
         
         let transport = client.internal.transport as! TestProxyTransport
         let sentPresenceMessages = transport.protocolMessagesSent.filter({ $0.action == .presence }).compactMap { $0.presence?.first }
         
-        // FIXME: https://github.com/ably/ably-cocoa/issues/1561
-//        expect(sentPresenceMessages).to(haveCount(2))
+        expect(sentPresenceMessages).to(haveCount(2))
 
         let client1PresenceMessage = try! XCTUnwrap(sentPresenceMessages.first(where: { $0.clientId == firstClient }))
         let client2PresenceMessage = try! XCTUnwrap(sentPresenceMessages.first(where: { $0.clientId == secondClient }))

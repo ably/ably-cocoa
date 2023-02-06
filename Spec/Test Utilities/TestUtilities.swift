@@ -1538,7 +1538,11 @@ extension String {
 }
 
 extension ARTRealtime {
-
+    
+    func simulateLostConnection() {
+        self.internal.onDisconnected()
+    }
+    
     func simulateLostConnectionAndState() {
         //1. Abruptly disconnect
         //2. Change the `Connection#id` and `Connection#key` before the client
@@ -1579,7 +1583,11 @@ extension ARTRealtime {
             reachability.simulate(true)
         }
     }
-
+    
+    func waitForPendingMessages() {
+        expect(self.internal.pendingMessages).toEventually(haveCount(0),timeout: testTimeout)
+    }
+    
     func overrideConnectionStateTTL(_ ttl: TimeInterval) -> HookToken {
         return self.internal.testSuite_injectIntoMethod(before: NSSelectorFromString("connectionStateTtl")) {
             self.internal.connectionStateTtl = ttl
