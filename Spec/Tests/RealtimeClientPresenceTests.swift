@@ -2744,10 +2744,14 @@ class RealtimeClientPresenceTests: XCTestCase {
         defer { client.dispose(); client.close() }
 
         let channel = client.channels.get(uniqueChannelName())
+        
+        var firstMsgId = ""
+        var secondMsgId = ""
         let firstClient = "client1"
         let secondClient = "client2"
         let firstClientData = "client1data"
         let secondClientData = "client2data"
+        
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
             channel.once(.attached) { stateChange in
@@ -2756,9 +2760,11 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
             channel.presence.subscribe(.enter) { presenceMessage in
                 if presenceMessage.clientId == firstClient {
+                    firstMsgId = presenceMessage.id!
                     partialDone()
                 }
                 else if presenceMessage.clientId == secondClient {
+                    secondMsgId = presenceMessage.id!
                     partialDone()
                 }
             }
@@ -2786,6 +2792,11 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         let client1PresenceMessage = try! XCTUnwrap(sentPresenceMessages.first(where: { $0.clientId == firstClient }))
         let client2PresenceMessage = try! XCTUnwrap(sentPresenceMessages.first(where: { $0.clientId == secondClient }))
+        
+        // RTP17g
+        
+        expect(client1PresenceMessage.id).to(equal(firstMsgId))
+        expect(client2PresenceMessage.id).to(equal(secondMsgId))
         
         expect(client1PresenceMessage.action).to(equal(ARTPresenceAction.enter))
         expect(client2PresenceMessage.action).to(equal(ARTPresenceAction.enter))
