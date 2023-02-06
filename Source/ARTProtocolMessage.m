@@ -51,6 +51,7 @@
     [description appendFormat:@" flags.hasBacklog: %@,\n", NSStringFromBOOL(self.hasBacklog)];
     [description appendFormat:@" flags.resumed: %@,\n", NSStringFromBOOL(self.resumed)];
     [description appendFormat:@" messages: %@\n", self.messages];
+    [description appendFormat:@" presence: %@\n", self.presence];
     [description appendFormat:@" params: %@\n", self.params];
     [description appendFormat:@"}"];
     return description;
