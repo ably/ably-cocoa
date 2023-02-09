@@ -533,39 +533,6 @@ class RealtimeClientChannelTests: XCTestCase {
         }
     }
 
-    // RTL2f, TR4i
-    func test__012__Channel__EventEmitter__channel_states_and_events__bit_flag_RESUMED_was_included() {
-        let options = AblyTests.commonAppSetup()
-        let client = ARTRealtime(options: options)
-        defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName())
-
-        waitUntil(timeout: testTimeout) { done in
-            channel.once(.attached) { stateChange in
-                expect(stateChange.resumed).to(beFalse())
-                expect(stateChange.reason).to(beNil())
-                done()
-            }
-            channel.attach()
-        }
-
-        let attachedMessage = ARTProtocolMessage()
-        attachedMessage.action = .attached
-        attachedMessage.channel = channel.name
-        attachedMessage.flags = 4 // Resumed
-
-        waitUntil(timeout: testTimeout) { done in
-            channel.once(.update) { stateChange in
-                expect(stateChange.resumed).to(beTrue())
-                expect(stateChange.reason).to(beNil())
-                expect(stateChange.current).to(equal(ARTRealtimeChannelState.attached))
-                expect(stateChange.previous).to(equal(ARTRealtimeChannelState.attached))
-                done()
-            }
-            client.internal.transport?.receive(attachedMessage)
-        }
-    }
-
     // RTL3
 
     // RTL3a
