@@ -4059,44 +4059,53 @@ class RealtimeClientChannelTests: XCTestCase {
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(uniqueChannelName())
         
-        waitUntil(timeout: testTimeout) { done in
-            client.connection.once(.connected) { _ in
-                done()
+        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+
+        let transport = try! XCTUnwrap(client.internal.transport as? TestProxyTransport)
+        
+        waitUntil(timeout: testTimeout.multiplied(by: 10)) { done in
+            let partialDone = AblyTests.splitDone(4, done: done)
+            
+            let createNoSerialMessage: () -> ARTProtocolMessage = {
+                let message = ARTProtocolMessage()
+                message.action = .message
+                message.channel = channel.name
+                message.id = "no-serial-id"
+                message.messages = [ARTMessage(name: "no-serial", data: "")]
+                return message
             }
-        }
-
-        guard let transport = client.internal.transport as? TestProxyTransport else {
-            fail("Expecting TestProxyTransport"); return
-        }
-
-        waitUntil(timeout: testTimeout) { done in
-            let partialDone = AblyTests.splitDone(3, done: done)
+            
             channel.attach { error in
                 expect(error).to(beNil())
+                
                 let attachMessage = transport.protocolMessagesReceived.filter { $0.action == .attached }[0]
-                if attachMessage.channelSerial != nil {
-                    expect(attachMessage.channelSerial).to(equal(channel.internal.serial))
+                expect(attachMessage.channelSerial).toNot(beNil())
+                expect(attachMessage.channelSerial).to(equal(channel.internal.serial))
+                partialDone()
+                
+                channel.subscribe("hello") { message in
+                    let messageMessage = transport.protocolMessagesReceived.filter { $0.action == .message }[0]
+                    expect(messageMessage.channelSerial).toNot(beNil())
+                    expect(messageMessage.channelSerial).to(equal(channel.internal.serial))
+                    transport.receive(createNoSerialMessage())
+                    partialDone()
                 }
                 
-                partialDone()
-                channel.subscribe { message in
-                    let messageMessage = transport.protocolMessagesReceived.filter { $0.action == .message }[0]
-                    if messageMessage.channelSerial != nil {
-                        expect(messageMessage.channelSerial).to(equal(channel.internal.serial))
-                    }
-                    
-                    channel.presence.enterClient("client1", data: "Hey")
+                channel.subscribe("no-serial") { message in
+                    let customMessage = transport.protocolMessagesReceived.filter { $0.id == "no-serial-id" }[0]
+                    expect(customMessage.channelSerial).to(beNil())
+                    expect(channel.internal.serial).toNot(beNil())
                     partialDone()
-
                 }
+                
                 channel.presence.subscribe { presenceMessage in
                     let presenceMessage = transport.protocolMessagesReceived.filter { $0.action == .presence }[0]
-                    if presenceMessage.channelSerial != nil {
-                        expect(presenceMessage.channelSerial).to(equal(channel.internal.serial))
-                    }
+                    expect(presenceMessage.channelSerial).toNot(beNil())
+                    expect(presenceMessage.channelSerial).to(equal(channel.internal.serial))
                     partialDone()
                 }
-                channel.publish([ARTMessage()])
+                channel.publish([ARTMessage(name: "hello", data: "")])
+                channel.presence.enterClient("client1", data: "Hey")
             }
         }
     }
