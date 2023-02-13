@@ -2831,7 +2831,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                         ttlAndIdleIntervalPassedTestsClient.connection.once(.connected) { _ in
                             expect(ttlAndIdleIntervalPassedTestsClient.connection.id).toNot(equal(ttlAndIdleIntervalPassedTestsConnectionId))
                             channel.once(.attached) { stateChange in
-//                                expect(stateChange.resumed).to(beFalse())
+                                expect(stateChange.resumed).to(beFalse())
                                 done()
                             }
                         }

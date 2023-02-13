@@ -924,7 +924,7 @@ class RealtimeClientChannelTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.once(.attached) { stateChange in
-//                expect(stateChange.resumed).to(beFalse())
+                expect(stateChange.resumed).to(beFalse())
                 expect(stateChange.reason).to(beNil())
                 channel.on(.suspended) { _ in
                     fail("Should not reach SUSPENDED state")
