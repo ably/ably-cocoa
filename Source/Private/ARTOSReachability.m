@@ -14,7 +14,7 @@
 
 /// Global callback for network state changes
 static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void* info) {
-    ARTOSReachability *reachability = (__bridge ARTOSReachability *)info;
+    ARTOSReachability *reachability = (__bridge_transfer ARTOSReachability *)info;
     BOOL reachable = flags & kSCNetworkReachabilityFlagsReachable;
     [reachability internalCallback:reachable];
 }
@@ -41,7 +41,7 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
     _callback = callback;
 
     _reachabilityRef = SCNetworkReachabilityCreateWithName(NULL, [host UTF8String]);
-    SCNetworkReachabilityContext context = {0, (__bridge void *)(self), NULL, NULL, NULL};
+    SCNetworkReachabilityContext context = {0, (__bridge_retained void *)(self), NULL, NULL, NULL};
     
     if (SCNetworkReachabilitySetCallback(_reachabilityRef, ARTOSReachability_Callback, &context)) {
         if (SCNetworkReachabilityScheduleWithRunLoop(_reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode)) {
