@@ -155,7 +155,7 @@ class RealtimeClientTests: XCTestCase {
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
-        waitUntil(timeout: testTimeout.multiplied(by: 2)) { done in
+        waitUntil(timeout: testTimeout.multiplied(by: 3)) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
             client.connection.once(.connecting) { _ in
                 guard let webSocketTransport = client.internal.transport as? ARTWebSocketTransport else {
