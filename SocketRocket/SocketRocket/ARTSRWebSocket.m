@@ -365,9 +365,9 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
     }
     // Schedule to run on a work queue, to make sure we don't run this inline and deallocate `self` inside `ARTSRProxyConnect`.
     // TODO: (nlutsenko) Find a better structure for this, maybe Bolts Tasks?
-    dispatch_async(_workQueue, ^{
-        self->_proxyConnect = nil;
-    });
+//    dispatch_async(_workQueue, ^{
+//        self->_proxyConnect = nil;
+//    });
 }
 
 - (BOOL)_checkHandshake:(CFHTTPMessageRef)httpMessage;
