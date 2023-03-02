@@ -8,15 +8,10 @@
 
 #import "ARTOSReachability.h"
 
-@interface ARTOSReachability ()
-- (void)internalCallback:(BOOL)reachable;
-@end
-
 /// Global callback for network state changes
 static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void* info) {
-    ARTOSReachability *reachability = (__bridge_transfer ARTOSReachability *)info;
-    BOOL reachable = flags & kSCNetworkReachabilityFlagsReachable;
-    [reachability internalCallback:reachable];
+    void (^callbackBlock)(SCNetworkReachabilityFlags) = (__bridge id)info;
+    callbackBlock(flags);
 }
 
 @implementation ARTOSReachability {
@@ -40,8 +35,23 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
     _host = host;
     _callback = callback;
 
+    __weak ARTOSReachability *weakSelf = self;
+    void (^callbackBlock)(SCNetworkReachabilityFlags) = ^(SCNetworkReachabilityFlags flags) {
+        ARTOSReachability *strongSelf = weakSelf;
+        if (strongSelf) {
+            BOOL reachable = (flags & kSCNetworkReachabilityFlagsReachable) != 0;
+            [strongSelf->_logger info:@"Reachability: host %@ is reachable: %@", strongSelf->_host, reachable ? @"true" : @"false"];
+            dispatch_async(strongSelf->_queue, ^{
+                if (strongSelf->_callback) {
+                    strongSelf->_callback(reachable);
+                }
+            });
+        }
+    };
+    
     _reachabilityRef = SCNetworkReachabilityCreateWithName(NULL, [host UTF8String]);
-    SCNetworkReachabilityContext context = {0, (__bridge_retained void *)(self), NULL, NULL, NULL};
+    
+    SCNetworkReachabilityContext context = { .version = 0, .info = (void *)CFBridgingRetain(callbackBlock), .release = CFRelease };
     
     if (SCNetworkReachabilitySetCallback(_reachabilityRef, ARTOSReachability_Callback, &context)) {
         if (SCNetworkReachabilityScheduleWithRunLoop(_reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode)) {
