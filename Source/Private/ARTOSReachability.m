@@ -17,7 +17,6 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
 @implementation ARTOSReachability {
     ARTLog *_logger;
     NSString *_host;
-    void (^_callback)(BOOL);
     SCNetworkReachabilityRef _reachabilityRef;
     dispatch_queue_t _queue;
 }
@@ -33,7 +32,6 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
 - (void)listenForHost:(NSString *)host callback:(void (^)(BOOL))callback {
     [self off];
     _host = host;
-    _callback = callback;
 
     __weak ARTOSReachability *weakSelf = self;
     void (^callbackBlock)(SCNetworkReachabilityFlags) = ^(SCNetworkReachabilityFlags flags) {
@@ -42,8 +40,8 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
             BOOL reachable = (flags & kSCNetworkReachabilityFlagsReachable) != 0;
             [strongSelf->_logger info:@"Reachability: host %@ is reachable: %@", strongSelf->_host, reachable ? @"true" : @"false"];
             dispatch_async(strongSelf->_queue, ^{
-                if (strongSelf->_callback) {
-                    strongSelf->_callback(reachable);
+                if (callback) {
+                    callback(reachable);
                 }
             });
         }
@@ -70,7 +68,6 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
         CFRelease(_reachabilityRef);
         _reachabilityRef = NULL;
     }
-    _callback = nil;
     _host = nil;
 }
 
