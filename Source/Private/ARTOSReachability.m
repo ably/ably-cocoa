@@ -74,13 +74,6 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
     _host = nil;
 }
 
-- (void)internalCallback:(BOOL)reachable {
-    [_logger info:@"Reachability: host %@ is reachable: %@", _host, reachable ? @"true" : @"false"];
-    dispatch_async(_queue, ^{
-        if (self->_callback) self->_callback(reachable);
-    });
-}
-
 - (void)dealloc {
     [self off];
 }
