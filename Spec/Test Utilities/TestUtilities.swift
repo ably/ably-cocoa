@@ -1212,31 +1212,37 @@ class TestProxyTransport: ARTWebSocketTransport {
 
     private func setupFakeNetworkResponse(_ networkResponse: FakeNetworkResponse) {
         var hook: AspectToken?
-        hook = ARTSRWebSocket.testSuite_replaceClassMethod(#selector(ARTSRWebSocket.open)) {
+        let handler = {
             if TestProxyTransport.fakeNetworkResponse == nil {
                 return
             }
-
+            
             func performFakeConnectionError(_ secondsForDelay: TimeInterval, error: ARTRealtimeTransportError) {
                 self.queue.asyncAfter(deadline: .now() + secondsForDelay) {
                     self.delegate?.realtimeTransportFailed(self, withError: error)
                     hook?.remove()
                 }
             }
-
+            
             guard let url = self.lastUrl else {
                 fatalError("MockNetworkResponse: lastUrl should not be nil")
             }
-
+            
             switch networkResponse {
             case .noInternet,
-                 .hostUnreachable,
-                 .hostInternalError,
-                 .host400BadRequest:
+                    .hostUnreachable,
+                    .hostInternalError,
+                    .host400BadRequest:
                 performFakeConnectionError(0.1, error: networkResponse.transportError(for: url))
             case .requestTimeout(let timeout):
                 performFakeConnectionError(0.1 + timeout, error: networkResponse.transportError(for: url))
             }
+        }
+        if #available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *) {
+            hook = ARTURLSessionWebSocket.testSuite_replaceClassMethod(#selector(ARTURLSessionWebSocket.open), code: handler)
+        }
+        else {
+            hook = ARTSRWebSocket.testSuite_replaceClassMethod(#selector(ARTSRWebSocket.open), code: handler)
         }
     }
 
