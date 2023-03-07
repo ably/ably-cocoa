@@ -831,6 +831,7 @@ dispatch_sync(_queue, ^{
 
         _lastPayloadMessageId = msg.id;
 
+        [self.logger debug:@"Telling messagesEventEmitter to emit received message named %@", msg.name];
         [self.messagesEventEmitter emit:msg.name with:msg];
 
         ++i;

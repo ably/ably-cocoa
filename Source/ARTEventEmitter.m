@@ -178,11 +178,15 @@
 
 - (ARTEventListener *)on:(id<ARTEventIdentification>)event callback:(void (^)(id))cb {
     NSString *eventId = [NSString stringWithFormat:@"%p-%@", self, [event identification]];
+    [self.logger debug:@"ARTEventEmitter on event: %@, callback %p, adding NSNotificationCenter listener with eventId %@", event, cb, eventId];
     __block ARTEventListener *listener;
+    ARTLog *logger = self.logger;
     id<NSObject> observer = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+        [logger debug:@"ARTEventEmitter inside notification callback for on event: %@, callback %p, adding NSNotificationCenter listener with eventId %@", event, cb, eventId];
         if (listener == nil || [listener invalidated]) return;
         if ([listener hasTimer] && ![listener timerIsRunning]) return;
         [listener stopTimer];
+        [logger debug:@"ARTEventEmitter calling callback for on event: %@, callback %p, adding NSNotificationCenter listener with eventId %@", event, cb, eventId];
         cb(note.object);
     }];
     listener = [[ARTEventListener alloc] initWithId:eventId observer:observer handler:self center:_notificationCenter];
@@ -276,9 +280,13 @@
 
 - (void)emit:(id<ARTEventIdentification>)event with:(id)data {
     if (event) {
-        [self.notificationCenter postNotificationName:[NSString stringWithFormat:@"%p-%@", self, [event identification]] object:data];
+        NSString *const notificationName = [NSString stringWithFormat:@"%p-%@", self, [event identification]];
+        [self.logger debug:@"ARTEventEmitter emitting notification named %@", notificationName];
+        [self.notificationCenter postNotificationName:notificationName object:data];
     }
-    [self.notificationCenter postNotificationName:[NSString stringWithFormat:@"%p", self] object:data];
+    NSString *const notificationName = [NSString stringWithFormat:@"%p", self];
+    [self.logger debug:@"ARTEventEmitter emitting notification named %@", notificationName];
+    [self.notificationCenter postNotificationName:notificationName object:data];
 }
 
 - (void)addObject:(id)obj toArrayWithKey:(id)key inDictionary:(NSMutableDictionary *)dict {
