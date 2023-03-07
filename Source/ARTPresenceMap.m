@@ -55,7 +55,7 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
         [self reset];
         _syncSessionId = 0;
         _syncState = ARTPresenceSyncInitialized;
-        _syncEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:queue];
+        _syncEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:queue logger:logger];
     }
     return self;
 }

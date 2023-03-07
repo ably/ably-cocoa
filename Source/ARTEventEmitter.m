@@ -159,17 +159,18 @@
 
 @implementation ARTEventEmitter
 
-- (instancetype)initWithQueue:(dispatch_queue_t)queue {
-    self = [self initWithQueues:queue userQueue:nil];
+- (instancetype)initWithQueue:(dispatch_queue_t)queue logger:(ARTLog *)logger {
+    self = [self initWithQueues:queue userQueue:nil logger:logger];
     return self;
 }
 
-- (instancetype)initWithQueues:(dispatch_queue_t)queue userQueue:(dispatch_queue_t)userQueue {
+- (instancetype)initWithQueues:(dispatch_queue_t)queue userQueue:(dispatch_queue_t)userQueue logger:(ARTLog *)logger {
     self = [super init];
     if (self) {
         _notificationCenter = [[NSNotificationCenter alloc] init];
         _queue = queue;
         _userQueue = userQueue;
+        _logger = logger;
         [self resetListeners];
     }
     return self;
@@ -322,7 +323,7 @@
 }
 
 - (instancetype)initWithRest:(ARTRestInternal *)rest {
-    if (self = [super initWithQueue:rest.queue]) {
+    if (self = [super initWithQueue:rest.queue logger:rest.logger]) {
         _rest = rest;
         _queue = rest.queue;
         _userQueue = rest.userQueue;
@@ -437,12 +438,12 @@ dispatch_sync(_queue, ^{
 
 @implementation ARTInternalEventEmitter
 
-- (instancetype)initWithQueue:(dispatch_queue_t)queue {
-   return [super initWithQueue:queue];
+- (instancetype)initWithQueue:(dispatch_queue_t)queue logger:(ARTLog *)logger {
+    return [super initWithQueue:queue logger:logger];
 }
 
-- (instancetype)initWithQueues:(dispatch_queue_t)queue userQueue:(dispatch_queue_t)userQueue {
-    return [super initWithQueues:queue userQueue:userQueue];
+- (instancetype)initWithQueues:(dispatch_queue_t)queue userQueue:(dispatch_queue_t)userQueue logger:(ARTLog *)logger {
+    return [super initWithQueues:queue userQueue:userQueue logger:logger];
 }
 
 @end

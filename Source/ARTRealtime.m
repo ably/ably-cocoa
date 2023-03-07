@@ -186,9 +186,9 @@
         _rest = [[ARTRestInternal alloc] initWithOptions:options realtime:self];
         _userQueue = _rest.userQueue;
         _queue = _rest.queue;
-        _internalEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
-        _connectedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
-        _pingEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
+        _internalEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue logger:self.logger];
+        _connectedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue logger:self.logger];
+        _pingEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue logger:self.logger];
         _channels = [[ARTRealtimeChannelsInternal alloc] initWithRealtime:self];
         _transport = nil;
         _transportClass = [ARTWebSocketTransport class];

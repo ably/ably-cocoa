@@ -99,7 +99,7 @@
         _options = options;
         _logger = rest.logger;
         _protocolClientId = nil;
-        _cancelationEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
+        _cancelationEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue logger:_logger];
         _tokenParams = options.defaultTokenParams ? : [[ARTTokenParams alloc] initWithOptions:self.options];
         _authorizationsCount = 0;
         [self validate:options];

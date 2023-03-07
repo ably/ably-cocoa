@@ -244,11 +244,11 @@
         _presenceMap = [[ARTPresenceMap alloc] initWithQueue:_queue logger:self.logger];
         _presenceMap.delegate = self;
         _statesEventEmitter = [[ARTPublicEventEmitter alloc] initWithRest:_realtime.rest];
-        _messagesEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueues:_queue userQueue:_userQueue];
-        _presenceEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
-        _attachedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
-        _detachedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
-        _internalEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
+        _messagesEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueues:_queue userQueue:_userQueue logger:self.logger];
+        _presenceEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue logger:self.logger];
+        _attachedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue logger:self.logger];
+        _detachedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue logger:self.logger];
+        _internalEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue logger:self.logger];
     }
     return self;
 }

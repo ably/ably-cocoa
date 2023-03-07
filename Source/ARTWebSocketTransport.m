@@ -68,7 +68,7 @@ Class configuredWebsocketClass = nil;
         _options = [options copy];
         _resumeKey = resumeKey;
         _connectionSerial = connectionSerial;
-        _stateEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_workQueue];
+        _stateEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_workQueue logger:_logger];
 
         [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p WS:%p alloc", _delegate, self];
     }

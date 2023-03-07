@@ -35,6 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) NSNotificationCenter *notificationCenter;
 @property (nonatomic, readonly) dispatch_queue_t queue;
 @property (nullable, nonatomic, readonly) dispatch_queue_t userQueue;
+@property (nonatomic, strong, readonly) ARTLog *logger;
 
 @property (readonly, atomic) NSMutableDictionary<NSString *, NSMutableArray<ARTEventListener *> *> *listeners;
 @property (readonly, atomic) NSMutableArray<ARTEventListener *> *anyListeners;
@@ -50,8 +51,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTInternalEventEmitter<EventType:id<ARTEventIdentification>, ItemType> : ARTEventEmitter<EventType, ItemType>
 
-- (instancetype)initWithQueue:(dispatch_queue_t)queue;
-- (instancetype)initWithQueues:(dispatch_queue_t)queue userQueue:(_Nullable dispatch_queue_t)userQueue;
+- (instancetype)initWithQueue:(dispatch_queue_t)queue logger:(ARTLog *)logger;
+- (instancetype)initWithQueues:(dispatch_queue_t)queue userQueue:(_Nullable dispatch_queue_t)userQueue logger:(ARTLog *)logger;
 
 @end
 
