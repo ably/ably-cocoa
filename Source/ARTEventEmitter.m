@@ -213,11 +213,15 @@
 
 - (ARTEventListener *)on:(void (^)(id))cb {
     NSString *eventId = [NSString stringWithFormat:@"%p", self];
+    [self.logger debug:@"ARTEventEmitter on, callback %p, adding NSNotificationCenter listener with eventId %@", cb, eventId];
     __block ARTEventListener *listener;
+    ARTLog *logger = self.logger;
     id<NSObject> observer = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+        [logger debug:@"ARTEventEmitter inside notification callback for on, callback %p, adding NSNotificationCenter listener with eventId %@", cb, eventId];
         if (listener == nil || [listener invalidated]) return;
         if ([listener hasTimer] && ![listener timerIsRunning]) return;
         [listener stopTimer];
+        [logger debug:@"ARTEventEmitter calling callback for on, callback %p, adding NSNotificationCenter listener with eventId %@", cb, eventId];
         cb(note.object);
     }];
     listener = [[ARTEventListener alloc] initWithId:eventId observer:observer handler:self center:_notificationCenter];
