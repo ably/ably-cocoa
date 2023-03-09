@@ -182,11 +182,11 @@
     __block ARTEventListener *listener;
     ARTLog *logger = self.logger;
     id<NSObject> observer = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
-        [logger debug:@"ARTEventEmitter received notification %p inside notification callback for on event: %@, callback %p, adding NSNotificationCenter listener with eventId %@", note, event, cb, eventId];
+        [logger debug:@"ARTEventEmitter received notification %p inside notification callback for on event: %@, callback %p, eventId %@", note, event, cb, eventId];
         if (listener == nil || [listener invalidated]) return;
         if ([listener hasTimer] && ![listener timerIsRunning]) return;
         [listener stopTimer];
-        [logger debug:@"ARTEventEmitter calling callback after receiving notification %p for on event: %@, callback %p, adding NSNotificationCenter listener with eventId %@", note, event, cb, eventId];
+        [logger debug:@"ARTEventEmitter calling callback after receiving notification %p for on event: %@, callback %p, eventId %@", note, event, cb, eventId];
         cb(note.object);
     }];
     listener = [[ARTEventListener alloc] initWithId:eventId observer:observer handler:self center:_notificationCenter];
@@ -217,11 +217,11 @@
     __block ARTEventListener *listener;
     ARTLog *logger = self.logger;
     id<NSObject> observer = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
-        [logger debug:@"ARTEventEmitter received notification %p inside notification callback for on, callback %p, adding NSNotificationCenter listener with eventId %@", note, cb, eventId];
+        [logger debug:@"ARTEventEmitter received notification %p inside notification callback for on, callback %p, eventId %@", note, cb, eventId];
         if (listener == nil || [listener invalidated]) return;
         if ([listener hasTimer] && ![listener timerIsRunning]) return;
         [listener stopTimer];
-        [logger debug:@"ARTEventEmitter calling callback after receiving notification %p for on, callback %p, adding NSNotificationCenter listener with eventId %@", note, cb, eventId];
+        [logger debug:@"ARTEventEmitter calling callback after receiving notification %p for on, callback %p, eventId %@", note, cb, eventId];
         cb(note.object);
     }];
     listener = [[ARTEventListener alloc] initWithId:eventId observer:observer handler:self center:_notificationCenter];
