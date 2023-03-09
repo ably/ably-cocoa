@@ -188,6 +188,7 @@
         [listener stopTimer];
         [logger debug:@"ARTEventEmitter calling callback after receiving notification %p for on event: %@, callback %p, eventId %@", note, event, cb, eventId];
         cb(note.object);
+        [logger debug:@"ARTEventEmitter called callback after receiving notification %p for on event: %@, callback %p, eventId %@", note, event, cb, eventId];
     }];
     listener = [[ARTEventListener alloc] initWithId:eventId observer:observer handler:self center:_notificationCenter];
     [self addObject:listener toArrayWithKey:listener.eventId inDictionary:self.listeners];
