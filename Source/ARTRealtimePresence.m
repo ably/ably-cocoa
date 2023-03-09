@@ -404,13 +404,19 @@ dispatch_sync(_queue, ^{
 }
 
 - (ARTEventListener *)subscribeWithAttachCallback:(ARTCallback)onAttach callback:(ARTPresenceMessageCallback)cb {
+    ARTLog *const logger = _channel.realtime.logger;
+
+    ARTPresenceMessageCallback intermediateCallback;
     if (cb) {
-        ARTPresenceMessageCallback userCallback = cb;
-        cb = ^(ARTPresenceMessage *_Nullable m) {
+        __block __weak ARTPresenceMessageCallback weakIntermediateCallback;
+        intermediateCallback = ^(ARTPresenceMessage *_Nullable m) {
+            [logger debug:@"subscribeWithAttachCallback:callback: dispatching callback %p to user queue %s via intermediate callback %p", cb, dispatch_queue_get_label(self->_userQueue), weakIntermediateCallback];
             dispatch_async(self->_userQueue, ^{
-                userCallback(m);
+                [logger debug:@"subscribeWithAttachCallback:callback: running callback %p on user queue %s via intermediate callback %p", cb, dispatch_queue_get_label(self->_userQueue), weakIntermediateCallback];
+                cb(m);
             });
         };
+        weakIntermediateCallback = intermediateCallback;
     }
     if (onAttach) {
         ARTCallback userOnAttach = onAttach;
@@ -428,7 +434,7 @@ dispatch_sync(_queue, ^{
         return;
     }
     [self->_channel _attach:onAttach];
-    listener = [self->_channel.presenceEventEmitter on:cb];
+    listener = [self->_channel.presenceEventEmitter on:intermediateCallback];
     [self->_channel.logger verbose:@"R:%p C:%p (%@) presence subscribe to all actions", self->_channel.realtime, self->_channel, self->_channel.name];
 });
     return listener;
