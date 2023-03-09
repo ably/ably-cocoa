@@ -294,6 +294,7 @@
 
     if (eventNotification != nil) {
         [self.logger debug:@"ARTEventEmitter emitting notifications: [(%p, named %@), (%p, named %@)] for event %@", eventNotification, eventNotification.name, notification, notification.name, [event identification]];
+        [self.notificationCenter postNotification:eventNotification];
     } else {
         [self.logger debug:@"ARTEventEmitter emitting notification (%p, named %@) for event %@", notification, notification.name, [event identification]];
     }
