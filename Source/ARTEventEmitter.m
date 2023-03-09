@@ -283,15 +283,21 @@
 }
 
 - (void)emit:(id<ARTEventIdentification>)event with:(id)data {
+    NSNotification *eventNotification;
     if (event) {
         NSString *const notificationName = [NSString stringWithFormat:@"%p-%@", self, [event identification]];
-        NSNotification *const notification = [NSNotification notificationWithName:notificationName object:data];
-        [self.logger debug:@"ARTEventEmitter emitting notification %p, named %@", notification, notificationName];
-        [self.notificationCenter postNotification:notification];
+        eventNotification = [NSNotification notificationWithName:notificationName object:data];
     }
+
     NSString *const notificationName = [NSString stringWithFormat:@"%p", self];
     NSNotification *const notification = [NSNotification notificationWithName:notificationName object:data];
-    [self.logger debug:@"ARTEventEmitter emitting notification %p, named %@", notification, notificationName];
+
+    if (eventNotification != nil) {
+        [self.logger debug:@"ARTEventEmitter emitting notifications: [(%p, named %@), (%p, named %@)] for event %@", eventNotification, eventNotification.name, notification, notification.name, [event identification]];
+    } else {
+        [self.logger debug:@"ARTEventEmitter emitting notification (%p, named %@) for event %@", notification, notification.name, [event identification]];
+    }
+
     [self.notificationCenter postNotificationName:notificationName object:data];
 }
 
