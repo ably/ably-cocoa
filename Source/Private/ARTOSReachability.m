@@ -62,8 +62,9 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
     };
     
     _reachabilityRef = SCNetworkReachabilityCreateWithName(NULL, [host UTF8String]);
-    
-    SCNetworkReachabilityContext context = { .version = 0, .info = (__bridge void *)callbackBlock, .retain = typedMyRetain, .release = typedMyRelease };
+
+    NSLog(@"%p CFBridgingRetain", callbackBlock);
+    SCNetworkReachabilityContext context = { .version = 0, .info =  (void *)CFBridgingRetain(callbackBlock), .release = typedMyRelease };
     
     if (SCNetworkReachabilitySetCallback(_reachabilityRef, ARTOSReachability_Callback, &context)) {
         if (SCNetworkReachabilityScheduleWithRunLoop(_reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode)) {
