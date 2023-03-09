@@ -33,6 +33,9 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
     [self off];
     _host = host;
 
+    // This strategy is taken from Mike Ash's book "The Complete Friday Q&A: Volume III".
+    // Article: https://www.mikeash.com/pyblog/friday-qa-2013-06-14-reachability.html
+    
     __weak ARTOSReachability *weakSelf = self;
     void (^callbackBlock)(SCNetworkReachabilityFlags) = ^(SCNetworkReachabilityFlags flags) {
         ARTOSReachability *strongSelf = weakSelf;
