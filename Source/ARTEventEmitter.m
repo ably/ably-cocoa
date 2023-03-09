@@ -191,6 +191,7 @@
         [logger debug:@"ARTEventEmitter called callback after receiving notification %p for on event: %@, callback %p, eventId %@", note, event, cb, eventId];
     }];
     listener = [[ARTEventListener alloc] initWithId:eventId observer:observer handler:self center:_notificationCenter];
+    [self.logger debug:@"ARTEventEmitter on event: %@, callback %p, added NSNotificationCenter listener with eventId %@, resulting in ARTEventListener %p", event, cb, eventId, listener];
     [self addObject:listener toArrayWithKey:listener.eventId inDictionary:self.listeners];
     return listener;
 }
