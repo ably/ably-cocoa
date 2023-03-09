@@ -8,6 +8,20 @@
 
 #import "ARTOSReachability.h"
 
+CFTypeRef _Nullable myRetain(id _Nullable X) {
+    NSLog(@"%p myRetain", X);
+    return CFBridgingRetain(X);
+}
+
+id _Nullable myRelease(CFTypeRef CF_CONSUMED _Nullable X) {
+    NSLog(@"%p myRelease", X);
+    return CFBridgingRelease(X);
+}
+
+// messing around to get it to compile
+const void    * __nonnull (* __nullable typedMyRetain)(const void *info) = (const void    * __nonnull (* __nullable )(const void *) )myRetain;
+void        (* __nullable typedMyRelease)(const void *info) = (void        (* __nullable)(const void *))myRelease;
+
 /// Global callback for network state changes
 static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void* info) {
     void (^callbackBlock)(SCNetworkReachabilityFlags) = (__bridge id)info;
@@ -49,7 +63,7 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
     
     _reachabilityRef = SCNetworkReachabilityCreateWithName(NULL, [host UTF8String]);
     
-    SCNetworkReachabilityContext context = { .version = 0, .info = (void *)CFBridgingRetain(callbackBlock), .release = CFRelease };
+    SCNetworkReachabilityContext context = { .version = 0, .info = (__bridge void *)callbackBlock, .retain = typedMyRetain, .release = typedMyRelease };
     
     if (SCNetworkReachabilitySetCallback(_reachabilityRef, ARTOSReachability_Callback, &context)) {
         if (SCNetworkReachabilityScheduleWithRunLoop(_reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode)) {
