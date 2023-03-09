@@ -299,7 +299,7 @@
         [self.logger debug:@"ARTEventEmitter emitting notification (%p, named %@) for event %@", notification, notification.name, [event identification]];
     }
 
-    [self.notificationCenter postNotificationName:notificationName object:data];
+    [self.notificationCenter postNotification:notification];
 }
 
 - (void)addObject:(id)obj toArrayWithKey:(id)key inDictionary:(NSMutableDictionary *)dict {
