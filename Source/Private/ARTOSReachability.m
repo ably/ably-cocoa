@@ -9,12 +9,12 @@
 #import "ARTOSReachability.h"
 
 CFTypeRef _Nullable myRetain(id _Nullable X) {
-    NSLog(@"%p myRetain", X);
+    NSLog(@"----------------------retain %p", X);
     return CFBridgingRetain(X);
 }
 
 id _Nullable myRelease(CFTypeRef CF_CONSUMED _Nullable X) {
-    NSLog(@"%p myRelease", X);
+    NSLog(@"----------------------release %p", X);
     return CFBridgingRelease(X);
 }
 
@@ -63,9 +63,9 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
     
     _reachabilityRef = SCNetworkReachabilityCreateWithName(NULL, [host UTF8String]);
 
-    NSLog(@"%p CFBridgingRetain", callbackBlock);
-    SCNetworkReachabilityContext context = { .version = 0, .info =  (void *)CFBridgingRetain(callbackBlock), .release = typedMyRelease };
-    
+//    NSLog(@"----------------------CFBridgingRetain %p", callbackBlock);
+//    SCNetworkReachabilityContext context = { .version = 0, .info =  (void *)CFBridgingRetain(callbackBlock), .release = typedMyRelease };
+    SCNetworkReachabilityContext context = { .version = 0, .info = (__bridge void *)callbackBlock, .retain = typedMyRetain, .release = typedMyRelease };
     if (SCNetworkReachabilitySetCallback(_reachabilityRef, ARTOSReachability_Callback, &context)) {
         if (SCNetworkReachabilityScheduleWithRunLoop(_reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode)) {
             [_logger info:@"Reachability: started listening for host %@", _host];
