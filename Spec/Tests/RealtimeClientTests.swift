@@ -363,7 +363,7 @@ class RealtimeClientTests: XCTestCase {
     }
 
     // RTC7
-    func test__004__RealtimeClient__should_use_the_configured_timeouts_specified() {
+    func test__004__RealtimeClient__should_use_the_configured_timeouts_specified() { //----unbalanced retain----
         let options = AblyTests.commonAppSetup()
         options.suspendedRetryTimeout = 6.0
 
@@ -859,7 +859,7 @@ class RealtimeClientTests: XCTestCase {
     }
 
     // RTC8b1 - part 1
-    func test__033__RealtimeClient__Auth_authorize_should_upgrade_the_connection_with_current_token__authorize_call_should_complete_with_the_new_token_once_the_connection_has_moved_to_the_CONNECTED_state() {
+    func test__033__RealtimeClient__Auth_authorize_should_upgrade_the_connection_with_current_token__authorize_call_should_complete_with_the_new_token_once_the_connection_has_moved_to_the_CONNECTED_state() { //----unbalanced retain----
         let options = AblyTests.clientOptions()
         options.autoConnect = false
         let testToken = getTestToken()
@@ -1020,7 +1020,7 @@ class RealtimeClientTests: XCTestCase {
     }
 
     // RTC8c - part 1
-    func test__037__RealtimeClient__Auth_authorize_should_upgrade_the_connection_with_current_token__when_the_connection_is_in_the_SUSPENDED_state_when_auth_authorize_is_called__after_obtaining_a_token_the_library_should_move_to_the_CONNECTING_state_and_initiate_a_connection_attempt_using_the_new_token() {
+    func test__037__RealtimeClient__Auth_authorize_should_upgrade_the_connection_with_current_token__when_the_connection_is_in_the_SUSPENDED_state_when_auth_authorize_is_called__after_obtaining_a_token_the_library_should_move_to_the_CONNECTING_state_and_initiate_a_connection_attempt_using_the_new_token() { //----unbalanced retain----
         let options = AblyTests.commonAppSetup()
         options.autoConnect = false
         let testToken = getTestToken()
@@ -1075,7 +1075,7 @@ class RealtimeClientTests: XCTestCase {
     }
 
     // RTC8c - part 2
-    func test__038__RealtimeClient__Auth_authorize_should_upgrade_the_connection_with_current_token__when_the_connection_is_in_the_CLOSED_state_when_auth_authorize_is_called__after_obtaining_a_token_the_library_should_move_to_the_CONNECTING_state_and_initiate_a_connection_attempt_using_the_new_token() {
+    func test__038__RealtimeClient__Auth_authorize_should_upgrade_the_connection_with_current_token__when_the_connection_is_in_the_CLOSED_state_when_auth_authorize_is_called__after_obtaining_a_token_the_library_should_move_to_the_CONNECTING_state_and_initiate_a_connection_attempt_using_the_new_token() { //----unbalanced retain----
         let options = AblyTests.commonAppSetup()
         options.autoConnect = false
         let testToken = getTestToken()
@@ -1130,7 +1130,7 @@ class RealtimeClientTests: XCTestCase {
     }
 
     // RTC8c - part 3
-    func test__039__RealtimeClient__Auth_authorize_should_upgrade_the_connection_with_current_token__when_the_connection_is_in_the_DISCONNECTED_state_when_auth_authorize_is_called__after_obtaining_a_token_the_library_should_move_to_the_CONNECTING_state_and_initiate_a_connection_attempt_using_the_new_token() {
+    func test__039__RealtimeClient__Auth_authorize_should_upgrade_the_connection_with_current_token__when_the_connection_is_in_the_DISCONNECTED_state_when_auth_authorize_is_called__after_obtaining_a_token_the_library_should_move_to_the_CONNECTING_state_and_initiate_a_connection_attempt_using_the_new_token() { //----unbalanced retain----
         let options = AblyTests.commonAppSetup()
         options.autoConnect = false
         let testToken = getTestToken()
@@ -1185,7 +1185,7 @@ class RealtimeClientTests: XCTestCase {
     }
 
     // RTC8c - part 4
-    func test__040__RealtimeClient__Auth_authorize_should_upgrade_the_connection_with_current_token__when_the_connection_is_in_the_FAILED_state_when_auth_authorize_is_called__after_obtaining_a_token_the_library_should_move_to_the_CONNECTING_state_and_initiate_a_connection_attempt_using_the_new_token() {
+    func test__040__RealtimeClient__Auth_authorize_should_upgrade_the_connection_with_current_token__when_the_connection_is_in_the_FAILED_state_when_auth_authorize_is_called__after_obtaining_a_token_the_library_should_move_to_the_CONNECTING_state_and_initiate_a_connection_attempt_using_the_new_token() { //----unbalanced retain----
         let options = AblyTests.commonAppSetup()
         options.autoConnect = false
         let testToken = getTestToken()
@@ -1483,7 +1483,7 @@ class RealtimeClientTests: XCTestCase {
 
     // RSL1i
 
-    func test__041__If_the_total_size_of_message_s__exceeds_the_maxMessageSize__the_client_library_should_reject_the_publish_and_indicate_an_error() {
+    func test__041__If_the_total_size_of_message_s__exceeds_the_maxMessageSize__the_client_library_should_reject_the_publish_and_indicate_an_error() { //----unbalanced retain----
         let options = AblyTests.commonAppSetup()
         let client = ARTRealtime(options: options)
         let channel = client.channels.get(uniqueChannelName())
@@ -1500,7 +1500,7 @@ class RealtimeClientTests: XCTestCase {
         })
     }
 
-    func test__042__If_the_total_size_of_message_s__exceeds_the_maxMessageSize__the_client_library_should_reject_also_presence_messages__enter_() {
+    func test__042__If_the_total_size_of_message_s__exceeds_the_maxMessageSize__the_client_library_should_reject_also_presence_messages__enter_() { //----unbalanced retain----
         let options = AblyTests.commonAppSetup()
         options.clientId = clientId
         let client = ARTRealtime(options: options)
@@ -1516,7 +1516,7 @@ class RealtimeClientTests: XCTestCase {
         })
     }
 
-    func test__043__If_the_total_size_of_message_s__exceeds_the_maxMessageSize__the_client_library_should_reject_also_presence_messages__leave_() {
+    func test__043__If_the_total_size_of_message_s__exceeds_the_maxMessageSize__the_client_library_should_reject_also_presence_messages__leave_() { //----unbalanced retain----
         let options = AblyTests.commonAppSetup()
         options.clientId = clientId
         let client = ARTRealtime(options: options)
@@ -1532,7 +1532,7 @@ class RealtimeClientTests: XCTestCase {
         })
     }
 
-    func test__044__If_the_total_size_of_message_s__exceeds_the_maxMessageSize__the_client_library_should_reject_also_presence_messages__update_() {
+    func test__044__If_the_total_size_of_message_s__exceeds_the_maxMessageSize__the_client_library_should_reject_also_presence_messages__update_() { //----unbalanced retain----
         let options = AblyTests.commonAppSetup()
         options.clientId = clientId
         let client = ARTRealtime(options: options)
@@ -1548,7 +1548,7 @@ class RealtimeClientTests: XCTestCase {
         })
     }
 
-    func test__045__If_the_total_size_of_message_s__exceeds_the_maxMessageSize__the_client_library_should_reject_also_presence_messages__updateClient_() {
+    func test__045__If_the_total_size_of_message_s__exceeds_the_maxMessageSize__the_client_library_should_reject_also_presence_messages__updateClient_() { //----unbalanced retain----
         let options = AblyTests.commonAppSetup()
         options.clientId = clientId
         let client = ARTRealtime(options: options)
@@ -1564,7 +1564,7 @@ class RealtimeClientTests: XCTestCase {
         })
     }
 
-    func test__046__If_the_total_size_of_message_s__exceeds_the_maxMessageSize__the_client_library_should_reject_also_presence_messages__leaveClient_() {
+    func test__046__If_the_total_size_of_message_s__exceeds_the_maxMessageSize__the_client_library_should_reject_also_presence_messages__leaveClient_() { //----unbalanced retain----
         let options = AblyTests.commonAppSetup()
         options.clientId = clientId
         let client = ARTRealtime(options: options)
