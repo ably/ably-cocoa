@@ -1488,7 +1488,8 @@ class RealtimeClientTests: XCTestCase {
         let client = ARTRealtime(options: options)
         let channel = client.channels.get(uniqueChannelName())
         let messages = buildMessagesThatExceedMaxMessageSize()
-
+        defer { client.dispose(); client.close() }
+        
         waitUntil(timeout: testTimeout, action: { done in
             // Wait for connected so that maxMessageSize is loaded from connection details
             client.connection.once(.connected) { _ in
@@ -1505,7 +1506,8 @@ class RealtimeClientTests: XCTestCase {
         options.clientId = clientId
         let client = ARTRealtime(options: options)
         let channel = client.channels.get(uniqueChannelName())
-
+        defer { client.dispose(); client.close() }
+        
         waitUntil(timeout: testTimeout, action: { done in
             client.connection.once(.connected) { _ in
                 channel.presence.enter(presenceData, callback: { err in
@@ -1521,7 +1523,8 @@ class RealtimeClientTests: XCTestCase {
         options.clientId = clientId
         let client = ARTRealtime(options: options)
         let channel = client.channels.get(uniqueChannelName())
-
+        defer { client.dispose(); client.close() }
+        
         waitUntil(timeout: testTimeout, action: { done in
             client.connection.once(.connected) { _ in
                 channel.presence.leave(presenceData, callback: { err in
@@ -1537,7 +1540,8 @@ class RealtimeClientTests: XCTestCase {
         options.clientId = clientId
         let client = ARTRealtime(options: options)
         let channel = client.channels.get(uniqueChannelName())
-
+        defer { client.dispose(); client.close() }
+        
         waitUntil(timeout: testTimeout, action: { done in
             client.connection.once(.connected) { _ in
                 channel.presence.update(presenceData, callback: { err in
@@ -1553,7 +1557,8 @@ class RealtimeClientTests: XCTestCase {
         options.clientId = clientId
         let client = ARTRealtime(options: options)
         let channel = client.channels.get(uniqueChannelName())
-
+        defer { client.dispose(); client.close() }
+        
         waitUntil(timeout: testTimeout, action: { done in
             client.connection.once(.connected) { _ in
                 channel.presence.updateClient(clientId, data: presenceData, callback: { err in
@@ -1569,7 +1574,8 @@ class RealtimeClientTests: XCTestCase {
         options.clientId = clientId
         let client = ARTRealtime(options: options)
         let channel = client.channels.get(uniqueChannelName())
-
+        defer { client.dispose(); client.close() }
+        
         waitUntil(timeout: testTimeout, action: { done in
             client.connection.once(.connected) { _ in
                 channel.presence.leaveClient(clientId, data: presenceData, callback: { err in
