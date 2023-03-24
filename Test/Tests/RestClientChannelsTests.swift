@@ -92,7 +92,7 @@ class RestClientChannelsTests: XCTestCase {
     // RSN2
 
     func test__007__RestClient__channels__channelExists__should_check_if_a_channel_exists() {
-        expect(client.channels.exists(channelName)).to(beFalse())
+        XCTAssertFalse(client.channels.exists(channelName))
 
         client.channels.get(channelName)
 

@@ -10,7 +10,7 @@ private func testOptionsGiveBasicAuthFalse(_ caseSetter: (ARTAuthOptions) -> Voi
 
     let client = ARTRest(options: options)
 
-    expect(client.auth.internal.options.isBasicAuth()).to(beFalse())
+    XCTAssertFalse(client.auth.internal.options.isBasicAuth())
 }
 
 private let expectedHostOrder = [4, 3, 0, 2, 1]
@@ -819,14 +819,14 @@ class RestClientTests: XCTestCase {
     @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
     func test__053__RestClient__Host_Fallback__fallbackHostsUseDefault_option__should_be_inactive_by_default() {
         let options = ARTClientOptions(key: "xxxx:xxxx")
-        expect(options.fallbackHostsUseDefault).to(beFalse())
+        XCTAssertFalse(options.fallbackHostsUseDefault)
     }
 
     @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
     func test__054__RestClient__Host_Fallback__fallbackHostsUseDefault_option__should_never_accept_to_configure__fallbackHost__and_set__fallbackHostsUseDefault__to__true_() {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         XCTAssertNil(options.fallbackHosts)
-        expect(options.fallbackHostsUseDefault).to(beFalse())
+        XCTAssertFalse(options.fallbackHostsUseDefault)
 
         expect { options.fallbackHosts = [] }.toNot(raiseException())
 

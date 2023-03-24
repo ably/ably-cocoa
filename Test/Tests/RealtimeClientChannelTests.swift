@@ -195,7 +195,7 @@ class RealtimeClientChannelTests: XCTestCase {
             }
             channel2.attach()
 
-            expect(channel2.presence.syncComplete).to(beFalse())
+            XCTAssertFalse(channel2.presence.syncComplete)
             expect(channel1.internal.presenceMap.members).to(haveCount(1))
             expect(channel2.internal.presenceMap.members).to(haveCount(0))
         }
@@ -378,7 +378,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 XCTAssertEqual(stateChange.previous, channel.state)
                 XCTAssertEqual(stateChange.current, channel.state)
                 XCTAssertEqual(stateChange.event, ARTChannelEvent.update)
-                expect(stateChange.resumed).to(beFalse())
+                XCTAssertFalse(stateChange.resumed)
                 XCTAssertNil(stateChange.reason)
                 done()
             }
@@ -508,9 +508,9 @@ class RealtimeClientChannelTests: XCTestCase {
             channel.on { stateChange in
                 switch stateChange.current {
                 case .attached:
-                    expect(stateChange.resumed).to(beFalse())
+                    XCTAssertFalse(stateChange.resumed)
                 default:
-                    expect(stateChange.resumed).to(beFalse())
+                    XCTAssertFalse(stateChange.resumed)
                 }
             }
             client.connection.once(.disconnected) { stateChange in
@@ -543,7 +543,7 @@ class RealtimeClientChannelTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.once(.attached) { stateChange in
-                expect(stateChange.resumed).to(beFalse())
+                XCTAssertFalse(stateChange.resumed)
                 XCTAssertNil(stateChange.reason)
                 done()
             }
@@ -957,7 +957,7 @@ class RealtimeClientChannelTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.once(.attached) { stateChange in
-                expect(stateChange.resumed).to(beFalse())
+                XCTAssertFalse(stateChange.resumed)
                 XCTAssertNil(stateChange.reason)
                 channel.on(.suspended) { _ in
                     fail("Should not reach SUSPENDED state")
@@ -3541,7 +3541,7 @@ class RealtimeClientChannelTests: XCTestCase {
                         fail("Result is empty"); done(); return
                     }
                     expect(result.items).to(haveCount(20))
-                    expect(result.hasNext).to(beFalse())
+                    XCTAssertFalse(result.hasNext)
                     XCTAssertEqual(result.items.first?.data as? String, "message 19")
                     XCTAssertEqual(result.items.last?.data as? String, "message 0")
                     done()
@@ -3571,7 +3571,7 @@ class RealtimeClientChannelTests: XCTestCase {
                     fail("Result is empty"); done(); return
                 }
                 expect(result.items).to(haveCount(1))
-                expect(result.hasNext).to(beFalse())
+                XCTAssertFalse(result.hasNext)
                 let messages = result.items
                 XCTAssertEqual(messages[0].data as? String, "message")
                 done()
@@ -3617,13 +3617,13 @@ class RealtimeClientChannelTests: XCTestCase {
                 try channel2.history(query) { result, _ in
                     expect(result!.items).to(haveCount(10))
                     XCTAssertTrue(result!.hasNext)
-                    expect(result!.isLast).to(beFalse())
+                    XCTAssertFalse(result!.isLast)
                     XCTAssertEqual((result!.items.first!).data as? String, "message 19")
                     XCTAssertEqual((result!.items.last!).data as? String, "message 10")
 
                     result!.next { result, _ in
                         expect(result!.items).to(haveCount(10))
-                        expect(result!.hasNext).to(beFalse())
+                        XCTAssertFalse(result!.hasNext)
                         XCTAssertTrue(result!.isLast)
                         XCTAssertEqual((result!.items.first!).data as? String, "message 9")
                         XCTAssertEqual((result!.items.last!).data as? String, "message 0")

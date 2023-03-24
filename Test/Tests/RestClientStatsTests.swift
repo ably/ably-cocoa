@@ -235,7 +235,7 @@ class RestClientStatsTests: XCTestCase {
         XCTAssertEqual(firstPage.items.count, 1)
         XCTAssertEqual((firstPage.items)[0].inbound.all.messages.data, 7000)
         XCTAssertTrue(firstPage.hasNext)
-        expect(firstPage.isLast).to(beFalse())
+        XCTAssertFalse(firstPage.isLast)
 
         guard let secondPage: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
             firstPage.next { page, err in
@@ -249,7 +249,7 @@ class RestClientStatsTests: XCTestCase {
         XCTAssertEqual(secondPage.items.count, 1)
         XCTAssertEqual((secondPage.items)[0].inbound.all.messages.data, 6000)
         XCTAssertTrue(secondPage.hasNext)
-        expect(secondPage.isLast).to(beFalse())
+        XCTAssertFalse(secondPage.isLast)
 
         guard let thirdPage: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
             secondPage.next { page, err in
@@ -290,7 +290,7 @@ class RestClientStatsTests: XCTestCase {
         XCTAssertEqual(firstPage.items.count, 1)
         XCTAssertEqual((firstPage.items)[0].inbound.all.messages.data, 5000)
         XCTAssertTrue(firstPage.hasNext)
-        expect(firstPage.isLast).to(beFalse())
+        XCTAssertFalse(firstPage.isLast)
 
         guard let secondPage: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
             firstPage.next { page, err in
@@ -304,7 +304,7 @@ class RestClientStatsTests: XCTestCase {
         XCTAssertEqual(secondPage.items.count, 1)
         XCTAssertEqual((secondPage.items)[0].inbound.all.messages.data, 6000)
         XCTAssertTrue(secondPage.hasNext)
-        expect(secondPage.isLast).to(beFalse())
+        XCTAssertFalse(secondPage.isLast)
 
         guard let thirdPage: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
             secondPage.next { page, err in

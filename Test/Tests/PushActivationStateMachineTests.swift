@@ -604,7 +604,7 @@ class PushActivationStateMachineTests: XCTestCase {
             if !fromEvent.isKind(of: ARTPushActivationEventCalledActivate.self) { XCTAssertTrue(activatedCallbackCalled)
                 expect(stateMachine.pendingEvents).to(haveCount(0))
             } else {
-                expect(activatedCallbackCalled).to(beFalse())
+                XCTAssertFalse(activatedCallbackCalled)
                 expect(stateMachine.pendingEvents).to(haveCount(1))
             }
 

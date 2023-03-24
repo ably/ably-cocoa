@@ -435,7 +435,7 @@ class UtilitiesTests: XCTestCase {
         })
         eventEmitter.emit("a", with: "123" as AnyObject?)
         XCTAssertTrue(firstCallbackCalled)
-        expect(secondCallbackCalled).to(beFalse())
+        XCTAssertFalse(secondCallbackCalled)
     }
 
     func test__021__Utilities__Logger__should_have_a_history_of_logs() {

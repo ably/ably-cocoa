@@ -26,7 +26,7 @@ class RealtimeClientChannelsTests: XCTestCase {
 
         XCTAssertNotNil(client.channels.get(channelName2))
         XCTAssertTrue(client.channels.exists(channelName2))
-        expect(client.channels.exists("testX")).to(beFalse())
+        XCTAssertFalse(client.channels.exists("testX"))
 
         for channel in client.channels {
             XCTAssertTrue(disposable.contains((channel as! ARTRealtimeChannel).name))

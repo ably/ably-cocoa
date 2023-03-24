@@ -2469,7 +2469,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 partialDone()
             }
             client1.connection.once(.connected) { _ in
-                expect(client1.internal.resuming).to(beFalse())
+                XCTAssertFalse(client1.internal.resuming)
                 XCTAssertNotEqual(client1.connection.id, firstConnection.id)
                 XCTAssertNotEqual(client1.connection.key, firstConnection.key)
                 partialDone()
@@ -2975,7 +2975,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                         ttlAndIdleIntervalPassedTestsClient.connection.once(.connected) { _ in
                             XCTAssertNotEqual(ttlAndIdleIntervalPassedTestsClient.connection.id, ttlAndIdleIntervalPassedTestsConnectionId)
                             channel.once(.attached) { stateChange in
-                                expect(stateChange.resumed).to(beFalse())
+                                XCTAssertFalse(stateChange.resumed)
                                 done()
                             }
                         }
@@ -3350,7 +3350,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.environment = "test" // do not use the default endpoint
-        expect(options.fallbackHostsUseDefault).to(beFalse())
+        XCTAssertFalse(options.fallbackHostsUseDefault)
         XCTAssertNil(options.fallbackHosts)
         options.autoConnect = false
         options.queueMessages = false
@@ -3405,7 +3405,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.environment = "test" // do not use the default endpoint
-        expect(options.fallbackHostsUseDefault).to(beFalse())
+        XCTAssertFalse(options.fallbackHostsUseDefault)
         XCTAssertNil(options.fallbackHosts)
         options.autoConnect = false
 

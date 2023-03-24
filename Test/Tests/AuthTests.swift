@@ -2683,7 +2683,7 @@ class AuthTests: XCTestCase {
                     XCTAssertEqual(auth.internal.options.authUrl!.host, "echo.ably.io")
                     XCTAssertEqual(auth.internal.options.authHeaders!["X-Ably"], "Test")
                     XCTAssertEqual(tokenDetails.token, token)
-                    expect(auth.internal.options.queryTime).to(beFalse())
+                    XCTAssertFalse(auth.internal.options.queryTime)
                     done()
                 }
             }
@@ -2714,9 +2714,9 @@ class AuthTests: XCTestCase {
                 auth.internal.testSuite_forceTokenToExpire()
 
                 auth.authorize(nil, options: authOptions2) { _, _ in
-                    expect(authCallbackHasBeenInvoked).to(beFalse())
-                    expect(auth.internal.options.useTokenAuth).to(beFalse())
-                    expect(auth.internal.options.queryTime).to(beFalse())
+                    XCTAssertFalse(authCallbackHasBeenInvoked)
+                    XCTAssertFalse(auth.internal.options.useTokenAuth)
+                    XCTAssertFalse(auth.internal.options.queryTime)
                     done()
                 }
             }
@@ -2742,15 +2742,15 @@ class AuthTests: XCTestCase {
                 XCTAssertNil(error)
                 XCTAssertNotNil(tokenDetails)
                 XCTAssertTrue(serverTimeRequestWasMade)
-                expect(rest.auth.internal.options.queryTime).to(beFalse())
+                XCTAssertFalse(rest.auth.internal.options.queryTime)
                 serverTimeRequestWasMade = false
 
                 // Second time
                 rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                     XCTAssertNil(error)
                     XCTAssertNotNil(tokenDetails)
-                    expect(serverTimeRequestWasMade).to(beFalse())
-                    expect(rest.auth.internal.options.queryTime).to(beFalse())
+                    XCTAssertFalse(serverTimeRequestWasMade)
+                    XCTAssertFalse(rest.auth.internal.options.queryTime)
                     done()
                 }
             }
@@ -3227,7 +3227,7 @@ class AuthTests: XCTestCase {
                 }
                 XCTAssertEqual(UInt((error as! ARTErrorInfo).code), ARTState.requestTokenFailed.rawValue)
                 XCTAssertNil(tokenDetails)
-                expect(authCallbackHasBeenInvoked).to(beFalse())
+                XCTAssertFalse(authCallbackHasBeenInvoked)
                 XCTAssertNil(rest.auth.internal.options.authCallback)
                 done()
             }
@@ -3240,7 +3240,7 @@ class AuthTests: XCTestCase {
                 }
                 XCTAssertEqual(UInt((error as! ARTErrorInfo).code), ARTState.requestTokenFailed.rawValue)
                 XCTAssertNil(tokenDetails)
-                expect(authCallbackHasBeenInvoked).to(beFalse())
+                XCTAssertFalse(authCallbackHasBeenInvoked)
                 XCTAssertNil(rest.auth.internal.options.authCallback)
                 done()
             }

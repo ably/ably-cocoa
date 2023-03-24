@@ -41,7 +41,7 @@ class RestClientPresenceTests: XCTestCase {
                 })
 
                 XCTAssertTrue(membersPage.hasNext)
-                expect(membersPage.isLast).to(beFalse())
+                XCTAssertFalse(membersPage.isLast)
 
                 membersPage.next { nextPage, error in
                     XCTAssertNil(error)
@@ -55,7 +55,7 @@ class RestClientPresenceTests: XCTestCase {
                             && (member!.data as? String) == expectedData
                     })
 
-                    expect(nextPage.hasNext).to(beFalse())
+                    XCTAssertFalse(nextPage.hasNext)
                     XCTAssertTrue(nextPage.isLast)
                     done()
                 }
@@ -144,7 +144,7 @@ class RestClientPresenceTests: XCTestCase {
                 try channel.presence.get(query) { membersPage, error in
                     XCTAssertNil(error)
                     expect(membersPage!.items).to(haveCount(3))
-                    expect(membersPage!.hasNext).to(beFalse())
+                    XCTAssertFalse(membersPage!.hasNext)
                     XCTAssertTrue(membersPage!.isLast)
                     expect(membersPage!.items).to(allPass { member in
                         let member = member!
@@ -189,7 +189,7 @@ class RestClientPresenceTests: XCTestCase {
                 })
 
                 XCTAssertTrue(membersPage.hasNext)
-                expect(membersPage.isLast).to(beFalse())
+                XCTAssertFalse(membersPage.isLast)
 
                 membersPage.next { nextPage, error in
                     XCTAssertNil(error)
@@ -205,7 +205,7 @@ class RestClientPresenceTests: XCTestCase {
                             && (member!.data as? String) == expectedData
                     })
 
-                    expect(nextPage.hasNext).to(beFalse())
+                    XCTAssertFalse(nextPage.hasNext)
                     XCTAssertTrue(nextPage.isLast)
                     done()
                 }
@@ -294,7 +294,7 @@ class RestClientPresenceTests: XCTestCase {
                 try channel.presence.history(query) { membersPage, error in
                     XCTAssertNil(error)
                     expect(membersPage!.items).to(haveCount(1))
-                    expect(membersPage!.hasNext).to(beFalse())
+                    XCTAssertFalse(membersPage!.hasNext)
                     XCTAssertTrue(membersPage!.isLast)
                     done()
                 }
@@ -339,7 +339,7 @@ class RestClientPresenceTests: XCTestCase {
                 try channel.presence.get(query) { membersPage, error in
                     XCTAssertNil(error)
                     expect(membersPage!.items).to(haveCount(3))
-                    expect(membersPage!.hasNext).to(beFalse())
+                    XCTAssertFalse(membersPage!.hasNext)
                     XCTAssertTrue(membersPage!.isLast)
                     expect(membersPage!.items).to(allPass { member in
                         let member = member
