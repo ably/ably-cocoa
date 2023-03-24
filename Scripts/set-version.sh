@@ -30,10 +30,10 @@ other_files=(
   "README.md"
   "Scripts/jazzy.sh"
   "Source/ARTClientInformation.m"
-  "Spec/Tests/ARTDefaultTests.swift"
-  "Spec/Tests/ClientInformationTests.swift"
-  "Spec/Tests/RealtimeClientConnectionTests.swift"
-  "Spec/Tests/RestClientTests.swift"
+  "Test/Tests/ARTDefaultTests.swift"
+  "Test/Tests/ClientInformationTests.swift"
+  "Test/Tests/RealtimeClientConnectionTests.swift"
+  "Test/Tests/RestClientTests.swift"
 )
 
 for file in ${other_files[@]};
