@@ -91,7 +91,7 @@ class PushActivationStateMachineTests: XCTestCase {
         stateMachine.send(ARTPushActivationEventCalledDeactivate())
 
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
-        expect(deactivatedCallbackCalled).to(beTrue())
+        XCTAssertTrue(deactivatedCallbackCalled)
     }
 
     // RSH3a2
@@ -212,7 +212,7 @@ class PushActivationStateMachineTests: XCTestCase {
 
         stateMachine.send(ARTPushActivationEventCalledDeactivate())
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
-        expect(deactivatedCallbackCalled).to(beTrue())
+        XCTAssertTrue(deactivatedCallbackCalled)
     }
 
     // RSH3b3
@@ -316,7 +316,7 @@ class PushActivationStateMachineTests: XCTestCase {
         }
 
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
-        expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
+        XCTAssertTrue(setAndPersistIdentityTokenDetailsCalled)
         expect(httpExecutor.requests.count) == 1
         let requests = httpExecutor.requests.compactMap { $0.url?.path }.filter { $0 == "/push/deviceRegistrations" }
         expect(requests).to(haveCount(1))
@@ -409,7 +409,7 @@ class PushActivationStateMachineTests: XCTestCase {
             stateMachine.send(ARTPushActivationEventGotPushDeviceDetails())
         }
 
-        expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
+        XCTAssertTrue(setAndPersistIdentityTokenDetailsCalled)
     }
 
     // RSH3b4
@@ -497,8 +497,8 @@ class PushActivationStateMachineTests: XCTestCase {
 
         stateMachine.send(ARTPushActivationEventGotDeviceRegistration(identityTokenDetails: testIdentityTokenDetails))
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
-        expect(activatedCallbackCalled).to(beTrue())
-        expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
+        XCTAssertTrue(activatedCallbackCalled)
+        XCTAssertTrue(setAndPersistIdentityTokenDetailsCalled)
         expect(storage.keysWritten.keys).to(contain(["ARTDeviceId", "ARTDeviceSecret", "ARTDeviceIdentityToken"]))
     }
 
@@ -520,7 +520,7 @@ class PushActivationStateMachineTests: XCTestCase {
 
         stateMachine.send(ARTPushActivationEventGettingDeviceRegistrationFailed(error: expectedError))
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
-        expect(activatedCallbackCalled).to(beTrue())
+        XCTAssertTrue(activatedCallbackCalled)
     }
 
     // RSH3d
@@ -543,7 +543,7 @@ class PushActivationStateMachineTests: XCTestCase {
 
         stateMachine.send(ARTPushActivationEventCalledActivate())
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
-        expect(activatedCallbackCalled).to(beTrue())
+        XCTAssertTrue(activatedCallbackCalled)
     }
 
     // RSH3d2
@@ -601,7 +601,7 @@ class PushActivationStateMachineTests: XCTestCase {
 
             stateMachine.send(ARTPushActivationEventCalledActivate())
             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
-            if !fromEvent.isKind(of: ARTPushActivationEventCalledActivate.self) { expect(activatedCallbackCalled).to(beTrue())
+            if !fromEvent.isKind(of: ARTPushActivationEventCalledActivate.self) { XCTAssertTrue(activatedCallbackCalled)
                 expect(stateMachine.pendingEvents).to(haveCount(0))
             } else {
                 expect(activatedCallbackCalled).to(beFalse())
@@ -640,7 +640,7 @@ class PushActivationStateMachineTests: XCTestCase {
 
             stateMachine.send(ARTPushActivationEventRegistrationSynced(identityTokenDetails: testIdentityTokenDetails))
             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
-            expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
+            XCTAssertTrue(setAndPersistIdentityTokenDetailsCalled)
 
             // RSH3e2b
             expect(activateCallbackCalled).toEventually(equal(fromEvent is ARTPushActivationEventCalledActivate), timeout: testTimeout)
@@ -830,8 +830,8 @@ class PushActivationStateMachineTests: XCTestCase {
 
         stateMachine.send(ARTPushActivationEventDeregistered())
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
-        expect(deactivatedCallbackCalled).to(beTrue())
-        expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
+        XCTAssertTrue(deactivatedCallbackCalled)
+        XCTAssertTrue(setAndPersistIdentityTokenDetailsCalled)
         // RSH3g2a
         XCTAssertNil(stateMachine.rest.device.identityTokenDetails)
     }
@@ -854,7 +854,7 @@ class PushActivationStateMachineTests: XCTestCase {
 
         stateMachine.send(ARTPushActivationEventDeregistrationFailed(error: expectedError))
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
-        expect(deactivatedCallbackCalled).to(beTrue())
+        XCTAssertTrue(deactivatedCallbackCalled)
     }
 
     // RSH4

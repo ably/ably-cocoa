@@ -60,8 +60,8 @@ private func testUsesAlternativeHostOnResponse(_ caseTest: FakeNetworkResponse, 
     }
 
     expect(urlConnections).to(haveCount(2))
-    expect(NSRegularExpression.match(urlConnections[0].absoluteString, pattern: "//realtime.ably.io")).to(beTrue())
-    expect(NSRegularExpression.match(urlConnections[1].absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+    XCTAssertTrue(NSRegularExpression.match(urlConnections[0].absoluteString, pattern: "//realtime.ably.io"))
+    XCTAssertTrue(NSRegularExpression.match(urlConnections[1].absoluteString, pattern: "//[a-e].ably-realtime.com"))
 }
 
 private func testMovesToDisconnectedWithNetworkingError(_ error: Error) {
@@ -284,7 +284,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         var connected = false
 
         // Default
-        expect(options.autoConnect).to(beTrue(), description: "autoConnect should be true by default")
+        XCTAssertTrue(options.autoConnect, "autoConnect should be true by default")
 
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
@@ -2465,7 +2465,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
             client1.connection.once(.connecting) { _ in
-                expect(client1.internal.resuming).to(beTrue())
+                XCTAssertTrue(client1.internal.resuming)
                 partialDone()
             }
             client1.connection.once(.connected) { _ in
@@ -3493,8 +3493,8 @@ class RealtimeClientConnectionTests: XCTestCase {
         if urlConnections.count != 2 {
             return
         }
-        expect(NSRegularExpression.match(urlConnections[0].absoluteString, pattern: "//realtime.ably.io")).to(beTrue())
-        expect(NSRegularExpression.match(urlConnections[1].absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+        XCTAssertTrue(NSRegularExpression.match(urlConnections[0].absoluteString, pattern: "//realtime.ably.io"))
+        XCTAssertTrue(NSRegularExpression.match(urlConnections[1].absoluteString, pattern: "//[a-e].ably-realtime.com"))
 
         afterEach__Connection__Host_Fallback()
     }
@@ -3541,10 +3541,10 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.connect()
         }
 
-        expect(urlConnections.count > 1 && urlConnections.count <= options.fallbackHosts!.count + 1).to(beTrue())
-        expect(NSRegularExpression.match(urlConnections[0].absoluteString, pattern: "//realtime.ably.io")).to(beTrue())
+        XCTAssertTrue(urlConnections.count > 1 && urlConnections.count <= options.fallbackHosts!.count + 1)
+        XCTAssertTrue(NSRegularExpression.match(urlConnections[0].absoluteString, pattern: "//realtime.ably.io"))
         for connection in urlConnections.dropFirst() {
-            expect(NSRegularExpression.match(connection.absoluteString, pattern: "//[f-j].ably-realtime.com")).to(beTrue())
+            XCTAssertTrue(NSRegularExpression.match(connection.absoluteString, pattern: "//[f-j].ably-realtime.com"))
         }
 
         afterEach__Connection__Host_Fallback()
@@ -3635,7 +3635,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
 
         expect(urlConnections).to(haveCount(1))
-        expect(NSRegularExpression.match(urlConnections[0].absoluteString, pattern: "//realtime.ably.io")).to(beTrue())
+        XCTAssertTrue(NSRegularExpression.match(urlConnections[0].absoluteString, pattern: "//realtime.ably.io"))
 
         afterEach__Connection__Host_Fallback()
     }
@@ -3694,9 +3694,9 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
 
         expect(urlConnections).to(haveCount(3))
-        expect(NSRegularExpression.match(urlConnections.at(0)?.absoluteString, pattern: "//realtime.ably.io")).to(beTrue())
-        expect(NSRegularExpression.match(urlConnections.at(1)?.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
-        expect(NSRegularExpression.match(urlConnections.at(2)?.absoluteString, pattern: "//realtime.ably.io")).to(beTrue())
+        XCTAssertTrue(NSRegularExpression.match(urlConnections.at(0)?.absoluteString, pattern: "//realtime.ably.io"))
+        XCTAssertTrue(NSRegularExpression.match(urlConnections.at(1)?.absoluteString, pattern: "//[a-e].ably-realtime.com"))
+        XCTAssertTrue(NSRegularExpression.match(urlConnections.at(2)?.absoluteString, pattern: "//realtime.ably.io"))
 
         afterEach__Connection__Host_Fallback()
     }
@@ -3772,7 +3772,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                     continue
                 }
                 // Host changed; should've had an internet check before.
-                expect(gotInternetIsUpCheck).to(beTrue())
+                XCTAssertTrue(gotInternetIsUpCheck)
                 gotInternetIsUpCheck = false
                 resultFallbackHosts.append(fallbackHost)
             }
@@ -3908,7 +3908,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                     continue
                 }
                 // Host changed; should've had an internet check before.
-                expect(gotInternetIsUpCheck).to(beTrue())
+                XCTAssertTrue(gotInternetIsUpCheck)
                 gotInternetIsUpCheck = false
                 resultFallbackHosts.append(fallbackHost)
             }
@@ -3993,7 +3993,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         expect(urlConnections).toEventually(haveCount(2), timeout: testTimeout)
 
-        expect(NSRegularExpression.match(urlConnections.at(1)?.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+        XCTAssertTrue(NSRegularExpression.match(urlConnections.at(1)?.absoluteString, pattern: "//[a-e].ably-realtime.com"))
 
         waitUntil(timeout: testTimeout) { done in
             client.time { _, _ in

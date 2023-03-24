@@ -38,8 +38,8 @@ private func testUsesAlternativeHost(_ caseTest: FakeNetworkResponse, channelNam
     if testHTTPExecutor.requests.count != 2 {
         return
     }
-    expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
-    expect(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+    XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.absoluteString, pattern: "//rest.ably.io"))
+    XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.absoluteString, pattern: "//[a-e].ably-realtime.com"))
 }
 
 private func testStoresSuccessfulFallbackHostAsDefaultHost(_ caseTest: FakeNetworkResponse, channelName: String) {
@@ -58,8 +58,8 @@ private func testStoresSuccessfulFallbackHostAsDefaultHost(_ caseTest: FakeNetwo
     }
 
     expect(testHTTPExecutor.requests).to(haveCount(2))
-    expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.host, pattern: "rest.ably.io")).to(beTrue())
-    expect(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.host, pattern: "[a-e].ably-realtime.com")).to(beTrue())
+    XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.host, pattern: "rest.ably.io"))
+    XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.host, pattern: "[a-e].ably-realtime.com"))
 
     // #1 Store fallback used to request
     let usedFallbackURL = testHTTPExecutor.requests[1].url!
@@ -124,8 +124,8 @@ private func testUsesAnotherFallbackHost(_ caseTest: FakeNetworkResponse, channe
     }
 
     expect(testHTTPExecutor.requests).to(haveCount(3))
-    expect(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.host, pattern: "[a-e].ably-realtime.com")).to(beTrue())
-    expect(NSRegularExpression.match(testHTTPExecutor.requests[2].url!.host, pattern: "[a-e].ably-realtime.com")).to(beTrue())
+    XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.host, pattern: "[a-e].ably-realtime.com"))
+    XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests[2].url!.host, pattern: "[a-e].ably-realtime.com"))
     XCTAssertNotEqual(testHTTPExecutor.requests[1].url!.host, testHTTPExecutor.requests[2].url!.host)
 }
 
@@ -433,7 +433,7 @@ class RestClientTests: XCTestCase {
 
         let authOptions = client.auth.internal.options
 
-        expect(authOptions == options).to(beTrue())
+        XCTAssertTrue(authOptions == options)
     }
 
     // RSC12
@@ -622,7 +622,7 @@ class RestClientTests: XCTestCase {
 
     func test__038__RestClient__Authentication__basic_authentication_flag__should_be_true_when_initialized_with_a_key() {
         let client = ARTRest(key: "key:secret")
-        expect(client.auth.internal.options.isBasicAuth()).to(beTrue())
+        XCTAssertTrue(client.auth.internal.options.isBasicAuth())
     }
 
     func test__039__RestClient__Authentication__basic_authentication_flag__should_be_false_when_options__useTokenAuth_is_set() {
@@ -780,7 +780,7 @@ class RestClientTests: XCTestCase {
         options.fallbackHostsUseDefault = true
 
         let client = ARTRest(options: options)
-        expect(client.internal.options.fallbackHostsUseDefault).to(beTrue())
+        XCTAssertTrue(client.internal.options.fallbackHostsUseDefault)
         // Not production
         XCTAssertNotNil(client.internal.options.environment)
         XCTAssertNotEqual(client.internal.options.environment, "production")
@@ -802,7 +802,7 @@ class RestClientTests: XCTestCase {
         options.fallbackHostsUseDefault = true
 
         let client = ARTRest(options: options)
-        expect(client.internal.options.fallbackHostsUseDefault).to(beTrue())
+        XCTAssertTrue(client.internal.options.fallbackHostsUseDefault)
         // Custom
         XCTAssertNotEqual(client.internal.options.restHost, ARTDefault.restHost())
         XCTAssertNotEqual(client.internal.options.realtimeHost, ARTDefault.realtimeHost())
@@ -861,9 +861,9 @@ class RestClientTests: XCTestCase {
         let requests = testHTTPExecutor.requests
         expect(requests).to(haveCount(3))
         let capturedURLs = requests.map { $0.url!.absoluteString }
-        expect(NSRegularExpression.match(capturedURLs.at(0), pattern: "//rest.ably.io")).to(beTrue())
-        expect(NSRegularExpression.match(capturedURLs.at(1), pattern: "//[a-e].ably-realtime.com")).to(beTrue())
-        expect(NSRegularExpression.match(capturedURLs.at(2), pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(0), pattern: "//rest.ably.io"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(1), pattern: "//[a-e].ably-realtime.com"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(2), pattern: "//[a-e].ably-realtime.com"))
     }
 
     // RSC15b1
@@ -887,7 +887,7 @@ class RestClientTests: XCTestCase {
         let requests = testHTTPExecutor.requests
         expect(requests).to(haveCount(1))
         let capturedURLs = requests.map { $0.url!.absoluteString }
-        expect(NSRegularExpression.match(capturedURLs.at(0), pattern: "//fake.ably.io")).to(beTrue())
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(0), pattern: "//fake.ably.io"))
     }
 
     // RSC15b1
@@ -959,9 +959,9 @@ class RestClientTests: XCTestCase {
 
         expect(testHTTPExecutor.requests).to(haveCount(3))
         let capturedURLs = testHTTPExecutor.requests.map { $0.url!.absoluteString }
-        expect(NSRegularExpression.match(capturedURLs.at(0), pattern: "//rest.ably.io")).to(beTrue())
-        expect(NSRegularExpression.match(capturedURLs.at(1), pattern: "//[a-b].cocoa.ably")).to(beTrue())
-        expect(NSRegularExpression.match(capturedURLs.at(2), pattern: "//[a-b].cocoa.ably")).to(beTrue())
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(0), pattern: "//rest.ably.io"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(1), pattern: "//[a-b].cocoa.ably"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(2), pattern: "//[a-b].cocoa.ably"))
     }
 
     // RSC15b3, RSC15g4
@@ -985,9 +985,9 @@ class RestClientTests: XCTestCase {
 
         expect(testHTTPExecutor.requests).to(haveCount(3))
         let capturedURLs = testHTTPExecutor.requests.map { $0.url!.absoluteString }
-        expect(NSRegularExpression.match(capturedURLs.at(0), pattern: "//rest.ably.io")).to(beTrue())
-        expect(NSRegularExpression.match(capturedURLs.at(1), pattern: "//[a-e].ably-realtime.com")).to(beTrue())
-        expect(NSRegularExpression.match(capturedURLs.at(2), pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(0), pattern: "//rest.ably.io"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(1), pattern: "//[a-e].ably-realtime.com"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(2), pattern: "//[a-e].ably-realtime.com"))
     }
 
     // RSC15k
@@ -1031,8 +1031,8 @@ class RestClientTests: XCTestCase {
 
         expect(testHTTPExecutor.requests).to(haveCount(2))
         let capturedURLs = testHTTPExecutor.requests.compactMap { $0.url?.absoluteString }
-        expect(NSRegularExpression.match(capturedURLs.at(0), pattern: "//rest.ably.io")).to(beTrue())
-        expect(NSRegularExpression.match(capturedURLs.at(1), pattern: "//f.ably-realtime.com")).to(beTrue())
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(0), pattern: "//rest.ably.io"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(1), pattern: "//f.ably-realtime.com"))
     }
 
     // RSC15g2
@@ -1055,9 +1055,9 @@ class RestClientTests: XCTestCase {
 
         expect(testHTTPExecutor.requests).to(haveCount(3))
         let capturedURLs = testHTTPExecutor.requests.compactMap { $0.url?.absoluteString }
-        expect(NSRegularExpression.match(capturedURLs.at(0), pattern: "//test-rest.ably.io")).to(beTrue())
-        expect(NSRegularExpression.match(capturedURLs.at(1), pattern: "//test-[a-e]-fallback.ably-realtime.com")).to(beTrue())
-        expect(NSRegularExpression.match(capturedURLs.at(1), pattern: "//test-[a-e]-fallback.ably-realtime.com")).to(beTrue())
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(0), pattern: "//test-rest.ably.io"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(1), pattern: "//test-[a-e]-fallback.ably-realtime.com"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(1), pattern: "//test-[a-e]-fallback.ably-realtime.com"))
     }
 
     // RSC15g2
@@ -1080,10 +1080,10 @@ class RestClientTests: XCTestCase {
 
         expect(testHTTPExecutor.requests).to(haveCount(4))
         let capturedURLs = testHTTPExecutor.requests.compactMap { $0.url?.absoluteString }
-        expect(NSRegularExpression.match(capturedURLs.at(0), pattern: "//rest.ably.io")).to(beTrue())
-        expect(NSRegularExpression.match(capturedURLs.at(1), pattern: "//[a-e].ably-realtime.com")).to(beTrue())
-        expect(NSRegularExpression.match(capturedURLs.at(2), pattern: "//[a-e].ably-realtime.com")).to(beTrue())
-        expect(NSRegularExpression.match(capturedURLs.at(3), pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(0), pattern: "//rest.ably.io"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(1), pattern: "//[a-e].ably-realtime.com"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(2), pattern: "//[a-e].ably-realtime.com"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(3), pattern: "//[a-e].ably-realtime.com"))
     }
 
     // RSC15g3
@@ -1106,10 +1106,10 @@ class RestClientTests: XCTestCase {
 
         expect(testHTTPExecutor.requests).to(haveCount(4))
         let capturedURLs = testHTTPExecutor.requests.compactMap { $0.url?.absoluteString }
-        expect(NSRegularExpression.match(capturedURLs.at(0), pattern: "//rest.ably.io")).to(beTrue())
-        expect(NSRegularExpression.match(capturedURLs.at(1), pattern: "//[a-e].ably-realtime.com")).to(beTrue())
-        expect(NSRegularExpression.match(capturedURLs.at(2), pattern: "//[a-e].ably-realtime.com")).to(beTrue())
-        expect(NSRegularExpression.match(capturedURLs.at(3), pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(0), pattern: "//rest.ably.io"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(1), pattern: "//[a-e].ably-realtime.com"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(2), pattern: "//[a-e].ably-realtime.com"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(3), pattern: "//[a-e].ably-realtime.com"))
     }
 
     // RSC15g4
@@ -1134,7 +1134,7 @@ class RestClientTests: XCTestCase {
 
         expect(testHTTPExecutor.requests).to(haveCount(2))
         let capturedURLs = testHTTPExecutor.requests.map { $0.url!.absoluteString }
-        expect(NSRegularExpression.match(capturedURLs.at(1), pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(1), pattern: "//[a-e].ably-realtime.com"))
     }
 
     // RSC15g1
@@ -1156,7 +1156,7 @@ class RestClientTests: XCTestCase {
 
         expect(testHTTPExecutor.requests).to(haveCount(1))
         let capturedURLs = testHTTPExecutor.requests.map { $0.url!.absoluteString }
-        expect(NSRegularExpression.match(capturedURLs.at(0), pattern: "//rest.ably.io")).to(beTrue())
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(0), pattern: "//rest.ably.io"))
     }
 
     // RSC15g3
@@ -1182,7 +1182,7 @@ class RestClientTests: XCTestCase {
         }
 
         let capturedURLs = testHTTPExecutor.requests.map { $0.url!.absoluteString }
-        expect(NSRegularExpression.match(capturedURLs.at(1), pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(1), pattern: "//[a-e].ably-realtime.com"))
     }
 
     // RSC15e
@@ -1213,9 +1213,9 @@ class RestClientTests: XCTestCase {
         }
 
         expect(testHTTPExecutor.requests).to(haveCount(3))
-        expect(NSRegularExpression.match(testHTTPExecutor.requests.at(0)?.url?.absoluteString, pattern: "//\(ARTDefault.restHost())")).to(beTrue())
-        expect(NSRegularExpression.match(testHTTPExecutor.requests.at(1)?.url?.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
-        expect(NSRegularExpression.match(testHTTPExecutor.requests.at(2)?.url?.absoluteString, pattern: "//\(ARTDefault.restHost())")).to(beTrue())
+        XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests.at(0)?.url?.absoluteString, pattern: "//\(ARTDefault.restHost())"))
+        XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests.at(1)?.url?.absoluteString, pattern: "//[a-e].ably-realtime.com"))
+        XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests.at(2)?.url?.absoluteString, pattern: "//\(ARTDefault.restHost())"))
     }
 
     // RSC15a
@@ -1379,7 +1379,7 @@ class RestClientTests: XCTestCase {
         }
 
         expect(testHTTPExecutor.requests).to(haveCount(Int(1 + options.httpMaxRetryCount)))
-        expect((testHTTPExecutor.requests.count) < (_fallbackHosts.count + 1)).to(beTrue())
+        XCTAssertTrue((testHTTPExecutor.requests.count) < (_fallbackHosts.count + 1))
 
         let extractHostname = { (request: URLRequest) in
             NSRegularExpression.extract(request.url!.absoluteString, pattern: "[f-j].ably-realtime.com")
@@ -1482,7 +1482,7 @@ class RestClientTests: XCTestCase {
         }
 
         expect(testHTTPExecutor.requests).to(haveCount(1))
-        expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
+        XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.absoluteString, pattern: "//rest.ably.io"))
 
         afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
     }
@@ -1518,7 +1518,7 @@ class RestClientTests: XCTestCase {
         }
 
         expect(testHTTPExecutor.requests).to(haveCount(1))
-        expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
+        XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.absoluteString, pattern: "//rest.ably.io"))
     }
 
     // RSC15f
@@ -1562,7 +1562,7 @@ class RestClientTests: XCTestCase {
     // RSC8a
     func test__008__RestClient__should_use_MsgPack_binary_protocol() throws {
         let options = AblyTests.commonAppSetup()
-        expect(options.useBinaryProtocol).to(beTrue())
+        XCTAssertTrue(options.useBinaryProtocol)
 
         let rest = ARTRest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
@@ -1627,7 +1627,7 @@ class RestClientTests: XCTestCase {
 
         let transport = realtime.internal.transport as! TestProxyTransport
         let object = try! JSONSerialization.jsonObject(with: transport.rawDataSent.first!, options: JSONSerialization.ReadingOptions(rawValue: 0))
-        expect(JSONSerialization.isValidJSONObject(object)).to(beTrue())
+        XCTAssertTrue(JSONSerialization.isValidJSONObject(object))
     }
 
     // RSC7a
@@ -1668,7 +1668,7 @@ class RestClientTests: XCTestCase {
                 let headerAgent = testHTTPExecutor.requests.first!.allHTTPHeaderFields?["Ably-Agent"]
                 let ablyAgent = ARTClientInformation.agentIdentifier(withAdditionalAgents: options.agents)
                 XCTAssertEqual(headerAgent, ablyAgent)
-                expect(headerAgent!.hasPrefix("ably-cocoa/1.2.19")).to(beTrue())
+                XCTAssertTrue(headerAgent!.hasPrefix("ably-cocoa/1.2.19"))
                 done()
             }
         }
@@ -1783,7 +1783,7 @@ class RestClientTests: XCTestCase {
         let decodedBody = try XCTUnwrap(try rest.internal.defaultEncoder.decode(rawBody), "Decode request body failed")
         let body = try XCTUnwrap(decodedBody as? NSDictionary, "Request body is invalid")
         
-        expect(body.value(forKey: "blockchain") as? Bool).to(beTrue())
+        XCTAssertTrue(try XCTUnwrap(body.value(forKey: "blockchain") as? Bool))
     }
 
     func test__088__RestClient__request__method_signature_and_arguments__should_add_a_HTTP_header() throws {

@@ -576,7 +576,7 @@ class AuthTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             realtime.connection.once(.failed) { stateChange in
-                expect(authCallbackHasBeenInvoked).to(beTrue())
+                XCTAssertTrue(authCallbackHasBeenInvoked)
                 XCTAssertEqual(stateChange.reason?.code, ARTErrorCode.authConfiguredProviderFailure.intValue)
                 XCTAssertEqual(stateChange.reason?.statusCode, 403)
                 done()
@@ -1726,7 +1726,7 @@ class AuthTests: XCTestCase {
             })
         }
 
-        expect(createTokenRequestMethodWasCalled).to(beTrue())
+        XCTAssertTrue(createTokenRequestMethodWasCalled)
     }
 
     // RSA8b
@@ -2083,7 +2083,7 @@ class AuthTests: XCTestCase {
                 done()
             }
         }
-        expect(customCallbackCalled).to(beTrue())
+        XCTAssertTrue(customCallbackCalled)
     }
 
     func test__078__createTokenRequest__should_use_defaults_if_no_AuthOptions_is_provided() {
@@ -2111,7 +2111,7 @@ class AuthTests: XCTestCase {
                 done()
             }
         }
-        expect(callbackCalled).to(beTrue())
+        XCTAssertTrue(callbackCalled)
     }
 
     func test__079__createTokenRequest__should_replace_defaults_if__nil__option_s_field_passed() {
@@ -2289,7 +2289,7 @@ class AuthTests: XCTestCase {
                     XCTFail("tokenRequest is nil"); done(); return
                 }
                 XCTAssertNotNil(tokenRequest.timestamp)
-                expect(serverTimeRequestWasMade).to(beTrue())
+                XCTAssertTrue(serverTimeRequestWasMade)
                 done()
             })
         }
@@ -2621,7 +2621,7 @@ class AuthTests: XCTestCase {
             })
         }
 
-        expect(requestMethodWasCalled).to(beTrue())
+        XCTAssertTrue(requestMethodWasCalled)
     }
 
     // RSA10f
@@ -2706,7 +2706,7 @@ class AuthTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             auth.authorize(nil, options: authOptions) { _, _ in
-                expect(authCallbackHasBeenInvoked).to(beTrue())
+                XCTAssertTrue(authCallbackHasBeenInvoked)
 
                 authCallbackHasBeenInvoked = false
                 let authOptions2 = ARTAuthOptions()
@@ -2741,7 +2741,7 @@ class AuthTests: XCTestCase {
             rest.auth.authorize(nil, options: authOptions) { tokenDetails, error in
                 XCTAssertNil(error)
                 XCTAssertNotNil(tokenDetails)
-                expect(serverTimeRequestWasMade).to(beTrue())
+                XCTAssertTrue(serverTimeRequestWasMade)
                 expect(rest.auth.internal.options.queryTime).to(beFalse())
                 serverTimeRequestWasMade = false
 
@@ -3201,7 +3201,7 @@ class AuthTests: XCTestCase {
             rest.auth.authorize(nil, options: authOptions) { tokenDetails, error in
                 XCTAssertNil(error)
                 XCTAssertEqual(tokenDetails?.token, "token")
-                expect(authCallbackHasBeenInvoked).to(beTrue())
+                XCTAssertTrue(authCallbackHasBeenInvoked)
                 XCTAssertNotNil(rest.auth.internal.options.authCallback)
                 done()
             }
@@ -3212,7 +3212,7 @@ class AuthTests: XCTestCase {
             rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                 XCTAssertNil(error)
                 XCTAssertEqual(tokenDetails?.token, "token")
-                expect(authCallbackHasBeenInvoked).to(beTrue())
+                XCTAssertTrue(authCallbackHasBeenInvoked)
                 XCTAssertNotNil(rest.auth.internal.options.authCallback)
                 done()
             }
@@ -4313,7 +4313,7 @@ class AuthTests: XCTestCase {
     func test__001__should_not_force_token_auth_when_clientId_is_set() {
         let options = AblyTests.commonAppSetup()
         options.clientId = "foo"
-        expect(options.isBasicAuth()).to(beTrue())
+        XCTAssertTrue(options.isBasicAuth())
     }
 
     // https://github.com/ably/ably-cocoa/issues/1093

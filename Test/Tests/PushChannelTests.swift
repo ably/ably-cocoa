@@ -39,7 +39,7 @@ class PushChannelTests: XCTestCase {
                     fail("Error is nil"); done(); return
                 }
                 expect(error.message).to(contain("cannot use device before device activation has finished"))
-                expect(AblyTests.currentQueueLabel() == AblyTests.userQueue.label).to(beTrue())
+                XCTAssertTrue(AblyTests.currentQueueLabel() == AblyTests.userQueue.label)
                 done()
             }
         }
@@ -93,7 +93,7 @@ class PushChannelTests: XCTestCase {
                     fail("Error is nil"); done(); return
                 }
                 expect(error.message).to(contain("null client ID"))
-                expect(AblyTests.currentQueueLabel() == AblyTests.userQueue.label).to(beTrue())
+                XCTAssertTrue(AblyTests.currentQueueLabel() == AblyTests.userQueue.label)
                 done()
             }
         }
@@ -138,7 +138,7 @@ class PushChannelTests: XCTestCase {
                     fail("Error is nil"); done(); return
                 }
                 expect(error.message).to(contain("cannot use device before device activation has finished"))
-                expect(AblyTests.currentQueueLabel() == AblyTests.userQueue.label).to(beTrue())
+                XCTAssertTrue(AblyTests.currentQueueLabel() == AblyTests.userQueue.label)
                 done()
             }
         }
@@ -190,7 +190,7 @@ class PushChannelTests: XCTestCase {
                     fail("Error is nil"); done(); return
                 }
                 expect(error.message).to(contain("null client ID"))
-                expect(AblyTests.currentQueueLabel() == AblyTests.userQueue.label).to(beTrue())
+                XCTAssertTrue(AblyTests.currentQueueLabel() == AblyTests.userQueue.label)
                 done()
             }
         }

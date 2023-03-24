@@ -427,6 +427,6 @@ class PushTests: XCTestCase {
             }
             rest.push.activate()
         }
-        expect(registerForAPNSMethodWasCalled).to(beTrue())
+        XCTAssertTrue(registerForAPNSMethodWasCalled)
     }
 }

@@ -281,8 +281,8 @@ class RealtimeClientChannelTests: XCTestCase {
             channel.attach()
         }
 
-        expect(channelOnMethodCalled).to(beTrue())
-        expect(statesEventEmitterOnMethodCalled).to(beTrue())
+        XCTAssertTrue(channelOnMethodCalled)
+        XCTAssertTrue(statesEventEmitterOnMethodCalled)
         XCTAssertEqual(emitCounter, 4)
 
         if states.count != 5 {
@@ -522,7 +522,7 @@ class RealtimeClientChannelTests: XCTestCase {
 
                 channel.on { stateChange in
                     if stateChange.current == .attached {
-                        expect(stateChange.resumed).to(beTrue())
+                        XCTAssertTrue(stateChange.resumed)
                         XCTAssertNil(stateChange.reason)
                         XCTAssertEqual(stateChange.current, ARTRealtimeChannelState.attached)
                         XCTAssertEqual(stateChange.previous, ARTRealtimeChannelState.attached)
@@ -557,7 +557,7 @@ class RealtimeClientChannelTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.once(.update) { stateChange in
-                expect(stateChange.resumed).to(beTrue())
+                XCTAssertTrue(stateChange.resumed)
                 XCTAssertNil(stateChange.reason)
                 XCTAssertEqual(stateChange.current, ARTRealtimeChannelState.attached)
                 XCTAssertEqual(stateChange.previous, ARTRealtimeChannelState.attached)
@@ -2298,7 +2298,7 @@ class RealtimeClientChannelTests: XCTestCase {
         options.autoConnect = false
         rtl6c2TestsClient = AblyTests.newRealtime(options)
         rtl6c2TestsChannel = rtl6c2TestsClient.channels.get(channelName)
-        expect(rtl6c2TestsClient.internal.options.queueMessages).to(beTrue())
+        XCTAssertTrue(rtl6c2TestsClient.internal.options.queueMessages)
     }
 
     func afterEach__Channel__publish__Connection_state_conditions__the_message() { rtl6c2TestsClient.close() }
@@ -3435,7 +3435,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 }
             }.toNot(throwError { err in fail("\(err)"); done() })
         }
-        expect(restChannelHistoryMethodWasCalled).to(beTrue())
+        XCTAssertTrue(restChannelHistoryMethodWasCalled)
         restChannelHistoryMethodWasCalled = false
 
         waitUntil(timeout: testTimeout) { done in
@@ -3445,7 +3445,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 }
             }.toNot(throwError { err in fail("\(err)"); done() })
         }
-        expect(restChannelHistoryMethodWasCalled).to(beTrue())
+        XCTAssertTrue(restChannelHistoryMethodWasCalled)
     }
 
     // RTL10b
@@ -3616,7 +3616,7 @@ class RealtimeClientChannelTests: XCTestCase {
             expect {
                 try channel2.history(query) { result, _ in
                     expect(result!.items).to(haveCount(10))
-                    expect(result!.hasNext).to(beTrue())
+                    XCTAssertTrue(result!.hasNext)
                     expect(result!.isLast).to(beFalse())
                     XCTAssertEqual((result!.items.first!).data as? String, "message 19")
                     XCTAssertEqual((result!.items.last!).data as? String, "message 10")
@@ -3624,7 +3624,7 @@ class RealtimeClientChannelTests: XCTestCase {
                     result!.next { result, _ in
                         expect(result!.items).to(haveCount(10))
                         expect(result!.hasNext).to(beFalse())
-                        expect(result!.isLast).to(beTrue())
+                        XCTAssertTrue(result!.isLast)
                         XCTAssertEqual((result!.items.first!).data as? String, "message 9")
                         XCTAssertEqual((result!.items.last!).data as? String, "message 0")
                         done()

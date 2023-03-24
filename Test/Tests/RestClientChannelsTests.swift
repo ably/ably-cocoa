@@ -96,7 +96,7 @@ class RestClientChannelsTests: XCTestCase {
 
         client.channels.get(channelName)
 
-        expect(client.channels.exists(channelName)).to(beTrue())
+        XCTAssertTrue(client.channels.exists(channelName))
     }
 
     // RSN4

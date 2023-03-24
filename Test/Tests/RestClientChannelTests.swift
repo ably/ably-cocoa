@@ -77,7 +77,7 @@ private func testSupportsAESEncryptionWithKeyLength(_ encryptionKeyLength: UInt,
                 return
             }
             expect(result.hasNext).to(beFalse())
-            expect(result.isLast).to(beTrue())
+            XCTAssertTrue(result.isLast)
             let items = result.items
             if result.items.isEmpty {
                 fail("PaginatedResult has no items"); done()
@@ -510,10 +510,10 @@ class RestClientChannelTests: XCTestCase {
         let channel = client.channels.get(uniqueChannelName(prefix: "pushenabled:test"))
         let extras = ["push": ["notification": ["title": "Hello from Ably!"]]] as ARTJsonCompatible
 
-        expect((client.internal.encoders["application/json"] as! ARTJsonLikeEncoder).message(from: [
+        XCTAssertTrue((client.internal.encoders["application/json"] as! ARTJsonLikeEncoder).message(from: [
             "data": "foo",
             "extras": ["push": ["notification": ["title": "Hello from Ably!"]]],
-        ])?.extras == extras).to(beTrue())
+        ])?.extras == extras)
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish("name", data: "some data", extras: extras) { error in
@@ -534,7 +534,7 @@ class RestClientChannelTests: XCTestCase {
                         fail("expected published message in history")
                         done(); return
                     }
-                    expect(message.extras == extras).to(beTrue())
+                    XCTAssertTrue(message.extras == extras)
                     done()
                 }
             }
@@ -898,7 +898,7 @@ class RestClientChannelTests: XCTestCase {
                 fail("Result is empty"); return
             }
             XCTAssertNil(error)
-            expect(result.hasNext).to(beTrue())
+            XCTAssertTrue(result.hasNext)
             expect(result.isLast).to(beFalse())
             expect(result.items).to(haveCount(2))
             let items = result.items.compactMap { $0.data as? String }
@@ -910,7 +910,7 @@ class RestClientChannelTests: XCTestCase {
                     fail("Result is empty"); return
                 }
                 XCTAssertNil(error)
-                expect(result.hasNext).to(beTrue())
+                XCTAssertTrue(result.hasNext)
                 expect(result.isLast).to(beFalse())
                 expect(result.items).to(haveCount(2))
                 let items = result.items.compactMap { $0.data as? String }
@@ -923,7 +923,7 @@ class RestClientChannelTests: XCTestCase {
                     }
                     XCTAssertNil(error)
                     expect(result.hasNext).to(beFalse())
-                    expect(result.isLast).to(beTrue())
+                    XCTAssertTrue(result.isLast)
                     expect(result.items).to(haveCount(1))
                     let items = result.items.compactMap { $0.data as? String }
                     XCTAssertEqual(items.first, "m5")
@@ -933,7 +933,7 @@ class RestClientChannelTests: XCTestCase {
                             fail("Result is empty"); return
                         }
                         XCTAssertNil(error)
-                        expect(result.hasNext).to(beTrue())
+                        XCTAssertTrue(result.hasNext)
                         expect(result.isLast).to(beFalse())
                         expect(result.items).to(haveCount(2))
                         let items = result.items.compactMap { $0.data as? String }
@@ -992,7 +992,7 @@ class RestClientChannelTests: XCTestCase {
                     return
                 }
                 expect(result.hasNext).to(beFalse())
-                expect(result.isLast).to(beTrue())
+                XCTAssertTrue(result.isLast)
                 let items = result.items
                 if items.count != 2 {
                     fail("PaginatedResult has no items"); done()
@@ -1054,7 +1054,7 @@ class RestClientChannelTests: XCTestCase {
                     return
                 }
                 expect(result.hasNext).to(beFalse())
-                expect(result.isLast).to(beTrue())
+                XCTAssertTrue(result.isLast)
                 let items = result.items
                 if items.count != 2 {
                     fail("PaginatedResult has no items"); done()
@@ -1091,7 +1091,7 @@ class RestClientChannelTests: XCTestCase {
                     fail("PaginatedResult is empty"); done()
                     return
                 }
-                expect(result.hasNext).to(beTrue())
+                XCTAssertTrue(result.hasNext)
                 expect(result.isLast).to(beFalse())
                 let items = result.items
                 if items.count != 2 {
@@ -1438,7 +1438,7 @@ class RestClientChannelTests: XCTestCase {
                 guard let message = result.items.first else {
                     fail("First item does not exist"); done(); return
                 }
-                expect(message.data is NSData).to(beTrue())
+                XCTAssertTrue(message.data is NSData)
                 XCTAssertEqual(message.encoding, "json/utf-8/cipher+aes-256-cbc")
                 done()
             }

@@ -413,7 +413,7 @@ class UtilitiesTests: XCTestCase {
         }).startTimer()
         waitUntil(timeout: DispatchTimeInterval.milliseconds(500)) { done in
             AblyTests.queue.asyncAfter(deadline: .now() + 0.35) {
-                expect(calledOnTimeout).to(beTrue())
+                XCTAssertTrue(calledOnTimeout)
                 eventEmitter.emit("foo", with: 123 as AnyObject?)
                 XCTAssertNil(receivedFoo1)
                 done()
@@ -434,7 +434,7 @@ class UtilitiesTests: XCTestCase {
             })
         })
         eventEmitter.emit("a", with: "123" as AnyObject?)
-        expect(firstCallbackCalled).to(beTrue())
+        XCTAssertTrue(firstCallbackCalled)
         expect(secondCallbackCalled).to(beFalse())
     }
 

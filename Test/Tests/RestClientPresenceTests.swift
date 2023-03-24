@@ -40,7 +40,7 @@ class RestClientPresenceTests: XCTestCase {
                         && (member!.data as? String) == expectedData
                 })
 
-                expect(membersPage.hasNext).to(beTrue())
+                XCTAssertTrue(membersPage.hasNext)
                 expect(membersPage.isLast).to(beFalse())
 
                 membersPage.next { nextPage, error in
@@ -56,7 +56,7 @@ class RestClientPresenceTests: XCTestCase {
                     })
 
                     expect(nextPage.hasNext).to(beFalse())
-                    expect(nextPage.isLast).to(beTrue())
+                    XCTAssertTrue(nextPage.isLast)
                     done()
                 }
             }
@@ -145,7 +145,7 @@ class RestClientPresenceTests: XCTestCase {
                     XCTAssertNil(error)
                     expect(membersPage!.items).to(haveCount(3))
                     expect(membersPage!.hasNext).to(beFalse())
-                    expect(membersPage!.isLast).to(beTrue())
+                    XCTAssertTrue(membersPage!.isLast)
                     expect(membersPage!.items).to(allPass { member in
                         let member = member!
                         return NSRegularExpression.match(member.clientId, pattern: "^user(7|8|9)")
@@ -188,7 +188,7 @@ class RestClientPresenceTests: XCTestCase {
                         && (member!.data as? String) == expectedData
                 })
 
-                expect(membersPage.hasNext).to(beTrue())
+                XCTAssertTrue(membersPage.hasNext)
                 expect(membersPage.isLast).to(beFalse())
 
                 membersPage.next { nextPage, error in
@@ -206,7 +206,7 @@ class RestClientPresenceTests: XCTestCase {
                     })
 
                     expect(nextPage.hasNext).to(beFalse())
-                    expect(nextPage.isLast).to(beTrue())
+                    XCTAssertTrue(nextPage.isLast)
                     done()
                 }
             }
@@ -295,7 +295,7 @@ class RestClientPresenceTests: XCTestCase {
                     XCTAssertNil(error)
                     expect(membersPage!.items).to(haveCount(1))
                     expect(membersPage!.hasNext).to(beFalse())
-                    expect(membersPage!.isLast).to(beTrue())
+                    XCTAssertTrue(membersPage!.isLast)
                     done()
                 }
             }.toNot(throwError())
@@ -340,7 +340,7 @@ class RestClientPresenceTests: XCTestCase {
                     XCTAssertNil(error)
                     expect(membersPage!.items).to(haveCount(3))
                     expect(membersPage!.hasNext).to(beFalse())
-                    expect(membersPage!.isLast).to(beTrue())
+                    XCTAssertTrue(membersPage!.isLast)
                     expect(membersPage!.items).to(allPass { member in
                         let member = member
                         return NSRegularExpression.match(member!.clientId, pattern: "^user(7|8|9)")
