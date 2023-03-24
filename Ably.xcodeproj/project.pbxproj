@@ -1030,7 +1030,7 @@
 		853ED7C31B7A1A3C006F1C6F /* RestClientStatsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestClientStatsTests.swift; sourceTree = "<group>"; };
 		856AAC8A1B6E304B00B07119 /* Ably-iOS-Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Ably-iOS-Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		856AAC8E1B6E304B00B07119 /* Info-iOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-iOS.plist"; sourceTree = "<group>"; };
-		856AAC951B6E30C800B07119 /* AblySpec-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AblySpec-Bridging-Header.h"; sourceTree = "<group>"; };
+		856AAC951B6E30C800B07119 /* AblyTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AblyTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		856AAC961B6E30C800B07119 /* TestUtilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestUtilities.swift; sourceTree = "<group>"; };
 		856AAC981B6E312F00B07119 /* RestClientTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RestClientTests.swift; sourceTree = "<group>"; };
 		856AAC9A1B6E326E00B07119 /* ably-common */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "ably-common"; sourceTree = SOURCE_ROOT; };
@@ -1520,18 +1520,18 @@
 			path = "Test Utilities";
 			sourceTree = "<group>";
 		};
-		856AAC8B1B6E304B00B07119 /* Spec */ = {
+		856AAC8B1B6E304B00B07119 /* Test */ = {
 			isa = PBXGroup;
 			children = (
 				21BF06092758477700AE4C43 /* Tests */,
 				21BF060A2758477E00AE4C43 /* Test Utilities */,
 				856AAC9A1B6E326E00B07119 /* ably-common */,
-				856AAC951B6E30C800B07119 /* AblySpec-Bridging-Header.h */,
+				856AAC951B6E30C800B07119 /* AblyTests-Bridging-Header.h */,
 				856AAC8E1B6E304B00B07119 /* Info-iOS.plist */,
 				D7093C0E219E2DB200723F17 /* Info-macOS.plist */,
 				D7093C64219EE1AE00723F17 /* Info-tvOS.plist */,
 			);
-			path = Spec;
+			path = Test;
 			sourceTree = "<group>";
 		};
 		96BF61271A35B2AB004CF2B3 = {
@@ -1542,7 +1542,7 @@
 				D7EE14F51F07964500C178D5 /* Version.xcconfig */,
 				96BF61331A35B2AB004CF2B3 /* Source */,
 				217D17EE25421FC100DFF07E /* SocketRocket */,
-				856AAC8B1B6E304B00B07119 /* Spec */,
+				856AAC8B1B6E304B00B07119 /* Test */,
 				EB36308A23804F7A00B83598 /* Ably-SoakTest-App */,
 				EB3630A123804F7C00B83598 /* Ably-SoakTest-AppUITests */,
 				96BF61321A35B2AB004CF2B3 /* Products */,
@@ -3163,7 +3163,7 @@
 					"$(inherited)",
 					"TEST_SUITE=1",
 				);
-				INFOPLIST_FILE = "Spec/Info-iOS.plist";
+				INFOPLIST_FILE = "Test/Info-iOS.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -3173,7 +3173,7 @@
 				OTHER_SWIFT_FLAGS = "$(inherited) -D TEST_SUITE -D TARGET_OS_IOS -D TARGET_OS_IPHONE -D TARGET_OS_MAC";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = "Ably-iOS-Tests";
-				SWIFT_OBJC_BRIDGING_HEADER = "Spec/AblySpec-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "Test/AblyTests-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 			};
@@ -3191,7 +3191,7 @@
 					"$(inherited)",
 					"TEST_SUITE=1",
 				);
-				INFOPLIST_FILE = "Spec/Info-iOS.plist";
+				INFOPLIST_FILE = "Test/Info-iOS.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -3201,7 +3201,7 @@
 				OTHER_SWIFT_FLAGS = "$(inherited) -D TEST_SUITE -D TARGET_OS_IOS -D TARGET_OS_IPHONE -D TARGET_OS_MAC";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = "Ably-iOS-Tests";
-				SWIFT_OBJC_BRIDGING_HEADER = "Spec/AblySpec-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "Test/AblyTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
@@ -3399,7 +3399,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
-				INFOPLIST_FILE = "Spec/Info-macOS.plist";
+				INFOPLIST_FILE = "Test/Info-macOS.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -3413,7 +3413,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
-				SWIFT_OBJC_BRIDGING_HEADER = "Spec/AblySpec-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "Test/AblyTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
@@ -3434,7 +3434,7 @@
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
-				INFOPLIST_FILE = "Spec/Info-macOS.plist";
+				INFOPLIST_FILE = "Test/Info-macOS.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -3446,7 +3446,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.Ably-macOS-Tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
-				SWIFT_OBJC_BRIDGING_HEADER = "Spec/AblySpec-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "Test/AblyTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
@@ -3464,7 +3464,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
-				INFOPLIST_FILE = "Spec/Info-tvOS.plist";
+				INFOPLIST_FILE = "Test/Info-tvOS.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -3477,7 +3477,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
-				SWIFT_OBJC_BRIDGING_HEADER = "Spec/AblySpec-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "Test/AblyTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 12.1;
@@ -3498,7 +3498,7 @@
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
-				INFOPLIST_FILE = "Spec/Info-tvOS.plist";
+				INFOPLIST_FILE = "Test/Info-tvOS.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -3509,7 +3509,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.Ably-tvOS-Tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
-				SWIFT_OBJC_BRIDGING_HEADER = "Spec/AblySpec-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "Test/AblyTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 12.1;
