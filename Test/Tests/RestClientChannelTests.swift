@@ -67,7 +67,7 @@ private func testSupportsAESEncryptionWithKeyLength(_ encryptionKeyLength: UInt,
     let httpBodyAsJSON = AblyTests.msgpackToJSON(httpBody)
     XCTAssertEqual(httpBodyAsJSON["encoding"].string, "utf-8/cipher+aes-\(encryptionKeyLength)-cbc/base64")
     XCTAssertEqual(httpBodyAsJSON["name"].string, "test")
-    expect(httpBodyAsJSON["data"].string).toNot(equal("message1"))
+    XCTAssertNotEqual(httpBodyAsJSON["data"].string, "message1")
 
     waitUntil(timeout: testTimeout) { done in
         channel.history { result, error in

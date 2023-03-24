@@ -2516,7 +2516,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                     fail("ClientB should be connected"); partialDone(); return
                 }
                 expect(presence.action).to(equal(ARTPresenceAction.enter) || equal(ARTPresenceAction.present))
-                expect(presence.connectionId).toNot(equal(currentConnectionId))
+                XCTAssertNotEqual(presence.connectionId, currentConnectionId)
                 expect(channelB.internal.presenceMap.members).to(haveCount(1))
                 expect(channelB.internal.presenceMap.localMembers).to(haveCount(0))
                 channelB.presence.unsubscribe()
@@ -2532,7 +2532,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                     fail("ClientA should be connected"); partialDone(); return
                 }
                 XCTAssertEqual(presence.action, ARTPresenceAction.enter)
-                expect(presence.connectionId).toNot(equal(currentConnectionId))
+                XCTAssertNotEqual(presence.connectionId, currentConnectionId)
                 expect(channelA.internal.presenceMap.members).to(haveCount(2))
                 expect(channelA.internal.presenceMap.localMembers).to(haveCount(1))
                 channelA.presence.unsubscribe()
@@ -2561,7 +2561,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 }
                 XCTAssertEqual(presence.action, ARTPresenceAction.update)
                 XCTAssertEqual(presence.data as? String, "hello")
-                expect(presence.connectionId).toNot(equal(currentConnectionId))
+                XCTAssertNotEqual(presence.connectionId, currentConnectionId)
                 expect(channelA.internal.presenceMap.members).to(haveCount(2))
                 expect(channelA.internal.presenceMap.localMembers).to(haveCount(1))
                 channelA.presence.unsubscribe()
@@ -2591,7 +2591,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 }
                 XCTAssertEqual(presence.action, ARTPresenceAction.leave)
                 XCTAssertEqual(presence.data as? String, "bye")
-                expect(presence.connectionId).toNot(equal(currentConnectionId))
+                XCTAssertNotEqual(presence.connectionId, currentConnectionId)
                 expect(channelA.internal.presenceMap.members).to(haveCount(1))
                 expect(channelA.internal.presenceMap.localMembers).to(haveCount(1))
                 channelA.presence.unsubscribe()

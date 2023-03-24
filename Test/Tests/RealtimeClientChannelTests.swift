@@ -399,7 +399,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let channel = client.channels.get(uniqueChannelName())
 
         channel.on { stateChange in
-            expect(stateChange.current).toNot(equal(stateChange.previous))
+            XCTAssertNotEqual(stateChange.current, stateChange.previous)
         }
         defer {
             channel.off()
@@ -473,7 +473,7 @@ class RealtimeClientChannelTests: XCTestCase {
             channel.on { stateChange in
                 XCTAssertNil(stateChange.reason)
                 XCTAssertEqual(stateChange.current, channel.state)
-                expect(stateChange.previous).toNot(equal(channel.state))
+                XCTAssertNotEqual(stateChange.previous, channel.state)
 
                 if stateChange.current == .attached {
                     done()
@@ -4418,7 +4418,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let senderMessages = senderTransport.protocolMessagesSent.filter { $0.action == .message }
         for protocolMessage in senderMessages {
             for message in protocolMessage.messages! {
-                expect(message.data! as? String).toNot(equal("\(message.name!) data"))
+                XCTAssertNotEqual(message.data! as? String, "\(message.name!) data")
                 XCTAssertEqual(message.encoding, "utf-8/cipher+aes-256-cbc/base64")
             }
         }
@@ -4427,7 +4427,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let receiverMessages = receiverTransport.protocolMessagesReceived.filter { $0.action == .message }
         for protocolMessage in receiverMessages {
             for message in protocolMessage.messages! {
-                expect(message.data! as? NSObject).toNot(equal("\(message.name!) data" as NSObject?))
+                XCTAssertNotEqual(message.data! as? NSObject, "\(message.name!) data" as NSObject?)
                 XCTAssertEqual(message.encoding, "utf-8/cipher+aes-256-cbc")
             }
         }

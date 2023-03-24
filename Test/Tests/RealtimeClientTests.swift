@@ -457,8 +457,8 @@ class RealtimeClientTests: XCTestCase {
                     fail("Missing accessToken from AUTH ProtocolMessage auth attribute"); done(); return
                 }
 
-                expect(accessToken).toNot(equal(firstToken))
-                expect(tokenDetails.token).toNot(equal(firstToken))
+                XCTAssertNotEqual(accessToken, firstToken)
+                XCTAssertNotEqual(tokenDetails.token, firstToken)
                 XCTAssertEqual(tokenDetails.token, accessToken)
 
                 expect(client.internal.transport).to(beIdenticalTo(transport))
@@ -518,14 +518,14 @@ class RealtimeClientTests: XCTestCase {
                 guard let tokenDetails = tokenDetails else {
                     fail("TokenDetails is nil"); partialDone(); return
                 }
-                expect(tokenDetails.token).toNot(equal(testToken))
+                XCTAssertNotEqual(tokenDetails.token, testToken)
                 partialDone()
             }
 
             XCTAssertNil(client.connection.errorReason)
         }
 
-        expect(client.auth.tokenDetails?.token).toNot(equal(testToken))
+        XCTAssertNotEqual(client.auth.tokenDetails?.token, testToken)
     }
 
     // RTC8a1 - part 2
@@ -588,13 +588,13 @@ class RealtimeClientTests: XCTestCase {
                 guard let tokenDetails = tokenDetails else {
                     fail("TokenDetails is nil"); partialDone(); return
                 }
-                expect(tokenDetails.token).toNot(equal(testToken))
+                XCTAssertNotEqual(tokenDetails.token, testToken)
                 XCTAssertEqual(tokenDetails.capability, tokenParams.capability)
                 partialDone()
             }
         }
 
-        expect(client.auth.tokenDetails?.token).toNot(equal(testToken))
+        XCTAssertNotEqual(client.auth.tokenDetails?.token, testToken)
 
         guard let transport = client.internal.transport as? TestProxyTransport else {
             fail("TestProxyTransport is not set"); return
@@ -616,7 +616,7 @@ class RealtimeClientTests: XCTestCase {
             channel.attach()
         }
 
-        expect(client.auth.tokenDetails?.token).toNot(equal(testToken))
+        XCTAssertNotEqual(client.auth.tokenDetails?.token, testToken)
     }
 
     // RTC8a1 - part 3
@@ -671,13 +671,13 @@ class RealtimeClientTests: XCTestCase {
                 guard let tokenDetails = tokenDetails else {
                     fail("TokenDetails is nil"); partialDone(); return
                 }
-                expect(tokenDetails.token).toNot(equal(testToken))
+                XCTAssertNotEqual(tokenDetails.token, testToken)
                 XCTAssertEqual(tokenDetails.capability, tokenParams.capability)
                 partialDone()
             }
         }
 
-        expect(client.auth.tokenDetails?.token).toNot(equal(testToken))
+        XCTAssertNotEqual(client.auth.tokenDetails?.token, testToken)
     }
 
     // RTC8a2
@@ -876,7 +876,7 @@ class RealtimeClientTests: XCTestCase {
                 guard let tokenDetails = tokenDetails else {
                     fail("TokenDetails is nil"); done(); return
                 }
-                expect(tokenDetails.token).toNot(equal(testToken))
+                XCTAssertNotEqual(tokenDetails.token, testToken)
                 done()
             }
         }
@@ -1062,7 +1062,7 @@ class RealtimeClientTests: XCTestCase {
                 }
 
                 XCTAssertEqual(client.connection.state, ARTRealtimeConnectionState.connected)
-                expect(tokenDetails.token).toNot(equal(testToken))
+                XCTAssertNotEqual(tokenDetails.token, testToken)
 
                 guard let transport = client.internal.transport as? TestProxyTransport else {
                     fail("TestProxyTransport is not set"); partialDone(); return
@@ -1117,7 +1117,7 @@ class RealtimeClientTests: XCTestCase {
                 }
 
                 XCTAssertEqual(client.connection.state, ARTRealtimeConnectionState.connected)
-                expect(tokenDetails.token).toNot(equal(testToken))
+                XCTAssertNotEqual(tokenDetails.token, testToken)
 
                 guard let transport = client.internal.transport as? TestProxyTransport else {
                     fail("TestProxyTransport is not set"); partialDone(); return
@@ -1172,7 +1172,7 @@ class RealtimeClientTests: XCTestCase {
                 }
 
                 XCTAssertEqual(client.connection.state, ARTRealtimeConnectionState.connected)
-                expect(tokenDetails.token).toNot(equal(testToken))
+                XCTAssertNotEqual(tokenDetails.token, testToken)
 
                 guard let transport = client.internal.transport as? TestProxyTransport else {
                     fail("TestProxyTransport is not set"); partialDone(); return
@@ -1227,7 +1227,7 @@ class RealtimeClientTests: XCTestCase {
                 }
 
                 XCTAssertEqual(client.connection.state, ARTRealtimeConnectionState.connected)
-                expect(tokenDetails.token).toNot(equal(testToken))
+                XCTAssertNotEqual(tokenDetails.token, testToken)
 
                 guard let transport = client.internal.transport as? TestProxyTransport else {
                     fail("TestProxyTransport is not set"); partialDone(); return

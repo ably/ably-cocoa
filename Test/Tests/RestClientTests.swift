@@ -126,7 +126,7 @@ private func testUsesAnotherFallbackHost(_ caseTest: FakeNetworkResponse, channe
     expect(testHTTPExecutor.requests).to(haveCount(3))
     expect(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.host, pattern: "[a-e].ably-realtime.com")).to(beTrue())
     expect(NSRegularExpression.match(testHTTPExecutor.requests[2].url!.host, pattern: "[a-e].ably-realtime.com")).to(beTrue())
-    expect(testHTTPExecutor.requests[1].url!.host).toNot(equal(testHTTPExecutor.requests[2].url!.host))
+    XCTAssertNotEqual(testHTTPExecutor.requests[1].url!.host, testHTTPExecutor.requests[2].url!.host)
 }
 
 class RestClientTests: XCTestCase {
@@ -563,7 +563,7 @@ class RestClientTests: XCTestCase {
                     XCTAssertEqual(Int(headerErrorCode), ARTErrorCode.tokenExpired.intValue)
 
                     // Different token
-                    expect(auth.tokenDetails!.token).toNot(equal(options.token))
+                    XCTAssertNotEqual(auth.tokenDetails!.token, options.token)
                     done()
                 }
             }
@@ -761,7 +761,7 @@ class RestClientTests: XCTestCase {
                         expect(Int(errorCode)).to(beGreaterThanOrEqualTo(ARTErrorCode.tokenErrorUnspecified.intValue))
                         expect(Int(errorCode)).to(beLessThan(ARTErrorCode.connectionLimitsExceeded.intValue))
                         XCTAssertNil(error)
-                        expect(rest.auth.tokenDetails!.token).toNot(equal(currentTokenDetails.token))
+                        XCTAssertNotEqual(rest.auth.tokenDetails!.token, currentTokenDetails.token)
                         done()
                     }
                 }
@@ -783,7 +783,7 @@ class RestClientTests: XCTestCase {
         expect(client.internal.options.fallbackHostsUseDefault).to(beTrue())
         // Not production
         XCTAssertNotNil(client.internal.options.environment)
-        expect(client.internal.options.environment).toNot(equal("production"))
+        XCTAssertNotEqual(client.internal.options.environment, "production")
 
         let hosts = ARTFallbackHosts.hosts(from: client.internal.options)
         let fallback = ARTFallback(fallbackHosts: hosts)
@@ -804,8 +804,8 @@ class RestClientTests: XCTestCase {
         let client = ARTRest(options: options)
         expect(client.internal.options.fallbackHostsUseDefault).to(beTrue())
         // Custom
-        expect(client.internal.options.restHost).toNot(equal(ARTDefault.restHost()))
-        expect(client.internal.options.realtimeHost).toNot(equal(ARTDefault.realtimeHost()))
+        XCTAssertNotEqual(client.internal.options.restHost, ARTDefault.restHost())
+        XCTAssertNotEqual(client.internal.options.realtimeHost, ARTDefault.realtimeHost())
 
         let hosts = ARTFallbackHosts.hosts(from: client.internal.options)
         let fallback = ARTFallback(fallbackHosts: hosts)
