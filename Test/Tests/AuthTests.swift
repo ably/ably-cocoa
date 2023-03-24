@@ -471,7 +471,7 @@ class AuthTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             rest.auth.createTokenRequest(nil, options: authOptions, callback: { tokenRequest, error in
                 XCTAssertNil(error)
-                expect(tokenRequest).toNot(beNil())
+                XCTAssertNotNil(tokenRequest)
                 done()
             })
         }
@@ -483,7 +483,7 @@ class AuthTests: XCTestCase {
             }
         }
 
-        expect(rest.auth.internal.timeOffset).toNot(beNil())
+        XCTAssertNotNil(rest.auth.internal.timeOffset)
 
         rest.internal.httpExecutor = proxyHTTPExecutor
         waitUntil(timeout: testTimeout) { done in
@@ -499,7 +499,7 @@ class AuthTests: XCTestCase {
             }
         }
 
-        expect(rest.auth.tokenDetails).toNot(beNil())
+        XCTAssertNotNil(rest.auth.tokenDetails)
     }
 
     func test__029__Token__authentication_method__local_token_validity_check__should_NOT_be_done_if_queryTime_is_false_and_local_time_is_NOT_in_sync_with_server() {
@@ -1375,7 +1375,7 @@ class AuthTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             rest.auth.requestToken(tokenParams, with: precedenceOptions) { tokenDetails, error in
                 XCTAssertNil(error)
-                expect(tokenDetails).toNot(beNil())
+                XCTAssertNotNil(tokenDetails)
                 expect(tokenDetails!.capability).to(equal("{\"cansubscribe:*\":[\"subscribe\"]}"))
                 XCTAssertNil(tokenDetails!.clientId)
                 expect(tokenDetails!.expires!.timeIntervalSince1970 - tokenDetails!.issued!.timeIntervalSince1970).to(equal(tokenParams.ttl as? Double))
@@ -1411,7 +1411,7 @@ class AuthTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             rest.auth.requestToken(nil, with: nil) { tokenDetails, error in
                 XCTAssertNil(error)
-                expect(tokenDetails).toNot(beNil())
+                XCTAssertNotNil(tokenDetails)
                 expect(tokenDetails!.capability).to(equal("{\"*\":[\"*\"]}"))
                 expect(tokenDetails!.clientId).to(equal("tester"))
                 done()
@@ -1430,7 +1430,7 @@ class AuthTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             rest.auth.requestToken(tokenParams, with: authOptions) { tokenDetails, error in
                 XCTAssertNil(error)
-                expect(tokenDetails).toNot(beNil())
+                XCTAssertNotNil(tokenDetails)
                 expect(tokenDetails!.capability).to(equal("{\"cansubscribe:*\":[\"subscribe\"]}"))
                 XCTAssertNil(tokenDetails!.clientId)
                 expect(tokenDetails!.expires!.timeIntervalSince1970 - tokenDetails!.issued!.timeIntervalSince1970).to(equal(tokenParams.ttl as? Double))
@@ -1442,7 +1442,7 @@ class AuthTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             rest.auth.requestToken(nil, with: authOptions) { tokenDetails, error in
                 XCTAssertNil(error)
-                expect(tokenDetails).toNot(beNil())
+                XCTAssertNotNil(tokenDetails)
                 expect(tokenDetails!.capability).to(equal("{\"*\":[\"*\"]}"))
                 expect(tokenDetails!.clientId).to(equal("tester"))
                 expect(tokenDetails!.expires!.timeIntervalSince1970 - tokenDetails!.issued!.timeIntervalSince1970).to(equal(ARTDefault.ttl()))
@@ -1454,7 +1454,7 @@ class AuthTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             rest.auth.requestToken { tokenDetails, error in
                 XCTAssertNil(error)
-                expect(tokenDetails).toNot(beNil())
+                XCTAssertNotNil(tokenDetails)
                 expect(tokenDetails!.capability).to(equal("{\"*\":[\"*\"]}"))
                 expect(tokenDetails!.clientId).to(equal("tester"))
                 done()
@@ -1469,7 +1469,7 @@ class AuthTests: XCTestCase {
 
         let options = AblyTests.clientOptions()
         options.authUrl = URL(string: "http://echo.ably.io")
-        expect(options.authUrl).toNot(beNil())
+        XCTAssertNotNil(options.authUrl)
         // Plain text
         options.authParams = [URLQueryItem]()
         options.authParams!.append(URLQueryItem(name: "type", value: "text"))
@@ -1483,7 +1483,7 @@ class AuthTests: XCTestCase {
             rest.auth.requestToken(nil, with: nil, callback: { tokenDetails, error in
                 expect(testHTTPExecutor.requests.last?.url?.host).to(equal("echo.ably.io"))
                 XCTAssertNil(error)
-                expect(tokenDetails).toNot(beNil())
+                XCTAssertNotNil(tokenDetails)
                 expect(tokenDetails?.token).to(equal(testToken))
                 done()
             })
@@ -1496,7 +1496,7 @@ class AuthTests: XCTestCase {
 
         let options = ARTClientOptions()
         options.authUrl = URL(string: "http://echo.ably.io")
-        expect(options.authUrl).toNot(beNil())
+        XCTAssertNotNil(options.authUrl)
         // JSON with TokenDetails
         options.authParams = [URLQueryItem]()
         options.authParams?.append(URLQueryItem(name: "type", value: "json"))
@@ -1510,11 +1510,11 @@ class AuthTests: XCTestCase {
             rest.auth.requestToken(nil, with: nil, callback: { tokenDetails, error in
                 expect(testHTTPExecutor.requests.last?.url?.host).to(equal("echo.ably.io"))
                 XCTAssertNil(error)
-                expect(tokenDetails).toNot(beNil())
+                XCTAssertNotNil(tokenDetails)
                 expect(tokenDetails?.clientId) == testTokenDetails.clientId
                 expect(tokenDetails?.capability) == testTokenDetails.capability
-                expect(tokenDetails?.issued).toNot(beNil())
-                expect(tokenDetails?.expires).toNot(beNil())
+                XCTAssertNotNil(tokenDetails?.issued)
+                XCTAssertNotNil(tokenDetails?.expires)
                 if let issued = tokenDetails?.issued, let testIssued = testTokenDetails.issued {
                     expect(issued.compare(testIssued)) == ComparisonResult.orderedSame
                 }
@@ -1532,7 +1532,7 @@ class AuthTests: XCTestCase {
 
         let options = AblyTests.commonAppSetup()
         options.authUrl = URL(string: "http://echo.ably.io")
-        expect(options.authUrl).toNot(beNil())
+        XCTAssertNotNil(options.authUrl)
 
         var rest = ARTRest(options: options)
 
@@ -1567,7 +1567,7 @@ class AuthTests: XCTestCase {
                     fail("TokenDetails is empty"); done()
                     return
                 }
-                expect(tokenDetails.token).toNot(beNil())
+                XCTAssertNotNil(tokenDetails.token)
                 expect(tokenDetails.capability) == tokenParams.capability
                 done()
             })
@@ -1743,8 +1743,8 @@ class AuthTests: XCTestCase {
                 expect(tokenDetails?.clientId).to(equal(defaultTokenParams.clientId))
                 XCTAssertNil(defaultTokenParams.capability)
                 expect(tokenDetails?.capability).to(equal("{\"*\":[\"*\"]}")) // Ably supplied capabilities of the underlying key
-                expect(tokenDetails?.issued).toNot(beNil())
-                expect(tokenDetails?.expires).toNot(beNil())
+                XCTAssertNotNil(tokenDetails?.issued)
+                XCTAssertNotNil(tokenDetails?.expires)
                 if let issued = tokenDetails?.issued, let expires = tokenDetails?.expires {
                     expect(expires.timeIntervalSince(issued)).to(equal(defaultTokenParams.ttl as? TimeInterval))
                 }
@@ -1769,8 +1769,8 @@ class AuthTests: XCTestCase {
                 XCTAssertNil(error)
                 expect(tokenDetails?.clientId).to(equal(options.clientId))
                 expect(tokenDetails?.capability).to(equal(expectedCapability))
-                expect(tokenDetails?.issued).toNot(beNil())
-                expect(tokenDetails?.expires).toNot(beNil())
+                XCTAssertNotNil(tokenDetails?.issued)
+                XCTAssertNotNil(tokenDetails?.expires)
                 if let issued = tokenDetails?.issued, let expires = tokenDetails?.expires {
                     expect(expires.timeIntervalSince(issued)).to(equal(expectedTtl))
                 }
@@ -2195,8 +2195,8 @@ class AuthTests: XCTestCase {
                 }
                 expect(tokenRequest).to(beAnInstanceOf(ARTTokenRequest.self))
                 expect(tokenRequest.clientId).to(equal(expectedClientId))
-                expect(tokenRequest.mac).toNot(beNil())
-                expect(tokenRequest.nonce).toNot(beNil())
+                XCTAssertNotNil(tokenRequest.mac)
+                XCTAssertNotNil(tokenRequest.nonce)
             })
         }
     }
@@ -2288,7 +2288,7 @@ class AuthTests: XCTestCase {
                 guard let tokenRequest = tokenRequest else {
                     XCTFail("tokenRequest is nil"); done(); return
                 }
-                expect(tokenRequest.timestamp).toNot(beNil())
+                XCTAssertNotNil(tokenRequest.timestamp)
                 expect(serverTimeRequestWasMade).to(beTrue())
                 done()
             })
@@ -2455,7 +2455,7 @@ class AuthTests: XCTestCase {
                 done()
             }
         }
-        expect(serverTime).toNot(beNil(), description: "Server time is nil")
+        XCTAssertNotNil(serverTime, "Server time is nil")
 
         waitUntil(timeout: testTimeout) { done in
             rest.auth.createTokenRequest(tokenParams, options: authOptions, callback: { tokenRequest, error in
@@ -2465,7 +2465,7 @@ class AuthTests: XCTestCase {
                     XCTFail("TokenRequest is nil"); return
                 }
                 expect(tokenRequest.clientId).to(equal(expectedClientId))
-                expect(tokenRequest.mac).toNot(beNil())
+                XCTAssertNotNil(tokenRequest.mac)
                 expect(tokenRequest.nonce).to(haveCount(16))
                 expect(tokenRequest.ttl as? TimeInterval).to(equal(expectedTtl))
                 expect(tokenRequest.capability).to(equal(expectedCapability))
@@ -2494,7 +2494,7 @@ class AuthTests: XCTestCase {
         expect(rest.auth.internal.method).to(equal(ARTAuthMethod.token))
         
         let firstTokenDetails = try XCTUnwrap(rest.auth.tokenDetails, "TokenDetails is nil")
-        expect(firstTokenDetails.token).toNot(beNil())
+        XCTAssertNotNil(firstTokenDetails.token)
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "second check") { error in
@@ -2537,7 +2537,7 @@ class AuthTests: XCTestCase {
         options.token = testToken
         let rest = ARTRest(options: options)
 
-        expect(rest.auth.tokenDetails?.token).toNot(beNil())
+        XCTAssertNotNil(rest.auth.tokenDetails?.token)
         waitUntil(timeout: testTimeout) { done in
             rest.auth.authorize(nil, options: nil, callback: { tokenDetails, error in
                 guard let tokenDetails = tokenDetails else {
@@ -2567,7 +2567,7 @@ class AuthTests: XCTestCase {
                 guard let tokenDetails = tokenDetails else {
                     XCTFail("TokenDetails is nil"); done(); return
                 }
-                expect(tokenDetails.token).toNot(beNil())
+                XCTAssertNotNil(tokenDetails.token)
                 expect(rest.auth.internal.method).to(equal(ARTAuthMethod.token))
 
                 publishTestMessage(rest, channelName: uniqueChannelName(), completion: { error in
@@ -2608,7 +2608,7 @@ class AuthTests: XCTestCase {
         // Adds a block of code after `requestToken` is triggered
         let token = try? hook(#selector(ARTAuthInternal._requestToken(_:with:callback:)), [], unsafeBitCast(block, to: ARTAuthInternal.self))
 
-        expect(token).toNot(beNil())
+        XCTAssertNotNil(token)
 
         waitUntil(timeout: testTimeout) { done in
             rest.auth.authorize(nil, options: nil, callback: { tokenDetails, error in
@@ -2740,7 +2740,7 @@ class AuthTests: XCTestCase {
             // First time
             rest.auth.authorize(nil, options: authOptions) { tokenDetails, error in
                 XCTAssertNil(error)
-                expect(tokenDetails).toNot(beNil())
+                XCTAssertNotNil(tokenDetails)
                 expect(serverTimeRequestWasMade).to(beTrue())
                 expect(rest.auth.internal.options.queryTime).to(beFalse())
                 serverTimeRequestWasMade = false
@@ -2748,7 +2748,7 @@ class AuthTests: XCTestCase {
                 // Second time
                 rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                     XCTAssertNil(error)
-                    expect(tokenDetails).toNot(beNil())
+                    XCTAssertNotNil(tokenDetails)
                     expect(serverTimeRequestWasMade).to(beFalse())
                     expect(rest.auth.internal.options.queryTime).to(beFalse())
                     done()
@@ -2768,7 +2768,7 @@ class AuthTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             rest.auth.authorize(tokenParams, options: nil) { tokenDetails, error in
                 XCTAssertNil(error)
-                expect(tokenDetails).toNot(beNil())
+                XCTAssertNotNil(tokenDetails)
                 done()
             }
         }
@@ -2811,7 +2811,7 @@ class AuthTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             rest.auth.authorize(tokenParams, options: authOptions) { tokenDetails, error in
                 XCTAssertNil(error)
-                expect(tokenDetails).toNot(beNil())
+                XCTAssertNotNil(tokenDetails)
                 done()
             }
         }
@@ -2819,7 +2819,7 @@ class AuthTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             rest.auth.authorize { tokenDetails, error in
                 XCTAssertNil(error)
-                expect(tokenDetails).toNot(beNil())
+                XCTAssertNotNil(tokenDetails)
                 done()
             }
         }
@@ -2970,7 +2970,7 @@ class AuthTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                 XCTAssertNil(error)
-                expect(tokenDetails).toNot(beNil())
+                XCTAssertNotNil(tokenDetails)
                 done()
             }
         }
@@ -3005,7 +3005,7 @@ class AuthTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                 XCTAssertNil(error)
-                expect(tokenDetails).toNot(beNil())
+                XCTAssertNotNil(tokenDetails)
                 expect(tokenDetails?.clientId).to(equal("myClientId"))
                 done()
             }
@@ -3025,7 +3025,7 @@ class AuthTests: XCTestCase {
         // Invalid token
         waitUntil(timeout: testTimeout) { done in
             rest.auth.authorize(nil, options: nil) { tokenDetails, error in
-                expect(error).toNot(beNil())
+                XCTAssertNotNil(error)
                 XCTAssertNil(tokenDetails)
                 done()
             }
@@ -3039,7 +3039,7 @@ class AuthTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             rest.auth.authorize(nil, options: nil) { tokenDetails, error in
                 XCTAssertNil(error)
-                expect(tokenDetails).toNot(beNil())
+                XCTAssertNotNil(tokenDetails)
                 done()
             }
         }
@@ -3117,9 +3117,9 @@ class AuthTests: XCTestCase {
                     XCTFail("TokenDetails is nil"); done(); return
                 }
                 expect(tokenDetails.token).to(equal(testTokenDetails.token))
-                expect(rest.auth.internal.options.authUrl).toNot(beNil())
-                expect(rest.auth.internal.options.authParams).toNot(beNil())
-                expect(rest.auth.internal.options.authHeaders).toNot(beNil())
+                XCTAssertNotNil(rest.auth.internal.options.authUrl)
+                XCTAssertNotNil(rest.auth.internal.options.authParams)
+                XCTAssertNotNil(rest.auth.internal.options.authHeaders)
                 delay(0.1) { // force to use the authUrl again
                     done()
                 }
@@ -3202,7 +3202,7 @@ class AuthTests: XCTestCase {
                 XCTAssertNil(error)
                 expect(tokenDetails?.token).to(equal("token"))
                 expect(authCallbackHasBeenInvoked).to(beTrue())
-                expect(rest.auth.internal.options.authCallback).toNot(beNil())
+                XCTAssertNotNil(rest.auth.internal.options.authCallback)
                 done()
             }
         }
@@ -3213,7 +3213,7 @@ class AuthTests: XCTestCase {
                 XCTAssertNil(error)
                 expect(tokenDetails?.token).to(equal("token"))
                 expect(authCallbackHasBeenInvoked).to(beTrue())
-                expect(rest.auth.internal.options.authCallback).toNot(beNil())
+                XCTAssertNotNil(rest.auth.internal.options.authCallback)
                 done()
             }
         }
@@ -3397,7 +3397,7 @@ class AuthTests: XCTestCase {
                     fail("Server Time Offset is nil"); done(); return
                 }
                 expect(timeOffset).toNot(equal(0))
-                expect(rest.auth.internal.timeOffset).toNot(beNil())
+                XCTAssertNotNil(rest.auth.internal.timeOffset)
                 let calculatedServerDate = currentDate.addingTimeInterval(timeOffset)
                 expect(calculatedServerDate).to(beCloseTo(mockServerDate, within: 0.9))
                 expect(serverTimeRequestCount) == 1
@@ -3557,7 +3557,7 @@ class AuthTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             rest.auth.authorize(nil, options: authOptions) { tokenDetails, error in
                 XCTAssertNil(error)
-                expect(tokenDetails).toNot(beNil())
+                XCTAssertNotNil(tokenDetails)
                 expect(serverTimeRequestCount) == 1
                 guard let timeOffset = rest.auth.internal.timeOffset?.doubleValue else {
                     fail("Server Time Offset is nil"); done(); return
@@ -3611,7 +3611,7 @@ class AuthTests: XCTestCase {
                 if let error = error {
                     fail(error.localizedDescription); partialDone(); return
                 }
-                expect(tokenDetails).toNot(beNil())
+                XCTAssertNotNil(tokenDetails)
                 if tokenDetailsFirst == nil {
                     tokenDetailsFirst = tokenDetails
                 } else {
@@ -3623,7 +3623,7 @@ class AuthTests: XCTestCase {
                 if let error = error {
                     fail(error.localizedDescription); partialDone(); return
                 }
-                expect(tokenDetails).toNot(beNil())
+                XCTAssertNotNil(tokenDetails)
                 if tokenDetailsFirst == nil {
                     tokenDetailsFirst = tokenDetails
                 } else {
@@ -3662,7 +3662,7 @@ class AuthTests: XCTestCase {
                         fail(error.localizedDescription); partialDone(); return
                     }
                 } else {
-                    expect(tokenDetails).toNot(beNil())
+                    XCTAssertNotNil(tokenDetails)
                     tokenDetailsLast = tokenDetails
                 }
                 partialDone()
@@ -3705,7 +3705,7 @@ class AuthTests: XCTestCase {
                 if let error = error {
                     fail(error.localizedDescription); partialDone(); return
                 }
-                expect(tokenDetails).toNot(beNil())
+                XCTAssertNotNil(tokenDetails)
                 if tokenDetailsFirst == nil {
                     tokenDetailsFirst = tokenDetails
                 } else {
@@ -3717,7 +3717,7 @@ class AuthTests: XCTestCase {
                 if let error = error {
                     fail(error.localizedDescription); partialDone(); return
                 }
-                expect(tokenDetails).toNot(beNil())
+                XCTAssertNotNil(tokenDetails)
                 if tokenDetailsFirst == nil {
                     tokenDetailsFirst = tokenDetails
                 } else {
@@ -3788,7 +3788,7 @@ class AuthTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             realtime.auth.authorize(tokenParams, options: nil) { tokenDetails, error in
                 XCTAssertNil(error)
-                expect(tokenDetails).toNot(beNil())
+                XCTAssertNotNil(tokenDetails)
                 done()
             }
         }
@@ -3862,7 +3862,7 @@ class AuthTests: XCTestCase {
                 expect(defaultTokenParamsCallCount) > 0
 
                 newTokenParams.timestamp = Date()
-                expect(newTokenParams.timestamp).toNot(beNil())
+                XCTAssertNotNil(newTokenParams.timestamp)
                 XCTAssertNil(defaultTokenParams.timestamp) // remain nil
                 done()
             }
@@ -4366,6 +4366,6 @@ class AuthTests: XCTestCase {
         
         expect(requestUrl.host).to(equal("auth-test.ably.cocoa"))
         expect(tokenDetails.clientId).to(equal(originalTokenRequest.clientId))
-        expect(tokenDetails.token).toNot(beNil())
+        XCTAssertNotNil(tokenDetails.token)
     }
 }

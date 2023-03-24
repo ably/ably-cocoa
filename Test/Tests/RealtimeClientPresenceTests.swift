@@ -22,7 +22,7 @@ private func testResultsInErrorWithConnectionState(_ connectionState: ARTRealtim
 
     waitUntil(timeout: testTimeout) { done in
         channel.presence.enterClient("user", data: nil) { error in
-            expect(error).toNot(beNil())
+            XCTAssertNotNil(error)
             expect(client.internal.queuedMessages).to(haveCount(0))
             done()
         }
@@ -52,7 +52,7 @@ private func testSuspendedStateResultsInError(channelName: String, _ getPresence
 
     getPresence(channel) { result, err in
         XCTAssertNil(result)
-        expect(err).toNot(beNil())
+        XCTAssertNotNil(err)
         guard let err = err else {
             return
         }
@@ -84,7 +84,7 @@ private func attachAndWaitForInitialPresenceSyncToComplete(client: ARTRealtime, 
     let transport = client.internal.transport as! TestProxyTransport
     
     let attachedProtocolMessage = transport.protocolMessagesReceived.first { $0.action == .attached }
-    expect(attachedProtocolMessage).notTo(beNil())
+    XCTAssertNotNil(attachedProtocolMessage)
     
     if ARTProtocolMessageFlag(rawValue: UInt(attachedProtocolMessage!.flags)).contains(.presence) {
         expect(channel.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
@@ -599,7 +599,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 channel.detach()
             }
             channel.presence.enterClient("user", data: nil) { error in
-                expect(error).toNot(beNil())
+                XCTAssertNotNil(error)
                 expect(client.internal.queuedMessages).to(haveCount(0))
                 done()
             }
@@ -884,10 +884,10 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.subscribe(attachCallback: { errorInfo in
-                expect(errorInfo).toNot(beNil())
+                XCTAssertNotNil(errorInfo)
 
                 channel.presence.subscribe(.enter, onAttach: { errorInfo in
-                    expect(errorInfo).toNot(beNil())
+                    XCTAssertNotNil(errorInfo)
                     done()
                 }) { _ in }
             }) { _ in }
@@ -903,10 +903,10 @@ class RealtimeClientPresenceTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             let error = AblyTests.newErrorProtocolMessage()
             channel.presence.subscribe(attachCallback: { errorInfo in
-                expect(errorInfo).toNot(beNil())
+                XCTAssertNotNil(errorInfo)
 
                 channel.presence.subscribe(.enter, onAttach: { errorInfo in
-                    expect(errorInfo).toNot(beNil())
+                    XCTAssertNotNil(errorInfo)
                     done()
                 }) { _ in }
             }) { _ in }
@@ -2372,7 +2372,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             channel.presence.subscribe(attachCallback: { error in
                 expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
-                expect(error).toNot(beNil())
+                XCTAssertNotNil(error)
                 done()
             }, callback: { _ in
                 fail("Should not be called")
@@ -2390,7 +2390,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             let error = AblyTests.newErrorProtocolMessage()
             channel.presence.subscribe(attachCallback: { error in
                 expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
-                expect(error).toNot(beNil())
+                XCTAssertNotNil(error)
                 done()
             }, callback: { _ in
                 fail("Should not be called")
@@ -3092,7 +3092,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enterClient("user", data: nil) { error in
-                expect(error).toNot(beNil())
+                XCTAssertNotNil(error)
                 done()
             }
             expect(client.internal.queuedMessages).to(haveCount(0))
@@ -3198,7 +3198,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             channel.presence.get { membersPage, error in
                 XCTAssertNil(error)
-                expect(membersPage).toNot(beNil())
+                XCTAssertNotNil(membersPage)
                 done()
             }
             expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
@@ -3353,7 +3353,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         channel.presence.get(getParams) { result, err in
             XCTAssertNil(err)
-            expect(result).toNot(beNil())
+            XCTAssertNotNil(result)
             guard let result = result else {
                 return
             }
@@ -3778,8 +3778,8 @@ class RealtimeClientPresenceTests: XCTestCase {
                 }) else { fail("No members"); done(); return }
 
                 expect(members["test"]!.data as? NSDictionary).to(equal(expectedData as NSDictionary?))
-                expect(members["john"]).toNot(beNil())
-                expect(members["sara"]).toNot(beNil())
+                XCTAssertNotNil(members["john"])
+                XCTAssertNotNil(members["sara"])
                 done()
             }
         }

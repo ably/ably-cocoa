@@ -234,7 +234,7 @@ class PushChannelTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             try? channel.push.listSubscriptions(params) { result, error in
                 XCTAssertNil(error)
-                expect(result).toNot(beNil())
+                XCTAssertNotNil(result)
                 done()
             }
         }
@@ -259,7 +259,7 @@ class PushChannelTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             try? channel.push.listSubscriptions(params) { result, error in
                 XCTAssertNil(error)
-                expect(result).toNot(beNil())
+                XCTAssertNotNil(result)
                 done()
             }
         }

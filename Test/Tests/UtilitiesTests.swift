@@ -99,7 +99,7 @@ class UtilitiesTests: XCTestCase {
         let data = NSData()
         var result: AnyObject?
         expect { result = try ARTMsgPackEncoder().decode(data as Data) as! (Data) as (Data) as AnyObject? }.to(throwError { error in
-            expect(error).toNot(beNil())
+            XCTAssertNotNil(error)
         })
         XCTAssertNil(result)
     }
@@ -396,7 +396,7 @@ class UtilitiesTests: XCTestCase {
             timer?.startTimer()
             eventEmitter.emit("foo", with: 123 as AnyObject?)
             AblyTests.queue.asyncAfter(deadline: .now() + 0.3) {
-                expect(receivedFoo1).toNot(beNil())
+                XCTAssertNotNil(receivedFoo1)
                 done()
             }
         }

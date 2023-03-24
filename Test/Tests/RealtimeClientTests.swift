@@ -162,7 +162,7 @@ class RealtimeClientTests: XCTestCase {
                     fail("Transport should be of type ARTWebSocketTransport"); done()
                     return
                 }
-                expect(webSocketTransport.websocketURL).toNot(beNil())
+                XCTAssertNotNil(webSocketTransport.websocketURL)
                 expect(webSocketTransport.websocketURL?.host).to(equal("fake.ably.io"))
                 partialDone()
             }
@@ -212,7 +212,7 @@ class RealtimeClientTests: XCTestCase {
                 }
                 let absoluteString = webSocketTransport.websocketURL?.absoluteString
 
-                expect(webSocketTransport.websocketURL).toNot(beNil())
+                XCTAssertNotNil(webSocketTransport.websocketURL)
                 expect(absoluteString?.contains("tpBool=true")).to(beTrue())
                 expect(absoluteString?.contains("tpInt=12")).to(beTrue())
                 expect(absoluteString?.contains("tpFloat=12.12")).to(beTrue())
@@ -251,7 +251,7 @@ class RealtimeClientTests: XCTestCase {
             // Attached
         }
 
-        expect(client.channels.get(channelName)).toNot(beNil())
+        XCTAssertNotNil(client.channels.get(channelName))
     }
 
     // RTC4
@@ -297,7 +297,7 @@ class RealtimeClientTests: XCTestCase {
             // Proxy from `client.internal.rest.stats`
             expect {
                 try client.stats(query, callback: { paginated, _ in
-                    expect(paginated).toNot(beNil())
+                    XCTAssertNotNil(paginated)
                     done()
                 })
             }.toNot(throwError { err in fail("\(err)"); done() })
@@ -356,7 +356,7 @@ class RealtimeClientTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             // Proxy from `client.internal.rest.time`
             client.time { date, _ in
-                expect(date).toNot(beNil())
+                XCTAssertNotNil(date)
                 done()
             }
         }
@@ -451,7 +451,7 @@ class RealtimeClientTests: XCTestCase {
                     fail("Missing AUTH protocol message"); done(); return
                 }
 
-                expect(authMessage.auth).toNot(beNil())
+                XCTAssertNotNil(authMessage.auth)
 
                 guard let accessToken = authMessage.auth?.accessToken else {
                     fail("Missing accessToken from AUTH ProtocolMessage auth attribute"); done(); return
@@ -706,7 +706,7 @@ class RealtimeClientTests: XCTestCase {
 
             client.connection.once(.failed) { stateChange in
                 expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.connected))
-                expect(stateChange.reason).toNot(beNil())
+                XCTAssertNotNil(stateChange.reason)
                 connectionError = stateChange.reason
                 partialDone()
             }
@@ -792,7 +792,7 @@ class RealtimeClientTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             client.auth.authorize(nil, options: nil) { tokenDetails, error in
                 XCTAssertNil(error)
-                expect(tokenDetails).toNot(beNil())
+                XCTAssertNotNil(tokenDetails)
 
                 guard let transport = client.internal.transport as? TestProxyTransport else {
                     fail("TestProxyTransport is not set"); done(); return
@@ -839,7 +839,7 @@ class RealtimeClientTests: XCTestCase {
                     guard let tokenDetails = tokenDetails else {
                         fail("TokenDetails is nil"); done(); return
                     }
-                    expect(tokenDetails.token).toNot(beNil())
+                    XCTAssertNotNil(tokenDetails.token)
                     expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connected))
 
                     guard let transport = client.internal.transport as? TestProxyTransport else {
@@ -1398,7 +1398,7 @@ class RealtimeClientTests: XCTestCase {
         }
 
         var foo: Foo? = Foo()
-        expect(foo).toNot(beNil())
+        XCTAssertNotNil(foo)
         foo = nil
         AblyManager.sharedClient.channels.get(Foo.channelName).unsubscribe()
     }

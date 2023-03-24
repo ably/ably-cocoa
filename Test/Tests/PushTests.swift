@@ -403,7 +403,7 @@ class PushTests: XCTestCase {
         var pushRegistererDelegate: StateMachineDelegate? = StateMachineDelegate()
         options.pushRegistererDelegate = pushRegistererDelegate
         let rest = ARTRest(options: options)
-        expect(rest.internal.options.pushRegistererDelegate).toNot(beNil())
+        XCTAssertNotNil(rest.internal.options.pushRegistererDelegate)
         pushRegistererDelegate = nil
         XCTAssertNil(rest.internal.options.pushRegistererDelegate)
     }

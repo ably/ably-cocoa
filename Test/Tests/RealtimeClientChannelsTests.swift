@@ -24,7 +24,7 @@ class RealtimeClientChannelsTests: XCTestCase {
         disposable.append(client.channels.get(channelName2).name)
         disposable.append(client.channels.get(channelName3).name)
 
-        expect(client.channels.get(channelName2)).toNot(beNil())
+        XCTAssertNotNil(client.channels.get(channelName2))
         expect(client.channels.exists(channelName2)).to(beTrue())
         expect(client.channels.exists("testX")).to(beFalse())
 

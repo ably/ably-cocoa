@@ -1042,8 +1042,8 @@ class PushAdminTests: XCTestCase {
     }
 
     func test__033__local_device__should_include_an_id_and_a_secret() {
-        expect(localDevice.id).toNot(beNil())
-        expect(localDevice.secret).toNot(beNil())
+        XCTAssertNotNil(localDevice.id)
+        XCTAssertNotNil(localDevice.secret)
         XCTAssertNil(localDevice.identityTokenDetails)
     }
 }

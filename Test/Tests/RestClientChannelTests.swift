@@ -786,7 +786,7 @@ class RestClientChannelTests: XCTestCase {
         
         waitUntil(timeout: testTimeout) { done in
             channel.publish(messages) { error in
-                expect(error).toNot(beNil())
+                XCTAssertNotNil(error)
                 done()
             }
         }
@@ -1152,7 +1152,7 @@ class RestClientChannelTests: XCTestCase {
                 message.clientId == value["clientId"].stringValue
             }.first!.1
 
-            expect(message.data).toNot(beNil())
+            XCTAssertNotNil(message.data)
             expect(message.action).to(equal(ARTPresenceAction.present))
 
             let encodedFixture = channel.internal.dataEncoder.decode(

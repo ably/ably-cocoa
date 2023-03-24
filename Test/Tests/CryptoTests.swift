@@ -151,11 +151,11 @@ class CryptoTests: XCTestCase {
                 var error: NSError?
                 let decoded = fixture.decode(with: decoder, error: &error) as! ARTMessage
                 XCTAssertNil(error)
-                expect(decoded).notTo(beNil())
+                XCTAssertNotNil(decoded)
 
                 let encrypted = try XCTUnwrap(decoded.encode(with: encrypter, error: &error) as? ARTMessage)
                 XCTAssertNil(error)
-                expect(encrypted).notTo(beNil())
+                XCTAssertNotNil(encrypted)
                 
                 expect(encrypted).to(equal(encryptedFixture))
             }
@@ -174,11 +174,11 @@ class CryptoTests: XCTestCase {
                 var error: NSError?
                 let decoded = fixture.decode(with: decoder, error: &error) as! ARTMessage
                 XCTAssertNil(error)
-                expect(decoded).notTo(beNil())
+                XCTAssertNotNil(decoded)
 
                 let decrypted = try XCTUnwrap(encryptedFixture.decode(with: encrypter, error: &error) as? ARTMessage)
                 XCTAssertNil(error)
-                expect(decrypted).notTo(beNil())
+                XCTAssertNotNil(decrypted)
 
                 expect(decrypted).to(equal(decoded))
             }
@@ -215,11 +215,11 @@ class CryptoTests: XCTestCase {
             var error: NSError?
             let decoded = fixture.decode(with: decoder, error: &error) as! ARTMessage
             XCTAssertNil(error)
-            expect(decoded).notTo(beNil())
+            XCTAssertNotNil(decoded)
             
             let rawDictionary = try XCTUnwrap(encryptedFixture.dictionaryObject)
             let decrypted = try XCTUnwrap(ARTMessage.fromEncoded(rawDictionary, channelOptions: channelOptions))
-            expect(decrypted).notTo(beNil())
+            XCTAssertNotNil(decrypted)
             
             expect(decrypted).to(equal(decoded))
         }
@@ -236,7 +236,7 @@ class CryptoTests: XCTestCase {
             var error: NSError?
             let decoded = fixture.decode(with: decoder, error: &error) as! ARTMessage
             XCTAssertNil(error)
-            expect(decoded).notTo(beNil())
+            XCTAssertNotNil(decoded)
             
             let decrypted = decryptedArray[i]
             expect(decrypted).to(equal(decoded))

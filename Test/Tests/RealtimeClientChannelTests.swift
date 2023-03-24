@@ -36,7 +36,7 @@ private func setupDependencies() {
 
 private func rtl6c4TestsPublish(_ done: @escaping () -> Void) {
     rtl6c4TestsChannel.publish(nil, data: "message") { error in
-        expect(error).toNot(beNil())
+        XCTAssertNotNil(error)
         done()
     }
 }
@@ -485,7 +485,7 @@ class RealtimeClientChannelTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.once(.failed) { stateChange in
-                expect(stateChange.reason).toNot(beNil())
+                XCTAssertNotNil(stateChange.reason)
                 expect(stateChange.current).to(equal(ARTRealtimeChannelState.failed))
                 expect(stateChange.previous).to(equal(ARTRealtimeChannelState.attached))
                 done()
@@ -1072,7 +1072,7 @@ class RealtimeClientChannelTests: XCTestCase {
         errorMsg.channel = channel.name
         client.internal.onError(errorMsg)
         expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
-        expect(channel.errorReason).toNot(beNil())
+        XCTAssertNotNil(channel.errorReason)
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
@@ -1106,7 +1106,7 @@ class RealtimeClientChannelTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
-                expect(error).toNot(beNil())
+                XCTAssertNotNil(error)
                 done()
             }
         }
@@ -1123,7 +1123,7 @@ class RealtimeClientChannelTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
-                expect(error).toNot(beNil())
+                XCTAssertNotNil(error)
                 done()
             }
         }
@@ -1138,7 +1138,7 @@ class RealtimeClientChannelTests: XCTestCase {
         expect(client.connection.state).to(equal(ARTRealtimeConnectionState.suspended))
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
-                expect(error).toNot(beNil())
+                XCTAssertNotNil(error)
                 done()
             }
         }
@@ -1153,7 +1153,7 @@ class RealtimeClientChannelTests: XCTestCase {
         expect(client.connection.state).to(equal(ARTRealtimeConnectionState.failed))
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
-                expect(error).toNot(beNil())
+                XCTAssertNotNil(error)
                 done()
             }
         }
@@ -1289,13 +1289,13 @@ class RealtimeClientChannelTests: XCTestCase {
         let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.attach { errorInfo in
-                expect(errorInfo).toNot(beNil())
+                XCTAssertNotNil(errorInfo)
                 expect(errorInfo).to(equal(channel.errorReason))
                 done()
             }
         }
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.suspended), timeout: testTimeout)
-        expect(channel.errorReason).toNot(beNil())
+        XCTAssertNotNil(channel.errorReason)
 
         transport.actionsIgnored = []
         // Automatically re-attached
@@ -1852,7 +1852,7 @@ class RealtimeClientChannelTests: XCTestCase {
         }
         let start = NSDate()
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
-        expect(channel.errorReason).toNot(beNil())
+        XCTAssertNotNil(channel.errorReason)
         expect(callbackCalled).toEventually(beTrue(), timeout: testTimeout)
         let end = NSDate()
         expect(start.addingTimeInterval(1.0)).to(beCloseTo(end, within: 0.5))
@@ -1881,7 +1881,7 @@ class RealtimeClientChannelTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.detach { error in
-                expect(error).toNot(beNil())
+                XCTAssertNotNil(error)
                 done()
             }
         }
@@ -1899,7 +1899,7 @@ class RealtimeClientChannelTests: XCTestCase {
         expect(client.connection.state).to(equal(ARTRealtimeConnectionState.failed))
         waitUntil(timeout: testTimeout) { done in
             channel.detach { error in
-                expect(error).toNot(beNil())
+                XCTAssertNotNil(error)
                 done()
             }
         }
@@ -2047,11 +2047,11 @@ class RealtimeClientChannelTests: XCTestCase {
         }
 
         expect(restEncodedMessage!.data as? NSObject).to(equal(realtimeEncodedMessage!.data as? NSObject))
-        expect(restEncodedMessage!.data).toNot(beNil())
-        expect(realtimeEncodedMessage!.data).toNot(beNil())
+        XCTAssertNotNil(restEncodedMessage!.data)
+        XCTAssertNotNil(realtimeEncodedMessage!.data)
         expect(restEncodedMessage!.encoding).to(equal(realtimeEncodedMessage!.encoding))
-        expect(restEncodedMessage!.encoding).toNot(beNil())
-        expect(realtimeEncodedMessage!.encoding).toNot(beNil())
+        XCTAssertNotNil(restEncodedMessage!.encoding)
+        XCTAssertNotNil(realtimeEncodedMessage!.encoding)
     }
 
     // RTL6b
@@ -2098,7 +2098,7 @@ class RealtimeClientChannelTests: XCTestCase {
                     channel.on { stateChange in
                         if stateChange.current == .attached {
                             channel.publish(nil, data: "message") { errorInfo in
-                                expect(errorInfo).toNot(beNil())
+                                XCTAssertNotNil(errorInfo)
                                 guard let errorInfo = errorInfo else {
                                     XCTFail("ErrorInfo is nil"); done(); return
                                 }
@@ -2395,7 +2395,7 @@ class RealtimeClientChannelTests: XCTestCase {
             tokenParams.ttl = 5.0
             rtl6c2TestsClient.auth.authorize(tokenParams, options: nil) { tokenDetails, error in
                 XCTAssertNil(error)
-                expect(tokenDetails).toNot(beNil())
+                XCTAssertNotNil(tokenDetails)
                 done()
             }
         }
@@ -2531,7 +2531,7 @@ class RealtimeClientChannelTests: XCTestCase {
 
                 channel.publish(nil, data: "message") { error in
                     expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
-                    expect(error).toNot(beNil())
+                    XCTAssertNotNil(error)
                     done()
                 }
             }
@@ -3250,10 +3250,10 @@ class RealtimeClientChannelTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.subscribe(attachCallback: { errorInfo in
-                expect(errorInfo).toNot(beNil())
+                XCTAssertNotNil(errorInfo)
 
                 channel.subscribe("foo", onAttach: { errorInfo in
-                    expect(errorInfo).toNot(beNil())
+                    XCTAssertNotNil(errorInfo)
                     done()
                 }) { _ in }
             }) { _ in }
@@ -3929,7 +3929,7 @@ class RealtimeClientChannelTests: XCTestCase {
             }
             channel.on(.suspended) { stateChange in
                 expect(stateChange.previous).to(equal(ARTRealtimeChannelState.attaching))
-                expect(stateChange.reason).toNot(beNil())
+                XCTAssertNotNil(stateChange.reason)
                 if retryNumber > numberOfRetriesToWaitFor {
                     done()
                 }

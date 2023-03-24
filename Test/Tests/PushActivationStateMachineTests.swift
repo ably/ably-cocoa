@@ -1168,7 +1168,7 @@ class PushActivationStateMachineTests: XCTestCase {
 
             expect(url.host).to(equal(rest.internal.options.restUrl().host))
             expect(request.httpMethod) == "DELETE"
-            expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
+            XCTAssertNotNil(request.allHTTPHeaderFields?["Authorization"])
             let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
             expect(deviceAuthorization).to(equal(rest.device.secret))
 
@@ -1193,7 +1193,7 @@ class PushActivationStateMachineTests: XCTestCase {
             XCTAssertNil(rest.device.identityTokenDetails)
             rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
             defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
-            expect(rest.device.identityTokenDetails).toNot(beNil())
+            XCTAssertNotNil(rest.device.identityTokenDetails)
 
             waitUntil(timeout: testTimeout) { done in
                 let partialDone = AblyTests.splitDone(2, done: done)
@@ -1221,7 +1221,7 @@ class PushActivationStateMachineTests: XCTestCase {
             expect(url.host).to(equal(rest.internal.options.restUrl().host))
             expect(request.httpMethod) == "DELETE"
             XCTAssertNil(rest.device.identityTokenDetails)
-            expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
+            XCTAssertNotNil(request.allHTTPHeaderFields?["Authorization"])
             let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
             expect(deviceAuthorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
 

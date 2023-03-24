@@ -371,7 +371,7 @@ class RestClientTests: XCTestCase {
             channel.publish(nil, data: "message") { error in
                 let end = NSDate()
                 expect(end.timeIntervalSince(start as Date)).to(beCloseTo(options.httpRequestTimeout, within: 0.5))
-                expect(error).toNot(beNil())
+                XCTAssertNotNil(error)
                 if let error = error {
                     expect(error.code).to(satisfyAnyOf(equal(-1001 /* Timed Out */ ), equal(-1004 /* Cannot Connect To Host */ )))
                 }
@@ -447,7 +447,7 @@ class RestClientTests: XCTestCase {
         client.internal.httpExecutor = testHTTPExecutor
         waitUntil(timeout: testTimeout) { done in
             client.channels.get(uniqueChannelName()).publish(nil, data: "message") { error in
-                expect(error).toNot(beNil())
+                XCTAssertNotNil(error)
                 done()
             }
         }
@@ -554,7 +554,7 @@ class RestClientTests: XCTestCase {
             delay(1.0) {
                 client.channels.get(uniqueChannelName()).history { result, error in
                     XCTAssertNil(error)
-                    expect(result).toNot(beNil())
+                    XCTAssertNotNil(result)
 
                     guard let headerErrorCode = testHTTPExecutor.responses.first?.value(forHTTPHeaderField: "X-Ably-Errorcode") else {
                         fail("X-Ably-Errorcode not found"); done()
@@ -705,7 +705,7 @@ class RestClientTests: XCTestCase {
                     }
                     expect(Int(errorCode)).to(beGreaterThanOrEqualTo(ARTErrorCode.tokenErrorUnspecified.intValue))
                     expect(Int(errorCode)).to(beLessThan(ARTErrorCode.connectionLimitsExceeded.intValue))
-                    expect(error).toNot(beNil())
+                    XCTAssertNotNil(error)
                     done()
                 }
             }
@@ -782,7 +782,7 @@ class RestClientTests: XCTestCase {
         let client = ARTRest(options: options)
         expect(client.internal.options.fallbackHostsUseDefault).to(beTrue())
         // Not production
-        expect(client.internal.options.environment).toNot(beNil())
+        XCTAssertNotNil(client.internal.options.environment)
         expect(client.internal.options.environment).toNot(equal("production"))
 
         let hosts = ARTFallbackHosts.hosts(from: client.internal.options)
@@ -1741,7 +1741,7 @@ class RestClientTests: XCTestCase {
             do {
                 try rest.request("patch", path: "feature", params: params, body: nil, headers: nil) { paginatedResult, error in
                     XCTAssertNil(error)
-                    expect(paginatedResult).toNot(beNil())
+                    XCTAssertNotNil(paginatedResult)
                     done()
                 }
             } catch {
@@ -1769,7 +1769,7 @@ class RestClientTests: XCTestCase {
             do {
                 try rest.request("post", path: "feature", params: nil, body: bodyDict, headers: nil) { paginatedResult, error in
                     XCTAssertNil(error)
-                    expect(paginatedResult).toNot(beNil())
+                    XCTAssertNotNil(paginatedResult)
                     done()
                 }
             } catch {
@@ -1796,7 +1796,7 @@ class RestClientTests: XCTestCase {
             do {
                 try rest.request("get", path: "feature", params: nil, body: nil, headers: headers) { paginatedResult, error in
                     XCTAssertNil(error)
-                    expect(paginatedResult).toNot(beNil())
+                    XCTAssertNotNil(paginatedResult)
                     done()
                 }
             } catch {
@@ -2084,8 +2084,8 @@ class RestClientTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             rest.channels.get(uniqueChannelName()).publish(nil, data: "something") { error in
-                expect(error).toNot(beNil())
-                expect(error?.requestId).toNot(beNil())
+                XCTAssertNotNil(error)
+                XCTAssertNotNil(error?.requestId)
                 done()
             }
         }

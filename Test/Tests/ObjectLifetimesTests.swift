@@ -25,9 +25,9 @@ class ObjectLifetimesTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             options.internalDispatchQueue.async {
                 realtime = nil // Schedule deallocation for later in this queue
-                expect(internalConn).toNot(beNil()) // Deallocation still hasn't happened.
-                expect(internalRealtime).toNot(beNil())
-                expect(internalRest).toNot(beNil())
+                XCTAssertNotNil(internalConn) // Deallocation still hasn't happened.
+                XCTAssertNotNil(internalRealtime)
+                XCTAssertNotNil(internalRest)
                 done()
             }
         }
@@ -61,7 +61,7 @@ class ObjectLifetimesTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             options.internalDispatchQueue.async {
                 conn = nil // Schedule deallocation for later in this queue
-                expect(weakConn).toNot(beNil()) // Deallocation still hasn't happened.
+                XCTAssertNotNil(weakConn) // Deallocation still hasn't happened.
                 done()
             }
         }
@@ -82,7 +82,7 @@ class ObjectLifetimesTests: XCTestCase {
         var client: ARTRealtime? = ARTRealtime(options: options)
 
         weak var weakClient = client!.internal
-        expect(weakClient).toNot(beNil())
+        XCTAssertNotNil(weakClient)
         defer { client?.close() }
 
         let channelName = uniqueChannelName()
