@@ -205,12 +205,12 @@ class PushAdminTests: XCTestCase {
             guard let bodyRecipient = httpBody.unbox["recipient"] as? [String: String] else {
                 fail("recipient is missing"); return
             }
-            expect(bodyRecipient).to(equal(recipient))
+            XCTAssertEqual(bodyRecipient, recipient)
 
             guard let bodyPayload = httpBody.unbox["notification"] as? [String: String] else {
                 fail("notification is missing"); return
             }
-            expect(bodyPayload).to(equal(payload["notification"]))
+            XCTAssertEqual(bodyPayload, payload["notification"])
         }
     }
 
@@ -336,7 +336,7 @@ class PushAdminTests: XCTestCase {
                 guard let device = device else {
                     fail("Device is missing"); done(); return
                 }
-                expect(device).to(equal(Self.deviceDetails))
+                XCTAssertEqual(device, Self.deviceDetails)
                 XCTAssertNil(error)
                 done()
             }
@@ -385,7 +385,7 @@ class PushAdminTests: XCTestCase {
         let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
         
-        expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
+        XCTAssertEqual(authorization, testIdentityTokenDetails.token.base64Encoded())
     }
 
     func test__009__Device_Registrations__get__push_device_authentication__should_include_DeviceSecret_HTTP_header() throws {
@@ -402,7 +402,7 @@ class PushAdminTests: XCTestCase {
         let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
         
-        expect(authorization).to(equal(localDevice.secret))
+        XCTAssertEqual(authorization, localDevice.secret)
     }
 
     // RSH1b2
@@ -540,8 +540,8 @@ class PushAdminTests: XCTestCase {
         let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
         
-        expect(request.httpMethod).to(equal("PUT"))
-        expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
+        XCTAssertEqual(request.httpMethod, "PUT")
+        XCTAssertEqual(authorization, testIdentityTokenDetails.token.base64Encoded())
     }
 
     func test__017__Device_Registrations__save__push_device_authentication__should_include_DeviceSecret_HTTP_header() throws {
@@ -561,8 +561,8 @@ class PushAdminTests: XCTestCase {
         let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
         
-        expect(request.httpMethod).to(equal("PUT"))
-        expect(authorization).to(equal(localDevice.secret))
+        XCTAssertEqual(request.httpMethod, "PUT")
+        XCTAssertEqual(authorization, localDevice.secret)
     }
 
     // RSH1b5
@@ -659,7 +659,7 @@ class PushAdminTests: XCTestCase {
 
         let request = try XCTUnwrap(testProxyHTTPExecutor.requests.first, "No request found")
 
-        expect(request.httpMethod).to(equal("POST"))
+        XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceToken"])
         XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"])
     }
@@ -721,7 +721,7 @@ class PushAdminTests: XCTestCase {
         let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
         
-        expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
+        XCTAssertEqual(authorization, testIdentityTokenDetails.token.base64Encoded())
     }
 
     func test__023__Channel_Subscriptions__save__push_device_authentication__should_include_DeviceSecret_HTTP_header() throws {
@@ -741,7 +741,7 @@ class PushAdminTests: XCTestCase {
         let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
         
-        expect(authorization).to(equal(localDevice.secret))
+        XCTAssertEqual(authorization, localDevice.secret)
     }
 
     // RSH1c1
@@ -799,7 +799,7 @@ class PushAdminTests: XCTestCase {
 
         let request = try XCTUnwrap(testProxyHTTPExecutor.requests.first, "No request found")
         
-        expect(request.httpMethod).to(equal("DELETE"))
+        XCTAssertEqual(request.httpMethod, "DELETE")
         XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceToken"])
         XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"])
 
@@ -844,7 +844,7 @@ class PushAdminTests: XCTestCase {
         let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
         
-        expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
+        XCTAssertEqual(authorization, testIdentityTokenDetails.token.base64Encoded())
     }
 
     func test__028__Channel_Subscriptions__remove__push_device_authentication__should_include_DeviceSecret_HTTP_header() throws {
@@ -864,7 +864,7 @@ class PushAdminTests: XCTestCase {
         let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
         
-        expect(authorization).to(equal(localDevice.secret))
+        XCTAssertEqual(authorization, localDevice.secret)
     }
 
     // RSH1c5

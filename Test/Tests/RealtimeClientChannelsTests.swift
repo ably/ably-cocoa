@@ -44,7 +44,7 @@ class RealtimeClientChannelsTests: XCTestCase {
         expect(client.channels.internal.collection).to(haveCount(0))
         let channelName = uniqueChannelName()
         let channel = client.channels.get(channelName)
-        expect(channel.name).to(equal("\(options.channelNamePrefix!)-\(channelName)"))
+        XCTAssertEqual(channel.name, "\(options.channelNamePrefix!)-\(channelName)")
 
         expect(client.channels.internal.collection).to(haveCount(1))
         expect(client.channels.get(channelName).internal).to(beIdenticalTo(channel.internal))
@@ -88,7 +88,7 @@ class RealtimeClientChannelsTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             client.channels.release(channelName) { errorInfo in
                 XCTAssertNil(errorInfo)
-                expect(channel.state).to(equal(ARTRealtimeChannelState.detached))
+                XCTAssertEqual(channel.state, ARTRealtimeChannelState.detached)
                 done()
             }
         }

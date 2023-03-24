@@ -69,7 +69,7 @@ class RestClientPresenceTests: XCTestCase {
         let channel = client.channels.get(uniqueChannelName())
 
         let query = ARTPresenceQuery()
-        expect(query.limit).to(equal(100))
+        XCTAssertEqual(query.limit, 100)
 
         query.limit = 1001
         expect { try channel.presence.get(query, callback: { _, _ in }) }.to(throwError())
@@ -105,8 +105,8 @@ class RestClientPresenceTests: XCTestCase {
                     XCTAssertNil(error)
                     expect(membersPage!.items).to(haveCount(1))
                     let member = membersPage!.items[0]
-                    expect(member.clientId).to(equal("john"))
-                    expect(member.data as? NSObject).to(equal("web" as NSObject?))
+                    XCTAssertEqual(member.clientId, "john")
+                    XCTAssertEqual(member.data as? NSObject, "web" as NSObject?)
                     done()
                 }
             }.toNot(throwError())
@@ -238,16 +238,16 @@ class RestClientPresenceTests: XCTestCase {
         disposable += [AblyTests.addMembersSequentiallyToChannel(channelName, members: 10, data: nil, options: options)]
 
         let query = ARTDataQuery()
-        expect(query.direction).to(equal(ARTQueryDirection.backwards))
+        XCTAssertEqual(query.direction, ARTQueryDirection.backwards)
 
         waitUntil(timeout: testTimeout) { done in
             expect {
                 try channel.presence.history(query) { membersPage, error in
                     XCTAssertNil(error)
                     let firstMember = membersPage!.items.first!
-                    expect(firstMember.clientId).to(equal("user10"))
+                    XCTAssertEqual(firstMember.clientId, "user10")
                     let lastMember = membersPage!.items.last!
-                    expect(lastMember.clientId).to(equal("user1"))
+                    XCTAssertEqual(lastMember.clientId, "user1")
                     done()
                 }
             }.toNot(throwError())
@@ -260,9 +260,9 @@ class RestClientPresenceTests: XCTestCase {
                 try channel.presence.history(query) { membersPage, error in
                     XCTAssertNil(error)
                     let firstMember = membersPage!.items.first!
-                    expect(firstMember.clientId).to(equal("user1"))
+                    XCTAssertEqual(firstMember.clientId, "user1")
                     let lastMember = membersPage!.items.last!
-                    expect(lastMember.clientId).to(equal("user10"))
+                    XCTAssertEqual(lastMember.clientId, "user10")
                     done()
                 }
             }.toNot(throwError())
@@ -286,7 +286,7 @@ class RestClientPresenceTests: XCTestCase {
         realtime = AblyTests.addMembersSequentiallyToChannel(channelName, members: 1, options: options)
 
         let query = ARTDataQuery()
-        expect(query.limit).to(equal(100))
+        XCTAssertEqual(query.limit, 100)
         query.limit = 1
 
         waitUntil(timeout: testTimeout) { done in
@@ -304,7 +304,7 @@ class RestClientPresenceTests: XCTestCase {
         query.limit = 1001
 
         expect { try channel.presence.history(query) { _, _ in } }.to(throwError { (error: Error) in
-            expect(error._code).to(equal(ARTDataQueryError.limit.rawValue))
+            XCTAssertEqual(error._code, ARTDataQueryError.limit.rawValue)
         })
     }
 
@@ -421,13 +421,13 @@ class RestClientPresenceTests: XCTestCase {
         query.start = query.end!.addingTimeInterval(10.0)
 
         expect { try channel.presence.history(query) { _, _ in } }.to(throwError { (error: Error) in
-            expect(error._code).to(equal(ARTDataQueryError.timestampRange.rawValue))
+            XCTAssertEqual(error._code, ARTDataQueryError.timestampRange.rawValue)
         })
 
         query.direction = .forwards
 
         expect { try channel.presence.history(query) { _, _ in } }.to(throwError { (error: Error) in
-            expect(error._code).to(equal(ARTDataQueryError.timestampRange.rawValue))
+            XCTAssertEqual(error._code, ARTDataQueryError.timestampRange.rawValue)
         })
     }
 
@@ -464,7 +464,7 @@ class RestClientPresenceTests: XCTestCase {
             return { membersPage, error in
                 XCTAssertNil(error)
                 let member = membersPage!.items[0]
-                expect(member.data as? NSDictionary).to(equal(expectedData as NSDictionary?))
+                XCTAssertEqual(member.data as? NSDictionary, expectedData as NSDictionary?)
                 done()
             }
         }
@@ -483,6 +483,6 @@ class RestClientPresenceTests: XCTestCase {
             channel.presence.history(checkReceivedMessage(done))
         }
 
-        expect(decodeNumberOfCalls).to(equal(2))
+        XCTAssertEqual(decodeNumberOfCalls, 2)
     }
 }

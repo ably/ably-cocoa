@@ -140,7 +140,7 @@ class PushActivationStateMachineTests: XCTestCase {
         options.clientId = "deviceClient"
         let rest = ARTRest(options: options)
         rest.internal.storage = storage
-        expect(rest.device.clientId).to(equal("deviceClient"))
+        XCTAssertEqual(rest.device.clientId, "deviceClient")
     }
 
     // RSH3a2c
@@ -327,10 +327,10 @@ class PushActivationStateMachineTests: XCTestCase {
         let decodedBody = try XCTUnwrap(try stateMachine.rest.defaultEncoder.decode(rawBody), "Decode request body failed")
         let body = try XCTUnwrap(decodedBody as? NSDictionary, "Request body is invalid")
         
-        expect(url.host).to(equal(rest.internal.options.restUrl().host))
+        XCTAssertEqual(url.host, rest.internal.options.restUrl().host)
         expect(request.httpMethod) == "POST"
-        expect(body.value(forKey: "id") as? String).to(equal(rest.device.id))
-        expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(expectedPushRecipient))
+        XCTAssertEqual(body.value(forKey: "id") as? String, rest.device.id)
+        XCTAssertEqual(body.value(forKey: "push") as? [String: [String: String]], expectedPushRecipient)
         expect(body.value(forKey: "formFactor") as? String) == expectedFormFactor
         expect(body.value(forKey: "platform") as? String) == expectedPlatform
     }
@@ -374,8 +374,8 @@ class PushActivationStateMachineTests: XCTestCase {
         let decodedBody = try XCTUnwrap(try stateMachine.rest.defaultEncoder.decode(rawBody), "Decode request body failed")
         let body = try XCTUnwrap(decodedBody as? NSDictionary, "Request body is invalid")
         
-        expect(body.value(forKey: "id") as? String).to(equal(rest.device.id))
-        expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(expectedPushRecipient))
+        XCTAssertEqual(body.value(forKey: "id") as? String, rest.device.id)
+        XCTAssertEqual(body.value(forKey: "push") as? [String: [String: String]], expectedPushRecipient)
         expect(body.value(forKey: "formFactor") as? String) == expectedFormFactor
         expect(body.value(forKey: "platform") as? String) == expectedPlatform
     }
@@ -423,7 +423,7 @@ class PushActivationStateMachineTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             delegate.onDidActivateAblyPush = { error in
-                expect(error).to(equal(expectedError))
+                XCTAssertEqual(error, expectedError)
                 done()
             }
             stateMachine.send(ARTPushActivationEventGettingPushDeviceDetailsFailed(error: expectedError))
@@ -934,7 +934,7 @@ class PushActivationStateMachineTests: XCTestCase {
             options.clientId = "deviceClient"
             let rest = ARTRest(options: options)
             rest.internal.storage = storage
-            expect(rest.device.clientId).to(equal("deviceClient"))
+            XCTAssertEqual(rest.device.clientId, "deviceClient")
 
             let newOptions = ARTClientOptions(key: "xxxx:xxxx")
             newOptions.clientId = "instanceClient"
@@ -951,7 +951,7 @@ class PushActivationStateMachineTests: XCTestCase {
             waitUntil(timeout: testTimeout) { done in
                 stateMachine.transitions = { event, _, _ in
                     if let event = event as? ARTPushActivationEventSyncRegistrationFailed {
-                        expect(event.error.code).to(equal(61002))
+                        XCTAssertEqual(event.error.code, 61002)
                         done()
                     }
                 }
@@ -1037,10 +1037,10 @@ class PushActivationStateMachineTests: XCTestCase {
             let decodedBody = try XCTUnwrap(try stateMachine.rest.defaultEncoder.decode(rawBody), "Decode request body failed")
             let body = try XCTUnwrap(decodedBody as? NSDictionary, "Request body is invalid")
             
-            expect(url.host).to(equal(rest.internal.options.restUrl().host))
+            XCTAssertEqual(url.host, rest.internal.options.restUrl().host)
             expect(request.httpMethod) == "PUT"
-            expect(body.value(forKey: "id") as? String).to(equal(rest.device.id))
-            expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(expectedPushRecipient))
+            XCTAssertEqual(body.value(forKey: "id") as? String, rest.device.id)
+            XCTAssertEqual(body.value(forKey: "push") as? [String: [String: String]], expectedPushRecipient)
             expect(body.value(forKey: "formFactor") as? String) == expectedFormFactor
             expect(body.value(forKey: "platform") as? String) == expectedPlatform
 
@@ -1166,11 +1166,11 @@ class PushActivationStateMachineTests: XCTestCase {
             let request = try XCTUnwrap(httpExecutor.requests.first, "Should have a \"/push/deviceRegistrations\" request")
             let url = try XCTUnwrap(request.url, "Request should have a \"/push/deviceRegistrations\" URL")
 
-            expect(url.host).to(equal(rest.internal.options.restUrl().host))
+            XCTAssertEqual(url.host, rest.internal.options.restUrl().host)
             expect(request.httpMethod) == "DELETE"
             XCTAssertNotNil(request.allHTTPHeaderFields?["Authorization"])
             let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
-            expect(deviceAuthorization).to(equal(rest.device.secret))
+            XCTAssertEqual(deviceAuthorization, rest.device.secret)
 
             contextAfterEach?()
         }
@@ -1218,12 +1218,12 @@ class PushActivationStateMachineTests: XCTestCase {
             let request = try XCTUnwrap(httpExecutor.requests.first, "Should have a \"/push/deviceRegistrations\" request")
             let url = try XCTUnwrap(request.url, "Request should have a \"/push/deviceRegistrations\" URL")
 
-            expect(url.host).to(equal(rest.internal.options.restUrl().host))
+            XCTAssertEqual(url.host, rest.internal.options.restUrl().host)
             expect(request.httpMethod) == "DELETE"
             XCTAssertNil(rest.device.identityTokenDetails)
             XCTAssertNotNil(request.allHTTPHeaderFields?["Authorization"])
             let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
-            expect(deviceAuthorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
+            XCTAssertEqual(deviceAuthorization, testIdentityTokenDetails.token.base64Encoded())
 
             contextAfterEach?()
         }
@@ -1262,7 +1262,7 @@ class PushActivationStateMachineTests: XCTestCase {
             let request = try XCTUnwrap(httpExecutor.requests.first, "Should have a \"/push/deviceRegistrations\" request")
             let url = try XCTUnwrap(request.url, "Request should have a \"/push/deviceRegistrations\" URL")
 
-            expect(url.host).to(equal(rest.internal.options.restUrl().host))
+            XCTAssertEqual(url.host, rest.internal.options.restUrl().host)
             expect(request.httpMethod) == "DELETE"
 
             contextAfterEach?()

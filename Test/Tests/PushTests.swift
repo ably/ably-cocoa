@@ -176,7 +176,7 @@ class PushTests: XCTestCase {
             guard let requestedClientId = httpBody.unbox["clientId"] as? String else {
                 fail("No clientId field in HTTPBody"); return
             }
-            expect(requestedClientId).to(equal(expectedClientId))
+            XCTAssertEqual(requestedClientId, expectedClientId)
         }
     }
 
@@ -193,7 +193,7 @@ class PushTests: XCTestCase {
             ARTPush.didRegisterForRemoteNotifications(withDeviceToken: TestDeviceToken.tokenData, rest: rest)
         }
         expect(storage.keysWritten.keys).to(contain(["ARTAPNSDeviceToken"]))
-        expect(storage.keysWritten.at("ARTAPNSDeviceToken")?.value as? String).to(equal(expectedDeviceToken))
+        XCTAssertEqual(storage.keysWritten.at("ARTAPNSDeviceToken")?.value as? String, expectedDeviceToken)
     }
 
     // https://github.com/ably/ably-cocoa/issues/888
@@ -225,8 +225,8 @@ class PushTests: XCTestCase {
 
         let device = rest.device
 
-        expect(device.apnsDeviceToken()).to(equal(testToken))
-        expect(device.identityTokenDetails?.token).to(equal(testIdentity.token))
+        XCTAssertEqual(device.apnsDeviceToken(), testToken)
+        XCTAssertEqual(device.identityTokenDetails?.token, testIdentity.token)
     }
 
     // RSH8d
@@ -249,7 +249,7 @@ class PushTests: XCTestCase {
             }
         }
 
-        expect(realtime.device.clientId).to(equal("testClient"))
+        XCTAssertEqual(realtime.device.clientId, "testClient")
     }
 
     // RSH8d
@@ -274,7 +274,7 @@ class PushTests: XCTestCase {
             transport.simulateTransportSuccess(clientId: "testClient")
         }
 
-        expect(realtime.device.clientId).to(equal("testClient"))
+        XCTAssertEqual(realtime.device.clientId, "testClient")
     }
 
     // RSH8e
@@ -332,7 +332,7 @@ class PushTests: XCTestCase {
             realtime.auth.authorize { _, _ in }
         }
 
-        expect(realtime.device.clientId).to(equal(expectedClient))
+        XCTAssertEqual(realtime.device.clientId, expectedClient)
 
         let expectation = XCTestExpectation(description: "Consecutive Authorization")
         expectation.isInverted = true
@@ -345,7 +345,7 @@ class PushTests: XCTestCase {
         wait(for: [expectation], timeout: 3.0)
 
         expect(mockHttpExecutor.requests.filter { $0.url?.pathComponents.contains("deviceRegistrations") == true }).to(haveCount(1))
-        expect(realtime.device.clientId).to(equal(expectedClient))
+        XCTAssertEqual(realtime.device.clientId, expectedClient)
     }
 
     // RSH8f
@@ -376,7 +376,7 @@ class PushTests: XCTestCase {
             ARTPush.didRegisterForRemoteNotifications(withDeviceToken: "testDeviceToken".data(using: .utf8)!, rest: rest)
         }
 
-        expect(rest.device.clientId).to(equal(expectedClientId))
+        XCTAssertEqual(rest.device.clientId, expectedClientId)
     }
 
     func test__014__Registerer_Delegate_option__a_successful_activation_should_call_the_correct_registerer_delegate_method() {

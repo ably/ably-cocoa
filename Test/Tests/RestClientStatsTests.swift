@@ -117,17 +117,17 @@ class RestClientStatsTests: XCTestCase {
         query.direction = .forwards
 
         let result = queryStats(client, query)
-        expect(result.items.count).to(equal(3))
+        XCTAssertEqual(result.items.count, 3)
 
         let totalInbound = result.items.reduce(0 as UInt) {
             $0 + $1.inbound.all.messages.count
         }
-        expect(totalInbound).to(equal(50 + 60 + 70))
+        XCTAssertEqual(totalInbound, 50 + 60 + 70)
 
         let totalOutbound = result.items.reduce(0 as UInt) {
             $0 + $1.outbound.all.messages.count
         }
-        expect(totalOutbound).to(equal(20 + 10 + 40))
+        XCTAssertEqual(totalOutbound, 20 + 10 + 40)
     }
 
     func test__002__RestClient__stats__result__should_match_hour_level_inbound_and_outbound_fixture_data__forwards_() {
@@ -147,9 +147,9 @@ class RestClientStatsTests: XCTestCase {
             $0 + $1.outbound.all.messages.count
         }
 
-        expect(result.items.count).to(equal(1))
-        expect(totalInbound).to(equal(50 + 60 + 70))
-        expect(totalOutbound).to(equal(20 + 10 + 40))
+        XCTAssertEqual(result.items.count, 1)
+        XCTAssertEqual(totalInbound, 50 + 60 + 70)
+        XCTAssertEqual(totalOutbound, 20 + 10 + 40)
     }
 
     func test__003__RestClient__stats__result__should_match_day_level_inbound_and_outbound_fixture_data__forwards_() {
@@ -165,9 +165,9 @@ class RestClientStatsTests: XCTestCase {
         let totalInbound = (result.items).reduce(0) { $0 + $1.inbound.all.messages.count }
         let totalOutbound = (result.items).reduce(0) { $0 + $1.outbound.all.messages.count }
 
-        expect(result.items.count).to(equal(1))
-        expect(totalInbound).to(equal(50 + 60 + 70))
-        expect(totalOutbound).to(equal(20 + 10 + 40))
+        XCTAssertEqual(result.items.count, 1)
+        XCTAssertEqual(totalInbound, 50 + 60 + 70)
+        XCTAssertEqual(totalOutbound, 20 + 10 + 40)
     }
 
     func skipped__test__004__RestClient__stats__result__should_match_month_level_inbound_and_outbound_fixture_data__forwards_() {
@@ -183,9 +183,9 @@ class RestClientStatsTests: XCTestCase {
         let totalInbound = (result.items).reduce(0) { $0 + $1.inbound.all.messages.count }
         let totalOutbound = (result.items).reduce(0) { $0 + $1.outbound.all.messages.count }
 
-        expect(result.items.count).to(equal(1))
-        expect(totalInbound).to(equal(50 + 60 + 70))
-        expect(totalOutbound).to(equal(20 + 10 + 40))
+        XCTAssertEqual(result.items.count, 1)
+        XCTAssertEqual(totalInbound, 50 + 60 + 70)
+        XCTAssertEqual(totalOutbound, 20 + 10 + 40)
     }
 
     func skipped__test__005__RestClient__stats__result__should_contain_only_one_item_when_limit_is_1__backwards() {
@@ -200,9 +200,9 @@ class RestClientStatsTests: XCTestCase {
         let totalInbound = (result.items).reduce(0) { $0 + $1.inbound.all.messages.count }
         let totalOutbound = (result.items).reduce(0) { $0 + $1.outbound.all.messages.count }
 
-        expect(result.items.count).to(equal(1))
-        expect(totalInbound).to(equal(60))
-        expect(totalOutbound).to(equal(10))
+        XCTAssertEqual(result.items.count, 1)
+        XCTAssertEqual(totalInbound, 60)
+        XCTAssertEqual(totalOutbound, 10)
     }
 
     func test__006__RestClient__stats__result__should_contain_only_one_item_when_limit_is_1__forwards() {
@@ -218,9 +218,9 @@ class RestClientStatsTests: XCTestCase {
         let totalInbound = (result.items).reduce(0) { $0 + $1.inbound.all.messages.count }
         let totalOutbound = (result.items).reduce(0) { $0 + $1.outbound.all.messages.count }
 
-        expect(result.items.count).to(equal(1))
-        expect(totalInbound).to(equal(50))
-        expect(totalOutbound).to(equal(20))
+        XCTAssertEqual(result.items.count, 1)
+        XCTAssertEqual(totalInbound, 50)
+        XCTAssertEqual(totalOutbound, 20)
     }
 
     func test__007__RestClient__stats__result__should_be_paginated_according_to_the_limit__backwards() {
@@ -232,8 +232,8 @@ class RestClientStatsTests: XCTestCase {
         query.limit = 1
 
         let firstPage = queryStats(client, query)
-        expect(firstPage.items.count).to(equal(1))
-        expect((firstPage.items)[0].inbound.all.messages.data).to(equal(7000))
+        XCTAssertEqual(firstPage.items.count, 1)
+        XCTAssertEqual((firstPage.items)[0].inbound.all.messages.data, 7000)
         expect(firstPage.hasNext).to(beTrue())
         expect(firstPage.isLast).to(beFalse())
 
@@ -246,8 +246,8 @@ class RestClientStatsTests: XCTestCase {
             return
         }
 
-        expect(secondPage.items.count).to(equal(1))
-        expect((secondPage.items)[0].inbound.all.messages.data).to(equal(6000))
+        XCTAssertEqual(secondPage.items.count, 1)
+        XCTAssertEqual((secondPage.items)[0].inbound.all.messages.data, 6000)
         expect(secondPage.hasNext).to(beTrue())
         expect(secondPage.isLast).to(beFalse())
 
@@ -260,8 +260,8 @@ class RestClientStatsTests: XCTestCase {
             return
         }
 
-        expect(thirdPage.items.count).to(equal(1))
-        expect((thirdPage.items)[0].inbound.all.messages.data).to(equal(5000))
+        XCTAssertEqual(thirdPage.items.count, 1)
+        XCTAssertEqual((thirdPage.items)[0].inbound.all.messages.data, 5000)
         expect(thirdPage.isLast).to(beTrue())
 
         guard let firstPageAgain: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
@@ -273,8 +273,8 @@ class RestClientStatsTests: XCTestCase {
             return
         }
 
-        expect(firstPageAgain.items.count).to(equal(1))
-        expect((firstPageAgain.items)[0].inbound.all.messages.data).to(equal(7000))
+        XCTAssertEqual(firstPageAgain.items.count, 1)
+        XCTAssertEqual((firstPageAgain.items)[0].inbound.all.messages.data, 7000)
     }
 
     func skipped__test__008__RestClient__stats__result__should_be_paginated_according_to_the_limit__fowards_() {
@@ -287,8 +287,8 @@ class RestClientStatsTests: XCTestCase {
         query.direction = .forwards
 
         let firstPage = queryStats(client, query)
-        expect(firstPage.items.count).to(equal(1))
-        expect((firstPage.items)[0].inbound.all.messages.data).to(equal(5000))
+        XCTAssertEqual(firstPage.items.count, 1)
+        XCTAssertEqual((firstPage.items)[0].inbound.all.messages.data, 5000)
         expect(firstPage.hasNext).to(beTrue())
         expect(firstPage.isLast).to(beFalse())
 
@@ -301,8 +301,8 @@ class RestClientStatsTests: XCTestCase {
             return
         }
 
-        expect(secondPage.items.count).to(equal(1))
-        expect((secondPage.items)[0].inbound.all.messages.data).to(equal(6000))
+        XCTAssertEqual(secondPage.items.count, 1)
+        XCTAssertEqual((secondPage.items)[0].inbound.all.messages.data, 6000)
         expect(secondPage.hasNext).to(beTrue())
         expect(secondPage.isLast).to(beFalse())
 
@@ -315,8 +315,8 @@ class RestClientStatsTests: XCTestCase {
             return
         }
 
-        expect(thirdPage.items.count).to(equal(1))
-        expect((thirdPage.items)[0].inbound.all.messages.data).to(equal(7000))
+        XCTAssertEqual(thirdPage.items.count, 1)
+        XCTAssertEqual((thirdPage.items)[0].inbound.all.messages.data, 7000)
         expect(thirdPage.isLast).to(beTrue())
 
         guard let firstPageAgain: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
@@ -328,8 +328,8 @@ class RestClientStatsTests: XCTestCase {
             return
         }
 
-        expect(firstPageAgain.items.count).to(equal(1))
-        expect((firstPageAgain.items)[0].inbound.all.messages.data).to(equal(5000))
+        XCTAssertEqual(firstPageAgain.items.count, 1)
+        XCTAssertEqual((firstPageAgain.items)[0].inbound.all.messages.data, 5000)
     }
 
     // RSC6b
@@ -351,7 +351,7 @@ class RestClientStatsTests: XCTestCase {
     func test__010__RestClient__stats__query__direction__should_be_backwards_by_default() {
         let query = ARTStatsQuery()
 
-        expect(query.direction).to(equal(ARTQueryDirection.backwards))
+        XCTAssertEqual(query.direction, ARTQueryDirection.backwards)
     }
 
     // RSC6b3
@@ -359,7 +359,7 @@ class RestClientStatsTests: XCTestCase {
     func test__011__RestClient__stats__query__limit__should_have_a_default_value_of_100() {
         let query = ARTStatsQuery()
 
-        expect(query.limit).to(equal(100))
+        XCTAssertEqual(query.limit, 100)
     }
 
     func test__012__RestClient__stats__query__limit__should_return_an_error_when_greater_than_1000() {
@@ -376,6 +376,6 @@ class RestClientStatsTests: XCTestCase {
     func test__013__RestClient__stats__query__unit__should_default_to_minute() {
         let query = ARTStatsQuery()
 
-        expect(query.unit).to(equal(ARTStatsGranularity.minute))
+        XCTAssertEqual(query.unit, ARTStatsGranularity.minute)
     }
 }

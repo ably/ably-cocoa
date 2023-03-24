@@ -91,7 +91,7 @@ class ObjectLifetimesTests: XCTestCase {
                 client = nil
                 ARTRest(options: options).channels.get(channelName).publish(nil, data: "bar")
             }, callback: { msg in
-                expect(msg.data as? String).to(equal("bar"))
+                XCTAssertEqual(msg.data as? String, "bar")
                 done()
             })
         }

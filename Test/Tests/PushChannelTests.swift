@@ -67,11 +67,11 @@ class PushChannelTests: XCTestCase {
 
         expect(request.httpMethod) == "POST"
         expect(url.absoluteString).to(contain("/push/channelSubscriptions"))
-        expect(body.value(forKey: "deviceId") as? String).to(equal(rest.device.id))
-        expect(body.value(forKey: "channel") as? String).to(equal(channel.name))
+        XCTAssertEqual(body.value(forKey: "deviceId") as? String, rest.device.id)
+        XCTAssertEqual(body.value(forKey: "channel") as? String, channel.name)
 
         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
-        expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
+        XCTAssertEqual(authorization, testIdentityTokenDetails.token.base64Encoded())
         XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"])
     }
 
@@ -121,8 +121,8 @@ class PushChannelTests: XCTestCase {
 
         expect(request.httpMethod) == "POST"
         expect(url.absoluteString).to(contain("/push/channelSubscriptions"))
-        expect(body.value(forKey: "clientId") as? String).to(equal(rest.device.clientId))
-        expect(body.value(forKey: "channel") as? String).to(equal(channel.name))
+        XCTAssertEqual(body.value(forKey: "clientId") as? String, rest.device.clientId)
+        XCTAssertEqual(body.value(forKey: "channel") as? String, channel.name)
 
         XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceToken"])
         XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"])
@@ -168,7 +168,7 @@ class PushChannelTests: XCTestCase {
         expect(query).to(haveParam("channel", withValue: channel.name))
 
         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
-        expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
+        XCTAssertEqual(authorization, testIdentityTokenDetails.token.base64Encoded())
         XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"])
     }
 
@@ -278,7 +278,7 @@ class PushChannelTests: XCTestCase {
     func test__011__Push_Channel__listSubscriptions__should_not_accept_null_deviceId_and_null_clientId() {
         let channel = rest.channels.get(uniqueChannelName())
         expect { try channel.push.listSubscriptions([:]) { _, _ in } }.to(throwError { (error: NSError) in
-            expect(error.code).to(equal(ARTDataQueryError.missingRequiredFields.rawValue))
+            XCTAssertEqual(error.code, ARTDataQueryError.missingRequiredFields.rawValue)
         })
     }
 
@@ -289,7 +289,7 @@ class PushChannelTests: XCTestCase {
         ]
         let channel = rest.channels.get(uniqueChannelName())
         expect { try channel.push.listSubscriptions(params) { _, _ in } }.to(throwError { (error: NSError) in
-            expect(error.code).to(equal(ARTDataQueryError.invalidParameters.rawValue))
+            XCTAssertEqual(error.code, ARTDataQueryError.invalidParameters.rawValue)
         })
     }
 

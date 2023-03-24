@@ -74,7 +74,7 @@ private func testStoresSuccessfulFallbackHostAsDefaultHost(_ caseTest: FakeNetwo
 
     // Reuse host has to be equal previous (stored #1) fallback host
     expect(testHTTPExecutor.requests).to(haveCount(3))
-    expect(usedFallbackURL.host).to(equal(reusedURL.host))
+    XCTAssertEqual(usedFallbackURL.host, reusedURL.host)
 }
 
 private func testRestoresDefaultPrimaryHostAfterTimeoutExpires(_ caseTest: FakeNetworkResponse, channelName: String) {
@@ -103,7 +103,7 @@ private func testRestoresDefaultPrimaryHostAfterTimeoutExpires(_ caseTest: FakeN
     }
 
     expect(testHTTPExecutor.requests).to(haveCount(3))
-    expect(testHTTPExecutor.requests[2].url!.host).to(equal("rest.ably.io"))
+    XCTAssertEqual(testHTTPExecutor.requests[2].url!.host, "rest.ably.io")
 }
 
 private func testUsesAnotherFallbackHost(_ caseTest: FakeNetworkResponse, channelName: String) {
@@ -154,7 +154,7 @@ class RestClientTests: XCTestCase {
 
                 // This test should not directly validate version against ARTDefault.version(), as
                 // ultimately the version header has been derived from that value.
-                expect(version).to(equal("1.2"))
+                XCTAssertEqual(version, "1.2")
 
                 done()
             }
@@ -236,13 +236,13 @@ class RestClientTests: XCTestCase {
 
         client.internal.logger.log("This is a warning", with: .warn)
 
-        expect(client.internal.logger.logLevel).to(equal(ARTLogLevel.warn))
+        XCTAssertEqual(client.internal.logger.logLevel, ARTLogLevel.warn)
         guard let line = options.logHandler.captured.last else {
             fail("didn't log line.")
             return
         }
-        expect(line.level).to(equal(ARTLogLevel.warn))
-        expect(line.toString()).to(equal("WARN: This is a warning"))
+        XCTAssertEqual(line.level, ARTLogLevel.warn)
+        XCTAssertEqual(line.toString(), "WARN: This is a warning")
     }
 
     // RSC3
@@ -278,10 +278,10 @@ class RestClientTests: XCTestCase {
 
         client.internal.logger.log("This is a warning", with: .warn)
 
-        expect(Log.interceptedLog.0).to(equal("This is a warning"))
-        expect(Log.interceptedLog.1).to(equal(ARTLogLevel.warn))
+        XCTAssertEqual(Log.interceptedLog.0, "This is a warning")
+        XCTAssertEqual(Log.interceptedLog.1, ARTLogLevel.warn)
 
-        expect(client.internal.logger.logLevel).to(equal(customLogger.logLevel))
+        XCTAssertEqual(client.internal.logger.logLevel, customLogger.logLevel)
     }
 
     // RSC11
@@ -353,8 +353,8 @@ class RestClientTests: XCTestCase {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.environment = "production"
         let client = ARTRest(options: options)
-        expect(client.internal.options.restHost).to(equal(ARTDefault.restHost()))
-        expect(client.internal.options.realtimeHost).to(equal(ARTDefault.realtimeHost()))
+        XCTAssertEqual(client.internal.options.restHost, ARTDefault.restHost())
+        XCTAssertEqual(client.internal.options.realtimeHost, ARTDefault.realtimeHost())
     }
 
     // RSC13
@@ -362,7 +362,7 @@ class RestClientTests: XCTestCase {
     func test__031__RestClient__should_use_the_the_connection_and_request_timeouts_specified__timeout_for_any_single_HTTP_request_and_response() {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.restHost = "10.255.255.1" // non-routable IP address
-        expect(options.httpRequestTimeout).to(equal(10.0)) // Seconds
+        XCTAssertEqual(options.httpRequestTimeout, 10.0) // Seconds
         options.httpRequestTimeout = 1.0
         let client = ARTRest(options: options)
         let channel = client.channels.get(uniqueChannelName())
@@ -382,7 +382,7 @@ class RestClientTests: XCTestCase {
 
     func test__032__RestClient__should_use_the_the_connection_and_request_timeouts_specified__max_number_of_fallback_hosts() {
         let options = ARTClientOptions(key: "xxxx:xxxx")
-        expect(options.httpMaxRetryCount).to(equal(3))
+        XCTAssertEqual(options.httpMaxRetryCount, 3)
         options.httpMaxRetryCount = 1
         let client = ARTRest(options: options)
         let mockHTTP = MockHTTP(logger: options.logHandler)
@@ -403,12 +403,12 @@ class RestClientTests: XCTestCase {
                 done()
             }
         }
-        expect(totalRetry).to(equal(options.httpMaxRetryCount))
+        XCTAssertEqual(totalRetry, options.httpMaxRetryCount)
     }
 
     func test__033__RestClient__should_use_the_the_connection_and_request_timeouts_specified__max_elapsed_time_in_which_fallback_host_retries_for_HTTP_requests_will_be_attempted() {
         let options = ARTClientOptions(key: "xxxx:xxxx")
-        expect(options.httpMaxRetryDuration).to(equal(15.0)) // Seconds
+        XCTAssertEqual(options.httpMaxRetryDuration, 15.0) // Seconds
         options.httpMaxRetryDuration = 1.0
         let client = ARTRest(options: options)
         let mockHTTP = MockHTTP(logger: options.logHandler)
@@ -439,9 +439,9 @@ class RestClientTests: XCTestCase {
     // RSC12
     func test__003__RestClient__REST_endpoint_host_should_be_configurable_in_the_Client_constructor_with_the_option_restHost() throws {
         let options = ARTClientOptions(key: "xxxx:xxxx")
-        expect(options.restHost).to(equal("rest.ably.io"))
+        XCTAssertEqual(options.restHost, "rest.ably.io")
         options.restHost = "rest.ably.test"
-        expect(options.restHost).to(equal("rest.ably.test"))
+        XCTAssertEqual(options.restHost, "rest.ably.test")
         let client = ARTRest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
         client.internal.httpExecutor = testHTTPExecutor
@@ -490,7 +490,7 @@ class RestClientTests: XCTestCase {
 
         let requestUrlA = try XCTUnwrap(testHTTPExecutor.requests.first?.url, "No request url found")
 
-        expect(requestUrlA.scheme).to(equal("https"))
+        XCTAssertEqual(requestUrlA.scheme, "https")
 
         options.clientId = "client_http"
         options.useTokenAuth = true
@@ -506,7 +506,7 @@ class RestClientTests: XCTestCase {
         }
 
         let requestUrlB = try XCTUnwrap(testHTTPExecutor.requests.last?.url, "No request url found")
-        expect(requestUrlB.scheme).to(equal("http"))
+        XCTAssertEqual(requestUrlB.scheme, "http")
     }
 
     // RSC9
@@ -535,7 +535,7 @@ class RestClientTests: XCTestCase {
                     done()
                     return
                 }
-                expect(tokenDetails.token).to(equal(testTokenDetails.token))
+                XCTAssertEqual(tokenDetails.token, testTokenDetails.token)
                 done()
             }
         }
@@ -560,7 +560,7 @@ class RestClientTests: XCTestCase {
                         fail("X-Ably-Errorcode not found"); done()
                         return
                     }
-                    expect(Int(headerErrorCode)).to(equal(ARTErrorCode.tokenExpired.intValue))
+                    XCTAssertEqual(Int(headerErrorCode), ARTErrorCode.tokenExpired.intValue)
 
                     // Different token
                     expect(auth.tokenDetails!.token).toNot(equal(options.token))
@@ -584,14 +584,14 @@ class RestClientTests: XCTestCase {
                     fail("Error is empty"); done()
                     return
                 }
-                expect(errorCode).to(equal(ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue))
+                XCTAssertEqual(errorCode, ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue)
                 XCTAssertNil(result)
 
                 guard let headerErrorCode = testHTTPExecutor.responses.first?.value(forHTTPHeaderField: "X-Ably-Errorcode") else {
                     fail("X-Ably-Errorcode not found"); done()
                     return
                 }
-                expect(Int(headerErrorCode)).to(equal(ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue))
+                XCTAssertEqual(Int(headerErrorCode), ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue)
                 done()
             }
         }
@@ -1285,7 +1285,7 @@ class RestClientTests: XCTestCase {
         let resultFallbackHosts = testHTTPExecutor.requests.compactMap(extractHostname)
         let expectedFallbackHosts = Array(expectedHostOrder.map { ARTDefault.fallbackHosts()[$0] }[0 ..< Int(options.httpMaxRetryCount)])
 
-        expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
+        XCTAssertEqual(resultFallbackHosts, expectedFallbackHosts)
 
         afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
     }
@@ -1322,7 +1322,7 @@ class RestClientTests: XCTestCase {
         let resultFallbackHosts = testHTTPExecutor.requests.compactMap(extractHostname)
         let expectedFallbackHosts = expectedHostOrder.map { customFallbackHosts[$0] }
 
-        expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
+        XCTAssertEqual(resultFallbackHosts, expectedFallbackHosts)
 
         afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
     }
@@ -1353,7 +1353,7 @@ class RestClientTests: XCTestCase {
         let resultFallbackHosts = testHTTPExecutor.requests.compactMap(extractHostname)
         let expectedFallbackHosts = expectedHostOrder.map { ARTDefault.fallbackHosts()[$0] }
 
-        expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
+        XCTAssertEqual(resultFallbackHosts, expectedFallbackHosts)
 
         afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
     }
@@ -1387,7 +1387,7 @@ class RestClientTests: XCTestCase {
         let resultFallbackHosts = testHTTPExecutor.requests.compactMap(extractHostname)
         let expectedFallbackHosts = Array(expectedHostOrder.map { _fallbackHosts[$0] }[0 ..< Int(options.httpMaxRetryCount)])
 
-        expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
+        XCTAssertEqual(resultFallbackHosts, expectedFallbackHosts)
 
         afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
     }
@@ -1421,7 +1421,7 @@ class RestClientTests: XCTestCase {
         let resultFallbackHosts = testHTTPExecutor.requests.compactMap(extractHostname)
         let expectedFallbackHosts = expectedHostOrder.map { _fallbackHosts[$0] }
 
-        expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
+        XCTAssertEqual(resultFallbackHosts, expectedFallbackHosts)
 
         afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
     }
@@ -1592,7 +1592,7 @@ class RestClientTests: XCTestCase {
         let transport = realtime.internal.transport as! TestProxyTransport
         let jsonArray = transport.rawDataSent.map { AblyTests.msgpackToJSON($0) }
         let messageJson = jsonArray.filter { item in item["action"] == 15 }.last!
-        expect(messageJson["messages"][0]["data"].string).to(equal("message"))
+        XCTAssertEqual(messageJson["messages"][0]["data"].string, "message")
     }
 
     // RSC8b
@@ -1646,7 +1646,7 @@ class RestClientTests: XCTestCase {
 
                 // This test should not directly validate version against ARTDefault.version(), as
                 // ultimately the version header has been derived from that value.
-                expect(headerAblyVersion).to(equal("1.2"))
+                XCTAssertEqual(headerAblyVersion, "1.2")
 
                 done()
             }
@@ -1667,7 +1667,7 @@ class RestClientTests: XCTestCase {
                 XCTAssertNil(error)
                 let headerAgent = testHTTPExecutor.requests.first!.allHTTPHeaderFields?["Ably-Agent"]
                 let ablyAgent = ARTClientInformation.agentIdentifier(withAdditionalAgents: options.agents)
-                expect(headerAgent).to(equal(ablyAgent))
+                XCTAssertEqual(headerAgent, ablyAgent)
                 expect(headerAgent!.hasPrefix("ably-cocoa/1.2.19")).to(beTrue())
                 done()
             }
@@ -1686,7 +1686,7 @@ class RestClientTests: XCTestCase {
                         fail("Error is empty"); done()
                         return
                     }
-                    expect(error.code).to(equal(Int(ARTState.requestTokenFailed.rawValue)))
+                    XCTAssertEqual(error.code, Int(ARTState.requestTokenFailed.rawValue))
                     expect(error.message).to(contain("no means to renew the token is provided"))
                     done()
                 }
@@ -1755,8 +1755,8 @@ class RestClientTests: XCTestCase {
         let acceptHeaderValue = try XCTUnwrap(request.allHTTPHeaderFields?["Accept"], "Accept HTTP Header is missing")
         
         expect(request.httpMethod) == "patch"
-        expect(url.absoluteString).to(equal("https://rest.ably.io:443/feature?foo=1"))
-        expect(acceptHeaderValue).to(equal("application/x-msgpack,application/json"))
+        XCTAssertEqual(url.absoluteString, "https://rest.ably.io:443/feature?foo=1")
+        XCTAssertEqual(acceptHeaderValue, "application/x-msgpack,application/json")
     }
 
     func test__087__RestClient__request__method_signature_and_arguments__should_add_a_HTTP_body() throws {
@@ -1808,7 +1808,7 @@ class RestClientTests: XCTestCase {
         let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No requests found")
 
         let authorization = request.allHTTPHeaderFields?["X-foo"]
-        expect(authorization).to(equal("ok"))
+        XCTAssertEqual(authorization, "ok")
     }
 
     func test__089__RestClient__request__method_signature_and_arguments__should_error_if_method_is_invalid() {
@@ -1821,7 +1821,7 @@ class RestClientTests: XCTestCase {
                 fail("Completion closure should not be called")
             }
         } catch let error as NSError {
-            expect(error.code).to(equal(ARTCustomRequestError.invalidMethod.rawValue))
+            XCTAssertEqual(error.code, ARTCustomRequestError.invalidMethod.rawValue)
             expect(error.localizedDescription).to(contain("Method isn't valid"))
         }
 
@@ -1830,7 +1830,7 @@ class RestClientTests: XCTestCase {
                 fail("Completion closure should not be called")
             }
         } catch let error as NSError {
-            expect(error.code).to(equal(ARTCustomRequestError.invalidMethod.rawValue))
+            XCTAssertEqual(error.code, ARTCustomRequestError.invalidMethod.rawValue)
             expect(error.localizedDescription).to(contain("Method isn't valid"))
         }
     }
@@ -1845,7 +1845,7 @@ class RestClientTests: XCTestCase {
                 fail("Completion closure should not be called")
             }
         } catch let error as NSError {
-            expect(error.code).to(equal(ARTCustomRequestError.invalidPath.rawValue))
+            XCTAssertEqual(error.code, ARTCustomRequestError.invalidPath.rawValue)
             expect(error.localizedDescription).to(contain("Path isn't valid"))
         }
 
@@ -1854,7 +1854,7 @@ class RestClientTests: XCTestCase {
                 fail("Completion closure should not be called")
             }
         } catch let error as NSError {
-            expect(error.code).to(equal(ARTCustomRequestError.invalidPath.rawValue))
+            XCTAssertEqual(error.code, ARTCustomRequestError.invalidPath.rawValue)
             expect(error.localizedDescription).to(contain("Path cannot be empty"))
         }
     }
@@ -1869,7 +1869,7 @@ class RestClientTests: XCTestCase {
                 fail("Completion closure should not be called")
             }
         } catch let error as NSError {
-            expect(error.code).to(equal(ARTCustomRequestError.invalidBody.rawValue))
+            XCTAssertEqual(error.code, ARTCustomRequestError.invalidBody.rawValue)
             expect(error.localizedDescription).to(contain("should be a Dictionary or an Array"))
         }
     }
@@ -1900,7 +1900,7 @@ class RestClientTests: XCTestCase {
                     guard let channelDetailsDict = paginatedResponse.items.first else {
                         fail("PaginatedResult first element is missing"); done(); return
                     }
-                    expect(channelDetailsDict.value(forKey: "channelId") as? String).to(equal(channel.name))
+                    XCTAssertEqual(channelDetailsDict.value(forKey: "channelId") as? String, channel.name)
                     expect(paginatedResponse.hasNext) == false
                     expect(paginatedResponse.isLast) == true
                     expect(paginatedResponse.statusCode) == 200
@@ -1952,7 +1952,7 @@ class RestClientTests: XCTestCase {
                     expect(paginatedResponse.errorCode) == ARTErrorCode.notFound.intValue
                     expect(paginatedResponse.errorMessage).to(contain("Could not find path"))
                     expect(paginatedResponse.headers).toNot(beEmpty())
-                    expect(paginatedResponse.headers["X-Ably-Errorcode"] as? String).to(equal("\(ARTErrorCode.notFound.intValue)"))
+                    XCTAssertEqual(paginatedResponse.headers["X-Ably-Errorcode"] as? String, "\(ARTErrorCode.notFound.intValue)")
                     done()
                 }
             } catch {
@@ -1964,7 +1964,7 @@ class RestClientTests: XCTestCase {
         let response = try XCTUnwrap(proxyHTTPExecutor.responses.first, "No responses found")
 
         expect(response.statusCode) == 404
-        expect(response.value(forHTTPHeaderField: "X-Ably-Errorcode")).to(equal("\(ARTErrorCode.notFound.intValue)"))
+        XCTAssertEqual(response.value(forHTTPHeaderField: "X-Ably-Errorcode"), "\(ARTErrorCode.notFound.intValue)")
     }
 
     // RSA4e
@@ -1986,8 +1986,8 @@ class RestClientTests: XCTestCase {
                     done()
                     return
                 }
-                expect(error.statusCode).to(equal(401))
-                expect(error.code).to(equal(ARTErrorCode.errorFromClientTokenCallback.intValue))
+                XCTAssertEqual(error.statusCode, 401)
+                XCTAssertEqual(error.code, ARTErrorCode.errorFromClientTokenCallback.intValue)
                 expect(error.message).to(contain("Error in requesting auth token"))
                 done()
             }

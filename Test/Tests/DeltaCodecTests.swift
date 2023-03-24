@@ -58,8 +58,8 @@ class DeltaCodecTests: XCTestCase {
 
         for (i, message) in receivedMessages.enumerated() {
             if let name = message.name, let expectedMessageIndex = Int(name) {
-                expect(i).to(equal(expectedMessageIndex))
-                expect(message.data as? String).to(equal(testData[expectedMessageIndex]))
+                XCTAssertEqual(i, expectedMessageIndex)
+                XCTAssertEqual(message.data as? String, testData[expectedMessageIndex])
             } else {
                 fail("Received message has an unexpected 'id': \(message)")
             }
@@ -120,7 +120,7 @@ class DeltaCodecTests: XCTestCase {
             let partialDone = AblyTests.splitDone(2, done: done)
             channel.once(.attaching) { stateChange in
                 expect(receivedMessages).to(haveCount(testData.count - 3)) // messages discarded
-                expect(stateChange.reason?.code).to(equal(ARTErrorCode.unableToDecodeMessage.intValue))
+                XCTAssertEqual(stateChange.reason?.code, ARTErrorCode.unableToDecodeMessage.intValue)
                 partialDone()
             }
             channel.once(.attached) { _ in
@@ -177,7 +177,7 @@ class DeltaCodecTests: XCTestCase {
                 guard let errorReason = stateChange.reason else {
                     fail("Reason should not be empty"); partialDone(); return
                 }
-                expect(errorReason.code).to(equal(ARTErrorCode.unableToDecodeMessage.intValue))
+                XCTAssertEqual(errorReason.code, ARTErrorCode.unableToDecodeMessage.intValue)
                 partialDone()
             }
             channel.once(.attached) { _ in

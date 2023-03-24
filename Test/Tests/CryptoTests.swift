@@ -26,46 +26,46 @@ class CryptoTests: XCTestCase {
         var params: ARTCipherParams = ARTCrypto.getDefaultParams([
             "key": key,
         ])
-        expect(params.algorithm).to(equal("AES"))
-        expect(params.key).to(equal(binaryKey as Data))
-        expect(params.keyLength).to(equal(128))
-        expect(params.mode).to(equal("CBC"))
+        XCTAssertEqual(params.algorithm, "AES")
+        XCTAssertEqual(params.key, binaryKey as Data)
+        XCTAssertEqual(params.keyLength, 128)
+        XCTAssertEqual(params.mode, "CBC")
 
         params = ARTCrypto.getDefaultParams([
             "key": longKey,
             "algorithm": "DES",
         ])
-        expect(params.algorithm).to(equal("DES"))
-        expect(params.key).to(equal(longKey as Data))
-        expect(params.keyLength).to(equal(256))
-        expect(params.mode).to(equal("CBC"))
+        XCTAssertEqual(params.algorithm, "DES")
+        XCTAssertEqual(params.key, longKey as Data)
+        XCTAssertEqual(params.keyLength, 256)
+        XCTAssertEqual(params.mode, "CBC")
     }
 
     // RSE1c
 
     func test__004__Crypto__getDefaultParams__key_parameter__can_be_a_binary() {
         let params = ARTCrypto.getDefaultParams(["key": binaryKey])
-        expect(params.key).to(equal(binaryKey as Data))
+        XCTAssertEqual(params.key, binaryKey as Data)
     }
 
     func test__005__Crypto__getDefaultParams__key_parameter__can_be_a_base64_encoded_string_with_standard_encoding() {
         let params = ARTCrypto.getDefaultParams(["key": key])
-        expect(params.key).to(equal(binaryKey as Data))
+        XCTAssertEqual(params.key, binaryKey as Data)
     }
 
     func test__006__Crypto__getDefaultParams__key_parameter__can_be_a_base64_encoded_string_with_URL_encoding() {
         let key = "-_h4eHh4eHh4eHh4eHh4eA=="
         let params = ARTCrypto.getDefaultParams(["key": key])
-        expect(params.key).to(equal(binaryKey as Data))
+        XCTAssertEqual(params.key, binaryKey as Data)
     }
 
     // RSE1d
     func test__002__Crypto__getDefaultParams__calculates_a_keyLength_from_the_key__its_size_in_bits_() {
         var params = ARTCrypto.getDefaultParams(["key": binaryKey])
-        expect(params.keyLength).to(equal(128))
+        XCTAssertEqual(params.keyLength, 128)
 
         params = ARTCrypto.getDefaultParams(["key": longKey])
-        expect(params.keyLength).to(equal(256))
+        XCTAssertEqual(params.keyLength, 256)
     }
 
     // RSE1e
@@ -80,16 +80,16 @@ class CryptoTests: XCTestCase {
     // RSE2a, RSE2b
     func test__007__Crypto__generateRandomKey__takes_a_single_length_argument_and_returns_a_binary() {
         var key: NSData = ARTCrypto.generateRandomKey(128) as NSData
-        expect(key.length).to(equal(128 / 8))
+        XCTAssertEqual(key.length, 128 / 8)
 
         key = ARTCrypto.generateRandomKey(256) as NSData
-        expect(key.length).to(equal(256 / 8))
+        XCTAssertEqual(key.length, 256 / 8)
     }
 
     // RSE2a, RSE2b
     func test__008__Crypto__generateRandomKey__takes_no_arguments_and_returns_the_default_algorithm_s_default_length() {
         let key: NSData = ARTCrypto.generateRandomKey() as NSData
-        expect(key.length).to(equal(256 / 8))
+        XCTAssertEqual(key.length, 256 / 8)
     }
 
     func test__009__Crypto__generateHashSHA256__takes_data_and_returns_a_SHA256_digest() {
@@ -97,7 +97,7 @@ class CryptoTests: XCTestCase {
         let expectedHash = "D7A8FBB307D7809469CA9ABCB0082E4F8D5651E46D3CDB762D02D0BF37C9E592" // hex
         let stringData = string.data(using: .utf8)!
         let result = ARTCrypto.generateHashSHA256(stringData)
-        expect(result.hexString).to(equal(expectedHash))
+        XCTAssertEqual(result.hexString, expectedHash)
     }
 
     func test__010__Crypto__encrypt__should_generate_a_new_IV_every_time_it_s_called__and_should_be_the_first_block_encrypted() {
@@ -117,10 +117,10 @@ class CryptoTests: XCTestCase {
             var sameOutput: NSData?
             ARTCrypto.cipher(with: paramsWithIV).encrypt(data, output: &sameOutput)
 
-            expect(output!).to(equal(sameOutput!))
+            XCTAssertEqual(output!, sameOutput!)
         }
 
-        expect(distinctOutputs.count).to(equal(3))
+        XCTAssertEqual(distinctOutputs.count, 3)
     }
 
     enum TestCase_ReusableTestsTestFixture {
@@ -157,7 +157,7 @@ class CryptoTests: XCTestCase {
                 XCTAssertNil(error)
                 XCTAssertNotNil(encrypted)
                 
-                expect(encrypted).to(equal(encryptedFixture))
+                XCTAssertEqual(encrypted, encryptedFixture)
             }
 
             contextAfterEach?()
@@ -180,7 +180,7 @@ class CryptoTests: XCTestCase {
                 XCTAssertNil(error)
                 XCTAssertNotNil(decrypted)
 
-                expect(decrypted).to(equal(decoded))
+                XCTAssertEqual(decrypted, decoded)
             }
 
             contextAfterEach?()
@@ -221,14 +221,14 @@ class CryptoTests: XCTestCase {
             let decrypted = try XCTUnwrap(ARTMessage.fromEncoded(rawDictionary, channelOptions: channelOptions))
             XCTAssertNotNil(decrypted)
             
-            expect(decrypted).to(equal(decoded))
+            XCTAssertEqual(decrypted, decoded)
         }
         
         // a bunch at once
         let encryptedFixtures = try jsonItems.map { try XCTUnwrap($0["encrypted"].dictionaryObject) }
 
         let decryptedArray = try XCTUnwrap(ARTMessage.fromEncodedArray(encryptedFixtures, channelOptions: channelOptions))
-        expect(decryptedArray.count).to(equal(jsonItems.count))
+        XCTAssertEqual(decryptedArray.count, jsonItems.count)
         
         for i in 0..<jsonItems.count {
             let fixture = extractMessage(jsonItems[i]["encoded"])
@@ -239,7 +239,7 @@ class CryptoTests: XCTestCase {
             XCTAssertNotNil(decoded)
             
             let decrypted = decryptedArray[i]
-            expect(decrypted).to(equal(decoded))
+            XCTAssertEqual(decrypted, decoded)
         }
     }
 

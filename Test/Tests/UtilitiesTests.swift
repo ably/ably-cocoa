@@ -60,7 +60,7 @@ class UtilitiesTests: XCTestCase {
         guard let error = protocolMessage.error else {
             fail("Error is empty"); return
         }
-        expect(error.message).to(equal(""))
+        XCTAssertEqual(error.message, "")
     }
 
     func test__002__Utilities__JSON_Encoder__should_encode_a_protocol_message_that_has_invalid_data() {
@@ -73,8 +73,8 @@ class UtilitiesTests: XCTestCase {
         var result: Data?
         expect { result = try jsonEncoder.encode(pm) }.to(throwError { error in
             let e = error as NSError
-            expect(e.domain).to(equal(ARTAblyErrorDomain))
-            expect(e.code).to(equal(Int(ARTClientCodeError.invalidType.rawValue)))
+            XCTAssertEqual(e.domain, ARTAblyErrorDomain)
+            XCTAssertEqual(e.code, Int(ARTClientCodeError.invalidType.rawValue))
             expect(e.localizedDescription).to(contain("Invalid type in JSON write"))
         })
         XCTAssertNil(result)
@@ -252,17 +252,17 @@ class UtilitiesTests: XCTestCase {
 
         eventEmitter.emit("foo", with: 123 as AnyObject?)
 
-        expect(receivedFoo1).to(equal(123))
-        expect(receivedFoo2).to(equal(123))
+        XCTAssertEqual(receivedFoo1, 123)
+        XCTAssertEqual(receivedFoo2, 123)
         XCTAssertNil(receivedBar)
-        expect(receivedAll).to(equal(123))
+        XCTAssertEqual(receivedAll, 123)
 
         eventEmitter.emit("bar", with: 456 as AnyObject?)
 
-        expect(receivedFoo1).to(equal(123))
-        expect(receivedFoo2).to(equal(123))
-        expect(receivedBar).to(equal(456))
-        expect(receivedAll).to(equal(456))
+        XCTAssertEqual(receivedFoo1, 123)
+        XCTAssertEqual(receivedFoo2, 123)
+        XCTAssertEqual(receivedBar, 456)
+        XCTAssertEqual(receivedAll, 456)
 
         eventEmitter.emit("qux", with: 789 as AnyObject?)
 
@@ -275,17 +275,17 @@ class UtilitiesTests: XCTestCase {
         eventEmitter.emit("foo", with: 123 as AnyObject?)
 
         XCTAssertNil(receivedBarOnce)
-        expect(receivedAllOnce).to(equal(123))
+        XCTAssertEqual(receivedAllOnce, 123)
 
         eventEmitter.emit("bar", with: 456 as AnyObject?)
 
-        expect(receivedBarOnce).to(equal(456))
-        expect(receivedAllOnce).to(equal(123))
+        XCTAssertEqual(receivedBarOnce, 456)
+        XCTAssertEqual(receivedAllOnce, 123)
 
         eventEmitter.emit("bar", with: 789 as AnyObject?)
 
-        expect(receivedBarOnce).to(equal(456))
-        expect(receivedAllOnce).to(equal(123))
+        XCTAssertEqual(receivedBarOnce, 456)
+        XCTAssertEqual(receivedAllOnce, 123)
     }
 
     func test__011__Utilities__EventEmitter__calling_off_with_a_single_listener_argument__should_stop_receiving_events_when_calling_off_with_a_single_listener_argument() {
@@ -295,18 +295,18 @@ class UtilitiesTests: XCTestCase {
         eventEmitter.emit("foo", with: 123 as AnyObject?)
 
         XCTAssertNil(receivedFoo1)
-        expect(receivedFoo2).to(equal(123))
-        expect(receivedAll).to(equal(123))
+        XCTAssertEqual(receivedFoo2, 123)
+        XCTAssertEqual(receivedAll, 123)
 
         eventEmitter.emit("bar", with: 222 as AnyObject?)
 
-        expect(receivedFoo2).to(equal(123))
-        expect(receivedAll).to(equal(222))
+        XCTAssertEqual(receivedFoo2, 123)
+        XCTAssertEqual(receivedAll, 222)
 
         eventEmitter.off(listenerAll!)
         eventEmitter.emit("bar", with: 333 as AnyObject?)
 
-        expect(receivedAll).to(equal(222))
+        XCTAssertEqual(receivedAll, 222)
     }
 
     func test__012__Utilities__EventEmitter__calling_off_with_a_single_listener_argument__should_remove_the_timeout() {
@@ -329,8 +329,8 @@ class UtilitiesTests: XCTestCase {
         eventEmitter.off("foo", listener: listenerAll!)
         eventEmitter.emit("foo", with: 111 as AnyObject?)
 
-        expect(receivedFoo1).to(equal(111))
-        expect(receivedAll).to(equal(111))
+        XCTAssertEqual(receivedFoo1, 111)
+        XCTAssertEqual(receivedAll, 111)
     }
 
     func test__014__Utilities__EventEmitter__calling_off_with_listener_and_event_arguments__should_stop_receive_events_if_off_matches_the_listener_s_criteria() {
@@ -340,7 +340,7 @@ class UtilitiesTests: XCTestCase {
         eventEmitter.emit("foo", with: 111 as AnyObject?)
 
         XCTAssertNil(receivedFoo1)
-        expect(receivedAll).to(equal(111))
+        XCTAssertEqual(receivedAll, 111)
     }
 
     func test__015__Utilities__EventEmitter__calling_off_with_no_arguments__should_remove_all_listeners() {
@@ -366,7 +366,7 @@ class UtilitiesTests: XCTestCase {
         eventEmitter.off()
         eventEmitter.on("foo", callback: { receivedFoo1 = $0 as? Int })
         eventEmitter.emit("foo", with: 111 as AnyObject?)
-        expect(receivedFoo1).to(equal(111))
+        XCTAssertEqual(receivedFoo1, 111)
     }
 
     func test__017__Utilities__EventEmitter__calling_off_with_no_arguments__should_remove_all_timeouts() {
@@ -460,14 +460,14 @@ class UtilitiesTests: XCTestCase {
     func test__022__Utilities__maxMessageSize__calculates_maxMessageSize_of_a_Message_with_name_and_data() {
         let message = ARTMessage(name: "this is name", data: data)
         let expectedSize = "{\"test\":\"test\"}".count + message.name!.count
-        expect(message.messageSize()).to(equal(expectedSize))
+        XCTAssertEqual(message.messageSize(), expectedSize)
     }
 
     func test__023__Utilities__maxMessageSize__calculates_maxMessageSize_of_a_Message_with_name__data_and_extras() {
         let message = ARTMessage(name: "this is name", data: data)
         message.extras = extras as ARTJsonCompatible
         let expectedSize = "{\"test\":\"test\"}".count + "{\"push\":{\"key\":\"value\"}}".count + message.name!.count
-        expect(message.messageSize()).to(equal(expectedSize))
+        XCTAssertEqual(message.messageSize(), expectedSize)
     }
 
     func test__024__Utilities__maxMessageSize__calculates_maxMessageSize_of_a_Message_with_name__data__clientId_and_extras() {
@@ -475,6 +475,6 @@ class UtilitiesTests: XCTestCase {
         message.clientId = clientId
         message.extras = extras as ARTJsonCompatible
         let expectedSize = "{\"test\":\"test\"}".count + "{\"push\":{\"key\":\"value\"}}".count + clientId.count + message.name!.count
-        expect(message.messageSize()).to(equal(expectedSize))
+        XCTAssertEqual(message.messageSize(), expectedSize)
     }
 }

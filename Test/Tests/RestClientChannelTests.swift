@@ -26,7 +26,7 @@ private func assertMessagePayloadId(id: String?, expectedSerial: String) {
     }
 
     expect(baseIdData.bytes.count) == 9
-    expect(serial).to(equal(expectedSerial))
+    XCTAssertEqual(serial, expectedSerial)
 }
 
 private let presenceFixtures = appSetupJson["post_apps"]["channels"][0]["presence"]
@@ -46,9 +46,9 @@ private func testSupportsAESEncryptionWithKeyLength(_ encryptionKeyLength: UInt,
     let params: ARTCipherParams = ARTCrypto.getDefaultParams([
         "key": ARTCrypto.generateRandomKey(encryptionKeyLength),
     ])
-    expect(params.algorithm).to(equal("AES"))
-    expect(params.keyLength).to(equal(encryptionKeyLength))
-    expect(params.mode).to(equal("CBC"))
+    XCTAssertEqual(params.algorithm, "AES")
+    XCTAssertEqual(params.keyLength, encryptionKeyLength)
+    XCTAssertEqual(params.mode, "CBC")
 
     let channelOptions = ARTChannelOptions(cipher: params)
     let channel = client.channels.get(channelName, options: channelOptions)
@@ -65,8 +65,8 @@ private func testSupportsAESEncryptionWithKeyLength(_ encryptionKeyLength: UInt,
         return
     }
     let httpBodyAsJSON = AblyTests.msgpackToJSON(httpBody)
-    expect(httpBodyAsJSON["encoding"].string).to(equal("utf-8/cipher+aes-\(encryptionKeyLength)-cbc/base64"))
-    expect(httpBodyAsJSON["name"].string).to(equal("test"))
+    XCTAssertEqual(httpBodyAsJSON["encoding"].string, "utf-8/cipher+aes-\(encryptionKeyLength)-cbc/base64")
+    XCTAssertEqual(httpBodyAsJSON["name"].string, "test")
     expect(httpBodyAsJSON["data"].string).toNot(equal("message1"))
 
     waitUntil(timeout: testTimeout) { done in
@@ -83,8 +83,8 @@ private func testSupportsAESEncryptionWithKeyLength(_ encryptionKeyLength: UInt,
                 fail("PaginatedResult has no items"); done()
                 return
             }
-            expect(items[0].name).to(equal("test"))
-            expect(items[0].data as? String).to(equal("message1"))
+            XCTAssertEqual(items[0].name, "test")
+            XCTAssertEqual(items[0].data as? String, "message1")
             done()
         }
     }
@@ -226,8 +226,8 @@ class RestClientChannelTests: XCTestCase {
         }
 
         XCTAssertNil(publishError)
-        expect(publishedMessage?.name).to(equal(PublishArgs.name))
-        expect(publishedMessage?.data as? String).to(equal(PublishArgs.data))
+        XCTAssertEqual(publishedMessage?.name, PublishArgs.name)
+        XCTAssertEqual(publishedMessage?.data as? String, PublishArgs.data)
     }
 
     // RSL1c
@@ -260,10 +260,10 @@ class RestClientChannelTests: XCTestCase {
         expect(publishError).toEventually(beNil(), timeout: testTimeout)
         expect(publishedMessages.count).toEventually(equal(messages.count), timeout: testTimeout)
         for (i, publishedMessage) in publishedMessages.reversed().enumerated() {
-            expect(publishedMessage.data as? NSObject).to(equal(messages[i].data as? NSObject))
-            expect(publishedMessage.name).to(equal(messages[i].name))
+            XCTAssertEqual(publishedMessage.data as? NSObject, messages[i].data as? NSObject)
+            XCTAssertEqual(publishedMessage.name, messages[i].name)
         }
-        expect(testHTTPExecutor.requests.count).to(equal(1))
+        XCTAssertEqual(testHTTPExecutor.requests.count, 1)
     }
 
     // RSL1f
@@ -275,7 +275,7 @@ class RestClientChannelTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             channel.publish([ARTMessage(name: nil, data: "message", clientId: "tester")]) { error in
                 XCTAssertNil(error)
-                expect(client.auth.internal.method).to(equal(ARTAuthMethod.basic))
+                XCTAssertEqual(client.auth.internal.method, ARTAuthMethod.basic)
                 channel.history { page, error in
                     XCTAssertNil(error)
                     guard let page = page else {
@@ -284,7 +284,7 @@ class RestClientChannelTests: XCTestCase {
                     guard let item = page.items.first else {
                         fail("First item does not exist"); done(); return
                     }
-                    expect(item.clientId).to(equal("tester"))
+                    XCTAssertEqual(item.clientId, "tester")
                     done()
                 }
             }
@@ -331,7 +331,7 @@ class RestClientChannelTests: XCTestCase {
                     let clientIdBase64Encoded = options.clientId?
                         .data(using: .utf8)?
                         .base64EncodedString()
-                    expect(request.allHTTPHeaderFields?["X-Ably-ClientId"]).to(equal(clientIdBase64Encoded))
+                    XCTAssertEqual(request.allHTTPHeaderFields?["X-Ably-ClientId"], clientIdBase64Encoded)
                     done()
                 }
         }
@@ -360,7 +360,7 @@ class RestClientChannelTests: XCTestCase {
         let publisher = rest.channels.get(chanelName)
         waitUntil(timeout: testTimeout) { done in
             subscriber.subscribe { message in
-                expect(message.clientId).to(equal(expectedClientId))
+                XCTAssertEqual(message.clientId, expectedClientId)
                 subscriber.unsubscribe()
                 done()
             }
@@ -391,7 +391,7 @@ class RestClientChannelTests: XCTestCase {
         let publisher = rest.channels.get(chanelName)
         waitUntil(timeout: testTimeout) { done in
             subscriber.subscribe { message in
-                expect(message.clientId).to(equal(expectedClientId))
+                XCTAssertEqual(message.clientId, expectedClientId)
                 subscriber.unsubscribe()
                 done()
             }
@@ -420,7 +420,7 @@ class RestClientChannelTests: XCTestCase {
         let publisher = rest.channels.get(chanelName)
         waitUntil(timeout: testTimeout) { done in
             subscriber.subscribe { message in
-                expect(message.clientId).to(equal(expectedClientId))
+                XCTAssertEqual(message.clientId, expectedClientId)
                 subscriber.unsubscribe()
                 done()
             }
@@ -453,7 +453,7 @@ class RestClientChannelTests: XCTestCase {
                 fail("Should not receive the message")
             }
             publisher.publish("check clientId", data: nil, clientId: "foo") { error in
-                expect(error?.code).to(equal(Int(ARTState.mismatchedClientId.rawValue)))
+                XCTAssertEqual(error?.code, Int(ARTState.mismatchedClientId.rawValue))
                 done()
             }
         }
@@ -551,7 +551,7 @@ class RestClientChannelTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(messages) { error in
-                expect(error?.code).to(equal(ARTErrorCode.maxMessageLengthExceeded.intValue))
+                XCTAssertEqual(error?.code, ARTErrorCode.maxMessageLengthExceeded.intValue)
                 done()
             }
         }
@@ -565,7 +565,7 @@ class RestClientChannelTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(name, data: nil, extras: nil) { error in
-                expect(error?.code).to(equal(ARTErrorCode.maxMessageLengthExceeded.intValue))
+                XCTAssertEqual(error?.code, ARTErrorCode.maxMessageLengthExceeded.intValue)
                 done()
             }
         }
@@ -649,7 +649,7 @@ class RestClientChannelTests: XCTestCase {
         assertMessagePayloadId(id: id2, expectedSerial: "1")
 
         // Same Base ID
-        expect(id1?.split(separator: ":").first).to(equal(id2?.split(separator: ":").first))
+        XCTAssertEqual(id1?.split(separator: ":").first, id2?.split(separator: ":").first)
     }
 
     // RSL1k2
@@ -675,7 +675,7 @@ class RestClientChannelTests: XCTestCase {
         }
 
         let json = AblyTests.msgpackToJSON(encodedBody)
-        expect(json.arrayValue.first?["id"].string).to(equal("123"))
+        XCTAssertEqual(json.arrayValue.first?["id"].string, "123")
     }
 
     func test__022__publish__idempotent_publishing__should_generate_for_internal_message_that_is_created_in_publish_name_data___method() {
@@ -726,7 +726,7 @@ class RestClientChannelTests: XCTestCase {
 
         let json = AblyTests.msgpackToJSON(encodedBody)
         XCTAssertNil(json.arrayValue.first?["id"].string)
-        expect(json.arrayValue.last?["id"].string).to(equal("123"))
+        XCTAssertEqual(json.arrayValue.last?["id"].string, "123")
     }
 
     func test__024__publish__idempotent_publishing__should_not_generate_when_idempotentRestPublishing_flag_is_off() {
@@ -831,7 +831,7 @@ class RestClientChannelTests: XCTestCase {
                     fail("No result"); done(); return
                 }
                 expect(result.items.count) == 1
-                expect(result.items.first?.id).to(equal("123"))
+                XCTAssertEqual(result.items.first?.id, "123")
                 done()
             }
         }
@@ -863,9 +863,9 @@ class RestClientChannelTests: XCTestCase {
         guard let jsonMessage = AblyTests.msgpackToJSON(encodedBody).array?.first else {
             fail("Body from the last request is invalid"); return
         }
-        expect(jsonMessage["name"].string).to(equal("tester"))
-        expect(jsonMessage["data"].string).to(equal(""))
-        expect(jsonMessage["id"].string).to(equal(message.id))
+        XCTAssertEqual(jsonMessage["name"].string, "tester")
+        XCTAssertEqual(jsonMessage["data"].string, "")
+        XCTAssertEqual(jsonMessage["id"].string, message.id)
     }
 
     // RSL2
@@ -902,8 +902,8 @@ class RestClientChannelTests: XCTestCase {
             expect(result.isLast).to(beFalse())
             expect(result.items).to(haveCount(2))
             let items = result.items.compactMap { $0.data as? String }
-            expect(items.first).to(equal("m1"))
-            expect(items.last).to(equal("m2"))
+            XCTAssertEqual(items.first, "m1")
+            XCTAssertEqual(items.last, "m2")
 
             result.next { result, error in
                 guard let result = result else {
@@ -914,8 +914,8 @@ class RestClientChannelTests: XCTestCase {
                 expect(result.isLast).to(beFalse())
                 expect(result.items).to(haveCount(2))
                 let items = result.items.compactMap { $0.data as? String }
-                expect(items.first).to(equal("m3"))
-                expect(items.last).to(equal("m4"))
+                XCTAssertEqual(items.first, "m3")
+                XCTAssertEqual(items.last, "m4")
 
                 result.next { result, error in
                     guard let result = result else {
@@ -926,7 +926,7 @@ class RestClientChannelTests: XCTestCase {
                     expect(result.isLast).to(beTrue())
                     expect(result.items).to(haveCount(1))
                     let items = result.items.compactMap { $0.data as? String }
-                    expect(items.first).to(equal("m5"))
+                    XCTAssertEqual(items.first, "m5")
 
                     result.first { result, error in
                         guard let result = result else {
@@ -937,8 +937,8 @@ class RestClientChannelTests: XCTestCase {
                         expect(result.isLast).to(beFalse())
                         expect(result.items).to(haveCount(2))
                         let items = result.items.compactMap { $0.data as? String }
-                        expect(items.first).to(equal("m1"))
-                        expect(items.last).to(equal("m2"))
+                        XCTAssertEqual(items.first, "m1")
+                        XCTAssertEqual(items.last, "m2")
                     }
                 }
             }
@@ -999,8 +999,8 @@ class RestClientChannelTests: XCTestCase {
                     return
                 }
                 let messageItems = items.compactMap { $0.data as? String }
-                expect(messageItems.first).to(equal("message2"))
-                expect(messageItems.last).to(equal("message1"))
+                XCTAssertEqual(messageItems.first, "message2")
+                XCTAssertEqual(messageItems.last, "message1")
                 done()
             }
         }
@@ -1017,13 +1017,13 @@ class RestClientChannelTests: XCTestCase {
         query.start = query.end!.addingTimeInterval(10.0)
 
         expect { try channel.history(query) { _, _ in } }.to(throwError { (error: Error) in
-            expect(error._code).to(equal(ARTDataQueryError.timestampRange.rawValue))
+            XCTAssertEqual(error._code, ARTDataQueryError.timestampRange.rawValue)
         })
 
         query.direction = .forwards
 
         expect { try channel.history(query) { _, _ in } }.to(throwError { (error: Error) in
-            expect(error._code).to(equal(ARTDataQueryError.timestampRange.rawValue))
+            XCTAssertEqual(error._code, ARTDataQueryError.timestampRange.rawValue)
         })
     }
 
@@ -1061,8 +1061,8 @@ class RestClientChannelTests: XCTestCase {
                     return
                 }
                 let messageItems = items.compactMap { $0.data as? String }
-                expect(messageItems.first).to(equal("message1"))
-                expect(messageItems.last).to(equal("message2"))
+                XCTAssertEqual(messageItems.first, "message1")
+                XCTAssertEqual(messageItems.last, "message2")
                 done()
             }
         }
@@ -1099,8 +1099,8 @@ class RestClientChannelTests: XCTestCase {
                     return
                 }
                 let messageItems = items.compactMap { $0.data as? String }
-                expect(messageItems.first).to(equal("message10"))
-                expect(messageItems.last).to(equal("message9"))
+                XCTAssertEqual(messageItems.first, "message10")
+                XCTAssertEqual(messageItems.last, "message9")
                 done()
             }
         }
@@ -1153,13 +1153,13 @@ class RestClientChannelTests: XCTestCase {
             }.first!.1
 
             XCTAssertNotNil(message.data)
-            expect(message.action).to(equal(ARTPresenceAction.present))
+            XCTAssertEqual(message.action, ARTPresenceAction.present)
 
             let encodedFixture = channel.internal.dataEncoder.decode(
                 fixtureMessage["data"].object,
                 encoding: fixtureMessage.asDictionary!["encoding"] as? String
             )
-            expect(message.data as? NSObject).to(equal(encodedFixture.data as? NSObject))
+            XCTAssertEqual(message.data as? NSObject, encodedFixture.data as? NSObject)
         }
     }
 
@@ -1214,7 +1214,7 @@ class RestClientChannelTests: XCTestCase {
                         }
                     }
                     let mergedWithExpectedJSON = try! json.merged(with: caseTest.expected)
-                    expect(json).to(equal(mergedWithExpectedJSON))
+                    XCTAssertEqual(json, mergedWithExpectedJSON)
                     done()
                 }
             }
@@ -1251,7 +1251,7 @@ class RestClientChannelTests: XCTestCase {
                         XCTFail("HTTPBody is nil")
                         done(); return
                     }
-                    expect(AblyTests.msgpackToJSON(httpBody)["encoding"]).to(equal(caseItem.expected))
+                    XCTAssertEqual(AblyTests.msgpackToJSON(httpBody)["encoding"], caseItem.expected)
                     done()
                 })
             }
@@ -1273,8 +1273,8 @@ class RestClientChannelTests: XCTestCase {
                 }
                 // Binary
                 let json = AblyTests.msgpackToJSON(httpBody)
-                expect(json["data"].string).to(equal(binaryData.toBase64))
-                expect(json["encoding"]).to(equal("base64"))
+                XCTAssertEqual(json["data"].string, binaryData.toBase64)
+                XCTAssertEqual(json["encoding"], "base64")
                 done()
             })
         }
@@ -1293,7 +1293,7 @@ class RestClientChannelTests: XCTestCase {
                 if let request = testHTTPExecutor.requests.last, let http = request.httpBody {
                     // String (UTF-8)
                     let json = AblyTests.msgpackToJSON(http)
-                    expect(json["data"].string).to(equal(text))
+                    XCTAssertEqual(json["data"].string, text)
                     XCTAssertNil(json["encoding"].string)
                 } else {
                     XCTFail("No request or HTTP body found")
@@ -1318,8 +1318,8 @@ class RestClientChannelTests: XCTestCase {
                 if let request = testHTTPExecutor.requests.last, let http = request.httpBody {
                     // Array
                     let json = AblyTests.msgpackToJSON(http)
-                    expect(try! JSON(data: json["data"].stringValue.data(using: .utf8)!).asArray).to(equal(array as NSArray?))
-                    expect(json["encoding"].string).to(equal("json"))
+                    XCTAssertEqual(try! JSON(data: json["data"].stringValue.data(using: .utf8)!).asArray, array as NSArray?)
+                    XCTAssertEqual(json["encoding"].string, "json")
                 } else {
                     XCTFail("No request or HTTP body found")
                 }
@@ -1341,8 +1341,8 @@ class RestClientChannelTests: XCTestCase {
                 if let request = testHTTPExecutor.requests.last, let http = request.httpBody {
                     // Dictionary
                     let json = AblyTests.msgpackToJSON(http)
-                    expect(try! JSON(data: json["data"].stringValue.data(using: .utf8)!).asDictionary).to(equal(dictionary as NSDictionary?))
-                    expect(json["encoding"].string).to(equal("json"))
+                    XCTAssertEqual(try! JSON(data: json["data"].stringValue.data(using: .utf8)!).asDictionary, dictionary as NSDictionary?)
+                    XCTAssertEqual(json["encoding"].string, "json")
                 } else {
                     XCTFail("No request or HTTP body found")
                 }
@@ -1380,13 +1380,13 @@ class RestClientChannelTests: XCTestCase {
 
                 switch item.data {
                 case let value as NSDictionary:
-                    expect(value).to(equal(cases[index] as? NSDictionary))
+                    XCTAssertEqual(value, cases[index] as? NSDictionary)
                 case let value as NSArray:
-                    expect(value).to(equal(cases[index] as? NSArray))
+                    XCTAssertEqual(value, cases[index] as? NSArray)
                 case let value as NSData:
-                    expect(value).to(equal(cases[index] as? NSData))
+                    XCTAssertEqual(value, cases[index] as? NSData)
                 case let value as NSString:
-                    expect(value).to(equal(cases[index] as? NSString))
+                    XCTAssertEqual(value, cases[index] as? NSString)
                 default:
                     XCTFail("Payload with unknown format")
                 }
@@ -1439,7 +1439,7 @@ class RestClientChannelTests: XCTestCase {
                     fail("First item does not exist"); done(); return
                 }
                 expect(message.data is NSData).to(beTrue())
-                expect(message.encoding).to(equal("json/utf-8/cipher+aes-256-cbc"))
+                XCTAssertEqual(message.encoding, "json/utf-8/cipher+aes-256-cbc")
                 done()
             }
         }
@@ -1478,8 +1478,8 @@ class RestClientChannelTests: XCTestCase {
                 guard let message = result.items.first else {
                     fail("First item does not exist"); done(); return
                 }
-                expect(message.data as? NSData).to(equal(expectedData as NSData?))
-                expect(message.encoding).to(equal("invalid"))
+                XCTAssertEqual(message.data as? NSData, expectedData as NSData?)
+                XCTAssertEqual(message.encoding, "invalid")
 
                 let logs = options.logHandler.captured
                 let line = logs.reduce("") { $0 + "; " + $1.toString() } // Reduce in one line
