@@ -17,8 +17,7 @@ Pod::Spec.new do |s|
   s.requires_arc            = true
   s.swift_version           = '5.0'
   s.source_files            = 'Source/**/*.{h,m,swift}', 'SocketRocket/SocketRocket/**/*.{h,m}'
-  s.private_header_files    = 'Source/*+Private.h', 'SocketRocket/SocketRocket/internal/**/*.h'
-  s.exclude_files           = 'Source/include/', 'Source/PrivateHeaders/'
+  s.private_header_files    = 'Source/PrivateHeaders/**/*.h', 'SocketRocket/SocketRocket/internal/**/*.h'
   s.module_map              = 'Source/Ably.modulemap'
   s.dependency 'msgpack', '0.4.0'
   s.dependency 'AblyDeltaCodec', '1.3.3'
