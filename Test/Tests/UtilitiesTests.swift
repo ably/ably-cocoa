@@ -77,7 +77,7 @@ class UtilitiesTests: XCTestCase {
             expect(e.code).to(equal(Int(ARTClientCodeError.invalidType.rawValue)))
             expect(e.localizedDescription).to(contain("Invalid type in JSON write"))
         })
-        expect(result).to(beNil())
+        XCTAssertNil(result)
     }
 
     func test__003__Utilities__JSON_Encoder__should_decode_data_with_malformed_JSON() {
@@ -90,7 +90,7 @@ class UtilitiesTests: XCTestCase {
             let e = error as NSError
             expect(e.localizedDescription).to(contain("data couldn’t be read"))
         })
-        expect(result).to(beNil())
+        XCTAssertNil(result)
     }
 
     func test__004__Utilities__JSON_Encoder__should_decode_data_with_malformed_MsgPack() {
@@ -101,7 +101,7 @@ class UtilitiesTests: XCTestCase {
         expect { result = try ARTMsgPackEncoder().decode(data as Data) as! (Data) as (Data) as AnyObject? }.to(throwError { error in
             expect(error).toNot(beNil())
         })
-        expect(result).to(beNil())
+        XCTAssertNil(result)
     }
 
     func test__005__Utilities__JSON_Encoder__in_Realtime__should_handle_and_emit_the_invalid_data_error() {
@@ -148,7 +148,7 @@ class UtilitiesTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 realtime.connection.once { _ in
                     fail("Should not receive any connection change state")
                 }
@@ -160,7 +160,7 @@ class UtilitiesTests: XCTestCase {
                 }
                 var result: AnyObject?
                 expect { result = realtime.internal.transport?.receive(with: data as Data) }.toNot(raiseException())
-                expect(result).to(beNil())
+                XCTAssertNil(result)
                 done()
             }
         }
@@ -215,7 +215,7 @@ class UtilitiesTests: XCTestCase {
         testHTTPExecutor.simulateIncomingPayloadOnNextRequest(data as Data)
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: nil) { error in
-                expect(error).to(beNil()) // ignored
+                XCTAssertNil(error) // ignored
                 done()
             }
         }
@@ -254,7 +254,7 @@ class UtilitiesTests: XCTestCase {
 
         expect(receivedFoo1).to(equal(123))
         expect(receivedFoo2).to(equal(123))
-        expect(receivedBar).to(beNil())
+        XCTAssertNil(receivedBar)
         expect(receivedAll).to(equal(123))
 
         eventEmitter.emit("bar", with: 456 as AnyObject?)
@@ -274,7 +274,7 @@ class UtilitiesTests: XCTestCase {
 
         eventEmitter.emit("foo", with: 123 as AnyObject?)
 
-        expect(receivedBarOnce).to(beNil())
+        XCTAssertNil(receivedBarOnce)
         expect(receivedAllOnce).to(equal(123))
 
         eventEmitter.emit("bar", with: 456 as AnyObject?)
@@ -294,7 +294,7 @@ class UtilitiesTests: XCTestCase {
         eventEmitter.off(listenerFoo1!)
         eventEmitter.emit("foo", with: 123 as AnyObject?)
 
-        expect(receivedFoo1).to(beNil())
+        XCTAssertNil(receivedFoo1)
         expect(receivedFoo2).to(equal(123))
         expect(receivedAll).to(equal(123))
 
@@ -339,7 +339,7 @@ class UtilitiesTests: XCTestCase {
         eventEmitter.off("foo", listener: listenerFoo1!)
         eventEmitter.emit("foo", with: 111 as AnyObject?)
 
-        expect(receivedFoo1).to(beNil())
+        XCTAssertNil(receivedFoo1)
         expect(receivedAll).to(equal(111))
     }
 
@@ -349,15 +349,15 @@ class UtilitiesTests: XCTestCase {
         eventEmitter.off()
         eventEmitter.emit("foo", with: 111 as AnyObject?)
 
-        expect(receivedFoo1).to(beNil())
-        expect(receivedFoo2).to(beNil())
-        expect(receivedAll).to(beNil())
+        XCTAssertNil(receivedFoo1)
+        XCTAssertNil(receivedFoo2)
+        XCTAssertNil(receivedAll)
 
         eventEmitter.emit("bar", with: 111 as AnyObject?)
 
-        expect(receivedBar).to(beNil())
-        expect(receivedBarOnce).to(beNil())
-        expect(receivedAll).to(beNil())
+        XCTAssertNil(receivedBar)
+        XCTAssertNil(receivedBarOnce)
+        XCTAssertNil(receivedAll)
     }
 
     func test__016__Utilities__EventEmitter__calling_off_with_no_arguments__should_allow_listening_again() {
@@ -415,7 +415,7 @@ class UtilitiesTests: XCTestCase {
             AblyTests.queue.asyncAfter(deadline: .now() + 0.35) {
                 expect(calledOnTimeout).to(beTrue())
                 eventEmitter.emit("foo", with: 123 as AnyObject?)
-                expect(receivedFoo1).to(beNil())
+                XCTAssertNil(receivedFoo1)
                 done()
             }
         }
@@ -447,7 +447,7 @@ class UtilitiesTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }

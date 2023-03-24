@@ -65,7 +65,7 @@ class RealtimeClientChannelsTests: XCTestCase {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
         let channelName = uniqueChannelName()
-        expect(client.channels.get(channelName).options).to(beNil())
+        XCTAssertNil(client.channels.get(channelName).options)
         let options = ARTRealtimeChannelOptions()
         let channel = client.channels.get(channelName, options: options)
         expect(channel.options).to(beIdenticalTo(options))
@@ -87,7 +87,7 @@ class RealtimeClientChannelsTests: XCTestCase {
         }
         waitUntil(timeout: testTimeout) { done in
             client.channels.release(channelName) { errorInfo in
-                expect(errorInfo).to(beNil())
+                XCTAssertNil(errorInfo)
                 expect(channel.state).to(equal(ARTRealtimeChannelState.detached))
                 done()
             }

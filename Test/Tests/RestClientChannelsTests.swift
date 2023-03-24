@@ -111,7 +111,7 @@ class RestClientChannelsTests: XCTestCase {
             client.channels.release(channel.name)
         }
 
-        expect(channel).to(beNil())
+        XCTAssertNil(channel)
     }
 
     // RSN2

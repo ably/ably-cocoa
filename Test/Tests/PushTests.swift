@@ -111,7 +111,7 @@ class PushTests: XCTestCase {
 
         options.authCallback = { _, completion in
             getTestTokenDetails(clientId: expectedClientId, completion: { tokenDetails, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 guard let tokenDetails = tokenDetails else {
                     fail("TokenDetails are missing"); return
                 }
@@ -146,8 +146,8 @@ class PushTests: XCTestCase {
             stateMachine.rest.device.setAndPersistAPNSDeviceToken(nil)
         }
 
-        expect(rest.device.clientId).to(beNil())
-        expect(rest.auth.clientId).to(beNil())
+        XCTAssertNil(rest.device.clientId)
+        XCTAssertNil(rest.auth.clientId)
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
@@ -241,7 +241,7 @@ class PushTests: XCTestCase {
         }
 
         let realtime = ARTRealtime(options: options)
-        expect(realtime.device.clientId).to(beNil())
+        XCTAssertNil(realtime.device.clientId)
 
         waitUntil(timeout: testTimeout) { done in
             realtime.auth.authorize { _, _ in
@@ -259,7 +259,7 @@ class PushTests: XCTestCase {
         options.autoConnect = false
 
         let realtime = ARTRealtime(options: options)
-        expect(realtime.device.clientId).to(beNil())
+        XCTAssertNil(realtime.device.clientId)
 
         realtime.internal.setTransport(TestProxyTransport.self)
 
@@ -321,7 +321,7 @@ class PushTests: XCTestCase {
         storage.simulateOnNextRead(string: testDeviceToken, for: ARTAPNSDeviceTokenKey)
         storage.simulateOnNextRead(data: testDeviceIdentity.archive(withLogger: nil), for: ARTDeviceIdentityTokenKey)
 
-        expect(realtime.device.clientId).to(beNil())
+        XCTAssertNil(realtime.device.clientId)
 
         waitUntil(timeout: testTimeout) { done in
             stateMachine.transitions = { event, _, _ in
@@ -364,7 +364,7 @@ class PushTests: XCTestCase {
         }
         rest.push.internal.activationMachine.delegate = stateMachineDelegate
 
-        expect(rest.device.clientId).to(beNil())
+        XCTAssertNil(rest.device.clientId)
 
         waitUntil(timeout: testTimeout) { done in
             stateMachineDelegate.onDidActivateAblyPush = { _ in
@@ -405,7 +405,7 @@ class PushTests: XCTestCase {
         let rest = ARTRest(options: options)
         expect(rest.internal.options.pushRegistererDelegate).toNot(beNil())
         pushRegistererDelegate = nil
-        expect(rest.internal.options.pushRegistererDelegate).to(beNil())
+        XCTAssertNil(rest.internal.options.pushRegistererDelegate)
     }
     
     func test__016__activate_should_call_registerForAPNS_while_transition_from_not_activated() {

@@ -188,7 +188,7 @@ class PushAdminTests: XCTestCase {
     func test__001__publish__should_perform_an_HTTP_request_to__push_publish() throws {
         waitUntil(timeout: testTimeout) { done in
             rest.push.admin.publish(recipient, data: payload) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -226,7 +226,7 @@ class PushAdminTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -241,7 +241,7 @@ class PushAdminTests: XCTestCase {
                 partialDone()
             }
             realtime.push.admin.publish(publishObject, data: ["data": ["foo": "bar"]]) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 partialDone()
             }
         }
@@ -254,7 +254,7 @@ class PushAdminTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -281,7 +281,7 @@ class PushAdminTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -307,7 +307,7 @@ class PushAdminTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -337,7 +337,7 @@ class PushAdminTests: XCTestCase {
                     fail("Device is missing"); done(); return
                 }
                 expect(device).to(equal(Self.deviceDetails))
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -348,7 +348,7 @@ class PushAdminTests: XCTestCase {
         defer { realtime.dispose(); realtime.close() }
         waitUntil(timeout: testTimeout) { done in
             realtime.push.admin.deviceRegistrations.get("madeup") { device, error in
-                expect(device).to(beNil())
+                XCTAssertNil(device)
                 guard let error = error else {
                     fail("Error should not be empty"); done(); return
                 }
@@ -372,7 +372,7 @@ class PushAdminTests: XCTestCase {
             clientId: ""
         )
 
-        expect(localDevice.identityTokenDetails).to(beNil())
+        XCTAssertNil(localDevice.identityTokenDetails)
         realtime.internal.rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
         defer { realtime.internal.rest.device.setAndPersistIdentityTokenDetails(nil) }
 
@@ -416,7 +416,7 @@ class PushAdminTests: XCTestCase {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
                 expect(result.items.count) == 1
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -431,7 +431,7 @@ class PushAdminTests: XCTestCase {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
                 expect(result.items.count) == Self.allDeviceDetails.filter { $0.clientId == "clientA" }.count
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -446,7 +446,7 @@ class PushAdminTests: XCTestCase {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
                 expect(result.items.count) == Self.allDeviceDetails.count
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -461,7 +461,7 @@ class PushAdminTests: XCTestCase {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
                 expect(result.items.count) == 0
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -477,7 +477,7 @@ class PushAdminTests: XCTestCase {
         realtime.internal.rest.httpExecutor = mockHttpExecutor
         waitUntil(timeout: testTimeout) { done in
             realtime.push.admin.deviceRegistrations.remove(Self.deviceDetails.id) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -485,8 +485,8 @@ class PushAdminTests: XCTestCase {
         let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
 
         expect(request.httpMethod) == "DELETE"
-        expect(request.allHTTPHeaderFields?["X-Ably-DeviceToken"]).to(beNil())
-        expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]).to(beNil())
+        XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceToken"])
+        XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"])
     }
 
     // RSH1b3
@@ -499,7 +499,7 @@ class PushAdminTests: XCTestCase {
         realtime.internal.rest.httpExecutor = mockHttpExecutor
         waitUntil(timeout: testTimeout) { done in
             realtime.push.admin.deviceRegistrations.save(Self.deviceDetails) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -507,8 +507,8 @@ class PushAdminTests: XCTestCase {
         let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
 
         expect(request.httpMethod) == "PUT"
-        expect(request.allHTTPHeaderFields?["X-Ably-DeviceToken"]).to(beNil())
-        expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]).to(beNil())
+        XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceToken"])
+        XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"])
     }
 
     func test__016__Device_Registrations__save__push_device_authentication__should_include_DeviceIdentityToken_HTTP_header() throws {
@@ -526,13 +526,13 @@ class PushAdminTests: XCTestCase {
             clientId: ""
         )
 
-        expect(localDevice.identityTokenDetails).to(beNil())
+        XCTAssertNil(localDevice.identityTokenDetails)
         realtime.internal.rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
         defer { realtime.internal.rest.device.setAndPersistIdentityTokenDetails(nil) }
 
         waitUntil(timeout: testTimeout) { done in
             realtime.push.admin.deviceRegistrations.save(localDevice) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -553,7 +553,7 @@ class PushAdminTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             realtime.push.admin.deviceRegistrations.save(localDevice) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -585,7 +585,7 @@ class PushAdminTests: XCTestCase {
                     fail("PaginatedResult should not be nil"); done(); return
                 }
                 expect(result.items).to(contain(expectedRemoved))
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -594,7 +594,7 @@ class PushAdminTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             realtime.push.admin.deviceRegistrations.removeWhere(params) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -602,8 +602,8 @@ class PushAdminTests: XCTestCase {
         let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
 
         expect(request.httpMethod) == "DELETE"
-        expect(request.allHTTPHeaderFields?["X-Ably-DeviceToken"]).to(beNil())
-        expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]).to(beNil())
+        XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceToken"])
+        XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"])
 
         waitUntil(timeout: testTimeout) { done in
             realtime.push.admin.deviceRegistrations.list(params) { result, error in
@@ -611,7 +611,7 @@ class PushAdminTests: XCTestCase {
                     fail("PaginatedResult should not be nil"); done(); return
                 }
                 expect(result.items.count) == 0
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -622,7 +622,7 @@ class PushAdminTests: XCTestCase {
             let partialDone = AblyTests.splitDone(expectedRemoved.count, done: done)
             for removedDevice in expectedRemoved {
                 realtime.push.admin.deviceRegistrations.save(removedDevice) { error in
-                    expect(error).to(beNil())
+                    XCTAssertNil(error)
                     partialDone()
                 }
             }
@@ -631,11 +631,11 @@ class PushAdminTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
             realtime.push.admin.channelSubscriptions.save(Self.subscriptionFooDevice2) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 partialDone()
             }
             realtime.push.admin.channelSubscriptions.save(Self.subscriptionBarDevice2) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 partialDone()
             }
         }
@@ -652,7 +652,7 @@ class PushAdminTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             realtime.push.admin.channelSubscriptions.save(subscription) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -660,8 +660,8 @@ class PushAdminTests: XCTestCase {
         let request = try XCTUnwrap(testProxyHTTPExecutor.requests.first, "No request found")
 
         expect(request.httpMethod).to(equal("POST"))
-        expect(request.allHTTPHeaderFields?["X-Ably-DeviceToken"]).to(beNil())
-        expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]).to(beNil())
+        XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceToken"])
+        XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"])
     }
 
     func test__020__Channel_Subscriptions__save__should_update_a_subscription() {
@@ -670,7 +670,7 @@ class PushAdminTests: XCTestCase {
         let updateSubscription = ARTPushChannelSubscription(clientId: subscription.clientId!, channel: "pushenabled:foo")
         waitUntil(timeout: testTimeout) { done in
             realtime.push.admin.channelSubscriptions.save(updateSubscription) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -705,7 +705,7 @@ class PushAdminTests: XCTestCase {
             clientId: ""
         )
 
-        expect(localDevice.identityTokenDetails).to(beNil())
+        XCTAssertNil(localDevice.identityTokenDetails)
         realtime.internal.rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
         defer { realtime.internal.rest.device.setAndPersistIdentityTokenDetails(nil) }
 
@@ -713,7 +713,7 @@ class PushAdminTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             realtime.push.admin.channelSubscriptions.save(subscription) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -733,7 +733,7 @@ class PushAdminTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             realtime.push.admin.channelSubscriptions.save(subscription) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -751,13 +751,13 @@ class PushAdminTests: XCTestCase {
         defer { realtime.dispose(); realtime.close() }
         waitUntil(timeout: testTimeout) { done in
             realtime.push.admin.channelSubscriptions.save(subscription) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 realtime.push.admin.channelSubscriptions.list(["channel": quxChannelName]) { result, error in
                     guard let result = result else {
                         fail("PaginatedResult should not be empty"); done(); return
                     }
                     expect(result.items.count) == 1
-                    expect(error).to(beNil())
+                    XCTAssertNil(error)
                     done()
                 }
             }
@@ -771,7 +771,7 @@ class PushAdminTests: XCTestCase {
         defer { realtime.dispose(); realtime.close() }
         waitUntil(timeout: testTimeout) { done in
             realtime.push.admin.channelSubscriptions.listChannels { result, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 guard let result = result else {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
@@ -792,7 +792,7 @@ class PushAdminTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             realtime.push.admin.channelSubscriptions.remove(subscription) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -800,8 +800,8 @@ class PushAdminTests: XCTestCase {
         let request = try XCTUnwrap(testProxyHTTPExecutor.requests.first, "No request found")
         
         expect(request.httpMethod).to(equal("DELETE"))
-        expect(request.allHTTPHeaderFields?["X-Ably-DeviceToken"]).to(beNil())
-        expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]).to(beNil())
+        XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceToken"])
+        XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"])
 
         waitUntil(timeout: testTimeout) { done in
             realtime.push.admin.channelSubscriptions.list(["channel": quxChannelName]) { result, error in
@@ -809,7 +809,7 @@ class PushAdminTests: XCTestCase {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
                 expect(result.items.count) == 0
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -828,7 +828,7 @@ class PushAdminTests: XCTestCase {
             clientId: ""
         )
 
-        expect(localDevice.identityTokenDetails).to(beNil())
+        XCTAssertNil(localDevice.identityTokenDetails)
         realtime.internal.rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
         defer { realtime.internal.rest.device.setAndPersistIdentityTokenDetails(nil) }
 
@@ -836,7 +836,7 @@ class PushAdminTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             realtime.push.admin.channelSubscriptions.remove(subscription) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -856,7 +856,7 @@ class PushAdminTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             realtime.push.admin.channelSubscriptions.remove(subscription) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -890,14 +890,14 @@ class PushAdminTests: XCTestCase {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
                 expect(result.items).to(contain(expectedRemoved))
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
 
         waitUntil(timeout: testTimeout) { done in
             realtime.push.admin.channelSubscriptions.removeWhere(params) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -908,7 +908,7 @@ class PushAdminTests: XCTestCase {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
                 expect(result.items.count) == 0
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -917,7 +917,7 @@ class PushAdminTests: XCTestCase {
             let partialDone = AblyTests.splitDone(expectedRemoved.count, done: done)
             for removedSubscription in expectedRemoved {
                 realtime.push.admin.channelSubscriptions.save(removedSubscription) { error in
-                    expect(error).to(beNil())
+                    XCTAssertNil(error)
                     partialDone()
                 }
             }
@@ -945,14 +945,14 @@ class PushAdminTests: XCTestCase {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
                 expect(result.items).to(contain(expectedRemoved))
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
 
         waitUntil(timeout: testTimeout) { done in
             realtime.push.admin.channelSubscriptions.removeWhere(params) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -963,7 +963,7 @@ class PushAdminTests: XCTestCase {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
                 expect(result.items.count) == 0
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -990,14 +990,14 @@ class PushAdminTests: XCTestCase {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
                 expect(result.items).to(contain(expectedRemoved))
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
 
         waitUntil(timeout: testTimeout) { done in
             realtime.push.admin.channelSubscriptions.removeWhere(params) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -1008,7 +1008,7 @@ class PushAdminTests: XCTestCase {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
                 expect(result.items.count) == 0
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -1028,14 +1028,14 @@ class PushAdminTests: XCTestCase {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
                 expect(result.items.count) == 0
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
 
         waitUntil(timeout: testTimeout) { done in
             realtime.push.admin.channelSubscriptions.removeWhere(params) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -1044,6 +1044,6 @@ class PushAdminTests: XCTestCase {
     func test__033__local_device__should_include_an_id_and_a_secret() {
         expect(localDevice.id).toNot(beNil())
         expect(localDevice.secret).toNot(beNil())
-        expect(localDevice.identityTokenDetails).to(beNil())
+        XCTAssertNil(localDevice.identityTokenDetails)
     }
 }

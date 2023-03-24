@@ -54,7 +54,7 @@ class PushChannelTests: XCTestCase {
         let channel = rest.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.push.subscribeDevice { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -72,7 +72,7 @@ class PushChannelTests: XCTestCase {
 
         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
         expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
-        expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"]).to(beNil())
+        XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"])
     }
 
     // RSH7b
@@ -108,7 +108,7 @@ class PushChannelTests: XCTestCase {
         let channel = rest.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.push.subscribeClient { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -124,8 +124,8 @@ class PushChannelTests: XCTestCase {
         expect(body.value(forKey: "clientId") as? String).to(equal(rest.device.clientId))
         expect(body.value(forKey: "channel") as? String).to(equal(channel.name))
 
-        expect(request.allHTTPHeaderFields?["X-Ably-DeviceToken"]).to(beNil())
-        expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"]).to(beNil())
+        XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceToken"])
+        XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"])
     }
 
     // RSH7c
@@ -153,7 +153,7 @@ class PushChannelTests: XCTestCase {
         let channel = rest.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.push.unsubscribeDevice { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -169,7 +169,7 @@ class PushChannelTests: XCTestCase {
 
         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
         expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
-        expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"]).to(beNil())
+        XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"])
     }
 
     // RSH7d
@@ -205,7 +205,7 @@ class PushChannelTests: XCTestCase {
         let channel = rest.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.push.unsubscribeClient { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -219,8 +219,8 @@ class PushChannelTests: XCTestCase {
         expect(query).to(haveParam("clientId", withValue: rest.device.clientId!))
         expect(query).to(haveParam("channel", withValue: channel.name))
 
-        expect(request.allHTTPHeaderFields?["X-Ably-DeviceToken"]).to(beNil())
-        expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"]).to(beNil())
+        XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceToken"])
+        XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"])
     }
 
     // RSH7e
@@ -233,7 +233,7 @@ class PushChannelTests: XCTestCase {
         let channel = rest.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             try? channel.push.listSubscriptions(params) { result, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 expect(result).toNot(beNil())
                 done()
             }
@@ -258,7 +258,7 @@ class PushChannelTests: XCTestCase {
         let channel = rest.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             try? channel.push.listSubscriptions(params) { result, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 expect(result).toNot(beNil())
                 done()
             }
@@ -309,7 +309,7 @@ class PushChannelTests: XCTestCase {
         let channel = rest.channels.get("pushenabled:\(uniqueChannelName())")
         waitUntil(timeout: testTimeout) { done in
             channel.push.subscribeClient { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -320,7 +320,7 @@ class PushChannelTests: XCTestCase {
         ]
         waitUntil(timeout: testTimeout) { done in
             try! channel.push.listSubscriptions(params) { result, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 guard let result = result else {
                     fail("Result is nil"); done(); return
                 }

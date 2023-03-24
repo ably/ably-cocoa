@@ -239,7 +239,7 @@ class RestClientStatsTests: XCTestCase {
 
         guard let secondPage: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
             firstPage.next { page, err in
-                expect(err).to(beNil())
+                XCTAssertNil(err)
                 value(page)
             }
         }) else {
@@ -253,7 +253,7 @@ class RestClientStatsTests: XCTestCase {
 
         guard let thirdPage: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
             secondPage.next { page, err in
-                expect(err).to(beNil())
+                XCTAssertNil(err)
                 value(page)
             }
         }) else {
@@ -266,7 +266,7 @@ class RestClientStatsTests: XCTestCase {
 
         guard let firstPageAgain: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
             thirdPage.first { page, err in
-                expect(err).to(beNil())
+                XCTAssertNil(err)
                 value(page)
             }
         }) else {
@@ -294,7 +294,7 @@ class RestClientStatsTests: XCTestCase {
 
         guard let secondPage: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
             firstPage.next { page, err in
-                expect(err).to(beNil())
+                XCTAssertNil(err)
                 value(page)
             }
         }) else {
@@ -308,7 +308,7 @@ class RestClientStatsTests: XCTestCase {
 
         guard let thirdPage: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
             secondPage.next { page, err in
-                expect(err).to(beNil())
+                XCTAssertNil(err)
                 value(page)
             }
         }) else {
@@ -321,7 +321,7 @@ class RestClientStatsTests: XCTestCase {
 
         guard let firstPageAgain: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
             thirdPage.first { page, err in
-                expect(err).to(beNil())
+                XCTAssertNil(err)
                 value(page)
             }
         }) else {

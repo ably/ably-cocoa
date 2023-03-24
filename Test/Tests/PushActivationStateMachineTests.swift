@@ -238,7 +238,7 @@ class PushActivationStateMachineTests: XCTestCase {
                 }
             }
             delegate.onPushCustomRegister = { error, deviceDetails in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 expect(deviceDetails).to(beIdenticalTo(rest.device))
                 partialDone()
                 return nil
@@ -274,7 +274,7 @@ class PushActivationStateMachineTests: XCTestCase {
                 }
             }
             delegate.onPushCustomRegister = { error, deviceDetails in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 expect(deviceDetails).to(beIdenticalTo(rest.device))
                 partialDone()
                 return simulatedError
@@ -626,7 +626,7 @@ class PushActivationStateMachineTests: XCTestCase {
 
             var activateCallbackCalled = false
             delegate.onDidActivateAblyPush = { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 activateCallbackCalled = true
             }
 
@@ -833,7 +833,7 @@ class PushActivationStateMachineTests: XCTestCase {
         expect(deactivatedCallbackCalled).to(beTrue())
         expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
         // RSH3g2a
-        expect(stateMachine.rest.device.identityTokenDetails).to(beNil())
+        XCTAssertNil(stateMachine.rest.device.identityTokenDetails)
     }
 
     // RSH3g3
@@ -912,9 +912,9 @@ class PushActivationStateMachineTests: XCTestCase {
         rest.internal.storage = storage
         rest.device.setAndPersistIdentityTokenDetails(nil)
         rest.internal.resetDeviceSingleton()
-        expect(rest.device.identityTokenDetails).to(beNil())
+        XCTAssertNil(rest.device.identityTokenDetails)
         expect(rest.device.isRegistered()) == false
-        expect(storage.object(forKey: ARTDeviceIdentityTokenKey)).to(beNil())
+        XCTAssertNil(storage.object(forKey: ARTDeviceIdentityTokenKey))
     }
 
     enum TestCase_ReusableTestsRsh3a2a {
@@ -994,7 +994,7 @@ class PushActivationStateMachineTests: XCTestCase {
                     }
                 }
                 delegate.onPushCustomRegister = { error, deviceDetails in
-                    expect(error).to(beNil())
+                    XCTAssertNil(error)
                     expect(deviceDetails).to(beIdenticalTo(rest.device))
                     partialDone()
                     return nil
@@ -1086,7 +1086,7 @@ class PushActivationStateMachineTests: XCTestCase {
                     }
                 }
                 delegate.onPushCustomDeregister = { error, deviceId in
-                    expect(error).to(beNil())
+                    XCTAssertNil(error)
                     expect(deviceId) == rest.device.id
                     partialDone()
                     return nil
@@ -1122,7 +1122,7 @@ class PushActivationStateMachineTests: XCTestCase {
                     }
                 }
                 delegate.onPushCustomDeregister = { error, deviceId in
-                    expect(error).to(beNil())
+                    XCTAssertNil(error)
                     expect(deviceId) == rest.device.id
                     partialDone()
                     return simulatedError
@@ -1190,7 +1190,7 @@ class PushActivationStateMachineTests: XCTestCase {
                 clientId: ""
             )
 
-            expect(rest.device.identityTokenDetails).to(beNil())
+            XCTAssertNil(rest.device.identityTokenDetails)
             rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
             defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
             expect(rest.device.identityTokenDetails).toNot(beNil())
@@ -1220,7 +1220,7 @@ class PushActivationStateMachineTests: XCTestCase {
 
             expect(url.host).to(equal(rest.internal.options.restUrl().host))
             expect(request.httpMethod) == "DELETE"
-            expect(rest.device.identityTokenDetails).to(beNil())
+            XCTAssertNil(rest.device.identityTokenDetails)
             expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
             let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
             expect(deviceAuthorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))

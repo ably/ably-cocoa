@@ -36,9 +36,9 @@ class ObjectLifetimesTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             options.internalDispatchQueue.async {
-                expect(internalConn).to(beNil())
-                expect(internalRealtime).to(beNil())
-                expect(internalRest).to(beNil())
+                XCTAssertNil(internalConn)
+                XCTAssertNil(internalRealtime)
+                XCTAssertNil(internalRest)
                 done()
             }
         }
@@ -70,7 +70,7 @@ class ObjectLifetimesTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             options.internalDispatchQueue.async {
-                expect(weakConn).to(beNil())
+                XCTAssertNil(weakConn)
                 done()
             }
         }
@@ -108,7 +108,7 @@ class ObjectLifetimesTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel!.attach { errorInfo in
-                expect(errorInfo).to(beNil())
+                XCTAssertNil(errorInfo)
                 done()
             }
         }
@@ -130,8 +130,8 @@ class ObjectLifetimesTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             AblyTests.queue.async {
-                expect(weakClient).to(beNil())
-                expect(weakChannel).to(beNil())
+                XCTAssertNil(weakClient)
+                XCTAssertNil(weakChannel)
                 done()
             }
         }

@@ -292,7 +292,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         client.connection.on { stateChange in
             let state = stateChange.current
             let error = stateChange.reason
-            expect(error).to(beNil())
+            XCTAssertNil(error)
             switch state {
             case .connected:
                 connected = true
@@ -315,7 +315,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.connection.on { stateChange in
                 let state = stateChange.current
                 let error = stateChange.reason
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 switch state {
                 case .connected:
                     if waiting {
@@ -476,7 +476,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { stateChange in
-                expect(stateChange.reason).to(beNil())
+                XCTAssertNil(stateChange.reason)
                 done()
             }
         }
@@ -487,7 +487,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.update) { stateChange in
-                expect(stateChange.reason).to(beNil())
+                XCTAssertNil(stateChange.reason)
                 expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connected))
                 expect(stateChange.current).to(equal(ARTRealtimeConnectionState.connected))
                 expect(stateChange.current).to(equal(stateChange.previous))
@@ -514,7 +514,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             connection.on { stateChange in
                 let state = stateChange.current
                 let error = stateChange.reason
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 switch state {
                 case .connecting:
                     events += [state]
@@ -549,7 +549,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             connection.on { stateChange in
                 let state = stateChange.current
                 let error = stateChange.reason
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 switch state {
                 case .connected:
                     connection.close()
@@ -587,7 +587,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             connection.on { stateChange in
                 let state = stateChange.current
                 let error = stateChange.reason
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 switch state {
                 case .connecting:
                     expect(connection.state.rawValue).to(equal(ARTRealtimeConnectionState.connecting.rawValue), description: "Missing CONNECTING state")
@@ -658,7 +658,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { stateChange in
-                expect(stateChange.reason).to(beNil())
+                XCTAssertNil(stateChange.reason)
                 done()
             }
         }
@@ -766,7 +766,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.connection.on { stateChange in
                 let state = stateChange.current
                 let error = stateChange.reason
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 if state == .connected, error == nil {
                     done()
                 }
@@ -802,7 +802,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             publishFirstTestMessage(client, channelName: uniqueChannelName(), completion: { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             })
         }
@@ -833,13 +833,13 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.connection.on { stateChange in
                 let state = stateChange.current
                 let error = stateChange.reason
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 if state == .connected {
                     let channel = client.channels.get(uniqueChannelName())
                     channel.attach { error in
-                        expect(error).to(beNil())
+                        XCTAssertNil(error)
                         channel.presence.enterClient("client_string", data: nil, callback: { errorInfo in
-                            expect(errorInfo).to(beNil())
+                            XCTAssertNil(errorInfo)
                             done()
                         })
                     }
@@ -904,11 +904,11 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.connection.on { stateChange in
                 let state = stateChange.current
                 let error = stateChange.reason
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 if state == .connected {
                     let channel = client.channels.get(uniqueChannelName())
                     channel.attach { error in
-                        expect(error).to(beNil())
+                        XCTAssertNil(error)
                         channel.presence.enterClient("invalid", data: nil, callback: { errorInfo in
                             expect(errorInfo).toNot(beNil())
                             done()
@@ -947,7 +947,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "message") { errorInfo in
-                expect(errorInfo).to(beNil())
+                XCTAssertNil(errorInfo)
                 done()
             }
         }
@@ -1004,7 +1004,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "message") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -1088,7 +1088,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "message") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -1183,7 +1183,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 channel.publish(nil, data: "message", callback: { error in
                     guard let error = error else {
                         fail("Error is nil"); done(); return
@@ -1221,7 +1221,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 channel.publish(nil, data: "message", callback: { errorInfo in
                     expect(errorInfo).toNot(beNil())
                     done()
@@ -1296,18 +1296,18 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.close()
         }
 
-        expect(connection.id).to(beNil())
+        XCTAssertNil(connection.id)
 
         waitUntil(timeout: testTimeout) { done in
             connection.on { stateChange in
                 let state = stateChange.current
                 let errorInfo = stateChange.reason
-                expect(errorInfo).to(beNil())
+                XCTAssertNil(errorInfo)
                 if state == .connected {
                     expect(connection.id).toNot(beNil())
                     done()
                 } else if state == .connecting {
-                    expect(connection.id).to(beNil())
+                    XCTAssertNil(connection.id)
                 }
             }
         }
@@ -1334,7 +1334,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 currentConnection.on { stateChange in
                     let state = stateChange.current
                     let error = stateChange.reason
-                    expect(error).to(beNil())
+                    XCTAssertNil(error)
                     if state == .connected {
                         guard let connectionId = currentConnection.id else {
                             fail("connectionId is nil on CONNECTED")
@@ -1372,18 +1372,18 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
         let connection = client.connection
 
-        expect(connection.key).to(beNil())
+        XCTAssertNil(connection.key)
 
         waitUntil(timeout: testTimeout) { done in
             connection.on { stateChange in
                 let state = stateChange.current
                 let errorInfo = stateChange.reason
-                expect(errorInfo).to(beNil())
+                XCTAssertNil(errorInfo)
                 if state == .connected {
                     expect(connection.id).toNot(beNil())
                     done()
                 } else if state == .connecting {
-                    expect(connection.key).to(beNil())
+                    XCTAssertNil(connection.key)
                 }
             }
         }
@@ -1409,7 +1409,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 currentConnection.on { stateChange in
                     let state = stateChange.current
                     let error = stateChange.reason
-                    expect(error).to(beNil())
+                    XCTAssertNil(error)
                     if state == .connected {
                         guard let connectionKey = currentConnection.key else {
                             fail("connectionKey is nil on CONNECTED")
@@ -1446,7 +1446,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.connection.on { stateChange in
                 let state = stateChange.current
                 let error = stateChange.reason
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 if state == .connected {
                     expect(client.connection.serial).to(equal(-1))
                     done()
@@ -1472,7 +1472,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             waitUntil(timeout: testTimeout) { done in
                 let partialDone = AblyTests.splitDone(2, done: done)
                 channel.publish(nil, data: "message", callback: { errorInfo in
-                    expect(errorInfo).to(beNil())
+                    XCTAssertNil(errorInfo)
                     partialDone()
                 })
                 channel.subscribe { _ in
@@ -1505,7 +1505,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             waitUntil(timeout: testTimeout) { done in
                 let partialDone = AblyTests.splitDone(2, done: done)
                 channel.publish(nil, data: "message", callback: { errorInfo in
-                    expect(errorInfo).to(beNil())
+                    XCTAssertNil(errorInfo)
                     partialDone()
                 })
                 channel.subscribe { _ in
@@ -1528,7 +1528,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             expect(recoveredClient.connection.serial).to(equal(lastSerial))
             let recoveredChannel = recoveredClient.channels.get(channelName)
             recoveredChannel.publish(nil, data: "message", callback: { errorInfo in
-                expect(errorInfo).to(beNil())
+                XCTAssertNil(errorInfo)
             })
             recoveredChannel.subscribe { _ in
                 expect(recoveredClient.connection.serial).to(equal(lastSerial + 1))
@@ -1564,8 +1564,8 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
 
             client.connection.once(.connected) { stateChange in
-                expect(stateChange.reason).to(beNil())
-                expect(client.connection.errorReason).to(beNil())
+                XCTAssertNil(stateChange.reason)
+                XCTAssertNil(client.connection.errorReason)
                 partialDone()
             }
 
@@ -1633,7 +1633,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
 
         expect(newTransport).toNot(beNil())
-        expect(oldTransport).to(beNil())
+        XCTAssertNil(oldTransport)
     }
 
     // RTN12
@@ -1652,7 +1652,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
 
         client.close()
-        expect(lastStateChange).to(beNil())
+        XCTAssertNil(lastStateChange)
 
         expect(lastStateChange).toEventuallyNot(beNil(), timeout: testTimeout)
         expect(lastStateChange!.current).toEventually(equal(ARTRealtimeConnectionState.closed), timeout: testTimeout)
@@ -1676,7 +1676,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.connection.on { stateChange in
                 let state = stateChange.current
                 let error = stateChange.reason
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 switch state {
                 case .connected:
                     client.close()
@@ -1723,7 +1723,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         client.connection.on { stateChange in
             let state = stateChange.current
             let error = stateChange.reason
-            expect(error).to(beNil())
+            XCTAssertNil(error)
             switch state {
             case .connected:
                 client.close()
@@ -1771,7 +1771,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.connection.on { stateChange in
                 let state = stateChange.current
                 let error = stateChange.reason
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 switch state {
                 case .connected:
                     states += [state]
@@ -1924,7 +1924,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         defer { client.dispose(); client.close() }
         waitUntil(timeout: testTimeout) { done in
             client.ping { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 let transport = client.internal.transport as! TestProxyTransport
                 expect(transport.protocolMessagesSent.filter { $0.action == .heartbeat }).to(haveCount(1))
                 expect(transport.protocolMessagesReceived.filter { $0.action == .heartbeat }).to(haveCount(1))
@@ -2026,7 +2026,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                     let errorInfo = stateChange.reason
                     switch state {
                     case .connected:
-                        expect(errorInfo).to(beNil())
+                        XCTAssertNil(errorInfo)
                         // New token
                         expect(client.auth.tokenDetails!.token).toNot(equal(options.token))
                         done()
@@ -2068,7 +2068,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         waitUntil(timeout: testTimeout.multiplied(by: 2)) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
             realtime.connection.once(.connected) { stateChange in
-                expect(stateChange.reason).to(beNil())
+                XCTAssertNil(stateChange.reason)
                 partialDone()
             }
             hookToken = realtime.internal.testSuite_getArgument(from: NSSelectorFromString("onError:"), at: 0) { arg0 in
@@ -2108,7 +2108,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
             client.connection.once(.connected) { stateChange in
-                expect(stateChange.reason).to(beNil())
+                XCTAssertNil(stateChange.reason)
                 partialDone()
             }
             client.connection.once(.disconnected) { stateChange in
@@ -2322,7 +2322,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { stateChange in
-                expect(stateChange.reason).to(beNil())
+                XCTAssertNil(stateChange.reason)
                 done()
             }
             client.connect()
@@ -2368,7 +2368,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         client.connection.off()
 
-        expect(client.connection.errorReason).to(beNil())
+        XCTAssertNil(client.connection.errorReason)
         expect(client.connection.state).to(equal(.connected))
     }
 
@@ -2459,7 +2459,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         client1.simulateLostConnectionAndState()
 
         channel2.publish(nil, data: "message") { errorInfo in
-            expect(errorInfo).to(beNil())
+            XCTAssertNil(errorInfo)
         }
 
         waitUntil(timeout: testTimeout) { done in
@@ -2553,7 +2553,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 let transport = client.internal.transport as! TestProxyTransport
                 let connectedPM = transport.protocolMessagesReceived.filter { $0.action == .connected }[0]
                 expect(connectedPM.connectionId).to(equal(expectedConnectionId))
-                expect(stateChange.reason).to(beNil())
+                XCTAssertNil(stateChange.reason)
                 done()
             }
         }
@@ -2626,7 +2626,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -2637,7 +2637,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             let partialDone = AblyTests.splitDone(2, done: done)
 
             channel.once(.attaching) { _ in
-                expect(channel.errorReason).to(beNil())
+                XCTAssertNil(channel.errorReason)
                 partialDone()
             }
 
@@ -2708,7 +2708,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let channel = client.channels.get(channelName)
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -2738,7 +2738,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             // Wait for connection resume
             client.connection.once(.connected) { stateChange in
-                expect(stateChange.reason).to(beNil())
+                XCTAssertNil(stateChange.reason)
                 done()
             }
         }
@@ -2766,7 +2766,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
 
             rest.channels.get(channelName).publish([expectedMessage]) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 partialDone()
             }
         }
@@ -2792,7 +2792,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel1.subscribe(attachCallback: { errorInfo in
-                expect(errorInfo).to(beNil())
+                XCTAssertNil(errorInfo)
                 done()
             }, callback: { message in
                 receivedMessages.append(message.data as! String)
@@ -2802,7 +2802,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         client1.internal.onDisconnected()
 
         channel2.publish(expectedMessages.map { ARTMessage(name: nil, data: $0) }) { errorInfo in
-            expect(errorInfo).to(beNil())
+            XCTAssertNil(errorInfo)
         }
 
         waitUntil(timeout: testTimeout) { done in
@@ -3049,11 +3049,11 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { stateChange in
-                expect(stateChange.reason).to(beNil())
+                XCTAssertNil(stateChange.reason)
                 done()
             }
         }
-        expect(client.connection.errorReason).to(beNil())
+        XCTAssertNil(client.connection.errorReason)
 
         // New connection
         expect(client.internal.transport).toNot(beNil())
@@ -3061,7 +3061,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             client.ping { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 expect((client.internal.transport as! TestProxyTransport).protocolMessagesReceived.filter { $0.action == .connected }).to(haveCount(1))
                 done()
             }
@@ -3153,9 +3153,9 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channelReceive.subscribe(attachCallback: { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 channelSend.publish(nil, data: "message") { error in
-                    expect(error).to(beNil())
+                    XCTAssertNil(error)
                 }
             }, callback: { message in
                 expect(message.data as? String).to(equal("message"))
@@ -3168,7 +3168,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channelSend.publish(nil, data: "queue a message") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -3199,10 +3199,10 @@ class RealtimeClientConnectionTests: XCTestCase {
                 partialDone()
             }
             channel.subscribe(attachCallback: { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 
                 channel.publish(nil, data: "message") { error in
-                    expect(error).to(beNil())
+                    XCTAssertNil(error)
                     partialDone()
                 }
             }, callback: { message in
@@ -3252,9 +3252,9 @@ class RealtimeClientConnectionTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { _ in
                 client.connection.once(.closed) { _ in
-                    expect(client.connection.recoveryKey).to(beNil())
-                    expect(client.connection.key).to(beNil())
-                    expect(client.connection.id).to(beNil())
+                    XCTAssertNil(client.connection.recoveryKey)
+                    XCTAssertNil(client.connection.key)
+                    XCTAssertNil(client.connection.id)
                     done()
                 }
                 client.close()
@@ -3351,7 +3351,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.environment = "test" // do not use the default endpoint
         expect(options.fallbackHostsUseDefault).to(beFalse())
-        expect(options.fallbackHosts).to(beNil())
+        XCTAssertNil(options.fallbackHosts)
         options.autoConnect = false
         options.queueMessages = false
 
@@ -3406,7 +3406,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.environment = "test" // do not use the default endpoint
         expect(options.fallbackHostsUseDefault).to(beFalse())
-        expect(options.fallbackHosts).to(beNil())
+        XCTAssertNil(options.fallbackHosts)
         options.autoConnect = false
 
         let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
@@ -4016,7 +4016,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             realtime.connection.once(.connecting) { stateChange in
-                expect(stateChange.reason).to(beNil())
+                XCTAssertNil(stateChange.reason)
 
                 let transport = realtime.internal.transport as! TestProxyTransport
                 transport.setBeforeIncomingMessageModifier { protocolMessage in
@@ -4028,7 +4028,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 }
             }
             realtime.connection.once(.connected) { stateChange in
-                expect(stateChange.reason).to(beNil())
+                XCTAssertNil(stateChange.reason)
 
                 let transport = realtime.internal.transport as! TestProxyTransport
                 let connectedProtocolMessage = transport.protocolMessagesReceived.filter { $0.action == .connected }[0]
@@ -4060,7 +4060,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "message") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 guard let newTransport = client.internal.transport as? TestProxyTransport else {
                     fail("Transport is nil"); done(); return
                 }
@@ -4092,7 +4092,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             transport.ignoreSends = true
             channel.attach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 guard let newTransport = client.internal.transport as? TestProxyTransport else {
                     fail("Transport is nil"); done(); return
                 }
@@ -4129,7 +4129,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             transport.ignoreSends = true
             channel.detach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 guard let newTransport = client.internal.transport as? TestProxyTransport else {
                     fail("Transport is nil"); done(); return
                 }
@@ -4169,7 +4169,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             internetConnectionNotAvailableTestsClient.connection.on { stateChange in
                 switch stateChange.current {
                 case .connecting:
-                    expect(stateChange.reason).to(beNil())
+                    XCTAssertNil(stateChange.reason)
                     guard let reachability = internetConnectionNotAvailableTestsClient.internal.reachability as? TestReachability else {
                         fail("expected test reachability")
                         done(); return
@@ -4200,7 +4200,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             internetConnectionNotAvailableTestsClient.connection.on { stateChange in
                 switch stateChange.current {
                 case .connected:
-                    expect(stateChange.reason).to(beNil())
+                    XCTAssertNil(stateChange.reason)
                     guard let reachability = internetConnectionNotAvailableTestsClient.internal.reachability as? TestReachability else {
                         fail("expected test reachability")
                         done(); return
@@ -4276,7 +4276,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
             client.connect()
@@ -4296,7 +4296,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.update) { stateChange in
-                expect(stateChange.reason).to(beNil())
+                XCTAssertNil(stateChange.reason)
                 expect(initialToken).toNot(equal(client.auth.tokenDetails?.token))
                 done()
             }
@@ -4337,7 +4337,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
 
             rest.channels.get(channelName).publish([expectedMessage]) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 partialDone()
             }
         }
@@ -4357,7 +4357,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -4392,7 +4392,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { stateChange in
-                expect(stateChange.reason).to(beNil())
+                XCTAssertNil(stateChange.reason)
                 expect(initialToken).toNot(equal(client.auth.tokenDetails?.token))
                 done()
             }
@@ -4416,7 +4416,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
 
             rest.channels.get(channelName).publish([expectedMessage]) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 partialDone()
             }
         }
@@ -4496,7 +4496,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { stateChange in
-                expect(stateChange.reason).to(beNil())
+                XCTAssertNil(stateChange.reason)
                 done()
             }
         }
@@ -4533,7 +4533,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { stateChange in
-                expect(stateChange.reason).to(beNil())
+                XCTAssertNil(stateChange.reason)
                 done()
             }
         }
@@ -4566,7 +4566,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.internal.transport?.receive(connectedMessageWithError)
         }
 
-        expect(client.connection.errorReason).to(beNil())
+        XCTAssertNil(client.connection.errorReason)
     }
 
     // https://github.com/ably/ably-cocoa/issues/454
@@ -4767,14 +4767,14 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { stateChange in
-                expect(stateChange.reason).to(beNil())
+                XCTAssertNil(stateChange.reason)
                 done()
             }
         }
 
         client.auth.internal.options.authCallback = { _, completion in
             getTestTokenDetails(ttl: 0.1) { tokenDetails, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 guard let tokenDetails = tokenDetails else {
                     fail("TokenDetails is nil"); return
                 }

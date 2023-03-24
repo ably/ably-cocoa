@@ -150,11 +150,11 @@ class CryptoTests: XCTestCase {
 
                 var error: NSError?
                 let decoded = fixture.decode(with: decoder, error: &error) as! ARTMessage
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 expect(decoded).notTo(beNil())
 
                 let encrypted = try XCTUnwrap(decoded.encode(with: encrypter, error: &error) as? ARTMessage)
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 expect(encrypted).notTo(beNil())
                 
                 expect(encrypted).to(equal(encryptedFixture))
@@ -173,11 +173,11 @@ class CryptoTests: XCTestCase {
 
                 var error: NSError?
                 let decoded = fixture.decode(with: decoder, error: &error) as! ARTMessage
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 expect(decoded).notTo(beNil())
 
                 let decrypted = try XCTUnwrap(encryptedFixture.decode(with: encrypter, error: &error) as? ARTMessage)
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 expect(decrypted).notTo(beNil())
 
                 expect(decrypted).to(equal(decoded))
@@ -214,7 +214,7 @@ class CryptoTests: XCTestCase {
             
             var error: NSError?
             let decoded = fixture.decode(with: decoder, error: &error) as! ARTMessage
-            expect(error).to(beNil())
+            XCTAssertNil(error)
             expect(decoded).notTo(beNil())
             
             let rawDictionary = try XCTUnwrap(encryptedFixture.dictionaryObject)
@@ -235,7 +235,7 @@ class CryptoTests: XCTestCase {
 
             var error: NSError?
             let decoded = fixture.decode(with: decoder, error: &error) as! ARTMessage
-            expect(error).to(beNil())
+            XCTAssertNil(error)
             expect(decoded).notTo(beNil())
             
             let decrypted = decryptedArray[i]

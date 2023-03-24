@@ -149,7 +149,7 @@ class RestClientTests: XCTestCase {
         let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "message") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 let version = testHTTPExecutor.requests.first!.allHTTPHeaderFields?["X-Ably-Version"]
 
                 // This test should not directly validate version against ARTDefault.version(), as
@@ -553,7 +553,7 @@ class RestClientTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             delay(1.0) {
                 client.channels.get(uniqueChannelName()).history { result, error in
-                    expect(error).to(beNil())
+                    XCTAssertNil(error)
                     expect(result).toNot(beNil())
 
                     guard let headerErrorCode = testHTTPExecutor.responses.first?.value(forHTTPHeaderField: "X-Ably-Errorcode") else {
@@ -585,7 +585,7 @@ class RestClientTests: XCTestCase {
                     return
                 }
                 expect(errorCode).to(equal(ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue))
-                expect(result).to(beNil())
+                XCTAssertNil(result)
 
                 guard let headerErrorCode = testHTTPExecutor.responses.first?.value(forHTTPHeaderField: "X-Ably-Errorcode") else {
                     fail("X-Ably-Errorcode not found"); done()
@@ -612,7 +612,7 @@ class RestClientTests: XCTestCase {
         let rest = ARTRest(key: "\(keyName):\(keySecret)")
         waitUntil(timeout: testTimeout) { done in
             rest.channels.get(uniqueChannelName()).publish(nil, data: "testing") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -760,7 +760,7 @@ class RestClientTests: XCTestCase {
                         }
                         expect(Int(errorCode)).to(beGreaterThanOrEqualTo(ARTErrorCode.tokenErrorUnspecified.intValue))
                         expect(Int(errorCode)).to(beLessThan(ARTErrorCode.connectionLimitsExceeded.intValue))
-                        expect(error).to(beNil())
+                        XCTAssertNil(error)
                         expect(rest.auth.tokenDetails!.token).toNot(equal(currentTokenDetails.token))
                         done()
                     }
@@ -825,7 +825,7 @@ class RestClientTests: XCTestCase {
     @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
     func test__054__RestClient__Host_Fallback__fallbackHostsUseDefault_option__should_never_accept_to_configure__fallbackHost__and_set__fallbackHostsUseDefault__to__true_() {
         let options = ARTClientOptions(key: "xxxx:xxxx")
-        expect(options.fallbackHosts).to(beNil())
+        XCTAssertNil(options.fallbackHosts)
         expect(options.fallbackHostsUseDefault).to(beFalse())
 
         expect { options.fallbackHosts = [] }.toNot(raiseException())
@@ -853,7 +853,7 @@ class RestClientTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -978,7 +978,7 @@ class RestClientTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -1048,7 +1048,7 @@ class RestClientTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -1127,7 +1127,7 @@ class RestClientTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "nil") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -1638,7 +1638,7 @@ class RestClientTests: XCTestCase {
         client.internal.httpExecutor = testHTTPExecutor
         waitUntil(timeout: testTimeout) { done in
             client.channels.get(uniqueChannelName()).publish(nil, data: "message") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 guard let headerAblyVersion = testHTTPExecutor.requests.first?.allHTTPHeaderFields?["X-Ably-Version"] else {
                     fail("X-Ably-Version header not found"); done()
                     return
@@ -1664,7 +1664,7 @@ class RestClientTests: XCTestCase {
         let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "message") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 let headerAgent = testHTTPExecutor.requests.first!.allHTTPHeaderFields?["Ably-Agent"]
                 let ablyAgent = ARTClientInformation.agentIdentifier(withAdditionalAgents: options.agents)
                 expect(headerAgent).to(equal(ablyAgent))
@@ -1740,7 +1740,7 @@ class RestClientTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             do {
                 try rest.request("patch", path: "feature", params: params, body: nil, headers: nil) { paginatedResult, error in
-                    expect(error).to(beNil())
+                    XCTAssertNil(error)
                     expect(paginatedResult).toNot(beNil())
                     done()
                 }
@@ -1768,7 +1768,7 @@ class RestClientTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             do {
                 try rest.request("post", path: "feature", params: nil, body: bodyDict, headers: nil) { paginatedResult, error in
-                    expect(error).to(beNil())
+                    XCTAssertNil(error)
                     expect(paginatedResult).toNot(beNil())
                     done()
                 }
@@ -1795,7 +1795,7 @@ class RestClientTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             do {
                 try rest.request("get", path: "feature", params: nil, body: nil, headers: headers) { paginatedResult, error in
-                    expect(error).to(beNil())
+                    XCTAssertNil(error)
                     expect(paginatedResult).toNot(beNil())
                     done()
                 }
@@ -1880,7 +1880,7 @@ class RestClientTests: XCTestCase {
         let channel = rest.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.publish("a", data: nil) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -1892,7 +1892,7 @@ class RestClientTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             do {
                 try rest.request("get", path: "/channels/\(channel.name)", params: nil, body: nil, headers: nil) { paginatedResponse, error in
-                    expect(error).to(beNil())
+                    XCTAssertNil(error)
                     guard let paginatedResponse = paginatedResponse else {
                         fail("PaginatedResult is empty"); done(); return
                     }
@@ -1906,7 +1906,7 @@ class RestClientTests: XCTestCase {
                     expect(paginatedResponse.statusCode) == 200
                     expect(paginatedResponse.success) == true
                     expect(paginatedResponse.errorCode) == 0
-                    expect(paginatedResponse.errorMessage).to(beNil())
+                    XCTAssertNil(paginatedResponse.errorMessage)
                     expect(paginatedResponse.headers).toNot(beEmpty())
                     httpPaginatedResponse = paginatedResponse
                     done()
@@ -1929,7 +1929,7 @@ class RestClientTests: XCTestCase {
         let channel = rest.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.publish("a", data: nil) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -1940,7 +1940,7 @@ class RestClientTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             do {
                 try rest.request("get", path: "feature", params: nil, body: nil, headers: nil) { paginatedResponse, error in
-                    expect(error).to(beNil())
+                    XCTAssertNil(error)
                     guard let paginatedResponse = paginatedResponse else {
                         fail("PaginatedResult is empty"); done(); return
                     }
@@ -2005,7 +2005,7 @@ class RestClientTests: XCTestCase {
         restA.internal.httpExecutor = mockHttpExecutor
         waitUntil(timeout: testTimeout) { done in
             restA.channels.get(uniqueChannelName()).publish(nil, data: "something") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 guard let url = mockHttpExecutor.requests.first?.url else {
                     fail("No requests found")
                     return
@@ -2022,13 +2022,13 @@ class RestClientTests: XCTestCase {
         restB.internal.httpExecutor = mockHttpExecutor
         waitUntil(timeout: testTimeout) { done in
             restB.channels.get(uniqueChannelName()).publish(nil, data: "something") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 expect(mockHttpExecutor.requests).to(haveCount(1))
                 guard let url = mockHttpExecutor.requests.first?.url else {
                     fail("No requests found")
                     return
                 }
-                expect(url.query).to(beNil())
+                XCTAssertNil(url.query)
                 done()
             }
         }

@@ -35,7 +35,7 @@ class DeltaCodecTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -53,7 +53,7 @@ class DeltaCodecTests: XCTestCase {
             channel.publish(String(i), data: data)
         }
 
-        expect(channel.errorReason).to(beNil())
+        XCTAssertNil(channel.errorReason)
         expect(receivedMessages).toEventually(haveCount(testData.count))
 
         for (i, message) in receivedMessages.enumerated() {
@@ -83,7 +83,7 @@ class DeltaCodecTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -142,7 +142,7 @@ class DeltaCodecTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }

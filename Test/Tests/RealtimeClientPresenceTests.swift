@@ -51,7 +51,7 @@ private func testSuspendedStateResultsInError(channelName: String, _ getPresence
     defer { client.dispose(); client.close() }
 
     getPresence(channel) { result, err in
-        expect(result).to(beNil())
+        XCTAssertNil(result)
         expect(err).toNot(beNil())
         guard let err = err else {
             return
@@ -76,7 +76,7 @@ private let getParams: ARTRealtimePresenceQuery = {
 private func attachAndWaitForInitialPresenceSyncToComplete(client: ARTRealtime, channel: ARTRealtimeChannel) {
     waitUntil(timeout: testTimeout) { done in
         channel.attach { error in
-            expect(error).to(beNil())
+            XCTAssertNil(error)
             done()
         }
     }
@@ -177,7 +177,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let channel = client.channels.get(channelName)
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -240,7 +240,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         expect(channel.presence.syncComplete).to(beTrue())
         waitUntil(timeout: testTimeout) { done in
             channel.presence.get { members, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 guard let members = members, members.count == 1 else {
                     fail("Should at least have 1 member"); done(); return
                 }
@@ -260,7 +260,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let channel = client.channels.get(channelName)
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -303,7 +303,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         expect(channel.presence.syncComplete).to(beTrue())
         waitUntil(timeout: testTimeout) { done in
             channel.presence.get { members, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 guard let members = members, members.count == 1 else {
                     fail("Should at least have 1 member"); done(); return
                 }
@@ -327,7 +327,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let channel = client.channels.get(channelName)
         waitUntil(timeout: testTimeout) { done in
             channel.presence.get { members, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 expect(members).to(haveCount(2)) // synced
                 done()
             }
@@ -342,7 +342,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.get { members, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 guard let members = members, members.count == 3 else {
                     fail("Should at least have 3 members"); done(); return
                 }
@@ -369,7 +369,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.get { members, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 guard let members = members, members.count == 2 else {
                     fail("Should at least have 2 members"); done(); return
                 }
@@ -408,18 +408,18 @@ class RealtimeClientPresenceTests: XCTestCase {
                 expect(leave.clientId?.hasPrefix("tester")).to(beTrue())
                 expect(leave.action).to(equal(ARTPresenceAction.leave))
                 expect(leave.timestamp).to(beCloseTo(Date(), within: 0.5))
-                expect(leave.id).to(beNil())
+                XCTAssertNil(leave.id)
                 partialDone() // 2 times
             }
             channel.attach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 partialDone()
             }
         }
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.get { members, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 expect(members).to(beEmpty())
                 done()
             }
@@ -452,7 +452,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.get { members, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 expect(members).to(haveCount(250))
                 done()
             }
@@ -557,7 +557,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
             channel.presence.enterClient("user", data: nil) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 partialDone()
             }
             channel.presence.subscribe { message in
@@ -613,7 +613,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
             channel.presence.enterClient("user", data: nil) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 partialDone()
             }
             channel.presence.subscribe { message in
@@ -653,7 +653,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel1.presence.enterClient("Client 1", data: nil) { errorInfo in
-                expect(errorInfo).to(beNil())
+                XCTAssertNil(errorInfo)
                 done()
             }
         }
@@ -665,7 +665,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
             channel2.presence.enterClient("Client 2", data: nil) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 expect(client2.internal.queuedMessages).to(haveCount(0))
                 expect(channel2.state).to(equal(ARTRealtimeChannelState.attached))
                 partialDone()
@@ -707,7 +707,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(3, done: done)
             channel.once(.attaching) { stateChange in
-                expect(stateChange.reason).to(beNil())
+                XCTAssertNil(stateChange.reason)
                 expect(channel.presence.internal.pendingPresence.count) == 1
                 channel.internalAsync { _internal in
                     _internal.setSuspended(ARTStatus.state(.error, info: ARTErrorInfo.create(withCode: 1234, message: "unknown error")))
@@ -746,11 +746,11 @@ class RealtimeClientPresenceTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(3, done: done)
             channel.presence.enter(nil) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 partialDone()
             }
             channel.presence.get { members, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 expect(members).to(haveCount(3))
                 partialDone()
             }
@@ -777,9 +777,9 @@ class RealtimeClientPresenceTests: XCTestCase {
                 partialDone()
             }
             channel.once(.attached) { stateChange in
-                expect(stateChange.reason).to(beNil())
+                XCTAssertNil(stateChange.reason)
                 channel.presence.leave(nil) { error in
-                    expect(error).to(beNil())
+                    XCTAssertNil(error)
                     partialDone()
                 }
                 partialDone()
@@ -792,7 +792,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         channel.presence.unsubscribe()
         waitUntil(timeout: testTimeout) { done in
             channel.presence.get { members, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 guard let members = members else {
                     fail("Members is nil"); done(); return
                 }
@@ -827,7 +827,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel1.attach { err in
-                expect(err).to(beNil())
+                XCTAssertNil(err)
                 channel1.presence.subscribe(.enter) { member in
                     expect(member.clientId).to(equal(options.clientId))
                     expect(member.data as? NSObject).to(equal("online" as NSObject?))
@@ -942,11 +942,11 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel2.presence.enterClient("john", data: "online") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 channel2.presence.updateClient("john", data: "away") { error in
-                    expect(error).to(beNil())
+                    XCTAssertNil(error)
                     channel2.presence.leaveClient("john", data: nil) { error in
-                        expect(error).to(beNil())
+                        XCTAssertNil(error)
                         done()
                     }
                 }
@@ -981,7 +981,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 done()
             }
             channel2.presence.enter("online") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
             }
         }
     }
@@ -1038,7 +1038,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 partialDone()
             }
             channel.presence.enter("online") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 partialDone()
             }
         }
@@ -1046,7 +1046,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let transport = client.internal.transport as! TestProxyTransport
         let sent = transport.protocolMessagesSent.filter { $0.action == .presence }[0].presence![0]
         expect(sent.action).to(equal(ARTPresenceAction.enter))
-        expect(sent.clientId).to(beNil())
+        XCTAssertNil(sent.clientId)
 
         let received = transport.protocolMessagesReceived.filter { $0.action == .presence }[0].presence![0]
         expect(received.action).to(equal(ARTPresenceAction.enter))
@@ -1170,7 +1170,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.subscribe(.enter) { member in
-                expect(member.data).to(beNil())
+                XCTAssertNil(member.data)
                 done()
             }
             channel.presence.enter(nil)
@@ -1203,7 +1203,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.subscribe(.update) { member in
-                expect(member.data).to(beNil())
+                XCTAssertNil(member.data)
                 done()
             }
             channel.presence.update(nil)
@@ -1244,7 +1244,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.update("online") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -1284,7 +1284,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enter("online") { error in
                 channel.presence.update("offline") { error in
-                    expect(error).to(beNil())
+                    XCTAssertNil(error)
                     done()
                 }
             }
@@ -1293,7 +1293,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let transport = client.internal.transport as! TestProxyTransport
         let sent = transport.protocolMessagesSent.filter { $0.action == .presence }[1].presence![0]
         expect(sent.action).to(equal(ARTPresenceAction.update))
-        expect(sent.clientId).to(beNil())
+        XCTAssertNil(sent.clientId)
 
         let receivedPresenceProtocolMessages = transport.protocolMessagesReceived.filter { $0.action == .presence }
         let receivedPresenceMessages = receivedPresenceProtocolMessages.flatMap { $0.presence! }
@@ -1373,7 +1373,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -1381,7 +1381,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         channel.presence.unsubscribe()
         waitUntil(timeout: testTimeout) { done in
             channel.presence.get { members, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 guard let members = members else {
                     fail("Members is nil"); done(); return
                 }
@@ -1411,7 +1411,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 partialDone()
             }
             channel.presence.enterClient("tester", data: nil) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 partialDone()
             }
         }
@@ -1429,7 +1429,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enterClient("tester", data: nil) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -1511,7 +1511,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channelSubscribed.presence.get { members, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 guard let members = members else {
                     fail("Members is nil"); done(); return
                 }
@@ -1590,7 +1590,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channelSubscribed.presence.get { members, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 guard let members = members else {
                     fail("Members is nil"); done(); return
                 }
@@ -1656,7 +1656,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 partialDone()
             }
             channel.attach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 partialDone()
             }
         }
@@ -1708,7 +1708,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 partialDone()
             }
             channel.attach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 partialDone()
             }
         }
@@ -1728,7 +1728,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 partialDone()
             }
             channel.presence.enterClient("tester", data: nil) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 partialDone()
             }
         }
@@ -1752,11 +1752,11 @@ class RealtimeClientPresenceTests: XCTestCase {
                 partialDone()
             }
             channel.presence.enterClient("tester", data: nil) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 partialDone()
             }
             channel.presence.updateClient("tester", data: nil) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 partialDone()
             }
         }
@@ -1785,7 +1785,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 partialDone()
             }
             channel.attach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 partialDone()
             }
         }
@@ -1875,7 +1875,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
 
             channel.attach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 expect(channel.internal.presenceMap.syncInProgress).to(beTrue())
 
                 // Inject a fabricated Presence message
@@ -1912,7 +1912,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
             channel.presence.enterClient("tester", data: nil) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 partialDone()
             }
             channel.presence.subscribe(.enter) { _ in
@@ -2050,14 +2050,14 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enter("online") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.leave("offline") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -2073,7 +2073,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enter("online") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -2114,7 +2114,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enter("online") { error in
                 channel.presence.leave(nil) { error in
-                    expect(error).to(beNil())
+                    XCTAssertNil(error)
                     done()
                 }
             }
@@ -2124,7 +2124,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         let sent = transport.protocolMessagesSent.filter { $0.action == .presence }[1].presence![0]
         expect(sent.action).to(equal(ARTPresenceAction.leave))
-        expect(sent.clientId).to(beNil())
+        XCTAssertNil(sent.clientId)
 
         let receivedPresenceProtocolMessages = transport.protocolMessagesReceived.filter { $0.action == .presence }
         let receivedPresenceMessages = receivedPresenceProtocolMessages.flatMap { $0.presence! }
@@ -2145,18 +2145,18 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.leave(nil) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enter("online") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 channel.presence.leave(nil) { error in
-                    expect(error).to(beNil())
+                    XCTAssertNil(error)
                     channel.presence.leave(nil) { error in
-                        expect(error).to(beNil())
+                        XCTAssertNil(error)
                         done()
                     }
                 }
@@ -2178,7 +2178,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enter("online") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
             expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
@@ -2220,11 +2220,11 @@ class RealtimeClientPresenceTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
             channel.attach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 partialDone()
             }
             channel.detach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 partialDone()
             }
         }
@@ -2264,7 +2264,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enter(nil) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -2289,7 +2289,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enter(nil) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -2433,7 +2433,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 partlyDone()
             }
             channel2.presence.enter(expectedData) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 partlyDone()
             }
         }
@@ -2459,21 +2459,21 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel2.presence.enter(expectedData) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
 
         waitUntil(timeout: testTimeout) { done in
             channel1.attach { err in
-                expect(err).to(beNil())
+                XCTAssertNil(err)
                 let partlyDone = AblyTests.splitDone(2, done: done)
                 channel1.presence.subscribe(.leave) { member in
                     expect(member.data as? NSObject).to(equal(expectedData as NSObject?))
                     partlyDone()
                 }
                 channel2.presence.leave(nil) { error in
-                    expect(error).to(beNil())
+                    XCTAssertNil(error)
                     partlyDone()
                 }
             }
@@ -2627,7 +2627,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
             channel.presence.enterClient(clientId, data: nil) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 partialDone()
             }
             channel.presence.subscribe(.enter) { presence in
@@ -2637,7 +2637,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         }
         waitUntil(timeout: testTimeout) { done in
             channel.presence.get { members, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 expect(members).to(haveCount(1))
                 expect(channel.internal.presenceMap.members).to(haveCount(1))
                 expect(channel.internal.presenceMap.localMembers).to(haveCount(1))
@@ -2662,7 +2662,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 partialDone()
             }
             channel.presence.enterClient("one", data: nil) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 partialDone()
             }
         }
@@ -2699,7 +2699,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             let partialDone = AblyTests.splitDone(3, done: done)
 
             channel.once(.attached) { stateChange in
-                expect(stateChange.reason).to(beNil())
+                XCTAssertNil(stateChange.reason)
                 partialDone()
             }
 
@@ -2734,7 +2734,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         expect(channel.presence.syncComplete).to(beFalse())
         waitUntil(timeout: testTimeout) { done in
             channel.presence.get { presences, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 guard let presences = presences else {
                     fail("Presences is nil"); done(); return
                 }
@@ -2761,7 +2761,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 partialDone()
             }
             channel.presence.enterClient("one", data: nil) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 partialDone()
             }
         }
@@ -2786,7 +2786,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.get { presences, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 guard let presences = presences else {
                     fail("Presences is nil"); done(); return
                 }
@@ -2807,7 +2807,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enterClient("Client 1", data: nil) { errorInfo in
-                expect(errorInfo).to(beNil())
+                XCTAssertNil(errorInfo)
                 done()
             }
         }
@@ -2843,9 +2843,9 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enter(nil) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 channel.presence.updateClient("john", data: "mobile") { error in
-                    expect(error).to(beNil())
+                    XCTAssertNil(error)
                     done()
                 }
             }
@@ -2878,7 +2878,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             waitUntil(timeout: testTimeout) { done in
                 // Call: enterClient, updateClient and leaveClient
                 performMethod(channel.presence) { errorInfo in
-                    expect(errorInfo).to(beNil())
+                    XCTAssertNil(errorInfo)
                     done()
                 }
                 expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
@@ -3009,7 +3009,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enter("browser") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 channel.presence.updateClient("tester", data: "mobile") { error in
                     expect(error!.message).to(contain("mismatched clientId"))
                     done()
@@ -3035,7 +3035,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enterClient("user", data: nil) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connected))
                 expect(client.internal.queuedMessages).to(haveCount(0))
                 done()
@@ -3062,7 +3062,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enterClient("user", data: nil) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 expect(client.connection.state).to(equal(ARTRealtimeConnectionState.connected))
                 expect(client.internal.queuedMessages).to(haveCount(0))
                 done()
@@ -3176,7 +3176,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.get { members, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 expect(members).to(haveCount(150))
                 expect(members!.first).to(beAnInstanceOf(ARTPresenceMessage.self))
                 expect(members).to(allPass { member in
@@ -3197,7 +3197,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         expect(channel.state).to(equal(ARTRealtimeChannelState.initialized))
         waitUntil(timeout: testTimeout) { done in
             channel.presence.get { membersPage, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 expect(membersPage).toNot(beNil())
                 done()
             }
@@ -3231,7 +3231,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 expect(error?.code).to(equal(ARTErrorCode.channelOperationFailedInvalidState.intValue))
                 expect(channel.errorReason).to(equal(protocolError))
                 expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
-                expect(members).to(beNil())
+                XCTAssertNil(members)
                 done()
             }
         }
@@ -3259,7 +3259,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                     fail("Error is empty"); done(); return
                 }
                 expect(error.message).to(equal(protocolError.message))
-                expect(members).to(beNil())
+                XCTAssertNil(members)
                 done()
             }
         }
@@ -3276,7 +3276,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             channel.attach()
             channel.detach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -3284,7 +3284,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             channel.presence.get { members, error in
                 expect(error?.code).to(equal(ARTErrorCode.channelOperationFailedInvalidState.intValue))
-                expect(members).to(beNil())
+                XCTAssertNil(members)
                 expect(channel.state).to(equal(ARTRealtimeChannelState.detached))
                 done()
             }
@@ -3312,11 +3312,11 @@ class RealtimeClientPresenceTests: XCTestCase {
                     fail("Error is nil"); done(); return
                 }
                 expect(error.message).to(equal("channel is being DETACHED"))
-                expect(members).to(beNil())
+                XCTAssertNil(members)
                 partialDone()
             }
             channel.detach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 partialDone()
             }
         }
@@ -3352,7 +3352,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         }
 
         channel.presence.get(getParams) { result, err in
-            expect(err).to(beNil())
+            XCTAssertNil(err)
             expect(result).toNot(beNil())
             guard let result = result else {
                 return
@@ -3385,13 +3385,13 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 let transport = client.internal.transport as! TestProxyTransport
                 transport.setListenerBeforeProcessingIncomingMessage { protocolMessage in
                     if protocolMessage.action == .sync {
                         expect(protocolMessage.presence!.count).to(equal(100))
                         channel.presence.get(query) { members, error in
-                            expect(error).to(beNil())
+                            XCTAssertNil(error)
                             expect(members).to(haveCount(150))
                             done()
                         }
@@ -3436,14 +3436,14 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
 
             channel.attach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 partialDone()
             }
         }
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.get(query) { members, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 expect(members).to(haveCount(100))
                 done()
             }
@@ -3475,7 +3475,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
 
                 // Inject a fabricated Presence message
                 let presenceMessage = ARTProtocolMessage()
@@ -3495,7 +3495,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.get(query) { members, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 guard let members = members else {
                     fail("Members is nil"); done(); return
                 }
@@ -3575,7 +3575,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channelSubscribed.presence.get(query) { members, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 guard let members = members else {
                     fail("Members is nil"); done(); return
                 }
@@ -3665,7 +3665,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.history { membersPage, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 guard let membersPage = membersPage else {
                     fail("membersPage is empty"); done(); return
                 }
@@ -3682,7 +3682,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 expect(membersPage.isLast).to(beFalse())
 
                 membersPage.next { nextPage, error in
-                    expect(error).to(beNil())
+                    XCTAssertNil(error)
                     guard let nextPage = nextPage else {
                         fail("nextPage is empty"); done(); return
                     }
@@ -3762,7 +3762,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enterClient("test", data: expectedData) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -3805,18 +3805,18 @@ class RealtimeClientPresenceTests: XCTestCase {
                 partialDone()
             }
             channel.presence.enterClient(john, data: nil) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 partialDone()
             }
             channel.presence.enterClient(max, data: nil) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 partialDone()
             }
         }
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.get { members, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 guard let members = members else {
                     fail("Members is nil"); done(); return
                 }
