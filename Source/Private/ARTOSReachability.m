@@ -8,6 +8,8 @@
 
 #import "ARTOSReachability.h"
 
+typedef const void * __nonnull (* __nullable ARTNetworkReachabilityContextRetain)(const void * _Nullable info);
+
 /// Global callback for network state changes
 static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void* info) {
     void (^callbackBlock)(SCNetworkReachabilityFlags) = (__bridge id)info;
@@ -52,8 +54,12 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
     
     _reachabilityRef = SCNetworkReachabilityCreateWithName(NULL, [host UTF8String]);
     
-    SCNetworkReachabilityContext context = { .version = 0, .info = (void *)CFBridgingRetain(callbackBlock), .release = CFRelease };
-    
+    SCNetworkReachabilityContext context = {
+        .version = 0,
+        .info = (__bridge void *)(callbackBlock),
+        .retain = (ARTNetworkReachabilityContextRetain)CFBridgingRetain,
+        .release = CFRelease
+    };
     if (SCNetworkReachabilitySetCallback(_reachabilityRef, ARTOSReachability_Callback, &context)) {
         if (SCNetworkReachabilityScheduleWithRunLoop(_reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode)) {
             [_logger info:@"Reachability: started listening for host %@", _host];
