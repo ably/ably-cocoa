@@ -181,7 +181,7 @@ NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE N
 
 Those examples need to be kept in sync with:
 
-Spec/ReadmeExamples.swift
+Test/Tests/ReadmeExamplesTests.swift
 
 ==============================================
 **********************************************
