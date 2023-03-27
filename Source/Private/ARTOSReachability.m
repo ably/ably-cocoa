@@ -8,21 +8,17 @@
 
 #import "ARTOSReachability.h"
 
-@interface ARTOSReachability ()
-- (void)internalCallback:(BOOL)reachable;
-@end
+typedef const void * __nonnull (* __nullable ARTNetworkReachabilityContextRetain)(const void * _Nullable info);
 
 /// Global callback for network state changes
 static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetworkReachabilityFlags flags, void* info) {
-    ARTOSReachability *reachability = (__bridge ARTOSReachability *)info;
-    BOOL reachable = flags & kSCNetworkReachabilityFlagsReachable;
-    [reachability internalCallback:reachable];
+    void (^callbackBlock)(SCNetworkReachabilityFlags) = (__bridge id)info;
+    callbackBlock(flags);
 }
 
 @implementation ARTOSReachability {
     ARTLog *_logger;
     NSString *_host;
-    void (^_callback)(BOOL);
     SCNetworkReachabilityRef _reachabilityRef;
     dispatch_queue_t _queue;
 }
@@ -38,11 +34,32 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
 - (void)listenForHost:(NSString *)host callback:(void (^)(BOOL))callback {
     [self off];
     _host = host;
-    _callback = callback;
 
-    _reachabilityRef = SCNetworkReachabilityCreateWithName(NULL, [host UTF8String]);
-    SCNetworkReachabilityContext context = {0, (__bridge void *)(self), NULL, NULL, NULL};
+    // This strategy is taken from Mike Ash's book "The Complete Friday Q&A: Volume III".
+    // Article: https://www.mikeash.com/pyblog/friday-qa-2013-06-14-reachability.html
     
+    __weak ARTOSReachability *weakSelf = self;
+    void (^callbackBlock)(SCNetworkReachabilityFlags) = ^(SCNetworkReachabilityFlags flags) {
+        ARTOSReachability *strongSelf = weakSelf;
+        if (strongSelf) {
+            BOOL reachable = (flags & kSCNetworkReachabilityFlagsReachable) != 0;
+            [strongSelf->_logger info:@"Reachability: host %@ is reachable: %@", strongSelf->_host, reachable ? @"true" : @"false"];
+            dispatch_async(strongSelf->_queue, ^{
+                if (callback) {
+                    callback(reachable);
+                }
+            });
+        }
+    };
+    
+    _reachabilityRef = SCNetworkReachabilityCreateWithName(NULL, [host UTF8String]);
+    
+    SCNetworkReachabilityContext context = {
+        .version = 0,
+        .info = (__bridge void *)(callbackBlock),
+        .retain = (ARTNetworkReachabilityContextRetain)CFBridgingRetain,
+        .release = CFRelease
+    };
     if (SCNetworkReachabilitySetCallback(_reachabilityRef, ARTOSReachability_Callback, &context)) {
         if (SCNetworkReachabilityScheduleWithRunLoop(_reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode)) {
             [_logger info:@"Reachability: started listening for host %@", _host];
@@ -57,18 +74,11 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
     if (_reachabilityRef != NULL) {
         [_logger info:@"Reachability: stopped listening for host %@", _host];
         SCNetworkReachabilityUnscheduleFromRunLoop(_reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
+        SCNetworkReachabilitySetCallback(_reachabilityRef, NULL, NULL);
         CFRelease(_reachabilityRef);
         _reachabilityRef = NULL;
     }
-    _callback = nil;
     _host = nil;
-}
-
-- (void)internalCallback:(BOOL)reachable {
-    [_logger info:@"Reachability: host %@ is reachable: %@", _host, reachable ? @"true" : @"false"];
-    dispatch_async(_queue, ^{
-        if (self->_callback) self->_callback(reachable);
-    });
 }
 
 - (void)dealloc {
