@@ -24,6 +24,12 @@
 		2132C29229D348AB000C4355 /* MockVersion2LogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C29129D348AB000C4355 /* MockVersion2LogHandler.swift */; };
 		2132C29329D348AB000C4355 /* MockVersion2LogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C29129D348AB000C4355 /* MockVersion2LogHandler.swift */; };
 		2132C29429D348AB000C4355 /* MockVersion2LogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C29129D348AB000C4355 /* MockVersion2LogHandler.swift */; };
+		2132C23129D24FA6000C4355 /* ARTInternalLogHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C23029D24FA6000C4355 /* ARTInternalLogHandler.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		2132C23229D24FA6000C4355 /* ARTInternalLogHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C23029D24FA6000C4355 /* ARTInternalLogHandler.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		2132C23329D24FA6000C4355 /* ARTInternalLogHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C23029D24FA6000C4355 /* ARTInternalLogHandler.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		2132C28A29D346BD000C4355 /* ARTInternalLogHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 2132C28929D346BD000C4355 /* ARTInternalLogHandler.m */; };
+		2132C28B29D346BD000C4355 /* ARTInternalLogHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 2132C28929D346BD000C4355 /* ARTInternalLogHandler.m */; };
+		2132C28C29D346BD000C4355 /* ARTInternalLogHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 2132C28929D346BD000C4355 /* ARTInternalLogHandler.m */; };
 		21447D3B254A2ECB00B3905A /* ARTSRWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 217D181B25421FED00DFF07E /* ARTSRWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		21447D40254A2ECE00B3905A /* ARTSRWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 217D181B25421FED00DFF07E /* ARTSRWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		21447D45254A2ED100B3905A /* ARTSRWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 217D181B25421FED00DFF07E /* ARTSRWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -979,6 +985,8 @@
 		1CD8DC9E1B1C7315007EAF36 /* ARTDefault.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTDefault.m; sourceTree = "<group>"; };
 		2132C28D29D34803000C4355 /* ARTVersion2LogHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTVersion2LogHandler.h; sourceTree = "<group>"; };
 		2132C29129D348AB000C4355 /* MockVersion2LogHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockVersion2LogHandler.swift; sourceTree = "<group>"; };
+		2132C23029D24FA6000C4355 /* ARTInternalLogHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTInternalLogHandler.h; path = PrivateHeaders/Ably/ARTInternalLogHandler.h; sourceTree = "<group>"; };
+		2132C28929D346BD000C4355 /* ARTInternalLogHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTInternalLogHandler.m; sourceTree = "<group>"; };
 		215F75F62922B1DB009E0E76 /* ARTClientInformation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTClientInformation.h; path = include/Ably/ARTClientInformation.h; sourceTree = "<group>"; };
 		215F75F72922B1DB009E0E76 /* ARTClientInformation.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTClientInformation.m; sourceTree = "<group>"; };
 		215F75FE2922B30F009E0E76 /* ClientInformationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientInformationTests.swift; sourceTree = "<group>"; };
@@ -1817,6 +1825,8 @@
 				215F75F72922B1DB009E0E76 /* ARTClientInformation.m */,
 				215F76022922C76C009E0E76 /* ARTClientInformation+Private.h */,
 				2132C28D29D34803000C4355 /* ARTVersion2LogHandler.h */,
+				2132C23029D24FA6000C4355 /* ARTInternalLogHandler.h */,
+				2132C28929D346BD000C4355 /* ARTInternalLogHandler.m */,
 			);
 			name = Utilities;
 			sourceTree = "<group>";
@@ -2048,6 +2058,7 @@
 				D7EBE5A41BE9F6900086E675 /* ARTConnection.h in Headers */,
 				96A507AD1A3780F60077CDF8 /* ARTJsonEncoder.h in Headers */,
 				EB89D4041C61C1A4007FA5B7 /* ARTRestChannels.h in Headers */,
+				2132C23129D24FA6000C4355 /* ARTInternalLogHandler.h in Headers */,
 				96A507951A370F860077CDF8 /* ARTStats.h in Headers */,
 				D7AE18D21E5B410F00478D82 /* ARTPushChannelSubscriptions.h in Headers */,
 				D7D8F8251BC2C691009718F2 /* ARTTokenDetails.h in Headers */,
@@ -2103,6 +2114,7 @@
 				D710D58E21949D29008F54AD /* ARTDataEncoder.h in Headers */,
 				D710D49221949AB7008F54AD /* ARTRest+Private.h in Headers */,
 				D710D58721949D29008F54AD /* ARTChannelOptions.h in Headers */,
+				2132C23229D24FA6000C4355 /* ARTInternalLogHandler.h in Headers */,
 				D710D64521949E61008F54AD /* ARTEventEmitter+Private.h in Headers */,
 				D710D4D121949BC0008F54AD /* ARTPresence+Private.h in Headers */,
 				D710D69021949EFF008F54AD /* ARTCrypto.h in Headers */,
@@ -2248,6 +2260,7 @@
 				D710D51121949C19008F54AD /* ARTRealtimeChannel+Private.h in Headers */,
 				D710D5B421949D2A008F54AD /* ARTDataEncoder.h in Headers */,
 				D710D49421949AB8008F54AD /* ARTRest+Private.h in Headers */,
+				2132C23329D24FA6000C4355 /* ARTInternalLogHandler.h in Headers */,
 				D710D5AD21949D2A008F54AD /* ARTChannelOptions.h in Headers */,
 				D710D64B21949E62008F54AD /* ARTEventEmitter+Private.h in Headers */,
 				D710D4D321949BC1008F54AD /* ARTPresence+Private.h in Headers */,
@@ -2779,6 +2792,7 @@
 				1CD8DCA01B1C7315007EAF36 /* ARTDefault.m in Sources */,
 				D7AE18CF1E5B40FE00478D82 /* ARTPushDeviceRegistrations.m in Sources */,
 				D7B621951E4A6FE600684474 /* ARTDeviceDetails.m in Sources */,
+				2132C28A29D346BD000C4355 /* ARTInternalLogHandler.m in Sources */,
 				D7588AF41BFF91B800BB8279 /* ARTURLSessionServerTrust.m in Sources */,
 				D74CBC04212EB58700D090E4 /* ARTNSHTTPURLResponse+ARTPaginated.m in Sources */,
 				D5BB213626AAA60500AA5F3E /* ARTNSError+ARTUtils.m in Sources */,
@@ -2960,6 +2974,7 @@
 				D710D4ED21949C0D008F54AD /* ARTRealtimeChannel.m in Sources */,
 				D710D67021949E78008F54AD /* ARTNSDictionary+ARTDictionaryUtil.m in Sources */,
 				D710D48C21949A97008F54AD /* ARTConstants.m in Sources */,
+				2132C28B29D346BD000C4355 /* ARTInternalLogHandler.m in Sources */,
 				D710D5DA21949D78008F54AD /* ARTBaseMessage.m in Sources */,
 				D710D63421949E03008F54AD /* ARTNSMutableURLRequest+ARTPaginated.m in Sources */,
 				217D1850254222F700DFF07E /* ARTSRHTTPConnectMessage.m in Sources */,
@@ -3071,6 +3086,7 @@
 				D710D65621949E77008F54AD /* ARTNSDictionary+ARTDictionaryUtil.m in Sources */,
 				D710D48E21949A98008F54AD /* ARTConstants.m in Sources */,
 				D710D60021949D79008F54AD /* ARTBaseMessage.m in Sources */,
+				2132C28C29D346BD000C4355 /* ARTInternalLogHandler.m in Sources */,
 				D520C4DB26809BB5000012B2 /* ARTStringifiable.m in Sources */,
 				D710D64421949E04008F54AD /* ARTNSMutableURLRequest+ARTPaginated.m in Sources */,
 				217D1867254222FA00DFF07E /* ARTSRHTTPConnectMessage.m in Sources */,
