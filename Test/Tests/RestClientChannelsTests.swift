@@ -53,7 +53,7 @@ class RestClientChannelsTests: XCTestCase {
         expect(channel).to(beAChannel(named: channelName))
 
         let sameChannel = client.channels.get(channelName).internal
-        expect(sameChannel).to(beIdenticalTo(channel))
+        XCTAssertTrue(sameChannel === channel)
     }
 
     // RSN3b
@@ -62,7 +62,7 @@ class RestClientChannelsTests: XCTestCase {
         let channel = client.channels.get(channelName, options: options)
 
         expect(channel.internal).to(beAChannel(named: channelName))
-        expect(channel.internal.options).to(beIdenticalTo(options))
+        XCTAssertTrue(channel.internal.options === options)
     }
 
     // RSN3b
@@ -72,8 +72,8 @@ class RestClientChannelsTests: XCTestCase {
 
         let newButSameChannel = client.channels.get(channelName).internal
 
-        expect(newButSameChannel).to(beIdenticalTo(channel))
-        expect(newButSameChannel.options).to(beIdenticalTo(options))
+        XCTAssertTrue(newButSameChannel === channel)
+        XCTAssertTrue(newButSameChannel.options === options)
     }
 
     // RSN3c
@@ -84,19 +84,19 @@ class RestClientChannelsTests: XCTestCase {
         let newOptions = ARTChannelOptions(cipher: cipherParams)
         let newButSameChannel = client.channels.get(channelName, options: newOptions).internal
 
-        expect(newButSameChannel).to(beIdenticalTo(channel))
-        expect(newButSameChannel.options).to(beIdenticalTo(newOptions))
+        XCTAssertTrue(newButSameChannel === channel)
+        XCTAssertTrue(newButSameChannel.options === newOptions)
         expect(newButSameChannel.options).notTo(beIdenticalTo(oldOptions))
     }
 
     // RSN2
 
     func test__007__RestClient__channels__channelExists__should_check_if_a_channel_exists() {
-        expect(client.channels.exists(channelName)).to(beFalse())
+        XCTAssertFalse(client.channels.exists(channelName))
 
         client.channels.get(channelName)
 
-        expect(client.channels.exists(channelName)).to(beTrue())
+        XCTAssertTrue(client.channels.exists(channelName))
     }
 
     // RSN4
@@ -111,7 +111,7 @@ class RestClientChannelsTests: XCTestCase {
             client.channels.release(channel.name)
         }
 
-        expect(channel).to(beNil())
+        XCTAssertNil(channel)
     }
 
     // RSN2

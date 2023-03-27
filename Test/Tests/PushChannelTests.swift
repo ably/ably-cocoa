@@ -39,7 +39,7 @@ class PushChannelTests: XCTestCase {
                     fail("Error is nil"); done(); return
                 }
                 expect(error.message).to(contain("cannot use device before device activation has finished"))
-                expect(AblyTests.currentQueueLabel() == AblyTests.userQueue.label).to(beTrue())
+                XCTAssertTrue(AblyTests.currentQueueLabel() == AblyTests.userQueue.label)
                 done()
             }
         }
@@ -54,7 +54,7 @@ class PushChannelTests: XCTestCase {
         let channel = rest.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.push.subscribeDevice { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -65,14 +65,14 @@ class PushChannelTests: XCTestCase {
         let decodedBody = try XCTUnwrap(try rest.internal.defaultEncoder.decode(rawBody), "Decode request body failed")
         let body = try XCTUnwrap(decodedBody as? NSDictionary, "Request body is invalid")
 
-        expect(request.httpMethod) == "POST"
+        XCTAssertEqual(request.httpMethod, "POST")
         expect(url.absoluteString).to(contain("/push/channelSubscriptions"))
-        expect(body.value(forKey: "deviceId") as? String).to(equal(rest.device.id))
-        expect(body.value(forKey: "channel") as? String).to(equal(channel.name))
+        XCTAssertEqual(body.value(forKey: "deviceId") as? String, rest.device.id)
+        XCTAssertEqual(body.value(forKey: "channel") as? String, channel.name)
 
         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
-        expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
-        expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"]).to(beNil())
+        XCTAssertEqual(authorization, testIdentityTokenDetails.token.base64Encoded())
+        XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"])
     }
 
     // RSH7b
@@ -93,7 +93,7 @@ class PushChannelTests: XCTestCase {
                     fail("Error is nil"); done(); return
                 }
                 expect(error.message).to(contain("null client ID"))
-                expect(AblyTests.currentQueueLabel() == AblyTests.userQueue.label).to(beTrue())
+                XCTAssertTrue(AblyTests.currentQueueLabel() == AblyTests.userQueue.label)
                 done()
             }
         }
@@ -108,7 +108,7 @@ class PushChannelTests: XCTestCase {
         let channel = rest.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.push.subscribeClient { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -119,13 +119,13 @@ class PushChannelTests: XCTestCase {
         let decodedBody = try XCTUnwrap(try rest.internal.defaultEncoder.decode(rawBody), "Decode request body failed")
         let body = try XCTUnwrap(decodedBody as? NSDictionary, "Request body is invalid")
 
-        expect(request.httpMethod) == "POST"
+        XCTAssertEqual(request.httpMethod, "POST")
         expect(url.absoluteString).to(contain("/push/channelSubscriptions"))
-        expect(body.value(forKey: "clientId") as? String).to(equal(rest.device.clientId))
-        expect(body.value(forKey: "channel") as? String).to(equal(channel.name))
+        XCTAssertEqual(body.value(forKey: "clientId") as? String, rest.device.clientId)
+        XCTAssertEqual(body.value(forKey: "channel") as? String, channel.name)
 
-        expect(request.allHTTPHeaderFields?["X-Ably-DeviceToken"]).to(beNil())
-        expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"]).to(beNil())
+        XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceToken"])
+        XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"])
     }
 
     // RSH7c
@@ -138,7 +138,7 @@ class PushChannelTests: XCTestCase {
                     fail("Error is nil"); done(); return
                 }
                 expect(error.message).to(contain("cannot use device before device activation has finished"))
-                expect(AblyTests.currentQueueLabel() == AblyTests.userQueue.label).to(beTrue())
+                XCTAssertTrue(AblyTests.currentQueueLabel() == AblyTests.userQueue.label)
                 done()
             }
         }
@@ -153,7 +153,7 @@ class PushChannelTests: XCTestCase {
         let channel = rest.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.push.unsubscribeDevice { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -162,14 +162,14 @@ class PushChannelTests: XCTestCase {
         let url = try XCTUnwrap(request.url, "No request url found")
         let query = try XCTUnwrap(url.query, "should have a query")
 
-        expect(request.httpMethod) == "DELETE"
+        XCTAssertEqual(request.httpMethod, "DELETE")
         expect(url.absoluteString).to(contain("/push/channelSubscriptions"))
         expect(query).to(haveParam("deviceId", withValue: rest.device.id))
         expect(query).to(haveParam("channel", withValue: channel.name))
 
         let authorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
-        expect(authorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
-        expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"]).to(beNil())
+        XCTAssertEqual(authorization, testIdentityTokenDetails.token.base64Encoded())
+        XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"])
     }
 
     // RSH7d
@@ -190,7 +190,7 @@ class PushChannelTests: XCTestCase {
                     fail("Error is nil"); done(); return
                 }
                 expect(error.message).to(contain("null client ID"))
-                expect(AblyTests.currentQueueLabel() == AblyTests.userQueue.label).to(beTrue())
+                XCTAssertTrue(AblyTests.currentQueueLabel() == AblyTests.userQueue.label)
                 done()
             }
         }
@@ -205,7 +205,7 @@ class PushChannelTests: XCTestCase {
         let channel = rest.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.push.unsubscribeClient { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -214,13 +214,13 @@ class PushChannelTests: XCTestCase {
         let url = try XCTUnwrap(request.url, "No request url found")
         let query = try XCTUnwrap(url.query, "should have a query")
         
-        expect(request.httpMethod) == "DELETE"
+        XCTAssertEqual(request.httpMethod, "DELETE")
         expect(url.absoluteString).to(contain("/push/channelSubscriptions"))
         expect(query).to(haveParam("clientId", withValue: rest.device.clientId!))
         expect(query).to(haveParam("channel", withValue: channel.name))
 
-        expect(request.allHTTPHeaderFields?["X-Ably-DeviceToken"]).to(beNil())
-        expect(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"]).to(beNil())
+        XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceToken"])
+        XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceSecrect"])
     }
 
     // RSH7e
@@ -233,8 +233,8 @@ class PushChannelTests: XCTestCase {
         let channel = rest.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             try? channel.push.listSubscriptions(params) { result, error in
-                expect(error).to(beNil())
-                expect(result).toNot(beNil())
+                XCTAssertNil(error)
+                XCTAssertNotNil(result)
                 done()
             }
         }
@@ -258,8 +258,8 @@ class PushChannelTests: XCTestCase {
         let channel = rest.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             try? channel.push.listSubscriptions(params) { result, error in
-                expect(error).to(beNil())
-                expect(result).toNot(beNil())
+                XCTAssertNil(error)
+                XCTAssertNotNil(result)
                 done()
             }
         }
@@ -278,7 +278,7 @@ class PushChannelTests: XCTestCase {
     func test__011__Push_Channel__listSubscriptions__should_not_accept_null_deviceId_and_null_clientId() {
         let channel = rest.channels.get(uniqueChannelName())
         expect { try channel.push.listSubscriptions([:]) { _, _ in } }.to(throwError { (error: NSError) in
-            expect(error.code).to(equal(ARTDataQueryError.missingRequiredFields.rawValue))
+            XCTAssertEqual(error.code, ARTDataQueryError.missingRequiredFields.rawValue)
         })
     }
 
@@ -289,7 +289,7 @@ class PushChannelTests: XCTestCase {
         ]
         let channel = rest.channels.get(uniqueChannelName())
         expect { try channel.push.listSubscriptions(params) { _, _ in } }.to(throwError { (error: NSError) in
-            expect(error.code).to(equal(ARTDataQueryError.invalidParameters.rawValue))
+            XCTAssertEqual(error.code, ARTDataQueryError.invalidParameters.rawValue)
         })
     }
 
@@ -309,7 +309,7 @@ class PushChannelTests: XCTestCase {
         let channel = rest.channels.get("pushenabled:\(uniqueChannelName())")
         waitUntil(timeout: testTimeout) { done in
             channel.push.subscribeClient { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -320,11 +320,11 @@ class PushChannelTests: XCTestCase {
         ]
         waitUntil(timeout: testTimeout) { done in
             try! channel.push.listSubscriptions(params) { result, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 guard let result = result else {
                     fail("Result is nil"); done(); return
                 }
-                expect(result.items.count) == 1
+                XCTAssertEqual(result.items.count, 1)
                 done()
             }
         }

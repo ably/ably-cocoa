@@ -99,7 +99,7 @@ class StatsTests: XCTestCase {
         func test__should_return_value_for_message_counts() {
             contextBeforeEach?()
 
-            expect(subject?.messages.count).to(equal(5))
+            XCTAssertEqual(subject?.messages.count, 5)
 
             contextAfterEach?()
         }
@@ -108,7 +108,7 @@ class StatsTests: XCTestCase {
         func test__should_return_value_for_all_data_transferred() {
             contextBeforeEach?()
 
-            expect(subject?.all.data).to(equal(10))
+            XCTAssertEqual(subject?.all.data, 10)
 
             contextAfterEach?()
         }
@@ -117,7 +117,7 @@ class StatsTests: XCTestCase {
         func test__should_return_zero_for_empty_values() {
             contextBeforeEach?()
 
-            expect(subject?.presence.count).to(equal(0))
+            XCTAssertEqual(subject?.presence.count, 0)
 
             contextAfterEach?()
         }
@@ -204,7 +204,7 @@ class StatsTests: XCTestCase {
         func test__should_return_value_for_realtime_message_counts() {
             contextBeforeEach?()
 
-            expect(subject?.realtime.messages.count).to(equal(5))
+            XCTAssertEqual(subject?.realtime.messages.count, 5)
 
             contextAfterEach?()
         }
@@ -213,7 +213,7 @@ class StatsTests: XCTestCase {
         func test__should_return_value_for_all_presence_data() {
             contextBeforeEach?()
 
-            expect(subject?.all.presence.data).to(equal(210))
+            XCTAssertEqual(subject?.all.presence.data, 210)
 
             contextAfterEach?()
         }
@@ -267,16 +267,16 @@ class StatsTests: XCTestCase {
     }
 
     func test__016__Stats__connections__should_return_value_for_tls_opened_counts() {
-        expect(subject?.tls.opened).to(equal(5))
+        XCTAssertEqual(subject?.tls.opened, 5)
     }
 
     func test__017__Stats__connections__should_return_value_for_all_peak_connections() {
-        expect(subject?.all.peak).to(equal(10))
+        XCTAssertEqual(subject?.all.peak, 10)
     }
 
     // TS2
     func test__018__Stats__connections__should_return_zero_for_empty_values() {
-        expect(subject?.all.refused).to(equal(0))
+        XCTAssertEqual(subject?.all.refused, 0)
     }
 
     // TS9
@@ -286,16 +286,16 @@ class StatsTests: XCTestCase {
     }
 
     func test__020__Stats__channels__should_return_value_for_opened_counts() {
-        expect(channelsTestsSubject?.opened).to(equal(5))
+        XCTAssertEqual(channelsTestsSubject?.opened, 5)
     }
 
     func test__021__Stats__channels__should_return_value_for_peak_channels() {
-        expect(channelsTestsSubject?.peak).to(equal(10))
+        XCTAssertEqual(channelsTestsSubject?.peak, 10)
     }
 
     // TS2
     func test__022__Stats__channels__should_return_zero_for_empty_values() {
-        expect(channelsTestsSubject?.refused).to(equal(0))
+        XCTAssertEqual(channelsTestsSubject?.refused, 0)
     }
 
     enum TestCase_ReusableTestsTestRequestType {
@@ -324,7 +324,7 @@ class StatsTests: XCTestCase {
         func test__should_return_value_for_succeeded() {
             contextBeforeEach?()
 
-            expect(subject?.succeeded).to(equal(5))
+            XCTAssertEqual(subject?.succeeded, 5)
 
             contextAfterEach?()
         }
@@ -332,7 +332,7 @@ class StatsTests: XCTestCase {
         func test__should_return_value_for_failed() {
             contextBeforeEach?()
 
-            expect(subject?.failed).to(equal(10))
+            XCTAssertEqual(subject?.failed, 10)
 
             contextAfterEach?()
         }
@@ -396,7 +396,7 @@ class StatsTests: XCTestCase {
 
         let expected = NSCalendar(identifier: NSCalendar.Identifier.gregorian)?.date(from: dateComponents as DateComponents)
 
-        expect(stats?.intervalTime()).to(equal(expected))
+        XCTAssertEqual(stats?.intervalTime(), expected)
     }
 
     func test__030__Stats__push__should_return_a_ARTStatsPushCount_object() {
@@ -404,27 +404,27 @@ class StatsTests: XCTestCase {
     }
 
     func test__031__Stats__push__should_return_value_for_messages_count() {
-        expect(pushTestsSubject?.messages).to(equal(10))
+        XCTAssertEqual(pushTestsSubject?.messages, 10)
     }
 
     func test__032__Stats__push__should_return_value_for_invalid_notifications() {
-        expect(pushTestsSubject?.invalid).to(equal(1))
+        XCTAssertEqual(pushTestsSubject?.invalid, 1)
     }
 
     func test__033__Stats__push__should_return_value_for_attempted_notifications() {
-        expect(pushTestsSubject?.attempted).to(equal(2))
+        XCTAssertEqual(pushTestsSubject?.attempted, 2)
     }
 
     func test__034__Stats__push__should_return_value_for_successful_notifications() {
-        expect(pushTestsSubject?.succeeded).to(equal(3))
+        XCTAssertEqual(pushTestsSubject?.succeeded, 3)
     }
 
     func test__035__Stats__push__should_return_value_for_failed_notifications() {
-        expect(pushTestsSubject?.failed).to(equal(4))
+        XCTAssertEqual(pushTestsSubject?.failed, 4)
     }
 
     func test__036__Stats__push__should_return_value_for_directPublishes() {
-        expect(pushTestsSubject?.direct).to(equal(5))
+        XCTAssertEqual(pushTestsSubject?.direct, 5)
     }
 
     func test__037__Stats__inProgress__should_return_a_Date_object_representing_the_last_sub_interval_included_in_this_statistic() {
@@ -438,10 +438,10 @@ class StatsTests: XCTestCase {
 
         let expected = NSCalendar(identifier: NSCalendar.Identifier.gregorian)?.date(from: dateComponents as DateComponents)
 
-        expect(inProgressTestsStats?.dateFromInProgress()).to(equal(expected))
+        XCTAssertEqual(inProgressTestsStats?.dateFromInProgress(), expected)
     }
 
     func test__038__Stats__count__should_return_value_for_number_of_lower_level_stats() {
-        expect(countTestStats?.count).to(equal(55))
+        XCTAssertEqual(countTestStats?.count, 55)
     }
 }

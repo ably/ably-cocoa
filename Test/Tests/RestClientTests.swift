@@ -10,7 +10,7 @@ private func testOptionsGiveBasicAuthFalse(_ caseSetter: (ARTAuthOptions) -> Voi
 
     let client = ARTRest(options: options)
 
-    expect(client.auth.internal.options.isBasicAuth()).to(beFalse())
+    XCTAssertFalse(client.auth.internal.options.isBasicAuth())
 }
 
 private let expectedHostOrder = [4, 3, 0, 2, 1]
@@ -34,12 +34,12 @@ private func testUsesAlternativeHost(_ caseTest: FakeNetworkResponse, channelNam
         }
     }
 
-    expect(testHTTPExecutor.requests).to(haveCount(2))
+    XCTAssertEqual(testHTTPExecutor.requests.count, 2)
     if testHTTPExecutor.requests.count != 2 {
         return
     }
-    expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
-    expect(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+    XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.absoluteString, pattern: "//rest.ably.io"))
+    XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.absoluteString, pattern: "//[a-e].ably-realtime.com"))
 }
 
 private func testStoresSuccessfulFallbackHostAsDefaultHost(_ caseTest: FakeNetworkResponse, channelName: String) {
@@ -57,9 +57,9 @@ private func testStoresSuccessfulFallbackHostAsDefaultHost(_ caseTest: FakeNetwo
         }
     }
 
-    expect(testHTTPExecutor.requests).to(haveCount(2))
-    expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.host, pattern: "rest.ably.io")).to(beTrue())
-    expect(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.host, pattern: "[a-e].ably-realtime.com")).to(beTrue())
+    XCTAssertEqual(testHTTPExecutor.requests.count, 2)
+    XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.host, pattern: "rest.ably.io"))
+    XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.host, pattern: "[a-e].ably-realtime.com"))
 
     // #1 Store fallback used to request
     let usedFallbackURL = testHTTPExecutor.requests[1].url!
@@ -73,8 +73,8 @@ private func testStoresSuccessfulFallbackHostAsDefaultHost(_ caseTest: FakeNetwo
     let reusedURL = testHTTPExecutor.requests[2].url!
 
     // Reuse host has to be equal previous (stored #1) fallback host
-    expect(testHTTPExecutor.requests).to(haveCount(3))
-    expect(usedFallbackURL.host).to(equal(reusedURL.host))
+    XCTAssertEqual(testHTTPExecutor.requests.count, 3)
+    XCTAssertEqual(usedFallbackURL.host, reusedURL.host)
 }
 
 private func testRestoresDefaultPrimaryHostAfterTimeoutExpires(_ caseTest: FakeNetworkResponse, channelName: String) {
@@ -102,8 +102,8 @@ private func testRestoresDefaultPrimaryHostAfterTimeoutExpires(_ caseTest: FakeN
         }
     }
 
-    expect(testHTTPExecutor.requests).to(haveCount(3))
-    expect(testHTTPExecutor.requests[2].url!.host).to(equal("rest.ably.io"))
+    XCTAssertEqual(testHTTPExecutor.requests.count, 3)
+    XCTAssertEqual(testHTTPExecutor.requests[2].url!.host, "rest.ably.io")
 }
 
 private func testUsesAnotherFallbackHost(_ caseTest: FakeNetworkResponse, channelName: String) {
@@ -123,10 +123,10 @@ private func testUsesAnotherFallbackHost(_ caseTest: FakeNetworkResponse, channe
         }
     }
 
-    expect(testHTTPExecutor.requests).to(haveCount(3))
-    expect(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.host, pattern: "[a-e].ably-realtime.com")).to(beTrue())
-    expect(NSRegularExpression.match(testHTTPExecutor.requests[2].url!.host, pattern: "[a-e].ably-realtime.com")).to(beTrue())
-    expect(testHTTPExecutor.requests[1].url!.host).toNot(equal(testHTTPExecutor.requests[2].url!.host))
+    XCTAssertEqual(testHTTPExecutor.requests.count, 3)
+    XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.host, pattern: "[a-e].ably-realtime.com"))
+    XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests[2].url!.host, pattern: "[a-e].ably-realtime.com"))
+    XCTAssertNotEqual(testHTTPExecutor.requests[1].url!.host, testHTTPExecutor.requests[2].url!.host)
 }
 
 class RestClientTests: XCTestCase {
@@ -149,12 +149,12 @@ class RestClientTests: XCTestCase {
         let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "message") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 let version = testHTTPExecutor.requests.first!.allHTTPHeaderFields?["X-Ably-Version"]
 
                 // This test should not directly validate version against ARTDefault.version(), as
                 // ultimately the version header has been derived from that value.
-                expect(version).to(equal("1.2"))
+                XCTAssertEqual(version, "1.2")
 
                 done()
             }
@@ -236,13 +236,13 @@ class RestClientTests: XCTestCase {
 
         client.internal.logger.log("This is a warning", with: .warn)
 
-        expect(client.internal.logger.logLevel).to(equal(ARTLogLevel.warn))
+        XCTAssertEqual(client.internal.logger.logLevel, ARTLogLevel.warn)
         guard let line = options.logHandler.captured.last else {
             fail("didn't log line.")
             return
         }
-        expect(line.level).to(equal(ARTLogLevel.warn))
-        expect(line.toString()).to(equal("WARN: This is a warning"))
+        XCTAssertEqual(line.level, ARTLogLevel.warn)
+        XCTAssertEqual(line.toString(), "WARN: This is a warning")
     }
 
     // RSC3
@@ -278,10 +278,10 @@ class RestClientTests: XCTestCase {
 
         client.internal.logger.log("This is a warning", with: .warn)
 
-        expect(Log.interceptedLog.0).to(equal("This is a warning"))
-        expect(Log.interceptedLog.1).to(equal(ARTLogLevel.warn))
+        XCTAssertEqual(Log.interceptedLog.0, "This is a warning")
+        XCTAssertEqual(Log.interceptedLog.1, ARTLogLevel.warn)
 
-        expect(client.internal.logger.logLevel).to(equal(customLogger.logLevel))
+        XCTAssertEqual(client.internal.logger.logLevel, customLogger.logLevel)
     }
 
     // RSC11
@@ -353,8 +353,8 @@ class RestClientTests: XCTestCase {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.environment = "production"
         let client = ARTRest(options: options)
-        expect(client.internal.options.restHost).to(equal(ARTDefault.restHost()))
-        expect(client.internal.options.realtimeHost).to(equal(ARTDefault.realtimeHost()))
+        XCTAssertEqual(client.internal.options.restHost, ARTDefault.restHost())
+        XCTAssertEqual(client.internal.options.realtimeHost, ARTDefault.realtimeHost())
     }
 
     // RSC13
@@ -362,7 +362,7 @@ class RestClientTests: XCTestCase {
     func test__031__RestClient__should_use_the_the_connection_and_request_timeouts_specified__timeout_for_any_single_HTTP_request_and_response() {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.restHost = "10.255.255.1" // non-routable IP address
-        expect(options.httpRequestTimeout).to(equal(10.0)) // Seconds
+        XCTAssertEqual(options.httpRequestTimeout, 10.0) // Seconds
         options.httpRequestTimeout = 1.0
         let client = ARTRest(options: options)
         let channel = client.channels.get(uniqueChannelName())
@@ -371,7 +371,7 @@ class RestClientTests: XCTestCase {
             channel.publish(nil, data: "message") { error in
                 let end = NSDate()
                 expect(end.timeIntervalSince(start as Date)).to(beCloseTo(options.httpRequestTimeout, within: 0.5))
-                expect(error).toNot(beNil())
+                XCTAssertNotNil(error)
                 if let error = error {
                     expect(error.code).to(satisfyAnyOf(equal(-1001 /* Timed Out */ ), equal(-1004 /* Cannot Connect To Host */ )))
                 }
@@ -382,7 +382,7 @@ class RestClientTests: XCTestCase {
 
     func test__032__RestClient__should_use_the_the_connection_and_request_timeouts_specified__max_number_of_fallback_hosts() {
         let options = ARTClientOptions(key: "xxxx:xxxx")
-        expect(options.httpMaxRetryCount).to(equal(3))
+        XCTAssertEqual(options.httpMaxRetryCount, 3)
         options.httpMaxRetryCount = 1
         let client = ARTRest(options: options)
         let mockHTTP = MockHTTP(logger: options.logHandler)
@@ -403,12 +403,12 @@ class RestClientTests: XCTestCase {
                 done()
             }
         }
-        expect(totalRetry).to(equal(options.httpMaxRetryCount))
+        XCTAssertEqual(totalRetry, options.httpMaxRetryCount)
     }
 
     func test__033__RestClient__should_use_the_the_connection_and_request_timeouts_specified__max_elapsed_time_in_which_fallback_host_retries_for_HTTP_requests_will_be_attempted() {
         let options = ARTClientOptions(key: "xxxx:xxxx")
-        expect(options.httpMaxRetryDuration).to(equal(15.0)) // Seconds
+        XCTAssertEqual(options.httpMaxRetryDuration, 15.0) // Seconds
         options.httpMaxRetryDuration = 1.0
         let client = ARTRest(options: options)
         let mockHTTP = MockHTTP(logger: options.logHandler)
@@ -433,21 +433,21 @@ class RestClientTests: XCTestCase {
 
         let authOptions = client.auth.internal.options
 
-        expect(authOptions == options).to(beTrue())
+        XCTAssertTrue(authOptions == options)
     }
 
     // RSC12
     func test__003__RestClient__REST_endpoint_host_should_be_configurable_in_the_Client_constructor_with_the_option_restHost() throws {
         let options = ARTClientOptions(key: "xxxx:xxxx")
-        expect(options.restHost).to(equal("rest.ably.io"))
+        XCTAssertEqual(options.restHost, "rest.ably.io")
         options.restHost = "rest.ably.test"
-        expect(options.restHost).to(equal("rest.ably.test"))
+        XCTAssertEqual(options.restHost, "rest.ably.test")
         let client = ARTRest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
         client.internal.httpExecutor = testHTTPExecutor
         waitUntil(timeout: testTimeout) { done in
             client.channels.get(uniqueChannelName()).publish(nil, data: "message") { error in
-                expect(error).toNot(beNil())
+                XCTAssertNotNil(error)
                 done()
             }
         }
@@ -490,7 +490,7 @@ class RestClientTests: XCTestCase {
 
         let requestUrlA = try XCTUnwrap(testHTTPExecutor.requests.first?.url, "No request url found")
 
-        expect(requestUrlA.scheme).to(equal("https"))
+        XCTAssertEqual(requestUrlA.scheme, "https")
 
         options.clientId = "client_http"
         options.useTokenAuth = true
@@ -506,7 +506,7 @@ class RestClientTests: XCTestCase {
         }
 
         let requestUrlB = try XCTUnwrap(testHTTPExecutor.requests.last?.url, "No request url found")
-        expect(requestUrlB.scheme).to(equal("http"))
+        XCTAssertEqual(requestUrlB.scheme, "http")
     }
 
     // RSC9
@@ -535,7 +535,7 @@ class RestClientTests: XCTestCase {
                     done()
                     return
                 }
-                expect(tokenDetails.token).to(equal(testTokenDetails.token))
+                XCTAssertEqual(tokenDetails.token, testTokenDetails.token)
                 done()
             }
         }
@@ -553,17 +553,17 @@ class RestClientTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             delay(1.0) {
                 client.channels.get(uniqueChannelName()).history { result, error in
-                    expect(error).to(beNil())
-                    expect(result).toNot(beNil())
+                    XCTAssertNil(error)
+                    XCTAssertNotNil(result)
 
                     guard let headerErrorCode = testHTTPExecutor.responses.first?.value(forHTTPHeaderField: "X-Ably-Errorcode") else {
                         fail("X-Ably-Errorcode not found"); done()
                         return
                     }
-                    expect(Int(headerErrorCode)).to(equal(ARTErrorCode.tokenExpired.intValue))
+                    XCTAssertEqual(Int(headerErrorCode), ARTErrorCode.tokenExpired.intValue)
 
                     // Different token
-                    expect(auth.tokenDetails!.token).toNot(equal(options.token))
+                    XCTAssertNotEqual(auth.tokenDetails!.token, options.token)
                     done()
                 }
             }
@@ -584,14 +584,14 @@ class RestClientTests: XCTestCase {
                     fail("Error is empty"); done()
                     return
                 }
-                expect(errorCode).to(equal(ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue))
-                expect(result).to(beNil())
+                XCTAssertEqual(errorCode, ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue)
+                XCTAssertNil(result)
 
                 guard let headerErrorCode = testHTTPExecutor.responses.first?.value(forHTTPHeaderField: "X-Ably-Errorcode") else {
                     fail("X-Ably-Errorcode not found"); done()
                     return
                 }
-                expect(Int(headerErrorCode)).to(equal(ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue))
+                XCTAssertEqual(Int(headerErrorCode), ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue)
                 done()
             }
         }
@@ -612,7 +612,7 @@ class RestClientTests: XCTestCase {
         let rest = ARTRest(key: "\(keyName):\(keySecret)")
         waitUntil(timeout: testTimeout) { done in
             rest.channels.get(uniqueChannelName()).publish(nil, data: "testing") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -622,7 +622,7 @@ class RestClientTests: XCTestCase {
 
     func test__038__RestClient__Authentication__basic_authentication_flag__should_be_true_when_initialized_with_a_key() {
         let client = ARTRest(key: "key:secret")
-        expect(client.auth.internal.options.isBasicAuth()).to(beTrue())
+        XCTAssertTrue(client.auth.internal.options.isBasicAuth())
     }
 
     func test__039__RestClient__Authentication__basic_authentication_flag__should_be_false_when_options__useTokenAuth_is_set() {
@@ -705,7 +705,7 @@ class RestClientTests: XCTestCase {
                     }
                     expect(Int(errorCode)).to(beGreaterThanOrEqualTo(ARTErrorCode.tokenErrorUnspecified.intValue))
                     expect(Int(errorCode)).to(beLessThan(ARTErrorCode.connectionLimitsExceeded.intValue))
-                    expect(error).toNot(beNil())
+                    XCTAssertNotNil(error)
                     done()
                 }
             }
@@ -760,8 +760,8 @@ class RestClientTests: XCTestCase {
                         }
                         expect(Int(errorCode)).to(beGreaterThanOrEqualTo(ARTErrorCode.tokenErrorUnspecified.intValue))
                         expect(Int(errorCode)).to(beLessThan(ARTErrorCode.connectionLimitsExceeded.intValue))
-                        expect(error).to(beNil())
-                        expect(rest.auth.tokenDetails!.token).toNot(equal(currentTokenDetails.token))
+                        XCTAssertNil(error)
+                        XCTAssertNotEqual(rest.auth.tokenDetails!.token, currentTokenDetails.token)
                         done()
                     }
                 }
@@ -780,14 +780,14 @@ class RestClientTests: XCTestCase {
         options.fallbackHostsUseDefault = true
 
         let client = ARTRest(options: options)
-        expect(client.internal.options.fallbackHostsUseDefault).to(beTrue())
+        XCTAssertTrue(client.internal.options.fallbackHostsUseDefault)
         // Not production
-        expect(client.internal.options.environment).toNot(beNil())
-        expect(client.internal.options.environment).toNot(equal("production"))
+        XCTAssertNotNil(client.internal.options.environment)
+        XCTAssertNotEqual(client.internal.options.environment, "production")
 
         let hosts = ARTFallbackHosts.hosts(from: client.internal.options)
         let fallback = ARTFallback(fallbackHosts: hosts)
-        expect(fallback.hosts).to(haveCount(ARTDefault.fallbackHosts().count))
+        XCTAssertEqual(fallback.hosts.count, ARTDefault.fallbackHosts().count)
 
         ARTDefault.fallbackHosts().forEach {
             expect(fallback.hosts).to(contain($0))
@@ -802,14 +802,14 @@ class RestClientTests: XCTestCase {
         options.fallbackHostsUseDefault = true
 
         let client = ARTRest(options: options)
-        expect(client.internal.options.fallbackHostsUseDefault).to(beTrue())
+        XCTAssertTrue(client.internal.options.fallbackHostsUseDefault)
         // Custom
-        expect(client.internal.options.restHost).toNot(equal(ARTDefault.restHost()))
-        expect(client.internal.options.realtimeHost).toNot(equal(ARTDefault.realtimeHost()))
+        XCTAssertNotEqual(client.internal.options.restHost, ARTDefault.restHost())
+        XCTAssertNotEqual(client.internal.options.realtimeHost, ARTDefault.realtimeHost())
 
         let hosts = ARTFallbackHosts.hosts(from: client.internal.options)
         let fallback = ARTFallback(fallbackHosts: hosts)
-        expect(fallback.hosts).to(haveCount(ARTDefault.fallbackHosts().count))
+        XCTAssertEqual(fallback.hosts.count, ARTDefault.fallbackHosts().count)
 
         ARTDefault.fallbackHosts().forEach {
             expect(fallback.hosts).to(contain($0))
@@ -819,14 +819,14 @@ class RestClientTests: XCTestCase {
     @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
     func test__053__RestClient__Host_Fallback__fallbackHostsUseDefault_option__should_be_inactive_by_default() {
         let options = ARTClientOptions(key: "xxxx:xxxx")
-        expect(options.fallbackHostsUseDefault).to(beFalse())
+        XCTAssertFalse(options.fallbackHostsUseDefault)
     }
 
     @available(*, deprecated, message: "This test is marked as deprecated so as to not trigger a compiler warning for using the -ARTClientOptions.fallbackHostsUseDefault property. Remove this deprecation when removing the property.")
     func test__054__RestClient__Host_Fallback__fallbackHostsUseDefault_option__should_never_accept_to_configure__fallbackHost__and_set__fallbackHostsUseDefault__to__true_() {
         let options = ARTClientOptions(key: "xxxx:xxxx")
-        expect(options.fallbackHosts).to(beNil())
-        expect(options.fallbackHostsUseDefault).to(beFalse())
+        XCTAssertNil(options.fallbackHosts)
+        XCTAssertFalse(options.fallbackHostsUseDefault)
 
         expect { options.fallbackHosts = [] }.toNot(raiseException())
 
@@ -853,17 +853,17 @@ class RestClientTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
 
         let requests = testHTTPExecutor.requests
-        expect(requests).to(haveCount(3))
+        XCTAssertEqual(requests.count, 3)
         let capturedURLs = requests.map { $0.url!.absoluteString }
-        expect(NSRegularExpression.match(capturedURLs.at(0), pattern: "//rest.ably.io")).to(beTrue())
-        expect(NSRegularExpression.match(capturedURLs.at(1), pattern: "//[a-e].ably-realtime.com")).to(beTrue())
-        expect(NSRegularExpression.match(capturedURLs.at(2), pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(0), pattern: "//rest.ably.io"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(1), pattern: "//[a-e].ably-realtime.com"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(2), pattern: "//[a-e].ably-realtime.com"))
     }
 
     // RSC15b1
@@ -885,9 +885,9 @@ class RestClientTests: XCTestCase {
         }
 
         let requests = testHTTPExecutor.requests
-        expect(requests).to(haveCount(1))
+        XCTAssertEqual(requests.count, 1)
         let capturedURLs = requests.map { $0.url!.absoluteString }
-        expect(NSRegularExpression.match(capturedURLs.at(0), pattern: "//fake.ably.io")).to(beTrue())
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(0), pattern: "//fake.ably.io"))
     }
 
     // RSC15b1
@@ -910,7 +910,7 @@ class RestClientTests: XCTestCase {
         }
 
         let requests = testHTTPExecutor.requests
-        expect(requests).to(haveCount(1))
+        XCTAssertEqual(requests.count, 1)
         let capturedURLs = requests.map { $0.url!.absoluteString }
         expect(capturedURLs.at(0)).to(beginWith("http://rest.ably.io:999"))
     }
@@ -934,7 +934,7 @@ class RestClientTests: XCTestCase {
         }
 
         let requests = testHTTPExecutor.requests
-        expect(requests).to(haveCount(1))
+        XCTAssertEqual(requests.count, 1)
         let capturedURLs = requests.map { $0.url!.absoluteString }
         expect(capturedURLs.at(0)).to(beginWith("https://rest.ably.io:999"))
     }
@@ -957,11 +957,11 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        expect(testHTTPExecutor.requests).to(haveCount(3))
+        XCTAssertEqual(testHTTPExecutor.requests.count, 3)
         let capturedURLs = testHTTPExecutor.requests.map { $0.url!.absoluteString }
-        expect(NSRegularExpression.match(capturedURLs.at(0), pattern: "//rest.ably.io")).to(beTrue())
-        expect(NSRegularExpression.match(capturedURLs.at(1), pattern: "//[a-b].cocoa.ably")).to(beTrue())
-        expect(NSRegularExpression.match(capturedURLs.at(2), pattern: "//[a-b].cocoa.ably")).to(beTrue())
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(0), pattern: "//rest.ably.io"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(1), pattern: "//[a-b].cocoa.ably"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(2), pattern: "//[a-b].cocoa.ably"))
     }
 
     // RSC15b3, RSC15g4
@@ -978,16 +978,16 @@ class RestClientTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
 
-        expect(testHTTPExecutor.requests).to(haveCount(3))
+        XCTAssertEqual(testHTTPExecutor.requests.count, 3)
         let capturedURLs = testHTTPExecutor.requests.map { $0.url!.absoluteString }
-        expect(NSRegularExpression.match(capturedURLs.at(0), pattern: "//rest.ably.io")).to(beTrue())
-        expect(NSRegularExpression.match(capturedURLs.at(1), pattern: "//[a-e].ably-realtime.com")).to(beTrue())
-        expect(NSRegularExpression.match(capturedURLs.at(2), pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(0), pattern: "//rest.ably.io"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(1), pattern: "//[a-e].ably-realtime.com"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(2), pattern: "//[a-e].ably-realtime.com"))
     }
 
     // RSC15k
@@ -1006,7 +1006,7 @@ class RestClientTests: XCTestCase {
                 done()
             }
         }
-        expect(testHTTPExecutor.requests).to(haveCount(1))
+        XCTAssertEqual(testHTTPExecutor.requests.count, 1)
     }
 
     // RSC15g
@@ -1029,10 +1029,10 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        expect(testHTTPExecutor.requests).to(haveCount(2))
+        XCTAssertEqual(testHTTPExecutor.requests.count, 2)
         let capturedURLs = testHTTPExecutor.requests.compactMap { $0.url?.absoluteString }
-        expect(NSRegularExpression.match(capturedURLs.at(0), pattern: "//rest.ably.io")).to(beTrue())
-        expect(NSRegularExpression.match(capturedURLs.at(1), pattern: "//f.ably-realtime.com")).to(beTrue())
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(0), pattern: "//rest.ably.io"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(1), pattern: "//f.ably-realtime.com"))
     }
 
     // RSC15g2
@@ -1048,16 +1048,16 @@ class RestClientTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
 
-        expect(testHTTPExecutor.requests).to(haveCount(3))
+        XCTAssertEqual(testHTTPExecutor.requests.count, 3)
         let capturedURLs = testHTTPExecutor.requests.compactMap { $0.url?.absoluteString }
-        expect(NSRegularExpression.match(capturedURLs.at(0), pattern: "//test-rest.ably.io")).to(beTrue())
-        expect(NSRegularExpression.match(capturedURLs.at(1), pattern: "//test-[a-e]-fallback.ably-realtime.com")).to(beTrue())
-        expect(NSRegularExpression.match(capturedURLs.at(1), pattern: "//test-[a-e]-fallback.ably-realtime.com")).to(beTrue())
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(0), pattern: "//test-rest.ably.io"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(1), pattern: "//test-[a-e]-fallback.ably-realtime.com"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(1), pattern: "//test-[a-e]-fallback.ably-realtime.com"))
     }
 
     // RSC15g2
@@ -1078,12 +1078,12 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        expect(testHTTPExecutor.requests).to(haveCount(4))
+        XCTAssertEqual(testHTTPExecutor.requests.count, 4)
         let capturedURLs = testHTTPExecutor.requests.compactMap { $0.url?.absoluteString }
-        expect(NSRegularExpression.match(capturedURLs.at(0), pattern: "//rest.ably.io")).to(beTrue())
-        expect(NSRegularExpression.match(capturedURLs.at(1), pattern: "//[a-e].ably-realtime.com")).to(beTrue())
-        expect(NSRegularExpression.match(capturedURLs.at(2), pattern: "//[a-e].ably-realtime.com")).to(beTrue())
-        expect(NSRegularExpression.match(capturedURLs.at(3), pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(0), pattern: "//rest.ably.io"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(1), pattern: "//[a-e].ably-realtime.com"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(2), pattern: "//[a-e].ably-realtime.com"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(3), pattern: "//[a-e].ably-realtime.com"))
     }
 
     // RSC15g3
@@ -1104,12 +1104,12 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        expect(testHTTPExecutor.requests).to(haveCount(4))
+        XCTAssertEqual(testHTTPExecutor.requests.count, 4)
         let capturedURLs = testHTTPExecutor.requests.compactMap { $0.url?.absoluteString }
-        expect(NSRegularExpression.match(capturedURLs.at(0), pattern: "//rest.ably.io")).to(beTrue())
-        expect(NSRegularExpression.match(capturedURLs.at(1), pattern: "//[a-e].ably-realtime.com")).to(beTrue())
-        expect(NSRegularExpression.match(capturedURLs.at(2), pattern: "//[a-e].ably-realtime.com")).to(beTrue())
-        expect(NSRegularExpression.match(capturedURLs.at(3), pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(0), pattern: "//rest.ably.io"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(1), pattern: "//[a-e].ably-realtime.com"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(2), pattern: "//[a-e].ably-realtime.com"))
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(3), pattern: "//[a-e].ably-realtime.com"))
     }
 
     // RSC15g4
@@ -1127,14 +1127,14 @@ class RestClientTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "nil") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
 
-        expect(testHTTPExecutor.requests).to(haveCount(2))
+        XCTAssertEqual(testHTTPExecutor.requests.count, 2)
         let capturedURLs = testHTTPExecutor.requests.map { $0.url!.absoluteString }
-        expect(NSRegularExpression.match(capturedURLs.at(1), pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(1), pattern: "//[a-e].ably-realtime.com"))
     }
 
     // RSC15g1
@@ -1154,9 +1154,9 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        expect(testHTTPExecutor.requests).to(haveCount(1))
+        XCTAssertEqual(testHTTPExecutor.requests.count, 1)
         let capturedURLs = testHTTPExecutor.requests.map { $0.url!.absoluteString }
-        expect(NSRegularExpression.match(capturedURLs.at(0), pattern: "//rest.ably.io")).to(beTrue())
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(0), pattern: "//rest.ably.io"))
     }
 
     // RSC15g3
@@ -1176,13 +1176,13 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        expect(testHTTPExecutor.requests).to(haveCount(2))
+        XCTAssertEqual(testHTTPExecutor.requests.count, 2)
         if testHTTPExecutor.requests.count < 2 {
             return
         }
 
         let capturedURLs = testHTTPExecutor.requests.map { $0.url!.absoluteString }
-        expect(NSRegularExpression.match(capturedURLs.at(1), pattern: "//[a-e].ably-realtime.com")).to(beTrue())
+        XCTAssertTrue(NSRegularExpression.match(capturedURLs.at(1), pattern: "//[a-e].ably-realtime.com"))
     }
 
     // RSC15e
@@ -1212,10 +1212,10 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        expect(testHTTPExecutor.requests).to(haveCount(3))
-        expect(NSRegularExpression.match(testHTTPExecutor.requests.at(0)?.url?.absoluteString, pattern: "//\(ARTDefault.restHost())")).to(beTrue())
-        expect(NSRegularExpression.match(testHTTPExecutor.requests.at(1)?.url?.absoluteString, pattern: "//[a-e].ably-realtime.com")).to(beTrue())
-        expect(NSRegularExpression.match(testHTTPExecutor.requests.at(2)?.url?.absoluteString, pattern: "//\(ARTDefault.restHost())")).to(beTrue())
+        XCTAssertEqual(testHTTPExecutor.requests.count, 3)
+        XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests.at(0)?.url?.absoluteString, pattern: "//\(ARTDefault.restHost())"))
+        XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests.at(1)?.url?.absoluteString, pattern: "//[a-e].ably-realtime.com"))
+        XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests.at(2)?.url?.absoluteString, pattern: "//\(ARTDefault.restHost())"))
     }
 
     // RSC15a
@@ -1241,7 +1241,7 @@ class RestClientTests: XCTestCase {
         defaultFallbackHosts.forEach { host in
             expect(host).to(match("[a-e].ably-realtime.com"))
         }
-        expect(defaultFallbackHosts).to(haveCount(5))
+        XCTAssertEqual(defaultFallbackHosts.count, 5)
 
         afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
     }
@@ -1254,7 +1254,7 @@ class RestClientTests: XCTestCase {
         environmentFallbackHosts.forEach { host in
             expect(host).to(match("sandbox-[a-e]-fallback.ably-realtime.com"))
         }
-        expect(environmentFallbackHosts).to(haveCount(5))
+        XCTAssertEqual(environmentFallbackHosts.count, 5)
 
         afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
     }
@@ -1277,7 +1277,7 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        expect(testHTTPExecutor.requests).to(haveCount(Int(1 + options.httpMaxRetryCount)))
+        XCTAssertEqual(testHTTPExecutor.requests.count, Int(1 + options.httpMaxRetryCount))
 
         let extractHostname = { (request: URLRequest) in
             NSRegularExpression.extract(request.url!.absoluteString, pattern: "[a-e].ably-realtime.com")
@@ -1285,7 +1285,7 @@ class RestClientTests: XCTestCase {
         let resultFallbackHosts = testHTTPExecutor.requests.compactMap(extractHostname)
         let expectedFallbackHosts = Array(expectedHostOrder.map { ARTDefault.fallbackHosts()[$0] }[0 ..< Int(options.httpMaxRetryCount)])
 
-        expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
+        XCTAssertEqual(resultFallbackHosts, expectedFallbackHosts)
 
         afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
     }
@@ -1314,7 +1314,7 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        expect(testHTTPExecutor.requests).to(haveCount(customFallbackHosts.count + 1))
+        XCTAssertEqual(testHTTPExecutor.requests.count, customFallbackHosts.count + 1)
 
         let extractHostname = { (request: URLRequest) in
             NSRegularExpression.extract(request.url!.absoluteString, pattern: "[f-j].ably-realtime.com")
@@ -1322,7 +1322,7 @@ class RestClientTests: XCTestCase {
         let resultFallbackHosts = testHTTPExecutor.requests.compactMap(extractHostname)
         let expectedFallbackHosts = expectedHostOrder.map { customFallbackHosts[$0] }
 
-        expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
+        XCTAssertEqual(resultFallbackHosts, expectedFallbackHosts)
 
         afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
     }
@@ -1345,7 +1345,7 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        expect(testHTTPExecutor.requests).to(haveCount(ARTDefault.fallbackHosts().count + 1))
+        XCTAssertEqual(testHTTPExecutor.requests.count, ARTDefault.fallbackHosts().count + 1)
 
         let extractHostname = { (request: URLRequest) in
             NSRegularExpression.extract(request.url!.absoluteString, pattern: "[a-e].ably-realtime.com")
@@ -1353,7 +1353,7 @@ class RestClientTests: XCTestCase {
         let resultFallbackHosts = testHTTPExecutor.requests.compactMap(extractHostname)
         let expectedFallbackHosts = expectedHostOrder.map { ARTDefault.fallbackHosts()[$0] }
 
-        expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
+        XCTAssertEqual(resultFallbackHosts, expectedFallbackHosts)
 
         afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
     }
@@ -1378,8 +1378,8 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        expect(testHTTPExecutor.requests).to(haveCount(Int(1 + options.httpMaxRetryCount)))
-        expect((testHTTPExecutor.requests.count) < (_fallbackHosts.count + 1)).to(beTrue())
+        XCTAssertEqual(testHTTPExecutor.requests.count, Int(1 + options.httpMaxRetryCount))
+        XCTAssertTrue((testHTTPExecutor.requests.count) < (_fallbackHosts.count + 1))
 
         let extractHostname = { (request: URLRequest) in
             NSRegularExpression.extract(request.url!.absoluteString, pattern: "[f-j].ably-realtime.com")
@@ -1387,7 +1387,7 @@ class RestClientTests: XCTestCase {
         let resultFallbackHosts = testHTTPExecutor.requests.compactMap(extractHostname)
         let expectedFallbackHosts = Array(expectedHostOrder.map { _fallbackHosts[$0] }[0 ..< Int(options.httpMaxRetryCount)])
 
-        expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
+        XCTAssertEqual(resultFallbackHosts, expectedFallbackHosts)
 
         afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
     }
@@ -1412,7 +1412,7 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        expect(testHTTPExecutor.requests).to(haveCount(ARTDefault.fallbackHosts().count + 1))
+        XCTAssertEqual(testHTTPExecutor.requests.count, ARTDefault.fallbackHosts().count + 1)
 
         let extractHostname = { (request: URLRequest) in
             NSRegularExpression.extract(request.url!.absoluteString, pattern: "[f-j].ably-realtime.com")
@@ -1421,7 +1421,7 @@ class RestClientTests: XCTestCase {
         let resultFallbackHosts = testHTTPExecutor.requests.compactMap(extractHostname)
         let expectedFallbackHosts = expectedHostOrder.map { _fallbackHosts[$0] }
 
-        expect(resultFallbackHosts).to(equal(expectedFallbackHosts))
+        XCTAssertEqual(resultFallbackHosts, expectedFallbackHosts)
 
         afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
     }
@@ -1446,7 +1446,7 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        expect(testHTTPExecutor.requests).to(haveCount(ARTDefault.fallbackHosts().count + 1))
+        XCTAssertEqual(testHTTPExecutor.requests.count, ARTDefault.fallbackHosts().count + 1)
 
         let fallbackRequests = testHTTPExecutor.requests.filter {
             NSRegularExpression.match($0.url!.absoluteString, pattern: "[f-j].ably-realtime.com")
@@ -1481,8 +1481,8 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        expect(testHTTPExecutor.requests).to(haveCount(1))
-        expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
+        XCTAssertEqual(testHTTPExecutor.requests.count, 1)
+        XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.absoluteString, pattern: "//rest.ably.io"))
 
         afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
     }
@@ -1517,8 +1517,8 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        expect(testHTTPExecutor.requests).to(haveCount(1))
-        expect(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.absoluteString, pattern: "//rest.ably.io")).to(beTrue())
+        XCTAssertEqual(testHTTPExecutor.requests.count, 1)
+        XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.absoluteString, pattern: "//rest.ably.io"))
     }
 
     // RSC15f
@@ -1562,7 +1562,7 @@ class RestClientTests: XCTestCase {
     // RSC8a
     func test__008__RestClient__should_use_MsgPack_binary_protocol() throws {
         let options = AblyTests.commonAppSetup()
-        expect(options.useBinaryProtocol).to(beTrue())
+        XCTAssertTrue(options.useBinaryProtocol)
 
         let rest = ARTRest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
@@ -1592,7 +1592,7 @@ class RestClientTests: XCTestCase {
         let transport = realtime.internal.transport as! TestProxyTransport
         let jsonArray = transport.rawDataSent.map { AblyTests.msgpackToJSON($0) }
         let messageJson = jsonArray.filter { item in item["action"] == 15 }.last!
-        expect(messageJson["messages"][0]["data"].string).to(equal("message"))
+        XCTAssertEqual(messageJson["messages"][0]["data"].string, "message")
     }
 
     // RSC8b
@@ -1627,7 +1627,7 @@ class RestClientTests: XCTestCase {
 
         let transport = realtime.internal.transport as! TestProxyTransport
         let object = try! JSONSerialization.jsonObject(with: transport.rawDataSent.first!, options: JSONSerialization.ReadingOptions(rawValue: 0))
-        expect(JSONSerialization.isValidJSONObject(object)).to(beTrue())
+        XCTAssertTrue(JSONSerialization.isValidJSONObject(object))
     }
 
     // RSC7a
@@ -1638,7 +1638,7 @@ class RestClientTests: XCTestCase {
         client.internal.httpExecutor = testHTTPExecutor
         waitUntil(timeout: testTimeout) { done in
             client.channels.get(uniqueChannelName()).publish(nil, data: "message") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 guard let headerAblyVersion = testHTTPExecutor.requests.first?.allHTTPHeaderFields?["X-Ably-Version"] else {
                     fail("X-Ably-Version header not found"); done()
                     return
@@ -1646,7 +1646,7 @@ class RestClientTests: XCTestCase {
 
                 // This test should not directly validate version against ARTDefault.version(), as
                 // ultimately the version header has been derived from that value.
-                expect(headerAblyVersion).to(equal("1.2"))
+                XCTAssertEqual(headerAblyVersion, "1.2")
 
                 done()
             }
@@ -1664,11 +1664,11 @@ class RestClientTests: XCTestCase {
         let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "message") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 let headerAgent = testHTTPExecutor.requests.first!.allHTTPHeaderFields?["Ably-Agent"]
                 let ablyAgent = ARTClientInformation.agentIdentifier(withAdditionalAgents: options.agents)
-                expect(headerAgent).to(equal(ablyAgent))
-                expect(headerAgent!.hasPrefix("ably-cocoa/1.2.19")).to(beTrue())
+                XCTAssertEqual(headerAgent, ablyAgent)
+                XCTAssertTrue(headerAgent!.hasPrefix("ably-cocoa/1.2.19"))
                 done()
             }
         }
@@ -1686,7 +1686,7 @@ class RestClientTests: XCTestCase {
                         fail("Error is empty"); done()
                         return
                     }
-                    expect(error.code).to(equal(Int(ARTState.requestTokenFailed.rawValue)))
+                    XCTAssertEqual(error.code, Int(ARTState.requestTokenFailed.rawValue))
                     expect(error.message).to(contain("no means to renew the token is provided"))
                     done()
                 }
@@ -1720,8 +1720,8 @@ class RestClientTests: XCTestCase {
                 guard let error = error as? ARTErrorInfo else {
                     fail("Error is nil"); done(); return
                 }
-                expect(error.statusCode) == 200
-                expect(error.message.lengthOfBytes(using: String.Encoding.utf8)) == 1000
+                XCTAssertEqual(error.statusCode, 200)
+                XCTAssertEqual(error.message.lengthOfBytes(using: String.Encoding.utf8), 1000)
                 done()
             })
         }
@@ -1740,8 +1740,8 @@ class RestClientTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             do {
                 try rest.request("patch", path: "feature", params: params, body: nil, headers: nil) { paginatedResult, error in
-                    expect(error).to(beNil())
-                    expect(paginatedResult).toNot(beNil())
+                    XCTAssertNil(error)
+                    XCTAssertNotNil(paginatedResult)
                     done()
                 }
             } catch {
@@ -1754,9 +1754,9 @@ class RestClientTests: XCTestCase {
         let url = try XCTUnwrap(request.url, "No request url found")
         let acceptHeaderValue = try XCTUnwrap(request.allHTTPHeaderFields?["Accept"], "Accept HTTP Header is missing")
         
-        expect(request.httpMethod) == "patch"
-        expect(url.absoluteString).to(equal("https://rest.ably.io:443/feature?foo=1"))
-        expect(acceptHeaderValue).to(equal("application/x-msgpack,application/json"))
+        XCTAssertEqual(request.httpMethod, "patch")
+        XCTAssertEqual(url.absoluteString, "https://rest.ably.io:443/feature?foo=1")
+        XCTAssertEqual(acceptHeaderValue, "application/x-msgpack,application/json")
     }
 
     func test__087__RestClient__request__method_signature_and_arguments__should_add_a_HTTP_body() throws {
@@ -1768,8 +1768,8 @@ class RestClientTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             do {
                 try rest.request("post", path: "feature", params: nil, body: bodyDict, headers: nil) { paginatedResult, error in
-                    expect(error).to(beNil())
-                    expect(paginatedResult).toNot(beNil())
+                    XCTAssertNil(error)
+                    XCTAssertNotNil(paginatedResult)
                     done()
                 }
             } catch {
@@ -1783,7 +1783,7 @@ class RestClientTests: XCTestCase {
         let decodedBody = try XCTUnwrap(try rest.internal.defaultEncoder.decode(rawBody), "Decode request body failed")
         let body = try XCTUnwrap(decodedBody as? NSDictionary, "Request body is invalid")
         
-        expect(body.value(forKey: "blockchain") as? Bool).to(beTrue())
+        XCTAssertTrue(try XCTUnwrap(body.value(forKey: "blockchain") as? Bool))
     }
 
     func test__088__RestClient__request__method_signature_and_arguments__should_add_a_HTTP_header() throws {
@@ -1795,8 +1795,8 @@ class RestClientTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             do {
                 try rest.request("get", path: "feature", params: nil, body: nil, headers: headers) { paginatedResult, error in
-                    expect(error).to(beNil())
-                    expect(paginatedResult).toNot(beNil())
+                    XCTAssertNil(error)
+                    XCTAssertNotNil(paginatedResult)
                     done()
                 }
             } catch {
@@ -1808,7 +1808,7 @@ class RestClientTests: XCTestCase {
         let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No requests found")
 
         let authorization = request.allHTTPHeaderFields?["X-foo"]
-        expect(authorization).to(equal("ok"))
+        XCTAssertEqual(authorization, "ok")
     }
 
     func test__089__RestClient__request__method_signature_and_arguments__should_error_if_method_is_invalid() {
@@ -1821,7 +1821,7 @@ class RestClientTests: XCTestCase {
                 fail("Completion closure should not be called")
             }
         } catch let error as NSError {
-            expect(error.code).to(equal(ARTCustomRequestError.invalidMethod.rawValue))
+            XCTAssertEqual(error.code, ARTCustomRequestError.invalidMethod.rawValue)
             expect(error.localizedDescription).to(contain("Method isn't valid"))
         }
 
@@ -1830,7 +1830,7 @@ class RestClientTests: XCTestCase {
                 fail("Completion closure should not be called")
             }
         } catch let error as NSError {
-            expect(error.code).to(equal(ARTCustomRequestError.invalidMethod.rawValue))
+            XCTAssertEqual(error.code, ARTCustomRequestError.invalidMethod.rawValue)
             expect(error.localizedDescription).to(contain("Method isn't valid"))
         }
     }
@@ -1845,7 +1845,7 @@ class RestClientTests: XCTestCase {
                 fail("Completion closure should not be called")
             }
         } catch let error as NSError {
-            expect(error.code).to(equal(ARTCustomRequestError.invalidPath.rawValue))
+            XCTAssertEqual(error.code, ARTCustomRequestError.invalidPath.rawValue)
             expect(error.localizedDescription).to(contain("Path isn't valid"))
         }
 
@@ -1854,7 +1854,7 @@ class RestClientTests: XCTestCase {
                 fail("Completion closure should not be called")
             }
         } catch let error as NSError {
-            expect(error.code).to(equal(ARTCustomRequestError.invalidPath.rawValue))
+            XCTAssertEqual(error.code, ARTCustomRequestError.invalidPath.rawValue)
             expect(error.localizedDescription).to(contain("Path cannot be empty"))
         }
     }
@@ -1869,7 +1869,7 @@ class RestClientTests: XCTestCase {
                 fail("Completion closure should not be called")
             }
         } catch let error as NSError {
-            expect(error.code).to(equal(ARTCustomRequestError.invalidBody.rawValue))
+            XCTAssertEqual(error.code, ARTCustomRequestError.invalidBody.rawValue)
             expect(error.localizedDescription).to(contain("should be a Dictionary or an Array"))
         }
     }
@@ -1880,7 +1880,7 @@ class RestClientTests: XCTestCase {
         let channel = rest.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.publish("a", data: nil) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -1892,21 +1892,21 @@ class RestClientTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             do {
                 try rest.request("get", path: "/channels/\(channel.name)", params: nil, body: nil, headers: nil) { paginatedResponse, error in
-                    expect(error).to(beNil())
+                    XCTAssertNil(error)
                     guard let paginatedResponse = paginatedResponse else {
                         fail("PaginatedResult is empty"); done(); return
                     }
-                    expect(paginatedResponse.items.count) == 1
+                    XCTAssertEqual(paginatedResponse.items.count, 1)
                     guard let channelDetailsDict = paginatedResponse.items.first else {
                         fail("PaginatedResult first element is missing"); done(); return
                     }
-                    expect(channelDetailsDict.value(forKey: "channelId") as? String).to(equal(channel.name))
-                    expect(paginatedResponse.hasNext) == false
-                    expect(paginatedResponse.isLast) == true
-                    expect(paginatedResponse.statusCode) == 200
-                    expect(paginatedResponse.success) == true
-                    expect(paginatedResponse.errorCode) == 0
-                    expect(paginatedResponse.errorMessage).to(beNil())
+                    XCTAssertEqual(channelDetailsDict.value(forKey: "channelId") as? String, channel.name)
+                    XCTAssertEqual(paginatedResponse.hasNext, false)
+                    XCTAssertEqual(paginatedResponse.isLast, true)
+                    XCTAssertEqual(paginatedResponse.statusCode, 200)
+                    XCTAssertEqual(paginatedResponse.success, true)
+                    XCTAssertEqual(paginatedResponse.errorCode, 0)
+                    XCTAssertNil(paginatedResponse.errorMessage)
                     expect(paginatedResponse.headers).toNot(beEmpty())
                     httpPaginatedResponse = paginatedResponse
                     done()
@@ -1919,8 +1919,8 @@ class RestClientTests: XCTestCase {
 
         let response = try XCTUnwrap(proxyHTTPExecutor.responses.first, "No responses found")
 
-        expect(response.statusCode) == httpPaginatedResponse.statusCode
-        expect(response.allHeaderFields as NSDictionary) == httpPaginatedResponse.headers
+        XCTAssertEqual(response.statusCode, httpPaginatedResponse.statusCode)
+        XCTAssertEqual(response.allHeaderFields as NSDictionary, httpPaginatedResponse.headers)
     }
 
     func test__093__RestClient__request__method_signature_and_arguments__should_handle_response_failures() throws {
@@ -1929,7 +1929,7 @@ class RestClientTests: XCTestCase {
         let channel = rest.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.publish("a", data: nil) { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
@@ -1940,19 +1940,19 @@ class RestClientTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             do {
                 try rest.request("get", path: "feature", params: nil, body: nil, headers: nil) { paginatedResponse, error in
-                    expect(error).to(beNil())
+                    XCTAssertNil(error)
                     guard let paginatedResponse = paginatedResponse else {
                         fail("PaginatedResult is empty"); done(); return
                     }
-                    expect(paginatedResponse.items.count) == 0
-                    expect(paginatedResponse.hasNext) == false
-                    expect(paginatedResponse.isLast) == true
-                    expect(paginatedResponse.statusCode) == 404
-                    expect(paginatedResponse.success) == false
-                    expect(paginatedResponse.errorCode) == ARTErrorCode.notFound.intValue
+                    XCTAssertEqual(paginatedResponse.items.count, 0)
+                    XCTAssertEqual(paginatedResponse.hasNext, false)
+                    XCTAssertEqual(paginatedResponse.isLast, true)
+                    XCTAssertEqual(paginatedResponse.statusCode, 404)
+                    XCTAssertEqual(paginatedResponse.success, false)
+                    XCTAssertEqual(paginatedResponse.errorCode, ARTErrorCode.notFound.intValue)
                     expect(paginatedResponse.errorMessage).to(contain("Could not find path"))
                     expect(paginatedResponse.headers).toNot(beEmpty())
-                    expect(paginatedResponse.headers["X-Ably-Errorcode"] as? String).to(equal("\(ARTErrorCode.notFound.intValue)"))
+                    XCTAssertEqual(paginatedResponse.headers["X-Ably-Errorcode"] as? String, "\(ARTErrorCode.notFound.intValue)")
                     done()
                 }
             } catch {
@@ -1963,8 +1963,8 @@ class RestClientTests: XCTestCase {
 
         let response = try XCTUnwrap(proxyHTTPExecutor.responses.first, "No responses found")
 
-        expect(response.statusCode) == 404
-        expect(response.value(forHTTPHeaderField: "X-Ably-Errorcode")).to(equal("\(ARTErrorCode.notFound.intValue)"))
+        XCTAssertEqual(response.statusCode, 404)
+        XCTAssertEqual(response.value(forHTTPHeaderField: "X-Ably-Errorcode"), "\(ARTErrorCode.notFound.intValue)")
     }
 
     // RSA4e
@@ -1986,8 +1986,8 @@ class RestClientTests: XCTestCase {
                     done()
                     return
                 }
-                expect(error.statusCode).to(equal(401))
-                expect(error.code).to(equal(ARTErrorCode.errorFromClientTokenCallback.intValue))
+                XCTAssertEqual(error.statusCode, 401)
+                XCTAssertEqual(error.code, ARTErrorCode.errorFromClientTokenCallback.intValue)
                 expect(error.message).to(contain("Error in requesting auth token"))
                 done()
             }
@@ -2005,7 +2005,7 @@ class RestClientTests: XCTestCase {
         restA.internal.httpExecutor = mockHttpExecutor
         waitUntil(timeout: testTimeout) { done in
             restA.channels.get(uniqueChannelName()).publish(nil, data: "something") { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 guard let url = mockHttpExecutor.requests.first?.url else {
                     fail("No requests found")
                     return
@@ -2022,13 +2022,13 @@ class RestClientTests: XCTestCase {
         restB.internal.httpExecutor = mockHttpExecutor
         waitUntil(timeout: testTimeout) { done in
             restB.channels.get(uniqueChannelName()).publish(nil, data: "something") { error in
-                expect(error).to(beNil())
-                expect(mockHttpExecutor.requests).to(haveCount(1))
+                XCTAssertNil(error)
+                XCTAssertEqual(mockHttpExecutor.requests.count, 1)
                 guard let url = mockHttpExecutor.requests.first?.url else {
                     fail("No requests found")
                     return
                 }
-                expect(url.query).to(beNil())
+                XCTAssertNil(url.query)
                 done()
             }
         }
@@ -2084,8 +2084,8 @@ class RestClientTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             rest.channels.get(uniqueChannelName()).publish(nil, data: "something") { error in
-                expect(error).toNot(beNil())
-                expect(error?.requestId).toNot(beNil())
+                XCTAssertNotNil(error)
+                XCTAssertNotNil(error?.requestId)
                 done()
             }
         }

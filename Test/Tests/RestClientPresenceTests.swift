@@ -28,11 +28,11 @@ class RestClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.get { membersPage, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
 
                 let membersPage = membersPage!
                 expect(membersPage).to(beAnInstanceOf(ARTPaginatedResult<ARTPresenceMessage>.self))
-                expect(membersPage.items).to(haveCount(100))
+                XCTAssertEqual(membersPage.items.count, 100)
 
                 let members = membersPage.items
                 expect(members).to(allPass { member in
@@ -40,14 +40,14 @@ class RestClientPresenceTests: XCTestCase {
                         && (member!.data as? String) == expectedData
                 })
 
-                expect(membersPage.hasNext).to(beTrue())
-                expect(membersPage.isLast).to(beFalse())
+                XCTAssertTrue(membersPage.hasNext)
+                XCTAssertFalse(membersPage.isLast)
 
                 membersPage.next { nextPage, error in
-                    expect(error).to(beNil())
+                    XCTAssertNil(error)
                     let nextPage = nextPage!
                     expect(nextPage).to(beAnInstanceOf(ARTPaginatedResult<ARTPresenceMessage>.self))
-                    expect(nextPage.items).to(haveCount(50))
+                    XCTAssertEqual(nextPage.items.count, 50)
 
                     let members = nextPage.items
                     expect(members).to(allPass { member in
@@ -55,8 +55,8 @@ class RestClientPresenceTests: XCTestCase {
                             && (member!.data as? String) == expectedData
                     })
 
-                    expect(nextPage.hasNext).to(beFalse())
-                    expect(nextPage.isLast).to(beTrue())
+                    XCTAssertFalse(nextPage.hasNext)
+                    XCTAssertTrue(nextPage.isLast)
                     done()
                 }
             }
@@ -69,7 +69,7 @@ class RestClientPresenceTests: XCTestCase {
         let channel = client.channels.get(uniqueChannelName())
 
         let query = ARTPresenceQuery()
-        expect(query.limit).to(equal(100))
+        XCTAssertEqual(query.limit, 100)
 
         query.limit = 1001
         expect { try channel.presence.get(query, callback: { _, _ in }) }.to(throwError())
@@ -102,11 +102,11 @@ class RestClientPresenceTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             expect {
                 try channel.presence.get(query) { membersPage, error in
-                    expect(error).to(beNil())
-                    expect(membersPage!.items).to(haveCount(1))
+                    XCTAssertNil(error)
+                    XCTAssertEqual(membersPage!.items.count, 1)
                     let member = membersPage!.items[0]
-                    expect(member.clientId).to(equal("john"))
-                    expect(member.data as? NSObject).to(equal("web" as NSObject?))
+                    XCTAssertEqual(member.clientId, "john")
+                    XCTAssertEqual(member.data as? NSObject, "web" as NSObject?)
                     done()
                 }
             }.toNot(throwError())
@@ -142,10 +142,10 @@ class RestClientPresenceTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             expect {
                 try channel.presence.get(query) { membersPage, error in
-                    expect(error).to(beNil())
-                    expect(membersPage!.items).to(haveCount(3))
-                    expect(membersPage!.hasNext).to(beFalse())
-                    expect(membersPage!.isLast).to(beTrue())
+                    XCTAssertNil(error)
+                    XCTAssertEqual(membersPage!.items.count, 3)
+                    XCTAssertFalse(membersPage!.hasNext)
+                    XCTAssertTrue(membersPage!.isLast)
                     expect(membersPage!.items).to(allPass { member in
                         let member = member!
                         return NSRegularExpression.match(member.clientId, pattern: "^user(7|8|9)")
@@ -175,12 +175,12 @@ class RestClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.history { membersPage, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 guard let membersPage = membersPage else {
                     fail("Page is empty"); done(); return
                 }
                 expect(membersPage).to(beAnInstanceOf(ARTPaginatedResult<ARTPresenceMessage>.self))
-                expect(membersPage.items).to(haveCount(100))
+                XCTAssertEqual(membersPage.items.count, 100)
 
                 let members = membersPage.items
                 expect(members).to(allPass { member in
@@ -188,16 +188,16 @@ class RestClientPresenceTests: XCTestCase {
                         && (member!.data as? String) == expectedData
                 })
 
-                expect(membersPage.hasNext).to(beTrue())
-                expect(membersPage.isLast).to(beFalse())
+                XCTAssertTrue(membersPage.hasNext)
+                XCTAssertFalse(membersPage.isLast)
 
                 membersPage.next { nextPage, error in
-                    expect(error).to(beNil())
+                    XCTAssertNil(error)
                     guard let nextPage = nextPage else {
                         fail("nextPage is empty"); done(); return
                     }
                     expect(nextPage).to(beAnInstanceOf(ARTPaginatedResult<ARTPresenceMessage>.self))
-                    expect(nextPage.items).to(haveCount(50))
+                    XCTAssertEqual(nextPage.items.count, 50)
 
                     let members = nextPage.items
                     expect(members).to(allPass { member in
@@ -205,8 +205,8 @@ class RestClientPresenceTests: XCTestCase {
                             && (member!.data as? String) == expectedData
                     })
 
-                    expect(nextPage.hasNext).to(beFalse())
-                    expect(nextPage.isLast).to(beTrue())
+                    XCTAssertFalse(nextPage.hasNext)
+                    XCTAssertTrue(nextPage.isLast)
                     done()
                 }
             }
@@ -238,16 +238,16 @@ class RestClientPresenceTests: XCTestCase {
         disposable += [AblyTests.addMembersSequentiallyToChannel(channelName, members: 10, data: nil, options: options)]
 
         let query = ARTDataQuery()
-        expect(query.direction).to(equal(ARTQueryDirection.backwards))
+        XCTAssertEqual(query.direction, ARTQueryDirection.backwards)
 
         waitUntil(timeout: testTimeout) { done in
             expect {
                 try channel.presence.history(query) { membersPage, error in
-                    expect(error).to(beNil())
+                    XCTAssertNil(error)
                     let firstMember = membersPage!.items.first!
-                    expect(firstMember.clientId).to(equal("user10"))
+                    XCTAssertEqual(firstMember.clientId, "user10")
                     let lastMember = membersPage!.items.last!
-                    expect(lastMember.clientId).to(equal("user1"))
+                    XCTAssertEqual(lastMember.clientId, "user1")
                     done()
                 }
             }.toNot(throwError())
@@ -258,11 +258,11 @@ class RestClientPresenceTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             expect {
                 try channel.presence.history(query) { membersPage, error in
-                    expect(error).to(beNil())
+                    XCTAssertNil(error)
                     let firstMember = membersPage!.items.first!
-                    expect(firstMember.clientId).to(equal("user1"))
+                    XCTAssertEqual(firstMember.clientId, "user1")
                     let lastMember = membersPage!.items.last!
-                    expect(lastMember.clientId).to(equal("user10"))
+                    XCTAssertEqual(lastMember.clientId, "user10")
                     done()
                 }
             }.toNot(throwError())
@@ -286,16 +286,16 @@ class RestClientPresenceTests: XCTestCase {
         realtime = AblyTests.addMembersSequentiallyToChannel(channelName, members: 1, options: options)
 
         let query = ARTDataQuery()
-        expect(query.limit).to(equal(100))
+        XCTAssertEqual(query.limit, 100)
         query.limit = 1
 
         waitUntil(timeout: testTimeout) { done in
             expect {
                 try channel.presence.history(query) { membersPage, error in
-                    expect(error).to(beNil())
-                    expect(membersPage!.items).to(haveCount(1))
-                    expect(membersPage!.hasNext).to(beFalse())
-                    expect(membersPage!.isLast).to(beTrue())
+                    XCTAssertNil(error)
+                    XCTAssertEqual(membersPage!.items.count, 1)
+                    XCTAssertFalse(membersPage!.hasNext)
+                    XCTAssertTrue(membersPage!.isLast)
                     done()
                 }
             }.toNot(throwError())
@@ -304,7 +304,7 @@ class RestClientPresenceTests: XCTestCase {
         query.limit = 1001
 
         expect { try channel.presence.history(query) { _, _ in } }.to(throwError { (error: Error) in
-            expect(error._code).to(equal(ARTDataQueryError.limit.rawValue))
+            XCTAssertEqual(error._code, ARTDataQueryError.limit.rawValue)
         })
     }
 
@@ -337,10 +337,10 @@ class RestClientPresenceTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             expect {
                 try channel.presence.get(query) { membersPage, error in
-                    expect(error).to(beNil())
-                    expect(membersPage!.items).to(haveCount(3))
-                    expect(membersPage!.hasNext).to(beFalse())
-                    expect(membersPage!.isLast).to(beTrue())
+                    XCTAssertNil(error)
+                    XCTAssertEqual(membersPage!.items.count, 3)
+                    XCTAssertFalse(membersPage!.hasNext)
+                    XCTAssertTrue(membersPage!.isLast)
                     expect(membersPage!.items).to(allPass { member in
                         let member = member
                         return NSRegularExpression.match(member!.clientId, pattern: "^user(7|8|9)")
@@ -377,7 +377,7 @@ class RestClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             client.time { time, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 query.start = time
                 done()
             }
@@ -391,7 +391,7 @@ class RestClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             client.time { time, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 query.end = time
                 done()
             }
@@ -402,8 +402,8 @@ class RestClientPresenceTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             expect {
                 try channel.presence.history(query) { membersPage, error in
-                    expect(error).to(beNil())
-                    expect(membersPage!.items).to(haveCount(3))
+                    XCTAssertNil(error)
+                    XCTAssertEqual(membersPage!.items.count, 3)
                     done()
                 }
             }.toNot(throwError())
@@ -421,13 +421,13 @@ class RestClientPresenceTests: XCTestCase {
         query.start = query.end!.addingTimeInterval(10.0)
 
         expect { try channel.presence.history(query) { _, _ in } }.to(throwError { (error: Error) in
-            expect(error._code).to(equal(ARTDataQueryError.timestampRange.rawValue))
+            XCTAssertEqual(error._code, ARTDataQueryError.timestampRange.rawValue)
         })
 
         query.direction = .forwards
 
         expect { try channel.presence.history(query) { _, _ in } }.to(throwError { (error: Error) in
-            expect(error._code).to(equal(ARTDataQueryError.timestampRange.rawValue))
+            XCTAssertEqual(error._code, ARTDataQueryError.timestampRange.rawValue)
         })
     }
 
@@ -462,9 +462,9 @@ class RestClientPresenceTests: XCTestCase {
         typealias Done = () -> Void
         func checkReceivedMessage<T: ARTBaseMessage>(_ done: @escaping Done) -> (ARTPaginatedResult<T>?, ARTErrorInfo?) -> Void {
             return { membersPage, error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 let member = membersPage!.items[0]
-                expect(member.data as? NSDictionary).to(equal(expectedData as NSDictionary?))
+                XCTAssertEqual(member.data as? NSDictionary, expectedData as NSDictionary?)
                 done()
             }
         }
@@ -483,6 +483,6 @@ class RestClientPresenceTests: XCTestCase {
             channel.presence.history(checkReceivedMessage(done))
         }
 
-        expect(decodeNumberOfCalls).to(equal(2))
+        XCTAssertEqual(decodeNumberOfCalls, 2)
     }
 }

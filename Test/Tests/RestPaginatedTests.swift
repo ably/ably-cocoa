@@ -45,6 +45,6 @@ class RestPaginatedTests: XCTestCase {
             fail("First link isn't a valid URL"); return
         }
 
-        expect(firstRequest.url?.absoluteString).to(equal("https://sandbox-rest.ably.io:443/channels/foo/messages?start=0&end=1535035746063&limit=100&direction=backwards&format=msgpack&firstEnd=1535035746063&fromDate=1535035746063&mode=all"))
+        XCTAssertEqual(firstRequest.url?.absoluteString, "https://sandbox-rest.ably.io:443/channels/foo/messages?start=0&end=1535035746063&limit=100&direction=backwards&format=msgpack&firstEnd=1535035746063&fromDate=1535035746063&mode=all")
     }
 }

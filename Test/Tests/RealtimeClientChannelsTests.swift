@@ -24,12 +24,12 @@ class RealtimeClientChannelsTests: XCTestCase {
         disposable.append(client.channels.get(channelName2).name)
         disposable.append(client.channels.get(channelName3).name)
 
-        expect(client.channels.get(channelName2)).toNot(beNil())
-        expect(client.channels.exists(channelName2)).to(beTrue())
-        expect(client.channels.exists("testX")).to(beFalse())
+        XCTAssertNotNil(client.channels.get(channelName2))
+        XCTAssertTrue(client.channels.exists(channelName2))
+        XCTAssertFalse(client.channels.exists("testX"))
 
         for channel in client.channels {
-            expect(disposable.contains((channel as! ARTRealtimeChannel).name)).to(beTrue())
+            XCTAssertTrue(disposable.contains((channel as! ARTRealtimeChannel).name))
         }
     }
 
@@ -41,14 +41,14 @@ class RealtimeClientChannelsTests: XCTestCase {
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
-        expect(client.channels.internal.collection).to(haveCount(0))
+        XCTAssertEqual(client.channels.internal.collection.count, 0)
         let channelName = uniqueChannelName()
         let channel = client.channels.get(channelName)
-        expect(channel.name).to(equal("\(options.channelNamePrefix!)-\(channelName)"))
+        XCTAssertEqual(channel.name, "\(options.channelNamePrefix!)-\(channelName)")
 
-        expect(client.channels.internal.collection).to(haveCount(1))
-        expect(client.channels.get(channelName).internal).to(beIdenticalTo(channel.internal))
-        expect(client.channels.internal.collection).to(haveCount(1))
+        XCTAssertEqual(client.channels.internal.collection.count, 1)
+        XCTAssertTrue(client.channels.get(channelName).internal === channel.internal)
+        XCTAssertEqual(client.channels.internal.collection.count, 1)
     }
 
     // RTS3b
@@ -57,7 +57,7 @@ class RealtimeClientChannelsTests: XCTestCase {
         defer { client.dispose(); client.close() }
         let options = ARTRealtimeChannelOptions()
         let channel = client.channels.get(uniqueChannelName(), options: options)
-        expect(channel.options).to(beIdenticalTo(options))
+        XCTAssertTrue(channel.options === options)
     }
 
     // RTS3c
@@ -65,10 +65,10 @@ class RealtimeClientChannelsTests: XCTestCase {
         let client = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { client.dispose(); client.close() }
         let channelName = uniqueChannelName()
-        expect(client.channels.get(channelName).options).to(beNil())
+        XCTAssertNil(client.channels.get(channelName).options)
         let options = ARTRealtimeChannelOptions()
         let channel = client.channels.get(channelName, options: options)
-        expect(channel.options).to(beIdenticalTo(options))
+        XCTAssertTrue(channel.options === options)
     }
 
     // RTS4
@@ -87,8 +87,8 @@ class RealtimeClientChannelsTests: XCTestCase {
         }
         waitUntil(timeout: testTimeout) { done in
             client.channels.release(channelName) { errorInfo in
-                expect(errorInfo).to(beNil())
-                expect(channel.state).to(equal(ARTRealtimeChannelState.detached))
+                XCTAssertNil(errorInfo)
+                XCTAssertEqual(channel.state, ARTRealtimeChannelState.detached)
                 done()
             }
         }

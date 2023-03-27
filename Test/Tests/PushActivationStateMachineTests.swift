@@ -54,8 +54,8 @@ class PushActivationStateMachineTests: XCTestCase {
         rest.internal.storage = storage
         let stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeviceRegistration.self))
-        expect(storage.keysRead).to(haveCount(2))
-        expect(storage.keysRead.filter { $0.hasSuffix("CurrentState") }).to(haveCount(1))
+        XCTAssertEqual(storage.keysRead.count, 2)
+        XCTAssertEqual(storage.keysRead.filter { $0.hasSuffix("CurrentState") }.count, 1)
         expect(storage.keysWritten).to(beEmpty())
     }
 
@@ -91,7 +91,7 @@ class PushActivationStateMachineTests: XCTestCase {
         stateMachine.send(ARTPushActivationEventCalledDeactivate())
 
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
-        expect(deactivatedCallbackCalled).to(beTrue())
+        XCTAssertTrue(deactivatedCallbackCalled)
     }
 
     // RSH3a2
@@ -120,7 +120,7 @@ class PushActivationStateMachineTests: XCTestCase {
         beforeEach__Activation_state_machine__State_NotActivated()
 
         rest.internal.resetDeviceSingleton()
-        expect(rest.device.id.count) == 36
+        XCTAssertEqual(rest.device.id.count, 36)
     }
 
     func test__015__Activation_state_machine__State_NotActivated__on_Event_CalledActivate__local_device__should_have_a_generated_secret() throws {
@@ -129,7 +129,7 @@ class PushActivationStateMachineTests: XCTestCase {
         let secret = try XCTUnwrap(rest.device.secret, "Device Secret should be available in storage")
         let data = try XCTUnwrap(Data(base64Encoded: secret), "Device Secret should be encoded with Base64")
         
-        expect(data.count) == 32 // 32 bytes digest
+        XCTAssertEqual(data.count, 32) // 32 bytes digest
     }
 
     // RSH8b
@@ -140,7 +140,7 @@ class PushActivationStateMachineTests: XCTestCase {
         options.clientId = "deviceClient"
         let rest = ARTRest(options: options)
         rest.internal.storage = storage
-        expect(rest.device.clientId).to(equal("deviceClient"))
+        XCTAssertEqual(rest.device.clientId, "deviceClient")
     }
 
     // RSH3a2c
@@ -212,7 +212,7 @@ class PushActivationStateMachineTests: XCTestCase {
 
         stateMachine.send(ARTPushActivationEventCalledDeactivate())
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
-        expect(deactivatedCallbackCalled).to(beTrue())
+        XCTAssertTrue(deactivatedCallbackCalled)
     }
 
     // RSH3b3
@@ -238,8 +238,8 @@ class PushActivationStateMachineTests: XCTestCase {
                 }
             }
             delegate.onPushCustomRegister = { error, deviceDetails in
-                expect(error).to(beNil())
-                expect(deviceDetails).to(beIdenticalTo(rest.device))
+                XCTAssertNil(error)
+                XCTAssertTrue(deviceDetails === rest.device)
                 partialDone()
                 return nil
             }
@@ -247,7 +247,7 @@ class PushActivationStateMachineTests: XCTestCase {
         }
 
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
-        expect(httpExecutor.requests.count) == 0
+        XCTAssertEqual(httpExecutor.requests.count, 0)
     }
 
     // RSH3b3c
@@ -267,15 +267,15 @@ class PushActivationStateMachineTests: XCTestCase {
                     expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForDeviceRegistration.self))
                     partialDone()
                 } else if let event = event as? ARTPushActivationEventGettingDeviceRegistrationFailed {
-                    expect(event.error.domain) == ARTAblyErrorDomain
-                    expect(event.error.code) == simulatedError.code
+                    XCTAssertEqual(event.error.domain, ARTAblyErrorDomain)
+                    XCTAssertEqual(event.error.code, simulatedError.code)
                     stateMachine.transitions = nil
                     partialDone()
                 }
             }
             delegate.onPushCustomRegister = { error, deviceDetails in
-                expect(error).to(beNil())
-                expect(deviceDetails).to(beIdenticalTo(rest.device))
+                XCTAssertNil(error)
+                XCTAssertTrue(deviceDetails === rest.device)
                 partialDone()
                 return simulatedError
             }
@@ -283,7 +283,7 @@ class PushActivationStateMachineTests: XCTestCase {
         }
 
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
-        expect(httpExecutor.requests.count) == 0
+        XCTAssertEqual(httpExecutor.requests.count, 0)
     }
 
     // RSH3b3b, RSH3b3c
@@ -316,10 +316,10 @@ class PushActivationStateMachineTests: XCTestCase {
         }
 
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
-        expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
-        expect(httpExecutor.requests.count) == 1
+        XCTAssertTrue(setAndPersistIdentityTokenDetailsCalled)
+        XCTAssertEqual(httpExecutor.requests.count, 1)
         let requests = httpExecutor.requests.compactMap { $0.url?.path }.filter { $0 == "/push/deviceRegistrations" }
-        expect(requests).to(haveCount(1))
+        XCTAssertEqual(requests.count, 1)
         
         let request = try XCTUnwrap(httpExecutor.requests.first, "Should have a \"/push/deviceRegistrations\" request")
         let url = try XCTUnwrap(request.url, "Request should have a \"/push/deviceRegistrations\" URL")
@@ -327,12 +327,12 @@ class PushActivationStateMachineTests: XCTestCase {
         let decodedBody = try XCTUnwrap(try stateMachine.rest.defaultEncoder.decode(rawBody), "Decode request body failed")
         let body = try XCTUnwrap(decodedBody as? NSDictionary, "Request body is invalid")
         
-        expect(url.host).to(equal(rest.internal.options.restUrl().host))
-        expect(request.httpMethod) == "POST"
-        expect(body.value(forKey: "id") as? String).to(equal(rest.device.id))
-        expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(expectedPushRecipient))
-        expect(body.value(forKey: "formFactor") as? String) == expectedFormFactor
-        expect(body.value(forKey: "platform") as? String) == expectedPlatform
+        XCTAssertEqual(url.host, rest.internal.options.restUrl().host)
+        XCTAssertEqual(request.httpMethod, "POST")
+        XCTAssertEqual(body.value(forKey: "id") as? String, rest.device.id)
+        XCTAssertEqual(body.value(forKey: "push") as? [String: [String: String]], expectedPushRecipient)
+        XCTAssertEqual(body.value(forKey: "formFactor") as? String, expectedFormFactor)
+        XCTAssertEqual(body.value(forKey: "platform") as? String, expectedPlatform)
     }
 
     // RSH3b3c
@@ -354,8 +354,8 @@ class PushActivationStateMachineTests: XCTestCase {
                     expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForDeviceRegistration.self))
                     partialDone()
                 } else if let event = event as? ARTPushActivationEventGettingDeviceRegistrationFailed {
-                    expect(event.error.domain) == ARTAblyErrorDomain
-                    expect(event.error.code) == simulatedError.code
+                    XCTAssertEqual(event.error.domain, ARTAblyErrorDomain)
+                    XCTAssertEqual(event.error.code, simulatedError.code)
                     stateMachine.transitions = nil
                     partialDone()
                 }
@@ -364,9 +364,9 @@ class PushActivationStateMachineTests: XCTestCase {
         }
 
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
-        expect(httpExecutor.requests.count) == 1
+        XCTAssertEqual(httpExecutor.requests.count, 1)
         let requests = httpExecutor.requests.compactMap { $0.url?.path }.filter { $0 == "/push/deviceRegistrations" }
-        expect(requests).to(haveCount(1))
+        XCTAssertEqual(requests.count, 1)
         
         let request = try XCTUnwrap(httpExecutor.requests.first, "Should have a \"/push/deviceRegistrations\" request")
         let _ = try XCTUnwrap(request.url, "Request should have a \"/push/deviceRegistrations\" URL")
@@ -374,10 +374,10 @@ class PushActivationStateMachineTests: XCTestCase {
         let decodedBody = try XCTUnwrap(try stateMachine.rest.defaultEncoder.decode(rawBody), "Decode request body failed")
         let body = try XCTUnwrap(decodedBody as? NSDictionary, "Request body is invalid")
         
-        expect(body.value(forKey: "id") as? String).to(equal(rest.device.id))
-        expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(expectedPushRecipient))
-        expect(body.value(forKey: "formFactor") as? String) == expectedFormFactor
-        expect(body.value(forKey: "platform") as? String) == expectedPlatform
+        XCTAssertEqual(body.value(forKey: "id") as? String, rest.device.id)
+        XCTAssertEqual(body.value(forKey: "push") as? [String: [String: String]], expectedPushRecipient)
+        XCTAssertEqual(body.value(forKey: "formFactor") as? String, expectedFormFactor)
+        XCTAssertEqual(body.value(forKey: "platform") as? String, expectedPlatform)
     }
 
     // RSH3b3d
@@ -409,7 +409,7 @@ class PushActivationStateMachineTests: XCTestCase {
             stateMachine.send(ARTPushActivationEventGotPushDeviceDetails())
         }
 
-        expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
+        XCTAssertTrue(setAndPersistIdentityTokenDetailsCalled)
     }
 
     // RSH3b4
@@ -423,7 +423,7 @@ class PushActivationStateMachineTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             delegate.onDidActivateAblyPush = { error in
-                expect(error).to(equal(expectedError))
+                XCTAssertEqual(error, expectedError)
                 done()
             }
             stateMachine.send(ARTPushActivationEventGettingPushDeviceDetailsFailed(error: expectedError))
@@ -497,8 +497,8 @@ class PushActivationStateMachineTests: XCTestCase {
 
         stateMachine.send(ARTPushActivationEventGotDeviceRegistration(identityTokenDetails: testIdentityTokenDetails))
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
-        expect(activatedCallbackCalled).to(beTrue())
-        expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
+        XCTAssertTrue(activatedCallbackCalled)
+        XCTAssertTrue(setAndPersistIdentityTokenDetailsCalled)
         expect(storage.keysWritten.keys).to(contain(["ARTDeviceId", "ARTDeviceSecret", "ARTDeviceIdentityToken"]))
     }
 
@@ -514,13 +514,13 @@ class PushActivationStateMachineTests: XCTestCase {
             guard let error = arg0 as? ARTErrorInfo else {
                 fail("Error is missing"); return
             }
-            expect(error) == expectedError
+            XCTAssertEqual(error, expectedError)
         })
         defer { hook.remove() }
 
         stateMachine.send(ARTPushActivationEventGettingDeviceRegistrationFailed(error: expectedError))
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
-        expect(activatedCallbackCalled).to(beTrue())
+        XCTAssertTrue(activatedCallbackCalled)
     }
 
     // RSH3d
@@ -543,7 +543,7 @@ class PushActivationStateMachineTests: XCTestCase {
 
         stateMachine.send(ARTPushActivationEventCalledActivate())
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
-        expect(activatedCallbackCalled).to(beTrue())
+        XCTAssertTrue(activatedCallbackCalled)
     }
 
     // RSH3d2
@@ -601,11 +601,11 @@ class PushActivationStateMachineTests: XCTestCase {
 
             stateMachine.send(ARTPushActivationEventCalledActivate())
             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
-            if !fromEvent.isKind(of: ARTPushActivationEventCalledActivate.self) { expect(activatedCallbackCalled).to(beTrue())
-                expect(stateMachine.pendingEvents).to(haveCount(0))
+            if !fromEvent.isKind(of: ARTPushActivationEventCalledActivate.self) { XCTAssertTrue(activatedCallbackCalled)
+                XCTAssertEqual(stateMachine.pendingEvents.count, 0)
             } else {
-                expect(activatedCallbackCalled).to(beFalse())
-                expect(stateMachine.pendingEvents).to(haveCount(1))
+                XCTAssertFalse(activatedCallbackCalled)
+                XCTAssertEqual(stateMachine.pendingEvents.count, 1)
             }
 
             contextAfterEach?()
@@ -626,7 +626,7 @@ class PushActivationStateMachineTests: XCTestCase {
 
             var activateCallbackCalled = false
             delegate.onDidActivateAblyPush = { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 activateCallbackCalled = true
             }
 
@@ -640,7 +640,7 @@ class PushActivationStateMachineTests: XCTestCase {
 
             stateMachine.send(ARTPushActivationEventRegistrationSynced(identityTokenDetails: testIdentityTokenDetails))
             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
-            expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
+            XCTAssertTrue(setAndPersistIdentityTokenDetailsCalled)
 
             // RSH3e2b
             expect(activateCallbackCalled).toEventually(equal(fromEvent is ARTPushActivationEventCalledActivate), timeout: testTimeout)
@@ -660,7 +660,7 @@ class PushActivationStateMachineTests: XCTestCase {
                 guard let error = arg0 as? ARTErrorInfo else {
                     fail("Error is missing"); return
                 }
-                expect(error) == expectedError
+                XCTAssertEqual(error, expectedError)
             })
             defer { hook.remove() }
 
@@ -669,7 +669,7 @@ class PushActivationStateMachineTests: XCTestCase {
 
             var activateCallbackCalled = false
             delegate.onDidActivateAblyPush = { error in
-                expect(error) == expectedError
+                XCTAssertEqual(error, expectedError)
                 activateCallbackCalled = true
             }
 
@@ -830,10 +830,10 @@ class PushActivationStateMachineTests: XCTestCase {
 
         stateMachine.send(ARTPushActivationEventDeregistered())
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
-        expect(deactivatedCallbackCalled).to(beTrue())
-        expect(setAndPersistIdentityTokenDetailsCalled).to(beTrue())
+        XCTAssertTrue(deactivatedCallbackCalled)
+        XCTAssertTrue(setAndPersistIdentityTokenDetailsCalled)
         // RSH3g2a
-        expect(stateMachine.rest.device.identityTokenDetails).to(beNil())
+        XCTAssertNil(stateMachine.rest.device.identityTokenDetails)
     }
 
     // RSH3g3
@@ -848,13 +848,13 @@ class PushActivationStateMachineTests: XCTestCase {
             guard let error = arg0 as? ARTErrorInfo else {
                 fail("Error is missing"); return
             }
-            expect(error) == expectedError
+            XCTAssertEqual(error, expectedError)
         })
         defer { hook.remove() }
 
         stateMachine.send(ARTPushActivationEventDeregistrationFailed(error: expectedError))
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
-        expect(deactivatedCallbackCalled).to(beTrue())
+        XCTAssertTrue(deactivatedCallbackCalled)
     }
 
     // RSH4
@@ -912,9 +912,9 @@ class PushActivationStateMachineTests: XCTestCase {
         rest.internal.storage = storage
         rest.device.setAndPersistIdentityTokenDetails(nil)
         rest.internal.resetDeviceSingleton()
-        expect(rest.device.identityTokenDetails).to(beNil())
-        expect(rest.device.isRegistered()) == false
-        expect(storage.object(forKey: ARTDeviceIdentityTokenKey)).to(beNil())
+        XCTAssertNil(rest.device.identityTokenDetails)
+        XCTAssertEqual(rest.device.isRegistered(), false)
+        XCTAssertNil(storage.object(forKey: ARTDeviceIdentityTokenKey))
     }
 
     enum TestCase_ReusableTestsRsh3a2a {
@@ -934,7 +934,7 @@ class PushActivationStateMachineTests: XCTestCase {
             options.clientId = "deviceClient"
             let rest = ARTRest(options: options)
             rest.internal.storage = storage
-            expect(rest.device.clientId).to(equal("deviceClient"))
+            XCTAssertEqual(rest.device.clientId, "deviceClient")
 
             let newOptions = ARTClientOptions(key: "xxxx:xxxx")
             newOptions.clientId = "instanceClient"
@@ -951,7 +951,7 @@ class PushActivationStateMachineTests: XCTestCase {
             waitUntil(timeout: testTimeout) { done in
                 stateMachine.transitions = { event, _, _ in
                     if let event = event as? ARTPushActivationEventSyncRegistrationFailed {
-                        expect(event.error.code).to(equal(61002))
+                        XCTAssertEqual(event.error.code, 61002)
                         done()
                     }
                 }
@@ -994,15 +994,15 @@ class PushActivationStateMachineTests: XCTestCase {
                     }
                 }
                 delegate.onPushCustomRegister = { error, deviceDetails in
-                    expect(error).to(beNil())
-                    expect(deviceDetails).to(beIdenticalTo(rest.device))
+                    XCTAssertNil(error)
+                    XCTAssertTrue(deviceDetails === rest.device)
                     partialDone()
                     return nil
                 }
                 stateMachine.send(ARTPushActivationEventCalledActivate())
             }
 
-            expect(httpExecutor.requests.count) == 0
+            XCTAssertEqual(httpExecutor.requests.count, 0)
 
             afterEach__the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID()
         }
@@ -1029,7 +1029,7 @@ class PushActivationStateMachineTests: XCTestCase {
             }
 
             let requests = httpExecutor.requests.compactMap { $0.url?.path }.filter { $0 == "/push/deviceRegistrations/\(rest.device.id)" }
-            expect(requests).to(haveCount(1))
+            XCTAssertEqual(requests.count, 1)
             
             let request = try XCTUnwrap(httpExecutor.requests.first, "Should have a \"/push/deviceRegistrations\" request")
             let url = try XCTUnwrap(request.url, "Request should have a \"/push/deviceRegistrations\" URL")
@@ -1037,12 +1037,12 @@ class PushActivationStateMachineTests: XCTestCase {
             let decodedBody = try XCTUnwrap(try stateMachine.rest.defaultEncoder.decode(rawBody), "Decode request body failed")
             let body = try XCTUnwrap(decodedBody as? NSDictionary, "Request body is invalid")
             
-            expect(url.host).to(equal(rest.internal.options.restUrl().host))
-            expect(request.httpMethod) == "PUT"
-            expect(body.value(forKey: "id") as? String).to(equal(rest.device.id))
-            expect(body.value(forKey: "push") as? [String: [String: String]]).to(equal(expectedPushRecipient))
-            expect(body.value(forKey: "formFactor") as? String) == expectedFormFactor
-            expect(body.value(forKey: "platform") as? String) == expectedPlatform
+            XCTAssertEqual(url.host, rest.internal.options.restUrl().host)
+            XCTAssertEqual(request.httpMethod, "PUT")
+            XCTAssertEqual(body.value(forKey: "id") as? String, rest.device.id)
+            XCTAssertEqual(body.value(forKey: "push") as? [String: [String: String]], expectedPushRecipient)
+            XCTAssertEqual(body.value(forKey: "formFactor") as? String, expectedFormFactor)
+            XCTAssertEqual(body.value(forKey: "platform") as? String, expectedPlatform)
 
             afterEach__the_local_device_has_id_and_deviceIdentityToken__the_local_DeviceDetails_matches_the_instance_s_client_ID()
         }
@@ -1086,8 +1086,8 @@ class PushActivationStateMachineTests: XCTestCase {
                     }
                 }
                 delegate.onPushCustomDeregister = { error, deviceId in
-                    expect(error).to(beNil())
-                    expect(deviceId) == rest.device.id
+                    XCTAssertNil(error)
+                    XCTAssertEqual(deviceId, rest.device.id)
                     partialDone()
                     return nil
                 }
@@ -1095,7 +1095,7 @@ class PushActivationStateMachineTests: XCTestCase {
             }
 
             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
-            expect(httpExecutor.requests.count) == 0
+            XCTAssertEqual(httpExecutor.requests.count, 0)
 
             contextAfterEach?()
         }
@@ -1115,15 +1115,15 @@ class PushActivationStateMachineTests: XCTestCase {
                         expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
                         partialDone()
                     } else if let event = event as? ARTPushActivationEventDeregistrationFailed {
-                        expect(event.error.domain) == ARTAblyErrorDomain
-                        expect(event.error.code) == simulatedError.code
+                        XCTAssertEqual(event.error.domain, ARTAblyErrorDomain)
+                        XCTAssertEqual(event.error.code, simulatedError.code)
                         stateMachine.transitions = nil
                         partialDone()
                     }
                 }
                 delegate.onPushCustomDeregister = { error, deviceId in
-                    expect(error).to(beNil())
-                    expect(deviceId) == rest.device.id
+                    XCTAssertNil(error)
+                    XCTAssertEqual(deviceId, rest.device.id)
                     partialDone()
                     return simulatedError
                 }
@@ -1131,7 +1131,7 @@ class PushActivationStateMachineTests: XCTestCase {
             }
 
             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
-            expect(httpExecutor.requests.count) == 0
+            XCTAssertEqual(httpExecutor.requests.count, 0)
 
             contextAfterEach?()
         }
@@ -1159,18 +1159,18 @@ class PushActivationStateMachineTests: XCTestCase {
             }
 
             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
-            expect(httpExecutor.requests.count) == 1
+            XCTAssertEqual(httpExecutor.requests.count, 1)
             let requests = httpExecutor.requests.compactMap { $0.url?.path }.filter { $0 == "/push/deviceRegistrations/\(rest.device.id)" }
-            expect(requests).to(haveCount(1))
+            XCTAssertEqual(requests.count, 1)
             
             let request = try XCTUnwrap(httpExecutor.requests.first, "Should have a \"/push/deviceRegistrations\" request")
             let url = try XCTUnwrap(request.url, "Request should have a \"/push/deviceRegistrations\" URL")
 
-            expect(url.host).to(equal(rest.internal.options.restUrl().host))
-            expect(request.httpMethod) == "DELETE"
-            expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
+            XCTAssertEqual(url.host, rest.internal.options.restUrl().host)
+            XCTAssertEqual(request.httpMethod, "DELETE")
+            XCTAssertNotNil(request.allHTTPHeaderFields?["Authorization"])
             let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceSecret"]
-            expect(deviceAuthorization).to(equal(rest.device.secret))
+            XCTAssertEqual(deviceAuthorization, rest.device.secret)
 
             contextAfterEach?()
         }
@@ -1190,10 +1190,10 @@ class PushActivationStateMachineTests: XCTestCase {
                 clientId: ""
             )
 
-            expect(rest.device.identityTokenDetails).to(beNil())
+            XCTAssertNil(rest.device.identityTokenDetails)
             rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
             defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
-            expect(rest.device.identityTokenDetails).toNot(beNil())
+            XCTAssertNotNil(rest.device.identityTokenDetails)
 
             waitUntil(timeout: testTimeout) { done in
                 let partialDone = AblyTests.splitDone(2, done: done)
@@ -1211,19 +1211,19 @@ class PushActivationStateMachineTests: XCTestCase {
             }
 
             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
-            expect(httpExecutor.requests.count) == 1
+            XCTAssertEqual(httpExecutor.requests.count, 1)
             let requests = httpExecutor.requests.compactMap { $0.url?.path }.filter { $0 == "/push/deviceRegistrations/\(rest.device.id)" }
-            expect(requests).to(haveCount(1))
+            XCTAssertEqual(requests.count, 1)
             
             let request = try XCTUnwrap(httpExecutor.requests.first, "Should have a \"/push/deviceRegistrations\" request")
             let url = try XCTUnwrap(request.url, "Request should have a \"/push/deviceRegistrations\" URL")
 
-            expect(url.host).to(equal(rest.internal.options.restUrl().host))
-            expect(request.httpMethod) == "DELETE"
-            expect(rest.device.identityTokenDetails).to(beNil())
-            expect(request.allHTTPHeaderFields?["Authorization"]).toNot(beNil())
+            XCTAssertEqual(url.host, rest.internal.options.restUrl().host)
+            XCTAssertEqual(request.httpMethod, "DELETE")
+            XCTAssertNil(rest.device.identityTokenDetails)
+            XCTAssertNotNil(request.allHTTPHeaderFields?["Authorization"])
             let deviceAuthorization = request.allHTTPHeaderFields?["X-Ably-DeviceToken"]
-            expect(deviceAuthorization).to(equal(testIdentityTokenDetails.token.base64Encoded()))
+            XCTAssertEqual(deviceAuthorization, testIdentityTokenDetails.token.base64Encoded())
 
             contextAfterEach?()
         }
@@ -1245,8 +1245,8 @@ class PushActivationStateMachineTests: XCTestCase {
                         expect(currentState).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
                         partialDone()
                     } else if let event = event as? ARTPushActivationEventDeregistrationFailed {
-                        expect(event.error.domain) == ARTAblyErrorDomain
-                        expect(event.error.code) == simulatedError.code
+                        XCTAssertEqual(event.error.domain, ARTAblyErrorDomain)
+                        XCTAssertEqual(event.error.code, simulatedError.code)
                         stateMachine.transitions = nil
                         partialDone()
                     }
@@ -1255,15 +1255,15 @@ class PushActivationStateMachineTests: XCTestCase {
             }
 
             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
-            expect(httpExecutor.requests.count) == 1
+            XCTAssertEqual(httpExecutor.requests.count, 1)
             let requests = httpExecutor.requests.compactMap { $0.url?.path }.filter { $0 == "/push/deviceRegistrations/\(rest.device.id)" }
-            expect(requests).to(haveCount(1))
+            XCTAssertEqual(requests.count, 1)
             
             let request = try XCTUnwrap(httpExecutor.requests.first, "Should have a \"/push/deviceRegistrations\" request")
             let url = try XCTUnwrap(request.url, "Request should have a \"/push/deviceRegistrations\" URL")
 
-            expect(url.host).to(equal(rest.internal.options.restUrl().host))
-            expect(request.httpMethod) == "DELETE"
+            XCTAssertEqual(url.host, rest.internal.options.restUrl().host)
+            XCTAssertEqual(request.httpMethod, "DELETE")
 
             contextAfterEach?()
         }

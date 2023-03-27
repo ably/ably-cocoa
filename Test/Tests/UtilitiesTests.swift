@@ -60,7 +60,7 @@ class UtilitiesTests: XCTestCase {
         guard let error = protocolMessage.error else {
             fail("Error is empty"); return
         }
-        expect(error.message).to(equal(""))
+        XCTAssertEqual(error.message, "")
     }
 
     func test__002__Utilities__JSON_Encoder__should_encode_a_protocol_message_that_has_invalid_data() {
@@ -73,11 +73,11 @@ class UtilitiesTests: XCTestCase {
         var result: Data?
         expect { result = try jsonEncoder.encode(pm) }.to(throwError { error in
             let e = error as NSError
-            expect(e.domain).to(equal(ARTAblyErrorDomain))
-            expect(e.code).to(equal(Int(ARTClientCodeError.invalidType.rawValue)))
+            XCTAssertEqual(e.domain, ARTAblyErrorDomain)
+            XCTAssertEqual(e.code, Int(ARTClientCodeError.invalidType.rawValue))
             expect(e.localizedDescription).to(contain("Invalid type in JSON write"))
         })
-        expect(result).to(beNil())
+        XCTAssertNil(result)
     }
 
     func test__003__Utilities__JSON_Encoder__should_decode_data_with_malformed_JSON() {
@@ -90,7 +90,7 @@ class UtilitiesTests: XCTestCase {
             let e = error as NSError
             expect(e.localizedDescription).to(contain("data couldn’t be read"))
         })
-        expect(result).to(beNil())
+        XCTAssertNil(result)
     }
 
     func test__004__Utilities__JSON_Encoder__should_decode_data_with_malformed_MsgPack() {
@@ -99,9 +99,9 @@ class UtilitiesTests: XCTestCase {
         let data = NSData()
         var result: AnyObject?
         expect { result = try ARTMsgPackEncoder().decode(data as Data) as! (Data) as (Data) as AnyObject? }.to(throwError { error in
-            expect(error).toNot(beNil())
+            XCTAssertNotNil(error)
         })
-        expect(result).to(beNil())
+        XCTAssertNil(result)
     }
 
     func test__005__Utilities__JSON_Encoder__in_Realtime__should_handle_and_emit_the_invalid_data_error() {
@@ -148,7 +148,7 @@ class UtilitiesTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 realtime.connection.once { _ in
                     fail("Should not receive any connection change state")
                 }
@@ -160,7 +160,7 @@ class UtilitiesTests: XCTestCase {
                 }
                 var result: AnyObject?
                 expect { result = realtime.internal.transport?.receive(with: data as Data) }.toNot(raiseException())
-                expect(result).to(beNil())
+                XCTAssertNil(result)
                 done()
             }
         }
@@ -215,7 +215,7 @@ class UtilitiesTests: XCTestCase {
         testHTTPExecutor.simulateIncomingPayloadOnNextRequest(data as Data)
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: nil) { error in
-                expect(error).to(beNil()) // ignored
+                XCTAssertNil(error) // ignored
                 done()
             }
         }
@@ -252,17 +252,17 @@ class UtilitiesTests: XCTestCase {
 
         eventEmitter.emit("foo", with: 123 as AnyObject?)
 
-        expect(receivedFoo1).to(equal(123))
-        expect(receivedFoo2).to(equal(123))
-        expect(receivedBar).to(beNil())
-        expect(receivedAll).to(equal(123))
+        XCTAssertEqual(receivedFoo1, 123)
+        XCTAssertEqual(receivedFoo2, 123)
+        XCTAssertNil(receivedBar)
+        XCTAssertEqual(receivedAll, 123)
 
         eventEmitter.emit("bar", with: 456 as AnyObject?)
 
-        expect(receivedFoo1).to(equal(123))
-        expect(receivedFoo2).to(equal(123))
-        expect(receivedBar).to(equal(456))
-        expect(receivedAll).to(equal(456))
+        XCTAssertEqual(receivedFoo1, 123)
+        XCTAssertEqual(receivedFoo2, 123)
+        XCTAssertEqual(receivedBar, 456)
+        XCTAssertEqual(receivedAll, 456)
 
         eventEmitter.emit("qux", with: 789 as AnyObject?)
 
@@ -274,18 +274,18 @@ class UtilitiesTests: XCTestCase {
 
         eventEmitter.emit("foo", with: 123 as AnyObject?)
 
-        expect(receivedBarOnce).to(beNil())
-        expect(receivedAllOnce).to(equal(123))
+        XCTAssertNil(receivedBarOnce)
+        XCTAssertEqual(receivedAllOnce, 123)
 
         eventEmitter.emit("bar", with: 456 as AnyObject?)
 
-        expect(receivedBarOnce).to(equal(456))
-        expect(receivedAllOnce).to(equal(123))
+        XCTAssertEqual(receivedBarOnce, 456)
+        XCTAssertEqual(receivedAllOnce, 123)
 
         eventEmitter.emit("bar", with: 789 as AnyObject?)
 
-        expect(receivedBarOnce).to(equal(456))
-        expect(receivedAllOnce).to(equal(123))
+        XCTAssertEqual(receivedBarOnce, 456)
+        XCTAssertEqual(receivedAllOnce, 123)
     }
 
     func test__011__Utilities__EventEmitter__calling_off_with_a_single_listener_argument__should_stop_receiving_events_when_calling_off_with_a_single_listener_argument() {
@@ -294,19 +294,19 @@ class UtilitiesTests: XCTestCase {
         eventEmitter.off(listenerFoo1!)
         eventEmitter.emit("foo", with: 123 as AnyObject?)
 
-        expect(receivedFoo1).to(beNil())
-        expect(receivedFoo2).to(equal(123))
-        expect(receivedAll).to(equal(123))
+        XCTAssertNil(receivedFoo1)
+        XCTAssertEqual(receivedFoo2, 123)
+        XCTAssertEqual(receivedAll, 123)
 
         eventEmitter.emit("bar", with: 222 as AnyObject?)
 
-        expect(receivedFoo2).to(equal(123))
-        expect(receivedAll).to(equal(222))
+        XCTAssertEqual(receivedFoo2, 123)
+        XCTAssertEqual(receivedAll, 222)
 
         eventEmitter.off(listenerAll!)
         eventEmitter.emit("bar", with: 333 as AnyObject?)
 
-        expect(receivedAll).to(equal(222))
+        XCTAssertEqual(receivedAll, 222)
     }
 
     func test__012__Utilities__EventEmitter__calling_off_with_a_single_listener_argument__should_remove_the_timeout() {
@@ -329,8 +329,8 @@ class UtilitiesTests: XCTestCase {
         eventEmitter.off("foo", listener: listenerAll!)
         eventEmitter.emit("foo", with: 111 as AnyObject?)
 
-        expect(receivedFoo1).to(equal(111))
-        expect(receivedAll).to(equal(111))
+        XCTAssertEqual(receivedFoo1, 111)
+        XCTAssertEqual(receivedAll, 111)
     }
 
     func test__014__Utilities__EventEmitter__calling_off_with_listener_and_event_arguments__should_stop_receive_events_if_off_matches_the_listener_s_criteria() {
@@ -339,8 +339,8 @@ class UtilitiesTests: XCTestCase {
         eventEmitter.off("foo", listener: listenerFoo1!)
         eventEmitter.emit("foo", with: 111 as AnyObject?)
 
-        expect(receivedFoo1).to(beNil())
-        expect(receivedAll).to(equal(111))
+        XCTAssertNil(receivedFoo1)
+        XCTAssertEqual(receivedAll, 111)
     }
 
     func test__015__Utilities__EventEmitter__calling_off_with_no_arguments__should_remove_all_listeners() {
@@ -349,15 +349,15 @@ class UtilitiesTests: XCTestCase {
         eventEmitter.off()
         eventEmitter.emit("foo", with: 111 as AnyObject?)
 
-        expect(receivedFoo1).to(beNil())
-        expect(receivedFoo2).to(beNil())
-        expect(receivedAll).to(beNil())
+        XCTAssertNil(receivedFoo1)
+        XCTAssertNil(receivedFoo2)
+        XCTAssertNil(receivedAll)
 
         eventEmitter.emit("bar", with: 111 as AnyObject?)
 
-        expect(receivedBar).to(beNil())
-        expect(receivedBarOnce).to(beNil())
-        expect(receivedAll).to(beNil())
+        XCTAssertNil(receivedBar)
+        XCTAssertNil(receivedBarOnce)
+        XCTAssertNil(receivedAll)
     }
 
     func test__016__Utilities__EventEmitter__calling_off_with_no_arguments__should_allow_listening_again() {
@@ -366,7 +366,7 @@ class UtilitiesTests: XCTestCase {
         eventEmitter.off()
         eventEmitter.on("foo", callback: { receivedFoo1 = $0 as? Int })
         eventEmitter.emit("foo", with: 111 as AnyObject?)
-        expect(receivedFoo1).to(equal(111))
+        XCTAssertEqual(receivedFoo1, 111)
     }
 
     func test__017__Utilities__EventEmitter__calling_off_with_no_arguments__should_remove_all_timeouts() {
@@ -396,7 +396,7 @@ class UtilitiesTests: XCTestCase {
             timer?.startTimer()
             eventEmitter.emit("foo", with: 123 as AnyObject?)
             AblyTests.queue.asyncAfter(deadline: .now() + 0.3) {
-                expect(receivedFoo1).toNot(beNil())
+                XCTAssertNotNil(receivedFoo1)
                 done()
             }
         }
@@ -413,9 +413,9 @@ class UtilitiesTests: XCTestCase {
         }).startTimer()
         waitUntil(timeout: DispatchTimeInterval.milliseconds(500)) { done in
             AblyTests.queue.asyncAfter(deadline: .now() + 0.35) {
-                expect(calledOnTimeout).to(beTrue())
+                XCTAssertTrue(calledOnTimeout)
                 eventEmitter.emit("foo", with: 123 as AnyObject?)
-                expect(receivedFoo1).to(beNil())
+                XCTAssertNil(receivedFoo1)
                 done()
             }
         }
@@ -434,8 +434,8 @@ class UtilitiesTests: XCTestCase {
             })
         })
         eventEmitter.emit("a", with: "123" as AnyObject?)
-        expect(firstCallbackCalled).to(beTrue())
-        expect(secondCallbackCalled).to(beFalse())
+        XCTAssertTrue(firstCallbackCalled)
+        XCTAssertFalse(secondCallbackCalled)
     }
 
     func test__021__Utilities__Logger__should_have_a_history_of_logs() {
@@ -447,27 +447,27 @@ class UtilitiesTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
-                expect(error).to(beNil())
+                XCTAssertNil(error)
                 done()
             }
         }
 
         expect(realtime.internal.logger.history.count).toNot(beGreaterThan(100))
-        expect(realtime.internal.logger.history.filter { $0.message.contains("channel state transitions from 1 - Attaching to 2 - Attached") }).to(haveCount(1))
-        expect(realtime.internal.logger.history.filter { $0.message.contains("realtime state transitions to 2 - Connected") }).to(haveCount(1))
+        XCTAssertEqual(realtime.internal.logger.history.filter { $0.message.contains("channel state transitions from 1 - Attaching to 2 - Attached") }.count, 1)
+        XCTAssertEqual(realtime.internal.logger.history.filter { $0.message.contains("realtime state transitions to 2 - Connected") }.count, 1)
     }
 
     func test__022__Utilities__maxMessageSize__calculates_maxMessageSize_of_a_Message_with_name_and_data() {
         let message = ARTMessage(name: "this is name", data: data)
         let expectedSize = "{\"test\":\"test\"}".count + message.name!.count
-        expect(message.messageSize()).to(equal(expectedSize))
+        XCTAssertEqual(message.messageSize(), expectedSize)
     }
 
     func test__023__Utilities__maxMessageSize__calculates_maxMessageSize_of_a_Message_with_name__data_and_extras() {
         let message = ARTMessage(name: "this is name", data: data)
         message.extras = extras as ARTJsonCompatible
         let expectedSize = "{\"test\":\"test\"}".count + "{\"push\":{\"key\":\"value\"}}".count + message.name!.count
-        expect(message.messageSize()).to(equal(expectedSize))
+        XCTAssertEqual(message.messageSize(), expectedSize)
     }
 
     func test__024__Utilities__maxMessageSize__calculates_maxMessageSize_of_a_Message_with_name__data__clientId_and_extras() {
@@ -475,6 +475,6 @@ class UtilitiesTests: XCTestCase {
         message.clientId = clientId
         message.extras = extras as ARTJsonCompatible
         let expectedSize = "{\"test\":\"test\"}".count + "{\"push\":{\"key\":\"value\"}}".count + clientId.count + message.name!.count
-        expect(message.messageSize()).to(equal(expectedSize))
+        XCTAssertEqual(message.messageSize(), expectedSize)
     }
 }
