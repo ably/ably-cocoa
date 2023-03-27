@@ -1,10 +1,12 @@
-#import <Ably/ARTLog.h>
+@import Foundation;
+
+@class ARTInternalLog;
 
 NS_ASSUME_NONNULL_BEGIN
 
 @protocol ARTReachability <NSObject>
 
-- (instancetype)initWithLogger:(ARTLog *)logger queue:(dispatch_queue_t)queue;
+- (instancetype)initWithLogger:(ARTInternalLog *)logger queue:(dispatch_queue_t)queue;
 
 - (void)listenForHost:(NSString *)host callback:(void (^)(BOOL))callback;
 - (void)off;

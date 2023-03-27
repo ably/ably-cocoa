@@ -26,7 +26,6 @@
 #import "ARTTokenDetails.h"
 #import "ARTDefault.h"
 #import "ARTGCD.h"
-#import "ARTLog+Private.h"
 #import "ARTRealtime+Private.h"
 #import "ARTPush.h"
 #import "ARTPush+Private.h"
@@ -40,6 +39,8 @@
 #import "ARTTime.h"
 #import "ARTClientInformation.h"
 #import "ARTErrorChecker.h"
+#import "ARTInternalLog.h"
+#import "ARTLogAdapter.h"
 
 @implementation ARTRest {
     ARTQueuedDealloc *_dealloc;
@@ -143,7 +144,7 @@
 @end
 
 @implementation ARTRestInternal {
-    ARTLog *_logger;
+    ARTInternalLog *_logger;
     NSUInteger _tokenErrorRetries;
 }
 
@@ -161,16 +162,20 @@
         _realtime = realtime;
         _options = [options copy];
 
+        ARTLog *legacyLogger;
         if (options.logHandler) {
-            _logger = options.logHandler;
+            legacyLogger = options.logHandler;
         }
         else {
-            _logger = [[ARTLog alloc] init];
+            legacyLogger = [[ARTLog alloc] init];
         }
 
         if (options.logLevel != ARTLogLevelNone) {
-            _logger.logLevel = options.logLevel;
+            legacyLogger.logLevel = options.logLevel;
         }
+
+        id<ARTVersion2Log> underlyingLogger = [[ARTLogAdapter alloc] initWithLogger:legacyLogger];
+        _logger = [[ARTInternalLog alloc] initWithLogger:underlyingLogger];
 
         _queue = options.internalDispatchQueue;
         _userQueue = options.dispatchQueue;

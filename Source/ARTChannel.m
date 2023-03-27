@@ -9,6 +9,7 @@
 #import "ARTRest+Private.h"
 #import "ARTDefault.h"
 #import "ARTClientOptions+Private.h"
+#import "ARTInternalLog.h"
 
 @implementation ARTChannel {
     dispatch_queue_t _queue;

@@ -4,7 +4,7 @@
 #import "ARTLocalDevice+Private.h"
 #import "ARTDeviceStorage.h"
 #import "ARTDevicePushDetails.h"
-#import "ARTLog.h"
+#import "ARTInternalLog.h"
 #import "ARTRest+Private.h"
 #import "ARTAuth+Private.h"
 #import "ARTHttp.h"
@@ -60,7 +60,7 @@
     return [self art_archiveWithLogger:self.machine.rest.logger];
 }
 
-+ (ARTPushActivationState *)unarchive:(NSData *)data withLogger:(nullable ARTLog *)logger {
++ (ARTPushActivationState *)unarchive:(NSData *)data withLogger:(nullable ARTInternalLog *)logger {
     return [self art_unarchiveFromData:data withLogger:logger];
 }
 
