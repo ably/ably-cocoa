@@ -18,6 +18,18 @@
 		1C6C18A41ADFDAB100AB79E4 /* ARTLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C6C18A21ADFDAB100AB79E4 /* ARTLog.m */; };
 		1CD8DC9F1B1C7315007EAF36 /* ARTDefault.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1CD8DCA01B1C7315007EAF36 /* ARTDefault.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CD8DC9E1B1C7315007EAF36 /* ARTDefault.m */; };
+		2132C21A29D230CE000C4355 /* ARTErrorChecker.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C21929D230AE000C4355 /* ARTErrorChecker.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		2132C21B29D230CF000C4355 /* ARTErrorChecker.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C21929D230AE000C4355 /* ARTErrorChecker.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		2132C21C29D230D0000C4355 /* ARTErrorChecker.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C21929D230AE000C4355 /* ARTErrorChecker.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		2132C21E29D23196000C4355 /* ARTErrorChecker.m in Sources */ = {isa = PBXBuildFile; fileRef = 2132C21D29D23196000C4355 /* ARTErrorChecker.m */; };
+		2132C21F29D23196000C4355 /* ARTErrorChecker.m in Sources */ = {isa = PBXBuildFile; fileRef = 2132C21D29D23196000C4355 /* ARTErrorChecker.m */; };
+		2132C22029D23196000C4355 /* ARTErrorChecker.m in Sources */ = {isa = PBXBuildFile; fileRef = 2132C21D29D23196000C4355 /* ARTErrorChecker.m */; };
+		2132C22229D233EB000C4355 /* DefaultErrorCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C22129D233EB000C4355 /* DefaultErrorCheckerTests.swift */; };
+		2132C22329D233EB000C4355 /* DefaultErrorCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C22129D233EB000C4355 /* DefaultErrorCheckerTests.swift */; };
+		2132C22429D233EB000C4355 /* DefaultErrorCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C22129D233EB000C4355 /* DefaultErrorCheckerTests.swift */; };
+		2132C22929D23484000C4355 /* MockErrorChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C22529D2347F000C4355 /* MockErrorChecker.swift */; };
+		2132C22A29D23484000C4355 /* MockErrorChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C22529D2347F000C4355 /* MockErrorChecker.swift */; };
+		2132C22B29D23485000C4355 /* MockErrorChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C22529D2347F000C4355 /* MockErrorChecker.swift */; };
 		21447D3B254A2ECB00B3905A /* ARTSRWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 217D181B25421FED00DFF07E /* ARTSRWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		21447D40254A2ECE00B3905A /* ARTSRWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 217D181B25421FED00DFF07E /* ARTSRWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		21447D45254A2ED100B3905A /* ARTSRWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 217D181B25421FED00DFF07E /* ARTSRWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -971,6 +983,10 @@
 		1C6C18A21ADFDAB100AB79E4 /* ARTLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTLog.m; sourceTree = "<group>"; };
 		1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTDefault.h; path = include/Ably/ARTDefault.h; sourceTree = "<group>"; };
 		1CD8DC9E1B1C7315007EAF36 /* ARTDefault.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTDefault.m; sourceTree = "<group>"; };
+		2132C21929D230AE000C4355 /* ARTErrorChecker.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTErrorChecker.h; path = PrivateHeaders/Ably/ARTErrorChecker.h; sourceTree = "<group>"; };
+		2132C21D29D23196000C4355 /* ARTErrorChecker.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTErrorChecker.m; sourceTree = "<group>"; };
+		2132C22129D233EB000C4355 /* DefaultErrorCheckerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultErrorCheckerTests.swift; sourceTree = "<group>"; };
+		2132C22529D2347F000C4355 /* MockErrorChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockErrorChecker.swift; sourceTree = "<group>"; };
 		215F75F62922B1DB009E0E76 /* ARTClientInformation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTClientInformation.h; path = include/Ably/ARTClientInformation.h; sourceTree = "<group>"; };
 		215F75F72922B1DB009E0E76 /* ARTClientInformation.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTClientInformation.m; sourceTree = "<group>"; };
 		215F75FE2922B30F009E0E76 /* ClientInformationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientInformationTests.swift; sourceTree = "<group>"; };
@@ -1481,6 +1497,7 @@
 				215F75FE2922B30F009E0E76 /* ClientInformationTests.swift */,
 				EB7913A71C6E54C3000ABF9B /* CryptoTests.swift */,
 				56190953238C3D3200A862A6 /* CryptoTest.m */,
+				2132C22129D233EB000C4355 /* DefaultErrorCheckerTests.swift */,
 				D798554723EB96C000946BE2 /* DeltaCodecTests.swift */,
 				D5A22171266F526600C87C42 /* GCDTests.swift */,
 				848ED97226E50D0F0087E800 /* ObjcppTest.mm */,
@@ -1516,6 +1533,7 @@
 				D780846D1C68B3E50083009D /* NSObject+TestSuite.m */,
 				D714A63D1C74D4B2002F2CA0 /* NSObject+TestSuite.swift */,
 				856AAC961B6E30C800B07119 /* TestUtilities.swift */,
+				2132C22529D2347F000C4355 /* MockErrorChecker.swift */,
 			);
 			path = "Test Utilities";
 			sourceTree = "<group>";
@@ -1807,6 +1825,8 @@
 				215F75F62922B1DB009E0E76 /* ARTClientInformation.h */,
 				215F75F72922B1DB009E0E76 /* ARTClientInformation.m */,
 				215F76022922C76C009E0E76 /* ARTClientInformation+Private.h */,
+				2132C21929D230AE000C4355 /* ARTErrorChecker.h */,
+				2132C21D29D23196000C4355 /* ARTErrorChecker.m */,
 			);
 			name = Utilities;
 			sourceTree = "<group>";
@@ -2051,6 +2071,7 @@
 				215F75F82922B1DB009E0E76 /* ARTClientInformation.h in Headers */,
 				D7DF738A1EA645300013CD36 /* ARTLocalDeviceStorage.h in Headers */,
 				960D07931A45F1D800ED8C8C /* ARTCrypto.h in Headers */,
+				2132C21A29D230CE000C4355 /* ARTErrorChecker.h in Headers */,
 				D5BB20FC26A7F3FF00AA5F3E /* NSURLRequest+ARTSRWebSocket.h in Headers */,
 				D5C0CB3D268317B500C06521 /* NSURLQueryItem+Stringifiable.h in Headers */,
 				D5BB20FB26A7F3C800AA5F3E /* NSRunLoop+ARTSRWebSocket.h in Headers */,
@@ -2143,6 +2164,7 @@
 				D710D51E21949C42008F54AD /* ARTLocalDeviceStorage.h in Headers */,
 				D5BB210626AA988200AA5F3E /* ARTTime.h in Headers */,
 				D710D50721949C18008F54AD /* ARTConnectionDetails+Private.h in Headers */,
+				2132C21B29D230CF000C4355 /* ARTErrorChecker.h in Headers */,
 				D7BDDD3E21959CC100CC0632 /* CompatibilityMacros.h in Headers */,
 				D710D51B21949C42008F54AD /* ARTDeviceIdentityTokenDetails.h in Headers */,
 				D76F153D23DB012100B5133C /* ARTRealtimeChannelOptions.h in Headers */,
@@ -2287,6 +2309,7 @@
 				D710D53021949C44008F54AD /* ARTLocalDeviceStorage.h in Headers */,
 				D710D51321949C19008F54AD /* ARTConnectionDetails+Private.h in Headers */,
 				D7BDDD3F21959CC200CC0632 /* CompatibilityMacros.h in Headers */,
+				2132C21C29D230D0000C4355 /* ARTErrorChecker.h in Headers */,
 				D5BB210F26AA98A900AA5F3E /* ARTStringifiable.h in Headers */,
 				D5C0CB3F268317B500C06521 /* NSURLQueryItem+Stringifiable.h in Headers */,
 				D710D52D21949C44008F54AD /* ARTDeviceIdentityTokenDetails.h in Headers */,
@@ -2651,6 +2674,7 @@
 				EB1B53F922F85CE4006A59AC /* ObjectLifetimesTests.swift in Sources */,
 				D7DF73851EA600240013CD36 /* PushActivationStateMachineTests.swift in Sources */,
 				D7FC1ECB209CEA2E001E4153 /* PushTests.swift in Sources */,
+				2132C22929D23484000C4355 /* MockErrorChecker.swift in Sources */,
 				D714A63E1C74D4B2002F2CA0 /* NSObject+TestSuite.swift in Sources */,
 				21881E7C283BD0E100CFD9E2 /* StringifiableTests.swift in Sources */,
 				856AAC971B6E30C800B07119 /* TestUtilities.swift in Sources */,
@@ -2671,6 +2695,7 @@
 				841134782722205400CFA837 /* ARTArchiveTests.m in Sources */,
 				D74A17B81FA0D9A3006D27B5 /* PushAdminTests.swift in Sources */,
 				EB7913A81C6E54C3000ABF9B /* CryptoTests.swift in Sources */,
+				2132C22229D233EB000C4355 /* DefaultErrorCheckerTests.swift in Sources */,
 				D777EEE820650ADF002EBA03 /* PushChannelTests.swift in Sources */,
 				D746AE2D1BBB625E003ECEF8 /* RestClientChannelsTests.swift in Sources */,
 				EBAB9A6F1C69702800AF036B /* ReadmeExamplesTests.swift in Sources */,
@@ -2772,6 +2797,7 @@
 				D746AE501BBD84E7003ECEF8 /* ARTChannelOptions.m in Sources */,
 				EB89D4051C61C1A4007FA5B7 /* ARTRestChannels.m in Sources */,
 				217D1834254222F600DFF07E /* ARTSRURLUtilities.m in Sources */,
+				2132C21E29D23196000C4355 /* ARTErrorChecker.m in Sources */,
 				D777EEE1206285CF002EBA03 /* ARTDeviceIdentityTokenDetails.m in Sources */,
 				D73B655823EF2B2900D459A6 /* ARTDeltaCodec.m in Sources */,
 				D5BB211B26AA9AA700AA5F3E /* ARTNSMutableDictionary+ARTDictionaryUtil.m in Sources */,
@@ -2802,6 +2828,7 @@
 				D7093C23219E466E00723F17 /* RestPaginatedTests.swift in Sources */,
 				D7093C19219E465300723F17 /* TestUtilities.swift in Sources */,
 				560579DA24AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */,
+				2132C22329D233EB000C4355 /* DefaultErrorCheckerTests.swift in Sources */,
 				D7093C1C219E466400723F17 /* ReadmeExamplesTests.swift in Sources */,
 				21881E7B283BD0DF00CFD9E2 /* StringifiableTests.swift in Sources */,
 				D7093C27219E466E00723F17 /* RealtimeClientChannelsTests.swift in Sources */,
@@ -2818,6 +2845,7 @@
 				D7093C2A219E466E00723F17 /* UtilitiesTests.swift in Sources */,
 				D798554923EB96C000946BE2 /* DeltaCodecTests.swift in Sources */,
 				D7093C21219E466E00723F17 /* RestClientChannelsTests.swift in Sources */,
+				2132C22A29D23484000C4355 /* MockErrorChecker.swift in Sources */,
 				D7093C26219E466E00723F17 /* RealtimeClientChannelTests.swift in Sources */,
 				D7093C22219E466E00723F17 /* RestClientPresenceTests.swift in Sources */,
 				56190955238C3D3200A862A6 /* CryptoTest.m in Sources */,
@@ -2836,6 +2864,7 @@
 				D7093C7F219EE26400723F17 /* RealtimeClientPresenceTests.swift in Sources */,
 				D7093C73219EE26000723F17 /* ReadmeExamplesTests.swift in Sources */,
 				560579DB24AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */,
+				2132C22429D233EB000C4355 /* DefaultErrorCheckerTests.swift in Sources */,
 				D7093C71219EE25800723F17 /* NSObject+TestSuite.m in Sources */,
 				D7093C70219EE25400723F17 /* TestUtilities.swift in Sources */,
 				D7093C80219EE26400723F17 /* StatsTests.swift in Sources */,
@@ -2852,6 +2881,7 @@
 				D7093C7C219EE26400723F17 /* RealtimeClientConnectionTests.swift in Sources */,
 				D798554A23EB96C000946BE2 /* DeltaCodecTests.swift in Sources */,
 				D7093C74219EE26400723F17 /* AuthTests.swift in Sources */,
+				2132C22B29D23485000C4355 /* MockErrorChecker.swift in Sources */,
 				D7093C72219EE25B00723F17 /* NSObject+TestSuite.swift in Sources */,
 				D7093C7B219EE26400723F17 /* RealtimeClientTests.swift in Sources */,
 				56190956238C3D3200A862A6 /* CryptoTest.m in Sources */,
@@ -2951,6 +2981,7 @@
 				D710D57421949CC4008F54AD /* ARTPushDeviceRegistrations.m in Sources */,
 				D710D5D821949D78008F54AD /* ARTChannelOptions.m in Sources */,
 				217D184B254222F700DFF07E /* ARTSRURLUtilities.m in Sources */,
+				2132C21F29D23196000C4355 /* ARTErrorChecker.m in Sources */,
 				D73B655923EF2B2900D459A6 /* ARTDeltaCodec.m in Sources */,
 				D710D62D21949E03008F54AD /* ARTHttp.m in Sources */,
 				D5BB211A26AA9AA600AA5F3E /* ARTNSMutableDictionary+ARTDictionaryUtil.m in Sources */,
@@ -3062,6 +3093,7 @@
 				D710D5FE21949D79008F54AD /* ARTChannelOptions.m in Sources */,
 				D5BB213826AAA60500AA5F3E /* ARTNSError+ARTUtils.m in Sources */,
 				217D1862254222FA00DFF07E /* ARTSRURLUtilities.m in Sources */,
+				2132C22029D23196000C4355 /* ARTErrorChecker.m in Sources */,
 				D73B655A23EF2B2900D459A6 /* ARTDeltaCodec.m in Sources */,
 				D710D63D21949E04008F54AD /* ARTHttp.m in Sources */,
 				D710D64021949E04008F54AD /* ARTPaginatedResult.m in Sources */,
