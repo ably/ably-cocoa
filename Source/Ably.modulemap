@@ -94,5 +94,6 @@ framework module Ably {
         header "ARTTypes+Private.h"
         header "ARTTestClientOptions.h"
         header "ARTVersion2Log.h"
+        header "ARTInternalLog.h"
     }
 }
