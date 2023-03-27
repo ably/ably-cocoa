@@ -453,8 +453,8 @@ class UtilitiesTests: XCTestCase {
         }
 
         expect(realtime.internal.logger.history.count).toNot(beGreaterThan(100))
-        expect(realtime.internal.logger.history.filter { $0.message.contains("channel state transitions from 1 - Attaching to 2 - Attached") }).to(haveCount(1))
-        expect(realtime.internal.logger.history.filter { $0.message.contains("realtime state transitions to 2 - Connected") }).to(haveCount(1))
+        XCTAssertEqual(realtime.internal.logger.history.filter { $0.message.contains("channel state transitions from 1 - Attaching to 2 - Attached") }.count, 1)
+        XCTAssertEqual(realtime.internal.logger.history.filter { $0.message.contains("realtime state transitions to 2 - Connected") }.count, 1)
     }
 
     func test__022__Utilities__maxMessageSize__calculates_maxMessageSize_of_a_Message_with_name_and_data() {

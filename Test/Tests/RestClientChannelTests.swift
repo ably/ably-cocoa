@@ -900,7 +900,7 @@ class RestClientChannelTests: XCTestCase {
             XCTAssertNil(error)
             XCTAssertTrue(result.hasNext)
             XCTAssertFalse(result.isLast)
-            expect(result.items).to(haveCount(2))
+            XCTAssertEqual(result.items.count, 2)
             let items = result.items.compactMap { $0.data as? String }
             XCTAssertEqual(items.first, "m1")
             XCTAssertEqual(items.last, "m2")
@@ -912,7 +912,7 @@ class RestClientChannelTests: XCTestCase {
                 XCTAssertNil(error)
                 XCTAssertTrue(result.hasNext)
                 XCTAssertFalse(result.isLast)
-                expect(result.items).to(haveCount(2))
+                XCTAssertEqual(result.items.count, 2)
                 let items = result.items.compactMap { $0.data as? String }
                 XCTAssertEqual(items.first, "m3")
                 XCTAssertEqual(items.last, "m4")
@@ -924,7 +924,7 @@ class RestClientChannelTests: XCTestCase {
                     XCTAssertNil(error)
                     XCTAssertFalse(result.hasNext)
                     XCTAssertTrue(result.isLast)
-                    expect(result.items).to(haveCount(1))
+                    XCTAssertEqual(result.items.count, 1)
                     let items = result.items.compactMap { $0.data as? String }
                     XCTAssertEqual(items.first, "m5")
 
@@ -935,7 +935,7 @@ class RestClientChannelTests: XCTestCase {
                         XCTAssertNil(error)
                         XCTAssertTrue(result.hasNext)
                         XCTAssertFalse(result.isLast)
-                        expect(result.items).to(haveCount(2))
+                        XCTAssertEqual(result.items.count, 2)
                         let items = result.items.compactMap { $0.data as? String }
                         XCTAssertEqual(items.first, "m1")
                         XCTAssertEqual(items.last, "m2")

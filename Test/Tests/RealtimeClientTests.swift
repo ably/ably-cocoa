@@ -447,7 +447,7 @@ class RealtimeClientTests: XCTestCase {
                 }
 
                 let authMessages = transport.protocolMessagesSent.filter { $0.action == .auth }
-                expect(authMessages).to(haveCount(1))
+                XCTAssertEqual(authMessages.count, 1)
 
                 guard let authMessage = authMessages.first else {
                     fail("Missing AUTH protocol message"); done(); return
@@ -503,7 +503,7 @@ class RealtimeClientTests: XCTestCase {
                     fail("TestProxyTransport is not set"); partialDone(); return
                 }
                 let connectedMessages = transport.protocolMessagesReceived.filter { $0.action == .connected }
-                expect(connectedMessages).to(haveCount(2))
+                XCTAssertEqual(connectedMessages.count, 2)
 
                 guard let connectedAfterAuth = connectedMessages.last, let connectionDetailsAfterAuth = connectedAfterAuth.connectionDetails else {
                     fail("Missing CONNECTED protocol message after AUTH protocol message"); partialDone(); return
@@ -604,7 +604,7 @@ class RealtimeClientTests: XCTestCase {
 
         expect(transport.protocolMessagesReceived.filter { $0.action == .disconnected }).to(beEmpty())
         // Should have one error: Channel denied access
-        expect(transport.protocolMessagesReceived.filter { $0.action == .error }).to(haveCount(1))
+        XCTAssertEqual(transport.protocolMessagesReceived.filter { $0.action == .error }.count, 1)
 
         // Retry Channel attach
         waitUntil(timeout: testTimeout) { done in
@@ -655,7 +655,7 @@ class RealtimeClientTests: XCTestCase {
                 }
 
                 let errorMessages = transport.protocolMessagesReceived.filter { $0.action == .error }
-                expect(errorMessages).to(haveCount(1))
+                XCTAssertEqual(errorMessages.count, 1)
 
                 guard let errorMessage = errorMessages.first else {
                     fail("Missing ERROR protocol message"); partialDone(); return
@@ -800,9 +800,9 @@ class RealtimeClientTests: XCTestCase {
                     fail("TestProxyTransport is not set"); done(); return
                 }
 
-                expect(transport.protocolMessagesSent.filter { $0.action == .auth }).to(haveCount(1))
-                expect(transport.protocolMessagesReceived.filter { $0.action == .connected }).to(haveCount(2))
-                expect(transport.protocolMessagesReceived.filter { $0.action == .error }).to(haveCount(0))
+                XCTAssertEqual(transport.protocolMessagesSent.filter { $0.action == .auth }.count, 1)
+                XCTAssertEqual(transport.protocolMessagesReceived.filter { $0.action == .connected }.count, 2)
+                XCTAssertEqual(transport.protocolMessagesReceived.filter { $0.action == .error }.count, 0)
                 done()
             }
         }
@@ -847,7 +847,7 @@ class RealtimeClientTests: XCTestCase {
                     guard let transport = client.internal.transport as? TestProxyTransport else {
                         fail("TestProxyTransport is not set"); done(); return
                     }
-                    expect(transport.protocolMessagesReceived.filter { $0.action == .connected }).to(haveCount(1))
+                    XCTAssertEqual(transport.protocolMessagesReceived.filter { $0.action == .connected }.count, 1)
                     done()
                 }
             }
@@ -1069,8 +1069,8 @@ class RealtimeClientTests: XCTestCase {
                 guard let transport = client.internal.transport as? TestProxyTransport else {
                     fail("TestProxyTransport is not set"); partialDone(); return
                 }
-                expect(transport.protocolMessagesSent.filter { $0.action == .auth }).to(haveCount(0))
-                expect(transport.protocolMessagesReceived.filter { $0.action == .connected }).to(haveCount(1)) // New transport
+                XCTAssertEqual(transport.protocolMessagesSent.filter { $0.action == .auth }.count, 0)
+                XCTAssertEqual(transport.protocolMessagesReceived.filter { $0.action == .connected }.count, 1) // New transport
                 partialDone()
             }
         }
@@ -1124,8 +1124,8 @@ class RealtimeClientTests: XCTestCase {
                 guard let transport = client.internal.transport as? TestProxyTransport else {
                     fail("TestProxyTransport is not set"); partialDone(); return
                 }
-                expect(transport.protocolMessagesSent.filter { $0.action == .auth }).to(haveCount(0))
-                expect(transport.protocolMessagesReceived.filter { $0.action == .connected }).to(haveCount(1)) // New transport
+                XCTAssertEqual(transport.protocolMessagesSent.filter { $0.action == .auth }.count, 0)
+                XCTAssertEqual(transport.protocolMessagesReceived.filter { $0.action == .connected }.count, 1) // New transport
                 partialDone()
             }
         }
@@ -1179,8 +1179,8 @@ class RealtimeClientTests: XCTestCase {
                 guard let transport = client.internal.transport as? TestProxyTransport else {
                     fail("TestProxyTransport is not set"); partialDone(); return
                 }
-                expect(transport.protocolMessagesSent.filter { $0.action == .auth }).to(haveCount(0))
-                expect(transport.protocolMessagesReceived.filter { $0.action == .connected }).to(haveCount(1)) // New transport
+                XCTAssertEqual(transport.protocolMessagesSent.filter { $0.action == .auth }.count, 0)
+                XCTAssertEqual(transport.protocolMessagesReceived.filter { $0.action == .connected }.count, 1) // New transport
                 partialDone()
             }
         }
@@ -1234,8 +1234,8 @@ class RealtimeClientTests: XCTestCase {
                 guard let transport = client.internal.transport as? TestProxyTransport else {
                     fail("TestProxyTransport is not set"); partialDone(); return
                 }
-                expect(transport.protocolMessagesSent.filter { $0.action == .auth }).to(haveCount(0))
-                expect(transport.protocolMessagesReceived.filter { $0.action == .connected }).to(haveCount(1)) // New transport
+                XCTAssertEqual(transport.protocolMessagesSent.filter { $0.action == .auth }.count, 0)
+                XCTAssertEqual(transport.protocolMessagesReceived.filter { $0.action == .connected }.count, 1) // New transport
                 partialDone()
             }
         }

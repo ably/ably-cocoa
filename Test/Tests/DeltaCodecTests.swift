@@ -119,7 +119,7 @@ class DeltaCodecTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
             channel.once(.attaching) { stateChange in
-                expect(receivedMessages).to(haveCount(testData.count - 3)) // messages discarded
+                XCTAssertEqual(receivedMessages.count, testData.count - 3) // messages discarded
                 XCTAssertEqual(stateChange.reason?.code, ARTErrorCode.unableToDecodeMessage.intValue)
                 partialDone()
             }
@@ -173,7 +173,7 @@ class DeltaCodecTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
             channel.once(.attaching) { stateChange in
-                expect(receivedMessages).to(haveCount(testData.count - 3)) // messages discarded
+                XCTAssertEqual(receivedMessages.count, testData.count - 3) // messages discarded
                 guard let errorReason = stateChange.reason else {
                     fail("Reason should not be empty"); partialDone(); return
                 }

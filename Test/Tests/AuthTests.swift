@@ -359,7 +359,7 @@ class AuthTests: XCTestCase {
         }
 
         // First request and a second attempt
-        expect(testHTTPExecutor.requests).to(haveCount(2))
+        XCTAssertEqual(testHTTPExecutor.requests.count, 2)
 
         // First token issue, and then reissue on token error.
         XCTAssertEqual(authCallbackCalled, 2)
@@ -392,7 +392,7 @@ class AuthTests: XCTestCase {
         }
 
         // First request and a second attempt
-        expect(testHTTPExecutor.requests).to(haveCount(2))
+        XCTAssertEqual(testHTTPExecutor.requests.count, 2)
     }
 
     // RSA4b
@@ -1871,7 +1871,7 @@ class AuthTests: XCTestCase {
                     guard let page = page else {
                         fail("Result is empty"); done(); return
                     }
-                    expect(page.items).to(haveCount(1))
+                    XCTAssertEqual(page.items.count, 1)
                     XCTAssertNil((page.items[0]).clientId)
                     done()
                 }
@@ -1932,7 +1932,7 @@ class AuthTests: XCTestCase {
                         fail("Page is empty"); done(); return
                     }
                     XCTAssertNil(error)
-                    expect(page.items).to(haveCount(1))
+                    XCTAssertEqual(page.items.count, 1)
                     XCTAssertNil(page.items[0].clientId)
                     done()
                 }
@@ -2231,7 +2231,7 @@ class AuthTests: XCTestCase {
                 guard let tokenRequest1 = tokenRequest else {
                     XCTFail("TokenRequest1 is nil"); done(); return
                 }
-                expect(tokenRequest1.nonce).to(haveCount(16))
+                XCTAssertEqual(tokenRequest1.nonce.count, 16)
 
                 // Second
                 rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
@@ -2239,7 +2239,7 @@ class AuthTests: XCTestCase {
                     guard let tokenRequest2 = tokenRequest else {
                         XCTFail("TokenRequest2 is nil"); done(); return
                     }
-                    expect(tokenRequest2.nonce).to(haveCount(16))
+                    XCTAssertEqual(tokenRequest2.nonce.count, 16)
 
                     // Uniqueness
                     XCTAssertNotEqual(tokenRequest1.nonce, tokenRequest2.nonce)
@@ -2466,7 +2466,7 @@ class AuthTests: XCTestCase {
                 }
                 XCTAssertEqual(tokenRequest.clientId, expectedClientId)
                 XCTAssertNotNil(tokenRequest.mac)
-                expect(tokenRequest.nonce).to(haveCount(16))
+                XCTAssertEqual(tokenRequest.nonce.count, 16)
                 XCTAssertEqual(tokenRequest.ttl as? TimeInterval, expectedTtl)
                 XCTAssertEqual(tokenRequest.capability, expectedCapability)
                 expect(tokenRequest.timestamp).to(beCloseTo(serverTime!, within: 6.0))
@@ -4108,7 +4108,7 @@ class AuthTests: XCTestCase {
                 let transport = client.internal.transport as! TestProxyTransport
 
                 client.connection.once(.update) { _ in
-                    expect(transport.protocolMessagesReceived.filter { $0.action == .auth }).to(haveCount(1))
+                    XCTAssertEqual(transport.protocolMessagesReceived.filter { $0.action == .auth }.count, 1)
                     XCTAssertNotEqual(originalToken, client.auth.tokenDetails?.token)
                     done()
                 }

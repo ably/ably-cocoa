@@ -54,8 +54,8 @@ class PushActivationStateMachineTests: XCTestCase {
         rest.internal.storage = storage
         let stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeviceRegistration.self))
-        expect(storage.keysRead).to(haveCount(2))
-        expect(storage.keysRead.filter { $0.hasSuffix("CurrentState") }).to(haveCount(1))
+        XCTAssertEqual(storage.keysRead.count, 2)
+        XCTAssertEqual(storage.keysRead.filter { $0.hasSuffix("CurrentState") }.count, 1)
         expect(storage.keysWritten).to(beEmpty())
     }
 
@@ -319,7 +319,7 @@ class PushActivationStateMachineTests: XCTestCase {
         XCTAssertTrue(setAndPersistIdentityTokenDetailsCalled)
         expect(httpExecutor.requests.count) == 1
         let requests = httpExecutor.requests.compactMap { $0.url?.path }.filter { $0 == "/push/deviceRegistrations" }
-        expect(requests).to(haveCount(1))
+        XCTAssertEqual(requests.count, 1)
         
         let request = try XCTUnwrap(httpExecutor.requests.first, "Should have a \"/push/deviceRegistrations\" request")
         let url = try XCTUnwrap(request.url, "Request should have a \"/push/deviceRegistrations\" URL")
@@ -366,7 +366,7 @@ class PushActivationStateMachineTests: XCTestCase {
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
         expect(httpExecutor.requests.count) == 1
         let requests = httpExecutor.requests.compactMap { $0.url?.path }.filter { $0 == "/push/deviceRegistrations" }
-        expect(requests).to(haveCount(1))
+        XCTAssertEqual(requests.count, 1)
         
         let request = try XCTUnwrap(httpExecutor.requests.first, "Should have a \"/push/deviceRegistrations\" request")
         let _ = try XCTUnwrap(request.url, "Request should have a \"/push/deviceRegistrations\" URL")
@@ -602,10 +602,10 @@ class PushActivationStateMachineTests: XCTestCase {
             stateMachine.send(ARTPushActivationEventCalledActivate())
             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
             if !fromEvent.isKind(of: ARTPushActivationEventCalledActivate.self) { XCTAssertTrue(activatedCallbackCalled)
-                expect(stateMachine.pendingEvents).to(haveCount(0))
+                XCTAssertEqual(stateMachine.pendingEvents.count, 0)
             } else {
                 XCTAssertFalse(activatedCallbackCalled)
-                expect(stateMachine.pendingEvents).to(haveCount(1))
+                XCTAssertEqual(stateMachine.pendingEvents.count, 1)
             }
 
             contextAfterEach?()
@@ -1029,7 +1029,7 @@ class PushActivationStateMachineTests: XCTestCase {
             }
 
             let requests = httpExecutor.requests.compactMap { $0.url?.path }.filter { $0 == "/push/deviceRegistrations/\(rest.device.id)" }
-            expect(requests).to(haveCount(1))
+            XCTAssertEqual(requests.count, 1)
             
             let request = try XCTUnwrap(httpExecutor.requests.first, "Should have a \"/push/deviceRegistrations\" request")
             let url = try XCTUnwrap(request.url, "Request should have a \"/push/deviceRegistrations\" URL")
@@ -1161,7 +1161,7 @@ class PushActivationStateMachineTests: XCTestCase {
             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
             expect(httpExecutor.requests.count) == 1
             let requests = httpExecutor.requests.compactMap { $0.url?.path }.filter { $0 == "/push/deviceRegistrations/\(rest.device.id)" }
-            expect(requests).to(haveCount(1))
+            XCTAssertEqual(requests.count, 1)
             
             let request = try XCTUnwrap(httpExecutor.requests.first, "Should have a \"/push/deviceRegistrations\" request")
             let url = try XCTUnwrap(request.url, "Request should have a \"/push/deviceRegistrations\" URL")
@@ -1213,7 +1213,7 @@ class PushActivationStateMachineTests: XCTestCase {
             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
             expect(httpExecutor.requests.count) == 1
             let requests = httpExecutor.requests.compactMap { $0.url?.path }.filter { $0 == "/push/deviceRegistrations/\(rest.device.id)" }
-            expect(requests).to(haveCount(1))
+            XCTAssertEqual(requests.count, 1)
             
             let request = try XCTUnwrap(httpExecutor.requests.first, "Should have a \"/push/deviceRegistrations\" request")
             let url = try XCTUnwrap(request.url, "Request should have a \"/push/deviceRegistrations\" URL")
@@ -1257,7 +1257,7 @@ class PushActivationStateMachineTests: XCTestCase {
             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeregistration.self))
             expect(httpExecutor.requests.count) == 1
             let requests = httpExecutor.requests.compactMap { $0.url?.path }.filter { $0 == "/push/deviceRegistrations/\(rest.device.id)" }
-            expect(requests).to(haveCount(1))
+            XCTAssertEqual(requests.count, 1)
             
             let request = try XCTUnwrap(httpExecutor.requests.first, "Should have a \"/push/deviceRegistrations\" request")
             let url = try XCTUnwrap(request.url, "Request should have a \"/push/deviceRegistrations\" URL")

@@ -32,7 +32,7 @@ class RestClientPresenceTests: XCTestCase {
 
                 let membersPage = membersPage!
                 expect(membersPage).to(beAnInstanceOf(ARTPaginatedResult<ARTPresenceMessage>.self))
-                expect(membersPage.items).to(haveCount(100))
+                XCTAssertEqual(membersPage.items.count, 100)
 
                 let members = membersPage.items
                 expect(members).to(allPass { member in
@@ -47,7 +47,7 @@ class RestClientPresenceTests: XCTestCase {
                     XCTAssertNil(error)
                     let nextPage = nextPage!
                     expect(nextPage).to(beAnInstanceOf(ARTPaginatedResult<ARTPresenceMessage>.self))
-                    expect(nextPage.items).to(haveCount(50))
+                    XCTAssertEqual(nextPage.items.count, 50)
 
                     let members = nextPage.items
                     expect(members).to(allPass { member in
@@ -103,7 +103,7 @@ class RestClientPresenceTests: XCTestCase {
             expect {
                 try channel.presence.get(query) { membersPage, error in
                     XCTAssertNil(error)
-                    expect(membersPage!.items).to(haveCount(1))
+                    XCTAssertEqual(membersPage!.items.count, 1)
                     let member = membersPage!.items[0]
                     XCTAssertEqual(member.clientId, "john")
                     XCTAssertEqual(member.data as? NSObject, "web" as NSObject?)
@@ -143,7 +143,7 @@ class RestClientPresenceTests: XCTestCase {
             expect {
                 try channel.presence.get(query) { membersPage, error in
                     XCTAssertNil(error)
-                    expect(membersPage!.items).to(haveCount(3))
+                    XCTAssertEqual(membersPage!.items.count, 3)
                     XCTAssertFalse(membersPage!.hasNext)
                     XCTAssertTrue(membersPage!.isLast)
                     expect(membersPage!.items).to(allPass { member in
@@ -180,7 +180,7 @@ class RestClientPresenceTests: XCTestCase {
                     fail("Page is empty"); done(); return
                 }
                 expect(membersPage).to(beAnInstanceOf(ARTPaginatedResult<ARTPresenceMessage>.self))
-                expect(membersPage.items).to(haveCount(100))
+                XCTAssertEqual(membersPage.items.count, 100)
 
                 let members = membersPage.items
                 expect(members).to(allPass { member in
@@ -197,7 +197,7 @@ class RestClientPresenceTests: XCTestCase {
                         fail("nextPage is empty"); done(); return
                     }
                     expect(nextPage).to(beAnInstanceOf(ARTPaginatedResult<ARTPresenceMessage>.self))
-                    expect(nextPage.items).to(haveCount(50))
+                    XCTAssertEqual(nextPage.items.count, 50)
 
                     let members = nextPage.items
                     expect(members).to(allPass { member in
@@ -293,7 +293,7 @@ class RestClientPresenceTests: XCTestCase {
             expect {
                 try channel.presence.history(query) { membersPage, error in
                     XCTAssertNil(error)
-                    expect(membersPage!.items).to(haveCount(1))
+                    XCTAssertEqual(membersPage!.items.count, 1)
                     XCTAssertFalse(membersPage!.hasNext)
                     XCTAssertTrue(membersPage!.isLast)
                     done()
@@ -338,7 +338,7 @@ class RestClientPresenceTests: XCTestCase {
             expect {
                 try channel.presence.get(query) { membersPage, error in
                     XCTAssertNil(error)
-                    expect(membersPage!.items).to(haveCount(3))
+                    XCTAssertEqual(membersPage!.items.count, 3)
                     XCTAssertFalse(membersPage!.hasNext)
                     XCTAssertTrue(membersPage!.isLast)
                     expect(membersPage!.items).to(allPass { member in
@@ -403,7 +403,7 @@ class RestClientPresenceTests: XCTestCase {
             expect {
                 try channel.presence.history(query) { membersPage, error in
                     XCTAssertNil(error)
-                    expect(membersPage!.items).to(haveCount(3))
+                    XCTAssertEqual(membersPage!.items.count, 3)
                     done()
                 }
             }.toNot(throwError())

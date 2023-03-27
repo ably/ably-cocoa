@@ -344,7 +344,7 @@ class PushTests: XCTestCase {
         realtime.auth.authorize { _, _ in }
         wait(for: [expectation], timeout: 3.0)
 
-        expect(mockHttpExecutor.requests.filter { $0.url?.pathComponents.contains("deviceRegistrations") == true }).to(haveCount(1))
+        XCTAssertEqual(mockHttpExecutor.requests.filter { $0.url?.pathComponents.contains("deviceRegistrations") == true }.count, 1)
         XCTAssertEqual(realtime.device.clientId, expectedClient)
     }
 

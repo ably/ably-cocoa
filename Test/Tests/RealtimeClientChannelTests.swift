@@ -196,13 +196,13 @@ class RealtimeClientChannelTests: XCTestCase {
             channel2.attach()
 
             XCTAssertFalse(channel2.presence.syncComplete)
-            expect(channel1.internal.presenceMap.members).to(haveCount(1))
-            expect(channel2.internal.presenceMap.members).to(haveCount(0))
+            XCTAssertEqual(channel1.internal.presenceMap.members.count, 1)
+            XCTAssertEqual(channel2.internal.presenceMap.members.count, 0)
         }
 
         expect(channel2.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
 
-        expect(channel1.internal.presenceMap.members).to(haveCount(1))
+        XCTAssertEqual(channel1.internal.presenceMap.members.count, 1)
         expect(channel2.internal.presenceMap.members).toEventually(haveCount(1), timeout: testTimeout)
 
         waitUntil(timeout: testTimeout) { done in
@@ -1238,10 +1238,10 @@ class RealtimeClientChannelTests: XCTestCase {
         channel.attach()
 
         XCTAssertEqual(channel.state, ARTRealtimeChannelState.attaching)
-        expect(transport.protocolMessagesSent.filter { $0.action == .attach }).to(haveCount(1))
+        XCTAssertEqual(transport.protocolMessagesSent.filter { $0.action == .attach }.count, 1)
 
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
-        expect(transport.protocolMessagesReceived.filter { $0.action == .attached }).to(haveCount(1))
+        XCTAssertEqual(transport.protocolMessagesReceived.filter { $0.action == .attached }.count, 1)
     }
 
     // RTL4e
@@ -1501,7 +1501,7 @@ class RealtimeClientChannelTests: XCTestCase {
         }
 
         let attachMessages = transport.protocolMessagesSent.filter { $0.action == .attach }
-        expect(attachMessages).to(haveCount(2))
+        XCTAssertEqual(attachMessages.count, 2)
 
         guard let firstAttach = attachMessages.first else {
             fail("First ATTACH message is missing"); return
@@ -1754,10 +1754,10 @@ class RealtimeClientChannelTests: XCTestCase {
         channel.detach()
 
         XCTAssertEqual(channel.state, ARTRealtimeChannelState.detaching)
-        expect(transport.protocolMessagesSent.filter { $0.action == .detach }).to(haveCount(1))
+        XCTAssertEqual(transport.protocolMessagesSent.filter { $0.action == .detach }.count, 1)
 
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.detached), timeout: testTimeout)
-        expect(transport.protocolMessagesReceived.filter { $0.action == .detached }).to(haveCount(1))
+        XCTAssertEqual(transport.protocolMessagesReceived.filter { $0.action == .detached }.count, 1)
     }
 
     // RTL5e
@@ -2180,7 +2180,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 XCTAssertNil(error)
                 done()
             }
-            expect((client.internal.transport as! TestProxyTransport).protocolMessagesSent.filter { $0.action == .message }).to(haveCount(1))
+            XCTAssertEqual((client.internal.transport as! TestProxyTransport).protocolMessagesSent.filter { $0.action == .message }.count, 1)
         }
     }
 
@@ -2201,7 +2201,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 XCTAssertNil(error)
                 done()
             }
-            expect((client.internal.transport as! TestProxyTransport).protocolMessagesSent.filter { $0.action == .message }).to(haveCount(1))
+            XCTAssertEqual((client.internal.transport as! TestProxyTransport).protocolMessagesSent.filter { $0.action == .message }.count, 1)
         }
 
         XCTAssertEqual(channel.state, ARTRealtimeChannelState.initialized)
@@ -2229,7 +2229,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 XCTAssertNil(error)
                 done()
             }
-            expect((client.internal.transport as! TestProxyTransport).protocolMessagesSent.filter { $0.action == .message }).to(haveCount(1))
+            XCTAssertEqual((client.internal.transport as! TestProxyTransport).protocolMessagesSent.filter { $0.action == .message }.count, 1)
         }
 
         XCTAssertEqual(channel.state, ARTRealtimeChannelState.detached)
@@ -2256,7 +2256,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 XCTAssertNil(error)
                 done()
             }
-            expect((client.internal.transport as! TestProxyTransport).protocolMessagesSent.filter { $0.action == .message }).to(haveCount(1))
+            XCTAssertEqual((client.internal.transport as! TestProxyTransport).protocolMessagesSent.filter { $0.action == .message }.count, 1)
         }
 
         XCTAssertEqual(channel.state, ARTRealtimeChannelState.attaching)
@@ -2284,7 +2284,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 XCTAssertNil(error)
                 done()
             }
-            expect((client.internal.transport as! TestProxyTransport).protocolMessagesSent.filter { $0.action == .message }).to(haveCount(1))
+            XCTAssertEqual((client.internal.transport as! TestProxyTransport).protocolMessagesSent.filter { $0.action == .message }.count, 1)
         }
 
         XCTAssertEqual(channel.state, ARTRealtimeChannelState.detaching)
@@ -2310,7 +2310,7 @@ class RealtimeClientChannelTests: XCTestCase {
             XCTAssertEqual(rtl6c2TestsClient.connection.state, ARTRealtimeConnectionState.initialized)
             rtl16c2TestsPublish(done)
             rtl6c2TestsClient.connect()
-            expect(rtl6c2TestsClient.internal.queuedMessages).to(haveCount(1))
+            XCTAssertEqual(rtl6c2TestsClient.internal.queuedMessages.count, 1)
         }
 
         afterEach__Channel__publish__Connection_state_conditions__the_message()
@@ -2323,7 +2323,7 @@ class RealtimeClientChannelTests: XCTestCase {
             rtl6c2TestsClient.connect()
             XCTAssertEqual(rtl6c2TestsClient.connection.state, ARTRealtimeConnectionState.connecting)
             rtl16c2TestsPublish(done)
-            expect(rtl6c2TestsClient.internal.queuedMessages).to(haveCount(1))
+            XCTAssertEqual(rtl6c2TestsClient.internal.queuedMessages.count, 1)
         }
 
         afterEach__Channel__publish__Connection_state_conditions__the_message()
@@ -2339,7 +2339,7 @@ class RealtimeClientChannelTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             XCTAssertEqual(rtl6c2TestsClient.connection.state, ARTRealtimeConnectionState.disconnected)
             rtl16c2TestsPublish(done)
-            expect(rtl6c2TestsClient.internal.queuedMessages).to(haveCount(1))
+            XCTAssertEqual(rtl6c2TestsClient.internal.queuedMessages.count, 1)
         }
 
         afterEach__Channel__publish__Connection_state_conditions__the_message()
@@ -2355,8 +2355,8 @@ class RealtimeClientChannelTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             rtl16c2TestsPublish(done)
-            expect(rtl6c2TestsClient.internal.queuedMessages).to(haveCount(0))
-            expect((rtl6c2TestsClient.internal.transport as! TestProxyTransport).protocolMessagesSent.filter { $0.action == .message }).to(haveCount(1))
+            XCTAssertEqual(rtl6c2TestsClient.internal.queuedMessages.count, 0)
+            XCTAssertEqual((rtl6c2TestsClient.internal.transport as! TestProxyTransport).protocolMessagesSent.filter { $0.action == .message }.count, 1)
         }
 
         afterEach__Channel__publish__Connection_state_conditions__the_message()
@@ -2372,8 +2372,8 @@ class RealtimeClientChannelTests: XCTestCase {
             rtl6c2TestsChannel.attach()
             XCTAssertEqual(rtl6c2TestsChannel.state, ARTRealtimeChannelState.attaching)
             rtl16c2TestsPublish(done)
-            expect(rtl6c2TestsClient.internal.queuedMessages).to(haveCount(0))
-            expect((rtl6c2TestsClient.internal.transport as! TestProxyTransport).protocolMessagesSent.filter { $0.action == .message }).to(haveCount(1))
+            XCTAssertEqual(rtl6c2TestsClient.internal.queuedMessages.count, 0)
+            XCTAssertEqual((rtl6c2TestsClient.internal.transport as! TestProxyTransport).protocolMessagesSent.filter { $0.action == .message }.count, 1)
         }
 
         afterEach__Channel__publish__Connection_state_conditions__the_message()
@@ -2410,7 +2410,7 @@ class RealtimeClientChannelTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             rtl16c2TestsPublish(done)
-            expect(rtl6c2TestsClient.internal.queuedMessages).to(haveCount(1))
+            XCTAssertEqual(rtl6c2TestsClient.internal.queuedMessages.count, 1)
         }
 
         afterEach__Channel__publish__Connection_state_conditions__the_message()
@@ -2544,7 +2544,7 @@ class RealtimeClientChannelTests: XCTestCase {
 
     // RTL6d
 
-    func test__088__Channel__publish__message_bundling__Messages_are_delivered_using_a_single_ProtocolMessage_where_possible_by_bundling_in_all_messages_for_that_channel() {
+    func test__088__Channel__publish__message_bundling__Messages_are_delivered_using_a_single_ProtocolMessage_where_possible_by_bundling_in_all_messages_for_that_channel() throws {
         let options = AblyTests.commonAppSetup()
         options.autoConnect = false
         let client = AblyTests.newRealtime(options)
@@ -2567,11 +2567,11 @@ class RealtimeClientChannelTests: XCTestCase {
 
         let transport = client.internal.transport as! TestProxyTransport
         let protocolMessages = transport.protocolMessagesSent.filter { $0.action == .message }
-        expect(protocolMessages).to(haveCount(1))
+        XCTAssertEqual(protocolMessages.count, 1)
         if protocolMessages.count != 1 {
             return
         }
-        expect(protocolMessages[0].messages).to(haveCount(messagesSent))
+        XCTAssertEqual(try XCTUnwrap(protocolMessages[0].messages).count, messagesSent)
 
         // Test that publishing an array of messages sends them together.
 
@@ -2587,11 +2587,15 @@ class RealtimeClientChannelTests: XCTestCase {
                 XCTAssertNil(error)
                 let transport = client.internal.transport as! TestProxyTransport
                 let protocolMessages = transport.protocolMessagesSent.filter { $0.action == .message }
-                expect(protocolMessages).to(haveCount(2))
+                XCTAssertEqual(protocolMessages.count, 2)
                 if protocolMessages.count != 2 {
                     done(); return
                 }
-                expect(protocolMessages[1].messages).to(haveCount(maxMessages))
+                if let messages = protocolMessages[1].messages {
+                    XCTAssertEqual(messages.count, maxMessages)
+                } else {
+                    XCTFail("Expected protocolMessages[1].messages to be non-nil")
+                }
                 done()
             }
         }
@@ -2798,7 +2802,7 @@ class RealtimeClientChannelTests: XCTestCase {
         }
 
         channel.subscribe("end") { _ in
-            expect(event0Msgs).to(haveCount(1))
+            XCTAssertEqual(event0Msgs.count, 1)
             expectationEnd.fulfill()
         }
 
@@ -3540,7 +3544,7 @@ class RealtimeClientChannelTests: XCTestCase {
                     guard let result = result else {
                         fail("Result is empty"); done(); return
                     }
-                    expect(result.items).to(haveCount(20))
+                    XCTAssertEqual(result.items.count, 20)
                     XCTAssertFalse(result.hasNext)
                     XCTAssertEqual(result.items.first?.data as? String, "message 19")
                     XCTAssertEqual(result.items.last?.data as? String, "message 0")
@@ -3570,7 +3574,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 guard let result = result else {
                     fail("Result is empty"); done(); return
                 }
-                expect(result.items).to(haveCount(1))
+                XCTAssertEqual(result.items.count, 1)
                 XCTAssertFalse(result.hasNext)
                 let messages = result.items
                 XCTAssertEqual(messages[0].data as? String, "message")
@@ -3615,14 +3619,14 @@ class RealtimeClientChannelTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             expect {
                 try channel2.history(query) { result, _ in
-                    expect(result!.items).to(haveCount(10))
+                    XCTAssertEqual(result!.items.count, 10)
                     XCTAssertTrue(result!.hasNext)
                     XCTAssertFalse(result!.isLast)
                     XCTAssertEqual((result!.items.first!).data as? String, "message 19")
                     XCTAssertEqual((result!.items.last!).data as? String, "message 10")
 
                     result!.next { result, _ in
-                        expect(result!.items).to(haveCount(10))
+                        XCTAssertEqual(result!.items.count, 10)
                         XCTAssertFalse(result!.hasNext)
                         XCTAssertTrue(result!.isLast)
                         XCTAssertEqual((result!.items.first!).data as? String, "message 9")
@@ -3731,7 +3735,7 @@ class RealtimeClientChannelTests: XCTestCase {
             transport.receive(detachedMessageWithError)
         }
 
-        expect(transport.protocolMessagesSent.filter { $0.action == .attach }).to(haveCount(2))
+        XCTAssertEqual(transport.protocolMessagesSent.filter { $0.action == .attach }.count, 2)
     }
 
     // RTL13a
@@ -3786,7 +3790,7 @@ class RealtimeClientChannelTests: XCTestCase {
             transport.receive(detachedMessageWithError)
         }
 
-        expect(transport.protocolMessagesSent.filter { $0.action == .attach }).to(haveCount(2))
+        XCTAssertEqual(transport.protocolMessagesSent.filter { $0.action == .attach }.count, 2)
     }
 
     // RTL13b
@@ -4068,7 +4072,7 @@ class RealtimeClientChannelTests: XCTestCase {
         XCTAssertEqual(channel.options?.params, channelOptions.params)
 
         let attachMessages = transport.protocolMessagesSent.filter { $0.action == .attach }
-        expect(attachMessages).to(haveCount(2))
+        XCTAssertEqual(attachMessages.count, 2)
         guard let lastAttach = attachMessages.last else {
             fail("Last ATTACH message is missing"); return
         }
@@ -4077,7 +4081,7 @@ class RealtimeClientChannelTests: XCTestCase {
         XCTAssertEqual(lastAttach.params, channelOptions.params)
 
         let attachedMessages = transport.protocolMessagesReceived.filter { $0.action == .attached }
-        expect(attachMessages).to(haveCount(2))
+        XCTAssertEqual(attachMessages.count, 2)
         guard let lastAttached = attachedMessages.last else {
             fail("Last ATTACH message is missing"); return
         }
@@ -4127,7 +4131,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let subscribeFlag = Int64(ARTChannelMode.subscribe.rawValue)
 
         let attachMessages = transport.protocolMessagesSent.filter { $0.action == .attach }
-        expect(attachMessages).to(haveCount(2))
+        XCTAssertEqual(attachMessages.count, 2)
         guard let lastAttach = attachMessages.last else {
             fail("Last ATTACH message is missing"); return
         }
@@ -4135,7 +4139,7 @@ class RealtimeClientChannelTests: XCTestCase {
         XCTAssertEqual(lastAttach.params, channelOptions.params)
 
         let attachedMessages = transport.protocolMessagesReceived.filter { $0.action == .attached }
-        expect(attachedMessages).to(haveCount(2))
+        XCTAssertEqual(attachedMessages.count, 2)
         guard let lastAttached = attachedMessages.last else {
             fail("Last ATTACH message is missing"); return
         }
@@ -4204,7 +4208,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let subscribeFlag = Int64(ARTChannelMode.subscribe.rawValue)
 
         let attachMessages = transport.protocolMessagesSent.filter { $0.action == .attach }
-        expect(attachMessages).to(haveCount(2))
+        XCTAssertEqual(attachMessages.count, 2)
         guard let lastAttach = attachMessages.last else {
             fail("Last ATTACH message is missing"); return
         }
@@ -4260,7 +4264,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let subscribeFlag = Int64(ARTChannelMode.subscribe.rawValue)
 
         let attachMessages = transport.protocolMessagesSent.filter { $0.action == .attach }
-        expect(attachMessages).to(haveCount(2))
+        XCTAssertEqual(attachMessages.count, 2)
         guard let lastAttach = attachMessages.last else {
             fail("Last ATTACH message is missing"); return
         }

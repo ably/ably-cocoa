@@ -59,7 +59,7 @@ private func testUsesAlternativeHostOnResponse(_ caseTest: FakeNetworkResponse, 
         client.connect()
     }
 
-    expect(urlConnections).to(haveCount(2))
+    XCTAssertEqual(urlConnections.count, 2)
     XCTAssertTrue(NSRegularExpression.match(urlConnections[0].absoluteString, pattern: "//realtime.ably.io"))
     XCTAssertTrue(NSRegularExpression.match(urlConnections[1].absoluteString, pattern: "//[a-e].ably-realtime.com"))
 }
@@ -1357,7 +1357,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
         }
 
-        expect(ids).to(haveCount(max))
+        XCTAssertEqual(ids.count, max)
     }
 
     // RTN9
@@ -1430,7 +1430,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
         }
 
-        expect(keys).to(haveCount(max))
+        XCTAssertEqual(keys.count, max)
     }
 
     // RTN10
@@ -1681,10 +1681,10 @@ class RealtimeClientConnectionTests: XCTestCase {
                 case .connected:
                     client.close()
                 case .closing:
-                    expect(transport.protocolMessagesSent.filter { $0.action == .close }).to(haveCount(1))
+                    XCTAssertEqual(transport.protocolMessagesSent.filter { $0.action == .close }.count, 1)
                     states += [state]
                 case .closed:
-                    expect(transport.protocolMessagesReceived.filter { $0.action == .closed }).to(haveCount(1))
+                    XCTAssertEqual(transport.protocolMessagesReceived.filter { $0.action == .closed }.count, 1)
                     states += [state]
                     done()
                 default:
@@ -1926,8 +1926,8 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.ping { error in
                 XCTAssertNil(error)
                 let transport = client.internal.transport as! TestProxyTransport
-                expect(transport.protocolMessagesSent.filter { $0.action == .heartbeat }).to(haveCount(1))
-                expect(transport.protocolMessagesReceived.filter { $0.action == .heartbeat }).to(haveCount(1))
+                XCTAssertEqual(transport.protocolMessagesSent.filter { $0.action == .heartbeat }.count, 1)
+                XCTAssertEqual(transport.protocolMessagesReceived.filter { $0.action == .heartbeat }.count, 1)
                 done()
             }
         }
@@ -2748,7 +2748,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
 
         let connectedMessages = secondTransport.protocolMessagesReceived.filter { $0.action == .connected }
-        expect(connectedMessages).to(haveCount(1)) // New transport connected
+        XCTAssertEqual(connectedMessages.count, 1) // New transport connected
         guard let receivedConnectionId = connectedMessages.first?.connectionId else {
             fail("ConnectionID is nil"); return
         }
@@ -2878,7 +2878,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                     guard let transport2 = client.internal.transport as? TestProxyTransport else {
                         fail("TestProxyTransport not setup"); done(); return
                     }
-                    expect(transport2.protocolMessagesReceived.filter { $0.action == .ack }).to(haveCount(1))
+                    XCTAssertEqual(transport2.protocolMessagesReceived.filter { $0.action == .ack }.count, 1)
 
                     guard let _ = transport1.protocolMessagesSent.filter({ $0.action == .message }).first?.messages?.first else {
                         fail("Message that has been re-sent isn't available"); done(); return
@@ -3062,7 +3062,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             client.ping { error in
                 XCTAssertNil(error)
-                expect((client.internal.transport as! TestProxyTransport).protocolMessagesReceived.filter { $0.action == .connected }).to(haveCount(1))
+                XCTAssertEqual((client.internal.transport as! TestProxyTransport).protocolMessagesReceived.filter { $0.action == .connected }.count, 1)
                 done()
             }
         }
@@ -3393,7 +3393,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
         }
 
-        expect(urlConnections).to(haveCount(1))
+        XCTAssertEqual(urlConnections.count, 1)
 
         afterEach__Connection__Host_Fallback()
     }
@@ -3442,7 +3442,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.connect()
         }
 
-        expect(urlConnections).to(haveCount(1))
+        XCTAssertEqual(urlConnections.count, 1)
 
         afterEach__Connection__Host_Fallback()
     }
@@ -3489,7 +3489,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.connect()
         }
 
-        expect(urlConnections).to(haveCount(2))
+        XCTAssertEqual(urlConnections.count, 2)
         if urlConnections.count != 2 {
             return
         }
@@ -3634,7 +3634,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
         }
 
-        expect(urlConnections).to(haveCount(1))
+        XCTAssertEqual(urlConnections.count, 1)
         XCTAssertTrue(NSRegularExpression.match(urlConnections[0].absoluteString, pattern: "//realtime.ably.io"))
 
         afterEach__Connection__Host_Fallback()
@@ -3693,7 +3693,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
         }
 
-        expect(urlConnections).to(haveCount(3))
+        XCTAssertEqual(urlConnections.count, 3)
         XCTAssertTrue(NSRegularExpression.match(urlConnections.at(0)?.absoluteString, pattern: "//realtime.ably.io"))
         XCTAssertTrue(NSRegularExpression.match(urlConnections.at(1)?.absoluteString, pattern: "//[a-e].ably-realtime.com"))
         XCTAssertTrue(NSRegularExpression.match(urlConnections.at(2)?.absoluteString, pattern: "//realtime.ably.io"))
@@ -3953,7 +3953,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
         }
 
-        expect(urlConnections).to(haveCount(1))
+        XCTAssertEqual(urlConnections.count, 1)
 
         afterEach__Connection__Host_Fallback()
     }
@@ -4065,11 +4065,11 @@ class RealtimeClientConnectionTests: XCTestCase {
                     fail("Transport is nil"); done(); return
                 }
                 expect(newTransport).toNot(beIdenticalTo(transport))
-                expect(transport.protocolMessagesSent.filter { $0.action == .message }).to(haveCount(1))
-                expect(transport.protocolMessagesReceived.filter { $0.action == .connected }).to(haveCount(1))
-                expect(newTransport.protocolMessagesReceived.filter { $0.action == .connected }).to(haveCount(1))
-                expect(transport.protocolMessagesReceived.filter { $0.action == .connected }).to(haveCount(1))
-                expect(newTransport.protocolMessagesSent.filter { $0.action == .message }).to(haveCount(1))
+                XCTAssertEqual(transport.protocolMessagesSent.filter { $0.action == .message }.count, 1)
+                XCTAssertEqual(transport.protocolMessagesReceived.filter { $0.action == .connected }.count, 1)
+                XCTAssertEqual(newTransport.protocolMessagesReceived.filter { $0.action == .connected }.count, 1)
+                XCTAssertEqual(transport.protocolMessagesReceived.filter { $0.action == .connected }.count, 1)
+                XCTAssertEqual(newTransport.protocolMessagesSent.filter { $0.action == .message }.count, 1)
                 done()
             }
             client.internal.onDisconnected()
@@ -4096,11 +4096,11 @@ class RealtimeClientConnectionTests: XCTestCase {
                 guard let newTransport = client.internal.transport as? TestProxyTransport else {
                     fail("Transport is nil"); done(); return
                 }
-                expect(transport.protocolMessagesReceived.filter { $0.action == .connected }).to(haveCount(1))
-                expect(newTransport.protocolMessagesReceived.filter { $0.action == .connected }).to(haveCount(1))
-                expect(transport.protocolMessagesSent.filter { $0.action == .attach }).to(haveCount(0))
-                expect(transport.protocolMessagesSentIgnored.filter { $0.action == .attach }).to(haveCount(1))
-                expect(newTransport.protocolMessagesSent.filter { $0.action == .attach }).to(haveCount(1))
+                XCTAssertEqual(transport.protocolMessagesReceived.filter { $0.action == .connected }.count, 1)
+                XCTAssertEqual(newTransport.protocolMessagesReceived.filter { $0.action == .connected }.count, 1)
+                XCTAssertEqual(transport.protocolMessagesSent.filter { $0.action == .attach }.count, 0)
+                XCTAssertEqual(transport.protocolMessagesSentIgnored.filter { $0.action == .attach }.count, 1)
+                XCTAssertEqual(newTransport.protocolMessagesSent.filter { $0.action == .attach }.count, 1)
                 expect(transport).toNot(beIdenticalTo(newTransport))
                 done()
             }
@@ -4133,11 +4133,11 @@ class RealtimeClientConnectionTests: XCTestCase {
                 guard let newTransport = client.internal.transport as? TestProxyTransport else {
                     fail("Transport is nil"); done(); return
                 }
-                expect(transport.protocolMessagesReceived.filter { $0.action == .connected }).to(haveCount(1))
-                expect(newTransport.protocolMessagesReceived.filter { $0.action == .connected }).to(haveCount(1))
-                expect(transport.protocolMessagesSent.filter { $0.action == .detach }).to(haveCount(0))
-                expect(transport.protocolMessagesSentIgnored.filter { $0.action == .detach }).to(haveCount(1))
-                expect(newTransport.protocolMessagesSent.filter { $0.action == .detach }).to(haveCount(1))
+                XCTAssertEqual(transport.protocolMessagesReceived.filter { $0.action == .connected }.count, 1)
+                XCTAssertEqual(newTransport.protocolMessagesReceived.filter { $0.action == .connected }.count, 1)
+                XCTAssertEqual(transport.protocolMessagesSent.filter { $0.action == .detach }.count, 0)
+                XCTAssertEqual(transport.protocolMessagesSentIgnored.filter { $0.action == .detach }.count, 1)
+                XCTAssertEqual(newTransport.protocolMessagesSent.filter { $0.action == .detach }.count, 1)
                 done()
             }
             XCTAssertEqual(channel.state, ARTRealtimeChannelState.detaching)
@@ -4310,7 +4310,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         expect(client.internal.transport).to(beIdenticalTo(transport))
 
         let authMessages = transport.protocolMessagesSent.filter { $0.action == .auth }
-        expect(authMessages).to(haveCount(1))
+        XCTAssertEqual(authMessages.count, 1)
 
         guard let authMessage = authMessages.first else {
             fail("Missing AUTH protocol message"); return
