@@ -16,8 +16,8 @@ Pod::Spec.new do |s|
   s.osx.deployment_target   = '10.12'
   s.requires_arc            = true
   s.swift_version           = '5.0'
-  s.source_files            = 'Source/**/*.{h,m,swift}', 'SocketRocket/SocketRocket/**/*.{h,m}'
-  s.private_header_files    = 'Source/*+Private.h', 'SocketRocket/SocketRocket/internal/**/*.h'
+  s.source_files            = 'Source/**/*.{h,m,swift}'
+  s.private_header_files    = 'Source/*+Private.h', 'Source/SocketRocket/**/*.h'
   s.exclude_files           = 'Source/include/', 'Source/PrivateHeaders/'
   s.module_map              = 'Source/Ably.modulemap'
   s.dependency 'msgpack', '0.4.0'

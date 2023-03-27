@@ -1382,7 +1382,7 @@
 				217D181725421FED00DFF07E /* NSURLRequest+ARTSRWebSocket.m */,
 			);
 			name = SocketRocket;
-			path = SocketRocket/SocketRocket;
+			path = Source/SocketRocket;
 			sourceTree = "<group>";
 		};
 		217D17EF25421FED00DFF07E /* Internal */ = {

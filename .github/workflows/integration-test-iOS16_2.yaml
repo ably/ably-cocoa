@@ -70,13 +70,6 @@ jobs:
           name: static-analyzer-reports-test_iOS16_2
           path: ./derived_data/**/report-*.html
 
-      # This is the script specified as the pod’s prepare_command in its Podspec.
-      # It would be run automatically for a normal CocoaPods install, but it doesn’t
-      # get run when the dependency is specified with the :path option. So we run it
-      # manually.
-      - name: Prepare Pod
-        run: Scripts/prepare-pod.sh
-
       - name: Run Examples Tests
         working-directory: ./Examples/Tests
         run: |

@@ -13,7 +13,7 @@ unzip "${TEMPDIR}/${ZIP_NAME}" -d "${TEMPDIR}"
 # Copy our LICENSE files across.
 cp LICENSE "${TEMPDIR}/Carthage"
 mkdir "${TEMPDIR}/Carthage/SocketRocket"
-cp SocketRocket/LICENSE "${TEMPDIR}/Carthage/SocketRocket"
+cp Source/SocketRocket/LICENSE "${TEMPDIR}/Carthage/SocketRocket"
 
 # Re-zip (replacing the original zip file) then clean up.
 cd "${TEMPDIR}"
