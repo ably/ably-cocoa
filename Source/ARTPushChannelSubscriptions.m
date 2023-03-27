@@ -9,6 +9,7 @@
 #import "ARTRest+Private.h"
 #import "ARTTypes.h"
 #import "ARTNSMutableRequest+ARTPush.h"
+#import "ARTInternalLogHandler.h"
 
 @implementation ARTPushChannelSubscriptions {
     ARTQueuedDealloc *_dealloc;
@@ -47,7 +48,7 @@
 
 @implementation ARTPushChannelSubscriptionsInternal {
     __weak ARTRestInternal *_rest; // weak because rest owns self
-    ARTLog* _logger;
+    ARTInternalLogHandler *_logger;
     dispatch_queue_t _queue;
     dispatch_queue_t _userQueue;
 }

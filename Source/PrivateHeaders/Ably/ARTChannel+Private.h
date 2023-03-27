@@ -4,6 +4,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class ARTRestInternal;
+@class ARTInternalLogHandler;
 
 @interface ARTChannel()
 
@@ -11,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nullable) ARTChannelOptions *options;
 
-@property (readonly, getter=getLogger) ARTLog *logger;
+@property (readonly, getter=getLogger) ARTInternalLogHandler *logger;
 @property (nonatomic, strong, readonly) ARTDataEncoder *dataEncoder;
 
 - (void)internalPostMessages:(id)data callback:(nullable ARTCallback)callback;

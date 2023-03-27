@@ -142,7 +142,7 @@
 @end
 
 @implementation ARTRestInternal {
-    ARTLog *_logger;
+    ARTInternalLogHandler *_logger;
     NSUInteger _tokenErrorRetries;
 }
 
@@ -160,16 +160,7 @@
         _realtime = realtime;
         _options = [options copy];
 
-        if (options.logHandler) {
-            _logger = options.logHandler;
-        }
-        else {
-            _logger = [[ARTLog alloc] init];
-        }
-
-        if (options.logLevel != ARTLogLevelNone) {
-            _logger.logLevel = options.logLevel;
-        }
+        _logger = [[ARTInternalLogHandler alloc] initWithClientOptions:options];
 
         _queue = options.internalDispatchQueue;
         _userQueue = options.dispatchQueue;

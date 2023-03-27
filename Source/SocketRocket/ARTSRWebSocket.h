@@ -46,7 +46,7 @@ typedef NS_ENUM(NSInteger, ARTSRStatusCode) {
 
 @class ARTSRWebSocket;
 @class ARTSRSecurityPolicy;
-@class ARTLog;
+@class ARTInternalLogHandler;
 
 /**
  Error domain used for errors reported by ARTSRWebSocket.
@@ -132,7 +132,7 @@ extern NSString *const ARTSRHTTPResponseErrorKey;
 
  @param request Request to initialize with.
  */
-- (instancetype)initWithURLRequest:(NSURLRequest *)request logger:(nullable ARTLog *)logger;
+- (instancetype)initWithURLRequest:(NSURLRequest *)request logger:(nullable ARTInternalLogHandler *)logger;
 
 /**
  Initializes a web socket with a given `NSURLRequest`, specifying a transport security policy (e.g. SSL configuration).
@@ -140,7 +140,7 @@ extern NSString *const ARTSRHTTPResponseErrorKey;
  @param request        Request to initialize with.
  @param securityPolicy Policy object describing transport security behavior.
  */
-- (instancetype)initWithURLRequest:(NSURLRequest *)request securityPolicy:(ARTSRSecurityPolicy *)securityPolicy logger:(nullable ARTLog *)logger;
+- (instancetype)initWithURLRequest:(NSURLRequest *)request securityPolicy:(ARTSRSecurityPolicy *)securityPolicy logger:(nullable ARTInternalLogHandler *)logger;
 
 /**
  Initializes a web socket with a given `NSURLRequest` and list of sub-protocols.
@@ -148,7 +148,7 @@ extern NSString *const ARTSRHTTPResponseErrorKey;
  @param request   Request to initialize with.
  @param protocols An array of strings that turn into `Sec-WebSocket-Protocol`. Default: `nil`.
  */
-- (instancetype)initWithURLRequest:(NSURLRequest *)request protocols:(nullable NSArray<NSString *> *)protocols logger:(nullable ARTLog *)logger;
+- (instancetype)initWithURLRequest:(NSURLRequest *)request protocols:(nullable NSArray<NSString *> *)protocols logger:(nullable ARTInternalLogHandler *)logger;
 
 /**
  Initializes a web socket with a given `NSURLRequest`, list of sub-protocols and whether untrusted SSL certificates are allowed.
@@ -157,7 +157,7 @@ extern NSString *const ARTSRHTTPResponseErrorKey;
  @param protocols                      An array of strings that turn into `Sec-WebSocket-Protocol`. Default: `nil`.
  @param allowsUntrustedSSLCertificates Boolean value indicating whether untrusted SSL certificates are allowed. Default: `false`.
  */
-- (instancetype)initWithURLRequest:(NSURLRequest *)request protocols:(nullable NSArray<NSString *> *)protocols allowsUntrustedSSLCertificates:(BOOL)allowsUntrustedSSLCertificates logger:(nullable ARTLog *)logger
+- (instancetype)initWithURLRequest:(NSURLRequest *)request protocols:(nullable NSArray<NSString *> *)protocols allowsUntrustedSSLCertificates:(BOOL)allowsUntrustedSSLCertificates logger:(nullable ARTInternalLogHandler *)logger
     DEPRECATED_MSG_ATTRIBUTE("Disabling certificate chain validation is unsafe. "
                              "Please use a proper Certificate Authority to issue your TLS certificates.");
 
@@ -168,14 +168,14 @@ extern NSString *const ARTSRHTTPResponseErrorKey;
  @param protocols      An array of strings that turn into `Sec-WebSocket-Protocol`. Default: `nil`.
  @param securityPolicy Policy object describing transport security behavior.
  */
-- (instancetype)initWithURLRequest:(NSURLRequest *)request protocols:(nullable NSArray<NSString *> *)protocols securityPolicy:(ARTSRSecurityPolicy *)securityPolicy logger:(nullable ARTLog *)logger NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithURLRequest:(NSURLRequest *)request protocols:(nullable NSArray<NSString *> *)protocols securityPolicy:(ARTSRSecurityPolicy *)securityPolicy logger:(nullable ARTInternalLogHandler *)logger NS_DESIGNATED_INITIALIZER;
 
 /**
  Initializes a web socket with a given `NSURL`.
 
  @param url URL to initialize with.
  */
-- (instancetype)initWithURL:(NSURL *)url logger:(nullable ARTLog *)logger;
+- (instancetype)initWithURL:(NSURL *)url logger:(nullable ARTInternalLogHandler *)logger;
 
 /**
  Initializes a web socket with a given `NSURL` and list of sub-protocols.
@@ -183,7 +183,7 @@ extern NSString *const ARTSRHTTPResponseErrorKey;
  @param url       URL to initialize with.
  @param protocols An array of strings that turn into `Sec-WebSocket-Protocol`. Default: `nil`.
  */
-- (instancetype)initWithURL:(NSURL *)url protocols:(nullable NSArray<NSString *> *)protocols logger:(nullable ARTLog *)logger;
+- (instancetype)initWithURL:(NSURL *)url protocols:(nullable NSArray<NSString *> *)protocols logger:(nullable ARTInternalLogHandler *)logger;
 
 /**
  Initializes a web socket with a given `NSURL`, specifying a transport security policy (e.g. SSL configuration).
@@ -191,7 +191,7 @@ extern NSString *const ARTSRHTTPResponseErrorKey;
  @param url            URL to initialize with.
  @param securityPolicy Policy object describing transport security behavior.
  */
-- (instancetype)initWithURL:(NSURL *)url securityPolicy:(ARTSRSecurityPolicy *)securityPolicy logger:(nullable ARTLog *)logger;
+- (instancetype)initWithURL:(NSURL *)url securityPolicy:(ARTSRSecurityPolicy *)securityPolicy logger:(nullable ARTInternalLogHandler *)logger;
 
 /**
  Initializes a web socket with a given `NSURL`, list of sub-protocols and whether untrusted SSL certificates are allowed.
@@ -200,7 +200,7 @@ extern NSString *const ARTSRHTTPResponseErrorKey;
  @param protocols                      An array of strings that turn into `Sec-WebSocket-Protocol`. Default: `nil`.
  @param allowsUntrustedSSLCertificates Boolean value indicating whether untrusted SSL certificates are allowed. Default: `false`.
  */
-- (instancetype)initWithURL:(NSURL *)url protocols:(nullable NSArray<NSString *> *)protocols allowsUntrustedSSLCertificates:(BOOL)allowsUntrustedSSLCertificates logger:(nullable ARTLog *)logger
+- (instancetype)initWithURL:(NSURL *)url protocols:(nullable NSArray<NSString *> *)protocols allowsUntrustedSSLCertificates:(BOOL)allowsUntrustedSSLCertificates logger:(nullable ARTInternalLogHandler *)logger
     DEPRECATED_MSG_ATTRIBUTE("Disabling certificate chain validation is unsafe. "
                              "Please use a proper Certificate Authority to issue your TLS certificates.");
 

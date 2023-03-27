@@ -9,7 +9,7 @@
 
 #import <Foundation/Foundation.h>
 
-@class ARTLog;
+@class ARTInternalLogHandler;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -19,7 +19,7 @@ typedef void(^ARTSRProxyConnectCompletion)(NSError *_Nullable error,
 
 @interface ARTSRProxyConnect : NSObject
 
-- (instancetype)initWithURL:(NSURL *)url logger:(nullable ARTLog *)logger;
+- (instancetype)initWithURL:(NSURL *)url logger:(nullable ARTInternalLogHandler *)logger;
 
 - (void)openNetworkStreamWithCompletion:(ARTSRProxyConnectCompletion)completion;
 

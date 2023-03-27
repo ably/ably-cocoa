@@ -82,7 +82,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 
 @property (nonatomic, strong, readonly) ARTSRDelegateController *delegateController;
 
-@property (nonatomic, strong, readonly, nullable) ARTLog * logger;
+@property (nonatomic, strong, readonly, nullable) ARTInternalLogHandler *logger;
 
 @end
 
@@ -149,7 +149,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 #pragma mark - Init
 ///--------------------------------------
 
-- (instancetype)initWithURLRequest:(NSURLRequest *)request protocols:(NSArray<NSString *> *)protocols securityPolicy:(ARTSRSecurityPolicy *)securityPolicy logger:(nullable ARTLog *)logger
+- (instancetype)initWithURLRequest:(NSURLRequest *)request protocols:(NSArray<NSString *> *)protocols securityPolicy:(ARTSRSecurityPolicy *)securityPolicy logger:(nullable ARTInternalLogHandler *)logger
 {
     self = [super init];
     if (!self) return self;
@@ -187,7 +187,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
     return self;
 }
 
-- (instancetype)initWithURLRequest:(NSURLRequest *)request protocols:(NSArray<NSString *> *)protocols allowsUntrustedSSLCertificates:(BOOL)allowsUntrustedSSLCertificates logger:(nullable ARTLog *)logger
+- (instancetype)initWithURLRequest:(NSURLRequest *)request protocols:(NSArray<NSString *> *)protocols allowsUntrustedSSLCertificates:(BOOL)allowsUntrustedSSLCertificates logger:(nullable ARTInternalLogHandler *)logger
 {
     ARTSRSecurityPolicy *securityPolicy;
     BOOL certificateChainValidationEnabled = !allowsUntrustedSSLCertificates;
@@ -202,12 +202,12 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
     return [self initWithURLRequest:request protocols:protocols securityPolicy:securityPolicy logger:logger];
 }
 
-- (instancetype)initWithURLRequest:(NSURLRequest *)request securityPolicy:(ARTSRSecurityPolicy *)securityPolicy logger:(nullable ARTLog *)logger
+- (instancetype)initWithURLRequest:(NSURLRequest *)request securityPolicy:(ARTSRSecurityPolicy *)securityPolicy logger:(nullable ARTInternalLogHandler *)logger
 {
     return [self initWithURLRequest:request protocols:nil securityPolicy:securityPolicy logger:logger];
 }
 
-- (instancetype)initWithURLRequest:(NSURLRequest *)request protocols:(NSArray<NSString *> *)protocols logger:(nullable ARTLog *)logger
+- (instancetype)initWithURLRequest:(NSURLRequest *)request protocols:(NSArray<NSString *> *)protocols logger:(nullable ARTInternalLogHandler *)logger
 {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated"
@@ -217,17 +217,17 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 #pragma clang diagnostic pop
 }
 
-- (instancetype)initWithURLRequest:(NSURLRequest *)request logger:(nullable ARTLog *)logger
+- (instancetype)initWithURLRequest:(NSURLRequest *)request logger:(nullable ARTInternalLogHandler *)logger
 {
     return [self initWithURLRequest:request protocols:nil logger:logger];
 }
 
-- (instancetype)initWithURL:(NSURL *)url logger:(nullable ARTLog *)logger;
+- (instancetype)initWithURL:(NSURL *)url logger:(nullable ARTInternalLogHandler *)logger;
 {
     return [self initWithURL:url protocols:nil logger:logger];
 }
 
-- (instancetype)initWithURL:(NSURL *)url protocols:(NSArray<NSString *> *)protocols logger:(nullable ARTLog *)logger;
+- (instancetype)initWithURL:(NSURL *)url protocols:(NSArray<NSString *> *)protocols logger:(nullable ARTInternalLogHandler *)logger;
 {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated"
@@ -237,13 +237,13 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 #pragma clang diagnostic pop
 }
 
-- (instancetype)initWithURL:(NSURL *)url securityPolicy:(ARTSRSecurityPolicy *)securityPolicy logger:(nullable ARTLog *)logger
+- (instancetype)initWithURL:(NSURL *)url securityPolicy:(ARTSRSecurityPolicy *)securityPolicy logger:(nullable ARTInternalLogHandler *)logger
 {
     NSURLRequest *request = [NSURLRequest requestWithURL:url];
     return [self initWithURLRequest:request protocols:nil securityPolicy:securityPolicy logger:logger];
 }
 
-- (instancetype)initWithURL:(NSURL *)url protocols:(NSArray<NSString *> *)protocols allowsUntrustedSSLCertificates:(BOOL)allowsUntrustedSSLCertificates logger:(nullable ARTLog *)logger
+- (instancetype)initWithURL:(NSURL *)url protocols:(NSArray<NSString *> *)protocols allowsUntrustedSSLCertificates:(BOOL)allowsUntrustedSSLCertificates logger:(nullable ARTInternalLogHandler *)logger
 {
     NSURLRequest *request = [NSURLRequest requestWithURL:url];
     return [self initWithURLRequest:request protocols:protocols allowsUntrustedSSLCertificates:allowsUntrustedSSLCertificates logger:logger];

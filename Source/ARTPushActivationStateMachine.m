@@ -3,7 +3,7 @@
 #import "ARTPushActivationEvent.h"
 #import "ARTPushActivationState.h"
 #import "ARTRest+Private.h"
-#import "ARTLog.h"
+#import "ARTInternalLogHandler.h"
 #import "ARTJsonEncoder.h"
 #import "ARTJsonLikeEncoder.h"
 #import "ARTTypes.h"

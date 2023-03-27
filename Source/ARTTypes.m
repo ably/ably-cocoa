@@ -1,5 +1,5 @@
 #import "ARTTypes.h"
-#import "ARTLog.h"
+#import "ARTInternalLogHandler.h"
 
 // MARK: Global helper functions
 
@@ -431,7 +431,7 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
 
 @implementation NSObject (ARTArchive)
 
-- (nullable NSData *)art_archiveWithLogger:(nullable ARTLog *)logger {
+- (nullable NSData *)art_archiveWithLogger:(nullable ARTInternalLogHandler *)logger {
 #if TARGET_OS_MACCATALYST // if (@available(iOS 13.0, macCatalyst 13.0, ... doesn't help
     NSError *error;
     NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self requiringSecureCoding:false error:&error];
@@ -454,7 +454,7 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
 #endif
 }
 
-+ (nullable id)art_unarchiveFromData:(NSData *)data withLogger:(nullable ARTLog *)logger {
++ (nullable id)art_unarchiveFromData:(NSData *)data withLogger:(nullable ARTInternalLogHandler *)logger {
     NSSet* allowedTypes = [NSSet setWithArray:@[ [NSArray class], [NSDictionary class], self]];
 #if TARGET_OS_MACCATALYST
     NSError *error;

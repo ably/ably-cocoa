@@ -1,6 +1,6 @@
 #import "ARTPushDeviceRegistrations+Private.h"
 #import "ARTHttp.h"
-#import "ARTLog.h"
+#import "ARTInternalLogHandler.h"
 #import "ARTPaginatedResult+Private.h"
 #import "ARTDeviceDetails.h"
 #import "ARTDevicePushDetails.h"
@@ -48,7 +48,7 @@
 
 @implementation ARTPushDeviceRegistrationsInternal {
     __weak ARTRestInternal *_rest; // weak because rest owns self
-    ARTLog* _logger;
+    ARTInternalLogHandler *_logger;
     dispatch_queue_t _queue;
     dispatch_queue_t _userQueue;
 }

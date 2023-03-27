@@ -4,7 +4,7 @@
 @class ARTPresenceMap;
 @class ARTPresenceMessage;
 @class ARTErrorInfo;
-@class ARTLog;
+@class ARTInternalLogHandler;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, getter=syncInProgress) BOOL syncInProgress;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithQueue:(_Nonnull dispatch_queue_t)queue logger:(ARTLog *)logger;
+- (instancetype)initWithQueue:(_Nonnull dispatch_queue_t)queue logger:(ARTInternalLogHandler *)logger;
 
 - (BOOL)add:(ARTPresenceMessage *)message;
 - (void)reset;

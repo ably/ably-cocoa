@@ -1,19 +1,19 @@
 #import "ARTLocalDeviceStorage.h"
-#import "ARTLog.h"
+#import "ARTInternalLogHandler.h"
 #import "ARTLocalDevice+Private.h"
 
 @implementation ARTLocalDeviceStorage {
-    ARTLog *_logger;
+    ARTInternalLogHandler *_logger;
 }
 
-- (instancetype)initWithLogger:(ARTLog *)logger {
+- (instancetype)initWithLogger:(ARTInternalLogHandler *)logger {
     if (self = [super init]) {
         _logger = logger;
     }
     return self;
 }
 
-+ (instancetype)newWithLogger:(ARTLog *)logger {
++ (instancetype)newWithLogger:(ARTInternalLogHandler *)logger {
     return [[self alloc] initWithLogger:logger];
 }
 

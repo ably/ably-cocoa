@@ -9,7 +9,7 @@
 #import "ARTProtocolMessage+Private.h"
 #import "ARTNSDictionary+ARTDictionaryUtil.h"
 #import "ARTNSDate+ARTUtil.h"
-#import "ARTLog.h"
+#import "ARTInternalLogHandler.h"
 #import "ARTHttp.h"
 #import "ARTStatus.h"
 #import "ARTTokenDetails.h"
@@ -26,7 +26,7 @@
 
 @implementation ARTJsonLikeEncoder {
     __weak ARTRestInternal *_rest; // weak because rest owns self
-    ARTLog *_logger;
+    ARTInternalLogHandler *_logger;
 }
 
 - (instancetype)init {
@@ -42,7 +42,7 @@
     return self;
 }
 
-- (instancetype)initWithLogger:(ARTLog *)logger delegate:(id<ARTJsonLikeEncoderDelegate>)delegate {
+- (instancetype)initWithLogger:(ARTInternalLogHandler *)logger delegate:(id<ARTJsonLikeEncoderDelegate>)delegate {
     if (self = [super init]) {
         _rest = nil;
         _logger = logger;

@@ -23,6 +23,7 @@
 #import "ARTConnection+Private.h"
 #import "ARTRestChannels+Private.h"
 #import "ARTEventEmitter+Private.h"
+#import "ARTInternalLogHandler.h"
 #if TARGET_OS_IPHONE
 #import "ARTPushChannel+Private.h"
 #endif
@@ -292,7 +293,7 @@ dispatch_sync(_queue, ^{
     return _errorReason;
 }
 
-- (ARTLog *)getLogger {
+- (ARTInternalLogHandler *)getLogger {
     return _realtime.logger;
 }
 

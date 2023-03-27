@@ -21,6 +21,8 @@ private let quxChannelName = "pushenabled:qux"
 
 private let subscription = ARTPushChannelSubscription(clientId: "newClient", channel: quxChannelName)
 
+private let mockLogHandler = InternalLogHandler(logHandler: MockVersion2LogHandler())
+
 class PushAdminTests: XCTestCase {
     private static let deviceDetails: ARTDeviceDetails = {
         let deviceDetails = ARTDeviceDetails(id: "testDeviceDetails")
@@ -647,7 +649,7 @@ class PushAdminTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         let realtime = ARTRealtime(options: options)
         defer { realtime.dispose(); realtime.close() }
-        let testProxyHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+        let testProxyHTTPExecutor = TestProxyHTTPExecutor(mockLogHandler)
         realtime.internal.rest.httpExecutor = testProxyHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -787,7 +789,7 @@ class PushAdminTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         let realtime = ARTRealtime(options: options)
         defer { realtime.dispose(); realtime.close() }
-        let testProxyHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+        let testProxyHTTPExecutor = TestProxyHTTPExecutor(mockLogHandler)
         realtime.internal.rest.httpExecutor = testProxyHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in

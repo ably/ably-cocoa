@@ -1,6 +1,6 @@
 #import "ARTNSMutableRequest+ARTPush.h"
 
-#import "ARTLog.h"
+#import "ARTInternalLogHandler.h"
 #import "ARTDeviceDetails.h"
 #import "ARTDeviceIdentityTokenDetails.h"
 #import "ARTLocalDevice.h"
@@ -11,7 +11,7 @@
     [self setDeviceAuthentication:deviceId localDevice:localDevice logger:nil];
 }
 
-- (void)setDeviceAuthentication:(ARTDeviceId *)deviceId localDevice:(ARTLocalDevice *)localDevice logger:(ARTLog *)logger {
+- (void)setDeviceAuthentication:(ARTDeviceId *)deviceId localDevice:(ARTLocalDevice *)localDevice logger:(ARTInternalLogHandler *)logger {
     if ([localDevice.id isEqualToString:deviceId]) {
         if (localDevice.identityTokenDetails.token) {
             [logger debug:__FILE__ line:__LINE__ message:@"adding device authentication using local device identity token"];
@@ -28,7 +28,7 @@
     [self setDeviceAuthentication:localDevice logger:nil];
 }
 
-- (void)setDeviceAuthentication:(ARTLocalDevice *)localDevice logger:(ARTLog *)logger {
+- (void)setDeviceAuthentication:(ARTLocalDevice *)localDevice logger:(ARTInternalLogHandler *)logger {
     [self setDeviceAuthentication:localDevice.id localDevice:localDevice logger:nil];
 }
 

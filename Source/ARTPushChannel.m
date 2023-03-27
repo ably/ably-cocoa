@@ -1,6 +1,6 @@
 #import "ARTPushChannel+Private.h"
 #import "ARTHttp.h"
-#import "ARTLog.h"
+#import "ARTInternalLogHandler.h"
 #import "ARTJsonLikeEncoder.h"
 #import "ARTRest+Private.h"
 #import "ARTClientOptions.h"
@@ -71,7 +71,7 @@ const NSUInteger ARTDefaultLimit = 100;
     dispatch_queue_t _userQueue;
 @public
     __weak ARTRestInternal *_rest; // weak because rest may own self and always outlives it
-    ARTLog *_logger;
+    ARTInternalLogHandler *_logger;
     __weak ARTChannel *_channel; // weak because channel owns self
 }
 

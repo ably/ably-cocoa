@@ -20,6 +20,7 @@
 #import "ARTPushActivationEvent.h"
 #import "ARTPushActivationState.h"
 #import "ARTFormEncode.h"
+#import "ARTInternalLogHandler.h"
 
 @implementation ARTAuth {
     ARTQueuedDealloc *_dealloc;

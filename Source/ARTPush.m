@@ -72,7 +72,7 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
 
 @implementation ARTPushInternal {
     __weak ARTRestInternal *_rest; // weak because rest owns self
-    ARTLog *_logger;
+    ARTInternalLogHandler *_logger;
     ARTPushActivationStateMachine *_activationMachine;
     NSLock *_activationMachineLock;
 }

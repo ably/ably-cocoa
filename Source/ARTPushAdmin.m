@@ -3,7 +3,7 @@
 #import "ARTRest+Private.h"
 #import "ARTPushDeviceRegistrations+Private.h"
 #import "ARTPushChannelSubscriptions+Private.h"
-#import "ARTLog.h"
+#import "ARTInternalLogHandler.h"
 #import "ARTJsonEncoder.h"
 #import "ARTJsonLikeEncoder.h"
 
@@ -36,7 +36,7 @@
 
 @implementation ARTPushAdminInternal {
     __weak ARTRestInternal *_rest; // weak because rest owns self
-    ARTLog *_logger;
+    ARTInternalLogHandler *_logger;
     dispatch_queue_t _userQueue;
     dispatch_queue_t _queue;
 }

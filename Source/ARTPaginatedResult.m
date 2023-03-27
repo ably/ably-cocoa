@@ -5,6 +5,7 @@
 #import "ARTRest+Private.h"
 #import "ARTNSMutableURLRequest+ARTPaginated.h"
 #import "ARTNSHTTPURLResponse+ARTPaginated.h"
+#import "ARTInternalLogHandler.h"
 
 @implementation ARTPaginatedResult {
     ARTRestInternal *_rest;

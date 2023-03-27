@@ -2,7 +2,7 @@
 
 @class ARTPushActivationStateMachine;
 @class ARTPushActivationEvent;
-@class ARTLog;
+@class ARTInternalLogHandler;
 
 @protocol ARTHTTPAuthenticatedExecutor;
 
@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable ARTPushActivationState *)transition:(ARTPushActivationEvent *)event;
 
 - (NSData *)archive;
-+ (nullable ARTPushActivationState *)unarchive:(NSData *)data withLogger:(nullable ARTLog *)logger;
++ (nullable ARTPushActivationState *)unarchive:(NSData *)data withLogger:(nullable ARTInternalLogHandler *)logger;
 
 @end
 

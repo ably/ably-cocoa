@@ -18,13 +18,13 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTSRPinningSecurityPolicy ()
 
 @property (nonatomic, copy, readonly) NSArray *pinnedCertificates;
-@property (nonatomic, strong, readonly, nullable) ARTLog * logger;
+@property (nonatomic, strong, readonly, nullable) ARTInternalLogHandler *logger;
 
 @end
 
 @implementation ARTSRPinningSecurityPolicy
 
-- (instancetype)initWithCertificates:(NSArray *)pinnedCertificates logger:(nullable ARTLog *)logger;
+- (instancetype)initWithCertificates:(NSArray *)pinnedCertificates logger:(nullable ARTInternalLogHandler *)logger;
 {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated"

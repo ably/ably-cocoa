@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// :nodoc:
 @protocol ARTHTTPExecutor
 
-- (ARTLog *)logger;
+- (ARTInternalLogHandler *)logger;
 - (nullable NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request completion:(nullable ARTURLRequestCallback)callback;
 
 @end
@@ -35,7 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)setURLSessionClass:(Class)urlSessionClass;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)init:(dispatch_queue_t)queue logger:(ARTLog *)logger;
+- (instancetype)init:(dispatch_queue_t)queue logger:(ARTInternalLogHandler *)logger;
 
 @end
 

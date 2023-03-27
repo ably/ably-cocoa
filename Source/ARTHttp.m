@@ -1,6 +1,7 @@
 #import "ARTHttp+Private.h"
 #import "ARTURLSessionServerTrust.h"
 #import "ARTConstants.h"
+#import "ARTInternalLogHandler.h"
 
 @interface ARTHttp ()
 
@@ -13,14 +14,14 @@ Class configuredUrlSessionClass = nil;
 #pragma mark - ARTHttp
 
 @implementation ARTHttp {
-    ARTLog *_logger;
+    ARTInternalLogHandler *_logger;
 }
 
 + (void)setURLSessionClass:(const Class)urlSessionClass {
     configuredUrlSessionClass = urlSessionClass;
 }
 
-- (instancetype)init:(dispatch_queue_t)queue logger:(ARTLog *)logger {
+- (instancetype)init:(dispatch_queue_t)queue logger:(ARTInternalLogHandler *)logger {
     self = [super init];
     if (self) {
         const Class urlSessionClass = configuredUrlSessionClass ? configuredUrlSessionClass : [ARTURLSessionServerTrust class];
@@ -30,7 +31,7 @@ Class configuredUrlSessionClass = nil;
     return self;
 }
 
-- (ARTLog *)logger {
+- (ARTInternalLogHandler *)logger {
     return _logger;
 }
 

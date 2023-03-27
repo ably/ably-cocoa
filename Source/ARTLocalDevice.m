@@ -5,6 +5,7 @@
 #import "ARTDeviceStorage.h"
 #import "ARTDeviceIdentityTokenDetails.h"
 #import "ARTCrypto+Private.h"
+#import "ARTInternalLogHandler.h"
 
 NSString *const ARTDevicePlatform = @"ios";
 
@@ -27,13 +28,13 @@ NSString *const ARTDevicePushTransportType = @"apns";
 
 @interface ARTLocalDevice ()
 
-@property (nullable, nonatomic, readonly, strong) ARTLog *logger;
+@property (nullable, nonatomic, readonly, strong) ARTInternalLogHandler *logger;
 
 @end
 
 @implementation ARTLocalDevice
 
-- (instancetype)initWithClientId:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage logger:(nullable ARTLog *)logger {
+- (instancetype)initWithClientId:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage logger:(nullable ARTInternalLogHandler *)logger {
     if (self = [super init]) {
         self.clientId = clientId;
         self.storage = storage;
@@ -42,7 +43,7 @@ NSString *const ARTDevicePushTransportType = @"apns";
     return self;
 }
 
-+ (ARTLocalDevice *)load:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage logger:(nullable ARTLog *)logger {
++ (ARTLocalDevice *)load:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage logger:(nullable ARTInternalLogHandler *)logger {
     ARTLocalDevice *device = [[ARTLocalDevice alloc] initWithClientId:clientId storage:storage logger:logger];
     device.platform = ARTDevicePlatform;
     #if TARGET_OS_IOS
