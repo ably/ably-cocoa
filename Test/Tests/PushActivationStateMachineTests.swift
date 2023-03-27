@@ -239,7 +239,7 @@ class PushActivationStateMachineTests: XCTestCase {
             }
             delegate.onPushCustomRegister = { error, deviceDetails in
                 XCTAssertNil(error)
-                expect(deviceDetails).to(beIdenticalTo(rest.device))
+                XCTAssertTrue(deviceDetails === rest.device)
                 partialDone()
                 return nil
             }
@@ -275,7 +275,7 @@ class PushActivationStateMachineTests: XCTestCase {
             }
             delegate.onPushCustomRegister = { error, deviceDetails in
                 XCTAssertNil(error)
-                expect(deviceDetails).to(beIdenticalTo(rest.device))
+                XCTAssertTrue(deviceDetails === rest.device)
                 partialDone()
                 return simulatedError
             }
@@ -995,7 +995,7 @@ class PushActivationStateMachineTests: XCTestCase {
                 }
                 delegate.onPushCustomRegister = { error, deviceDetails in
                     XCTAssertNil(error)
-                    expect(deviceDetails).to(beIdenticalTo(rest.device))
+                    XCTAssertTrue(deviceDetails === rest.device)
                     partialDone()
                     return nil
                 }

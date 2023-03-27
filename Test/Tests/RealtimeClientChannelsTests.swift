@@ -47,7 +47,7 @@ class RealtimeClientChannelsTests: XCTestCase {
         XCTAssertEqual(channel.name, "\(options.channelNamePrefix!)-\(channelName)")
 
         XCTAssertEqual(client.channels.internal.collection.count, 1)
-        expect(client.channels.get(channelName).internal).to(beIdenticalTo(channel.internal))
+        XCTAssertTrue(client.channels.get(channelName).internal === channel.internal)
         XCTAssertEqual(client.channels.internal.collection.count, 1)
     }
 
@@ -57,7 +57,7 @@ class RealtimeClientChannelsTests: XCTestCase {
         defer { client.dispose(); client.close() }
         let options = ARTRealtimeChannelOptions()
         let channel = client.channels.get(uniqueChannelName(), options: options)
-        expect(channel.options).to(beIdenticalTo(options))
+        XCTAssertTrue(channel.options === options)
     }
 
     // RTS3c
@@ -68,7 +68,7 @@ class RealtimeClientChannelsTests: XCTestCase {
         XCTAssertNil(client.channels.get(channelName).options)
         let options = ARTRealtimeChannelOptions()
         let channel = client.channels.get(channelName, options: options)
-        expect(channel.options).to(beIdenticalTo(options))
+        XCTAssertTrue(channel.options === options)
     }
 
     // RTS4

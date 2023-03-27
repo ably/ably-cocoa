@@ -100,7 +100,7 @@ private func testHandlesDecodingErrorInFixture(_ cryptoFixtureFileName: String, 
                 return
             }
             expect(error.message).to(contain("Failed to decode data: unknown encoding: 'bad_encoding_type'"))
-            expect(error).to(beIdenticalTo(channel.errorReason))
+            XCTAssertTrue(error === channel.errorReason)
             partlyDone()
         }
 
@@ -593,7 +593,7 @@ class RealtimeClientChannelTests: XCTestCase {
                     fail("Reason error is nil"); done(); return
                 }
                 XCTAssertEqual(error, pmError.error)
-                expect(channel.errorReason).to(beIdenticalTo(error))
+                XCTAssertTrue(channel.errorReason === error)
                 done()
             }
             client.internal.onError(pmError)
@@ -3686,8 +3686,8 @@ class RealtimeClientChannelTests: XCTestCase {
 
             channel.once(.update) { stateChange in
                 XCTAssertEqual(stateChange.event, ARTChannelEvent.update)
-                expect(stateChange.reason).to(beIdenticalTo(attachedMessageWithError.error))
-                expect(channel.errorReason).to(beIdenticalTo(stateChange.reason))
+                XCTAssertTrue(stateChange.reason === attachedMessageWithError.error)
+                XCTAssertTrue(channel.errorReason === stateChange.reason)
                 done()
             }
 
@@ -3727,7 +3727,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 guard let error = stateChange.reason else {
                     fail("Reason error is nil"); done(); return
                 }
-                expect(error).to(beIdenticalTo(detachedMessageWithError.error))
+                XCTAssertTrue(error === detachedMessageWithError.error)
                 XCTAssertNil(channel.errorReason)
                 done()
             }
@@ -3782,7 +3782,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 guard let error = stateChange.reason else {
                     fail("Reason error is nil"); done(); return
                 }
-                expect(error).to(beIdenticalTo(detachedMessageWithError.error))
+                XCTAssertTrue(error === detachedMessageWithError.error)
                 XCTAssertNil(channel.errorReason)
                 done()
             }
@@ -3826,7 +3826,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 guard let error = stateChange.reason else {
                     fail("Reason error is nil"); done(); return
                 }
-                expect(error).to(beIdenticalTo(detachedMessageWithError.error))
+                XCTAssertTrue(error === detachedMessageWithError.error)
                 XCTAssertNil(channel.errorReason)
                 done()
             }
@@ -3840,7 +3840,7 @@ class RealtimeClientChannelTests: XCTestCase {
                     fail("Reason error is nil"); done(); return
                 }
                 expect(error.message).to(contain("timed out"))
-                expect(channel.errorReason).to(beIdenticalTo(error))
+                XCTAssertTrue(channel.errorReason === error)
                 done()
             }
         }
@@ -3878,7 +3878,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 guard let error = stateChange.reason else {
                     fail("Reason error is nil"); partialDone(); return
                 }
-                expect(error).to(beIdenticalTo(detachedMessageWithError.error))
+                XCTAssertTrue(error === detachedMessageWithError.error)
                 XCTAssertNil(channel.errorReason)
 
                 // Check retry
@@ -3975,7 +3975,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 guard let error = stateChange.reason else {
                     fail("Reason error is nil"); done(); return
                 }
-                expect(error).to(beIdenticalTo(detachedMessageWithError.error))
+                XCTAssertTrue(error === detachedMessageWithError.error)
                 XCTAssertNil(channel.errorReason)
                 done()
             }
@@ -3987,7 +3987,7 @@ class RealtimeClientChannelTests: XCTestCase {
                     fail("Reason error is nil"); done(); return
                 }
                 expect(error.message).to(contain("timed out"))
-                expect(channel.errorReason).to(beIdenticalTo(error))
+                XCTAssertTrue(channel.errorReason === error)
                 done()
             }
         }
@@ -4024,8 +4024,8 @@ class RealtimeClientChannelTests: XCTestCase {
                 guard let error = stateChange.reason else {
                     fail("Reason error is nil"); done(); return
                 }
-                expect(error).to(beIdenticalTo(errorProtocolMessage.error))
-                expect(channel.errorReason).to(beIdenticalTo(error))
+                XCTAssertTrue(error === errorProtocolMessage.error)
+                XCTAssertTrue(channel.errorReason === error)
                 done()
             }
 
@@ -4302,7 +4302,7 @@ class RealtimeClientChannelTests: XCTestCase {
             }
         }
         
-        expect(restChannelSetOptions).to(beIdenticalTo(channelOptions))
+        XCTAssertTrue(restChannelSetOptions === channelOptions)
     }
 
     // RTL17

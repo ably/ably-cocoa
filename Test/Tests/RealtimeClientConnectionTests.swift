@@ -2194,7 +2194,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.connection.on(.disconnected) { stateChange in
                 end = NSDate()
                 expect(stateChange.reason!.message).to(contain("timed out"))
-                expect(client.connection.errorReason!).to(beIdenticalTo(stateChange.reason))
+                XCTAssertTrue(client.connection.errorReason! === stateChange.reason)
                 done()
             }
             client.connect()
@@ -2597,7 +2597,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             let partialDone = AblyTests.splitDone(2, done: done)
             client.connection.once(.connected) { stateChange in
                 XCTAssertEqual(stateChange.reason?.message, "Injected error")
-                expect(client.connection.errorReason).to(beIdenticalTo(stateChange.reason))
+                XCTAssertTrue(client.connection.errorReason === stateChange.reason)
                 let transport = client.internal.transport as! TestProxyTransport
                 let connectedPM = transport.protocolMessagesReceived.filter { $0.action == .connected }[0]
                 XCTAssertEqual(connectedPM.connectionId, expectedConnectionId)
@@ -2609,7 +2609,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                     fail("Reason error is nil"); done(); return
                 }
                 XCTAssertEqual(error.message, "Channel injected error")
-                expect(channel.errorReason).to(beIdenticalTo(error))
+                XCTAssertTrue(channel.errorReason === error)
                 partialDone()
             }
         }
@@ -2647,7 +2647,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 }
                 XCTAssertEqual(error.code, ARTErrorCode.unableToRecoverConnectionExpired.intValue)
                 expect(error.message).to(contain("Unable to recover connection"))
-                expect(client.connection.errorReason).to(beIdenticalTo(stateChange.reason))
+                XCTAssertTrue(client.connection.errorReason === stateChange.reason)
                 partialDone()
             }
 
@@ -2686,13 +2686,13 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.failed) { stateChange in
-                expect(stateChange.reason).to(beIdenticalTo(protocolError.error))
-                expect(client.connection.errorReason).to(beIdenticalTo(protocolError.error))
+                XCTAssertTrue(stateChange.reason === protocolError.error)
+                XCTAssertTrue(client.connection.errorReason === protocolError.error)
                 done()
             }
         }
         XCTAssertEqual(channel.state, ARTRealtimeChannelState.failed)
-        expect(channel.errorReason).to(beIdenticalTo(protocolError.error))
+        XCTAssertTrue(channel.errorReason === protocolError.error)
     }
 
     func skipped__test__072__Connection__connection_failures_once_CONNECTED__System_s_response_to_a_resume_request__should_resume_the_connection_after_an_auth_renewal() {
@@ -2888,7 +2888,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                     }
 
                     expect(transport1).toNot(beIdenticalTo(transport2))
-                    expect(sentPendingMessage).to(beIdenticalTo(sentTransportMessage2))
+                    XCTAssertTrue(sentPendingMessage === sentTransportMessage2)
 
                     partialDone()
                 } else {
@@ -3126,7 +3126,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                         fail("Error is nil"); done(); return
                     }
                     XCTAssertEqual(error.code, ARTErrorCode.tokenExpired.intValue)
-                    expect(client.connection.errorReason).to(beIdenticalTo(error))
+                    XCTAssertTrue(client.connection.errorReason === error)
                     done()
                 }
             }
@@ -3274,7 +3274,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                     fail("Reason is empty"); done(); return
                 }
                 expect(reason.message).to(contain("Unable to recover connection"))
-                expect(client.connection.errorReason).to(beIdenticalTo(reason))
+                XCTAssertTrue(client.connection.errorReason === reason)
                 done()
             }
         }
@@ -3320,7 +3320,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 XCTAssertEqual(client.internal.msgSerial, 0)
 
                 expect(reason.message).to(contain("Unable to recover connection"))
-                expect(client.connection.errorReason).to(beIdenticalTo(reason))
+                XCTAssertTrue(client.connection.errorReason === reason)
                 done()
             }
             client.connect()
@@ -4307,7 +4307,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
 
         XCTAssertEqual(client.connection.id, initialConnectionId)
-        expect(client.internal.transport).to(beIdenticalTo(transport))
+        XCTAssertTrue(client.internal.transport === transport)
 
         let authMessages = transport.protocolMessagesSent.filter { $0.action == .auth }
         XCTAssertEqual(authMessages.count, 1)
@@ -4513,7 +4513,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 XCTAssertEqual(client.connection.state, ARTRealtimeConnectionState.connected)
                 XCTAssertEqual(stateChange.current, ARTRealtimeConnectionState.connected)
                 XCTAssertEqual(stateChange.current, stateChange.previous)
-                expect(stateChange.reason).to(beIdenticalTo(authMessage.error))
+                XCTAssertTrue(stateChange.reason === authMessage.error)
                 delay(0.5) { // Give some time for the other listener to be triggered.
                     client.connection.off(listener)
                     done()

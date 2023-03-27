@@ -551,7 +551,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             let protocolError = AblyTests.newErrorProtocolMessage()
             channel.presence.enterClient("user", data: nil) { error in
-                expect(error).to(beIdenticalTo(protocolError.error))
+                XCTAssertTrue(error === protocolError.error)
                 XCTAssertEqual(channel.presence.internal.pendingPresence.count, 0)
                 done()
             }
@@ -1024,7 +1024,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
             let protocolError = AblyTests.newErrorProtocolMessage()
             channel2.presence.enter("online") { error in
-                expect(error).to(beIdenticalTo(protocolError.error))
+                XCTAssertTrue(error === protocolError.error)
                 done()
             }
             delay(0.1) {
@@ -1283,7 +1283,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
             (client.internal.transport as! TestProxyTransport).actionsIgnored += [.attached]
             channel.presence.update("online") { error in
-                expect(error).to(beIdenticalTo(protocolError.error))
+                XCTAssertTrue(error === protocolError.error)
                 done()
             }
         }
@@ -2099,7 +2099,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             let transport = client.internal.transport as! TestProxyTransport
             transport.enableReplaceAcksWithNacks(with: sentError)
             channel.presence.leave("offline") { error in
-                expect(error).to(beIdenticalTo(sentError))
+                XCTAssertTrue(error === sentError)
                 transport.disableReplaceAcksWithNacks()
                 done()
             }

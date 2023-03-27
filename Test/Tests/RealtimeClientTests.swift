@@ -463,7 +463,7 @@ class RealtimeClientTests: XCTestCase {
                 XCTAssertNotEqual(tokenDetails.token, firstToken)
                 XCTAssertEqual(tokenDetails.token, accessToken)
 
-                expect(client.internal.transport).to(beIdenticalTo(transport))
+                XCTAssertTrue(client.internal.transport === transport)
 
                 done()
             }
@@ -647,7 +647,7 @@ class RealtimeClientTests: XCTestCase {
                 guard let error = stateChange.reason else {
                     fail("ErrorInfo is nil"); partialDone(); return
                 }
-                expect(error).to(beIdenticalTo(channel.errorReason))
+                XCTAssertTrue(error === channel.errorReason)
                 XCTAssertEqual(error.code, ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue)
 
                 guard let transport = client.internal.transport as? TestProxyTransport else {
@@ -730,7 +730,7 @@ class RealtimeClientTests: XCTestCase {
             }
         }
 
-        expect(authError).to(beIdenticalTo(connectionError))
+        XCTAssertTrue(authError === connectionError)
     }
 
     func test__030__RealtimeClient__Auth_authorize_should_upgrade_the_connection_with_current_token__authorize_call_should_complete_with_an_error_if_the_request_fails() {

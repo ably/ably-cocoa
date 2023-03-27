@@ -1826,7 +1826,7 @@ class AuthTests: XCTestCase {
         var rest: ARTRest!
 
         options.authCallback = { tokenParams, completion in
-            expect(tokenParams.clientId).to(beIdenticalTo(expectedTokenParams.clientId))
+            XCTAssertTrue(tokenParams.clientId == expectedTokenParams.clientId)
             rest.auth.createTokenRequest(tokenParams, options: options) { tokenRequest, error in
                 completion(tokenRequest, error)
             }
@@ -2507,7 +2507,7 @@ class AuthTests: XCTestCase {
         XCTAssertEqual(rest.auth.internal.method, ARTAuthMethod.token)
         
         let secondTokenDetails = try XCTUnwrap(rest.auth.tokenDetails, "TokenDetails is nil")
-        expect(firstTokenDetails).to(beIdenticalTo(secondTokenDetails))
+        XCTAssertTrue(firstTokenDetails === secondTokenDetails)
 
         waitUntil(timeout: testTimeout) { done in
             rest.auth.authorize(nil, options: nil, callback: { tokenDetails, error in
@@ -3634,7 +3634,7 @@ class AuthTests: XCTestCase {
         }
 
         XCTAssertNotEqual(tokenDetailsFirst?.token, tokenDetailsLast?.token)
-        expect(rest.auth.tokenDetails).to(beIdenticalTo(tokenDetailsLast))
+        XCTAssertTrue(rest.auth.tokenDetails === tokenDetailsLast)
         XCTAssertEqual(rest.auth.tokenDetails?.token, tokenDetailsLast?.token)
     }
 
@@ -3673,7 +3673,7 @@ class AuthTests: XCTestCase {
         }
 
         expect(didCancelAuthorization).to(be(true))
-        expect(realtime.auth.tokenDetails).to(beIdenticalTo(tokenDetailsLast))
+        XCTAssertTrue(realtime.auth.tokenDetails === tokenDetailsLast)
         XCTAssertEqual(realtime.auth.tokenDetails?.token, tokenDetailsLast?.token)
 
         if let transport = realtime.internal.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
@@ -3728,7 +3728,7 @@ class AuthTests: XCTestCase {
         }
 
         XCTAssertNotEqual(tokenDetailsFirst?.token, tokenDetailsLast?.token)
-        expect(realtime.auth.tokenDetails).to(beIdenticalTo(tokenDetailsLast))
+        XCTAssertTrue(realtime.auth.tokenDetails === tokenDetailsLast)
         XCTAssertEqual(realtime.auth.tokenDetails?.token, tokenDetailsLast?.token)
     }
 
