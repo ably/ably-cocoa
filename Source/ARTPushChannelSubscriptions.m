@@ -1,6 +1,5 @@
 #import "ARTPushChannelSubscriptions+Private.h"
 #import "ARTHttp.h"
-#import "ARTLog.h"
 #import "ARTPaginatedResult+Private.h"
 #import "ARTPushChannelSubscription.h"
 #import "ARTClientOptions.h"
@@ -9,6 +8,7 @@
 #import "ARTRest+Private.h"
 #import "ARTTypes.h"
 #import "ARTNSMutableRequest+ARTPush.h"
+#import "ARTInternalLog.h"
 
 @implementation ARTPushChannelSubscriptions {
     ARTQueuedDealloc *_dealloc;
@@ -47,7 +47,7 @@
 
 @implementation ARTPushChannelSubscriptionsInternal {
     __weak ARTRestInternal *_rest; // weak because rest owns self
-    ARTLog* _logger;
+    ARTInternalLog *_logger;
     dispatch_queue_t _queue;
     dispatch_queue_t _userQueue;
 }

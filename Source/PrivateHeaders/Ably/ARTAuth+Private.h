@@ -3,6 +3,7 @@
 #import "ARTQueuedDealloc.h"
 
 @class ARTRestInternal;
+@class ARTInternalLog;
 
 typedef NS_ENUM(NSUInteger, ARTAuthorizationState) {
     ARTAuthorizationSucceeded, //ItemType: nil
@@ -34,7 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, assign) ARTAuthMethod method;
 @property (readonly) BOOL isTokenAuth;
 
-@property (nonatomic, strong) ARTLog *logger;
+@property (nonatomic, strong) ARTInternalLog *logger;
 
 @property (nullable, nonatomic, readonly, strong) NSNumber *timeOffset;
 

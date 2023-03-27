@@ -1,6 +1,6 @@
 #import <Ably/ARTRest.h>
 
-@class ARTLog;
+@class ARTInternalLog;
 @protocol ARTDeviceStorage;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -14,7 +14,7 @@ extern NSString *const ARTAPNSDeviceTokenKey;
 
 @property (strong, nonatomic) id<ARTDeviceStorage> storage;
 
-+ (ARTLocalDevice *)load:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage logger:(nullable ARTLog *)logger;
++ (ARTLocalDevice *)load:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage logger:(nullable ARTInternalLog *)logger;
 - (nullable NSString *)apnsDeviceToken;
 - (void)setAndPersistAPNSDeviceToken:(nullable NSString *)deviceToken;
 - (void)setAndPersistIdentityTokenDetails:(nullable ARTDeviceIdentityTokenDetails *)tokenDetails;

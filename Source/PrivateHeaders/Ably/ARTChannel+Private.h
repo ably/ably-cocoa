@@ -1,9 +1,9 @@
 #import <Ably/ARTChannel.h>
-#import <Ably/ARTLog.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class ARTRestInternal;
+@class ARTInternalLog;
 
 @interface ARTChannel()
 
@@ -11,7 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nullable) ARTChannelOptions *options;
 
-@property (readonly, getter=getLogger) ARTLog *logger;
+@property (readonly, getter=getLogger) ARTInternalLog *logger;
 @property (nonatomic, strong, readonly) ARTDataEncoder *dataEncoder;
 
 - (void)internalPostMessages:(id)data callback:(nullable ARTCallback)callback;

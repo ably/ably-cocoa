@@ -6,6 +6,7 @@
 @protocol ARTEncoder;
 @protocol ARTHTTPExecutor;
 @protocol ARTDeviceStorage;
+@class ARTInternalLog;
 @class ARTRealtimeInternal;
 @class ARTAuthInternal;
 
@@ -37,7 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, copy) NSString *currentFallbackHost;
 @property (readonly, nonatomic) CFAbsoluteTime fallbackRetryExpiration;
 
-@property (nonatomic, strong, readonly) ARTLog *logger;
+@property (nonatomic, strong, readonly) ARTInternalLog *logger;
 
 @property (nonatomic, strong) dispatch_queue_t queue;
 @property (nonatomic, strong) dispatch_queue_t userQueue;

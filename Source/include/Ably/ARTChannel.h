@@ -2,7 +2,6 @@
 
 #import <Ably/ARTTypes.h>
 #import <Ably/ARTDataEncoder.h>
-#import <Ably/ARTLog.h>
 
 @class ARTRest;
 @class ARTChannelOptions;

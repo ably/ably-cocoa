@@ -4,7 +4,6 @@
 
 @class ARTClientOptions;
 @class ARTRest;
-@class ARTLog;
 
 NS_ASSUME_NONNULL_BEGIN
 

@@ -1,7 +1,6 @@
 #import <Foundation/Foundation.h>
 
 #import <Ably/ARTTypes.h>
-#import <Ably/ARTLog.h>
 #import <Ably/ARTRestChannel.h>
 #import <Ably/ARTPresenceMessage.h>
 #import <Ably/ARTEventEmitter.h>
