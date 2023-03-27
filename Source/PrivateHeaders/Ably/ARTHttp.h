@@ -1,10 +1,10 @@
 #import <Foundation/Foundation.h>
 
 #import <Ably/ARTTypes.h>
-#import <Ably/ARTLog.h>
 
 @class ARTErrorInfo;
 @class ARTClientOptions;
+@class ARTInternalLog;
 
 @protocol ARTEncoder;
 
@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// :nodoc:
 @protocol ARTHTTPExecutor
 
-- (ARTLog *)logger;
+- (ARTInternalLog *)logger;
 - (nullable NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request completion:(nullable ARTURLRequestCallback)callback;
 
 @end
@@ -35,7 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)setURLSessionClass:(Class)urlSessionClass;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)init:(dispatch_queue_t)queue logger:(ARTLog *)logger;
+- (instancetype)init:(dispatch_queue_t)queue logger:(ARTInternalLog *)logger;
 
 @end
 

@@ -125,6 +125,8 @@ private func expectDataToMatch(_ message: ARTMessage, _ fixtureMessage: JSON) {
 private var jsonOptions: ARTClientOptions!
 private var msgpackOptions: ARTClientOptions!
 
+private let mockLogger = InternalLog(logger: MockVersion2Log())
+
 private func setupDependencies() {
     if jsonOptions == nil {
         jsonOptions = AblyTests.commonAppSetup()
@@ -3683,7 +3685,8 @@ class RealtimeClientConnectionTests: XCTestCase {
         defer { client.dispose(); client.close() }
         client.channels.get(uniqueChannelName())
 
-        let testHttpExecutor = TestProxyHTTPExecutor(options.logHandler)
+
+        let testHttpExecutor = TestProxyHTTPExecutor(mockLogger)
         client.internal.rest.httpExecutor = testHttpExecutor
 
         client.internal.setTransport(TestProxyTransport.self)
@@ -3762,8 +3765,9 @@ class RealtimeClientConnectionTests: XCTestCase {
         defer { client.dispose(); client.close() }
         client.channels.get(uniqueChannelName())
 
-        let mockHTTP = MockHTTP(logger: options.logHandler)
-        let testHttpExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: options.logHandler)
+        let mockLogger = InternalLog(logger: MockVersion2Log())
+        let mockHTTP = MockHTTP(logger: mockLogger)
+        let testHttpExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: mockLogger)
         client.internal.rest.httpExecutor = testHttpExecutor
 
         client.internal.setTransport(TestProxyTransport.self)
@@ -3815,7 +3819,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         defer { client.dispose(); client.close() }
         client.channels.get(uniqueChannelName())
 
-        let testHttpExecutor = TestProxyHTTPExecutor(options.logHandler)
+        let testHttpExecutor = TestProxyHTTPExecutor(mockLogger)
         client.internal.rest.httpExecutor = testHttpExecutor
 
         client.internal.setTransport(TestProxyTransport.self)
@@ -3890,7 +3894,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let client = ARTRealtime(options: options)
         let channel = client.channels.get(uniqueChannelName())
 
-        let testHttpExecutor = TestProxyHTTPExecutor(options.logHandler)
+        let testHttpExecutor = TestProxyHTTPExecutor(mockLogger)
         client.internal.rest.httpExecutor = testHttpExecutor
 
         client.internal.setTransport(TestProxyTransport.self)
@@ -3928,7 +3932,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.autoConnect = false
         let client = ARTRealtime(options: options)
 
-        let testHttpExecutor = TestProxyHTTPExecutor(options.logHandler)
+        let testHttpExecutor = TestProxyHTTPExecutor(mockLogger)
         client.internal.rest.httpExecutor = testHttpExecutor
 
         client.internal.setTransport(TestProxyTransport.self)

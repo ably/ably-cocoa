@@ -8,11 +8,11 @@
 //
 
 #import "ARTSRLog.h"
-#import "ARTLog.h"
+#import "ARTInternalLog.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-extern void ARTSRErrorLog(ARTLog * _Nullable logger, NSString *format, ...)
+extern void ARTSRErrorLog(ARTInternalLog * _Nullable logger, NSString *format, ...)
 {
     __block va_list arg_list;
     va_start (arg_list, format);
@@ -24,7 +24,7 @@ extern void ARTSRErrorLog(ARTLog * _Nullable logger, NSString *format, ...)
     [logger error:@"[SocketRocket] %@", formattedString];
 }
 
-extern void ARTSRDebugLog(ARTLog * _Nullable logger, NSString *format, ...)
+extern void ARTSRDebugLog(ARTInternalLog * _Nullable logger, NSString *format, ...)
 {
 #ifdef ARTSR_DEBUG_LOG_ENABLED
     ARTSRErrorLog(logger, tag, format);

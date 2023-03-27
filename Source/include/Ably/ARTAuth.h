@@ -1,10 +1,8 @@
 #import <Foundation/Foundation.h>
 
 #import <Ably/ARTTypes.h>
-#import <Ably/ARTLog.h>
 
 @class ARTRest;
-@class ARTLog;
 @class ARTClientOptions;
 @class ARTAuthOptions;
 @class ARTTokenParams;

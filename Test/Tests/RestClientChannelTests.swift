@@ -90,6 +90,8 @@ private func testSupportsAESEncryptionWithKeyLength(_ encryptionKeyLength: UInt,
     }
 }
 
+private let mockLogger = InternalLog(logger: MockVersion2Log())
+
 class RestClientChannelTests: XCTestCase {
     // XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
     override class var defaultTestSuite: XCTestSuite {
@@ -121,7 +123,7 @@ class RestClientChannelTests: XCTestCase {
 
         let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
         client = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+        testHTTPExecutor = TestProxyHTTPExecutor(mockLogger)
     }
 
     // RSL1
@@ -318,7 +320,7 @@ class RestClientChannelTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         options.clientId = "john-doe"
         let client = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+        testHTTPExecutor = TestProxyHTTPExecutor(mockLogger)
         client.internal.httpExecutor = testHTTPExecutor
         waitUntil(timeout: testTimeout) { done in
             client.channels.get(uniqueChannelName(prefix: "RSA7e1"))
@@ -841,7 +843,7 @@ class RestClientChannelTests: XCTestCase {
     func test__004__publish__should_include_attributes_supplied_by_the_caller_in_the_encoded_message() {
         let options = AblyTests.commonAppSetup()
         let client = ARTRest(options: options)
-        let proxyHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+        let proxyHTTPExecutor = TestProxyHTTPExecutor(mockLogger)
         client.internal.httpExecutor = proxyHTTPExecutor
 
         let channel = client.channels.get(uniqueChannelName())
