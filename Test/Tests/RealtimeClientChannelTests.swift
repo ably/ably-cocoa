@@ -318,7 +318,7 @@ class RealtimeClientChannelTests: XCTestCase {
                         fail("Reason is nil"); done(); return
                     }
                     XCTAssertEqual(stateChange.event, ARTChannelEvent.failed)
-                    expect(reason.code) == ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue
+                    XCTAssertEqual(reason.code, ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue)
                     XCTAssertEqual(stateChange.previous, ARTRealtimeChannelState.attaching)
                     done()
                 default:
@@ -518,7 +518,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 guard let error = stateChange.reason else {
                     fail("Error is nil"); done(); return
                 }
-                expect(error.code) == ARTErrorCode.tokenExpired.intValue
+                XCTAssertEqual(error.code, ARTErrorCode.tokenExpired.intValue)
 
                 channel.on { stateChange in
                     if stateChange.current == .attached {
@@ -1043,20 +1043,20 @@ class RealtimeClientChannelTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
             channel.once(.failed) { stateChange in
-                expect(stateChange.reason?.code) == ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue
+                XCTAssertEqual(stateChange.reason?.code, ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue)
                 partialDone()
             }
             channel.attach { error in
                 guard let error = error else {
                     fail("Error is nil"); partialDone(); return
                 }
-                expect(error.code) == ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue
+                XCTAssertEqual(error.code, ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue)
                 partialDone()
             }
         }
 
         XCTAssertEqual(channel.state, ARTRealtimeChannelState.failed)
-        expect(channel.errorReason?.code) == ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue
+        XCTAssertEqual(channel.errorReason?.code, ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue)
     }
 
     // RTL4g
@@ -1678,8 +1678,8 @@ class RealtimeClientChannelTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             delay(1.0) {
-                expect(detachedCount) == 1
-                expect(detachingCount) == 1
+                XCTAssertEqual(detachedCount, 1)
+                XCTAssertEqual(detachingCount, 1)
                 done()
             }
         }
@@ -4349,7 +4349,7 @@ class RealtimeClientChannelTests: XCTestCase {
         }
 
         channel.unsubscribe()
-        expect(subscribeEmittedCount) == 1
+        XCTAssertEqual(subscribeEmittedCount, 1)
     }
 
     func test__138__Channel__crypto__if_configured_for_encryption__channels_encrypt_and_decrypt_messages__data() {
@@ -4465,7 +4465,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
-                expect(error.statusCode) == 500
+                XCTAssertEqual(error.statusCode, 500)
                 done()
             }
         }

@@ -1720,8 +1720,8 @@ class RestClientTests: XCTestCase {
                 guard let error = error as? ARTErrorInfo else {
                     fail("Error is nil"); done(); return
                 }
-                expect(error.statusCode) == 200
-                expect(error.message.lengthOfBytes(using: String.Encoding.utf8)) == 1000
+                XCTAssertEqual(error.statusCode, 200)
+                XCTAssertEqual(error.message.lengthOfBytes(using: String.Encoding.utf8), 1000)
                 done()
             })
         }
@@ -1754,7 +1754,7 @@ class RestClientTests: XCTestCase {
         let url = try XCTUnwrap(request.url, "No request url found")
         let acceptHeaderValue = try XCTUnwrap(request.allHTTPHeaderFields?["Accept"], "Accept HTTP Header is missing")
         
-        expect(request.httpMethod) == "patch"
+        XCTAssertEqual(request.httpMethod, "patch")
         XCTAssertEqual(url.absoluteString, "https://rest.ably.io:443/feature?foo=1")
         XCTAssertEqual(acceptHeaderValue, "application/x-msgpack,application/json")
     }
@@ -1896,16 +1896,16 @@ class RestClientTests: XCTestCase {
                     guard let paginatedResponse = paginatedResponse else {
                         fail("PaginatedResult is empty"); done(); return
                     }
-                    expect(paginatedResponse.items.count) == 1
+                    XCTAssertEqual(paginatedResponse.items.count, 1)
                     guard let channelDetailsDict = paginatedResponse.items.first else {
                         fail("PaginatedResult first element is missing"); done(); return
                     }
                     XCTAssertEqual(channelDetailsDict.value(forKey: "channelId") as? String, channel.name)
-                    expect(paginatedResponse.hasNext) == false
-                    expect(paginatedResponse.isLast) == true
-                    expect(paginatedResponse.statusCode) == 200
-                    expect(paginatedResponse.success) == true
-                    expect(paginatedResponse.errorCode) == 0
+                    XCTAssertEqual(paginatedResponse.hasNext, false)
+                    XCTAssertEqual(paginatedResponse.isLast, true)
+                    XCTAssertEqual(paginatedResponse.statusCode, 200)
+                    XCTAssertEqual(paginatedResponse.success, true)
+                    XCTAssertEqual(paginatedResponse.errorCode, 0)
                     XCTAssertNil(paginatedResponse.errorMessage)
                     expect(paginatedResponse.headers).toNot(beEmpty())
                     httpPaginatedResponse = paginatedResponse
@@ -1919,8 +1919,8 @@ class RestClientTests: XCTestCase {
 
         let response = try XCTUnwrap(proxyHTTPExecutor.responses.first, "No responses found")
 
-        expect(response.statusCode) == httpPaginatedResponse.statusCode
-        expect(response.allHeaderFields as NSDictionary) == httpPaginatedResponse.headers
+        XCTAssertEqual(response.statusCode, httpPaginatedResponse.statusCode)
+        XCTAssertEqual(response.allHeaderFields as NSDictionary, httpPaginatedResponse.headers)
     }
 
     func test__093__RestClient__request__method_signature_and_arguments__should_handle_response_failures() throws {
@@ -1944,12 +1944,12 @@ class RestClientTests: XCTestCase {
                     guard let paginatedResponse = paginatedResponse else {
                         fail("PaginatedResult is empty"); done(); return
                     }
-                    expect(paginatedResponse.items.count) == 0
-                    expect(paginatedResponse.hasNext) == false
-                    expect(paginatedResponse.isLast) == true
-                    expect(paginatedResponse.statusCode) == 404
-                    expect(paginatedResponse.success) == false
-                    expect(paginatedResponse.errorCode) == ARTErrorCode.notFound.intValue
+                    XCTAssertEqual(paginatedResponse.items.count, 0)
+                    XCTAssertEqual(paginatedResponse.hasNext, false)
+                    XCTAssertEqual(paginatedResponse.isLast, true)
+                    XCTAssertEqual(paginatedResponse.statusCode, 404)
+                    XCTAssertEqual(paginatedResponse.success, false)
+                    XCTAssertEqual(paginatedResponse.errorCode, ARTErrorCode.notFound.intValue)
                     expect(paginatedResponse.errorMessage).to(contain("Could not find path"))
                     expect(paginatedResponse.headers).toNot(beEmpty())
                     XCTAssertEqual(paginatedResponse.headers["X-Ably-Errorcode"] as? String, "\(ARTErrorCode.notFound.intValue)")
@@ -1963,7 +1963,7 @@ class RestClientTests: XCTestCase {
 
         let response = try XCTUnwrap(proxyHTTPExecutor.responses.first, "No responses found")
 
-        expect(response.statusCode) == 404
+        XCTAssertEqual(response.statusCode, 404)
         XCTAssertEqual(response.value(forHTTPHeaderField: "X-Ably-Errorcode"), "\(ARTErrorCode.notFound.intValue)")
     }
 

@@ -115,7 +115,7 @@ class PushTests: XCTestCase {
                 guard let tokenDetails = tokenDetails else {
                     fail("TokenDetails are missing"); return
                 }
-                expect(tokenDetails.clientId) == expectedClientId
+                XCTAssertEqual(tokenDetails.clientId, expectedClientId)
                 completion(tokenDetails, error)
             })
         }
@@ -162,8 +162,8 @@ class PushTests: XCTestCase {
             rest.push.activate()
         }
 
-        expect(rest.device.clientId) == expectedClientId
-        expect(rest.auth.clientId) == expectedClientId
+        XCTAssertEqual(rest.device.clientId, expectedClientId)
+        XCTAssertEqual(rest.auth.clientId, expectedClientId)
 
         let registerRequest = mockHttpExecutor.requests.filter { req in
             req.httpMethod == "POST" && req.url?.path == "/push/deviceRegistrations"

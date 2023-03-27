@@ -25,7 +25,7 @@ private func assertMessagePayloadId(id: String?, expectedSerial: String) {
         fail("BaseId should be a base64 encoded string"); return
     }
 
-    expect(baseIdData.bytes.count) == 9
+    XCTAssertEqual(baseIdData.bytes.count, 9)
     XCTAssertEqual(serial, expectedSerial)
 }
 
@@ -575,20 +575,20 @@ class RestClientChannelTests: XCTestCase {
 
     // TO3n
     func test__020__publish__idempotent_publishing__idempotentRestPublishing_option() {
-        expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "2")) == true
-        expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "2.0.0")) == true
-        expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "1.1")) == false
-        expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "1.1.2")) == false
-        expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "1.2")) == true
-        expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "1.2.2")) == true
-        expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "1.0")) == false
-        expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "1.0.5")) == false
-        expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "0.9")) == false
-        expect(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "0.9.1")) == false
+        XCTAssertEqual(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "2"), true)
+        XCTAssertEqual(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "2.0.0"), true)
+        XCTAssertEqual(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "1.1"), false)
+        XCTAssertEqual(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "1.1.2"), false)
+        XCTAssertEqual(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "1.2"), true)
+        XCTAssertEqual(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "1.2.2"), true)
+        XCTAssertEqual(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "1.0"), false)
+        XCTAssertEqual(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "1.0.5"), false)
+        XCTAssertEqual(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "0.9"), false)
+        XCTAssertEqual(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "0.9.1"), false)
 
         // Current version
         let options = AblyTests.clientOptions()
-        expect(options.idempotentRestPublishing) == true
+        XCTAssertEqual(options.idempotentRestPublishing, true)
     }
 
     // RSL1k1
@@ -791,7 +791,7 @@ class RestClientChannelTests: XCTestCase {
             }
         }
 
-        expect(testHTTPExecutor.requests.count) == 2
+        XCTAssertEqual(testHTTPExecutor.requests.count, 2)
 
         waitUntil(timeout: testTimeout) { done in
             channel.history { result, error in
@@ -799,7 +799,7 @@ class RestClientChannelTests: XCTestCase {
                 guard let result = result else {
                     fail("No result"); done(); return
                 }
-                expect(result.items.count) == 3
+                XCTAssertEqual(result.items.count, 3)
                 done()
             }
         }
@@ -830,7 +830,7 @@ class RestClientChannelTests: XCTestCase {
                 guard let result = result else {
                     fail("No result"); done(); return
                 }
-                expect(result.items.count) == 1
+                XCTAssertEqual(result.items.count, 1)
                 XCTAssertEqual(result.items.first?.id, "123")
                 done()
             }
@@ -953,8 +953,8 @@ class RestClientChannelTests: XCTestCase {
         let channel = client.channels.get(uniqueChannelName())
 
         let query = ARTDataQuery()
-        expect(query.direction) == ARTQueryDirection.backwards
-        expect(query.limit) == 100
+        XCTAssertEqual(query.direction, ARTQueryDirection.backwards)
+        XCTAssertEqual(query.limit, 100)
 
         waitUntil(timeout: testTimeout) { done in
             client.time { time, _ in
@@ -1033,7 +1033,7 @@ class RestClientChannelTests: XCTestCase {
         let channel = client.channels.get(uniqueChannelName())
 
         let query = ARTDataQuery()
-        expect(query.direction) == ARTQueryDirection.backwards
+        XCTAssertEqual(query.direction, ARTQueryDirection.backwards)
         query.direction = .forwards
 
         let messages = [
@@ -1074,7 +1074,7 @@ class RestClientChannelTests: XCTestCase {
         let channel = client.channels.get(uniqueChannelName())
 
         let query = ARTDataQuery()
-        expect(query.limit) == 100
+        XCTAssertEqual(query.limit, 100)
         query.limit = 2
 
         let messages = (1 ... 10).compactMap { ARTMessage(name: nil, data: "message\($0)") }
@@ -1112,7 +1112,7 @@ class RestClientChannelTests: XCTestCase {
         let channel = client.channels.get(uniqueChannelName())
 
         let query = ARTDataQuery()
-        expect(query.limit) == 100
+        XCTAssertEqual(query.limit, 100)
 
         query.limit = 1001
         expect { try channel.history(query, callback: { _, _ in }) }.to(throwError())
@@ -1512,12 +1512,12 @@ class RestClientChannelTests: XCTestCase {
                     fail("Channel details are empty"); done()
                     return
                 }
-                expect(details.status.occupancy.metrics.connections) == 1 // CHM2a
-                expect(details.status.occupancy.metrics.publishers) == 1 // CHM2e
-                expect(details.status.occupancy.metrics.subscribers) == 1 // CHM2f
-                expect(details.status.occupancy.metrics.presenceMembers) == 1 // CHM2c
-                expect(details.status.occupancy.metrics.presenceConnections) == 1 // CHM2b
-                expect(details.status.occupancy.metrics.presenceSubscribers) == 1 // CHM2d
+                XCTAssertEqual(details.status.occupancy.metrics.connections, 1) // CHM2a
+                XCTAssertEqual(details.status.occupancy.metrics.publishers, 1) // CHM2e
+                XCTAssertEqual(details.status.occupancy.metrics.subscribers, 1) // CHM2f
+                XCTAssertEqual(details.status.occupancy.metrics.presenceMembers, 1) // CHM2c
+                XCTAssertEqual(details.status.occupancy.metrics.presenceConnections, 1) // CHM2b
+                XCTAssertEqual(details.status.occupancy.metrics.presenceSubscribers, 1) // CHM2d
                 done()
             }
         }

@@ -65,7 +65,7 @@ class PushChannelTests: XCTestCase {
         let decodedBody = try XCTUnwrap(try rest.internal.defaultEncoder.decode(rawBody), "Decode request body failed")
         let body = try XCTUnwrap(decodedBody as? NSDictionary, "Request body is invalid")
 
-        expect(request.httpMethod) == "POST"
+        XCTAssertEqual(request.httpMethod, "POST")
         expect(url.absoluteString).to(contain("/push/channelSubscriptions"))
         XCTAssertEqual(body.value(forKey: "deviceId") as? String, rest.device.id)
         XCTAssertEqual(body.value(forKey: "channel") as? String, channel.name)
@@ -119,7 +119,7 @@ class PushChannelTests: XCTestCase {
         let decodedBody = try XCTUnwrap(try rest.internal.defaultEncoder.decode(rawBody), "Decode request body failed")
         let body = try XCTUnwrap(decodedBody as? NSDictionary, "Request body is invalid")
 
-        expect(request.httpMethod) == "POST"
+        XCTAssertEqual(request.httpMethod, "POST")
         expect(url.absoluteString).to(contain("/push/channelSubscriptions"))
         XCTAssertEqual(body.value(forKey: "clientId") as? String, rest.device.clientId)
         XCTAssertEqual(body.value(forKey: "channel") as? String, channel.name)
@@ -162,7 +162,7 @@ class PushChannelTests: XCTestCase {
         let url = try XCTUnwrap(request.url, "No request url found")
         let query = try XCTUnwrap(url.query, "should have a query")
 
-        expect(request.httpMethod) == "DELETE"
+        XCTAssertEqual(request.httpMethod, "DELETE")
         expect(url.absoluteString).to(contain("/push/channelSubscriptions"))
         expect(query).to(haveParam("deviceId", withValue: rest.device.id))
         expect(query).to(haveParam("channel", withValue: channel.name))
@@ -214,7 +214,7 @@ class PushChannelTests: XCTestCase {
         let url = try XCTUnwrap(request.url, "No request url found")
         let query = try XCTUnwrap(url.query, "should have a query")
         
-        expect(request.httpMethod) == "DELETE"
+        XCTAssertEqual(request.httpMethod, "DELETE")
         expect(url.absoluteString).to(contain("/push/channelSubscriptions"))
         expect(query).to(haveParam("clientId", withValue: rest.device.clientId!))
         expect(query).to(haveParam("channel", withValue: channel.name))
@@ -324,7 +324,7 @@ class PushChannelTests: XCTestCase {
                 guard let result = result else {
                     fail("Result is nil"); done(); return
                 }
-                expect(result.items.count) == 1
+                XCTAssertEqual(result.items.count, 1)
                 done()
             }
         }

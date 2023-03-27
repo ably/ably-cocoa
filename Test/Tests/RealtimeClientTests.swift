@@ -86,13 +86,13 @@ class RealtimeClientTests: XCTestCase {
     // RTC1a
     func test__014__RealtimeClient__options__should_echoMessages_option_be_true_by_default() {
         let options = ARTClientOptions()
-        expect(options.echoMessages) == true
+        XCTAssertEqual(options.echoMessages, true)
     }
 
     // RTC1b
     func test__015__RealtimeClient__options__should_autoConnect_option_be_true_by_default() {
         let options = ARTClientOptions()
-        expect(options.autoConnect) == true
+        XCTAssertEqual(options.autoConnect, true)
     }
 
     // RTC1c
@@ -854,8 +854,8 @@ class RealtimeClientTests: XCTestCase {
             client.connect()
         }
 
-        expect(connections) == 2
-        expect(connectionsConnected) == 1
+        XCTAssertEqual(connections, 2)
+        XCTAssertEqual(connectionsConnected, 1)
 
         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
     }
@@ -926,7 +926,7 @@ class RealtimeClientTests: XCTestCase {
                 guard let error = error else {
                     fail("ErrorInfo is nil"); partialDone(); return
                 }
-                expect((error as NSError).code) == URLError.cancelled.rawValue
+                XCTAssertEqual((error as NSError).code, URLError.cancelled.rawValue)
                 expect(client.connection.errorReason?.localizedDescription).to(contain("Fail test"))
                 XCTAssertNil(tokenDetails)
                 partialDone()
@@ -969,7 +969,7 @@ class RealtimeClientTests: XCTestCase {
                 guard let error = error else {
                     fail("ErrorInfo is nil"); partialDone(); return
                 }
-                expect((error as NSError).code) == URLError.cancelled.rawValue
+                XCTAssertEqual((error as NSError).code, URLError.cancelled.rawValue)
                 XCTAssertNil(tokenDetails)
                 partialDone()
             }
@@ -1012,7 +1012,7 @@ class RealtimeClientTests: XCTestCase {
                 guard let error = error else {
                     fail("Error is nil"); partialDone(); return
                 }
-                expect((error as NSError).code) == URLError.cancelled.rawValue
+                XCTAssertEqual((error as NSError).code, URLError.cancelled.rawValue)
                 XCTAssertNil(tokenDetails)
                 partialDone()
             }

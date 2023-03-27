@@ -675,8 +675,8 @@ class RealtimeClientConnectionTests: XCTestCase {
                 guard let error = stateChange.reason else {
                     fail("Reason error is nil"); done(); return
                 }
-                expect(error.code) == 1234
-                expect(error.message) == "fabricated error"
+                XCTAssertEqual(error.code, 1234)
+                XCTAssertEqual(error.message, "fabricated error")
                 XCTAssertEqual(stateChange.event, ARTRealtimeConnectionEvent.update)
                 done()
             }
@@ -1028,7 +1028,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
         }
 
-        expect(client.internal.msgSerial) == 5
+        XCTAssertEqual(client.internal.msgSerial, 5)
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.disconnected) { stateChange in
@@ -1066,17 +1066,17 @@ class RealtimeClientConnectionTests: XCTestCase {
             return
         }
         // Messages covered in a single ACK response
-        expect(acks[0].msgSerial) == 5 // [0] 1st publish + [1.2.4] publish + [4] enter with invalid client + [5] queued messages
-        expect(acks[0].count) == 1
+        XCTAssertEqual(acks[0].msgSerial, 5) // [0] 1st publish + [1.2.4] publish + [4] enter with invalid client + [5] queued messages
+        XCTAssertEqual(acks[0].count, 1)
 
         if nacks.count != 1 {
             fail("Received invalid number of NACK responses: \(nacks.count)")
             return
         }
-        expect(nacks[0].msgSerial) == 6
-        expect(nacks[0].count) == 1
+        XCTAssertEqual(nacks[0].msgSerial, 6)
+        XCTAssertEqual(nacks[0].count, 1)
 
-        expect(client.internal.msgSerial) == 7
+        XCTAssertEqual(client.internal.msgSerial, 7)
     }
 
     func test__034__Connection__ACK_and_NACK__ProtocolMessage__should_reset_msgSerial_serially_if_the_connection_does_not_resume() {
@@ -1112,7 +1112,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
         }
 
-        expect(client.internal.msgSerial) == 5
+        XCTAssertEqual(client.internal.msgSerial, 5)
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
@@ -1153,17 +1153,17 @@ class RealtimeClientConnectionTests: XCTestCase {
             fail("Received invalid number of ACK responses: \(acks.count)")
             return
         }
-        expect(acks[0].msgSerial) == 0
-        expect(acks.reduce(0) { $0 + $1.count }) == 3
+        XCTAssertEqual(acks[0].msgSerial, 0)
+        XCTAssertEqual(acks.reduce(0) { $0 + $1.count }, 3)
 
         if nacks.count != 1 {
             fail("Received invalid number of NACK responses: \(nacks.count)")
             return
         }
-        expect(nacks[0].msgSerial) == 3
-        expect(nacks[0].count) == 1
+        XCTAssertEqual(nacks[0].msgSerial, 3)
+        XCTAssertEqual(nacks[0].count, 1)
 
-        expect(client.internal.msgSerial) == 4
+        XCTAssertEqual(client.internal.msgSerial, 4)
     }
 
     // RTN7c
@@ -1263,7 +1263,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 guard let error = error else {
                     fail("Error is nil"); return
                 }
-                expect(error.code) == ARTErrorCode.unableToRecoverConnectionExpired.intValue
+                XCTAssertEqual(error.code, ARTErrorCode.unableToRecoverConnectionExpired.intValue)
                 expect(error.message).to(contain("Unable to recover connection"))
                 partialDone()
             }
@@ -2019,7 +2019,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 guard let reason = stateChange.reason else {
                     fail("Token error is missing"); done(); return
                 }
-                expect(reason.code) == ARTErrorCode.tokenExpired.intValue
+                XCTAssertEqual(reason.code, ARTErrorCode.tokenExpired.intValue)
 
                 client.connection.on { stateChange in
                     let state = stateChange.current
@@ -2730,7 +2730,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 guard let error = stateChange.reason else {
                     fail("Error is nil"); done(); return
                 }
-                expect(error.code) == ARTErrorCode.tokenExpired.intValue
+                XCTAssertEqual(error.code, ARTErrorCode.tokenExpired.intValue)
                 done()
             }
         }
@@ -3042,7 +3042,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 guard let error = stateChange.reason else {
                     fail("Error is nil"); done(); return
                 }
-                expect(error.code) == ARTErrorCode.tokenExpired.intValue
+                XCTAssertEqual(error.code, ARTErrorCode.tokenExpired.intValue)
                 done()
             }
         }
@@ -3118,14 +3118,14 @@ class RealtimeClientConnectionTests: XCTestCase {
                 guard let error = stateChange.reason else {
                     fail("Error is nil"); done(); return
                 }
-                expect(error.code) == ARTErrorCode.tokenExpired.intValue
+                XCTAssertEqual(error.code, ARTErrorCode.tokenExpired.intValue)
 
                 // Renewal will lead to another disconnection
                 client.connection.once(.disconnected) { stateChange in
                     guard let error = stateChange.reason else {
                         fail("Error is nil"); done(); return
                     }
-                    expect(error.code) == ARTErrorCode.tokenExpired.intValue
+                    XCTAssertEqual(error.code, ARTErrorCode.tokenExpired.intValue)
                     expect(client.connection.errorReason).to(beIdenticalTo(error))
                     done()
                 }
@@ -3212,7 +3212,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 partialDone()
             })
         }
-        expect(client.internal.msgSerial) == 1
+        XCTAssertEqual(client.internal.msgSerial, 1)
         XCTAssertEqual(client.connection.recoveryKey, "\(client.connection.key!):\(client.connection.serial):\(client.internal.msgSerial)")
     }
 
@@ -3307,7 +3307,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                     fail("Reason is empty"); done(); return
                 }
 
-                expect(urlConnections.count) == 1
+                XCTAssertEqual(urlConnections.count, 1)
                 guard let urlConnectionQuery = urlConnections.first?.query else {
                     fail("Missing URL Connection query"); done(); return
                 }
@@ -3317,14 +3317,14 @@ class RealtimeClientConnectionTests: XCTestCase {
                 expect(urlConnectionQuery).toNot(haveParam("msgSerial"))
 
                 // recover fails, the counter should be reset to 0
-                expect(client.internal.msgSerial) == 0
+                XCTAssertEqual(client.internal.msgSerial, 0)
 
                 expect(reason.message).to(contain("Unable to recover connection"))
                 expect(client.connection.errorReason).to(beIdenticalTo(reason))
                 done()
             }
             client.connect()
-            expect(client.internal.msgSerial) == 7
+            XCTAssertEqual(client.internal.msgSerial, 7)
         }
     }
 
@@ -3373,8 +3373,8 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.disconnected) { stateChange in
-                expect(stateChange.previous) == ARTRealtimeConnectionState.connecting
-                expect(stateChange.current) == ARTRealtimeConnectionState.disconnected
+                XCTAssertEqual(stateChange.previous, ARTRealtimeConnectionState.connecting)
+                XCTAssertEqual(stateChange.current, ARTRealtimeConnectionState.disconnected)
                 guard let reason = stateChange.reason else {
                     fail("Reason is empty"); done(); return
                 }
@@ -3431,8 +3431,8 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.on(.disconnected) { stateChange in
-                expect(stateChange.previous) == ARTRealtimeConnectionState.connecting
-                expect(stateChange.current) == ARTRealtimeConnectionState.disconnected
+                XCTAssertEqual(stateChange.previous, ARTRealtimeConnectionState.connecting)
+                XCTAssertEqual(stateChange.current, ARTRealtimeConnectionState.disconnected)
                 guard let reason = stateChange.reason else {
                     fail("Reason is empty"); done(); return
                 }
@@ -4385,7 +4385,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 guard let error = stateChange.reason else {
                     fail("Error is nil"); done(); return
                 }
-                expect(error.code) == ARTErrorCode.tokenExpired.intValue
+                XCTAssertEqual(error.code, ARTErrorCode.tokenExpired.intValue)
                 done()
             }
         }
@@ -4399,7 +4399,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
 
         XCTAssertEqual(client.connection.id, initialConnectionId)
-        expect(authorizeMethodCallCount) == 1
+        XCTAssertEqual(authorizeMethodCallCount, 1)
 
         let restOptions = AblyTests.clientOptions(key: options.key!)
         restOptions.channelNamePrefix = options.channelNamePrefix
@@ -4459,7 +4459,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.connection.on(.disconnected) { stateChange in
                 let now = Date()
 
-                expect(stateChange.previous) == ARTRealtimeConnectionState.connected
+                XCTAssertEqual(stateChange.previous, ARTRealtimeConnectionState.connected)
 
                 guard let noActivityHasStartedAt = noActivityHasStartedAt else {
                     fail("No activity date is missing"); partialDone(); return
@@ -4484,8 +4484,8 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
         }
 
-        expect(expectedInactivityTimeout) == 3.5
-        expect(client.internal.maxIdleInterval) == 3.0
+        XCTAssertEqual(expectedInactivityTimeout, 3.5)
+        XCTAssertEqual(client.internal.maxIdleInterval, 3.0)
     }
 
     // RTN24
@@ -4554,7 +4554,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 guard let error = stateChange.reason else {
                     fail("Reason error is nil"); done(); return
                 }
-                expect(error.code) == 1234
+                XCTAssertEqual(error.code, 1234)
                 XCTAssertEqual(client.connection.state, ARTRealtimeConnectionState.connected)
                 XCTAssertEqual(stateChange.current, ARTRealtimeConnectionState.connected)
                 XCTAssertEqual(stateChange.current, stateChange.previous)

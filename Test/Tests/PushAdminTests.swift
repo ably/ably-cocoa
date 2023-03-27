@@ -267,7 +267,7 @@ class PushAdminTests: XCTestCase {
                 guard let error = error else {
                     fail("Error is missing"); done(); return
                 }
-                expect(error.statusCode) == 400
+                XCTAssertEqual(error.statusCode, 400)
                 expect(error.message).to(contain("recipient must contain"))
                 done()
             }
@@ -352,7 +352,7 @@ class PushAdminTests: XCTestCase {
                 guard let error = error else {
                     fail("Error should not be empty"); done(); return
                 }
-                expect(error.statusCode) == 404
+                XCTAssertEqual(error.statusCode, 404)
                 expect(error.message).to(contain("not found"))
                 done()
             }
@@ -415,7 +415,7 @@ class PushAdminTests: XCTestCase {
                 guard let result = result else {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
-                expect(result.items.count) == 1
+                XCTAssertEqual(result.items.count, 1)
                 XCTAssertNil(error)
                 done()
             }
@@ -430,7 +430,7 @@ class PushAdminTests: XCTestCase {
                 guard let result = result else {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
-                expect(result.items.count) == Self.allDeviceDetails.filter { $0.clientId == "clientA" }.count
+                XCTAssertEqual(result.items.count, Self.allDeviceDetails.filter { $0.clientId == "clientA" }.count)
                 XCTAssertNil(error)
                 done()
             }
@@ -445,7 +445,7 @@ class PushAdminTests: XCTestCase {
                 guard let result = result else {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
-                expect(result.items.count) == Self.allDeviceDetails.count
+                XCTAssertEqual(result.items.count, Self.allDeviceDetails.count)
                 XCTAssertNil(error)
                 done()
             }
@@ -460,7 +460,7 @@ class PushAdminTests: XCTestCase {
                 guard let result = result else {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
-                expect(result.items.count) == 0
+                XCTAssertEqual(result.items.count, 0)
                 XCTAssertNil(error)
                 done()
             }
@@ -484,7 +484,7 @@ class PushAdminTests: XCTestCase {
 
         let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
 
-        expect(request.httpMethod) == "DELETE"
+        XCTAssertEqual(request.httpMethod, "DELETE")
         XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceToken"])
         XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"])
     }
@@ -506,7 +506,7 @@ class PushAdminTests: XCTestCase {
         
         let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
 
-        expect(request.httpMethod) == "PUT"
+        XCTAssertEqual(request.httpMethod, "PUT")
         XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceToken"])
         XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"])
     }
@@ -601,7 +601,7 @@ class PushAdminTests: XCTestCase {
         
         let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
 
-        expect(request.httpMethod) == "DELETE"
+        XCTAssertEqual(request.httpMethod, "DELETE")
         XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceToken"])
         XCTAssertNil(request.allHTTPHeaderFields?["X-Ably-DeviceSecret"])
 
@@ -610,7 +610,7 @@ class PushAdminTests: XCTestCase {
                 guard let result = result else {
                     fail("PaginatedResult should not be nil"); done(); return
                 }
-                expect(result.items.count) == 0
+                XCTAssertEqual(result.items.count, 0)
                 XCTAssertNil(error)
                 done()
             }
@@ -685,7 +685,7 @@ class PushAdminTests: XCTestCase {
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
-                expect(error.statusCode) == 400
+                XCTAssertEqual(error.statusCode, 400)
                 expect(error.message).to(contain("device madeup doesn't exist"))
                 done()
             }
@@ -756,7 +756,7 @@ class PushAdminTests: XCTestCase {
                     guard let result = result else {
                         fail("PaginatedResult should not be empty"); done(); return
                     }
-                    expect(result.items.count) == 1
+                    XCTAssertEqual(result.items.count, 1)
                     XCTAssertNil(error)
                     done()
                 }
@@ -808,7 +808,7 @@ class PushAdminTests: XCTestCase {
                 guard let result = result else {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
-                expect(result.items.count) == 0
+                XCTAssertEqual(result.items.count, 0)
                 XCTAssertNil(error)
                 done()
             }
@@ -907,7 +907,7 @@ class PushAdminTests: XCTestCase {
                 guard let result = result else {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
-                expect(result.items.count) == 0
+                XCTAssertEqual(result.items.count, 0)
                 XCTAssertNil(error)
                 done()
             }
@@ -962,7 +962,7 @@ class PushAdminTests: XCTestCase {
                 guard let result = result else {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
-                expect(result.items.count) == 0
+                XCTAssertEqual(result.items.count, 0)
                 XCTAssertNil(error)
                 done()
             }
@@ -1007,7 +1007,7 @@ class PushAdminTests: XCTestCase {
                 guard let result = result else {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
-                expect(result.items.count) == 0
+                XCTAssertEqual(result.items.count, 0)
                 XCTAssertNil(error)
                 done()
             }
@@ -1027,7 +1027,7 @@ class PushAdminTests: XCTestCase {
                 guard let result = result else {
                     fail("PaginatedResult should not be empty"); done(); return
                 }
-                expect(result.items.count) == 0
+                XCTAssertEqual(result.items.count, 0)
                 XCTAssertNil(error)
                 done()
             }

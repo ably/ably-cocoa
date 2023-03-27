@@ -720,7 +720,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             let partialDone = AblyTests.splitDone(3, done: done)
             channel.once(.attaching) { stateChange in
                 XCTAssertNil(stateChange.reason)
-                expect(channel.presence.internal.pendingPresence.count) == 1
+                XCTAssertEqual(channel.presence.internal.pendingPresence.count, 1)
                 channel.internalAsync { _internal in
                     _internal.setSuspended(ARTStatus.state(.error, info: ARTErrorInfo.create(withCode: 1234, message: "unknown error")))
                 }
@@ -728,14 +728,14 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
             channel.once(.suspended) { _ in
                 // All queued presence messages will fail immediately
-                expect(channel.presence.internal.pendingPresence.count) == 0
+                XCTAssertEqual(channel.presence.internal.pendingPresence.count, 0)
                 partialDone()
             }
             channel.presence.enterClient("tester", data: nil) { error in
                 guard let error = error else {
                     fail("Error is nil"); partialDone(); return
                 }
-                expect(error.code) == 1234
+                XCTAssertEqual(error.code, 1234)
                 expect(error.message).to(contain("unknown error"))
                 partialDone()
             }
@@ -1081,7 +1081,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enter(nil) { error in
-                expect(error?.code) == Int(ARTState.noClientId.rawValue)
+                XCTAssertEqual(error?.code, Int(ARTState.noClientId.rawValue))
                 done()
             }
         }
@@ -1099,7 +1099,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enter(nil) { error in
-                expect(error?.code) == Int(ARTState.noClientId.rawValue)
+                XCTAssertEqual(error?.code, Int(ARTState.noClientId.rawValue))
                 done()
             }
         }
@@ -1162,7 +1162,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enter(nil) { error in
-                expect(error?.code) == Int(ARTErrorCode.invalidClientId.rawValue)
+                XCTAssertEqual(error?.code, Int(ARTErrorCode.invalidClientId.rawValue))
                 done()
             }
         }
@@ -1401,7 +1401,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 guard let members = members else {
                     fail("Members is nil"); done(); return
                 }
-                expect(members.count) == 100
+                XCTAssertEqual(members.count, 100)
                 done()
             }
         }
@@ -1457,7 +1457,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         XCTAssertEqual(intialPresenceMessage.memberKey(), updatedPresenceMessage.memberKey())
         expect(intialPresenceMessage.timestamp).to(beLessThan(updatedPresenceMessage.timestamp))
 
-        expect(compareForNewnessMethodCalls) == 1
+        XCTAssertEqual(compareForNewnessMethodCalls, 1)
 
         hook?.remove()
     }
@@ -1974,7 +1974,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.update(nil) { error in
-                expect(error?.code) == Int(ARTErrorCode.invalidClientId.rawValue)
+                XCTAssertEqual(error?.code, Int(ARTErrorCode.invalidClientId.rawValue))
                 done()
             }
         }
@@ -2048,7 +2048,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.update(nil) { error in
-                expect(error?.code) == Int(ARTErrorCode.invalidClientId.rawValue)
+                XCTAssertEqual(error?.code, Int(ARTErrorCode.invalidClientId.rawValue))
                 done()
             }
         }
@@ -2113,7 +2113,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.presence.leave("offline") { error in
-                expect(error?.code) == Int(ARTErrorCode.invalidClientId.rawValue)
+                XCTAssertEqual(error?.code, Int(ARTErrorCode.invalidClientId.rawValue))
                 done()
             }
         }
@@ -2264,7 +2264,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.leave(nil) { error in
-                expect(error?.code) == Int(ARTErrorCode.invalidClientId.rawValue)
+                XCTAssertEqual(error?.code, Int(ARTErrorCode.invalidClientId.rawValue))
                 done()
             }
         }
@@ -2347,7 +2347,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.leave(nil) { error in
-                expect(error?.code) == Int(ARTErrorCode.invalidClientId.rawValue)
+                XCTAssertEqual(error?.code, Int(ARTErrorCode.invalidClientId.rawValue))
                 done()
             }
         }
