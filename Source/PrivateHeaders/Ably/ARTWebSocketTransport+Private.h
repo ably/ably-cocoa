@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 // From RestClient
 @property (readwrite, strong, nonatomic) id<ARTEncoder> encoder;
-@property (readonly, strong, nonatomic) ARTLog *logger;
+@property (readonly, strong, nonatomic) ARTInternalLog *logger;
 @property (readonly, strong, nonatomic) ARTClientOptions *options;
 
 @property (readwrite, strong, nonatomic, nullable) id<ARTWebSocket> websocket;

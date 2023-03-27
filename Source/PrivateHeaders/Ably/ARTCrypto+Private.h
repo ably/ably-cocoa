@@ -1,12 +1,12 @@
 #import <Ably/ARTCrypto.h>
-#import <Ably/ARTLog.h>
+#import <Ably/ARTInternalLog.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTCipherParams ()
 
 @property (readonly, strong, nonatomic, nullable) NSData *iv;
-@property (nonatomic, strong) ARTLog *logger;
+@property (nonatomic, strong) ARTInternalLog *logger;
 - (instancetype)initWithAlgorithm:(NSString *)algorithm key:(id<ARTCipherKeyCompatible>)key iv:(NSData *_Nullable)iv;
 
 @end
@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)cbcCipherWithParams:(ARTCipherParams *)cipherParams;
 
 
-@property (nonatomic, strong) ARTLog *logger;
+@property (nonatomic, strong) ARTInternalLog *logger;
 @property (readonly, strong, nonatomic) NSData *keySpec;
 @property NSData *iv;
 @property (readonly) NSUInteger blockLength;

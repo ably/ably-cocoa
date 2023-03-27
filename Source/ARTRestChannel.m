@@ -128,7 +128,7 @@ static const NSUInteger kIdempotentLibraryGeneratedIdLength = 9; //bytes
     return self;
 }
 
-- (ARTLog *)getLogger {
+- (ARTInternalLog *)getLogger {
     return _rest.logger;
 }
 

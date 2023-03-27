@@ -1,4 +1,5 @@
 #import <Ably/ARTClientOptions.h>
+#import <Ably/ARTInternalLog.h>
 
 @protocol ARTVersion2Log;
 

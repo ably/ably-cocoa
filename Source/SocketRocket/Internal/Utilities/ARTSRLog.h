@@ -9,14 +9,14 @@
 
 #import <Foundation/Foundation.h>
 
-@class ARTLog;
+@class ARTInternalLog;
 
 NS_ASSUME_NONNULL_BEGIN
 
 // Uncomment this line to enable debug logging
 //#define ARTSR_DEBUG_LOG_ENABLED
 
-extern void ARTSRErrorLog(ARTLog * _Nullable logger, NSString *format, ...);
-extern void ARTSRDebugLog(ARTLog * _Nullable logger, NSString *format, ...);
+extern void ARTSRErrorLog(ARTInternalLog *_Nullable logger, NSString *format, ...);
+extern void ARTSRDebugLog(ARTInternalLog *_Nullable logger, NSString *format, ...);
 
 NS_ASSUME_NONNULL_END

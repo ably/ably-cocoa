@@ -33,11 +33,11 @@
 #import "ARTAuthDetails.h"
 #import "ARTGCD.h"
 #import "ARTEncoder.h"
-#import "ARTLog+Private.h"
 #import "ARTRealtimeChannels+Private.h"
 #import "ARTPush+Private.h"
 #import "ARTQueuedDealloc.h"
 #import "ARTErrorChecker.h"
+#import "ARTInternalLog.h"
 
 @interface ARTConnectionStateChange ()
 
@@ -334,7 +334,7 @@
     return _transport;
 }
 
-- (ARTLog *)getLogger {
+- (ARTInternalLog *)getLogger {
     return _rest.logger;
 }
 
