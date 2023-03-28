@@ -35,8 +35,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) ARTAuthMethod method;
 @property (readonly) BOOL isTokenAuth;
 
-@property (nonatomic) ARTInternalLog *logger;
-
 @property (nullable, nonatomic, readonly) NSNumber *timeOffset;
 
 @property (nullable, weak) id<ARTAuthDelegate> delegate; // weak because delegates outlive their counterpart
