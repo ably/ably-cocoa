@@ -38,8 +38,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, copy) NSString *currentFallbackHost;
 @property (readonly, nonatomic) CFAbsoluteTime fallbackRetryExpiration;
 
-@property (nonatomic, readonly) ARTInternalLog *logger;
-
 @property (nonatomic) dispatch_queue_t queue;
 @property (nonatomic) dispatch_queue_t userQueue;
 

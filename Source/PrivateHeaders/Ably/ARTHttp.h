@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// :nodoc:
 @protocol ARTHTTPExecutor
 
-- (ARTInternalLog *)logger;
+@property (nonatomic, readonly) ARTInternalLog *logger;
 - (nullable NSObject<ARTCancellable> *)executeRequest:(NSURLRequest *)request completion:(nullable ARTURLRequestCallback)callback;
 
 @end
