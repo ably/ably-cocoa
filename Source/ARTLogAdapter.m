@@ -1,0 +1,32 @@
+#import "ARTLogAdapter.h"
+#import "ARTLog.h"
+
+@interface ARTLogAdapter ()
+
+@property (nonatomic, readonly) ARTLog *logger;
+
+@end
+
+@implementation ARTLogAdapter
+
+- (instancetype)initWithLogger:(ARTLog *)logger {
+    if (self = [super init]) {
+        _logger = logger;
+    }
+
+    return self;
+}
+
+- (void)log:(NSString *)message withLevel:(ARTLogLevel)level {
+    [self.logger log:message withLevel:level];
+}
+
+- (ARTLogLevel)logLevel {
+    return self.logger.logLevel;
+}
+
+- (void)setLogLevel:(ARTLogLevel)logLevel {
+    self.logger.logLevel = logLevel;
+}
+
+@end

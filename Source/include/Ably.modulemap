@@ -89,5 +89,6 @@ framework module Ably {
         header "Ably/ARTClientOptions+TestConfiguration.h"
         header "Ably/ARTVersion2Log.h"
         header "Ably/ARTInternalLog.h"
+        header "Ably/ARTLogAdapter.h"
     }
 }

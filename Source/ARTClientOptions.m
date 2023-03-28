@@ -138,6 +138,7 @@ NSString *ARTDefaultEnvironment = nil;
     options.pushRegistererDelegate = self.pushRegistererDelegate;
     options.transportParams = self.transportParams;
     options.agents = self.agents;
+    options.version2LogHandler = self.version2LogHandler;
 
     return options;
 }
