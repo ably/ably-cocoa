@@ -1,5 +1,11 @@
 # Change Log
 
+## Unreleased
+
+**Public API changes:**
+
+- This release hides some private types that had been unintentionally exposed in the public API of the ably-cocoa library.
+
 ## [1.2.19](https://github.com/ably/ably-cocoa/tree/1.2.19)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.18...1.2.19)

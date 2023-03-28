@@ -38,12 +38,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// :nodoc:
 - (instancetype)initWithToken:(NSString *)token issued:(NSDate *)issued expires:(NSDate *)expires capability:(NSString *)capability clientId:(nullable NSString *)clientId;
 
-/// :nodoc:
-- (NSData *)archiveWithLogger:(nullable ARTLog *)logger;
-
-/// :nodoc:
-+ (nullable ARTDeviceIdentityTokenDetails *)unarchive:(NSData *)data withLogger:(nullable ARTLog *)logger;
-
 @end
 
 NS_ASSUME_NONNULL_END

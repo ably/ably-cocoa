@@ -3,7 +3,7 @@
 #import "ARTPush.h"
 #import "ARTEncoder.h"
 #import "ARTDeviceStorage.h"
-#import "ARTDeviceIdentityTokenDetails.h"
+#import "ARTDeviceIdentityTokenDetails+Private.h"
 #import "ARTCrypto+Private.h"
 
 NSString *const ARTDevicePlatform = @"ios";
