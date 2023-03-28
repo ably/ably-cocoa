@@ -91,5 +91,6 @@ framework module Ably {
         header "ARTInternalLog.h"
         header "ARTLogAdapter.h"
         header "ARTDeviceIdentityTokenDetails+Private.h"
+        header "ARTHttp.h"
     }
 }

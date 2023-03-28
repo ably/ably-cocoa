@@ -232,7 +232,7 @@
 		96A507BE1A3791490077CDF8 /* ARTRealtime.m in Sources */ = {isa = PBXBuildFile; fileRef = 96A507BC1A3791490077CDF8 /* ARTRealtime.m */; };
 		96BF61531A35B39C004CF2B3 /* ARTRest.h in Headers */ = {isa = PBXBuildFile; fileRef = 96BF61511A35B39C004CF2B3 /* ARTRest.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		96BF61541A35B39C004CF2B3 /* ARTRest.m in Sources */ = {isa = PBXBuildFile; fileRef = 96BF61521A35B39C004CF2B3 /* ARTRest.m */; };
-		96BF61581A35B52C004CF2B3 /* ARTHttp.h in Headers */ = {isa = PBXBuildFile; fileRef = 96BF61561A35B52C004CF2B3 /* ARTHttp.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		96BF61581A35B52C004CF2B3 /* ARTHttp.h in Headers */ = {isa = PBXBuildFile; fileRef = 96BF61561A35B52C004CF2B3 /* ARTHttp.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		96BF61591A35B52C004CF2B3 /* ARTHttp.m in Sources */ = {isa = PBXBuildFile; fileRef = 96BF61571A35B52C004CF2B3 /* ARTHttp.m */; };
 		96BF615E1A35C1C8004CF2B3 /* ARTTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = 96BF615C1A35C1C8004CF2B3 /* ARTTypes.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		96BF615F1A35C1C8004CF2B3 /* ARTTypes.m in Sources */ = {isa = PBXBuildFile; fileRef = 96BF615D1A35C1C8004CF2B3 /* ARTTypes.m */; };
@@ -629,12 +629,12 @@
 		D710D60821949D79008F54AD /* ARTTypes.m in Sources */ = {isa = PBXBuildFile; fileRef = 96BF615D1A35C1C8004CF2B3 /* ARTTypes.m */; };
 		D710D60921949DA9008F54AD /* ARTURLSessionServerTrust.h in Headers */ = {isa = PBXBuildFile; fileRef = D7588AF11BFF91B800BB8279 /* ARTURLSessionServerTrust.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D710D60B21949DAA008F54AD /* ARTURLSessionServerTrust.h in Headers */ = {isa = PBXBuildFile; fileRef = D7588AF11BFF91B800BB8279 /* ARTURLSessionServerTrust.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		D710D60C21949DDB008F54AD /* ARTHttp.h in Headers */ = {isa = PBXBuildFile; fileRef = 96BF61561A35B52C004CF2B3 /* ARTHttp.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D710D60C21949DDB008F54AD /* ARTHttp.h in Headers */ = {isa = PBXBuildFile; fileRef = 96BF61561A35B52C004CF2B3 /* ARTHttp.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D710D60D21949DDB008F54AD /* ARTDataQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE1A1BBB5207003ECEF8 /* ARTDataQuery.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D710D60E21949DDB008F54AD /* ARTPaginatedResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 850BFB4A1B79323C009D0ADD /* ARTPaginatedResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D710D60F21949DDB008F54AD /* ARTHTTPPaginatedResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = D769E15121270F3400DC5CD1 /* ARTHTTPPaginatedResponse.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D710D61021949DDB008F54AD /* ARTFallback.h in Headers */ = {isa = PBXBuildFile; fileRef = 1C578E1D1B3435CA00EF46EC /* ARTFallback.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		D710D61621949DDC008F54AD /* ARTHttp.h in Headers */ = {isa = PBXBuildFile; fileRef = 96BF61561A35B52C004CF2B3 /* ARTHttp.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D710D61621949DDC008F54AD /* ARTHttp.h in Headers */ = {isa = PBXBuildFile; fileRef = 96BF61561A35B52C004CF2B3 /* ARTHttp.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D710D61721949DDC008F54AD /* ARTDataQuery.h in Headers */ = {isa = PBXBuildFile; fileRef = D746AE1A1BBB5207003ECEF8 /* ARTDataQuery.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D710D61821949DDC008F54AD /* ARTPaginatedResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 850BFB4A1B79323C009D0ADD /* ARTPaginatedResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D710D61921949DDC008F54AD /* ARTHTTPPaginatedResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = D769E15121270F3400DC5CD1 /* ARTHTTPPaginatedResponse.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1148,7 +1148,7 @@
 		96BF61511A35B39C004CF2B3 /* ARTRest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTRest.h; path = include/Ably/ARTRest.h; sourceTree = "<group>"; };
 		96BF61521A35B39C004CF2B3 /* ARTRest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTRest.m; sourceTree = "<group>"; };
 		96BF61551A35B40E004CF2B3 /* ARTStatus.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTStatus.h; path = include/Ably/ARTStatus.h; sourceTree = "<group>"; };
-		96BF61561A35B52C004CF2B3 /* ARTHttp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTHttp.h; path = include/Ably/ARTHttp.h; sourceTree = "<group>"; };
+		96BF61561A35B52C004CF2B3 /* ARTHttp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTHttp.h; path = PrivateHeaders/Ably/ARTHttp.h; sourceTree = "<group>"; };
 		96BF61571A35B52C004CF2B3 /* ARTHttp.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTHttp.m; sourceTree = "<group>"; };
 		96BF615C1A35C1C8004CF2B3 /* ARTTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTTypes.h; path = include/Ably/ARTTypes.h; sourceTree = "<group>"; };
 		96BF615D1A35C1C8004CF2B3 /* ARTTypes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTTypes.m; sourceTree = "<group>"; };
