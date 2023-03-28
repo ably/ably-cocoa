@@ -81,6 +81,16 @@
 
 @end
 
+NS_ASSUME_NONNULL_BEGIN
+
+@interface ARTAuthInternal ()
+
+@property (nonatomic, readonly) ARTInternalLog *logger;
+
+@end
+
+NS_ASSUME_NONNULL_END
+
 @implementation ARTAuthInternal {
     __weak ARTRestInternal *_rest; // weak because rest owns auth
     dispatch_queue_t _userQueue;
