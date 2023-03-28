@@ -93,5 +93,6 @@ framework module Ably {
         header "ARTRetrySequence.h"
         header "ARTTypes+Private.h"
         header "ARTTestClientOptions.h"
+        header "ARTVersion2Log.h"
     }
 }
