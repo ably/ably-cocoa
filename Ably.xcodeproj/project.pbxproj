@@ -21,6 +21,12 @@
 		211A60D729D6D2C300D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */; };
 		211A60D829D6D2C400D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */; };
 		211A60D929D6D2C500D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */; };
+		2124B78729DB127900AD8361 /* MockVersion2Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2124B78629DB127900AD8361 /* MockVersion2Log.swift */; };
+		2124B78829DB127900AD8361 /* MockVersion2Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2124B78629DB127900AD8361 /* MockVersion2Log.swift */; };
+		2124B78929DB127900AD8361 /* MockVersion2Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2124B78629DB127900AD8361 /* MockVersion2Log.swift */; };
+		2124B78B29DB12A900AD8361 /* ARTVersion2Log.h in Headers */ = {isa = PBXBuildFile; fileRef = 2124B78A29DB12A900AD8361 /* ARTVersion2Log.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		2124B78C29DB12A900AD8361 /* ARTVersion2Log.h in Headers */ = {isa = PBXBuildFile; fileRef = 2124B78A29DB12A900AD8361 /* ARTVersion2Log.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		2124B78D29DB12A900AD8361 /* ARTVersion2Log.h in Headers */ = {isa = PBXBuildFile; fileRef = 2124B78A29DB12A900AD8361 /* ARTVersion2Log.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2132C20E29D20EEC000C4355 /* ARTResumeRequestResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C20D29D20EEC000C4355 /* ARTResumeRequestResponse.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2132C20F29D20EEC000C4355 /* ARTResumeRequestResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C20D29D20EEC000C4355 /* ARTResumeRequestResponse.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2132C21029D20EEC000C4355 /* ARTResumeRequestResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C20D29D20EEC000C4355 /* ARTResumeRequestResponse.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -1006,6 +1012,8 @@
 		1C6C18A21ADFDAB100AB79E4 /* ARTLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTLog.m; sourceTree = "<group>"; };
 		1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTDefault.h; path = include/Ably/ARTDefault.h; sourceTree = "<group>"; };
 		1CD8DC9E1B1C7315007EAF36 /* ARTDefault.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTDefault.m; sourceTree = "<group>"; };
+		2124B78629DB127900AD8361 /* MockVersion2Log.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockVersion2Log.swift; sourceTree = "<group>"; };
+		2124B78A29DB12A900AD8361 /* ARTVersion2Log.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTVersion2Log.h; path = PrivateHeaders/Ably/ARTVersion2Log.h; sourceTree = "<group>"; };
 		2132C20D29D20EEC000C4355 /* ARTResumeRequestResponse.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTResumeRequestResponse.h; path = PrivateHeaders/Ably/ARTResumeRequestResponse.h; sourceTree = "<group>"; };
 		2132C21129D20F05000C4355 /* ARTResumeRequestResponse.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTResumeRequestResponse.m; sourceTree = "<group>"; };
 		2132C21529D20F69000C4355 /* ResumeRequestResponseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResumeRequestResponseTests.swift; sourceTree = "<group>"; };
@@ -1581,6 +1589,7 @@
 				217FCF3E29D626E4006E5F2D /* MockJitterCoefficientGenerator.swift */,
 				217FCF3D29D626E4006E5F2D /* StaticJitterCoefficients.swift */,
 				2132C2E829D4B91B000C4355 /* BackoffCoefficients.swift */,
+				2124B78629DB127900AD8361 /* MockVersion2Log.swift */,
 			);
 			path = "Test Utilities";
 			sourceTree = "<group>";
@@ -1884,6 +1893,7 @@
 				2132C30C29D5D1B8000C4355 /* ARTConstantRetryDelayCalculator.m */,
 				2132C31029D5E4C6000C4355 /* ARTBackoffRetryDelayCalculator.h */,
 				2132C31429D5E50A000C4355 /* ARTBackoffRetryDelayCalculator.m */,
+				2124B78A29DB12A900AD8361 /* ARTVersion2Log.h */,
 			);
 			name = Utilities;
 			sourceTree = "<group>";
@@ -2035,6 +2045,7 @@
 				D78D780921271FB10016808B /* ARTHTTPPaginatedResponse+Private.h in Headers */,
 				21447D3B254A2ECB00B3905A /* ARTSRWebSocket.h in Headers */,
 				EBB721CB2376B454001C3550 /* ARTURLSession.h in Headers */,
+				2124B78B29DB12A900AD8361 /* ARTVersion2Log.h in Headers */,
 				D746AE381BBC3201003ECEF8 /* ARTMessage.h in Headers */,
 				D746AE471BBD6FE9003ECEF8 /* ARTQueuedMessage.h in Headers */,
 				1C2B0FFD1B136A6D00E3633C /* ARTPresenceMap.h in Headers */,
@@ -2242,6 +2253,7 @@
 				D710D4D421949BF9008F54AD /* ARTRealtime.h in Headers */,
 				D710D58821949D29008F54AD /* ARTProtocolMessage.h in Headers */,
 				D710D47D21949A27008F54AD /* Ably.h in Headers */,
+				2124B78C29DB12A900AD8361 /* ARTVersion2Log.h in Headers */,
 				EB1B53FE22F8D91C006A59AC /* ARTQueuedDealloc.h in Headers */,
 				D710D56A21949CB9008F54AD /* ARTPushAdmin.h in Headers */,
 				D710D48321949A4E008F54AD /* ARTDefault+Private.h in Headers */,
@@ -2393,6 +2405,7 @@
 				D710D4E421949BFB008F54AD /* ARTRealtime.h in Headers */,
 				D710D5AE21949D2A008F54AD /* ARTProtocolMessage.h in Headers */,
 				D581B31A269C16E200785FBE /* ARTTime.h in Headers */,
+				2124B78D29DB12A900AD8361 /* ARTVersion2Log.h in Headers */,
 				D710D47F21949A28008F54AD /* Ably.h in Headers */,
 				EB1B53FF22F8D91C006A59AC /* ARTQueuedDealloc.h in Headers */,
 				D710D57021949CBA008F54AD /* ARTPushAdmin.h in Headers */,
@@ -2768,6 +2781,7 @@
 				2132C2E929D4B91B000C4355 /* BackoffCoefficients.swift in Sources */,
 				215F75FF2922B30F009E0E76 /* ClientInformationTests.swift in Sources */,
 				D798554823EB96C000946BE2 /* DeltaCodecTests.swift in Sources */,
+				2124B78729DB127900AD8361 /* MockVersion2Log.swift in Sources */,
 				D74CBC0B212EC22800D090E4 /* RestPaginatedTests.swift in Sources */,
 				D72304701BB72CED00F1ABDA /* RealtimeClientTests.swift in Sources */,
 				841134782722205400CFA837 /* ARTArchiveTests.m in Sources */,
@@ -2932,6 +2946,7 @@
 				EB1B53FA22F85CE4006A59AC /* ObjectLifetimesTests.swift in Sources */,
 				D7093C2A219E466E00723F17 /* UtilitiesTests.swift in Sources */,
 				D798554923EB96C000946BE2 /* DeltaCodecTests.swift in Sources */,
+				2124B78829DB127900AD8361 /* MockVersion2Log.swift in Sources */,
 				2132C21729D20F69000C4355 /* ResumeRequestResponseTests.swift in Sources */,
 				217FCF4329D626E4006E5F2D /* MockJitterCoefficientGenerator.swift in Sources */,
 				D7093C21219E466E00723F17 /* RestClientChannelsTests.swift in Sources */,
@@ -2975,6 +2990,7 @@
 				EB1B53FB22F85CE4006A59AC /* ObjectLifetimesTests.swift in Sources */,
 				D7093C7C219EE26400723F17 /* RealtimeClientConnectionTests.swift in Sources */,
 				D798554A23EB96C000946BE2 /* DeltaCodecTests.swift in Sources */,
+				2124B78929DB127900AD8361 /* MockVersion2Log.swift in Sources */,
 				2132C21829D20F69000C4355 /* ResumeRequestResponseTests.swift in Sources */,
 				217FCF4429D626E4006E5F2D /* MockJitterCoefficientGenerator.swift in Sources */,
 				D7093C74219EE26400723F17 /* AuthTests.swift in Sources */,
