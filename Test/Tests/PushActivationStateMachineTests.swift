@@ -36,7 +36,7 @@ class PushActivationStateMachineTests: XCTestCase {
         rest.internal.httpExecutor = httpExecutor
         storage = MockDeviceStorage()
         rest.internal.storage = storage
-        initialStateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
+        initialStateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate(), logger: .init(backend: MockInternalLogBackend()))
     }
 
     override func tearDown() {
@@ -52,7 +52,7 @@ class PushActivationStateMachineTests: XCTestCase {
     func test__003__Activation_state_machine__should_read_the_current_state_from_disk() {
         let storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeviceRegistration(machine: initialStateMachine))
         rest.internal.storage = storage
-        let stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
+        let stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate(), logger: .init(backend: MockInternalLogBackend()))
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForDeviceRegistration.self))
         XCTAssertEqual(storage.keysRead.count, 2)
         XCTAssertEqual(storage.keysRead.filter { $0.hasSuffix("CurrentState") }.count, 1)
@@ -66,7 +66,7 @@ class PushActivationStateMachineTests: XCTestCase {
         let storage = MockDeviceStorage()
         storage.simulateOnNextRead(data: stateEncodedFromOldVersion, for: ARTPushActivationCurrentStateKey)
         rest.internal.storage = storage
-        let stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
+        let stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate(), logger: .init(backend: MockInternalLogBackend()))
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
     }
 
@@ -75,7 +75,7 @@ class PushActivationStateMachineTests: XCTestCase {
     func beforeEach__Activation_state_machine__State_NotActivated() {
         storage = MockDeviceStorage(startWith: ARTPushActivationStateNotActivated(machine: initialStateMachine))
         rest.internal.storage = storage
-        stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
+        stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate(), logger: .init(backend: MockInternalLogBackend()))
     }
 
     // RSH3a1
@@ -189,7 +189,7 @@ class PushActivationStateMachineTests: XCTestCase {
     func beforeEach__Activation_state_machine__State_WaitingForPushDeviceDetails() {
         storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForPushDeviceDetails(machine: initialStateMachine))
         rest.internal.storage = storage
-        stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
+        stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate(), logger: .init(backend: MockInternalLogBackend()))
     }
 
     // RSH3b1
@@ -444,7 +444,7 @@ class PushActivationStateMachineTests: XCTestCase {
         var registered = false
 
         let delegate = StateMachineDelegateCustomCallbacks()
-        stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: delegate)
+        stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: delegate, logger: .init(backend: MockInternalLogBackend()))
         delegate.onPushCustomRegister = { _, _ in
             registered = true
             return nil
@@ -458,7 +458,7 @@ class PushActivationStateMachineTests: XCTestCase {
     func beforeEach__Activation_state_machine__State_WaitingForDeviceRegistration() {
         storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeviceRegistration(machine: initialStateMachine))
         rest.internal.storage = storage
-        stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
+        stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate(), logger: .init(backend: MockInternalLogBackend()))
     }
 
     // RSH3c1
@@ -528,7 +528,7 @@ class PushActivationStateMachineTests: XCTestCase {
     func beforeEach__Activation_state_machine__State_WaitingForNewPushDeviceDetails() {
         storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForNewPushDeviceDetails(machine: initialStateMachine))
         rest.internal.storage = storage
-        stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
+        stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate(), logger: .init(backend: MockInternalLogBackend()))
     }
 
     // RSH3d1
@@ -585,7 +585,7 @@ class PushActivationStateMachineTests: XCTestCase {
 
             storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForRegistrationSync(machine: initialStateMachine, from: fromEvent))
             rest.internal.storage = storage
-            stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
+            stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate(), logger: .init(backend: MockInternalLogBackend()))
             (stateMachine.current as! ARTPushActivationStateWaitingForRegistrationSync).fromEvent = fromEvent
         }
 
@@ -731,7 +731,7 @@ class PushActivationStateMachineTests: XCTestCase {
     func beforeEach__Activation_state_machine__State_AfterRegistrationSyncFailed() {
         storage = MockDeviceStorage(startWith: ARTPushActivationStateAfterRegistrationSyncFailed(machine: initialStateMachine))
         rest.internal.storage = storage
-        stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
+        stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate(), logger: .init(backend: MockInternalLogBackend()))
     }
 
     // RSH3f1
@@ -801,7 +801,7 @@ class PushActivationStateMachineTests: XCTestCase {
     func beforeEach__Activation_state_machine__State_WaitingForDeregistration() {
         storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeregistration(machine: initialStateMachine))
         rest.internal.storage = storage
-        stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
+        stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate(), logger: .init(backend: MockInternalLogBackend()))
     }
 
     // RSH3g1
@@ -862,7 +862,7 @@ class PushActivationStateMachineTests: XCTestCase {
         // Start with WaitingForDeregistration state
         let storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeregistration(machine: initialStateMachine))
         rest.internal.storage = storage
-        let stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
+        let stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate(), logger: .init(backend: MockInternalLogBackend()))
 
         stateMachine.transitions = { _, _, _ in
             fail("Should not handle the CalledActivate event because it should be queued")
@@ -899,7 +899,7 @@ class PushActivationStateMachineTests: XCTestCase {
     func test__006__Activation_state_machine__event_handling_sould_be_atomic_and_sequential() {
         let storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeregistration(machine: initialStateMachine))
         rest.internal.storage = storage
-        let stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
+        let stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate(), logger: .init(backend: MockInternalLogBackend()))
         stateMachine.send(ARTPushActivationEventCalledActivate())
         DispatchQueue(label: "QueueA").sync {
             stateMachine.send(ARTPushActivationEventDeregistered())
@@ -940,7 +940,7 @@ class PushActivationStateMachineTests: XCTestCase {
             newOptions.clientId = "instanceClient"
             let newRest = ARTRest(options: newOptions)
             newRest.internal.storage = storage
-            let stateMachine = ARTPushActivationStateMachine(rest: newRest.internal, delegate: StateMachineDelegate())
+            let stateMachine = ARTPushActivationStateMachine(rest: newRest.internal, delegate: StateMachineDelegate(), logger: .init(backend: MockInternalLogBackend()))
 
             storage.simulateOnNextRead(string: testDeviceId, for: ARTDeviceIdKey)
 

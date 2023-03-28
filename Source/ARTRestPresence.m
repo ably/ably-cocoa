@@ -86,17 +86,28 @@
 
 @end
 
+NS_ASSUME_NONNULL_BEGIN
+
+@interface ARTRestPresenceInternal ()
+
+@property (nonatomic, readonly) ARTInternalLog *logger;
+
+@end
+
+NS_ASSUME_NONNULL_END
+
 @implementation ARTRestPresenceInternal {
     __weak ARTRestChannelInternal *_channel; // weak because channel owns self
     dispatch_queue_t _userQueue;
     dispatch_queue_t _queue;
 }
 
-- (instancetype)initWithChannel:(ARTRestChannelInternal *)channel {
+- (instancetype)initWithChannel:(ARTRestChannelInternal *)channel logger:(ARTInternalLog *)logger {
     if (self = [super init]) {
         _channel = channel;
         _userQueue = channel.rest.userQueue;
         _queue = channel.rest.queue;
+        _logger = logger;
     }
     return self;
 }
@@ -145,7 +156,7 @@
     };
 
 dispatch_async(_queue, ^{
-    [ARTPaginatedResult executePaginated:self->_channel.rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
+    [ARTPaginatedResult executePaginated:self->_channel.rest withRequest:request andResponseProcessor:responseProcessor logger:self->_logger callback:callback];
 });
     return YES;
 }
@@ -206,7 +217,7 @@ dispatch_async(_queue, ^{
     };
 
 dispatch_async(_queue, ^{
-    [ARTPaginatedResult executePaginated:self->_channel.rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
+    [ARTPaginatedResult executePaginated:self->_channel.rest withRequest:request andResponseProcessor:responseProcessor logger:self->_logger callback:callback];
 });
     return YES;
 }

@@ -251,8 +251,8 @@ NS_ASSUME_NONNULL_END
     ARTErrorInfo *_errorReason;
 }
 
-- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime andName:(NSString *)name withOptions:(ARTRealtimeChannelOptions *)options {
-    self = [super initWithName:name andOptions:options rest:realtime.rest];
+- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime andName:(NSString *)name withOptions:(ARTRealtimeChannelOptions *)options logger:(ARTInternalLog *)logger {
+    self = [super initWithName:name andOptions:options rest:realtime.rest logger:logger];
     if (self) {
         _realtime = realtime;
         _queue = realtime.rest.queue;
@@ -262,7 +262,7 @@ NS_ASSUME_NONNULL_END
         _attachSerial = nil;
         _presenceMap = [[ARTPresenceMap alloc] initWithQueue:_queue logger:self.logger];
         _presenceMap.delegate = self;
-        _statesEventEmitter = [[ARTPublicEventEmitter alloc] initWithRest:_realtime.rest];
+        _statesEventEmitter = [[ARTPublicEventEmitter alloc] initWithRest:_realtime.rest logger:logger];
         _messagesEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueues:_queue userQueue:_userQueue];
         _presenceEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
         _attachedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
@@ -308,10 +308,6 @@ dispatch_sync(_queue, ^{
     return _errorReason;
 }
 
-- (ARTInternalLog *)getLogger {
-    return _realtime.logger;
-}
-
 - (ARTRealtimePresenceInternal *)presence {
     if (!_realtimePresence) {
         _realtimePresence = [[ARTRealtimePresenceInternal alloc] initWithChannel:self];
@@ -322,7 +318,7 @@ dispatch_sync(_queue, ^{
 #if TARGET_OS_IPHONE
 - (ARTPushChannelInternal *)push {
     if (!_pushChannel) {
-        _pushChannel = [[ARTPushChannelInternal alloc] init:self.realtime.rest withChannel:self];
+        _pushChannel = [[ARTPushChannelInternal alloc] init:self.realtime.rest withChannel:self logger:self.logger];
     }
     return _pushChannel;
 }

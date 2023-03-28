@@ -4,10 +4,11 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class ARTRestChannelInternal;
+@class ARTInternalLog;
 
 @interface ARTRestPresenceInternal : ARTPresence <ARTRestPresenceProtocol>
 
-- (instancetype)initWithChannel:(ARTRestChannelInternal *)channel;
+- (instancetype)initWithChannel:(ARTRestChannelInternal *)channel logger:(ARTInternalLog *)logger;
 
 @end
 

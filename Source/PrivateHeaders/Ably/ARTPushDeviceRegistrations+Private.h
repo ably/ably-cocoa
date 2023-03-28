@@ -5,10 +5,11 @@
 #import "ARTQueuedDealloc.h"
 
 @class ARTRestInternal;
+@class ARTInternalLog;
 
 @interface ARTPushDeviceRegistrationsInternal : NSObject <ARTPushDeviceRegistrationsProtocol>
 
-- (instancetype)initWithRest:(ARTRestInternal *)rest;
+- (instancetype)initWithRest:(ARTRestInternal *)rest logger:(ARTInternalLog *)logger;
 
 @end
 

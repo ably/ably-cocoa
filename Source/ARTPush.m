@@ -77,11 +77,11 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
     NSLock *_activationMachineLock;
 }
 
-- (instancetype)init:(ARTRestInternal *)rest {
+- (instancetype)initWithRest:(ARTRestInternal *)rest logger:(ARTInternalLog *)logger {
     if (self = [super init]) {
         _rest = rest;
-        _logger = [rest logger];
-        _admin = [[ARTPushAdminInternal alloc] initWithRest:rest];
+        _logger = logger;
+        _admin = [[ARTPushAdminInternal alloc] initWithRest:rest logger:logger];
         _activationMachine = nil;
         _activationMachineLock = [[NSLock alloc] init];
         _activationMachineLock.name = @"ActivationMachineLock";
@@ -145,7 +145,7 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
                     format:@"_activationMachine already set."];
     }
     
-    _activationMachine = [[ARTPushActivationStateMachine alloc] initWithRest:self->_rest delegate:delegate];
+    _activationMachine = [[ARTPushActivationStateMachine alloc] initWithRest:self->_rest delegate:delegate logger:_logger];
     return _activationMachine;
 }
 
@@ -167,7 +167,7 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
 }
 
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceTokenData restInternal:(ARTRestInternal *)rest {
-    ARTLogDebug(rest.logger, @"ARTPush: device token data received: %@", [deviceTokenData base64EncodedStringWithOptions:0]);
+    ARTLogDebug(rest.logger_onlyForUseInClassMethodsAndTests, @"ARTPush: device token data received: %@", [deviceTokenData base64EncodedStringWithOptions:0]);
 
     NSUInteger dataLength = deviceTokenData.length;
     const unsigned char *dataBuffer = deviceTokenData.bytes;
@@ -178,7 +178,7 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
 
     NSString *deviceToken = [hexString copy];
 
-    ARTLogInfo(rest.logger, @"ARTPush: device token: %@", deviceToken);
+    ARTLogInfo(rest.logger_onlyForUseInClassMethodsAndTests, @"ARTPush: device token: %@", deviceToken);
     NSString *currentDeviceToken = [rest.storage objectForKey:ARTAPNSDeviceTokenKey];
     if ([currentDeviceToken isEqualToString:deviceToken]) {
         // Already stored.
@@ -186,7 +186,7 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
     }
 
     [rest.device_nosync setAndPersistAPNSDeviceToken:deviceToken];
-    ARTLogDebug(rest.logger, @"ARTPush: device token stored");
+    ARTLogDebug(rest.logger_onlyForUseInClassMethodsAndTests, @"ARTPush: device token stored");
     [rest.push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
         [stateMachine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
     }];
@@ -205,7 +205,7 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
 }
 
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error restInternal:(ARTRestInternal *)rest {
-    ARTLogError(rest.logger, @"ARTPush: device token not received (%@)", [error localizedDescription]);
+    ARTLogError(rest.logger_onlyForUseInClassMethodsAndTests, @"ARTPush: device token not received (%@)", [error localizedDescription]);
     [rest.push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
         [stateMachine sendEvent:[ARTPushActivationEventGettingPushDeviceDetailsFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
     }];

@@ -4,6 +4,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class ARTRestInternal;
 @protocol ARTPushRegistererDelegate;
+@class ARTInternalLog;
 
 extern NSString *const ARTPushActivationCurrentStateKey;
 extern NSString *const ARTPushActivationPendingEventsKey;
@@ -13,7 +14,8 @@ extern NSString *const ARTPushActivationPendingEventsKey;
 @property (nonatomic, strong) ARTRestInternal *rest;
 
 - (instancetype)initWithRest:(ARTRestInternal *)rest
-                    delegate:(id<ARTPushRegistererDelegate, NSObject>)delegate NS_DESIGNATED_INITIALIZER;
+                    delegate:(id<ARTPushRegistererDelegate, NSObject>)delegate
+                      logger:(ARTInternalLog *)logger NS_DESIGNATED_INITIALIZER;
 
 /// The delegate property should be written to only for internal testing purposes.
 @property (weak, nonatomic) id<ARTPushRegistererDelegate, NSObject> delegate;

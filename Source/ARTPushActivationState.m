@@ -10,6 +10,16 @@
 #import "ARTHttp.h"
 #import "ARTTypes+Private.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
+@interface ARTPushActivationState ()
+
+@property (nonatomic, readonly) ARTInternalLog *logger;
+
+@end
+
+NS_ASSUME_NONNULL_END
+
 @implementation ARTPushActivationState
 
 - (instancetype)initWithMachine:(ARTPushActivationStateMachine *)machine {
@@ -24,7 +34,7 @@
 }
 
 - (void)logEventTransition:(ARTPushActivationEvent *)event file:(const char *)file line:(NSUInteger)line {
-    ARTLogDebug(self.machine.rest.logger, @"ARTPush Activation: %@ state: handling %@ event", NSStringFromClass(self.class), NSStringFromClass(event.class));
+    ARTLogDebug(self.logger, @"ARTPush Activation: %@ state: handling %@ event", NSStringFromClass(self.class), NSStringFromClass(event.class));
 }
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
@@ -57,7 +67,7 @@
 #pragma mark - Archive/Unarchive
 
 - (NSData *)archive {
-    return [self art_archiveWithLogger:self.machine.rest.logger];
+    return [self art_archiveWithLogger:self.logger];
 }
 
 + (ARTPushActivationState *)unarchive:(NSData *)data withLogger:(nullable ARTInternalLog *)logger {

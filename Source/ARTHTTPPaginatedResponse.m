@@ -10,6 +10,16 @@
 #import "ARTConstants.h"
 #import "ARTInternalLog.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
+@interface ARTHTTPPaginatedResponse ()
+
+@property (nonatomic, readonly) ARTInternalLog *logger;
+
+@end
+
+NS_ASSUME_NONNULL_END
+
 @implementation ARTHTTPPaginatedResponse
 
 - (instancetype)initWithResponse:(NSHTTPURLResponse *)response
@@ -18,8 +28,9 @@
                         relFirst:(NSMutableURLRequest *)relFirst
                       relCurrent:(NSMutableURLRequest *)relCurrent
                          relNext:(NSMutableURLRequest *)relNext
-               responseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor {
-    self = [super initWithItems:items rest:rest relFirst:relFirst relCurrent:relCurrent relNext:relNext responseProcessor:responseProcessor];
+               responseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor
+                          logger:(ARTInternalLog *)logger {
+    self = [super initWithItems:items rest:rest relFirst:relFirst relCurrent:relCurrent relNext:relNext responseProcessor:responseProcessor logger:logger];
     if (self) {
         _response = response;
     }
@@ -58,7 +69,7 @@
         };
     }
 
-    [self.class executePaginated:self.rest withRequest:self.relFirst callback:callback];
+    [self.class executePaginated:self.rest withRequest:self.relFirst logger:self.logger callback:callback];
 }
 
 - (void)next:(ARTHTTPPaginatedCallback)callback {
@@ -79,13 +90,14 @@
         return;
     }
 
-    [self.class executePaginated:self.rest withRequest:self.relNext callback:callback];
+    [self.class executePaginated:self.rest withRequest:self.relNext logger:self.logger callback:callback];
 }
 
 + (void)executePaginated:(ARTRestInternal *)rest
              withRequest:(NSMutableURLRequest *)request
+                  logger:(ARTInternalLog *)logger
                 callback:(ARTHTTPPaginatedCallback)callback {
-    ARTLogDebug(rest.logger, @"HTTP Paginated request: %@", request);
+    ARTLogDebug(logger, @"HTTP Paginated request: %@", request);
 
     [rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error && ![error.domain isEqualToString:ARTAblyErrorDomain]) {
@@ -93,8 +105,8 @@
             return;
         }
 
-        ARTLogDebug([rest logger], @"HTTP Paginated response: %@", response);
-        ARTLogDebug([rest logger], @"HTTP Paginated response data: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
+        ARTLogDebug(logger, @"HTTP Paginated response: %@", response);
+        ARTLogDebug(logger, @"HTTP Paginated response data: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
 
         NSError *decodeError = nil;
 
@@ -115,7 +127,7 @@
         NSMutableURLRequest *currentRel = [NSMutableURLRequest requestWithPath:links[@"current"] relativeTo:request];
         NSMutableURLRequest *nextRel = [NSMutableURLRequest requestWithPath:links[@"next"] relativeTo:request];
 
-        ARTHTTPPaginatedResponse *result = [[ARTHTTPPaginatedResponse alloc] initWithResponse:response items:items rest:rest relFirst:firstRel relCurrent:currentRel relNext:nextRel responseProcessor:responseProcessor];
+        ARTHTTPPaginatedResponse *result = [[ARTHTTPPaginatedResponse alloc] initWithResponse:response items:items rest:rest relFirst:firstRel relCurrent:currentRel relNext:nextRel responseProcessor:responseProcessor logger:logger];
 
         callback(result, nil);
     }];

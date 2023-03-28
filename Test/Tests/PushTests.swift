@@ -303,7 +303,7 @@ class PushTests: XCTestCase {
 
         let storage = MockDeviceStorage(
             startWith: ARTPushActivationStateWaitingForNewPushDeviceDetails(
-                machine: ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
+                machine: ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate(), logger: .init(backend: MockInternalLogBackend()))
             )
         )
         realtime.internal.rest.storage = storage

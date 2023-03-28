@@ -11,13 +11,14 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class ARTRestInternal;
+@class ARTInternalLog;
 
 @interface ARTRestChannelInternal : ARTChannel <ARTRestChannelProtocol>
 
 @property (readonly) ARTRestPresenceInternal *presence;
 @property (readonly) ARTPushChannelInternal *push;
 
-- (instancetype)initWithName:(NSString *)name withOptions:(ARTChannelOptions *)options andRest:(ARTRestInternal *)rest;
+- (instancetype)initWithName:(NSString *)name withOptions:(ARTChannelOptions *)options andRest:(ARTRestInternal *)rest logger:(ARTInternalLog *)logger;
 
 @property (nonatomic, weak) ARTRestInternal *rest; // weak because rest owns self
 @property (nonatomic, strong) dispatch_queue_t queue;

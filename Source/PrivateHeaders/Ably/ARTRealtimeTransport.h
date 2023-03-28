@@ -8,6 +8,7 @@
 @class ARTErrorInfo;
 @class ARTClientOptions;
 @class ARTRestInternal;
+@class ARTInternalLog;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -64,7 +65,7 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportState) {
 
 // All methods must be called from rest's serial queue.
 
-- (instancetype)initWithRest:(ARTRestInternal *)rest options:(ARTClientOptions *)options resumeKey:(nullable NSString *)resumeKey connectionSerial:(nullable NSNumber *)connectionSerial;
+- (instancetype)initWithRest:(ARTRestInternal *)rest options:(ARTClientOptions *)options resumeKey:(nullable NSString *)resumeKey connectionSerial:(nullable NSNumber *)connectionSerial logger:(ARTInternalLog *)logger;
 
 @property (readonly, strong, nonatomic) NSString *resumeKey;
 @property (readonly, strong, nonatomic) NSNumber *connectionSerial;

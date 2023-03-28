@@ -183,8 +183,8 @@ NS_ASSUME_NONNULL_END
         ARTLogVerbose(_logger, @"RS:%p %p alloc HTTP", self, _http);
         _httpExecutor = _http;
 
-        id<ARTEncoder> jsonEncoder = [[ARTJsonLikeEncoder alloc] initWithRest:self delegate:[[ARTJsonEncoder alloc] init]];
-        id<ARTEncoder> msgPackEncoder = [[ARTJsonLikeEncoder alloc] initWithRest:self delegate:[[ARTMsgPackEncoder alloc] init]];
+        id<ARTEncoder> jsonEncoder = [[ARTJsonLikeEncoder alloc] initWithRest:self delegate:[[ARTJsonEncoder alloc] init] logger:_logger];
+        id<ARTEncoder> msgPackEncoder = [[ARTJsonLikeEncoder alloc] initWithRest:self delegate:[[ARTMsgPackEncoder alloc] init] logger:_logger];
         _encoders = @{
             [jsonEncoder mimeType]: jsonEncoder,
             [msgPackEncoder mimeType]: msgPackEncoder
@@ -193,9 +193,9 @@ NS_ASSUME_NONNULL_END
         _fallbackCount = 0;
         _tokenErrorRetries = 0;
 
-        _auth = [[ARTAuthInternal alloc] init:self withOptions:_options];
-        _push = [[ARTPushInternal alloc] init:self];
-        _channels = [[ARTRestChannelsInternal alloc] initWithRest:self];
+        _auth = [[ARTAuthInternal alloc] init:self withOptions:_options logger:_logger];
+        _push = [[ARTPushInternal alloc] initWithRest:self logger:_logger];
+        _channels = [[ARTRestChannelsInternal alloc] initWithRest:self logger:_logger];
 
         ARTLogVerbose(self.logger, @"RS:%p initialized", self);
     }
@@ -212,6 +212,10 @@ NS_ASSUME_NONNULL_END
 
 - (void)dealloc {
     ARTLogVerbose(self.logger, @"RS:%p dealloc", self);
+}
+
+- (ARTInternalLog *)logger_onlyForUseInClassMethodsAndTests {
+    return self.logger;
 }
 
 - (NSString *)description {
@@ -621,7 +625,7 @@ NS_ASSUME_NONNULL_END
 
     ARTLogDebug(self.logger, @"request %@ %@", method, path);
     dispatch_async(_queue, ^{
-        [ARTHTTPPaginatedResponse executePaginated:self withRequest:request  callback:callback];
+        [ARTHTTPPaginatedResponse executePaginated:self withRequest:request logger:self.logger callback:callback];
     });
     return YES;
 }
@@ -688,7 +692,7 @@ NS_ASSUME_NONNULL_END
     };
     
 dispatch_async(_queue, ^{
-    [ARTPaginatedResult executePaginated:self withRequest:request andResponseProcessor:responseProcessor callback:callback];
+    [ARTPaginatedResult executePaginated:self withRequest:request andResponseProcessor:responseProcessor logger:self.logger callback:callback];
 });
     return YES;
 }

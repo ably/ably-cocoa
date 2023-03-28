@@ -51,10 +51,10 @@
     return self;
 }
 
-- (instancetype)initWithRest:(ARTRestInternal *)rest delegate:(id<ARTJsonLikeEncoderDelegate>)delegate {
+- (instancetype)initWithRest:(ARTRestInternal *)rest delegate:(id<ARTJsonLikeEncoderDelegate>)delegate logger:(ARTInternalLog *)logger {
     if (self = [super init]) {
         _rest = rest;
-        _logger = rest.logger;
+        _logger = logger;
         _delegate = delegate;
     }
     return self;

@@ -203,14 +203,15 @@ NS_ASSUME_NONNULL_END
     self = [super init];
     if (self) {
         NSAssert(options, @"ARTRealtime: No options provided");
-        
+
+        _logger = [[ARTInternalLog alloc] initWithClientOptions:options];
         _rest = [[ARTRestInternal alloc] initWithOptions:options realtime:self];
         _userQueue = _rest.userQueue;
         _queue = _rest.queue;
         _internalEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
         _connectedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
         _pingEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
-        _channels = [[ARTRealtimeChannelsInternal alloc] initWithRealtime:self];
+        _channels = [[ARTRealtimeChannelsInternal alloc] initWithRealtime:self logger:self.logger];
         _transport = nil;
         _transportClass = [ARTWebSocketTransport class];
         _reachabilityClass = [ARTOSReachability class];
@@ -219,7 +220,7 @@ NS_ASSUME_NONNULL_END
         _pendingMessages = [NSMutableArray array];
         _pendingMessageStartSerial = 0;
         _pendingAuthorizations = [NSMutableArray array];
-        _connection = [[ARTConnectionInternal alloc] initWithRealtime:self];
+        _connection = [[ARTConnectionInternal alloc] initWithRealtime:self logger:self.logger];
         _connectionStateTtl = [ARTDefault connectionStateTtl];
         _shouldImmediatelyReconnect = true;
         _connectRetryDelayCalculator = [[ARTConstantRetryDelayCalculator alloc] initWithConstantDelay:options.disconnectedRetryTimeout];
@@ -353,10 +354,6 @@ NS_ASSUME_NONNULL_END
 
 - (id<ARTRealtimeTransport>)transport {
     return _transport;
-}
-
-- (ARTInternalLog *)getLogger {
-    return _rest.logger;
 }
 
 - (ARTClientOptions *)getClientOptions {
@@ -791,7 +788,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)setTransportWithResumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial {
-    _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:resumeKey connectionSerial:connectionSerial];
+    _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:resumeKey connectionSerial:connectionSerial logger:self.logger];
     _transport.delegate = self;
 }
 

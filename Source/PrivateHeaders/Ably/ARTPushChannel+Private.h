@@ -5,10 +5,11 @@
 #import "ARTQueuedDealloc.h"
 
 @class ARTRestInternal;
+@class ARTInternalLog;
 
 @interface ARTPushChannelInternal : NSObject <ARTPushChannelProtocol>
 
-- (instancetype)init:(ARTRestInternal *)rest withChannel:(ARTChannel *)channel;
+- (instancetype)init:(ARTRestInternal *)rest withChannel:(ARTChannel *)channel logger:(ARTInternalLog *)logger;
 
 @end
 

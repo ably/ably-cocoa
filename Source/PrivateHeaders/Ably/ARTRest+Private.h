@@ -41,6 +41,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) dispatch_queue_t queue;
 @property (nonatomic, strong) dispatch_queue_t userQueue;
 
+// TODO document
+@property (nonatomic, readonly) ARTInternalLog *logger_onlyForUseInClassMethodsAndTests;
+
 // MARK: Not accessible by tests
 @property (readonly, strong, nonatomic) ARTHttp *http;
 @property (readwrite, assign, nonatomic) int fallbackCount;
