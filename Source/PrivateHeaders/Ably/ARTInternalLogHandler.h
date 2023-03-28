@@ -2,6 +2,7 @@
 #import <Ably/ARTLog.h>
 
 @protocol ARTVersion2LogHandler;
+@class ARTClientOptions;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -12,6 +13,7 @@ NS_SWIFT_NAME(InternalLogHandler)
 @interface ARTInternalLogHandler: NSObject
 
 - (instancetype)initWithLogHandler:(id<ARTVersion2LogHandler>)logHandler NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithClientOptions:(ARTClientOptions *)clientOptions; // TODO document and test
 - (instancetype)init NS_UNAVAILABLE;
 
 // Copied from ARTLog

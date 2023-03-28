@@ -1,8 +1,15 @@
 #import <Ably/ARTClientOptions.h>
 
+@protocol ARTVersion2LogHandler;
+
 @interface ARTClientOptions ()
 
 @property (nullable, strong, nonatomic) NSString *channelNamePrefix;
+
+/**
+ If non-nil, overrides any configuration from this client options instance’s `logHandler` and `logLevel` (TODO check I mean this about logLevel).
+ */
+@property (nullable, nonatomic) id<ARTVersion2LogHandler> version2LogHandler;
 
 @property (readonly) BOOL isProductionEnvironment;
 @property (readonly) BOOL hasEnvironment;

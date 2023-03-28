@@ -82,5 +82,6 @@ framework module Ably {
         header "Ably/ARTTime.h"
         header "Ably/ARTVersion2LogHandler.h"
         header "Ably/ARTInternalLogHandler.h"
+        header "Ably/ARTLogAdapter.h"
     }
 }

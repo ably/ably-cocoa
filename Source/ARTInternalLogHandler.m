@@ -1,5 +1,8 @@
 #import "ARTInternalLogHandler.h"
 #import "ARTVersion2LogHandler.h"
+#import "ARTClientOptions.h"
+#import "ARTClientOptions+Private.h"
+#import "ARTLogAdapter.h"
 
 @interface ARTInternalLogHandler ()
 
@@ -15,6 +18,35 @@
     }
 
     return self;
+}
+
+- (instancetype)initWithClientOptions:(ARTClientOptions *)clientOptions {
+    id<ARTVersion2LogHandler> version2LogHandler;
+
+    if (clientOptions.version2LogHandler) {
+        version2LogHandler = clientOptions.version2LogHandler;
+    } else {
+        // This code was previously in the ARTRest initializer.
+
+        ARTLog *logHandler;
+
+        if (clientOptions.logHandler) {
+            logHandler = clientOptions.logHandler;
+        } else {
+            logHandler = [[ARTLog alloc] init];
+        }
+
+        if (clientOptions.logLevel != ARTLogLevelNone) {
+            logHandler.logLevel = clientOptions.logLevel;
+        }
+
+        version2LogHandler = [[ARTLogAdapter alloc] initWithLogHandler:logHandler];
+    }
+
+    self = [self initWithLogHandler:version2LogHandler];
+
+    return self;
+
 }
 
 // MARK: Logging
