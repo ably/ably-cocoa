@@ -238,9 +238,9 @@ class RestClientTests: XCTestCase {
         options.logHandler = ARTLog(capturingOutput: true)
         let client = ARTRest(options: options)
 
-        client.internal.logger.log("This is a warning", with: .warn, file: "foo.m", line: 10)
+        client.internal.logger_onlyForUseInClassMethodsAndTests.log("This is a warning", with: .warn, file: "foo.m", line: 10)
 
-        XCTAssertEqual(client.internal.logger.logLevel, ARTLogLevel.warn)
+        XCTAssertEqual(client.internal.logger_onlyForUseInClassMethodsAndTests.logLevel, ARTLogLevel.warn)
         guard let line = options.logHandler.captured.last else {
             fail("didn't log line.")
             return
@@ -254,10 +254,10 @@ class RestClientTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         options.logHandler = ARTLog(capturingOutput: true)
         let client = ARTRest(options: options)
-        client.internal.logger.logLevel = .error
+        client.internal.logger_onlyForUseInClassMethodsAndTests.logLevel = .error
 
         let logTime = NSDate()
-        client.internal.logger.log("This is a warning", with: .warn, file: "foo.m", line: 10)
+        client.internal.logger_onlyForUseInClassMethodsAndTests.log("This is a warning", with: .warn, file: "foo.m", line: 10)
 
         let logs = options.logHandler.captured.filter { !$0.date.isBefore(logTime as Date) }
         expect(logs).to(beEmpty())
@@ -280,12 +280,12 @@ class RestClientTests: XCTestCase {
         options.logLevel = .verbose
         let client = ARTRest(options: options)
 
-        client.internal.logger.log("This is a warning", with: .warn, file: "foo.m", line: 10)
+        client.internal.logger_onlyForUseInClassMethodsAndTests.log("This is a warning", with: .warn, file: "foo.m", line: 10)
 
         XCTAssertEqual(Log.interceptedLog.0, "(foo.m:10) This is a warning")
         XCTAssertEqual(Log.interceptedLog.1, ARTLogLevel.warn)
 
-        XCTAssertEqual(client.internal.logger.logLevel, customLogger.logLevel)
+        XCTAssertEqual(client.internal.logger_onlyForUseInClassMethodsAndTests.logLevel, customLogger.logLevel)
     }
 
     // RSC11

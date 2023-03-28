@@ -7,11 +7,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTChannel()
 
-- (instancetype)initWithName:(NSString *)name andOptions:(ARTChannelOptions *)options rest:(ARTRestInternal *)rest;
+- (instancetype)initWithName:(NSString *)name andOptions:(ARTChannelOptions *)options rest:(ARTRestInternal *)rest logger:(ARTInternalLog *)logger;
 
 @property (readonly, nullable) ARTChannelOptions *options;
 
-@property (readonly, getter=getLogger) ARTInternalLog *logger;
+@property (nonatomic, readonly) ARTInternalLog *logger;
 @property (nonatomic, readonly) ARTDataEncoder *dataEncoder;
 
 - (void)internalPostMessages:(id)data callback:(nullable ARTCallback)callback;

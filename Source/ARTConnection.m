@@ -101,9 +101,9 @@
     ARTErrorInfo *_errorReason;
 }
 
-- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime {
+- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime logger:(ARTInternalLog *)logger {
     if (self = [super init]) {
-        _eventEmitter = [[ARTPublicEventEmitter alloc] initWithRest:realtime.rest];
+        _eventEmitter = [[ARTPublicEventEmitter alloc] initWithRest:realtime.rest logger:logger];
         _realtime = realtime;
         _queue = _realtime.rest.queue;
         _serial = -1;

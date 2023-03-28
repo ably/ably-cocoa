@@ -24,6 +24,7 @@ framework module Ably {
         header "Ably/ARTRestChannels+Private.h"
         header "Ably/ARTRestChannel+Private.h"
         header "Ably/ARTPaginatedResult+Private.h"
+        header "Ably/ARTPaginatedResult+Subclass.h"
         header "Ably/ARTPresence+Private.h"
         header "Ably/ARTPresenceMessage+Private.h"
         header "Ably/ARTProtocolMessage+Private.h"

@@ -24,6 +24,9 @@
 		2105ED1E29E7242400DE6D67 /* ARTLogAdapter+Testing.h in Headers */ = {isa = PBXBuildFile; fileRef = 2105ED1D29E7242400DE6D67 /* ARTLogAdapter+Testing.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2105ED1F29E7242400DE6D67 /* ARTLogAdapter+Testing.h in Headers */ = {isa = PBXBuildFile; fileRef = 2105ED1D29E7242400DE6D67 /* ARTLogAdapter+Testing.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2105ED2029E7242400DE6D67 /* ARTLogAdapter+Testing.h in Headers */ = {isa = PBXBuildFile; fileRef = 2105ED1D29E7242400DE6D67 /* ARTLogAdapter+Testing.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		2105ED2229E7429E00DE6D67 /* ARTPaginatedResult+Subclass.h in Headers */ = {isa = PBXBuildFile; fileRef = 2105ED2129E7429E00DE6D67 /* ARTPaginatedResult+Subclass.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		2105ED2329E7429E00DE6D67 /* ARTPaginatedResult+Subclass.h in Headers */ = {isa = PBXBuildFile; fileRef = 2105ED2129E7429E00DE6D67 /* ARTPaginatedResult+Subclass.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		2105ED2429E7429E00DE6D67 /* ARTPaginatedResult+Subclass.h in Headers */ = {isa = PBXBuildFile; fileRef = 2105ED2129E7429E00DE6D67 /* ARTPaginatedResult+Subclass.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		21113B4929DB60F800652C86 /* MockRetryDelayCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21113B4829DB60F800652C86 /* MockRetryDelayCalculator.swift */; };
 		21113B4A29DB60F800652C86 /* MockRetryDelayCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21113B4829DB60F800652C86 /* MockRetryDelayCalculator.swift */; };
 		21113B4B29DB60F800652C86 /* MockRetryDelayCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21113B4829DB60F800652C86 /* MockRetryDelayCalculator.swift */; };
@@ -1089,6 +1092,7 @@
 		1CD8DC9E1B1C7315007EAF36 /* ARTDefault.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTDefault.m; sourceTree = "<group>"; };
 		2105ED1929E722DD00DE6D67 /* ARTInternalLogCore+Testing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTInternalLogCore+Testing.h"; path = "PrivateHeaders/Ably/ARTInternalLogCore+Testing.h"; sourceTree = "<group>"; };
 		2105ED1D29E7242400DE6D67 /* ARTLogAdapter+Testing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTLogAdapter+Testing.h"; path = "PrivateHeaders/Ably/ARTLogAdapter+Testing.h"; sourceTree = "<group>"; };
+		2105ED2129E7429E00DE6D67 /* ARTPaginatedResult+Subclass.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTPaginatedResult+Subclass.h"; path = "PrivateHeaders/Ably/ARTPaginatedResult+Subclass.h"; sourceTree = "<group>"; };
 		21113B4829DB60F800652C86 /* MockRetryDelayCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockRetryDelayCalculator.swift; sourceTree = "<group>"; };
 		21113B5029DC6AAF00652C86 /* ARTTestClientOptions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTTestClientOptions.h; path = PrivateHeaders/Ably/ARTTestClientOptions.h; sourceTree = "<group>"; };
 		21113B5429DC6ACD00652C86 /* ARTTestClientOptions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTTestClientOptions.m; sourceTree = "<group>"; };
@@ -2035,6 +2039,7 @@
 				D746AE1C1BBB5207003ECEF8 /* ARTDataQuery.m */,
 				850BFB4A1B79323C009D0ADD /* ARTPaginatedResult.h */,
 				D746AE2E1BBBE7D7003ECEF8 /* ARTPaginatedResult+Private.h */,
+				2105ED2129E7429E00DE6D67 /* ARTPaginatedResult+Subclass.h */,
 				850BFB4B1B79323C009D0ADD /* ARTPaginatedResult.m */,
 				D769E15121270F3400DC5CD1 /* ARTHTTPPaginatedResponse.h */,
 				D78D780821271FB10016808B /* ARTHTTPPaginatedResponse+Private.h */,
@@ -2176,6 +2181,7 @@
 				21447D3B254A2ECB00B3905A /* ARTSRWebSocket.h in Headers */,
 				EBB721CB2376B454001C3550 /* ARTURLSession.h in Headers */,
 				2124B78B29DB12A900AD8361 /* ARTVersion2Log.h in Headers */,
+				2105ED2229E7429E00DE6D67 /* ARTPaginatedResult+Subclass.h in Headers */,
 				D746AE381BBC3201003ECEF8 /* ARTMessage.h in Headers */,
 				D746AE471BBD6FE9003ECEF8 /* ARTQueuedMessage.h in Headers */,
 				1C2B0FFD1B136A6D00E3633C /* ARTPresenceMap.h in Headers */,
@@ -2327,6 +2333,7 @@
 				D710D49221949AB7008F54AD /* ARTRest+Private.h in Headers */,
 				D710D58721949D29008F54AD /* ARTChannelOptions.h in Headers */,
 				D710D64521949E61008F54AD /* ARTEventEmitter+Private.h in Headers */,
+				2105ED2329E7429E00DE6D67 /* ARTPaginatedResult+Subclass.h in Headers */,
 				D710D4D121949BC0008F54AD /* ARTPresence+Private.h in Headers */,
 				D710D69021949EFF008F54AD /* ARTCrypto.h in Headers */,
 				D710D68121949EB3008F54AD /* ARTReachability.h in Headers */,
@@ -2490,6 +2497,7 @@
 				D710D5B421949D2A008F54AD /* ARTDataEncoder.h in Headers */,
 				D710D49421949AB8008F54AD /* ARTRest+Private.h in Headers */,
 				D710D5AD21949D2A008F54AD /* ARTChannelOptions.h in Headers */,
+				2105ED2429E7429E00DE6D67 /* ARTPaginatedResult+Subclass.h in Headers */,
 				D710D64B21949E62008F54AD /* ARTEventEmitter+Private.h in Headers */,
 				D710D4D321949BC1008F54AD /* ARTPresence+Private.h in Headers */,
 				D710D69A21949F00008F54AD /* ARTCrypto.h in Headers */,

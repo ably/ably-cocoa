@@ -55,7 +55,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTAuthInternal (Private)
 
-- (instancetype)init:(ARTRestInternal *)rest withOptions:(ARTClientOptions *)options;
+- (instancetype)init:(ARTRestInternal *)rest withOptions:(ARTClientOptions *)options logger:(ARTInternalLog *)logger;
 
 - (ARTAuthOptions *)mergeOptions:(ARTAuthOptions *)customOptions;
 - (ARTTokenParams *)mergeParams:(ARTTokenParams *)customParams;

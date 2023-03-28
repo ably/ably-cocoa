@@ -1,6 +1,7 @@
 #import <Ably/ARTPaginatedResult.h>
 
 @class ARTRestInternal;
+@class ARTInternalLog;
 
 @protocol ARTHTTPAuthenticatedExecutor;
 
@@ -22,11 +23,13 @@ typedef NSArray<ItemType> *_Nullable(^ARTPaginatedResultResponseProcessor)(NSHTT
                      relFirst:(NSMutableURLRequest *)relFirst
                    relCurrent:(NSMutableURLRequest *)relCurrent
                       relNext:(NSMutableURLRequest *)relNext
-            responseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor;
+            responseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor
+                       logger:(ARTInternalLog *)logger;
 
 + (void)executePaginated:(ARTRestInternal *)rest
              withRequest:(NSMutableURLRequest *)request
     andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor
+                  logger:(ARTInternalLog *)logger
                 callback:(void (^)(ARTPaginatedResult<ItemType> *_Nullable result, ARTErrorInfo *_Nullable error))callback;
 
 @end

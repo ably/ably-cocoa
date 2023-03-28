@@ -52,10 +52,10 @@
     dispatch_queue_t _userQueue;
 }
 
-- (instancetype)initWithRest:(ARTRestInternal *)rest {
+- (instancetype)initWithRest:(ARTRestInternal *)rest logger:(ARTInternalLog *)logger {
     if (self = [super init]) {
         _rest = rest;
-        _logger = [rest logger];
+        _logger = logger;
         _queue = rest.queue;
         _userQueue = rest.userQueue;
     }
@@ -126,7 +126,7 @@
         ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **error) {
             return [self->_rest.encoders[response.MIMEType] decode:data error:error];
         };
-        [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
+        [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor logger:self->_logger callback:callback];
     });
 }
 
@@ -149,7 +149,7 @@
         ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **error) {
             return [self->_rest.encoders[response.MIMEType] decodePushChannelSubscriptions:data error:error];
         };
-        [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
+        [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor logger:self->_logger callback:callback];
     });
 }
 
