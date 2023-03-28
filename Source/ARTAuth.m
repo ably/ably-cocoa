@@ -97,14 +97,14 @@
     ARTEventEmitter<ARTEvent *, ARTErrorInfo *> *_cancelationEventEmitter;
 }
 
-- (instancetype)init:(ARTRestInternal *)rest withOptions:(ARTClientOptions *)options {
+- (instancetype)init:(ARTRestInternal *)rest withOptions:(ARTClientOptions *)options logHandler:(ARTInternalLogHandler *)logHandler {
     if (self = [super init]) {
         _rest = rest;
         _userQueue = rest.userQueue;
         _queue = rest.queue;
         _tokenDetails = options.tokenDetails;
         _options = options;
-        _logger = rest.logger;
+        _logger = logHandler;
         _protocolClientId = nil;
         _cancelationEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
         _tokenParams = options.defaultTokenParams ? : [[ARTTokenParams alloc] initWithOptions:self.options];

@@ -322,18 +322,18 @@
     dispatch_queue_t _userQueue;
 }
 
-- (instancetype)initWithRest:(ARTRestInternal *)rest {
+- (instancetype)initWithRest:(ARTRestInternal *)rest logHandler:(ARTInternalLogHandler *)logHandler {
     if (self = [super initWithQueue:rest.queue]) {
         _rest = rest;
         _queue = rest.queue;
         _userQueue = rest.userQueue;
 
-        if (rest.logger.logLevel == ARTLogLevelVerbose) {
+        if (logHandler.logLevel == ARTLogLevelVerbose) {
             [self.notificationCenter addObserverForName:nil
                                                  object:nil
                                                   queue:nil
                                              usingBlock:^(NSNotification *notification) {
-                                                 [rest.logger verbose:@"PublicEventEmitter Notification emitted %@", notification.name];
+                                                 [logHandler verbose:@"PublicEventEmitter Notification emitted %@", notification.name];
                                              }];
         }
     }

@@ -117,8 +117,8 @@ static const NSUInteger kIdempotentLibraryGeneratedIdLength = 9; //bytes
 
 @dynamic options;
 
-- (instancetype)initWithName:(NSString *)name withOptions:(ARTChannelOptions *)options andRest:(ARTRestInternal *)rest {
-    if (self = [super initWithName:name andOptions:options rest:rest]) {
+- (instancetype)initWithName:(NSString *)name withOptions:(ARTChannelOptions *)options andRest:(ARTRestInternal *)rest logHandler:(ARTInternalLogHandler *)logHandler {
+    if (self = [super initWithName:name andOptions:options rest:rest logHandler:logHandler]) {
         _rest = rest;
         _queue = rest.queue;
         _userQueue = rest.userQueue;
@@ -128,24 +128,20 @@ static const NSUInteger kIdempotentLibraryGeneratedIdLength = 9; //bytes
     return self;
 }
 
-- (ARTInternalLogHandler *)getLogger {
-    return _rest.logger;
-}
-
 - (NSString *)getBasePath {
     return _basePath;
 }
 
 - (ARTRestPresenceInternal *)presence {
     if (!_presence) {
-        _presence = [[ARTRestPresenceInternal alloc] initWithChannel:self];
+        _presence = [[ARTRestPresenceInternal alloc] initWithChannel:self logHandler:self.logger];
     }
     return _presence;
 }
 
 - (ARTPushChannelInternal *)push {
     if (!_pushChannel) {
-        _pushChannel = [[ARTPushChannelInternal alloc] init:self.rest withChannel:self];
+        _pushChannel = [[ARTPushChannelInternal alloc] init:self.rest withChannel:self logHandler:self.logger];
     }
     return _pushChannel;
 }
@@ -212,7 +208,7 @@ dispatch_sync(_queue, ^{
     };
 
     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p C:%p (%@) stats request %@", self->_rest, self, self.name, request];
-    [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
+    [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor logHandler:self.logger callback:callback];
     ret = YES;
 });
     return ret;

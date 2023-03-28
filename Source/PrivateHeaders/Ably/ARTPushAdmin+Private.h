@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) ARTPushDeviceRegistrationsInternal *deviceRegistrations;
 @property (nonatomic, readonly) ARTPushChannelSubscriptionsInternal *channelSubscriptions;
 
-- (instancetype)initWithRest:(ARTRestInternal *)rest;
+- (instancetype)initWithRest:(ARTRestInternal *)rest logHandler:(ARTInternalLogHandler *)logHandler;
 
 @end
 

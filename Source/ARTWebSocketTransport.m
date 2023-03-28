@@ -57,14 +57,14 @@ Class configuredWebsocketClass = nil;
     configuredWebsocketClass = webSocketClass;
 }
 
-- (instancetype)initWithRest:(ARTRestInternal *)rest options:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial {
+- (instancetype)initWithRest:(ARTRestInternal *)rest options:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial logHandler:(ARTInternalLogHandler *)logHandler {
     self = [super init];
     if (self) {
         _workQueue = rest.queue;
         _websocket = nil;
         _state = ARTRealtimeTransportStateClosed;
         _encoder = rest.defaultEncoder;
-        _logger = rest.logger;
+        _logger = logHandler;
         _options = [options copy];
         _resumeKey = resumeKey;
         _connectionSerial = connectionSerial;

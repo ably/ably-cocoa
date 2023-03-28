@@ -7,6 +7,12 @@
 #import "ARTNSHTTPURLResponse+ARTPaginated.h"
 #import "ARTInternalLogHandler.h"
 
+@interface ARTPaginatedResult ()
+
+@property (nonatomic, strong, readonly) ARTInternalLogHandler *logHandler;
+
+@end
+
 @implementation ARTPaginatedResult {
     ARTRestInternal *_rest;
     dispatch_queue_t _userQueue;
@@ -30,7 +36,8 @@
                      relFirst:(NSMutableURLRequest *)relFirst
                    relCurrent:(NSMutableURLRequest *)relCurrent
                       relNext:(NSMutableURLRequest *)relNext
-            responseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor {
+            responseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor
+                   logHandler:(ARTInternalLogHandler *)logHandler {
     if (self = [super init]) {
         _items = items;
         
@@ -46,6 +53,7 @@
         _userQueue = rest.userQueue;
         _queue = rest.queue;
         _responseProcessor = responseProcessor;
+        _logHandler = logHandler;
 
         // ARTPaginatedResult doesn't need a internal counterpart, as other
         // public objects do. It basically acts as a proxy to a
@@ -74,7 +82,7 @@
         };
     }
 
-    [self.class executePaginated:_rest withRequest:_relFirst andResponseProcessor:_responseProcessor callback:callback];
+    [self.class executePaginated:_rest withRequest:_relFirst andResponseProcessor:_responseProcessor logHandler:_logHandler callback:callback];
 }
 
 - (void)next:(void (^)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
@@ -94,18 +102,18 @@
         callback(nil, nil);
         return;
     }
-    [self.class executePaginated:_rest withRequest:_relNext andResponseProcessor:_responseProcessor callback:callback];
+    [self.class executePaginated:_rest withRequest:_relNext andResponseProcessor:_responseProcessor logHandler:_logHandler callback:callback];
 }
 
-+ (void)executePaginated:(ARTRestInternal *)rest withRequest:(NSMutableURLRequest *)request andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor callback:(void (^)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
-    [rest.logger debug:__FILE__ line:__LINE__ message:@"Paginated request: %@", request];
++ (void)executePaginated:(ARTRestInternal *)rest withRequest:(NSMutableURLRequest *)request andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor logHandler:(ARTInternalLogHandler *)logHandler callback:(void (^)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
+    [logHandler debug:__FILE__ line:__LINE__ message:@"Paginated request: %@", request];
 
     [rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             callback(nil, [ARTErrorInfo createFromNSError:error]);
         } else {
-            [[rest logger] debug:__FILE__ line:__LINE__ message:@"Paginated response: %@", response];
-            [[rest logger] debug:__FILE__ line:__LINE__ message:@"Paginated response data: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
+            [logHandler debug:__FILE__ line:__LINE__ message:@"Paginated response: %@", response];
+            [logHandler debug:__FILE__ line:__LINE__ message:@"Paginated response data: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
 
             NSError *decodeError = nil;
             NSArray *items = responseProcessor(response, data, &decodeError);
@@ -126,7 +134,8 @@
                                                                           relFirst:firstRel
                                                                         relCurrent:currentRel
                                                                            relNext:nextRel
-                                                                 responseProcessor:responseProcessor];
+                                                                 responseProcessor:responseProcessor
+                                                                        logHandler:logHandler];
 
             callback(result, nil);
         }

@@ -45,6 +45,7 @@
 @interface ARTRestChannelsInternal ()
 
 @property (weak, nonatomic) ARTRestInternal *rest; // weak because rest owns self
+@property (nonatomic, strong, readonly) ARTInternalLogHandler *logHandler;
 
 @end
 
@@ -55,16 +56,17 @@
     ARTChannels *_channels;
 }
 
-- (instancetype)initWithRest:(ARTRestInternal *)rest {
+- (instancetype)initWithRest:(ARTRestInternal *)rest logHandler:(ARTInternalLogHandler *)logHandler {
     if (self = [super init]) {
         _rest = rest;
         _channels = [[ARTChannels alloc] initWithDelegate:self dispatchQueue:_rest.queue prefix:rest.options.channelNamePrefix];
+        _logHandler = logHandler;
     }
     return self;
 }
 
 - (id)makeChannel:(NSString *)name options:(ARTChannelOptions *)options {
-    return [[ARTRestChannelInternal alloc] initWithName:name withOptions:options andRest:_rest];
+    return [[ARTRestChannelInternal alloc] initWithName:name withOptions:options andRest:_rest logHandler:_logHandler];
 }
 
 - (id<NSFastEnumeration>)copyIntoIteratorWithMapper:(ARTRestChannel *(^)(ARTRestChannelInternal *))mapper {

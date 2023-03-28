@@ -53,10 +53,10 @@
     dispatch_queue_t _userQueue;
 }
 
-- (instancetype)initWithRest:(ARTRestInternal *)rest {
+- (instancetype)initWithRest:(ARTRestInternal *)rest logHandler:(ARTInternalLogHandler *)logHandler {
     if (self = [super init]) {
         _rest = rest;
-        _logger = [rest logger];
+        _logger = logHandler;
         _queue = rest.queue;
         _userQueue = rest.userQueue;
     }
@@ -188,7 +188,7 @@ dispatch_async(_queue, ^{
     ARTPaginatedResultResponseProcessor responseProcessor = ^(NSHTTPURLResponse *response, NSData *data, NSError **error) {
         return [self->_rest.encoders[response.MIMEType] decodeDevicesDetails:data error:error];
     };
-    [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
+    [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor logHandler:self->_logger callback:callback];
 });
 }
 

@@ -7,7 +7,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRestPresenceInternal : ARTPresence <ARTRestPresenceProtocol>
 
-- (instancetype)initWithChannel:(ARTRestChannelInternal *)channel;
+- (instancetype)initWithChannel:(ARTRestChannelInternal *)channel logHandler:(ARTInternalLogHandler *)logHandler;
 
 @end
 

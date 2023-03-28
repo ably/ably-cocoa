@@ -15,10 +15,10 @@
     ARTChannelOptions *_options;
 }
 
-- (instancetype)initWithName:(NSString *)name andOptions:(ARTChannelOptions *)options rest:(ARTRestInternal *)rest {
+- (instancetype)initWithName:(NSString *)name andOptions:(ARTChannelOptions *)options rest:(ARTRestInternal *)rest logHandler:(ARTInternalLogHandler *)logHandler {
     if (self = [super init]) {
         _name = name;
-        _logger = rest.logger;
+        _logger = logHandler;
         _queue = rest.queue;
         _options = options;
         NSError *error = nil;

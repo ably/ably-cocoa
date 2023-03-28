@@ -177,8 +177,8 @@
         [_logger verbose:__FILE__ line:__LINE__ message:@"RS:%p %p alloc HTTP", self, _http];
         _httpExecutor = _http;
 
-        id<ARTEncoder> jsonEncoder = [[ARTJsonLikeEncoder alloc] initWithRest:self delegate:[[ARTJsonEncoder alloc] init]];
-        id<ARTEncoder> msgPackEncoder = [[ARTJsonLikeEncoder alloc] initWithRest:self delegate:[[ARTMsgPackEncoder alloc] init]];
+        id<ARTEncoder> jsonEncoder = [[ARTJsonLikeEncoder alloc] initWithRest:self delegate:[[ARTJsonEncoder alloc] init] logHandler:_logger];
+        id<ARTEncoder> msgPackEncoder = [[ARTJsonLikeEncoder alloc] initWithRest:self delegate:[[ARTMsgPackEncoder alloc] init] logHandler:_logger];
         _encoders = @{
             [jsonEncoder mimeType]: jsonEncoder,
             [msgPackEncoder mimeType]: msgPackEncoder
@@ -188,8 +188,8 @@
         _tokenErrorRetries = 0;
 
         _auth = [[ARTAuthInternal alloc] init:self withOptions:_options];
-        _push = [[ARTPushInternal alloc] init:self];
-        _channels = [[ARTRestChannelsInternal alloc] initWithRest:self];
+        _push = [[ARTPushInternal alloc] initWithRest:self logHandler:_logger];
+        _channels = [[ARTRestChannelsInternal alloc] initWithRest:self logHandler:_logger];
 
         [self.logger verbose:__FILE__ line:__LINE__ message:@"RS:%p initialized", self];
     }
@@ -206,6 +206,10 @@
 
 - (void)dealloc {
     [self.logger verbose:__FILE__ line:__LINE__ message:@"RS:%p dealloc", self];
+}
+
+- (ARTInternalLogHandler *)logHandler_onlyForUseInClassMethods {
+    return self.logger;
 }
 
 - (NSString *)description {
@@ -616,7 +620,7 @@
 
     [self.logger debug:__FILE__ line:__LINE__ message:@"request %@ %@", method, path];
     dispatch_async(_queue, ^{
-        [ARTHTTPPaginatedResponse executePaginated:self withRequest:request  callback:callback];
+        [ARTHTTPPaginatedResponse executePaginated:self withRequest:request logHandler:self.logger callback:callback];
     });
     return YES;
 }
@@ -683,7 +687,7 @@
     };
     
 dispatch_async(_queue, ^{
-    [ARTPaginatedResult executePaginated:self withRequest:request andResponseProcessor:responseProcessor callback:callback];
+    [ARTPaginatedResult executePaginated:self withRequest:request andResponseProcessor:responseProcessor logHandler:self.logger callback:callback];
 });
     return YES;
 }

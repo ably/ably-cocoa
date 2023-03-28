@@ -8,7 +8,7 @@
 
 @interface ARTPushChannelInternal : NSObject <ARTPushChannelProtocol>
 
-- (instancetype)init:(ARTRestInternal *)rest withChannel:(ARTChannel *)channel;
+- (instancetype)init:(ARTRestInternal *)rest withChannel:(ARTChannel *)channel logHandler:(ARTInternalLogHandler *)logHandler;
 
 @end
 

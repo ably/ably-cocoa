@@ -9,6 +9,12 @@
 #import "ARTAuth+Private.h"
 #import "ARTHttp.h"
 
+@interface ARTPushActivationState ()
+
+@property (nonatomic, strong, readonly) ARTInternalLogHandler *logHandler;
+
+@end
+
 @implementation ARTPushActivationState
 
 - (instancetype)initWithMachine:(ARTPushActivationStateMachine *)machine {
@@ -23,7 +29,7 @@
 }
 
 - (void)logEventTransition:(ARTPushActivationEvent *)event file:(const char *)file line:(NSUInteger)line {
-    [self.machine.rest.logger debug:@"ARTPush Activation: %@ state: handling %@ event", NSStringFromClass(self.class), NSStringFromClass(event.class)];
+    [self.logHandler debug:@"ARTPush Activation: %@ state: handling %@ event", NSStringFromClass(self.class), NSStringFromClass(event.class)];
 }
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
@@ -56,7 +62,7 @@
 #pragma mark - Archive/Unarchive
 
 - (NSData *)archive {
-    return [self art_archiveWithLogger:self.machine.rest.logger];
+    return [self art_archiveWithLogger:self.logHandler];
 }
 
 + (ARTPushActivationState *)unarchive:(NSData *)data withLogger:(nullable ARTInternalLogHandler *)logger {

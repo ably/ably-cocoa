@@ -41,12 +41,12 @@
     dispatch_queue_t _queue;
 }
 
-- (instancetype)initWithRest:(ARTRestInternal *)rest {
+- (instancetype)initWithRest:(ARTRestInternal *)rest logHandler:(ARTInternalLogHandler *)logHandler {
     if (self = [super init]) {
         _rest = rest;
-        _logger = [rest logger];
-        _deviceRegistrations = [[ARTPushDeviceRegistrationsInternal alloc] initWithRest:rest];
-        _channelSubscriptions = [[ARTPushChannelSubscriptionsInternal alloc] initWithRest:rest];
+        _logger = logHandler;
+        _deviceRegistrations = [[ARTPushDeviceRegistrationsInternal alloc] initWithRest:rest logHandler:logHandler];
+        _channelSubscriptions = [[ARTPushChannelSubscriptionsInternal alloc] initWithRest:rest logHandler:logHandler];
         _userQueue = rest.userQueue;
         _queue = rest.queue;
     }

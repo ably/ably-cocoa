@@ -86,17 +86,24 @@
 
 @end
 
+@interface ARTRestPresenceInternal ()
+
+@property (nonatomic, readonly) ARTInternalLogHandler *logHandler;
+
+@end
+
 @implementation ARTRestPresenceInternal {
     __weak ARTRestChannelInternal *_channel; // weak because channel owns self
     dispatch_queue_t _userQueue;
     dispatch_queue_t _queue;
 }
 
-- (instancetype)initWithChannel:(ARTRestChannelInternal *)channel {
+- (instancetype)initWithChannel:(ARTRestChannelInternal *)channel logHandler:(ARTInternalLogHandler *)logHandler {
     if (self = [super init]) {
         _channel = channel;
         _userQueue = channel.rest.userQueue;
         _queue = channel.rest.queue;
+        _logHandler = logHandler;
     }
     return self;
 }
@@ -145,7 +152,7 @@
     };
 
 dispatch_async(_queue, ^{
-    [ARTPaginatedResult executePaginated:self->_channel.rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
+    [ARTPaginatedResult executePaginated:self->_channel.rest withRequest:request andResponseProcessor:responseProcessor logHandler:self->_logHandler callback:callback];
 });
     return YES;
 }
@@ -206,7 +213,7 @@ dispatch_async(_queue, ^{
     };
 
 dispatch_async(_queue, ^{
-    [ARTPaginatedResult executePaginated:self->_channel.rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
+    [ARTPaginatedResult executePaginated:self->_channel.rest withRequest:request andResponseProcessor:responseProcessor logHandler:self->_logHandler callback:callback];
 });
     return YES;
 }

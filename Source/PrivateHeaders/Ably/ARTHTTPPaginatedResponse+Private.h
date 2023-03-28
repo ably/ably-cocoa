@@ -16,7 +16,8 @@ NS_ASSUME_NONNULL_BEGIN
                         relFirst:(NSMutableURLRequest *)relFirst
                       relCurrent:(NSMutableURLRequest *)relCurrent
                          relNext:(NSMutableURLRequest *)relNext
-               responseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor;
+               responseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor
+                      logHandler:(ARTInternalLogHandler *)logHandler;
 
 + (void)executePaginated:(ARTRestInternal *)rest
              withRequest:(NSMutableURLRequest *)request
@@ -25,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void)executePaginated:(ARTRestInternal *)rest
              withRequest:(NSMutableURLRequest *)request
+              logHandler:(ARTInternalLogHandler *)logHandler
                 callback:(ARTHTTPPaginatedCallback)callback;
 
 @end

@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithDelegate:(id<ARTJsonLikeEncoderDelegate>)delegate;
 - (instancetype)initWithLogger:(ARTInternalLogHandler *)logger delegate:(nullable id<ARTJsonLikeEncoderDelegate>)delegate;
-- (instancetype)initWithRest:(ARTRestInternal *)rest delegate:(nullable id<ARTJsonLikeEncoderDelegate>)delegate;
+- (instancetype)initWithRest:(ARTRestInternal *)rest delegate:(nullable id<ARTJsonLikeEncoderDelegate>)delegate logHandler:(ARTInternalLogHandler *)logHandler;
 
 @end
 

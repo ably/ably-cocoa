@@ -183,6 +183,8 @@
     self = [super init];
     if (self) {
         NSAssert(options, @"ARTRealtime: No options provided");
+
+        _logger = [[ARTInternalLogHandler alloc] initWithClientOptions:options];
         
         _rest = [[ARTRestInternal alloc] initWithOptions:options realtime:self];
         _userQueue = _rest.userQueue;
@@ -190,7 +192,7 @@
         _internalEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
         _connectedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
         _pingEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
-        _channels = [[ARTRealtimeChannelsInternal alloc] initWithRealtime:self];
+        _channels = [[ARTRealtimeChannelsInternal alloc] initWithRealtime:self logHandler:self.logger];
         _transport = nil;
         _transportClass = [ARTWebSocketTransport class];
         _reachabilityClass = [ARTOSReachability class];
@@ -199,7 +201,7 @@
         _pendingMessages = [NSMutableArray array];
         _pendingMessageStartSerial = 0;
         _pendingAuthorizations = [NSMutableArray array];
-        _connection = [[ARTConnectionInternal alloc] initWithRealtime:self];
+        _connection = [[ARTConnectionInternal alloc] initWithRealtime:self logHandler:self.logger];
         _connectionStateTtl = [ARTDefault connectionStateTtl];
         _shouldImmediatelyReconnect = true;
         self.auth.delegate = self;
@@ -332,10 +334,6 @@
 
 - (id<ARTRealtimeTransport>)transport {
     return _transport;
-}
-
-- (ARTInternalLogHandler *)getLogger {
-    return _rest.logger;
 }
 
 - (ARTClientOptions *)getClientOptions {
@@ -749,7 +747,7 @@
 }
 
 - (void)setTransportWithResumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial {
-    _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:resumeKey connectionSerial:connectionSerial];
+    _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:resumeKey connectionSerial:connectionSerial logHandler:self.logger];
     _transport.delegate = self;
 }
 

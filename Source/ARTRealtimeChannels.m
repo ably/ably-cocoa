@@ -49,6 +49,7 @@
 
 @interface ARTRealtimeChannelsInternal ()
 
+@property (nonatomic, readonly) ARTInternalLogHandler *logHandler;
 @property (weak, nonatomic) ARTRealtimeInternal *realtime; // weak because realtime owns self
 
 @end
@@ -61,18 +62,19 @@
     dispatch_queue_t _userQueue;
 }
 
-- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime {
+- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime logHandler:(ARTInternalLogHandler *)logHandler {
     if (self = [super init]) {
         _realtime = realtime;
         _userQueue = _realtime.rest.userQueue;
         _queue = _realtime.rest.queue;
+        _logHandler = logHandler;
         _channels = [[ARTChannels alloc] initWithDelegate:self dispatchQueue:_queue prefix:_realtime.options.channelNamePrefix];
     }
     return self;
 }
 
 - (id)makeChannel:(NSString *)name options:(ARTRealtimeChannelOptions *)options {
-    return [ARTRealtimeChannelInternal channelWithRealtime:_realtime andName:name withOptions:options];
+    return [ARTRealtimeChannelInternal channelWithRealtime:_realtime andName:name withOptions:options logHandler:_logHandler];
 }
 
 - (id<NSFastEnumeration>)copyIntoIteratorWithMapper:(ARTRealtimeChannel *(^)(ARTRealtimeChannelInternal *))mapper {
