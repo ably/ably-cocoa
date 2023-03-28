@@ -141,6 +141,12 @@
 
 @end
 
+@interface ARTRestInternal ()
+
+@property (nonatomic, strong, readonly) ARTInternalLogHandler *logger;
+
+@end
+
 @implementation ARTRestInternal {
     ARTInternalLogHandler *_logger;
     NSUInteger _tokenErrorRetries;
