@@ -143,6 +143,16 @@
 
 @end
 
+NS_ASSUME_NONNULL_BEGIN
+
+@interface ARTRestInternal ()
+
+@property (nonatomic, readonly) ARTInternalLog *logger;
+
+@end
+
+NS_ASSUME_NONNULL_END
+
 @implementation ARTRestInternal {
     ARTInternalLog *_logger;
     NSUInteger _tokenErrorRetries;
