@@ -1,5 +1,6 @@
 #import "ARTTypes.h"
 #import "ARTDeviceIdentityTokenDetails.h"
+#import "ARTDeviceIdentityTokenDetails+Private.h"
 
 NSString *const ARTCoderTokenKey = @"token";
 NSString *const ARTCoderIssuedKey = @"issued";
