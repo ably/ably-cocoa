@@ -92,5 +92,6 @@ framework module Ably {
         header "Ably/ARTLogAdapter.h"
         header "Ably/ARTDeviceIdentityTokenDetails+Private.h"
         header "Ably/ARTHttp.h"
+        header "Ably/ARTLocalDeviceStorage.h"
     }
 }
