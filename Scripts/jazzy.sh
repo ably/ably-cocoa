@@ -8,7 +8,7 @@ jazzy \
   --clean \
   --author Ably \
   --module-version 1.2.19 \
-  --umbrella-header Source/Ably.h \
+  --umbrella-header Source/include/Ably/Ably.h \
   --framework-root Source \
   --module Ably \
   --sdk iphonesimulator \

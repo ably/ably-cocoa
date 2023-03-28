@@ -1,1 +1,4 @@
-../../.././Source/Private/ARTOSReachability.h
+#import <Ably/ARTReachability.h>
+
+@interface ARTOSReachability : NSObject  <ARTReachability>
+@end
