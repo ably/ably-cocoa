@@ -81,6 +81,12 @@
 
 @end
 
+@interface ARTAuthInternal ()
+
+@property (nonatomic, strong) ARTInternalLogHandler *logger;
+
+@end
+
 @implementation ARTAuthInternal {
     __weak ARTRestInternal *_rest; // weak because rest owns auth
     dispatch_queue_t _userQueue;
