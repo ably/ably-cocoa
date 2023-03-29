@@ -16,7 +16,6 @@
 @class ARTStats;
 @class ARTPushChannelSubscription;
 @class ARTDeviceDetails;
-@class ARTLog;
 @protocol ARTTokenDetailsCompatible;
 
 /// :nodoc:
@@ -450,12 +449,6 @@ NSString *generateNonce(void);
 - (void)art_enqueue:(id)object;
 - (nullable id)art_dequeue;
 - (nullable id)art_peek;
-@end
-
-/// :nodoc:
-@interface NSObject (ARTArchive)
-- (nullable NSData *)art_archiveWithLogger:(nullable ARTLog *)logger;
-+ (nullable id)art_unarchiveFromData:(NSData *)data withLogger:(nullable ARTLog *)logger;
 @end
 
 /// :nodoc:

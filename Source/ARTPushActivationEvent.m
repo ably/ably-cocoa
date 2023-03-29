@@ -1,5 +1,6 @@
 #import "ARTPushActivationEvent.h"
 #import "ARTTypes.h"
+#import "ARTTypes+Private.h"
 #import "ARTDeviceIdentityTokenDetails.h"
 
 NSString *const ARTCoderErrorKey = @"error";
