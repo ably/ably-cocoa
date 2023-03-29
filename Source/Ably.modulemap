@@ -82,5 +82,6 @@ framework module Ably {
         header "ARTTime.h"
         header "ARTErrorChecker.h"
         header "ARTResumeRequestResponse.h"
+        header "ARTJitterCoefficientGenerator.h"
     }
 }
