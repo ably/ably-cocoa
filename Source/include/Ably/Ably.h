@@ -34,7 +34,6 @@ FOUNDATION_EXPORT const unsigned char ablyVersionString[];
 #import <Ably/ARTMessage.h>
 #import <Ably/ARTDataEncoder.h>
 #import <Ably/ARTPresence.h>
-#import <Ably/ARTPresenceMap.h>
 #import <Ably/ARTPresenceMessage.h>
 #import <Ably/ARTProtocolMessage.h>
 #import <Ably/ARTQueuedMessage.h>
