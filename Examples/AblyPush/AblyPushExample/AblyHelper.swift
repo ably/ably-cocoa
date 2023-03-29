@@ -34,14 +34,11 @@ extension AblyHelper {
     }
     
     func printIdentityToken() {
-        guard
-            let tokenData = UserDefaults.standard.value(forKey: "ARTDeviceIdentityToken") as? Data,
-            let tokenInfo = ARTDeviceIdentityTokenDetails.unarchive(tokenData, withLogger: ARTLog())
-        else {
+        if UserDefaults.standard.value(forKey: "ARTDeviceIdentityToken") != nil {
+            print("IDENTITY TOKEN: exists")
+        } else {
             print("IDENTITY TOKEN: doesn't exist")
-            return
         }
-        print("IDENTITY TOKEN:\n\(tokenInfo.token)")
     }
     
     func getDeviceDetails(_ callback: @escaping (ARTDeviceDetails?, ARTErrorInfo?) -> ()) {
