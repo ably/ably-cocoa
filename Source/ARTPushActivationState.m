@@ -8,6 +8,7 @@
 #import "ARTRest+Private.h"
 #import "ARTAuth+Private.h"
 #import "ARTHttp.h"
+#import "ARTTypes+Private.h"
 
 @implementation ARTPushActivationState
 

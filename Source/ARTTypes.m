@@ -1,4 +1,5 @@
 #import "ARTTypes.h"
+#import "ARTTypes+Private.h"
 #import "ARTLog.h"
 
 // MARK: Global helper functions

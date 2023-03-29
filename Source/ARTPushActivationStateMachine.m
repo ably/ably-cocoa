@@ -7,6 +7,7 @@
 #import "ARTJsonEncoder.h"
 #import "ARTJsonLikeEncoder.h"
 #import "ARTTypes.h"
+#import "ARTTypes+Private.h"
 #import "ARTLocalDevice+Private.h"
 #import "ARTDeviceStorage.h"
 #import "ARTDevicePushDetails.h"

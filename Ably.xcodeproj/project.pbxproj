@@ -45,6 +45,9 @@
 		2124B7A329DB153500AD8361 /* ARTDeviceIdentityTokenDetails+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 2124B7A229DB153500AD8361 /* ARTDeviceIdentityTokenDetails+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2124B7A429DB153500AD8361 /* ARTDeviceIdentityTokenDetails+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 2124B7A229DB153500AD8361 /* ARTDeviceIdentityTokenDetails+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2124B7A529DB153500AD8361 /* ARTDeviceIdentityTokenDetails+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 2124B7A229DB153500AD8361 /* ARTDeviceIdentityTokenDetails+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		2124B7A729DB17DF00AD8361 /* ARTTypes+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 2124B7A629DB17DF00AD8361 /* ARTTypes+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		2124B7A829DB17DF00AD8361 /* ARTTypes+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 2124B7A629DB17DF00AD8361 /* ARTTypes+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		2124B7A929DB17DF00AD8361 /* ARTTypes+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 2124B7A629DB17DF00AD8361 /* ARTTypes+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2132C20E29D20EEC000C4355 /* ARTResumeRequestResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C20D29D20EEC000C4355 /* ARTResumeRequestResponse.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2132C20F29D20EEC000C4355 /* ARTResumeRequestResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C20D29D20EEC000C4355 /* ARTResumeRequestResponse.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2132C21029D20EEC000C4355 /* ARTResumeRequestResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C20D29D20EEC000C4355 /* ARTResumeRequestResponse.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -1038,6 +1041,7 @@
 		2124B79A29DB14C000AD8361 /* ARTLogAdapter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTLogAdapter.m; sourceTree = "<group>"; };
 		2124B79E29DB14D000AD8361 /* ARTLogAdapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTLogAdapter.h; path = PrivateHeaders/Ably/ARTLogAdapter.h; sourceTree = "<group>"; };
 		2124B7A229DB153500AD8361 /* ARTDeviceIdentityTokenDetails+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "ARTDeviceIdentityTokenDetails+Private.h"; path = "PrivateHeaders/Ably/ARTDeviceIdentityTokenDetails+Private.h"; sourceTree = "<group>"; };
+		2124B7A629DB17DF00AD8361 /* ARTTypes+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "ARTTypes+Private.h"; path = "PrivateHeaders/Ably/ARTTypes+Private.h"; sourceTree = "<group>"; };
 		2132C20D29D20EEC000C4355 /* ARTResumeRequestResponse.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTResumeRequestResponse.h; path = PrivateHeaders/Ably/ARTResumeRequestResponse.h; sourceTree = "<group>"; };
 		2132C21129D20F05000C4355 /* ARTResumeRequestResponse.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTResumeRequestResponse.m; sourceTree = "<group>"; };
 		2132C21529D20F69000C4355 /* ResumeRequestResponseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResumeRequestResponseTests.swift; sourceTree = "<group>"; };
@@ -1849,6 +1853,7 @@
 				96BF61551A35B40E004CF2B3 /* ARTStatus.h */,
 				1C55427C1B148306003068DB /* ARTStatus.m */,
 				96BF615C1A35C1C8004CF2B3 /* ARTTypes.h */,
+				2124B7A629DB17DF00AD8361 /* ARTTypes+Private.h */,
 				96BF615D1A35C1C8004CF2B3 /* ARTTypes.m */,
 				D520C4D426809BB5000012B2 /* ARTStringifiable.h */,
 				D520C4D526809BB5000012B2 /* ARTStringifiable.m */,
@@ -2118,6 +2123,7 @@
 				EBFFAC191E97919C003E7326 /* ARTLocalDevice+Private.h in Headers */,
 				D737F826263AF4CE0064FA05 /* ARTFallbackHosts.h in Headers */,
 				D746AE4F1BBD84E7003ECEF8 /* ARTChannelOptions.h in Headers */,
+				2124B7A729DB17DF00AD8361 /* ARTTypes+Private.h in Headers */,
 				D7588AF31BFF91B800BB8279 /* ARTURLSessionServerTrust.h in Headers */,
 				D77F02A81DAF8099001B3FF9 /* ARTFallback+Private.h in Headers */,
 				D746AE3C1BBC5AE1003ECEF8 /* ARTRealtimeChannel.h in Headers */,
@@ -2238,6 +2244,7 @@
 				D710D69221949EFF008F54AD /* ARTJsonEncoder.h in Headers */,
 				D710D5B921949D4F008F54AD /* ARTTokenParams+Private.h in Headers */,
 				D710D51821949C42008F54AD /* ARTPushChannelSubscription.h in Headers */,
+				2124B7A829DB17DF00AD8361 /* ARTTypes+Private.h in Headers */,
 				D710D4B421949B47008F54AD /* ARTAuth+Private.h in Headers */,
 				D710D4C221949B9C008F54AD /* ARTRealtimeTransport.h in Headers */,
 				D710D58121949D28008F54AD /* ARTTokenRequest.h in Headers */,
@@ -2393,6 +2400,7 @@
 				D710D61621949DDC008F54AD /* ARTHttp.h in Headers */,
 				D710D69D21949F00008F54AD /* ARTMsgPackEncoder.h in Headers */,
 				D710D69C21949F00008F54AD /* ARTJsonEncoder.h in Headers */,
+				2124B7A929DB17DF00AD8361 /* ARTTypes+Private.h in Headers */,
 				D710D5C921949D50008F54AD /* ARTTokenParams+Private.h in Headers */,
 				D710D52A21949C44008F54AD /* ARTPushChannelSubscription.h in Headers */,
 				D710D4BA21949B48008F54AD /* ARTAuth+Private.h in Headers */,
