@@ -1,4 +1,5 @@
 #import "ARTClientOptions+Private.h"
+#import "ARTClientOptions+TestConfiguration.h"
 #import "ARTAuthOptions+Private.h"
 
 #import "ARTDefault+Private.h"

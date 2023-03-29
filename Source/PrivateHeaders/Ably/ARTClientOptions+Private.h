@@ -2,8 +2,6 @@
 
 @interface ARTClientOptions ()
 
-@property (nullable, strong, nonatomic) NSString *channelNamePrefix;
-
 @property (readonly) BOOL isProductionEnvironment;
 @property (readonly) BOOL hasEnvironment;
 @property (readonly) BOOL hasEnvironmentDifferentThanProduction;

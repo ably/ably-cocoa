@@ -4,7 +4,7 @@
 #import "ARTRealtimeChannel+Private.h"
 #import "ARTRealtime+Private.h"
 #import "ARTRealtimePresence+Private.h"
-#import "ARTClientOptions+Private.h"
+#import "ARTClientOptions+TestConfiguration.h"
 
 @implementation ARTRealtimeChannels {
     ARTQueuedDealloc *_dealloc;
