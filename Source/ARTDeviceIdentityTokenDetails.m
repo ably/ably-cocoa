@@ -1,4 +1,5 @@
 #import "ARTTypes.h"
+#import "ARTTypes+Private.h"
 #import "ARTDeviceIdentityTokenDetails.h"
 #import "ARTDeviceIdentityTokenDetails+Private.h"
 
