@@ -80,5 +80,7 @@ framework module Ably {
         header "ARTNSURL+ARTUtils.h"
         header "ARTNSMutableURLRequest+ARTUtils.h"
         header "ARTTime.h"
+        header "ARTErrorChecker.h"
+        header "ARTResumeRequestResponse.h"
     }
 }

@@ -37,6 +37,7 @@
 #import "ARTRealtimeChannels+Private.h"
 #import "ARTPush+Private.h"
 #import "ARTQueuedDealloc.h"
+#import "ARTErrorChecker.h"
 
 @interface ARTConnectionStateChange ()
 
@@ -959,7 +960,7 @@
 }
 
 - (BOOL)isTokenError:(nullable ARTErrorInfo *)error {
-    return error != nil && error.statusCode == 401 && error.code >= ARTErrorTokenErrorUnspecified && error.code < ARTErrorConnectionLimitsExceeded;
+    return error != nil && [[[ARTDefaultErrorChecker alloc] init] isTokenError:error];
 }
 
 - (void)transportReconnectWithHost:(NSString *)host {
