@@ -99,5 +99,6 @@ framework module Ably {
         header "Ably/ARTDeviceIdentityTokenDetails+Private.h"
         header "Ably/ARTHttp.h"
         header "Ably/ARTLocalDeviceStorage.h"
+        header "Ably/ARTPresenceMap.h"
     }
 }
