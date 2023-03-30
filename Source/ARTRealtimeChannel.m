@@ -30,7 +30,7 @@
 #import "ARTChannelStateChangeMetadata.h"
 #import "ARTAttachRequestMetadata.h"
 #import "ARTRetrySequence.h"
-#import "ARTConstantRetryDelayCalculator.h"
+#import "ARTBackoffRetryDelayCalculator.h"
 #import "ARTInternalLog.h"
 #import "ARTAttachRetryState.h"
 #if TARGET_OS_IPHONE
@@ -269,7 +269,8 @@ NS_ASSUME_NONNULL_END
         _attachedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
         _detachedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
         _internalEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
-        const id<ARTRetryDelayCalculator> attachRetryDelayCalculator = [[ARTConstantRetryDelayCalculator alloc] initWithConstantDelay:realtime.options.channelRetryTimeout];
+        const id<ARTRetryDelayCalculator> attachRetryDelayCalculator = [[ARTBackoffRetryDelayCalculator alloc] initWithInitialRetryTimeout:realtime.options.channelRetryTimeout
+                                                                                                                jitterCoefficientGenerator:realtime.options.testOptions.jitterCoefficientGenerator];
         _attachRetryState = [[ARTAttachRetryState alloc] initWithRetryDelayCalculator:attachRetryDelayCalculator
                                                                                logger:logger
                                                                      logMessagePrefix:[NSString stringWithFormat:@"RT: %p C:%p ", _realtime, self]];
@@ -610,6 +611,8 @@ dispatch_sync(_queue, ^{
     if (metadata.storeErrorInfo) {
         _errorReason = metadata.errorInfo;
     }
+
+    [self.attachRetryState channelWillTransitionToState:state];
 
     ARTEventListener *channelRetryListener = nil;
     switch (state) {

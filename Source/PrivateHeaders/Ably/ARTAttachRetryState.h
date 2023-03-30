@@ -1,4 +1,5 @@
 @import Foundation;
+#import "ARTTypes.h"
 
 @class ARTRetryAttempt;
 @class ARTInternalLog;
@@ -21,6 +22,11 @@ NS_SWIFT_NAME(AttachRetryState)
  Calls `addRetryAttempt` on the current retry sequence.
  */
 - (ARTRetryAttempt *)addRetryAttempt;
+
+/**
+ Resets the retry sequence when the channel leaves the sequence of `SUSPENDED` <-> `ATTACHING` state changes.
+ */
+- (void)channelWillTransitionToState:(ARTRealtimeChannelState)state;
 
 @end
 
