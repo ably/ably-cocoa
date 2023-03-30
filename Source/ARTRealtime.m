@@ -43,7 +43,7 @@
 #import "ARTChannelStateChangeMetadata.h"
 #import "ARTAttachRequestMetadata.h"
 #import "ARTRetrySequence.h"
-#import "ARTConstantRetryDelayCalculator.h"
+#import "ARTBackoffRetryDelayCalculator.h"
 #import "ARTTypes+Private.h"
 #import "ARTInternalLog.h"
 #import "ARTRealtimeTransportFactory.h"
@@ -226,7 +226,8 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
         _connection = [[ARTConnectionInternal alloc] initWithRealtime:self logger:self.logger];
         _connectionStateTtl = [ARTDefault connectionStateTtl];
         _shouldImmediatelyReconnect = true;
-        const id<ARTRetryDelayCalculator> connectRetryDelayCalculator = [[ARTConstantRetryDelayCalculator alloc] initWithConstantDelay:options.disconnectedRetryTimeout];
+        const id<ARTRetryDelayCalculator> connectRetryDelayCalculator = [[ARTBackoffRetryDelayCalculator alloc] initWithInitialRetryTimeout:options.disconnectedRetryTimeout
+                                                                                                                 jitterCoefficientGenerator:options.testOptions.jitterCoefficientGenerator];
         _connectRetryState = [[ARTConnectRetryState alloc] initWithRetryDelayCalculator:connectRetryDelayCalculator
                                                                                  logger:_logger
                                                                        logMessagePrefix:[NSString stringWithFormat:@"RT: %p ", self]];
@@ -611,6 +612,8 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
     ARTEventListener *stateChangeEventListener = nil;
     
     ARTLogDebug(self.logger, @"RT:%p realtime is transitioning from %tu - %@ to %tu - %@", self, stateChange.previous, ARTRealtimeConnectionStateToStr(stateChange.previous), stateChange.current, ARTRealtimeConnectionStateToStr(stateChange.current));
+
+    [self.connectRetryState connectionWillTransitionToState:stateChange.current];
     
     switch (stateChange.current) {
         case ARTRealtimeConnecting: {

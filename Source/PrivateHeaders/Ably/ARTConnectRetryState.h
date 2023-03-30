@@ -23,6 +23,11 @@ NS_SWIFT_NAME(ConnectRetryState)
  */
 - (ARTRetryAttempt *)addRetryAttempt;
 
+/**
+ Resets the retry sequence when the channel leaves the sequence of `DISCONNECTED` <-> `CONNECTING` state changes.
+ */
+- (void)connectionWillTransitionToState:(ARTRealtimeConnectionState)state;
+
 @end
 
 NS_ASSUME_NONNULL_END
