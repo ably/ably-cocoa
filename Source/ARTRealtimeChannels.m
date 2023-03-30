@@ -72,7 +72,7 @@
 }
 
 - (id)makeChannel:(NSString *)name options:(ARTRealtimeChannelOptions *)options {
-    return [ARTRealtimeChannelInternal channelWithRealtime:_realtime andName:name withOptions:options];
+    return [[ARTRealtimeChannelInternal alloc] initWithRealtime:_realtime andName:name withOptions:options];
 }
 
 - (id<NSFastEnumeration>)copyIntoIteratorWithMapper:(ARTRealtimeChannel *(^)(ARTRealtimeChannelInternal *))mapper {
