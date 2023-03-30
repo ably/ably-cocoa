@@ -44,8 +44,9 @@
 #import "ARTChannelStateChangeMetadata.h"
 #import "ARTAttachRequestMetadata.h"
 #import "ARTRetrySequence.h"
-#import "ARTConstantRetryDelayCalculator.h"
+#import "ARTBackoffRetryDelayCalculator.h"
 #import "ARTTypes+Private.h"
+#import "ARTJitterCoefficientGenerator.h"
 
 @interface ARTConnectionStateChange ()
 
@@ -222,7 +223,8 @@ NS_ASSUME_NONNULL_END
         _connection = [[ARTConnectionInternal alloc] initWithRealtime:self];
         _connectionStateTtl = [ARTDefault connectionStateTtl];
         _shouldImmediatelyReconnect = true;
-        _connectRetryDelayCalculator = [[ARTConstantRetryDelayCalculator alloc] initWithConstantDelay:options.disconnectedRetryTimeout];
+        _connectRetryDelayCalculator = [[ARTBackoffRetryDelayCalculator alloc] initWithInitialRetryTimeout:options.disconnectedRetryTimeout
+                                                                                jitterCoefficientGenerator:options.testOptions.jitterCoefficientGenerator];
         self.auth.delegate = self;
         
         [self.connection setState:ARTRealtimeInitialized];
@@ -656,9 +658,10 @@ NS_ASSUME_NONNULL_END
             if (stateChange.previous == ARTRealtimeConnected && _shouldImmediatelyReconnect) {
                 retryDelay = 0.1;
             } else {
-                // Note: we currently reset the retry sequence every time we wish to perform a retry (defeating the point of using it in the first place, but it's OK since the delays are all constant). As part of implementing #1431 we will reuse any existing retry sequence, resetting it only in response to certain state changes.
-                self.connectRetrySequence = [[ARTRetrySequence alloc] initWithDelayCalculator:self.connectRetryDelayCalculator];
-                [self.logger verbose:@"RT:%p Created connect retry sequence %@", self, self.connectRetrySequence];
+                if (!self.connectRetrySequence) {
+                    self.connectRetrySequence = [[ARTRetrySequence alloc] initWithDelayCalculator:self.connectRetryDelayCalculator];
+                    [self.logger verbose:@"RT:%p Created connect retry sequence %@", self, self.connectRetrySequence];
+                }
 
                 retryAttempt = [self.connectRetrySequence addRetryAttempt];
                 [self.logger verbose:@"RT:%p Adding connect retry attempt to %@ gave %@", self, self.connectRetrySequence.id, retryAttempt];
@@ -676,6 +679,8 @@ NS_ASSUME_NONNULL_END
             break;
         }
         case ARTRealtimeSuspended: {
+            // TODO explain the places we set this to nil
+            self.connectRetrySequence = nil;
             [_connectionRetryFromDisconnectedListener stopTimer];
             _connectionRetryFromDisconnectedListener = nil;
             [self.auth cancelAuthorization:nil];
@@ -689,6 +694,7 @@ NS_ASSUME_NONNULL_END
             break;
         }
         case ARTRealtimeConnected: {
+            self.connectRetrySequence = nil;
             _fallbacks = nil;
             _connectionLostAt = nil;
             if (stateChange.reason) {

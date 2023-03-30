@@ -1,5 +1,7 @@
 @import Foundation;
 
+@protocol ARTJitterCoefficientGenerator;
+
 NS_ASSUME_NONNULL_BEGIN
 
 /**
@@ -18,6 +20,11 @@ NS_ASSUME_NONNULL_BEGIN
  Initial value is `ARTDefault.realtimeRequestTimeout`.
  */
 @property (nonatomic) NSTimeInterval realtimeRequestTimeout;
+
+/**
+ Initial value is an instance of `ARTDefaultJitterCoefficientGenerator`.
+ */
+@property (nonatomic) id<ARTJitterCoefficientGenerator> jitterCoefficientGenerator;
 
 @end
 

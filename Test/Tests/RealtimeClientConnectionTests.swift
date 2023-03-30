@@ -2201,23 +2201,37 @@ class RealtimeClientConnectionTests: XCTestCase {
             fail("Start date or end date are empty")
         }
     }
-
-    // RTN14d
-    func test__059__Connection__connection_request_fails__connection_attempt_fails_for_any_recoverable_reason() {
+    
+    // RTN14d, RTN14e, RTN14f, RTB1
+    func test__059__Connection__connection_request_fails__if_connection_attempt_fails_connection_state_will_first_transition_to_DISCONNECTED_and_then_to_SUSPENDED_with_periodic_connection_attempts() {
         let options = AblyTests.commonAppSetup()
-        options.realtimeHost = "10.255.255.1" // non-routable IP address
-        options.disconnectedRetryTimeout = 1.0
+        options.disconnectedRetryTimeout = 0.4 // so expectedTimeBeforeSuspended below would not exceed 3 seconds
+        options.suspendedRetryTimeout = 1.0
         options.autoConnect = false
-        options.testOptions.realtimeRequestTimeout = 0.1
-        let expectedTime = 3.0
+        let requestTimeout = 0.1
+        options.testOptions.realtimeRequestTimeout = requestTimeout
 
+        let jitterCoefficients = StaticJitterCoefficients()
+        let mockJitterCoefficientGenerator = MockJitterCoefficientGenerator(coefficients: jitterCoefficients)
+        options.testOptions.jitterCoefficientGenerator = mockJitterCoefficientGenerator
+        
         options.authCallback = { _, _ in
             // Ignore `completion` closure to force a time out
         }
 
+        var predefinedDelays = Array(AblyTests.expectedRetryDelays(forTimeout: options.disconnectedRetryTimeout, jitterCoefficients: jitterCoefficients).prefix(5)) // TODO justify this; it's the length of the sequence that Marat was previously using
+        let expectedTimeBeforeSuspended = predefinedDelays.reduce(0, { $0 + $1 + requestTimeout })
+        
+        var suspendedRetryCount = 0
+        let maxSuspendedRetryCount = 3 // enough to get confidence that it continues in suspended mode
+        
+        for _ in 0..<maxSuspendedRetryCount {
+            predefinedDelays.append(options.suspendedRetryTimeout)
+        }
+        
         let previousConnectionStateTtl = ARTDefault.connectionStateTtl()
         defer { ARTDefault.setConnectionStateTtl(previousConnectionStateTtl) }
-        ARTDefault.setConnectionStateTtl(expectedTime)
+        ARTDefault.setConnectionStateTtl(expectedTimeBeforeSuspended)
 
         let client = ARTRealtime(options: options)
         client.internal.shouldImmediatelyReconnect = false
@@ -2225,140 +2239,43 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.connection.off()
             client.close()
         }
-
-        var totalRetry = 0
+        
+        var observedRetryInValues = [TimeInterval]()
+        
         waitUntil(timeout: testTimeout) { done in
-            let partialDone = AblyTests.splitDone(2, done: done)
-            var start: NSDate?
-
+            var firstDisconnectedAt: Date!
+            var latestSuspendedAt: Date!
+            
             client.connection.once(.disconnected) { stateChange in
-                expect(stateChange.reason!.message).to(contain("timed out"))
+                firstDisconnectedAt = Date()
+            }
+            
+            client.connection.on(.disconnected) { stateChange in
+                XCTAssertNil(latestSuspendedAt) // github.com/ably/ably-cocoa/issues/913
                 XCTAssertEqual(stateChange.previous, ARTRealtimeConnectionState.connecting)
-                expect(stateChange.retryIn).to(beCloseTo(options.disconnectedRetryTimeout))
-                partialDone()
-                start = NSDate()
+                expect(stateChange.reason?.message).to(contain("timed out"))
+                observedRetryInValues.append(stateChange.retryIn)
             }
-
-            client.connection.on(.suspended) { _ in
-                let end = NSDate()
-                expect(end.timeIntervalSince(start! as Date)).to(beCloseTo(expectedTime, within: 0.9))
-                partialDone()
+            
+            client.connection.once(.suspended) { stateChange in
+                let actualTimeBeforeSuspended = Date().timeIntervalSince(firstDisconnectedAt)
+                expect(actualTimeBeforeSuspended).to(beCloseTo(expectedTimeBeforeSuspended, within: 0.9))
             }
-
-            client.connect()
-
-            client.connection.on(.connecting) { stateChange in
-                XCTAssertEqual(stateChange.previous, ARTRealtimeConnectionState.disconnected)
-                totalRetry += 1
-            }
-        }
-
-        XCTAssertEqual(totalRetry, Int(expectedTime / options.disconnectedRetryTimeout))
-    }
-
-    // RTN14e
-    func test__060__Connection__connection_request_fails__connection_state_has_been_in_the_DISCONNECTED_state_for_more_than_the_default_connectionStateTtl_should_change_the_state_to_SUSPENDED() {
-        let options = AblyTests.commonAppSetup()
-        options.disconnectedRetryTimeout = 0.1
-        options.suspendedRetryTimeout = 0.5
-        options.autoConnect = false
-        options.testOptions.realtimeRequestTimeout = 0.1
-
-        options.authCallback = { _, _ in
-            // Force a timeout
-        }
-
-        let client = ARTRealtime(options: options)
-        client.internal.shouldImmediatelyReconnect = false
-        defer { client.dispose(); client.close() }
-
-        let ttlHookToken = client.overrideConnectionStateTTL(0.3)
-        defer { ttlHookToken.remove() }
-
-        waitUntil(timeout: testTimeout) { done in
-            client.connection.on(.suspended) { _ in
-                expect(client.connection.errorReason!.message).to(contain("timed out"))
-
-                let start = NSDate()
-                client.connection.once(.connecting) { _ in
-                    let end = NSDate()
-                    expect(end.timeIntervalSince(start as Date)).to(beCloseTo(options.suspendedRetryTimeout, within: 0.5))
+            
+            client.connection.on(.suspended) { stateChange in
+                latestSuspendedAt = Date()
+                XCTAssertEqual(stateChange.previous, ARTRealtimeConnectionState.connecting)
+                expect(stateChange.reason?.message).to(contain("timed out"))
+                observedRetryInValues.append(stateChange.retryIn)
+                suspendedRetryCount += 1
+                if suspendedRetryCount == maxSuspendedRetryCount {
                     done()
                 }
             }
+
             client.connect()
         }
-    }
-
-    // RTN14e - https://github.com/ably/ably-cocoa/issues/913
-    func test__061__Connection__connection_request_fails__should_change_the_state_to_SUSPENDED_when_the_connection_state_has_been_in_the_DISCONNECTED_state_for_more_than_the_connectionStateTtl() {
-        let options = AblyTests.commonAppSetup()
-        options.disconnectedRetryTimeout = 0.5
-        options.suspendedRetryTimeout = 2.0
-        options.autoConnect = false
-
-        let client = ARTRealtime(options: options)
-        client.internal.setTransport(TestProxyTransport.self)
-        client.internal.setReachabilityClass(TestReachability.self)
-        defer {
-            client.simulateRestoreInternetConnection()
-            client.dispose()
-            client.close()
-        }
-
-        let ttlHookToken = client.overrideConnectionStateTTL(3.0)
-        defer { ttlHookToken.remove() }
-
-        waitUntil(timeout: testTimeout) { done in
-            client.connection.once(.connected) { stateChange in
-                XCTAssertNil(stateChange.reason)
-                done()
-            }
-            client.connect()
-        }
-
-        var events: [ARTRealtimeConnectionState] = []
-        client.connection.on { stateChange in
-            events.append(stateChange.current)
-        }
-        client.simulateNoInternetConnection()
-
-        expect(events).toEventually(equal([
-            .disconnected,
-            .connecting, // 0.5 - 1
-            .disconnected,
-            .connecting, // 1.0 - 2
-            .disconnected,
-            .connecting, // 1.5 - 3
-            .disconnected,
-            .connecting, // 2.0 - 4
-            .disconnected,
-            .connecting, // 2.5 - 5
-            .disconnected,
-            .connecting, // 3.0 - 6
-            .suspended,
-            .connecting,
-            .suspended,
-        ]), timeout: testTimeout)
-
-        events.removeAll()
-        client.simulateRestoreInternetConnection(after: 7.0)
-
-        expect(events).toEventually(equal([
-            .connecting, // 2.0 - 1
-            .suspended,
-            .connecting, // 4.0 - 2
-            .suspended,
-            .connecting, // 6.0 - 3
-            .suspended,
-            .connecting,
-            .connected,
-        ]), timeout: testTimeout)
-
-        client.connection.off()
-
-        XCTAssertNil(client.connection.errorReason)
-        XCTAssertEqual(client.connection.state, .connected)
+        XCTAssertEqual(observedRetryInValues, predefinedDelays)
     }
 
     func test__062__Connection__connection_request_fails__on_CLOSE_the_connection_should_stop_connection_retries() {
