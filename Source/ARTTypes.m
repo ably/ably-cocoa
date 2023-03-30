@@ -1,4 +1,5 @@
 #import "ARTTypes.h"
+#import "ARTTypes+Private.h"
 #import "ARTLog.h"
 
 // MARK: Global helper functions
@@ -44,6 +45,10 @@ NSString *generateNonce() {
 }
 
 - (instancetype)initWithCurrent:(ARTRealtimeConnectionState)current previous:(ARTRealtimeConnectionState)previous event:(ARTRealtimeConnectionEvent)event reason:(ARTErrorInfo *)reason retryIn:(NSTimeInterval)retryIn {
+    return [self initWithCurrent:current previous:previous event:event reason:reason retryIn:retryIn retryAttempt:nil];
+}
+
+- (instancetype)initWithCurrent:(ARTRealtimeConnectionState)current previous:(ARTRealtimeConnectionState)previous event:(ARTRealtimeConnectionEvent)event reason:(ARTErrorInfo *)reason retryIn:(NSTimeInterval)retryIn retryAttempt:(ARTRetryAttempt *)retryAttempt {
     self = [self init];
     if (self) {
         _current = current;
@@ -51,12 +56,13 @@ NSString *generateNonce() {
         _event = event;
         _reason = reason;
         _retryIn = retryIn;
+        _retryAttempt = retryAttempt;
     }
     return self;
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"%@ - \n\t current: %@; \n\t previous: %@; \n\t reason: %@; \n\t retryIn: %f; \n", [super description], ARTRealtimeConnectionStateToStr(_current), ARTRealtimeConnectionStateToStr(_previous), _reason, _retryIn];
+    return [NSString stringWithFormat:@"%@ - \n\t current: %@; \n\t previous: %@; \n\t reason: %@; \n\t retryIn: %f; \n\t retryAttempt: %@; \n", [super description], ARTRealtimeConnectionStateToStr(_current), ARTRealtimeConnectionStateToStr(_previous), _reason, _retryIn, _retryAttempt];
 }
 
 - (void)setRetryIn:(NSTimeInterval)retryIn {
