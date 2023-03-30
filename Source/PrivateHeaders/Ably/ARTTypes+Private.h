@@ -23,4 +23,22 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+@interface ARTChannelStateChange ()
+
+/**
+ The retry attempt that triggered this channel state change, if any.
+
+ Intended for tests that wish to make assertions about the exact value of retry delays.
+ */
+@property (nonatomic, readonly, nullable) ARTRetryAttempt *retryAttempt;
+
+- (instancetype)initWithCurrent:(ARTRealtimeChannelState)current
+                       previous:(ARTRealtimeChannelState)previous
+                          event:(ARTChannelEvent)event
+                         reason:(nullable ARTErrorInfo *)reason
+                        resumed:(BOOL)resumed
+                   retryAttempt:(nullable ARTRetryAttempt *)retryAttempt;
+
+@end
+
 NS_ASSUME_NONNULL_END

@@ -19,6 +19,7 @@
 #import "ARTRest.h"
 #import "ARTClientOptions.h"
 #import "ARTTypes.h"
+#import "ARTTypes+Private.h"
 #import "ARTGCD.h"
 #import "ARTConnection+Private.h"
 #import "ARTRestChannels+Private.h"
@@ -600,7 +601,7 @@ dispatch_sync(_queue, ^{
 
 - (void)transition:(ARTRealtimeChannelState)state withMetadata:(ARTChannelStateChangeMetadata *)metadata {
     [self.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) channel state transitions from %tu - %@ to %tu - %@%@", _realtime, self, self.name, self.state_nosync, ARTRealtimeChannelStateToStr(self.state_nosync), state, ARTRealtimeChannelStateToStr(state), metadata.retryAttempt ? [NSString stringWithFormat: @" (result of %@)", metadata.retryAttempt.id] : @""];
-    ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:state previous:self.state_nosync event:(ARTChannelEvent)state reason:metadata.errorInfo];
+    ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:state previous:self.state_nosync event:(ARTChannelEvent)state reason:metadata.errorInfo resumed:NO retryAttempt:metadata.retryAttempt];
     self.state = state;
 
     if (metadata.storeErrorInfo) {
