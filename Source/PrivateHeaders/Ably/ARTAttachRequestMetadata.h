@@ -1,6 +1,7 @@
 @import Foundation;
 
 @class ARTErrorInfo;
+@class ARTRetryAttempt;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -20,6 +21,8 @@ NS_SWIFT_NAME(AttachRequestMetadata)
  */
 @property (nullable, nonatomic, readonly) NSString *channelSerial;
 
+@property (nullable, nonatomic, readonly) ARTRetryAttempt *retryAttempt;
+
 - (instancetype)init NS_UNAVAILABLE;
 
 /**
@@ -27,7 +30,12 @@ NS_SWIFT_NAME(AttachRequestMetadata)
  */
 - (instancetype)initWithReason:(nullable ARTErrorInfo *)reason;
 
-- (instancetype)initWithReason:(nullable ARTErrorInfo *)reason channelSerial:(nullable NSString *)channelSerial NS_DESIGNATED_INITIALIZER;
+/**
+ Creates an `ARTAttachRequest` instance with the given `reason` and `channelSerial`, whose `retryAttempt` is `nil`.
+ */
+- (instancetype)initWithReason:(nullable ARTErrorInfo *)reason channelSerial:(nullable NSString *)channelSerial;
+
+- (instancetype)initWithReason:(nullable ARTErrorInfo *)reason channelSerial:(nullable NSString *)channelSerial retryAttempt:(nullable ARTRetryAttempt *)retryAttempt NS_DESIGNATED_INITIALIZER;
 
 @end
 
