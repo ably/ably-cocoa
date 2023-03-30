@@ -253,10 +253,6 @@
     return self;
 }
 
-+ (instancetype)channelWithRealtime:(ARTRealtimeInternal *)realtime andName:(NSString *)name withOptions:(ARTRealtimeChannelOptions *)options {
-    return [[ARTRealtimeChannelInternal alloc] initWithRealtime:realtime andName:name withOptions:options];
-}
-
 - (ARTRealtimeChannelState)state {
     __block ARTRealtimeChannelState ret;
 dispatch_sync(_queue, ^{

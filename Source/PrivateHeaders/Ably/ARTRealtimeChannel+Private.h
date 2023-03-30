@@ -45,7 +45,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) BOOL attachResume;
 
 - (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime andName:(NSString *)name withOptions:(ARTRealtimeChannelOptions *)options;
-+ (instancetype)channelWithRealtime:(ARTRealtimeInternal *)realtime andName:(NSString *)name withOptions:(ARTRealtimeChannelOptions *)options;
 
 - (bool)isLastChannelSerial:(NSString *)channelSerial;
 
