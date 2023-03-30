@@ -3881,6 +3881,11 @@ class RealtimeClientChannelTests: XCTestCase {
         options.channelRetryTimeout = 1.0 // this is done for making the test not last ages
         options.autoConnect = false // this is done for testing reasons, it's not part of the key scenario
         options.testOptions.realtimeRequestTimeout = 1.0
+
+        let jitterCoefficients = StaticJitterCoefficients()
+        let mockJitterCoefficientGenerator = MockJitterCoefficientGenerator(coefficients: jitterCoefficients)
+        options.testOptions.jitterCoefficientGenerator = mockJitterCoefficientGenerator
+
         let client = ARTRealtime(options: options)
 
         // ...a Realtime client...
@@ -3934,7 +3939,8 @@ class RealtimeClientChannelTests: XCTestCase {
         // When...
         // TODO this explanation is bad
         // ...all of the channel’s attempts to attach time out (after realtimeRequestTimeout = 1.0) (implicit from the ignored ATTACHED above),
-        let timeout = Double(numberOfRetriesToWaitFor) * (options.testOptions.realtimeRequestTimeout + options.channelRetryTimeout + 0.5) // TODO explain and check
+        let expectedRetryDelays = Array(AblyTests.expectedRetryDelays(forTimeout: options.channelRetryTimeout, jitterCoefficients: jitterCoefficients).prefix(numberOfRetriesToWaitFor))
+        let timeout = expectedRetryDelays.reduce(0, +) + Double(numberOfRetriesToWaitFor) * (options.testOptions.realtimeRequestTimeout + 0.5) // TODO explain and check
         let observedStateChanges = try retrySequenceDataGatherer.waitForData(timeout: timeout)
 
         // Then...
@@ -3958,7 +3964,7 @@ class RealtimeClientChannelTests: XCTestCase {
         for retryNumber in 1 ... numberOfRetriesToWaitFor {
             let firstStateChangeIndex = 1 + 2 * (retryNumber - 1)
 
-            let expectedRetryDelay = options.channelRetryTimeout
+            let expectedRetryDelay = expectedRetryDelays[retryNumber - 1]
 
             // the channel emits a state change to the ATTACHING state...
             let firstObservedStateChange = observedStateChanges[firstStateChangeIndex]

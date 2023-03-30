@@ -211,7 +211,7 @@ NS_ASSUME_NONNULL_END
         _internalEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
         _connectedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
         _pingEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
-        _channels = [[ARTRealtimeChannelsInternal alloc] initWithRealtime:self];
+        _channels = [[ARTRealtimeChannelsInternal alloc] initWithRealtime:self jitterCoefficientGenerator:options.testOptions.jitterCoefficientGenerator];
         _transport = nil;
         _transportClass = [ARTWebSocketTransport class];
         _reachabilityClass = [ARTOSReachability class];

@@ -8,6 +8,7 @@
 #import "ARTQueuedDealloc.h"
 
 @class ARTRealtimeChannelInternal;
+@protocol ARTJitterCoefficientGenerator;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -17,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (ARTRealtimeChannelInternal *)get:(NSString *)name options:(ARTRealtimeChannelOptions *)options;
 - (id<NSFastEnumeration>)copyIntoIteratorWithMapper:(ARTRealtimeChannel *(^)(ARTRealtimeChannelInternal *))mapper;
 
-- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime;
+- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime jitterCoefficientGenerator:(id<ARTJitterCoefficientGenerator>)jitterCoefficientGenerator;
 
 @property (readonly, getter=getNosyncIterable) id<NSFastEnumeration> nosyncIterable;
 @property (nonatomic, readonly, getter=getCollection) NSMutableDictionary<NSString *, ARTRealtimeChannelInternal *> *collection;
