@@ -85,5 +85,6 @@ framework module Ably {
         header "Ably/ARTJitterCoefficientGenerator.h"
         header "Ably/ARTRetryDelayCalculator.h"
         header "Ably/ARTConstantRetryDelayCalculator.h"
+        header "Ably/ARTBackoffRetryDelayCalculator.h"
     }
 }

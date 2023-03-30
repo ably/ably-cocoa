@@ -18,6 +18,9 @@
 		1C6C18A41ADFDAB100AB79E4 /* ARTLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C6C18A21ADFDAB100AB79E4 /* ARTLog.m */; };
 		1CD8DC9F1B1C7315007EAF36 /* ARTDefault.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1CD8DCA01B1C7315007EAF36 /* ARTDefault.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CD8DC9E1B1C7315007EAF36 /* ARTDefault.m */; };
+		211A60D729D6D2C300D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */; };
+		211A60D829D6D2C400D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */; };
+		211A60D929D6D2C500D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */; };
 		2132C20E29D20EEC000C4355 /* ARTResumeRequestResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C20D29D20EEC000C4355 /* ARTResumeRequestResponse.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2132C20F29D20EEC000C4355 /* ARTResumeRequestResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C20D29D20EEC000C4355 /* ARTResumeRequestResponse.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2132C21029D20EEC000C4355 /* ARTResumeRequestResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C20D29D20EEC000C4355 /* ARTResumeRequestResponse.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -39,6 +42,9 @@
 		2132C22929D23484000C4355 /* MockErrorChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C22529D2347F000C4355 /* MockErrorChecker.swift */; };
 		2132C22A29D23484000C4355 /* MockErrorChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C22529D2347F000C4355 /* MockErrorChecker.swift */; };
 		2132C22B29D23485000C4355 /* MockErrorChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C22529D2347F000C4355 /* MockErrorChecker.swift */; };
+		2132C2E929D4B91B000C4355 /* BackoffCoefficients.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C2E829D4B91B000C4355 /* BackoffCoefficients.swift */; };
+		2132C2EA29D4B91B000C4355 /* BackoffCoefficients.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C2E829D4B91B000C4355 /* BackoffCoefficients.swift */; };
+		2132C2EB29D4B91B000C4355 /* BackoffCoefficients.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C2E829D4B91B000C4355 /* BackoffCoefficients.swift */; };
 		2132C30129D5D156000C4355 /* ARTRetryDelayCalculator.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C30029D5D154000C4355 /* ARTRetryDelayCalculator.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2132C30229D5D157000C4355 /* ARTRetryDelayCalculator.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C30029D5D154000C4355 /* ARTRetryDelayCalculator.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2132C30329D5D157000C4355 /* ARTRetryDelayCalculator.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C30029D5D154000C4355 /* ARTRetryDelayCalculator.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -48,6 +54,12 @@
 		2132C30D29D5D1B8000C4355 /* ARTConstantRetryDelayCalculator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2132C30C29D5D1B8000C4355 /* ARTConstantRetryDelayCalculator.m */; };
 		2132C30E29D5D1B8000C4355 /* ARTConstantRetryDelayCalculator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2132C30C29D5D1B8000C4355 /* ARTConstantRetryDelayCalculator.m */; };
 		2132C30F29D5D1B8000C4355 /* ARTConstantRetryDelayCalculator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2132C30C29D5D1B8000C4355 /* ARTConstantRetryDelayCalculator.m */; };
+		2132C31129D5E4C6000C4355 /* ARTBackoffRetryDelayCalculator.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C31029D5E4C6000C4355 /* ARTBackoffRetryDelayCalculator.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		2132C31229D5E4C6000C4355 /* ARTBackoffRetryDelayCalculator.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C31029D5E4C6000C4355 /* ARTBackoffRetryDelayCalculator.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		2132C31329D5E4C6000C4355 /* ARTBackoffRetryDelayCalculator.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C31029D5E4C6000C4355 /* ARTBackoffRetryDelayCalculator.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		2132C31529D5E50A000C4355 /* ARTBackoffRetryDelayCalculator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2132C31429D5E50A000C4355 /* ARTBackoffRetryDelayCalculator.m */; };
+		2132C31629D5E50A000C4355 /* ARTBackoffRetryDelayCalculator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2132C31429D5E50A000C4355 /* ARTBackoffRetryDelayCalculator.m */; };
+		2132C31729D5E50A000C4355 /* ARTBackoffRetryDelayCalculator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2132C31429D5E50A000C4355 /* ARTBackoffRetryDelayCalculator.m */; };
 		21447D3B254A2ECB00B3905A /* ARTSRWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 217D181B25421FED00DFF07E /* ARTSRWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		21447D40254A2ECE00B3905A /* ARTSRWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 217D181B25421FED00DFF07E /* ARTSRWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		21447D45254A2ED100B3905A /* ARTSRWebSocket.h in Headers */ = {isa = PBXBuildFile; fileRef = 217D181B25421FED00DFF07E /* ARTSRWebSocket.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -1026,9 +1038,13 @@
 		2132C21D29D23196000C4355 /* ARTErrorChecker.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTErrorChecker.m; sourceTree = "<group>"; };
 		2132C22129D233EB000C4355 /* DefaultErrorCheckerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultErrorCheckerTests.swift; sourceTree = "<group>"; };
 		2132C22529D2347F000C4355 /* MockErrorChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockErrorChecker.swift; sourceTree = "<group>"; };
+		2132C2E829D4B91B000C4355 /* BackoffCoefficients.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackoffCoefficients.swift; sourceTree = "<group>"; };
 		2132C30029D5D154000C4355 /* ARTRetryDelayCalculator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTRetryDelayCalculator.h; path = PrivateHeaders/Ably/ARTRetryDelayCalculator.h; sourceTree = "<group>"; };
 		2132C30829D5D18E000C4355 /* ARTConstantRetryDelayCalculator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTConstantRetryDelayCalculator.h; path = PrivateHeaders/Ably/ARTConstantRetryDelayCalculator.h; sourceTree = "<group>"; };
 		2132C30C29D5D1B8000C4355 /* ARTConstantRetryDelayCalculator.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTConstantRetryDelayCalculator.m; sourceTree = "<group>"; };
+		2132C31029D5E4C6000C4355 /* ARTBackoffRetryDelayCalculator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTBackoffRetryDelayCalculator.h; path = PrivateHeaders/Ably/ARTBackoffRetryDelayCalculator.h; sourceTree = "<group>"; };
+		2132C31429D5E50A000C4355 /* ARTBackoffRetryDelayCalculator.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTBackoffRetryDelayCalculator.m; sourceTree = "<group>"; };
+		2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackoffRetryDelayCalculatorTests.swift; sourceTree = "<group>"; };
 		215F75F62922B1DB009E0E76 /* ARTClientInformation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTClientInformation.h; path = include/Ably/ARTClientInformation.h; sourceTree = "<group>"; };
 		215F75F72922B1DB009E0E76 /* ARTClientInformation.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTClientInformation.m; sourceTree = "<group>"; };
 		215F75FE2922B30F009E0E76 /* ClientInformationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientInformationTests.swift; sourceTree = "<group>"; };
@@ -1550,6 +1566,7 @@
 				217FCF4529D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift */,
 				D798554723EB96C000946BE2 /* DeltaCodecTests.swift */,
 				D5A22171266F526600C87C42 /* GCDTests.swift */,
+				2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */,
 				848ED97226E50D0F0087E800 /* ObjcppTest.mm */,
 				EB1B53F822F85CE4006A59AC /* ObjectLifetimesTests.swift */,
 				D7FC1ECA209CEA2E001E4153 /* PushTests.swift */,
@@ -1587,6 +1604,7 @@
 				2132C22529D2347F000C4355 /* MockErrorChecker.swift */,
 				217FCF3E29D626E4006E5F2D /* MockJitterCoefficientGenerator.swift */,
 				217FCF3D29D626E4006E5F2D /* StaticJitterCoefficients.swift */,
+				2132C2E829D4B91B000C4355 /* BackoffCoefficients.swift */,
 			);
 			path = "Test Utilities";
 			sourceTree = "<group>";
@@ -1887,6 +1905,8 @@
 				2132C30029D5D154000C4355 /* ARTRetryDelayCalculator.h */,
 				2132C30829D5D18E000C4355 /* ARTConstantRetryDelayCalculator.h */,
 				2132C30C29D5D1B8000C4355 /* ARTConstantRetryDelayCalculator.m */,
+				2132C31029D5E4C6000C4355 /* ARTBackoffRetryDelayCalculator.h */,
+				2132C31429D5E50A000C4355 /* ARTBackoffRetryDelayCalculator.m */,
 			);
 			name = Utilities;
 			sourceTree = "<group>";
@@ -2098,6 +2118,7 @@
 				2132C30129D5D156000C4355 /* ARTRetryDelayCalculator.h in Headers */,
 				D7AE18CE1E5B40FE00478D82 /* ARTPushDeviceRegistrations.h in Headers */,
 				D520C4D626809BB5000012B2 /* ARTStringifiable.h in Headers */,
+				2132C31129D5E4C6000C4355 /* ARTBackoffRetryDelayCalculator.h in Headers */,
 				D5BB213926AAA60500AA5F3E /* ARTNSError+ARTUtils.h in Headers */,
 				D746AE431BBC5CD0003ECEF8 /* ARTRealtimeChannel+Private.h in Headers */,
 				D746AE251BBB611C003ECEF8 /* ARTChannel+Private.h in Headers */,
@@ -2263,6 +2284,7 @@
 				D710D58D21949D29008F54AD /* ARTPresenceMap.h in Headers */,
 				D5BB210E26AA98A800AA5F3E /* ARTStringifiable.h in Headers */,
 				D710D56B21949CB9008F54AD /* ARTPushDeviceRegistrations.h in Headers */,
+				2132C31229D5E4C6000C4355 /* ARTBackoffRetryDelayCalculator.h in Headers */,
 				D710D62021949DEC008F54AD /* ARTNSMutableURLRequest+ARTPaginated.h in Headers */,
 				D710D4B021949AF8008F54AD /* ARTAuth.h in Headers */,
 				D710D58B21949D29008F54AD /* ARTPresence.h in Headers */,
@@ -2412,6 +2434,7 @@
 				D710D5B321949D2A008F54AD /* ARTPresenceMap.h in Headers */,
 				D710D57121949CBA008F54AD /* ARTPushDeviceRegistrations.h in Headers */,
 				D710D62C21949DED008F54AD /* ARTNSMutableURLRequest+ARTPaginated.h in Headers */,
+				2132C31329D5E4C6000C4355 /* ARTBackoffRetryDelayCalculator.h in Headers */,
 				D710D4B221949AF9008F54AD /* ARTAuth.h in Headers */,
 				D710D5B121949D2A008F54AD /* ARTPresence.h in Headers */,
 				D710D4E921949BFB008F54AD /* ARTQueuedMessage.h in Headers */,
@@ -2746,6 +2769,7 @@
 				D71D30041C5F7B2F002115B0 /* RealtimeClientChannelsTests.swift in Sources */,
 				EB1B53F922F85CE4006A59AC /* ObjectLifetimesTests.swift in Sources */,
 				D7DF73851EA600240013CD36 /* PushActivationStateMachineTests.swift in Sources */,
+				211A60D729D6D2C300D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */,
 				D7FC1ECB209CEA2E001E4153 /* PushTests.swift in Sources */,
 				2132C22929D23484000C4355 /* MockErrorChecker.swift in Sources */,
 				D714A63E1C74D4B2002F2CA0 /* NSObject+TestSuite.swift in Sources */,
@@ -2763,6 +2787,7 @@
 				851674EF1B7BA5CD00D35169 /* StatsTests.swift in Sources */,
 				EB1AE0CE1C5C3A4900D62250 /* UtilitiesTests.swift in Sources */,
 				848ED97326E50D0F0087E800 /* ObjcppTest.mm in Sources */,
+				2132C2E929D4B91B000C4355 /* BackoffCoefficients.swift in Sources */,
 				215F75FF2922B30F009E0E76 /* ClientInformationTests.swift in Sources */,
 				D798554823EB96C000946BE2 /* DeltaCodecTests.swift in Sources */,
 				D74CBC0B212EC22800D090E4 /* RestPaginatedTests.swift in Sources */,
@@ -2881,6 +2906,7 @@
 				D777EEE1206285CF002EBA03 /* ARTDeviceIdentityTokenDetails.m in Sources */,
 				D73B655823EF2B2900D459A6 /* ARTDeltaCodec.m in Sources */,
 				D5BB211B26AA9AA700AA5F3E /* ARTNSMutableDictionary+ARTDictionaryUtil.m in Sources */,
+				2132C31529D5E50A000C4355 /* ARTBackoffRetryDelayCalculator.m in Sources */,
 				D768C6AD1E4B5B0200436011 /* ARTDevicePushDetails.m in Sources */,
 				1C6C18A41ADFDAB100AB79E4 /* ARTLog.m in Sources */,
 				D70EAAEE1BC3376200CD8B9E /* ARTRestChannel.m in Sources */,
@@ -2909,6 +2935,7 @@
 				D7093C19219E465300723F17 /* TestUtilities.swift in Sources */,
 				217FCF4729D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift in Sources */,
 				560579DA24AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */,
+				2132C2EA29D4B91B000C4355 /* BackoffCoefficients.swift in Sources */,
 				2132C22329D233EB000C4355 /* DefaultErrorCheckerTests.swift in Sources */,
 				D7093C1C219E466400723F17 /* ReadmeExamplesTests.swift in Sources */,
 				21881E7B283BD0DF00CFD9E2 /* StringifiableTests.swift in Sources */,
@@ -2919,6 +2946,7 @@
 				D7093C24219E466E00723F17 /* RealtimeClientTests.swift in Sources */,
 				D7093C1F219E466E00723F17 /* RestClientStatsTests.swift in Sources */,
 				D7093C1A219E465C00723F17 /* NSObject+TestSuite.m in Sources */,
+				211A60D829D6D2C400D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */,
 				215F76002922B30F009E0E76 /* ClientInformationTests.swift in Sources */,
 				D7093C1E219E466900723F17 /* RestClientTests.swift in Sources */,
 				D7093C2B219E466E00723F17 /* CryptoTests.swift in Sources */,
@@ -2950,6 +2978,7 @@
 				D7093C73219EE26000723F17 /* ReadmeExamplesTests.swift in Sources */,
 				217FCF4829D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift in Sources */,
 				560579DB24AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */,
+				2132C2EB29D4B91B000C4355 /* BackoffCoefficients.swift in Sources */,
 				2132C22429D233EB000C4355 /* DefaultErrorCheckerTests.swift in Sources */,
 				D7093C71219EE25800723F17 /* NSObject+TestSuite.m in Sources */,
 				D7093C70219EE25400723F17 /* TestUtilities.swift in Sources */,
@@ -2960,6 +2989,7 @@
 				D7093C7E219EE26400723F17 /* RealtimeClientChannelsTests.swift in Sources */,
 				D7093C79219EE26400723F17 /* RestClientPresenceTests.swift in Sources */,
 				215F76012922B30F009E0E76 /* ClientInformationTests.swift in Sources */,
+				211A60D929D6D2C500D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */,
 				D7093C78219EE26400723F17 /* RestClientChannelsTests.swift in Sources */,
 				D7093C76219EE26400723F17 /* RestClientStatsTests.swift in Sources */,
 				D7093C82219EE26400723F17 /* CryptoTests.swift in Sources */,
@@ -3078,6 +3108,7 @@
 				D73B655923EF2B2900D459A6 /* ARTDeltaCodec.m in Sources */,
 				D710D62D21949E03008F54AD /* ARTHttp.m in Sources */,
 				D5BB211A26AA9AA600AA5F3E /* ARTNSMutableDictionary+ARTDictionaryUtil.m in Sources */,
+				2132C31629D5E50A000C4355 /* ARTBackoffRetryDelayCalculator.m in Sources */,
 				D710D63021949E03008F54AD /* ARTPaginatedResult.m in Sources */,
 				D710D5E121949D78008F54AD /* ARTStatus.m in Sources */,
 				EB1B540622F8DA05006A59AC /* ARTQueuedDealloc.m in Sources */,
@@ -3193,6 +3224,7 @@
 				D73B655A23EF2B2900D459A6 /* ARTDeltaCodec.m in Sources */,
 				D710D63D21949E04008F54AD /* ARTHttp.m in Sources */,
 				D710D64021949E04008F54AD /* ARTPaginatedResult.m in Sources */,
+				2132C31729D5E50A000C4355 /* ARTBackoffRetryDelayCalculator.m in Sources */,
 				D710D60721949D79008F54AD /* ARTStatus.m in Sources */,
 				D5C0CB42268317B500C06521 /* NSURLQueryItem+Stringifiable.m in Sources */,
 				EB1B540722F8DA05006A59AC /* ARTQueuedDealloc.m in Sources */,
