@@ -360,6 +360,19 @@ class AblyTests {
         let items = jsonItems.map{ $0 }.map(CryptoTestItem.init)
         return (keyData, ivData, items)
     }
+
+    /// Given a sequence of jitter coefficients, returns a sequence of retry delays as defined by RTB1. The first element of the sequence is the delay before the first retry, and so on.
+    ///
+    /// We use "AnySequence<Double>" instead of "some Sequence<Double>", because the compiler tells us "'some' return types are only available in iOS 13.0.0 or newer".
+    class func expectedRetryDelays<T: Sequence<Double>>(forTimeout timeout: TimeInterval, jitterCoefficients: T) ->  AnySequence<Double> {
+        let backoffCoefficients = BackoffCoefficients()
+
+        let sequence = zip(backoffCoefficients, jitterCoefficients).lazy.map { backoffCoefficient, jitterCoefficient in
+            timeout * backoffCoefficient * jitterCoefficient
+        }
+
+        return .init(sequence)
+    }
 }
 
 class NSURLSessionServerTrustSync: NSObject, URLSessionDelegate, URLSessionTaskDelegate {
