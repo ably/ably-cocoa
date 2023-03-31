@@ -39,6 +39,7 @@
 #import "ARTQueuedDealloc.h"
 #import "ARTErrorChecker.h"
 #import "ARTConnectionStateChangeMetadata.h"
+#import "ARTChannelStateChangeMetadata.h"
 
 @interface ARTConnectionStateChange ()
 
@@ -519,7 +520,7 @@
 }
 
 - (ARTEventListener *)transitionSideEffects:(ARTConnectionStateChange *)stateChange {
-    ARTStatus *status = nil;
+    ARTChannelStateChangeMetadata *channelStateChangeMetadata = nil;
     ARTEventListener *stateChangeEventListener = nil;
     
     [self.logger debug:@"RT:%p realtime is transitioning from %tu - %@ to %tu - %@", self, stateChange.previous, ARTRealtimeConnectionStateToStr(stateChange.previous), stateChange.current, ARTRealtimeConnectionStateToStr(stateChange.current)];
@@ -611,13 +612,16 @@
             [self.auth cancelAuthorization:nil];
             [self failPendingMessages:[ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:ARTErrorConnectionClosed message:@"connection broken before receiving publishing acknowledgment"]]];
             break;
-        case ARTRealtimeFailed:
-            status = [ARTStatus state:ARTStateConnectionFailed info:stateChange.reason];
+        case ARTRealtimeFailed: {
+            ARTStatus *const status = [ARTStatus state:ARTStateConnectionFailed info:stateChange.reason];
+            channelStateChangeMetadata = [[ARTChannelStateChangeMetadata alloc] initWithState:status.state
+                                                                                    errorInfo:status.errorInfo];
             [self abortAndReleaseTransport:status];
             self.rest.prioritizedHost = nil;
             [self.auth cancelAuthorization:stateChange.reason];
             [self failPendingMessages:[ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:ARTErrorConnectionFailed message:@"connection broken before receiving publishing acknowledgment"]]];
             break;
+        }
         case ARTRealtimeDisconnected: {
             [self closeAndReleaseTransport];
             if (!_connectionLostAt) {
@@ -691,10 +695,16 @@
             }
         }
     } else if (![self shouldQueueEvents]) {
-        ARTStatus *channelStatus = status;
-        if (!channelStatus) {
-            channelStatus = stateChange.reason ? [ARTStatus state:ARTStateError info:stateChange.reason] : [self defaultError];
+        if (!channelStateChangeMetadata) {
+            if (stateChange.reason) {
+                channelStateChangeMetadata = [[ARTChannelStateChangeMetadata alloc] initWithState:ARTStateError
+                                                                                        errorInfo:stateChange.reason];
+            } else {
+                channelStateChangeMetadata = [[ARTChannelStateChangeMetadata alloc] initWithState:ARTStateError];
+            }
         }
+
+        ARTStatus *const channelStatus = [ARTStatus state:channelStateChangeMetadata.state info:channelStateChangeMetadata.errorInfo];
         [self failQueuedMessages:channelStatus];
         
         // Channels
@@ -703,15 +713,19 @@
                 case ARTRealtimeClosing:
                     //do nothing. Closed state is coming.
                     break;
-                case ARTRealtimeClosed:
-                    [channel detachChannel:[ARTStatus state:ARTStateOk]];
+                case ARTRealtimeClosed: {
+                    ARTChannelStateChangeMetadata *const metadata = [[ARTChannelStateChangeMetadata alloc] initWithState:ARTStateOk];
+                    [channel detachChannel:metadata];
                     break;
-                case ARTRealtimeSuspended:
-                    [channel setSuspended:channelStatus];
+                }
+                case ARTRealtimeSuspended: {
+                    [channel setSuspended:channelStateChangeMetadata];
                     break;
-                case ARTRealtimeFailed:
-                    [channel setFailed:channelStatus];
+                }
+                case ARTRealtimeFailed: {
+                    [channel setFailed:channelStateChangeMetadata];
                     break;
+                }
                 default:
                     break;
             }
@@ -1137,10 +1151,6 @@
         default:
             return false;
     }
-}
-
-- (ARTStatus *)defaultError {
-    return [ARTStatus state:ARTStateError];
 }
 
 - (BOOL)isActive {

@@ -13,6 +13,7 @@
 
 @class ARTProtocolMessage;
 @class ARTRealtimePresenceInternal;
+@class ARTChannelStateChangeMetadata;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -62,7 +63,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtimeChannelInternal (Private)
 
-- (void)transition:(ARTRealtimeChannelState)state status:(ARTStatus *)status;
+- (void)transition:(ARTRealtimeChannelState)state withMetadata:(ARTChannelStateChangeMetadata *)metadata;
 
 - (void)onChannelMessage:(ARTProtocolMessage *)message;
 - (void)publishProtocolMessage:(ARTProtocolMessage *)pm callback:(ARTStatusCallback)cb;
@@ -75,12 +76,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)onSync:(ARTProtocolMessage *)message;
 - (void)onError:(ARTProtocolMessage *)error;
 
-- (void)setSuspended:(ARTStatus *)status;
-- (void)setFailed:(ARTStatus *)status;
+- (void)setSuspended:(ARTChannelStateChangeMetadata *)metadata;
+- (void)setFailed:(ARTChannelStateChangeMetadata *)metadata;
 - (void)throwOnDisconnectedOrFailed;
 
 - (void)broadcastPresence:(ARTPresenceMessage *)pm;
-- (void)detachChannel:(ARTStatus *)status;
+- (void)detachChannel:(ARTChannelStateChangeMetadata *)metadata;
 
 - (void)sync;
 - (void)sync:(nullable ARTCallback)callback;

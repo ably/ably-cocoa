@@ -1985,7 +1985,7 @@ class RealtimeClientChannelTests: XCTestCase {
             }
         }
 
-        channel.internal.setSuspended(ARTStatus.state(.ok))
+        channel.internal.setSuspended(.init(state: .ok))
         XCTAssertEqual(channel.state, ARTRealtimeChannelState.suspended)
 
         waitUntil(timeout: testTimeout) { done in
@@ -2492,7 +2492,7 @@ class RealtimeClientChannelTests: XCTestCase {
         rtl6c4TestsClient.connect()
         rtl6c4TestsChannel.attach()
         expect(rtl6c4TestsChannel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
-        rtl6c4TestsChannel.internal.setSuspended(ARTStatus.state(.ok))
+        rtl6c4TestsChannel.internal.setSuspended(.init(state: .ok))
         expect(rtl6c4TestsChannel.state).toEventually(equal(ARTRealtimeChannelState.suspended), timeout: testTimeout)
         waitUntil(timeout: testTimeout) { done in
             rtl6c4TestsPublish(done)
