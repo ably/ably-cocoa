@@ -21,6 +21,12 @@
 		211A60D729D6D2C300D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */; };
 		211A60D829D6D2C400D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */; };
 		211A60D929D6D2C500D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */; };
+		211A60DB29D726F800D169C5 /* ARTConnectionStateChangeMetadata.h in Headers */ = {isa = PBXBuildFile; fileRef = 211A60DA29D726F800D169C5 /* ARTConnectionStateChangeMetadata.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		211A60DC29D726F800D169C5 /* ARTConnectionStateChangeMetadata.h in Headers */ = {isa = PBXBuildFile; fileRef = 211A60DA29D726F800D169C5 /* ARTConnectionStateChangeMetadata.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		211A60DD29D726F800D169C5 /* ARTConnectionStateChangeMetadata.h in Headers */ = {isa = PBXBuildFile; fileRef = 211A60DA29D726F800D169C5 /* ARTConnectionStateChangeMetadata.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		211A60DF29D7272000D169C5 /* ARTConnectionStateChangeMetadata.m in Sources */ = {isa = PBXBuildFile; fileRef = 211A60DE29D7272000D169C5 /* ARTConnectionStateChangeMetadata.m */; };
+		211A60E029D7272000D169C5 /* ARTConnectionStateChangeMetadata.m in Sources */ = {isa = PBXBuildFile; fileRef = 211A60DE29D7272000D169C5 /* ARTConnectionStateChangeMetadata.m */; };
+		211A60E129D7272000D169C5 /* ARTConnectionStateChangeMetadata.m in Sources */ = {isa = PBXBuildFile; fileRef = 211A60DE29D7272000D169C5 /* ARTConnectionStateChangeMetadata.m */; };
 		2132C20E29D20EEC000C4355 /* ARTResumeRequestResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C20D29D20EEC000C4355 /* ARTResumeRequestResponse.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2132C20F29D20EEC000C4355 /* ARTResumeRequestResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C20D29D20EEC000C4355 /* ARTResumeRequestResponse.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2132C21029D20EEC000C4355 /* ARTResumeRequestResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C20D29D20EEC000C4355 /* ARTResumeRequestResponse.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -1006,6 +1012,8 @@
 		1C6C18A21ADFDAB100AB79E4 /* ARTLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTLog.m; sourceTree = "<group>"; };
 		1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTDefault.h; path = include/Ably/ARTDefault.h; sourceTree = "<group>"; };
 		1CD8DC9E1B1C7315007EAF36 /* ARTDefault.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTDefault.m; sourceTree = "<group>"; };
+		211A60DA29D726F800D169C5 /* ARTConnectionStateChangeMetadata.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTConnectionStateChangeMetadata.h; path = PrivateHeaders/Ably/ARTConnectionStateChangeMetadata.h; sourceTree = "<group>"; };
+		211A60DE29D7272000D169C5 /* ARTConnectionStateChangeMetadata.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTConnectionStateChangeMetadata.m; sourceTree = "<group>"; };
 		2132C20D29D20EEC000C4355 /* ARTResumeRequestResponse.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTResumeRequestResponse.h; path = PrivateHeaders/Ably/ARTResumeRequestResponse.h; sourceTree = "<group>"; };
 		2132C21129D20F05000C4355 /* ARTResumeRequestResponse.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTResumeRequestResponse.m; sourceTree = "<group>"; };
 		2132C21529D20F69000C4355 /* ResumeRequestResponseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResumeRequestResponseTests.swift; sourceTree = "<group>"; };
@@ -1724,6 +1732,8 @@
 				96A507BB1A3791490077CDF8 /* ARTRealtime.h */,
 				1C05CF1E1AC1D7EB00687AC9 /* ARTRealtime+Private.h */,
 				96A507BC1A3791490077CDF8 /* ARTRealtime.m */,
+				211A60DA29D726F800D169C5 /* ARTConnectionStateChangeMetadata.h */,
+				211A60DE29D7272000D169C5 /* ARTConnectionStateChangeMetadata.m */,
 				D746AE3A1BBC5AE1003ECEF8 /* ARTRealtimeChannel.h */,
 				D746AE421BBC5CD0003ECEF8 /* ARTRealtimeChannel+Private.h */,
 				D746AE3B1BBC5AE1003ECEF8 /* ARTRealtimeChannel.m */,
@@ -2073,6 +2083,7 @@
 				EB1B541922FB1D7F006A59AC /* ARTPushChannelSubscriptions+Private.h in Headers */,
 				EBF2285B1F4D9AD6009091DD /* ARTWebSocketTransport+Private.h in Headers */,
 				EBFFAC191E97919C003E7326 /* ARTLocalDevice+Private.h in Headers */,
+				211A60DB29D726F800D169C5 /* ARTConnectionStateChangeMetadata.h in Headers */,
 				D737F826263AF4CE0064FA05 /* ARTFallbackHosts.h in Headers */,
 				D746AE4F1BBD84E7003ECEF8 /* ARTChannelOptions.h in Headers */,
 				D7588AF31BFF91B800BB8279 /* ARTURLSessionServerTrust.h in Headers */,
@@ -2166,6 +2177,7 @@
 				D710D60F21949DDB008F54AD /* ARTHTTPPaginatedResponse.h in Headers */,
 				D710D58A21949D29008F54AD /* ARTMessage.h in Headers */,
 				D710D68721949ED5008F54AD /* ARTNSArray+ARTFunctional.h in Headers */,
+				211A60DC29D726F800D169C5 /* ARTConnectionStateChangeMetadata.h in Headers */,
 				D5BB211826AA9A9E00AA5F3E /* ARTNSMutableDictionary+ARTDictionaryUtil.h in Headers */,
 				D710D5BA21949D4F008F54AD /* ARTClientOptions+Private.h in Headers */,
 				D710D58521949D28008F54AD /* ARTChannel.h in Headers */,
@@ -2317,6 +2329,7 @@
 				D710D61921949DDC008F54AD /* ARTHTTPPaginatedResponse.h in Headers */,
 				D710D5B021949D2A008F54AD /* ARTMessage.h in Headers */,
 				D710D5CA21949D50008F54AD /* ARTClientOptions+Private.h in Headers */,
+				211A60DD29D726F800D169C5 /* ARTConnectionStateChangeMetadata.h in Headers */,
 				D710D5AB21949D2A008F54AD /* ARTChannel.h in Headers */,
 				EB1B541322FB1AB4006A59AC /* ARTPushChannel+Private.h in Headers */,
 				D54C55A926957FDE00729EC4 /* ARTNSURL+ARTUtils.h in Headers */,
@@ -2879,6 +2892,7 @@
 				217D1839254222F600DFF07E /* ARTSRHTTPConnectMessage.m in Sources */,
 				D746AE501BBD84E7003ECEF8 /* ARTChannelOptions.m in Sources */,
 				EB89D4051C61C1A4007FA5B7 /* ARTRestChannels.m in Sources */,
+				211A60DF29D7272000D169C5 /* ARTConnectionStateChangeMetadata.m in Sources */,
 				217D1834254222F600DFF07E /* ARTSRURLUtilities.m in Sources */,
 				2132C21E29D23196000C4355 /* ARTErrorChecker.m in Sources */,
 				D777EEE1206285CF002EBA03 /* ARTDeviceIdentityTokenDetails.m in Sources */,
@@ -3081,6 +3095,7 @@
 				D5BB213726AAA60500AA5F3E /* ARTNSError+ARTUtils.m in Sources */,
 				D710D57421949CC4008F54AD /* ARTPushDeviceRegistrations.m in Sources */,
 				D710D5D821949D78008F54AD /* ARTChannelOptions.m in Sources */,
+				211A60E029D7272000D169C5 /* ARTConnectionStateChangeMetadata.m in Sources */,
 				217D184B254222F700DFF07E /* ARTSRURLUtilities.m in Sources */,
 				2132C21F29D23196000C4355 /* ARTErrorChecker.m in Sources */,
 				D73B655923EF2B2900D459A6 /* ARTDeltaCodec.m in Sources */,
@@ -3197,6 +3212,7 @@
 				D710D57A21949CC5008F54AD /* ARTPushDeviceRegistrations.m in Sources */,
 				D710D5FE21949D79008F54AD /* ARTChannelOptions.m in Sources */,
 				D5BB213826AAA60500AA5F3E /* ARTNSError+ARTUtils.m in Sources */,
+				211A60E129D7272000D169C5 /* ARTConnectionStateChangeMetadata.m in Sources */,
 				217D1862254222FA00DFF07E /* ARTSRURLUtilities.m in Sources */,
 				2132C22029D23196000C4355 /* ARTErrorChecker.m in Sources */,
 				D73B655A23EF2B2900D459A6 /* ARTDeltaCodec.m in Sources */,
