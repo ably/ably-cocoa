@@ -19,6 +19,6 @@
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>NSPrincipalClass</key>
-	<string>Ably_iOS_Tests.AblyTestsConfiguration</string>
+	<string>Ably_tvOS_Tests.AblyTestsConfiguration</string>
 </dict>
 </plist>
