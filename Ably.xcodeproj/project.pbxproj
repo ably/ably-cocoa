@@ -111,6 +111,21 @@
 		217D1867254222FA00DFF07E /* ARTSRHTTPConnectMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180D25421FED00DFF07E /* ARTSRHTTPConnectMessage.m */; };
 		217D1868254222FA00DFF07E /* NSURLRequest+ARTSRWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D181725421FED00DFF07E /* NSURLRequest+ARTSRWebSocket.m */; };
 		217D1869254222FA00DFF07E /* ARTSRDelegateController.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D17FC25421FED00DFF07E /* ARTSRDelegateController.m */; };
+		217FCF3629D6269D006E5F2D /* ARTJitterCoefficientGenerator.h in Headers */ = {isa = PBXBuildFile; fileRef = 217FCF3529D6269D006E5F2D /* ARTJitterCoefficientGenerator.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		217FCF3729D6269D006E5F2D /* ARTJitterCoefficientGenerator.h in Headers */ = {isa = PBXBuildFile; fileRef = 217FCF3529D6269D006E5F2D /* ARTJitterCoefficientGenerator.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		217FCF3829D6269D006E5F2D /* ARTJitterCoefficientGenerator.h in Headers */ = {isa = PBXBuildFile; fileRef = 217FCF3529D6269D006E5F2D /* ARTJitterCoefficientGenerator.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		217FCF3A29D626C1006E5F2D /* ARTJitterCoefficientGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 217FCF3929D626C1006E5F2D /* ARTJitterCoefficientGenerator.m */; };
+		217FCF3B29D626C1006E5F2D /* ARTJitterCoefficientGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 217FCF3929D626C1006E5F2D /* ARTJitterCoefficientGenerator.m */; };
+		217FCF3C29D626C1006E5F2D /* ARTJitterCoefficientGenerator.m in Sources */ = {isa = PBXBuildFile; fileRef = 217FCF3929D626C1006E5F2D /* ARTJitterCoefficientGenerator.m */; };
+		217FCF3F29D626E4006E5F2D /* StaticJitterCoefficients.swift in Sources */ = {isa = PBXBuildFile; fileRef = 217FCF3D29D626E4006E5F2D /* StaticJitterCoefficients.swift */; };
+		217FCF4029D626E4006E5F2D /* StaticJitterCoefficients.swift in Sources */ = {isa = PBXBuildFile; fileRef = 217FCF3D29D626E4006E5F2D /* StaticJitterCoefficients.swift */; };
+		217FCF4129D626E4006E5F2D /* StaticJitterCoefficients.swift in Sources */ = {isa = PBXBuildFile; fileRef = 217FCF3D29D626E4006E5F2D /* StaticJitterCoefficients.swift */; };
+		217FCF4229D626E4006E5F2D /* MockJitterCoefficientGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 217FCF3E29D626E4006E5F2D /* MockJitterCoefficientGenerator.swift */; };
+		217FCF4329D626E4006E5F2D /* MockJitterCoefficientGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 217FCF3E29D626E4006E5F2D /* MockJitterCoefficientGenerator.swift */; };
+		217FCF4429D626E4006E5F2D /* MockJitterCoefficientGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 217FCF3E29D626E4006E5F2D /* MockJitterCoefficientGenerator.swift */; };
+		217FCF4629D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 217FCF4529D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift */; };
+		217FCF4729D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 217FCF4529D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift */; };
+		217FCF4829D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 217FCF4529D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift */; };
 		21881E79283BD08200CFD9E2 /* GCDTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A22171266F526600C87C42 /* GCDTests.swift */; };
 		21881E7A283BD08300CFD9E2 /* GCDTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A22171266F526600C87C42 /* GCDTests.swift */; };
 		21881E7B283BD0DF00CFD9E2 /* StringifiableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D520C4DD2680A1E3000012B2 /* StringifiableTests.swift */; };
@@ -1043,6 +1058,11 @@
 		217D181E25421FED00DFF07E /* ARTSRSecurityPolicy.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRSecurityPolicy.m; sourceTree = "<group>"; };
 		217D181F25421FED00DFF07E /* ARTSRWebSocket.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRWebSocket.m; sourceTree = "<group>"; };
 		217D182025421FED00DFF07E /* ARTSRSecurityPolicy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTSRSecurityPolicy.h; sourceTree = "<group>"; };
+		217FCF3529D6269D006E5F2D /* ARTJitterCoefficientGenerator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTJitterCoefficientGenerator.h; path = PrivateHeaders/Ably/ARTJitterCoefficientGenerator.h; sourceTree = "<group>"; };
+		217FCF3929D626C1006E5F2D /* ARTJitterCoefficientGenerator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTJitterCoefficientGenerator.m; sourceTree = "<group>"; };
+		217FCF3D29D626E4006E5F2D /* StaticJitterCoefficients.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StaticJitterCoefficients.swift; sourceTree = "<group>"; };
+		217FCF3E29D626E4006E5F2D /* MockJitterCoefficientGenerator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockJitterCoefficientGenerator.swift; sourceTree = "<group>"; };
+		217FCF4529D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultJitterCoefficientGeneratorTests.swift; sourceTree = "<group>"; };
 		560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARTDefaultTests.swift; sourceTree = "<group>"; };
 		56190953238C3D3200A862A6 /* CryptoTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CryptoTest.m; sourceTree = "<group>"; };
 		841134772722205400CFA837 /* ARTArchiveTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTArchiveTests.m; sourceTree = "<group>"; };
@@ -1510,6 +1530,7 @@
 				EB7913A71C6E54C3000ABF9B /* CryptoTests.swift */,
 				56190953238C3D3200A862A6 /* CryptoTest.m */,
 				2132C22129D233EB000C4355 /* DefaultErrorCheckerTests.swift */,
+				217FCF4529D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift */,
 				D798554723EB96C000946BE2 /* DeltaCodecTests.swift */,
 				D5A22171266F526600C87C42 /* GCDTests.swift */,
 				848ED97226E50D0F0087E800 /* ObjcppTest.mm */,
@@ -1547,6 +1568,8 @@
 				D714A63D1C74D4B2002F2CA0 /* NSObject+TestSuite.swift */,
 				856AAC961B6E30C800B07119 /* TestUtilities.swift */,
 				2132C22529D2347F000C4355 /* MockErrorChecker.swift */,
+				217FCF3E29D626E4006E5F2D /* MockJitterCoefficientGenerator.swift */,
+				217FCF3D29D626E4006E5F2D /* StaticJitterCoefficients.swift */,
 			);
 			path = "Test Utilities";
 			sourceTree = "<group>";
@@ -1842,6 +1865,8 @@
 				215F76022922C76C009E0E76 /* ARTClientInformation+Private.h */,
 				2132C21929D230AE000C4355 /* ARTErrorChecker.h */,
 				2132C21D29D23196000C4355 /* ARTErrorChecker.m */,
+				217FCF3529D6269D006E5F2D /* ARTJitterCoefficientGenerator.h */,
+				217FCF3929D626C1006E5F2D /* ARTJitterCoefficientGenerator.m */,
 			);
 			name = Utilities;
 			sourceTree = "<group>";
@@ -2004,6 +2029,7 @@
 				D74CBC03212EB58700D090E4 /* ARTNSHTTPURLResponse+ARTPaginated.h in Headers */,
 				1CD8DC9F1B1C7315007EAF36 /* ARTDefault.h in Headers */,
 				D70EECAC1FEAF331008A50CD /* ARTPendingMessage.h in Headers */,
+				217FCF3629D6269D006E5F2D /* ARTJitterCoefficientGenerator.h in Headers */,
 				D7D8F8211BC2BE16009718F2 /* ARTAuthOptions.h in Headers */,
 				EB82F8511C59D29B00661917 /* ARTDataEncoder.h in Headers */,
 				D7B621981E4A762A00684474 /* ARTPushChannel.h in Headers */,
@@ -2111,6 +2137,7 @@
 				D710D58421949D28008F54AD /* ARTClientOptions.h in Headers */,
 				D710D69121949EFF008F54AD /* ARTEncoder.h in Headers */,
 				D73B655623EF2B2900D459A6 /* ARTDeltaCodec.h in Headers */,
+				217FCF3729D6269D006E5F2D /* ARTJitterCoefficientGenerator.h in Headers */,
 				D710D5BB21949D4F008F54AD /* ARTChannel+Private.h in Headers */,
 				D710D5BF21949D4F008F54AD /* ARTPresenceMessage+Private.h in Headers */,
 				D710D69421949EFF008F54AD /* ARTLog.h in Headers */,
@@ -2257,6 +2284,7 @@
 				D710D5AA21949D2A008F54AD /* ARTClientOptions.h in Headers */,
 				D710D69B21949F00008F54AD /* ARTEncoder.h in Headers */,
 				D73B655723EF2B2900D459A6 /* ARTDeltaCodec.h in Headers */,
+				217FCF3829D6269D006E5F2D /* ARTJitterCoefficientGenerator.h in Headers */,
 				D710D5CB21949D50008F54AD /* ARTChannel+Private.h in Headers */,
 				D710D5CF21949D50008F54AD /* ARTPresenceMessage+Private.h in Headers */,
 				D710D69E21949F00008F54AD /* ARTLog.h in Headers */,
@@ -2687,6 +2715,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				856AAC991B6E312F00B07119 /* RestClientTests.swift in Sources */,
+				217FCF4229D626E4006E5F2D /* MockJitterCoefficientGenerator.swift in Sources */,
 				D746AE2C1BBB625E003ECEF8 /* RestClientChannelTests.swift in Sources */,
 				D71D30041C5F7B2F002115B0 /* RealtimeClientChannelsTests.swift in Sources */,
 				EB1B53F922F85CE4006A59AC /* ObjectLifetimesTests.swift in Sources */,
@@ -2702,6 +2731,7 @@
 				D7093CA9219EFA8A00723F17 /* MockDeviceStorage.swift in Sources */,
 				D7CEF1321C8DD3BC004FB242 /* RealtimeClientPresenceTests.swift in Sources */,
 				853ED7C41B7A1A3C006F1C6F /* RestClientStatsTests.swift in Sources */,
+				217FCF4629D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift in Sources */,
 				D74EFAEB1C4D09B500CFF98E /* RealtimeClientChannelTests.swift in Sources */,
 				851674EF1B7BA5CD00D35169 /* StatsTests.swift in Sources */,
 				EB1AE0CE1C5C3A4900D62250 /* UtilitiesTests.swift in Sources */,
@@ -2716,6 +2746,7 @@
 				EB7913A81C6E54C3000ABF9B /* CryptoTests.swift in Sources */,
 				2132C22229D233EB000C4355 /* DefaultErrorCheckerTests.swift in Sources */,
 				D777EEE820650ADF002EBA03 /* PushChannelTests.swift in Sources */,
+				217FCF3F29D626E4006E5F2D /* StaticJitterCoefficients.swift in Sources */,
 				D746AE2D1BBB625E003ECEF8 /* RestClientChannelsTests.swift in Sources */,
 				EBAB9A6F1C69702800AF036B /* ReadmeExamplesTests.swift in Sources */,
 				56190954238C3D3200A862A6 /* CryptoTest.m in Sources */,
@@ -2772,6 +2803,7 @@
 				1C55427D1B148306003068DB /* ARTStatus.m in Sources */,
 				D785C42A1E549E33008FEC05 /* ARTPushChannelSubscription.m in Sources */,
 				D7B17EE41C07208B00A6958E /* ARTConnectionDetails.m in Sources */,
+				217FCF3A29D626C1006E5F2D /* ARTJitterCoefficientGenerator.m in Sources */,
 				96BF61591A35B52C004CF2B3 /* ARTHttp.m in Sources */,
 				217D1833254222F600DFF07E /* ARTSRPinningSecurityPolicy.m in Sources */,
 				D3AD0EBE215E2FB000312105 /* ARTNSString+ARTUtil.m in Sources */,
@@ -2847,6 +2879,7 @@
 				D7093C29219E466E00723F17 /* StatsTests.swift in Sources */,
 				D7093C23219E466E00723F17 /* RestPaginatedTests.swift in Sources */,
 				D7093C19219E465300723F17 /* TestUtilities.swift in Sources */,
+				217FCF4729D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift in Sources */,
 				560579DA24AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */,
 				2132C22329D233EB000C4355 /* DefaultErrorCheckerTests.swift in Sources */,
 				D7093C1C219E466400723F17 /* ReadmeExamplesTests.swift in Sources */,
@@ -2865,6 +2898,7 @@
 				D7093C2A219E466E00723F17 /* UtilitiesTests.swift in Sources */,
 				D798554923EB96C000946BE2 /* DeltaCodecTests.swift in Sources */,
 				2132C21729D20F69000C4355 /* ResumeRequestResponseTests.swift in Sources */,
+				217FCF4329D626E4006E5F2D /* MockJitterCoefficientGenerator.swift in Sources */,
 				D7093C21219E466E00723F17 /* RestClientChannelsTests.swift in Sources */,
 				2132C22A29D23484000C4355 /* MockErrorChecker.swift in Sources */,
 				D7093C26219E466E00723F17 /* RealtimeClientChannelTests.swift in Sources */,
@@ -2872,6 +2906,7 @@
 				56190955238C3D3200A862A6 /* CryptoTest.m in Sources */,
 				D7093C1D219E466600723F17 /* AuthTests.swift in Sources */,
 				D7093C25219E466E00723F17 /* RealtimeClientConnectionTests.swift in Sources */,
+				217FCF4029D626E4006E5F2D /* StaticJitterCoefficients.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2884,6 +2919,7 @@
 				848ED97526E50D0F0087E800 /* ObjcppTest.mm in Sources */,
 				D7093C7F219EE26400723F17 /* RealtimeClientPresenceTests.swift in Sources */,
 				D7093C73219EE26000723F17 /* ReadmeExamplesTests.swift in Sources */,
+				217FCF4829D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift in Sources */,
 				560579DB24AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */,
 				2132C22429D233EB000C4355 /* DefaultErrorCheckerTests.swift in Sources */,
 				D7093C71219EE25800723F17 /* NSObject+TestSuite.m in Sources */,
@@ -2902,6 +2938,7 @@
 				D7093C7C219EE26400723F17 /* RealtimeClientConnectionTests.swift in Sources */,
 				D798554A23EB96C000946BE2 /* DeltaCodecTests.swift in Sources */,
 				2132C21829D20F69000C4355 /* ResumeRequestResponseTests.swift in Sources */,
+				217FCF4429D626E4006E5F2D /* MockJitterCoefficientGenerator.swift in Sources */,
 				D7093C74219EE26400723F17 /* AuthTests.swift in Sources */,
 				2132C22B29D23485000C4355 /* MockErrorChecker.swift in Sources */,
 				D7093C72219EE25B00723F17 /* NSObject+TestSuite.swift in Sources */,
@@ -2909,6 +2946,7 @@
 				56190956238C3D3200A862A6 /* CryptoTest.m in Sources */,
 				D7093C7A219EE26400723F17 /* RestPaginatedTests.swift in Sources */,
 				D7093C81219EE26400723F17 /* UtilitiesTests.swift in Sources */,
+				217FCF4129D626E4006E5F2D /* StaticJitterCoefficients.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2959,6 +2997,7 @@
 				D710D5D921949D78008F54AD /* ARTProtocolMessage.m in Sources */,
 				D710D53721949C54008F54AD /* ARTLocalDevice.m in Sources */,
 				D710D53621949C54008F54AD /* ARTDeviceIdentityTokenDetails.m in Sources */,
+				217FCF3B29D626C1006E5F2D /* ARTJitterCoefficientGenerator.m in Sources */,
 				D710D4C821949BAA008F54AD /* ARTRealtimeTransport.m in Sources */,
 				217D184A254222F700DFF07E /* ARTSRPinningSecurityPolicy.m in Sources */,
 				D710D49821949ACA008F54AD /* ARTRestChannel.m in Sources */,
@@ -3072,6 +3111,7 @@
 				D54C55AC26957FDE00729EC4 /* ARTNSURL+ARTUtils.m in Sources */,
 				D710D54921949C55008F54AD /* ARTLocalDevice.m in Sources */,
 				D710D54821949C55008F54AD /* ARTDeviceIdentityTokenDetails.m in Sources */,
+				217FCF3C29D626C1006E5F2D /* ARTJitterCoefficientGenerator.m in Sources */,
 				D710D4CC21949BAB008F54AD /* ARTRealtimeTransport.m in Sources */,
 				217D1861254222FA00DFF07E /* ARTSRPinningSecurityPolicy.m in Sources */,
 				D710D4A221949ACB008F54AD /* ARTRestChannel.m in Sources */,
