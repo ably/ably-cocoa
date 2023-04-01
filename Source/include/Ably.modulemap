@@ -86,5 +86,6 @@ framework module Ably {
         header "Ably/ARTRetryDelayCalculator.h"
         header "Ably/ARTConstantRetryDelayCalculator.h"
         header "Ably/ARTBackoffRetryDelayCalculator.h"
+        header "Ably/ARTClientOptions+TestConfiguration.h"
     }
 }
