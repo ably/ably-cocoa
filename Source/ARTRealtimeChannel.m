@@ -960,14 +960,10 @@ dispatch_sync(_queue, ^{
 }
 
 - (void)internalAttach:(ARTCallback)callback withReason:(ARTErrorInfo *)reason {
-    [self internalAttach:callback reason:reason storeErrorInfo:false channelSerial:nil];
+    [self internalAttach:callback reason:reason channelSerial:nil];
 }
 
-- (void)internalAttach:(ARTCallback)callback channelSerial:(NSString *)channelSerial reason:(ARTErrorInfo *)reason {
-    [self internalAttach:callback reason:reason storeErrorInfo:false channelSerial:channelSerial];
-}
-
-- (void)internalAttach:(ARTCallback)callback reason:(ARTErrorInfo *)reason storeErrorInfo:(BOOL)storeErrorInfo channelSerial:(NSString *)channelSerial {
+- (void)internalAttach:(ARTCallback)callback reason:(ARTErrorInfo *)reason channelSerial:(NSString *)channelSerial {
     switch (self.state_nosync) {
         case ARTRealtimeChannelDetaching: {
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) attach after the completion of Detaching", _realtime, self, self.name];
@@ -993,7 +989,7 @@ dispatch_sync(_queue, ^{
     const ARTState metadataState = reason ? ARTStateError : ARTStateOk;
     ARTChannelStateChangeMetadata *const metadata = [[ARTChannelStateChangeMetadata alloc] initWithState:metadataState
                                                                                                errorInfo:reason
-                                                                                          storeErrorInfo:storeErrorInfo];
+                                                                                          storeErrorInfo:NO];
     [self transition:ARTRealtimeChannelAttaching withMetadata:metadata];
 
     [self attachAfterChecks:callback channelSerial:channelSerial];
@@ -1168,7 +1164,7 @@ dispatch_sync(_queue, ^{
     _decodeFailureRecoveryInProgress = true;
     [self internalAttach:^(ARTErrorInfo *e) {
         self->_decodeFailureRecoveryInProgress = false;
-    } channelSerial:channelSerial reason:error];
+    } reason:error channelSerial:channelSerial];
 }
 
 #pragma mark - ARTPresenceMapDelegate
