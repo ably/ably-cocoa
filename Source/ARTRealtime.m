@@ -42,6 +42,7 @@
 #import "ARTConstants.h"
 #import "ARTCrypto.h"
 #import "ARTDeviceIdentityTokenDetails.h"
+#import "ARTErrorChecker.h"
 
 @interface ARTConnectionStateChange ()
 
@@ -213,7 +214,7 @@
         self.rest.prioritizedHost = nil;
         
         if (options.autoConnect) {
-            [self _connect];
+            [self connect];
         }
 
         if (options.recover) { //RTN16f
@@ -970,7 +971,7 @@
 }
 
 - (BOOL)isTokenError:(nullable ARTErrorInfo *)error {
-    return error != nil && error.statusCode == 401 && error.code >= ARTErrorTokenErrorUnspecified && error.code < ARTErrorConnectionLimitsExceeded;
+    return error != nil && [[[ARTDefaultErrorChecker alloc] init] isTokenError:error];
 }
 
 - (void)transportReconnectWithHost:(NSString *)host {

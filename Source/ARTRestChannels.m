@@ -3,7 +3,7 @@
 #import "ARTChannels+Private.h"
 #import "ARTRestChannel+Private.h"
 #import "ARTRest+Private.h"
-#import "ARTClientOptions+Private.h"
+#import "ARTClientOptions+TestConfiguration.h"
 
 @implementation ARTRestChannels {
     ARTQueuedDealloc *_dealloc;

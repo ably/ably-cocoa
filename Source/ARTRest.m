@@ -39,6 +39,7 @@
 #import "ARTNSURL+ARTUtils.h"
 #import "ARTTime.h"
 #import "ARTClientInformation.h"
+#import "ARTErrorChecker.h"
 
 @implementation ARTRest {
     ARTQueuedDealloc *_dealloc;
@@ -372,7 +373,7 @@
         if (response.statusCode >= 400) {
             if (data) {
                 NSError *decodeError = nil;
-                NSError *dataError = [self->_encoders[response.MIMEType] decodeErrorInfo:data error:&decodeError];
+                ARTErrorInfo *dataError = [self->_encoders[response.MIMEType] decodeErrorInfo:data error:&decodeError];
                 if ([self shouldRenewToken:&dataError] && [request isKindOfClass:[NSMutableURLRequest class]]) {
                     [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p retry request %@", self, request];
                     // Make a single attempt to reissue the token and resend the request
@@ -444,13 +445,12 @@
     return task;
 }
 
-- (BOOL)shouldRenewToken:(NSError **)errorPtr {
-    if (errorPtr && *errorPtr &&
-        (*errorPtr).code >= ARTErrorTokenErrorUnspecified && (*errorPtr).code < ARTErrorConnectionLimitsExceeded) {
+- (BOOL)shouldRenewToken:(ARTErrorInfo **)errorPtr {
+    if (errorPtr && *errorPtr && [[[ARTDefaultErrorChecker alloc] init] isTokenError: *errorPtr]) {
         if ([self.auth tokenIsRenewable]) {
             return YES;
         }
-        *errorPtr = (NSError *)[ARTErrorInfo createWithCode:ARTStateRequestTokenFailed message:ARTAblyMessageNoMeansToRenewToken];
+        *errorPtr = [ARTErrorInfo createWithCode:ARTStateRequestTokenFailed message:ARTAblyMessageNoMeansToRenewToken];
     }
     return NO;
 }

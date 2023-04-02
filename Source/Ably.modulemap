@@ -80,5 +80,12 @@ framework module Ably {
         header "ARTNSURL+ARTUtils.h"
         header "ARTNSMutableURLRequest+ARTUtils.h"
         header "ARTTime.h"
+        header "ARTErrorChecker.h"
+        header "ARTResumeRequestResponse.h"
+        header "ARTJitterCoefficientGenerator.h"
+        header "ARTRetryDelayCalculator.h"
+        header "ARTConstantRetryDelayCalculator.h"
+        header "ARTBackoffRetryDelayCalculator.h"
+        header "ARTClientOptions+TestConfiguration.h"
     }
 }

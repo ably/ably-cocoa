@@ -4,7 +4,7 @@
 #import "ARTRealtimeChannel+Private.h"
 #import "ARTRealtime+Private.h"
 #import "ARTRealtimePresence+Private.h"
-#import "ARTClientOptions+Private.h"
+#import "ARTClientOptions+TestConfiguration.h"
 
 @implementation ARTRealtimeChannels {
     ARTQueuedDealloc *_dealloc;
@@ -72,7 +72,7 @@
 }
 
 - (id)makeChannel:(NSString *)name options:(ARTRealtimeChannelOptions *)options {
-    return [ARTRealtimeChannelInternal channelWithRealtime:_realtime andName:name withOptions:options];
+    return [[ARTRealtimeChannelInternal alloc] initWithRealtime:_realtime andName:name withOptions:options];
 }
 
 - (id<NSFastEnumeration>)copyIntoIteratorWithMapper:(ARTRealtimeChannel *(^)(ARTRealtimeChannelInternal *))mapper {
