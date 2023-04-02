@@ -24,6 +24,7 @@
 #import "ARTRestChannels+Private.h"
 #import "ARTEventEmitter+Private.h"
 #import "ARTChannelStateChangeMetadata.h"
+#import "ARTAttachRequestMetadata.h"
 #if TARGET_OS_IPHONE
 #import "ARTPushChannel+Private.h"
 #endif
@@ -947,23 +948,21 @@ dispatch_sync(_queue, ^{
         default:
             break;
     }
-    [self internalAttach:callback withReason:nil];
+    ARTAttachRequestMetadata *const metadata = [[ARTAttachRequestMetadata alloc] initWithReason:nil];
+    [self internalAttach:callback metadata:metadata];
 }
 
 - (void)reattachWithReason:(ARTErrorInfo *)reason {
     if ([self canBeReattached]) {
         [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) %@ and will reattach", _realtime, self, self.name, ARTRealtimeChannelStateToStr(self.state_nosync)];
-        [self internalAttach:nil withReason:reason];
+        ARTAttachRequestMetadata *const metadata = [[ARTAttachRequestMetadata alloc] initWithReason:reason];
+        [self internalAttach:nil metadata:metadata];
     } else {
         [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) %@ should not reattach", _realtime, self, self.name, ARTRealtimeChannelStateToStr(self.state_nosync)];
     }
 }
 
-- (void)internalAttach:(ARTCallback)callback withReason:(ARTErrorInfo *)reason {
-    [self internalAttach:callback reason:reason channelSerial:nil];
-}
-
-- (void)internalAttach:(ARTCallback)callback reason:(ARTErrorInfo *)reason channelSerial:(NSString *)channelSerial {
+- (void)internalAttach:(ARTCallback)callback metadata:(ARTAttachRequestMetadata *)metadata {
     switch (self.state_nosync) {
         case ARTRealtimeChannelDetaching: {
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) attach after the completion of Detaching", _realtime, self, self.name];
@@ -986,13 +985,13 @@ dispatch_sync(_queue, ^{
 
     if (callback) [_attachedEventEmitter once:callback];
     // Set state: Attaching
-    const ARTState metadataState = reason ? ARTStateError : ARTStateOk;
-    ARTChannelStateChangeMetadata *const metadata = [[ARTChannelStateChangeMetadata alloc] initWithState:metadataState
-                                                                                               errorInfo:reason
-                                                                                          storeErrorInfo:NO];
-    [self transition:ARTRealtimeChannelAttaching withMetadata:metadata];
+    const ARTState stateChangeMetadataState = metadata.reason ? ARTStateError : ARTStateOk;
+    ARTChannelStateChangeMetadata *const stateChangeMetadata = [[ARTChannelStateChangeMetadata alloc] initWithState:stateChangeMetadataState
+                                                                                                          errorInfo:metadata.reason
+                                                                                                     storeErrorInfo:NO];
+    [self transition:ARTRealtimeChannelAttaching withMetadata:stateChangeMetadata];
 
-    [self attachAfterChecks:callback channelSerial:channelSerial];
+    [self attachAfterChecks:callback channelSerial:metadata.channelSerial];
 }
 
 - (void)attachAfterChecks:(ARTCallback)callback channelSerial:(NSString *)channelSerial {
@@ -1162,9 +1161,11 @@ dispatch_sync(_queue, ^{
 
     [self.logger warn:@"R:%p C:%p (%@) starting delta decode failure recovery process", _realtime, self, self.name];
     _decodeFailureRecoveryInProgress = true;
+    ARTAttachRequestMetadata *const metadata = [[ARTAttachRequestMetadata alloc] initWithReason:error
+                                                                                  channelSerial:channelSerial];
     [self internalAttach:^(ARTErrorInfo *e) {
         self->_decodeFailureRecoveryInProgress = false;
-    } reason:error channelSerial:channelSerial];
+    } metadata:metadata];
 }
 
 #pragma mark - ARTPresenceMapDelegate
@@ -1237,10 +1238,12 @@ dispatch_sync(_queue, ^{
 
     switch (self.state_nosync) {
         case ARTRealtimeChannelAttached:
-        case ARTRealtimeChannelAttaching:
+        case ARTRealtimeChannelAttaching: {
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) set options in %@ state", _realtime, self, self.name, ARTRealtimeChannelStateToStr(self.state_nosync)];
-            [self internalAttach:callback withReason:nil];
+            ARTAttachRequestMetadata *const metadata = [[ARTAttachRequestMetadata alloc] initWithReason:nil];
+            [self internalAttach:callback metadata:metadata];
             break;
+        }
         default:
             if (callback)
                 callback(nil);
