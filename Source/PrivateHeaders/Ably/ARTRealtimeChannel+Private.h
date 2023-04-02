@@ -14,6 +14,7 @@
 @class ARTProtocolMessage;
 @class ARTRealtimePresenceInternal;
 @class ARTChannelStateChangeMetadata;
+@class ARTAttachRequestMetadata;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -49,7 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (bool)isLastChannelSerial:(NSString *)channelSerial;
 
-- (void)reattachWithReason:(nullable ARTErrorInfo *)reason;
+- (void)reattachWithMetadata:(ARTAttachRequestMetadata *)metadata;
 
 - (void)_attach:(nullable ARTCallback)callback;
 - (void)_detach:(nullable ARTCallback)callback;

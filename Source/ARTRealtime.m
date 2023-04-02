@@ -40,6 +40,7 @@
 #import "ARTErrorChecker.h"
 #import "ARTConnectionStateChangeMetadata.h"
 #import "ARTChannelStateChangeMetadata.h"
+#import "ARTAttachRequestMetadata.h"
 
 @interface ARTConnectionStateChange ()
 
@@ -789,7 +790,8 @@
             [self.logger warn:@"RT:%p connection \"%@\" has reconnected, but resume failed. Reattaching any attached channels", self, message.connectionId];
             // Reattach all channels
             for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
-                [channel reattachWithReason:message.error];
+                ARTAttachRequestMetadata *const metadata = [[ARTAttachRequestMetadata alloc] initWithReason:message.error];
+                [channel reattachWithMetadata:metadata];
             }
             _resuming = false;
         }

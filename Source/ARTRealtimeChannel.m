@@ -603,7 +603,8 @@ dispatch_sync(_queue, ^{
             if (self.realtime.shouldSendEvents) {
                 channelRetryListener = [self unlessStateChangesBefore:self.realtime.options.channelRetryTimeout do:^{
                     [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) reattach initiated by retry timeout", self->_realtime, self, self.name];
-                    [self reattachWithReason:nil];
+                    ARTAttachRequestMetadata *const attachMetadata = [[ARTAttachRequestMetadata alloc] initWithReason:nil];
+                    [self reattachWithMetadata:attachMetadata];
                 }];
             }
             break;
@@ -737,10 +738,12 @@ dispatch_sync(_queue, ^{
 - (void)setDetached:(ARTProtocolMessage *)message {
     switch (self.state_nosync) {
         case ARTRealtimeChannelAttached:
-        case ARTRealtimeChannelSuspended:
+        case ARTRealtimeChannelSuspended: {
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) reattach initiated by DETACHED message", _realtime, self, self.name];
-            [self reattachWithReason:message.error];
+            ARTAttachRequestMetadata *const metadata = [[ARTAttachRequestMetadata alloc] initWithReason:message.error];
+            [self reattachWithMetadata:metadata];
             return;
+        }
         case ARTRealtimeChannelAttaching: {
             [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) reattach initiated by DETACHED message but it is currently attaching", _realtime, self, self.name];
             const ARTState state = message.error ? ARTStateError : ARTStateOk;
@@ -952,10 +955,9 @@ dispatch_sync(_queue, ^{
     [self internalAttach:callback metadata:metadata];
 }
 
-- (void)reattachWithReason:(ARTErrorInfo *)reason {
+- (void)reattachWithMetadata:(ARTAttachRequestMetadata *)metadata {
     if ([self canBeReattached]) {
         [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) %@ and will reattach", _realtime, self, self.name, ARTRealtimeChannelStateToStr(self.state_nosync)];
-        ARTAttachRequestMetadata *const metadata = [[ARTAttachRequestMetadata alloc] initWithReason:reason];
         [self internalAttach:nil metadata:metadata];
     } else {
         [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) %@ should not reattach", _realtime, self, self.name, ARTRealtimeChannelStateToStr(self.state_nosync)];
