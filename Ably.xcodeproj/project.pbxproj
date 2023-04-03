@@ -18,6 +18,9 @@
 		1C6C18A41ADFDAB100AB79E4 /* ARTLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C6C18A21ADFDAB100AB79E4 /* ARTLog.m */; };
 		1CD8DC9F1B1C7315007EAF36 /* ARTDefault.h in Headers */ = {isa = PBXBuildFile; fileRef = 1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1CD8DCA01B1C7315007EAF36 /* ARTDefault.m in Sources */ = {isa = PBXBuildFile; fileRef = 1CD8DC9E1B1C7315007EAF36 /* ARTDefault.m */; };
+		21113B4929DB60F800652C86 /* MockRetryDelayCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21113B4829DB60F800652C86 /* MockRetryDelayCalculator.swift */; };
+		21113B4A29DB60F800652C86 /* MockRetryDelayCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21113B4829DB60F800652C86 /* MockRetryDelayCalculator.swift */; };
+		21113B4B29DB60F800652C86 /* MockRetryDelayCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21113B4829DB60F800652C86 /* MockRetryDelayCalculator.swift */; };
 		211A60D729D6D2C300D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */; };
 		211A60D829D6D2C400D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */; };
 		211A60D929D6D2C500D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */; };
@@ -1024,6 +1027,7 @@
 		1C6C18A21ADFDAB100AB79E4 /* ARTLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTLog.m; sourceTree = "<group>"; };
 		1CD8DC9D1B1C7315007EAF36 /* ARTDefault.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTDefault.h; path = include/Ably/ARTDefault.h; sourceTree = "<group>"; };
 		1CD8DC9E1B1C7315007EAF36 /* ARTDefault.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTDefault.m; sourceTree = "<group>"; };
+		21113B4829DB60F800652C86 /* MockRetryDelayCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockRetryDelayCalculator.swift; sourceTree = "<group>"; };
 		211A60DA29D726F800D169C5 /* ARTConnectionStateChangeMetadata.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTConnectionStateChangeMetadata.h; path = PrivateHeaders/Ably/ARTConnectionStateChangeMetadata.h; sourceTree = "<group>"; };
 		211A60DE29D7272000D169C5 /* ARTConnectionStateChangeMetadata.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTConnectionStateChangeMetadata.m; sourceTree = "<group>"; };
 		211A60FA29D8ABCF00D169C5 /* ARTChannelStateChangeMetadata.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTChannelStateChangeMetadata.h; path = PrivateHeaders/Ably/ARTChannelStateChangeMetadata.h; sourceTree = "<group>"; };
@@ -1605,6 +1609,7 @@
 				217FCF3E29D626E4006E5F2D /* MockJitterCoefficientGenerator.swift */,
 				217FCF3D29D626E4006E5F2D /* StaticJitterCoefficients.swift */,
 				2132C2E829D4B91B000C4355 /* BackoffCoefficients.swift */,
+				21113B4829DB60F800652C86 /* MockRetryDelayCalculator.swift */,
 			);
 			path = "Test Utilities";
 			sourceTree = "<group>";
@@ -2821,6 +2826,7 @@
 				56190954238C3D3200A862A6 /* CryptoTest.m in Sources */,
 				D7C1B8771BBEA81A0087B55F /* AuthTests.swift in Sources */,
 				D7EBE5A31BE8391E0086E675 /* RealtimeClientConnectionTests.swift in Sources */,
+				21113B4929DB60F800652C86 /* MockRetryDelayCalculator.swift in Sources */,
 				560579D924AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2975,6 +2981,7 @@
 				D7093C2A219E466E00723F17 /* UtilitiesTests.swift in Sources */,
 				D798554923EB96C000946BE2 /* DeltaCodecTests.swift in Sources */,
 				2132C21729D20F69000C4355 /* ResumeRequestResponseTests.swift in Sources */,
+				21113B4A29DB60F800652C86 /* MockRetryDelayCalculator.swift in Sources */,
 				217FCF4329D626E4006E5F2D /* MockJitterCoefficientGenerator.swift in Sources */,
 				D7093C21219E466E00723F17 /* RestClientChannelsTests.swift in Sources */,
 				2132C22A29D23484000C4355 /* MockErrorChecker.swift in Sources */,
@@ -3018,6 +3025,7 @@
 				D7093C7C219EE26400723F17 /* RealtimeClientConnectionTests.swift in Sources */,
 				D798554A23EB96C000946BE2 /* DeltaCodecTests.swift in Sources */,
 				2132C21829D20F69000C4355 /* ResumeRequestResponseTests.swift in Sources */,
+				21113B4B29DB60F800652C86 /* MockRetryDelayCalculator.swift in Sources */,
 				217FCF4429D626E4006E5F2D /* MockJitterCoefficientGenerator.swift in Sources */,
 				D7093C74219EE26400723F17 /* AuthTests.swift in Sources */,
 				2132C22B29D23485000C4355 /* MockErrorChecker.swift in Sources */,
