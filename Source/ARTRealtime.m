@@ -172,6 +172,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) id<ARTRetryDelayCalculator> connectRetryDelayCalculator;
 @property (nonatomic, nullable) ARTRetrySequence *connectRetrySequence;
+@property (nonatomic, readonly) ARTInternalLog *logger;
 
 @end
 
@@ -237,6 +238,10 @@ NS_ASSUME_NONNULL_END
         }
     }
     return self;
+}
+
+- (ARTInternalLog *)logger_onlyForUseInTests {
+    return self.logger;
 }
 
 #pragma mark - ARTAuthDelegate
