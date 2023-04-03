@@ -172,6 +172,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) id<ARTRetryDelayCalculator> connectRetryDelayCalculator;
 @property (nonatomic, nullable) ARTRetrySequence *connectRetrySequence;
+@property (nonatomic, readonly) ARTInternalLog *logger;
 
 @end
 

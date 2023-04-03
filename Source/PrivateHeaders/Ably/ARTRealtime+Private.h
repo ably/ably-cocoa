@@ -65,7 +65,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, nonatomic) ARTRestInternal *rest;
 @property (readonly, nullable) id<ARTRealtimeTransport> transport;
 @property (readonly, nonatomic, nonnull) id<ARTReachability> reachability;
-@property (nonatomic, readonly) ARTInternalLog *logger;
 @property (nonatomic) NSTimeInterval connectionStateTtl;
 @property (nonatomic) NSTimeInterval maxIdleInterval;
 

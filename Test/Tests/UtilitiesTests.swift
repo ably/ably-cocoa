@@ -440,8 +440,8 @@ class UtilitiesTests: XCTestCase {
 
     func test__021__Utilities__Logger__should_have_a_history_of_logs() {
         let options = AblyTests.commonAppSetup()
+        options.logLevel = .verbose
         let realtime = ARTRealtime(options: options)
-        realtime.internal.logger.logLevel = .verbose
         defer { realtime.close() }
         let channel = realtime.channels.get(uniqueChannelName())
 
