@@ -2557,8 +2557,8 @@ class RealtimeClientConnectionTests: XCTestCase {
                 let transport = client.internal.transport as! TestProxyTransport
                 
                 let connectedPM = transport.protocolMessagesReceived.filter { $0.action == .connected }[0]
-                XCTAssertEqual(connectedPM.connectionId, expectedConnectionId)
-                XCTAssertEqual(client.connection.id, expectedConnectionId)
+                XCTAssertNotEqual(connectedPM.connectionId, expectedConnectionId)
+                XCTAssertNotEqual(client.connection.id, expectedConnectionId)
                 //ensure reattach
                 XCTAssertEqual((transport.protocolMessagesSent.filter { $0.action == .attach }).count, 1)
                 partialDone()

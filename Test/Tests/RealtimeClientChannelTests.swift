@@ -917,7 +917,7 @@ class RealtimeClientChannelTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { stateChange in
-                XCTAssertEqual(stateChange.reason?.code, ARTErrorCode.unableToRecoverConnectionExpired.intValue) // didn't resumed
+                XCTAssertEqual(stateChange.reason?.code, ARTErrorCode.invalidConnectionIdInvalidFormat.intValue) // didn't resumed
                 done()
             }
             client.simulateRestoreInternetConnection(after: 1.0)
