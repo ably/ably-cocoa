@@ -722,7 +722,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 XCTAssertNil(stateChange.reason)
                 XCTAssertEqual(channel.presence.internal.pendingPresence.count, 1)
                 channel.internalAsync { _internal in
-                    _internal.setSuspended(ARTStatus.state(.error, info: ARTErrorInfo.create(withCode: 1234, message: "unknown error")))
+                    _internal.setSuspended(.init(state: .error, errorInfo: ARTErrorInfo.create(withCode: 1234, message: "unknown error")))
                 }
                 partialDone()
             }
@@ -801,7 +801,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 partialDone()
             }
             channel.internalAsync { _internal in
-                _internal.setSuspended(ARTStatus.state(.ok))
+                _internal.setSuspended(.init(state: .ok))
             }
         }
 

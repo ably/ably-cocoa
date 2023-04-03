@@ -52,7 +52,6 @@ NS_ASSUME_NONNULL_BEGIN
 // State properties
 - (BOOL)shouldSendEvents;
 - (BOOL)shouldQueueEvents;
-- (ARTStatus *)defaultError;
 
 // Message sending
 - (void)sendQueuedMessages;
