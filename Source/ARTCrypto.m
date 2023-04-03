@@ -10,12 +10,6 @@
 
 @end
 
-@interface ARTCrypto ()
-
-@property (nonatomic, strong) ARTLog * logger;
-
-@end
-
 @interface ARTCbcCipher ()
 
 @property CCAlgorithm algorithm;
