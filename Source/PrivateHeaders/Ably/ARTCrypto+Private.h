@@ -6,7 +6,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTCipherParams ()
 
 @property (readonly, strong, nonatomic, nullable) NSData *iv;
-@property (nonatomic, strong) ARTLog *logger;
 - (instancetype)initWithAlgorithm:(NSString *)algorithm key:(id<ARTCipherKeyCompatible>)key iv:(NSData *_Nullable)iv;
 
 @end
