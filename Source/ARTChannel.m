@@ -1,4 +1,5 @@
 #import "ARTChannel+Private.h"
+#import "ARTChannel+Subclass.h"
 
 #import "ARTDataEncoder.h"
 #import "ARTMessage.h"

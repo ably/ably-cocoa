@@ -11,7 +11,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nullable) ARTChannelOptions *options;
 
-@property (nonatomic, readonly) ARTInternalLog *logger;
 @property (nonatomic, strong, readonly) ARTDataEncoder *dataEncoder;
 
 - (void)internalPostMessages:(id)data callback:(nullable ARTCallback)callback;

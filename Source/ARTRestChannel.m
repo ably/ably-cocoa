@@ -3,6 +3,7 @@
 #import "ARTRest+Private.h"
 #import "ARTRestPresence+Private.h"
 #import "ARTChannel+Private.h"
+#import "ARTChannel+Subclass.h"
 #import "ARTChannelOptions.h"
 #import "ARTMessage.h"
 #import "ARTBaseMessage+Private.h"

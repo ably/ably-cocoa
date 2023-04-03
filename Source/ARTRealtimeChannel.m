@@ -1,5 +1,6 @@
 #import "ARTRealtimeChannel+Private.h"
 #import "ARTChannel+Private.h"
+#import "ARTChannel+Subclass.h"
 #import "ARTDataQuery+Private.h"
 
 #import "ARTRealtime+Private.h"
@@ -310,7 +311,7 @@ dispatch_sync(_queue, ^{
 
 - (ARTRealtimePresenceInternal *)presence {
     if (!_realtimePresence) {
-        _realtimePresence = [[ARTRealtimePresenceInternal alloc] initWithChannel:self];
+        _realtimePresence = [[ARTRealtimePresenceInternal alloc] initWithChannel:self logger:self.logger];
     }
     return _realtimePresence;
 }
