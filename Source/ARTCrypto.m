@@ -88,7 +88,6 @@
     }
 
     if (errorMsg) {
-        [self.logger error:@"ARTCrypto.ccAlgorithm: %@", errorMsg];
         if (error) *error = [NSError errorWithDomain:ARTAblyErrorDomain code:0 userInfo:@{NSLocalizedFailureReasonErrorKey: errorMsg}];
         return NO;
     }
