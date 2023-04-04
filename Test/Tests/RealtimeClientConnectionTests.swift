@@ -157,12 +157,6 @@ class RealtimeClientConnectionTests: XCTestCase {
         return super.defaultTestSuite
     }
 
-    class TotalMessages {
-        static var expected: Int32 = 0
-        static var succeeded: Int32 = 0
-        fileprivate init() {}
-    }
-
     // CD2c
 
     func test__016__Connection__ConnectionDetails__maxMessageSize_overrides_the_default_maxMessageSize() {
@@ -952,15 +946,21 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
         }
 
-        TotalMessages.expected = 5
+        struct TotalMessages {
+            static let expected = 5
+            var succeeded = 0
+        }
+
+        var totalMessages = TotalMessages()
+
         for index in 1 ... TotalMessages.expected {
             channel.publish(nil, data: "message\(index)") { errorInfo in
                 if errorInfo == nil {
-                    TotalMessages.succeeded += 1
+                    totalMessages.succeeded += 1
                 }
             }
         }
-        expect(TotalMessages.succeeded).toEventually(equal(TotalMessages.expected), timeout: testTimeout)
+        expect(totalMessages.succeeded).toEventually(equal(TotalMessages.expected), timeout: testTimeout)
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enterClient("invalid", data: nil, callback: { errorInfo in
@@ -983,7 +983,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         // Messages covered in a single ACK response
         XCTAssertEqual(acks[1].msgSerial, 1)
-        XCTAssertEqual(acks[1].count, TotalMessages.expected)
+        XCTAssertEqual(Int(acks[1].count), TotalMessages.expected)
 
         if nacks.count != 1 {
             fail("Received invalid number of NACK responses: \(nacks.count)")
