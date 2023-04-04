@@ -1014,7 +1014,8 @@ dispatch_sync(_queue, ^{
     const ARTState stateChangeMetadataState = metadata.reason ? ARTStateError : ARTStateOk;
     ARTChannelStateChangeMetadata *const stateChangeMetadata = [[ARTChannelStateChangeMetadata alloc] initWithState:stateChangeMetadataState
                                                                                                           errorInfo:metadata.reason
-                                                                                                     storeErrorInfo:NO];
+                                                                                                     storeErrorInfo:NO
+                                                                                                       retryAttempt:metadata.retryAttempt];
     [self transition:ARTRealtimeChannelAttaching withMetadata:stateChangeMetadata];
 
     [self attachAfterChecks:callback channelSerial:metadata.channelSerial];
