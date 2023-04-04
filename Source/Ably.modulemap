@@ -90,5 +90,6 @@ framework module Ably {
         header "ARTConnectionStateChangeMetadata.h"
         header "ARTChannelStateChangeMetadata.h"
         header "ARTAttachRequestMetadata.h"
+        header "ARTRetrySequence.h"
     }
 }

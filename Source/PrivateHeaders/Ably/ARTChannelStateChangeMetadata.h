@@ -2,6 +2,7 @@
 #import "ARTTypes.h"
 
 @class ARTErrorInfo;
+@class ARTRetryAttempt;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -28,6 +29,8 @@ NS_SWIFT_NAME(ChannelStateChangeMetadata)
  */
 @property (nonatomic, readonly) BOOL storeErrorInfo;
 
+@property (nullable, nonatomic, readonly) ARTRetryAttempt *retryAttempt;
+
 - (instancetype)init NS_UNAVAILABLE;
 
 /**
@@ -43,7 +46,12 @@ NS_SWIFT_NAME(ChannelStateChangeMetadata)
 
 - (instancetype)initWithState:(ARTState)state
                     errorInfo:(nullable ARTErrorInfo *)errorInfo
-               storeErrorInfo:(BOOL)storeErrorInfo NS_DESIGNATED_INITIALIZER;
+               storeErrorInfo:(BOOL)storeErrorInfo;
+
+- (instancetype)initWithState:(ARTState)state
+                    errorInfo:(nullable ARTErrorInfo *)errorInfo
+               storeErrorInfo:(BOOL)storeErrorInfo
+                 retryAttempt:(nullable ARTRetryAttempt *)retryAttempt NS_DESIGNATED_INITIALIZER;
 
 @end
 

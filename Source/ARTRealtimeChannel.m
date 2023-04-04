@@ -25,6 +25,8 @@
 #import "ARTEventEmitter+Private.h"
 #import "ARTChannelStateChangeMetadata.h"
 #import "ARTAttachRequestMetadata.h"
+#import "ARTRetrySequence.h"
+#import "ARTConstantRetryDelayCalculator.h"
 #if TARGET_OS_IPHONE
 #import "ARTPushChannel+Private.h"
 #endif
@@ -228,6 +230,17 @@
 
 @end
 
+NS_ASSUME_NONNULL_BEGIN
+
+@interface ARTRealtimeChannelInternal ()
+
+@property (nonatomic, readonly) id<ARTRetryDelayCalculator> attachRetryDelayCalculator;
+@property (nonatomic, nullable) ARTRetrySequence *attachRetrySequence;
+
+@end
+
+NS_ASSUME_NONNULL_END
+
 @implementation ARTRealtimeChannelInternal {
     dispatch_queue_t _queue;
     dispatch_queue_t _userQueue;
@@ -251,6 +264,7 @@
         _attachedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
         _detachedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
         _internalEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
+        _attachRetryDelayCalculator = [[ARTConstantRetryDelayCalculator alloc] initWithConstantDelay:realtime.options.channelRetryTimeout];
     }
     return self;
 }
@@ -585,7 +599,7 @@ dispatch_sync(_queue, ^{
 }
 
 - (void)transition:(ARTRealtimeChannelState)state withMetadata:(ARTChannelStateChangeMetadata *)metadata {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) channel state transitions from %tu - %@ to %tu - %@", _realtime, self, self.name, self.state_nosync, ARTRealtimeChannelStateToStr(self.state_nosync), state, ARTRealtimeChannelStateToStr(state)];
+    [self.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) channel state transitions from %tu - %@ to %tu - %@%@", _realtime, self, self.name, self.state_nosync, ARTRealtimeChannelStateToStr(self.state_nosync), state, ARTRealtimeChannelStateToStr(state), metadata.retryAttempt ? [NSString stringWithFormat: @" (result of %@)", metadata.retryAttempt.id] : @""];
     ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:state previous:self.state_nosync event:(ARTChannelEvent)state reason:metadata.errorInfo];
     self.state = state;
 
@@ -598,16 +612,26 @@ dispatch_sync(_queue, ^{
         case ARTRealtimeChannelAttached:
             self.attachResume = true;
             break;
-        case ARTRealtimeChannelSuspended:
+        case ARTRealtimeChannelSuspended: {
+            // Note: we currently reset the retry sequence every time we wish to perform a retry (defeating the point of using it in the first place, but it's OK since the delays are all constant). As part of implementing #1431 we will reuse any existing retry sequence, resetting it only in response to certain state changes.
+            self.attachRetrySequence = [[ARTRetrySequence alloc] initWithDelayCalculator:self.attachRetryDelayCalculator];
+            [self.logger debug:@"RT:%p C:%p Created attach retry sequence %@", _realtime, self, self.attachRetrySequence];
+
+            ARTRetryAttempt *const retryAttempt = [self.attachRetrySequence addRetryAttempt];
+            [self.logger debug:@"RT:%p C:%p Adding attach retry attempt to %@ gave %@", retryAttempt, self, self.attachRetrySequence.id, retryAttempt];
+
             [_attachedEventEmitter emit:nil with:metadata.errorInfo];
             if (self.realtime.shouldSendEvents) {
-                channelRetryListener = [self unlessStateChangesBefore:self.realtime.options.channelRetryTimeout do:^{
-                    [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) reattach initiated by retry timeout", self->_realtime, self, self.name];
-                    ARTAttachRequestMetadata *const attachMetadata = [[ARTAttachRequestMetadata alloc] initWithReason:nil];
+                channelRetryListener = [self unlessStateChangesBefore:retryAttempt.delay do:^{
+                    [self.realtime.logger debug:__FILE__ line:__LINE__ message:@"RT:%p C:%p (%@) reattach initiated by retry timeout, acting on retry attempt %@", self->_realtime, self, self.name, retryAttempt.id];
+                    ARTAttachRequestMetadata *const attachMetadata = [[ARTAttachRequestMetadata alloc] initWithReason:nil
+                                                                                                        channelSerial:nil
+                                                                                                         retryAttempt:retryAttempt];
                     [self reattachWithMetadata:attachMetadata];
                 }];
             }
             break;
+        }
         case ARTRealtimeChannelDetaching:
             self.attachResume = false;
             break;

@@ -1,6 +1,7 @@
 @import Foundation;
 
 @class ARTErrorInfo;
+@class ARTRetryAttempt;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -17,12 +18,17 @@ NS_SWIFT_NAME(ConnectionStateChangeMetadata)
  */
 @property (nullable, nonatomic, readonly) ARTErrorInfo *errorInfo;
 
+@property (nullable, nonatomic, readonly) ARTRetryAttempt *retryAttempt;
+
 /**
  Creates an `ARTConnectionStateChangeMetadata` instance whose `errorInfo` is `nil`.
  */
 - (instancetype)init;
 
-- (instancetype)initWithErrorInfo:(nullable ARTErrorInfo *)errorInfo NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithErrorInfo:(nullable ARTErrorInfo *)errorInfo;
+
+- (instancetype)initWithErrorInfo:(nullable ARTErrorInfo *)errorInfo
+                     retryAttempt:(nullable ARTRetryAttempt *)retryAttempt NS_DESIGNATED_INITIALIZER;
 
 @end
 
