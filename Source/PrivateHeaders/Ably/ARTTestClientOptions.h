@@ -10,6 +10,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nullable, nonatomic, copy) NSString *channelNamePrefix;
 
+/**
+ Initial value is `ARTDefault.realtimeRequestTimeout`.
+ */
+@property (nonatomic) NSTimeInterval realtimeRequestTimeout;
+
 @end
 
 NS_ASSUME_NONNULL_END

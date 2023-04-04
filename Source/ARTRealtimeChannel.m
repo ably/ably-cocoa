@@ -18,6 +18,8 @@
 #import "ARTDefault.h"
 #import "ARTRest.h"
 #import "ARTClientOptions.h"
+#import "ARTClientOptions+TestConfiguration.h"
+#import "ARTTestClientOptions.h"
 #import "ARTTypes.h"
 #import "ARTGCD.h"
 #import "ARTConnection+Private.h"
@@ -1037,7 +1039,7 @@ dispatch_sync(_queue, ^{
             return;
         }
         // Set attach timer after the connection is active
-        [[self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
+        [[self unlessStateChangesBefore:self.realtime.options.testOptions.realtimeRequestTimeout do:^{
             // Timeout
             ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTStateAttachTimedOut message:@"attach timed out"];
             ARTChannelStateChangeMetadata *const metadata = [[ARTChannelStateChangeMetadata alloc] initWithState:ARTStateAttachTimedOut
@@ -1132,7 +1134,7 @@ dispatch_sync(_queue, ^{
 
     [self.realtime send:detachMessage sentCallback:nil ackCallback:nil];
 
-    [[self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
+    [[self unlessStateChangesBefore:self.realtime.options.testOptions.realtimeRequestTimeout do:^{
         if (!self.realtime) {
             return;
         }
