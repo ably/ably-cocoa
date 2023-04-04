@@ -13,6 +13,8 @@
 #import "ARTTokenDetails.h"
 #import "ARTMessage.h"
 #import "ARTClientOptions.h"
+#import "ARTClientOptions+TestConfiguration.h"
+#import "ARTTestClientOptions.h"
 #import "ARTChannelOptions.h"
 #import "ARTPresenceMessage.h"
 #import "ARTWebSocketTransport+Private.h"
@@ -475,7 +477,7 @@ NS_ASSUME_NONNULL_END
                     }];
                     return;
                 }
-                [[[self->_pingEventEmitter once:cb] setTimer:[ARTDefault realtimeRequestTimeout] onTimeout:^{
+                [[[self->_pingEventEmitter once:cb] setTimer:self.options.testOptions.realtimeRequestTimeout onTimeout:^{
                     [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p ping timed out", self];
                     cb([ARTErrorInfo createWithCode:ARTErrorConnectionTimedOut status:ARTStateConnectionFailed message:@"timed out"]);
                 }] startTimer];
@@ -556,7 +558,7 @@ NS_ASSUME_NONNULL_END
                 }
             }
             
-            stateChangeEventListener = [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
+            stateChangeEventListener = [self unlessStateChangesBefore:self.options.testOptions.realtimeRequestTimeout do:^{
                 [self onConnectionTimeOut];
             }];
             _connectingTimeoutListener = stateChangeEventListener;
@@ -613,7 +615,7 @@ NS_ASSUME_NONNULL_END
         case ARTRealtimeClosing: {
             [self stopIdleTimer];
             [_reachability off];
-            stateChangeEventListener = [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
+            stateChangeEventListener = [self unlessStateChangesBefore:self.options.testOptions.realtimeRequestTimeout do:^{
                 [self transition:ARTRealtimeClosed withMetadata:[[ARTConnectionStateChangeMetadata alloc] init]];
             }];
             [self.transport sendClose];
@@ -1035,7 +1037,7 @@ NS_ASSUME_NONNULL_END
     }
     else {
         // Token
-        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p connecting with token auth; authorising (timeout of %f)", self, [ARTDefault realtimeRequestTimeout]];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p connecting with token auth; authorising (timeout of %f)", self, self.options.testOptions.realtimeRequestTimeout];
         
         if (!forceNewToken && [self.auth tokenRemainsValid]) {
             // Reuse token
@@ -1047,7 +1049,7 @@ NS_ASSUME_NONNULL_END
             [self.auth setTokenDetails:nil];
             
             // Schedule timeout handler
-            _authenitcatingTimeoutWork = artDispatchScheduled([ARTDefault realtimeRequestTimeout], _rest.queue, ^{
+            _authenitcatingTimeoutWork = artDispatchScheduled(self.options.testOptions.realtimeRequestTimeout, _rest.queue, ^{
                 [self onConnectionTimeOut];
             });
             
@@ -1431,7 +1433,7 @@ NS_ASSUME_NONNULL_END
     }
     artDispatchCancel(_idleTimer);
     
-    _idleTimer = artDispatchScheduled([ARTDefault realtimeRequestTimeout] + self.maxIdleInterval, _rest.queue, ^{
+    _idleTimer = artDispatchScheduled(self.options.testOptions.realtimeRequestTimeout + self.maxIdleInterval, _rest.queue, ^{
         [self.logger error:@"R:%p No activity seen from realtime in %f seconds; assuming connection has dropped", self, [[NSDate date] timeIntervalSinceDate:self->_lastActivity]];
         
         ARTErrorInfo *idleTimerExpired = [ARTErrorInfo createWithCode:ARTErrorDisconnected status:408 message:@"Idle timer expired"];

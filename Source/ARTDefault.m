@@ -10,7 +10,6 @@ NSString *const ARTDefaultProduction = @"production";
 static NSString *const ARTDefault_restHost = @"rest.ably.io";
 static NSString *const ARTDefault_realtimeHost = @"realtime.ably.io";
 
-static NSTimeInterval _realtimeRequestTimeout = 10.0;
 static NSTimeInterval _connectionStateTtl = 60.0;
 static NSInteger _maxMessageSize = 65536;
 
@@ -67,17 +66,11 @@ static NSInteger _maxMessageSize = 65536;
 }
 
 + (NSTimeInterval)realtimeRequestTimeout {
-    return _realtimeRequestTimeout;
+    return 10.0;
 }
 
 + (NSInteger)maxMessageSize {
     return _maxMessageSize;
-}
-
-+ (void)setRealtimeRequestTimeout:(NSTimeInterval)value {
-    @synchronized (self) {
-        _realtimeRequestTimeout = value;
-    }
 }
 
 + (void)setConnectionStateTtl:(NSTimeInterval)value {
