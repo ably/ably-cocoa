@@ -1,6 +1,8 @@
 @import Foundation;
 #import <Ably/ARTClientOptions.h>
 
+@class ARTTestClientOptions;
+
 NS_ASSUME_NONNULL_BEGIN
 
 /**
@@ -10,10 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface ARTClientOptions ()
 
-/**
- Initial value is `nil`.
- */
-@property (nullable, strong, nonatomic) NSString *channelNamePrefix;
+@property (nonatomic, copy) ARTTestClientOptions *testOptions;
 
 @end
 

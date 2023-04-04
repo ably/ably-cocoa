@@ -131,7 +131,7 @@ class AblyTests {
     }
 
     class func setupOptions(_ options: ARTClientOptions, forceNewApp: Bool = false, debug: Bool = false) -> ARTClientOptions {
-        options.channelNamePrefix = "test-\(setupOptionsCounter)"
+        options.testOptions.channelNamePrefix = "test-\(setupOptionsCounter)"
         setupOptionsCounter += 1
 
         if forceNewApp {
