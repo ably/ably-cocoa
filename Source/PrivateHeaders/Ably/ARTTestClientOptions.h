@@ -1,7 +1,4 @@
 @import Foundation;
-#import <Ably/ARTClientOptions.h>
-
-@class ARTTestClientOptions;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -10,12 +7,12 @@ NS_ASSUME_NONNULL_BEGIN
 
  This is for anything that test code wishes to be able to configure but which should not be part of the public API of these classes.
  */
-@interface ARTClientOptions ()
+@interface ARTTestClientOptions: NSObject <NSCopying>
 
 /**
- Defaults to a new instance of `ARTTestClientOptions` (whose properties all have their default values).
+ Initial value is `nil`.
  */
-@property (nonatomic, copy) ARTTestClientOptions *testOptions;
+@property (nullable, nonatomic, copy) NSString *channelNamePrefix;
 
 @end
 

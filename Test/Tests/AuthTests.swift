@@ -4209,7 +4209,7 @@ class AuthTests: XCTestCase {
         let options = AblyTests.clientOptions()
         options.tokenDetails = ARTTokenDetails(token: getJWTToken(capability: capability)!)
         // Prevent channel name to be prefixed by test-*
-        options.channelNamePrefix = nil
+        options.testOptions.channelNamePrefix = nil
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 

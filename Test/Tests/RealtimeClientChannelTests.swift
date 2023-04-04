@@ -2077,7 +2077,7 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__068__Channel__publish__should_invoke_callback__upon_failure() {
         let options = AblyTests.commonAppSetup()
         let channelname = uniqueChannelName()
-        options.token = getTestToken(key: options.key, capability: "{ \"\(options.channelNamePrefix!)-\(channelname)\":[\"subscribe\"] }")
+        options.token = getTestToken(key: options.key, capability: "{ \"\(options.testOptions.channelNamePrefix!)-\(channelname)\":[\"subscribe\"] }")
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
@@ -2113,7 +2113,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let channelToSucceedName = uniqueChannelName(prefix: "channelToSucceed")
         let channelToFailName = uniqueChannelName(prefix: "channelToFail")
         
-        options.token = getTestToken(key: options.key, capability: "{ \"\(options.channelNamePrefix!)-\(channelToSucceedName)\":[\"subscribe\", \"publish\"], \"\(options.channelNamePrefix!)-\(channelToFailName)\":[\"subscribe\"] }")
+        options.token = getTestToken(key: options.key, capability: "{ \"\(options.testOptions.channelNamePrefix!)-\(channelToSucceedName)\":[\"subscribe\", \"publish\"], \"\(options.testOptions.channelNamePrefix!)-\(channelToFailName)\":[\"subscribe\"] }")
         
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }

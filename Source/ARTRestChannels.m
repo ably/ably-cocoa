@@ -4,6 +4,7 @@
 #import "ARTRestChannel+Private.h"
 #import "ARTRest+Private.h"
 #import "ARTClientOptions+TestConfiguration.h"
+#import "ARTTestClientOptions.h"
 
 @implementation ARTRestChannels {
     ARTQueuedDealloc *_dealloc;
@@ -58,7 +59,7 @@
 - (instancetype)initWithRest:(ARTRestInternal *)rest {
     if (self = [super init]) {
         _rest = rest;
-        _channels = [[ARTChannels alloc] initWithDelegate:self dispatchQueue:_rest.queue prefix:rest.options.channelNamePrefix];
+        _channels = [[ARTChannels alloc] initWithDelegate:self dispatchQueue:_rest.queue prefix:rest.options.testOptions.channelNamePrefix];
     }
     return self;
 }

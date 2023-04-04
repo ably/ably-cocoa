@@ -858,7 +858,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         
         let channelName = uniqueChannelName()
-        options.token = getTestToken(key: options.key, capability: "{ \"\(options.channelNamePrefix!)-\(channelName)\":[\"subscribe\"] }")
+        options.token = getTestToken(key: options.key, capability: "{ \"\(options.testOptions.channelNamePrefix!)-\(channelName)\":[\"subscribe\"] }")
         options.autoConnect = false
         let client = ARTRealtime(options: options)
         client.internal.setTransport(TestProxyTransport.self)
@@ -2701,7 +2701,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
         let restOptions = AblyTests.clientOptions(key: options.key!)
-        restOptions.channelNamePrefix = options.channelNamePrefix
+        restOptions.testOptions.channelNamePrefix = options.testOptions.channelNamePrefix
         let rest = ARTRest(options: restOptions)
         
         let channelName = uniqueChannelName()
@@ -4323,7 +4323,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
 
         let restOptions = AblyTests.clientOptions(key: options.key!)
-        restOptions.channelNamePrefix = options.channelNamePrefix
+        restOptions.testOptions.channelNamePrefix = options.testOptions.channelNamePrefix
         let rest = ARTRest(options: restOptions)
 
         waitUntil(timeout: testTimeout) { done in
@@ -4402,7 +4402,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         XCTAssertEqual(authorizeMethodCallCount, 1)
 
         let restOptions = AblyTests.clientOptions(key: options.key!)
-        restOptions.channelNamePrefix = options.channelNamePrefix
+        restOptions.testOptions.channelNamePrefix = options.testOptions.channelNamePrefix
         let rest = ARTRest(options: restOptions)
 
         waitUntil(timeout: testTimeout) { done in
