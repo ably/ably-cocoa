@@ -3956,6 +3956,7 @@ class RealtimeClientChannelTests: XCTestCase {
             let firstStateChange = observedStateChanges[firstStateChangeIndex]
             XCTAssertEqual(firstStateChange.current, .attaching)
             XCTAssertEqual(firstStateChange.previous, .suspended)
+            XCTAssertEqual(firstStateChange.retryAttempt?.delay, options.channelRetryTimeout)
 
             // ...and the channel emits a state change to the SUSPENDED state (after what? this is a result of what?), whose (?).
             let secondStateChange = observedStateChanges[firstStateChangeIndex + 1]
