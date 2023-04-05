@@ -282,7 +282,7 @@ dispatch_sync(_queue, ^{
 - (void)internalPostMessages:(id)data callback:(ARTCallback)callback {
     if (callback) {
         ARTCallback userCallback = callback;
-        callback = ^(ARTErrorInfo *__art_nullable error) {
+        callback = ^(ARTErrorInfo *__nullable error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
