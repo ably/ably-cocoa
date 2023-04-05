@@ -1,5 +1,4 @@
 #import <Ably/ARTAuthOptions.h>
-#import <Ably/CompatibilityMacros.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

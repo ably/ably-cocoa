@@ -224,8 +224,8 @@
     #endif
     CFRunLoopTimerRef _attachTimer;
     CFRunLoopTimerRef _detachTimer;
-    __GENERIC(ARTEventEmitter, ARTEvent *, ARTErrorInfo *) *_attachedEventEmitter;
-    __GENERIC(ARTEventEmitter, ARTEvent *, ARTErrorInfo *) *_detachedEventEmitter;
+    ARTEventEmitter<ARTEvent *, ARTErrorInfo *> *_attachedEventEmitter;
+    ARTEventEmitter<ARTEvent *, ARTErrorInfo *> *_detachedEventEmitter;
     NSString * _Nullable _lastPayloadMessageId;
     NSString * _Nullable _lastPayloadProtocolMessageChannelSerial;
     BOOL _decodeFailureRecoveryInProgress;
@@ -330,7 +330,7 @@ dispatch_sync(_queue, ^{
 - (void)internalPostMessages:(id)data callback:(ARTCallback)callback {
     if (callback) {
         ARTCallback userCallback = callback;
-        callback = ^(ARTErrorInfo *__art_nullable error) {
+        callback = ^(ARTErrorInfo *__nullable error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
@@ -386,7 +386,7 @@ dispatch_sync(_queue, ^{
 - (void)sync:(ARTCallback)callback {
     if (callback) {
         ARTCallback userCallback = callback;
-        callback = ^(ARTErrorInfo *__art_nullable error) {
+        callback = ^(ARTErrorInfo *__nullable error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
@@ -954,7 +954,7 @@ dispatch_sync(_queue, ^{
 - (void)attach:(ARTCallback)callback {
     if (callback) {
         ARTCallback userCallback = callback;
-        callback = ^(ARTErrorInfo *__art_nullable error) {
+        callback = ^(ARTErrorInfo *__nullable error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
@@ -1064,7 +1064,7 @@ dispatch_sync(_queue, ^{
 - (void)detach:(ARTCallback)callback {
     if (callback) {
         ARTCallback userCallback = callback;
-        callback = ^(ARTErrorInfo *__art_nullable error) {
+        callback = ^(ARTErrorInfo *__nullable error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });
