@@ -43,6 +43,7 @@
 #import "ARTAttachRequestMetadata.h"
 #import "ARTRetrySequence.h"
 #import "ARTConstantRetryDelayCalculator.h"
+#import "ARTTypes+Private.h"
 
 @interface ARTConnectionStateChange ()
 
@@ -494,7 +495,8 @@ NS_ASSUME_NONNULL_END
 - (void)transition:(ARTRealtimeConnectionState)state withMetadata:(ARTConnectionStateChangeMetadata *)metadata {
     [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p realtime state transitions to %tu - %@%@", self, state, ARTRealtimeConnectionStateToStr(state), metadata.retryAttempt ? [NSString stringWithFormat: @" (result of %@)", metadata.retryAttempt.id] : @""];
     
-    ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:state previous:self.connection.state_nosync event:(ARTRealtimeConnectionEvent)state reason:metadata.errorInfo retryIn:0];
+    ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:state previous:self.connection.state_nosync event:(ARTRealtimeConnectionEvent)state reason:metadata.errorInfo retryIn:0 retryAttempt:metadata.retryAttempt];
+
     [self.connection setState:state];
     [self.connection setErrorReason:metadata.errorInfo];
     

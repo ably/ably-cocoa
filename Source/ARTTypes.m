@@ -1,4 +1,5 @@
 #import "ARTTypes.h"
+#import "ARTTypes+Private.h"
 #import "ARTLog.h"
 
 // MARK: Global helper functions
@@ -44,6 +45,10 @@ NSString *generateNonce() {
 }
 
 - (instancetype)initWithCurrent:(ARTRealtimeConnectionState)current previous:(ARTRealtimeConnectionState)previous event:(ARTRealtimeConnectionEvent)event reason:(ARTErrorInfo *)reason retryIn:(NSTimeInterval)retryIn {
+    return [self initWithCurrent:current previous:previous event:event reason:reason retryIn:retryIn retryAttempt:nil];
+}
+
+- (instancetype)initWithCurrent:(ARTRealtimeConnectionState)current previous:(ARTRealtimeConnectionState)previous event:(ARTRealtimeConnectionEvent)event reason:(ARTErrorInfo *)reason retryIn:(NSTimeInterval)retryIn retryAttempt:(ARTRetryAttempt *)retryAttempt {
     self = [self init];
     if (self) {
         _current = current;
@@ -51,12 +56,13 @@ NSString *generateNonce() {
         _event = event;
         _reason = reason;
         _retryIn = retryIn;
+        _retryAttempt = retryAttempt;
     }
     return self;
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"%@ - \n\t current: %@; \n\t previous: %@; \n\t reason: %@; \n\t retryIn: %f; \n", [super description], ARTRealtimeConnectionStateToStr(_current), ARTRealtimeConnectionStateToStr(_previous), _reason, _retryIn];
+    return [NSString stringWithFormat:@"%@ - \n\t current: %@; \n\t previous: %@; \n\t reason: %@; \n\t retryIn: %f; \n\t retryAttempt: %@; \n", [super description], ARTRealtimeConnectionStateToStr(_current), ARTRealtimeConnectionStateToStr(_previous), _reason, _retryIn, _retryAttempt];
 }
 
 - (void)setRetryIn:(NSTimeInterval)retryIn {
@@ -118,6 +124,10 @@ NSString *ARTRealtimeConnectionEventToStr(ARTRealtimeConnectionEvent event) {
 }
 
 - (instancetype)initWithCurrent:(ARTRealtimeChannelState)current previous:(ARTRealtimeChannelState)previous event:(ARTChannelEvent)event reason:(ARTErrorInfo *)reason resumed:(BOOL)resumed {
+    return [self initWithCurrent:current previous:previous event:event reason:reason resumed:resumed retryAttempt:nil];
+}
+
+- (instancetype)initWithCurrent:(ARTRealtimeChannelState)current previous:(ARTRealtimeChannelState)previous event:(ARTChannelEvent)event reason:(ARTErrorInfo *)reason resumed:(BOOL)resumed retryAttempt:(ARTRetryAttempt *)retryAttempt {
     self = [self init];
     if (self) {
         _current = current;
@@ -125,12 +135,13 @@ NSString *ARTRealtimeConnectionEventToStr(ARTRealtimeConnectionEvent event) {
         _event = event;
         _reason = reason;
         _resumed = resumed;
+        _retryAttempt = retryAttempt;
     }
     return self;
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"%@ - \n\t current: %@; \n\t previous: %@; \n\t reason: %@; \n\t resumed: %d; \n", [super description], ARTRealtimeChannelStateToStr(_current), ARTRealtimeChannelStateToStr(_previous), _reason, _resumed];
+    return [NSString stringWithFormat:@"%@ - \n\t current: %@; \n\t previous: %@; \n\t reason: %@; \n\t resumed: %d; \n\t retryAttempt: %@; \n", [super description], ARTRealtimeChannelStateToStr(_current), ARTRealtimeChannelStateToStr(_previous), _reason, _resumed, _retryAttempt];
 }
 
 @end
