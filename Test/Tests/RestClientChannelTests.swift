@@ -505,7 +505,7 @@ class RestClientChannelTests: XCTestCase {
     func test__003__publish__should_provide_an_optional_argument_that_allows_the_extras_value_to_be_specified() {
         let options = AblyTests.commonAppSetup()
         // Prevent channel name to be prefixed by test-*
-        options.channelNamePrefix = nil
+        options.testOptions.channelNamePrefix = nil
         let client = ARTRest(options: options)
         let channel = client.channels.get(uniqueChannelName(prefix: "pushenabled:test"))
         let extras = ["push": ["notification": ["title": "Hello from Ably!"]]] as ARTJsonCompatible
@@ -1127,7 +1127,7 @@ class RestClientChannelTests: XCTestCase {
 
     func skipped__test__035__presence__get__should_return_presence_fixture_data() {
         let options = AblyTests.commonAppSetup()
-        options.channelNamePrefix = nil
+        options.testOptions.channelNamePrefix = nil
         client = ARTRest(options: options)
         let key = appSetupJson["cipher"]["key"].string!
         let cipherParams = ARTCipherParams(

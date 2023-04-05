@@ -92,5 +92,6 @@ framework module Ably {
         header "ARTAttachRequestMetadata.h"
         header "ARTRetrySequence.h"
         header "ARTTypes+Private.h"
+        header "ARTTestClientOptions.h"
     }
 }

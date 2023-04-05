@@ -297,7 +297,7 @@ class PushChannelTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         options.clientId = "tester"
         // Prevent channel name to be prefixed by test-*
-        options.channelNamePrefix = nil
+        options.testOptions.channelNamePrefix = nil
         let rest = ARTRest(options: options)
         rest.internal.storage = MockDeviceStorage()
 

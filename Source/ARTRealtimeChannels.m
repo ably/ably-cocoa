@@ -5,6 +5,7 @@
 #import "ARTRealtime+Private.h"
 #import "ARTRealtimePresence+Private.h"
 #import "ARTClientOptions+TestConfiguration.h"
+#import "ARTTestClientOptions.h"
 
 @implementation ARTRealtimeChannels {
     ARTQueuedDealloc *_dealloc;
@@ -66,7 +67,7 @@
         _realtime = realtime;
         _userQueue = _realtime.rest.userQueue;
         _queue = _realtime.rest.queue;
-        _channels = [[ARTChannels alloc] initWithDelegate:self dispatchQueue:_queue prefix:_realtime.options.channelNamePrefix];
+        _channels = [[ARTChannels alloc] initWithDelegate:self dispatchQueue:_queue prefix:_realtime.options.testOptions.channelNamePrefix];
     }
     return self;
 }

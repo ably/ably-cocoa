@@ -44,7 +44,7 @@ class RealtimeClientChannelsTests: XCTestCase {
         XCTAssertEqual(client.channels.internal.collection.count, 0)
         let channelName = uniqueChannelName()
         let channel = client.channels.get(channelName)
-        XCTAssertEqual(channel.name, "\(options.channelNamePrefix!)-\(channelName)")
+        XCTAssertEqual(channel.name, "\(options.testOptions.channelNamePrefix!)-\(channelName)")
 
         XCTAssertEqual(client.channels.internal.collection.count, 1)
         XCTAssertTrue(client.channels.get(channelName).internal === channel.internal)

@@ -1265,14 +1265,11 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__032__Channel__attach__should_transition_the_channel_state_to_SUSPENDED_if_ATTACHED_ProtocolMessage_is_not_received() {
         let options = AblyTests.commonAppSetup()
         options.channelRetryTimeout = 1.0
+        options.testOptions.realtimeRequestTimeout = 1.0
         let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
 
         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
-
-        let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
-        defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
-        ARTDefault.setRealtimeRequestTimeout(1.0)
 
         guard let transport = client.internal.transport as? TestProxyTransport else {
             fail("TestProxyTransport is not set"); return
@@ -1432,6 +1429,7 @@ class RealtimeClientChannelTests: XCTestCase {
 
     func test__038__Channel__attach__a_channel_in_DETACHING_can_actually_move_back_to_ATTACHED_if_it_fails_to_detach() {
         let options = AblyTests.commonAppSetup()
+        options.testOptions.realtimeRequestTimeout = 1.0
         let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(uniqueChannelName())
@@ -1441,10 +1439,6 @@ class RealtimeClientChannelTests: XCTestCase {
                 done()
             }
         }
-
-        let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
-        defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
-        ARTDefault.setRealtimeRequestTimeout(1.0)
 
         guard let transport = client.internal.transport as? TestProxyTransport else {
             fail("TestProxyTransport is not set"); return
@@ -1817,6 +1811,7 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__057__Channel__detach__if_a_DETACHED_is_not_received_within_the_default_realtime_request_timeout__the_detach_request_should_be_treated_as_though_it_has_failed_and_the_channel_will_return_to_its_previous_state() {
         let options = AblyTests.commonAppSetup()
         options.autoConnect = false
+        options.testOptions.realtimeRequestTimeout = 1.0
         let client = ARTRealtime(options: options)
         client.internal.setTransport(TestProxyTransport.self)
         client.connect()
@@ -1825,10 +1820,6 @@ class RealtimeClientChannelTests: XCTestCase {
         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
         let transport = client.internal.transport as! TestProxyTransport
         transport.actionsIgnored += [.detached]
-
-        let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
-        defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
-        ARTDefault.setRealtimeRequestTimeout(1.0)
 
         let channel = client.channels.get(uniqueChannelName())
         channel.attach()
@@ -2077,7 +2068,7 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__068__Channel__publish__should_invoke_callback__upon_failure() {
         let options = AblyTests.commonAppSetup()
         let channelname = uniqueChannelName()
-        options.token = getTestToken(key: options.key, capability: "{ \"\(options.channelNamePrefix!)-\(channelname)\":[\"subscribe\"] }")
+        options.token = getTestToken(key: options.key, capability: "{ \"\(options.testOptions.channelNamePrefix!)-\(channelname)\":[\"subscribe\"] }")
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
@@ -2113,7 +2104,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let channelToSucceedName = uniqueChannelName(prefix: "channelToSucceed")
         let channelToFailName = uniqueChannelName(prefix: "channelToFail")
         
-        options.token = getTestToken(key: options.key, capability: "{ \"\(options.channelNamePrefix!)-\(channelToSucceedName)\":[\"subscribe\", \"publish\"], \"\(options.channelNamePrefix!)-\(channelToFailName)\":[\"subscribe\"] }")
+        options.token = getTestToken(key: options.key, capability: "{ \"\(options.testOptions.channelNamePrefix!)-\(channelToSucceedName)\":[\"subscribe\", \"publish\"], \"\(options.testOptions.channelNamePrefix!)-\(channelToFailName)\":[\"subscribe\"] }")
         
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
@@ -3732,7 +3723,9 @@ class RealtimeClientChannelTests: XCTestCase {
 
     // RTL13a
     func test__129__Channel__history__if_the_channel_receives_a_server_initiated_DETACHED_message_when__the_channel_is_in_the_SUSPENDED_state__an_attempt_to_reattach_the_channel_should_be_made_immediately_by_sending_a_new_ATTACH_message_and_the_channel_should_transition_to_the_ATTACHING_state_with_the_error_emitted_in_the_ChannelStateChange_event() {
-        let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
+        let options = AblyTests.commonAppSetup()
+        options.testOptions.realtimeRequestTimeout = 1.0
+        let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
@@ -3745,10 +3738,6 @@ class RealtimeClientChannelTests: XCTestCase {
         guard let transport = client.internal.transport as? TestProxyTransport else {
             fail("TestProxyTransport is not set"); return
         }
-
-        let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
-        defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
-        ARTDefault.setRealtimeRequestTimeout(1.0)
 
         let channel = client.channels.get(uniqueChannelName())
 
@@ -3789,6 +3778,7 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__130__Channel__history__if_the_channel_receives_a_server_initiated_DETACHED_message_when__if_the_attempt_to_re_attach_fails_the_channel_will_transition_to_the_SUSPENDED_state_and_the_error_will_be_emitted_in_the_ChannelStateChange_event() {
         let options = AblyTests.commonAppSetup()
         options.channelRetryTimeout = 1.0
+        options.testOptions.realtimeRequestTimeout = 1.0
         let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(uniqueChannelName())
@@ -3804,9 +3794,6 @@ class RealtimeClientChannelTests: XCTestCase {
             fail("TestProxyTransport is not set"); return
         }
 
-        let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
-        defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
-        ARTDefault.setRealtimeRequestTimeout(1.0)
         transport.actionsIgnored = [.attached]
 
         let detachedMessageWithError = AblyTests.newErrorProtocolMessage()
@@ -3892,14 +3879,13 @@ class RealtimeClientChannelTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         options.channelRetryTimeout = 1.0
         options.autoConnect = false
+        options.testOptions.realtimeRequestTimeout = 1.0
         let client = ARTRealtime(options: options)
         client.internal.setTransport(TestProxyTransport.self)
         
-        let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
-        ARTDefault.setRealtimeRequestTimeout(1.0)
         client.connect()
         
-        defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout); client.dispose(); client.close() }
+        defer { client.dispose(); client.close() }
         
         let transport = client.internal.transport as! TestProxyTransport
         transport.actionsIgnored += [.attached] // Make sure that each attach attempt times out (after realtimeRequestTimeout = 1.0)
@@ -3941,6 +3927,7 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__132__Channel__history__if_the_channel_receives_a_server_initiated_DETACHED_message_when__if_the_connection_is_no_longer_CONNECTED__then_the_automatic_attempts_to_re_attach_the_channel_must_be_cancelled() {
         let options = AblyTests.commonAppSetup()
         options.channelRetryTimeout = 1.0
+        options.testOptions.realtimeRequestTimeout = 1.0
         let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(uniqueChannelName())
@@ -3953,10 +3940,6 @@ class RealtimeClientChannelTests: XCTestCase {
         guard let transport = client.internal.transport as? TestProxyTransport else {
             fail("TestProxyTransport is not set"); return
         }
-
-        let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
-        defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
-        ARTDefault.setRealtimeRequestTimeout(1.0)
 
         transport.actionsIgnored = [.attached]
         let detachedMessageWithError = AblyTests.newErrorProtocolMessage()
@@ -4432,13 +4415,10 @@ class RealtimeClientChannelTests: XCTestCase {
     // https://github.com/ably/ably-cocoa/issues/614
     func test__002__Channel__should_not_crash_when_an_ATTACH_request_is_responded_with_a_DETACHED() {
         let options = AblyTests.commonAppSetup()
+        options.testOptions.realtimeRequestTimeout = 1.0
         let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(uniqueChannelName())
-
-        let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
-        defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
-        ARTDefault.setRealtimeRequestTimeout(1.0)
 
         guard let transport = client.internal.transport as? TestProxyTransport else {
             fail("TestProxyTransport is not set"); return
