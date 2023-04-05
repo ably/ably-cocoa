@@ -106,7 +106,7 @@ class AblyTests {
         let label: String
     }
 
-    static var queueIdentityKey = DispatchSpecificKey<QueueIdentity>()
+    static let queueIdentityKey = DispatchSpecificKey<QueueIdentity>()
 
     static var queue: DispatchQueue = {
         let queue = DispatchQueue(label: "io.ably.tests", qos: .userInitiated)

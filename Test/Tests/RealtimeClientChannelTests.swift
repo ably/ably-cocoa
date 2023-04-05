@@ -155,13 +155,6 @@ class RealtimeClientChannelTests: XCTestCase {
         return super.defaultTestSuite
     }
 
-    class TotalMessages {
-        static let expected = 50
-        static var succeeded = 0
-        static var failed = 0
-        fileprivate init() {}
-    }
-
     // RTL1
     func skipped__test__001__Channel__should_process_all_incoming_messages_and_presence_messages_as_soon_as_a_Channel_becomes_attached() {
         let options = AblyTests.commonAppSetup()
@@ -2125,8 +2118,13 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
-        TotalMessages.succeeded = 0
-        TotalMessages.failed = 0
+        struct TotalMessages {
+            static let expected = 50
+            var succeeded = 0
+            var failed = 0
+        }
+
+        var totalMessages = TotalMessages()
 
         let channelToSucceed = client.channels.get(channelToSucceedName)
         channelToSucceed.on { stateChange in
@@ -2134,8 +2132,8 @@ class RealtimeClientChannelTests: XCTestCase {
                 for index in 1 ... TotalMessages.expected {
                     channelToSucceed.publish(nil, data: "message\(index)") { errorInfo in
                         if errorInfo == nil {
-                            TotalMessages.succeeded += 1
-                            XCTAssertEqual(index, TotalMessages.succeeded, "Callback was invoked with an invalid sequence")
+                            totalMessages.succeeded += 1
+                            XCTAssertEqual(index, totalMessages.succeeded, "Callback was invoked with an invalid sequence")
                         }
                     }
                 }
@@ -2149,8 +2147,8 @@ class RealtimeClientChannelTests: XCTestCase {
                 for index in 1 ... TotalMessages.expected {
                     channelToFail.publish(nil, data: "message\(index)") { errorInfo in
                         if errorInfo != nil {
-                            TotalMessages.failed += 1
-                            XCTAssertEqual(index, TotalMessages.failed, "Callback was invoked with an invalid sequence")
+                            totalMessages.failed += 1
+                            XCTAssertEqual(index, totalMessages.failed, "Callback was invoked with an invalid sequence")
                         }
                     }
                 }
@@ -2158,8 +2156,8 @@ class RealtimeClientChannelTests: XCTestCase {
         }
         channelToFail.attach()
 
-        expect(TotalMessages.succeeded).toEventually(equal(TotalMessages.expected), timeout: testTimeout)
-        expect(TotalMessages.failed).toEventually(equal(TotalMessages.expected), timeout: testTimeout)
+        expect(totalMessages.succeeded).toEventually(equal(TotalMessages.expected), timeout: testTimeout)
+        expect(totalMessages.failed).toEventually(equal(TotalMessages.expected), timeout: testTimeout)
     }
 
     // RTL6c
@@ -3163,21 +3161,18 @@ class RealtimeClientChannelTests: XCTestCase {
 
         let channel = client.channels.get(uniqueChannelName())
 
-        class Test {
-            static var counter = 0
-            fileprivate init() {}
-        }
+        var counter = 0
 
         channel.subscribe { message in
             XCTAssertEqual(message.data as? String, "message")
-            Test.counter += 1
+            counter += 1
         }
 
         channel.publish(nil, data: "message")
         channel.publish("eventA", data: "message")
         channel.publish("eventB", data: "message")
 
-        expect(Test.counter).toEventually(equal(3), timeout: testTimeout)
+        expect(counter).toEventually(equal(3), timeout: testTimeout)
     }
 
     // RTL7b
@@ -3187,15 +3182,12 @@ class RealtimeClientChannelTests: XCTestCase {
 
         let channel = client.channels.get(uniqueChannelName())
 
-        class Test {
-            static var counter = 0
-            fileprivate init() {}
-        }
+        var counter = 0
 
         channel.subscribe("eventA") { message in
             XCTAssertEqual(message.name, "eventA")
             XCTAssertEqual(message.data as? String, "message")
-            Test.counter += 1
+            counter += 1
         }
 
         channel.publish(nil, data: "message")
@@ -3203,7 +3195,7 @@ class RealtimeClientChannelTests: XCTestCase {
         channel.publish("eventB", data: "message")
         channel.publish("eventA", data: "message")
 
-        expect(Test.counter).toEventually(equal(2), timeout: testTimeout)
+        expect(counter).toEventually(equal(2), timeout: testTimeout)
     }
 
     func test__108__Channel__subscribe__with_a_attach_callback_should_subscribe_and_call_the_callback_when_attached() {
