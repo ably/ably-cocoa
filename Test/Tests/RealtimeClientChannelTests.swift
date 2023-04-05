@@ -3874,52 +3874,94 @@ class RealtimeClientChannelTests: XCTestCase {
     }
     
     // RTL13b
-    func test__131b__Channel__if_the_channel_receives_a_server_initiated_DETACHED_message_and_if_the_attempt_to_reattach_fails_then_the_channel_will_transition_to_SUSPENDED_state_with_periodic_reattach_with_channelRetryTimeout() {
-        
+    func test__131b__Channel__if_the_channel_receives_a_server_initiated_DETACHED_message_and_if_the_attempt_to_reattach_fails_then_the_channel_will_transition_to_SUSPENDED_state_with_periodic_reattach_with_channelRetryTimeout() throws {
+        // Given...
+
         let options = AblyTests.commonAppSetup()
-        options.channelRetryTimeout = 1.0
-        options.autoConnect = false
+        options.channelRetryTimeout = 1.0 // this is done for making the test not last ages
+        options.autoConnect = false // this is done for testing reasons, it's not part of the key scenario
         options.testOptions.realtimeRequestTimeout = 1.0
         let client = ARTRealtime(options: options)
+
+        // ...a Realtime client...
         client.internal.setTransport(TestProxyTransport.self)
-        
         client.connect()
-        
         defer { client.dispose(); client.close() }
-        
+        expect(client.connection.state).toEventually(equal(.connected), timeout: testTimeout) // what's this?
+
+        // ...whose transport drops all incoming ATTACHED messages... (TODO why)
         let transport = client.internal.transport as! TestProxyTransport
-        transport.actionsIgnored += [.attached] // Make sure that each attach attempt times out (after realtimeRequestTimeout = 1.0)
+        transport.actionsIgnored += [.attached] // (Given) Make sure that each re-attach attempt times out (after realtimeRequestTimeout = 1.0), a scenario described by RTL13b BUT it's also so that the initial attach attempt doesn't succeed and hence we are sure that we're doing it in the attaching state
 
-        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
-
+        // ...from which we retrieve a channel...
         let channel = client.channels.get(uniqueChannelName())
-        channel.attach()
-        
-        XCTAssertEqual(channel.state, ARTRealtimeChannelState.attaching)
 
+        // ...which we put into the ATTACHING state...
+        channel.attach()
+        XCTAssertEqual(channel.state, .attaching)
+
+        // ...whose state transitions we then start to observe...
+        let numberOfRetriesToWaitFor = 5 // arbitrarily chosen, TODO why
+        let retrySequenceDataGatherer = DataGatherer(description: "Observe emitted state changes") { submit in
+            var retryNumber = 1
+            var observedStateChanges: [ARTChannelStateChange] = []
+
+            channel.on { stateChange in
+                observedStateChanges.append(stateChange)
+
+                if (stateChange.current == .attaching) {
+                    retryNumber += 1
+                }
+
+                if (stateChange.current == .suspended) {
+                    if retryNumber > numberOfRetriesToWaitFor {
+                        submit(observedStateChanges)
+                    }
+                }
+            }
+        }
+
+        // ...which then receives a DETACHED ProtocolMessage,
         let detachedMessageWithError = AblyTests.newErrorProtocolMessage()
         detachedMessageWithError.action = .detached
         detachedMessageWithError.channel = channel.name
-        
-        var retryNumber = 1
-        let numberOfRetriesToWaitFor = 5 // An arbitrary number to finish test before timeout for `waitUntil` fires
-        
-        waitUntil(timeout: testTimeout) { done in
-            channel.on(.attaching) { stateChange in
-                XCTAssertEqual(stateChange.previous, ARTRealtimeChannelState.suspended)
-                retryNumber += 1
-            }
-            channel.on(.suspended) { stateChange in
-                XCTAssertEqual(stateChange.previous, ARTRealtimeChannelState.attaching)
-                XCTAssertNotNil(stateChange.reason)
-                if retryNumber > numberOfRetriesToWaitFor {
-                    done()
-                }
-            }
-            channel.on(.attached) { _ in
-                fail("Should not receive attached message")
-            }
-            client.internal.transport?.receive(detachedMessageWithError) // force to .suspended
+        client.internal.transport?.receive(detachedMessageWithError) // (Given) channel receives a DETACHED message whilst in ATTACHING state, the scenario described by RTL13b
+
+        // When...
+        // TODO this explanation is bad
+        // ...all of the channel’s attempts to attach time out (after realtimeRequestTimeout = 1.0) (implicit from the ignored ATTACHED above),
+        let timeout = Double(numberOfRetriesToWaitFor) * (options.testOptions.realtimeRequestTimeout + options.channelRetryTimeout + 0.5) // TODO explain and check
+        let observedStateChanges = try retrySequenceDataGatherer.waitForData(timeout: timeout)
+
+        // Then...
+
+        let expectedNumberOfStateChanges = 1 + 2 * numberOfRetriesToWaitFor
+        XCTAssertEqual(observedStateChanges.count, expectedNumberOfStateChanges)
+        guard observedStateChanges.count == expectedNumberOfStateChanges else {
+            return
+        }
+
+        // ...the channel emits a state change to the SUSPENDED state (after what? this is a result of what?), whose (?)
+        // TODO is this even part of what we're testing here?
+        let startStateChange = observedStateChanges[0]
+        XCTAssertEqual(startStateChange.current, .suspended)
+        XCTAssertEqual(startStateChange.previous, .attaching)
+        XCTAssertNotNil(startStateChange.reason)
+
+        // ...and then, in the following order, the following sequence of events repeats numberOfRetriesToWaitFor times:
+        for retryNumber in 1 ... numberOfRetriesToWaitFor {
+            let firstStateChangeIndex = 1 + 2 * (retryNumber - 1)
+
+            // the channel emits a state change to the ATTACHING state...
+            let firstStateChange = observedStateChanges[firstStateChangeIndex]
+            XCTAssertEqual(firstStateChange.current, .attaching)
+            XCTAssertEqual(firstStateChange.previous, .suspended)
+
+            // ...and the channel emits a state change to the SUSPENDED state (after what? this is a result of what?), whose (?).
+            let secondStateChange = observedStateChanges[firstStateChangeIndex + 1]
+            XCTAssertEqual(secondStateChange.current, .suspended)
+            XCTAssertEqual(secondStateChange.previous, .attaching)
+            XCTAssertNotNil(secondStateChange.reason)
         }
     }
 
