@@ -122,7 +122,7 @@
     [self publish:messages callback:nil];
 }
 
-- (void)publish:(__GENERIC(NSArray, ARTMessage *) *)messages callback:(nullable ARTCallback)callback {
+- (void)publish:(NSArray<ARTMessage *> *)messages callback:(nullable ARTCallback)callback {
     NSError *error = nil;
 
     NSMutableArray<ARTMessage *> *messagesWithDataEncoded = [NSMutableArray new];

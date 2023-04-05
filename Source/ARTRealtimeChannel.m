@@ -222,8 +222,8 @@
     #endif
     CFRunLoopTimerRef _attachTimer;
     CFRunLoopTimerRef _detachTimer;
-    __GENERIC(ARTEventEmitter, ARTEvent *, ARTErrorInfo *) *_attachedEventEmitter;
-    __GENERIC(ARTEventEmitter, ARTEvent *, ARTErrorInfo *) *_detachedEventEmitter;
+    ARTEventEmitter<ARTEvent *, ARTErrorInfo *> *_attachedEventEmitter;
+    ARTEventEmitter<ARTEvent *, ARTErrorInfo *> *_detachedEventEmitter;
     NSString * _Nullable _lastPayloadMessageId;
     NSString * _Nullable _lastPayloadProtocolMessageChannelSerial;
     BOOL _decodeFailureRecoveryInProgress;

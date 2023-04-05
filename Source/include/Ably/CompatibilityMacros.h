@@ -19,12 +19,4 @@
     #define __art_nonnull
 #endif
 
-#if __has_feature(objc_generics)
-    #define __GENERIC(class, ...)         class<__VA_ARGS__>
-    #define __GENERIC_TYPE(type)          type
-#else
-    #define __GENERIC(class, ...)         class
-    #define __GENERIC_TYPE(type)          id
-#endif
-
 #endif /* CompatibilityMacros_h */
