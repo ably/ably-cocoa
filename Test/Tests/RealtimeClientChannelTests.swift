@@ -4046,13 +4046,17 @@ class RealtimeClientChannelTests: XCTestCase {
 
         // When...
 
+        struct ObservedStateChange {
+            var observedAt: Date
+            var stateChange: ARTChannelStateChange
+        }
         let numberOfRetriesToWaitFor = 5 // arbitrarily-chosen, see (D)
         let retrySequenceDataGatherer = DataGatherer(description: "Observe emitted state changes") { submit in
             var retryNumber = 1
-            var observedStateChanges: [ARTChannelStateChange] = []
+            var observedStateChanges: [ObservedStateChange] = []
 
             channel.on { stateChange in
-                observedStateChanges.append(stateChange)
+                observedStateChanges.append(.init(observedAt: .init(), stateChange: stateChange))
 
                 if (stateChange.current == .attaching) {
                     retryNumber += 1
@@ -4089,25 +4093,32 @@ class RealtimeClientChannelTests: XCTestCase {
 
         // ...the channel emits a state change to the SUSPENDED state...
         let startObservedStateChange = observedStateChanges[0]
-        XCTAssertEqual(startObservedStateChange.previous, .attaching)
-        XCTAssertEqual(startObservedStateChange.current, .suspended)
-        XCTAssertNotNil(startObservedStateChange.reason)
+        XCTAssertEqual(startObservedStateChange.stateChange.previous, .attaching)
+        XCTAssertEqual(startObservedStateChange.stateChange.current, .suspended)
+        XCTAssertNotNil(startObservedStateChange.stateChange.reason)
+
+        var previousSuspendedObservedStateChange = startObservedStateChange
 
         // (D) ...and then, in the following order, we observe the following sequence of events occur numberOfRetriesToWaitFor (a number arbitrarily chosen to give us confidence that this sequence is going to repeat indefinitely) times:
         for retryNumber in 1 ... numberOfRetriesToWaitFor {
             let observedStateChangesStartIndexForThisRetry = 1 + 2 * (retryNumber - 1)
 
-            // after channelRetryTimeout seconds (as described by the retry metadata attached to the channel state change), the channel emits a state change to the ATTACHING state...
+            let expectedRetryDelay = options.channelRetryTimeout
+
+            // after channelRetryTimeout seconds (as described by the retry metadata attached to the channel state change, and as approximately measured), the channel emits a state change to the ATTACHING state...
             let firstObservedStateChange = observedStateChanges[observedStateChangesStartIndexForThisRetry]
-            XCTAssertEqual(firstObservedStateChange.previous, .suspended)
-            XCTAssertEqual(firstObservedStateChange.current, .attaching)
-            XCTAssertEqual(firstObservedStateChange.retryAttempt?.delay, options.channelRetryTimeout)
+            XCTAssertEqual(firstObservedStateChange.stateChange.previous, .suspended)
+            XCTAssertEqual(firstObservedStateChange.stateChange.current, .attaching)
+            XCTAssertEqual(firstObservedStateChange.stateChange.retryAttempt?.delay, expectedRetryDelay)
+            let measuredRetryDelay = firstObservedStateChange.observedAt.timeIntervalSince(previousSuspendedObservedStateChange.observedAt)
+            expect(measuredRetryDelay).to(beCloseTo(expectedRetryDelay, within: 0.2 /* arbitrarily-chosen tolerance */))
 
             // ...and the channel emits a state change to the SUSPENDED state, whose `reason` is non-nil.
             let secondObservedStateChange = observedStateChanges[observedStateChangesStartIndexForThisRetry + 1]
-            XCTAssertEqual(secondObservedStateChange.previous, .attaching)
-            XCTAssertEqual(secondObservedStateChange.current, .suspended)
-            XCTAssertNotNil(secondObservedStateChange.reason)
+            XCTAssertEqual(secondObservedStateChange.stateChange.previous, .attaching)
+            XCTAssertEqual(secondObservedStateChange.stateChange.current, .suspended)
+            XCTAssertNotNil(secondObservedStateChange.stateChange.reason)
+            previousSuspendedObservedStateChange = secondObservedStateChange
         }
     }
 
