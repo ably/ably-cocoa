@@ -4097,10 +4097,11 @@ class RealtimeClientChannelTests: XCTestCase {
         for retryNumber in 1 ... numberOfRetriesToWaitFor {
             let observedStateChangesStartIndexForThisRetry = 1 + 2 * (retryNumber - 1)
 
-            // the channel emits a state change to the ATTACHING state...
+            // after channelRetryTimeout seconds (as described by the retry metadata attached to the channel state change), the channel emits a state change to the ATTACHING state...
             let firstObservedStateChange = observedStateChanges[observedStateChangesStartIndexForThisRetry]
             XCTAssertEqual(firstObservedStateChange.previous, .suspended)
             XCTAssertEqual(firstObservedStateChange.current, .attaching)
+            XCTAssertEqual(firstObservedStateChange.retryAttempt?.delay, options.channelRetryTimeout)
 
             // ...and the channel emits a state change to the SUSPENDED state, whose `reason` is non-nil.
             let secondObservedStateChange = observedStateChanges[observedStateChangesStartIndexForThisRetry + 1]
