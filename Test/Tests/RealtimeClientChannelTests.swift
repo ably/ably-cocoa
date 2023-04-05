@@ -3901,13 +3901,17 @@ class RealtimeClientChannelTests: XCTestCase {
         XCTAssertEqual(channel.state, .attaching)
 
         // ...whose state transitions we then start to observe...
+        struct ObservedStateChange {
+            var observedAt: Date
+            var stateChange: ARTChannelStateChange
+        }
         let numberOfRetriesToWaitFor = 5 // arbitrarily chosen, TODO why
         let retrySequenceDataGatherer = DataGatherer(description: "Observe emitted state changes") { submit in
             var retryNumber = 1
-            var observedStateChanges: [ARTChannelStateChange] = []
+            var observedStateChanges: [ObservedStateChange] = []
 
             channel.on { stateChange in
-                observedStateChanges.append(stateChange)
+                observedStateChanges.append(.init(observedAt: .init(), stateChange: stateChange))
 
                 if (stateChange.current == .attaching) {
                     retryNumber += 1
@@ -3943,26 +3947,33 @@ class RealtimeClientChannelTests: XCTestCase {
 
         // ...the channel emits a state change to the SUSPENDED state (after what? this is a result of what?), whose (?)
         // TODO is this even part of what we're testing here?
-        let startStateChange = observedStateChanges[0]
-        XCTAssertEqual(startStateChange.current, .suspended)
-        XCTAssertEqual(startStateChange.previous, .attaching)
-        XCTAssertNotNil(startStateChange.reason)
+        let startObservedStateChange = observedStateChanges[0]
+        XCTAssertEqual(startObservedStateChange.stateChange.current, .suspended)
+        XCTAssertEqual(startObservedStateChange.stateChange.previous, .attaching)
+        XCTAssertNotNil(startObservedStateChange.stateChange.reason)
+
+        var previousSuspendedObservedStateChange = startObservedStateChange
 
         // ...and then, in the following order, the following sequence of events repeats numberOfRetriesToWaitFor times:
         for retryNumber in 1 ... numberOfRetriesToWaitFor {
             let firstStateChangeIndex = 1 + 2 * (retryNumber - 1)
 
+            let expectedRetryDelay = options.channelRetryTimeout
+
             // the channel emits a state change to the ATTACHING state...
-            let firstStateChange = observedStateChanges[firstStateChangeIndex]
-            XCTAssertEqual(firstStateChange.current, .attaching)
-            XCTAssertEqual(firstStateChange.previous, .suspended)
-            XCTAssertEqual(firstStateChange.retryAttempt?.delay, options.channelRetryTimeout)
+            let firstObservedStateChange = observedStateChanges[firstStateChangeIndex]
+            XCTAssertEqual(firstObservedStateChange.stateChange.current, .attaching)
+            XCTAssertEqual(firstObservedStateChange.stateChange.previous, .suspended)
+            XCTAssertEqual(firstObservedStateChange.stateChange.retryAttempt?.delay, expectedRetryDelay)
+            let measuredRetryDelay = firstObservedStateChange.observedAt.timeIntervalSince(previousSuspendedObservedStateChange.observedAt)
+            expect(measuredRetryDelay).to(beCloseTo(expectedRetryDelay, within: 0.2 /* TODO where from */))
 
             // ...and the channel emits a state change to the SUSPENDED state (after what? this is a result of what?), whose (?).
-            let secondStateChange = observedStateChanges[firstStateChangeIndex + 1]
-            XCTAssertEqual(secondStateChange.current, .suspended)
-            XCTAssertEqual(secondStateChange.previous, .attaching)
-            XCTAssertNotNil(secondStateChange.reason)
+            let secondObservedStateChange = observedStateChanges[firstStateChangeIndex + 1]
+            XCTAssertEqual(secondObservedStateChange.stateChange.current, .suspended)
+            XCTAssertEqual(secondObservedStateChange.stateChange.previous, .attaching)
+            XCTAssertNotNil(secondObservedStateChange.stateChange.reason)
+            previousSuspendedObservedStateChange = secondObservedStateChange
         }
     }
 
