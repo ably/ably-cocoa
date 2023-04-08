@@ -8,6 +8,7 @@
 #import "ARTDeltaCodec.h"
 #import "ARTStringifiable.h"
 #import "ARTNSString+ARTUtil.h"
+#import "ARTTestClientOptions.h"
 
 NSString *ARTDefaultEnvironment = nil;
 
@@ -48,6 +49,7 @@ NSString *ARTDefaultEnvironment = nil;
     _idempotentRestPublishing = [ARTClientOptions getDefaultIdempotentRestPublishingForVersion:[ARTDefault apiVersion]];
     _addRequestIds = false;
     _pushRegistererDelegate = nil;
+    _testOptions = [[ARTTestClientOptions alloc] init];
     return self;
 }
 
@@ -133,11 +135,11 @@ NSString *ARTDefaultEnvironment = nil;
     options.internalDispatchQueue = self.internalDispatchQueue;
     options.pushFullWait = self.pushFullWait;
     options.idempotentRestPublishing = self.idempotentRestPublishing;
-    options.channelNamePrefix = self.channelNamePrefix;
     options.addRequestIds = self.addRequestIds;
     options.pushRegistererDelegate = self.pushRegistererDelegate;
     options.transportParams = self.transportParams;
     options.agents = self.agents;
+    options.testOptions = self.testOptions;
 
     return options;
 }

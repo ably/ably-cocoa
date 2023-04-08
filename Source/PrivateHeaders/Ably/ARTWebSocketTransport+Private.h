@@ -1,6 +1,5 @@
 #import <Ably/ARTWebSocketTransport.h>
-#import <Ably/CompatibilityMacros.h>
-#import <Ably/ARTSRWebSocket.h>
+#import "ARTSRWebSocket.h"
 #import <Ably/ARTEncoder.h>
 #import <Ably/ARTAuth.h>
 #import <Ably/ARTWebSocket.h>

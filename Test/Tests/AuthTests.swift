@@ -813,15 +813,12 @@ class AuthTests: XCTestCase {
 
     // RSA4c1 & RSA4c2
     func test__038__Token__options__if_an_attempt_by_the_realtime_client_library_to_authenticate_is_made_using_the_authUrl_or_authCallback__the_attempt_times_out_after_realtimeRequestTimeout__if_the_connection_is_CONNECTING__then_the_connection_attempt_should_be_treated_as_unsuccessful() throws {
-        let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
-        defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
-        ARTDefault.setRealtimeRequestTimeout(0.5)
-
         let options = AblyTests.clientOptions()
         options.autoConnect = false
         options.authCallback = { _, _ in
             // Ignore `completion` closure to force a time out
         }
+        options.testOptions.realtimeRequestTimeout = 0.5
 
         let realtime = ARTRealtime(options: options)
         defer { realtime.dispose(); realtime.close() }
@@ -852,6 +849,7 @@ class AuthTests: XCTestCase {
         options.authCallback = { _, completion in
             getTestTokenDetails(completion: completion)
         }
+        options.testOptions.realtimeRequestTimeout = 0.5
 
         let realtime = ARTRealtime(options: options)
         defer { realtime.dispose(); realtime.close() }
@@ -863,10 +861,6 @@ class AuthTests: XCTestCase {
             }
             realtime.connect()
         }
-
-        let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
-        defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
-        ARTDefault.setRealtimeRequestTimeout(0.5)
 
         // Token should renew and fail
         realtime.internal.options.authCallback = { _, _ in
@@ -4209,7 +4203,7 @@ class AuthTests: XCTestCase {
         let options = AblyTests.clientOptions()
         options.tokenDetails = ARTTokenDetails(token: getJWTToken(capability: capability)!)
         // Prevent channel name to be prefixed by test-*
-        options.channelNamePrefix = nil
+        options.testOptions.channelNamePrefix = nil
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 

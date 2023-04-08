@@ -156,8 +156,8 @@ static const NSUInteger kIdempotentLibraryGeneratedIdLength = 9; //bytes
 
 - (BOOL)history:(ARTDataQuery *)query callback:(ARTPaginatedMessagesCallback)callback error:(NSError * __autoreleasing *)errorPtr {
     if (callback) {
-        void (^userCallback)(__GENERIC(ARTPaginatedResult, ARTMessage *) *result, ARTErrorInfo *error) = callback;
-        callback = ^(__GENERIC(ARTPaginatedResult, ARTMessage *) *result, ARTErrorInfo *error) {
+        void (^userCallback)(ARTPaginatedResult<ARTMessage *> *result, ARTErrorInfo *error) = callback;
+        callback = ^(ARTPaginatedResult<ARTMessage *> *result, ARTErrorInfo *error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(result, error);
             });
@@ -282,7 +282,7 @@ dispatch_sync(_queue, ^{
 - (void)internalPostMessages:(id)data callback:(ARTCallback)callback {
     if (callback) {
         ARTCallback userCallback = callback;
-        callback = ^(ARTErrorInfo *__art_nullable error) {
+        callback = ^(ARTErrorInfo *__nullable error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(error);
             });

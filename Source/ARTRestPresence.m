@@ -155,8 +155,8 @@ dispatch_async(_queue, ^{
 
 - (BOOL)history:(ARTDataQuery *)query callback:(ARTPaginatedPresenceCallback)callback error:(NSError **)errorPtr {
     if (callback) {
-        void (^userCallback)(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, ARTErrorInfo *error) = callback;
-        callback = ^(__GENERIC(ARTPaginatedResult, ARTPresenceMessage *) *result, ARTErrorInfo *error) {
+        void (^userCallback)(ARTPaginatedResult<ARTPresenceMessage *> *result, ARTErrorInfo *error) = callback;
+        callback = ^(ARTPaginatedResult<ARTPresenceMessage *> *result, ARTErrorInfo *error) {
             dispatch_async(self->_userQueue, ^{
                 userCallback(result, error);
             });

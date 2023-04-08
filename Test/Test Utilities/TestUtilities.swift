@@ -106,7 +106,7 @@ class AblyTests {
         let label: String
     }
 
-    static var queueIdentityKey = DispatchSpecificKey<QueueIdentity>()
+    static let queueIdentityKey = DispatchSpecificKey<QueueIdentity>()
 
     static var queue: DispatchQueue = {
         let queue = DispatchQueue(label: "io.ably.tests", qos: .userInitiated)
@@ -131,7 +131,7 @@ class AblyTests {
     }
 
     class func setupOptions(_ options: ARTClientOptions, forceNewApp: Bool = false, debug: Bool = false) -> ARTClientOptions {
-        options.channelNamePrefix = "test-\(setupOptionsCounter)"
+        options.testOptions.channelNamePrefix = "test-\(setupOptionsCounter)"
         setupOptionsCounter += 1
 
         if forceNewApp {

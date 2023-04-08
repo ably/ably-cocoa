@@ -711,7 +711,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 XCTAssertNil(stateChange.reason)
                 XCTAssertEqual(channel.presence.internal.pendingPresence.count, 1)
                 channel.internalAsync { _internal in
-                    _internal.setSuspended(ARTStatus.state(.error, info: ARTErrorInfo.create(withCode: 1234, message: "unknown error")))
+                    _internal.setSuspended(.init(state: .error, errorInfo: ARTErrorInfo.create(withCode: 1234, message: "unknown error")))
                 }
                 partialDone()
             }
@@ -797,7 +797,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 partialDone()
             }
             channel.internalAsync { _internal in
-                _internal.setSuspended(ARTStatus.state(.ok))
+                _internal.setSuspended(.init(state: .ok))
             }
         }
 
@@ -2627,7 +2627,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let clientId = NSUUID().uuidString
         options.tokenDetails = getTestTokenDetails(clientId: clientId, capability: "{\"\(channelName)\":[\"presence\",\"publish\"]}")
         // Prevent channel name to be prefixed by test-*
-        options.channelNamePrefix = nil
+        options.testOptions.channelNamePrefix = nil
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(channelName)

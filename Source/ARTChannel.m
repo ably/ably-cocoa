@@ -68,7 +68,7 @@
     [self publish:name data:data callback:nil];
 }
 
-- (void)publish:(art_nullable NSString *)name data:(art_nullable id)data callback:(art_nullable ARTCallback)callback {
+- (void)publish:(nullable NSString *)name data:(nullable id)data callback:(nullable ARTCallback)callback {
     [self publish:name data:data extras:nil callback:callback];
 }
 
@@ -76,7 +76,7 @@
     [self publish:name data:data extras:extras callback:nil];
 }
 
-- (void)publish:(art_nullable NSString *)name data:(art_nullable id)data extras:(id<ARTJsonCompatible>)extras callback:(art_nullable ARTCallback)callback {
+- (void)publish:(nullable NSString *)name data:(nullable id)data extras:(id<ARTJsonCompatible>)extras callback:(nullable ARTCallback)callback {
     [self publish:name message:[[ARTMessage alloc] initWithName:name data:data] extras:extras callback:callback];
 }
 
@@ -122,7 +122,7 @@
     [self publish:messages callback:nil];
 }
 
-- (void)publish:(__GENERIC(NSArray, ARTMessage *) *)messages callback:(nullable ARTCallback)callback {
+- (void)publish:(NSArray<ARTMessage *> *)messages callback:(nullable ARTCallback)callback {
     NSError *error = nil;
 
     NSMutableArray<ARTMessage *> *messagesWithDataEncoded = [NSMutableArray new];

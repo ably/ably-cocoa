@@ -13,6 +13,8 @@
 #import "ARTTokenDetails.h"
 #import "ARTMessage.h"
 #import "ARTClientOptions.h"
+#import "ARTClientOptions+TestConfiguration.h"
+#import "ARTTestClientOptions.h"
 #import "ARTChannelOptions.h"
 #import "ARTPresenceMessage.h"
 #import "ARTWebSocketTransport+Private.h"
@@ -43,6 +45,12 @@
 #import "ARTCrypto.h"
 #import "ARTDeviceIdentityTokenDetails.h"
 #import "ARTErrorChecker.h"
+#import "ARTConnectionStateChangeMetadata.h"
+#import "ARTChannelStateChangeMetadata.h"
+#import "ARTAttachRequestMetadata.h"
+#import "ARTRetrySequence.h"
+#import "ARTConstantRetryDelayCalculator.h"
+#import "ARTTypes+Private.h"
 
 @interface ARTConnectionStateChange ()
 
@@ -163,6 +171,18 @@
 
 @end
 
+NS_ASSUME_NONNULL_BEGIN
+
+@interface ARTRealtimeInternal ()
+
+@property (nonatomic, readonly) id<ARTRetryDelayCalculator> connectRetryDelayCalculator;
+@property (nonatomic, nullable) ARTRetrySequence *connectRetrySequence;
+
+@end
+
+NS_ASSUME_NONNULL_END
+
+
 @implementation ARTRealtimeInternal {
     BOOL _renewingToken;
     BOOL _shouldImmediatelyReconnect;
@@ -205,6 +225,7 @@
         _connection = [[ARTConnectionInternal alloc] initWithRealtime:self];
         _connectionStateTtl = [ARTDefault connectionStateTtl];
         _shouldImmediatelyReconnect = true;
+        _connectRetryDelayCalculator = [[ARTConstantRetryDelayCalculator alloc] initWithConstantDelay:options.disconnectedRetryTimeout];
         self.auth.delegate = self;
         
         [self.connection setState:ARTRealtimeInitialized];
@@ -303,7 +324,7 @@
         default: {
             // Client state is NOT Connecting or Connected, so it should start a new connection
             [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p new connection from successfull authorize %@", self.rest, tokenDetails];
-            [self transition:ARTRealtimeConnecting];
+            [self transition:ARTRealtimeConnecting withMetadata:[[ARTConnectionStateChangeMetadata alloc] init]];
             waitForResponse();
             break;
         }
@@ -409,7 +430,7 @@
         // New connection
         _transport = nil;
     }
-    [self transition:ARTRealtimeConnecting];
+    [self transition:ARTRealtimeConnecting withMetadata:[[ARTConnectionStateChangeMetadata alloc] init]];
 }
 
 - (void)close {
@@ -436,10 +457,10 @@
         }
         case ARTRealtimeDisconnected:
         case ARTRealtimeSuspended:
-            [self transition:ARTRealtimeClosed];
+            [self transition:ARTRealtimeClosed withMetadata:[[ARTConnectionStateChangeMetadata alloc] init]];
             break;
         case ARTRealtimeConnected:
-            [self transition:ARTRealtimeClosing];
+            [self transition:ARTRealtimeClosing withMetadata:[[ARTConnectionStateChangeMetadata alloc] init]];
             break;
     }
 }
@@ -476,7 +497,7 @@
                     }];
                     return;
                 }
-                [[[self->_pingEventEmitter once:cb] setTimer:[ARTDefault realtimeRequestTimeout] onTimeout:^{
+                [[[self->_pingEventEmitter once:cb] setTimer:self.options.testOptions.realtimeRequestTimeout onTimeout:^{
                     [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p ping timed out", self];
                     cb([ARTErrorInfo createWithCode:ARTErrorConnectionTimedOut status:ARTStateConnectionFailed message:@"timed out"]);
                 }] startTimer];
@@ -493,16 +514,13 @@
     return [self.rest stats:query callback:callback error:errorPtr];
 }
 
-- (void)transition:(ARTRealtimeConnectionState)state {
-    [self transition:state withErrorInfo:nil];
-}
-
-- (void)transition:(ARTRealtimeConnectionState)state withErrorInfo:(ARTErrorInfo *)errorInfo {
-    [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p realtime state transitions to %tu - %@", self, state, ARTRealtimeConnectionStateToStr(state)];
+- (void)transition:(ARTRealtimeConnectionState)state withMetadata:(ARTConnectionStateChangeMetadata *)metadata {
+    [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p realtime state transitions to %tu - %@%@", self, state, ARTRealtimeConnectionStateToStr(state), metadata.retryAttempt ? [NSString stringWithFormat: @" (result of %@)", metadata.retryAttempt.id] : @""];
     
-    ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:state previous:self.connection.state_nosync event:(ARTRealtimeConnectionEvent)state reason:errorInfo retryIn:0];
+    ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:state previous:self.connection.state_nosync event:(ARTRealtimeConnectionEvent)state reason:metadata.errorInfo retryIn:0 retryAttempt:metadata.retryAttempt];
+
     [self.connection setState:state];
-    [self.connection setErrorReason:errorInfo];
+    [self.connection setErrorReason:metadata.errorInfo];
     
     ARTEventListener *stateChangeEventListener = [self transitionSideEffects:stateChange];
     
@@ -514,16 +532,12 @@
     }
 }
 
-- (void)transitionToDisconnectedOrSuspended {
-    [self transitionToDisconnectedOrSuspendedWithError:nil];
-}
-
-- (void)transitionToDisconnectedOrSuspendedWithError:(nullable ARTErrorInfo *)errorInfo {
+- (void)transitionToDisconnectedOrSuspendedWithMetadata:(ARTConnectionStateChangeMetadata *)metadata {
     if ([self isSuspendMode]) {
-        [self transition:ARTRealtimeSuspended withErrorInfo:errorInfo];
+        [self transition:ARTRealtimeSuspended withMetadata:metadata];
     }
     else {
-        [self transition:ARTRealtimeDisconnected withErrorInfo:errorInfo];
+        [self transition:ARTRealtimeDisconnected withMetadata:metadata];
     }
 }
 
@@ -546,7 +560,7 @@
 }
 
 - (ARTEventListener *)transitionSideEffects:(ARTConnectionStateChange *)stateChange {
-    ARTStatus *status = nil;
+    ARTChannelStateChangeMetadata *channelStateChangeMetadata = nil;
     ARTEventListener *stateChangeEventListener = nil;
     
     [self.logger debug:@"RT:%p realtime is transitioning from %tu - %@ to %tu - %@", self, stateChange.previous, ARTRealtimeConnectionStateToStr(stateChange.previous), stateChange.current, ARTRealtimeConnectionStateToStr(stateChange.current)];
@@ -563,7 +577,7 @@
                 }
             }
             
-            stateChangeEventListener = [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
+            stateChangeEventListener = [self unlessStateChangesBefore:self.options.testOptions.realtimeRequestTimeout do:^{
                 [self onConnectionTimeOut];
             }];
             _connectingTimeoutListener = stateChangeEventListener;
@@ -593,7 +607,7 @@
                         switch (self.connection.state_nosync) {
                             case ARTRealtimeDisconnected:
                             case ARTRealtimeSuspended:
-                                [self transition:ARTRealtimeConnecting];
+                                [self transition:ARTRealtimeConnecting withMetadata:[[ARTConnectionStateChangeMetadata alloc] init]];
                             default:
                                 break;
                         }
@@ -602,7 +616,8 @@
                             case ARTRealtimeConnecting:
                             case ARTRealtimeConnected: {
                                 ARTErrorInfo *unreachable = [ARTErrorInfo createWithCode:-1003 message:@"unreachable host"];
-                                [self transitionToDisconnectedOrSuspendedWithError:unreachable];
+                                ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:unreachable];
+                                [self transitionToDisconnectedOrSuspendedWithMetadata:metadata];
                                 break;
                             }
                             default:
@@ -616,8 +631,8 @@
         case ARTRealtimeClosing: {
             [self stopIdleTimer];
             [_reachability off];
-            stateChangeEventListener = [self unlessStateChangesBefore:[ARTDefault realtimeRequestTimeout] do:^{
-                [self transition:ARTRealtimeClosed];
+            stateChangeEventListener = [self unlessStateChangesBefore:self.options.testOptions.realtimeRequestTimeout do:^{
+                [self transition:ARTRealtimeClosed withMetadata:[[ARTConnectionStateChangeMetadata alloc] init]];
             }];
             [self.transport sendClose];
             break;
@@ -633,28 +648,45 @@
             [self.auth cancelAuthorization:nil];
             [self failPendingMessages:[ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:ARTErrorConnectionClosed message:@"connection broken before receiving publishing acknowledgment"]]];
             break;
-        case ARTRealtimeFailed:
-            status = [ARTStatus state:ARTStateConnectionFailed info:stateChange.reason];
+        case ARTRealtimeFailed: {
+            ARTStatus *const status = [ARTStatus state:ARTStateConnectionFailed info:stateChange.reason];
+            channelStateChangeMetadata = [[ARTChannelStateChangeMetadata alloc] initWithState:status.state
+                                                                                    errorInfo:status.errorInfo];
             [self abortAndReleaseTransport:status];
             self.rest.prioritizedHost = nil;
             [self.auth cancelAuthorization:stateChange.reason];
             [self failPendingMessages:[ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:ARTErrorConnectionFailed message:@"connection broken before receiving publishing acknowledgment"]]];
             break;
+        }
         case ARTRealtimeDisconnected: {
             [self closeAndReleaseTransport];
             if (!_connectionLostAt) {
                 _connectionLostAt = [NSDate date];
                 [self.logger verbose:@"RT:%p set connection lost time; expected suspension at %@ (ttl=%f)", self, [self suspensionTime], self.connectionStateTtl];
             }
-            NSTimeInterval retryInterval = self.options.disconnectedRetryTimeout;
+
+            NSTimeInterval retryDelay;
+            ARTRetryAttempt *retryAttempt;
+
             // RTN15a - retry immediately if client was connected
             if (stateChange.previous == ARTRealtimeConnected && _shouldImmediatelyReconnect) {
-                retryInterval = 0.1;
+                retryDelay = 0.1;
+            } else {
+                // Note: we currently reset the retry sequence every time we wish to perform a retry (defeating the point of using it in the first place, but it's OK since the delays are all constant). As part of implementing #1431 we will reuse any existing retry sequence, resetting it only in response to certain state changes.
+                self.connectRetrySequence = [[ARTRetrySequence alloc] initWithDelayCalculator:self.connectRetryDelayCalculator];
+                [self.logger verbose:@"RT:%p Created connect retry sequence %@", self, self.connectRetrySequence];
+
+                retryAttempt = [self.connectRetrySequence addRetryAttempt];
+                [self.logger verbose:@"RT:%p Adding connect retry attempt to %@ gave %@", self, self.connectRetrySequence.id, retryAttempt];
+
+                retryDelay = retryAttempt.delay;
             }
-            [stateChange setRetryIn:retryInterval];
+            [stateChange setRetryIn:retryDelay];
             stateChangeEventListener = [self unlessStateChangesBefore:stateChange.retryIn do:^{
                 self->_connectionRetryFromDisconnectedListener = nil;
-                [self transition:ARTRealtimeConnecting];
+                ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:nil
+                                                                                                                  retryAttempt:retryAttempt];
+                [self transition:ARTRealtimeConnecting withMetadata:metadata];
             }];
             _connectionRetryFromDisconnectedListener = stateChangeEventListener;
             break;
@@ -667,7 +699,7 @@
             [stateChange setRetryIn:self.options.suspendedRetryTimeout];
             stateChangeEventListener = [self unlessStateChangesBefore:stateChange.retryIn do:^{
                 self->_connectionRetryFromSuspendedListener = nil;
-                [self transition:ARTRealtimeConnecting];
+                [self transition:ARTRealtimeConnecting withMetadata:[[ARTConnectionStateChangeMetadata alloc] init]];
             }];
             _connectionRetryFromSuspendedListener = stateChangeEventListener;
             break;
@@ -709,10 +741,16 @@
             }
         }
     } else if (![self shouldQueueEvents]) {
-        ARTStatus *channelStatus = status;
-        if (!channelStatus) {
-            channelStatus = stateChange.reason ? [ARTStatus state:ARTStateError info:stateChange.reason] : [self defaultError];
+        if (!channelStateChangeMetadata) {
+            if (stateChange.reason) {
+                channelStateChangeMetadata = [[ARTChannelStateChangeMetadata alloc] initWithState:ARTStateError
+                                                                                        errorInfo:stateChange.reason];
+            } else {
+                channelStateChangeMetadata = [[ARTChannelStateChangeMetadata alloc] initWithState:ARTStateError];
+            }
         }
+
+        ARTStatus *const channelStatus = [ARTStatus state:channelStateChangeMetadata.state info:channelStateChangeMetadata.errorInfo];
         [self failQueuedMessages:channelStatus];
         
         // Channels
@@ -721,15 +759,19 @@
                 case ARTRealtimeClosing:
                     //do nothing. Closed state is coming.
                     break;
-                case ARTRealtimeClosed:
-                    [channel detachChannel:[ARTStatus state:ARTStateOk]];
+                case ARTRealtimeClosed: {
+                    ARTChannelStateChangeMetadata *const metadata = [[ARTChannelStateChangeMetadata alloc] initWithState:ARTStateOk];
+                    [channel detachChannel:metadata];
                     break;
-                case ARTRealtimeSuspended:
-                    [channel setSuspended:channelStatus];
+                }
+                case ARTRealtimeSuspended: {
+                    [channel setSuspended:channelStateChangeMetadata];
                     break;
-                case ARTRealtimeFailed:
-                    [channel setFailed:channelStatus];
+                }
+                case ARTRealtimeFailed: {
+                    [channel setFailed:channelStateChangeMetadata];
                     break;
+                }
                 default:
                     break;
             }
@@ -827,7 +869,8 @@
                 _lastActivity = [NSDate date];
                 [self setIdleTimer];
             }
-            [self transition:ARTRealtimeConnected withErrorInfo:message.error];
+            ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:message.error];
+            [self transition:ARTRealtimeConnected withMetadata:metadata];
             break;
         }
         case ARTRealtimeConnected: {
@@ -841,7 +884,8 @@
 
 - (void)reattachChannelsWithReason:(ARTErrorInfo *)reason {
     for (ARTRealtimeChannelInternal *const channel in self.channels.nosyncIterable) {
-        [channel reattachWithReason:reason];
+        ARTAttachRequestMetadata *const metadata = [[ARTAttachRequestMetadata alloc] initWithReason:reason];
+        [channel reattachWithMetadata:metadata];
     }
 }
 
@@ -858,18 +902,21 @@
         && !_renewingToken // If already reconnecting, give up.
         ) {
         if (![self.auth tokenIsRenewable]) {
-            [self transition:ARTRealtimeFailed withErrorInfo:error];
+            ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:error];
+            [self transition:ARTRealtimeFailed withMetadata:metadata];
             return;
         }
-        
-        [self transitionToDisconnectedOrSuspendedWithError:error];
+
+        ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:error];
+        [self transitionToDisconnectedOrSuspendedWithMetadata:metadata];
         [self.connection setErrorReason:nil];
         _renewingToken = true;
-        [self transition:ARTRealtimeConnecting withErrorInfo:nil];
+        [self transition:ARTRealtimeConnecting withMetadata:[[ARTConnectionStateChangeMetadata alloc] init]];
         return;
     }
-    
-    [self transitionToDisconnectedOrSuspendedWithError:error];
+
+    ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:error];
+    [self transitionToDisconnectedOrSuspendedWithMetadata:metadata];
 }
 
 - (void)onClosed {
@@ -879,7 +926,7 @@
             break;
         case ARTRealtimeClosing:
             [self.connection setId:nil];
-            [self transition:ARTRealtimeClosed];
+            [self transition:ARTRealtimeClosed withMetadata:[[ARTConnectionStateChangeMetadata alloc] init]];
             break;
         default:
             NSAssert(false, @"Invalid Realtime state transitioning to Closed: expected Closing or Closed, has %@", ARTRealtimeConnectionStateToStr(self.connection.state_nosync));
@@ -910,7 +957,8 @@
             if (_renewingToken) {
                 // Already retrying; give up.
                 [self.connection setErrorReason:error];
-                [self transitionToDisconnectedOrSuspendedWithError:error];
+                ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:error];
+                [self transitionToDisconnectedOrSuspendedWithMetadata:metadata];
                 return;
             }
             [self transportReconnectWithRenewedToken];
@@ -918,7 +966,8 @@
         }
         
         [self.connection setId:nil];
-        [self transition:ARTRealtimeFailed withErrorInfo:message.error];
+        ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:message.error];
+        [self transition:ARTRealtimeFailed withMetadata:metadata];
     }
 }
 
@@ -961,12 +1010,16 @@
         error = [ARTErrorInfo createWithCode:ARTErrorConnectionTimedOut status:ARTStateConnectionFailed message:@"timed out"];
     }
     switch (self.connection.state_nosync) {
-        case ARTRealtimeConnected:
-            [self transition:ARTRealtimeConnected withErrorInfo:error];
+        case ARTRealtimeConnected: {
+            ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:error];
+            [self transition:ARTRealtimeConnected withMetadata:metadata];
             break;
-        default:
-            [self transitionToDisconnectedOrSuspendedWithError:error];
+        }
+        default: {
+            ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:error];
+            [self transitionToDisconnectedOrSuspendedWithMetadata:metadata];
             break;
+        }
     }
 }
 
@@ -995,7 +1048,7 @@
     }
     else {
         // Token
-        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p connecting with token auth; authorising (timeout of %f)", self, [ARTDefault realtimeRequestTimeout]];
+        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p connecting with token auth; authorising (timeout of %f)", self, self.options.testOptions.realtimeRequestTimeout];
         
         if (!forceNewToken && [self.auth tokenRemainsValid]) {
             // Reuse token
@@ -1007,7 +1060,7 @@
             [self.auth setTokenDetails:nil];
             
             // Schedule timeout handler
-            _authenitcatingTimeoutWork = artDispatchScheduled([ARTDefault realtimeRequestTimeout], _rest.queue, ^{
+            _authenitcatingTimeoutWork = artDispatchScheduled(self.options.testOptions.realtimeRequestTimeout, _rest.queue, ^{
                 [self onConnectionTimeOut];
             });
             
@@ -1057,14 +1110,17 @@
     [self.logger error:@"R:%p token auth failed with %@", self, error.description];
     if (error.code == ARTErrorIncompatibleCredentials) {
         // RSA15c
-        [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:error]];
+        ARTErrorInfo *const errorInfo = [ARTErrorInfo createFromNSError:error];
+        ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:errorInfo];
+        [self transition:ARTRealtimeFailed withMetadata:metadata];
     }
     else if (self.options.authUrl || self.options.authCallback) {
         if (error.code == ARTErrorForbidden /* RSA4d */) {
             ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTErrorAuthConfiguredProviderFailure
                                                             status:error.artStatusCode
                                                            message:error.description];
-            [self transition:ARTRealtimeFailed withErrorInfo:errorInfo];
+            ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:errorInfo];
+            [self transition:ARTRealtimeFailed withMetadata:metadata];
         } else {
             ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTErrorAuthConfiguredProviderFailure status:ARTStateConnectionFailed message:error.description];
             switch (self.connection.state_nosync) {
@@ -1072,16 +1128,20 @@
                     // RSA4c3
                     [self.connection setErrorReason:errorInfo];
                     break;
-                default:
+                default: {
                     // RSA4c
-                    [self transitionToDisconnectedOrSuspendedWithError:errorInfo];
+                    ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:errorInfo];
+                    [self transitionToDisconnectedOrSuspendedWithMetadata:metadata];
                     break;
+                }
             }
         }
     }
     else {
         // RSA4b
-        [self transitionToDisconnectedOrSuspendedWithError:[ARTErrorInfo createFromNSError:error]];
+        ARTErrorInfo *const errorInfo = [ARTErrorInfo createFromNSError:error];
+        ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:errorInfo];
+        [self transitionToDisconnectedOrSuspendedWithMetadata:metadata];
     }
 }
 
@@ -1102,7 +1162,7 @@
 }
 
 - (void)onSuspended {
-    [self transition:ARTRealtimeSuspended];
+    [self transition:ARTRealtimeSuspended withMetadata:[[ARTConnectionStateChangeMetadata alloc] init]];
 }
 
 - (NSDate *)suspensionTime {
@@ -1137,10 +1197,6 @@
         default:
             return false;
     }
-}
-
-- (ARTStatus *)defaultError {
-    return [ARTStatus state:ARTStateError];
 }
 
 - (BOOL)isActive {
@@ -1348,7 +1404,9 @@
     if (host != nil) {
         [self.rest internetIsUp:^void(BOOL isUp) {
             if (!isUp) {
-                [self transition:ARTRealtimeDisconnected withErrorInfo:[ARTErrorInfo createWithCode:0 message:@"no Internet connection"]];
+                ARTErrorInfo *const errorInfo = [ARTErrorInfo createWithCode:0 message:@"no Internet connection"];
+                ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:errorInfo];
+                [self transition:ARTRealtimeDisconnected withMetadata:metadata];
                 return;
             }
             
@@ -1387,11 +1445,12 @@
     }
     artDispatchCancel(_idleTimer);
     
-    _idleTimer = artDispatchScheduled([ARTDefault realtimeRequestTimeout] + self.maxIdleInterval, _rest.queue, ^{
+    _idleTimer = artDispatchScheduled(self.options.testOptions.realtimeRequestTimeout + self.maxIdleInterval, _rest.queue, ^{
         [self.logger error:@"R:%p No activity seen from realtime in %f seconds; assuming connection has dropped", self, [[NSDate date] timeIntervalSinceDate:self->_lastActivity]];
         
         ARTErrorInfo *idleTimerExpired = [ARTErrorInfo createWithCode:ARTErrorDisconnected status:408 message:@"Idle timer expired"];
-        [self transitionToDisconnectedOrSuspendedWithError:idleTimerExpired];
+        ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:idleTimerExpired];
+        [self transitionToDisconnectedOrSuspendedWithMetadata:metadata];
     });
 }
 
@@ -1485,10 +1544,10 @@
     
     if (self.connection.state_nosync == ARTRealtimeClosing) {
         // Close succeeded. Nothing more to do.
-        [self transition:ARTRealtimeClosed];
+        [self transition:ARTRealtimeClosed withMetadata:[[ARTConnectionStateChangeMetadata alloc] init]];
     } else if (self.connection.state_nosync != ARTRealtimeClosed && self.connection.state_nosync != ARTRealtimeFailed) {
         // Unexpected closure; recover.
-        [self transitionToDisconnectedOrSuspended];
+        [self transitionToDisconnectedOrSuspendedWithMetadata:[[ARTConnectionStateChangeMetadata alloc] init]];
     }
 }
 
@@ -1499,9 +1558,11 @@
     }
     
     if (self.connection.state_nosync == ARTRealtimeClosing) {
-        [self transition:ARTRealtimeClosed];
+        [self transition:ARTRealtimeClosed withMetadata:[[ARTConnectionStateChangeMetadata alloc] init]];
     } else {
-        [self transitionToDisconnectedOrSuspendedWithError:[ARTErrorInfo createFromNSError:error.error]];
+        ARTErrorInfo *const errorInfo = [ARTErrorInfo createFromNSError:error.error];
+        ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:errorInfo];
+        [self transitionToDisconnectedOrSuspendedWithMetadata:metadata];
     }
 }
 
@@ -1521,7 +1582,9 @@
             if (self->_fallbacks != nil) {
                 [self reconnectWithFallback];
             } else {
-                [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:transportError.error]];
+                ARTErrorInfo *const errorInfo = [ARTErrorInfo createFromNSError:transportError.error];
+                ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:errorInfo];
+                [self transition:ARTRealtimeFailed withMetadata:metadata];
             }
             return;
         } else if (_fallbacks && [self reconnectWithFallback]) {
@@ -1531,12 +1594,16 @@
     
     switch (transportError.type) {
         case ARTRealtimeTransportErrorTypeBadResponse:
-        case ARTRealtimeTransportErrorTypeOther:
-            [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:transportError.error]];
+        case ARTRealtimeTransportErrorTypeOther: {
+            ARTErrorInfo *const errorInfo = [ARTErrorInfo createFromNSError:transportError.error];
+            ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:errorInfo];
+            [self transition:ARTRealtimeFailed withMetadata:metadata];
             break;
+        }
         default: {
             ARTErrorInfo *error = [ARTErrorInfo createFromNSError:transportError.error];
-            [self transitionToDisconnectedOrSuspendedWithError:error];
+            ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:error];
+            [self transitionToDisconnectedOrSuspendedWithMetadata:metadata];
         }
     }
 }
@@ -1547,7 +1614,9 @@
         return;
     }
     
-    [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createWithCode:ARTClientCodeErrorTransport message:@"Transport never connected"]];
+    ARTErrorInfo *const errorInfo = [ARTErrorInfo createWithCode:ARTClientCodeErrorTransport message:@"Transport never connected"];
+    ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:errorInfo];
+    [self transition:ARTRealtimeFailed withMetadata:metadata];
 }
 
 - (void)realtimeTransportRefused:(id<ARTRealtimeTransport>)transport withError:(ARTRealtimeTransportError *)error {
@@ -1557,13 +1626,17 @@
     }
     
     if (error && error.type == ARTRealtimeTransportErrorTypeRefused) {
-        [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createWithCode:ARTClientCodeErrorTransport message:[NSString stringWithFormat:@"Connection refused using %@", error.url]]];
+        ARTErrorInfo *const errorInfo = [ARTErrorInfo createWithCode:ARTClientCodeErrorTransport message:[NSString stringWithFormat:@"Connection refused using %@", error.url]];
+        ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:errorInfo];
+        [self transition:ARTRealtimeFailed withMetadata:metadata];
     }
     else if (error) {
-        [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:error.error]];
+        ARTErrorInfo *const errorInfo = [ARTErrorInfo createFromNSError:error.error];
+        ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:errorInfo];
+        [self transition:ARTRealtimeFailed withMetadata:metadata];
     }
     else {
-        [self transition:ARTRealtimeFailed];
+        [self transition:ARTRealtimeFailed withMetadata:[[ARTConnectionStateChangeMetadata alloc] init]];
     }
 }
 
@@ -1572,8 +1645,10 @@
         // Old connection
         return;
     }
-    
-    [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createWithCode:ARTClientCodeErrorTransport message:@"Transport too big"]];
+
+    ARTErrorInfo *const errorInfo = [ARTErrorInfo createWithCode:ARTClientCodeErrorTransport message:@"Transport too big"];
+    ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:errorInfo];
+    [self transition:ARTRealtimeFailed withMetadata:metadata];
 }
 
 - (void)realtimeTransportSetMsgSerial:(id<ARTRealtimeTransport>)transport msgSerial:(int64_t)msgSerial {
