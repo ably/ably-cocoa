@@ -203,7 +203,7 @@ class UtilitiesTests: XCTestCase {
 
         let options = AblyTests.commonAppSetup()
         let rest = ARTRest(options: options)
-        let testHTTPExecutor = TestProxyHTTPExecutor(options.logHandler)
+        let testHTTPExecutor = TestProxyHTTPExecutor(InternalLog(logger: LogAdapter(logger: options.logHandler)))
         rest.internal.httpExecutor = testHTTPExecutor
         let channel = rest.channels.get(uniqueChannelName())
 
@@ -452,9 +452,11 @@ class UtilitiesTests: XCTestCase {
             }
         }
 
-        expect(realtime.internal.logger.history.count).toNot(beGreaterThan(100))
-        XCTAssertEqual(realtime.internal.logger.history.filter { $0.message.contains("channel state transitions from 1 - Attaching to 2 - Attached") }.count, 1)
-        XCTAssertEqual(realtime.internal.logger.history.filter { $0.message.contains("realtime state transitions to 2 - Connected") }.count, 1)
+        let logger = options.logHandler
+
+        expect(logger.history.count).toNot(beGreaterThan(100))
+        XCTAssertEqual(logger.history.filter { $0.message.contains("channel state transitions from 1 - Attaching to 2 - Attached") }.count, 1)
+        XCTAssertEqual(logger.history.filter { $0.message.contains("realtime state transitions to 2 - Connected") }.count, 1)
     }
 
     func test__022__Utilities__maxMessageSize__calculates_maxMessageSize_of_a_Message_with_name_and_data() {

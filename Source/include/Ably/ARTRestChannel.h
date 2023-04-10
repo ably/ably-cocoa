@@ -1,7 +1,6 @@
 #import <Foundation/Foundation.h>
 
 #import <Ably/ARTChannel.h>
-#import <Ably/ARTLog.h>
 
 @class ARTRest;
 @class ARTRestPresence;

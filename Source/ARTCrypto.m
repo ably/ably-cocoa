@@ -1,4 +1,5 @@
 #import "ARTCrypto+Private.h"
+#import "ARTInternalLog.h"
 
 #import <CommonCrypto/CommonCrypto.h>
 
@@ -7,6 +8,12 @@
 @interface ARTCipherParams ()
 
 - (BOOL)ccAlgorithm:(CCAlgorithm *)algorithm error:(NSError **)error;
+
+@end
+
+@interface ARTCrypto ()
+
+@property (nonatomic, strong) ARTInternalLog *logger;
 
 @end
 

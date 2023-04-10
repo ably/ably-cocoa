@@ -12,13 +12,13 @@
 #import "ARTDefault.h"
 #import "ARTRealtimeTransport.h"
 #import "ARTGCD.h"
-#import "ARTLog+Private.h"
 #import "ARTEventEmitter+Private.h"
 #import "NSURLQueryItem+Stringifiable.h"
 #import "ARTNSMutableDictionary+ARTDictionaryUtil.h"
 #import "ARTStringifiable.h"
 #import "ARTClientInformation.h"
 #import "ARTConnection+Private.h"
+#import "ARTInternalLog.h"
 
 enum {
     ARTWsNeverConnected = -1,

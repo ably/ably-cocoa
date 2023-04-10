@@ -4,6 +4,7 @@
 #import "ARTRealtime+Private.h"
 #import "ARTRealtimeChannel.h"
 #import "ARTGCD.h"
+#import "ARTInternalLog.h"
 
 @implementation NSMutableArray (AsSet)
 

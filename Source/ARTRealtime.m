@@ -35,7 +35,6 @@
 #import "ARTAuthDetails.h"
 #import "ARTGCD.h"
 #import "ARTEncoder.h"
-#import "ARTLog+Private.h"
 #import "ARTRealtimeChannels+Private.h"
 #import "ARTPush+Private.h"
 #import "ARTQueuedDealloc.h"
@@ -52,6 +51,7 @@
 #import "ARTConstantRetryDelayCalculator.h"
 #import "ARTTypes+Private.h"
 #import "ARTResumeRequestResponse.h"
+#import "ARTInternalLog.h"
 
 @interface ARTConnectionStateChange ()
 
@@ -376,7 +376,7 @@ NS_ASSUME_NONNULL_END
     return _transport;
 }
 
-- (ARTLog *)getLogger {
+- (ARTInternalLog *)getLogger {
     return _rest.logger;
 }
 

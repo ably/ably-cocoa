@@ -800,7 +800,7 @@ class MockHTTP: ARTHttp {
     private var rule: Rule?
     private var count: Int = 0
 
-    init(logger: ARTLog) {
+    init(logger: InternalLog) {
         super.init(AblyTests.queue, logger: logger)
     }
 
@@ -909,12 +909,12 @@ class MockHTTPExecutor: NSObject, ARTHTTPAuthenticatedExecutor {
 
     fileprivate var errorSimulator: NSError?
 
-    var _logger = ARTLog()
+    var _logger = InternalLog(logger: MockVersion2Log())
     var clientOptions = ARTClientOptions()
     var encoder = ARTJsonLikeEncoder()
     var requests: [URLRequest] = []
 
-    func logger() -> ARTLog {
+    func logger() -> InternalLog {
         return _logger
     }
 
@@ -968,7 +968,7 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
     typealias HTTPExecutorCallback = (HTTPURLResponse?, Data?, Error?) -> Void
 
     private(set) var http: ARTHttp
-    private var _logger: ARTLog!
+    private var _logger: InternalLog!
 
     private var errorSimulator: ErrorSimulator?
 
@@ -994,17 +994,17 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
     private var callbackAfterRequest: ((URLRequest) -> Void)?
     private var callbackProcessingDataResponse: ((Data?) -> Data)?
 
-    init(_ logger: ARTLog) {
+    init(_ logger: InternalLog) {
         self._logger = logger
         self.http = ARTHttp(AblyTests.queue, logger: logger)
     }
 
-    init(http: ARTHttp, logger: ARTLog) {
+    init(http: ARTHttp, logger: InternalLog) {
         self._logger = logger
         self.http = http
     }
     
-    func logger() -> ARTLog {
+    func logger() -> InternalLog {
         return self._logger
     }
 
@@ -1797,7 +1797,7 @@ extension String {
     var callback: ((Bool) -> Void)?
     var queue: DispatchQueue
 
-    required init(logger: ARTLog, queue: DispatchQueue) {
+    required init(logger: InternalLog, queue: DispatchQueue) {
         self.queue = queue
     }
 

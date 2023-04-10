@@ -2,7 +2,7 @@
 #import "ARTPresenceMessage.h"
 #import "ARTPresenceMessage+Private.h"
 #import "ARTEventEmitter+Private.h"
-#import "ARTLog.h"
+#import "ARTInternalLog.h"
 
 typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
     ARTPresenceSyncInitialized,
@@ -45,10 +45,10 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
 @end
 
 @implementation ARTPresenceMap {
-    ARTLog *_logger;
+    ARTInternalLog *_logger;
 }
 
-- (instancetype)initWithQueue:(_Nonnull dispatch_queue_t)queue logger:(ARTLog *)logger { 
+- (instancetype)initWithQueue:(_Nonnull dispatch_queue_t)queue logger:(ARTInternalLog *)logger {
     self = [super init];
     if(self) {
         _logger = logger;

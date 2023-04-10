@@ -1,5 +1,7 @@
 #import "ARTTypes.h"
+#import "ARTTypes+Private.h"
 #import "ARTDeviceIdentityTokenDetails.h"
+#import "ARTDeviceIdentityTokenDetails+Private.h"
 
 NSString *const ARTCoderTokenKey = @"token";
 NSString *const ARTCoderIssuedKey = @"issued";
@@ -64,11 +66,11 @@ NSString *const ARTCoderClientIdKey = @"clientId";
 
 #pragma mark - Archive/Unarchive
 
-- (NSData *)archiveWithLogger:(nullable ARTLog *)logger {
+- (NSData *)archiveWithLogger:(nullable ARTInternalLog *)logger {
     return [self art_archiveWithLogger:logger];
 }
 
-+ (ARTDeviceIdentityTokenDetails *)unarchive:(NSData *)data withLogger:(nullable ARTLog *)logger {
++ (ARTDeviceIdentityTokenDetails *)unarchive:(NSData *)data withLogger:(nullable ARTInternalLog *)logger {
     return [self art_unarchiveFromData:data withLogger:logger];
 }
 

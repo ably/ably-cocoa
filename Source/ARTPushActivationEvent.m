@@ -1,5 +1,6 @@
 #import "ARTPushActivationEvent.h"
 #import "ARTTypes.h"
+#import "ARTTypes+Private.h"
 #import "ARTDeviceIdentityTokenDetails.h"
 
 NSString *const ARTCoderErrorKey = @"error";
@@ -31,11 +32,11 @@ NSString *const ARTCoderIdentityTokenDetailsKey = @"identityTokenDetails";
 
 #pragma mark - Archive/Unarchive
 
-- (NSData *)archiveWithLogger:(nullable ARTLog *)logger {
+- (NSData *)archiveWithLogger:(nullable ARTInternalLog *)logger {
     return [self art_archiveWithLogger:logger];
 }
 
-+ (ARTPushActivationEvent *)unarchive:(NSData *)data withLogger:(nullable ARTLog *)logger {
++ (ARTPushActivationEvent *)unarchive:(NSData *)data withLogger:(ARTInternalLog *)logger {
     return [self art_unarchiveFromData:data withLogger:logger];
 }
 

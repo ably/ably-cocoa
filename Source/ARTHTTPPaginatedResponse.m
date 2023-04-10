@@ -8,6 +8,7 @@
 #import "ARTNSHTTPURLResponse+ARTPaginated.h"
 #import "ARTEncoder.h"
 #import "ARTConstants.h"
+#import "ARTInternalLog.h"
 
 @implementation ARTHTTPPaginatedResponse
 

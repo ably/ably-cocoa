@@ -33,6 +33,8 @@ typedef NS_ENUM(NSUInteger, ARTLogLevel) {
 /// :nodoc:
 @interface ARTLog (Shorthand)
 
+// These methods should be considered obsolete. They are no longer called by the ably-cocoa SDK.
+
 - (void)verbose:(NSString *)format, ... NS_FORMAT_FUNCTION(1,2);
 - (void)verbose:(const char *)fileName line:(NSUInteger)line message:(NSString *)message, ... NS_FORMAT_FUNCTION(3,4);
 - (void)debug:(NSString *)format, ... NS_FORMAT_FUNCTION(1,2);

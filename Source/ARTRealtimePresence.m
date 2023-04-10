@@ -10,6 +10,7 @@
 #import "ARTDataQuery+Private.h"
 #import "ARTConnection+Private.h"
 #import "ARTNSArray+ARTFunctional.h"
+#import "ARTInternalLog.h"
 
 #pragma mark - ARTRealtimePresenceQuery
 

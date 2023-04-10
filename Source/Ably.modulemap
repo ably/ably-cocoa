@@ -93,5 +93,12 @@ framework module Ably {
         header "ARTRetrySequence.h"
         header "ARTTypes+Private.h"
         header "ARTTestClientOptions.h"
+        header "ARTVersion2Log.h"
+        header "ARTInternalLog.h"
+        header "ARTLogAdapter.h"
+        header "ARTDeviceIdentityTokenDetails+Private.h"
+        header "ARTHttp.h"
+        header "ARTLocalDeviceStorage.h"
+        header "ARTPresenceMap.h"
     }
 }

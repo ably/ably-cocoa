@@ -9,6 +9,7 @@
 #import "ARTNSArray+ARTFunctional.h"
 #import "ARTChannel+Private.h"
 #import "ARTBaseMessage+Private.h"
+#import "ARTInternalLog.h"
 
 #import "ARTChannel.h"
 #import "ARTDataQuery.h"
