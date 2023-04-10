@@ -183,7 +183,7 @@
         _storage = [ARTLocalDeviceStorage newWithLogger:_logger];
 #endif
         _http = [[ARTHttp alloc] init:_queue logger:_logger];
-        [_logger verbose:__FILE__ line:__LINE__ message:@"RS:%p %p alloc HTTP", self, _http];
+        ARTLogVerbose(_logger, @"RS:%p %p alloc HTTP", self, _http);
         _httpExecutor = _http;
 
         id<ARTEncoder> jsonEncoder = [[ARTJsonLikeEncoder alloc] initWithRest:self delegate:[[ARTJsonEncoder alloc] init]];
@@ -200,7 +200,7 @@
         _push = [[ARTPushInternal alloc] init:self];
         _channels = [[ARTRestChannelsInternal alloc] initWithRest:self];
 
-        [self.logger verbose:__FILE__ line:__LINE__ message:@"RS:%p initialized", self];
+        ARTLogVerbose(self.logger, @"RS:%p initialized", self);
     }
     return self;
 }
@@ -214,7 +214,7 @@
 }
 
 - (void)dealloc {
-    [self.logger verbose:__FILE__ line:__LINE__ message:@"RS:%p dealloc", self];
+    ARTLogVerbose(self.logger, @"RS:%p dealloc", self);
 }
 
 - (NSString *)description {
@@ -266,21 +266,21 @@
                                                     withMethod:(ARTAuthMethod)method
                                                          force:(BOOL)force
                                                     completion:(ARTURLRequestCallback)callback {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p calculating authorization %lu", self, (unsigned long)method];
+    ARTLogDebug(self.logger, @"RS:%p calculating authorization %lu", self, (unsigned long)method);
     __block NSObject<ARTCancellable> *task;
 
     if (method == ARTAuthMethodBasic) {
         // Basic
         NSString *authorization = [self prepareBasicAuthorisationHeader:self.options.key];
         [request setValue:authorization forHTTPHeaderField:@"Authorization"];
-        [self.logger verbose:@"RS:%p ARTRest: %@", self, authorization];
+        ARTLogVerbose(self.logger, @"RS:%p ARTRest: %@", self, authorization);
         task = [self executeRequest:request completion:callback];
     }
     else {
         if (!force && [self.auth tokenRemainsValid]) {
             // Reuse token
             NSString *authorization = [self prepareTokenAuthorisationHeader:self.auth.tokenDetails.token];
-            [self.logger verbose:@"RS:%p ARTRestInternal reusing token: authorization bearer in Base64 %@", self, authorization];
+            ARTLogVerbose(self.logger, @"RS:%p ARTRestInternal reusing token: authorization bearer in Base64 %@", self, authorization);
             [request setValue:authorization forHTTPHeaderField:@"Authorization"];
             task = [self executeRequest:request completion:callback];
         }
@@ -288,12 +288,12 @@
             // New Token
             task = [self.auth _authorize:nil options:self.options callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
                 if (error) {
-                    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p ARTRestInternal reissuing token failed %@", self, error];
+                    ARTLogDebug(self.logger, @"RS:%p ARTRestInternal reissuing token failed %@", self, error);
                     if (callback) callback(nil, nil, error);
                     return;
                 }
                 NSString *authorization = [self prepareTokenAuthorisationHeader:tokenDetails.token];
-                [self.logger verbose:@"RS:%p ARTRestInternal reissuing token: authorization bearer %@", self, authorization];
+                ARTLogVerbose(self.logger, @"RS:%p ARTRestInternal reissuing token: authorization bearer %@", self, authorization);
                 [request setValue:authorization forHTTPHeaderField:@"Authorization"];
                 task = [self executeRequest:request completion:callback];
             }];
@@ -342,7 +342,7 @@
         // change URLRequest host from `fallback host` to `default host`
         //
         if (self.currentFallbackHost != nil && self.fallbackRetryExpiration < [ARTTime timeSinceBoot]) {
-            [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p fallbackRetryExpiration ids expired, reset `prioritizedHost` and `currentFallbackHost`", self];
+            ARTLogDebug(self.logger, @"RS:%p fallbackRetryExpiration ids expired, reset `prioritizedHost` and `currentFallbackHost`", self);
             
             self.currentFallbackHost = nil;
             self.prioritizedHost = nil;
@@ -351,7 +351,7 @@
     }
 
 
-    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p executing request %@", self, request];
+    ARTLogDebug(self.logger, @"RS:%p executing request %@", self, request);
     __block NSObject<ARTCancellable> *task;
     task = [self.httpExecutor executeRequest:request completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         // Error messages in plaintext and HTML format (only if the URL request is different than `options.authUrl` and we don't have an error already)
@@ -371,7 +371,7 @@
                 // Construct artificial error
                 error = [ARTErrorInfo createWithCode:response.statusCode * 100 status:response.statusCode message:[plain art_shortString] requestId:requestId];
                 data = nil; // Discard data; format is unreliable.
-                [self.logger error:@"Request %@ failed with %@", request, error];
+                ARTLogError(self.logger, @"Request %@ failed with %@", request, error);
             }
         }
 
@@ -380,7 +380,7 @@
                 NSError *decodeError = nil;
                 ARTErrorInfo *dataError = [self->_encoders[response.MIMEType] decodeErrorInfo:data error:&decodeError];
                 if ([self shouldRenewToken:&dataError] && [request isKindOfClass:[NSMutableURLRequest class]]) {
-                    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p retry request %@", self, request];
+                    ARTLogDebug(self.logger, @"RS:%p retry request %@", self, request);
                     // Make a single attempt to reissue the token and resend the request
                     if (self->_tokenErrorRetries < 1) {
                         task = [self executeRequest:(NSMutableURLRequest *)request withAuthOption:ARTAuthenticationTokenRetry completion:callback];
@@ -406,7 +406,7 @@
         } else {
             // Response Status Code < 400 and no errors
             if (error == nil && self.currentFallbackHost != nil) {
-                [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p switching `prioritizedHost` to fallback host %@", self, self.currentFallbackHost];
+                ARTLogDebug(self.logger, @"RS:%p switching `prioritizedHost` to fallback host %@", self, self.currentFallbackHost);
                 self.prioritizedHost = self.currentFallbackHost;
             }
         }
@@ -419,7 +419,7 @@
             if (blockFallbacks) {
                 NSString *host = [blockFallbacks popFallbackHost];
                 if (host != nil) {
-                    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p host is down; retrying request at %@", self, host];
+                    ARTLogDebug(self.logger, @"RS:%p host is down; retrying request at %@", self, host);
                     
                     self.currentFallbackHost = host;
                     NSMutableURLRequest *newRequest = [request copy];
@@ -622,7 +622,7 @@
 
     [request setAcceptHeader:self.defaultEncoder encoders:self.encoders];
 
-    [self.logger debug:__FILE__ line:__LINE__ message:@"request %@ %@", method, path];
+    ARTLogDebug(self.logger, @"request %@ %@", method, path);
     dispatch_async(_queue, ^{
         [ARTHTTPPaginatedResponse executePaginated:self withRequest:request  callback:callback];
     });

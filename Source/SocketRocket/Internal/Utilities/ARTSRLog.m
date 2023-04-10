@@ -21,7 +21,7 @@ extern void ARTSRErrorLog(ARTInternalLog * _Nullable logger, NSString *format, .
 
     va_end(arg_list);
 
-    [logger error:@"[SocketRocket] %@", formattedString];
+    ARTLogError(logger, @"[SocketRocket] %@", formattedString);
 }
 
 extern void ARTSRDebugLog(ARTInternalLog * _Nullable logger, NSString *format, ...)
