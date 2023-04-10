@@ -8,7 +8,7 @@
 
 **Internal changes:**
 
-- The ably-cocoa library no longer calls any of the `ARTLog` methods in the `ARTLog (Shorthand)` category. Be aware that if you have created a custom subclass of `ARTLog` which overrides any of these methods, they will no longer be called. `ARTLog` now performs all of its logging using only the `-log:withLevel:` and `-logWithError:` methods.
+- The ably-cocoa library no longer calls any of the `ARTLog` methods in the `ARTLog (Shorthand)` category, nor the `-logWithError:` method. Be aware that if you have created a custom subclass of `ARTLog` which overrides any of these methods, they will no longer be called. `ARTLog` now performs all of its logging using only the `-log:withLevel:` method.
 
 ## [1.2.19](https://github.com/ably/ably-cocoa/tree/1.2.19)
 

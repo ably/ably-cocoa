@@ -400,7 +400,7 @@ dispatch_sync(_queue, ^{
         case ARTRealtimeChannelDetached: {
             ARTErrorInfo *error = [ARTErrorInfo createWithCode:ARTErrorBadRequest
                                                        message:@"Unable to sync to channel; not attached."];
-            [self.logger logWithError:error];
+            [self.logger error:@"%@", error.message];
             if (callback) callback(error);
             return;
         }
