@@ -27,6 +27,12 @@
 		21113B5529DC6ACD00652C86 /* ARTTestClientOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 21113B5429DC6ACD00652C86 /* ARTTestClientOptions.m */; };
 		21113B5629DC6ACD00652C86 /* ARTTestClientOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 21113B5429DC6ACD00652C86 /* ARTTestClientOptions.m */; };
 		21113B5729DC6ACD00652C86 /* ARTTestClientOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 21113B5429DC6ACD00652C86 /* ARTTestClientOptions.m */; };
+		21113B5F29DDDDD000652C86 /* LogAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21113B5E29DDDDD000652C86 /* LogAdapterTests.swift */; };
+		21113B6029DDDDD000652C86 /* LogAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21113B5E29DDDDD000652C86 /* LogAdapterTests.swift */; };
+		21113B6129DDDDD000652C86 /* LogAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21113B5E29DDDDD000652C86 /* LogAdapterTests.swift */; };
+		21113B6329DDF7E800652C86 /* ARTInternalLogTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 21113B6229DDF7E800652C86 /* ARTInternalLogTests.m */; };
+		21113B6429DDF7ED00652C86 /* ARTInternalLogTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 21113B6229DDF7E800652C86 /* ARTInternalLogTests.m */; };
+		21113B6529DDF7EF00652C86 /* ARTInternalLogTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 21113B6229DDF7E800652C86 /* ARTInternalLogTests.m */; };
 		211A60D729D6D2C300D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */; };
 		211A60D829D6D2C400D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */; };
 		211A60D929D6D2C500D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */; };
@@ -48,6 +54,27 @@
 		211A610729DA05D700D169C5 /* ARTAttachRequestMetadata.m in Sources */ = {isa = PBXBuildFile; fileRef = 211A610629DA05D700D169C5 /* ARTAttachRequestMetadata.m */; };
 		211A610829DA05D700D169C5 /* ARTAttachRequestMetadata.m in Sources */ = {isa = PBXBuildFile; fileRef = 211A610629DA05D700D169C5 /* ARTAttachRequestMetadata.m */; };
 		211A610929DA05D700D169C5 /* ARTAttachRequestMetadata.m in Sources */ = {isa = PBXBuildFile; fileRef = 211A610629DA05D700D169C5 /* ARTAttachRequestMetadata.m */; };
+		2124B78729DB127900AD8361 /* MockVersion2Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2124B78629DB127900AD8361 /* MockVersion2Log.swift */; };
+		2124B78829DB127900AD8361 /* MockVersion2Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2124B78629DB127900AD8361 /* MockVersion2Log.swift */; };
+		2124B78929DB127900AD8361 /* MockVersion2Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2124B78629DB127900AD8361 /* MockVersion2Log.swift */; };
+		2124B78B29DB12A900AD8361 /* ARTVersion2Log.h in Headers */ = {isa = PBXBuildFile; fileRef = 2124B78A29DB12A900AD8361 /* ARTVersion2Log.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		2124B78C29DB12A900AD8361 /* ARTVersion2Log.h in Headers */ = {isa = PBXBuildFile; fileRef = 2124B78A29DB12A900AD8361 /* ARTVersion2Log.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		2124B78D29DB12A900AD8361 /* ARTVersion2Log.h in Headers */ = {isa = PBXBuildFile; fileRef = 2124B78A29DB12A900AD8361 /* ARTVersion2Log.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		2124B78F29DB13BD00AD8361 /* ARTInternalLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 2124B78E29DB13BD00AD8361 /* ARTInternalLog.m */; };
+		2124B79029DB13BD00AD8361 /* ARTInternalLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 2124B78E29DB13BD00AD8361 /* ARTInternalLog.m */; };
+		2124B79129DB13BD00AD8361 /* ARTInternalLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 2124B78E29DB13BD00AD8361 /* ARTInternalLog.m */; };
+		2124B79329DB13C400AD8361 /* ARTInternalLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 2124B79229DB13C400AD8361 /* ARTInternalLog.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		2124B79429DB13C400AD8361 /* ARTInternalLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 2124B79229DB13C400AD8361 /* ARTInternalLog.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		2124B79529DB13C400AD8361 /* ARTInternalLog.h in Headers */ = {isa = PBXBuildFile; fileRef = 2124B79229DB13C400AD8361 /* ARTInternalLog.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		2124B79729DB144600AD8361 /* InternalLogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2124B79629DB144600AD8361 /* InternalLogTests.swift */; };
+		2124B79829DB144600AD8361 /* InternalLogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2124B79629DB144600AD8361 /* InternalLogTests.swift */; };
+		2124B79929DB144600AD8361 /* InternalLogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2124B79629DB144600AD8361 /* InternalLogTests.swift */; };
+		2124B79B29DB14C000AD8361 /* ARTLogAdapter.m in Sources */ = {isa = PBXBuildFile; fileRef = 2124B79A29DB14C000AD8361 /* ARTLogAdapter.m */; };
+		2124B79C29DB14C000AD8361 /* ARTLogAdapter.m in Sources */ = {isa = PBXBuildFile; fileRef = 2124B79A29DB14C000AD8361 /* ARTLogAdapter.m */; };
+		2124B79D29DB14C000AD8361 /* ARTLogAdapter.m in Sources */ = {isa = PBXBuildFile; fileRef = 2124B79A29DB14C000AD8361 /* ARTLogAdapter.m */; };
+		2124B79F29DB14D000AD8361 /* ARTLogAdapter.h in Headers */ = {isa = PBXBuildFile; fileRef = 2124B79E29DB14D000AD8361 /* ARTLogAdapter.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		2124B7A029DB14D000AD8361 /* ARTLogAdapter.h in Headers */ = {isa = PBXBuildFile; fileRef = 2124B79E29DB14D000AD8361 /* ARTLogAdapter.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		2124B7A129DB14D000AD8361 /* ARTLogAdapter.h in Headers */ = {isa = PBXBuildFile; fileRef = 2124B79E29DB14D000AD8361 /* ARTLogAdapter.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2132C20E29D20EEC000C4355 /* ARTResumeRequestResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C20D29D20EEC000C4355 /* ARTResumeRequestResponse.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2132C20F29D20EEC000C4355 /* ARTResumeRequestResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C20D29D20EEC000C4355 /* ARTResumeRequestResponse.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2132C21029D20EEC000C4355 /* ARTResumeRequestResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C20D29D20EEC000C4355 /* ARTResumeRequestResponse.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -1045,12 +1072,21 @@
 		21113B4829DB60F800652C86 /* MockRetryDelayCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockRetryDelayCalculator.swift; sourceTree = "<group>"; };
 		21113B5029DC6AAF00652C86 /* ARTTestClientOptions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTTestClientOptions.h; path = PrivateHeaders/Ably/ARTTestClientOptions.h; sourceTree = "<group>"; };
 		21113B5429DC6ACD00652C86 /* ARTTestClientOptions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTTestClientOptions.m; sourceTree = "<group>"; };
+		21113B5E29DDDDD000652C86 /* LogAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogAdapterTests.swift; sourceTree = "<group>"; };
+		21113B6229DDF7E800652C86 /* ARTInternalLogTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTInternalLogTests.m; sourceTree = "<group>"; };
 		211A60DA29D726F800D169C5 /* ARTConnectionStateChangeMetadata.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTConnectionStateChangeMetadata.h; path = PrivateHeaders/Ably/ARTConnectionStateChangeMetadata.h; sourceTree = "<group>"; };
 		211A60DE29D7272000D169C5 /* ARTConnectionStateChangeMetadata.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTConnectionStateChangeMetadata.m; sourceTree = "<group>"; };
 		211A60FA29D8ABCF00D169C5 /* ARTChannelStateChangeMetadata.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTChannelStateChangeMetadata.h; path = PrivateHeaders/Ably/ARTChannelStateChangeMetadata.h; sourceTree = "<group>"; };
 		211A60FE29D8ABF100D169C5 /* ARTChannelStateChangeMetadata.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTChannelStateChangeMetadata.m; sourceTree = "<group>"; };
 		211A610229DA05C700D169C5 /* ARTAttachRequestMetadata.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTAttachRequestMetadata.h; path = PrivateHeaders/Ably/ARTAttachRequestMetadata.h; sourceTree = "<group>"; };
 		211A610629DA05D700D169C5 /* ARTAttachRequestMetadata.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTAttachRequestMetadata.m; sourceTree = "<group>"; };
+		2124B78629DB127900AD8361 /* MockVersion2Log.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockVersion2Log.swift; sourceTree = "<group>"; };
+		2124B78A29DB12A900AD8361 /* ARTVersion2Log.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTVersion2Log.h; path = PrivateHeaders/Ably/ARTVersion2Log.h; sourceTree = "<group>"; };
+		2124B78E29DB13BD00AD8361 /* ARTInternalLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTInternalLog.m; sourceTree = "<group>"; };
+		2124B79229DB13C400AD8361 /* ARTInternalLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTInternalLog.h; path = PrivateHeaders/Ably/ARTInternalLog.h; sourceTree = "<group>"; };
+		2124B79629DB144600AD8361 /* InternalLogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InternalLogTests.swift; sourceTree = "<group>"; };
+		2124B79A29DB14C000AD8361 /* ARTLogAdapter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTLogAdapter.m; sourceTree = "<group>"; };
+		2124B79E29DB14D000AD8361 /* ARTLogAdapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTLogAdapter.h; path = PrivateHeaders/Ably/ARTLogAdapter.h; sourceTree = "<group>"; };
 		2132C20D29D20EEC000C4355 /* ARTResumeRequestResponse.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTResumeRequestResponse.h; path = PrivateHeaders/Ably/ARTResumeRequestResponse.h; sourceTree = "<group>"; };
 		2132C21129D20F05000C4355 /* ARTResumeRequestResponse.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTResumeRequestResponse.m; sourceTree = "<group>"; };
 		2132C21529D20F69000C4355 /* ResumeRequestResponseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResumeRequestResponseTests.swift; sourceTree = "<group>"; };
@@ -1590,6 +1626,9 @@
 				217FCF4529D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift */,
 				D798554723EB96C000946BE2 /* DeltaCodecTests.swift */,
 				D5A22171266F526600C87C42 /* GCDTests.swift */,
+				2124B79629DB144600AD8361 /* InternalLogTests.swift */,
+				21113B6229DDF7E800652C86 /* ARTInternalLogTests.m */,
+				21113B5E29DDDDD000652C86 /* LogAdapterTests.swift */,
 				2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */,
 				848ED97226E50D0F0087E800 /* ObjcppTest.mm */,
 				EB1B53F822F85CE4006A59AC /* ObjectLifetimesTests.swift */,
@@ -1631,6 +1670,7 @@
 				217FCF3D29D626E4006E5F2D /* StaticJitterCoefficients.swift */,
 				2132C2E829D4B91B000C4355 /* BackoffCoefficients.swift */,
 				21113B4829DB60F800652C86 /* MockRetryDelayCalculator.swift */,
+				2124B78629DB127900AD8361 /* MockVersion2Log.swift */,
 			);
 			path = "Test Utilities";
 			sourceTree = "<group>";
@@ -1944,6 +1984,11 @@
 				2132C31429D5E50A000C4355 /* ARTBackoffRetryDelayCalculator.m */,
 				2132C2F429D5BE05000C4355 /* ARTRetrySequence.h */,
 				2132C2F829D5BE3D000C4355 /* ARTRetrySequence.m */,
+				2124B78A29DB12A900AD8361 /* ARTVersion2Log.h */,
+				2124B79229DB13C400AD8361 /* ARTInternalLog.h */,
+				2124B78E29DB13BD00AD8361 /* ARTInternalLog.m */,
+				2124B79E29DB14D000AD8361 /* ARTLogAdapter.h */,
+				2124B79A29DB14C000AD8361 /* ARTLogAdapter.m */,
 			);
 			name = Utilities;
 			sourceTree = "<group>";
@@ -2066,6 +2111,7 @@
 				961343D81A42E0B7006DC822 /* ARTClientOptions.h in Headers */,
 				D7534C321D79E5C20054C182 /* Ably.h in Headers */,
 				D777EEE0206285CF002EBA03 /* ARTDeviceIdentityTokenDetails.h in Headers */,
+				2124B79F29DB14D000AD8361 /* ARTLogAdapter.h in Headers */,
 				2132C20E29D20EEC000C4355 /* ARTResumeRequestResponse.h in Headers */,
 				215F76032922C76C009E0E76 /* ARTClientInformation+Private.h in Headers */,
 				211A610329DA05C700D169C5 /* ARTAttachRequestMetadata.h in Headers */,
@@ -2098,6 +2144,7 @@
 				D78D780921271FB10016808B /* ARTHTTPPaginatedResponse+Private.h in Headers */,
 				21447D3B254A2ECB00B3905A /* ARTSRWebSocket.h in Headers */,
 				EBB721CB2376B454001C3550 /* ARTURLSession.h in Headers */,
+				2124B78B29DB12A900AD8361 /* ARTVersion2Log.h in Headers */,
 				D746AE381BBC3201003ECEF8 /* ARTMessage.h in Headers */,
 				D746AE471BBD6FE9003ECEF8 /* ARTQueuedMessage.h in Headers */,
 				1C2B0FFD1B136A6D00E3633C /* ARTPresenceMap.h in Headers */,
@@ -2125,6 +2172,7 @@
 				D777EEE42063A64E002EBA03 /* ARTNSMutableRequest+ARTPush.h in Headers */,
 				EB20F8D71C653F2300EF3978 /* ARTPresence+Private.h in Headers */,
 				D7F1D3771BF4DE72001A4B5E /* ARTRealtimePresence.h in Headers */,
+				2124B79329DB13C400AD8361 /* ARTInternalLog.h in Headers */,
 				1C578E1F1B3435CA00EF46EC /* ARTFallback.h in Headers */,
 				EB7617721CB6CBFF00D0981E /* ARTRealtimePresence+Private.h in Headers */,
 				EBFFAC1B1E97EF68003E7326 /* ARTPushAdmin+Private.h in Headers */,
@@ -2281,6 +2329,7 @@
 				D710D4D821949BF9008F54AD /* ARTRealtimePresence.h in Headers */,
 				D710D48F21949AAE008F54AD /* ARTRest.h in Headers */,
 				D710D5B821949D4F008F54AD /* ARTAuthOptions+Private.h in Headers */,
+				2124B79429DB13C400AD8361 /* ARTInternalLog.h in Headers */,
 				D710D51D21949C42008F54AD /* ARTDeviceStorage.h in Headers */,
 				D710D60D21949DDB008F54AD /* ARTDataQuery.h in Headers */,
 				D710D58221949D28008F54AD /* ARTTokenParams.h in Headers */,
@@ -2311,6 +2360,7 @@
 				D710D4D421949BF9008F54AD /* ARTRealtime.h in Headers */,
 				D710D58821949D29008F54AD /* ARTProtocolMessage.h in Headers */,
 				D710D47D21949A27008F54AD /* Ably.h in Headers */,
+				2124B78C29DB12A900AD8361 /* ARTVersion2Log.h in Headers */,
 				EB1B53FE22F8D91C006A59AC /* ARTQueuedDealloc.h in Headers */,
 				D710D56A21949CB9008F54AD /* ARTPushAdmin.h in Headers */,
 				D710D48321949A4E008F54AD /* ARTDefault+Private.h in Headers */,
@@ -2360,6 +2410,7 @@
 				D5C0CB3E268317B500C06521 /* NSURLQueryItem+Stringifiable.h in Headers */,
 				D5BB210026A80A9000AA5F3E /* NSURLRequest+ARTSRWebSocket.h in Headers */,
 				D5BB210526A80AFD00AA5F3E /* ARTSRSecurityPolicy.h in Headers */,
+				2124B7A029DB14D000AD8361 /* ARTLogAdapter.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2437,6 +2488,7 @@
 				D710D4E821949BFB008F54AD /* ARTRealtimePresence.h in Headers */,
 				D710D49121949AAF008F54AD /* ARTRest.h in Headers */,
 				D710D5C821949D50008F54AD /* ARTAuthOptions+Private.h in Headers */,
+				2124B79529DB13C400AD8361 /* ARTInternalLog.h in Headers */,
 				D710D52F21949C44008F54AD /* ARTDeviceStorage.h in Headers */,
 				D710D61721949DDC008F54AD /* ARTDataQuery.h in Headers */,
 				D710D5A821949D2A008F54AD /* ARTTokenParams.h in Headers */,
@@ -2467,6 +2519,7 @@
 				D710D4E421949BFB008F54AD /* ARTRealtime.h in Headers */,
 				D710D5AE21949D2A008F54AD /* ARTProtocolMessage.h in Headers */,
 				D581B31A269C16E200785FBE /* ARTTime.h in Headers */,
+				2124B78D29DB12A900AD8361 /* ARTVersion2Log.h in Headers */,
 				D710D47F21949A28008F54AD /* Ably.h in Headers */,
 				EB1B53FF22F8D91C006A59AC /* ARTQueuedDealloc.h in Headers */,
 				D710D57021949CBA008F54AD /* ARTPushAdmin.h in Headers */,
@@ -2516,6 +2569,7 @@
 				D54C554A268B31E500729EC4 /* ARTNSMutableDictionary+ARTDictionaryUtil.h in Headers */,
 				D5BB210226A80AA400AA5F3E /* NSURLRequest+ARTSRWebSocket.h in Headers */,
 				D5BB210426A80AF300AA5F3E /* ARTSRSecurityPolicy.h in Headers */,
+				2124B7A129DB14D000AD8361 /* ARTLogAdapter.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2832,6 +2886,7 @@
 				D72768211C9C19040022F8B2 /* RestClientPresenceTests.swift in Sources */,
 				D780846E1C68B3E50083009D /* NSObject+TestSuite.m in Sources */,
 				21881E7A283BD08300CFD9E2 /* GCDTests.swift in Sources */,
+				2124B79729DB144600AD8361 /* InternalLogTests.swift in Sources */,
 				D7093CA9219EFA8A00723F17 /* MockDeviceStorage.swift in Sources */,
 				D7CEF1321C8DD3BC004FB242 /* RealtimeClientPresenceTests.swift in Sources */,
 				853ED7C41B7A1A3C006F1C6F /* RestClientStatsTests.swift in Sources */,
@@ -2844,6 +2899,8 @@
 				2132C2E929D4B91B000C4355 /* BackoffCoefficients.swift in Sources */,
 				215F75FF2922B30F009E0E76 /* ClientInformationTests.swift in Sources */,
 				D798554823EB96C000946BE2 /* DeltaCodecTests.swift in Sources */,
+				21113B5F29DDDDD000652C86 /* LogAdapterTests.swift in Sources */,
+				2124B78729DB127900AD8361 /* MockVersion2Log.swift in Sources */,
 				D74CBC0B212EC22800D090E4 /* RestPaginatedTests.swift in Sources */,
 				D72304701BB72CED00F1ABDA /* RealtimeClientTests.swift in Sources */,
 				841134782722205400CFA837 /* ARTArchiveTests.m in Sources */,
@@ -2856,6 +2913,7 @@
 				D746AE2D1BBB625E003ECEF8 /* RestClientChannelsTests.swift in Sources */,
 				EBAB9A6F1C69702800AF036B /* ReadmeExamplesTests.swift in Sources */,
 				56190954238C3D3200A862A6 /* CryptoTest.m in Sources */,
+				21113B6329DDF7E800652C86 /* ARTInternalLogTests.m in Sources */,
 				D7C1B8771BBEA81A0087B55F /* AuthTests.swift in Sources */,
 				D7EBE5A31BE8391E0086E675 /* RealtimeClientConnectionTests.swift in Sources */,
 				21113B4929DB60F800652C86 /* MockRetryDelayCalculator.swift in Sources */,
@@ -2912,6 +2970,7 @@
 				1C55427D1B148306003068DB /* ARTStatus.m in Sources */,
 				D785C42A1E549E33008FEC05 /* ARTPushChannelSubscription.m in Sources */,
 				D7B17EE41C07208B00A6958E /* ARTConnectionDetails.m in Sources */,
+				2124B79B29DB14C000AD8361 /* ARTLogAdapter.m in Sources */,
 				217FCF3A29D626C1006E5F2D /* ARTJitterCoefficientGenerator.m in Sources */,
 				96BF61591A35B52C004CF2B3 /* ARTHttp.m in Sources */,
 				217D1833254222F600DFF07E /* ARTSRPinningSecurityPolicy.m in Sources */,
@@ -2955,6 +3014,7 @@
 				D7B621951E4A6FE600684474 /* ARTDeviceDetails.m in Sources */,
 				D7588AF41BFF91B800BB8279 /* ARTURLSessionServerTrust.m in Sources */,
 				D74CBC04212EB58700D090E4 /* ARTNSHTTPURLResponse+ARTPaginated.m in Sources */,
+				2124B78F29DB13BD00AD8361 /* ARTInternalLog.m in Sources */,
 				D5BB213626AAA60500AA5F3E /* ARTNSError+ARTUtils.m in Sources */,
 				217D1839254222F600DFF07E /* ARTSRHTTPConnectMessage.m in Sources */,
 				2132C2F929D5BE3D000C4355 /* ARTRetrySequence.m in Sources */,
@@ -2992,6 +3052,7 @@
 				D7093C1B219E465F00723F17 /* NSObject+TestSuite.swift in Sources */,
 				D7093C29219E466E00723F17 /* StatsTests.swift in Sources */,
 				D7093C23219E466E00723F17 /* RestPaginatedTests.swift in Sources */,
+				21113B6029DDDDD000652C86 /* LogAdapterTests.swift in Sources */,
 				D7093C19219E465300723F17 /* TestUtilities.swift in Sources */,
 				217FCF4729D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift in Sources */,
 				560579DA24AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */,
@@ -3009,12 +3070,15 @@
 				211A60D829D6D2C400D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */,
 				215F76002922B30F009E0E76 /* ClientInformationTests.swift in Sources */,
 				D7093C1E219E466900723F17 /* RestClientTests.swift in Sources */,
+				2124B79829DB144600AD8361 /* InternalLogTests.swift in Sources */,
 				D7093C2B219E466E00723F17 /* CryptoTests.swift in Sources */,
 				D7093C20219E466E00723F17 /* RestClientChannelTests.swift in Sources */,
 				EB1B53FA22F85CE4006A59AC /* ObjectLifetimesTests.swift in Sources */,
 				217FCF3329D62460006E5F2D /* RetrySequenceTests.swift in Sources */,
+				21113B6429DDF7ED00652C86 /* ARTInternalLogTests.m in Sources */,
 				D7093C2A219E466E00723F17 /* UtilitiesTests.swift in Sources */,
 				D798554923EB96C000946BE2 /* DeltaCodecTests.swift in Sources */,
+				2124B78829DB127900AD8361 /* MockVersion2Log.swift in Sources */,
 				2132C21729D20F69000C4355 /* ResumeRequestResponseTests.swift in Sources */,
 				21113B4A29DB60F800652C86 /* MockRetryDelayCalculator.swift in Sources */,
 				217FCF4329D626E4006E5F2D /* MockJitterCoefficientGenerator.swift in Sources */,
@@ -3037,6 +3101,7 @@
 				D7093C7D219EE26400723F17 /* RealtimeClientChannelTests.swift in Sources */,
 				848ED97526E50D0F0087E800 /* ObjcppTest.mm in Sources */,
 				D7093C7F219EE26400723F17 /* RealtimeClientPresenceTests.swift in Sources */,
+				21113B6129DDDDD000652C86 /* LogAdapterTests.swift in Sources */,
 				D7093C73219EE26000723F17 /* ReadmeExamplesTests.swift in Sources */,
 				217FCF4829D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift in Sources */,
 				560579DB24AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */,
@@ -3054,12 +3119,15 @@
 				211A60D929D6D2C500D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */,
 				D7093C78219EE26400723F17 /* RestClientChannelsTests.swift in Sources */,
 				D7093C76219EE26400723F17 /* RestClientStatsTests.swift in Sources */,
+				2124B79929DB144600AD8361 /* InternalLogTests.swift in Sources */,
 				D7093C82219EE26400723F17 /* CryptoTests.swift in Sources */,
 				D5A22174266F526600C87C42 /* GCDTests.swift in Sources */,
 				EB1B53FB22F85CE4006A59AC /* ObjectLifetimesTests.swift in Sources */,
 				217FCF3429D62460006E5F2D /* RetrySequenceTests.swift in Sources */,
+				21113B6529DDF7EF00652C86 /* ARTInternalLogTests.m in Sources */,
 				D7093C7C219EE26400723F17 /* RealtimeClientConnectionTests.swift in Sources */,
 				D798554A23EB96C000946BE2 /* DeltaCodecTests.swift in Sources */,
+				2124B78929DB127900AD8361 /* MockVersion2Log.swift in Sources */,
 				2132C21829D20F69000C4355 /* ResumeRequestResponseTests.swift in Sources */,
 				21113B4B29DB60F800652C86 /* MockRetryDelayCalculator.swift in Sources */,
 				217FCF4429D626E4006E5F2D /* MockJitterCoefficientGenerator.swift in Sources */,
@@ -3123,6 +3191,7 @@
 				D710D5D921949D78008F54AD /* ARTProtocolMessage.m in Sources */,
 				D710D53721949C54008F54AD /* ARTLocalDevice.m in Sources */,
 				D710D53621949C54008F54AD /* ARTDeviceIdentityTokenDetails.m in Sources */,
+				2124B79C29DB14C000AD8361 /* ARTLogAdapter.m in Sources */,
 				217FCF3B29D626C1006E5F2D /* ARTJitterCoefficientGenerator.m in Sources */,
 				D710D4C821949BAA008F54AD /* ARTRealtimeTransport.m in Sources */,
 				217D184A254222F700DFF07E /* ARTSRPinningSecurityPolicy.m in Sources */,
@@ -3166,6 +3235,7 @@
 				D710D48C21949A97008F54AD /* ARTConstants.m in Sources */,
 				D710D5DA21949D78008F54AD /* ARTBaseMessage.m in Sources */,
 				D710D63421949E03008F54AD /* ARTNSMutableURLRequest+ARTPaginated.m in Sources */,
+				2124B79029DB13BD00AD8361 /* ARTInternalLog.m in Sources */,
 				217D1850254222F700DFF07E /* ARTSRHTTPConnectMessage.m in Sources */,
 				D5BB213726AAA60500AA5F3E /* ARTNSError+ARTUtils.m in Sources */,
 				2132C2FA29D5BE3D000C4355 /* ARTRetrySequence.m in Sources */,
@@ -3244,6 +3314,7 @@
 				D54C55AC26957FDE00729EC4 /* ARTNSURL+ARTUtils.m in Sources */,
 				D710D54921949C55008F54AD /* ARTLocalDevice.m in Sources */,
 				D710D54821949C55008F54AD /* ARTDeviceIdentityTokenDetails.m in Sources */,
+				2124B79D29DB14C000AD8361 /* ARTLogAdapter.m in Sources */,
 				217FCF3C29D626C1006E5F2D /* ARTJitterCoefficientGenerator.m in Sources */,
 				D710D4CC21949BAB008F54AD /* ARTRealtimeTransport.m in Sources */,
 				217D1861254222FA00DFF07E /* ARTSRPinningSecurityPolicy.m in Sources */,
@@ -3287,6 +3358,7 @@
 				D710D60021949D79008F54AD /* ARTBaseMessage.m in Sources */,
 				D520C4DB26809BB5000012B2 /* ARTStringifiable.m in Sources */,
 				D710D64421949E04008F54AD /* ARTNSMutableURLRequest+ARTPaginated.m in Sources */,
+				2124B79129DB13BD00AD8361 /* ARTInternalLog.m in Sources */,
 				217D1867254222FA00DFF07E /* ARTSRHTTPConnectMessage.m in Sources */,
 				D710D57A21949CC5008F54AD /* ARTPushDeviceRegistrations.m in Sources */,
 				2132C2FB29D5BE3D000C4355 /* ARTRetrySequence.m in Sources */,
@@ -3408,6 +3480,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = "Ably-iOS-Tests";
 				SWIFT_OBJC_BRIDGING_HEADER = "Test/AblyTests-Bridging-Header.h";
+				SWIFT_OBJC_INTERFACE_HEADER_NAME = "Ably_Tests-Swift.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 			};
@@ -3436,6 +3509,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.$(PRODUCT_NAME)";
 				PRODUCT_NAME = "Ably-iOS-Tests";
 				SWIFT_OBJC_BRIDGING_HEADER = "Test/AblyTests-Bridging-Header.h";
+				SWIFT_OBJC_INTERFACE_HEADER_NAME = "Ably_Tests-Swift.h";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
@@ -3648,6 +3722,7 @@
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OBJC_BRIDGING_HEADER = "Test/AblyTests-Bridging-Header.h";
+				SWIFT_OBJC_INTERFACE_HEADER_NAME = "Ably_Tests-Swift.h";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
@@ -3681,6 +3756,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SWIFT_OBJC_BRIDGING_HEADER = "Test/AblyTests-Bridging-Header.h";
+				SWIFT_OBJC_INTERFACE_HEADER_NAME = "Ably_Tests-Swift.h";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
@@ -3712,6 +3788,7 @@
 				SDKROOT = appletvos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OBJC_BRIDGING_HEADER = "Test/AblyTests-Bridging-Header.h";
+				SWIFT_OBJC_INTERFACE_HEADER_NAME = "Ably_Tests-Swift.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 12.1;
@@ -3744,6 +3821,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				SWIFT_OBJC_BRIDGING_HEADER = "Test/AblyTests-Bridging-Header.h";
+				SWIFT_OBJC_INTERFACE_HEADER_NAME = "Ably_Tests-Swift.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 12.1;
