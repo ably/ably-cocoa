@@ -28,8 +28,10 @@
 
     [internalLog verbose:"foo.m" line:123 message:@"Hello %@", @"there"];
 
-    XCTAssertEqualObjects(mock.lastReceivedLogMessageArgumentMessage, @"(foo.m:123) Hello there");
+    XCTAssertEqualObjects(mock.lastReceivedLogMessageArgumentMessage, @"Hello there");
     XCTAssertEqual(mock.lastReceivedLogMessageArgumentLevel, ARTLogLevelVerbose);
+    XCTAssertTrue(strcmp(mock.lastReceivedLogMessageArgumentFileName, "foo.m") == 0);
+    XCTAssertEqual(mock.lastReceivedLogMessageArgumentLine, 123);
 }
 
 - (void)test_debug_vararg {
@@ -50,8 +52,10 @@
 
     [internalLog debug:"foo.m" line:123 message:@"Hello %@", @"there"];
 
-    XCTAssertEqualObjects(mock.lastReceivedLogMessageArgumentMessage, @"(foo.m:123) Hello there");
+    XCTAssertEqualObjects(mock.lastReceivedLogMessageArgumentMessage, @"Hello there");
     XCTAssertEqual(mock.lastReceivedLogMessageArgumentLevel, ARTLogLevelDebug);
+    XCTAssertTrue(strcmp(mock.lastReceivedLogMessageArgumentFileName, "foo.m") == 0);
+    XCTAssertEqual(mock.lastReceivedLogMessageArgumentLine, 123);
 }
 
 - (void)test_info_vararg {
@@ -92,10 +96,14 @@
     mock.logLevel = ARTLogLevelVerbose;
     ARTInternalLog *const internalLog = [[ARTInternalLog alloc] initWithBackend:mock];
 
+    const int statementLine = __LINE__ + 1;
     ARTLogVerbose(internalLog, @"Hello %@", @"there");
 
     XCTAssertEqualObjects(mock.lastReceivedLogMessageArgumentMessage, @"Hello there");
     XCTAssertEqual(mock.lastReceivedLogMessageArgumentLevel, ARTLogLevelVerbose);
+    XCTAssertEqual(strcmp(mock.lastReceivedLogMessageArgumentFileName, __FILE__), 0);
+    XCTAssertEqual(mock.lastReceivedLogMessageArgumentFileName[0], '/'); // Confirming my assumption that __FILE__ gives an absolute path
+    XCTAssertEqual(mock.lastReceivedLogMessageArgumentLine, statementLine);
 }
 
 - (void)test_ARTLogDebug {
@@ -103,10 +111,14 @@
     mock.logLevel = ARTLogLevelDebug;
     ARTInternalLog *const internalLog = [[ARTInternalLog alloc] initWithBackend:mock];
 
+    const int statementLine = __LINE__ + 1;
     ARTLogDebug(internalLog, @"Hello %@", @"there");
 
     XCTAssertEqualObjects(mock.lastReceivedLogMessageArgumentMessage, @"Hello there");
     XCTAssertEqual(mock.lastReceivedLogMessageArgumentLevel, ARTLogLevelDebug);
+    XCTAssertEqual(strcmp(mock.lastReceivedLogMessageArgumentFileName, __FILE__), 0);
+    XCTAssertEqual(mock.lastReceivedLogMessageArgumentFileName[0], '/'); // Confirming my assumption that __FILE__ gives an absolute path
+    XCTAssertEqual(mock.lastReceivedLogMessageArgumentLine, statementLine);
 }
 
 - (void)test_ARTLogInfo {
@@ -114,10 +126,14 @@
     mock.logLevel = ARTLogLevelInfo;
     ARTInternalLog *const internalLog = [[ARTInternalLog alloc] initWithBackend:mock];
 
+    const int statementLine = __LINE__ + 1;
     ARTLogInfo(internalLog, @"Hello %@", @"there");
 
     XCTAssertEqualObjects(mock.lastReceivedLogMessageArgumentMessage, @"Hello there");
     XCTAssertEqual(mock.lastReceivedLogMessageArgumentLevel, ARTLogLevelInfo);
+    XCTAssertEqual(strcmp(mock.lastReceivedLogMessageArgumentFileName, __FILE__), 0);
+    XCTAssertEqual(mock.lastReceivedLogMessageArgumentFileName[0], '/'); // Confirming my assumption that __FILE__ gives an absolute path
+    XCTAssertEqual(mock.lastReceivedLogMessageArgumentLine, statementLine);
 }
 
 - (void)test_ARTLogWarn {
@@ -125,10 +141,14 @@
     mock.logLevel = ARTLogLevelWarn;
     ARTInternalLog *const internalLog = [[ARTInternalLog alloc] initWithBackend:mock];
 
+    const int statementLine = __LINE__ + 1;
     ARTLogWarn(internalLog, @"Hello %@", @"there");
 
     XCTAssertEqualObjects(mock.lastReceivedLogMessageArgumentMessage, @"Hello there");
     XCTAssertEqual(mock.lastReceivedLogMessageArgumentLevel, ARTLogLevelWarn);
+    XCTAssertEqual(strcmp(mock.lastReceivedLogMessageArgumentFileName, __FILE__), 0);
+    XCTAssertEqual(mock.lastReceivedLogMessageArgumentFileName[0], '/'); // Confirming my assumption that __FILE__ gives an absolute path
+    XCTAssertEqual(mock.lastReceivedLogMessageArgumentLine, statementLine);
 }
 
 - (void)test_ARTLogError {
@@ -136,10 +156,14 @@
     mock.logLevel = ARTLogLevelError;
     ARTInternalLog *const internalLog = [[ARTInternalLog alloc] initWithBackend:mock];
 
+    const int statementLine = __LINE__ + 1;
     ARTLogError(internalLog, @"Hello %@", @"there");
 
     XCTAssertEqualObjects(mock.lastReceivedLogMessageArgumentMessage, @"Hello there");
     XCTAssertEqual(mock.lastReceivedLogMessageArgumentLevel, ARTLogLevelError);
+    XCTAssertEqual(strcmp(mock.lastReceivedLogMessageArgumentFileName, __FILE__), 0);
+    XCTAssertEqual(mock.lastReceivedLogMessageArgumentFileName[0], '/'); // Confirming my assumption that __FILE__ gives an absolute path
+    XCTAssertEqual(mock.lastReceivedLogMessageArgumentLine, statementLine);
 }
 
 @end

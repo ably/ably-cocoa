@@ -33,12 +33,16 @@ NS_ASSUME_NONNULL_END
     [self.backend log:message withLevel:level];
 }
 
-- (void)logWithLevel:(ARTLogLevel)level format:(NSString *)format, ... {
+- (void)log:(NSString *)message withLevel:(ARTLogLevel)level file:(const char *)fileName line:(NSInteger)line {
+    [self.backend log:message withLevel:level file:fileName line:line];
+}
+
+- (void)logWithLevel:(ARTLogLevel)level file:(const char *)fileName line:(NSUInteger)line format:(NSString *)format, ... {
     if (self.logLevel <= level) {
         va_list args;
         va_start(args, format);
         NSString *const message = [[NSString alloc] initWithFormat:format arguments:args];
-        [self log:message withLevel:level];
+        [self log:message withLevel:level file:fileName line:line];
         va_end(args);
     }
 }
@@ -71,8 +75,8 @@ NS_ASSUME_NONNULL_END
     if (self.logLevel <= ARTLogLevelVerbose) {
         va_list args;
         va_start(args, message);
-        [self log:[[NSString alloc] initWithFormat:[NSString stringWithFormat:@"(%@:%lu) %@", [[NSString stringWithUTF8String:fileName] lastPathComponent], (unsigned long)line, message] arguments:args]
-        withLevel:ARTLogLevelVerbose];
+        [self log:[[NSString alloc] initWithFormat:message arguments:args]
+        withLevel:ARTLogLevelVerbose file:fileName line:line];
         va_end(args);
     }
 }
@@ -91,8 +95,8 @@ NS_ASSUME_NONNULL_END
     if (self.logLevel <= ARTLogLevelDebug) {
         va_list args;
         va_start(args, message);
-        [self log:[[NSString alloc] initWithFormat:[NSString stringWithFormat:@"(%@:%lu) %@", [[NSString stringWithUTF8String:fileName] lastPathComponent], (unsigned long)line, message] arguments:args]
-        withLevel:ARTLogLevelDebug];
+        [self log:[[NSString alloc] initWithFormat:message arguments:args]
+        withLevel:ARTLogLevelDebug file:fileName line:line];
         va_end(args);
     }
 }
