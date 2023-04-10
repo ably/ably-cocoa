@@ -28,13 +28,13 @@ static NSString *TypeDescription(const ARTResumeRequestResponseType type) {
     }
 
     // RTN15c6: "A CONNECTED ProtocolMessage with the same connectionId as the current client (and no error property)."
-    if (protocolMessage.action == ARTProtocolMessageConnected && [protocolMessage.connectionId isEqualToString:currentConnectionID] && protocolMessage.error == nil) {
+    if (currentConnectionID != nil && protocolMessage.action == ARTProtocolMessageConnected && [protocolMessage.connectionId isEqualToString:currentConnectionID] && protocolMessage.error == nil) {
         _type = ARTResumeRequestResponseTypeValid;
         return self;
     }
 
     // RTN15c7: "CONNECTED ProtocolMessage with a new connectionId and an ErrorInfo in the error field."
-    if (protocolMessage.action == ARTProtocolMessageConnected && ![protocolMessage.connectionId isEqualToString:currentConnectionID] && protocolMessage.error != nil) {
+    if (currentConnectionID != nil && protocolMessage.action == ARTProtocolMessageConnected && ![protocolMessage.connectionId isEqualToString:currentConnectionID] && protocolMessage.error != nil) {
         _type = ARTResumeRequestResponseTypeInvalid;
         _error = protocolMessage.error;
         return self;

@@ -51,6 +51,7 @@
 #import "ARTRetrySequence.h"
 #import "ARTConstantRetryDelayCalculator.h"
 #import "ARTTypes+Private.h"
+#import "ARTResumeRequestResponse.h"
 
 @interface ARTConnectionStateChange ()
 
@@ -837,16 +838,17 @@ NS_ASSUME_NONNULL_END
 
     switch (self.connection.state_nosync) {
         case ARTRealtimeConnecting: {
-            // RTN15c6
-            if ([message.connectionId isEqualToString:self.connection.id_nosync] && !message.error) {
+            ARTResumeRequestResponse *response = [[ARTResumeRequestResponse alloc] initWithCurrentConnectionID:_connection.id_nosync
+                                                                                               protocolMessage:message
+                                                                                                  errorChecker:[[ARTDefaultErrorChecker alloc] init]];
+            if (response.type == ARTResumeRequestResponseTypeValid) {
                 [self.logger debug:@"RT:%p connection \"%@\" has reconnected and resumed successfully", self, message.connectionId];
             }
-            // RTN15c7
-            else if (self.connection.id_nosync && ![message.connectionId isEqualToString:self.connection.id_nosync] && message.error) {
+            else if (response.type == ARTResumeRequestResponseTypeInvalid) {
                 [self.logger warn:@"RT:%p connection \"%@\" has resumed with non-fatal error \"%@\"", self, message.connectionId, message.error.message];
                 [self resetSerials];
             }
-            else if (!self.connection.id_nosync && message.error) { // Recover failure
+            else if (response.type == ARTResumeRequestResponseTypeFatalError || response.type == ARTResumeRequestResponseTypeTokenError) {
                 [self resetSerials];
             }
             
