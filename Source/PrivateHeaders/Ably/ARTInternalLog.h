@@ -24,7 +24,6 @@ NS_SWIFT_NAME(InternalLog)
 - (instancetype)init NS_UNAVAILABLE;
 
 - (void)log:(NSString *)message withLevel:(ARTLogLevel)level;
-- (void)logWithError:(ARTErrorInfo *)error;
 
 @property (nonatomic, assign) ARTLogLevel logLevel;
 

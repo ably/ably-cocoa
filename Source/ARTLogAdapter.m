@@ -25,10 +25,6 @@ NS_ASSUME_NONNULL_END
     [self.logger log:message withLevel:level];
 }
 
-- (void)logWithError:(ARTErrorInfo *)error {
-    [self.logger logWithError:error];
-}
-
 - (ARTLogLevel)logLevel {
     return self.logger.logLevel;
 }

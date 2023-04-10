@@ -17,17 +17,6 @@ class InternalLogTests: XCTestCase {
         }
     }
 
-    func test_logError() {
-        let mock = MockVersion2Log()
-        let internalLog = InternalLog(logger: mock)
-
-        let error = ARTErrorInfo.createUnknownError()
-        internalLog.logWithError(error)
-
-        let logged = mock.lastReceivedLogErrorArgument!
-        XCTAssertEqual(logged, error)
-    }
-
     func test_logLevel() {
         let mock = MockVersion2Log()
         mock.logLevel = .info
