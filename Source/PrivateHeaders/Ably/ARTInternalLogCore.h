@@ -19,6 +19,12 @@ NS_SWIFT_NAME(InternalLogCore)
 
 - (void)log:(NSString *)message withLevel:(ARTLogLevel)level;
 
+/**
+ - Parameters:
+   - fileName: The absolute path of the file from which the log message was emitted (for example, as returned by the `__FILE__` macro).
+ */
+- (void)log:(NSString *)message withLevel:(ARTLogLevel)level file:(const char *)fileName line:(NSInteger)line;
+
 @property (nonatomic) ARTLogLevel logLevel;
 
 @end

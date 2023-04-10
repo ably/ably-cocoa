@@ -25,6 +25,21 @@ class LogAdapterTests: XCTestCase {
         }
     }
 
+    func test_logMessageWithFileAndLine() {
+        let underlyingLogger = MockARTLog()
+        let logger = LogAdapter(logger: underlyingLogger)
+
+        let logLevels: [ARTLogLevel] = [.verbose, .debug, .info, .warn, .error, .none]
+        for (index, level) in logLevels.enumerated() {
+            let message = "Message \(index)"
+            logger.log(message, with: level, file: "myFile.m", line: 123)
+
+            let logged = underlyingLogger.lastReceivedLogMessageArguments!
+            XCTAssertEqual(logged.level, level)
+            XCTAssertEqual(logged.message, "(myFile.m:123) \(message)")
+        }
+    }
+
     func test_logLevel() {
         let underlyingLogger = ARTLog()
         underlyingLogger.logLevel = .info

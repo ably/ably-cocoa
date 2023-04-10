@@ -27,6 +27,12 @@ NS_ASSUME_NONNULL_END
     [self.logger log:message withLevel:level];
 }
 
+- (void)log:(NSString *)message withLevel:(ARTLogLevel)level file:(const char *)fileName line:(NSInteger)line {
+    NSString *const fileNameNSString = [NSString stringWithUTF8String:fileName];
+    NSString *const lastPathComponent = fileNameNSString ? fileNameNSString.lastPathComponent : @"";
+    [self.logger log:message withLevel:level file:lastPathComponent line:line];
+}
+
 // MARK: Log level
 
 - (ARTLogLevel)logLevel {
