@@ -2,7 +2,6 @@
 #import "ARTDeviceDetails.h"
 #import "ARTDevicePushDetails.h"
 #import "ARTRest+Private.h"
-#import "ARTLog.h"
 #import "ARTJsonEncoder.h"
 #import "ARTJsonLikeEncoder.h"
 #import "ARTEventEmitter.h"
@@ -17,6 +16,7 @@
 #import "ARTLocalDevice+Private.h"
 #import "ARTDeviceStorage.h"
 #import "ARTRealtime+Private.h"
+#import "ARTInternalLog.h"
 
 @implementation ARTPush {
     ARTQueuedDealloc *_dealloc;
@@ -72,7 +72,7 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
 
 @implementation ARTPushInternal {
     __weak ARTRestInternal *_rest; // weak because rest owns self
-    ARTLog *_logger;
+    ARTInternalLog *_logger;
     ARTPushActivationStateMachine *_activationMachine;
     NSLock *_activationMachineLock;
 }

@@ -30,6 +30,7 @@
 #import "ARTAttachRequestMetadata.h"
 #import "ARTRetrySequence.h"
 #import "ARTConstantRetryDelayCalculator.h"
+#import "ARTInternalLog.h"
 #if TARGET_OS_IPHONE
 #import "ARTPushChannel+Private.h"
 #endif
@@ -307,7 +308,7 @@ dispatch_sync(_queue, ^{
     return _errorReason;
 }
 
-- (ARTLog *)getLogger {
+- (ARTInternalLog *)getLogger {
     return _realtime.logger;
 }
 

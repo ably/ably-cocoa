@@ -7,6 +7,7 @@
 #import <netinet/in.h>
 
 #import "ARTOSReachability.h"
+#import "ARTInternalLog.h"
 
 typedef const void * __nonnull (* __nullable ARTNetworkReachabilityContextRetain)(const void * _Nullable info);
 
@@ -17,13 +18,13 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
 }
 
 @implementation ARTOSReachability {
-    ARTLog *_logger;
+    ARTInternalLog *_logger;
     NSString *_host;
     SCNetworkReachabilityRef _reachabilityRef;
     dispatch_queue_t _queue;
 }
 
-- (instancetype)initWithLogger:(ARTLog *)logger queue:(dispatch_queue_t)queue {
+- (instancetype)initWithLogger:(ARTInternalLog *)logger queue:(dispatch_queue_t)queue {
     if (self = [super init]) {
         _logger = logger;
         _queue = queue;

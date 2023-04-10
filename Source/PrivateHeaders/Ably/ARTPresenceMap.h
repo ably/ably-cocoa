@@ -4,22 +4,19 @@
 @class ARTPresenceMap;
 @class ARTPresenceMessage;
 @class ARTErrorInfo;
-@class ARTLog;
+@class ARTInternalLog;
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// :nodoc:
 @protocol ARTPresenceMapDelegate <NSObject>
 @property (nonatomic, readonly) NSString *connectionId;
 - (void)map:(ARTPresenceMap *)map didRemovedMemberNoLongerPresent:(ARTPresenceMessage *)presence;
 - (void)map:(ARTPresenceMap *)map shouldReenterLocalMember:(ARTPresenceMessage *)presence;
 @end
 
-/// :nodoc:
 /// Used to maintain a list of members present on a channel
 @interface ARTPresenceMap : NSObject
 
-/// :nodoc:
 /// List of members.
 /// The key is the memberKey and the value is the latest relevant ARTPresenceMessage for that clientId.
 @property (readonly, atomic) NSDictionary<NSString *, ARTPresenceMessage *> *members;
@@ -37,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic, getter=syncInProgress) BOOL syncInProgress;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)initWithQueue:(_Nonnull dispatch_queue_t)queue logger:(ARTLog *)logger;
+- (instancetype)initWithQueue:(_Nonnull dispatch_queue_t)queue logger:(ARTInternalLog *)logger;
 
 - (BOOL)add:(ARTPresenceMessage *)message;
 - (void)reset;
