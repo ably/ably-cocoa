@@ -33,6 +33,16 @@ NS_ASSUME_NONNULL_END
     [self.core log:message withLevel:level];
 }
 
+- (void)logWithLevel:(ARTLogLevel)level format:(NSString *)format, ... {
+    if (self.logLevel <= level) {
+        va_list args;
+        va_start(args, format);
+        NSString *const message = [[NSString alloc] initWithFormat:format arguments:args];
+        [self log:message withLevel:level];
+        va_end(args);
+    }
+}
+
 // MARK: Log level
 
 - (ARTLogLevel)logLevel {

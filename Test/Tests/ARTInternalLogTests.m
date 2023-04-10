@@ -2,7 +2,7 @@
 #import "Ably_Tests-Swift.h"
 
 /**
- This file is written in Objective-C because it tests `ARTInternalLog`’s variadic methods, which are not accessible from Swift.
+ This file is written in Objective-C because it tests `ARTInternalLog`’s variadic methods and the `ARTLog*` macros defined in `ARTInternalLog.h`, which are not accessible from Swift.
  */
 @interface ARTInternalLogTests : XCTestCase
 
@@ -82,6 +82,61 @@
     ARTInternalLog *const internalLog = [[ARTInternalLog alloc] initWithCore:mock];
 
     [internalLog error:@"Hello %@", @"there"];
+
+    XCTAssertEqualObjects(mock.lastReceivedLogMessageArgumentMessage, @"Hello there");
+    XCTAssertEqual(mock.lastReceivedLogMessageArgumentLevel, ARTLogLevelError);
+}
+
+- (void)test_ARTLogVerbose {
+    ARTMockInternalLogCore *const mock = [[ARTMockInternalLogCore alloc] init];
+    mock.logLevel = ARTLogLevelVerbose;
+    ARTInternalLog *const internalLog = [[ARTInternalLog alloc] initWithCore:mock];
+
+    ARTLogVerbose(internalLog, @"Hello %@", @"there");
+
+    XCTAssertEqualObjects(mock.lastReceivedLogMessageArgumentMessage, @"Hello there");
+    XCTAssertEqual(mock.lastReceivedLogMessageArgumentLevel, ARTLogLevelVerbose);
+}
+
+- (void)test_ARTLogDebug {
+    ARTMockInternalLogCore *const mock = [[ARTMockInternalLogCore alloc] init];
+    mock.logLevel = ARTLogLevelDebug;
+    ARTInternalLog *const internalLog = [[ARTInternalLog alloc] initWithCore:mock];
+
+    ARTLogDebug(internalLog, @"Hello %@", @"there");
+
+    XCTAssertEqualObjects(mock.lastReceivedLogMessageArgumentMessage, @"Hello there");
+    XCTAssertEqual(mock.lastReceivedLogMessageArgumentLevel, ARTLogLevelDebug);
+}
+
+- (void)test_ARTLogInfo {
+    ARTMockInternalLogCore *const mock = [[ARTMockInternalLogCore alloc] init];
+    mock.logLevel = ARTLogLevelInfo;
+    ARTInternalLog *const internalLog = [[ARTInternalLog alloc] initWithCore:mock];
+
+    ARTLogInfo(internalLog, @"Hello %@", @"there");
+
+    XCTAssertEqualObjects(mock.lastReceivedLogMessageArgumentMessage, @"Hello there");
+    XCTAssertEqual(mock.lastReceivedLogMessageArgumentLevel, ARTLogLevelInfo);
+}
+
+- (void)test_ARTLogWarn {
+    ARTMockInternalLogCore *const mock = [[ARTMockInternalLogCore alloc] init];
+    mock.logLevel = ARTLogLevelWarn;
+    ARTInternalLog *const internalLog = [[ARTInternalLog alloc] initWithCore:mock];
+
+    ARTLogWarn(internalLog, @"Hello %@", @"there");
+
+    XCTAssertEqualObjects(mock.lastReceivedLogMessageArgumentMessage, @"Hello there");
+    XCTAssertEqual(mock.lastReceivedLogMessageArgumentLevel, ARTLogLevelWarn);
+}
+
+- (void)test_ARTLogError {
+    ARTMockInternalLogCore *const mock = [[ARTMockInternalLogCore alloc] init];
+    mock.logLevel = ARTLogLevelError;
+    ARTInternalLog *const internalLog = [[ARTInternalLog alloc] initWithCore:mock];
+
+    ARTLogError(internalLog, @"Hello %@", @"there");
 
     XCTAssertEqualObjects(mock.lastReceivedLogMessageArgumentMessage, @"Hello there");
     XCTAssertEqual(mock.lastReceivedLogMessageArgumentLevel, ARTLogLevelError);
