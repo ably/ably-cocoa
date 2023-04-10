@@ -772,12 +772,12 @@ class RealtimeClientPresenceTests: XCTestCase {
             var updateReceived = false
             channel.presence.subscribe { presence in
                 //update after attach is received now we just expect leave event
-                if(updateReceived){
+                if (updateReceived) {
                     XCTAssertEqual(presence.action, ARTPresenceAction.leave)
                     XCTAssertEqual(presence.clientId, "tester")
                     partialDone()
                 }
-                if(presence.action == ARTPresenceAction.update){
+                if (presence.action == ARTPresenceAction.update) {
                     updateReceived = true
                 }
             }
