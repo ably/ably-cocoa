@@ -4,6 +4,22 @@
 @protocol ARTInternalLogBackend;
 @protocol ARTVersion2Log;
 
+/**
+ Logs a message to a given instance of `ARTInternalLog`. The `ARTLogVerbose` etc macros wrap this; favour using those.
+
+ - Parameters:
+   - _logger: An instance of `ARTInternalLog`.
+   - _level: An `ARTLogLevel` value.
+   - _format: An NSString format string, followed by any arguments to interpolate in the format string.
+ */
+#define ARTLog(_logger, _level, _format, ...) [_logger logWithLevel:_level format:_format, ##__VA_ARGS__]
+
+#define ARTLogVerbose(logger, format, ...) ARTLog(logger, ARTLogLevelVerbose, format, ##__VA_ARGS__)
+#define ARTLogDebug(logger, format, ...) ARTLog(logger, ARTLogLevelDebug, format, ##__VA_ARGS__)
+#define ARTLogInfo(logger, format, ...) ARTLog(logger, ARTLogLevelInfo, format, ##__VA_ARGS__)
+#define ARTLogWarn(logger, format, ...) ARTLog(logger, ARTLogLevelWarn, format, ##__VA_ARGS__)
+#define ARTLogError(logger, format, ...) ARTLog(logger, ARTLogLevelError, format, ##__VA_ARGS__)
+
 NS_ASSUME_NONNULL_BEGIN
 
 NS_SWIFT_NAME(InternalLog)
@@ -24,7 +40,11 @@ NS_SWIFT_NAME(InternalLog)
 - (instancetype)initWithLogger:(id<ARTVersion2Log>)logger;
 - (instancetype)init NS_UNAVAILABLE;
 
+// This method passes the arguments through to the logger’s backend. It is not directly used by the internals of the SDK, but we need it because some of our Swift tests (which can’t access the variadic method below) want to be able to call a logging method on an instance of `ARTInternalLog`.
 - (void)log:(NSString *)message withLevel:(ARTLogLevel)level;
+
+// This method should not be called directly — it is for use by the ARTLog* macros. It is tested via the tests of the macros.
+- (void)logWithLevel:(ARTLogLevel)level format:(NSString *)format, ...  NS_FORMAT_FUNCTION(2,3);
 
 @property (nonatomic, assign) ARTLogLevel logLevel;
 
