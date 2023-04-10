@@ -227,7 +227,7 @@ NS_ASSUME_NONNULL_END
         
         [self.connection setState:ARTRealtimeInitialized];
         
-        [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p initialized with RS:%p", self, _rest];
+        ARTLogVerbose(self.logger, @"R:%p initialized with RS:%p", self, _rest);
         
         self.rest.prioritizedHost = nil;
         
@@ -262,7 +262,7 @@ NS_ASSUME_NONNULL_END
                 case ARTRealtimeInitialized:
                 case ARTRealtimeConnecting:
                 case ARTRealtimeClosing:
-                    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p authorize completion has been ignored because the connection state is unexpected (%@)", self.rest, ARTRealtimeConnectionStateToStr(state)];
+                    ARTLogDebug(self.logger, @"RS:%p authorize completion has been ignored because the connection state is unexpected (%@)", self.rest, ARTRealtimeConnectionStateToStr(state));
                     break;
             }
         }];
@@ -270,7 +270,7 @@ NS_ASSUME_NONNULL_END
     
     void (^haltCurrentConnectionAndReconnect)(void) = ^{
         // Halt the current connection and reconnect with the most recent token
-        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p halt current connection and reconnect with %@", self.rest, tokenDetails];
+        ARTLogDebug(self.logger, @"RS:%p halt current connection and reconnect with %@", self.rest, tokenDetails);
         [self abortAndReleaseTransport:[ARTStatus state:ARTStateOk]];
         [self setTransportWithResumeKey:self->_transport.resumeKey connectionSerial:self->_transport.connectionSerial];
         [self->_transport connectWithToken:tokenDetails.token];
@@ -281,7 +281,7 @@ NS_ASSUME_NONNULL_END
     switch (self.connection.state_nosync) {
         case ARTRealtimeConnected: {
             // Update (send AUTH message)
-            [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p AUTH message using %@", self.rest, tokenDetails];
+            ARTLogDebug(self.logger, @"RS:%p AUTH message using %@", self.rest, tokenDetails);
             ARTProtocolMessage *msg = [[ARTProtocolMessage alloc] init];
             msg.action = ARTProtocolMessageAuth;
             msg.auth = [[ARTAuthDetails alloc] initWithToken:tokenDetails.token];
@@ -297,13 +297,13 @@ NS_ASSUME_NONNULL_END
         }
         case ARTRealtimeClosing: {
             // Should ignore because the connection is being closed
-            [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p authorize has been cancelled because the connection is closing", self.rest];
+            ARTLogDebug(self.logger, @"RS:%p authorize has been cancelled because the connection is closing", self.rest);
             [self cancelAllPendingAuthorizations];
             break;
         }
         default: {
             // Client state is NOT Connecting or Connected, so it should start a new connection
-            [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p new connection from successfull authorize %@", self.rest, tokenDetails];
+            ARTLogDebug(self.logger, @"RS:%p new connection from successfull authorize %@", self.rest, tokenDetails);
             [self transition:ARTRealtimeConnecting withMetadata:[[ARTConnectionStateChangeMetadata alloc] init]];
             waitForResponse();
             break;
@@ -394,7 +394,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)dealloc {
-    [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p dealloc", self];
+    ARTLogVerbose(self.logger, @"R:%p dealloc", self);
     
     self.rest.prioritizedHost = nil;
 }
@@ -478,7 +478,7 @@ NS_ASSUME_NONNULL_END
                     return;
                 }
                 [[[self->_pingEventEmitter once:cb] setTimer:self.options.testOptions.realtimeRequestTimeout onTimeout:^{
-                    [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p ping timed out", self];
+                    ARTLogVerbose(self.logger, @"R:%p ping timed out", self);
                     cb([ARTErrorInfo createWithCode:ARTErrorConnectionTimedOut status:ARTStateConnectionFailed message:@"timed out"]);
                 }] startTimer];
                 [self.transport sendPing];
@@ -495,7 +495,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)transition:(ARTRealtimeConnectionState)state withMetadata:(ARTConnectionStateChangeMetadata *)metadata {
-    [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p realtime state transitions to %tu - %@%@", self, state, ARTRealtimeConnectionStateToStr(state), metadata.retryAttempt ? [NSString stringWithFormat: @" (result of %@)", metadata.retryAttempt.id] : @""];
+    ARTLogVerbose(self.logger, @"R:%p realtime state transitions to %tu - %@%@", self, state, ARTRealtimeConnectionStateToStr(state), metadata.retryAttempt ? [NSString stringWithFormat: @" (result of %@)", metadata.retryAttempt.id] : @"");
     
     ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:state previous:self.connection.state_nosync event:(ARTRealtimeConnectionEvent)state reason:metadata.errorInfo retryIn:0 retryAttempt:metadata.retryAttempt];
 
@@ -522,10 +522,10 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)updateWithErrorInfo:(nullable ARTErrorInfo *)errorInfo {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p update requested", self];
+    ARTLogDebug(self.logger, @"R:%p update requested", self);
     
     if (self.connection.state_nosync != ARTRealtimeConnected) {
-        [self.logger warn:@"R:%p update ignored because connection is not connected", self];
+        ARTLogWarn(self.logger, @"R:%p update ignored because connection is not connected", self);
         return;
     }
     
@@ -543,7 +543,7 @@ NS_ASSUME_NONNULL_END
     ARTChannelStateChangeMetadata *channelStateChangeMetadata = nil;
     ARTEventListener *stateChangeEventListener = nil;
     
-    [self.logger debug:@"RT:%p realtime is transitioning from %tu - %@ to %tu - %@", self, stateChange.previous, ARTRealtimeConnectionStateToStr(stateChange.previous), stateChange.current, ARTRealtimeConnectionStateToStr(stateChange.current)];
+    ARTLogDebug(self.logger, @"RT:%p realtime is transitioning from %tu - %@ to %tu - %@", self, stateChange.previous, ARTRealtimeConnectionStateToStr(stateChange.previous), stateChange.current, ARTRealtimeConnectionStateToStr(stateChange.current));
     
     switch (stateChange.current) {
         case ARTRealtimeConnecting: {
@@ -646,7 +646,7 @@ NS_ASSUME_NONNULL_END
             [self closeAndReleaseTransport];
             if (!_connectionLostAt) {
                 _connectionLostAt = [NSDate date];
-                [self.logger verbose:@"RT:%p set connection lost time; expected suspension at %@ (ttl=%f)", self, [self suspensionTime], self.connectionStateTtl];
+                ARTLogVerbose(self.logger, @"RT:%p set connection lost time; expected suspension at %@ (ttl=%f)", self, [self suspensionTime], self.connectionStateTtl);
             }
 
             NSTimeInterval retryDelay;
@@ -658,10 +658,10 @@ NS_ASSUME_NONNULL_END
             } else {
                 // Note: we currently reset the retry sequence every time we wish to perform a retry (defeating the point of using it in the first place, but it's OK since the delays are all constant). As part of implementing #1431 we will reuse any existing retry sequence, resetting it only in response to certain state changes.
                 self.connectRetrySequence = [[ARTRetrySequence alloc] initWithDelayCalculator:self.connectRetryDelayCalculator];
-                [self.logger verbose:@"RT:%p Created connect retry sequence %@", self, self.connectRetrySequence];
+                ARTLogVerbose(self.logger, @"RT:%p Created connect retry sequence %@", self, self.connectRetrySequence);
 
                 retryAttempt = [self.connectRetrySequence addRetryAttempt];
-                [self.logger verbose:@"RT:%p Adding connect retry attempt to %@ gave %@", self, self.connectRetrySequence.id, retryAttempt];
+                ARTLogVerbose(self.logger, @"RT:%p Adding connect retry attempt to %@ gave %@", self, self.connectRetrySequence.id, retryAttempt);
 
                 retryDelay = retryAttempt.delay;
             }
@@ -806,10 +806,10 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)onHeartbeat {
-    [self.logger verbose:@"R:%p heartbeat received", self];
+    ARTLogVerbose(self.logger, @"R:%p heartbeat received", self);
     if(self.connection.state_nosync != ARTRealtimeConnected) {
         NSString *msg = [NSString stringWithFormat:@"received a ping when in state %@", ARTRealtimeConnectionStateToStr(self.connection.state_nosync)];
-        [self.logger warn:@"R:%p %@", self, msg];
+        ARTLogWarn(self.logger, @"R:%p %@", self, msg);
     }
     [_pingEventEmitter emit:nil with:nil];
 }
@@ -820,7 +820,7 @@ NS_ASSUME_NONNULL_END
     // Resuming
     if (_resuming) {
         if (![message.connectionId isEqualToString:self.connection.id_nosync]) { // RTN15c3
-            [self.logger warn:@"RT:%p connection \"%@\" has reconnected, but resume failed. Reattaching any attached channels", self, message.connectionId];
+            ARTLogWarn(self.logger, @"RT:%p connection \"%@\" has reconnected, but resume failed. Reattaching any attached channels", self, message.connectionId);
             // Reattach all channels
             for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
                 ARTAttachRequestMetadata *const metadata = [[ARTAttachRequestMetadata alloc] initWithReason:message.error];
@@ -829,11 +829,11 @@ NS_ASSUME_NONNULL_END
             _resuming = false;
         }
         else if (message.error) {
-            [self.logger warn:@"RT:%p connection \"%@\" has resumed with non-fatal error \"%@\"", self, message.connectionId, message.error.message];
+            ARTLogWarn(self.logger, @"RT:%p connection \"%@\" has resumed with non-fatal error \"%@\"", self, message.connectionId, message.error.message);
             // The error will be emitted on `transition`
         }
         else {
-            [self.logger debug:@"RT:%p connection \"%@\" has reconnected and resumed successfully", self, message.connectionId];
+            ARTLogDebug(self.logger, @"RT:%p connection \"%@\" has reconnected and resumed successfully", self, message.connectionId);
         }
     }
     
@@ -845,7 +845,7 @@ NS_ASSUME_NONNULL_END
             BOOL connIdChanged = prevConnId && ![message.connectionId isEqualToString:prevConnId];
             BOOL recoverFailure = !prevConnId && message.error;
             if (connIdChanged || recoverFailure) {
-                [self.logger debug:@"RT:%p msgSerial of connection \"%@\" has been reset", self, self.connection.id_nosync];
+                ARTLogDebug(self.logger, @"RT:%p msgSerial of connection \"%@\" has been reset", self, self.connection.id_nosync);
                 self.msgSerial = 0;
                 self.pendingMessageStartSerial = 0;
             }
@@ -883,7 +883,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)onDisconnected:(ARTProtocolMessage *)message {
-    [self.logger info:@"R:%p Realtime disconnected", self];
+    ARTLogInfo(self.logger, @"R:%p Realtime disconnected", self);
     ARTErrorInfo * const error = message.error;
     
     if (
@@ -909,7 +909,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)onClosed {
-    [self.logger info:@"R:%p Realtime closed", self];
+    ARTLogInfo(self.logger, @"R:%p Realtime closed", self);
     switch (self.connection.state_nosync) {
         case ARTRealtimeClosed:
             break;
@@ -924,14 +924,14 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)onAuth {
-    [self.logger info:@"R:%p server has requested an authorize", self];
+    ARTLogInfo(self.logger, @"R:%p server has requested an authorize", self);
     switch (self.connection.state_nosync) {
         case ARTRealtimeConnecting:
         case ARTRealtimeConnected:
             [self transportConnectForcingNewToken:true newConnection:false];
             break;
         default:
-            [self.logger error:@"Invalid Realtime state: expected Connecting or Connected, has %@", ARTRealtimeConnectionStateToStr(self.connection.state_nosync)];
+            ARTLogError(self.logger, @"Invalid Realtime state: expected Connecting or Connected, has %@", ARTRealtimeConnectionStateToStr(self.connection.state_nosync));
             break;
     }
 }
@@ -961,7 +961,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)cancelTimers {
-    [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p cancel timers", self];
+    ARTLogVerbose(self.logger, @"R:%p cancel timers", self);
     [_connectionRetryFromSuspendedListener stopTimer];
     _connectionRetryFromSuspendedListener = nil;
     [_connectionRetryFromDisconnectedListener stopTimer];
@@ -981,7 +981,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)onConnectionTimeOut {
-    [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p connection timed out", self];
+    ARTLogVerbose(self.logger, @"R:%p connection timed out", self);
     // Cancel connecting scheduled work
     [_connectingTimeoutListener stopTimer];
     _connectingTimeoutListener = nil;
@@ -1037,11 +1037,11 @@ NS_ASSUME_NONNULL_END
     }
     else {
         // Token
-        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p connecting with token auth; authorising (timeout of %f)", self, self.options.testOptions.realtimeRequestTimeout];
+        ARTLogDebug(self.logger, @"R:%p connecting with token auth; authorising (timeout of %f)", self, self.options.testOptions.realtimeRequestTimeout);
         
         if (!forceNewToken && [self.auth tokenRemainsValid]) {
             // Reuse token
-            [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p reusing token for auth", self];
+            ARTLogDebug(self.logger, @"R:%p reusing token for auth", self);
             [self.transport connectWithToken:self.auth.tokenDetails.token];
         }
         else {
@@ -1074,7 +1074,7 @@ NS_ASSUME_NONNULL_END
                             break;
                     }
                     
-                    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p authorized: %@ error: %@", self, tokenDetails, error];
+                    ARTLogDebug(self.logger, @"R:%p authorized: %@ error: %@", self, tokenDetails, error);
                     if (error) {
                         [self handleTokenAuthError:error];
                         return;
@@ -1096,7 +1096,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)handleTokenAuthError:(NSError *)error {
-    [self.logger error:@"R:%p token auth failed with %@", self, error.description];
+    ARTLogError(self.logger, @"R:%p token auth failed with %@", self, error.description);
     if (error.code == ARTErrorIncompatibleCredentials) {
         // RSA15c
         ARTErrorInfo *const errorInfo = [ARTErrorInfo createFromNSError:error];
@@ -1223,7 +1223,7 @@ NS_ASSUME_NONNULL_END
         [self.pendingMessages addObject:pendingMessage];
     }
     
-    [self.logger debug:__FILE__ line:__LINE__ message:@"RT:%p sending action %tu - %@", self, pm.action, ARTProtocolMessageActionToStr(pm.action)];
+    ARTLogDebug(self.logger, @"RT:%p sending action %tu - %@", self, pm.action, ARTProtocolMessageActionToStr(pm.action));
     if ([self.transport send:data withSource:pm]) {
         if (sentCallback) sentCallback(nil);
         // `ackCallback()` is called with ACK/NACK action
@@ -1240,10 +1240,10 @@ NS_ASSUME_NONNULL_END
         if (!merged) {
             ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg sentCallback:nil ackCallback:ackCallback];
             [self.queuedMessages addObject:qm];
-            [self.logger debug:__FILE__ line:__LINE__ message:@"RT:%p (channel: %@) protocol message with action '%lu - %@' has been queued (%@)", self, msg.channel, (unsigned long)msg.action, ARTProtocolMessageActionToStr(msg.action), msg.messages];
+            ARTLogDebug(self.logger, @"RT:%p (channel: %@) protocol message with action '%lu - %@' has been queued (%@)", self, msg.channel, (unsigned long)msg.action, ARTProtocolMessageActionToStr(msg.action), msg.messages);
         }
         else {
-            [self.logger verbose:__FILE__ line:__LINE__ message:@"RT:%p (channel: %@) message %@ has been bundled to %@", self, msg.channel, msg, lastQueuedMessage.msg];
+            ARTLogVerbose(self.logger, @"RT:%p (channel: %@) message %@ has been bundled to %@", self, msg.channel, msg, lastQueuedMessage.msg);
         }
     }
     else if (ackCallback) {
@@ -1256,7 +1256,7 @@ NS_ASSUME_NONNULL_END
 - (void)resendPendingMessages {
     NSArray<ARTPendingMessage *> *pms = self.pendingMessages;
     if (pms.count > 0) {
-        [self.logger debug:__FILE__ line:__LINE__ message:@"RT:%p resending messages waiting for acknowledgment", self];
+        ARTLogDebug(self.logger, @"RT:%p resending messages waiting for acknowledgment", self);
     }
     self.pendingMessages = [NSMutableArray array];
     for (ARTPendingMessage *pendingMessage in pms) {
@@ -1297,8 +1297,8 @@ NS_ASSUME_NONNULL_END
     int count = message.count;
     NSArray *nackMessages = nil;
     NSArray *ackMessages = nil;
-    [self.logger verbose:@"R:%p ACK: msgSerial=%lld, count=%d", self, serial, count];
-    [self.logger verbose:@"R:%p ACK (before processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
+    ARTLogVerbose(self.logger, @"R:%p ACK: msgSerial=%lld, count=%d", self, serial, count);
+    ARTLogVerbose(self.logger, @"R:%p ACK (before processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count);
     
     if (serial < self.pendingMessageStartSerial) {
         // This is an error condition and shouldn't happen but
@@ -1315,7 +1315,7 @@ NS_ASSUME_NONNULL_END
         NSRange nackRange;
         if (nCount > self.pendingMessages.count) {
             NSString *message = [NSString stringWithFormat:@"R:%p ACK: receiving a serial greater than expected", self];
-            [self.logger error:@"%@", message];
+            ARTLogError(self.logger, @"%@", message);
             // Process all the available pending messages as nack
             nackRange = NSMakeRange(0, self.pendingMessages.count);
         }
@@ -1330,7 +1330,7 @@ NS_ASSUME_NONNULL_END
     if (serial == self.pendingMessageStartSerial) {
         NSRange ackRange;
         if (count > self.pendingMessages.count) {
-            [self.logger error:@"R:%p ACK: count response is greater than the total of pending messages", self];
+            ARTLogError(self.logger, @"R:%p ACK: count response is greater than the total of pending messages", self);
             // Process all the available pending messages
             ackRange = NSMakeRange(0, self.pendingMessages.count);
         }
@@ -1350,14 +1350,14 @@ NS_ASSUME_NONNULL_END
         msg.ackCallback([ARTStatus state:ARTStateOk]);
     }
     
-    [self.logger verbose:@"R:%p ACK (after processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
+    ARTLogVerbose(self.logger, @"R:%p ACK (after processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count);
 }
 
 - (void)nack:(ARTProtocolMessage *)message {
     int64_t serial = [message.msgSerial longLongValue];
     int count = message.count;
-    [self.logger verbose:@"R:%p NACK: msgSerial=%lld, count=%d", self, serial, count];
-    [self.logger verbose:@"R:%p NACK (before processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
+    ARTLogVerbose(self.logger, @"R:%p NACK: msgSerial=%lld, count=%d", self, serial, count);
+    ARTLogVerbose(self.logger, @"R:%p NACK (before processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count);
     
     if (serial != self.pendingMessageStartSerial) {
         // This is an error condition and it shouldn't happen but
@@ -1368,7 +1368,7 @@ NS_ASSUME_NONNULL_END
     
     NSRange nackRange;
     if (count > self.pendingMessages.count) {
-        [self.logger error:@"R:%p NACK: count response is greater than the total of pending messages", self];
+        ARTLogError(self.logger, @"R:%p NACK: count response is greater than the total of pending messages", self);
         // Process all the available pending messages
         nackRange = NSMakeRange(0, self.pendingMessages.count);
     }
@@ -1384,7 +1384,7 @@ NS_ASSUME_NONNULL_END
         msg.ackCallback([ARTStatus state:ARTStateError info:message.error]);
     }
     
-    [self.logger verbose:@"R:%p NACK (after processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count];
+    ARTLogVerbose(self.logger, @"R:%p NACK (after processing): pendingMessageStartSerial=%lld, pendingMessages=%lu", self, self.pendingMessageStartSerial, (unsigned long)self.pendingMessages.count);
 }
 
 - (BOOL)reconnectWithFallback {
@@ -1398,7 +1398,7 @@ NS_ASSUME_NONNULL_END
                 return;
             }
             
-            [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p host is down; retrying realtime connection at %@", self, host];
+            ARTLogDebug(self.logger, @"R:%p host is down; retrying realtime connection at %@", self, host);
             self.rest.prioritizedHost = host;
             [self transportReconnectWithHost:host];
         }];
@@ -1421,20 +1421,20 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)onActivity {
-    [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p activity", self];
+    ARTLogVerbose(self.logger, @"R:%p activity", self);
     _lastActivity = [NSDate date];
     [self setIdleTimer];
 }
 
 - (void)setIdleTimer {
     if (self.maxIdleInterval <= 0) {
-        [self.logger verbose:@"R:%p set idle timer had been ignored", self];
+        ARTLogVerbose(self.logger, @"R:%p set idle timer had been ignored", self);
         return;
     }
     artDispatchCancel(_idleTimer);
     
     _idleTimer = artDispatchScheduled(self.options.testOptions.realtimeRequestTimeout + self.maxIdleInterval, _rest.queue, ^{
-        [self.logger error:@"R:%p No activity seen from realtime in %f seconds; assuming connection has dropped", self, [[NSDate date] timeIntervalSinceDate:self->_lastActivity]];
+        ARTLogError(self.logger, @"R:%p No activity seen from realtime in %f seconds; assuming connection has dropped", self, [[NSDate date] timeIntervalSinceDate:self->_lastActivity]);
         
         ARTErrorInfo *idleTimerExpired = [ARTErrorInfo createWithCode:ARTErrorDisconnected status:408 message:@"Idle timer expired"];
         ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:idleTimerExpired];
@@ -1475,10 +1475,10 @@ NS_ASSUME_NONNULL_END
         return;
     }
     
-    [self.logger verbose:@"R:%p did receive Protocol Message %@ (connection state is %@)", self, ARTProtocolMessageActionToStr(message.action), ARTRealtimeConnectionStateToStr(self.connection.state_nosync)];
+    ARTLogVerbose(self.logger, @"R:%p did receive Protocol Message %@ (connection state is %@)", self, ARTProtocolMessageActionToStr(message.action), ARTRealtimeConnectionStateToStr(self.connection.state_nosync));
     
     if (message.error) {
-        [self.logger verbose:@"R:%p Protocol Message with error %@", self, message.error];
+        ARTLogVerbose(self.logger, @"R:%p Protocol Message with error %@", self, message.error);
     }
     
     NSAssert(transport == self.transport, @"Unexpected transport");
@@ -1563,10 +1563,10 @@ NS_ASSUME_NONNULL_END
         return;
     }
     
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p realtime transport failed: %@", self, transportError];
+    ARTLogDebug(self.logger, @"R:%p realtime transport failed: %@", self, transportError);
     
     if ([self shouldRetryWithFallback:transportError]) {
-        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p host is down; can retry with fallback host", self];
+        ARTLogDebug(self.logger, @"R:%p host is down; can retry with fallback host", self);
         if (!_fallbacks && [transportError.url.host isEqualToString:[ARTDefault realtimeHost]]) {
             NSArray *hosts = [ARTFallbackHosts hostsFromOptions:[self getClientOptions]];
             self->_fallbacks = [[ARTFallback alloc] initWithFallbackHosts:hosts];

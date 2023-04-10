@@ -167,7 +167,7 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
 }
 
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceTokenData restInternal:(ARTRestInternal *)rest {
-    [rest.logger debug:@"ARTPush: device token data received: %@", [deviceTokenData base64EncodedStringWithOptions:0]];
+    ARTLogDebug(rest.logger, @"ARTPush: device token data received: %@", [deviceTokenData base64EncodedStringWithOptions:0]);
 
     NSUInteger dataLength = deviceTokenData.length;
     const unsigned char *dataBuffer = deviceTokenData.bytes;
@@ -178,7 +178,7 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
 
     NSString *deviceToken = [hexString copy];
 
-    [rest.logger info:@"ARTPush: device token: %@", deviceToken];
+    ARTLogInfo(rest.logger, @"ARTPush: device token: %@", deviceToken);
     NSString *currentDeviceToken = [rest.storage objectForKey:ARTAPNSDeviceTokenKey];
     if ([currentDeviceToken isEqualToString:deviceToken]) {
         // Already stored.
@@ -186,7 +186,7 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
     }
 
     [rest.device_nosync setAndPersistAPNSDeviceToken:deviceToken];
-    [rest.logger debug:@"ARTPush: device token stored"];
+    ARTLogDebug(rest.logger, @"ARTPush: device token stored");
     [rest.push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
         [stateMachine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
     }];
@@ -205,7 +205,7 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
 }
 
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error restInternal:(ARTRestInternal *)rest {
-    [rest.logger error:@"ARTPush: device token not received (%@)", [error localizedDescription]];
+    ARTLogError(rest.logger, @"ARTPush: device token not received (%@)", [error localizedDescription]);
     [rest.push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
         [stateMachine sendEvent:[ARTPushActivationEventGettingPushDeviceDetailsFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
     }];

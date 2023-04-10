@@ -89,18 +89,18 @@
         [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
         [request setDeviceAuthentication:channelSubscription.deviceId localDevice:local];
         
-        [self->_logger debug:__FILE__ line:__LINE__ message:@"save channel subscription with request %@", request];
+        ARTLogDebug(self->_logger, @"save channel subscription with request %@", request);
         [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (response.statusCode == 200 /*Ok*/ || response.statusCode == 201 /*Created*/) {
-                [self->_logger debug:__FILE__ line:__LINE__ message:@"channel subscription saved successfully"];
+                ARTLogDebug(self->_logger, @"channel subscription saved successfully");
                 callback(nil);
             }
             else if (error) {
-                [self->_logger error:@"%@: save channel subscription failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+                ARTLogError(self->_logger, @"%@: save channel subscription failed (%@)", NSStringFromClass(self.class), error.localizedDescription);
                 callback([ARTErrorInfo createFromNSError:error]);
             }
             else {
-                [self->_logger error:@"%@: save channel subscription failed with status code %ld", NSStringFromClass(self.class), (long)response.statusCode];
+                ARTLogError(self->_logger, @"%@: save channel subscription failed with status code %ld", NSStringFromClass(self.class), (long)response.statusCode);
                 NSString *plain = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
                 callback([ARTErrorInfo createWithCode:response.statusCode*100 status:response.statusCode message:[plain art_shortString]]);
             }
@@ -206,18 +206,18 @@
     [request setDeviceAuthentication:[params objectForKey:@"deviceId"] localDevice:_rest.device_nosync];
 #endif
     
-    [_logger debug:__FILE__ line:__LINE__ message:@"remove channel subscription with request %@", request];
+    ARTLogDebug(_logger, @"remove channel subscription with request %@", request);
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (response.statusCode == 200 /*Ok*/ || response.statusCode == 204 /*not returning any content*/) {
-            [self->_logger debug:__FILE__ line:__LINE__ message:@"%@: channel subscription removed successfully", NSStringFromClass(self.class)];
+            ARTLogDebug(self->_logger, @"%@: channel subscription removed successfully", NSStringFromClass(self.class));
             callback(nil);
         }
         else if (error) {
-            [self->_logger error:@"%@: remove channel subscription failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+            ARTLogError(self->_logger, @"%@: remove channel subscription failed (%@)", NSStringFromClass(self.class), error.localizedDescription);
             callback([ARTErrorInfo createFromNSError:error]);
         }
         else {
-            [self->_logger error:@"%@: remove channel subscription failed with status code %ld", NSStringFromClass(self.class), (long)response.statusCode];
+            ARTLogError(self->_logger, @"%@: remove channel subscription failed with status code %ld", NSStringFromClass(self.class), (long)response.statusCode);
             NSString *plain = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
             callback([ARTErrorInfo createWithCode:response.statusCode*100 status:response.statusCode message:[plain art_shortString]]);
         }

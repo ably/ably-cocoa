@@ -44,7 +44,7 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
         ARTOSReachability *strongSelf = weakSelf;
         if (strongSelf) {
             BOOL reachable = (flags & kSCNetworkReachabilityFlagsReachable) != 0;
-            [strongSelf->_logger info:@"Reachability: host %@ is reachable: %@", strongSelf->_host, reachable ? @"true" : @"false"];
+            ARTLogInfo(strongSelf->_logger, @"Reachability: host %@ is reachable: %@", strongSelf->_host, reachable ? @"true" : @"false");
             dispatch_async(strongSelf->_queue, ^{
                 if (callback) {
                     callback(reachable);
@@ -63,17 +63,17 @@ static void ARTOSReachability_Callback(SCNetworkReachabilityRef target, SCNetwor
     };
     if (SCNetworkReachabilitySetCallback(_reachabilityRef, ARTOSReachability_Callback, &context)) {
         if (SCNetworkReachabilityScheduleWithRunLoop(_reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode)) {
-            [_logger info:@"Reachability: started listening for host %@", _host];
+            ARTLogInfo(_logger, @"Reachability: started listening for host %@", _host);
         }
         else {
-            [_logger warn:@"Reachability: failed starting listener for host %@", _host];
+            ARTLogWarn(_logger, @"Reachability: failed starting listener for host %@", _host);
         }
     }
 }
 
 - (void)off {
     if (_reachabilityRef != NULL) {
-        [_logger info:@"Reachability: stopped listening for host %@", _host];
+        ARTLogInfo(_logger, @"Reachability: stopped listening for host %@", _host);
         SCNetworkReachabilityUnscheduleFromRunLoop(_reachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
         SCNetworkReachabilitySetCallback(_reachabilityRef, NULL, NULL);
         CFRelease(_reachabilityRef);

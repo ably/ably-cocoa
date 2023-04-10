@@ -30,10 +30,10 @@
     NSString *value = [self keychainGetPasswordForService:ARTDeviceSecretKey account:(NSString *)deviceId error:&error];
 
     if ([error code] == errSecItemNotFound) {
-        [_logger debug:__FILE__ line:__LINE__ message:@"Device Secret not found"];
+        ARTLogDebug(_logger, @"Device Secret not found");
     }
     else if (error) {
-        [_logger error:@"Device Secret couldn't be read (%@)", [error localizedDescription]];
+        ARTLogError(_logger, @"Device Secret couldn't be read (%@)", [error localizedDescription]);
     }
 
     return value;
@@ -45,17 +45,17 @@
         [self keychainDeletePasswordForService:ARTDeviceSecretKey account:(NSString *)deviceId error:&error];
 
         if ([error code] == errSecItemNotFound) {
-            [_logger warn:@"Device Secret can't be deleted because it doesn't exist"];
+            ARTLogWarn(_logger, @"Device Secret can't be deleted because it doesn't exist");
         }
         else if (error) {
-            [_logger error:@"Device Secret couldn't be updated (%@)", [error localizedDescription]];
+            ARTLogError(_logger, @"Device Secret couldn't be updated (%@)", [error localizedDescription]);
         }
     }
     else {
         [self keychainSetPassword:value forService:ARTDeviceSecretKey account:(NSString *)deviceId error:&error];
 
         if (error) {
-            [_logger error:@"Device Secret couldn't be updated (%@)", [error localizedDescription]];
+            ARTLogError(_logger, @"Device Secret couldn't be updated (%@)", [error localizedDescription]);
         }
     }
 }

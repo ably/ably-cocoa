@@ -199,7 +199,7 @@ dispatch_async(_queue, ^{
             message = [message decodeWithEncoder:self->_channel.dataEncoder error:&decodeError];
             if (decodeError != nil) {
                 ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:ARTErrorUnableToDecodeMessage message:decodeError.localizedFailureReason] prepend:@"Failed to decode data: "];
-                [self->_channel.logger error:@"RS:%p %@", self->_channel.rest, errorInfo.message];
+                ARTLogError(self->_channel.logger, @"RS:%p %@", self->_channel.rest, errorInfo.message);
             }
             return message;
         }];
