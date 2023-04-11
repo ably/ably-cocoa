@@ -1,5 +1,7 @@
 #import "ARTInternalLogBackend.h"
 #import "ARTVersion2Log.h"
+#import "ARTClientOptions.h"
+#import "ARTLogAdapter.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -19,6 +21,24 @@ NS_ASSUME_NONNULL_END
     }
 
     return self;
+}
+
+- (instancetype)initWithClientOptions:(ARTClientOptions *)clientOptions {
+    ARTLog *legacyLogger;
+    if (clientOptions.logHandler) {
+        legacyLogger = clientOptions.logHandler;
+    }
+    else {
+        legacyLogger = [[ARTLog alloc] init];
+    }
+
+    if (clientOptions.logLevel != ARTLogLevelNone) {
+        legacyLogger.logLevel = clientOptions.logLevel;
+    }
+
+    id<ARTVersion2Log> underlyingLogger = [[ARTLogAdapter alloc] initWithLogger:legacyLogger];
+
+    return [self initWithLogger:underlyingLogger];
 }
 
 // MARK: Logging

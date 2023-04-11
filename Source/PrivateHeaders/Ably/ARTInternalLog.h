@@ -3,6 +3,7 @@
 
 @protocol ARTInternalLogBackend;
 @protocol ARTVersion2Log;
+@class ARTClientOptions;
 
 /**
  Logs a message to a given instance of `ARTInternalLog`. The `ARTLogVerbose` etc macros wrap this; favour using those.
@@ -38,6 +39,11 @@ NS_SWIFT_NAME(InternalLog)
  A convenience initializer which creates a logger whose backend is an instance of `ARTDefaultInternalLogBackend` wrapping the given logger.
  */
 - (instancetype)initWithLogger:(id<ARTVersion2Log>)logger;
+/**
+ A convenience initializer which TODO
+ Also TODO should we be updating tests etc which use initWithLogger?
+ */
+- (instancetype)initWithClientOptions:(ARTClientOptions *)clientOptions;
 - (instancetype)init NS_UNAVAILABLE;
 
 // This method passes the arguments through to the logger’s backend. It is not directly used by the internals of the SDK, but we need it because some of our Swift tests (which can’t access the variadic method below) want to be able to call a logging method on an instance of `ARTInternalLog`.

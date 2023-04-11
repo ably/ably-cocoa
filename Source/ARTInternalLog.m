@@ -27,6 +27,11 @@ NS_ASSUME_NONNULL_END
     return [self initWithBackend:backend];
 }
 
+- (instancetype)initWithClientOptions:(ARTClientOptions *)clientOptions {
+    const id<ARTInternalLogBackend> backend = [[ARTDefaultInternalLogBackend alloc] initWithClientOptions:clientOptions];
+    return [self initWithBackend:backend];
+}
+
 // MARK: Logging
 
 - (void)log:(NSString *)message withLevel:(ARTLogLevel)level file:(const char *)fileName line:(NSInteger)line {

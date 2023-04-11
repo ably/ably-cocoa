@@ -172,20 +172,7 @@ NS_ASSUME_NONNULL_END
         _realtime = realtime;
         _options = [options copy];
 
-        ARTLog *legacyLogger;
-        if (options.logHandler) {
-            legacyLogger = options.logHandler;
-        }
-        else {
-            legacyLogger = [[ARTLog alloc] init];
-        }
-
-        if (options.logLevel != ARTLogLevelNone) {
-            legacyLogger.logLevel = options.logLevel;
-        }
-
-        id<ARTVersion2Log> underlyingLogger = [[ARTLogAdapter alloc] initWithLogger:legacyLogger];
-        _logger = [[ARTInternalLog alloc] initWithLogger:underlyingLogger];
+        _logger = [[ARTInternalLog alloc] initWithClientOptions:options];
 
         _queue = options.internalDispatchQueue;
         _userQueue = options.dispatchQueue;

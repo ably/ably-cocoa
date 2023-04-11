@@ -2,6 +2,7 @@
 #import <Ably/ARTLog.h>
 
 @protocol ARTVersion2Log;
+@class ARTClientOptions;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -37,6 +38,10 @@ NS_SWIFT_NAME(DefaultInternalLogBackend)
  Creates a logger which forwards its generated messages to the given logger.
  */
 - (instancetype)initWithLogger:(id<ARTVersion2Log>)logger NS_DESIGNATED_INITIALIZER;
+/**
+ A convenience initializer which TODO
+ */
+- (instancetype)initWithClientOptions:(ARTClientOptions *)clientOptions;
 - (instancetype)init NS_UNAVAILABLE;
 
 @end
