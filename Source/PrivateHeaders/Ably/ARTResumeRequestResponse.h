@@ -47,11 +47,11 @@ NS_SWIFT_NAME(ResumeRequestResponse)
 /**
  Creates an `ARTResumeRequestResponse` describing the resume request response that the Realtime system has communicated through the use of a protocol message.
 
- @param currentConnectionID The ID of the connection that we are trying to resume. `nil` in case of a new connection.
+ @param currentConnectionID The ID of the connection that we are trying to resume.
  @param protocolMessage The first protocol message received on a transport which is trying to resume a connection with ID `currentConnectionID`.
  @param errorChecker An error checker which will be used to check whether an error is a token error.
  */
-- (instancetype)initWithCurrentConnectionID:(nullable NSString *)currentConnectionID
+- (instancetype)initWithCurrentConnectionID:(NSString *)currentConnectionID
                             protocolMessage:(ARTProtocolMessage *)protocolMessage
                                errorChecker:(id<ARTErrorChecker>)errorChecker NS_DESIGNATED_INITIALIZER;
 
