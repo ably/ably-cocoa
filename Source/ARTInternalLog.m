@@ -1,36 +1,46 @@
 #import "ARTInternalLog.h"
+#import "ARTInternalLogCore.h"
 #import "ARTVersion2Log.h"
+
+NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTInternalLog ()
 
-@property (nonatomic, readonly) id<ARTVersion2Log> logger;
+@property (nonatomic, readonly) id<ARTInternalLogCore> core;
 
 @end
 
+NS_ASSUME_NONNULL_END
+
 @implementation ARTInternalLog
 
-- (instancetype)initWithLogger:(id<ARTVersion2Log>)logger {
+- (instancetype)initWithCore:(id<ARTInternalLogCore>)core {
     if (self = [super init]) {
-        _logger = logger;
+        _core = core;
     }
 
     return self;
 }
 
+- (instancetype)initWithLogger:(id<ARTVersion2Log>)logger {
+    const id<ARTInternalLogCore> core = [[ARTDefaultInternalLogCore alloc] initWithLogger:logger];
+    return [self initWithCore:core];
+}
+
 // MARK: Logging
 
 - (void)log:(NSString *)message withLevel:(ARTLogLevel)level {
-    [self.logger log:message withLevel:level];
+    [self.core log:message withLevel:level];
 }
 
 // MARK: Log level
 
 - (ARTLogLevel)logLevel {
-    return self.logger.logLevel;
+    return self.core.logLevel;
 }
 
 - (void)setLogLevel:(ARTLogLevel)logLevel {
-    self.logger.logLevel = logLevel;
+    self.core.logLevel = logLevel;
 }
 
 // MARK: Shorthand
