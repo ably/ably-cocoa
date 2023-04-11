@@ -2,7 +2,7 @@
 #import "Ably_Tests-Swift.h"
 
 /**
- This file exists for testing `ARTInternalLog`’s variadic methods, which are only accessible from Objective-C. The rest of this class’s functionality should be tested in `InternalLogTests.swift`.
+ This file is written in Objective-C because it tests `ARTInternalLog`’s variadic methods, which are not accessible from Swift.
  */
 @interface ARTInternalLogTests : XCTestCase
 
@@ -11,9 +11,9 @@
 @implementation ARTInternalLogTests
 
 - (void)test_verbose_vararg {
-    ARTMockVersion2Log *const mock = [[ARTMockVersion2Log alloc] init];
+    ARTMockInternalLogBackend *const mock = [[ARTMockInternalLogBackend alloc] init];
     mock.logLevel = ARTLogLevelVerbose;
-    ARTInternalLog *const internalLog = [[ARTInternalLog alloc] initWithLogger:mock];
+    ARTInternalLog *const internalLog = [[ARTInternalLog alloc] initWithBackend:mock];
 
     [internalLog verbose:@"Hello %@", @"there"];
 
@@ -22,9 +22,9 @@
 }
 
 - (void)test_verbose_varargWithFileAndLine {
-    ARTMockVersion2Log *const mock = [[ARTMockVersion2Log alloc] init];
+    ARTMockInternalLogBackend *const mock = [[ARTMockInternalLogBackend alloc] init];
     mock.logLevel = ARTLogLevelVerbose;
-    ARTInternalLog *const internalLog = [[ARTInternalLog alloc] initWithLogger:mock];
+    ARTInternalLog *const internalLog = [[ARTInternalLog alloc] initWithBackend:mock];
 
     [internalLog verbose:"foo.m" line:123 message:@"Hello %@", @"there"];
 
@@ -33,9 +33,9 @@
 }
 
 - (void)test_debug_vararg {
-    ARTMockVersion2Log *const mock = [[ARTMockVersion2Log alloc] init];
+    ARTMockInternalLogBackend *const mock = [[ARTMockInternalLogBackend alloc] init];
     mock.logLevel = ARTLogLevelDebug;
-    ARTInternalLog *const internalLog = [[ARTInternalLog alloc] initWithLogger:mock];
+    ARTInternalLog *const internalLog = [[ARTInternalLog alloc] initWithBackend:mock];
 
     [internalLog debug:@"Hello %@", @"there"];
 
@@ -44,9 +44,9 @@
 }
 
 - (void)test_debug_varargWithFileAndLine {
-    ARTMockVersion2Log *const mock = [[ARTMockVersion2Log alloc] init];
+    ARTMockInternalLogBackend *const mock = [[ARTMockInternalLogBackend alloc] init];
     mock.logLevel = ARTLogLevelDebug;
-    ARTInternalLog *const internalLog = [[ARTInternalLog alloc] initWithLogger:mock];
+    ARTInternalLog *const internalLog = [[ARTInternalLog alloc] initWithBackend:mock];
 
     [internalLog debug:"foo.m" line:123 message:@"Hello %@", @"there"];
 
@@ -55,9 +55,9 @@
 }
 
 - (void)test_info_vararg {
-    ARTMockVersion2Log *const mock = [[ARTMockVersion2Log alloc] init];
+    ARTMockInternalLogBackend *const mock = [[ARTMockInternalLogBackend alloc] init];
     mock.logLevel = ARTLogLevelInfo;
-    ARTInternalLog *const internalLog = [[ARTInternalLog alloc] initWithLogger:mock];
+    ARTInternalLog *const internalLog = [[ARTInternalLog alloc] initWithBackend:mock];
 
     [internalLog info:@"Hello %@", @"there"];
 
@@ -66,9 +66,9 @@
 }
 
 - (void)test_warn_vararg {
-    ARTMockVersion2Log *const mock = [[ARTMockVersion2Log alloc] init];
+    ARTMockInternalLogBackend *const mock = [[ARTMockInternalLogBackend alloc] init];
     mock.logLevel = ARTLogLevelWarn;
-    ARTInternalLog *const internalLog = [[ARTInternalLog alloc] initWithLogger:mock];
+    ARTInternalLog *const internalLog = [[ARTInternalLog alloc] initWithBackend:mock];
 
     [internalLog warn:@"Hello %@", @"there"];
 
@@ -77,9 +77,9 @@
 }
 
 - (void)test_error_vararg {
-    ARTMockVersion2Log *const mock = [[ARTMockVersion2Log alloc] init];
+    ARTMockInternalLogBackend *const mock = [[ARTMockInternalLogBackend alloc] init];
     mock.logLevel = ARTLogLevelError;
-    ARTInternalLog *const internalLog = [[ARTInternalLog alloc] initWithLogger:mock];
+    ARTInternalLog *const internalLog = [[ARTInternalLog alloc] initWithBackend:mock];
 
     [internalLog error:@"Hello %@", @"there"];
 
