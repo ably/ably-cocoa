@@ -2,6 +2,39 @@ import XCTest
 import Ably.Private
 
 class DefaultInternalLogCoreTests: XCTestCase {
+    func test_initWithClientOptions_whenClientOptionsLogLevelIsNotNone() throws {
+        // Given: client options whose logLevel is .verbose (arbitrarily chosen, not .none), and whose logHandler has logLevel .info (arbitrarily chosen, not equal to .verbose)
+        let clientOptions = ARTClientOptions()
+        clientOptions.logLevel = .verbose
+        clientOptions.logHandler.logLevel = .info
+
+        // When: we create a DefaultInternalLogCore from these client options
+        let core = DefaultInternalLogCore(clientOptions: clientOptions)
+
+        // Then: the created object wraps a LogAdapter instance, which wraps the client options’ logHandler, and the client options’s logHandler’s logLevel gets set to match the client options’ logLevel
+        let adapter = try XCTUnwrap(core.logger as? LogAdapter)
+        let logger = adapter.logger
+        XCTAssertEqual(logger, clientOptions.logHandler)
+        XCTAssertEqual(clientOptions.logHandler.logLevel, .verbose)
+    }
+
+    func test_initWithClientOptions_whenClientOptionsLogLevelIsNone() throws {
+        // Given: client options whose logLevel is .none, and whose logHandler has logLevel .info (arbitrarily chosen, not equal to .none)
+
+        let clientOptions = ARTClientOptions()
+        clientOptions.logLevel = .none
+        clientOptions.logHandler.logLevel = .info
+
+        // When: we create a DefaultInternalLogCore from these client options
+        let core = DefaultInternalLogCore(clientOptions: clientOptions)
+
+        // Then: the created object wraps a LogAdapter instance, which wraps the client options’ logHandler, and the client options’s logHandler’s logLevel does not get changed
+        let adapter = try XCTUnwrap(core.logger as? LogAdapter)
+        let logger = adapter.logger
+        XCTAssertEqual(logger, clientOptions.logHandler)
+        XCTAssertEqual(clientOptions.logHandler.logLevel, .info)
+    }
+
     func test_logMessage() {
         let mock = MockVersion2Log()
         let core = DefaultInternalLogCore(logger: mock)

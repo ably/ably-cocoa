@@ -1,15 +1,8 @@
 #import "ARTInternalLogCore.h"
+#import "ARTInternalLogCore+Testing.h"
 #import "ARTVersion2Log.h"
-
-NS_ASSUME_NONNULL_BEGIN
-
-@interface ARTDefaultInternalLogCore ()
-
-@property (nonatomic, readonly) id<ARTVersion2Log> logger;
-
-@end
-
-NS_ASSUME_NONNULL_END
+#import "ARTClientOptions.h"
+#import "ARTLogAdapter.h"
 
 @implementation ARTDefaultInternalLogCore
 
@@ -19,6 +12,15 @@ NS_ASSUME_NONNULL_END
     }
 
     return self;
+}
+
+- (instancetype)initWithClientOptions:(ARTClientOptions *)options {
+    if (options.logLevel != ARTLogLevelNone) {
+        options.logHandler.logLevel = options.logLevel;
+    }
+
+    id<ARTVersion2Log> logger = [[ARTLogAdapter alloc] initWithLogger:options.logHandler];
+    return [self initWithLogger:logger];
 }
 
 // MARK: Logging

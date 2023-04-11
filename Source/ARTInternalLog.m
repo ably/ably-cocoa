@@ -27,6 +27,11 @@ NS_ASSUME_NONNULL_END
     return [self initWithCore:core];
 }
 
+- (instancetype)initWithClientOptions:(ARTClientOptions *)clientOptions {
+    const id<ARTInternalLogCore> core = [[ARTDefaultInternalLogCore alloc] initWithClientOptions:clientOptions];
+    return [self initWithCore:core];
+}
+
 // MARK: Logging
 
 - (void)log:(NSString *)message withLevel:(ARTLogLevel)level file:(const char *)fileName line:(NSInteger)line {

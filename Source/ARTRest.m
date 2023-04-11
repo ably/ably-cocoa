@@ -161,14 +161,7 @@
 
         _realtime = realtime;
         _options = [options copy];
-
-        if (options.logLevel != ARTLogLevelNone) {
-            options.logHandler.logLevel = options.logLevel;
-        }
-
-        id<ARTVersion2Log> underlyingLogger = [[ARTLogAdapter alloc] initWithLogger:options.logHandler];
-        _logger = [[ARTInternalLog alloc] initWithLogger:underlyingLogger];
-
+        _logger = [[ARTInternalLog alloc] initWithClientOptions:options];
         _queue = options.internalDispatchQueue;
         _userQueue = options.dispatchQueue;
 #if TARGET_OS_IOS

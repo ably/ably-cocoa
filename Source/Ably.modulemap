@@ -96,10 +96,12 @@ framework module Ably {
         header "ARTVersion2Log.h"
         header "ARTInternalLog.h"
         header "ARTLogAdapter.h"
+        header "ARTLogAdapter+Testing.h"
         header "ARTDeviceIdentityTokenDetails+Private.h"
         header "ARTHttp.h"
         header "ARTLocalDeviceStorage.h"
         header "ARTPresenceMap.h"
         header "ARTInternalLogCore.h"
+        header "ARTInternalLogCore+Testing.h"
     }
 }

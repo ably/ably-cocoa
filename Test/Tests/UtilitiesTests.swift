@@ -203,7 +203,7 @@ class UtilitiesTests: XCTestCase {
 
         let options = AblyTests.commonAppSetup()
         let rest = ARTRest(options: options)
-        let testHTTPExecutor = TestProxyHTTPExecutor(InternalLog(logger: LogAdapter(logger: options.logHandler)))
+        let testHTTPExecutor = TestProxyHTTPExecutor(.init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
         let channel = rest.channels.get(uniqueChannelName())
 

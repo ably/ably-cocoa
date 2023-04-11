@@ -2,6 +2,7 @@
 #import <Ably/ARTLog.h>
 
 @protocol ARTVersion2Log;
+@class ARTClientOptions;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -37,6 +38,12 @@ NS_SWIFT_NAME(DefaultInternalLogCore)
  Creates a logger which forwards its generated messages to the given logger.
  */
 - (instancetype)initWithLogger:(id<ARTVersion2Log>)logger NS_DESIGNATED_INITIALIZER;
+/**
+ A convenience initializer which creates a logger initialized with an instance of `ARTLogAdapter` which wraps the given client options’ `logHandler`.
+
+ Also, if the client options’ `logLevel` is anything other than `ARTLogLevelNone`, this initializer will set the client options’ `logHandler`’s `logLevel` such that it matches the client options’ `logLevel`. (We offer no judgement here on whether this is the right thing to do or the right place to do it; this is pre-existing behaviour simply moved from elsewhere in the codebase.)
+ */
+- (instancetype)initWithClientOptions:(ARTClientOptions *)clientOptions;
 - (instancetype)init NS_UNAVAILABLE;
 
 @end
