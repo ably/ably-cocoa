@@ -48,7 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonatomic) ARTHttp *http;
 @property (readwrite, assign, nonatomic) int fallbackCount;
 
-- (instancetype)initWithOptions:(ARTClientOptions *)options realtime:(ARTRealtimeInternal *_Nullable)realtime;
+- (instancetype)initWithOptions:(ARTClientOptions *)options realtime:(ARTRealtimeInternal *_Nullable)realtime logger:(ARTInternalLog *)logger;
 
 - (nullable NSObject<ARTCancellable> *)_time:(ARTDateTimeCallback)callback;
 
