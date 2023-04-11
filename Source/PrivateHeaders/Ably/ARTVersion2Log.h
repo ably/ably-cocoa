@@ -19,8 +19,6 @@ NS_SWIFT_NAME(Version2Log)
 
 - (void)log:(NSString *)message withLevel:(ARTLogLevel)level;
 
-- (void)logWithError:(ARTErrorInfo *)error;
-
 @end
 
 NS_ASSUME_NONNULL_END

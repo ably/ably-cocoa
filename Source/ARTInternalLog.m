@@ -23,10 +23,6 @@
     [self.logger log:message withLevel:level];
 }
 
-- (void)logWithError:(ARTErrorInfo *)error {
-    [self.logger logWithError:error];
-}
-
 // MARK: Log level
 
 - (ARTLogLevel)logLevel {

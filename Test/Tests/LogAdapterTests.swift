@@ -4,14 +4,9 @@ import Ably.Private
 class LogAdapterTests: XCTestCase {
     class MockARTLog: ARTLog {
         var lastReceivedLogMessageArguments: (message: String, level: ARTLogLevel)?
-        var lastReceivedLogErrorArgument: ARTErrorInfo?
 
         override func log(_ message: String, with level: ARTLogLevel) {
             lastReceivedLogMessageArguments = (message: message, level: level)
-        }
-
-        override func logWithError(_ error: ARTErrorInfo) {
-            lastReceivedLogErrorArgument = error
         }
     }
 
@@ -28,17 +23,6 @@ class LogAdapterTests: XCTestCase {
             XCTAssertEqual(logged.level, level)
             XCTAssertEqual(logged.message, message)
         }
-    }
-
-    func test_logError() {
-        let underlyingLogger = MockARTLog()
-        let logger = LogAdapter(logger: underlyingLogger)
-
-        let error = ARTErrorInfo.createUnknownError()
-        logger.logWithError(error)
-
-        let logged = underlyingLogger.lastReceivedLogErrorArgument!
-        XCTAssertEqual(logged, error)
     }
 
     func test_logLevel() {
