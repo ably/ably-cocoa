@@ -205,7 +205,7 @@ NS_ASSUME_NONNULL_END
         NSAssert(options, @"ARTRealtime: No options provided");
         
         _logger = [[ARTInternalLog alloc] initWithClientOptions:options];
-        _rest = [[ARTRestInternal alloc] initWithOptions:options realtime:self];
+        _rest = [[ARTRestInternal alloc] initWithOptions:options realtime:self logger:_logger];
         _userQueue = _rest.userQueue;
         _queue = _rest.queue;
         _internalEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];

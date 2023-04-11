@@ -161,17 +161,18 @@ NS_ASSUME_NONNULL_END
 @synthesize logger = _logger;
 
 - (instancetype)initWithOptions:(ARTClientOptions *)options {
-    return [self initWithOptions:options realtime:nil];
+    ARTInternalLog *const logger = [[ARTInternalLog alloc] initWithClientOptions:options];
+    return [self initWithOptions:options realtime:nil logger:logger];
 }
 
-- (instancetype)initWithOptions:(ARTClientOptions *)options realtime:(ARTRealtimeInternal *_Nullable)realtime {
+- (instancetype)initWithOptions:(ARTClientOptions *)options realtime:(ARTRealtimeInternal *_Nullable)realtime logger:(ARTInternalLog *)logger {
     self = [super init];
     if (self) {
         NSAssert(options, @"ARTRest: No options provided");
 
         _realtime = realtime;
         _options = [options copy];
-        _logger = [[ARTInternalLog alloc] initWithClientOptions:options];
+        _logger = logger;
         _queue = options.internalDispatchQueue;
         _userQueue = options.dispatchQueue;
 #if TARGET_OS_IOS
