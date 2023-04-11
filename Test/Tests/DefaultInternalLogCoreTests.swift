@@ -9,21 +9,6 @@ class DefaultInternalLogCoreTests: XCTestCase {
         let logLevels: [ARTLogLevel] = [.verbose, .debug, .info, .warn, .error, .none]
         for (index, level) in logLevels.enumerated() {
             let message = "Message \(index)"
-            core.log(message, with: level)
-
-            let logged = mock.lastReceivedLogMessageArguments!
-            XCTAssertEqual(logged.level, level)
-            XCTAssertEqual(logged.message, message)
-        }
-    }
-
-    func test_logMessageWithFileAndLine() {
-        let mock = MockVersion2Log()
-        let core = DefaultInternalLogCore(logger: mock)
-
-        let logLevels: [ARTLogLevel] = [.verbose, .debug, .info, .warn, .error, .none]
-        for (index, level) in logLevels.enumerated() {
-            let message = "Message \(index)"
             core.log(message, with: level, file: "/foo/bar/myFile.m", line: 123)
 
             let logged = mock.lastReceivedLogMessageArguments!

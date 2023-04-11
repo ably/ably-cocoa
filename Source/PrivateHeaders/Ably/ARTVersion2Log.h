@@ -17,8 +17,6 @@ NS_SWIFT_NAME(Version2Log)
 
 @property (nonatomic) ARTLogLevel logLevel;
 
-- (void)log:(NSString *)message withLevel:(ARTLogLevel)level;
-
 /**
  - Parameters:
    - fileName: The base name (e.g. given an absolute path `/foo/bar/baz`, its base name is `baz`) of the file from which the log message was emitted.

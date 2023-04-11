@@ -17,8 +17,6 @@ NS_ASSUME_NONNULL_BEGIN
 NS_SWIFT_NAME(InternalLogCore)
 @protocol ARTInternalLogCore
 
-- (void)log:(NSString *)message withLevel:(ARTLogLevel)level;
-
 /**
  - Parameters:
    - fileName: The absolute path of the file from which the log message was emitted (for example, as returned by the `__FILE__` macro).

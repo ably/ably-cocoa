@@ -21,13 +21,9 @@ NS_ASSUME_NONNULL_END
     return self;
 }
 
-- (void)log:(NSString *)message withLevel:(ARTLogLevel)level {
-    [self.logger log:message withLevel:level];
-}
-
 - (void)log:(NSString *)message withLevel:(ARTLogLevel)level file:(NSString *)fileName line:(NSInteger)line {
     NSString *const augmentedMessage = [NSString stringWithFormat:@"(%@:%ld) %@", fileName, (long)line, message];
-    [self log:augmentedMessage withLevel:level];
+    [self.logger log:augmentedMessage withLevel:level];
 }
 
 - (ARTLogLevel)logLevel {
