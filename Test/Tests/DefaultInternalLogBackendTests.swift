@@ -4,21 +4,6 @@ import Ably.Private
 class DefaultInternalLogBackendTests: XCTestCase {
     func test_logMessage() {
         let mock = MockVersion2Log()
-        let backend = DefaultInternalLogBackend(logger: mock)
-
-        let logLevels: [ARTLogLevel] = [.verbose, .debug, .info, .warn, .error, .none]
-        for (index, level) in logLevels.enumerated() {
-            let message = "Message \(index)"
-            backend.log(message, with: level)
-
-            let logged = mock.lastReceivedLogMessageArguments!
-            XCTAssertEqual(logged.level, level)
-            XCTAssertEqual(logged.message, message)
-        }
-    }
-
-    func test_logMessageWithFileAndLine() {
-        let mock = MockVersion2Log()
         let internalLog = DefaultInternalLogBackend(logger: mock)
 
         let logLevels: [ARTLogLevel] = [.verbose, .debug, .info, .warn, .error, .none]

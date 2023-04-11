@@ -48,15 +48,6 @@ NS_SWIFT_NAME(InternalLog)
 
 @property (nonatomic, assign) ARTLogLevel logLevel;
 
-// Copied from ARTLog (Shorthand)
-- (void)verbose:(NSString *)format, ... NS_FORMAT_FUNCTION(1,2);
-- (void)verbose:(const char *)fileName line:(NSUInteger)line message:(NSString *)message, ... NS_FORMAT_FUNCTION(3,4);
-- (void)debug:(NSString *)format, ... NS_FORMAT_FUNCTION(1,2);
-- (void)debug:(const char *)fileName line:(NSUInteger)line message:(NSString *)message, ... NS_FORMAT_FUNCTION(3,4);
-- (void)info:(NSString *)format, ... NS_FORMAT_FUNCTION(1,2);
-- (void)warn:(NSString *)format, ... NS_FORMAT_FUNCTION(1,2);
-- (void)error:(NSString *)format, ... NS_FORMAT_FUNCTION(1,2);
-
 @end
 
 NS_ASSUME_NONNULL_END
