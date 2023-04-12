@@ -838,27 +838,24 @@ NS_ASSUME_NONNULL_END
 
     switch (self.connection.state_nosync) {
         case ARTRealtimeConnecting: {
-            ARTResumeRequestResponse *response = [[ARTResumeRequestResponse alloc] initWithCurrentConnectionID:_connection.id_nosync
-                                                                                               protocolMessage:message
-                                                                                                  errorChecker:[[ARTDefaultErrorChecker alloc] init]];
-            if (response.type == ARTResumeRequestResponseTypeValid) {
-                ARTLogDebug(self.logger, @"RT:%p connection \"%@\" has reconnected and resumed successfully", self, message.connectionId);
-            }
-            else if (response.type == ARTResumeRequestResponseTypeInvalid) {
-                ARTLogWarn(self.logger, @"RT:%p connection \"%@\" has resumed with non-fatal error \"%@\"", self, message.connectionId, message.error.message);
-                [self resetSerials];
-            }
-            else if (response.type == ARTResumeRequestResponseTypeFatalError || response.type == ARTResumeRequestResponseTypeTokenError) {
-                [self resetSerials];
-            }
-            
-            // Do not reattach on a completely new connection
-            const BOOL isNewConnection = !self.connection.id_nosync && !message.error && !_connectionLostAt;
-            if (!isNewConnection) {
-                // RTN15c6, RTN15c7 (reattach channels regardless resume success or failure)
+            const BOOL isResuming = self.connection.id_nosync != nil || message.error != nil || _connectionLostAt != nil;
+            if (isResuming) {
+                ARTResumeRequestResponse *response = [[ARTResumeRequestResponse alloc] initWithCurrentConnectionID:_connection.id_nosync protocolMessage:message errorChecker:[[ARTDefaultErrorChecker alloc] init]];
+                switch (response.type) {
+                    case ARTResumeRequestResponseTypeValid:
+                        ARTLogDebug(self.logger, @"RT:%p connection \"%@\" has reconnected and resumed successfully", self, message.connectionId);
+                        break;
+                    case ARTResumeRequestResponseTypeInvalid:
+                        ARTLogWarn(self.logger, @"RT:%p connection \"%@\" has resumed with non-fatal error \"%@\"", self, message.connectionId, message.error.message);
+                        [self resetSerials];
+                        break;
+                    case ARTResumeRequestResponseTypeFatalError:
+                    case ARTResumeRequestResponseTypeTokenError:
+                    case ARTResumeRequestResponseTypeUnknown:
+                        [self resetSerials];
+                }
                 [self reattachChannelsWithReason:message.error];
             }
-            
             [self.connection setId:message.connectionId];
             [self.connection setKey:message.connectionKey];
             [self.connection setMaxMessageSize:message.connectionDetails.maxMessageSize];
