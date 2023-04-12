@@ -81,31 +81,31 @@ extern NSString *const ARTSRHTTPResponseErrorKey;
 
  If `nil` and `delegateOperationQueue` is `nil`, the socket uses main queue for performing all delegate method calls.
  */
-@property (nullable, nonatomic, strong) dispatch_queue_t delegateDispatchQueue;
+@property (nullable, nonatomic) dispatch_queue_t delegateDispatchQueue;
 
 /**
  An operation queue for scheduling the delegate calls.
 
  If `nil` and `delegateOperationQueue` is `nil`, the socket uses main queue for performing all delegate method calls.
  */
-@property (nullable, nonatomic, strong) NSOperationQueue *delegateOperationQueue;
+@property (nullable, nonatomic) NSOperationQueue *delegateOperationQueue;
 
 /**
  Current ready state of the socket. Default: `ARTSR_CONNECTING`.
 
  This property is Key-Value Observable and fully thread-safe.
  */
-@property (atomic, assign, readonly) ARTSRReadyState readyState;
+@property (atomic, readonly) ARTSRReadyState readyState;
 
 /**
  An instance of `NSURL` that this socket connects to.
  */
-@property (nullable, nonatomic, strong, readonly) NSURL *url;
+@property (nullable, nonatomic, readonly) NSURL *url;
 
 /**
  All HTTP headers that were received by socket or `nil` if none were received so far.
  */
-@property (nullable, nonatomic, assign, readonly) CFHTTPMessageRef receivedHTTPHeaders;
+@property (nullable, nonatomic, readonly) CFHTTPMessageRef receivedHTTPHeaders;
 
 /**
  Array of `NSHTTPCookie` cookies to apply to the connection.
@@ -121,7 +121,7 @@ extern NSString *const ARTSRHTTPResponseErrorKey;
  A boolean value indicating whether this socket will allow connection without SSL trust chain evaluation.
  For DEBUG builds this flag is ignored, and SSL connections are allowed regardless of the certificate trust configuration
  */
-@property (nonatomic, assign, readonly) BOOL allowsUntrustedSSLCertificates;
+@property (nonatomic, readonly) BOOL allowsUntrustedSSLCertificates;
 
 ///--------------------------------------
 #pragma mark - Constructors

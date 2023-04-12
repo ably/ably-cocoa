@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTJsonLikeEncoder : NSObject <ARTEncoder>
 
-@property (nonatomic, strong, nullable) id<ARTJsonLikeEncoderDelegate> delegate;
+@property (nonatomic, nullable) id<ARTJsonLikeEncoderDelegate> delegate;
 
 - (instancetype)initWithDelegate:(id<ARTJsonLikeEncoderDelegate>)delegate;
 - (instancetype)initWithLogger:(ARTInternalLog *)logger delegate:(nullable id<ARTJsonLikeEncoderDelegate>)delegate;

@@ -10,7 +10,7 @@ extern NSString *const ARTPushActivationPendingEventsKey;
 
 @interface ARTPushActivationStateMachine ()
 
-@property (nonatomic, strong) ARTRestInternal *rest;
+@property (nonatomic) ARTRestInternal *rest;
 
 - (instancetype)initWithRest:(ARTRestInternal *)rest
                     delegate:(id<ARTPushRegistererDelegate, NSObject>)delegate NS_DESIGNATED_INITIALIZER;

@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithName:(NSString *)name withOptions:(ARTChannelOptions *)options andRest:(ARTRestInternal *)rest;
 
 @property (nonatomic, weak) ARTRestInternal *rest; // weak because rest owns self
-@property (nonatomic, strong) dispatch_queue_t queue;
+@property (nonatomic) dispatch_queue_t queue;
 
 @end
 

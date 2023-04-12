@@ -5,7 +5,7 @@
 
 @interface ARTHttp ()
 
-@property (readonly, strong, nonatomic) id<ARTURLSession> urlSession;
+@property (readonly, nonatomic) id<ARTURLSession> urlSession;
 
 @end
 

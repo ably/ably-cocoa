@@ -8,9 +8,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// :nodoc:
 @interface ARTQueuedMessage : NSObject
 
-@property (readonly, strong, nonatomic) ARTProtocolMessage *msg;
-@property (readonly, strong, nonatomic) NSMutableArray *sentCallbacks;
-@property (readonly, strong, nonatomic) NSMutableArray *ackCallbacks;
+@property (readonly, nonatomic) ARTProtocolMessage *msg;
+@property (readonly, nonatomic) NSMutableArray *sentCallbacks;
+@property (readonly, nonatomic) NSMutableArray *ackCallbacks;
 
 - (instancetype)initWithProtocolMessage:(ARTProtocolMessage *)msg sentCallback:(nullable ARTCallback)sentCallback ackCallback:(nullable ARTStatusCallback)ackCallback;
 

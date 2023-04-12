@@ -13,8 +13,8 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol ARTWebSocket <NSObject>
 
 @property (nonatomic, weak) id <ARTWebSocketDelegate> _Nullable delegate;
-@property (nullable, nonatomic, strong) dispatch_queue_t delegateDispatchQueue;
-@property (atomic, assign, readonly) ARTSRReadyState readyState;
+@property (nullable, nonatomic) dispatch_queue_t delegateDispatchQueue;
+@property (atomic, readonly) ARTSRReadyState readyState;
 
 - (instancetype)initWithURLRequest:(NSURLRequest *)request logger:(nullable ARTInternalLog *)logger;
 

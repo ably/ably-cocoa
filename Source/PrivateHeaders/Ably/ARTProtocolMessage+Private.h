@@ -16,12 +16,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTProtocolMessage ()
 
-@property (readwrite, assign, nonatomic) BOOL hasConnectionSerial;
-@property (readonly, assign, nonatomic) BOOL ackRequired;
+@property (readwrite, nonatomic) BOOL hasConnectionSerial;
+@property (readonly, nonatomic) BOOL ackRequired;
 
-@property (readonly, assign, nonatomic) BOOL hasPresence;
-@property (readonly, assign, nonatomic) BOOL hasBacklog;
-@property (readonly, assign, nonatomic) BOOL resumed;
+@property (readonly, nonatomic) BOOL hasPresence;
+@property (readonly, nonatomic) BOOL hasBacklog;
+@property (readonly, nonatomic) BOOL resumed;
 
 - (BOOL)mergeFrom:(ARTProtocolMessage *)msg;
 

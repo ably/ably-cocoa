@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTMessage : ARTBaseMessage
 
 /// The event name, if available
-@property (nullable, readwrite, strong, nonatomic) NSString *name;
+@property (nullable, readwrite, nonatomic) NSString *name;
 
 /**
  * Construct an `ARTMessage` object with an event name and payload.

@@ -36,7 +36,7 @@ NS_SWIFT_NAME(LogAdapter)
 /**
  `ARTLogAdapter` implements this `ARTVersion2Log` protocol requirement by forwarding the setter and getter calls to its underlying `ARTLog` instance.
  */
-@property (nonatomic, assign) ARTLogLevel logLevel;
+@property (nonatomic) ARTLogLevel logLevel;
 
 @end
 

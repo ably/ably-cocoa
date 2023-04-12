@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nullable) ARTChannelOptions *options;
 
 @property (readonly, getter=getLogger) ARTInternalLog *logger;
-@property (nonatomic, strong, readonly) ARTDataEncoder *dataEncoder;
+@property (nonatomic, readonly) ARTDataEncoder *dataEncoder;
 
 - (void)internalPostMessages:(id)data callback:(nullable ARTCallback)callback;
 - (BOOL)exceedMaxSize:(NSArray<ARTBaseMessage *> *)messages;

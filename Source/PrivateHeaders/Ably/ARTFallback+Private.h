@@ -6,7 +6,7 @@ extern void (^ARTFallback_shuffleArray)(NSMutableArray *);
 
 @interface ARTFallback ()
 
-@property (readwrite, strong, nonatomic) NSMutableArray<NSString *> *hosts;
+@property (readwrite, nonatomic) NSMutableArray<NSString *> *hosts;
 
 @end
 

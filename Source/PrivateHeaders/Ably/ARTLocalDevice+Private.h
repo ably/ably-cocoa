@@ -12,7 +12,7 @@ extern NSString *const ARTAPNSDeviceTokenKey;
 
 @interface ARTLocalDevice ()
 
-@property (strong, nonatomic) id<ARTDeviceStorage> storage;
+@property (nonatomic) id<ARTDeviceStorage> storage;
 
 + (ARTLocalDevice *)load:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage logger:(nullable ARTInternalLog *)logger;
 - (nullable NSString *)apnsDeviceToken;

@@ -7,7 +7,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTBaseMessage ()
 
-@property (nonatomic, assign, readonly) BOOL isIdEmpty;
+@property (nonatomic, readonly) BOOL isIdEmpty;
 
 - (id __nonnull)decodeWithEncoder:(ARTDataEncoder*)encoder error:(NSError *__nullable*__nullable)error;
 - (id __nonnull)encodeWithEncoder:(ARTDataEncoder*)encoder error:(NSError *__nullable*__nullable)error;

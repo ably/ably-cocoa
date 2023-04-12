@@ -13,7 +13,7 @@
 
 @interface ARTSRRunLoopThread ()
 
-@property (atomic, strong, readwrite) NSRunLoop *runLoop;
+@property (atomic, readwrite) NSRunLoop *runLoop;
 
 @end
 

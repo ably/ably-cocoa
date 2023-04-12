@@ -25,7 +25,7 @@ NS_SWIFT_NAME(InternalLog)
 
 - (void)log:(NSString *)message withLevel:(ARTLogLevel)level;
 
-@property (nonatomic, assign) ARTLogLevel logLevel;
+@property (nonatomic) ARTLogLevel logLevel;
 
 // Copied from ARTLog (Shorthand)
 - (void)verbose:(NSString *)format, ... NS_FORMAT_FUNCTION(1,2);

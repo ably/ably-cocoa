@@ -72,17 +72,17 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 
 @interface ARTSRWebSocket ()  <NSStreamDelegate>
 
-@property (atomic, assign, readwrite) ARTSRReadyState readyState;
+@property (atomic, readwrite) ARTSRReadyState readyState;
 
 // Specifies whether SSL trust chain should NOT be evaluated.
 // By default this flag is set to NO, meaning only secure SSL connections are allowed.
 // For DEBUG builds this flag is ignored, and SSL connections are allowed regardless
 // of the certificate trust configuration
-@property (nonatomic, assign, readwrite) BOOL allowsUntrustedSSLCertificates;
+@property (nonatomic, readwrite) BOOL allowsUntrustedSSLCertificates;
 
-@property (nonatomic, strong, readonly) ARTSRDelegateController *delegateController;
+@property (nonatomic, readonly) ARTSRDelegateController *delegateController;
 
-@property (nonatomic, strong, readonly, nullable) ARTInternalLog *logger;
+@property (nonatomic, readonly, nullable) ARTInternalLog *logger;
 
 @end
 

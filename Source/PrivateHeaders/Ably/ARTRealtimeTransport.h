@@ -29,10 +29,10 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportState) {
 
 @interface ARTRealtimeTransportError : NSObject
 
-@property (nonatomic, strong) NSError *error;
-@property (nonatomic, assign) ARTRealtimeTransportErrorType type;
-@property (nonatomic, assign) NSInteger badResponseCode;
-@property (nonatomic, strong) NSURL *url;
+@property (nonatomic) NSError *error;
+@property (nonatomic) ARTRealtimeTransportErrorType type;
+@property (nonatomic) NSInteger badResponseCode;
+@property (nonatomic) NSURL *url;
 
 - (instancetype)initWithError:(NSError *)error type:(ARTRealtimeTransportErrorType)type url:(NSURL *)url;
 - (instancetype)initWithError:(NSError *)error badResponseCode:(NSInteger)badResponseCode url:(NSURL *)url;
@@ -66,10 +66,10 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportState) {
 
 - (instancetype)initWithRest:(ARTRestInternal *)rest options:(ARTClientOptions *)options resumeKey:(nullable NSString *)resumeKey connectionSerial:(nullable NSNumber *)connectionSerial;
 
-@property (readonly, strong, nonatomic) NSString *resumeKey;
-@property (readonly, strong, nonatomic) NSNumber *connectionSerial;
-@property (readonly, assign, nonatomic) ARTRealtimeTransportState state;
-@property (nullable, readwrite, strong, nonatomic) id<ARTRealtimeTransportDelegate> delegate;
+@property (readonly, nonatomic) NSString *resumeKey;
+@property (readonly, nonatomic) NSNumber *connectionSerial;
+@property (readonly, nonatomic) ARTRealtimeTransportState state;
+@property (nullable, readwrite, nonatomic) id<ARTRealtimeTransportDelegate> delegate;
 @property (nonatomic, readonly) ARTEventEmitter<ARTEvent *, id> *stateEmitter;
 
 - (BOOL)send:(NSData *)data withSource:(nullable id)decodedObject;
