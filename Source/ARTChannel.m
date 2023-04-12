@@ -25,7 +25,7 @@
         NSError *error = nil;
         _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:_options.cipher error:&error];
         if (error != nil) {
-            [_logger warn:@"creating ARTDataEncoder: %@", error];
+            ARTLogWarn(_logger, @"creating ARTDataEncoder: %@", error);
             _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:nil error:nil];
         }
     }
@@ -60,7 +60,7 @@
     _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:cipher error:&error];
     
     if (error != nil) {
-        [_logger warn:@"creating ARTDataEncoder: %@", error];
+        ARTLogWarn(_logger, @"creating ARTDataEncoder: %@", error);
         _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:nil error:nil];
     }
 }
@@ -166,7 +166,7 @@
     NSError *e = nil;
     message = [message encodeWithEncoder:self.dataEncoder error:&e];
     if (e) {
-        [self.logger error:@"ARTChannel: error encoding data: %@", e];
+        ARTLogError(self.logger, @"ARTChannel: error encoding data: %@", e);
     }
     if (error) {
         *error = e;

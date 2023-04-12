@@ -85,7 +85,7 @@
 + (void)executePaginated:(ARTRestInternal *)rest
              withRequest:(NSMutableURLRequest *)request
                 callback:(ARTHTTPPaginatedCallback)callback {
-    [rest.logger debug:__FILE__ line:__LINE__ message:@"HTTP Paginated request: %@", request];
+    ARTLogDebug(rest.logger, @"HTTP Paginated request: %@", request);
 
     [rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error && ![error.domain isEqualToString:ARTAblyErrorDomain]) {
@@ -93,8 +93,8 @@
             return;
         }
 
-        [[rest logger] debug:__FILE__ line:__LINE__ message:@"HTTP Paginated response: %@", response];
-        [[rest logger] debug:__FILE__ line:__LINE__ message:@"HTTP Paginated response data: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
+        ARTLogDebug([rest logger], @"HTTP Paginated response: %@", response);
+        ARTLogDebug([rest logger], @"HTTP Paginated response data: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
 
         NSError *decodeError = nil;
 

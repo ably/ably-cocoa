@@ -57,7 +57,7 @@ NSString *const ARTPushActivationPendingEventsKey = @"ARTPushActivationPendingEv
         // persisted state: we have a deviceToken, but the persisted push state is WaitingForPushDeviceDetails.
         // So we need to re-emit the GotPushDeviceDetails event that led us there.
         if ([_current isKindOfClass:[ARTPushActivationStateWaitingForPushDeviceDetails class]] && rest.device_nosync.apnsDeviceToken != nil) {
-            [rest.logger debug:@"ARTPush: re-emitting stored device details for stuck state machine"];
+            ARTLogDebug(rest.logger, @"ARTPush: re-emitting stored device details for stuck state machine");
             [self handleEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
         }
     }
@@ -95,18 +95,18 @@ dispatch_async(_queue, ^{
 }
 
 - (void)handleEvent:(nonnull ARTPushActivationEvent *)event {
-    [_rest.logger debug:@"%@: handling event %@ from %@", NSStringFromClass(self.class), NSStringFromClass(event.class), NSStringFromClass(_current.class)];
+    ARTLogDebug(_rest.logger, @"%@: handling event %@ from %@", NSStringFromClass(self.class), NSStringFromClass(event.class), NSStringFromClass(_current.class));
     _lastHandledEvent = event;
 
     if (self.onEvent) self.onEvent(event, _current);
     ARTPushActivationState *maybeNext = [_current transition:event];
 
     if (maybeNext == nil) {
-        [_rest.logger debug:@"%@: enqueuing event: %@", NSStringFromClass(self.class), NSStringFromClass(event.class)];
+        ARTLogDebug(_rest.logger, @"%@: enqueuing event: %@", NSStringFromClass(self.class), NSStringFromClass(event.class));
         [_pendingEvents addObject:event];
         return;
     }
-    [_rest.logger debug:@"%@: transition: %@ -> %@", NSStringFromClass(self.class), NSStringFromClass(_current.class), NSStringFromClass(maybeNext.class)];
+    ARTLogDebug(_rest.logger, @"%@: transition: %@ -> %@", NSStringFromClass(self.class), NSStringFromClass(_current.class), NSStringFromClass(maybeNext.class));
     if (self.transitions) self.transitions(event, _current, maybeNext);
     _current = maybeNext;
 
@@ -115,14 +115,14 @@ dispatch_async(_queue, ^{
         if (pending == nil) {
             break;
         }
-        [_rest.logger debug:@"%@: attempting to consume pending event: %@", NSStringFromClass(self.class), NSStringFromClass(pending.class)];
+        ARTLogDebug(_rest.logger, @"%@: attempting to consume pending event: %@", NSStringFromClass(self.class), NSStringFromClass(pending.class));
         maybeNext = [_current transition:pending];
         if (maybeNext == nil) {
             break;
         }
         [_pendingEvents art_dequeue];
 
-        [_rest.logger debug:@"%@: transition: %@ -> %@", NSStringFromClass(self.class), NSStringFromClass(_current.class), NSStringFromClass(maybeNext.class)];
+        ARTLogDebug(_rest.logger, @"%@: transition: %@ -> %@", NSStringFromClass(self.class), NSStringFromClass(_current.class), NSStringFromClass(maybeNext.class));
         if (self.transitions) self.transitions(event, _current, maybeNext);
         _current = maybeNext;
     }
@@ -174,17 +174,17 @@ dispatch_async(_queue, ^{
         request.HTTPBody = [[self->_rest defaultEncoder] encodeDeviceDetails:local error:nil];
         [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
-        [[self->_rest logger] debug:__FILE__ line:__LINE__ message:@"%@: device registration with request %@", NSStringFromClass(self.class), request];
+        ARTLogDebug([self->_rest logger], @"%@: device registration with request %@", NSStringFromClass(self.class), request);
         [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (error) {
-                [[self->_rest logger] error:@"%@: device registration failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+                ARTLogError([self->_rest logger], @"%@: device registration failed (%@)", NSStringFromClass(self.class), error.localizedDescription);
                 [self sendEvent:[ARTPushActivationEventGettingDeviceRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
                 return;
             }
             NSError *decodeError = nil;
             ARTDeviceIdentityTokenDetails *identityTokenDetails = [[self->_rest defaultEncoder] decodeDeviceIdentityTokenDetails:data error:&decodeError];
             if (decodeError != nil) {
-                [[self->_rest logger] error:@"%@: decode identity token details failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+                ARTLogError([self->_rest logger], @"%@: decode identity token details failed (%@)", NSStringFromClass(self.class), error.localizedDescription);
                 [self sendEvent:[ARTPushActivationEventGettingDeviceRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:decodeError]]];
                 return;
             }
@@ -240,10 +240,10 @@ dispatch_async(_queue, ^{
     [request setValue:[[_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
     [request setDeviceAuthentication:local];
 
-    [[_rest logger] debug:__FILE__ line:__LINE__ message:@"%@: update device with request %@", NSStringFromClass(self.class), request];
+    ARTLogDebug([_rest logger], @"%@: update device with request %@", NSStringFromClass(self.class), request);
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
-            [[self->_rest logger] error:@"%@: update device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+            ARTLogError([self->_rest logger], @"%@: update device failed (%@)", NSStringFromClass(self.class), error.localizedDescription);
             [self sendEvent:[ARTPushActivationEventSyncRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
             return;
         }
@@ -287,10 +287,10 @@ dispatch_async(_queue, ^{
         request.HTTPBody = [[self->_rest defaultEncoder] encodeDeviceDetails:local error:nil];
         [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
-        [[self->_rest logger] debug:__FILE__ line:__LINE__ message:@"%@: sync device with request %@", NSStringFromClass(self.class), request];
+        ARTLogDebug([self->_rest logger], @"%@: sync device with request %@", NSStringFromClass(self.class), request);
         [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (error) {
-                [[self->_rest logger] error:@"%@: device registration failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+                ARTLogError([self->_rest logger], @"%@: device registration failed (%@)", NSStringFromClass(self.class), error.localizedDescription);
                 [self sendEvent:[ARTPushActivationEventSyncRegistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
                 return;
             }
@@ -338,14 +338,14 @@ dispatch_async(_queue, ^{
     request.HTTPMethod = @"DELETE";
     [request setDeviceAuthentication:local];
 
-    [[_rest logger] debug:__FILE__ line:__LINE__ message:@"%@: device deregistration with request %@", NSStringFromClass(self.class), request];
+    ARTLogDebug([_rest logger], @"%@: device deregistration with request %@", NSStringFromClass(self.class), request);
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
-            [[self->_rest logger] error:@"%@: device deregistration failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+            ARTLogError([self->_rest logger], @"%@: device deregistration failed (%@)", NSStringFromClass(self.class), error.localizedDescription);
             [self sendEvent:[ARTPushActivationEventDeregistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
             return;
         }
-        [[self->_rest logger] debug:__FILE__ line:__LINE__ message:@"successfully deactivate device"];
+        ARTLogDebug([self->_rest logger], @"successfully deactivate device");
         [self sendEvent:[ARTPushActivationEventDeregistered new]];
     }];
     #endif

@@ -17,11 +17,11 @@ class LogAdapterTests: XCTestCase {
         let logLevels: [ARTLogLevel] = [.verbose, .debug, .info, .warn, .error, .none]
         for (index, level) in logLevels.enumerated() {
             let message = "Message \(index)"
-            logger.log(message, with: level)
+            logger.log(message, with: level, file: "myFile.m", line: 123)
 
             let logged = underlyingLogger.lastReceivedLogMessageArguments!
             XCTAssertEqual(logged.level, level)
-            XCTAssertEqual(logged.message, message)
+            XCTAssertEqual(logged.message, "(myFile.m:123) \(message)")
         }
     }
 

@@ -139,47 +139,47 @@
 }
 
 - (void)didReceiveCurrentLocaleDidChangeNotification:(NSNotification *)notification {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p NSCurrentLocaleDidChangeNotification received", _rest];
+    ARTLogDebug(self.logger, @"RS:%p NSCurrentLocaleDidChangeNotification received", _rest);
     [self discardTimeOffset];
 }
 
 - (void)didReceiveApplicationSignificantTimeChangeNotification:(NSNotification *)notification {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p UIApplicationSignificantTimeChangeNotification received", _rest];
+    ARTLogDebug(self.logger, @"RS:%p UIApplicationSignificantTimeChangeNotification received", _rest);
     [self discardTimeOffset];
 }
 
 - (void)validate:(ARTClientOptions *)options {
     // Only called from constructor, no need to synchronize.
-    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p validating %@", _rest, options];
+    ARTLogDebug(self.logger, @"RS:%p validating %@", _rest, options);
     if ([options isBasicAuth]) {
         if (!options.tls) {
             [ARTException raise:@"ARTAuthException" format:@"Basic authentication only connects over HTTPS (tls)."];
         }
         // Basic
-        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p setting up auth method Basic (anonymous)", _rest];
+        ARTLogDebug(self.logger, @"RS:%p setting up auth method Basic (anonymous)", _rest);
         _method = ARTAuthMethodBasic;
     } else if (options.tokenDetails) {
         // TokenDetails
-        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p setting up auth method Token with token details", _rest];
+        ARTLogDebug(self.logger, @"RS:%p setting up auth method Token with token details", _rest);
         _method = ARTAuthMethodToken;
     } else if (options.token) {
         // Token
-        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p setting up auth method Token with supplied token only", _rest];
+        ARTLogDebug(self.logger, @"RS:%p setting up auth method Token with supplied token only", _rest);
         _method = ARTAuthMethodToken;
         options.tokenDetails = [[ARTTokenDetails alloc] initWithToken:options.token];
     } else if (options.authUrl && options.authCallback) {
         [ARTException raise:@"ARTAuthException" format:@"Incompatible authentication configuration: please specify either authCallback and authUrl."];
     } else if (options.authUrl) {
         // Authentication url
-        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p setting up auth method Token with authUrl", _rest];
+        ARTLogDebug(self.logger, @"RS:%p setting up auth method Token with authUrl", _rest);
         _method = ARTAuthMethodToken;
     } else if (options.authCallback) {
         // Authentication callback
-        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p setting up auth method Token with authCallback", _rest];
+        ARTLogDebug(self.logger, @"RS:%p setting up auth method Token with authCallback", _rest);
         _method = ARTAuthMethodToken;
     } else if (options.key) {
         // Token
-        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p setting up auth method Token with key", _rest];
+        ARTLogDebug(self.logger, @"RS:%p setting up auth method Token with key", _rest);
         _method = ARTAuthMethodToken;
     } else {
         [ARTException raise:@"ARTAuthException" format:@"Could not setup authentication method with given options."];
@@ -355,13 +355,13 @@ dispatch_async(_queue, ^{
     if (replacedOptions.authUrl) {
         NSMutableURLRequest *request = [self buildRequest:replacedOptions withParams:currentTokenParams];
 
-        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p using authUrl (%@ %@)", _rest, request.HTTPMethod, request.URL];
+        ARTLogDebug(self.logger, @"RS:%p using authUrl (%@ %@)", _rest, request.HTTPMethod, request.URL);
 
         task = [_rest executeRequest:request withAuthOption:ARTAuthenticationOff completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (error) {
                 checkerCallback(nil, error);
             } else {
-                [self.logger debug:@"RS:%p ARTAuth: authUrl response %@", self->_rest, response];
+                ARTLogDebug(self.logger, @"RS:%p ARTAuth: authUrl response %@", self->_rest, response);
                 [self handleAuthUrlResponse:response withData:data completion:checkerCallback];
             }
         }];
@@ -406,7 +406,7 @@ dispatch_async(_queue, ^{
                     });
                 });
             };
-            [self.logger debug:@"RS:%p ARTAuth: using authCallback", _rest];
+            ARTLogDebug(self.logger, @"RS:%p ARTAuth: using authCallback", _rest);
         } else {
             tokenDetailsFactory = ^(ARTTokenParams *tokenParams, ARTTokenDetailsCallback callback) {
                 // Create a TokenRequest and execute it
@@ -557,35 +557,35 @@ dispatch_async(_queue, ^{
     NSString *authorizeId = [[NSUUID new] UUIDString];
     __block BOOL hasBeenExplicitlyCanceled = NO;
     // Request always a new token
-    [self.logger verbose:@"RS:%p ARTAuthInternal [authorize.%@, delegate=%@]: requesting new token", _rest, authorizeId, lastDelegate ? @"YES" : @"NO"];
+    ARTLogVerbose(self.logger, @"RS:%p ARTAuthInternal [authorize.%@, delegate=%@]: requesting new token", _rest, authorizeId, lastDelegate ? @"YES" : @"NO");
     NSObject<ARTCancellable> *task;
     self->_authorizationsCount += 1;
     task = [self _requestToken:currentTokenParams withOptions:replacedOptions callback:^(ARTTokenDetails *tokenDetails, NSError *error) {
         self->_authorizationsCount -= 1;
 
         void (^const successCallbackBlock)(void) = ^{
-            [self.logger verbose:@"RS:%p ARTAuthInternal [authorize.%@]: success callback: %@", self->_rest, authorizeId, tokenDetails];
+            ARTLogVerbose(self.logger, @"RS:%p ARTAuthInternal [authorize.%@]: success callback: %@", self->_rest, authorizeId, tokenDetails);
             if (callback) {
                 callback(tokenDetails, nil);
             }
         };
         
         void (^const failureCallbackBlock)(NSError *) = ^(NSError *error) {
-            [self.logger verbose:@"RS:%p ARTAuthInternal [authorize.%@]: failure callback: %@ with token details %@", self->_rest, authorizeId, error, tokenDetails];
+            ARTLogVerbose(self.logger, @"RS:%p ARTAuthInternal [authorize.%@]: failure callback: %@ with token details %@", self->_rest, authorizeId, error, tokenDetails);
             if (callback) {
                 callback(tokenDetails, error);
             }
         };
 
         void (^const canceledCallbackBlock)(void) = ^{
-            [self.logger verbose:@"RS:%p ARTAuthInternal [authorize.%@]: canceled callback", self->_rest, authorizeId];
+            ARTLogVerbose(self.logger, @"RS:%p ARTAuthInternal [authorize.%@]: canceled callback", self->_rest, authorizeId);
             if (callback) {
                 callback(nil, [ARTErrorInfo createWithCode:kCFURLErrorCancelled message:@"Authorization has been canceled"]);
             }
         };
 
         if (error) {
-            [self.logger debug:@"RS:%p ARTAuthInternal [authorize.%@]: token request failed: %@", self->_rest, authorizeId, error];
+            ARTLogDebug(self.logger, @"RS:%p ARTAuthInternal [authorize.%@]: token request failed: %@", self->_rest, authorizeId, error);
             failureCallbackBlock(error);
             return;
         }
@@ -595,7 +595,7 @@ dispatch_async(_queue, ^{
             return;
         }
 
-        [self.logger debug:@"RS:%p ARTAuthInternal [authorize.%@]: token request succeeded: %@", self->_rest, authorizeId, tokenDetails];
+        ARTLogDebug(self.logger, @"RS:%p ARTAuthInternal [authorize.%@]: token request succeeded: %@", self->_rest, authorizeId, tokenDetails);
 
         [self setTokenDetails:tokenDetails];
         self->_method = ARTAuthMethodToken;
@@ -615,12 +615,12 @@ dispatch_async(_queue, ^{
                         [self setTokenDetails:tokenDetails];
                         break;
                     case ARTAuthorizationFailed:
-                        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p authorization failed with \"%@\" but the request token has already completed", self->_rest, error];
+                        ARTLogDebug(self.logger, @"RS:%p authorization failed with \"%@\" but the request token has already completed", self->_rest, error);
                         failureCallbackBlock(error);
                         [self setTokenDetails:nil];
                         break;
                     case ARTAuthorizationCancelled: {
-                        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p authorization cancelled but the request token has already completed", self->_rest];
+                        ARTLogDebug(self.logger, @"RS:%p authorization cancelled but the request token has already completed", self->_rest);
                         canceledCallbackBlock();
                         break;
                     }
@@ -641,7 +641,7 @@ dispatch_async(_queue, ^{
 }
 
 - (void)cancelAuthorization:(nullable ARTErrorInfo *)error {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p authorization cancelled with %@", self->_rest, error];
+    ARTLogDebug(self.logger, @"RS:%p authorization cancelled with %@", self->_rest, error);
     [_cancelationEventEmitter emit:nil with:error];
 }
 

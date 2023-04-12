@@ -88,7 +88,7 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
         }
         return YES;
     }
-    [_logger debug:__FILE__ line:__LINE__ message:@"Presence member \"%@\" with action %@ has been ignored", message.memberKey, ARTPresenceActionToStr(message.action)];
+    ARTLogDebug(_logger, @"Presence member \"%@\" with action %@ has been ignored", message.memberKey, ARTPresenceActionToStr(message.action));
     latest.syncSessionId = _syncSessionId;
     return NO;
 }
@@ -103,7 +103,7 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
     // Local member
     if ([message.connectionId isEqualToString:self.delegate.connectionId]) {
         [_localMembers addObject:message];
-        [_logger debug:__FILE__ line:__LINE__ message:@"local member %@ with action %@ has been added", message.memberKey, ARTPresenceActionToStr(message.action).uppercaseString];
+        ARTLogDebug(_logger, @"local member %@ with action %@ has been added", message.memberKey, ARTPresenceActionToStr(message.action).uppercaseString);
     }
 }
 
@@ -118,7 +118,7 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
 
     const BOOL syncInProgress = self.syncInProgress;
     if (!force && syncInProgress) {
-        [_logger debug:__FILE__ line:__LINE__ message:@"%p \"%@\" should be removed after sync ends (syncInProgress=%d)", self, message.clientId, syncInProgress];
+        ARTLogDebug(_logger, @"%p \"%@\" should be removed after sync ends (syncInProgress=%d)", self, message.clientId, syncInProgress);
         message.action = ARTPresenceAbsent;
         // Should be removed after Sync ends
         [self internalAdd:message withSessionId:message.syncSessionId];
@@ -129,7 +129,7 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
 }
 
 - (void)cleanUpAbsentMembers {
-    [_logger debug:__FILE__ line:__LINE__ message:@"%p cleaning up absent members (syncSessionId=%lu)", self, (unsigned long)_syncSessionId];
+    ARTLogDebug(_logger, @"%p cleaning up absent members (syncSessionId=%lu)", self, (unsigned long)_syncSessionId);
     NSSet<NSString *> *filteredMembers = [_members keysOfEntriesPassingTest:^BOOL(NSString *key, ARTPresenceMessage *message, BOOL *stop) {
         return message.action == ARTPresenceAbsent;
     }];
@@ -139,7 +139,7 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
 }
 
 - (void)leaveMembersNotPresentInSync {
-    [_logger debug:__FILE__ line:__LINE__ message:@"%p leaving members not present in sync (syncSessionId=%lu)", self, (unsigned long)_syncSessionId];
+    ARTLogDebug(_logger, @"%p leaving members not present in sync (syncSessionId=%lu)", self, (unsigned long)_syncSessionId);
     for (ARTPresenceMessage *member in [_members allValues]) {
         if (member.syncSessionId != _syncSessionId) {
             // Handle members that have not been added or updated in the PresenceMap during the sync process
@@ -151,7 +151,7 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
 }
 
 - (void)reenterLocalMembersMissingFromSync {
-    [_logger debug:__FILE__ line:__LINE__ message:@"%p reentering local members missed from sync (syncSessionId=%lu)", self, (unsigned long)_syncSessionId];
+    ARTLogDebug(_logger, @"%p reentering local members missed from sync (syncSessionId=%lu)", self, (unsigned long)_syncSessionId);
     NSSet *filteredLocalMembers = [_localMembers filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"syncSessionId != %lu", (unsigned long)_syncSessionId]];
     for (ARTPresenceMessage *localMember in filteredLocalMembers) {
         ARTPresenceMessage *reenter = [localMember copy];
@@ -167,21 +167,21 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
 }
 
 - (void)startSync {
-    [_logger debug:__FILE__ line:__LINE__ message:@"%p PresenceMap sync started", self];
+    ARTLogDebug(_logger, @"%p PresenceMap sync started", self);
     _syncSessionId++;
     _syncState = ARTPresenceSyncStarted;
     [_syncEventEmitter emit:[ARTEvent newWithPresenceSyncState:_syncState] with:nil];
 }
 
 - (void)endSync {
-    [_logger verbose:__FILE__ line:__LINE__ message:@"%p PresenceMap sync ending", self];
+    ARTLogVerbose(_logger, @"%p PresenceMap sync ending", self);
     [self cleanUpAbsentMembers];
     [self leaveMembersNotPresentInSync];
     _syncState = ARTPresenceSyncEnded;
     [self reenterLocalMembersMissingFromSync];
     [_syncEventEmitter emit:[ARTEvent newWithPresenceSyncState:ARTPresenceSyncEnded] with:[_members allValues]];
     [_syncEventEmitter off];
-    [_logger debug:__FILE__ line:__LINE__ message:@"%p PresenceMap sync ended", self];
+    ARTLogDebug(_logger, @"%p PresenceMap sync ended", self);
 }
 
 - (void)failsSync:(ARTErrorInfo *)error {
