@@ -162,19 +162,11 @@
         _realtime = realtime;
         _options = [options copy];
 
-        ARTLog *legacyLogger;
-        if (options.logHandler) {
-            legacyLogger = options.logHandler;
-        }
-        else {
-            legacyLogger = [[ARTLog alloc] init];
-        }
-
         if (options.logLevel != ARTLogLevelNone) {
-            legacyLogger.logLevel = options.logLevel;
+            options.logHandler.logLevel = options.logLevel;
         }
 
-        id<ARTVersion2Log> underlyingLogger = [[ARTLogAdapter alloc] initWithLogger:legacyLogger];
+        id<ARTVersion2Log> underlyingLogger = [[ARTLogAdapter alloc] initWithLogger:options.logHandler];
         _logger = [[ARTInternalLog alloc] initWithLogger:underlyingLogger];
 
         _queue = options.internalDispatchQueue;
