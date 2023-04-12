@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly) ARTPushChannelInternal *push;
 #endif
 
-@property (readwrite, assign, nonatomic) ARTRealtimeChannelState state;
+@property (readwrite, nonatomic) ARTRealtimeChannelState state;
 @property (readonly, nonatomic, nullable) ARTErrorInfo *errorReason;
 @property (readonly, nullable, getter=getOptions_nosync) ARTRealtimeChannelOptions *options_nosync;
 
@@ -44,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic) ARTEventEmitter<ARTEvent *, ARTPresenceMessage *> *presenceEventEmitter;
 @property (readwrite, nonatomic) ARTPresenceMap *presenceMap;
-@property (readwrite, assign, nonatomic) BOOL attachResume;
+@property (readwrite, nonatomic) BOOL attachResume;
 
 - (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime andName:(NSString *)name withOptions:(ARTRealtimeChannelOptions *)options;
 

@@ -12,9 +12,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, readonly, nonatomic) NSString *id;
 @property (nullable, readonly, nonatomic) NSString *key;
 @property (nullable, readonly) NSString *recoveryKey;
-@property (readonly, assign, nonatomic) int64_t serial;
-@property (readonly, assign, nonatomic) NSInteger maxMessageSize;
-@property (readonly, assign, nonatomic) ARTRealtimeConnectionState state;
+@property (readonly, nonatomic) int64_t serial;
+@property (readonly, nonatomic) NSInteger maxMessageSize;
+@property (readonly, nonatomic) ARTRealtimeConnectionState state;
 @property (nullable, readonly, nonatomic) ARTErrorInfo *errorReason;
 
 - (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime;

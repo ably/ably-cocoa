@@ -27,9 +27,9 @@ typedef void (^data_callback)(ARTSRWebSocket *webSocket,  NSData *data);
 }
 @property (nonatomic, copy, readonly) stream_scanner consumer;
 @property (nonatomic, copy, readonly) data_callback handler;
-@property (nonatomic, assign) size_t bytesNeeded;
-@property (nonatomic, assign, readonly) BOOL readToCurrentFrame;
-@property (nonatomic, assign, readonly) BOOL unmaskBytes;
+@property (nonatomic) size_t bytesNeeded;
+@property (nonatomic, readonly) BOOL readToCurrentFrame;
+@property (nonatomic, readonly) BOOL unmaskBytes;
 
 - (void)resetWithScanner:(stream_scanner)scanner
                  handler:(data_callback)handler

@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 NS_SWIFT_NAME(Version2Log)
 @protocol ARTVersion2Log
 
-@property (nonatomic, assign) ARTLogLevel logLevel;
+@property (nonatomic) ARTLogLevel logLevel;
 
 - (void)log:(NSString *)message withLevel:(ARTLogLevel)level;
 

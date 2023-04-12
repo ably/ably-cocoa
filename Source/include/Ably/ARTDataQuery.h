@@ -28,12 +28,12 @@ typedef NS_ENUM(NSUInteger, ARTQueryDirection) {
 /**
  * An upper limit on the number of the data items returned. The default is 100, and the maximum is 1000.
  */
-@property (nonatomic, assign) uint16_t limit;
+@property (nonatomic) uint16_t limit;
 
 /**
  * The order for which the data is returned in. Valid values are `ARTQueryDirectionBackwards` which orders items from most recent to oldest, or `ARTQueryDirectionForwards` which orders items from oldest to most recent. The default is `ARTQueryDirectionBackwards`.
  */
-@property (nonatomic, assign) ARTQueryDirection direction;
+@property (nonatomic) ARTQueryDirection direction;
 
 @end
 
@@ -45,7 +45,7 @@ typedef NS_ENUM(NSUInteger, ARTQueryDirection) {
 /**
  * When `true`, ensures message history is up until the point of the channel being attached. See [continuous history](https://ably.com/docs/realtime/history#continuous-history) for more info. Requires the `direction` to be `ARTQueryDirectionBackwards`. If the channel is not attached, or if `direction` is set to `ARTQueryDirectionForwards`, this option results in an error.
  */
-@property (nonatomic, assign) BOOL untilAttach;
+@property (nonatomic) BOOL untilAttach;
 
 @end
 

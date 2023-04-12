@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, readonly) dispatch_queue_t accessQueue;
 
-@property (atomic, assign, readwrite) ARTSRDelegateAvailableMethods availableDelegateMethods;
+@property (atomic, readwrite) ARTSRDelegateAvailableMethods availableDelegateMethods;
 
 @end
 

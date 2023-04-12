@@ -30,8 +30,8 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportState) {
 @interface ARTRealtimeTransportError : NSObject
 
 @property (nonatomic) NSError *error;
-@property (nonatomic, assign) ARTRealtimeTransportErrorType type;
-@property (nonatomic, assign) NSInteger badResponseCode;
+@property (nonatomic) ARTRealtimeTransportErrorType type;
+@property (nonatomic) NSInteger badResponseCode;
 @property (nonatomic) NSURL *url;
 
 - (instancetype)initWithError:(NSError *)error type:(ARTRealtimeTransportErrorType)type url:(NSURL *)url;
@@ -68,7 +68,7 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportState) {
 
 @property (readonly, nonatomic) NSString *resumeKey;
 @property (readonly, nonatomic) NSNumber *connectionSerial;
-@property (readonly, assign, nonatomic) ARTRealtimeTransportState state;
+@property (readonly, nonatomic) ARTRealtimeTransportState state;
 @property (nullable, readwrite, nonatomic) id<ARTRealtimeTransportDelegate> delegate;
 @property (nonatomic, readonly) ARTEventEmitter<ARTEvent *, id> *stateEmitter;
 

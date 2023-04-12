@@ -70,7 +70,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) NSTimeInterval maxIdleInterval;
 
 /// Current protocol `msgSerial`. Starts at zero.
-@property (readwrite, assign, nonatomic) int64_t msgSerial;
+@property (readwrite, nonatomic) int64_t msgSerial;
 
 /// List of queued messages on a connection in the disconnected or connecting states.
 @property (readwrite, nonatomic) NSMutableArray<ARTQueuedMessage *> *queuedMessages;
@@ -79,15 +79,15 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, nonatomic) NSMutableArray<ARTPendingMessage *> *pendingMessages;
 
 /// First `msgSerial` pending message.
-@property (readwrite, assign, nonatomic) int64_t pendingMessageStartSerial;
+@property (readwrite, nonatomic) int64_t pendingMessageStartSerial;
 
 /// Client is trying to resume the last connection
-@property (readwrite, assign, nonatomic) BOOL resuming;
+@property (readwrite, nonatomic) BOOL resuming;
 
 @property (readonly, getter=getClientOptions) ARTClientOptions *options;
 
 /// Suspend the behavior defined in RTN15a, that is trying to immediately reconnect after a disconnection
-@property (readwrite, assign, nonatomic) BOOL shouldImmediatelyReconnect;
+@property (readwrite, nonatomic) BOOL shouldImmediatelyReconnect;
 
 @end
 

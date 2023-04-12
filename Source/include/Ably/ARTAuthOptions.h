@@ -64,12 +64,12 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * If `true`, the library queries the Ably servers for the current time when issuing `ARTTokenRequest`s instead of relying on a locally-available time of day. Knowing the time accurately is needed to create valid signed Ably `ARTTokenRequest`s, so this option is useful for library instances on auth servers where for some reason the server clock cannot be kept synchronized through normal means, such as an [NTP daemon](https://en.wikipedia.org/wiki/Ntpd). The server is queried for the current time once per client library instance (which stores the offset from the local clock), so if using this option you should avoid instancing a new version of the library for each request. The default is `false`.
  */
-@property (nonatomic, assign, nonatomic) BOOL queryTime;
+@property (nonatomic, nonatomic) BOOL queryTime;
 
 /**
  * When `true`, forces token authentication to be used by the library. If a `clientId` is not specified in the `ARTClientOptions` or `ARTTokenParams`, then the Ably Token issued is [anonymous](https://ably.com/docs/core-features/authentication#identified-clients).
  */
-@property (readwrite, assign, nonatomic) BOOL useTokenAuth;
+@property (readwrite, nonatomic) BOOL useTokenAuth;
 
 /// :nodoc:
 - (instancetype)init;

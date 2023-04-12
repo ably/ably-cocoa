@@ -17,7 +17,7 @@ typedef NS_ENUM(NSUInteger, ARTLogLevel) {
 /// :nodoc:
 @interface ARTLog : NSObject
 
-@property (nonatomic, assign) ARTLogLevel logLevel;
+@property (nonatomic) ARTLogLevel logLevel;
 
 - (void)log:(NSString *)message withLevel:(ARTLogLevel)level;
 

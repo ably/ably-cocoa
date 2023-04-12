@@ -45,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 // MARK: Not accessible by tests
 @property (readonly, nonatomic) ARTHttp *http;
-@property (readwrite, assign, nonatomic) int fallbackCount;
+@property (readwrite, nonatomic) int fallbackCount;
 
 - (instancetype)initWithOptions:(ARTClientOptions *)options realtime:(ARTRealtimeInternal *_Nullable)realtime;
 

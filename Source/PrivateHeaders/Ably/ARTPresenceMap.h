@@ -27,9 +27,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nullable, weak) id<ARTPresenceMapDelegate> delegate; // weak because delegates outlive their counterpart
 
-@property (readwrite, nonatomic, assign) int64_t syncMsgSerial;
+@property (readwrite, nonatomic) int64_t syncMsgSerial;
 @property (readwrite, nonatomic, nullable) NSString *syncChannelSerial;
-@property (readonly, nonatomic, assign) NSUInteger syncSessionId;
+@property (readonly, nonatomic) NSUInteger syncSessionId;
 @property (readonly, nonatomic, getter=syncComplete) BOOL syncComplete;
 @property (readonly, nonatomic, getter=syncInProgress) BOOL syncInProgress;
 

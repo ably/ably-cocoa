@@ -34,7 +34,7 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 /**
  * `ARTStatsGranularity.ARTStatsGranularityMinute`, `ARTStatsGranularity.ARTStatsGranularityHour`, `ARTStatsGranularity.ARTStatsGranularityDay` or `ARTStatsGranularity.ARTStatsGranularityMonth`. Based on the unit selected, the given `start` or `end` times are rounded down to the start of the relevant interval depending on the unit granularity of the query.
  */
-@property (nonatomic, assign) ARTStatsGranularity unit;
+@property (nonatomic) ARTStatsGranularity unit;
 
 @end
 
@@ -46,12 +46,12 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 /**
  * The count of all messages.
  */
-@property (readonly, assign, nonatomic) NSUInteger count;
+@property (readonly, nonatomic) NSUInteger count;
 
 /**
  * The total number of bytes transferred for all messages.
  */
-@property (readonly, assign, nonatomic) NSUInteger data;
+@property (readonly, nonatomic) NSUInteger data;
 
 /// :nodoc:
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
@@ -145,27 +145,27 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 /**
  * The total number of resources opened of this type.
  */
-@property (readonly, assign, nonatomic) NSUInteger opened;
+@property (readonly, nonatomic) NSUInteger opened;
 
 /**
  * The peak number of resources of this type used for this period.
  */
-@property (readonly, assign, nonatomic) NSUInteger peak;
+@property (readonly, nonatomic) NSUInteger peak;
 
 /**
  * The average number of resources of this type used for this period.
  */
-@property (readonly, assign, nonatomic) NSUInteger mean;
+@property (readonly, nonatomic) NSUInteger mean;
 
 /**
  * The minimum total resources of this type used for this period.
  */
-@property (readonly, assign, nonatomic) NSUInteger min;
+@property (readonly, nonatomic) NSUInteger min;
 
 /**
  * The number of resource requests refused within this period.
  */
-@property (readonly, assign, nonatomic) NSUInteger refused;
+@property (readonly, nonatomic) NSUInteger refused;
 
 /// :nodoc:
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
@@ -223,17 +223,17 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 /**
  * The number of requests that succeeded.
  */
-@property (readonly, assign, nonatomic) NSUInteger succeeded;
+@property (readonly, nonatomic) NSUInteger succeeded;
 
 /**
  * The number of requests that failed.
  */
-@property (readonly, assign, nonatomic) NSUInteger failed;
+@property (readonly, nonatomic) NSUInteger failed;
 
 /**
  * The number of requests that were refused, typically as a result of permissions or a limit being exceeded.
  */
-@property (readonly, assign, nonatomic) NSUInteger refused;
+@property (readonly, nonatomic) NSUInteger refused;
 
 /// :nodoc:
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
@@ -256,32 +256,32 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 /**
  * Total number of delivered push notifications.
  */
-@property (readonly, assign, nonatomic) NSUInteger succeeded;
+@property (readonly, nonatomic) NSUInteger succeeded;
 
 /**
  * Total number of attempted push notifications which were rejected due to invalid request data.
  */
-@property (readonly, assign, nonatomic) NSUInteger invalid;
+@property (readonly, nonatomic) NSUInteger invalid;
 
 /**
  * Total number of attempted push notifications including notifications which were rejected as invalid or failed to publish.
  */
-@property (readonly, assign, nonatomic) NSUInteger attempted;
+@property (readonly, nonatomic) NSUInteger attempted;
 
 /**
  * Total number of refused push notifications.
  */
-@property (readonly, assign, nonatomic) NSUInteger failed;
+@property (readonly, nonatomic) NSUInteger failed;
 
 /**
  * Total number of push messages.
  */
-@property (readonly, assign, nonatomic) NSUInteger messages;
+@property (readonly, nonatomic) NSUInteger messages;
 
 /**
  * Total number of direct publishes.
  */
-@property (readonly, assign, nonatomic) NSUInteger direct;
+@property (readonly, nonatomic) NSUInteger direct;
 
 /// :nodoc:
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
@@ -362,7 +362,7 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 @property (readonly, nonatomic) NSString *inProgress;
 
 /// :nodoc: TODO: docstring
-@property (readonly, assign, nonatomic) NSUInteger count;
+@property (readonly, nonatomic) NSUInteger count;
 
 /**
  * The UTC time at which the time period covered begins. If `unit` is set to `minute` this will be in the format `YYYY-mm-dd:HH:MM`, if `hour` it will be `YYYY-mm-dd:HH`, if `day` it will be `YYYY-mm-dd:00` and if `month` it will be `YYYY-mm-01:00`.

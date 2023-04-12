@@ -32,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSString *)clientId_nosync;
 
 @property (nonatomic, readonly) ARTClientOptions *options;
-@property (nonatomic, readonly, assign) ARTAuthMethod method;
+@property (nonatomic, readonly) ARTAuthMethod method;
 @property (readonly) BOOL isTokenAuth;
 
 @property (nonatomic) ARTInternalLog *logger;

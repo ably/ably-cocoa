@@ -44,20 +44,20 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface ARTProtocolMessage : NSObject
 
-@property (readwrite, assign, nonatomic) ARTProtocolMessageAction action;
-@property (readwrite, assign, nonatomic) int count;
+@property (readwrite, nonatomic) ARTProtocolMessageAction action;
+@property (readwrite, nonatomic) int count;
 @property (nullable, readwrite, nonatomic) ARTErrorInfo *error;
 @property (nullable, readwrite, nonatomic) NSString *id;
 @property (nullable, readwrite, nonatomic) NSString *channel;
 @property (nullable, readwrite, nonatomic) NSString *channelSerial;
 @property (nullable, readwrite, nonatomic) NSString *connectionId;
 @property (nullable, readwrite, nonatomic, getter=getConnectionKey) NSString *connectionKey;
-@property (readwrite, assign, nonatomic) int64_t connectionSerial;
+@property (readwrite, nonatomic) int64_t connectionSerial;
 @property (nullable, readwrite, nonatomic) NSNumber *msgSerial;
 @property (nullable, readwrite, nonatomic) NSDate *timestamp;
 @property (nullable, readwrite, nonatomic) NSArray<ARTMessage *> *messages;
 @property (nullable, readwrite, nonatomic) NSArray<ARTPresenceMessage *> *presence;
-@property (readwrite, assign, nonatomic) int64_t flags;
+@property (readwrite, nonatomic) int64_t flags;
 @property (nullable, readwrite, nonatomic) ARTConnectionDetails *connectionDetails;
 @property (nullable, nonatomic) ARTAuthDetails *auth;
 @property (nonatomic, nullable) NSStringDictionary *params;

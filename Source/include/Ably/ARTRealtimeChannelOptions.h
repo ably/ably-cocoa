@@ -39,7 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * An array of `ARTChannelMode` objects.
  */
-@property (nonatomic, assign) ARTChannelMode modes;
+@property (nonatomic) ARTChannelMode modes;
 
 @end
 
