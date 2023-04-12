@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Contains the current page of results; for example, an array of `ARTMessage` or `ARTPresenceMessage` objects for a channel history request.
  */
-@property (nonatomic, strong, readonly) NSArray<ItemType> *items;
+@property (nonatomic, readonly) NSArray<ItemType> *items;
 
 /**
  * Returns `true` if there are more pages available by calling next and returns `false` if this page is the last page available.

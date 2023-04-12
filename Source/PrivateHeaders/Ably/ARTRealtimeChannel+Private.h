@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 #endif
 
 @property (readwrite, assign, nonatomic) ARTRealtimeChannelState state;
-@property (readonly, strong, nonatomic, nullable) ARTErrorInfo *errorReason;
+@property (readonly, nonatomic, nullable) ARTErrorInfo *errorReason;
 @property (readonly, nullable, getter=getOptions_nosync) ARTRealtimeChannelOptions *options_nosync;
 
 - (ARTRealtimeChannelState)state_nosync;
@@ -35,15 +35,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)canBeReattached;
 
 @property (readonly, weak, nonatomic) ARTRealtimeInternal *realtime; // weak because realtime owns self
-@property (readonly, strong, nonatomic) ARTRestChannelInternal *restChannel;
-@property (readwrite, strong, nonatomic, nullable) NSString *attachSerial;
+@property (readonly, nonatomic) ARTRestChannelInternal *restChannel;
+@property (readwrite, nonatomic, nullable) NSString *attachSerial;
 @property (readonly, nullable, getter=getClientId) NSString *clientId;
-@property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTChannelStateChange *> *internalEventEmitter;
-@property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTChannelStateChange *> *statesEventEmitter;
-@property (readonly, strong, nonatomic) ARTEventEmitter<id<ARTEventIdentification>, ARTMessage *> *messagesEventEmitter;
+@property (readonly, nonatomic) ARTEventEmitter<ARTEvent *, ARTChannelStateChange *> *internalEventEmitter;
+@property (readonly, nonatomic) ARTEventEmitter<ARTEvent *, ARTChannelStateChange *> *statesEventEmitter;
+@property (readonly, nonatomic) ARTEventEmitter<id<ARTEventIdentification>, ARTMessage *> *messagesEventEmitter;
 
-@property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTPresenceMessage *> *presenceEventEmitter;
-@property (readwrite, strong, nonatomic) ARTPresenceMap *presenceMap;
+@property (readonly, nonatomic) ARTEventEmitter<ARTEvent *, ARTPresenceMessage *> *presenceEventEmitter;
+@property (readwrite, nonatomic) ARTPresenceMap *presenceMap;
 @property (readwrite, assign, nonatomic) BOOL attachResume;
 
 - (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime andName:(NSString *)name withOptions:(ARTRealtimeChannelOptions *)options;
@@ -58,7 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)_unsubscribe;
 - (void)off_nosync;
 
-@property (nonatomic, strong) dispatch_queue_t queue;
+@property (nonatomic) dispatch_queue_t queue;
 
 @end
 

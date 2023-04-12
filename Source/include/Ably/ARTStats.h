@@ -73,17 +73,17 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 /**
  * A `ARTStatsMessageCount` object containing the count and byte value of messages and presence messages.
  */
-@property (readonly, strong, nonatomic) ARTStatsMessageCount *all;
+@property (readonly, nonatomic) ARTStatsMessageCount *all;
 
 /**
  * A `ARTStatsMessageCount` object containing the count and byte value of messages.
  */
-@property (readonly, strong, nonatomic) ARTStatsMessageCount *messages;
+@property (readonly, nonatomic) ARTStatsMessageCount *messages;
 
 /**
  * A `ARTStatsMessageCount` object containing the count and byte value of presence messages.
  */
-@property (readonly, strong, nonatomic) ARTStatsMessageCount *presence;
+@property (readonly, nonatomic) ARTStatsMessageCount *presence;
 
 /// :nodoc:
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
@@ -106,22 +106,22 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 /**
  * A `ARTStatsMessageTypes` object containing a breakdown of usage by message type for all messages (includes `realtime`, `rest` and `webhook` messages).
  */
-@property (readonly, strong, nonatomic) ARTStatsMessageTypes *all;
+@property (readonly, nonatomic) ARTStatsMessageTypes *all;
 
 /**
  * A `ARTStatsMessageTypes` object containing a breakdown of usage by message type for messages transferred over a realtime transport such as web socket.
  */
-@property (readonly, strong, nonatomic) ARTStatsMessageTypes *realtime;
+@property (readonly, nonatomic) ARTStatsMessageTypes *realtime;
 
 /**
  * A `ARTStatsMessageTypes` object containing a breakdown of usage by message type for messages transferred over a rest transport such as `ARTRest`.
  */
-@property (readonly, strong, nonatomic) ARTStatsMessageTypes *rest;
+@property (readonly, nonatomic) ARTStatsMessageTypes *rest;
 
 /**
  * A `ARTStatsMessageTypes` object containing a breakdown of usage by message type for messages delivered using webhooks.
  */
-@property (readonly, strong, nonatomic) ARTStatsMessageTypes *webhook;
+@property (readonly, nonatomic) ARTStatsMessageTypes *webhook;
 
 /// :nodoc:
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
@@ -190,17 +190,17 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 /**
  * A `ARTStatsResourceCount` object containing a breakdown of usage by scope over `TLS` connections (both `TLS` and non-`TLS`).
  */
-@property (readonly, strong, nonatomic) ARTStatsResourceCount *all;
+@property (readonly, nonatomic) ARTStatsResourceCount *all;
 
 /**
  * A `ARTStatsResourceCount` object containing a breakdown of usage by scope over non-`TLS` connections.
  */
-@property (readonly, strong, nonatomic) ARTStatsResourceCount *plain;
+@property (readonly, nonatomic) ARTStatsResourceCount *plain;
 
 /**
  * A `ARTStatsResourceCount` object containing a breakdown of usage by scope over `TLS` connections.
  */
-@property (readonly, strong, nonatomic) ARTStatsResourceCount *tls;
+@property (readonly, nonatomic) ARTStatsResourceCount *tls;
 
 /// :nodoc:
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
@@ -316,50 +316,50 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 /**
  * A `ARTStatsMessageTypes` object containing the aggregate count of all message stats.
  */
-@property (readonly, strong, nonatomic) ARTStatsMessageTypes *all;
+@property (readonly, nonatomic) ARTStatsMessageTypes *all;
 
 /**
  * A `ARTStatsMessageTraffic` object containing the aggregate count of inbound message stats.
  */
-@property (readonly, strong, nonatomic) ARTStatsMessageTraffic *inbound;
+@property (readonly, nonatomic) ARTStatsMessageTraffic *inbound;
 
 /**
  * A `ARTStatsMessageTraffic` object containing the aggregate count of outbound message stats.
  */
-@property (readonly, strong, nonatomic) ARTStatsMessageTraffic *outbound;
+@property (readonly, nonatomic) ARTStatsMessageTraffic *outbound;
 
 /**
  * A `ARTStatsMessageTypes` object containing the aggregate count of persisted message stats.
  */
-@property (readonly, strong, nonatomic) ARTStatsMessageTypes *persisted;
+@property (readonly, nonatomic) ARTStatsMessageTypes *persisted;
 
 /**
  * A `ARTStatsConnectionTypes` object containing a breakdown of connection related stats, such as min, mean and peak connections.
  */
-@property (readonly, strong, nonatomic) ARTStatsConnectionTypes *connections;
+@property (readonly, nonatomic) ARTStatsConnectionTypes *connections;
 
 /**
  * A `ARTStatsResourceCount` object containing a breakdown of channels.
  */
-@property (readonly, strong, nonatomic) ARTStatsResourceCount *channels;
+@property (readonly, nonatomic) ARTStatsResourceCount *channels;
 
 /**
  * A `ARTStatsRequestCount` object containing a breakdown of API Requests.
  */
-@property (readonly, strong, nonatomic) ARTStatsRequestCount *apiRequests;
+@property (readonly, nonatomic) ARTStatsRequestCount *apiRequests;
 
 /**
  * A `ARTStatsRequestCount` object containing a breakdown of Ably Token requests.
  */
-@property (readonly, strong, nonatomic) ARTStatsRequestCount *tokenRequests;
+@property (readonly, nonatomic) ARTStatsRequestCount *tokenRequests;
 
 /**
  * A `ARTStatsPushCount` object containing a breakdown of stats on push notifications.
  */
-@property (readonly, strong, nonatomic) ARTStatsPushCount *pushes;
+@property (readonly, nonatomic) ARTStatsPushCount *pushes;
 
 /// :nodoc: TODO: docstring
-@property (readonly, strong, nonatomic) NSString *inProgress;
+@property (readonly, nonatomic) NSString *inProgress;
 
 /// :nodoc: TODO: docstring
 @property (readonly, assign, nonatomic) NSUInteger count;
@@ -367,7 +367,7 @@ typedef NS_ENUM(NSUInteger, ARTStatsGranularity) {
 /**
  * The UTC time at which the time period covered begins. If `unit` is set to `minute` this will be in the format `YYYY-mm-dd:HH:MM`, if `hour` it will be `YYYY-mm-dd:HH`, if `day` it will be `YYYY-mm-dd:00` and if `month` it will be `YYYY-mm-01:00`.
  */
-@property (readonly, strong, nonatomic) NSString *intervalId;
+@property (readonly, nonatomic) NSString *intervalId;
 
 /// :nodoc:
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;

@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTSRDelegateController ()
 
-@property (nonatomic, strong, readonly) dispatch_queue_t accessQueue;
+@property (nonatomic, readonly) dispatch_queue_t accessQueue;
 
 @property (atomic, assign, readwrite) ARTSRDelegateAvailableMethods availableDelegateMethods;
 

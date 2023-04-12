@@ -18,12 +18,12 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * The timestamp at which this token expires as a `NSDate` object.
  */
-@property (nonatomic, readonly, strong, nullable) NSDate *expires;
+@property (nonatomic, readonly, nullable) NSDate *expires;
 
 /**
  * The timestamp at which this token was issued as a `NSDate` object.
  */
-@property (nonatomic, readonly, strong, nullable) NSDate *issued;
+@property (nonatomic, readonly, nullable) NSDate *issued;
 
 /**
  * The capabilities associated with this Ably Token. The capabilities value is a JSON-encoded representation of the resource paths and associated operations. Read more about capabilities in the [capabilities docs](https://ably.com/docs/core-features/authentication/#capabilities-explained).

@@ -12,17 +12,17 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * A JSON object of key-value pairs that contains of the push transport and address.
  */
-@property (strong, nonatomic) NSMutableDictionary<NSString *, NSString *> *recipient;
+@property (nonatomic) NSMutableDictionary<NSString *, NSString *> *recipient;
 
 /**
  * The current state of the push registration.
  */
-@property (strong, nullable, nonatomic) NSString *state;
+@property (nullable, nonatomic) NSString *state;
 
 /**
  * An `ARTErrorInfo` object describing the most recent error when the `state` is `Failing` or `Failed`.
  */
-@property (strong, nullable, nonatomic) ARTErrorInfo *errorReason;
+@property (nullable, nonatomic) ARTErrorInfo *errorReason;
 
 /// :nodoc:
 - (instancetype)init;

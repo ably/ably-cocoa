@@ -4,8 +4,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTConnectionDetails ()
 
-@property (readwrite, strong, nonatomic, nullable) NSString *clientId;
-@property (readwrite, strong, nonatomic, nullable) NSString *connectionKey;
+@property (readwrite, nonatomic, nullable) NSString *clientId;
+@property (readwrite, nonatomic, nullable) NSString *connectionKey;
 
 - (void)setMaxIdleInterval:(NSTimeInterval)seconds;
 

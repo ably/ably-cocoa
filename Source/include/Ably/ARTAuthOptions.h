@@ -34,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * An authenticated `ARTTokenDetails` object (most commonly obtained from an Ably Token Request response). This option is mostly useful for testing: since tokens are short-lived, in production you almost always want to use an authentication method that enables the client library to renew the token automatically when the previous one expires, such as `authUrl` or `authCallback`. Use this option if you wish to use Token authentication. Read more about [Token authentication](https://ably.com/docs/core-features/authentication#token-authentication).
  */
-@property (nonatomic, strong, nullable) ARTTokenDetails *tokenDetails;
+@property (nonatomic, nullable) ARTTokenDetails *tokenDetails;
 
 /**
  * Called when a new token is required. The role of the callback is to obtain a fresh token, one of: an Ably Token string (in plain text format); a signed `ARTTokenRequest`; a `ARTTokenDetails` (in JSON format); an [Ably JWT](https://ably.com/docs/core-features/authentication#ably-jwt). See [the authentication documentation](https://ably.com/docs/realtime/authentication) for details of the Ably `ARTTokenRequest` format and associated API calls.
@@ -44,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * A URL that the library may use to obtain a token string (in plain text format), or a signed `ARTTokenRequest` or `ARTTokenDetails` (in JSON format) from.
  */
-@property (nonatomic, strong, nullable) NSURL *authUrl;
+@property (nonatomic, nullable) NSURL *authUrl;
 
 /**
  * The HTTP verb to use for any request made to the `authUrl`, either `GET` or `POST`. The default value is `GET`.

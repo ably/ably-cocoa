@@ -52,8 +52,8 @@ typedef void(^ARTSRDelegateBlock)(id<ARTSRWebSocketDelegate> _Nullable delegate,
 @property (nonatomic, weak) id<ARTSRWebSocketDelegate> delegate;
 @property (atomic, readonly) ARTSRDelegateAvailableMethods availableDelegateMethods;
 
-@property (nullable, nonatomic, strong) dispatch_queue_t dispatchQueue;
-@property (nullable, nonatomic, strong) NSOperationQueue *operationQueue;
+@property (nullable, nonatomic) dispatch_queue_t dispatchQueue;
+@property (nullable, nonatomic) NSOperationQueue *operationQueue;
 
 ///--------------------------------------
 #pragma mark - Perform

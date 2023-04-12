@@ -17,10 +17,10 @@
 
 @interface ARTSRProxyConnect() <NSStreamDelegate>
 
-@property (nonatomic, strong) NSURL *url;
-@property (nonatomic, strong) NSInputStream *inputStream;
-@property (nonatomic, strong) NSOutputStream *outputStream;
-@property (nonatomic, strong, readonly, nullable) ARTInternalLog *logger;
+@property (nonatomic) NSURL *url;
+@property (nonatomic) NSInputStream *inputStream;
+@property (nonatomic) NSOutputStream *outputStream;
+@property (nonatomic, readonly, nullable) ARTInternalLog *logger;
 
 @end
 

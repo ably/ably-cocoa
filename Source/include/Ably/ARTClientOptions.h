@@ -17,12 +17,12 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Enables a non-default Ably host to be specified. For development environments only. The default value is `rest.ably.io`.
  */
-@property (readwrite, strong, nonatomic) NSString *restHost;
+@property (readwrite, nonatomic) NSString *restHost;
 
 /**
  * Enables a non-default Ably host to be specified for realtime connections. For development environments only. The default value is `realtime.ably.io`.
  */
-@property (readwrite, strong, nonatomic) NSString *realtimeHost;
+@property (readwrite, nonatomic) NSString *realtimeHost;
 
 /**
  * Enables a non-default Ably port to be specified. For development environments only. The default value is 80.
@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Enables a [custom environment](https://ably.com/docs/platform-customization) to be used with the Ably service.
  */
-@property (readwrite, strong, nonatomic) NSString *environment;
+@property (readwrite, nonatomic) NSString *environment;
 
 /**
  * When `false`, the client will use an insecure connection. The default is `true`, meaning a TLS connection will be used to connect to Ably.
@@ -47,7 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Controls the log output of the library. This is an object to handle each line of log output.
  */
-@property (nonatomic, strong, readwrite) ARTLog *logHandler;
+@property (nonatomic, readwrite) ARTLog *logHandler;
 
 /**
  * Controls the verbosity of the logs output from the library. Levels include `ARTLogLevelVerbose`, `ARTLogLevelDebug`, `ARTLogLevelInfo`, `ARTLogLevelWarn` and `ARTLogLevelError`.
@@ -85,12 +85,12 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * A client ID, used for identifying this client when publishing messages or for presence purposes. The `clientId` can be any non-empty string, except it cannot contain a `*`. This option is primarily intended to be used in situations where the library is instantiated with a key. Note that a `clientId` may also be implicit in a token used to instantiate the library. An error will be raised if a `clientId` specified here conflicts with the `clientId` implicit in the token.
  */
-@property (readwrite, strong, nonatomic, nullable) NSString *clientId;
+@property (readwrite, nonatomic, nullable) NSString *clientId;
 
 /**
  * When a `ARTTokenParams` object is provided, it overrides the client library defaults when issuing new Ably Tokens or Ably `ARTTokenRequest`s.
  */
-@property (readwrite, strong, nonatomic, nullable) ARTTokenParams *defaultTokenParams;
+@property (readwrite, nonatomic, nullable) ARTTokenParams *defaultTokenParams;
 
 /**
  * If the connection is still in the `ARTRealtimeConnectionState.ARTRealtimeDisconnected` state after this delay, the client library will attempt to reconnect automatically. The default is 15 seconds.
@@ -145,7 +145,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * DEPRECATED: this property is deprecated and will be removed in a future version. Defaults to a string value for an Ably error reporting DSN (Data Source Name), which is typically a URL in the format `https://[KEY]:[SECRET]@errors.ably.io/[ID]`. When set to `nil` exception reporting is disabled.
  */
-@property (readwrite, strong, nonatomic, nullable) NSString *logExceptionReportingUrl;
+@property (readwrite, nonatomic, nullable) NSString *logExceptionReportingUrl;
 
 /**
  The queue to which all calls to user-provided callbacks will be dispatched
@@ -153,7 +153,7 @@ NS_ASSUME_NONNULL_BEGIN
 
  It defaults to the main queue.
  */
-@property (readwrite, strong, nonatomic) dispatch_queue_t dispatchQueue;
+@property (readwrite, nonatomic) dispatch_queue_t dispatchQueue;
 
 /**
  The queue to which all internal concurrent operations will be dispatched.
@@ -161,7 +161,7 @@ NS_ASSUME_NONNULL_BEGIN
 
  It defaults to a newly created serial queue.
  */
-@property (readwrite, strong, nonatomic) dispatch_queue_t internalDispatchQueue;
+@property (readwrite, nonatomic) dispatch_queue_t internalDispatchQueue;
 
 /**
  * When `true`, enables idempotent publishing by assigning a unique message ID client-side, allowing the Ably servers to discard automatic publish retries following a failure such as a network fault. The default is `true`.

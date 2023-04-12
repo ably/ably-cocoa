@@ -80,9 +80,9 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 // of the certificate trust configuration
 @property (nonatomic, assign, readwrite) BOOL allowsUntrustedSSLCertificates;
 
-@property (nonatomic, strong, readonly) ARTSRDelegateController *delegateController;
+@property (nonatomic, readonly) ARTSRDelegateController *delegateController;
 
-@property (nonatomic, strong, readonly, nullable) ARTInternalLog *logger;
+@property (nonatomic, readonly, nullable) ARTInternalLog *logger;
 
 @end
 

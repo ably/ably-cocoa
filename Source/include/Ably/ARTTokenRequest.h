@@ -39,12 +39,12 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Requested time to live for the Ably Token in milliseconds. If the Ably `ARTTokenRequest` is successful, the TTL of the returned Ably Token is less than or equal to this value, depending on application settings and the attributes of the issuing key. The default is 60 minutes.
  */
-@property (nonatomic, strong, nullable) NSNumber *ttl;
+@property (nonatomic, nullable) NSNumber *ttl;
 
 /**
  * The timestamp of this request as `NSDate` object.
  */
-@property (nonatomic, strong) NSDate *timestamp;
+@property (nonatomic) NSDate *timestamp;
 
 /// :nodoc:
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;

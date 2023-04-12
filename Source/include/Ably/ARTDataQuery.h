@@ -18,12 +18,12 @@ typedef NS_ENUM(NSUInteger, ARTQueryDirection) {
 /**
  * The time from which the data items are retrieved.
  */
-@property (nonatomic, strong, nullable) NSDate *start;
+@property (nonatomic, nullable) NSDate *start;
 
 /**
  * The time until the data items are retrieved.
  */
-@property (nonatomic, strong, nullable) NSDate *end;
+@property (nonatomic, nullable) NSDate *end;
 
 /**
  * An upper limit on the number of the data items returned. The default is 100, and the maximum is 1000.

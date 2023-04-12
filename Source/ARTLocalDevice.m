@@ -28,7 +28,7 @@ NSString *const ARTDevicePushTransportType = @"apns";
 
 @interface ARTLocalDevice ()
 
-@property (nullable, nonatomic, readonly, strong) ARTInternalLog *logger;
+@property (nullable, nonatomic, readonly) ARTInternalLog *logger;
 
 @end
 

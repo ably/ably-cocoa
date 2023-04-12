@@ -43,7 +43,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * A unique identifier for the front-end server that the client has connected to. This server ID is only used for the purposes of debugging.
  */
-@property (readonly, strong, nonatomic, nullable) NSString *serverId;
+@property (readonly, nonatomic, nullable) NSString *serverId;
 
 /**
  * The maximum length of time in milliseconds that the server will allow no activity to occur in the server to client direction. After such a period of inactivity, the server will send a `HEARTBEAT` or transport-level ping to the client. If the value is `0`, the server will allow arbitrarily-long levels of inactivity.

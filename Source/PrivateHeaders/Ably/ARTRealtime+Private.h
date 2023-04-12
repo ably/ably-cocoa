@@ -29,8 +29,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtimeInternal : NSObject<ARTRealtimeProtocol>
 
-@property (nonatomic, strong, readonly) ARTConnectionInternal *connection;
-@property (nonatomic, strong, readonly) ARTRealtimeChannelsInternal *channels;
+@property (nonatomic, readonly) ARTConnectionInternal *connection;
+@property (nonatomic, readonly) ARTRealtimeChannelsInternal *channels;
 @property (readonly) ARTAuthInternal *auth;
 @property (readonly) ARTPushInternal *push;
 #if TARGET_OS_IOS
@@ -44,8 +44,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtimeInternal () <ARTRealtimeTransportDelegate, ARTAuthDelegate>
 
-@property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTConnectionStateChange *> *internalEventEmitter;
-@property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, NSNull *> *connectedEventEmitter;
+@property (readonly, nonatomic) ARTEventEmitter<ARTEvent *, ARTConnectionStateChange *> *internalEventEmitter;
+@property (readonly, nonatomic) ARTEventEmitter<ARTEvent *, NSNull *> *connectedEventEmitter;
 
 @property (readonly, nonatomic) NSMutableArray<void (^)(ARTRealtimeConnectionState, ARTErrorInfo *_Nullable)> *pendingAuthorizations;
 
@@ -62,9 +62,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// ARTRealtimeInternal private methods that are used for internal testing.
 @interface ARTRealtimeInternal ()
 
-@property (readwrite, strong, nonatomic) ARTRestInternal *rest;
+@property (readwrite, nonatomic) ARTRestInternal *rest;
 @property (readonly, nullable) id<ARTRealtimeTransport> transport;
-@property (readonly, strong, nonatomic, nonnull) id<ARTReachability> reachability;
+@property (readonly, nonatomic, nonnull) id<ARTReachability> reachability;
 @property (readonly, getter=getLogger) ARTInternalLog *logger;
 @property (nonatomic) NSTimeInterval connectionStateTtl;
 @property (nonatomic) NSTimeInterval maxIdleInterval;
@@ -73,10 +73,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, assign, nonatomic) int64_t msgSerial;
 
 /// List of queued messages on a connection in the disconnected or connecting states.
-@property (readwrite, strong, nonatomic) NSMutableArray<ARTQueuedMessage *> *queuedMessages;
+@property (readwrite, nonatomic) NSMutableArray<ARTQueuedMessage *> *queuedMessages;
 
 /// List of pending messages waiting for ACK/NACK action to confirm the success receipt and acceptance.
-@property (readwrite, strong, nonatomic) NSMutableArray<ARTPendingMessage *> *pendingMessages;
+@property (readwrite, nonatomic) NSMutableArray<ARTPendingMessage *> *pendingMessages;
 
 /// First `msgSerial` pending message.
 @property (readwrite, assign, nonatomic) int64_t pendingMessageStartSerial;
