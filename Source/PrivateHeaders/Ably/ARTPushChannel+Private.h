@@ -1,6 +1,3 @@
-#ifndef ARTPushChannel_Private_h
-#define ARTPushChannel_Private_h
-
 #import <Ably/ARTPushChannel.h>
 #import "ARTQueuedDealloc.h"
 
@@ -19,5 +16,3 @@
 - (instancetype)initWithInternal:(ARTPushChannelInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc;
 
 @end
-
-#endif /* ARTPushChannel_Private_h */

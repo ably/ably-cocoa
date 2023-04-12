@@ -1,6 +1,3 @@
-#ifndef ARTPushChannelSubscriptions_Private_h
-#define ARTPushChannelSubscriptions_Private_h
-
 #import <Ably/ARTPushChannelSubscriptions.h>
 #import "ARTQueuedDealloc.h"
 
@@ -19,5 +16,3 @@
 - (instancetype)initWithInternal:(ARTPushChannelSubscriptionsInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc;
 
 @end
-
-#endif /* ARTPushChannelSubscriptions_Private_h */

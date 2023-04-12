@@ -1,6 +1,3 @@
-#ifndef ARTJsonLikeEncoder_h
-#define ARTJsonLikeEncoder_h
-
 #import <Ably/ARTRest+Private.h>
 #import <Ably/ARTEncoder.h>
 #import <Ably/ARTTokenDetails.h>
@@ -70,5 +67,3 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 NS_ASSUME_NONNULL_END
-
-#endif /* ARTJsonLikeEncoder_h */
