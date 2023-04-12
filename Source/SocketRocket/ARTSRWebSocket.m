@@ -1331,8 +1331,6 @@ static const char CRLFCRLFBytes[] = {'\r', '\n', '\r', '\n'};
     _isPumping = NO;
 }
 
-//#define NOMASK
-
 static const size_t ARTSRFrameHeaderOverhead = 32;
 
 - (void)_sendFrameWithOpcode:(ARTSROpCode)opCode data:(NSData *)data

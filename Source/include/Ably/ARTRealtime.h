@@ -24,8 +24,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-#define ART_WARN_UNUSED_RESULT __attribute__((warn_unused_result))
-
 /**
  The protocol upon which the top level object `ARTRealtime` is implemented.
  */
