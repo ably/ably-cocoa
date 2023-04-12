@@ -1,4 +1,4 @@
-#include <Ably/ARTFallback.h>
+#import <Ably/ARTFallback.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
