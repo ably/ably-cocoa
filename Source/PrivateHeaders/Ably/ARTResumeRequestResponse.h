@@ -65,7 +65,7 @@ NS_SWIFT_NAME(ResumeRequestResponse)
 
  Non-nil if and only if `type` is `ARTResumeRequestResponseTypeInvalid`, `ARTResumeRequestResponseTypeTokenError`, or `ARTResumeRequestResponseTypeFatalError`.
  */
-@property (nullable, nonatomic, readonly, strong) ARTErrorInfo *error;
+@property (nullable, nonatomic, readonly) ARTErrorInfo *error;
 
 @end
 

@@ -1,6 +1,3 @@
-#ifndef ARTJsonLikeEncoder_h
-#define ARTJsonLikeEncoder_h
-
 #import <Ably/ARTRest+Private.h>
 #import <Ably/ARTEncoder.h>
 #import <Ably/ARTTokenDetails.h>
@@ -23,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTJsonLikeEncoder : NSObject <ARTEncoder>
 
-@property (nonatomic, strong, nullable) id<ARTJsonLikeEncoderDelegate> delegate;
+@property (nonatomic, nullable) id<ARTJsonLikeEncoderDelegate> delegate;
 
 - (instancetype)initWithDelegate:(id<ARTJsonLikeEncoderDelegate>)delegate;
 - (instancetype)initWithLogger:(ARTInternalLog *)logger delegate:(nullable id<ARTJsonLikeEncoderDelegate>)delegate;
@@ -70,5 +67,3 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 NS_ASSUME_NONNULL_END
-
-#endif /* ARTJsonLikeEncoder_h */

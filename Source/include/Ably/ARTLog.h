@@ -17,9 +17,11 @@ typedef NS_ENUM(NSUInteger, ARTLogLevel) {
 /// :nodoc:
 @interface ARTLog : NSObject
 
-@property (nonatomic, assign) ARTLogLevel logLevel;
+@property (nonatomic) ARTLogLevel logLevel;
 
 - (void)log:(NSString *)message withLevel:(ARTLogLevel)level;
+
+// This method should be considered obsolete. It is no longer called by the ably-cocoa SDK.
 - (void)logWithError:(ARTErrorInfo *)error;
 
 - (ARTLog *)verboseMode;

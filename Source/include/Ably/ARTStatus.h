@@ -259,8 +259,8 @@ FOUNDATION_EXPORT NSString *const ARTAblyMessageNoMeansToRenewToken;
  */
 @interface ARTStatus : NSObject
 
-@property (nullable, readonly, strong, nonatomic) ARTErrorInfo *errorInfo;
-@property (nonatomic, assign) ARTState state;
+@property (nullable, readonly, nonatomic) ARTErrorInfo *errorInfo;
+@property (nonatomic) ARTState state;
 
 + (ARTStatus *)state:(ARTState) state;
 + (ARTStatus *)state:(ARTState) state info:(nullable ARTErrorInfo *) info;

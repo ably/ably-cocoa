@@ -82,10 +82,10 @@
             request.HTTPBody = [[self->_rest defaultEncoder] encode:body error:nil];
             [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
-            [self->_logger debug:__FILE__ line:__LINE__ message:@"push notification to a single device %@", request];
+            ARTLogDebug(self->_logger, @"push notification to a single device %@", request);
             [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
                 if (error) {
-                    [self->_logger error:@"%@: push notification to a single device failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+                    ARTLogError(self->_logger, @"%@: push notification to a single device failed (%@)", NSStringFromClass(self.class), error.localizedDescription);
                     if (callback) callback([ARTErrorInfo createFromNSError:error]);
                     return;
                 }

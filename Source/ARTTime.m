@@ -1,6 +1,6 @@
 #import "ARTTime.h"
-#include <sys/types.h>
-#include <sys/sysctl.h>
+#import <sys/types.h>
+#import <sys/sysctl.h>
 
 @implementation ARTTime
 

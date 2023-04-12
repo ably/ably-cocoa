@@ -14,8 +14,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)reenterWithPresenceMessage:(ARTPresenceMessage *)message callback:(ARTCallback)cb;
 
-@property (nonatomic, strong) dispatch_queue_t queue;
-@property (readwrite, assign, nonatomic) ARTPresenceAction lastPresenceAction;
+@property (nonatomic) dispatch_queue_t queue;
+@property (readwrite, nonatomic) ARTPresenceAction lastPresenceAction;
 @property (readonly, nonatomic) NSMutableArray<ARTQueuedMessage *> *pendingPresence;
 
 @end

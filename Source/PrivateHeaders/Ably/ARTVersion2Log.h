@@ -15,11 +15,13 @@ NS_ASSUME_NONNULL_BEGIN
 NS_SWIFT_NAME(Version2Log)
 @protocol ARTVersion2Log
 
-@property (nonatomic, assign) ARTLogLevel logLevel;
+@property (nonatomic) ARTLogLevel logLevel;
 
-- (void)log:(NSString *)message withLevel:(ARTLogLevel)level;
-
-- (void)logWithError:(ARTErrorInfo *)error;
+/**
+ - Parameters:
+   - fileName: The base name (e.g. given an absolute path `/foo/bar/baz`, its base name is `baz`) of the file from which the log message was emitted.
+ */
+- (void)log:(NSString *)message withLevel:(ARTLogLevel)level file:(NSString *)fileName line:(NSInteger)line;
 
 @end
 

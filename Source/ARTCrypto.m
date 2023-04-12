@@ -11,12 +11,6 @@
 
 @end
 
-@interface ARTCrypto ()
-
-@property (nonatomic, strong) ARTInternalLog *logger;
-
-@end
-
 @interface ARTCbcCipher ()
 
 @property CCAlgorithm algorithm;
@@ -149,7 +143,7 @@
     void *buf = malloc(outputBufLen);
 
     if (!buf) {
-        [self.logger error:@"ARTCrypto error encrypting"];
+        ARTLogError(self.logger, @"ARTCrypto error encrypting");
         return [ARTStatus state:ARTStateError];
     }
 
@@ -170,14 +164,14 @@
     CCCryptorStatus status = CCCrypt(kCCEncrypt, self.algorithm, kCCOptionPKCS7Padding, key, keyLen, ivBytes, dataIn, dataInLen, ciphertextBuf, ciphertextBufLen, &bytesWritten);
 
     if (status) {
-        [self.logger error:@"ARTCrypto error encrypting. Status is %d", status];
+        ARTLogError(self.logger, @"ARTCrypto error encrypting. Status is %d", status);
         free(ciphertextBuf);
         return [ARTStatus state: ARTStateError];
     }
 
     ciphertext = [NSData dataWithBytesNoCopy:buf length:(bytesWritten + self.blockLength) freeWhenDone:YES];
     if (nil == ciphertext) {
-        [self.logger error:@"ARTCrypto error encrypting. cipher text is nil"];
+        ARTLogError(self.logger, @"ARTCrypto error encrypting. cipher text is nil");
         free(buf);
         return [ARTStatus state:ARTStateError];
     }
@@ -210,7 +204,7 @@
     size_t bytesWritten = 0;
 
     if (!buf) {
-        [self.logger error:@"ARTCrypto error decrypting."];
+        ARTLogError(self.logger, @"ARTCrypto error decrypting.");
         return [ARTStatus state:ARTStateError];
     }
 
@@ -219,7 +213,7 @@
     CCCryptorStatus status = CCCrypt(kCCDecrypt, self.algorithm, options, key, keyLength, iv, dataIn, dataInLength, buf, outputLength, &bytesWritten);
 
     if (status) {
-        [self.logger error:@"ARTCrypto error decrypting. Status is %d", status];
+        ARTLogError(self.logger, @"ARTCrypto error decrypting. Status is %d", status);
         free(buf);
         return [ARTStatus state:ARTStateError];
     }
@@ -243,7 +237,7 @@
 
     NSData *plaintext = [NSData dataWithBytesNoCopy:buf length:unpaddedLength freeWhenDone:YES];
     if (!plaintext) {
-        [self.logger error:@"ARTCrypto error decrypting. plain text is nil"];
+        ARTLogError(self.logger, @"ARTCrypto error decrypting. plain text is nil");
         free(buf);
     }
 

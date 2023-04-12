@@ -207,12 +207,12 @@
         [output setObject:channelSubscription.deviceId forKey:@"deviceId"];
     }
 
-    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: pushChannelSubscriptionToDictionary %@", _rest, [_delegate formatAsString], output];
+    ARTLogVerbose(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: pushChannelSubscriptionToDictionary %@", _rest, [_delegate formatAsString], output);
     return output;
 }
 
 - (ARTPushChannelSubscription *)pushChannelSubscriptionFromDictionary:(NSDictionary *)input error:(NSError * __autoreleasing *)error {
-    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: pushChannelSubscriptionFromDictionary %@", _rest, [_delegate formatAsString], input];
+    ARTLogVerbose(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: pushChannelSubscriptionFromDictionary %@", _rest, [_delegate formatAsString], input);
 
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
@@ -222,7 +222,7 @@
     NSString *deviceId = [input artString:@"deviceId"];
 
     if ((clientId && deviceId) || (!clientId && !deviceId)) {
-        [_logger error:@"ARTJsonLikeEncoder<%@>: clientId and deviceId are both present or both nil", [_delegate formatAsString]];
+        ARTLogError(_logger, @"ARTJsonLikeEncoder<%@>: clientId and deviceId are both present or both nil", [_delegate formatAsString]);
         if (error) {
             *error = [NSError errorWithDomain:ARTAblyErrorDomain
                                          code:ARTErrorIncompatibleCredentials
@@ -246,7 +246,7 @@
 
 - (NSDate *)decodeTime:(NSData *)data error:(NSError **)error {
     NSArray *resp = [self decodeArray:data error:error];
-    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: decodeTime %@", _rest, [_delegate formatAsString], resp];
+    ARTLogVerbose(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: decodeTime %@", _rest, [_delegate formatAsString], resp);
     if (resp && resp.count == 1) {
         NSNumber *num = resp[0];
         if ([num isKindOfClass:[NSNumber class]]) {
@@ -261,7 +261,7 @@
 }
 
 - (ARTMessage *)messageFromDictionary:(NSDictionary *)input {
-    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: messageFromDictionary %@", _rest, [_delegate formatAsString], input];
+    ARTLogVerbose(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: messageFromDictionary %@", _rest, [_delegate formatAsString], input);
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
@@ -309,7 +309,7 @@
         case 4:
             return ARTPresenceUpdate;
     }
-    [_logger error:@"RS:%p ARTJsonEncoder invalid ARTPresenceAction %d", _rest, action];
+    ARTLogError(_logger, @"RS:%p ARTJsonEncoder invalid ARTPresenceAction %d", _rest, action);
     return ARTPresenceAbsent;
     
 }
@@ -331,7 +331,7 @@
 }
 
 - (ARTPresenceMessage *)presenceMessageFromDictionary:(NSDictionary *)input {
-    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: presenceMessageFromDictionary %@", _rest, [_delegate formatAsString], input];
+    ARTLogVerbose(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: presenceMessageFromDictionary %@", _rest, [_delegate formatAsString], input);
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
@@ -397,7 +397,7 @@
         [output setObject:message.connectionId forKey:@"connectionId"];
     }
 
-    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: messageToDictionary %@", _rest, [_delegate formatAsString], output];
+    ARTLogVerbose(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: messageToDictionary %@", _rest, [_delegate formatAsString], output);
     return output;
 }
 
@@ -406,7 +406,7 @@
 
     [output setObject:authDetails.accessToken forKey:@"accessToken"];
 
-    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: authDetailsToDictionary %@", _rest, [_delegate formatAsString], output];
+    ARTLogVerbose(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: authDetailsToDictionary %@", _rest, [_delegate formatAsString], output);
     return output;
 }
 
@@ -449,7 +449,7 @@
     int action = [self intFromPresenceMessageAction:message.action];
     
     [output setObject:[NSNumber numberWithInt:action] forKey:@"action"];
-    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: presenceMessageToDictionary %@", _rest, [_delegate formatAsString], output];
+    ARTLogVerbose(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: presenceMessageToDictionary %@", _rest, [_delegate formatAsString], output);
     return output;
 }
 
@@ -500,12 +500,12 @@
         output[@"params"] = message.params;
     }
 
-    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: protocolMessageToDictionary %@", _rest, [_delegate formatAsString], output];
+    ARTLogVerbose(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: protocolMessageToDictionary %@", _rest, [_delegate formatAsString], output);
     return output;
 }
 
 - (ARTTokenDetails *)tokenFromDictionary:(NSDictionary *)input error:(NSError * __autoreleasing *)error {
-    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: tokenFromDictionary %@", _rest, [_delegate formatAsString], input];
+    ARTLogVerbose(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: tokenFromDictionary %@", _rest, [_delegate formatAsString], input);
     
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
@@ -513,7 +513,7 @@
     
     NSDictionary *jsonError = [input artDictionary:@"error"];
     if (jsonError) {
-        [_logger error:@"RS:%p ARTJsonLikeEncoder<%@>: tokenFromDictionary error %@", _rest, [_delegate formatAsString], jsonError];
+        ARTLogError(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: tokenFromDictionary error %@", _rest, [_delegate formatAsString], jsonError);
         if (error) {
             NSMutableDictionary* details = [NSMutableDictionary dictionary];
             [details setValue:[jsonError artString:@"message"] forKey:NSLocalizedDescriptionKey];
@@ -540,7 +540,7 @@
 }
 
 - (NSDictionary *)tokenRequestToDictionary:(ARTTokenRequest *)tokenRequest {
-    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: tokenRequestToDictionary %@", _rest, [_delegate formatAsString], tokenRequest];
+    ARTLogVerbose(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: tokenRequestToDictionary %@", _rest, [_delegate formatAsString], tokenRequest);
 
     NSNumber *timestamp;
     if (tokenRequest.timestamp)
@@ -569,7 +569,7 @@
 }
 
 - (ARTTokenRequest *)tokenRequestFromDictionary:(NSDictionary *)input error:(NSError * __autoreleasing *)error {
-    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: tokenRequestFromDictionary %@", _rest, [_delegate formatAsString], input];
+    ARTLogVerbose(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: tokenRequestFromDictionary %@", _rest, [_delegate formatAsString], input);
 
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
@@ -577,7 +577,7 @@
 
     NSDictionary *jsonError = [input artDictionary:@"error"];
     if (jsonError) {
-        [_logger error:@"RS:%p ARTJsonLikeEncoder<%@>: tokenRequestFromDictionary error %@", _rest, [_delegate formatAsString], jsonError];
+        ARTLogError(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: tokenRequestFromDictionary error %@", _rest, [_delegate formatAsString], jsonError);
         if (error) {
             NSMutableDictionary* details = [NSMutableDictionary dictionary];
             [details setValue:[jsonError artString:@"message"] forKey:NSLocalizedDescriptionKey];
@@ -646,7 +646,7 @@
 }
 
 - (ARTDeviceDetails *)deviceDetailsFromDictionary:(NSDictionary *)input error:(NSError * __autoreleasing *)error {
-    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: deviceDetailsFromDictionary %@", _rest, [_delegate formatAsString], input];
+    ARTLogVerbose(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: deviceDetailsFromDictionary %@", _rest, [_delegate formatAsString], input);
 
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
@@ -663,7 +663,7 @@
 }
 
 - (ARTDeviceIdentityTokenDetails *)deviceIdentityTokenDetailsFromDictionary:(NSDictionary *)input error:(NSError * __autoreleasing *)error {
-    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: deviceIdentityTokenDetailsFromDictionary %@", _rest, [_delegate formatAsString], input];
+    ARTLogVerbose(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: deviceIdentityTokenDetailsFromDictionary %@", _rest, [_delegate formatAsString], input);
 
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
@@ -692,7 +692,7 @@
 }
 
 - (ARTDevicePushDetails *)devicePushDetailsFromDictionary:(NSDictionary *)input error:(NSError * __autoreleasing *)error {
-    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: devicePushDetailsFromDictionary %@", _rest, [_delegate formatAsString], input];
+    ARTLogVerbose(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: devicePushDetailsFromDictionary %@", _rest, [_delegate formatAsString], input);
 
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
@@ -710,7 +710,7 @@
 }
 
 - (ARTProtocolMessage *)protocolMessageFromDictionary:(NSDictionary *)input {
-    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: protocolMessageFromDictionary %@", _rest, [_delegate formatAsString], input];
+    ARTLogVerbose(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: protocolMessageFromDictionary %@", _rest, [_delegate formatAsString], input);
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
@@ -807,7 +807,7 @@
 }
 
 - (ARTStats *)statsFromDictionary:(NSDictionary *)input {
-    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: statsFromDictionary %@", _rest, [_delegate formatAsString], input];
+    ARTLogVerbose(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: statsFromDictionary %@", _rest, [_delegate formatAsString], input);
     if (![input isKindOfClass:[NSDictionary class]]) {
         return nil;
     }
@@ -916,7 +916,7 @@
 }
 
 - (ARTStatsRequestCount *)statsRequestCountFromDictionary:(NSDictionary *)input {
-    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: statsRequestCountFromDictionary %@", _rest, [_delegate formatAsString], input];
+    ARTLogVerbose(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: statsRequestCountFromDictionary %@", _rest, [_delegate formatAsString], input);
     if (![input isKindOfClass:[NSDictionary class]]) {
         return [ARTStatsRequestCount empty];
     }
@@ -931,7 +931,7 @@
 }
 
 - (ARTStatsPushCount *)statsPushCountFromDictionary:(NSDictionary *)input {
-    [_logger verbose:@"RS:%p ARTJsonLikeEncoder<%@>: statsPushCountFromDictionary %@", _rest, [_delegate formatAsString], input];
+    ARTLogVerbose(_logger, @"RS:%p ARTJsonLikeEncoder<%@>: statsPushCountFromDictionary %@", _rest, [_delegate formatAsString], input);
     if (![input isKindOfClass:[NSDictionary class]]) {
         return [ARTStatsPushCount empty];
     }
@@ -991,12 +991,12 @@
     NSError *e = nil;
     id decoded = [_delegate decode:data error:&e];
     if (e) {
-        [_logger error:@"failed decoding data %@ with error: %@ (%@)", data, e.localizedDescription, e.localizedFailureReason];
+        ARTLogError(_logger, @"failed decoding data %@ with,  %@ (%@)", data, e.localizedDescription, e.localizedFailureReason);
     }
     if (error) {
         *error = e;
     }
-    [_logger debug:@"RS:%p ARTJsonLikeEncoder<%@> decoding '%@'; got: %@", _rest, [_delegate formatAsString], data, decoded];
+    ARTLogDebug(_logger, @"RS:%p ARTJsonLikeEncoder<%@> decoding '%@'; got: %@", _rest, [_delegate formatAsString], data, decoded);
     return decoded;
 }
 
@@ -1004,12 +1004,12 @@
     NSError *e = nil;
     NSData *encoded = [_delegate encode:obj error:&e];
     if (e) {
-        [_logger error:@"failed encoding object %@ with error: %@ (%@)", obj, e.localizedDescription, e.localizedFailureReason];
+        ARTLogError(_logger, @"failed encoding object %@ with,  %@ (%@)", obj, e.localizedDescription, e.localizedFailureReason);
     }
     if (error) {
         *error = e;
     }
-    [_logger debug:@"RS:%p ARTJsonLikeEncoder<%@> encoding '%@'; got: %@", _rest, [_delegate formatAsString], obj, encoded];
+    ARTLogDebug(_logger, @"RS:%p ARTJsonLikeEncoder<%@> encoding '%@'; got: %@", _rest, [_delegate formatAsString], obj, encoded);
     return encoded;
 }
 

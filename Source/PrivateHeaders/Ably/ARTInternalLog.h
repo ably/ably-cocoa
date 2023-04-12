@@ -1,41 +1,52 @@
 @import Foundation;
 #import <Ably/ARTLog.h>
 
+@protocol ARTInternalLogCore;
 @protocol ARTVersion2Log;
+
+/**
+ Logs a message to a given instance of `ARTInternalLog`. The `ARTLogVerbose` etc macros wrap this; favour using those.
+
+ - Parameters:
+   - _logger: An instance of `ARTInternalLog`.
+   - _level: An `ARTLogLevel` value.
+   - _format: An NSString format string, followed by any arguments to interpolate in the format string.
+ */
+#define ARTLog(_logger, _level, _format, ...) [_logger logWithLevel:_level file:__FILE__ line:__LINE__ format:_format, ##__VA_ARGS__]
+
+#define ARTLogVerbose(logger, format, ...) ARTLog(logger, ARTLogLevelVerbose, format, ##__VA_ARGS__)
+#define ARTLogDebug(logger, format, ...) ARTLog(logger, ARTLogLevelDebug, format, ##__VA_ARGS__)
+#define ARTLogInfo(logger, format, ...) ARTLog(logger, ARTLogLevelInfo, format, ##__VA_ARGS__)
+#define ARTLogWarn(logger, format, ...) ARTLog(logger, ARTLogLevelWarn, format, ##__VA_ARGS__)
+#define ARTLogError(logger, format, ...) ARTLog(logger, ARTLogLevelError, format, ##__VA_ARGS__)
 
 NS_ASSUME_NONNULL_BEGIN
 
 NS_SWIFT_NAME(InternalLog)
 /**
- `ARTInternalLog` is the logging class used internally by the SDK. It’s responsible for receiving log messages from SDK components, performing additional processing on these messages, and forwarding the result to an object conforming to the `ARTVersion2Log` protocol.
-
- This class exists to give internal SDK components access to a rich and useful logging interface, whilst minimising the complexity (and hence the implementation burden for users of the SDK) of the `ARTVersion2Log` protocol. It also allows us to evolve the logging interface used internally without introducing breaking changes for users of the SDK.
-
- The initial interface of `ARTInternalLog` more or less mirrors that of the `ARTLog` class, for compatibility with existing internal SDK code. However, it will evolve as we gather requirements for the information logged by the SDK — see issues #1623 and #1624.
+ `ARTInternalLog` is the logging class used internally by the SDK. It provides a thin wrapper over `ARTInternalLogCore`, providing variadic versions of that protocol’s methods.
 
  - Note: It would be great if we could make `ARTInternalLog` a protocol (with a default implementation) instead of a class, since this would make it easier to test the logging behaviour of the SDK. However, since its interface currently makes heavy use of variadic Objective-C methods, which cannot be represented in Swift, we would be unable to write mocks for this protocol in our Swift test suite. As the `ARTInternalLog` interface evolves we may end up removing these variadic methods, in which case we can reconsider.
  */
 @interface ARTInternalLog: NSObject
 
 /**
- Creates a logger which forwards its generated messages to the given logger.
+ Creates a logger which forwards its generated messages to the given core object.
  */
-- (instancetype)initWithLogger:(id<ARTVersion2Log>)logger NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithCore:(id<ARTInternalLogCore>)core NS_DESIGNATED_INITIALIZER;
+/**
+ A convenience initializer which creates a logger whose core is an instance of `ARTDefaultInternalLogCore` wrapping the given logger.
+ */
+- (instancetype)initWithLogger:(id<ARTVersion2Log>)logger;
 - (instancetype)init NS_UNAVAILABLE;
 
-- (void)log:(NSString *)message withLevel:(ARTLogLevel)level;
-- (void)logWithError:(ARTErrorInfo *)error;
+// This method passes the arguments through to the logger’s core object. It is not directly used by the internals of the SDK, but we need it because some of our Swift tests (which can’t access the variadic method below) want to be able to call a logging method on an instance of `ARTInternalLog`.
+- (void)log:(NSString *)message withLevel:(ARTLogLevel)level file:(const char *)fileName line:(NSInteger)line;
 
-@property (nonatomic, assign) ARTLogLevel logLevel;
+// This method should not be called directly — it is for use by the ARTLog* macros. It is tested via the tests of the macros.
+- (void)logWithLevel:(ARTLogLevel)level file:(const char *)fileName line:(NSUInteger)line format:(NSString *)format, ...  NS_FORMAT_FUNCTION(4,5);
 
-// Copied from ARTLog (Shorthand)
-- (void)verbose:(NSString *)format, ... NS_FORMAT_FUNCTION(1,2);
-- (void)verbose:(const char *)fileName line:(NSUInteger)line message:(NSString *)message, ... NS_FORMAT_FUNCTION(3,4);
-- (void)debug:(NSString *)format, ... NS_FORMAT_FUNCTION(1,2);
-- (void)debug:(const char *)fileName line:(NSUInteger)line message:(NSString *)message, ... NS_FORMAT_FUNCTION(3,4);
-- (void)info:(NSString *)format, ... NS_FORMAT_FUNCTION(1,2);
-- (void)warn:(NSString *)format, ... NS_FORMAT_FUNCTION(1,2);
-- (void)error:(NSString *)format, ... NS_FORMAT_FUNCTION(1,2);
+@property (nonatomic) ARTLogLevel logLevel;
 
 @end
 

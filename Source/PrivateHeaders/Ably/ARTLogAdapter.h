@@ -25,25 +25,9 @@ NS_SWIFT_NAME(LogAdapter)
 - (instancetype)initWithLogger:(ARTLog *)logger;
 
 /**
- `ARTLogAdapter` implements this `ARTVersion2Log` protocol requirement by calling the `-log:withMessage:` method on its underlying `ARTLog` instance.
-
- This implementation will necessarily change (becoming more complex) as we evolve the `ARTVersion2Log` protocol and hence the signature of this method. For example, if we add the ability to attach metadata to a log message, then this implementation will need to choose a way of representing that metadata as a string.
-
- - Note: `ARTLogAdapter` directly calls the underlying `ARTLog` instance’s `-log:withLevel:` method. It does not call any of the convenience methods in the "`ARTLog (Shorthand)`" category.
- */
-- (void)log:(NSString *)message withLevel:(ARTLogLevel)level;
-
-/**
- `ARTLogAdapter` implements this `ARTVersion2Log` protocol requirement by calling the `-logWithError:` method on its underlying `ARTLog` instance.
-
- As with `-log:withLevel:`, the implementation of this method may change, or the method may disappear entirely, as we evolve the `ARTVersion2Log` protocol.
- */
-- (void)logWithError:(ARTErrorInfo *)error;
-
-/**
  `ARTLogAdapter` implements this `ARTVersion2Log` protocol requirement by forwarding the setter and getter calls to its underlying `ARTLog` instance.
  */
-@property (nonatomic, assign) ARTLogLevel logLevel;
+@property (nonatomic) ARTLogLevel logLevel;
 
 @end
 

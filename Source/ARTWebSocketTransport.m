@@ -72,13 +72,13 @@ Class configuredWebsocketClass = nil;
         _resumeKey = resumeKey;
         _stateEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_workQueue];
 
-        [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p WS:%p alloc", _delegate, self];
+        ARTLogVerbose(self.logger, @"R:%p WS:%p alloc", _delegate, self);
     }
     return self;
 }
 
 - (void)dealloc {
-    [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p WS:%p dealloc", _delegate, self];
+    ARTLogVerbose(self.logger, @"R:%p WS:%p dealloc", _delegate, self);
     self.websocket.delegate = nil;
     self.websocket = nil;
     self.delegate = nil;
@@ -95,13 +95,13 @@ Class configuredWebsocketClass = nil;
             ARTProtocolMessage *msg = (ARTProtocolMessage *)decodedObject;
             extraInformation = [NSString stringWithFormat:@"with action \"%tu - %@\" ", msg.action, ARTProtocolMessageActionToStr(msg.action)];
         }
-        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p sending message %@was ignored because websocket isn't ready", _delegate, self, extraInformation];
+        ARTLogDebug(self.logger, @"R:%p WS:%p sending message %@was ignored because websocket isn't ready", _delegate, self, extraInformation);
         return false;
     }
 }
 
 - (void)internalSend:(ARTProtocolMessage *)msg {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket sending action %tu - %@", _delegate, self, msg.action, ARTProtocolMessageActionToStr(msg.action)];
+    ARTLogDebug(self.logger, @"R:%p WS:%p websocket sending action %tu - %@", _delegate, self, msg.action, ARTProtocolMessageActionToStr(msg.action));
     NSData *data = [self.encoder encodeProtocolMessage:msg error:nil];
     [self send:data withSource:msg];
 }
@@ -118,7 +118,7 @@ Class configuredWebsocketClass = nil;
 
 - (void)connectWithKey:(NSString *)key {
     _state = ARTRealtimeTransportStateOpening;
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket connect with key", _delegate, self];
+    ARTLogDebug(self.logger, @"R:%p WS:%p websocket connect with key", _delegate, self);
     NSURLQueryItem *keyParam = [NSURLQueryItem queryItemWithName:@"key" value:key];
     [self setupWebSocket:@{keyParam.name: keyParam} withOptions:self.options resumeKey:self.resumeKey];
     // Connect
@@ -127,7 +127,7 @@ Class configuredWebsocketClass = nil;
 
 - (void)connectWithToken:(NSString *)token {
     _state = ARTRealtimeTransportStateOpening;
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket connect with token", _delegate, self];
+    ARTLogDebug(self.logger, @"R:%p WS:%p websocket connect with token", _delegate, self);
     NSURLQueryItem *accessTokenParam = [NSURLQueryItem queryItemWithName:@"accessToken" value:token];
     [self setupWebSocket:@{accessTokenParam.name: accessTokenParam} withOptions:self.options resumeKey:self.resumeKey];
     // Connect
@@ -174,7 +174,7 @@ Class configuredWebsocketClass = nil;
     urlComponents.queryItems = [queryItems allValues];
     NSURL *url = [urlComponents URLRelativeToURL:[options realtimeUrl]];
 
-    [_logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p url %@", _delegate, self, url];
+    ARTLogDebug(_logger, @"R:%p WS:%p url %@", _delegate, self, url);
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
 
@@ -246,13 +246,13 @@ Class configuredWebsocketClass = nil;
 // call all our delegate's methods.
 
 - (void)webSocketDidOpen:(id<ARTWebSocket>)websocket {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket did open", _delegate, self];
+    ARTLogDebug(self.logger, @"R:%p WS:%p websocket did open", _delegate, self);
     [_stateEmitter emit:[ARTEvent newWithTransportState:ARTRealtimeTransportStateOpened] with:nil];
     [_delegate realtimeTransportAvailable:self];
 }
 
 - (void)webSocket:(id<ARTWebSocket>)webSocket didCloseWithCode:(NSInteger)code reason:(NSString *)reason wasClean:(BOOL)wasClean {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket did disconnect (code %ld) %@", _delegate, self, (long)code, reason];
+    ARTLogDebug(self.logger, @"R:%p WS:%p websocket did disconnect (code %ld) %@", _delegate, self, (long)code, reason);
 
     switch (code) {
     case ARTWsCloseNormal:
@@ -291,7 +291,7 @@ Class configuredWebsocketClass = nil;
 }
 
 - (void)webSocket:(id<ARTWebSocket>)webSocket didFailWithError:(NSError *)error {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket did receive error %@", _delegate, self, error];
+    ARTLogDebug(self.logger, @"R:%p WS:%p websocket did receive error %@", _delegate, self, error);
 
     [_delegate realtimeTransportFailed:self withError:[self classifyError:error]];
     _state = ARTRealtimeTransportStateClosed;
@@ -319,10 +319,10 @@ Class configuredWebsocketClass = nil;
 }
 
 - (void)webSocket:(id<ARTWebSocket>)webSocket didReceiveMessage:(id)message {
-    [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket did receive message", _delegate, self];
+    ARTLogVerbose(self.logger, @"R:%p WS:%p websocket did receive message", _delegate, self);
 
     if (self.websocket.readyState == ARTSR_CLOSED) {
-        [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket is closed, message has been ignored", _delegate, self];
+        ARTLogDebug(self.logger, @"R:%p WS:%p websocket is closed, message has been ignored", _delegate, self);
         return;
     }
 
@@ -336,7 +336,7 @@ Class configuredWebsocketClass = nil;
 }
 
 - (void)webSocketMessageText:(NSString *)text {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket in %@ state did receive message %@", _delegate, self, WebSocketStateToStr(self.websocket.readyState), text];
+    ARTLogDebug(self.logger, @"R:%p WS:%p websocket in %@ state did receive message %@", _delegate, self, WebSocketStateToStr(self.websocket.readyState), text);
 
     NSData *data = nil;
     data = [((NSString *)text) dataUsingEncoding:NSUTF8StringEncoding];
@@ -345,13 +345,13 @@ Class configuredWebsocketClass = nil;
 }
 
 - (void)webSocketMessageData:(NSData *)data {
-    [self.logger verbose:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket in %@ state did receive data %@", _delegate, self, WebSocketStateToStr(self.websocket.readyState), data];
+    ARTLogVerbose(self.logger, @"R:%p WS:%p websocket in %@ state did receive data %@", _delegate, self, WebSocketStateToStr(self.websocket.readyState), data);
 
     [self receiveWithData:data];
 }
 
 - (void)webSocketMessageProtocol:(ARTProtocolMessage *)message {
-    [self.logger debug:__FILE__ line:__LINE__ message:@"R:%p WS:%p websocket in %@ state did receive protocol message %@", _delegate, self, WebSocketStateToStr(self.websocket.readyState), message];
+    ARTLogDebug(self.logger, @"R:%p WS:%p websocket in %@ state did receive protocol message %@", _delegate, self, WebSocketStateToStr(self.websocket.readyState), message);
 
     [self receive:message];
 }

@@ -11,37 +11,37 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * A Unique ID assigned by Ably to this message.
  */
-@property (nullable, strong, nonatomic) NSString *id;
+@property (nullable, nonatomic) NSString *id;
 
 /**
  * Timestamp of when the message was received by Ably, as a `NSDate` object.
  */
-@property (strong, nonatomic, nullable) NSDate *timestamp;
+@property (nonatomic, nullable) NSDate *timestamp;
 
 /**
  * The client ID of the publisher of this message.
  */
-@property (strong, nonatomic, nullable) NSString *clientId;
+@property (nonatomic, nullable) NSString *clientId;
 
 /**
  * The connection ID of the publisher of this message.
  */
-@property (strong, nonatomic) NSString *connectionId;
+@property (nonatomic) NSString *connectionId;
 
 /**
  * This is typically empty, as all messages received from Ably are automatically decoded client-side using this value. However, if the message encoding cannot be processed, this attribute contains the remaining transformations not applied to the `data` payload.
  */
-@property (strong, nonatomic, nullable) NSString *encoding;
+@property (nonatomic, nullable) NSString *encoding;
 
 /**
  * The message payload, if provided.
  */
-@property (strong, nonatomic, nullable) id data;
+@property (nonatomic, nullable) id data;
 
 /**
  * A JSON object of arbitrary key-value pairs that may contain metadata, and/or ancillary payloads.
  */
-@property (strong, nullable, nonatomic) id<ARTJsonCompatible> extras;
+@property (nullable, nonatomic) id<ARTJsonCompatible> extras;
 
 /// :nodoc:
 - (NSString *)description;

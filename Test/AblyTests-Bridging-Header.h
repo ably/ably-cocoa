@@ -1,3 +1,3 @@
-#include <asl.h>
-#include "NSObject+TestSuite.h"
-#include "ARTGCD.h"
+#import <asl.h>
+#import "NSObject+TestSuite.h"
+#import "ARTGCD.h"

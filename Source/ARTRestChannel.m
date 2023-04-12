@@ -124,7 +124,7 @@ static const NSUInteger kIdempotentLibraryGeneratedIdLength = 9; //bytes
         _queue = rest.queue;
         _userQueue = rest.userQueue;
         _basePath = [NSString stringWithFormat:@"/channels/%@", [name stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]]]; // Using URLHostAllowedCharacterSet, because it doesn't include '/', which can be used in channel names across other platforms.
-        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p instantiating under '%@'", self, name];
+        ARTLogDebug(self.logger, @"RS:%p instantiating under '%@'", self, name);
     }
     return self;
 }
@@ -206,13 +206,13 @@ dispatch_sync(_queue, ^{
             message = [message decodeWithEncoder:self.dataEncoder error:&decodeError];
             if (decodeError != nil) {
                 ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:ARTErrorUnableToDecodeMessage message:decodeError.localizedFailureReason] prepend:@"Failed to decode data: "];
-                [self.logger error:@"RS:%p C:%p (%@) %@", self->_rest, self, self.name, errorInfo.message];
+                ARTLogError(self.logger, @"RS:%p C:%p (%@) %@", self->_rest, self, self.name, errorInfo.message);
             }
             return message;
         }];
     };
 
-    [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p C:%p (%@) stats request %@", self->_rest, self, self.name, request];
+    ARTLogDebug(self.logger, @"RS:%p C:%p (%@) stats request %@", self->_rest, self, self.name, request);
     [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
     ret = YES;
 });
@@ -232,7 +232,7 @@ dispatch_sync(_queue, ^{
         NSURL *url = [NSURL URLWithString:self->_basePath];
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
         
-        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p C:%p (%@) channel details request %@", self->_rest, self, self.name, request];
+        ARTLogDebug(self.logger, @"RS:%p C:%p (%@) channel details request %@", self->_rest, self, self.name, request);
         
         [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse * _Nullable response, NSData * _Nullable data, NSError * _Nullable error) {
             
@@ -241,7 +241,7 @@ dispatch_sync(_queue, ^{
                 id<ARTEncoder> decoder = self->_rest.encoders[response.MIMEType];
                 if (decoder == nil) {
                     NSString* errorMessage = [NSString stringWithFormat:@"Decoder for MIMEType '%@' wasn't found.", response.MIMEType];
-                    [self.logger debug:__FILE__ line:__LINE__ message:@"%@: %@", NSStringFromClass(self.class), errorMessage];
+                    ARTLogDebug(self.logger, @"%@: %@", NSStringFromClass(self.class), errorMessage);
                     if (callback) {
                         callback(nil, [ARTErrorInfo createWithCode:ARTErrorUnableToDecodeMessage message:errorMessage]);
                     }
@@ -249,13 +249,13 @@ dispatch_sync(_queue, ^{
                 else {
                     ARTChannelDetails *channelDetails = [decoder decodeChannelDetails:data error:&decodeError];
                     if (decodeError) {
-                        [self.logger debug:__FILE__ line:__LINE__ message:@"%@: decode channel details failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+                        ARTLogDebug(self.logger, @"%@: decode channel details failed (%@)", NSStringFromClass(self.class), error.localizedDescription);
                         if (callback) {
                             callback(nil, [ARTErrorInfo createFromNSError:decodeError]);
                         }
                     }
                     else {
-                        [self.logger debug:__FILE__ line:__LINE__ message:@"%@: successfully got channel details %@", NSStringFromClass(self.class), channelDetails.channelId];
+                        ARTLogDebug(self.logger, @"%@: successfully got channel details %@", NSStringFromClass(self.class), channelDetails.channelId);
                         if (callback) {
                             callback(channelDetails, nil);
                         }
@@ -263,7 +263,7 @@ dispatch_sync(_queue, ^{
                 }
             }
             else {
-                [self.logger debug:__FILE__ line:__LINE__ message:@"%@: get channel details failed (%@)", NSStringFromClass(self.class), error.localizedDescription];
+                ARTLogDebug(self.logger, @"%@: get channel details failed (%@)", NSStringFromClass(self.class), error.localizedDescription);
                 ARTErrorInfo *errorInfo = nil;
                 if (error) {
                     if (self->_rest.options.addRequestIds) {
@@ -362,7 +362,7 @@ dispatch_sync(_queue, ^{
             [request setValue:self.rest.defaultEncoding forHTTPHeaderField:@"Content-Type"];
         }
         
-        [self.logger debug:__FILE__ line:__LINE__ message:@"RS:%p C:%p (%@) post message %@", self->_rest, self, self.name, [[NSString alloc] initWithData:encodedMessage ?: [NSData data] encoding:NSUTF8StringEncoding]];
+        ARTLogDebug(self.logger, @"RS:%p C:%p (%@) post message %@", self->_rest, self, self.name, [[NSString alloc] initWithData:encodedMessage ?: [NSData data] encoding:NSUTF8StringEncoding]);
         
         [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
             if (callback) {

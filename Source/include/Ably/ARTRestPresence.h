@@ -20,12 +20,12 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Filters the array of returned presence members by a specific client using its ID.
  */
-@property (nullable, nonatomic, strong, readwrite) NSString *clientId;
+@property (nullable, nonatomic, readwrite) NSString *clientId;
 
 /**
  * Filters the array of returned presence members by a specific connection using its ID.
  */
-@property (nullable, nonatomic, strong, readwrite) NSString *connectionId;
+@property (nullable, nonatomic, readwrite) NSString *connectionId;
 
 /// :nodoc:
 - (instancetype)init;

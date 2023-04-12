@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTSRSecurityPolicy ()
 
-@property (nonatomic, assign, readonly) BOOL certificateChainValidationEnabled;
+@property (nonatomic, readonly) BOOL certificateChainValidationEnabled;
 
 @end
 

@@ -83,7 +83,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTChannel : NSObject<ARTChannelProtocol>
 
 /// :nodoc:
-@property (nonatomic, strong, readonly) NSString *name;
+@property (nonatomic, readonly) NSString *name;
 
 @end
 

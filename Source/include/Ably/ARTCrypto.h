@@ -40,12 +40,12 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * The algorithm to use for encryption. Only `AES` is supported and is the default value.
  */
-@property (readonly, strong, nonatomic) NSString *algorithm;
+@property (readonly, nonatomic) NSString *algorithm;
 
 /**
  * The private key used to encrypt and decrypt payloads.
  */
-@property (readonly, strong, nonatomic) NSData *key;
+@property (readonly, nonatomic) NSData *key;
 
 /**
  * The length of the key in bits; for example 128 or 256.

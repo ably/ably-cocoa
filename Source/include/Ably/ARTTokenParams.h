@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Requested time to live for the token in milliseconds. The default is 60 minutes.
  */
-@property (nonatomic, strong, nullable) NSNumber *ttl;
+@property (nonatomic, nullable) NSNumber *ttl;
 
 /**
  * The capabilities associated with this Ably Token. The capabilities value is a JSON-encoded representation of the resource paths and associated operations. Read more about capabilities in the [capabilities docs](https://ably.com/docs/core-features/authentication/#capabilities-explained).
@@ -35,7 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * A cryptographically secure random string of at least 16 characters, used to ensure the `ARTTokenRequest` cannot be reused.
  */
-@property (nullable, nonatomic, readonly, strong) NSString *nonce;
+@property (nullable, nonatomic, readonly) NSString *nonce;
 
 /// :nodoc:
 - (instancetype)init;

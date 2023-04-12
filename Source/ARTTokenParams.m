@@ -1,7 +1,7 @@
 #import "ARTTokenParams+Private.h"
 
-#include <CommonCrypto/CommonDigest.h>
-#include <CommonCrypto/CommonHMAC.h>
+#import <CommonCrypto/CommonDigest.h>
+#import <CommonCrypto/CommonHMAC.h>
 
 #import "ARTDefault.h"
 #import "ARTEncoder.h"

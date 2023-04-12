@@ -14,11 +14,11 @@
 - (void)setDeviceAuthentication:(ARTDeviceId *)deviceId localDevice:(ARTLocalDevice *)localDevice logger:(ARTInternalLog *)logger {
     if ([localDevice.id isEqualToString:deviceId]) {
         if (localDevice.identityTokenDetails.token) {
-            [logger debug:__FILE__ line:__LINE__ message:@"adding device authentication using local device identity token"];
+            ARTLogDebug(logger, @"adding device authentication using local device identity token");
             [self setValue:[localDevice.identityTokenDetails.token art_base64Encoded] forHTTPHeaderField:@"X-Ably-DeviceToken"];
         }
         else if (localDevice.secret) {
-            [logger debug:__FILE__ line:__LINE__ message:@"adding device authentication using local device secret"];
+            ARTLogDebug(logger, @"adding device authentication using local device secret");
             [self setValue:localDevice.secret forHTTPHeaderField:@"X-Ably-DeviceSecret"];
         }
     }

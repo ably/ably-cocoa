@@ -23,12 +23,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTConnectionInternal : NSObject<ARTConnectionProtocol>
 
-@property (nullable, readonly, strong, nonatomic) NSString *id;
-@property (nullable, readonly, strong, nonatomic) NSString *key;
+@property (nullable, readonly, nonatomic) NSString *id;
+@property (nullable, readonly, nonatomic) NSString *key;
 @property (assign, nonatomic) int64_t latestMessageSerial;
-@property (readonly, assign, nonatomic) NSInteger maxMessageSize;
-@property (readonly, assign, nonatomic) ARTRealtimeConnectionState state;
-@property (nullable, readonly, strong, nonatomic) ARTErrorInfo *errorReason;
+@property (readonly, nonatomic) NSInteger maxMessageSize;
+@property (readonly, nonatomic) ARTRealtimeConnectionState state;
+@property (nullable, readonly, nonatomic) ARTErrorInfo *errorReason;
 
 - (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime;
 
@@ -39,7 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable ARTErrorInfo *)errorReason_nosync;
 - (nullable ARTErrorInfo *)error_nosync;
 
-@property (readonly, strong, nonatomic) ARTEventEmitter<ARTEvent *, ARTConnectionStateChange *> *eventEmitter;
+@property (readonly, nonatomic) ARTEventEmitter<ARTEvent *, ARTConnectionStateChange *> *eventEmitter;
 @property(weak, nonatomic) ARTRealtimeInternal* realtime; // weak because realtime owns self
 
 - (void)setId:(NSString *_Nullable)newId;

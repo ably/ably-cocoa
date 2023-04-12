@@ -7,7 +7,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
-@property (readonly, strong, nonatomic) NSString *resumeKey;
+@property (readonly, nonatomic) NSString *resumeKey;
 
 @end
 

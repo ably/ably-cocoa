@@ -447,7 +447,7 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
     NSError *error;
     NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self requiringSecureCoding:false error:&error];
     if (error) {
-        [logger error:@"%@ archive failed: %@", [self class], error];
+        ARTLogError(logger, @"%@ archive failed: %@", [self class], error);
     }
     return data;
 #else
@@ -455,7 +455,7 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
         NSError *error;
         NSData *data = [NSKeyedArchiver archivedDataWithRootObject:self requiringSecureCoding:false error:&error];
         if (error) {
-            [logger error:@"%@ archive failed: %@", [self class], error];
+            ARTLogError(logger, @"%@ archive failed: %@", [self class], error);
         }
         return data;
     }
@@ -471,7 +471,7 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
     NSError *error;
     id result = [NSKeyedUnarchiver unarchivedObjectOfClasses:allowedTypes fromData:data error:&error];
     if (error) {
-        [logger error:@"%@ unarchive failed: %@", self, error];
+        ARTLogError(logger, @"%@ unarchive failed: %@", self, error);
     }
     return result;
 #else
@@ -479,7 +479,7 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
         NSError *error;
         id result = [NSKeyedUnarchiver unarchivedObjectOfClasses:allowedTypes fromData:data error:&error];
         if (error) {
-            [logger error:@"%@ unarchive failed: %@", self, error];
+            ARTLogError(logger, @"%@ unarchive failed: %@", self, error);
         }
         return result;
     }

@@ -40,7 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * The type of `ARTPresenceAction` the `ARTPresenceMessage` is for.
  */
-@property (readwrite, assign, nonatomic) ARTPresenceAction action;
+@property (readwrite, nonatomic) ARTPresenceAction action;
 
 /**
  * Combines `ARTBaseMessage.clientId` and `ARTBaseMessage.connectionId` to ensure that multiple connected clients with an identical `clientId` are uniquely identifiable.

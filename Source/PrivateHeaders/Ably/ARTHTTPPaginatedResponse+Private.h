@@ -8,7 +8,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTHTTPPaginatedResponse ()
 
-@property (nonatomic, strong) NSHTTPURLResponse *response;
+@property (nonatomic) NSHTTPURLResponse *response;
 
 - (instancetype)initWithResponse:(NSHTTPURLResponse *)response
                            items:(NSArray *)items

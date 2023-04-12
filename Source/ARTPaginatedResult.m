@@ -98,14 +98,14 @@
 }
 
 + (void)executePaginated:(ARTRestInternal *)rest withRequest:(NSMutableURLRequest *)request andResponseProcessor:(ARTPaginatedResultResponseProcessor)responseProcessor callback:(void (^)(ARTPaginatedResult<id> *_Nullable result, ARTErrorInfo *_Nullable error))callback {
-    [rest.logger debug:__FILE__ line:__LINE__ message:@"Paginated request: %@", request];
+    ARTLogDebug(rest.logger, @"Paginated request: %@", request);
 
     [rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             callback(nil, [ARTErrorInfo createFromNSError:error]);
         } else {
-            [[rest logger] debug:__FILE__ line:__LINE__ message:@"Paginated response: %@", response];
-            [[rest logger] debug:__FILE__ line:__LINE__ message:@"Paginated response data: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]];
+            ARTLogDebug([rest logger], @"Paginated response: %@", response);
+            ARTLogDebug([rest logger], @"Paginated response data: %@", [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding]);
 
             NSError *decodeError = nil;
             NSArray *items = responseProcessor(response, data, &decodeError);

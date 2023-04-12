@@ -359,7 +359,7 @@ NSString *generateNonce(void);
 /**
  * A `ARTChannelMetrics` object.
  */
-@property (nonatomic, strong, readonly) ARTChannelMetrics *metrics;
+@property (nonatomic, readonly) ARTChannelMetrics *metrics;
 
 /// :nodoc:
 - (instancetype)initWithMetrics:(ARTChannelMetrics *)metrics;
@@ -379,7 +379,7 @@ NSString *generateNonce(void);
 /**
  * A `ARTChannelOccupancy` object.
  */
-@property (nonatomic, strong, readonly) ARTChannelOccupancy *occupancy;
+@property (nonatomic, readonly) ARTChannelOccupancy *occupancy;
 
 /// :nodoc:
 - (instancetype)initWithOccupancy:(ARTChannelOccupancy *)occupancy active:(BOOL)active;
@@ -394,12 +394,12 @@ NSString *generateNonce(void);
 /**
  * The identifier of the channel.
  */
-@property (nonatomic, strong, readonly) NSString *channelId;
+@property (nonatomic, readonly) NSString *channelId;
 
 /**
  * A `ARTChannelStatus` object.
  */
-@property (nonatomic, strong, readonly) ARTChannelStatus *status;
+@property (nonatomic, readonly) ARTChannelStatus *status;
 
 /// :nodoc:
 - (instancetype)initWithChannelId:(NSString *)channelId status:(ARTChannelStatus *)status;

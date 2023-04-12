@@ -34,12 +34,12 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * [Channel Parameters](https://ably.com/docs/realtime/channels/channel-parameters/overview) that configure the behavior of the channel.
  */
-@property (nonatomic, strong, nullable) NSStringDictionary *params;
+@property (nonatomic, nullable) NSStringDictionary *params;
 
 /**
  * An array of `ARTChannelMode` objects.
  */
-@property (nonatomic, assign) ARTChannelMode modes;
+@property (nonatomic) ARTChannelMode modes;
 
 @end
 

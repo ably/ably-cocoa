@@ -34,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * An authenticated `ARTTokenDetails` object (most commonly obtained from an Ably Token Request response). This option is mostly useful for testing: since tokens are short-lived, in production you almost always want to use an authentication method that enables the client library to renew the token automatically when the previous one expires, such as `authUrl` or `authCallback`. Use this option if you wish to use Token authentication. Read more about [Token authentication](https://ably.com/docs/core-features/authentication#token-authentication).
  */
-@property (nonatomic, strong, nullable) ARTTokenDetails *tokenDetails;
+@property (nonatomic, nullable) ARTTokenDetails *tokenDetails;
 
 /**
  * Called when a new token is required. The role of the callback is to obtain a fresh token, one of: an Ably Token string (in plain text format); a signed `ARTTokenRequest`; a `ARTTokenDetails` (in JSON format); an [Ably JWT](https://ably.com/docs/core-features/authentication#ably-jwt). See [the authentication documentation](https://ably.com/docs/realtime/authentication) for details of the Ably `ARTTokenRequest` format and associated API calls.
@@ -44,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * A URL that the library may use to obtain a token string (in plain text format), or a signed `ARTTokenRequest` or `ARTTokenDetails` (in JSON format) from.
  */
-@property (nonatomic, strong, nullable) NSURL *authUrl;
+@property (nonatomic, nullable) NSURL *authUrl;
 
 /**
  * The HTTP verb to use for any request made to the `authUrl`, either `GET` or `POST`. The default value is `GET`.
@@ -64,12 +64,12 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * If `true`, the library queries the Ably servers for the current time when issuing `ARTTokenRequest`s instead of relying on a locally-available time of day. Knowing the time accurately is needed to create valid signed Ably `ARTTokenRequest`s, so this option is useful for library instances on auth servers where for some reason the server clock cannot be kept synchronized through normal means, such as an [NTP daemon](https://en.wikipedia.org/wiki/Ntpd). The server is queried for the current time once per client library instance (which stores the offset from the local clock), so if using this option you should avoid instancing a new version of the library for each request. The default is `false`.
  */
-@property (nonatomic, assign, nonatomic) BOOL queryTime;
+@property (nonatomic, nonatomic) BOOL queryTime;
 
 /**
  * When `true`, forces token authentication to be used by the library. If a `clientId` is not specified in the `ARTClientOptions` or `ARTTokenParams`, then the Ably Token issued is [anonymous](https://ably.com/docs/core-features/authentication#identified-clients).
  */
-@property (readwrite, assign, nonatomic) BOOL useTokenAuth;
+@property (readwrite, nonatomic) BOOL useTokenAuth;
 
 /// :nodoc:
 - (instancetype)init;

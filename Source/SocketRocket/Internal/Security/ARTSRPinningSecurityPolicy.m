@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTSRPinningSecurityPolicy ()
 
 @property (nonatomic, copy, readonly) NSArray *pinnedCertificates;
-@property (nonatomic, strong, readonly, nullable) ARTInternalLog *logger;
+@property (nonatomic, readonly, nullable) ARTInternalLog *logger;
 
 @end
 

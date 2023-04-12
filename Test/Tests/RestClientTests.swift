@@ -238,7 +238,7 @@ class RestClientTests: XCTestCase {
         options.logHandler = ARTLog(capturingOutput: true)
         let client = ARTRest(options: options)
 
-        client.internal.logger.log("This is a warning", with: .warn)
+        client.internal.logger.log("This is a warning", with: .warn, file: "foo.m", line: 10)
 
         XCTAssertEqual(client.internal.logger.logLevel, ARTLogLevel.warn)
         guard let line = options.logHandler.captured.last else {
@@ -246,7 +246,7 @@ class RestClientTests: XCTestCase {
             return
         }
         XCTAssertEqual(line.level, ARTLogLevel.warn)
-        XCTAssertEqual(line.toString(), "WARN: This is a warning")
+        XCTAssertEqual(line.toString(), "WARN: (foo.m:10) This is a warning")
     }
 
     // RSC3
@@ -257,7 +257,7 @@ class RestClientTests: XCTestCase {
         client.internal.logger.logLevel = .error
 
         let logTime = NSDate()
-        client.internal.logger.log("This is a warning", with: .warn)
+        client.internal.logger.log("This is a warning", with: .warn, file: "foo.m", line: 10)
 
         let logs = options.logHandler.captured.filter { !$0.date.isBefore(logTime as Date) }
         expect(logs).to(beEmpty())
@@ -280,9 +280,9 @@ class RestClientTests: XCTestCase {
         options.logLevel = .verbose
         let client = ARTRest(options: options)
 
-        client.internal.logger.log("This is a warning", with: .warn)
+        client.internal.logger.log("This is a warning", with: .warn, file: "foo.m", line: 10)
 
-        XCTAssertEqual(Log.interceptedLog.0, "This is a warning")
+        XCTAssertEqual(Log.interceptedLog.0, "(foo.m:10) This is a warning")
         XCTAssertEqual(Log.interceptedLog.1, ARTLogLevel.warn)
 
         XCTAssertEqual(client.internal.logger.logLevel, customLogger.logLevel)

@@ -8,7 +8,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
-@property(nonnull, nonatomic, strong, readonly) NSString* stringValue;
+@property(nonnull, nonatomic, readonly) NSString* stringValue;
 
 + (ARTStringifiable*)withString:(NSString *)value;
 + (ARTStringifiable*)withNumber:(NSNumber *)value;
