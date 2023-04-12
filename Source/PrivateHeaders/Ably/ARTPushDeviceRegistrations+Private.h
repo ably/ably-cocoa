@@ -1,6 +1,3 @@
-#ifndef ARTPushDeviceRegistrations_Private_h
-#define ARTPushDeviceRegistrations_Private_h
-
 #import <Ably/ARTPushDeviceRegistrations.h>
 #import "ARTQueuedDealloc.h"
 
@@ -19,5 +16,3 @@
 - (instancetype)initWithInternal:(ARTPushDeviceRegistrationsInternal *)internal queuedDealloc:(ARTQueuedDealloc *)dealloc;
 
 @end
-
-#endif /* ARTPushDeviceRegistrations_Private_h */
