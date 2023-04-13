@@ -990,7 +990,7 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
     private var callbackAfterRequest: ((URLRequest) -> Void)?
     private var callbackProcessingDataResponse: ((Data?) -> Data)?
 
-    init(_ logger: InternalLog) {
+    init(logger: InternalLog) {
         self.logger = logger
         self.http = ARTHttp(queue: AblyTests.queue, logger: logger)
     }
