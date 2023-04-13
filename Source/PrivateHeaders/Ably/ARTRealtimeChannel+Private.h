@@ -46,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, nonatomic) ARTPresenceMap *presenceMap;
 @property (readwrite, nonatomic) BOOL attachResume;
 
-- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime andName:(NSString *)name withOptions:(ARTRealtimeChannelOptions *)options;
+- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime andName:(NSString *)name withOptions:(ARTRealtimeChannelOptions *)options logger:(ARTInternalLog *)logger;
 
 - (bool)isLastChannelSerial:(NSString *)channelSerial;
 

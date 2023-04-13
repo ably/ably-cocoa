@@ -75,14 +75,13 @@ const NSUInteger ARTDefaultLimit = 100;
     __weak ARTChannel *_channel; // weak because channel owns self
 }
 
-- (instancetype)init:(ARTRestInternal *)rest withChannel:(ARTChannel *)channel {
+- (instancetype)init:(ARTRestInternal *)rest withChannel:(ARTChannel *)channel logger:(ARTInternalLog *)logger {
     if (self == [super self]) {
         _rest = rest;
         _queue = rest.queue;
         _userQueue = rest.userQueue;
-        _logger = [rest logger];
+        _logger = logger;
         _channel = channel;
-        _logger = channel.logger;
     }
     return self;
 }
@@ -291,7 +290,7 @@ dispatch_sync(_queue, ^{
         return [self->_rest.encoders[response.MIMEType] decodePushChannelSubscriptions:data error:error];
     };
 
-    [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
+    [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor logger:self->_logger callback:callback];
     ret = YES;
 });
     return ret;

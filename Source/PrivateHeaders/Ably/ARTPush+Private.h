@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) ARTPushAdminInternal *admin;
 @property (readonly) dispatch_queue_t queue;
 
-- (instancetype)init:(ARTRestInternal *)rest;
+- (instancetype)initWithRest:(ARTRestInternal *)rest logger:(ARTInternalLog *)logger;
 
 #if TARGET_OS_IOS
 - (void)getActivationMachine:(void (^)(ARTPushActivationStateMachine *))block;

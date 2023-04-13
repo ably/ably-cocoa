@@ -647,7 +647,7 @@ class PushAdminTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         let realtime = ARTRealtime(options: options)
         defer { realtime.dispose(); realtime.close() }
-        let testProxyHTTPExecutor = TestProxyHTTPExecutor(InternalLog(logger: LogAdapter(logger: options.logHandler)))
+        let testProxyHTTPExecutor = TestProxyHTTPExecutor(.init(clientOptions: options))
         realtime.internal.rest.httpExecutor = testProxyHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -787,7 +787,7 @@ class PushAdminTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         let realtime = ARTRealtime(options: options)
         defer { realtime.dispose(); realtime.close() }
-        let testProxyHTTPExecutor = TestProxyHTTPExecutor(InternalLog(logger: LogAdapter(logger: options.logHandler)))
+        let testProxyHTTPExecutor = TestProxyHTTPExecutor(.init(clientOptions: options))
         realtime.internal.rest.httpExecutor = testProxyHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in

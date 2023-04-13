@@ -10,21 +10,32 @@
 #import "ARTHttp.h"
 #import "ARTTypes+Private.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
+@interface ARTPushActivationState ()
+
+@property (nonatomic, readonly) ARTInternalLog *logger;
+
+@end
+
+NS_ASSUME_NONNULL_END
+
 @implementation ARTPushActivationState
 
-- (instancetype)initWithMachine:(ARTPushActivationStateMachine *)machine {
+- (instancetype)initWithMachine:(ARTPushActivationStateMachine *)machine logger:(ARTInternalLog *)logger {
     if (self = [super init]) {
         _machine = machine;
+        _logger = logger;
     }
     return self;
 }
 
-+ (instancetype)newWithMachine:(ARTPushActivationStateMachine *)machine {
-    return [[self alloc] initWithMachine:machine];
++ (instancetype)newWithMachine:(ARTPushActivationStateMachine *)machine logger:(ARTInternalLog *)logger {
+    return [[self alloc] initWithMachine:machine logger:logger];
 }
 
 - (void)logEventTransition:(ARTPushActivationEvent *)event file:(const char *)file line:(NSUInteger)line {
-    ARTLogDebug(self.machine.rest.logger, @"ARTPush Activation: %@ state: handling %@ event", NSStringFromClass(self.class), NSStringFromClass(event.class));
+    ARTLogDebug(self.logger, @"ARTPush Activation: %@ state: handling %@ event", NSStringFromClass(self.class), NSStringFromClass(event.class));
 }
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
@@ -57,7 +68,7 @@
 #pragma mark - Archive/Unarchive
 
 - (NSData *)archive {
-    return [self art_archiveWithLogger:self.machine.rest.logger];
+    return [self art_archiveWithLogger:self.logger];
 }
 
 + (ARTPushActivationState *)unarchive:(NSData *)data withLogger:(nullable ARTInternalLog *)logger {
@@ -73,7 +84,7 @@
 
 #pragma mark - Activation States
 
-ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, ARTPushActivationEvent *event) {
+ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, ARTPushActivationEvent *event, ARTInternalLog *logger) {
     #if TARGET_OS_IOS
     ARTLocalDevice *const local = machine.rest.device_nosync;
 
@@ -87,13 +98,13 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
             [machine syncDevice];
         }
         
-        return [ARTPushActivationStateWaitingForRegistrationSync newWithMachine:machine fromEvent:event];
+        return [ARTPushActivationStateWaitingForRegistrationSync newWithMachine:machine logger:logger fromEvent:event];
     } else if ([local apnsDeviceToken]) {
         [machine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
     }
     #endif
 
-    return [ARTPushActivationStateWaitingForPushDeviceDetails newWithMachine:machine];
+    return [ARTPushActivationStateWaitingForPushDeviceDetails newWithMachine:machine logger:logger];
 }
 
 @implementation ARTPushActivationStateNotActivated
@@ -106,7 +117,7 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
     }
     else if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
         [self.machine registerForAPNS];
-        return validateAndSync(self.machine, event);
+        return validateAndSync(self.machine, event, self.logger);
     }
     return nil;
 }
@@ -127,11 +138,11 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
         [local setAndPersistIdentityTokenDetails:gotDeviceRegistrationEvent.identityTokenDetails];
         #endif
         [self.machine callActivatedCallback:nil];
-        return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine];
+        return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine logger:self.logger];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventGettingDeviceRegistrationFailed class]]) {
         [self.machine callActivatedCallback:[(ARTPushActivationEventGettingDeviceRegistrationFailed *)event error]];
-        return [ARTPushActivationStateNotActivated newWithMachine:self.machine];
+        return [ARTPushActivationStateNotActivated newWithMachine:self.machine logger:self.logger];
     }
     return nil;
 }
@@ -143,19 +154,19 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
     [self logEventTransition:event file:__FILE__ line:__LINE__];
     if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
-        return [ARTPushActivationStateWaitingForPushDeviceDetails newWithMachine:self.machine];
+        return [ARTPushActivationStateWaitingForPushDeviceDetails newWithMachine:self.machine logger:self.logger];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventCalledDeactivate class]]) {
         [self.machine callDeactivatedCallback:nil];
-        return [ARTPushActivationStateNotActivated newWithMachine:self.machine];
+        return [ARTPushActivationStateNotActivated newWithMachine:self.machine logger:self.logger];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventGotPushDeviceDetails class]]) {
         [self.machine deviceRegistration:nil];
-        return [ARTPushActivationStateWaitingForDeviceRegistration newWithMachine:self.machine];
+        return [ARTPushActivationStateWaitingForDeviceRegistration newWithMachine:self.machine logger:self.logger];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventGettingPushDeviceDetailsFailed class]]) {
         [self.machine callActivatedCallback:((ARTPushActivationEventGettingPushDeviceDetailsFailed *) event).error];
-        return [ARTPushActivationStateNotActivated newWithMachine:self.machine];
+        return [ARTPushActivationStateNotActivated newWithMachine:self.machine logger:self.logger];
     }
     return nil;
 }
@@ -172,11 +183,11 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
     }
     else if ([event isKindOfClass:[ARTPushActivationEventCalledDeactivate class]]) {
         [self.machine deviceUnregistration:nil];
-        return [ARTPushActivationStateWaitingForDeregistration newWithMachine:self.machine];
+        return [ARTPushActivationStateWaitingForDeregistration newWithMachine:self.machine logger:self.logger];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventGotPushDeviceDetails class]]) {
         [self.machine deviceUpdateRegistration:nil];
-        return [ARTPushActivationStateWaitingForRegistrationSync newWithMachine:self.machine fromEvent:event];
+        return [ARTPushActivationStateWaitingForRegistrationSync newWithMachine:self.machine logger:self.logger fromEvent:event];
     }
     return nil;
 }
@@ -187,15 +198,15 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
     ARTPushActivationEvent *_fromEvent;
 }
 
-- (instancetype)initWithMachine:(ARTPushActivationStateMachine *)machine fromEvent:(ARTPushActivationEvent *)event {
-    if (self = [super initWithMachine:machine]) {
+- (instancetype)initWithMachine:(ARTPushActivationStateMachine *)machine logger:(ARTInternalLog *)logger fromEvent:(ARTPushActivationEvent *)event {
+    if (self = [super initWithMachine:machine logger:logger]) {
         _fromEvent = event;
     }
     return self;
 }
 
-+ (instancetype)newWithMachine:(ARTPushActivationStateMachine *)machine fromEvent:(ARTPushActivationEvent *)event {
-    return [[self alloc] initWithMachine:machine fromEvent:event];
++ (instancetype)newWithMachine:(ARTPushActivationStateMachine *)machine logger:(ARTInternalLog *)logger fromEvent:(ARTPushActivationEvent *)event {
+    return [[self alloc] initWithMachine:machine logger:logger fromEvent:event];
 }
 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
@@ -217,7 +228,7 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
             [self.machine callActivatedCallback:nil];
         }
 
-        return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine];
+        return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine logger:self.logger];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventSyncRegistrationFailed class]]) {
         ARTErrorInfo *const error = [(ARTPushActivationEventSyncRegistrationFailed *)event error];
@@ -227,7 +238,7 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
             [self.machine callUpdateFailedCallback:error];
         }
 
-        return [ARTPushActivationStateAfterRegistrationSyncFailed newWithMachine:self.machine];
+        return [ARTPushActivationStateAfterRegistrationSyncFailed newWithMachine:self.machine logger:self.logger];
     }
     return nil;
 }
@@ -241,11 +252,11 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
     if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]] ||
         [event isKindOfClass:[ARTPushActivationEventGotPushDeviceDetails class]]) {
 
-        return validateAndSync(self.machine, event);
+        return validateAndSync(self.machine, event, self.logger);
     }
     else if ([event isKindOfClass:[ARTPushActivationEventCalledDeactivate class]]) {
         [self.machine deviceUnregistration:nil];
-        return [ARTPushActivationStateWaitingForDeregistration newWithMachine:self.machine];
+        return [ARTPushActivationStateWaitingForDeregistration newWithMachine:self.machine logger:self.logger];
     }
     return nil;
 }
@@ -257,7 +268,7 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
     [self logEventTransition:event file:__FILE__ line:__LINE__];
     if ([event isKindOfClass:[ARTPushActivationEventCalledDeactivate class]]) {
-        return [ARTPushActivationStateWaitingForDeregistration newWithMachine:self.machine];
+        return [ARTPushActivationStateWaitingForDeregistration newWithMachine:self.machine logger:self.logger];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventDeregistered class]]) {
         #if TARGET_OS_IOS
@@ -265,11 +276,11 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
         [local setAndPersistIdentityTokenDetails:nil];
         #endif
         [self.machine callDeactivatedCallback:nil];
-        return [ARTPushActivationStateNotActivated newWithMachine:self.machine];
+        return [ARTPushActivationStateNotActivated newWithMachine:self.machine logger:self.logger];
     }
     else if ([event isKindOfClass:[ARTPushActivationEventDeregistrationFailed class]]) {
         [self.machine callDeactivatedCallback:[(ARTPushActivationEventDeregistrationFailed *)event error]];
-        return [ARTPushActivationStateWaitingForDeregistration newWithMachine:self.machine];
+        return [ARTPushActivationStateWaitingForDeregistration newWithMachine:self.machine logger:self.logger];
     }
     return nil;
 }
@@ -288,7 +299,7 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
 @implementation ARTPushActivationStateAfterRegistrationUpdateFailed
 
 - (ARTPushActivationPersistentState *)migrate {
-    return [[ARTPushActivationStateAfterRegistrationSyncFailed alloc] initWithMachine:self.machine];
+    return [[ARTPushActivationStateAfterRegistrationSyncFailed alloc] initWithMachine:self.machine logger:self.logger];
 }
 
 @end

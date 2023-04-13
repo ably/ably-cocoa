@@ -1,15 +1,6 @@
 #import "ARTLogAdapter.h"
+#import "ARTLogAdapter+Testing.h"
 #import "ARTLog.h"
-
-NS_ASSUME_NONNULL_BEGIN
-
-@interface ARTLogAdapter ()
-
-@property (nonatomic, readonly) ARTLog *logger;
-
-@end
-
-NS_ASSUME_NONNULL_END
 
 @implementation ARTLogAdapter
 

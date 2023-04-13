@@ -909,14 +909,10 @@ class MockHTTPExecutor: NSObject, ARTHTTPAuthenticatedExecutor {
 
     fileprivate var errorSimulator: NSError?
 
-    var _logger = InternalLog(logger: MockVersion2Log())
+    private(set) var logger = InternalLog(logger: MockVersion2Log())
     var clientOptions = ARTClientOptions()
     var encoder = ARTJsonLikeEncoder()
     var requests: [URLRequest] = []
-
-    func logger() -> InternalLog {
-        return _logger
-    }
 
     func options() -> ARTClientOptions {
         return self.clientOptions
@@ -968,7 +964,7 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
     typealias HTTPExecutorCallback = (HTTPURLResponse?, Data?, Error?) -> Void
 
     private(set) var http: ARTHttp
-    private var _logger: InternalLog!
+    private(set) var logger: InternalLog
 
     private var errorSimulator: ErrorSimulator?
 
@@ -995,17 +991,13 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
     private var callbackProcessingDataResponse: ((Data?) -> Data)?
 
     init(_ logger: InternalLog) {
-        self._logger = logger
+        self.logger = logger
         self.http = ARTHttp(AblyTests.queue, logger: logger)
     }
 
     init(http: ARTHttp, logger: InternalLog) {
-        self._logger = logger
+        self.logger = logger
         self.http = http
-    }
-    
-    func logger() -> InternalLog {
-        return self._logger
     }
 
     public func setHTTP(http: ARTHttp) {

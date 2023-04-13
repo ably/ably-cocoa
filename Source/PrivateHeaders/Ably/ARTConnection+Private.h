@@ -6,6 +6,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class ARTRealtimeInternal;
+@class ARTInternalLog;
 
 @interface ARTConnectionInternal : NSObject<ARTConnectionProtocol>
 
@@ -17,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic) ARTRealtimeConnectionState state;
 @property (nullable, readonly, nonatomic) ARTErrorInfo *errorReason;
 
-- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime;
+- (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime logger:(ARTInternalLog *)logger;
 
 - (nullable NSString *)id_nosync;
 - (nullable NSString *)key_nosync;

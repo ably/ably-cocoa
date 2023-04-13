@@ -3,6 +3,7 @@
 #import "ARTRest+Private.h"
 #import "ARTRestPresence+Private.h"
 #import "ARTChannel+Private.h"
+#import "ARTChannel+Subclass.h"
 #import "ARTChannelOptions.h"
 #import "ARTMessage.h"
 #import "ARTBaseMessage+Private.h"
@@ -118,8 +119,8 @@ static const NSUInteger kIdempotentLibraryGeneratedIdLength = 9; //bytes
 
 @dynamic options;
 
-- (instancetype)initWithName:(NSString *)name withOptions:(ARTChannelOptions *)options andRest:(ARTRestInternal *)rest {
-    if (self = [super initWithName:name andOptions:options rest:rest]) {
+- (instancetype)initWithName:(NSString *)name withOptions:(ARTChannelOptions *)options andRest:(ARTRestInternal *)rest logger:(ARTInternalLog *)logger {
+    if (self = [super initWithName:name andOptions:options rest:rest logger:logger]) {
         _rest = rest;
         _queue = rest.queue;
         _userQueue = rest.userQueue;
@@ -129,24 +130,20 @@ static const NSUInteger kIdempotentLibraryGeneratedIdLength = 9; //bytes
     return self;
 }
 
-- (ARTInternalLog *)getLogger {
-    return _rest.logger;
-}
-
 - (NSString *)getBasePath {
     return _basePath;
 }
 
 - (ARTRestPresenceInternal *)presence {
     if (!_presence) {
-        _presence = [[ARTRestPresenceInternal alloc] initWithChannel:self];
+        _presence = [[ARTRestPresenceInternal alloc] initWithChannel:self logger:self.logger];
     }
     return _presence;
 }
 
 - (ARTPushChannelInternal *)push {
     if (!_pushChannel) {
-        _pushChannel = [[ARTPushChannelInternal alloc] init:self.rest withChannel:self];
+        _pushChannel = [[ARTPushChannelInternal alloc] init:self.rest withChannel:self logger:self.logger];
     }
     return _pushChannel;
 }
@@ -213,7 +210,7 @@ dispatch_sync(_queue, ^{
     };
 
     ARTLogDebug(self.logger, @"RS:%p C:%p (%@) stats request %@", self->_rest, self, self.name, request);
-    [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor callback:callback];
+    [ARTPaginatedResult executePaginated:self->_rest withRequest:request andResponseProcessor:responseProcessor logger:self.logger callback:callback];
     ret = YES;
 });
     return ret;
