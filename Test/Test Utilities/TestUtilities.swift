@@ -400,20 +400,6 @@ class NSURLSessionServerTrustSync: NSObject, URLSessionDelegate, URLSessionTaskD
 
         return (responseData, responseError, httpResponse)
     }
-
-    func urlSession(_ session: URLSession, task: URLSessionTask, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        // Try to extract the server certificate for trust validation
-        if let serverTrust = challenge.protectionSpace.serverTrust {
-            // Server trust authentication
-            // Reference: https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/URLLoadingSystem/Articles/AuthenticationChallenges.html
-            completionHandler(Foundation.URLSession.AuthChallengeDisposition.useCredential, URLCredential(trust: serverTrust))
-        }
-        else {
-            challenge.sender?.performDefaultHandling?(for: challenge)
-            XCTFail("Current authentication: \(challenge.protectionSpace.authenticationMethod)")
-        }
-    }
-
 }
 
 extension Date {
