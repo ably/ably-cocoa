@@ -1,5 +1,8 @@
 #import <XCTest/XCTest.h>
 #import "Ably_Tests-Swift.h"
+#import "ARTInternalLog+Testing.h"
+#import "ARTInternalLogCore+Testing.h"
+#import "ARTLogAdapter+Testing.h"
 
 /**
  This file is written in Objective-C because it tests the `ARTLog*` macros defined in `ARTInternalLog.h`, which are not accessible from Swift.
@@ -9,6 +12,16 @@
 @end
 
 @implementation ARTInternalLogTests
+
+- (void)test_classMethodLogger {
+    ARTInternalLog *const logger = ARTInternalLog.sharedClassMethodLogger_readDocumentationBeforeUsing;
+
+    XCTAssertTrue([logger.core isKindOfClass:[ARTDefaultInternalLogCore class]]);
+    ARTDefaultInternalLogCore *const core = (ARTDefaultInternalLogCore *)logger.core;
+    XCTAssertTrue([core.logger isKindOfClass:[ARTLogAdapter class]]);
+    ARTLogAdapter *const logAdapter = (ARTLogAdapter *)core.logger;
+    XCTAssertEqual(logAdapter.logger.logLevel, ARTLogLevelNone);
+}
 
 - (void)test_ARTLogVerbose {
     ARTMockInternalLogCore *const mock = [[ARTMockInternalLogCore alloc] init];

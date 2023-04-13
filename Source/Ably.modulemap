@@ -96,6 +96,7 @@ framework module Ably {
         header "ARTTestClientOptions.h"
         header "ARTVersion2Log.h"
         header "ARTInternalLog.h"
+        header "ARTInternalLog+Testing.h"
         header "ARTLogAdapter.h"
         header "ARTLogAdapter+Testing.h"
         header "ARTDeviceIdentityTokenDetails+Private.h"

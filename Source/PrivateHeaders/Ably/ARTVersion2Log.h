@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
  2. Requirements for the data emitted by the SDK’s logging system — see issues #1618 and #1625.
  */
 NS_SWIFT_NAME(Version2Log)
-@protocol ARTVersion2Log
+@protocol ARTVersion2Log <NSObject>
 
 @property (nonatomic) ARTLogLevel logLevel;
 
