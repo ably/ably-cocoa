@@ -1510,7 +1510,7 @@ class AuthTests: XCTestCase {
         options.authParams?.append(URLQueryItem(name: "body", value: jsonTokenDetails.toUTF8String))
 
         let rest = ARTRest(options: options)
-        let testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
+        let testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.createInternalQueue(for: test), logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -1673,6 +1673,7 @@ class AuthTests: XCTestCase {
 
     // RSA8c2
     func test__067__requestToken__authUrl__TokenParams_should_take_precedence_over_any_configured_authParams_when_a_name_conflict_occurs() {
+        let test = Test()
         let options = ARTClientOptions()
         options.clientId = "john"
         options.authUrl = URL(string: "http://auth.ably.io")
@@ -1688,7 +1689,7 @@ class AuthTests: XCTestCase {
         tokenParams.clientId = "tester"
 
         let client = ARTRest(options: options)
-        let testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
+        let testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.createInternalQueue(for: test), logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
