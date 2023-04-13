@@ -104,5 +104,6 @@ framework module Ably {
         header "Ably/ARTPresenceMap.h"
         header "Ably/ARTInternalLogCore.h"
         header "Ably/ARTInternalLogCore+Testing.h"
+        header "Ably/ARTDataEncoder.h"
     }
 }
