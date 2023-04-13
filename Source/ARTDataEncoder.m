@@ -22,11 +22,11 @@
     NSString *_baseId;
 }
 
-- (instancetype)initWithCipherParams:(ARTCipherParams *)params error:(NSError **)error {
+- (instancetype)initWithCipherParams:(ARTCipherParams *)params logger:(ARTInternalLog *)logger error:(NSError **)error {
     self = [super init];
     if (self) {
         if (params) {
-            _cipher = [ARTCrypto cipherWithParams:params];
+            _cipher = [ARTCrypto cipherWithParams:params logger:logger];
             if (!_cipher) {
                 if (error) {
                     NSString *desc = [NSString stringWithFormat:@"ARTDataEncoder failed to create cipher with name %@", params.algorithm];
