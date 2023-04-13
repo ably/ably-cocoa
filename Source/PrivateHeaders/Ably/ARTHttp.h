@@ -34,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)setURLSessionClass:(Class)urlSessionClass;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
-- (instancetype)init:(dispatch_queue_t)queue logger:(ARTInternalLog *)logger;
+- (instancetype)initWithQueue:(dispatch_queue_t)queue logger:(ARTInternalLog *)logger;
 
 @end
 

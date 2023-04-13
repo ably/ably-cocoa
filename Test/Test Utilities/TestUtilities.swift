@@ -801,7 +801,7 @@ class MockHTTP: ARTHttp {
     private var count: Int = 0
 
     init(logger: InternalLog) {
-        super.init(AblyTests.queue, logger: logger)
+        super.init(queue: AblyTests.queue, logger: logger)
     }
 
     func setNetworkState(network: FakeNetworkResponse, resetAfter numberOfRequests: Int) {
@@ -992,7 +992,7 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
 
     init(_ logger: InternalLog) {
         self.logger = logger
-        self.http = ARTHttp(AblyTests.queue, logger: logger)
+        self.http = ARTHttp(queue: AblyTests.queue, logger: logger)
     }
 
     init(http: ARTHttp, logger: InternalLog) {
