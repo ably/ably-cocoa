@@ -238,8 +238,8 @@ class UtilitiesTests: XCTestCase {
         }
     }
 
-    func beforeEach__Utilities__EventEmitter() {
-        eventEmitterQueue = AblyTests.queue
+    func beforeEach__Utilities__EventEmitter(for test: Test) {
+        eventEmitterQueue = AblyTests.createInternalQueue(for: test)
         eventEmitter = ARTInternalEventEmitter(queue: eventEmitterQueue)
         receivedFoo1 = nil
         receivedFoo2 = nil
@@ -255,7 +255,8 @@ class UtilitiesTests: XCTestCase {
     }
 
     func test__009__Utilities__EventEmitter__should_emit_events_to_all_relevant_listeners() {
-        beforeEach__Utilities__EventEmitter()
+        let test = Test()
+        beforeEach__Utilities__EventEmitter(for: test)
 
         eventEmitter.emit("foo", with: 123 as AnyObject?)
 
@@ -277,7 +278,8 @@ class UtilitiesTests: XCTestCase {
     }
 
     func test__010__Utilities__EventEmitter__should_only_call_once_listeners_once_for_its_event() {
-        beforeEach__Utilities__EventEmitter()
+        let test = Test()
+        beforeEach__Utilities__EventEmitter(for: test)
 
         eventEmitter.emit("foo", with: 123 as AnyObject?)
 
@@ -296,7 +298,8 @@ class UtilitiesTests: XCTestCase {
     }
 
     func test__011__Utilities__EventEmitter__calling_off_with_a_single_listener_argument__should_stop_receiving_events_when_calling_off_with_a_single_listener_argument() {
-        beforeEach__Utilities__EventEmitter()
+        let test = Test()
+        beforeEach__Utilities__EventEmitter(for: test)
 
         eventEmitter.off(listenerFoo1!)
         eventEmitter.emit("foo", with: 123 as AnyObject?)
@@ -317,7 +320,8 @@ class UtilitiesTests: XCTestCase {
     }
 
     func test__012__Utilities__EventEmitter__calling_off_with_a_single_listener_argument__should_remove_the_timeout() {
-        beforeEach__Utilities__EventEmitter()
+        let test = Test()
+        beforeEach__Utilities__EventEmitter(for: test)
 
         listenerFoo1!.setTimer(0.1, onTimeout: {
             fail("onTimeout callback shouldn't have been called")
@@ -331,7 +335,8 @@ class UtilitiesTests: XCTestCase {
     }
 
     func test__013__Utilities__EventEmitter__calling_off_with_listener_and_event_arguments__should_still_receive_events_if_off_doesn_t_match_the_listener_s_criteria() {
-        beforeEach__Utilities__EventEmitter()
+        let test = Test()
+        beforeEach__Utilities__EventEmitter(for: test)
 
         eventEmitter.off("foo", listener: listenerAll!)
         eventEmitter.emit("foo", with: 111 as AnyObject?)
@@ -341,7 +346,8 @@ class UtilitiesTests: XCTestCase {
     }
 
     func test__014__Utilities__EventEmitter__calling_off_with_listener_and_event_arguments__should_stop_receive_events_if_off_matches_the_listener_s_criteria() {
-        beforeEach__Utilities__EventEmitter()
+        let test = Test()
+        beforeEach__Utilities__EventEmitter(for: test)
 
         eventEmitter.off("foo", listener: listenerFoo1!)
         eventEmitter.emit("foo", with: 111 as AnyObject?)
@@ -351,7 +357,8 @@ class UtilitiesTests: XCTestCase {
     }
 
     func test__015__Utilities__EventEmitter__calling_off_with_no_arguments__should_remove_all_listeners() {
-        beforeEach__Utilities__EventEmitter()
+        let test = Test()
+        beforeEach__Utilities__EventEmitter(for: test)
 
         eventEmitter.off()
         eventEmitter.emit("foo", with: 111 as AnyObject?)
@@ -368,7 +375,8 @@ class UtilitiesTests: XCTestCase {
     }
 
     func test__016__Utilities__EventEmitter__calling_off_with_no_arguments__should_allow_listening_again() {
-        beforeEach__Utilities__EventEmitter()
+        let test = Test()
+        beforeEach__Utilities__EventEmitter(for: test)
 
         eventEmitter.off()
         eventEmitter.on("foo", callback: { receivedFoo1 = $0 as? Int })
@@ -377,7 +385,8 @@ class UtilitiesTests: XCTestCase {
     }
 
     func test__017__Utilities__EventEmitter__calling_off_with_no_arguments__should_remove_all_timeouts() {
-        beforeEach__Utilities__EventEmitter()
+        let test = Test()
+        beforeEach__Utilities__EventEmitter(for: test)
 
         listenerFoo1!.setTimer(0.1, onTimeout: {
             fail("onTimeout callback shouldn't have been called")
@@ -394,7 +403,8 @@ class UtilitiesTests: XCTestCase {
     }
 
     func test__018__Utilities__EventEmitter__the_timed_method__should_not_call_onTimeout_if_the_deadline_isn_t_reached() {
-        beforeEach__Utilities__EventEmitter()
+        let test = Test()
+        beforeEach__Utilities__EventEmitter(for: test)
 
         weak var timer = listenerFoo1!.setTimer(0.2, onTimeout: {
             fail("onTimeout callback shouldn't have been called")
@@ -410,7 +420,8 @@ class UtilitiesTests: XCTestCase {
     }
 
     func test__019__Utilities__EventEmitter__the_timed_method__should_call_onTimeout_and_off_the_listener_if_the_deadline_is_reached() {
-        beforeEach__Utilities__EventEmitter()
+        let test = Test()
+        beforeEach__Utilities__EventEmitter(for: test)
 
         var calledOnTimeout = false
         let beforeEmitting = NSDate()
@@ -430,7 +441,8 @@ class UtilitiesTests: XCTestCase {
 
     // RTE6a
     func test__020__Utilities__EventEmitter__set_of_listeners__should_not_change_over_the_course_of_the_emit() {
-        beforeEach__Utilities__EventEmitter()
+        let test = Test()
+        beforeEach__Utilities__EventEmitter(for: test)
 
         var firstCallbackCalled = false
         var secondCallbackCalled = false
