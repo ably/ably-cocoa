@@ -113,11 +113,11 @@ class AblyTests {
         return queue
     }()
 
-    static var userQueue: DispatchQueue = {
-        let queue = DispatchQueue(label: "io.ably.tests.callbacks", qos: .userInitiated)
+    static func createUserQueue() -> DispatchQueue {
+        let queue = DispatchQueue(label: "io.ably.tests.callbacks.\(UUID().uuidString)", qos: .userInitiated)
         queue.setSpecific(key: queueIdentityKey, value: QueueIdentity(label: queue.label))
         return queue
-    }()
+    }
 
     static func currentQueueLabel() -> String? {
         return DispatchQueue.getSpecific(key: queueIdentityKey)?.label
