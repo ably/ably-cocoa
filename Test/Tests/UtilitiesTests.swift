@@ -235,7 +235,7 @@ class UtilitiesTests: XCTestCase {
     }
 
     func beforeEach__Utilities__EventEmitter() {
-        eventEmitterQueue = AblyTests.queue
+        eventEmitterQueue = AblyTests.createInternalQueue()
         eventEmitter = ARTInternalEventEmitter(queue: eventEmitterQueue)
         receivedFoo1 = nil
         receivedFoo2 = nil

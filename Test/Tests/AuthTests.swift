@@ -1451,7 +1451,7 @@ class AuthTests: XCTestCase {
         options.authParams?.append(URLQueryItem(name: "body", value: jsonTokenDetails.toUTF8String))
 
         let rest = ARTRest(options: options)
-        let testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
+        let testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.createInternalQueue(), logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -1628,7 +1628,7 @@ class AuthTests: XCTestCase {
         tokenParams.clientId = "tester"
 
         let client = ARTRest(options: options)
-        let testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
+        let testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.createInternalQueue(), logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in

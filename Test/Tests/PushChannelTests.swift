@@ -23,7 +23,7 @@ class PushChannelTests: XCTestCase {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         userQueue = AblyTests.createUserQueue()
         options.dispatchQueue = userQueue
-        options.internalDispatchQueue = AblyTests.queue
+        options.internalDispatchQueue = AblyTests.createInternalQueue()
         rest = ARTRest(options: options)
         rest.internal.options.clientId = "tester"
         rest.internal.httpExecutor = mockHttpExecutor

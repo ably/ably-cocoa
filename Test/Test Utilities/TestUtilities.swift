@@ -105,11 +105,11 @@ class AblyTests {
 
     static let queueIdentityKey = DispatchSpecificKey<QueueIdentity>()
 
-    static var queue: DispatchQueue = {
-        let queue = DispatchQueue(label: "io.ably.tests", qos: .userInitiated)
+    static func createInternalQueue() -> DispatchQueue {
+        let queue = DispatchQueue(label: "io.ably.tests.\(UUID().uuidString)", qos: .userInitiated)
         queue.setSpecific(key: queueIdentityKey, value: QueueIdentity(label: queue.label))
         return queue
-    }()
+    }
 
     static func createUserQueue() -> DispatchQueue {
         let queue = DispatchQueue(label: "io.ably.tests.callbacks.\(UUID().uuidString)", qos: .userInitiated)
@@ -175,7 +175,7 @@ class AblyTests {
             options.token = getTestToken()
         }
         options.dispatchQueue = DispatchQueue.main
-        options.internalDispatchQueue = queue
+        options.internalDispatchQueue = createInternalQueue()
         return options
     }
 
