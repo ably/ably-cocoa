@@ -62,24 +62,21 @@ private func rsa8gTestsSetupDependencies() {
 
 private let authCallbackTestsOptions = AblyTests.clientOptions()
 private let jwtAndRestTestsOptions = AblyTests.clientOptions()
-private var client: ARTRest!
 private func createJsonEncoder() -> ARTJsonLikeEncoder {
     let encoder = ARTJsonLikeEncoder()
     encoder.delegate = ARTJsonEncoder()
     return encoder
 }
 
-private func jwtContentTypeTestsSetupDependencies() {
-    if client == nil {
-        let options = AblyTests.clientOptions()
-        let keys = getKeys()
-        options.authUrl = URL(string: echoServerAddress)!
-        options.authParams = [URLQueryItem]()
-        options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
-        options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
-        options.authParams?.append(URLQueryItem(name: "returnType", value: "jwt"))
-        client = ARTRest(options: options)
-    }
+private func jwtContentTypeTestsSetupDependencies() -> ARTRest {
+    let options = AblyTests.clientOptions()
+    let keys = getKeys()
+    options.authUrl = URL(string: echoServerAddress)!
+    options.authParams = [URLQueryItem]()
+    options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
+    options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
+    options.authParams?.append(URLQueryItem(name: "returnType", value: "jwt"))
+    return ARTRest(options: options)
 }
 
 class AuthTests: XCTestCase {
@@ -95,7 +92,6 @@ class AuthTests: XCTestCase {
         _ = keys
         _ = authCallbackTestsOptions
         _ = jwtAndRestTestsOptions
-        _ = client
 
         return super.defaultTestSuite
     }
@@ -4264,12 +4260,8 @@ class AuthTests: XCTestCase {
 
     // RSA4f, RSA8c
 
-    func beforeEach__JWT_and_rest__when_the_JWT_token_is_returned_with_application_jwt_content_type() {
-        jwtContentTypeTestsSetupDependencies()
-    }
-
     func test__156__JWT_and_rest__when_the_JWT_token_is_returned_with_application_jwt_content_type__the_client_successfully_connects_and_pulls_stats() {
-        beforeEach__JWT_and_rest__when_the_JWT_token_is_returned_with_application_jwt_content_type()
+        let client = jwtContentTypeTestsSetupDependencies()
 
         waitUntil(timeout: testTimeout) { done in
             client.stats { _, error in
@@ -4280,7 +4272,7 @@ class AuthTests: XCTestCase {
     }
 
     func test__157__JWT_and_rest__when_the_JWT_token_is_returned_with_application_jwt_content_type__the_client_can_request_a_new_token_to_initilize_another_client_that_connects_and_pulls_stats() {
-        beforeEach__JWT_and_rest__when_the_JWT_token_is_returned_with_application_jwt_content_type()
+        let client = jwtContentTypeTestsSetupDependencies()
 
         waitUntil(timeout: testTimeout) { done in
             client.auth.requestToken(nil, with: nil, callback: { tokenDetails, error in
