@@ -43,11 +43,11 @@ private func check(_ details: ARTTokenDetails) {
 
 private let channelName = "test_JWT"
 private let messageName = "message_JWT"
-private let authUrlTestsOptions: ARTClientOptions = {
+private func createAuthUrlTestsOptions() -> ARTClientOptions {
     let options = AblyTests.clientOptions()
     options.authUrl = URL(string: echoServerAddress)!
     return options
-}()
+}
 
 private let authCallbackTestsOptions = AblyTests.clientOptions()
 private func createJsonEncoder() -> ARTJsonLikeEncoder {
@@ -74,7 +74,6 @@ class AuthTests: XCTestCase {
         _ = json
         _ = channelName
         _ = messageName
-        _ = authUrlTestsOptions
         _ = authCallbackTestsOptions
 
         return super.defaultTestSuite
@@ -3990,10 +3989,12 @@ class AuthTests: XCTestCase {
     func test__142__JWT_and_realtime__when_using_authUrl__with_valid_credentials__fetches_a_channels_and_posts_a_message() {
         let keys = getKeys()
 
-        authUrlTestsOptions.authParams = [URLQueryItem]()
-        authUrlTestsOptions.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
-        authUrlTestsOptions.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
-        let client = ARTRealtime(options: authUrlTestsOptions)
+        let options = createAuthUrlTestsOptions()
+        options.authParams = [URLQueryItem]()
+        options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
+        options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
+        let client = ARTRealtime(options: options)
+
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
@@ -4011,10 +4012,12 @@ class AuthTests: XCTestCase {
     func test__143__JWT_and_realtime__when_using_authUrl__with_wrong_credentials__fails_to_connect_with_reason__invalid_signature_() {
         let keys = getKeys()
 
-        authUrlTestsOptions.authParams = [URLQueryItem]()
-        authUrlTestsOptions.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
-        authUrlTestsOptions.authParams?.append(URLQueryItem(name: "keySecret", value: "INVALID"))
-        let client = ARTRealtime(options: authUrlTestsOptions)
+        let options = createAuthUrlTestsOptions()
+        options.authParams = [URLQueryItem]()
+        options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
+        options.authParams?.append(URLQueryItem(name: "keySecret", value: "INVALID"))
+
+        let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
@@ -4034,11 +4037,14 @@ class AuthTests: XCTestCase {
         let keys = getKeys()
 
         let tokenDuration = 5.0
-        authUrlTestsOptions.authParams = [URLQueryItem]()
-        authUrlTestsOptions.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
-        authUrlTestsOptions.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
-        authUrlTestsOptions.authParams?.append(URLQueryItem(name: "expiresIn", value: String(UInt(tokenDuration))))
-        let client = ARTRealtime(options: authUrlTestsOptions)
+
+        let options = createAuthUrlTestsOptions()
+        options.authParams = [URLQueryItem]()
+        options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
+        options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
+        options.authParams?.append(URLQueryItem(name: "expiresIn", value: String(UInt(tokenDuration))))
+
+        let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
@@ -4061,12 +4067,15 @@ class AuthTests: XCTestCase {
         // The server sends an AUTH protocol message 30 seconds before a token expires
         // We create a token that lasts 35 seconds, so there's room to receive the AUTH message
         let tokenDuration = 35.0
-        authUrlTestsOptions.authParams = [URLQueryItem]()
-        authUrlTestsOptions.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
-        authUrlTestsOptions.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
-        authUrlTestsOptions.authParams?.append(URLQueryItem(name: "expiresIn", value: String(UInt(tokenDuration))))
-        authUrlTestsOptions.autoConnect = false // Prevent auto connection so we can set the transport proxy
-        let client = ARTRealtime(options: authUrlTestsOptions)
+
+        let options = createAuthUrlTestsOptions()
+        options.authParams = [URLQueryItem]()
+        options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
+        options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
+        options.authParams?.append(URLQueryItem(name: "expiresIn", value: String(UInt(tokenDuration))))
+        options.autoConnect = false // Prevent auto connection so we can set the transport proxy
+
+        let client = ARTRealtime(options: options)
         client.internal.setTransport(TestProxyTransport.self)
         defer { client.dispose(); client.close() }
 
