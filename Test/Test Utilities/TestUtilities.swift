@@ -1104,33 +1104,32 @@ class TestProxyTransport: ARTWebSocketTransport {
     static var fakeNetworkResponse: FakeNetworkResponse?
     static var networkConnectEvent: ((ARTRealtimeTransport, URL) -> Void)?
 
+    // For synchronising access to mutable state
+    private let semaphore = DispatchSemaphore(value: 1)
 
     fileprivate(set) var lastUrl: URL?
 
     private var _protocolMessagesReceived: [ARTProtocolMessage] = []
     var protocolMessagesReceived: [ARTProtocolMessage] {
-        var result: [ARTProtocolMessage] = []
-        queue.sync {
-            result = self._protocolMessagesReceived
-        }
+        semaphore.wait()
+        let result = self._protocolMessagesReceived
+        semaphore.signal()
         return result
     }
 
     private var _protocolMessagesSent: [ARTProtocolMessage] = []
     var protocolMessagesSent: [ARTProtocolMessage] {
-        var result: [ARTProtocolMessage] = []
-        queue.sync {
-            result = self._protocolMessagesSent
-        }
+        semaphore.wait()
+        let result = self._protocolMessagesSent
+        semaphore.signal()
         return result
     }
 
     private var _protocolMessagesSentIgnored: [ARTProtocolMessage] = []
     var protocolMessagesSentIgnored: [ARTProtocolMessage] {
-        var result: [ARTProtocolMessage] = []
-        queue.sync {
-            result = self._protocolMessagesSentIgnored
-        }
+        semaphore.wait()
+        let result = self._protocolMessagesSentIgnored
+        semaphore.signal()
         return result
     }
 
@@ -1154,21 +1153,21 @@ class TestProxyTransport: ARTWebSocketTransport {
     private var callbackAfterIncomingMessageModifier: ((ARTProtocolMessage) -> ARTProtocolMessage?)?
 
     func setListenerBeforeProcessingIncomingMessage(_ callback: ((ARTProtocolMessage) -> Void)?) {
-        queue.sync {
-            self.callbackBeforeProcessingIncomingMessage = callback
-        }
+        semaphore.wait()
+        self.callbackBeforeProcessingIncomingMessage = callback
+        semaphore.signal()
     }
 
     func setListenerAfterProcessingIncomingMessage(_ callback: ((ARTProtocolMessage) -> Void)?) {
-        queue.sync {
-            self.callbackAfterProcessingIncomingMessage = callback
-        }
+        semaphore.wait()
+        self.callbackAfterProcessingIncomingMessage = callback
+        semaphore.signal()
     }
 
     func setListenerBeforeProcessingOutgoingMessage(_ callback: ((ARTProtocolMessage) -> Void)?) {
-        queue.sync {
-            self.callbackBeforeProcessingOutgoingMessage = callback
-        }
+        semaphore.wait()
+        self.callbackBeforeProcessingOutgoingMessage = callback
+        semaphore.signal()
     }
 
     /// The modifier will be called on the internal queue.
@@ -1186,15 +1185,15 @@ class TestProxyTransport: ARTWebSocketTransport {
     }
 
     func enableReplaceAcksWithNacks(with errorInfo: ARTErrorInfo) {
-        queue.sync {
-            self.replacingAcksWithNacks = errorInfo
-        }
+        semaphore.wait()
+        self.replacingAcksWithNacks = errorInfo
+        semaphore.signal()
     }
 
     func disableReplaceAcksWithNacks() {
-        queue.sync {
-            self.replacingAcksWithNacks = nil
-        }
+        semaphore.wait()
+        self.replacingAcksWithNacks = nil
+        semaphore.signal()
     }
 
     // MARK: ARTWebSocket
