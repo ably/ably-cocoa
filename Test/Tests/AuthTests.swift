@@ -49,7 +49,6 @@ private func createAuthUrlTestsOptions() -> ARTClientOptions {
     return options
 }
 
-private let authCallbackTestsOptions = AblyTests.clientOptions()
 private func createJsonEncoder() -> ARTJsonLikeEncoder {
     let encoder = ARTJsonLikeEncoder()
     encoder.delegate = ARTJsonEncoder()
@@ -74,7 +73,6 @@ class AuthTests: XCTestCase {
         _ = json
         _ = channelName
         _ = messageName
-        _ = authCallbackTestsOptions
 
         return super.defaultTestSuite
     }
@@ -4097,11 +4095,12 @@ class AuthTests: XCTestCase {
     // RSA8g
 
     func skipped__test__146__JWT_and_realtime__when_using_authCallback__with_valid_credentials__pulls_stats_successfully() {
-        authCallbackTestsOptions.authCallback = { _, completion in
+        let options = AblyTests.clientOptions()
+        options.authCallback = { _, completion in
             let token = ARTTokenDetails(token: getJWTToken()!)
             completion(token, nil)
         }
-        let client = ARTRealtime(options: authCallbackTestsOptions)
+        let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
@@ -4113,11 +4112,12 @@ class AuthTests: XCTestCase {
     }
 
     func test__147__JWT_and_realtime__when_using_authCallback__with_invalid_credentials__fails_to_connect() {
-        authCallbackTestsOptions.authCallback = { _, completion in
+        let options = AblyTests.clientOptions()
+        options.authCallback = { _, completion in
             let token = ARTTokenDetails(token: getJWTToken(invalid: true)!)
             completion(token, nil)
         }
-        let client = ARTRealtime(options: authCallbackTestsOptions)
+        let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
