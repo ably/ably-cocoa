@@ -186,10 +186,10 @@ class AuthTests: XCTestCase {
         let options = AblyTests.clientOptions()
         options.token = getTestToken()
         options.autoConnect = false
+        options.testOptions.transportFactory = TestProxyTransportFactory()
 
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        client.internal.setTransport(TestProxyTransport.self)
         client.connect()
 
         if let transport = client.internal.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
@@ -257,6 +257,7 @@ class AuthTests: XCTestCase {
         let options = AblyTests.clientOptions()
         options.tokenDetails = getTestTokenDetails(ttl: 0.1)
         options.autoConnect = false
+        options.testOptions.transportFactory = TestProxyTransportFactory()
 
         // Token will expire, expecting 40142
         waitUntil(timeout: testTimeout) { done in
@@ -269,7 +270,6 @@ class AuthTests: XCTestCase {
         XCTAssertNil(realtime.internal.options.key)
         XCTAssertNil(realtime.internal.options.authCallback)
         XCTAssertNil(realtime.internal.options.authUrl)
-        realtime.internal.setTransport(TestProxyTransport.self)
 
         let channel = realtime.channels.get(uniqueChannelName())
 
@@ -885,10 +885,10 @@ class AuthTests: XCTestCase {
         let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
         options.clientId = expectedClientId
         options.autoConnect = false
+        options.testOptions.transportFactory = TestProxyTransportFactory()
 
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        client.internal.setTransport(TestProxyTransport.self)
         client.connect()
 
         waitUntil(timeout: testTimeout) { done in
@@ -4062,9 +4062,9 @@ class AuthTests: XCTestCase {
         options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
         options.authParams?.append(URLQueryItem(name: "expiresIn", value: String(UInt(tokenDuration))))
         options.autoConnect = false // Prevent auto connection so we can set the transport proxy
+        options.testOptions.transportFactory = TestProxyTransportFactory()
 
         let client = ARTRealtime(options: options)
-        client.internal.setTransport(TestProxyTransport.self)
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in

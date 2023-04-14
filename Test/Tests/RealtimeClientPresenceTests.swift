@@ -110,8 +110,8 @@ class RealtimeClientPresenceTests: XCTestCase {
     func skipped__test__009__Presence__ProtocolMessage_bit_flag__when_no_members_are_present() {
         let options = AblyTests.commonAppSetup()
         options.autoConnect = false
+        options.testOptions.transportFactory = TestProxyTransportFactory()
         let client = ARTRealtime(options: options)
-        client.internal.setTransport(TestProxyTransport.self)
         client.connect()
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(uniqueChannelName())
@@ -143,8 +143,8 @@ class RealtimeClientPresenceTests: XCTestCase {
         disposable += [AblyTests.addMembersSequentiallyToChannel(channelName, members: 250, options: options)]
 
         options.autoConnect = false
+        options.testOptions.transportFactory = TestProxyTransportFactory()
         let client = ARTRealtime(options: options)
-        client.internal.setTransport(TestProxyTransport.self)
         client.connect()
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(channelName)

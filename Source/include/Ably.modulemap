@@ -106,5 +106,6 @@ framework module Ably {
         header "Ably/ARTInternalLogCore.h"
         header "Ably/ARTInternalLogCore+Testing.h"
         header "Ably/ARTDataEncoder.h"
+        header "Ably/ARTRealtimeTransportFactory.h"
     }
 }
