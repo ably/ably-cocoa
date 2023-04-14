@@ -1,6 +1,6 @@
 import Ably.Private
 
-class MockVersion2Log: Version2Log {
+class MockVersion2Log: NSObject, Version2Log {
     var logLevel: ARTLogLevel = .none
 
     var lastReceivedLogMessageArguments: (message: String, level: ARTLogLevel, fileName: String, line: Int)?

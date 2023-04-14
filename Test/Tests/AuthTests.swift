@@ -4,7 +4,6 @@ import Aspects
 import Nimble
 import XCTest
 
-private var testHTTPExecutor: TestProxyHTTPExecutor!
 private func testOptionsGiveDefaultAuthMethod(_ caseSetter: (ARTAuthOptions) -> Void) {
     let options = ARTClientOptions()
     caseSetter(options)
@@ -26,17 +25,6 @@ private func testStopsClientWithOptions(caseSetter: (ARTClientOptions) -> Void) 
 
 private let currentClientId = "client_string"
 
-private var options: ARTClientOptions!
-private var rest: ARTRest!
-
-private func tokenParamsTestsSetupDependencies() {
-    if options == nil {
-        options = AblyTests.commonAppSetup()
-        options.clientId = currentClientId
-        rest = ARTRest(options: options)
-    }
-}
-
 private let json = "{" +
     "    \"token\": \"xxxxxx.yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy\"," +
     "    \"issued\": 1479087321934," +
@@ -55,63 +43,30 @@ private func check(_ details: ARTTokenDetails) {
 
 private let channelName = "test_JWT"
 private let messageName = "message_JWT"
-private let jwtTestsOptions = AblyTests.clientOptions()
-private let authUrlTestsOptions: ARTClientOptions = {
+private func createAuthUrlTestsOptions() -> ARTClientOptions {
     let options = AblyTests.clientOptions()
     options.authUrl = URL(string: echoServerAddress)!
     return options
-}()
-
-private var keys: [String: String]!
-
-private func rsa8gTestsSetupDependencies() {
-    if keys == nil {
-        keys = getKeys()
-    }
 }
 
-private let authCallbackTestsOptions = AblyTests.clientOptions()
-private let jwtAndRestTestsOptions = AblyTests.clientOptions()
-private var client: ARTRest!
 private func createJsonEncoder() -> ARTJsonLikeEncoder {
     let encoder = ARTJsonLikeEncoder()
     encoder.delegate = ARTJsonEncoder()
     return encoder
 }
 
-private func jwtContentTypeTestsSetupDependencies() {
-    if client == nil {
-        let options = AblyTests.clientOptions()
-        let keys = getKeys()
-        options.authUrl = URL(string: echoServerAddress)!
-        options.authParams = [URLQueryItem]()
-        options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
-        options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
-        options.authParams?.append(URLQueryItem(name: "returnType", value: "jwt"))
-        client = ARTRest(options: options)
-    }
+private func jwtContentTypeTestsSetupDependencies() -> ARTRest {
+    let options = AblyTests.clientOptions()
+    let keys = getKeys()
+    options.authUrl = URL(string: echoServerAddress)!
+    options.authParams = [URLQueryItem]()
+    options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
+    options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
+    options.authParams?.append(URLQueryItem(name: "returnType", value: "jwt"))
+    return ARTRest(options: options)
 }
 
 class AuthTests: XCTestCase {
-    // XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
-    override class var defaultTestSuite: XCTestSuite {
-        _ = testHTTPExecutor
-        _ = currentClientId
-        _ = options
-        _ = rest
-        _ = json
-        _ = channelName
-        _ = messageName
-        _ = jwtTestsOptions
-        _ = authUrlTestsOptions
-        _ = keys
-        _ = authCallbackTestsOptions
-        _ = jwtAndRestTestsOptions
-        _ = client
-
-        return super.defaultTestSuite
-    }
-
     enum ExpectedTokenParams {
         static let clientId = "client_from_params"
         static let ttl = 1.0
@@ -130,7 +85,7 @@ class AuthTests: XCTestCase {
     func test__004__Basic__should_send_the_API_key_in_the_Authorization_header() throws {
         let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
         let client = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(InternalLog(logger: LogAdapter(logger: options.logHandler)))
+        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -166,7 +121,7 @@ class AuthTests: XCTestCase {
         let options = AblyTests.clientOptions(requestToken: true)
         options.tls = false
         let clientHTTP = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(InternalLog(logger: LogAdapter(logger: options.logHandler)))
+        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         clientHTTP.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -184,7 +139,7 @@ class AuthTests: XCTestCase {
         let options = AblyTests.clientOptions(requestToken: true)
         options.tls = true
         let clientHTTPS = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(InternalLog(logger: LogAdapter(logger: options.logHandler)))
+        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         clientHTTPS.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -205,7 +160,7 @@ class AuthTests: XCTestCase {
         options.token = getTestToken()
 
         let client = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(InternalLog(logger: LogAdapter(logger: options.logHandler)))
+        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -280,7 +235,7 @@ class AuthTests: XCTestCase {
         XCTAssertNil(rest.internal.options.key)
         XCTAssertNil(rest.internal.options.authCallback)
         XCTAssertNil(rest.internal.options.authUrl)
-        testHTTPExecutor = TestProxyHTTPExecutor(InternalLog(logger: LogAdapter(logger: options.logHandler)))
+        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
 
         let channel = rest.channels.get(uniqueChannelName())
@@ -344,7 +299,7 @@ class AuthTests: XCTestCase {
         }
 
         let rest = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(InternalLog(logger: LogAdapter(logger: options.logHandler)))
+        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
 
         let channel = rest.channels.get(uniqueChannelName())
@@ -371,7 +326,7 @@ class AuthTests: XCTestCase {
         options.useTokenAuth = true
 
         let rest = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(InternalLog(logger: LogAdapter(logger: options.logHandler)))
+        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
 
         let channel = rest.channels.get(uniqueChannelName())
@@ -463,7 +418,7 @@ class AuthTests: XCTestCase {
         options.key = nil
 
         let rest = ARTRest(options: options)
-        let proxyHTTPExecutor = TestProxyHTTPExecutor(InternalLog(logger: LogAdapter(logger: options.logHandler)))
+        let proxyHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
 
         // Sync server time offset
         let authOptions = ARTAuthOptions(key: testKey)
@@ -513,7 +468,7 @@ class AuthTests: XCTestCase {
         options.key = nil
 
         let rest = ARTRest(options: options)
-        let proxyHTTPExecutor = TestProxyHTTPExecutor(InternalLog(logger: LogAdapter(logger: options.logHandler)))
+        let proxyHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = proxyHTTPExecutor
 
         // No server time offset
@@ -898,7 +853,7 @@ class AuthTests: XCTestCase {
         options.clientId = expectedClientId
 
         let client = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(InternalLog(logger: LogAdapter(logger: options.logHandler)))
+        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -1068,7 +1023,7 @@ class AuthTests: XCTestCase {
 
         let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
         let rest = ARTRest(options: options)
-        let testHTTPExecutor = TestProxyHTTPExecutor(InternalLog(logger: LogAdapter(logger: options.logHandler)))
+        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -1100,7 +1055,7 @@ class AuthTests: XCTestCase {
 
         let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
         let rest = ARTRest(options: options)
-        let testHTTPExecutor = TestProxyHTTPExecutor(InternalLog(logger: LogAdapter(logger: options.logHandler)))
+        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -1131,7 +1086,7 @@ class AuthTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         options.clientId = "mary"
         let rest = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(InternalLog(logger: LogAdapter(logger: options.logHandler)))
+        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
         let channel = rest.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
@@ -1156,7 +1111,7 @@ class AuthTests: XCTestCase {
         options.clientId = "client_string"
 
         let client = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(InternalLog(logger: LogAdapter(logger: options.logHandler)))
+        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -1283,7 +1238,7 @@ class AuthTests: XCTestCase {
         options.useTokenAuth = true
 
         let client = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(InternalLog(logger: LogAdapter(logger: options.logHandler)))
+        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
         // TokenDetails
@@ -1470,7 +1425,7 @@ class AuthTests: XCTestCase {
         options.authParams!.append(URLQueryItem(name: "body", value: testToken))
 
         let rest = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(InternalLog(logger: LogAdapter(logger: options.logHandler)))
+        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -1497,7 +1452,7 @@ class AuthTests: XCTestCase {
         options.authParams?.append(URLQueryItem(name: "body", value: jsonTokenDetails.toUTF8String))
 
         let rest = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(InternalLog(logger: LogAdapter(logger: options.logHandler)))
+        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -1549,7 +1504,7 @@ class AuthTests: XCTestCase {
         options.authParams?.append(URLQueryItem(name: "body", value: jsonTokenRequest.toUTF8String))
 
         rest = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(InternalLog(logger: LogAdapter(logger: options.logHandler)))
+        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -1674,7 +1629,7 @@ class AuthTests: XCTestCase {
         tokenParams.clientId = "tester"
 
         let client = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(InternalLog(logger: LogAdapter(logger: options.logHandler)))
+        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -1726,7 +1681,9 @@ class AuthTests: XCTestCase {
     // RSA8b
 
     func test__071__requestToken__should_support_all_TokenParams__using_defaults() {
-        tokenParamsTestsSetupDependencies()
+        let options = AblyTests.commonAppSetup()
+        options.clientId = currentClientId
+        let rest = ARTRest(options: options)
 
         // Default values
         let defaultTokenParams = ARTTokenParams(clientId: currentClientId)
@@ -1748,7 +1705,9 @@ class AuthTests: XCTestCase {
     }
 
     func test__072__requestToken__should_support_all_TokenParams__overriding_defaults() {
-        tokenParamsTestsSetupDependencies()
+        let options = AblyTests.commonAppSetup()
+        options.clientId = currentClientId
+        let rest = ARTRest(options: options)
 
         // Custom values
         let expectedTtl = 4800.0
@@ -1845,7 +1804,7 @@ class AuthTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         options.token = getTestToken(clientId: nil)
         let rest = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(InternalLog(logger: LogAdapter(logger: options.logHandler)))
+        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
         let channel = rest.channels.get(uniqueChannelName())
 
@@ -1906,7 +1865,7 @@ class AuthTests: XCTestCase {
             }
         }
 
-        testHTTPExecutor = TestProxyHTTPExecutor(InternalLog(logger: LogAdapter(logger: options.logHandler)))
+        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
         let channel = rest.channels.get(uniqueChannelName())
 
@@ -2644,7 +2603,7 @@ class AuthTests: XCTestCase {
     func test__099__authorize__on_subsequent_authorisations__should_store_the_AuthOptions_with_authUrl() {
         let options = AblyTests.commonAppSetup()
         let rest = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(InternalLog(logger: LogAdapter(logger: options.logHandler)))
+        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
         let auth = rest.auth
 
@@ -3980,8 +3939,9 @@ class AuthTests: XCTestCase {
     }
 
     func skipped__test__140__JWT_and_realtime__client_initialized_with_a_JWT_token_in_ClientOptions__with_valid_credentials__pulls_stats_successfully() {
-        jwtTestsOptions.token = getJWTToken()
-        let client = AblyTests.newRealtime(jwtTestsOptions)
+        let options = AblyTests.clientOptions()
+        options.token = getJWTToken()
+        let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
@@ -3993,9 +3953,10 @@ class AuthTests: XCTestCase {
     }
 
     func test__141__JWT_and_realtime__client_initialized_with_a_JWT_token_in_ClientOptions__with_invalid_credentials__fails_to_connect_with_reason__invalid_signature_() {
-        jwtTestsOptions.token = getJWTToken(invalid: true)
-        jwtTestsOptions.autoConnect = false
-        let client = AblyTests.newRealtime(jwtTestsOptions)
+        let options = AblyTests.clientOptions()
+        options.token = getJWTToken(invalid: true)
+        options.autoConnect = false
+        let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
@@ -4014,12 +3975,14 @@ class AuthTests: XCTestCase {
     // RSA8g RSA8c
 
     func test__142__JWT_and_realtime__when_using_authUrl__with_valid_credentials__fetches_a_channels_and_posts_a_message() {
-        rsa8gTestsSetupDependencies()
+        let keys = getKeys()
 
-        authUrlTestsOptions.authParams = [URLQueryItem]()
-        authUrlTestsOptions.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
-        authUrlTestsOptions.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
-        let client = ARTRealtime(options: authUrlTestsOptions)
+        let options = createAuthUrlTestsOptions()
+        options.authParams = [URLQueryItem]()
+        options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
+        options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
+        let client = ARTRealtime(options: options)
+
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
@@ -4035,12 +3998,14 @@ class AuthTests: XCTestCase {
     }
 
     func test__143__JWT_and_realtime__when_using_authUrl__with_wrong_credentials__fails_to_connect_with_reason__invalid_signature_() {
-        rsa8gTestsSetupDependencies()
+        let keys = getKeys()
 
-        authUrlTestsOptions.authParams = [URLQueryItem]()
-        authUrlTestsOptions.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
-        authUrlTestsOptions.authParams?.append(URLQueryItem(name: "keySecret", value: "INVALID"))
-        let client = ARTRealtime(options: authUrlTestsOptions)
+        let options = createAuthUrlTestsOptions()
+        options.authParams = [URLQueryItem]()
+        options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
+        options.authParams?.append(URLQueryItem(name: "keySecret", value: "INVALID"))
+
+        let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
@@ -4057,14 +4022,17 @@ class AuthTests: XCTestCase {
     }
 
     func test__144__JWT_and_realtime__when_using_authUrl__when_token_expires__receives_a_40142_error_from_the_server() {
-        rsa8gTestsSetupDependencies()
+        let keys = getKeys()
 
         let tokenDuration = 5.0
-        authUrlTestsOptions.authParams = [URLQueryItem]()
-        authUrlTestsOptions.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
-        authUrlTestsOptions.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
-        authUrlTestsOptions.authParams?.append(URLQueryItem(name: "expiresIn", value: String(UInt(tokenDuration))))
-        let client = ARTRealtime(options: authUrlTestsOptions)
+
+        let options = createAuthUrlTestsOptions()
+        options.authParams = [URLQueryItem]()
+        options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
+        options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
+        options.authParams?.append(URLQueryItem(name: "expiresIn", value: String(UInt(tokenDuration))))
+
+        let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
@@ -4082,17 +4050,20 @@ class AuthTests: XCTestCase {
     // RTC8a4
 
     func test__145__JWT_and_realtime__when_using_authUrl__when_the_server_sends_and_AUTH_protocol_message__client_reauths_correctly_without_going_through_a_disconnection() {
-        rsa8gTestsSetupDependencies()
+        let keys = getKeys()
 
         // The server sends an AUTH protocol message 30 seconds before a token expires
         // We create a token that lasts 35 seconds, so there's room to receive the AUTH message
         let tokenDuration = 35.0
-        authUrlTestsOptions.authParams = [URLQueryItem]()
-        authUrlTestsOptions.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
-        authUrlTestsOptions.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
-        authUrlTestsOptions.authParams?.append(URLQueryItem(name: "expiresIn", value: String(UInt(tokenDuration))))
-        authUrlTestsOptions.autoConnect = false // Prevent auto connection so we can set the transport proxy
-        let client = ARTRealtime(options: authUrlTestsOptions)
+
+        let options = createAuthUrlTestsOptions()
+        options.authParams = [URLQueryItem]()
+        options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
+        options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
+        options.authParams?.append(URLQueryItem(name: "expiresIn", value: String(UInt(tokenDuration))))
+        options.autoConnect = false // Prevent auto connection so we can set the transport proxy
+
+        let client = ARTRealtime(options: options)
         client.internal.setTransport(TestProxyTransport.self)
         defer { client.dispose(); client.close() }
 
@@ -4114,11 +4085,12 @@ class AuthTests: XCTestCase {
     // RSA8g
 
     func skipped__test__146__JWT_and_realtime__when_using_authCallback__with_valid_credentials__pulls_stats_successfully() {
-        authCallbackTestsOptions.authCallback = { _, completion in
+        let options = AblyTests.clientOptions()
+        options.authCallback = { _, completion in
             let token = ARTTokenDetails(token: getJWTToken()!)
             completion(token, nil)
         }
-        let client = ARTRealtime(options: authCallbackTestsOptions)
+        let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
@@ -4130,11 +4102,12 @@ class AuthTests: XCTestCase {
     }
 
     func test__147__JWT_and_realtime__when_using_authCallback__with_invalid_credentials__fails_to_connect() {
-        authCallbackTestsOptions.authCallback = { _, completion in
+        let options = AblyTests.clientOptions()
+        options.authCallback = { _, completion in
             let token = ARTTokenDetails(token: getJWTToken(invalid: true)!)
             completion(token, nil)
         }
-        let client = ARTRealtime(options: authCallbackTestsOptions)
+        let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
@@ -4249,8 +4222,9 @@ class AuthTests: XCTestCase {
     // RSC1 RSC1a RSC1c RSA3d
 
     func test__154__JWT_and_rest__when_the_JWT_token_embeds_an_Ably_token__pulls_stats_successfully() {
-        jwtAndRestTestsOptions.tokenDetails = ARTTokenDetails(token: getJWTToken(jwtType: "embedded")!)
-        let client = ARTRest(options: jwtAndRestTestsOptions)
+        let options = AblyTests.clientOptions()
+        options.tokenDetails = ARTTokenDetails(token: getJWTToken(jwtType: "embedded")!)
+        let client = ARTRest(options: options)
         waitUntil(timeout: testTimeout) { done in
             client.stats { _, error in
                 XCTAssertNil(error)
@@ -4260,8 +4234,9 @@ class AuthTests: XCTestCase {
     }
 
     func test__155__JWT_and_rest__when_the_JWT_token_embeds_an_Ably_token_and_it_is_requested_as_encrypted__pulls_stats_successfully() {
-        jwtAndRestTestsOptions.tokenDetails = ARTTokenDetails(token: getJWTToken(jwtType: "embedded", encrypted: 1)!)
-        let client = ARTRest(options: jwtAndRestTestsOptions)
+        let options = AblyTests.clientOptions()
+        options.tokenDetails = ARTTokenDetails(token: getJWTToken(jwtType: "embedded", encrypted: 1)!)
+        let client = ARTRest(options: options)
         waitUntil(timeout: testTimeout) { done in
             client.stats { _, error in
                 XCTAssertNil(error)
@@ -4272,12 +4247,8 @@ class AuthTests: XCTestCase {
 
     // RSA4f, RSA8c
 
-    func beforeEach__JWT_and_rest__when_the_JWT_token_is_returned_with_application_jwt_content_type() {
-        jwtContentTypeTestsSetupDependencies()
-    }
-
     func test__156__JWT_and_rest__when_the_JWT_token_is_returned_with_application_jwt_content_type__the_client_successfully_connects_and_pulls_stats() {
-        beforeEach__JWT_and_rest__when_the_JWT_token_is_returned_with_application_jwt_content_type()
+        let client = jwtContentTypeTestsSetupDependencies()
 
         waitUntil(timeout: testTimeout) { done in
             client.stats { _, error in
@@ -4288,7 +4259,7 @@ class AuthTests: XCTestCase {
     }
 
     func test__157__JWT_and_rest__when_the_JWT_token_is_returned_with_application_jwt_content_type__the_client_can_request_a_new_token_to_initilize_another_client_that_connects_and_pulls_stats() {
-        beforeEach__JWT_and_rest__when_the_JWT_token_is_returned_with_application_jwt_content_type()
+        let client = jwtContentTypeTestsSetupDependencies()
 
         waitUntil(timeout: testTimeout) { done in
             client.auth.requestToken(nil, with: nil, callback: { tokenDetails, error in
@@ -4342,7 +4313,7 @@ class AuthTests: XCTestCase {
         #if TARGET_OS_IOS
             XCTAssertNil(rest.device.clientId)
         #endif
-        let testHttpExecutor = TestProxyHTTPExecutor(InternalLog(logger: LogAdapter(logger: options.logHandler)))
+        let testHttpExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHttpExecutor
         let channel = rest.channels.get(channelName)
 

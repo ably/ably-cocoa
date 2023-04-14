@@ -1,5 +1,6 @@
 @import XCTest;
 #import <Ably/Ably.h>
+#import "Ably_Tests-Swift.h"
 
 @interface _StateMachineDelegate : NSObject <ARTPushRegistererDelegate>
 @end
@@ -17,12 +18,13 @@
 - (void)test_art_unarchivedObjectOfClass_for_state_machine_states {
     
     ARTRest* rest = [[ARTRest alloc] initWithKey:@"xxxx:xxxx"];
-    ARTPushActivationStateMachine* stateMachine = [[ARTPushActivationStateMachine alloc] initWithRest:rest.internal delegate:[[_StateMachineDelegate alloc] init]];
+    ARTInternalLog *const logger = [[ARTInternalLog alloc] initWithCore:[[ARTMockInternalLogCore alloc] init]];
+    ARTPushActivationStateMachine* stateMachine = [[ARTPushActivationStateMachine alloc] initWithRest:rest.internal delegate:[[_StateMachineDelegate alloc] init] logger:logger];
     
     NSArray* initialStates = [NSMutableArray arrayWithArray:@[
-        [[ARTPushActivationStateNotActivated alloc] initWithMachine:stateMachine],
-        [[ARTPushActivationStateWaitingForPushDeviceDetails alloc] initWithMachine:stateMachine],
-        [[ARTPushActivationStateAfterRegistrationSyncFailed alloc] initWithMachine:stateMachine]
+        [[ARTPushActivationStateNotActivated alloc] initWithMachine:stateMachine logger:logger],
+        [[ARTPushActivationStateWaitingForPushDeviceDetails alloc] initWithMachine:stateMachine logger:logger],
+        [[ARTPushActivationStateAfterRegistrationSyncFailed alloc] initWithMachine:stateMachine logger:logger]
     ]];
     
     NSData* data = [initialStates art_archiveWithLogger:nil];

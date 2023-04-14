@@ -109,7 +109,7 @@ class PushAdminTests: XCTestCase {
         super.setUp()
         let options = AblyTests.commonAppSetup()
         options.pushFullWait = true
-        options.dispatchQueue = AblyTests.userQueue
+        options.dispatchQueue = AblyTests.createUserQueue()
         let rest = ARTRest(options: options)
         rest.internal.storage = MockDeviceStorage()
         let group = DispatchGroup()
@@ -140,7 +140,7 @@ class PushAdminTests: XCTestCase {
 
     override class func tearDown() {
         let options = AblyTests.commonAppSetup()
-        options.dispatchQueue = AblyTests.userQueue
+        options.dispatchQueue = AblyTests.createUserQueue()
         let rest = ARTRest(options: options)
         rest.internal.storage = MockDeviceStorage()
         let group = DispatchGroup()
@@ -652,7 +652,7 @@ class PushAdminTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         let realtime = ARTRealtime(options: options)
         defer { realtime.dispose(); realtime.close() }
-        let testProxyHTTPExecutor = TestProxyHTTPExecutor(InternalLog(logger: LogAdapter(logger: options.logHandler)))
+        let testProxyHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         realtime.internal.rest.httpExecutor = testProxyHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -792,7 +792,7 @@ class PushAdminTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         let realtime = ARTRealtime(options: options)
         defer { realtime.dispose(); realtime.close() }
-        let testProxyHTTPExecutor = TestProxyHTTPExecutor(InternalLog(logger: LogAdapter(logger: options.logHandler)))
+        let testProxyHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         realtime.internal.rest.httpExecutor = testProxyHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in

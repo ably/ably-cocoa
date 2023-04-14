@@ -139,19 +139,30 @@
 
 #pragma mark - ARTRealtimePresenceInternal
 
+NS_ASSUME_NONNULL_BEGIN
+
+@interface ARTRealtimePresenceInternal ()
+
+@property (nonatomic, readonly) ARTInternalLog *logger;
+
+@end
+
+NS_ASSUME_NONNULL_END
+
 @implementation ARTRealtimePresenceInternal {
     __weak ARTRealtimeChannelInternal *_channel; // weak because channel owns self
     dispatch_queue_t _userQueue;
     NSMutableArray<ARTQueuedMessage *> *_pendingPresence;
 }
 
-- (instancetype)initWithChannel:(ARTRealtimeChannelInternal *)channel {
+- (instancetype)initWithChannel:(ARTRealtimeChannelInternal *)channel logger:(ARTInternalLog *)logger {
     if (self = [super init]) {
         _channel = channel;
         _userQueue = channel.realtime.rest.userQueue;
         _queue = channel.realtime.rest.queue;
         _pendingPresence = [NSMutableArray array];
         _lastPresenceAction = ARTPresenceAbsent;
+        _logger = logger;
     }
     return self;
 }
@@ -199,7 +210,7 @@ dispatch_async(_queue, ^{
         }
         const BOOL syncInProgress = self->_channel.presenceMap.syncInProgress;
         if (syncInProgress && query.waitForSync) {
-            ARTLogDebug(self->_channel.logger, @"R:%p C:%p (%@) sync is in progress, waiting until the presence members is synchronized", self->_channel.realtime, self->_channel, self->_channel.name);
+            ARTLogDebug(self.logger, @"R:%p C:%p (%@) sync is in progress, waiting until the presence members is synchronized", self->_channel.realtime, self->_channel, self->_channel.name);
             [self->_channel.presenceMap onceSyncEnds:^(NSArray<ARTPresenceMessage *> *members) {
                 NSArray<ARTPresenceMessage *> *filteredMembers = [members artFilter:filterMemberBlock];
                 callback(filteredMembers, nil);
@@ -208,7 +219,7 @@ dispatch_async(_queue, ^{
                 callback(nil, error);
             }];
         } else {
-            ARTLogDebug(self->_channel.logger, @"R:%p C:%p (%@) returning presence members (syncInProgress=%d)", self->_channel.realtime, self->_channel, self->_channel.name, syncInProgress);
+            ARTLogDebug(self.logger, @"R:%p C:%p (%@) returning presence members (syncInProgress=%d)", self->_channel.realtime, self->_channel, self->_channel.name, syncInProgress);
             NSArray<ARTPresenceMessage *> *members = self->_channel.presenceMap.members.allValues;
             NSArray<ARTPresenceMessage *> *filteredMembers = [members artFilter:filterMemberBlock];
             callback(filteredMembers, nil);
@@ -468,7 +479,7 @@ dispatch_sync(_queue, ^{
     }
     [self->_channel _attach:onAttach];
     listener = [self->_channel.presenceEventEmitter on:cb];
-    ARTLogVerbose(self->_channel.logger, @"R:%p C:%p (%@) presence subscribe to all actions", self->_channel.realtime, self->_channel, self->_channel.name);
+    ARTLogVerbose(self.logger, @"R:%p C:%p (%@) presence subscribe to all actions", self->_channel.realtime, self->_channel, self->_channel.name);
 });
     return listener;
 }
@@ -503,7 +514,7 @@ dispatch_sync(_queue, ^{
     }
     [self->_channel _attach:onAttach];
     listener = [self->_channel.presenceEventEmitter on:[ARTEvent newWithPresenceAction:action] callback:cb];
-    ARTLogVerbose(self->_channel.logger, @"R:%p C:%p (%@) presence subscribe to action %@", self->_channel.realtime, self->_channel, self->_channel.name, ARTPresenceActionToStr(action));
+    ARTLogVerbose(self.logger, @"R:%p C:%p (%@) presence subscribe to action %@", self->_channel.realtime, self->_channel, self->_channel.name, ARTPresenceActionToStr(action));
 });
     return listener;
 }
@@ -511,7 +522,7 @@ dispatch_sync(_queue, ^{
 - (void)unsubscribe {
 dispatch_sync(_queue, ^{
     [self _unsubscribe];
-    ARTLogVerbose(self->_channel.logger, @"R:%p C:%p (%@) presence unsubscribe to all actions", self->_channel.realtime, self->_channel, self->_channel.name);
+    ARTLogVerbose(self.logger, @"R:%p C:%p (%@) presence unsubscribe to all actions", self->_channel.realtime, self->_channel, self->_channel.name);
 });
 }
 
@@ -522,14 +533,14 @@ dispatch_sync(_queue, ^{
 - (void)unsubscribe:(ARTEventListener *)listener {
 dispatch_sync(_queue, ^{
     [self->_channel.presenceEventEmitter off:listener];
-    ARTLogVerbose(self->_channel.logger, @"R:%p C:%p (%@) presence unsubscribe to all actions", self->_channel.realtime, self->_channel, self->_channel.name);
+    ARTLogVerbose(self.logger, @"R:%p C:%p (%@) presence unsubscribe to all actions", self->_channel.realtime, self->_channel, self->_channel.name);
 });
 }
 
 - (void)unsubscribe:(ARTPresenceAction)action listener:(ARTEventListener *)listener {
 dispatch_sync(_queue, ^{
     [self->_channel.presenceEventEmitter off:[ARTEvent newWithPresenceAction:action] listener:listener];
-    ARTLogVerbose(self->_channel.logger, @"R:%p C:%p (%@) presence unsubscribe to action %@", self->_channel.realtime, self->_channel, self->_channel.name, ARTPresenceActionToStr(action));
+    ARTLogVerbose(self.logger, @"R:%p C:%p (%@) presence unsubscribe to action %@", self->_channel.realtime, self->_channel, self->_channel.name, ARTPresenceActionToStr(action));
 });
 }
 
@@ -569,7 +580,7 @@ dispatch_sync(_queue, ^{
     if (msg.data && _channel.dataEncoder) {
         ARTDataEncoderOutput *encoded = [_channel.dataEncoder encode:msg.data];
         if (encoded.errorInfo) {
-            ARTLogWarn(_channel.logger, @"RT:%p C:%p (%@) error encoding presence message: %@", _channel.realtime, self, _channel.name, encoded.errorInfo);
+            ARTLogWarn(self.logger, @"RT:%p C:%p (%@) error encoding presence message: %@", _channel.realtime, self, _channel.name, encoded.errorInfo);
         }
         msg.data = encoded.data;
         msg.encoding = encoded.encoding;

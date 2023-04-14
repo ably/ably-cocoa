@@ -24,6 +24,7 @@ framework module Ably {
         header "ARTRestChannels+Private.h"
         header "ARTRestChannel+Private.h"
         header "ARTPaginatedResult+Private.h"
+        header "ARTPaginatedResult+Subclass.h"
         header "ARTPresence+Private.h"
         header "ARTPresenceMessage+Private.h"
         header "ARTProtocolMessage+Private.h"
@@ -95,11 +96,15 @@ framework module Ably {
         header "ARTTestClientOptions.h"
         header "ARTVersion2Log.h"
         header "ARTInternalLog.h"
+        header "ARTInternalLog+Testing.h"
         header "ARTLogAdapter.h"
+        header "ARTLogAdapter+Testing.h"
         header "ARTDeviceIdentityTokenDetails+Private.h"
         header "ARTHttp.h"
         header "ARTLocalDeviceStorage.h"
         header "ARTPresenceMap.h"
         header "ARTInternalLogCore.h"
+        header "ARTInternalLogCore+Testing.h"
+        header "ARTDataEncoder.h"
     }
 }

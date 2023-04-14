@@ -5,7 +5,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtimePresenceInternal : NSObject <ARTRealtimePresenceProtocol>
 
-- (instancetype)initWithChannel:(ARTRealtimeChannelInternal *)channel;
+- (instancetype)initWithChannel:(ARTRealtimeChannelInternal *)channel logger:(ARTInternalLog *)logger;
 - (void)_unsubscribe;
 - (BOOL)syncComplete_nosync;
 

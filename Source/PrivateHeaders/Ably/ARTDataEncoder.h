@@ -5,6 +5,7 @@
 
 @class ARTCipherParams;
 @class ARTPlugin;
+@class ARTInternalLog;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -22,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// :nodoc:
 @interface ARTDataEncoder : NSObject
 
-- (instancetype)initWithCipherParams:(ARTCipherParams *_Nullable)params error:(NSError *_Nullable*_Nullable)error;
+- (instancetype)initWithCipherParams:(ARTCipherParams *_Nullable)params logger:(ARTInternalLog *)logger error:(NSError *_Nullable*_Nullable)error;
 - (ARTDataEncoderOutput *)encode:(id _Nullable)data;
 - (ARTDataEncoderOutput *)decode:(id _Nullable)data encoding:(NSString *_Nullable)encoding;
 - (ARTDataEncoderOutput *)decode:(id _Nullable)data identifier:(NSString *)identifier encoding:(NSString *_Nullable)encoding;

@@ -114,7 +114,7 @@ private func testWithUntilAttach(_ untilAttach: Bool, channelName: String) {
     defer { client.dispose(); client.close() }
     let channel = client.channels.get(channelName)
 
-    let testHTTPExecutor = TestProxyHTTPExecutor(InternalLog(logger: LogAdapter(logger: options.logHandler)))
+    let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
     client.internal.rest.httpExecutor = testHTTPExecutor
 
     let query = ARTRealtimeHistoryQuery()

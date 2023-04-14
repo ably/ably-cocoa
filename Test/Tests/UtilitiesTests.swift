@@ -203,7 +203,7 @@ class UtilitiesTests: XCTestCase {
 
         let options = AblyTests.commonAppSetup()
         let rest = ARTRest(options: options)
-        let testHTTPExecutor = TestProxyHTTPExecutor(InternalLog(logger: LogAdapter(logger: options.logHandler)))
+        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
         let channel = rest.channels.get(uniqueChannelName())
 
@@ -440,8 +440,8 @@ class UtilitiesTests: XCTestCase {
 
     func test__021__Utilities__Logger__should_have_a_history_of_logs() {
         let options = AblyTests.commonAppSetup()
+        options.logLevel = .verbose
         let realtime = ARTRealtime(options: options)
-        realtime.internal.logger.logLevel = .verbose
         defer { realtime.close() }
         let channel = realtime.channels.get(uniqueChannelName())
 

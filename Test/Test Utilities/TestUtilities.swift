@@ -100,7 +100,6 @@ class AblyTests {
     }
 
     static var testApplication: JSON?
-    static fileprivate var setupOptionsCounter = 0
 
     struct QueueIdentity {
         let label: String
@@ -114,25 +113,18 @@ class AblyTests {
         return queue
     }()
 
-    static var userQueue: DispatchQueue = {
-        let queue = DispatchQueue(label: "io.ably.tests.callbacks", qos: .userInitiated)
+    static func createUserQueue() -> DispatchQueue {
+        let queue = DispatchQueue(label: "io.ably.tests.callbacks.\(UUID().uuidString)", qos: .userInitiated)
         queue.setSpecific(key: queueIdentityKey, value: QueueIdentity(label: queue.label))
         return queue
-    }()
-    
-    static var extraQueue: DispatchQueue = {
-        let queue = DispatchQueue(label: "io.ably.tests.extra", qos: .userInitiated)
-        queue.setSpecific(key: queueIdentityKey, value: QueueIdentity(label: queue.label))
-        return queue
-    }()
+    }
 
     static func currentQueueLabel() -> String? {
         return DispatchQueue.getSpecific(key: queueIdentityKey)?.label
     }
 
     class func setupOptions(_ options: ARTClientOptions, forceNewApp: Bool = false, debug: Bool = false) -> ARTClientOptions {
-        options.testOptions.channelNamePrefix = "test-\(setupOptionsCounter)"
-        setupOptionsCounter += 1
+        options.testOptions.channelNamePrefix = "test-\(UUID().uuidString)"
 
         if forceNewApp {
             testApplication = nil
@@ -376,6 +368,7 @@ class AblyTests {
 }
 
 class NSURLSessionServerTrustSync: NSObject, URLSessionDelegate, URLSessionTaskDelegate {
+    private static let delegateQueue = DispatchQueue(label: "io.ably.tests.NSURLSessionServerTrustSync", qos: .userInitiated)
 
     func get(_ request: NSMutableURLRequest) -> (Data?, NSError?, HTTPURLResponse?) {
         var responseError: NSError?
@@ -385,7 +378,7 @@ class NSURLSessionServerTrustSync: NSObject, URLSessionDelegate, URLSessionTaskD
 
         let configuration = URLSessionConfiguration.default
         let queue = OperationQueue()
-        queue.underlyingQueue = AblyTests.extraQueue
+        queue.underlyingQueue = Self.delegateQueue
         let session = Foundation.URLSession(configuration:configuration, delegate:self, delegateQueue:queue)
 
         let task = session.dataTask(with: request as URLRequest, completionHandler: { data, response, error in
@@ -801,7 +794,7 @@ class MockHTTP: ARTHttp {
     private var count: Int = 0
 
     init(logger: InternalLog) {
-        super.init(AblyTests.queue, logger: logger)
+        super.init(queue: AblyTests.queue, logger: logger)
     }
 
     func setNetworkState(network: FakeNetworkResponse, resetAfter numberOfRequests: Int) {
@@ -909,14 +902,10 @@ class MockHTTPExecutor: NSObject, ARTHTTPAuthenticatedExecutor {
 
     fileprivate var errorSimulator: NSError?
 
-    var _logger = InternalLog(logger: MockVersion2Log())
+    private(set) var logger = InternalLog(logger: MockVersion2Log())
     var clientOptions = ARTClientOptions()
     var encoder = ARTJsonLikeEncoder()
     var requests: [URLRequest] = []
-
-    func logger() -> InternalLog {
-        return _logger
-    }
 
     func options() -> ARTClientOptions {
         return self.clientOptions
@@ -968,7 +957,7 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
     typealias HTTPExecutorCallback = (HTTPURLResponse?, Data?, Error?) -> Void
 
     private(set) var http: ARTHttp
-    private var _logger: InternalLog!
+    private(set) var logger: InternalLog
 
     private var errorSimulator: ErrorSimulator?
 
@@ -994,18 +983,14 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
     private var callbackAfterRequest: ((URLRequest) -> Void)?
     private var callbackProcessingDataResponse: ((Data?) -> Data)?
 
-    init(_ logger: InternalLog) {
-        self._logger = logger
-        self.http = ARTHttp(AblyTests.queue, logger: logger)
+    init(logger: InternalLog) {
+        self.logger = logger
+        self.http = ARTHttp(queue: AblyTests.queue, logger: logger)
     }
 
     init(http: ARTHttp, logger: InternalLog) {
-        self._logger = logger
+        self.logger = logger
         self.http = http
-    }
-    
-    func logger() -> InternalLog {
-        return self._logger
     }
 
     public func setHTTP(http: ARTHttp) {

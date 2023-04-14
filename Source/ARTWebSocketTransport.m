@@ -60,14 +60,15 @@ Class configuredWebsocketClass = nil;
 
 - (instancetype)initWithRest:(ARTRestInternal *)rest
                      options:(ARTClientOptions *)options
-                   resumeKey:(NSString *)resumeKey {
+                   resumeKey:(NSString *)resumeKey
+                      logger:(ARTInternalLog *)logger {
     self = [super init];
     if (self) {
         _workQueue = rest.queue;
         _websocket = nil;
         _state = ARTRealtimeTransportStateClosed;
         _encoder = rest.defaultEncoder;
-        _logger = rest.logger;
+        _logger = logger;
         _options = [options copy];
         _resumeKey = resumeKey;
         _stateEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_workQueue];

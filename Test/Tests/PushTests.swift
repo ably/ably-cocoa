@@ -301,9 +301,11 @@ class PushTests: XCTestCase {
         let mockHttpExecutor = MockHTTPExecutor()
         realtime.internal.rest.httpExecutor = mockHttpExecutor
 
+        let logger = InternalLog(core: MockInternalLogCore())
         let storage = MockDeviceStorage(
             startWith: ARTPushActivationStateWaitingForNewPushDeviceDetails(
-                machine: ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate())
+                machine: ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate(), logger: logger),
+                logger: logger
             )
         )
         realtime.internal.rest.storage = storage

@@ -1,4 +1,5 @@
 #import "ARTChannel+Private.h"
+#import "ARTChannel+Subclass.h"
 
 #import "ARTDataEncoder.h"
 #import "ARTMessage.h"
@@ -16,17 +17,17 @@
     ARTChannelOptions *_options;
 }
 
-- (instancetype)initWithName:(NSString *)name andOptions:(ARTChannelOptions *)options rest:(ARTRestInternal *)rest {
+- (instancetype)initWithName:(NSString *)name andOptions:(ARTChannelOptions *)options rest:(ARTRestInternal *)rest logger:(ARTInternalLog *)logger {
     if (self = [super init]) {
         _name = name;
-        _logger = rest.logger;
+        _logger = logger;
         _queue = rest.queue;
         _options = options;
         NSError *error = nil;
-        _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:_options.cipher error:&error];
+        _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:_options.cipher logger:_logger error:&error];
         if (error != nil) {
             ARTLogWarn(_logger, @"creating ARTDataEncoder: %@", error);
-            _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:nil error:nil];
+            _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:nil logger:_logger error:nil];
         }
     }
     return self;
@@ -57,11 +58,11 @@
 
 - (void)recreateDataEncoderWith:(ARTCipherParams*)cipher {
     NSError *error = nil;
-    _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:cipher error:&error];
+    _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:cipher logger:self.logger error:&error];
     
     if (error != nil) {
         ARTLogWarn(_logger, @"creating ARTDataEncoder: %@", error);
-        _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:nil error:nil];
+        _dataEncoder = [[ARTDataEncoder alloc] initWithCipherParams:nil logger:self.logger error:nil];
     }
 }
 

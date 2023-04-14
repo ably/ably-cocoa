@@ -8,6 +8,7 @@
 @class ARTErrorInfo;
 @class ARTClientOptions;
 @class ARTRestInternal;
+@class ARTInternalLog;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -66,7 +67,8 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportState) {
 
 - (instancetype)initWithRest:(ARTRestInternal *)rest
                      options:(ARTClientOptions *)options
-                   resumeKey:(nullable NSString *)resumeKey;
+                   resumeKey:(nullable NSString *)resumeKey
+                      logger:(ARTInternalLog *)logger;
 
 @property (readonly, nonatomic) NSString *resumeKey;
 @property (readonly, nonatomic) ARTRealtimeTransportState state;

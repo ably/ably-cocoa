@@ -81,6 +81,16 @@
 
 @end
 
+NS_ASSUME_NONNULL_BEGIN
+
+@interface ARTAuthInternal ()
+
+@property (nonatomic, readonly) ARTInternalLog *logger;
+
+@end
+
+NS_ASSUME_NONNULL_END
+
 @implementation ARTAuthInternal {
     __weak ARTRestInternal *_rest; // weak because rest owns auth
     dispatch_queue_t _userQueue;
@@ -91,14 +101,14 @@
     ARTEventEmitter<ARTEvent *, ARTErrorInfo *> *_cancelationEventEmitter;
 }
 
-- (instancetype)init:(ARTRestInternal *)rest withOptions:(ARTClientOptions *)options {
+- (instancetype)init:(ARTRestInternal *)rest withOptions:(ARTClientOptions *)options logger:(ARTInternalLog *)logger {
     if (self = [super init]) {
         _rest = rest;
         _userQueue = rest.userQueue;
         _queue = rest.queue;
         _tokenDetails = options.tokenDetails;
         _options = options;
-        _logger = rest.logger;
+        _logger = logger;
         _protocolClientId = nil;
         _cancelationEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
         _tokenParams = options.defaultTokenParams ? : [[ARTTokenParams alloc] initWithOptions:self.options];

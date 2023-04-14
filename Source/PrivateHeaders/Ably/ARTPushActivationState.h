@@ -11,9 +11,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTPushActivationState : NSObject <NSSecureCoding>
 
 - (instancetype)init NS_UNAVAILABLE;
-- (instancetype)initWithMachine:(ARTPushActivationStateMachine *)machine;
+- (instancetype)initWithMachine:(ARTPushActivationStateMachine *)machine logger:(ARTInternalLog *)logger;
 + (instancetype)new NS_UNAVAILABLE;
-+ (instancetype)newWithMachine:(ARTPushActivationStateMachine *)machine;
++ (instancetype)newWithMachine:(ARTPushActivationStateMachine *)machine logger:(ARTInternalLog *)logger;
 
 @property (atomic, nullable) ARTPushActivationStateMachine *machine;
 
@@ -44,11 +44,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTPushActivationStateWaitingForRegistrationSync : ARTPushActivationState
 
-- (instancetype)initWithMachine:(ARTPushActivationStateMachine *)machine NS_UNAVAILABLE;
-+ (instancetype)newWithMachine:(ARTPushActivationStateMachine *)machine NS_UNAVAILABLE;
+- (instancetype)initWithMachine:(ARTPushActivationStateMachine *)machine logger:(ARTInternalLog *)logger NS_UNAVAILABLE;
++ (instancetype)newWithMachine:(ARTPushActivationStateMachine *)machine logger:(ARTInternalLog *)logger NS_UNAVAILABLE;
 
-- (instancetype)initWithMachine:(ARTPushActivationStateMachine *)machine fromEvent:(ARTPushActivationEvent *)event;
-+ (instancetype)newWithMachine:(ARTPushActivationStateMachine *)machine fromEvent:(ARTPushActivationEvent *)event;
+- (instancetype)initWithMachine:(ARTPushActivationStateMachine *)machine logger:(ARTInternalLog *)logger fromEvent:(ARTPushActivationEvent *)event;
++ (instancetype)newWithMachine:(ARTPushActivationStateMachine *)machine logger:(ARTInternalLog *)logger fromEvent:(ARTPushActivationEvent *)event;
 
 @property (atomic) ARTPushActivationEvent *fromEvent;
 
