@@ -67,16 +67,6 @@ private func jwtContentTypeTestsSetupDependencies() -> ARTRest {
 }
 
 class AuthTests: XCTestCase {
-    // XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
-    override class var defaultTestSuite: XCTestSuite {
-        _ = currentClientId
-        _ = json
-        _ = channelName
-        _ = messageName
-
-        return super.defaultTestSuite
-    }
-
     enum ExpectedTokenParams {
         static let clientId = "client_from_params"
         static let ttl = 1.0
