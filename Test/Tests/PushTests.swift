@@ -257,7 +257,7 @@ class PushTests: XCTestCase {
     func test__013__LocalDevice__when_getting_a_client_ID_from_CONNECTED_message__new_clientID_is_set() {
         let options = ARTClientOptions(key: "fake:key")
         options.autoConnect = false
-        options.testOptions.transportFactory = TestProxyTransportFactory(internalQueue: AblyTests.queue)
+        options.testOptions.transportFactory = TestProxyTransportFactory(internalQueue: options.internalDispatchQueue)
 
         let realtime = ARTRealtime(options: options)
         XCTAssertNil(realtime.device.clientId)
