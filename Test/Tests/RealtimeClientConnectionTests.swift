@@ -2361,7 +2361,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let client = ARTRealtime(options: options)
         client.internal.setReachabilityClass(TestReachability.self)
         defer {
-            client.simulateRestoreInternetConnection(transportFactory: transportFactory)
+            client.simulateRestoreInternetConnection(transportFactory: transportFactory, internalQueue: AblyTests.queue)
             client.dispose()
             client.close()
         }
@@ -2381,7 +2381,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         client.connection.on { stateChange in
             events.append(stateChange.current)
         }
-        client.simulateNoInternetConnection(transportFactory: transportFactory)
+        client.simulateNoInternetConnection(transportFactory: transportFactory, internalQueue: AblyTests.queue)
 
         expect(events).toEventually(equal([
             .disconnected,
@@ -2402,7 +2402,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         ]), timeout: testTimeout)
 
         events.removeAll()
-        client.simulateRestoreInternetConnection(after: 7.0, transportFactory: transportFactory)
+        client.simulateRestoreInternetConnection(after: 7.0, transportFactory: transportFactory, internalQueue: AblyTests.queue)
 
         expect(events).toEventually(equal([
             .connecting, // 2.0 - 1
@@ -3712,7 +3712,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         defer { client.dispose(); client.close() }
         client.channels.get(uniqueChannelName(for: test))
 
-        let testHttpExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        let testHttpExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
         client.internal.rest.httpExecutor = testHttpExecutor
 
         transportFactory.fakeNetworkResponse = .hostUnreachable
@@ -3788,7 +3788,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         client.channels.get(uniqueChannelName(for: test))
 
         let internalLog = InternalLog(clientOptions: options)
-        let mockHTTP = MockHTTP(logger: internalLog)
+        let mockHTTP = MockHTTP(queue: AblyTests.queue, logger: internalLog)
         let testHttpExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.rest.httpExecutor = testHttpExecutor
 
@@ -3838,7 +3838,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         defer { client.dispose(); client.close() }
         client.channels.get(uniqueChannelName(for: test))
 
-        let testHttpExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        let testHttpExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
         client.internal.rest.httpExecutor = testHttpExecutor
 
         transportFactory.fakeNetworkResponse = .hostUnreachable
@@ -3908,7 +3908,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let client = ARTRealtime(options: options)
         let channel = client.channels.get(uniqueChannelName(for: test))
 
-        let testHttpExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        let testHttpExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
         client.internal.rest.httpExecutor = testHttpExecutor
 
         transportFactory.fakeNetworkResponse = .hostUnreachable
@@ -3941,7 +3941,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.testOptions.transportFactory = transportFactory
         let client = ARTRealtime(options: options)
 
-        let testHttpExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        let testHttpExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
         client.internal.rest.httpExecutor = testHttpExecutor
 
         transportFactory.fakeNetworkResponse = .hostUnreachable

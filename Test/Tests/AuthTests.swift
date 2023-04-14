@@ -86,7 +86,7 @@ class AuthTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRest(options: options)
-        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        let testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -123,7 +123,7 @@ class AuthTests: XCTestCase {
         let options = try AblyTests.clientOptions(for: test, requestToken: true)
         options.tls = false
         let clientHTTP = ARTRest(options: options)
-        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        let testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
         clientHTTP.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -142,7 +142,7 @@ class AuthTests: XCTestCase {
         let options = try AblyTests.clientOptions(for: test, requestToken: true)
         options.tls = true
         let clientHTTPS = ARTRest(options: options)
-        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        let testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
         clientHTTPS.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -164,7 +164,7 @@ class AuthTests: XCTestCase {
         options.token = try getTestToken(for: test)
 
         let client = ARTRest(options: options)
-        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        let testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -241,7 +241,7 @@ class AuthTests: XCTestCase {
         XCTAssertNil(rest.internal.options.key)
         XCTAssertNil(rest.internal.options.authCallback)
         XCTAssertNil(rest.internal.options.authUrl)
-        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        let testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
 
         let channel = rest.channels.get(uniqueChannelName(for: test))
@@ -307,7 +307,7 @@ class AuthTests: XCTestCase {
         }
 
         let rest = ARTRest(options: options)
-        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        let testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
 
         let channel = rest.channels.get(uniqueChannelName(for: test))
@@ -335,7 +335,7 @@ class AuthTests: XCTestCase {
         options.useTokenAuth = true
 
         let rest = ARTRest(options: options)
-        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        let testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
 
         let channel = rest.channels.get(uniqueChannelName(for: test))
@@ -435,7 +435,7 @@ class AuthTests: XCTestCase {
         options.key = nil
 
         let rest = ARTRest(options: options)
-        let proxyHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        let proxyHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
 
         // Sync server time offset
         let authOptions = ARTAuthOptions(key: testKey)
@@ -486,7 +486,7 @@ class AuthTests: XCTestCase {
         options.key = nil
 
         let rest = ARTRest(options: options)
-        let proxyHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        let proxyHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
         rest.internal.httpExecutor = proxyHTTPExecutor
 
         // No server time offset
@@ -882,7 +882,7 @@ class AuthTests: XCTestCase {
         options.clientId = expectedClientId
 
         let client = ARTRest(options: options)
-        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        let testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -1058,7 +1058,7 @@ class AuthTests: XCTestCase {
 
         let options = try AblyTests.commonAppSetup(for: test)
         let rest = ARTRest(options: options)
-        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        let testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -1091,7 +1091,7 @@ class AuthTests: XCTestCase {
 
         let options = try AblyTests.commonAppSetup(for: test)
         let rest = ARTRest(options: options)
-        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        let testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -1123,7 +1123,7 @@ class AuthTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = "mary"
         let rest = ARTRest(options: options)
-        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        let testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
         let channel = rest.channels.get(uniqueChannelName(for: test))
         waitUntil(timeout: testTimeout) { done in
@@ -1149,7 +1149,7 @@ class AuthTests: XCTestCase {
         options.clientId = "client_string"
 
         let client = ARTRest(options: options)
-        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        let testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -1287,7 +1287,7 @@ class AuthTests: XCTestCase {
         options.useTokenAuth = true
 
         let client = ARTRest(options: options)
-        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        let testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
         // TokenDetails
@@ -1480,7 +1480,7 @@ class AuthTests: XCTestCase {
         options.authParams!.append(URLQueryItem(name: "body", value: testToken))
 
         let rest = ARTRest(options: options)
-        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        let testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -1508,7 +1508,7 @@ class AuthTests: XCTestCase {
         options.authParams?.append(URLQueryItem(name: "body", value: jsonTokenDetails.toUTF8String))
 
         let rest = ARTRest(options: options)
-        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        let testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -1561,7 +1561,7 @@ class AuthTests: XCTestCase {
         options.authParams?.append(URLQueryItem(name: "body", value: jsonTokenRequest.toUTF8String))
 
         rest = ARTRest(options: options)
-        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        let testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -1686,7 +1686,7 @@ class AuthTests: XCTestCase {
         tokenParams.clientId = "tester"
 
         let client = ARTRest(options: options)
-        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        let testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -1868,7 +1868,7 @@ class AuthTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         options.token = try getTestToken(for: test, clientId: nil)
         let rest = ARTRest(options: options)
-        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        let testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
         let channel = rest.channels.get(uniqueChannelName(for: test))
 
@@ -1931,7 +1931,7 @@ class AuthTests: XCTestCase {
             }
         }
 
-        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        let testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
         let channel = rest.channels.get(uniqueChannelName(for: test))
 
@@ -2693,7 +2693,7 @@ class AuthTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let rest = ARTRest(options: options)
-        let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        let testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
         let auth = rest.auth
 
@@ -4478,7 +4478,7 @@ class AuthTests: XCTestCase {
         #if TARGET_OS_IOS
             XCTAssertNil(rest.device.clientId)
         #endif
-        let testHttpExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        let testHttpExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHttpExecutor
         let channel = rest.channels.get(channelName)
 
