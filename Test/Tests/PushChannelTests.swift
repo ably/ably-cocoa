@@ -27,7 +27,7 @@ class PushChannelTests: XCTestCase {
         rest = ARTRest(options: options)
         rest.internal.options.clientId = "tester"
         rest.internal.httpExecutor = mockHttpExecutor
-        rest.internal.resetDeviceSingleton()
+        DefaultLocalDeviceFetcher.sharedInstance.resetDevice()
     }
 
     // RSH7

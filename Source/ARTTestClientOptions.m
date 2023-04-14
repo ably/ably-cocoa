@@ -2,6 +2,7 @@
 #import "ARTDefault.h"
 #import "ARTFallback+Private.h"
 #import "ARTRealtimeTransportFactory.h"
+#import "ARTLocalDeviceFetcher.h"
 
 @implementation ARTTestClientOptions
 
@@ -10,6 +11,7 @@
         _realtimeRequestTimeout = [ARTDefault realtimeRequestTimeout];
         _shuffleArray = ARTFallback_shuffleArray;
         _transportFactory = [[ARTDefaultRealtimeTransportFactory alloc] init];
+        _localDeviceFetcher = ARTDefaultLocalDeviceFetcher.sharedInstance;
     }
 
     return self;
@@ -21,6 +23,7 @@
     copied.realtimeRequestTimeout = self.realtimeRequestTimeout;
     copied.shuffleArray = self.shuffleArray;
     copied.transportFactory = self.transportFactory;
+    copied.localDeviceFetcher = self.localDeviceFetcher;
 
     return copied;
 }
