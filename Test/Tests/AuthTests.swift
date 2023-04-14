@@ -43,7 +43,6 @@ private func check(_ details: ARTTokenDetails) {
 
 private let channelName = "test_JWT"
 private let messageName = "message_JWT"
-private let jwtTestsOptions = AblyTests.clientOptions()
 private let authUrlTestsOptions: ARTClientOptions = {
     let options = AblyTests.clientOptions()
     options.authUrl = URL(string: echoServerAddress)!
@@ -76,7 +75,6 @@ class AuthTests: XCTestCase {
         _ = json
         _ = channelName
         _ = messageName
-        _ = jwtTestsOptions
         _ = authUrlTestsOptions
         _ = authCallbackTestsOptions
         _ = jwtAndRestTestsOptions
@@ -3956,8 +3954,9 @@ class AuthTests: XCTestCase {
     }
 
     func skipped__test__140__JWT_and_realtime__client_initialized_with_a_JWT_token_in_ClientOptions__with_valid_credentials__pulls_stats_successfully() {
-        jwtTestsOptions.token = getJWTToken()
-        let client = AblyTests.newRealtime(jwtTestsOptions)
+        let options = AblyTests.clientOptions()
+        options.token = getJWTToken()
+        let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
@@ -3969,9 +3968,10 @@ class AuthTests: XCTestCase {
     }
 
     func test__141__JWT_and_realtime__client_initialized_with_a_JWT_token_in_ClientOptions__with_invalid_credentials__fails_to_connect_with_reason__invalid_signature_() {
-        jwtTestsOptions.token = getJWTToken(invalid: true)
-        jwtTestsOptions.autoConnect = false
-        let client = AblyTests.newRealtime(jwtTestsOptions)
+        let options = AblyTests.clientOptions()
+        options.token = getJWTToken(invalid: true)
+        options.autoConnect = false
+        let client = AblyTests.newRealtime(options)
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
