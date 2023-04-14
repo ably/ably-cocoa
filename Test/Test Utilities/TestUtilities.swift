@@ -100,7 +100,6 @@ class AblyTests {
     }
 
     static var testApplication: JSON?
-    static fileprivate var setupOptionsCounter = 0
 
     struct QueueIdentity {
         let label: String
@@ -125,8 +124,7 @@ class AblyTests {
     }
 
     class func setupOptions(_ options: ARTClientOptions, forceNewApp: Bool = false, debug: Bool = false) -> ARTClientOptions {
-        options.testOptions.channelNamePrefix = "test-\(setupOptionsCounter)"
-        setupOptionsCounter += 1
+        options.testOptions.channelNamePrefix = "test-\(UUID().uuidString)"
 
         if forceNewApp {
             testApplication = nil
