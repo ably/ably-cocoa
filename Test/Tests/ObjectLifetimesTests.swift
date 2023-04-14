@@ -121,7 +121,7 @@ class ObjectLifetimesTests: XCTestCase {
         }
 
         waitUntil(timeout: testTimeout) { done in
-            AblyTests.queue.async {
+            options.internalDispatchQueue.async {
                 client = nil // should enqueue a release
                 channel = nil // should enqueue a release
                 done()
@@ -129,7 +129,7 @@ class ObjectLifetimesTests: XCTestCase {
         }
 
         waitUntil(timeout: testTimeout) { done in
-            AblyTests.queue.async {
+            options.internalDispatchQueue.async {
                 XCTAssertNil(weakClient)
                 XCTAssertNil(weakChannel)
                 done()

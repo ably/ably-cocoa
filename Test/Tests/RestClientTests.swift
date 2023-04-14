@@ -151,7 +151,7 @@ class RestClientTests: XCTestCase {
     func test__001__RestClient__All_REST_requests_should_include_the_current_API_version() {
         let options = AblyTests.commonAppSetup()
         let client = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
+        testHTTPExecutor = TestProxyHTTPExecutor(queue: options.internalDispatchQueue, logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
         let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
@@ -347,7 +347,7 @@ class RestClientTests: XCTestCase {
         let options = AblyTests.clientOptions(requestToken: true)
         options.tls = false
         let client = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
+        testHTTPExecutor = TestProxyHTTPExecutor(queue: options.internalDispatchQueue, logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
         publishTestMessage(client, channelName: uniqueChannelName(), failOnError: false)
@@ -486,7 +486,7 @@ class RestClientTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
 
         let clientHttps = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
+        testHTTPExecutor = TestProxyHTTPExecutor(queue: options.internalDispatchQueue, logger: .init(clientOptions: options))
         clientHttps.internal.httpExecutor = testHTTPExecutor
 
         let channelName = uniqueChannelName()
@@ -505,7 +505,7 @@ class RestClientTests: XCTestCase {
         options.useTokenAuth = true
         options.tls = false
         let clientHttp = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
+        testHTTPExecutor = TestProxyHTTPExecutor(queue: options.internalDispatchQueue, logger: .init(clientOptions: options))
         clientHttp.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -555,7 +555,7 @@ class RestClientTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         options.token = getTestToken(ttl: 0.5)
         let client = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
+        testHTTPExecutor = TestProxyHTTPExecutor(queue: options.internalDispatchQueue, logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
         let auth = client.auth
 
@@ -584,7 +584,7 @@ class RestClientTests: XCTestCase {
         let options = AblyTests.clientOptions()
         options.token = getTestToken(capability: "{ \"main\":[\"subscribe\"] }")
         let client = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
+        testHTTPExecutor = TestProxyHTTPExecutor(queue: options.internalDispatchQueue, logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -700,7 +700,7 @@ class RestClientTests: XCTestCase {
         }
 
         let rest = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
+        testHTTPExecutor = TestProxyHTTPExecutor(queue: options.internalDispatchQueue, logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -756,7 +756,7 @@ class RestClientTests: XCTestCase {
                 )
 
                 let rest = ARTRest(options: options)
-                testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
+                testHTTPExecutor = TestProxyHTTPExecutor(queue: options.internalDispatchQueue, logger: .init(clientOptions: options))
                 rest.internal.httpExecutor = testHTTPExecutor
 
                 // Delay for token expiration
@@ -1553,7 +1553,7 @@ class RestClientTests: XCTestCase {
         XCTAssertTrue(options.useBinaryProtocol)
 
         let rest = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
+        testHTTPExecutor = TestProxyHTTPExecutor(queue: options.internalDispatchQueue, logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
         waitUntil(timeout: testTimeout) { done in
             rest.channels.get(uniqueChannelName(prefix: "rest")).publish(nil, data: "message") { _ in
@@ -1590,7 +1590,7 @@ class RestClientTests: XCTestCase {
         options.useBinaryProtocol = false
 
         let rest = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
+        testHTTPExecutor = TestProxyHTTPExecutor(queue: options.internalDispatchQueue, logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
         waitUntil(timeout: testTimeout) { done in
             rest.channels.get(uniqueChannelName(prefix: "rest")).publish(nil, data: "message") { _ in
@@ -1623,7 +1623,7 @@ class RestClientTests: XCTestCase {
     func test__010__RestClient__X_Ably_Version_must_be_included_in_all_REST_requests() {
         let options = AblyTests.commonAppSetup()
         let client = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
+        testHTTPExecutor = TestProxyHTTPExecutor(queue: options.internalDispatchQueue, logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
         waitUntil(timeout: testTimeout) { done in
             client.channels.get(uniqueChannelName()).publish(nil, data: "message") { error in
@@ -1648,7 +1648,7 @@ class RestClientTests: XCTestCase {
     func test__011__RestClient__The_Agent_library_identifier_is_composed_of_a_series_of_key__value__entries_joined_by_spaces() {
         let options = AblyTests.commonAppSetup()
         let client = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
+        testHTTPExecutor = TestProxyHTTPExecutor(queue: options.internalDispatchQueue, logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
         let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
@@ -1874,7 +1874,7 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        let proxyHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
+        let proxyHTTPExecutor = TestProxyHTTPExecutor(queue: options.internalDispatchQueue, logger: .init(clientOptions: options))
         rest.internal.httpExecutor = proxyHTTPExecutor
 
         var httpPaginatedResponse: ARTHTTPPaginatedResponse!
@@ -1923,7 +1923,7 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        let proxyHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
+        let proxyHTTPExecutor = TestProxyHTTPExecutor(queue: options.internalDispatchQueue, logger: .init(clientOptions: options))
         rest.internal.httpExecutor = proxyHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
