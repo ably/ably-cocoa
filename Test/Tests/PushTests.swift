@@ -28,7 +28,7 @@ class PushTests: XCTestCase {
         super.setUp()
 
         rest = ARTRest(key: "xxxx:xxxx")
-        rest.internal.resetDeviceSingleton()
+        ARTDefaultLocalDeviceFetcher.sharedInstance.resetDevice()
         mockHttpExecutor = MockHTTPExecutor()
         rest.internal.httpExecutor = mockHttpExecutor
         storage = MockDeviceStorage()
@@ -126,7 +126,7 @@ class PushTests: XCTestCase {
         let storage = MockDeviceStorage()
         rest.internal.storage = storage
 
-        rest.internal.resetDeviceSingleton()
+        ARTDefaultLocalDeviceFetcher.sharedInstance.resetDevice()
 
         var stateMachine: ARTPushActivationStateMachine!
         waitUntil(timeout: testTimeout) { done in

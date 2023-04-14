@@ -1,5 +1,7 @@
 @import Foundation;
 
+@protocol ARTLocalDeviceFetcher;
+
 NS_ASSUME_NONNULL_BEGIN
 
 /**
@@ -23,6 +25,11 @@ NS_ASSUME_NONNULL_BEGIN
  Initial value is `ARTFallback_shuffleArray`.
  */
 @property (nonatomic) void (^shuffleArray)(NSMutableArray *);
+
+/**
+ Initial value is `ARTDefaultLocalDeviceFetcher.sharedInstance`.
+ */
+@property (nonatomic) id<ARTLocalDeviceFetcher> localDeviceFetcher;
 
 @end
 

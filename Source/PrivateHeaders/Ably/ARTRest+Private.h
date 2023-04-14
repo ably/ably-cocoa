@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) ARTPushInternal *push;
 #if TARGET_OS_IOS
 @property (nonnull, nonatomic, readonly, getter=device) ARTLocalDevice *device;
-@property (nonnull, nonatomic, readonly, getter=device_nosync) ARTLocalDevice *device_nosync;
+@property (nonnull, nonatomic, readonly) ARTLocalDevice *device_nosync;
 @property (nonatomic) id<ARTDeviceStorage> storage;
 #endif
 
@@ -73,11 +73,6 @@ NS_ASSUME_NONNULL_BEGIN
                                            completion:(ARTURLRequestCallback)callback;
 
 - (nullable NSObject<ARTCancellable> *)internetIsUp:(void (^)(BOOL isUp))cb;
-
-#if TARGET_OS_IOS
-// This is only intended to be called from test code.
-- (void)resetDeviceSingleton;
-#endif
 
 @end
 

@@ -40,7 +40,7 @@ class PushActivationStateMachineTests: XCTestCase {
     }
 
     override func tearDown() {
-        rest.internal.resetDeviceSingleton()
+        ARTDefaultLocalDeviceFetcher.sharedInstance.resetDevice()
 
         super.tearDown()
     }
@@ -119,7 +119,7 @@ class PushActivationStateMachineTests: XCTestCase {
     func test__014__Activation_state_machine__State_NotActivated__on_Event_CalledActivate__local_device__should_have_a_generated_id() {
         beforeEach__Activation_state_machine__State_NotActivated()
 
-        rest.internal.resetDeviceSingleton()
+        ARTDefaultLocalDeviceFetcher.sharedInstance.resetDevice()
         XCTAssertEqual(rest.device.id.count, 36)
     }
 
@@ -473,7 +473,7 @@ class PushActivationStateMachineTests: XCTestCase {
     func test__028__Activation_state_machine__State_WaitingForDeviceRegistration__on_Event_GotDeviceRegistration() {
         beforeEach__Activation_state_machine__State_WaitingForDeviceRegistration()
 
-        rest.internal.resetDeviceSingleton()
+        ARTDefaultLocalDeviceFetcher.sharedInstance.resetDevice()
 
         var activatedCallbackCalled = false
         let hook = stateMachine.testSuite_injectIntoMethod(after: NSSelectorFromString("callActivatedCallback:")) {
@@ -911,7 +911,7 @@ class PushActivationStateMachineTests: XCTestCase {
         let storage = MockDeviceStorage()
         rest.internal.storage = storage
         rest.device.setAndPersistIdentityTokenDetails(nil)
-        rest.internal.resetDeviceSingleton()
+        ARTDefaultLocalDeviceFetcher.sharedInstance.resetDevice()
         XCTAssertNil(rest.device.identityTokenDetails)
         XCTAssertEqual(rest.device.isRegistered(), false)
         XCTAssertNil(storage.object(forKey: ARTDeviceIdentityTokenKey))
