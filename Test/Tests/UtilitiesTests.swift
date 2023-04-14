@@ -5,7 +5,7 @@ import XCTest
 
 private var jsonEncoder: ARTJsonLikeEncoder!
 
-private var eventEmitter = ARTInternalEventEmitter<NSString, AnyObject>(queue: AblyTests.queue)
+private var eventEmitter: ARTInternalEventEmitter<NSString, AnyObject>!
 private var receivedFoo1: Int?
 private var receivedFoo2: Int?
 private var receivedBar: Int?
@@ -37,6 +37,8 @@ class UtilitiesTests: XCTestCase {
 
         return super.defaultTestSuite
     }
+
+    private var eventEmitterQueue: DispatchQueue!
 
     func beforeEach__Utilities__JSON_Encoder() {
         jsonEncoder = ARTJsonLikeEncoder()
@@ -237,7 +239,8 @@ class UtilitiesTests: XCTestCase {
     }
 
     func beforeEach__Utilities__EventEmitter() {
-        eventEmitter = ARTInternalEventEmitter(queue: AblyTests.queue)
+        eventEmitterQueue = AblyTests.queue
+        eventEmitter = ARTInternalEventEmitter(queue: eventEmitterQueue)
         receivedFoo1 = nil
         receivedFoo2 = nil
         receivedBar = nil
@@ -320,8 +323,8 @@ class UtilitiesTests: XCTestCase {
             fail("onTimeout callback shouldn't have been called")
         }).startTimer()
         eventEmitter.off(listenerFoo1!)
-        waitUntil(timeout: testTimeout) { done in
-            AblyTests.queue.asyncAfter(deadline: DispatchTime.now() + 0.3) {
+        waitUntil(timeout: testTimeout) { [eventEmitterQueue] done in
+            eventEmitterQueue!.asyncAfter(deadline: DispatchTime.now() + 0.3) {
                 done()
             }
         }
@@ -383,8 +386,8 @@ class UtilitiesTests: XCTestCase {
             fail("onTimeout callback shouldn't have been called")
         }).startTimer()
         eventEmitter.off()
-        waitUntil(timeout: DispatchTimeInterval.milliseconds(300)) { done in
-            AblyTests.queue.asyncAfter(deadline: .now() + 0.15) {
+        waitUntil(timeout: DispatchTimeInterval.milliseconds(300)) { [eventEmitterQueue] done in
+            eventEmitterQueue!.asyncAfter(deadline: .now() + 0.15) {
                 done()
             }
         }
@@ -396,10 +399,10 @@ class UtilitiesTests: XCTestCase {
         weak var timer = listenerFoo1!.setTimer(0.2, onTimeout: {
             fail("onTimeout callback shouldn't have been called")
         })
-        waitUntil(timeout: DispatchTimeInterval.seconds(1)) { done in
+        waitUntil(timeout: DispatchTimeInterval.seconds(1)) { [eventEmitterQueue] done in
             timer?.startTimer()
             eventEmitter.emit("foo", with: 123 as AnyObject?)
-            AblyTests.queue.asyncAfter(deadline: .now() + 0.3) {
+            eventEmitterQueue!.asyncAfter(deadline: .now() + 0.3) {
                 XCTAssertNotNil(receivedFoo1)
                 done()
             }
@@ -415,8 +418,8 @@ class UtilitiesTests: XCTestCase {
             calledOnTimeout = true
             expect(NSDate()).to(beCloseTo(beforeEmitting.addingTimeInterval(0.3), within: 0.2))
         }).startTimer()
-        waitUntil(timeout: DispatchTimeInterval.milliseconds(500)) { done in
-            AblyTests.queue.asyncAfter(deadline: .now() + 0.35) {
+        waitUntil(timeout: DispatchTimeInterval.milliseconds(500)) { [eventEmitterQueue] done in
+            eventEmitterQueue!.asyncAfter(deadline: .now() + 0.35) {
                 XCTAssertTrue(calledOnTimeout)
                 eventEmitter.emit("foo", with: 123 as AnyObject?)
                 XCTAssertNil(receivedFoo1)
