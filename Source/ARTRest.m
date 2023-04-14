@@ -43,6 +43,7 @@
 #import "ARTLogAdapter.h"
 #import "ARTClientOptions+TestConfiguration.h"
 #import "ARTTestClientOptions.h"
+#import "ARTLocalDeviceFetcher.h"
 
 @implementation ARTRest {
     ARTQueuedDealloc *_dealloc;
@@ -150,6 +151,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTRestInternal ()
 
 @property (nonatomic, readonly) ARTInternalLog *logger;
+@property (nonatomic, readonly) id<ARTLocalDeviceFetcher> localDeviceFetcher;
 
 @end
 
@@ -175,6 +177,7 @@ NS_ASSUME_NONNULL_END
         _realtime = realtime;
         _options = [options copy];
         _logger = logger;
+        _localDeviceFetcher = options.testOptions.localDeviceFetcher;
         _queue = options.internalDispatchQueue;
         _userQueue = options.dispatchQueue;
 #if TARGET_OS_IOS
@@ -735,48 +738,9 @@ dispatch_async(_queue, ^{
 }
 
 - (ARTLocalDevice *)device_nosync {
-    NSString *clientId = self.auth.clientId_nosync;
-    __block ARTLocalDevice *ret;
-    dispatch_sync(ARTRestInternal.deviceAccessQueue, ^{
-        ret = [self deviceWithClientId_onlyCallOnDeviceAccessQueue:clientId];
-    });
-    return ret;
-}
-
-+ (dispatch_queue_t)deviceAccessQueue {
-    static dispatch_queue_t queue;
-    static dispatch_once_t onceToken;
-    
-    dispatch_once(&onceToken, ^{
-        queue = dispatch_queue_create("io.ably.deviceAccess", DISPATCH_QUEUE_SERIAL);
-    });
-    
-    return queue;
-}
-
-static BOOL sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = YES;
-
-- (ARTLocalDevice *)deviceWithClientId_onlyCallOnDeviceAccessQueue:(NSString *)clientId {
-    // The device is shared in a static variable because it's a reflection
-    // of what's persisted. Having a device instance per ARTRest instance
-    // could leave some instances in a stale state, if, through another
-    // instance, the persisted state is changed.
-    //
-    // As a side effect, the first instance "wins" at setting the device's
-    // client ID.
-
-    static id device;
-    if (sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue) {
-        device = [ARTLocalDevice load:clientId storage:self.storage logger:self.logger];
-        sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = NO;
-    }
-    return device;
-}
-
-- (void)resetDeviceSingleton {
-    dispatch_sync([ARTRestInternal deviceAccessQueue], ^{
-        sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = YES;
-    });
+    return [self.localDeviceFetcher fetchLocalDeviceWithClientID:self.auth.clientId_nosync
+                                                         storage:self.storage
+                                                          logger:self.logger];
 }
 #endif
 

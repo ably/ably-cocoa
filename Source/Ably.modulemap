@@ -107,5 +107,7 @@ framework module Ably {
         header "ARTInternalLogCore+Testing.h"
         header "ARTDataEncoder.h"
         header "ARTRealtimeTransportFactory.h"
+        header "ARTLocalDeviceFetcher.h"
+        header "ARTLocalDeviceFetcher+Testing.h"
     }
 }
