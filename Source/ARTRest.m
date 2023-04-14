@@ -41,6 +41,8 @@
 #import "ARTErrorChecker.h"
 #import "ARTInternalLog.h"
 #import "ARTLogAdapter.h"
+#import "ARTClientOptions+TestConfiguration.h"
+#import "ARTTestClientOptions.h"
 
 @implementation ARTRest {
     ARTQueuedDealloc *_dealloc;
@@ -414,7 +416,7 @@ NS_ASSUME_NONNULL_END
         if (retries < self->_options.httpMaxRetryCount && [self shouldRetryWithFallback:request response:response error:error]) {
             if (!blockFallbacks) {
                 NSArray *hosts = [ARTFallbackHosts hostsFromOptions:self->_options];
-                blockFallbacks = [[ARTFallback alloc] initWithFallbackHosts:hosts];
+                blockFallbacks = [[ARTFallback alloc] initWithFallbackHosts:hosts shuffleArray:self->_options.testOptions.shuffleArray];
             }
             if (blockFallbacks) {
                 NSString *host = [blockFallbacks popFallbackHost];
