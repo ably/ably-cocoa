@@ -1272,10 +1272,14 @@ class TestProxyTransport: ARTWebSocketTransport {
 
         if let msg = decodedObject as? ARTProtocolMessage {
             if ignoreSends {
+                semaphore.wait()
                 _protocolMessagesSentIgnored.append(msg)
+                semaphore.signal()
                 return false
             }
+            semaphore.wait()
             _protocolMessagesSent.append(msg)
+            semaphore.signal()
             if let performEvent = callbackBeforeProcessingOutgoingMessage {
                 DispatchQueue.main.async {
                     performEvent(msg)
@@ -1288,15 +1292,23 @@ class TestProxyTransport: ARTWebSocketTransport {
 
     override func receive(_ original: ARTProtocolMessage) {
         if original.action == .ack || original.action == .presence {
+            semaphore.wait()
+            let replacingAcksWithNacks = self.replacingAcksWithNacks
+            semaphore.signal()
             if let error = replacingAcksWithNacks {
                 original.action = .nack
                 original.error = error
             }
         }
+        semaphore.wait()
         _protocolMessagesReceived.append(original)
+        semaphore.signal()
         if actionsIgnored.contains(original.action) {
             return
         }
+        semaphore.wait()
+        let callbackBeforeProcessingIncomingMessage = self.callbackBeforeProcessingIncomingMessage
+        semaphore.signal()
         if let performEvent = callbackBeforeProcessingIncomingMessage {
             DispatchQueue.main.async {
                 performEvent(original)
