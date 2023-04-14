@@ -1222,7 +1222,10 @@ class TestProxyTransport: ARTWebSocketTransport {
             }
 
             func performFakeConnectionError(_ secondsForDelay: TimeInterval, error: ARTRealtimeTransportError) {
-                self.queue.asyncAfter(deadline: .now() + secondsForDelay) {
+                guard let delegateQueue = self.websocket?.delegateDispatchQueue else {
+                    preconditionFailure("Don't know what queue to dispatch delegate event to")
+                }
+                delegateQueue.asyncAfter(deadline: .now() + secondsForDelay) {
                     self.delegate?.realtimeTransportFailed(self, withError: error)
                     hook?.remove()
                 }
