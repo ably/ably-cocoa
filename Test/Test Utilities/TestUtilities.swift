@@ -140,7 +140,7 @@ class AblyTests {
                 "Content-Type" : "application/json"
             ]
 
-            let (responseData, responseError, _) = NSURLSessionServerTrustSync().get(request)
+            let (responseData, responseError, _) = SynchronousHTTPClient().get(request)
 
             if let error = responseError {
                 fatalError(error.localizedDescription)
@@ -367,7 +367,8 @@ class AblyTests {
     }
 }
 
-class NSURLSessionServerTrustSync: NSObject, URLSessionDelegate, URLSessionTaskDelegate {
+/// A helper class for performing HTTP requests synchronously in tests.
+class SynchronousHTTPClient: NSObject, URLSessionDelegate, URLSessionTaskDelegate {
     private static let delegateQueue = DispatchQueue(label: "io.ably.tests.NSURLSessionServerTrustSync", qos: .userInitiated)
 
     func get(_ request: NSMutableURLRequest) -> (Data?, NSError?, HTTPURLResponse?) {
@@ -595,7 +596,7 @@ func getJWTToken(invalid: Bool = false, expiresIn: Int = 3600, clientId: String 
     ]
     
     let request = NSMutableURLRequest(url: urlComponents!.url!)
-    let (responseData, responseError, _) = NSURLSessionServerTrustSync().get(request)
+    let (responseData, responseError, _) = SynchronousHTTPClient().get(request)
     if let error = responseError {
         fail(error.localizedDescription)
         return nil

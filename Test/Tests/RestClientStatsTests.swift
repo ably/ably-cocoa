@@ -16,7 +16,7 @@ private func postTestStats(_ stats: JSON) -> ARTClientOptions {
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Basic \(keyBase64)", forHTTPHeaderField: "Authorization")
 
-    let (_, responseError, httpResponse) = NSURLSessionServerTrustSync().get(request)
+    let (_, responseError, httpResponse) = SynchronousHTTPClient().get(request)
 
     if let error = responseError {
         XCTFail(error.localizedDescription)
