@@ -52,14 +52,6 @@ private let authUrlTestsOptions: ARTClientOptions = {
     return options
 }()
 
-private var keys: [String: String]!
-
-private func rsa8gTestsSetupDependencies() {
-    if keys == nil {
-        keys = getKeys()
-    }
-}
-
 private let authCallbackTestsOptions = AblyTests.clientOptions()
 private let jwtAndRestTestsOptions = AblyTests.clientOptions()
 private func createJsonEncoder() -> ARTJsonLikeEncoder {
@@ -89,7 +81,6 @@ class AuthTests: XCTestCase {
         _ = messageName
         _ = jwtTestsOptions
         _ = authUrlTestsOptions
-        _ = keys
         _ = authCallbackTestsOptions
         _ = jwtAndRestTestsOptions
 
@@ -4002,7 +3993,7 @@ class AuthTests: XCTestCase {
     // RSA8g RSA8c
 
     func test__142__JWT_and_realtime__when_using_authUrl__with_valid_credentials__fetches_a_channels_and_posts_a_message() {
-        rsa8gTestsSetupDependencies()
+        let keys = getKeys()
 
         authUrlTestsOptions.authParams = [URLQueryItem]()
         authUrlTestsOptions.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
@@ -4023,7 +4014,7 @@ class AuthTests: XCTestCase {
     }
 
     func test__143__JWT_and_realtime__when_using_authUrl__with_wrong_credentials__fails_to_connect_with_reason__invalid_signature_() {
-        rsa8gTestsSetupDependencies()
+        let keys = getKeys()
 
         authUrlTestsOptions.authParams = [URLQueryItem]()
         authUrlTestsOptions.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
@@ -4045,7 +4036,7 @@ class AuthTests: XCTestCase {
     }
 
     func test__144__JWT_and_realtime__when_using_authUrl__when_token_expires__receives_a_40142_error_from_the_server() {
-        rsa8gTestsSetupDependencies()
+        let keys = getKeys()
 
         let tokenDuration = 5.0
         authUrlTestsOptions.authParams = [URLQueryItem]()
@@ -4070,7 +4061,7 @@ class AuthTests: XCTestCase {
     // RTC8a4
 
     func test__145__JWT_and_realtime__when_using_authUrl__when_the_server_sends_and_AUTH_protocol_message__client_reauths_correctly_without_going_through_a_disconnection() {
-        rsa8gTestsSetupDependencies()
+        let keys = getKeys()
 
         // The server sends an AUTH protocol message 30 seconds before a token expires
         // We create a token that lasts 35 seconds, so there's room to receive the AUTH message
