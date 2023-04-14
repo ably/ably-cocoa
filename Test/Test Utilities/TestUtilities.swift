@@ -779,10 +779,6 @@ class MockHTTP: ARTHttp {
     private var rule: Rule?
     private var count: Int = 0
 
-    init(logger: InternalLog) {
-        super.init(queue: AblyTests.queue, logger: logger)
-    }
-
     func setNetworkState(network: FakeNetworkResponse, resetAfter numberOfRequests: Int) {
         queue.async {
             self.networkState = network
@@ -969,9 +965,9 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
     private var callbackAfterRequest: ((URLRequest) -> Void)?
     private var callbackProcessingDataResponse: ((Data?) -> Data)?
 
-    init(logger: InternalLog) {
+    init(queue: DispatchQueue, logger: InternalLog) {
         self.logger = logger
-        self.http = ARTHttp(queue: AblyTests.queue, logger: logger)
+        self.http = ARTHttp(queue: queue, logger: logger)
     }
 
     init(http: ARTHttp, logger: InternalLog) {
@@ -1538,23 +1534,23 @@ extension ARTRealtime {
         }
     }
 
-    func simulateNoInternetConnection(transportFactory: TestProxyTransportFactory) {
+    func simulateNoInternetConnection(transportFactory: TestProxyTransportFactory, internalQueue: DispatchQueue) {
         guard let reachability = self.internal.reachability as? TestReachability else {
             fatalError("Expected test reachability")
         }
 
-        AblyTests.queue.async {
+        internalQueue.async {
             transportFactory.fakeNetworkResponse = .noInternet
             reachability.simulate(false)
         }
     }
 
-    func simulateRestoreInternetConnection(after seconds: TimeInterval? = nil, transportFactory: TestProxyTransportFactory) {
+    func simulateRestoreInternetConnection(after seconds: TimeInterval? = nil, transportFactory: TestProxyTransportFactory, internalQueue: DispatchQueue) {
         guard let reachability = self.internal.reachability as? TestReachability else {
             fatalError("Expected test reachability")
         }
 
-        AblyTests.queue.asyncAfter(deadline: .now() + (seconds ?? 0)) {
+        internalQueue.asyncAfter(deadline: .now() + (seconds ?? 0)) {
             transportFactory.fakeNetworkResponse = nil
             reachability.simulate(true)
         }
