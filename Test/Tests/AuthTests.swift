@@ -26,15 +26,6 @@ private func testStopsClientWithOptions(caseSetter: (ARTClientOptions) -> Void) 
 private let currentClientId = "client_string"
 
 private var options: ARTClientOptions!
-private var rest: ARTRest!
-
-private func tokenParamsTestsSetupDependencies() {
-    if options == nil {
-        options = AblyTests.commonAppSetup()
-        options.clientId = currentClientId
-        rest = ARTRest(options: options)
-    }
-}
 
 private let json = "{" +
     "    \"token\": \"xxxxxx.yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy\"," +
@@ -96,7 +87,6 @@ class AuthTests: XCTestCase {
     override class var defaultTestSuite: XCTestSuite {
         _ = currentClientId
         _ = options
-        _ = rest
         _ = json
         _ = channelName
         _ = messageName
@@ -1724,7 +1714,9 @@ class AuthTests: XCTestCase {
     // RSA8b
 
     func test__071__requestToken__should_support_all_TokenParams__using_defaults() {
-        tokenParamsTestsSetupDependencies()
+        let options = AblyTests.commonAppSetup()
+        options.clientId = currentClientId
+        let rest = ARTRest(options: options)
 
         // Default values
         let defaultTokenParams = ARTTokenParams(clientId: currentClientId)
@@ -1746,7 +1738,9 @@ class AuthTests: XCTestCase {
     }
 
     func test__072__requestToken__should_support_all_TokenParams__overriding_defaults() {
-        tokenParamsTestsSetupDependencies()
+        let options = AblyTests.commonAppSetup()
+        options.clientId = currentClientId
+        let rest = ARTRest(options: options)
 
         // Custom values
         let expectedTtl = 4800.0
