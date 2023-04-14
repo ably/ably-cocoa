@@ -113,7 +113,7 @@ private func testWithUntilAttach(_ untilAttach: Bool, for test: Test, channelNam
     defer { client.dispose(); client.close() }
     let channel = client.channels.get(channelName)
 
-    let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+    let testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
     client.internal.rest.httpExecutor = testHTTPExecutor
 
     let query = ARTRealtimeHistoryQuery()
@@ -738,7 +738,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 expect(stateChange.reason?.message).to(satisfyAnyOf(contain("unreachable host"), contain("network is down")))
                 done()
             }
-            client.simulateNoInternetConnection(transportFactory: transportFactory)
+            client.simulateNoInternetConnection(transportFactory: transportFactory, internalQueue: AblyTests.queue)
         }
 
         waitUntil(timeout: testTimeout) { done in
@@ -746,7 +746,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 XCTAssertEqual(stateChange.previous, .connecting)
                 done()
             }
-            client.simulateRestoreInternetConnection(transportFactory: transportFactory)
+            client.simulateRestoreInternetConnection(transportFactory: transportFactory, internalQueue: AblyTests.queue)
         }
 
         channel.off()
@@ -931,7 +931,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let client = ARTRealtime(options: options)
         client.internal.setReachabilityClass(TestReachability.self)
         defer {
-            client.simulateRestoreInternetConnection(transportFactory: transportFactory)
+            client.simulateRestoreInternetConnection(transportFactory: transportFactory, internalQueue: AblyTests.queue)
             client.dispose()
             client.close()
         }
@@ -957,7 +957,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 expect(error.message).to(satisfyAnyOf(contain("network is down"), contain("unreachable host")))
                 done()
             }
-            client.simulateNoInternetConnection(transportFactory: transportFactory)
+            client.simulateNoInternetConnection(transportFactory: transportFactory, internalQueue: AblyTests.queue)
         }
 
         AblyTests.queue.async {
@@ -970,7 +970,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 XCTAssertEqual(stateChange.reason?.code, ARTErrorCode.unableToRecoverConnectionExpired.intValue) // didn't resumed
                 done()
             }
-            client.simulateRestoreInternetConnection(after: 1.0, transportFactory: transportFactory)
+            client.simulateRestoreInternetConnection(after: 1.0, transportFactory: transportFactory, internalQueue: AblyTests.queue)
         }
 
         waitUntil(timeout: testTimeout) { done in
