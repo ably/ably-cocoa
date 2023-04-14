@@ -3683,7 +3683,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         defer { client.dispose(); client.close() }
         client.channels.get(uniqueChannelName())
 
-        let testHttpExecutor = TestProxyHTTPExecutor(.init(clientOptions: options))
+        let testHttpExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.rest.httpExecutor = testHttpExecutor
 
         client.internal.setTransport(TestProxyTransport.self)
@@ -3816,7 +3816,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         defer { client.dispose(); client.close() }
         client.channels.get(uniqueChannelName())
 
-        let testHttpExecutor = TestProxyHTTPExecutor(.init(clientOptions: options))
+        let testHttpExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.rest.httpExecutor = testHttpExecutor
 
         client.internal.setTransport(TestProxyTransport.self)
@@ -3891,7 +3891,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let client = ARTRealtime(options: options)
         let channel = client.channels.get(uniqueChannelName())
 
-        let testHttpExecutor = TestProxyHTTPExecutor(.init(clientOptions: options))
+        let testHttpExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.rest.httpExecutor = testHttpExecutor
 
         client.internal.setTransport(TestProxyTransport.self)
@@ -3929,7 +3929,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.autoConnect = false
         let client = ARTRealtime(options: options)
 
-        let testHttpExecutor = TestProxyHTTPExecutor(.init(clientOptions: options))
+        let testHttpExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.rest.httpExecutor = testHttpExecutor
 
         client.internal.setTransport(TestProxyTransport.self)

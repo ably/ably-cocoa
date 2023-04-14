@@ -178,7 +178,7 @@ NS_ASSUME_NONNULL_END
 #if TARGET_OS_IOS
         _storage = [ARTLocalDeviceStorage newWithLogger:_logger];
 #endif
-        _http = [[ARTHttp alloc] init:_queue logger:_logger];
+        _http = [[ARTHttp alloc] initWithQueue:_queue logger:_logger];
         ARTLogVerbose(_logger, @"RS:%p %p alloc HTTP", self, _http);
         _httpExecutor = _http;
 

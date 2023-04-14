@@ -21,7 +21,7 @@ Class configuredUrlSessionClass = nil;
     configuredUrlSessionClass = urlSessionClass;
 }
 
-- (instancetype)init:(dispatch_queue_t)queue logger:(ARTInternalLog *)logger {
+- (instancetype)initWithQueue:(dispatch_queue_t)queue logger:(ARTInternalLog *)logger {
     self = [super init];
     if (self) {
         const Class urlSessionClass = configuredUrlSessionClass ? configuredUrlSessionClass : [ARTURLSessionServerTrust class];
