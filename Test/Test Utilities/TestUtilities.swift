@@ -1142,10 +1142,6 @@ class TestProxyTransport: ARTWebSocketTransport {
     var ignoreSends = false
     var actionsIgnored = [ARTProtocolMessageAction]()
 
-    var queue: DispatchQueue {
-        return websocket?.delegateDispatchQueue ?? AblyTests.queue
-    }
-
     private var callbackBeforeProcessingIncomingMessage: ((ARTProtocolMessage) -> Void)?
     private var callbackAfterProcessingIncomingMessage: ((ARTProtocolMessage) -> Void)?
     private var callbackBeforeProcessingOutgoingMessage: ((ARTProtocolMessage) -> Void)?
@@ -1255,7 +1251,7 @@ class TestProxyTransport: ARTWebSocketTransport {
             networkConnectEventHandler(self, lastUrl)
         }
         else {
-            queue.asyncAfter(deadline: .now() + 0.1) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 // Repeat until `lastUrl` is assigned.
                 self.performNetworkConnectEvent()
             }
