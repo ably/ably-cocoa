@@ -105,7 +105,7 @@ class PushAdminTests: XCTestCase {
         super.setUp()
         let options = AblyTests.commonAppSetup()
         options.pushFullWait = true
-        options.dispatchQueue = AblyTests.userQueue
+        options.dispatchQueue = AblyTests.createUserQueue()
         let rest = ARTRest(options: options)
         rest.internal.storage = MockDeviceStorage()
         let group = DispatchGroup()
@@ -136,7 +136,7 @@ class PushAdminTests: XCTestCase {
 
     override class func tearDown() {
         let options = AblyTests.commonAppSetup()
-        options.dispatchQueue = AblyTests.userQueue
+        options.dispatchQueue = AblyTests.createUserQueue()
         let rest = ARTRest(options: options)
         rest.internal.storage = MockDeviceStorage()
         let group = DispatchGroup()
