@@ -212,8 +212,8 @@ class AblyTests {
 
         let autoConnect = modifiedOptions.autoConnect
         modifiedOptions.autoConnect = false
+        modifiedOptions.testOptions.transportFactory = TestProxyTransportFactory()
         let realtime = ARTRealtime(options: modifiedOptions)
-        realtime.internal.setTransport(TestProxyTransport.self)
         realtime.internal.setReachabilityClass(TestReachability.self)
         if autoConnect {
             realtime.connect()
