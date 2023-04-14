@@ -119,12 +119,6 @@ class AblyTests {
         queue.setSpecific(key: queueIdentityKey, value: QueueIdentity(label: queue.label))
         return queue
     }()
-    
-    static var extraQueue: DispatchQueue = {
-        let queue = DispatchQueue(label: "io.ably.tests.extra", qos: .userInitiated)
-        queue.setSpecific(key: queueIdentityKey, value: QueueIdentity(label: queue.label))
-        return queue
-    }()
 
     static func currentQueueLabel() -> String? {
         return DispatchQueue.getSpecific(key: queueIdentityKey)?.label
@@ -376,6 +370,7 @@ class AblyTests {
 }
 
 class NSURLSessionServerTrustSync: NSObject, URLSessionDelegate, URLSessionTaskDelegate {
+    private static let delegateQueue = DispatchQueue(label: "io.ably.tests.NSURLSessionServerTrustSync", qos: .userInitiated)
 
     func get(_ request: NSMutableURLRequest) -> (Data?, NSError?, HTTPURLResponse?) {
         var responseError: NSError?
@@ -385,7 +380,7 @@ class NSURLSessionServerTrustSync: NSObject, URLSessionDelegate, URLSessionTaskD
 
         let configuration = URLSessionConfiguration.default
         let queue = OperationQueue()
-        queue.underlyingQueue = AblyTests.extraQueue
+        queue.underlyingQueue = Self.delegateQueue
         let session = Foundation.URLSession(configuration:configuration, delegate:self, delegateQueue:queue)
 
         let task = session.dataTask(with: request as URLRequest, completionHandler: { data, response, error in
