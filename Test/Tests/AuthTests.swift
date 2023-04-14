@@ -50,7 +50,6 @@ private let authUrlTestsOptions: ARTClientOptions = {
 }()
 
 private let authCallbackTestsOptions = AblyTests.clientOptions()
-private let jwtAndRestTestsOptions = AblyTests.clientOptions()
 private func createJsonEncoder() -> ARTJsonLikeEncoder {
     let encoder = ARTJsonLikeEncoder()
     encoder.delegate = ARTJsonEncoder()
@@ -77,7 +76,6 @@ class AuthTests: XCTestCase {
         _ = messageName
         _ = authUrlTestsOptions
         _ = authCallbackTestsOptions
-        _ = jwtAndRestTestsOptions
 
         return super.defaultTestSuite
     }
@@ -4225,8 +4223,9 @@ class AuthTests: XCTestCase {
     // RSC1 RSC1a RSC1c RSA3d
 
     func test__154__JWT_and_rest__when_the_JWT_token_embeds_an_Ably_token__pulls_stats_successfully() {
-        jwtAndRestTestsOptions.tokenDetails = ARTTokenDetails(token: getJWTToken(jwtType: "embedded")!)
-        let client = ARTRest(options: jwtAndRestTestsOptions)
+        let options = AblyTests.clientOptions()
+        options.tokenDetails = ARTTokenDetails(token: getJWTToken(jwtType: "embedded")!)
+        let client = ARTRest(options: options)
         waitUntil(timeout: testTimeout) { done in
             client.stats { _, error in
                 XCTAssertNil(error)
@@ -4236,8 +4235,9 @@ class AuthTests: XCTestCase {
     }
 
     func test__155__JWT_and_rest__when_the_JWT_token_embeds_an_Ably_token_and_it_is_requested_as_encrypted__pulls_stats_successfully() {
-        jwtAndRestTestsOptions.tokenDetails = ARTTokenDetails(token: getJWTToken(jwtType: "embedded", encrypted: 1)!)
-        let client = ARTRest(options: jwtAndRestTestsOptions)
+        let options = AblyTests.clientOptions()
+        options.tokenDetails = ARTTokenDetails(token: getJWTToken(jwtType: "embedded", encrypted: 1)!)
+        let client = ARTRest(options: options)
         waitUntil(timeout: testTimeout) { done in
             client.stats { _, error in
                 XCTAssertNil(error)
