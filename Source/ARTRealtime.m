@@ -1566,8 +1566,9 @@ NS_ASSUME_NONNULL_END
     if ([self shouldRetryWithFallback:transportError]) {
         ARTLogDebug(self.logger, @"R:%p host is down; can retry with fallback host", self);
         if (!_fallbacks && [transportError.url.host isEqualToString:[ARTDefault realtimeHost]]) {
-            NSArray *hosts = [ARTFallbackHosts hostsFromOptions:[self getClientOptions]];
-            self->_fallbacks = [[ARTFallback alloc] initWithFallbackHosts:hosts];
+            ARTClientOptions *const clientOptions = [self getClientOptions];
+            NSArray *hosts = [ARTFallbackHosts hostsFromOptions:clientOptions];
+            self->_fallbacks = [[ARTFallback alloc] initWithFallbackHosts:hosts shuffleArray:clientOptions.testOptions.shuffleArray];
             if (self->_fallbacks != nil) {
                 [self reconnectWithFallback];
             } else {

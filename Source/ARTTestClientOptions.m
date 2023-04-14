@@ -1,11 +1,13 @@
 #import "ARTTestClientOptions.h"
 #import "ARTDefault.h"
+#import "ARTFallback+Private.h"
 
 @implementation ARTTestClientOptions
 
 - (instancetype)init {
     if (self = [super init]) {
         _realtimeRequestTimeout = [ARTDefault realtimeRequestTimeout];
+        _shuffleArray = ARTFallback_shuffleArray;
     }
 
     return self;
@@ -15,6 +17,7 @@
     ARTTestClientOptions *const copied = [[ARTTestClientOptions alloc] init];
     copied.channelNamePrefix = self.channelNamePrefix;
     copied.realtimeRequestTimeout = self.realtimeRequestTimeout;
+    copied.shuffleArray = self.shuffleArray;
 
     return copied;
 }
