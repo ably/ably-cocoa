@@ -136,7 +136,7 @@ class RestClientChannelTests: XCTestCase {
         init(test: Test) throws {
             let options = try AblyTests.commonAppSetup(for: test)
             client = ARTRest(options: options)
-            testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
+            testHTTPExecutor = TestProxyHTTPExecutor(queue: options.internalDispatchQueue, logger: .init(clientOptions: options))
         }
     }
 
@@ -357,7 +357,7 @@ class RestClientChannelTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = "john-doe"
         let client = ARTRest(options: options)
-        let testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
+        let testHTTPExecutor = TestProxyHTTPExecutor(queue: options.internalDispatchQueue, logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
         waitUntil(timeout: testTimeout) { done in
             client.channels.get(test.uniqueChannelName(prefix: "RSA7e1"))
@@ -914,7 +914,7 @@ class RestClientChannelTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRest(options: options)
-        let proxyHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.queue, logger: .init(clientOptions: options))
+        let proxyHTTPExecutor = TestProxyHTTPExecutor(queue: options.internalDispatchQueue, logger: .init(clientOptions: options))
         client.internal.httpExecutor = proxyHTTPExecutor
 
         let channel = client.channels.get(test.uniqueChannelName())
