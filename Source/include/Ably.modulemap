@@ -96,6 +96,7 @@ framework module Ably {
         header "Ably/ARTTestClientOptions.h"
         header "Ably/ARTVersion2Log.h"
         header "Ably/ARTInternalLog.h"
+        header "Ably/ARTInternalLog+Testing.h"
         header "Ably/ARTLogAdapter.h"
         header "Ably/ARTLogAdapter+Testing.h"
         header "Ably/ARTDeviceIdentityTokenDetails+Private.h"
@@ -104,5 +105,6 @@ framework module Ably {
         header "Ably/ARTPresenceMap.h"
         header "Ably/ARTInternalLogCore.h"
         header "Ably/ARTInternalLogCore+Testing.h"
+        header "Ably/ARTDataEncoder.h"
     }
 }

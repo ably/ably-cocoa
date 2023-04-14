@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
  The initial interface of `ARTInternalLogCore` more or less mirrors that of the `ARTLog` class, for compatibility with existing internal SDK code. However, it will evolve as we gather requirements for the information logged by the SDK — see issues #1623 and #1624.
  */
 NS_SWIFT_NAME(InternalLogCore)
-@protocol ARTInternalLogCore
+@protocol ARTInternalLogCore <NSObject>
 
 /**
  - Parameters:

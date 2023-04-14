@@ -3,6 +3,7 @@
 #import "ARTJsonLikeEncoder.h"
 #import "ARTBaseMessage+Private.h"
 #import "ARTNSArray+ARTFunctional.h"
+#import "ARTInternalLog.h"
 
 @implementation ARTMessage
 
@@ -55,7 +56,7 @@
 + (instancetype)fromEncoded:(NSDictionary *)jsonObject channelOptions:(ARTChannelOptions *)options error:(NSError **)error {
     ARTJsonLikeEncoder *jsonEncoder = [[ARTJsonLikeEncoder alloc] initWithDelegate:[[ARTJsonEncoder alloc] init]];
     NSError *encoderError = nil;
-    ARTDataEncoder *decoder = [[ARTDataEncoder alloc] initWithCipherParams:options.cipher error:&encoderError];
+    ARTDataEncoder *decoder = [[ARTDataEncoder alloc] initWithCipherParams:options.cipher logger:ARTInternalLog.sharedClassMethodLogger_readDocumentationBeforeUsing error:&encoderError];
     if (encoderError != nil) {
         if (error != nil) {
             ARTErrorInfo *errorInfo =
@@ -85,7 +86,7 @@
 + (NSArray<ARTMessage *> *)fromEncodedArray:(NSArray<NSDictionary *> *)jsonArray channelOptions:(ARTChannelOptions *)options error:(NSError **)error {
     ARTJsonLikeEncoder *jsonEncoder = [[ARTJsonLikeEncoder alloc] initWithDelegate:[[ARTJsonEncoder alloc] init]];
     NSError *encoderError = nil;
-    ARTDataEncoder *decoder = [[ARTDataEncoder alloc] initWithCipherParams:options.cipher error:&encoderError];
+    ARTDataEncoder *decoder = [[ARTDataEncoder alloc] initWithCipherParams:options.cipher logger:ARTInternalLog.sharedClassMethodLogger_readDocumentationBeforeUsing error:&encoderError];
     if (encoderError != nil) {
         if (error != nil) {
             ARTErrorInfo *errorInfo =

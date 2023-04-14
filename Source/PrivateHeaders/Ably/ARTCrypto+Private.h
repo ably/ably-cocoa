@@ -22,8 +22,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTCbcCipher : NSObject<ARTChannelCipher>
 
-- (id)initWithCipherParams:(ARTCipherParams *)cipherParams;
-+ (instancetype)cbcCipherWithParams:(ARTCipherParams *)cipherParams;
+- (id)initWithCipherParams:(ARTCipherParams *)cipherParams logger:(ARTInternalLog *)logger;
++ (instancetype)cbcCipherWithParams:(ARTCipherParams *)cipherParams logger:(ARTInternalLog *)logger;
 
 
 @property (nonatomic) ARTInternalLog *logger;
@@ -42,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (nullable NSMutableData *)generateSecureRandomData:(size_t)length;
 + (NSData *)generateHashSHA256:(NSData *)data;
 
-+ (id<ARTChannelCipher>)cipherWithParams:(ARTCipherParams *)params;
++ (id<ARTChannelCipher>)cipherWithParams:(ARTCipherParams *)params logger:(ARTInternalLog *)logger;
 
 @end
 
