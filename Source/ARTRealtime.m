@@ -578,35 +578,32 @@ NS_ASSUME_NONNULL_END
                 [self transportConnectForcingNewToken:_renewingToken newConnection:true];
             }
             
-            if (self.connection.state_nosync != ARTRealtimeFailed &&
-                self.connection.state_nosync != ARTRealtimeClosed &&
-                self.connection.state_nosync != ARTRealtimeDisconnected) {
-                [_reachability listenForHost:[_transport host] callback:^(BOOL reachable) {
-                    // The ref cycle creating by taking self here is resolved on close
-                    // when [_reachability off] is called.
-                    if (reachable) {
-                        switch (self.connection.state_nosync) {
-                            case ARTRealtimeDisconnected:
-                            case ARTRealtimeSuspended:
-                                [self transition:ARTRealtimeConnecting withMetadata:[[ARTConnectionStateChangeMetadata alloc] init]];
-                            default:
-                                break;
-                        }
-                    } else {
-                        switch (self.connection.state_nosync) {
-                            case ARTRealtimeConnecting:
-                            case ARTRealtimeConnected: {
-                                ARTErrorInfo *unreachable = [ARTErrorInfo createWithCode:-1003 message:@"unreachable host"];
-                                ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:unreachable];
-                                [self transitionToDisconnectedOrSuspendedWithMetadata:metadata];
-                                break;
-                            }
-                            default:
-                                break;
-                        }
+            [_reachability listenForHost:[_transport host] callback:^(BOOL reachable) {
+                // The ref cycle creating by taking self here is resolved on close
+                // when [_reachability off] is called.
+                if (reachable) {
+                    switch (self.connection.state_nosync) {
+                        case ARTRealtimeDisconnected:
+                        case ARTRealtimeSuspended:
+                            [self transition:ARTRealtimeConnecting withMetadata:[[ARTConnectionStateChangeMetadata alloc] init]];
+                        default:
+                            break;
                     }
-                }];
-            }
+                }
+                else {
+                    switch (self.connection.state_nosync) {
+                        case ARTRealtimeConnecting:
+                        case ARTRealtimeConnected: {
+                            ARTErrorInfo *unreachable = [ARTErrorInfo createWithCode:-1003 message:@"unreachable host"];
+                            ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:unreachable];
+                            [self transitionToDisconnectedOrSuspendedWithMetadata:metadata];
+                            break;
+                        }
+                        default:
+                            break;
+                    }
+                }
+            }];
             break;
         }
         case ARTRealtimeClosing: {
