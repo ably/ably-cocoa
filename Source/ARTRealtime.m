@@ -578,25 +578,27 @@ NS_ASSUME_NONNULL_END
                 [self transportConnectForcingNewToken:_renewingToken newConnection:true];
             }
             
+            __weak ARTRealtimeInternal *weakSelf = self;
             [_reachability listenForHost:[_transport host] callback:^(BOOL reachable) {
-                // The ref cycle creating by taking self here is resolved on close
-                // when [_reachability off] is called.
+                ARTRealtimeInternal *strongSelf = weakSelf;
+                if (!strongSelf) return;
+                
                 if (reachable) {
-                    switch (self.connection.state_nosync) {
+                    switch (strongSelf.connection.state_nosync) {
                         case ARTRealtimeDisconnected:
                         case ARTRealtimeSuspended:
-                            [self transition:ARTRealtimeConnecting withMetadata:[[ARTConnectionStateChangeMetadata alloc] init]];
+                            [strongSelf transition:ARTRealtimeConnecting withMetadata:[[ARTConnectionStateChangeMetadata alloc] init]];
                         default:
                             break;
                     }
                 }
                 else {
-                    switch (self.connection.state_nosync) {
+                    switch (strongSelf.connection.state_nosync) {
                         case ARTRealtimeConnecting:
                         case ARTRealtimeConnected: {
                             ARTErrorInfo *unreachable = [ARTErrorInfo createWithCode:-1003 message:@"unreachable host"];
                             ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:unreachable];
-                            [self transitionToDisconnectedOrSuspendedWithMetadata:metadata];
+                            [strongSelf transitionToDisconnectedOrSuspendedWithMetadata:metadata];
                             break;
                         }
                         default:
