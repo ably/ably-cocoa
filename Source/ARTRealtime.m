@@ -500,7 +500,7 @@ NS_ASSUME_NONNULL_END
     [self.connection setState:state];
     [self.connection setErrorReason:metadata.errorInfo];
     
-    ARTEventListener *stateChangeEventListener = [self transitionSideEffects:stateChange];
+    ARTEventListener *stateChangeEventListener = [self performTransitionWithStateChange:stateChange];
     
     [_internalEventEmitter emit:[ARTEvent newWithConnectionEvent:(ARTRealtimeConnectionEvent)state] with:stateChange];
     
@@ -529,7 +529,7 @@ NS_ASSUME_NONNULL_END
     
     ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:self.connection.state_nosync previous:self.connection.state_nosync event:ARTRealtimeConnectionEventUpdate reason:errorInfo retryIn:0];
     
-    ARTEventListener *stateChangeEventListener = [self transitionSideEffects:stateChange];
+    ARTEventListener *stateChangeEventListener = [self performTransitionWithStateChange:stateChange];
     
     // stateChangeEventListener may be nil if we're in a failed state
     if (stateChangeEventListener != nil) {
@@ -537,7 +537,7 @@ NS_ASSUME_NONNULL_END
     }
 }
 
-- (ARTEventListener *)transitionSideEffects:(ARTConnectionStateChange *)stateChange {
+- (ARTEventListener *)performTransitionWithStateChange:(ARTConnectionStateChange *)stateChange {
     ARTChannelStateChangeMetadata *channelStateChangeMetadata = nil;
     ARTEventListener *stateChangeEventListener = nil;
     
