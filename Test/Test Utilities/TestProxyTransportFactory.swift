@@ -17,11 +17,17 @@ class TestProxyTransportFactory: RealtimeTransportFactory {
     }
 
     var actionsIgnored: [ARTProtocolMessageAction]
+    var fakeNetworkResponse: FakeNetworkResponse?
+    var allowMultipleTransportsToBeCreated: Bool
 
     init(
-        actionsIgnored: [ARTProtocolMessageAction] = []
+        actionsIgnored: [ARTProtocolMessageAction] = [],
+        fakeNetworkResponse: FakeNetworkResponse? = nil,
+        allowMultipleTransportsToBeCreated: Bool = false
     ) {
         self.actionsIgnored = actionsIgnored
+        self.fakeNetworkResponse = fakeNetworkResponse
+        self.allowMultipleTransportsToBeCreated = allowMultipleTransportsToBeCreated // this exists so that if want to turn off properties that'll happen
     }
 
     func transport(withRest rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, connectionSerial: NSNumber?, logger: InternalLog) -> ARTRealtimeTransport {
@@ -38,6 +44,8 @@ class TestProxyTransportFactory: RealtimeTransportFactory {
         semaphore.wait()
         if (createdTransportCount == 0) {
             firstCreatedTransport = transport
+        } else if !allowMultipleTransportsToBeCreated {
+            preconditionFailure("Factory configured to not allow multiple transports to be created")
         }
         createdTransportCount += 1
         semaphore.signal()
