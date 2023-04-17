@@ -1081,7 +1081,7 @@ class TestProxyTransport: ARTWebSocketTransport {
 
     /// This will affect all WebSocketTransport instances.
     /// Set it to nil after the test ends.
-    static var fakeNetworkResponse: FakeNetworkResponse?
+    var fakeNetworkResponse: FakeNetworkResponse?
     static var networkConnectEvent: ((ARTRealtimeTransport, URL) -> Void)?
 
 
@@ -1180,7 +1180,7 @@ class TestProxyTransport: ARTWebSocketTransport {
     // MARK: ARTWebSocket
 
     override func connect(withKey key: String) {
-        if let fakeResponse = TestProxyTransport.fakeNetworkResponse {
+        if let fakeResponse = fakeNetworkResponse {
             setupFakeNetworkResponse(fakeResponse)
         }
         super.connect(withKey: key)
@@ -1188,7 +1188,7 @@ class TestProxyTransport: ARTWebSocketTransport {
     }
 
     override func connect(withToken token: String) {
-        if let fakeResponse = TestProxyTransport.fakeNetworkResponse {
+        if let fakeResponse = fakeNetworkResponse {
             setupFakeNetworkResponse(fakeResponse)
         }
         super.connect(withToken: token)
@@ -1198,7 +1198,7 @@ class TestProxyTransport: ARTWebSocketTransport {
     private func setupFakeNetworkResponse(_ networkResponse: FakeNetworkResponse) {
         var hook: AspectToken?
         hook = ARTSRWebSocket.testSuite_replaceClassMethod(#selector(ARTSRWebSocket.open)) {
-            if TestProxyTransport.fakeNetworkResponse == nil {
+            if self.fakeNetworkResponse == nil {
                 return
             }
 
@@ -1253,7 +1253,7 @@ class TestProxyTransport: ARTWebSocketTransport {
 
     @discardableResult
     override func send(_ data: Data, withSource decodedObject: Any?) -> Bool {
-        if let networkAnswer = TestProxyTransport.fakeNetworkResponse, let ws = self.websocket {
+        if let networkAnswer = fakeNetworkResponse, let ws = self.websocket {
             // Ignore it because it should fake a failure.
             self.webSocket(ws, didFailWithError: networkAnswer.error)
             return false
@@ -1330,7 +1330,7 @@ class TestProxyTransport: ARTWebSocketTransport {
     }
 
     override func webSocket(_ webSocket: ARTWebSocket, didReceiveMessage message: Any?) {
-        if let networkAnswer = TestProxyTransport.fakeNetworkResponse, let ws = self.websocket {
+        if let networkAnswer = fakeNetworkResponse, let ws = self.websocket {
             // Ignore it because it should fake a failure.
             self.webSocket(ws, didFailWithError: networkAnswer.error)
             return
@@ -1544,24 +1544,24 @@ extension ARTRealtime {
         }
     }
 
-    func simulateNoInternetConnection() {
+    func simulateNoInternetConnection(transport: TestProxyTransport) {
         guard let reachability = self.internal.reachability as? TestReachability else {
             fatalError("Expected test reachability")
         }
 
         AblyTests.queue.async {
-            TestProxyTransport.fakeNetworkResponse = .noInternet
+            transport.fakeNetworkResponse = .noInternet
             reachability.simulate(false)
         }
     }
 
-    func simulateRestoreInternetConnection(after seconds: TimeInterval? = nil) {
+    func simulateRestoreInternetConnection(after seconds: TimeInterval? = nil, transport: TestProxyTransport) {
         guard let reachability = self.internal.reachability as? TestReachability else {
             fatalError("Expected test reachability")
         }
 
         AblyTests.queue.asyncAfter(deadline: .now() + (seconds ?? 0)) {
-            TestProxyTransport.fakeNetworkResponse = nil
+            transport.fakeNetworkResponse = nil
             reachability.simulate(true)
         }
     }

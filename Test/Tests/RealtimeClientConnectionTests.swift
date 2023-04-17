@@ -29,13 +29,11 @@ private func testUsesAlternativeHostOnResponse(_ caseTest: FakeNetworkResponse, 
     let options = ARTClientOptions(key: "xxxx:xxxx")
     options.autoConnect = false
     options.testOptions.realtimeRequestTimeout = 1.0
-    options.testOptions.transportFactory = TestProxyTransportFactory()
+    let transportFactory = TestProxyTransportFactory(fakeNetworkResponse: caseTest)
+    options.testOptions.transportFactory = transportFactory
     let client = ARTRealtime(options: options)
     defer { client.dispose(); client.close() }
     client.channels.get(channelName)
-
-    TestProxyTransport.fakeNetworkResponse = caseTest
-    defer { TestProxyTransport.fakeNetworkResponse = nil }
 
     var urlConnections = [URL]()
     TestProxyTransport.networkConnectEvent = { transport, url in
@@ -44,7 +42,7 @@ private func testUsesAlternativeHostOnResponse(_ caseTest: FakeNetworkResponse, 
         }
         urlConnections.append(url)
         if urlConnections.count == 1 {
-            TestProxyTransport.fakeNetworkResponse = nil
+            transportFactory.onlyCreatedTransport.fakeNetworkResponse = nil
         }
     }
     defer { TestProxyTransport.networkConnectEvent = nil }
@@ -1221,6 +1219,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 })
                 // Wait until the message is pushed to Ably first
                 delay(1.0) {
+                    let transport = client.internal.transport as! TestProxyTransport
                     transport.simulateIncomingError()
                 }
             }
@@ -2282,12 +2281,12 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.disconnectedRetryTimeout = 0.5
         options.suspendedRetryTimeout = 2.0
         options.autoConnect = false
-        options.testOptions.transportFactory = TestProxyTransportFactory()
+        let transportFactory = TestProxyTransportFactory()
+        options.testOptions.transportFactory = transportFactory
 
         let client = ARTRealtime(options: options)
         client.internal.setReachabilityClass(TestReachability.self)
         defer {
-            client.simulateRestoreInternetConnection()
             client.dispose()
             client.close()
         }
@@ -2307,7 +2306,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         client.connection.on { stateChange in
             events.append(stateChange.current)
         }
-        client.simulateNoInternetConnection()
+        client.simulateNoInternetConnection(transport: transportFactory.onlyCreatedTransport)
 
         expect(events).toEventually(equal([
             .disconnected,
@@ -2328,7 +2327,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         ]), timeout: testTimeout)
 
         events.removeAll()
-        client.simulateRestoreInternetConnection(after: 7.0)
+        client.simulateRestoreInternetConnection(after: 7.0, transport: transportFactory.onlyCreatedTransport)
 
         expect(events).toEventually(equal([
             .connecting, // 2.0 - 1
