@@ -140,7 +140,7 @@ class AblyTests {
                 "Content-Type" : "application/json"
             ]
 
-            let (responseData, responseError, _) = NSURLSessionServerTrustSync().get(request)
+            let (responseData, responseError, _) = SynchronousHTTPClient().perform(request)
 
             if let error = responseError {
                 fatalError(error.localizedDescription)
@@ -367,10 +367,11 @@ class AblyTests {
     }
 }
 
-class NSURLSessionServerTrustSync: NSObject, URLSessionDelegate, URLSessionTaskDelegate {
+/// A helper class for performing HTTP requests synchronously in tests.
+class SynchronousHTTPClient: NSObject, URLSessionDelegate, URLSessionTaskDelegate {
     private static let delegateQueue = DispatchQueue(label: "io.ably.tests.NSURLSessionServerTrustSync", qos: .userInitiated)
 
-    func get(_ request: NSMutableURLRequest) -> (Data?, NSError?, HTTPURLResponse?) {
+    func perform(_ request: NSMutableURLRequest) -> (Data?, NSError?, HTTPURLResponse?) {
         var responseError: NSError?
         var responseData: Data?
         var httpResponse: HTTPURLResponse?;
@@ -400,20 +401,6 @@ class NSURLSessionServerTrustSync: NSObject, URLSessionDelegate, URLSessionTaskD
 
         return (responseData, responseError, httpResponse)
     }
-
-    func urlSession(_ session: URLSession, task: URLSessionTask, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        // Try to extract the server certificate for trust validation
-        if let serverTrust = challenge.protectionSpace.serverTrust {
-            // Server trust authentication
-            // Reference: https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/URLLoadingSystem/Articles/AuthenticationChallenges.html
-            completionHandler(Foundation.URLSession.AuthChallengeDisposition.useCredential, URLCredential(trust: serverTrust))
-        }
-        else {
-            challenge.sender?.performDefaultHandling?(for: challenge)
-            XCTFail("Current authentication: \(challenge.protectionSpace.authenticationMethod)")
-        }
-    }
-
 }
 
 extension Date {
@@ -609,7 +596,7 @@ func getJWTToken(invalid: Bool = false, expiresIn: Int = 3600, clientId: String 
     ]
     
     let request = NSMutableURLRequest(url: urlComponents!.url!)
-    let (responseData, responseError, _) = NSURLSessionServerTrustSync().get(request)
+    let (responseData, responseError, _) = SynchronousHTTPClient().perform(request)
     if let error = responseError {
         fail(error.localizedDescription)
         return nil
