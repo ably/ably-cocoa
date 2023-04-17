@@ -1173,14 +1173,12 @@ class RealtimeClientConnectionTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         options.autoConnect = false
         options.clientId = "client_string"
-        options.testOptions.transportFactory = TestProxyTransportFactory()
+        options.testOptions.transportFactory = TestProxyTransportFactory(actionsIgnored: [.ack, .nack])
         let client = ARTRealtime(options: options)
         client.connect()
         defer { client.dispose(); client.close() }
 
         let channel = client.channels.get(uniqueChannelName())
-        let transport = client.internal.transport as! TestProxyTransport
-        transport.actionsIgnored += [.ack, .nack]
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
@@ -1211,14 +1209,12 @@ class RealtimeClientConnectionTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         options.autoConnect = false
         options.clientId = "client_string"
-        options.testOptions.transportFactory = TestProxyTransportFactory()
+        options.testOptions.transportFactory = TestProxyTransportFactory(actionsIgnored: [.ack, .nack])
         let client = ARTRealtime(options: options)
         client.connect()
         defer { client.dispose(); client.close() }
 
         let channel = client.channels.get(uniqueChannelName())
-        let transport = client.internal.transport as! TestProxyTransport
-        transport.actionsIgnored += [.ack, .nack]
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
@@ -1238,7 +1234,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     func test__037__Connection__ACK_and_NACK__should_trigger_the_failure_callback_for_the_remaining_pending_messages_if__lost_connection_state() {
         let options = AblyTests.commonAppSetup()
         options.autoConnect = false
-        options.testOptions.transportFactory = TestProxyTransportFactory()
+        options.testOptions.transportFactory = TestProxyTransportFactory(actionsIgnored: [.ack, .nack])
         let client = ARTRealtime(options: options)
         client.connect()
         defer {
@@ -1247,9 +1243,6 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
 
         let channel = client.channels.get(uniqueChannelName())
-
-        let transport = client.internal.transport as! TestProxyTransport
-        transport.actionsIgnored += [.ack, .nack]
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { _ in
@@ -1706,16 +1699,13 @@ class RealtimeClientConnectionTests: XCTestCase {
     func test__047__Connection__close__should_transition_to_CLOSED_action_when_the_close_process_timeouts() {
         let options = AblyTests.commonAppSetup()
         options.autoConnect = false
-        options.testOptions.transportFactory = TestProxyTransportFactory()
+        options.testOptions.transportFactory = TestProxyTransportFactory(actionsIgnored: [.closed])
         let client = ARTRealtime(options: options)
         client.connect()
         defer {
             client.dispose()
             client.close()
         }
-
-        let transport = client.internal.transport as! TestProxyTransport
-        transport.actionsIgnored += [.closed]
 
         var states: [ARTRealtimeConnectionState] = []
         var start: NSDate?

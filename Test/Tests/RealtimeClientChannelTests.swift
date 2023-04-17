@@ -567,15 +567,13 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__017__Channel__connection_state__changes_to_FAILED__ATTACHING_channel_should_transition_to_FAILED() {
         let options = AblyTests.commonAppSetup()
         options.autoConnect = false
-        options.testOptions.transportFactory = TestProxyTransportFactory()
+        options.testOptions.transportFactory = TestProxyTransportFactory(actionsIgnored: [.attached])
         let client = ARTRealtime(options: options)
         client.connect()
         defer { client.dispose(); client.close() }
 
         let channel = client.channels.get(uniqueChannelName())
         channel.attach()
-        let transport = client.internal.transport as! TestProxyTransport
-        transport.actionsIgnored += [.attached]
 
         XCTAssertEqual(channel.state, ARTRealtimeChannelState.attaching)
 
@@ -742,7 +740,7 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__022__Channel__connection_state__changes_to_CLOSED__ATTACHING_channel_should_transition_to_DETACHED() {
         let options = AblyTests.commonAppSetup()
         options.autoConnect = false
-        options.testOptions.transportFactory = TestProxyTransportFactory()
+        options.testOptions.transportFactory = TestProxyTransportFactory(actionsIgnored: [.attached])
         let client = ARTRealtime(options: options)
         client.connect()
         defer { client.dispose(); client.close() }
@@ -750,8 +748,6 @@ class RealtimeClientChannelTests: XCTestCase {
 
         let channel = client.channels.get(uniqueChannelName())
         channel.attach()
-        let transport = client.internal.transport as! TestProxyTransport
-        transport.actionsIgnored += [.attached]
 
         XCTAssertEqual(channel.state, ARTRealtimeChannelState.attaching)
         client.close()
@@ -780,15 +776,13 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__024__Channel__connection_state__changes_to_SUSPENDED__ATTACHING_channel_should_transition_to_SUSPENDED() {
         let options = AblyTests.commonAppSetup()
         options.autoConnect = false
-        options.testOptions.transportFactory = TestProxyTransportFactory()
+        options.testOptions.transportFactory = TestProxyTransportFactory(actionsIgnored: [.attached])
         let client = ARTRealtime(options: options)
         client.connect()
         defer { client.dispose(); client.close() }
 
         let channel = client.channels.get(uniqueChannelName())
         channel.attach()
-        let transport = client.internal.transport as! TestProxyTransport
-        transport.actionsIgnored += [.attached]
 
         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
         XCTAssertEqual(channel.state, ARTRealtimeChannelState.attaching)
@@ -811,15 +805,12 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__026__Channel__connection_state__changes_to_SUSPENDED__channel_being_released_waiting_for_DETACH_shouldn_t_crash__issue__918_() {
         let options = AblyTests.commonAppSetup()
         options.autoConnect = false
-        options.testOptions.transportFactory = TestProxyTransportFactory()
+        // Force the callback on .release below to be triggered by our
+        // forced SUSPENDED message, not by a DETACHED.
+        options.testOptions.transportFactory = TestProxyTransportFactory(actionsIgnored: [.detached])
         let client = ARTRealtime(options: options)
         client.connect()
         defer { client.dispose(); client.close() }
-
-        // Force the callback on .release below to be triggered by our
-        // forced SUSPENDED message, not by a DETACHED.
-        let transport = client.internal.transport as! TestProxyTransport
-        transport.actionsIgnored += [.detached]
         
         var channel0Name = ""
         for i in 0 ..< 100 { // We need a few channels to trigger iterator invalidation.
@@ -1083,14 +1074,12 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__039__Channel__attach__results_in_an_error_if_the_connection_state_is__CLOSING() {
         let options = AblyTests.commonAppSetup()
         options.autoConnect = false
-        options.testOptions.transportFactory = TestProxyTransportFactory()
+        options.testOptions.transportFactory = TestProxyTransportFactory(actionsIgnored: [.closed])
         let client = ARTRealtime(options: options)
         client.connect()
         defer { client.dispose(); client.close() }
 
         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
-        let transport = client.internal.transport as! TestProxyTransport
-        transport.actionsIgnored += [.closed]
 
         let channel = client.channels.get(uniqueChannelName())
 
@@ -1812,14 +1801,12 @@ class RealtimeClientChannelTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         options.autoConnect = false
         options.testOptions.realtimeRequestTimeout = 1.0
-        options.testOptions.transportFactory = TestProxyTransportFactory()
+        options.testOptions.transportFactory = TestProxyTransportFactory(actionsIgnored: [.detached])
         let client = ARTRealtime(options: options)
         client.connect()
         defer { client.dispose(); client.close() }
 
         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
-        let transport = client.internal.transport as! TestProxyTransport
-        transport.actionsIgnored += [.detached]
 
         let channel = client.channels.get(uniqueChannelName())
         channel.attach()
