@@ -1171,11 +1171,9 @@ class RealtimeClientConnectionTests: XCTestCase {
 
     func test__035__Connection__ACK_and_NACK__should_trigger_the_failure_callback_for_the_remaining_pending_messages_if__connection_is_closed() {
         let options = AblyTests.commonAppSetup()
-        options.autoConnect = false
         options.clientId = "client_string"
         options.testOptions.transportFactory = TestProxyTransportFactory(actionsIgnored: [.ack, .nack])
         let client = ARTRealtime(options: options)
-        client.connect()
         defer { client.dispose(); client.close() }
 
         let channel = client.channels.get(uniqueChannelName())
@@ -1207,11 +1205,9 @@ class RealtimeClientConnectionTests: XCTestCase {
 
     func test__036__Connection__ACK_and_NACK__should_trigger_the_failure_callback_for_the_remaining_pending_messages_if__connection_state_enters_FAILED() {
         let options = AblyTests.commonAppSetup()
-        options.autoConnect = false
         options.clientId = "client_string"
         options.testOptions.transportFactory = TestProxyTransportFactory(actionsIgnored: [.ack, .nack])
         let client = ARTRealtime(options: options)
-        client.connect()
         defer { client.dispose(); client.close() }
 
         let channel = client.channels.get(uniqueChannelName())
@@ -1233,10 +1229,8 @@ class RealtimeClientConnectionTests: XCTestCase {
 
     func test__037__Connection__ACK_and_NACK__should_trigger_the_failure_callback_for_the_remaining_pending_messages_if__lost_connection_state() {
         let options = AblyTests.commonAppSetup()
-        options.autoConnect = false
         options.testOptions.transportFactory = TestProxyTransportFactory(actionsIgnored: [.ack, .nack])
         let client = ARTRealtime(options: options)
-        client.connect()
         defer {
             client.dispose()
             client.close()
@@ -1698,10 +1692,8 @@ class RealtimeClientConnectionTests: XCTestCase {
     // RTN12b
     func test__047__Connection__close__should_transition_to_CLOSED_action_when_the_close_process_timeouts() {
         let options = AblyTests.commonAppSetup()
-        options.autoConnect = false
         options.testOptions.transportFactory = TestProxyTransportFactory(actionsIgnored: [.closed])
         let client = ARTRealtime(options: options)
-        client.connect()
         defer {
             client.dispose()
             client.close()
