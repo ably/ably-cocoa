@@ -297,7 +297,7 @@ class RestClientChannelTests: XCTestCase {
     func test__012__publish__ClientOptions_clientId__should_include_the_clientId_as_a_querystring_parameter_in_realtime_connection_requests() {
         let options = AblyTests.commonAppSetup()
         options.clientId = "john-doe"
-        let client = AblyTests.newRealtime(options)
+        let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
         waitUntil(timeout: testTimeout) { done in
             client.channels.get(uniqueChannelName(prefix: "RSA7e1"))

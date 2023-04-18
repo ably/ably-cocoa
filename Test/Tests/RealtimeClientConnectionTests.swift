@@ -70,7 +70,7 @@ private func testMovesToDisconnectedWithNetworkingError(_ error: Error) {
     let options = AblyTests.commonAppSetup()
     options.autoConnect = false
     options.testOptions.transportFactory = TestProxyTransportFactory()
-    let client = AblyTests.newRealtime(options)
+    let client = AblyTests.newRealtime(options).client
     defer {
         client.dispose()
         client.close()
@@ -648,7 +648,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     func test__027__Connection__event_emitter__any_state_change_triggered_by_a_ProtocolMessage_that_contains_an_Error_member_should_populate_the_Reason_property() {
         let options = AblyTests.commonAppSetup()
         options.useTokenAuth = true
-        let client = AblyTests.newRealtime(options)
+        let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
@@ -999,7 +999,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         options.clientId = "tester"
         options.tokenDetails = getTestTokenDetails(key: options.key!, clientId: options.clientId, ttl: 5.0)
-        let client = AblyTests.newRealtime(options)
+        let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
 
         let channel = client.channels.get(uniqueChannelName())
@@ -1083,7 +1083,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     func test__034__Connection__ACK_and_NACK__ProtocolMessage__should_reset_msgSerial_serially_if_the_connection_does_not_resume() {
         let options = AblyTests.commonAppSetup()
         options.clientId = "tester"
-        let client = AblyTests.newRealtime(options)
+        let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
 
         let channel = client.channels.get(uniqueChannelName())
@@ -1578,7 +1578,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
     // RTN11b
     func test__008__Connection__it_should_make_sure_that__when_the_CLOSED_ProtocolMessage_arrives_for_the_old_connection__it_doesn_t_affect_the_new_one() {
-        let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
+        let client = AblyTests.newRealtime(AblyTests.commonAppSetup()).client
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
@@ -1921,7 +1921,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
     // RTN13a
     func test__052__Connection__ping__should_send_a_ProtocolMessage_with_action_HEARTBEAT_and_expects_a_HEARTBEAT_message_in_response() {
-        let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
+        let client = AblyTests.newRealtime(AblyTests.commonAppSetup()).client
         defer { client.dispose(); client.close() }
         waitUntil(timeout: testTimeout) { done in
             client.ping { error in
@@ -1939,7 +1939,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         let realtimeRequestTimeout = 3.0
         options.testOptions.realtimeRequestTimeout = realtimeRequestTimeout
-        let client = AblyTests.newRealtime(options)
+        let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { _ in
@@ -2502,7 +2502,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     // RTN15b1, RTN15b2
     func test__067__Connection__connection_failures_once_CONNECTED__reconnects_to_the_websocket_endpoint_with_additional_querystring_params__resume_is_the_private_connection_key_and_connection_serial_is_the_most_recent_ProtocolMessage_connectionSerial_received() {
         let options = AblyTests.commonAppSetup()
-        let client = AblyTests.newRealtime(options)
+        let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
 
         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
@@ -2526,7 +2526,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     // RTN15c1
     func test__068__Connection__connection_failures_once_CONNECTED__System_s_response_to_a_resume_request__CONNECTED_ProtocolMessage_with_the_same_connectionId_as_the_current_client__and_no_error() {
         let options = AblyTests.commonAppSetup()
-        let client = AblyTests.newRealtime(options)
+        let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(uniqueChannelName())
 
@@ -2554,7 +2554,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     // RTN15c2
     func test__069__Connection__connection_failures_once_CONNECTED__System_s_response_to_a_resume_request__CONNECTED_ProtocolMessage_with_the_same_connectionId_as_the_current_client_and_an_non_fatal_error() {
         let options = AblyTests.commonAppSetup()
-        let client = AblyTests.newRealtime(options)
+        let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(uniqueChannelName())
 
@@ -2610,7 +2610,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     // RTN15c3
     func test__070__Connection__connection_failures_once_CONNECTED__System_s_response_to_a_resume_request__CONNECTED_ProtocolMessage_with_a_new_connectionId_and_an_error() {
         let options = AblyTests.commonAppSetup()
-        let client = AblyTests.newRealtime(options)
+        let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(uniqueChannelName())
 
@@ -2656,7 +2656,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     // RTN15c4
     func test__071__Connection__connection_failures_once_CONNECTED__System_s_response_to_a_resume_request__ERROR_ProtocolMessage_indicating_a_fatal_error_in_the_connection() {
         let options = AblyTests.commonAppSetup()
-        let client = AblyTests.newRealtime(options)
+        let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(uniqueChannelName())
 
@@ -2688,7 +2688,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     func skipped__test__072__Connection__connection_failures_once_CONNECTED__System_s_response_to_a_resume_request__should_resume_the_connection_after_an_auth_renewal() {
         let options = AblyTests.commonAppSetup()
         options.tokenDetails = getTestTokenDetails(ttl: 5.0)
-        let client = AblyTests.newRealtime(options)
+        let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
         let restOptions = AblyTests.clientOptions(key: options.key!)
         restOptions.testOptions.channelNamePrefix = options.testOptions.channelNamePrefix
@@ -2844,7 +2844,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     // RTN15f
     func test__066__Connection__connection_failures_once_CONNECTED__ACK_and_NACK_responses_for_published_messages_can_only_ever_be_received_on_the_transport_connection_on_which_those_messages_were_sent() {
         let options = AblyTests.commonAppSetup()
-        let client = AblyTests.newRealtime(options)
+        let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(uniqueChannelName())
 
@@ -2908,7 +2908,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         // We want this to be > than the sum of customTtlInterval and customIdleInterval
         options.disconnectedRetryTimeout = 5.0 + customTtlInterval + customIdleInterval
-        ttlAndIdleIntervalPassedTestsClient = AblyTests.newRealtime(options)
+        ttlAndIdleIntervalPassedTestsClient = AblyTests.newRealtime(options).client
         ttlAndIdleIntervalPassedTestsClient.internal.shouldImmediatelyReconnect = false
         ttlAndIdleIntervalPassedTestsClient.connect()
         defer { ttlAndIdleIntervalPassedTestsClient.close() }
@@ -2942,7 +2942,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         // We want this to be > than the sum of customTtlInterval and customIdleInterval
         options.disconnectedRetryTimeout = 5.0
-        ttlAndIdleIntervalPassedTestsClient = AblyTests.newRealtime(options)
+        ttlAndIdleIntervalPassedTestsClient = AblyTests.newRealtime(options).client
         ttlAndIdleIntervalPassedTestsClient.internal.shouldImmediatelyReconnect = false
         defer { ttlAndIdleIntervalPassedTestsClient.close() }
         let channelName = uniqueChannelName()
@@ -2980,7 +2980,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
     func test__076__Connection__connection_failures_once_CONNECTED__when_connection__ttl_plus_idle_interval__period_has_NOT_passed_since_last_activity__uses_the_same_connection() {
         let options = AblyTests.commonAppSetup()
-        ttlAndIdleIntervalNotPassedTestsClient = AblyTests.newRealtime(options)
+        ttlAndIdleIntervalNotPassedTestsClient = AblyTests.newRealtime(options).client
         ttlAndIdleIntervalNotPassedTestsClient.connect()
         defer { ttlAndIdleIntervalNotPassedTestsClient.close() }
 
@@ -3219,7 +3219,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.recover = clientOriginal.connection.recoveryKey
         clientOriginal.internal.onError(AblyTests.newErrorProtocolMessage())
 
-        let clientRecover = AblyTests.newRealtime(options)
+        let clientRecover = AblyTests.newRealtime(options).client
         defer { clientRecover.close() }
 
         waitUntil(timeout: testTimeout) { done in
@@ -3276,7 +3276,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.autoConnect = false
         options.recover = "99999!xxxxxx-xxxxxxxxx-xxxxxxxxx:-1:7"
 
-        let client = AblyTests.newRealtime(options)
+        let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
 
         var urlConnections = [URL]()
@@ -3328,7 +3328,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.autoConnect = false
         options.queueMessages = false
 
-        let client = AblyTests.newRealtime(options)
+        let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(uniqueChannelName())
 
@@ -3379,7 +3379,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         XCTAssertNil(options.fallbackHosts)
         options.autoConnect = false
 
-        let client = AblyTests.newRealtime(options)
+        let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
         client.channels.get(uniqueChannelName())
 
@@ -3897,7 +3897,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     func test__010__Connection__attributes_within_ConnectionDetails_should_be_used_as_defaults() {
         let options = AblyTests.commonAppSetup()
         options.autoConnect = false
-        let realtime = AblyTests.newRealtime(options)
+        let realtime = AblyTests.newRealtime(options).client
         defer { realtime.close() }
 
         waitUntil(timeout: testTimeout) { done in
@@ -3935,7 +3935,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     // RTN19a
     func skipped__test__103__Connection__Transport_disconnected_side_effects__should_resend_any_ProtocolMessage_that_is_awaiting_a_ACK_NACK() {
         let options = AblyTests.commonAppSetup()
-        let client = AblyTests.newRealtime(options)
+        let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(uniqueChannelName())
         let transport = client.internal.transport as! TestProxyTransport
@@ -3965,7 +3965,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     // RTN19b
     func skipped__test__104__Connection__Transport_disconnected_side_effects__should_resend_the_ATTACH_message_if_there_are_any_pending_channels() {
         let options = AblyTests.commonAppSetup()
-        let client = AblyTests.newRealtime(options)
+        let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
 
         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
@@ -4001,7 +4001,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     // RTN19b
     func skipped__test__105__Connection__Transport_disconnected_side_effects__should_resent_the_DETACH_message_if_there_are_any_pending_channels() {
         let options = AblyTests.commonAppSetup()
-        let client = AblyTests.newRealtime(options)
+        let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(uniqueChannelName())
         let transport = client.internal.transport as! TestProxyTransport
@@ -4315,7 +4315,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         let realtimeRequestTimeout = 0.5
         options.testOptions.realtimeRequestTimeout = realtimeRequestTimeout
-        let client = AblyTests.newRealtime(options)
+        let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
 
         var expectedInactivityTimeout: TimeInterval?
@@ -4412,7 +4412,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     func test__013__Connection__should_set_the_Connection_reason_attribute_based_on_the_Error_member_of_the_CONNECTED_ProtocolMessage() {
         let options = AblyTests.commonAppSetup()
         options.useTokenAuth = true
-        let client = AblyTests.newRealtime(options)
+        let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
@@ -4477,7 +4477,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     func skipped__test__111__Connection__with_fixture_messages__should_encode_and_decode_fixture_messages_as_expected() {
         let options = AblyTests.commonAppSetup()
         options.useBinaryProtocol = false
-        let client = AblyTests.newRealtime(options)
+        let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(uniqueChannelName())
         channel.attach()
@@ -4547,8 +4547,8 @@ class RealtimeClientConnectionTests: XCTestCase {
     func skipped__test__112__Connection__with_fixture_messages__should_send_messages_through_raw_JSON_POST_and_retrieve_equal_messages_through_MsgPack_and_JSON() {
         setupDependencies()
         let restPublishClient = ARTRest(options: jsonOptions)
-        let realtimeSubscribeClientMsgPack = AblyTests.newRealtime(msgpackOptions)
-        let realtimeSubscribeClientJSON = AblyTests.newRealtime(jsonOptions)
+        let realtimeSubscribeClientMsgPack = AblyTests.newRealtime(msgpackOptions).client
+        let realtimeSubscribeClientJSON = AblyTests.newRealtime(jsonOptions).client
         defer {
             realtimeSubscribeClientMsgPack.close()
             realtimeSubscribeClientJSON.close()

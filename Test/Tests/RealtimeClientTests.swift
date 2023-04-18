@@ -39,7 +39,7 @@ class RealtimeClientTests: XCTestCase {
 
     // G4
     func test__001__RealtimeClient__All_WebSocket_connections_should_include_the_current_API_version() {
-        let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
+        let client = AblyTests.newRealtime(AblyTests.commonAppSetup()).client
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
@@ -1257,7 +1257,7 @@ class RealtimeClientTests: XCTestCase {
     }
 
     func test__006__RealtimeClient__should_accept_acks_with_different_order() {
-        let realtime = AblyTests.newRealtime(AblyTests.commonAppSetup())
+        let realtime = AblyTests.newRealtime(AblyTests.commonAppSetup()).client
         defer { realtime.dispose(); realtime.close() }
         let channel = realtime.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in

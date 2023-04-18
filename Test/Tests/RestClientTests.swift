@@ -1569,7 +1569,7 @@ class RestClientTests: XCTestCase {
         default: break
         }
 
-        let realtime = AblyTests.newRealtime(options)
+        let realtime = AblyTests.newRealtime(options).client
         defer { realtime.close() }
         waitUntil(timeout: testTimeout) { done in
             realtime.channels.get(uniqueChannelName(prefix: "realtime")).publish(nil, data: "message") { _ in
@@ -1605,7 +1605,7 @@ class RestClientTests: XCTestCase {
         default: break
         }
 
-        let realtime = AblyTests.newRealtime(options)
+        let realtime = AblyTests.newRealtime(options).client
         defer { realtime.close() }
         waitUntil(timeout: testTimeout) { done in
             realtime.channels.get(uniqueChannelName(prefix: "realtime")).publish(nil, data: "message") { _ in

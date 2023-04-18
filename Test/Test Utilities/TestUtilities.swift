@@ -207,18 +207,24 @@ class AblyTests {
         return protocolMessage
     }
 
-    class func newRealtime(_ options: ARTClientOptions) -> ARTRealtime {
+    struct RealtimeTestEnvironment {
+        let client: ARTRealtime
+        let transportFactory: TestProxyTransportFactory
+    }
+
+    class func newRealtime(_ options: ARTClientOptions) -> RealtimeTestEnvironment {
         let modifiedOptions = options.copy() as! ARTClientOptions
 
         let autoConnect = modifiedOptions.autoConnect
         modifiedOptions.autoConnect = false
-        modifiedOptions.testOptions.transportFactory = TestProxyTransportFactory()
+        let transportFactory = TestProxyTransportFactory()
+        modifiedOptions.testOptions.transportFactory = transportFactory
         let realtime = ARTRealtime(options: modifiedOptions)
         realtime.internal.setReachabilityClass(TestReachability.self)
         if autoConnect {
             realtime.connect()
         }
-        return realtime
+        return .init(client: realtime, transportFactory: transportFactory)
     }
 
     class func newRandomString() -> String {
