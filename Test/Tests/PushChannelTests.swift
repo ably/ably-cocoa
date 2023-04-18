@@ -53,7 +53,6 @@ class PushChannelTests: XCTestCase {
     func test__002__Push_Channel__subscribeDevice__should_do_a_POST_request_to__push_channelSubscriptions_and_include_device_authentication() throws {
         let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
-        defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
         let channel = rest.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
@@ -85,11 +84,8 @@ class PushChannelTests: XCTestCase {
     func test__003__Push_Channel__subscribeClient__should_fail_if_the_LocalDevice_doesn_t_have_a_clientId() {
         let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
-        defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
-        let originalClientId = rest.device.clientId
         rest.device.clientId = nil
-        defer { rest.device.clientId = originalClientId }
 
         waitUntil(timeout: testTimeout) { [userQueue] done in
             rest.channels.get(uniqueChannelName()).push.subscribeClient { error in
@@ -107,7 +103,6 @@ class PushChannelTests: XCTestCase {
     func test__004__Push_Channel__subscribeClient__should_do_a_POST_request_to__push_channelSubscriptions() throws {
         let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
-        defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
         let channel = rest.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
@@ -152,7 +147,6 @@ class PushChannelTests: XCTestCase {
     func test__006__Push_Channel__unsubscribeDevice__should_do_a_DELETE_request_to__push_channelSubscriptions_and_include_device_authentication() throws {
         let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
-        defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
         let channel = rest.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
@@ -182,11 +176,8 @@ class PushChannelTests: XCTestCase {
     func test__007__Push_Channel__unsubscribeClient__should_fail_if_the_LocalDevice_doesn_t_have_a_clientId() {
         let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
-        defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
-        let originalClientId = rest.device.clientId
         rest.device.clientId = nil
-        defer { rest.device.clientId = originalClientId }
 
         waitUntil(timeout: testTimeout) { [userQueue] done in
             rest.channels.get(uniqueChannelName()).push.unsubscribeClient { error in
@@ -204,7 +195,6 @@ class PushChannelTests: XCTestCase {
     func test__008__Push_Channel__unsubscribeClient__should_do_a_DELETE_request_to__push_channelSubscriptions() throws {
         let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
-        defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
         let channel = rest.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
@@ -308,7 +298,6 @@ class PushChannelTests: XCTestCase {
         // Activate device
         let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
-        defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
         let channel = rest.channels.get("pushenabled:\(uniqueChannelName())")
         waitUntil(timeout: testTimeout) { done in

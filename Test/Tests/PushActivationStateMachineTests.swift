@@ -151,7 +151,6 @@ class PushActivationStateMachineTests: XCTestCase {
 
         let testDeviceToken = "xxxx-xxxx-xxxx-xxxx-xxxx"
         stateMachine.rest.device.setAndPersistAPNSDeviceToken(testDeviceToken)
-        defer { stateMachine.rest.device.setAndPersistAPNSDeviceToken(nil) }
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
@@ -295,10 +294,9 @@ class PushActivationStateMachineTests: XCTestCase {
         stateMachine.delegate = delegate
 
         var setAndPersistIdentityTokenDetailsCalled = false
-        let hookDevice = stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
+        stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
             setAndPersistIdentityTokenDetailsCalled = true
         }
-        defer { hookDevice.remove() }
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
@@ -389,10 +387,9 @@ class PushActivationStateMachineTests: XCTestCase {
         stateMachine.delegate = delegate
 
         var setAndPersistIdentityTokenDetailsCalled = false
-        let hookDevice = stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
+        stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
             setAndPersistIdentityTokenDetailsCalled = true
         }
-        defer { hookDevice.remove() }
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
@@ -438,7 +435,6 @@ class PushActivationStateMachineTests: XCTestCase {
         storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForPushDeviceDetails(machine: initialStateMachine, logger: .init(core: MockInternalLogCore())))
         rest.internal.storage = storage
         rest.device.setAndPersistAPNSDeviceToken("foo")
-        defer { rest.device.setAndPersistAPNSDeviceToken(nil) }
 
         var registered = false
 
@@ -481,10 +477,9 @@ class PushActivationStateMachineTests: XCTestCase {
         defer { hook.remove() }
 
         var setAndPersistIdentityTokenDetailsCalled = false
-        let hookDevice = stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
+        stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
             setAndPersistIdentityTokenDetailsCalled = true
         }
-        defer { hookDevice.remove() }
 
         let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(
             token: "123456",
@@ -615,10 +610,9 @@ class PushActivationStateMachineTests: XCTestCase {
             beforeEach()
 
             var setAndPersistIdentityTokenDetailsCalled = false
-            let hookDevice = stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
+            stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
                 setAndPersistIdentityTokenDetailsCalled = true
             }
-            defer { hookDevice.remove() }
 
             let delegate = StateMachineDelegate()
             stateMachine.delegate = delegate
@@ -822,10 +816,9 @@ class PushActivationStateMachineTests: XCTestCase {
         defer { hook.remove() }
 
         var setAndPersistIdentityTokenDetailsCalled = false
-        let hookDevice = stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
+        stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
             setAndPersistIdentityTokenDetailsCalled = true
         }
-        defer { hookDevice.remove() }
 
         stateMachine.send(ARTPushActivationEventDeregistered())
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
@@ -950,7 +943,6 @@ class PushActivationStateMachineTests: XCTestCase {
 
             let testDeviceIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "deviceClient")
             stateMachine.rest.device.setAndPersistIdentityTokenDetails(testDeviceIdentityTokenDetails)
-            defer { stateMachine.rest.device.setAndPersistIdentityTokenDetails(nil) }
 
             waitUntil(timeout: testTimeout) { done in
                 stateMachine.transitions = { event, _, _ in
@@ -1196,7 +1188,6 @@ class PushActivationStateMachineTests: XCTestCase {
 
             XCTAssertNil(rest.device.identityTokenDetails)
             rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
-            defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
             XCTAssertNotNil(rest.device.identityTokenDetails)
 
             waitUntil(timeout: testTimeout) { done in

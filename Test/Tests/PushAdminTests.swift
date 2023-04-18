@@ -384,7 +384,6 @@ class PushAdminTests: XCTestCase {
         let localDevice = realtime.internal.rest.device
         XCTAssertNil(localDevice.identityTokenDetails)
         localDevice.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
-        defer { localDevice.setAndPersistIdentityTokenDetails(nil) }
 
         waitUntil(timeout: testTimeout) { done in
             realtime.push.admin.deviceRegistrations.get(localDevice.id) { _, _ in
@@ -555,7 +554,6 @@ class PushAdminTests: XCTestCase {
         let localDevice = realtime.internal.rest.device
         XCTAssertNil(localDevice.identityTokenDetails)
         localDevice.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
-        defer { localDevice.setAndPersistIdentityTokenDetails(nil) }
 
         waitUntil(timeout: testTimeout) { done in
             realtime.push.admin.deviceRegistrations.save(localDevice) { error in
@@ -746,7 +744,6 @@ class PushAdminTests: XCTestCase {
         let localDevice = realtime.internal.rest.device
         XCTAssertNil(localDevice.identityTokenDetails)
         localDevice.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
-        defer { localDevice.setAndPersistIdentityTokenDetails(nil) }
 
         let subscription = ARTPushChannelSubscription(deviceId: localDevice.id, channel: quxChannelName)
 
@@ -880,7 +877,6 @@ class PushAdminTests: XCTestCase {
         let localDevice = realtime.internal.rest.device
         XCTAssertNil(localDevice.identityTokenDetails)
         localDevice.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
-        defer { localDevice.setAndPersistIdentityTokenDetails(nil) }
 
         let subscription = ARTPushChannelSubscription(deviceId: localDevice.id, channel: quxChannelName)
 
