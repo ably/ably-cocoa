@@ -437,7 +437,7 @@ class RestClientTests: XCTestCase {
 
     // RSC5
     func test__002__RestClient__should_provide_access_to_the_AuthOptions_object_passed_in_ClientOptions() {
-        let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+        let options = AblyTests.commonAppSetup()
         let client = ARTRest(options: options)
 
         let authOptions = client.auth.internal.options
@@ -469,7 +469,7 @@ class RestClientTests: XCTestCase {
     // RSC16
 
     func test__034__RestClient__time__should_return_server_time() {
-        let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+        let options = AblyTests.commonAppSetup()
         let client = ARTRest(options: options)
 
         var time: NSDate?
