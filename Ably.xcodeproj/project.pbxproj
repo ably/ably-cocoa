@@ -102,6 +102,15 @@
 		2124B7A329DB153500AD8361 /* ARTDeviceIdentityTokenDetails+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 2124B7A229DB153500AD8361 /* ARTDeviceIdentityTokenDetails+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2124B7A429DB153500AD8361 /* ARTDeviceIdentityTokenDetails+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 2124B7A229DB153500AD8361 /* ARTDeviceIdentityTokenDetails+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2124B7A529DB153500AD8361 /* ARTDeviceIdentityTokenDetails+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = 2124B7A229DB153500AD8361 /* ARTDeviceIdentityTokenDetails+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		21276CBA29EF323100107B5F /* ARTContinuousClock.h in Headers */ = {isa = PBXBuildFile; fileRef = 21276CB929EF323100107B5F /* ARTContinuousClock.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		21276CBB29EF323100107B5F /* ARTContinuousClock.h in Headers */ = {isa = PBXBuildFile; fileRef = 21276CB929EF323100107B5F /* ARTContinuousClock.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		21276CBC29EF323100107B5F /* ARTContinuousClock.h in Headers */ = {isa = PBXBuildFile; fileRef = 21276CB929EF323100107B5F /* ARTContinuousClock.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		21276CBE29EF34AE00107B5F /* ARTContinuousClock.m in Sources */ = {isa = PBXBuildFile; fileRef = 21276CBD29EF34AE00107B5F /* ARTContinuousClock.m */; };
+		21276CBF29EF34AE00107B5F /* ARTContinuousClock.m in Sources */ = {isa = PBXBuildFile; fileRef = 21276CBD29EF34AE00107B5F /* ARTContinuousClock.m */; };
+		21276CC029EF34AE00107B5F /* ARTContinuousClock.m in Sources */ = {isa = PBXBuildFile; fileRef = 21276CBD29EF34AE00107B5F /* ARTContinuousClock.m */; };
+		21276CC229F00BAA00107B5F /* ContinuousClockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21276CC129F00BAA00107B5F /* ContinuousClockTests.swift */; };
+		21276CC329F00BAA00107B5F /* ContinuousClockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21276CC129F00BAA00107B5F /* ContinuousClockTests.swift */; };
+		21276CC429F00BAA00107B5F /* ContinuousClockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21276CC129F00BAA00107B5F /* ContinuousClockTests.swift */; };
 		2132C20E29D20EEC000C4355 /* ARTResumeRequestResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C20D29D20EEC000C4355 /* ARTResumeRequestResponse.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2132C20F29D20EEC000C4355 /* ARTResumeRequestResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C20D29D20EEC000C4355 /* ARTResumeRequestResponse.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2132C21029D20EEC000C4355 /* ARTResumeRequestResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = 2132C20D29D20EEC000C4355 /* ARTResumeRequestResponse.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -1132,6 +1141,9 @@
 		2124B79A29DB14C000AD8361 /* ARTLogAdapter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTLogAdapter.m; sourceTree = "<group>"; };
 		2124B79E29DB14D000AD8361 /* ARTLogAdapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTLogAdapter.h; path = PrivateHeaders/Ably/ARTLogAdapter.h; sourceTree = "<group>"; };
 		2124B7A229DB153500AD8361 /* ARTDeviceIdentityTokenDetails+Private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "ARTDeviceIdentityTokenDetails+Private.h"; path = "PrivateHeaders/Ably/ARTDeviceIdentityTokenDetails+Private.h"; sourceTree = "<group>"; };
+		21276CB929EF323100107B5F /* ARTContinuousClock.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTContinuousClock.h; path = PrivateHeaders/Ably/ARTContinuousClock.h; sourceTree = "<group>"; };
+		21276CBD29EF34AE00107B5F /* ARTContinuousClock.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTContinuousClock.m; sourceTree = "<group>"; };
+		21276CC129F00BAA00107B5F /* ContinuousClockTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContinuousClockTests.swift; sourceTree = "<group>"; };
 		2132C20D29D20EEC000C4355 /* ARTResumeRequestResponse.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTResumeRequestResponse.h; path = PrivateHeaders/Ably/ARTResumeRequestResponse.h; sourceTree = "<group>"; };
 		2132C21129D20F05000C4355 /* ARTResumeRequestResponse.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTResumeRequestResponse.m; sourceTree = "<group>"; };
 		2132C21529D20F69000C4355 /* ResumeRequestResponseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResumeRequestResponseTests.swift; sourceTree = "<group>"; };
@@ -1668,6 +1680,7 @@
 				D7C1B8761BBEA81A0087B55F /* AuthTests.swift */,
 				215F75FE2922B30F009E0E76 /* ClientInformationTests.swift */,
 				217FCF2D29D623DD006E5F2D /* ConstantRetryDelayCalculatorTests.swift */,
+				21276CC129F00BAA00107B5F /* ContinuousClockTests.swift */,
 				EB7913A71C6E54C3000ABF9B /* CryptoTests.swift */,
 				56190953238C3D3200A862A6 /* CryptoTest.m */,
 				2132C22129D233EB000C4355 /* DefaultErrorCheckerTests.swift */,
@@ -2047,6 +2060,8 @@
 				2124B79E29DB14D000AD8361 /* ARTLogAdapter.h */,
 				2105ED1D29E7242400DE6D67 /* ARTLogAdapter+Testing.h */,
 				2124B79A29DB14C000AD8361 /* ARTLogAdapter.m */,
+				21276CB929EF323100107B5F /* ARTContinuousClock.h */,
+				21276CBD29EF34AE00107B5F /* ARTContinuousClock.m */,
 			);
 			name = Utilities;
 			sourceTree = "<group>";
@@ -2277,6 +2292,7 @@
 				2132C30129D5D156000C4355 /* ARTRetryDelayCalculator.h in Headers */,
 				D7AE18CE1E5B40FE00478D82 /* ARTPushDeviceRegistrations.h in Headers */,
 				D520C4D626809BB5000012B2 /* ARTStringifiable.h in Headers */,
+				21276CBA29EF323100107B5F /* ARTContinuousClock.h in Headers */,
 				2132C31129D5E4C6000C4355 /* ARTBackoffRetryDelayCalculator.h in Headers */,
 				D5BB213926AAA60500AA5F3E /* ARTNSError+ARTUtils.h in Headers */,
 				D746AE431BBC5CD0003ECEF8 /* ARTRealtimeChannel+Private.h in Headers */,
@@ -2416,6 +2432,7 @@
 				D710D51621949C42008F54AD /* ARTPush.h in Headers */,
 				D737F827263AF4CE0064FA05 /* ARTFallbackHosts.h in Headers */,
 				D710D4D521949BF9008F54AD /* ARTRealtimeChannel.h in Headers */,
+				21276CBB29EF323100107B5F /* ARTContinuousClock.h in Headers */,
 				D710D51721949C42008F54AD /* ARTPushChannel.h in Headers */,
 				D710D51E21949C42008F54AD /* ARTLocalDeviceStorage.h in Headers */,
 				D5BB210626AA988200AA5F3E /* ARTTime.h in Headers */,
@@ -2583,6 +2600,7 @@
 				D710D52821949C44008F54AD /* ARTPush.h in Headers */,
 				D737F828263AF4CE0064FA05 /* ARTFallbackHosts.h in Headers */,
 				D710D4E521949BFB008F54AD /* ARTRealtimeChannel.h in Headers */,
+				21276CBC29EF323100107B5F /* ARTContinuousClock.h in Headers */,
 				D710D52921949C44008F54AD /* ARTPushChannel.h in Headers */,
 				D710D53021949C44008F54AD /* ARTLocalDeviceStorage.h in Headers */,
 				D710D51321949C19008F54AD /* ARTConnectionDetails+Private.h in Headers */,
@@ -2966,6 +2984,7 @@
 				D7FC1ECB209CEA2E001E4153 /* PushTests.swift in Sources */,
 				2132C22929D23484000C4355 /* MockErrorChecker.swift in Sources */,
 				D714A63E1C74D4B2002F2CA0 /* NSObject+TestSuite.swift in Sources */,
+				21276CC229F00BAA00107B5F /* ContinuousClockTests.swift in Sources */,
 				21881E7C283BD0E100CFD9E2 /* StringifiableTests.swift in Sources */,
 				856AAC971B6E30C800B07119 /* TestUtilities.swift in Sources */,
 				D72768211C9C19040022F8B2 /* RestClientPresenceTests.swift in Sources */,
@@ -3068,6 +3087,7 @@
 				21113B5529DC6ACD00652C86 /* ARTTestClientOptions.m in Sources */,
 				1C578E201B3435CA00EF46EC /* ARTFallback.m in Sources */,
 				217D1831254222F600DFF07E /* ARTSRConstants.m in Sources */,
+				21276CBE29EF34AE00107B5F /* ARTContinuousClock.m in Sources */,
 				96A507B61A37881C0077CDF8 /* ARTNSDate+ARTUtil.m in Sources */,
 				217D182C254222F500DFF07E /* ARTSRProxyConnect.m in Sources */,
 				850BFB4D1B79323C009D0ADD /* ARTPaginatedResult.m in Sources */,
@@ -3178,6 +3198,7 @@
 				D7093C22219E466E00723F17 /* RestClientPresenceTests.swift in Sources */,
 				56190955238C3D3200A862A6 /* CryptoTest.m in Sources */,
 				D7093C1D219E466600723F17 /* AuthTests.swift in Sources */,
+				21276CC329F00BAA00107B5F /* ContinuousClockTests.swift in Sources */,
 				D7093C25219E466E00723F17 /* RealtimeClientConnectionTests.swift in Sources */,
 				217FCF4029D626E4006E5F2D /* StaticJitterCoefficients.swift in Sources */,
 			);
@@ -3229,6 +3250,7 @@
 				D7093C7B219EE26400723F17 /* RealtimeClientTests.swift in Sources */,
 				56190956238C3D3200A862A6 /* CryptoTest.m in Sources */,
 				D7093C7A219EE26400723F17 /* RestPaginatedTests.swift in Sources */,
+				21276CC429F00BAA00107B5F /* ContinuousClockTests.swift in Sources */,
 				D7093C81219EE26400723F17 /* UtilitiesTests.swift in Sources */,
 				217FCF4129D626E4006E5F2D /* StaticJitterCoefficients.swift in Sources */,
 			);
@@ -3295,6 +3317,7 @@
 				21113B5629DC6ACD00652C86 /* ARTTestClientOptions.m in Sources */,
 				D710D66E21949E78008F54AD /* ARTNSDate+ARTUtil.m in Sources */,
 				217D1848254222F700DFF07E /* ARTSRConstants.m in Sources */,
+				21276CBF29EF34AE00107B5F /* ARTContinuousClock.m in Sources */,
 				D710D57321949CC4008F54AD /* ARTPushAdmin.m in Sources */,
 				217D1843254222F700DFF07E /* ARTSRProxyConnect.m in Sources */,
 				D710D53421949C54008F54AD /* ARTDeviceDetails.m in Sources */,
@@ -3420,6 +3443,7 @@
 				21113B5729DC6ACD00652C86 /* ARTTestClientOptions.m in Sources */,
 				D710D65421949E77008F54AD /* ARTNSDate+ARTUtil.m in Sources */,
 				217D185F254222F900DFF07E /* ARTSRConstants.m in Sources */,
+				21276CC029EF34AE00107B5F /* ARTContinuousClock.m in Sources */,
 				D710D57921949CC5008F54AD /* ARTPushAdmin.m in Sources */,
 				217D185A254222F900DFF07E /* ARTSRProxyConnect.m in Sources */,
 				D710D54621949C55008F54AD /* ARTDeviceDetails.m in Sources */,
