@@ -17,7 +17,7 @@ NS_SWIFT_NAME(LocalDeviceFetcher)
 
  This method can safely be called from any thread.
  */
-- (ARTLocalDevice *)fetchLocalDeviceWithClientID:(NSString *)clientID
+- (ARTLocalDevice *)fetchLocalDeviceWithClientID:(nullable NSString *)clientID
                                          storage:(id<ARTDeviceStorage>)storage
                                           logger:(nullable ARTInternalLog *)logger;
 

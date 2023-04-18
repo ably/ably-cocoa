@@ -5,7 +5,7 @@ class MockLocalDeviceFetcher: NSObject, LocalDeviceFetcher {
     private let semaphore = DispatchSemaphore(value: 1)
     private var device: ARTLocalDevice?
 
-    func fetchLocalDevice(withClientID clientID: String, storage: ARTDeviceStorage, logger: InternalLog?) -> ARTLocalDevice {
+    func fetchLocalDevice(withClientID clientID: String?, storage: ARTDeviceStorage, logger: InternalLog?) -> ARTLocalDevice {
         semaphore.wait()
         let device: ARTLocalDevice
         if let existingDevice = self.device {
