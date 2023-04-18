@@ -1085,11 +1085,6 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
 
 /// Records each message for test purpose.
 class TestProxyTransport: ARTWebSocketTransport {
-
-    /// This will affect all WebSocketTransport instances.
-    /// Set it to nil after the test ends.
-    static var networkConnectEvent: ((ARTRealtimeTransport, URL) -> Void)?
-
     /// The factory that created this TestProxyTransport instance.
     private weak var _factory: TestProxyTransportFactory?
     private var factory: TestProxyTransportFactory {
@@ -1245,7 +1240,7 @@ class TestProxyTransport: ARTWebSocketTransport {
     }
 
     private func performNetworkConnectEvent() {
-        guard let networkConnectEventHandler = TestProxyTransport.networkConnectEvent else {
+        guard let networkConnectEventHandler = factory.networkConnectEvent else {
             return
         }
         if let lastUrl = self.lastUrl {

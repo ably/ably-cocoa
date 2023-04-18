@@ -38,7 +38,7 @@ private func testUsesAlternativeHostOnResponse(_ caseTest: FakeNetworkResponse, 
     transportFactory.fakeNetworkResponse = caseTest
 
     var urlConnections = [URL]()
-    TestProxyTransport.networkConnectEvent = { transport, url in
+    transportFactory.networkConnectEvent = { transport, url in
         if client.internal.transport !== transport {
             return
         }
@@ -47,7 +47,7 @@ private func testUsesAlternativeHostOnResponse(_ caseTest: FakeNetworkResponse, 
             transportFactory.fakeNetworkResponse = nil
         }
     }
-    defer { TestProxyTransport.networkConnectEvent = nil }
+    defer { transportFactory.networkConnectEvent = nil }
 
     waitUntil(timeout: testTimeout) { done in
         // wss://[a-e].ably-realtime.com: when a timeout occurs
@@ -3277,20 +3277,21 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.autoConnect = false
         options.recover = "99999!xxxxxx-xxxxxxxxx-xxxxxxxxx:-1:7"
 
-        let client = AblyTests.newRealtime(options).client
+        let testEnvironment = AblyTests.newRealtime(options)
+        let client = testEnvironment.client
         defer { client.dispose(); client.close() }
 
         var urlConnections = [URL]()
-        TestProxyTransport.networkConnectEvent = { transport, url in
+        testEnvironment.transportFactory.networkConnectEvent = { transport, url in
             if client.internal.transport !== transport {
                 return
             }
             urlConnections.append(url)
             if urlConnections.count == 1 {
-                TestProxyTransport.networkConnectEvent = nil
+                testEnvironment.transportFactory.networkConnectEvent = nil
             }
         }
-        defer { TestProxyTransport.networkConnectEvent = nil }
+        defer { testEnvironment.transportFactory.networkConnectEvent = nil }
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { stateChange in
@@ -3337,13 +3338,13 @@ class RealtimeClientConnectionTests: XCTestCase {
         testEnvironment.transportFactory.fakeNetworkResponse = .hostUnreachable
 
         var urlConnections = [URL]()
-        TestProxyTransport.networkConnectEvent = { transport, url in
+        testEnvironment.transportFactory.networkConnectEvent = { transport, url in
             if client.internal.transport !== transport {
                 return
             }
             urlConnections.append(url)
         }
-        defer { TestProxyTransport.networkConnectEvent = nil }
+        defer { testEnvironment.transportFactory.networkConnectEvent = nil }
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.disconnected) { stateChange in
@@ -3388,13 +3389,13 @@ class RealtimeClientConnectionTests: XCTestCase {
         testEnvironment.transportFactory.fakeNetworkResponse = .hostUnreachable
 
         var urlConnections = [URL]()
-        TestProxyTransport.networkConnectEvent = { transport, url in
+        testEnvironment.transportFactory.networkConnectEvent = { transport, url in
             if client.internal.transport !== transport {
                 return
             }
             urlConnections.append(url)
         }
-        defer { TestProxyTransport.networkConnectEvent = nil }
+        defer { testEnvironment.transportFactory.networkConnectEvent = nil }
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.on(.disconnected) { stateChange in
@@ -3426,7 +3427,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         transportFactory.fakeNetworkResponse = .hostUnreachable
 
         var urlConnections = [URL]()
-        TestProxyTransport.networkConnectEvent = { transport, url in
+        transportFactory.networkConnectEvent = { transport, url in
             if client.internal.transport !== transport {
                 return
             }
@@ -3435,7 +3436,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 transportFactory.fakeNetworkResponse = nil
             }
         }
-        defer { TestProxyTransport.networkConnectEvent = nil }
+        defer { transportFactory.networkConnectEvent = nil }
 
         waitUntil(timeout: testTimeout) { done in
             // wss://[a-e].ably-realtime.com: when a timeout occurs
@@ -3471,7 +3472,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         transportFactory.fakeNetworkResponse = .hostUnreachable
 
         var urlConnections = [URL]()
-        TestProxyTransport.networkConnectEvent = { transport, url in
+        transportFactory.networkConnectEvent = { transport, url in
             if client.internal.transport !== transport {
                 return
             }
@@ -3480,7 +3481,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 transportFactory.fakeNetworkResponse = nil
             }
         }
-        defer { TestProxyTransport.networkConnectEvent = nil }
+        defer { transportFactory.networkConnectEvent = nil }
 
         waitUntil(timeout: testTimeout) { done in
             // wss://[a-e].ably-realtime.com: when a timeout occurs
@@ -3539,13 +3540,13 @@ class RealtimeClientConnectionTests: XCTestCase {
         transportFactory.fakeNetworkResponse = .host400BadRequest
 
         var urlConnections = [URL]()
-        TestProxyTransport.networkConnectEvent = { transport, url in
+        transportFactory.networkConnectEvent = { transport, url in
             if client.internal.transport !== transport {
                 return
             }
             urlConnections.append(url)
         }
-        defer { TestProxyTransport.networkConnectEvent = nil }
+        defer { transportFactory.networkConnectEvent = nil }
 
         client.connect()
         defer { client.dispose(); client.close() }
@@ -3574,14 +3575,14 @@ class RealtimeClientConnectionTests: XCTestCase {
         transportFactory.fakeNetworkResponse = .hostUnreachable
 
         var urlConnections = [URL]()
-        TestProxyTransport.networkConnectEvent = { transport, url in
+        transportFactory.networkConnectEvent = { transport, url in
             if client.internal.transport !== transport {
                 return
             }
             urlConnections.append(url)
             transportFactory.fakeNetworkResponse = nil
         }
-        defer { TestProxyTransport.networkConnectEvent = nil }
+        defer { transportFactory.networkConnectEvent = nil }
 
         waitUntil(timeout: testTimeout) { done in
             // Unreachable and try a fallback
@@ -3641,7 +3642,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let expectedFallbackHosts = Array(expectedHostOrder.map { ARTDefault.fallbackHosts()[$0] })
         let allFallbackHostsTriedOfFailedExp = XCTestExpectation(description: "TestProxyTransport should spit 5 fallback hosts on networkConnectEvent")
         
-        TestProxyTransport.networkConnectEvent = { transport, url in
+        transportFactory.networkConnectEvent = { transport, url in
             if client.internal.transport !== transport {
                 return
             }
@@ -3649,7 +3650,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 urls.append(url)
             }
         }
-        defer { TestProxyTransport.networkConnectEvent = nil }
+        defer { transportFactory.networkConnectEvent = nil }
         
         testHttpExecutor.setListenerAfterRequest { request in
             urls.append(request.url!)
@@ -3712,7 +3713,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             NSRegularExpression.extract(url.absoluteString, pattern: "[a-e].ably-realtime.com")
         }
 
-        TestProxyTransport.networkConnectEvent = { transport, url in
+        transportFactory.networkConnectEvent = { transport, url in
             if client.internal.transport !== transport {
                 return
             }
@@ -3720,7 +3721,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 fail("shouldn't try fallback host after failed connectivity check")
             }
         }
-        defer { TestProxyTransport.networkConnectEvent = nil }
+        defer { transportFactory.networkConnectEvent = nil }
 
         mockHTTP.setNetworkState(network: .hostInternalError(code: 500), forHost: "internet-up.ably-realtime.com")
 
@@ -3764,7 +3765,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         var urls = [URL]()
         let allFallbackHostsTriedOfFailedExp = XCTestExpectation(description: "TestProxyTransport should spit 5 fallback hosts on networkConnectEvent")
         
-        TestProxyTransport.networkConnectEvent = { transport, url in
+        transportFactory.networkConnectEvent = { transport, url in
             if client.internal.transport !== transport {
                 return
             }
@@ -3773,7 +3774,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
         }
         
-        defer { TestProxyTransport.networkConnectEvent = nil }
+        defer { transportFactory.networkConnectEvent = nil }
 
         testHttpExecutor.setListenerAfterRequest { request in
             urls.append(request.url!)
@@ -3829,13 +3830,13 @@ class RealtimeClientConnectionTests: XCTestCase {
         transportFactory.fakeNetworkResponse = .hostUnreachable
 
         var urlConnections = [URL]()
-        TestProxyTransport.networkConnectEvent = { transport, url in
+        transportFactory.networkConnectEvent = { transport, url in
             if client.internal.transport !== transport {
                 return
             }
             urlConnections.append(url)
         }
-        defer { TestProxyTransport.networkConnectEvent = nil }
+        defer { transportFactory.networkConnectEvent = nil }
 
         client.connect()
         defer { client.dispose(); client.close() }
@@ -3863,7 +3864,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         transportFactory.fakeNetworkResponse = .hostUnreachable
 
         var urlConnections = [URL]()
-        TestProxyTransport.networkConnectEvent = { transport, url in
+        transportFactory.networkConnectEvent = { transport, url in
             if client.internal.transport !== transport {
                 return
             }
@@ -3873,7 +3874,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 (client.internal.transport as! TestProxyTransport).simulateTransportSuccess()
             }
         }
-        defer { TestProxyTransport.networkConnectEvent = nil }
+        defer { transportFactory.networkConnectEvent = nil }
 
         client.connect()
         // Because we're faking the CONNECTED state, we can't client.close() or it
