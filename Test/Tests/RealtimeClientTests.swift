@@ -39,7 +39,7 @@ class RealtimeClientTests: XCTestCase {
 
     // G4
     func test__001__RealtimeClient__All_WebSocket_connections_should_include_the_current_API_version() {
-        let client = AblyTests.newRealtime(AblyTests.commonAppSetup())
+        let client = AblyTests.newRealtime(AblyTests.commonAppSetup()).client
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
@@ -419,9 +419,9 @@ class RealtimeClientTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         options.autoConnect = false
         options.useTokenAuth = true
+        options.testOptions.transportFactory = TestProxyTransportFactory()
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        client.internal.setTransport(TestProxyTransport.self)
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { stateChange in
@@ -476,9 +476,9 @@ class RealtimeClientTests: XCTestCase {
         options.autoConnect = false
         let testToken = getTestToken()
         options.token = testToken
+        options.testOptions.transportFactory = TestProxyTransportFactory()
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        client.internal.setTransport(TestProxyTransport.self)
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { stateChange in
@@ -536,9 +536,9 @@ class RealtimeClientTests: XCTestCase {
         options.autoConnect = false
         let testToken = getTestToken(capability: "{\"test\":[\"subscribe\"]}")
         options.token = testToken
+        options.testOptions.transportFactory = TestProxyTransportFactory()
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        client.internal.setTransport(TestProxyTransport.self)
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { stateChange in
@@ -627,9 +627,9 @@ class RealtimeClientTests: XCTestCase {
         options.autoConnect = false
         let testToken = getTestToken()
         options.token = testToken
+        options.testOptions.transportFactory = TestProxyTransportFactory()
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        client.internal.setTransport(TestProxyTransport.self)
 
         let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
@@ -688,9 +688,9 @@ class RealtimeClientTests: XCTestCase {
         options.autoConnect = false
         options.clientId = "ios"
         options.useTokenAuth = true
+        options.testOptions.transportFactory = TestProxyTransportFactory()
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        client.internal.setTransport(TestProxyTransport.self)
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { stateChange in
@@ -779,9 +779,9 @@ class RealtimeClientTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         options.autoConnect = false
         options.useTokenAuth = true
+        options.testOptions.transportFactory = TestProxyTransportFactory()
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        client.internal.setTransport(TestProxyTransport.self)
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { stateChange in
@@ -813,9 +813,9 @@ class RealtimeClientTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         options.autoConnect = false
         options.useTokenAuth = true
+        options.testOptions.transportFactory = TestProxyTransportFactory()
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        client.internal.setTransport(TestProxyTransport.self)
 
         var connections = 0
         let hook1 = TestProxyTransport.testSuite_injectIntoClassMethod(#selector(TestProxyTransport.connect(withToken:))) {
@@ -891,9 +891,9 @@ class RealtimeClientTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         options.autoConnect = false
         options.useTokenAuth = true
+        options.testOptions.transportFactory = TestProxyTransportFactory()
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        client.internal.setTransport(TestProxyTransport.self)
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { stateChange in
@@ -941,9 +941,9 @@ class RealtimeClientTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         options.autoConnect = false
         options.useTokenAuth = true
+        options.testOptions.transportFactory = TestProxyTransportFactory()
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        client.internal.setTransport(TestProxyTransport.self)
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { stateChange in
@@ -1027,9 +1027,9 @@ class RealtimeClientTests: XCTestCase {
         options.autoConnect = false
         let testToken = getTestToken()
         options.token = testToken
+        options.testOptions.transportFactory = TestProxyTransportFactory()
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        client.internal.setTransport(TestProxyTransport.self)
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { stateChange in
@@ -1082,9 +1082,9 @@ class RealtimeClientTests: XCTestCase {
         options.autoConnect = false
         let testToken = getTestToken()
         options.token = testToken
+        options.testOptions.transportFactory = TestProxyTransportFactory()
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        client.internal.setTransport(TestProxyTransport.self)
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { stateChange in
@@ -1137,9 +1137,9 @@ class RealtimeClientTests: XCTestCase {
         options.autoConnect = false
         let testToken = getTestToken()
         options.token = testToken
+        options.testOptions.transportFactory = TestProxyTransportFactory()
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        client.internal.setTransport(TestProxyTransport.self)
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { stateChange in
@@ -1192,9 +1192,9 @@ class RealtimeClientTests: XCTestCase {
         options.autoConnect = false
         let testToken = getTestToken()
         options.token = testToken
+        options.testOptions.transportFactory = TestProxyTransportFactory()
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        client.internal.setTransport(TestProxyTransport.self)
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { stateChange in
@@ -1257,7 +1257,7 @@ class RealtimeClientTests: XCTestCase {
     }
 
     func test__006__RealtimeClient__should_accept_acks_with_different_order() {
-        let realtime = AblyTests.newRealtime(AblyTests.commonAppSetup())
+        let realtime = AblyTests.newRealtime(AblyTests.commonAppSetup()).client
         defer { realtime.dispose(); realtime.close() }
         let channel = realtime.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in

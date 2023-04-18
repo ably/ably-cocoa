@@ -30,6 +30,15 @@
 		2105ED2629E830D600DE6D67 /* ARTInternalLog+Testing.h in Headers */ = {isa = PBXBuildFile; fileRef = 2105ED2529E830D600DE6D67 /* ARTInternalLog+Testing.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2105ED2729E830D600DE6D67 /* ARTInternalLog+Testing.h in Headers */ = {isa = PBXBuildFile; fileRef = 2105ED2529E830D600DE6D67 /* ARTInternalLog+Testing.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2105ED2829E830D600DE6D67 /* ARTInternalLog+Testing.h in Headers */ = {isa = PBXBuildFile; fileRef = 2105ED2529E830D600DE6D67 /* ARTInternalLog+Testing.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		210F67A229E9D718007B9345 /* ARTRealtimeTransportFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 210F67A129E9D718007B9345 /* ARTRealtimeTransportFactory.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		210F67A329E9D718007B9345 /* ARTRealtimeTransportFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 210F67A129E9D718007B9345 /* ARTRealtimeTransportFactory.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		210F67A429E9D718007B9345 /* ARTRealtimeTransportFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 210F67A129E9D718007B9345 /* ARTRealtimeTransportFactory.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		210F67A629E9D93D007B9345 /* ARTRealtimeTransportFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = 210F67A529E9D93D007B9345 /* ARTRealtimeTransportFactory.m */; };
+		210F67A729E9D93D007B9345 /* ARTRealtimeTransportFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = 210F67A529E9D93D007B9345 /* ARTRealtimeTransportFactory.m */; };
+		210F67A829E9D93D007B9345 /* ARTRealtimeTransportFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = 210F67A529E9D93D007B9345 /* ARTRealtimeTransportFactory.m */; };
+		210F67B129E9DB62007B9345 /* TestProxyTransportFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 210F67B029E9DB62007B9345 /* TestProxyTransportFactory.swift */; };
+		210F67B229E9DB62007B9345 /* TestProxyTransportFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 210F67B029E9DB62007B9345 /* TestProxyTransportFactory.swift */; };
+		210F67B329E9DB62007B9345 /* TestProxyTransportFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 210F67B029E9DB62007B9345 /* TestProxyTransportFactory.swift */; };
 		21113B4529DB484200652C86 /* ARTChannel+Subclass.h in Headers */ = {isa = PBXBuildFile; fileRef = 21113B4429DB484200652C86 /* ARTChannel+Subclass.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		21113B4629DB484200652C86 /* ARTChannel+Subclass.h in Headers */ = {isa = PBXBuildFile; fileRef = 21113B4429DB484200652C86 /* ARTChannel+Subclass.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		21113B4729DB484200652C86 /* ARTChannel+Subclass.h in Headers */ = {isa = PBXBuildFile; fileRef = 21113B4429DB484200652C86 /* ARTChannel+Subclass.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -1100,6 +1109,9 @@
 		2105ED1D29E7242400DE6D67 /* ARTLogAdapter+Testing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTLogAdapter+Testing.h"; path = "PrivateHeaders/Ably/ARTLogAdapter+Testing.h"; sourceTree = "<group>"; };
 		2105ED2129E7429E00DE6D67 /* ARTPaginatedResult+Subclass.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTPaginatedResult+Subclass.h"; path = "PrivateHeaders/Ably/ARTPaginatedResult+Subclass.h"; sourceTree = "<group>"; };
 		2105ED2529E830D600DE6D67 /* ARTInternalLog+Testing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTInternalLog+Testing.h"; path = "PrivateHeaders/Ably/ARTInternalLog+Testing.h"; sourceTree = "<group>"; };
+		210F67A129E9D718007B9345 /* ARTRealtimeTransportFactory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTRealtimeTransportFactory.h; path = PrivateHeaders/Ably/ARTRealtimeTransportFactory.h; sourceTree = "<group>"; };
+		210F67A529E9D93D007B9345 /* ARTRealtimeTransportFactory.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTRealtimeTransportFactory.m; sourceTree = "<group>"; };
+		210F67B029E9DB62007B9345 /* TestProxyTransportFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestProxyTransportFactory.swift; sourceTree = "<group>"; };
 		21113B4429DB484200652C86 /* ARTChannel+Subclass.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTChannel+Subclass.h"; path = "PrivateHeaders/Ably/ARTChannel+Subclass.h"; sourceTree = "<group>"; };
 		21113B4829DB60F800652C86 /* MockRetryDelayCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockRetryDelayCalculator.swift; sourceTree = "<group>"; };
 		21113B5029DC6AAF00652C86 /* ARTTestClientOptions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTTestClientOptions.h; path = PrivateHeaders/Ably/ARTTestClientOptions.h; sourceTree = "<group>"; };
@@ -1708,6 +1720,7 @@
 				21113B4829DB60F800652C86 /* MockRetryDelayCalculator.swift */,
 				2124B78629DB127900AD8361 /* MockVersion2Log.swift */,
 				2147F03429E5872C0071CB94 /* MockInternalLogCore.swift */,
+				210F67B029E9DB62007B9345 /* TestProxyTransportFactory.swift */,
 			);
 			path = "Test Utilities";
 			sourceTree = "<group>";
@@ -1887,6 +1900,8 @@
 			isa = PBXGroup;
 			children = (
 				96E4083D1A3892C700087F77 /* ARTRealtimeTransport.h */,
+				210F67A129E9D718007B9345 /* ARTRealtimeTransportFactory.h */,
+				210F67A529E9D93D007B9345 /* ARTRealtimeTransportFactory.m */,
 				D7B17EE21C07208B00A6958E /* ARTConnectionDetails.m */,
 				EB2D5A901CC941A700AD1A67 /* ARTRealtimeTransport.m */,
 				96E408451A3895E800087F77 /* ARTWebSocketTransport.h */,
@@ -2146,6 +2161,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				210F67A229E9D718007B9345 /* ARTRealtimeTransportFactory.h in Headers */,
 				96BF61531A35B39C004CF2B3 /* ARTRest.h in Headers */,
 				EB91213E1CA0AD6600BA0A40 /* ARTMsgPackEncoder.h in Headers */,
 				96A507BD1A3791490077CDF8 /* ARTRealtime.h in Headers */,
@@ -2393,6 +2409,7 @@
 				D710D54E21949C66008F54AD /* ARTNSMutableRequest+ARTPush.h in Headers */,
 				211A610429DA05C700D169C5 /* ARTAttachRequestMetadata.h in Headers */,
 				D7D06F1026330E2800DEBDAD /* ARTHttp+Private.h in Headers */,
+				210F67A329E9D718007B9345 /* ARTRealtimeTransportFactory.h in Headers */,
 				EB1B541A22FB1D7F006A59AC /* ARTPushChannelSubscriptions+Private.h in Headers */,
 				D710D48921949A85008F54AD /* ARTConstants.h in Headers */,
 				D710D60921949DA9008F54AD /* ARTURLSessionServerTrust.h in Headers */,
@@ -2559,6 +2576,7 @@
 				D710D55421949C67008F54AD /* ARTNSMutableRequest+ARTPush.h in Headers */,
 				211A610529DA05C700D169C5 /* ARTAttachRequestMetadata.h in Headers */,
 				D7D06F1126330E2900DEBDAD /* ARTHttp+Private.h in Headers */,
+				210F67A429E9D718007B9345 /* ARTRealtimeTransportFactory.h in Headers */,
 				EB1B541B22FB1D7F006A59AC /* ARTPushChannelSubscriptions+Private.h in Headers */,
 				D710D48B21949A86008F54AD /* ARTConstants.h in Headers */,
 				D710D60B21949DAA008F54AD /* ARTURLSessionServerTrust.h in Headers */,
@@ -2941,6 +2959,7 @@
 				D746AE2C1BBB625E003ECEF8 /* RestClientChannelTests.swift in Sources */,
 				D71D30041C5F7B2F002115B0 /* RealtimeClientChannelsTests.swift in Sources */,
 				EB1B53F922F85CE4006A59AC /* ObjectLifetimesTests.swift in Sources */,
+				210F67B129E9DB62007B9345 /* TestProxyTransportFactory.swift in Sources */,
 				D7DF73851EA600240013CD36 /* PushActivationStateMachineTests.swift in Sources */,
 				211A60D729D6D2C300D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */,
 				217FCF3229D62460006E5F2D /* RetrySequenceTests.swift in Sources */,
@@ -3039,6 +3058,7 @@
 				D785C42A1E549E33008FEC05 /* ARTPushChannelSubscription.m in Sources */,
 				D7B17EE41C07208B00A6958E /* ARTConnectionDetails.m in Sources */,
 				2124B79B29DB14C000AD8361 /* ARTLogAdapter.m in Sources */,
+				210F67A629E9D93D007B9345 /* ARTRealtimeTransportFactory.m in Sources */,
 				217FCF3A29D626C1006E5F2D /* ARTJitterCoefficientGenerator.m in Sources */,
 				96BF61591A35B52C004CF2B3 /* ARTHttp.m in Sources */,
 				217D1833254222F600DFF07E /* ARTSRPinningSecurityPolicy.m in Sources */,
@@ -3133,6 +3153,7 @@
 				848ED97426E50D0F0087E800 /* ObjcppTest.mm in Sources */,
 				D7093C28219E466E00723F17 /* RealtimeClientPresenceTests.swift in Sources */,
 				D7093C24219E466E00723F17 /* RealtimeClientTests.swift in Sources */,
+				210F67B229E9DB62007B9345 /* TestProxyTransportFactory.swift in Sources */,
 				D7093C1F219E466E00723F17 /* RestClientStatsTests.swift in Sources */,
 				D7093C1A219E465C00723F17 /* NSObject+TestSuite.m in Sources */,
 				211A60D829D6D2C400D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */,
@@ -3183,6 +3204,7 @@
 				D7093C77219EE26400723F17 /* RestClientChannelTests.swift in Sources */,
 				D520C4E32680A1FC000012B2 /* StringifiableTests.swift in Sources */,
 				D7093C7E219EE26400723F17 /* RealtimeClientChannelsTests.swift in Sources */,
+				210F67B329E9DB62007B9345 /* TestProxyTransportFactory.swift in Sources */,
 				D7093C79219EE26400723F17 /* RestClientPresenceTests.swift in Sources */,
 				215F76012922B30F009E0E76 /* ClientInformationTests.swift in Sources */,
 				211A60D929D6D2C500D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */,
@@ -3263,6 +3285,7 @@
 				D710D53721949C54008F54AD /* ARTLocalDevice.m in Sources */,
 				D710D53621949C54008F54AD /* ARTDeviceIdentityTokenDetails.m in Sources */,
 				2124B79C29DB14C000AD8361 /* ARTLogAdapter.m in Sources */,
+				210F67A729E9D93D007B9345 /* ARTRealtimeTransportFactory.m in Sources */,
 				217FCF3B29D626C1006E5F2D /* ARTJitterCoefficientGenerator.m in Sources */,
 				D710D4C821949BAA008F54AD /* ARTRealtimeTransport.m in Sources */,
 				217D184A254222F700DFF07E /* ARTSRPinningSecurityPolicy.m in Sources */,
@@ -3387,6 +3410,7 @@
 				D710D54921949C55008F54AD /* ARTLocalDevice.m in Sources */,
 				D710D54821949C55008F54AD /* ARTDeviceIdentityTokenDetails.m in Sources */,
 				2124B79D29DB14C000AD8361 /* ARTLogAdapter.m in Sources */,
+				210F67A829E9D93D007B9345 /* ARTRealtimeTransportFactory.m in Sources */,
 				217FCF3C29D626C1006E5F2D /* ARTJitterCoefficientGenerator.m in Sources */,
 				D710D4CC21949BAB008F54AD /* ARTRealtimeTransport.m in Sources */,
 				217D1861254222FA00DFF07E /* ARTSRPinningSecurityPolicy.m in Sources */,

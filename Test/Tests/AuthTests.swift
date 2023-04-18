@@ -186,10 +186,10 @@ class AuthTests: XCTestCase {
         let options = AblyTests.clientOptions()
         options.token = getTestToken()
         options.autoConnect = false
+        options.testOptions.transportFactory = TestProxyTransportFactory()
 
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        client.internal.setTransport(TestProxyTransport.self)
         client.connect()
 
         if let transport = client.internal.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
@@ -257,6 +257,7 @@ class AuthTests: XCTestCase {
         let options = AblyTests.clientOptions()
         options.tokenDetails = getTestTokenDetails(ttl: 0.1)
         options.autoConnect = false
+        options.testOptions.transportFactory = TestProxyTransportFactory()
 
         // Token will expire, expecting 40142
         waitUntil(timeout: testTimeout) { done in
@@ -269,7 +270,6 @@ class AuthTests: XCTestCase {
         XCTAssertNil(realtime.internal.options.key)
         XCTAssertNil(realtime.internal.options.authCallback)
         XCTAssertNil(realtime.internal.options.authUrl)
-        realtime.internal.setTransport(TestProxyTransport.self)
 
         let channel = realtime.channels.get(uniqueChannelName())
 
@@ -885,10 +885,10 @@ class AuthTests: XCTestCase {
         let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
         options.clientId = expectedClientId
         options.autoConnect = false
+        options.testOptions.transportFactory = TestProxyTransportFactory()
 
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        client.internal.setTransport(TestProxyTransport.self)
         client.connect()
 
         waitUntil(timeout: testTimeout) { done in
@@ -1174,7 +1174,7 @@ class AuthTests: XCTestCase {
     func test__051__Token__clientId_and_authenticated_clients__Auth_clientId_attribute_is_null__identity_should_be_anonymous_for_all_operations() {
         let options = AblyTests.commonAppSetup()
         options.autoConnect = false
-        let realtime = AblyTests.newRealtime(options)
+        let realtime = AblyTests.newRealtime(options).client
         defer { realtime.dispose(); realtime.close() }
         XCTAssertNil(realtime.auth.clientId)
 
@@ -1268,7 +1268,7 @@ class AuthTests: XCTestCase {
         options.token = getTestToken(clientId: "john")
         XCTAssertNil(options.clientId)
         options.autoConnect = false
-        let realtime = AblyTests.newRealtime(options)
+        let realtime = AblyTests.newRealtime(options).client
         defer { realtime.dispose(); realtime.close() }
 
         waitUntil(timeout: testTimeout) { done in
@@ -3594,7 +3594,7 @@ class AuthTests: XCTestCase {
     func test__122__authorize__two_consecutive_authorizations__using_Realtime_and_connection_is_CONNECTING__should_call_each_Realtime_authorize_callback() {
         let options = AblyTests.commonAppSetup()
         options.useTokenAuth = true
-        let realtime = AblyTests.newRealtime(options)
+        let realtime = AblyTests.newRealtime(options).client
         defer { realtime.close(); realtime.dispose() }
 
         var connectedStateCount = 0
@@ -3941,7 +3941,7 @@ class AuthTests: XCTestCase {
     func skipped__test__140__JWT_and_realtime__client_initialized_with_a_JWT_token_in_ClientOptions__with_valid_credentials__pulls_stats_successfully() {
         let options = AblyTests.clientOptions()
         options.token = getJWTToken()
-        let client = AblyTests.newRealtime(options)
+        let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
@@ -3956,7 +3956,7 @@ class AuthTests: XCTestCase {
         let options = AblyTests.clientOptions()
         options.token = getJWTToken(invalid: true)
         options.autoConnect = false
-        let client = AblyTests.newRealtime(options)
+        let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in
@@ -4062,9 +4062,9 @@ class AuthTests: XCTestCase {
         options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
         options.authParams?.append(URLQueryItem(name: "expiresIn", value: String(UInt(tokenDuration))))
         options.autoConnect = false // Prevent auto connection so we can set the transport proxy
+        options.testOptions.transportFactory = TestProxyTransportFactory()
 
         let client = ARTRealtime(options: options)
-        client.internal.setTransport(TestProxyTransport.self)
         defer { client.dispose(); client.close() }
 
         waitUntil(timeout: testTimeout) { done in

@@ -207,17 +207,24 @@ class AblyTests {
         return protocolMessage
     }
 
-    class func newRealtime(_ options: ARTClientOptions) -> ARTRealtime {
-        let autoConnect = options.autoConnect
-        options.autoConnect = false
-        let realtime = ARTRealtime(options: options)
-        realtime.internal.setTransport(TestProxyTransport.self)
+    struct RealtimeTestEnvironment {
+        let client: ARTRealtime
+        let transportFactory: TestProxyTransportFactory
+    }
+
+    class func newRealtime(_ options: ARTClientOptions) -> RealtimeTestEnvironment {
+        let modifiedOptions = options.copy() as! ARTClientOptions
+
+        let autoConnect = modifiedOptions.autoConnect
+        modifiedOptions.autoConnect = false
+        let transportFactory = TestProxyTransportFactory()
+        modifiedOptions.testOptions.transportFactory = transportFactory
+        let realtime = ARTRealtime(options: modifiedOptions)
         realtime.internal.setReachabilityClass(TestReachability.self)
         if autoConnect {
-            options.autoConnect = true
             realtime.connect()
         }
-        return realtime
+        return .init(client: realtime, transportFactory: transportFactory)
     }
 
     class func newRandomString() -> String {
@@ -1078,12 +1085,19 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
 
 /// Records each message for test purpose.
 class TestProxyTransport: ARTWebSocketTransport {
+    /// The factory that created this TestProxyTransport instance.
+    private weak var _factory: TestProxyTransportFactory?
+    private var factory: TestProxyTransportFactory {
+        guard let _factory else {
+            preconditionFailure("Tried to fetch factory but it's already been deallocated")
+        }
+        return _factory
+    }
 
-    /// This will affect all WebSocketTransport instances.
-    /// Set it to nil after the test ends.
-    static var fakeNetworkResponse: FakeNetworkResponse?
-    static var networkConnectEvent: ((ARTRealtimeTransport, URL) -> Void)?
-
+    init(factory: TestProxyTransportFactory, rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, connectionSerial: NSNumber?, logger: InternalLog) {
+        self._factory = factory
+        super.init(rest: rest, options: options, resumeKey: resumeKey, connectionSerial: connectionSerial, logger: logger)
+    }
 
     fileprivate(set) var lastUrl: URL?
 
@@ -1180,7 +1194,7 @@ class TestProxyTransport: ARTWebSocketTransport {
     // MARK: ARTWebSocket
 
     override func connect(withKey key: String) {
-        if let fakeResponse = TestProxyTransport.fakeNetworkResponse {
+        if let fakeResponse = factory.fakeNetworkResponse {
             setupFakeNetworkResponse(fakeResponse)
         }
         super.connect(withKey: key)
@@ -1188,7 +1202,7 @@ class TestProxyTransport: ARTWebSocketTransport {
     }
 
     override func connect(withToken token: String) {
-        if let fakeResponse = TestProxyTransport.fakeNetworkResponse {
+        if let fakeResponse = factory.fakeNetworkResponse {
             setupFakeNetworkResponse(fakeResponse)
         }
         super.connect(withToken: token)
@@ -1198,7 +1212,7 @@ class TestProxyTransport: ARTWebSocketTransport {
     private func setupFakeNetworkResponse(_ networkResponse: FakeNetworkResponse) {
         var hook: AspectToken?
         hook = ARTSRWebSocket.testSuite_replaceClassMethod(#selector(ARTSRWebSocket.open)) {
-            if TestProxyTransport.fakeNetworkResponse == nil {
+            if self.factory.fakeNetworkResponse == nil {
                 return
             }
 
@@ -1226,7 +1240,7 @@ class TestProxyTransport: ARTWebSocketTransport {
     }
 
     private func performNetworkConnectEvent() {
-        guard let networkConnectEventHandler = TestProxyTransport.networkConnectEvent else {
+        guard let networkConnectEventHandler = factory.networkConnectEvent else {
             return
         }
         if let lastUrl = self.lastUrl {
@@ -1253,7 +1267,7 @@ class TestProxyTransport: ARTWebSocketTransport {
 
     @discardableResult
     override func send(_ data: Data, withSource decodedObject: Any?) -> Bool {
-        if let networkAnswer = TestProxyTransport.fakeNetworkResponse, let ws = self.websocket {
+        if let networkAnswer = factory.fakeNetworkResponse, let ws = self.websocket {
             // Ignore it because it should fake a failure.
             self.webSocket(ws, didFailWithError: networkAnswer.error)
             return false
@@ -1330,7 +1344,7 @@ class TestProxyTransport: ARTWebSocketTransport {
     }
 
     override func webSocket(_ webSocket: ARTWebSocket, didReceiveMessage message: Any?) {
-        if let networkAnswer = TestProxyTransport.fakeNetworkResponse, let ws = self.websocket {
+        if let networkAnswer = factory.fakeNetworkResponse, let ws = self.websocket {
             // Ignore it because it should fake a failure.
             self.webSocket(ws, didFailWithError: networkAnswer.error)
             return
@@ -1544,24 +1558,24 @@ extension ARTRealtime {
         }
     }
 
-    func simulateNoInternetConnection() {
+    func simulateNoInternetConnection(transportFactory: TestProxyTransportFactory) {
         guard let reachability = self.internal.reachability as? TestReachability else {
             fatalError("Expected test reachability")
         }
 
         AblyTests.queue.async {
-            TestProxyTransport.fakeNetworkResponse = .noInternet
+            transportFactory.fakeNetworkResponse = .noInternet
             reachability.simulate(false)
         }
     }
 
-    func simulateRestoreInternetConnection(after seconds: TimeInterval? = nil) {
+    func simulateRestoreInternetConnection(after seconds: TimeInterval? = nil, transportFactory: TestProxyTransportFactory) {
         guard let reachability = self.internal.reachability as? TestReachability else {
             fatalError("Expected test reachability")
         }
 
         AblyTests.queue.asyncAfter(deadline: .now() + (seconds ?? 0)) {
-            TestProxyTransport.fakeNetworkResponse = nil
+            transportFactory.fakeNetworkResponse = nil
             reachability.simulate(true)
         }
     }
