@@ -92,13 +92,6 @@ class AblyTests {
         checkError(errorInfo, withAlternative: "")
     }
 
-    class var jsonRestOptions: ARTClientOptions {
-        get {
-            let options = AblyTests.clientOptions()
-            return options
-        }
-    }
-
     static var testApplication: JSON?
 
     struct QueueIdentity {
@@ -166,7 +159,7 @@ class AblyTests {
     }
     
     class func commonAppSetup(_ debug: Bool = false) -> ARTClientOptions {
-        return AblyTests.setupOptions(AblyTests.jsonRestOptions, debug: debug)
+        return AblyTests.setupOptions(AblyTests.clientOptions(), debug: debug)
     }
 
     class func clientOptions(_ debug: Bool = false, key: String? = nil, requestToken: Bool = false) -> ARTClientOptions {
