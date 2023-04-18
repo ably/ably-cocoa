@@ -47,7 +47,6 @@ private func testUsesAlternativeHostOnResponse(_ caseTest: FakeNetworkResponse, 
             transportFactory.fakeNetworkResponse = nil
         }
     }
-    defer { transportFactory.networkConnectEvent = nil }
 
     waitUntil(timeout: testTimeout) { done in
         // wss://[a-e].ably-realtime.com: when a timeout occurs
@@ -3291,7 +3290,6 @@ class RealtimeClientConnectionTests: XCTestCase {
                 testEnvironment.transportFactory.networkConnectEvent = nil
             }
         }
-        defer { testEnvironment.transportFactory.networkConnectEvent = nil }
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { stateChange in
@@ -3344,7 +3342,6 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
             urlConnections.append(url)
         }
-        defer { testEnvironment.transportFactory.networkConnectEvent = nil }
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.disconnected) { stateChange in
@@ -3395,7 +3392,6 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
             urlConnections.append(url)
         }
-        defer { testEnvironment.transportFactory.networkConnectEvent = nil }
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.on(.disconnected) { stateChange in
@@ -3436,7 +3432,6 @@ class RealtimeClientConnectionTests: XCTestCase {
                 transportFactory.fakeNetworkResponse = nil
             }
         }
-        defer { transportFactory.networkConnectEvent = nil }
 
         waitUntil(timeout: testTimeout) { done in
             // wss://[a-e].ably-realtime.com: when a timeout occurs
@@ -3481,7 +3476,6 @@ class RealtimeClientConnectionTests: XCTestCase {
                 transportFactory.fakeNetworkResponse = nil
             }
         }
-        defer { transportFactory.networkConnectEvent = nil }
 
         waitUntil(timeout: testTimeout) { done in
             // wss://[a-e].ably-realtime.com: when a timeout occurs
@@ -3546,7 +3540,6 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
             urlConnections.append(url)
         }
-        defer { transportFactory.networkConnectEvent = nil }
 
         client.connect()
         defer { client.dispose(); client.close() }
@@ -3582,7 +3575,6 @@ class RealtimeClientConnectionTests: XCTestCase {
             urlConnections.append(url)
             transportFactory.fakeNetworkResponse = nil
         }
-        defer { transportFactory.networkConnectEvent = nil }
 
         waitUntil(timeout: testTimeout) { done in
             // Unreachable and try a fallback
@@ -3650,8 +3642,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 urls.append(url)
             }
         }
-        defer { transportFactory.networkConnectEvent = nil }
-        
+
         testHttpExecutor.setListenerAfterRequest { request in
             urls.append(request.url!)
         }
@@ -3721,7 +3712,6 @@ class RealtimeClientConnectionTests: XCTestCase {
                 fail("shouldn't try fallback host after failed connectivity check")
             }
         }
-        defer { transportFactory.networkConnectEvent = nil }
 
         mockHTTP.setNetworkState(network: .hostInternalError(code: 500), forHost: "internet-up.ably-realtime.com")
 
@@ -3773,8 +3763,6 @@ class RealtimeClientConnectionTests: XCTestCase {
                 urls.append(url)
             }
         }
-        
-        defer { transportFactory.networkConnectEvent = nil }
 
         testHttpExecutor.setListenerAfterRequest { request in
             urls.append(request.url!)
@@ -3836,7 +3824,6 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
             urlConnections.append(url)
         }
-        defer { transportFactory.networkConnectEvent = nil }
 
         client.connect()
         defer { client.dispose(); client.close() }
@@ -3874,7 +3861,6 @@ class RealtimeClientConnectionTests: XCTestCase {
                 (client.internal.transport as! TestProxyTransport).simulateTransportSuccess()
             }
         }
-        defer { transportFactory.networkConnectEvent = nil }
 
         client.connect()
         // Because we're faking the CONNECTED state, we can't client.close() or it
