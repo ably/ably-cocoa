@@ -111,10 +111,12 @@ class PushAdminTests: XCTestCase {
         let group = DispatchGroup()
 
         group.enter()
+        var numberOfRemainingDevicesToRegister = allDeviceDetails.count
         for device in allDeviceDetails {
             rest.push.admin.deviceRegistrations.save(device) { error in
                 assert(error == nil, error?.message ?? "no message")
-                if allDeviceDetails.last == device {
+                numberOfRemainingDevicesToRegister -= 1
+                if numberOfRemainingDevicesToRegister == 0 {
                     group.leave()
                 }
             }
@@ -122,10 +124,12 @@ class PushAdminTests: XCTestCase {
         group.wait()
 
         group.enter()
+        var numberOfRemainingSubscriptionsToSave = allSubscriptions.count
         for subscription in allSubscriptions {
             rest.push.admin.channelSubscriptions.save(subscription) { error in
                 assert(error == nil, error?.message ?? "no message")
-                if allSubscriptions.last == subscription {
+                numberOfRemainingSubscriptionsToSave -= 1
+                if numberOfRemainingSubscriptionsToSave == 0 {
                     group.leave()
                 }
             }
