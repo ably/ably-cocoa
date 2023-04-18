@@ -29,13 +29,14 @@ private func testUsesAlternativeHostOnResponse(_ caseTest: FakeNetworkResponse, 
     let options = ARTClientOptions(key: "xxxx:xxxx")
     options.autoConnect = false
     options.testOptions.realtimeRequestTimeout = 1.0
-    options.testOptions.transportFactory = TestProxyTransportFactory()
+    let transportFactory = TestProxyTransportFactory()
+    options.testOptions.transportFactory = transportFactory
     let client = ARTRealtime(options: options)
     defer { client.dispose(); client.close() }
     client.channels.get(channelName)
 
-    TestProxyTransport.fakeNetworkResponse = caseTest
-    defer { TestProxyTransport.fakeNetworkResponse = nil }
+    transportFactory.fakeNetworkResponse = caseTest
+    defer { transportFactory.fakeNetworkResponse = nil }
 
     var urlConnections = [URL]()
     TestProxyTransport.networkConnectEvent = { transport, url in
@@ -44,7 +45,7 @@ private func testUsesAlternativeHostOnResponse(_ caseTest: FakeNetworkResponse, 
         }
         urlConnections.append(url)
         if urlConnections.count == 1 {
-            TestProxyTransport.fakeNetworkResponse = nil
+            transportFactory.fakeNetworkResponse = nil
         }
     }
     defer { TestProxyTransport.networkConnectEvent = nil }
@@ -2300,12 +2301,13 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.disconnectedRetryTimeout = 0.5
         options.suspendedRetryTimeout = 2.0
         options.autoConnect = false
-        options.testOptions.transportFactory = TestProxyTransportFactory()
+        let transportFactory = TestProxyTransportFactory()
+        options.testOptions.transportFactory = transportFactory
 
         let client = ARTRealtime(options: options)
         client.internal.setReachabilityClass(TestReachability.self)
         defer {
-            client.simulateRestoreInternetConnection()
+            client.simulateRestoreInternetConnection(transportFactory: transportFactory)
             client.dispose()
             client.close()
         }
@@ -2325,7 +2327,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         client.connection.on { stateChange in
             events.append(stateChange.current)
         }
-        client.simulateNoInternetConnection()
+        client.simulateNoInternetConnection(transportFactory: transportFactory)
 
         expect(events).toEventually(equal([
             .disconnected,
@@ -2346,7 +2348,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         ]), timeout: testTimeout)
 
         events.removeAll()
-        client.simulateRestoreInternetConnection(after: 7.0)
+        client.simulateRestoreInternetConnection(after: 7.0, transportFactory: transportFactory)
 
         expect(events).toEventually(equal([
             .connecting, // 2.0 - 1
@@ -3328,12 +3330,13 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.autoConnect = false
         options.queueMessages = false
 
-        let client = AblyTests.newRealtime(options).client
+        let testEnvironment = AblyTests.newRealtime(options)
+        let client = testEnvironment.client
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(uniqueChannelName())
 
-        TestProxyTransport.fakeNetworkResponse = .hostUnreachable
-        defer { TestProxyTransport.fakeNetworkResponse = nil }
+        testEnvironment.transportFactory.fakeNetworkResponse = .hostUnreachable
+        defer { testEnvironment.transportFactory.fakeNetworkResponse = nil }
 
         var urlConnections = [URL]()
         TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3379,12 +3382,13 @@ class RealtimeClientConnectionTests: XCTestCase {
         XCTAssertNil(options.fallbackHosts)
         options.autoConnect = false
 
-        let client = AblyTests.newRealtime(options).client
+        let testEnvironment = AblyTests.newRealtime(options)
+        let client = testEnvironment.client
         defer { client.dispose(); client.close() }
         client.channels.get(uniqueChannelName())
 
-        TestProxyTransport.fakeNetworkResponse = .hostUnreachable
-        defer { TestProxyTransport.fakeNetworkResponse = nil }
+        testEnvironment.transportFactory.fakeNetworkResponse = .hostUnreachable
+        defer { testEnvironment.transportFactory.fakeNetworkResponse = nil }
 
         var urlConnections = [URL]()
         TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3416,13 +3420,14 @@ class RealtimeClientConnectionTests: XCTestCase {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.autoConnect = false
         options.testOptions.realtimeRequestTimeout = 1.0
-        options.testOptions.transportFactory = TestProxyTransportFactory()
+        let transportFactory = TestProxyTransportFactory()
+        options.testOptions.transportFactory = transportFactory
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
         client.channels.get(uniqueChannelName())
 
-        TestProxyTransport.fakeNetworkResponse = .hostUnreachable
-        defer { TestProxyTransport.fakeNetworkResponse = nil }
+        transportFactory.fakeNetworkResponse = .hostUnreachable
+        defer { transportFactory.fakeNetworkResponse = nil }
 
         var urlConnections = [URL]()
         TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3431,7 +3436,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
             urlConnections.append(url)
             if urlConnections.count == 1 {
-                TestProxyTransport.fakeNetworkResponse = nil
+                transportFactory.fakeNetworkResponse = nil
             }
         }
         defer { TestProxyTransport.networkConnectEvent = nil }
@@ -3461,13 +3466,14 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.autoConnect = false
         options.fallbackHosts = ["f.ably-realtime.com", "g.ably-realtime.com", "h.ably-realtime.com", "i.ably-realtime.com", "j.ably-realtime.com"]
         options.testOptions.realtimeRequestTimeout = 1.0
-        options.testOptions.transportFactory = TestProxyTransportFactory()
+        let transportFactory = TestProxyTransportFactory()
+        options.testOptions.transportFactory = transportFactory
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
         client.channels.get(uniqueChannelName())
 
-        TestProxyTransport.fakeNetworkResponse = .hostUnreachable
-        defer { TestProxyTransport.fakeNetworkResponse = nil }
+        transportFactory.fakeNetworkResponse = .hostUnreachable
+        defer { transportFactory.fakeNetworkResponse = nil }
 
         var urlConnections = [URL]()
         TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3476,7 +3482,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
             urlConnections.append(url)
             if urlConnections.count == 1 {
-                TestProxyTransport.fakeNetworkResponse = nil
+                transportFactory.fakeNetworkResponse = nil
             }
         }
         defer { TestProxyTransport.networkConnectEvent = nil }
@@ -3530,12 +3536,13 @@ class RealtimeClientConnectionTests: XCTestCase {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.autoConnect = false
         options.testOptions.realtimeRequestTimeout = 1.0
-        options.testOptions.transportFactory = TestProxyTransportFactory()
+        let transportFactory = TestProxyTransportFactory()
+        options.testOptions.transportFactory = transportFactory
         let client = ARTRealtime(options: options)
         let channel = client.channels.get(uniqueChannelName())
 
-        TestProxyTransport.fakeNetworkResponse = .host400BadRequest
-        defer { TestProxyTransport.fakeNetworkResponse = nil }
+        transportFactory.fakeNetworkResponse = .host400BadRequest
+        defer { transportFactory.fakeNetworkResponse = nil }
 
         var urlConnections = [URL]()
         TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3564,13 +3571,14 @@ class RealtimeClientConnectionTests: XCTestCase {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.autoConnect = false
         options.testOptions.realtimeRequestTimeout = 1.0
-        options.testOptions.transportFactory = TestProxyTransportFactory()
+        let transportFactory = TestProxyTransportFactory()
+        options.testOptions.transportFactory = transportFactory
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
         client.channels.get(uniqueChannelName())
 
-        TestProxyTransport.fakeNetworkResponse = .hostUnreachable
-        defer { TestProxyTransport.fakeNetworkResponse = nil }
+        transportFactory.fakeNetworkResponse = .hostUnreachable
+        defer { transportFactory.fakeNetworkResponse = nil }
 
         var urlConnections = [URL]()
         TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3578,7 +3586,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 return
             }
             urlConnections.append(url)
-            TestProxyTransport.fakeNetworkResponse = nil
+            transportFactory.fakeNetworkResponse = nil
         }
         defer { TestProxyTransport.networkConnectEvent = nil }
 
@@ -3619,7 +3627,8 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.autoConnect = false
         options.testOptions.realtimeRequestTimeout = 5.0
         options.testOptions.shuffleArray = shuffleArrayInExpectedHostOrder
-        options.testOptions.transportFactory = TestProxyTransportFactory()
+        let transportFactory = TestProxyTransportFactory()
+        options.testOptions.transportFactory = transportFactory
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
         client.channels.get(uniqueChannelName())
@@ -3627,8 +3636,8 @@ class RealtimeClientConnectionTests: XCTestCase {
         let testHttpExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.rest.httpExecutor = testHttpExecutor
 
-        TestProxyTransport.fakeNetworkResponse = .hostUnreachable
-        defer { TestProxyTransport.fakeNetworkResponse = nil }
+        transportFactory.fakeNetworkResponse = .hostUnreachable
+        defer { transportFactory.fakeNetworkResponse = nil }
         
         let hostPrefixes = Array("abcde")
         
@@ -3694,7 +3703,8 @@ class RealtimeClientConnectionTests: XCTestCase {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.autoConnect = false
         options.testOptions.realtimeRequestTimeout = 1.0
-        options.testOptions.transportFactory = TestProxyTransportFactory()
+        let transportFactory = TestProxyTransportFactory()
+        options.testOptions.transportFactory = transportFactory
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
         client.channels.get(uniqueChannelName())
@@ -3704,8 +3714,8 @@ class RealtimeClientConnectionTests: XCTestCase {
         let testHttpExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.rest.httpExecutor = testHttpExecutor
 
-        TestProxyTransport.fakeNetworkResponse = .hostUnreachable
-        defer { TestProxyTransport.fakeNetworkResponse = nil }
+        transportFactory.fakeNetworkResponse = .hostUnreachable
+        defer { transportFactory.fakeNetworkResponse = nil }
 
         let extractHostname = { (url: URL) in
             NSRegularExpression.extract(url.absoluteString, pattern: "[a-e].ably-realtime.com")
@@ -3745,7 +3755,8 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.fallbackHosts = expectedFallbackHosts.sorted() // will be picked "randomly" as of expectedHostOrder
         options.testOptions.realtimeRequestTimeout = 5.0
         options.testOptions.shuffleArray = shuffleArrayInExpectedHostOrder
-        options.testOptions.transportFactory = TestProxyTransportFactory()
+        let transportFactory = TestProxyTransportFactory()
+        options.testOptions.transportFactory = transportFactory
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
         client.channels.get(uniqueChannelName())
@@ -3753,8 +3764,8 @@ class RealtimeClientConnectionTests: XCTestCase {
         let testHttpExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.rest.httpExecutor = testHttpExecutor
 
-        TestProxyTransport.fakeNetworkResponse = .hostUnreachable
-        defer { TestProxyTransport.fakeNetworkResponse = nil }
+        transportFactory.fakeNetworkResponse = .hostUnreachable
+        defer { transportFactory.fakeNetworkResponse = nil }
 
         let extractHostname = { (url: URL) in
             NSRegularExpression.extract(url.absoluteString, pattern: "[\(hostPrefixes.first!)-\(hostPrefixes.last!)].ably-realtime.com")
@@ -3817,15 +3828,16 @@ class RealtimeClientConnectionTests: XCTestCase {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.autoConnect = false
         options.fallbackHosts = []
-        options.testOptions.transportFactory = TestProxyTransportFactory()
+        let transportFactory = TestProxyTransportFactory()
+        options.testOptions.transportFactory = transportFactory
         let client = ARTRealtime(options: options)
         let channel = client.channels.get(uniqueChannelName())
 
         let testHttpExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.rest.httpExecutor = testHttpExecutor
 
-        TestProxyTransport.fakeNetworkResponse = .hostUnreachable
-        defer { TestProxyTransport.fakeNetworkResponse = nil }
+        transportFactory.fakeNetworkResponse = .hostUnreachable
+        defer { transportFactory.fakeNetworkResponse = nil }
 
         var urlConnections = [URL]()
         TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3852,14 +3864,15 @@ class RealtimeClientConnectionTests: XCTestCase {
     func test__096__Connection__Host_Fallback__client_is_connected_to_a_fallback_host_endpoint_should_do_HTTP_requests_to_the_same_data_centre() {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.autoConnect = false
-        options.testOptions.transportFactory = TestProxyTransportFactory()
+        let transportFactory = TestProxyTransportFactory()
+        options.testOptions.transportFactory = transportFactory
         let client = ARTRealtime(options: options)
 
         let testHttpExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.rest.httpExecutor = testHttpExecutor
 
-        TestProxyTransport.fakeNetworkResponse = .hostUnreachable
-        defer { TestProxyTransport.fakeNetworkResponse = nil }
+        transportFactory.fakeNetworkResponse = .hostUnreachable
+        defer { transportFactory.fakeNetworkResponse = nil }
 
         var urlConnections = [URL]()
         TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3868,7 +3881,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
             urlConnections.append(url)
             if urlConnections.count == 2 {
-                TestProxyTransport.fakeNetworkResponse = nil
+                transportFactory.fakeNetworkResponse = nil
                 (client.internal.transport as! TestProxyTransport).simulateTransportSuccess()
             }
         }

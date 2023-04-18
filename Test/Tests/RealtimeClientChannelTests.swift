@@ -690,7 +690,8 @@ class RealtimeClientChannelTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         options.queueMessages = false
         options.autoConnect = false
-        options.testOptions.transportFactory = TestProxyTransportFactory()
+        let transportFactory = TestProxyTransportFactory()
+        options.testOptions.transportFactory = transportFactory
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
         client.internal.setReachabilityClass(TestReachability.self)
@@ -722,7 +723,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 expect(stateChange.reason?.message).to(satisfyAnyOf(contain("unreachable host"), contain("network is down")))
                 done()
             }
-            client.simulateNoInternetConnection()
+            client.simulateNoInternetConnection(transportFactory: transportFactory)
         }
 
         waitUntil(timeout: testTimeout) { done in
@@ -730,7 +731,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 XCTAssertEqual(stateChange.previous, .connecting)
                 done()
             }
-            client.simulateRestoreInternetConnection()
+            client.simulateRestoreInternetConnection(transportFactory: transportFactory)
         }
 
         channel.off()
@@ -901,12 +902,13 @@ class RealtimeClientChannelTests: XCTestCase {
         options.suspendedRetryTimeout = 3.0
         options.channelRetryTimeout = 0.5
         options.autoConnect = false
-        options.testOptions.transportFactory = TestProxyTransportFactory()
+        let transportFactory = TestProxyTransportFactory()
+        options.testOptions.transportFactory = transportFactory
 
         let client = ARTRealtime(options: options)
         client.internal.setReachabilityClass(TestReachability.self)
         defer {
-            client.simulateRestoreInternetConnection()
+            client.simulateRestoreInternetConnection(transportFactory: transportFactory)
             client.dispose()
             client.close()
         }
@@ -932,7 +934,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 expect(error.message).to(satisfyAnyOf(contain("network is down"), contain("unreachable host")))
                 done()
             }
-            client.simulateNoInternetConnection()
+            client.simulateNoInternetConnection(transportFactory: transportFactory)
         }
 
         AblyTests.queue.async {
@@ -945,7 +947,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 XCTAssertEqual(stateChange.reason?.code, ARTErrorCode.unableToRecoverConnectionExpired.intValue) // didn't resumed
                 done()
             }
-            client.simulateRestoreInternetConnection(after: 1.0)
+            client.simulateRestoreInternetConnection(after: 1.0, transportFactory: transportFactory)
         }
 
         waitUntil(timeout: testTimeout) { done in
