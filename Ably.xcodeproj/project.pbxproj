@@ -169,6 +169,9 @@
 		214D3F3229EECE6A0080D080 /* ARTLocalDeviceFetcher+Testing.h in Headers */ = {isa = PBXBuildFile; fileRef = 214D3F3029EECE6A0080D080 /* ARTLocalDeviceFetcher+Testing.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		214D3F3329EECE6A0080D080 /* ARTLocalDeviceFetcher+Testing.h in Headers */ = {isa = PBXBuildFile; fileRef = 214D3F3029EECE6A0080D080 /* ARTLocalDeviceFetcher+Testing.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		214D3F3529EED43C0080D080 /* DefaultLocalDeviceFetcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 214D3F3429EED43C0080D080 /* DefaultLocalDeviceFetcherTests.swift */; };
+		214D3F3929EEDA420080D080 /* MockLocalDeviceFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 214D3F3829EEDA420080D080 /* MockLocalDeviceFetcher.swift */; };
+		214D3F3A29EEDA420080D080 /* MockLocalDeviceFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 214D3F3829EEDA420080D080 /* MockLocalDeviceFetcher.swift */; };
+		214D3F3B29EEDA420080D080 /* MockLocalDeviceFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 214D3F3829EEDA420080D080 /* MockLocalDeviceFetcher.swift */; };
 		215F75F82922B1DB009E0E76 /* ARTClientInformation.h in Headers */ = {isa = PBXBuildFile; fileRef = 215F75F62922B1DB009E0E76 /* ARTClientInformation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		215F75F92922B1DB009E0E76 /* ARTClientInformation.h in Headers */ = {isa = PBXBuildFile; fileRef = 215F75F62922B1DB009E0E76 /* ARTClientInformation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		215F75FA2922B1DB009E0E76 /* ARTClientInformation.h in Headers */ = {isa = PBXBuildFile; fileRef = 215F75F62922B1DB009E0E76 /* ARTClientInformation.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1165,6 +1168,7 @@
 		2147F03429E5872C0071CB94 /* MockInternalLogCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockInternalLogCore.swift; sourceTree = "<group>"; };
 		214D3F3029EECE6A0080D080 /* ARTLocalDeviceFetcher+Testing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTLocalDeviceFetcher+Testing.h"; path = "PrivateHeaders/Ably/ARTLocalDeviceFetcher+Testing.h"; sourceTree = "<group>"; };
 		214D3F3429EED43C0080D080 /* DefaultLocalDeviceFetcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultLocalDeviceFetcherTests.swift; sourceTree = "<group>"; };
+		214D3F3829EEDA420080D080 /* MockLocalDeviceFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockLocalDeviceFetcher.swift; sourceTree = "<group>"; };
 		215F75F62922B1DB009E0E76 /* ARTClientInformation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTClientInformation.h; path = include/Ably/ARTClientInformation.h; sourceTree = "<group>"; };
 		215F75F72922B1DB009E0E76 /* ARTClientInformation.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTClientInformation.m; sourceTree = "<group>"; };
 		215F75FE2922B30F009E0E76 /* ClientInformationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientInformationTests.swift; sourceTree = "<group>"; };
@@ -1736,6 +1740,7 @@
 				2124B78629DB127900AD8361 /* MockVersion2Log.swift */,
 				2147F03429E5872C0071CB94 /* MockInternalLogCore.swift */,
 				210F67B029E9DB62007B9345 /* TestProxyTransportFactory.swift */,
+				214D3F3829EEDA420080D080 /* MockLocalDeviceFetcher.swift */,
 			);
 			path = "Test Utilities";
 			sourceTree = "<group>";
@@ -2985,6 +2990,7 @@
 				EB1B53F922F85CE4006A59AC /* ObjectLifetimesTests.swift in Sources */,
 				210F67B129E9DB62007B9345 /* TestProxyTransportFactory.swift in Sources */,
 				D7DF73851EA600240013CD36 /* PushActivationStateMachineTests.swift in Sources */,
+				214D3F3929EEDA420080D080 /* MockLocalDeviceFetcher.swift in Sources */,
 				211A60D729D6D2C300D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */,
 				217FCF3229D62460006E5F2D /* RetrySequenceTests.swift in Sources */,
 				D7FC1ECB209CEA2E001E4153 /* PushTests.swift in Sources */,
@@ -3192,6 +3198,7 @@
 				217FCF3329D62460006E5F2D /* RetrySequenceTests.swift in Sources */,
 				2147F03629E5872C0071CB94 /* MockInternalLogCore.swift in Sources */,
 				21113B6429DDF7ED00652C86 /* ARTInternalLogTests.m in Sources */,
+				214D3F3A29EEDA420080D080 /* MockLocalDeviceFetcher.swift in Sources */,
 				D7093C2A219E466E00723F17 /* UtilitiesTests.swift in Sources */,
 				D798554923EB96C000946BE2 /* DeltaCodecTests.swift in Sources */,
 				2124B78829DB127900AD8361 /* MockVersion2Log.swift in Sources */,
@@ -3243,6 +3250,7 @@
 				217FCF3429D62460006E5F2D /* RetrySequenceTests.swift in Sources */,
 				2147F03729E5872C0071CB94 /* MockInternalLogCore.swift in Sources */,
 				21113B6529DDF7EF00652C86 /* ARTInternalLogTests.m in Sources */,
+				214D3F3B29EEDA420080D080 /* MockLocalDeviceFetcher.swift in Sources */,
 				D7093C7C219EE26400723F17 /* RealtimeClientConnectionTests.swift in Sources */,
 				D798554A23EB96C000946BE2 /* DeltaCodecTests.swift in Sources */,
 				2124B78929DB127900AD8361 /* MockVersion2Log.swift in Sources */,
