@@ -38,6 +38,7 @@
 }
 
 - (ARTLocalDevice *)fetchLocalDeviceWithClientID:(NSString *)clientID storage:(id<ARTDeviceStorage>)storage logger:(ARTInternalLog *)logger {
+    NSLog(@"fetchLocalDeviceWithClientID on default called");
     dispatch_semaphore_wait(self.semaphore, DISPATCH_TIME_FOREVER);
     if (!self.device) {
         self.device = [ARTLocalDevice load:clientID storage:storage logger:logger];
