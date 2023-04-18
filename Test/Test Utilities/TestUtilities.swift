@@ -208,13 +208,14 @@ class AblyTests {
     }
 
     class func newRealtime(_ options: ARTClientOptions) -> ARTRealtime {
-        let autoConnect = options.autoConnect
-        options.autoConnect = false
-        let realtime = ARTRealtime(options: options)
+        let modifiedOptions = options.copy() as! ARTClientOptions
+
+        let autoConnect = modifiedOptions.autoConnect
+        modifiedOptions.autoConnect = false
+        let realtime = ARTRealtime(options: modifiedOptions)
         realtime.internal.setTransport(TestProxyTransport.self)
         realtime.internal.setReachabilityClass(TestReachability.self)
         if autoConnect {
-            options.autoConnect = true
             realtime.connect()
         }
         return realtime
