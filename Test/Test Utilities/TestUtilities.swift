@@ -1085,6 +1085,19 @@ class TestProxyTransport: ARTWebSocketTransport {
     static var fakeNetworkResponse: FakeNetworkResponse?
     static var networkConnectEvent: ((ARTRealtimeTransport, URL) -> Void)?
 
+    /// The factory that created this TestProxyTransport instance.
+    private weak var _factory: TestProxyTransportFactory?
+    private var factory: TestProxyTransportFactory {
+        guard let _factory else {
+            preconditionFailure("Tried to fetch factory but it's already been deallocated")
+        }
+        return _factory
+    }
+
+    init(factory: TestProxyTransportFactory, rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, connectionSerial: NSNumber?, logger: InternalLog) {
+        self._factory = factory
+        super.init(rest: rest, options: options, resumeKey: resumeKey, connectionSerial: connectionSerial, logger: logger)
+    }
 
     fileprivate(set) var lastUrl: URL?
 
