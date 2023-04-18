@@ -28,6 +28,7 @@ class PushChannelTests: XCTestCase {
         rest = ARTRest(options: options)
         rest.internal.options.clientId = "tester"
         rest.internal.httpExecutor = mockHttpExecutor
+        rest.internal.storage = MockDeviceStorage()
     }
 
     // RSH7
