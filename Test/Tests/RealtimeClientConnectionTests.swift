@@ -36,7 +36,6 @@ private func testUsesAlternativeHostOnResponse(_ caseTest: FakeNetworkResponse, 
     client.channels.get(channelName)
 
     transportFactory.fakeNetworkResponse = caseTest
-    defer { transportFactory.fakeNetworkResponse = nil }
 
     var urlConnections = [URL]()
     TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3336,7 +3335,6 @@ class RealtimeClientConnectionTests: XCTestCase {
         let channel = client.channels.get(uniqueChannelName())
 
         testEnvironment.transportFactory.fakeNetworkResponse = .hostUnreachable
-        defer { testEnvironment.transportFactory.fakeNetworkResponse = nil }
 
         var urlConnections = [URL]()
         TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3388,7 +3386,6 @@ class RealtimeClientConnectionTests: XCTestCase {
         client.channels.get(uniqueChannelName())
 
         testEnvironment.transportFactory.fakeNetworkResponse = .hostUnreachable
-        defer { testEnvironment.transportFactory.fakeNetworkResponse = nil }
 
         var urlConnections = [URL]()
         TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3427,7 +3424,6 @@ class RealtimeClientConnectionTests: XCTestCase {
         client.channels.get(uniqueChannelName())
 
         transportFactory.fakeNetworkResponse = .hostUnreachable
-        defer { transportFactory.fakeNetworkResponse = nil }
 
         var urlConnections = [URL]()
         TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3473,7 +3469,6 @@ class RealtimeClientConnectionTests: XCTestCase {
         client.channels.get(uniqueChannelName())
 
         transportFactory.fakeNetworkResponse = .hostUnreachable
-        defer { transportFactory.fakeNetworkResponse = nil }
 
         var urlConnections = [URL]()
         TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3542,7 +3537,6 @@ class RealtimeClientConnectionTests: XCTestCase {
         let channel = client.channels.get(uniqueChannelName())
 
         transportFactory.fakeNetworkResponse = .host400BadRequest
-        defer { transportFactory.fakeNetworkResponse = nil }
 
         var urlConnections = [URL]()
         TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3578,7 +3572,6 @@ class RealtimeClientConnectionTests: XCTestCase {
         client.channels.get(uniqueChannelName())
 
         transportFactory.fakeNetworkResponse = .hostUnreachable
-        defer { transportFactory.fakeNetworkResponse = nil }
 
         var urlConnections = [URL]()
         TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3637,8 +3630,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         client.internal.rest.httpExecutor = testHttpExecutor
 
         transportFactory.fakeNetworkResponse = .hostUnreachable
-        defer { transportFactory.fakeNetworkResponse = nil }
-        
+
         let hostPrefixes = Array("abcde")
         
         let extractHostname = { (url: URL) in
@@ -3715,7 +3707,6 @@ class RealtimeClientConnectionTests: XCTestCase {
         client.internal.rest.httpExecutor = testHttpExecutor
 
         transportFactory.fakeNetworkResponse = .hostUnreachable
-        defer { transportFactory.fakeNetworkResponse = nil }
 
         let extractHostname = { (url: URL) in
             NSRegularExpression.extract(url.absoluteString, pattern: "[a-e].ably-realtime.com")
@@ -3765,7 +3756,6 @@ class RealtimeClientConnectionTests: XCTestCase {
         client.internal.rest.httpExecutor = testHttpExecutor
 
         transportFactory.fakeNetworkResponse = .hostUnreachable
-        defer { transportFactory.fakeNetworkResponse = nil }
 
         let extractHostname = { (url: URL) in
             NSRegularExpression.extract(url.absoluteString, pattern: "[\(hostPrefixes.first!)-\(hostPrefixes.last!)].ably-realtime.com")
@@ -3837,7 +3827,6 @@ class RealtimeClientConnectionTests: XCTestCase {
         client.internal.rest.httpExecutor = testHttpExecutor
 
         transportFactory.fakeNetworkResponse = .hostUnreachable
-        defer { transportFactory.fakeNetworkResponse = nil }
 
         var urlConnections = [URL]()
         TestProxyTransport.networkConnectEvent = { transport, url in
@@ -3872,7 +3861,6 @@ class RealtimeClientConnectionTests: XCTestCase {
         client.internal.rest.httpExecutor = testHttpExecutor
 
         transportFactory.fakeNetworkResponse = .hostUnreachable
-        defer { transportFactory.fakeNetworkResponse = nil }
 
         var urlConnections = [URL]()
         TestProxyTransport.networkConnectEvent = { transport, url in
