@@ -117,7 +117,7 @@ class AblyTests {
     }
 
     class func commonAppSetup(debug: Bool = false, forceNewApp: Bool = false) -> ARTClientOptions {
-        let options = AblyTests.clientOptions()
+        let options = AblyTests.clientOptions(debug: debug)
         options.testOptions.channelNamePrefix = "test-\(UUID().uuidString)"
 
         if forceNewApp {
@@ -153,9 +153,7 @@ class AblyTests {
         
         let key = app["keys"][0]
         options.key = key["keyStr"].stringValue
-        if debug {
-            options.logLevel = .verbose
-        }
+
         return options
     }
 
@@ -164,7 +162,7 @@ class AblyTests {
         options.environment = getEnvironment()
         options.logExceptionReportingUrl = nil
         if debug {
-            options.logLevel = .debug
+            options.logLevel = .verbose
         }
         if let key = key {
             options.key = key
