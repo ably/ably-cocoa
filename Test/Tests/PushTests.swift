@@ -27,8 +27,10 @@ class PushTests: XCTestCase {
     override func setUp() {
         super.setUp()
 
-        rest = ARTRest(key: "xxxx:xxxx")
-        rest.internal.resetDeviceSingleton()
+        let options = ARTClientOptions(key: "xxxx:xxxx")
+        options.testOptions.localDeviceFetcher = MockLocalDeviceFetcher()
+
+        rest = ARTRest(options: options)
         mockHttpExecutor = MockHTTPExecutor()
         rest.internal.httpExecutor = mockHttpExecutor
         storage = MockDeviceStorage()
@@ -126,8 +128,6 @@ class PushTests: XCTestCase {
         let storage = MockDeviceStorage()
         rest.internal.storage = storage
 
-        rest.internal.resetDeviceSingleton()
-
         var stateMachine: ARTPushActivationStateMachine!
         waitUntil(timeout: testTimeout) { done in
             rest.push.internal.getActivationMachine { machine in
@@ -203,8 +203,11 @@ class PushTests: XCTestCase {
 
     // RSH8
     func test__008__LocalDevice__has_a_device_method_that_returns_a_LocalDevice() {
-        let _: ARTLocalDevice = ARTRest(key: "fake:key").device
-        let _: ARTLocalDevice = ARTRealtime(key: "fake:key").device
+        let options = ARTClientOptions(key: "fake:key")
+        options.testOptions.localDeviceFetcher = MockLocalDeviceFetcher()
+
+        let _: ARTLocalDevice = ARTRest(options: options).device
+        let _: ARTLocalDevice = ARTRealtime(options: options).device
     }
 
     // RSH8a
@@ -218,7 +221,10 @@ class PushTests: XCTestCase {
             clientId: ""
         )
 
-        let rest = ARTRest(key: "fake:key")
+        let options = ARTClientOptions(key: "fake:key")
+        options.testOptions.localDeviceFetcher = MockLocalDeviceFetcher()
+
+        let rest = ARTRest(options: options)
         rest.internal.storage = storage
         storage.simulateOnNextRead(string: testToken, for: ARTAPNSDeviceTokenKey)
         storage.simulateOnNextRead(data: testIdentity.archive(withLogger: nil), for: ARTDeviceIdentityTokenKey)
@@ -239,6 +245,7 @@ class PushTests: XCTestCase {
                 callback(ARTTokenDetails(token: "fake:token", expires: nil, issued: nil, capability: nil, clientId: "testClient"), nil)
             }
         }
+        options.testOptions.localDeviceFetcher = MockLocalDeviceFetcher()
 
         let realtime = ARTRealtime(options: options)
         XCTAssertNil(realtime.device.clientId)
@@ -258,6 +265,7 @@ class PushTests: XCTestCase {
         let options = ARTClientOptions(key: "fake:key")
         options.autoConnect = false
         options.testOptions.transportFactory = TestProxyTransportFactory()
+        options.testOptions.localDeviceFetcher = MockLocalDeviceFetcher()
 
         let realtime = ARTRealtime(options: options)
         XCTAssertNil(realtime.device.clientId)
@@ -295,6 +303,7 @@ class PushTests: XCTestCase {
                 callback(ARTTokenDetails(token: "fake:token", expires: nil, issued: nil, capability: nil, clientId: expectedClient), nil)
             }
         }
+        options.testOptions.localDeviceFetcher = MockLocalDeviceFetcher()
 
         let realtime = ARTRealtime(options: options)
         let mockHttpExecutor = MockHTTPExecutor()

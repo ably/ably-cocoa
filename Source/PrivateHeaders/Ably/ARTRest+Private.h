@@ -74,11 +74,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (nullable NSObject<ARTCancellable> *)internetIsUp:(void (^)(BOOL isUp))cb;
 
-#if TARGET_OS_IOS
-// This is only intended to be called from test code.
-- (void)resetDeviceSingleton;
-#endif
-
 @end
 
 @interface ARTRest ()

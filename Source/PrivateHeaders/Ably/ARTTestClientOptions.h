@@ -1,6 +1,7 @@
 @import Foundation;
 
 @protocol ARTRealtimeTransportFactory;
+@protocol ARTLocalDeviceFetcher;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -30,6 +31,11 @@ NS_ASSUME_NONNULL_BEGIN
  Initial value is an instance of `ARTDefaultRealtimeTransportFactory`.
  */
 @property (nonatomic) id<ARTRealtimeTransportFactory> transportFactory;
+
+/**
+ Initial value is `ARTDefaultLocalDeviceFetcher.sharedInstance`.
+ */
+@property (nonatomic) id<ARTLocalDeviceFetcher> localDeviceFetcher;
 
 @end
 

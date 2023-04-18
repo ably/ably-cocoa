@@ -2,11 +2,6 @@ import Ably
 import Nimble
 import XCTest
 
-private var rest: ARTRest!
-private var mockHttpExecutor: MockHTTPExecutor!
-private var storage: MockDeviceStorage!
-private var localDevice: ARTLocalDevice!
-
 private let recipient = [
     "clientId": "bob",
 ]
@@ -111,10 +106,12 @@ class PushAdminTests: XCTestCase {
         let group = DispatchGroup()
 
         group.enter()
+        var numberOfRemainingDevicesToRegister = allDeviceDetails.count
         for device in allDeviceDetails {
             rest.push.admin.deviceRegistrations.save(device) { error in
                 assert(error == nil, error?.message ?? "no message")
-                if allDeviceDetails.last == device {
+                numberOfRemainingDevicesToRegister -= 1
+                if numberOfRemainingDevicesToRegister == 0 {
                     group.leave()
                 }
             }
@@ -122,10 +119,12 @@ class PushAdminTests: XCTestCase {
         group.wait()
 
         group.enter()
+        var numberOfRemainingSubscriptionsToSave = allSubscriptions.count
         for subscription in allSubscriptions {
             rest.push.admin.channelSubscriptions.save(subscription) { error in
                 assert(error == nil, error?.message ?? "no message")
-                if allSubscriptions.last == subscription {
+                numberOfRemainingSubscriptionsToSave -= 1
+                if numberOfRemainingSubscriptionsToSave == 0 {
                     group.leave()
                 }
             }
@@ -160,10 +159,6 @@ class PushAdminTests: XCTestCase {
 
     // XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
     override class var defaultTestSuite: XCTestSuite {
-        _ = rest
-        _ = mockHttpExecutor
-        _ = storage
-        _ = localDevice
         _ = recipient
         _ = payload
         _ = quxChannelName
@@ -172,28 +167,38 @@ class PushAdminTests: XCTestCase {
         return super.defaultTestSuite
     }
 
-    override func setUp() {
-        super.setUp()
+    private struct TestEnvironment {
+        var rest: ARTRest
+        var mockHttpExecutor: MockHTTPExecutor
+        var storage: MockDeviceStorage
+        var localDevice: ARTLocalDevice
 
-        rest = ARTRest(key: "xxxx:xxxx")
-        mockHttpExecutor = MockHTTPExecutor()
-        rest.internal.httpExecutor = mockHttpExecutor
-        storage = MockDeviceStorage()
-        rest.internal.storage = storage
-        localDevice = rest.device
+        init() {
+            let options = ARTClientOptions(key: "xxxx:xxxx")
+            options.testOptions.localDeviceFetcher = MockLocalDeviceFetcher()
+
+            rest = ARTRest(options: options)
+            mockHttpExecutor = MockHTTPExecutor()
+            rest.internal.httpExecutor = mockHttpExecutor
+            storage = MockDeviceStorage()
+            rest.internal.storage = storage
+            localDevice = rest.device
+        }
     }
 
     // RSH1a
 
     func test__001__publish__should_perform_an_HTTP_request_to__push_publish() throws {
+        let testEnvironment = TestEnvironment()
+
         waitUntil(timeout: testTimeout) { done in
-            rest.push.admin.publish(recipient, data: payload) { error in
+            testEnvironment.rest.push.admin.publish(recipient, data: payload) { error in
                 XCTAssertNil(error)
                 done()
             }
         }
 
-        let request = try XCTUnwrap(mockHttpExecutor.requests.first, "No request found")
+        let request = try XCTUnwrap(testEnvironment.mockHttpExecutor.requests.first, "No request found")
         let url = try XCTUnwrap(request.url, "No request url found")
 
         expect(url.absoluteString).to(contain("/push/publish"))
@@ -362,6 +367,8 @@ class PushAdminTests: XCTestCase {
     func test__008__Device_Registrations__get__push_device_authentication__should_include_DeviceIdentityToken_HTTP_header() throws {
         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { realtime.dispose(); realtime.close() }
+
+        let mockHttpExecutor = MockHTTPExecutor()
         realtime.internal.rest.httpExecutor = mockHttpExecutor
 
         let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(
@@ -372,9 +379,11 @@ class PushAdminTests: XCTestCase {
             clientId: ""
         )
 
+        realtime.internal.rest.storage = MockDeviceStorage()
+
+        let localDevice = realtime.internal.rest.device
         XCTAssertNil(localDevice.identityTokenDetails)
-        realtime.internal.rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
-        defer { realtime.internal.rest.device.setAndPersistIdentityTokenDetails(nil) }
+        localDevice.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
 
         waitUntil(timeout: testTimeout) { done in
             realtime.push.admin.deviceRegistrations.get(localDevice.id) { _, _ in
@@ -391,7 +400,13 @@ class PushAdminTests: XCTestCase {
     func test__009__Device_Registrations__get__push_device_authentication__should_include_DeviceSecret_HTTP_header() throws {
         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { realtime.dispose(); realtime.close() }
+
+        let mockHttpExecutor = MockHTTPExecutor()
         realtime.internal.rest.httpExecutor = mockHttpExecutor
+
+        realtime.internal.rest.storage = MockDeviceStorage()
+
+        let localDevice = realtime.internal.rest.device
 
         waitUntil(timeout: testTimeout) { done in
             realtime.push.admin.deviceRegistrations.get(localDevice.id) { _, _ in
@@ -474,7 +489,10 @@ class PushAdminTests: XCTestCase {
         options.pushFullWait = true
         let realtime = ARTRealtime(options: options)
         defer { realtime.dispose(); realtime.close() }
+
+        let mockHttpExecutor = MockHTTPExecutor()
         realtime.internal.rest.httpExecutor = mockHttpExecutor
+
         waitUntil(timeout: testTimeout) { done in
             realtime.push.admin.deviceRegistrations.remove(Self.deviceDetails.id) { error in
                 XCTAssertNil(error)
@@ -496,7 +514,10 @@ class PushAdminTests: XCTestCase {
         options.pushFullWait = true
         let realtime = ARTRealtime(options: options)
         defer { realtime.dispose(); realtime.close() }
+
+        let mockHttpExecutor = MockHTTPExecutor()
         realtime.internal.rest.httpExecutor = mockHttpExecutor
+
         waitUntil(timeout: testTimeout) { done in
             realtime.push.admin.deviceRegistrations.save(Self.deviceDetails) { error in
                 XCTAssertNil(error)
@@ -516,6 +537,8 @@ class PushAdminTests: XCTestCase {
         options.pushFullWait = true
         let realtime = ARTRealtime(options: options)
         defer { realtime.dispose(); realtime.close() }
+
+        let mockHttpExecutor = MockHTTPExecutor()
         realtime.internal.rest.httpExecutor = mockHttpExecutor
 
         let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(
@@ -526,9 +549,11 @@ class PushAdminTests: XCTestCase {
             clientId: ""
         )
 
+        realtime.internal.rest.storage = MockDeviceStorage()
+
+        let localDevice = realtime.internal.rest.device
         XCTAssertNil(localDevice.identityTokenDetails)
-        realtime.internal.rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
-        defer { realtime.internal.rest.device.setAndPersistIdentityTokenDetails(nil) }
+        localDevice.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
 
         waitUntil(timeout: testTimeout) { done in
             realtime.push.admin.deviceRegistrations.save(localDevice) { error in
@@ -549,7 +574,13 @@ class PushAdminTests: XCTestCase {
         options.pushFullWait = true
         let realtime = ARTRealtime(options: options)
         defer { realtime.dispose(); realtime.close() }
+
+        let mockHttpExecutor = MockHTTPExecutor()
         realtime.internal.rest.httpExecutor = mockHttpExecutor
+
+        realtime.internal.rest.storage = MockDeviceStorage()
+
+        let localDevice = realtime.internal.rest.device
 
         waitUntil(timeout: testTimeout) { done in
             realtime.push.admin.deviceRegistrations.save(localDevice) { error in
@@ -590,6 +621,7 @@ class PushAdminTests: XCTestCase {
             }
         }
 
+        let mockHttpExecutor = MockHTTPExecutor()
         realtime.internal.rest.httpExecutor = mockHttpExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -695,6 +727,8 @@ class PushAdminTests: XCTestCase {
     func test__022__Channel_Subscriptions__save__push_device_authentication__should_include_DeviceIdentityToken_HTTP_header() throws {
         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { realtime.dispose(); realtime.close() }
+
+        let mockHttpExecutor = MockHTTPExecutor()
         realtime.internal.rest.httpExecutor = mockHttpExecutor
 
         let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(
@@ -705,9 +739,11 @@ class PushAdminTests: XCTestCase {
             clientId: ""
         )
 
+        realtime.internal.rest.storage = MockDeviceStorage()
+
+        let localDevice = realtime.internal.rest.device
         XCTAssertNil(localDevice.identityTokenDetails)
-        realtime.internal.rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
-        defer { realtime.internal.rest.device.setAndPersistIdentityTokenDetails(nil) }
+        localDevice.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
 
         let subscription = ARTPushChannelSubscription(deviceId: localDevice.id, channel: quxChannelName)
 
@@ -727,7 +763,13 @@ class PushAdminTests: XCTestCase {
     func test__023__Channel_Subscriptions__save__push_device_authentication__should_include_DeviceSecret_HTTP_header() throws {
         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { realtime.dispose(); realtime.close() }
+
+        let mockHttpExecutor = MockHTTPExecutor()
         realtime.internal.rest.httpExecutor = mockHttpExecutor
+
+        realtime.internal.rest.storage = MockDeviceStorage()
+
+        let localDevice = realtime.internal.rest.device
 
         let subscription = ARTPushChannelSubscription(deviceId: localDevice.id, channel: quxChannelName)
 
@@ -818,6 +860,8 @@ class PushAdminTests: XCTestCase {
     func test__027__Channel_Subscriptions__remove__push_device_authentication__should_include_DeviceIdentityToken_HTTP_header() throws {
         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { realtime.dispose(); realtime.close() }
+
+        let mockHttpExecutor = MockHTTPExecutor()
         realtime.internal.rest.httpExecutor = mockHttpExecutor
 
         let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(
@@ -828,9 +872,11 @@ class PushAdminTests: XCTestCase {
             clientId: ""
         )
 
+        realtime.internal.rest.storage = MockDeviceStorage()
+
+        let localDevice = realtime.internal.rest.device
         XCTAssertNil(localDevice.identityTokenDetails)
-        realtime.internal.rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
-        defer { realtime.internal.rest.device.setAndPersistIdentityTokenDetails(nil) }
+        localDevice.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
 
         let subscription = ARTPushChannelSubscription(deviceId: localDevice.id, channel: quxChannelName)
 
@@ -850,7 +896,13 @@ class PushAdminTests: XCTestCase {
     func test__028__Channel_Subscriptions__remove__push_device_authentication__should_include_DeviceSecret_HTTP_header() throws {
         let realtime = ARTRealtime(options: AblyTests.commonAppSetup())
         defer { realtime.dispose(); realtime.close() }
+
+        let mockHttpExecutor = MockHTTPExecutor()
         realtime.internal.rest.httpExecutor = mockHttpExecutor
+
+        realtime.internal.rest.storage = MockDeviceStorage()
+
+        let localDevice = realtime.internal.rest.device
 
         let subscription = ARTPushChannelSubscription(deviceId: localDevice.id, channel: quxChannelName)
 
@@ -1042,6 +1094,8 @@ class PushAdminTests: XCTestCase {
     }
 
     func test__033__local_device__should_include_an_id_and_a_secret() {
+        let testEnvironment = TestEnvironment()
+        let localDevice = testEnvironment.localDevice
         XCTAssertNotNil(localDevice.id)
         XCTAssertNotNil(localDevice.secret)
         XCTAssertNil(localDevice.identityTokenDetails)
