@@ -116,14 +116,18 @@ class AblyTests {
         return DispatchQueue.getSpecific(key: queueIdentityKey)?.label
     }
 
-    class func setupOptions(_ options: ARTClientOptions, forceNewApp: Bool = false, debug: Bool = false) -> ARTClientOptions {
+    class func commonAppSetup(_ debug: Bool = false, forceNewApp: Bool = false) -> ARTClientOptions {
+        let options = AblyTests.clientOptions()
         options.testOptions.channelNamePrefix = "test-\(UUID().uuidString)"
 
         if forceNewApp {
             testApplication = nil
         }
 
-        guard let app = testApplication else {
+        let app: JSON
+        if let testApplication {
+            app = testApplication
+        } else {
             let request = NSMutableURLRequest(url: URL(string: "https://\(options.restHost):\(options.tlsPort)/apps")!)
             request.httpMethod = "POST"
             request.httpBody = try? appSetupJson["post_apps"].rawData()
@@ -139,13 +143,12 @@ class AblyTests {
                 fatalError(error.localizedDescription)
             }
 
-            testApplication = try! JSON(data: responseData!)
+            app = try! JSON(data: responseData!)
+            testApplication = app
             
             if debug {
-                print(testApplication!)
+                print(app)
             }
-
-            return setupOptions(options, debug: debug)
         }
         
         let key = app["keys"][0]
@@ -156,10 +159,6 @@ class AblyTests {
             options.logLevel = .verbose
         }
         return options
-    }
-    
-    class func commonAppSetup(_ debug: Bool = false, forceNewApp: Bool = false) -> ARTClientOptions {
-        return AblyTests.setupOptions(AblyTests.clientOptions(), forceNewApp: forceNewApp, debug: debug)
     }
 
     class func clientOptions(_ debug: Bool = false, key: String? = nil, requestToken: Bool = false) -> ARTClientOptions {
