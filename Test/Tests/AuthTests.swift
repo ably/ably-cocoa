@@ -75,7 +75,7 @@ class AuthTests: XCTestCase {
 
     // RSA1
     func test__003__Basic__should_work_over_HTTPS_only() {
-        let clientOptions = AblyTests.setupOptions(AblyTests.clientOptions())
+        let clientOptions = AblyTests.commonAppSetup()
         clientOptions.tls = false
 
         expect { ARTRest(options: clientOptions) }.to(raiseException())
@@ -83,7 +83,7 @@ class AuthTests: XCTestCase {
 
     // RSA11
     func test__004__Basic__should_send_the_API_key_in_the_Authorization_header() throws {
-        let options = AblyTests.setupOptions(AblyTests.clientOptions())
+        let options = AblyTests.commonAppSetup()
         let client = ARTRest(options: options)
         let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
@@ -882,7 +882,7 @@ class AuthTests: XCTestCase {
 
     func test__042__Token__token_auth_and_clientId__should_check_clientId_consistency__on_realtime() throws {
         let expectedClientId = "client_string"
-        let options = AblyTests.setupOptions(AblyTests.clientOptions())
+        let options = AblyTests.commonAppSetup()
         options.clientId = expectedClientId
         options.autoConnect = false
         options.testOptions.transportFactory = TestProxyTransportFactory()
@@ -913,7 +913,7 @@ class AuthTests: XCTestCase {
     }
 
     func test__043__Token__token_auth_and_clientId__should_check_clientId_consistency__with_wildcard() {
-        let options = AblyTests.setupOptions(AblyTests.clientOptions())
+        let options = AblyTests.commonAppSetup()
         options.clientId = "*"
         expect { ARTRest(options: options) }.to(raiseException())
         expect { ARTRealtime(options: options) }.to(raiseException())
@@ -1021,7 +1021,7 @@ class AuthTests: XCTestCase {
         let tokenParams = ARTTokenParams()
         XCTAssertNil(tokenParams.capability)
 
-        let options = AblyTests.setupOptions(AblyTests.clientOptions())
+        let options = AblyTests.commonAppSetup()
         let rest = ARTRest(options: options)
         let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
@@ -1053,7 +1053,7 @@ class AuthTests: XCTestCase {
         let tokenParams = ARTTokenParams()
         tokenParams.capability = "{\"*\":[\"*\"]}"
 
-        let options = AblyTests.setupOptions(AblyTests.clientOptions())
+        let options = AblyTests.commonAppSetup()
         let rest = ARTRest(options: options)
         let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
@@ -1107,7 +1107,7 @@ class AuthTests: XCTestCase {
 
     // RSA7a2
     func test__047__Token__clientId_and_authenticated_clients__should_obtain_a_token_if_clientId_is_assigned() {
-        let options = AblyTests.setupOptions(AblyTests.clientOptions())
+        let options = AblyTests.commonAppSetup()
         options.clientId = "client_string"
 
         let client = ARTRest(options: options)
@@ -1130,7 +1130,7 @@ class AuthTests: XCTestCase {
 
     // RSA7a3
     func test__048__Token__clientId_and_authenticated_clients__should_convenience_clientId_return_a_string() {
-        let clientOptions = AblyTests.setupOptions(AblyTests.clientOptions())
+        let clientOptions = AblyTests.commonAppSetup()
         clientOptions.clientId = "String"
 
         XCTAssertEqual(ARTRest(options: clientOptions).internal.options.clientId, "String")
@@ -1225,7 +1225,7 @@ class AuthTests: XCTestCase {
 
     // RSA7b1
     func test__053__Token__clientId_and_authenticated_clients__auth_clientId_not_null__when_clientId_attribute_is_assigned_on_client_options() {
-        let clientOptions = AblyTests.setupOptions(AblyTests.clientOptions())
+        let clientOptions = AblyTests.commonAppSetup()
         clientOptions.clientId = "Exist"
 
         XCTAssertEqual(ARTRest(options: clientOptions).auth.clientId, "Exist")
@@ -1301,7 +1301,7 @@ class AuthTests: XCTestCase {
 
     // RSA7c
     func test__050__Token__clientId_and_authenticated_clients__should_clientId_be_null_or_string() {
-        let clientOptions = AblyTests.setupOptions(AblyTests.clientOptions())
+        let clientOptions = AblyTests.commonAppSetup()
         clientOptions.clientId = "*"
 
         expect { ARTRest(options: clientOptions) }.to(raiseException())

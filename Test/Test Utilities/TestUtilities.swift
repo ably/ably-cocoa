@@ -158,8 +158,8 @@ class AblyTests {
         return options
     }
     
-    class func commonAppSetup(_ debug: Bool = false) -> ARTClientOptions {
-        return AblyTests.setupOptions(AblyTests.clientOptions(), debug: debug)
+    class func commonAppSetup(_ debug: Bool = false, forceNewApp: Bool = false) -> ARTClientOptions {
+        return AblyTests.setupOptions(AblyTests.clientOptions(), forceNewApp: forceNewApp, debug: debug)
     }
 
     class func clientOptions(_ debug: Bool = false, key: String? = nil, requestToken: Bool = false) -> ARTClientOptions {

@@ -5,7 +5,7 @@ import XCTest
 import SwiftyJSON
 
 private func postTestStats(_ stats: JSON) -> ARTClientOptions {
-    let options = AblyTests.setupOptions(AblyTests.clientOptions(), forceNewApp: true)
+    let options = AblyTests.commonAppSetup(forceNewApp: true)
 
     let keyBase64 = encodeBase64(options.key ?? "")
 
