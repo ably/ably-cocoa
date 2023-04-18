@@ -119,7 +119,7 @@ class RestClientChannelTests: XCTestCase {
     override func setUp() {
         super.setUp()
 
-        let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+        let options = AblyTests.setupOptions(AblyTests.clientOptions())
         client = ARTRest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
     }
