@@ -116,7 +116,7 @@ class AblyTests {
         return DispatchQueue.getSpecific(key: queueIdentityKey)?.label
     }
 
-    class func commonAppSetup(_ debug: Bool = false, forceNewApp: Bool = false) -> ARTClientOptions {
+    class func commonAppSetup(debug: Bool = false, forceNewApp: Bool = false) -> ARTClientOptions {
         let options = AblyTests.clientOptions()
         options.testOptions.channelNamePrefix = "test-\(UUID().uuidString)"
 
@@ -161,7 +161,7 @@ class AblyTests {
         return options
     }
 
-    class func clientOptions(_ debug: Bool = false, key: String? = nil, requestToken: Bool = false) -> ARTClientOptions {
+    class func clientOptions(debug: Bool = false, key: String? = nil, requestToken: Bool = false) -> ARTClientOptions {
         let options = ARTClientOptions()
         options.environment = getEnvironment()
         options.logExceptionReportingUrl = nil
