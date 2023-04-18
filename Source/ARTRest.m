@@ -36,7 +36,6 @@
 #import "ARTNSError+ARTUtils.h"
 #import "ARTNSMutableURLRequest+ARTUtils.h"
 #import "ARTNSURL+ARTUtils.h"
-#import "ARTTime.h"
 #import "ARTClientInformation.h"
 #import "ARTErrorChecker.h"
 #import "ARTInternalLog.h"
