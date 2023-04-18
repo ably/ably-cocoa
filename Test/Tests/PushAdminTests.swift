@@ -174,7 +174,10 @@ class PushAdminTests: XCTestCase {
         var localDevice: ARTLocalDevice
 
         init() {
-            rest = ARTRest(key: "xxxx:xxxx")
+            let options = ARTClientOptions(key: "xxxx:xxxx")
+            options.testOptions.localDeviceFetcher = MockLocalDeviceFetcher()
+
+            rest = ARTRest(options: options)
             mockHttpExecutor = MockHTTPExecutor()
             rest.internal.httpExecutor = mockHttpExecutor
             storage = MockDeviceStorage()

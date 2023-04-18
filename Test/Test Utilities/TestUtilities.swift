@@ -171,6 +171,7 @@ class AblyTests {
         }
         options.dispatchQueue = DispatchQueue.main
         options.internalDispatchQueue = queue
+        options.testOptions.localDeviceFetcher = MockLocalDeviceFetcher()
         return options
     }
 

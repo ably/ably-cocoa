@@ -31,18 +31,15 @@ class PushActivationStateMachineTests: XCTestCase {
     override func setUp() {
         super.setUp()
 
-        rest = ARTRest(key: "xxxx:xxxx")
+        let options = ARTClientOptions(key: "xxxx:xxxx")
+        options.testOptions.localDeviceFetcher = MockLocalDeviceFetcher()
+
+        rest = ARTRest(options: options)
         httpExecutor = MockHTTPExecutor()
         rest.internal.httpExecutor = httpExecutor
         storage = MockDeviceStorage()
         rest.internal.storage = storage
         initialStateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate(), logger: .init(core: MockInternalLogCore()))
-    }
-
-    override func tearDown() {
-        DefaultLocalDeviceFetcher.sharedInstance.resetDevice()
-
-        super.tearDown()
     }
 
     func test__002__Activation_state_machine__should_set_NotActivated_state_as_current_state_when_disk_is_empty() {
@@ -119,7 +116,8 @@ class PushActivationStateMachineTests: XCTestCase {
     func test__014__Activation_state_machine__State_NotActivated__on_Event_CalledActivate__local_device__should_have_a_generated_id() {
         beforeEach__Activation_state_machine__State_NotActivated()
 
-        DefaultLocalDeviceFetcher.sharedInstance.resetDevice()
+        // TODO was the reset here in a special place?
+
         XCTAssertEqual(rest.device.id.count, 36)
     }
 
@@ -138,6 +136,7 @@ class PushActivationStateMachineTests: XCTestCase {
 
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.clientId = "deviceClient"
+        options.testOptions.localDeviceFetcher = MockLocalDeviceFetcher()
         let rest = ARTRest(options: options)
         rest.internal.storage = storage
         XCTAssertEqual(rest.device.clientId, "deviceClient")
@@ -473,7 +472,7 @@ class PushActivationStateMachineTests: XCTestCase {
     func test__028__Activation_state_machine__State_WaitingForDeviceRegistration__on_Event_GotDeviceRegistration() {
         beforeEach__Activation_state_machine__State_WaitingForDeviceRegistration()
 
-        DefaultLocalDeviceFetcher.sharedInstance.resetDevice()
+        // TODO was the reset here in a special place?
 
         var activatedCallbackCalled = false
         let hook = stateMachine.testSuite_injectIntoMethod(after: NSSelectorFromString("callActivatedCallback:")) {
@@ -907,11 +906,12 @@ class PushActivationStateMachineTests: XCTestCase {
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForPushDeviceDetails.self))
     }
 
+    // TODO what is this a test of?
     func test__001__should_remove_identityTokenDetails_from_cache_and_storage() {
         let storage = MockDeviceStorage()
         rest.internal.storage = storage
         rest.device.setAndPersistIdentityTokenDetails(nil)
-        DefaultLocalDeviceFetcher.sharedInstance.resetDevice()
+//        DefaultLocalDeviceFetcher.sharedInstance.resetDevice()
         XCTAssertNil(rest.device.identityTokenDetails)
         XCTAssertEqual(rest.device.isRegistered(), false)
         XCTAssertNil(storage.object(forKey: ARTDeviceIdentityTokenKey))
@@ -930,14 +930,18 @@ class PushActivationStateMachineTests: XCTestCase {
         func test__the_local_device_has_id_and_deviceIdentityToken__emits_a_SyncRegistrationFailed_event_with_code_61002_if_client_IDs_don_t_match() {
             contextBeforeEach?()
 
+            let localDeviceFetcher = MockLocalDeviceFetcher()
+
             let options = ARTClientOptions(key: "xxxx:xxxx")
             options.clientId = "deviceClient"
+            options.testOptions.localDeviceFetcher = localDeviceFetcher
             let rest = ARTRest(options: options)
             rest.internal.storage = storage
             XCTAssertEqual(rest.device.clientId, "deviceClient")
 
             let newOptions = ARTClientOptions(key: "xxxx:xxxx")
             newOptions.clientId = "instanceClient"
+            newOptions.testOptions.localDeviceFetcher = localDeviceFetcher
             let newRest = ARTRest(options: newOptions)
             newRest.internal.storage = storage
             let stateMachine = ARTPushActivationStateMachine(rest: newRest.internal, delegate: StateMachineDelegate(), logger: .init(core: MockInternalLogCore()))

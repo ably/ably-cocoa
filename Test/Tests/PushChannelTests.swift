@@ -24,10 +24,10 @@ class PushChannelTests: XCTestCase {
         userQueue = AblyTests.createUserQueue()
         options.dispatchQueue = userQueue
         options.internalDispatchQueue = AblyTests.queue
+        options.testOptions.localDeviceFetcher = MockLocalDeviceFetcher()
         rest = ARTRest(options: options)
         rest.internal.options.clientId = "tester"
         rest.internal.httpExecutor = mockHttpExecutor
-        DefaultLocalDeviceFetcher.sharedInstance.resetDevice()
     }
 
     // RSH7
