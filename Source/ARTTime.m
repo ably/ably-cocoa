@@ -14,7 +14,7 @@ struct timezone timeZone;
 + (double) timeSinceBoot {
     
     int mib[2];
-    size_t size;
+    size_t size = sizeof(bootTime);
     
     /**
      https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man3/sysctl.3.html
