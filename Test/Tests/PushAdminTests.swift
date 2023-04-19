@@ -110,24 +110,20 @@ class PushAdminTests: XCTestCase {
         rest.internal.storage = MockDeviceStorage()
         let group = DispatchGroup()
 
-        group.enter()
         for device in allDeviceDetails {
+            group.enter()
             rest.push.admin.deviceRegistrations.save(device) { error in
                 assert(error == nil, error?.message ?? "no message")
-                if allDeviceDetails.last == device {
-                    group.leave()
-                }
+                group.leave()
             }
         }
         group.wait()
 
-        group.enter()
         for subscription in allSubscriptions {
+            group.enter()
             rest.push.admin.channelSubscriptions.save(subscription) { error in
                 assert(error == nil, error?.message ?? "no message")
-                if allSubscriptions.last == subscription {
-                    group.leave()
-                }
+                group.leave()
             }
         }
 
