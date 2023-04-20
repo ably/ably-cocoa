@@ -1,6 +1,6 @@
 import Ably
 import Nimble
- import XCTest
+import XCTest
 
 private var testHTTPExecutor: TestProxyHTTPExecutor!
 
@@ -1578,9 +1578,10 @@ class RestClientTests: XCTestCase {
         }
 
         let transport = realtime.internal.transport as! TestProxyTransport
-        let jsonArray = transport.rawDataSent.map { AblyTests.msgpackToJSON($0) }
-        let messageJson = jsonArray.filter { item in item["action"] == 15 }.last!
-        XCTAssertEqual(messageJson["messages"][0]["data"].string, "message")
+        let jsonArray = transport.rawDataSent.map { AblyTests.msgpackToData($0).jsonObject as! [String: Any] }
+        let messageJson = jsonArray.filter { item in (item["action"] as! Int) == 15 }.last!
+        let messages = messageJson["messages"] as! [[String: Any]]
+        XCTAssertEqual(messages[0]["data"] as? String, "message")
     }
 
     // RSC8b
