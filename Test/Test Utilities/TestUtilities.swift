@@ -81,7 +81,7 @@ class AblyTests {
         return Data(base64Encoded: base64, options: NSData.Base64DecodingOptions(rawValue: 0))!
     }
 
-    class func msgpackToJSON(_ data: Data) -> Data {
+    class func msgpackToData(_ data: Data) -> Data {
         let decoded = try! ARTMsgPackEncoder().decode(data)
         let encoded = try! ARTJsonEncoder().encode(decoded)
         

@@ -63,7 +63,7 @@ private func testSupportsAESEncryptionWithKeyLength(_ encryptionKeyLength: UInt,
         fail("HTTPBody is empty")
         return
     }
-    let httpBodyAsJSON = AblyTests.msgpackToJSON(httpBody).jsonObject
+    let httpBodyAsJSON = AblyTests.msgpackToData(httpBody).jsonObject
     let dictionaryValue = httpBodyAsJSON as? [String: Any]
     XCTAssertEqual(dictionaryValue?["encoding"] as? String, "utf-8/cipher+aes-\(encryptionKeyLength)-cbc/base64")
     XCTAssertEqual(dictionaryValue?["name"] as? String, "test")
@@ -633,7 +633,7 @@ class RestClientChannelTests: XCTestCase {
             fail("Body from the last request is empty"); return
         }
 
-        let json = try XCTUnwrap(AblyTests.msgpackToJSON(encodedBody).jsonObject)
+        let json = try XCTUnwrap(AblyTests.msgpackToData(encodedBody).jsonObject)
         let arrayValue = try XCTUnwrap(json as? [[String: Any]])
         let id = arrayValue.first?["id"] as? String
         
@@ -664,7 +664,7 @@ class RestClientChannelTests: XCTestCase {
             fail("Body from the last request is empty"); return
         }
 
-        let json = try XCTUnwrap(AblyTests.msgpackToJSON(encodedBody).jsonObject)
+        let json = try XCTUnwrap(AblyTests.msgpackToData(encodedBody).jsonObject)
         let arrayValue = try XCTUnwrap(json as? [[String: Any]])
         let id1 = arrayValue.first?["id"] as? String
         assertMessagePayloadId(id: id1, expectedSerial: "0")
@@ -697,7 +697,7 @@ class RestClientChannelTests: XCTestCase {
             fail("Body from the last request is empty"); return
         }
 
-        let json = try XCTUnwrap(AblyTests.msgpackToJSON(encodedBody).jsonObject)
+        let json = try XCTUnwrap(AblyTests.msgpackToData(encodedBody).jsonObject)
         let arrayValue = try XCTUnwrap(json as? [[String: Any]])
         let id = arrayValue.first?["id"] as? String
         
@@ -722,7 +722,7 @@ class RestClientChannelTests: XCTestCase {
             fail("Body from the last request is empty"); return
         }
 
-        let json = AblyTests.msgpackToJSON(encodedBody).jsonObject
+        let json = AblyTests.msgpackToData(encodedBody).jsonObject
         let dictionaryValue = try XCTUnwrap(json as? [String: Any])
         let id = dictionaryValue["id"] as? String
         assertMessagePayloadId(id: id, expectedSerial: "0")
@@ -752,7 +752,7 @@ class RestClientChannelTests: XCTestCase {
             fail("Body from the last request is empty"); return
         }
 
-        let json = AblyTests.msgpackToJSON(encodedBody).jsonObject
+        let json = AblyTests.msgpackToData(encodedBody).jsonObject
         let arrayValue = try XCTUnwrap(json as? [[String: Any]])
         XCTAssertNil(arrayValue.first?["id"])
         XCTAssertEqual(arrayValue.last?["id"] as? String, "123")
@@ -783,7 +783,7 @@ class RestClientChannelTests: XCTestCase {
             fail("Body from the last request is empty"); return
         }
 
-        let json = AblyTests.msgpackToJSON(encodedBody).jsonObject
+        let json = AblyTests.msgpackToData(encodedBody).jsonObject
         let arrayValue = try XCTUnwrap(json as? [[String: Any]])
         XCTAssertNil(arrayValue.first?["id"])
         XCTAssertNil(arrayValue.last?["id"])
@@ -891,7 +891,7 @@ class RestClientChannelTests: XCTestCase {
         }
 
         guard
-            let object = AblyTests.msgpackToJSON(encodedBody).jsonObject,
+            let object = AblyTests.msgpackToData(encodedBody).jsonObject,
             let jsonMessage = (object as? [[String: Any]])?.first
         else {
             fail("Body from the last request is invalid"); return
@@ -1224,7 +1224,7 @@ class RestClientChannelTests: XCTestCase {
                         done(); return
                     }
                     
-                    var jsonData = AblyTests.msgpackToJSON(httpBody)
+                    var jsonData = AblyTests.msgpackToData(httpBody)
                     var model: ExpectedModel
                     do {
                         model = try jsonUtility.decode(data: jsonData)
@@ -1277,7 +1277,7 @@ class RestClientChannelTests: XCTestCase {
                     
                     var model: ExpectedModel
                     do {
-                        model = try jsonUtility.decode(data: AblyTests.msgpackToJSON(httpBody))
+                        model = try jsonUtility.decode(data: AblyTests.msgpackToData(httpBody))
                     } catch {
                         XCTFail("\(error)")
                     }
@@ -1303,7 +1303,7 @@ class RestClientChannelTests: XCTestCase {
                     done(); return
                 }
                 // Binary
-                let json = AblyTests.msgpackToJSON(httpBody).jsonObject
+                let json = AblyTests.msgpackToData(httpBody).jsonObject
                 let dictionaryObject = json as? [String: Any]
                 XCTAssertEqual(dictionaryObject?["data"] as? String, binaryData.toBase64)
                 XCTAssertEqual(dictionaryObject?["encoding"] as? String, "base64")
@@ -1324,7 +1324,7 @@ class RestClientChannelTests: XCTestCase {
 
                 if let request = testHTTPExecutor.requests.last, let http = request.httpBody {
                     // String (UTF-8)
-                    let json = AblyTests.msgpackToJSON(http).jsonObject
+                    let json = AblyTests.msgpackToData(http).jsonObject
                     let dictionaryObject = json as? [String: Any]
                     XCTAssertEqual(dictionaryObject?["data"] as? String, text)
                     XCTAssertNil(dictionaryObject?["encoding"])
@@ -1350,7 +1350,7 @@ class RestClientChannelTests: XCTestCase {
 
                 if let request = testHTTPExecutor.requests.last, let http = request.httpBody {
                     // Array
-                    let json = AblyTests.msgpackToJSON(http).jsonObject
+                    let json = AblyTests.msgpackToData(http).jsonObject
                     let dictionaryValue = json as? [String: Any]
                     let data = (dictionaryValue?["data"] as? String)?.data(using: .utf8)
                     let jsonArray = data?.jsonObject as? NSArray
@@ -1377,7 +1377,7 @@ class RestClientChannelTests: XCTestCase {
 
                 if let request = testHTTPExecutor.requests.last, let http = request.httpBody {
                     // Dictionary
-                    let json = AblyTests.msgpackToJSON(http).jsonObject
+                    let json = AblyTests.msgpackToData(http).jsonObject
                     let dictionaryValue = json as? [String: Any]
                     let data = (dictionaryValue?["data"] as? String)?.data(using: .utf8)
                     let jsonDictionary = data?.jsonObject as? NSDictionary
