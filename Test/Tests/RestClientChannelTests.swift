@@ -1224,7 +1224,7 @@ class RestClientChannelTests: XCTestCase {
                         done(); return
                     }
                     
-                    var jsonData = AblyTests.msgpackToData(httpBody)
+                    let jsonData = AblyTests.msgpackToData(httpBody)
                     var model: ExpectedModel
                     do {
                         model = try jsonUtility.decode(data: jsonData)
