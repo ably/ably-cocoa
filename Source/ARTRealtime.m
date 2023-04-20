@@ -184,6 +184,7 @@ NS_ASSUME_NONNULL_END
     BOOL _resuming;
     BOOL _renewingToken;
     BOOL _shouldImmediatelyReconnect;
+    NSTimeInterval _immediateReconnectionDelay;
     ARTEventEmitter<ARTEvent *, ARTErrorInfo *> *_pingEventEmitter;
     NSDate *_connectionLostAt;
     NSDate *_lastActivity;
@@ -223,6 +224,7 @@ NS_ASSUME_NONNULL_END
         _connection = [[ARTConnectionInternal alloc] initWithRealtime:self logger:self.logger];
         _connectionStateTtl = [ARTDefault connectionStateTtl];
         _shouldImmediatelyReconnect = true;
+        _immediateReconnectionDelay = 0.1;
         _connectRetryDelayCalculator = [[ARTConstantRetryDelayCalculator alloc] initWithConstantDelay:options.disconnectedRetryTimeout];
         self.auth.delegate = self;
         
@@ -417,7 +419,7 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)_close {
-    [_reachability off];
+    [self setReachabilityActive:NO];
     [self cancelTimers];
     
     switch (self.connection.state_nosync) {
@@ -536,6 +538,58 @@ NS_ASSUME_NONNULL_END
     }
 }
 
+- (void)handleNetworkIsReachable:(BOOL)reachable {
+    if (reachable) {
+        switch (_connection.state_nosync) {
+            case ARTRealtimeDisconnected:
+            case ARTRealtimeSuspended:
+                [self transition:ARTRealtimeConnecting withMetadata:[[ARTConnectionStateChangeMetadata alloc] init]];
+            default:
+                break;
+        }
+    }
+    else {
+        switch (_connection.state_nosync) {
+            case ARTRealtimeConnecting:
+            case ARTRealtimeConnected: {
+                ARTErrorInfo *unreachable = [ARTErrorInfo createWithCode:-1003 message:@"unreachable host"];
+                ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:unreachable];
+                [self transitionToDisconnectedOrSuspendedWithMetadata:metadata];
+                break;
+            }
+            default:
+                break;
+        }
+    }
+}
+
+- (void)setReachabilityActive:(BOOL)active {
+    if (!_reachability) {
+        _reachability = [[_reachabilityClass alloc] initWithLogger:self.logger queue:_queue];
+    }
+    if (active) {
+        __weak ARTRealtimeInternal *weakSelf = self;
+        [_reachability listenForHost:[_transport host] callback:^(BOOL reachable) {
+            ARTRealtimeInternal *strongSelf = weakSelf;
+            if (!strongSelf) return;
+            
+            [strongSelf handleNetworkIsReachable:reachable];
+        }];
+    }
+    else {
+        [_reachability off];
+    }
+}
+
+- (void)resetInactiveConnection {
+    NSTimeInterval intervalSinceLast = [[NSDate date] timeIntervalSinceDate:_lastActivity];
+    if (intervalSinceLast > (_maxIdleInterval + _connectionStateTtl)) {
+        [self.connection setId:nil];
+        [self.connection setKey:nil];
+        [self.connection setSerial:0];
+    }
+}
+
 - (ARTEventListener *)performTransitionWithStateChange:(ARTConnectionStateChange *)stateChange {
     ARTChannelStateChangeMetadata *channelStateChangeMetadata = nil;
     ARTEventListener *stateChangeEventListener = nil;
@@ -547,70 +601,28 @@ NS_ASSUME_NONNULL_END
             
             // RTN15g We want to enforce a new connection also when there hasn't been activity for longer than (idle interval + TTL)
             if (stateChange.previous == ARTRealtimeDisconnected || stateChange.previous == ARTRealtimeSuspended) {
-                NSTimeInterval intervalSinceLast = [[NSDate date] timeIntervalSinceDate:_lastActivity];
-                if (intervalSinceLast > (_maxIdleInterval + _connectionStateTtl)) {
-                    [self.connection setId:nil];
-                    [self.connection setKey:nil];
-                    [self.connection setSerial:0];
-                }
+                [self resetInactiveConnection];
             }
+            
+            if (!_transport) {
+                BOOL resume = stateChange.previous == ARTRealtimeFailed ||
+                              stateChange.previous == ARTRealtimeDisconnected ||
+                              stateChange.previous == ARTRealtimeSuspended;
+                [self createAndConnectTransportWithConnectionResume:resume];
+            }
+            
+            [self setReachabilityActive:YES];
             
             stateChangeEventListener = [self unlessStateChangesBefore:self.options.testOptions.realtimeRequestTimeout do:^{
                 [self onConnectionTimeOut];
             }];
             _connectingTimeoutListener = stateChangeEventListener;
             
-            if (!_reachability) {
-                _reachability = [[_reachabilityClass alloc] initWithLogger:self.logger queue:_queue];
-            }
-            
-            if (!_transport) {
-                NSString *resumeKey = nil;
-                NSNumber *connectionSerial = nil;
-                if (stateChange.previous == ARTRealtimeFailed ||
-                    stateChange.previous == ARTRealtimeDisconnected ||
-                    stateChange.previous == ARTRealtimeSuspended) {
-                    resumeKey = self.connection.key_nosync;
-                    connectionSerial = [NSNumber numberWithLongLong:self.connection.serial_nosync];
-                    _resuming = true;
-                }
-                [self setTransportWithResumeKey:resumeKey connectionSerial:connectionSerial];
-                [self transportConnectForcingNewToken:_renewingToken newConnection:true];
-            }
-            
-            __weak ARTRealtimeInternal *weakSelf = self;
-            [_reachability listenForHost:[_transport host] callback:^(BOOL reachable) {
-                ARTRealtimeInternal *strongSelf = weakSelf;
-                if (!strongSelf) return;
-                
-                if (reachable) {
-                    switch (strongSelf.connection.state_nosync) {
-                        case ARTRealtimeDisconnected:
-                        case ARTRealtimeSuspended:
-                            [strongSelf transition:ARTRealtimeConnecting withMetadata:[[ARTConnectionStateChangeMetadata alloc] init]];
-                        default:
-                            break;
-                    }
-                }
-                else {
-                    switch (strongSelf.connection.state_nosync) {
-                        case ARTRealtimeConnecting:
-                        case ARTRealtimeConnected: {
-                            ARTErrorInfo *unreachable = [ARTErrorInfo createWithCode:-1003 message:@"unreachable host"];
-                            ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:unreachable];
-                            [strongSelf transitionToDisconnectedOrSuspendedWithMetadata:metadata];
-                            break;
-                        }
-                        default:
-                            break;
-                    }
-                }
-            }];
             break;
         }
         case ARTRealtimeClosing: {
             [self stopIdleTimer];
-            [_reachability off];
+            [self setReachabilityActive:NO];
             stateChangeEventListener = [self unlessStateChangesBefore:self.options.testOptions.realtimeRequestTimeout do:^{
                 [self transition:ARTRealtimeClosed withMetadata:[[ARTConnectionStateChangeMetadata alloc] init]];
             }];
@@ -619,7 +631,7 @@ NS_ASSUME_NONNULL_END
         }
         case ARTRealtimeClosed:
             [self stopIdleTimer];
-            [_reachability off];
+            [self setReachabilityActive:NO];
             [self closeAndReleaseTransport];
             _connection.key = nil;
             _connection.id = nil;
@@ -648,10 +660,10 @@ NS_ASSUME_NONNULL_END
             NSTimeInterval retryDelay;
             ARTRetryAttempt *retryAttempt;
 
-            // RTN15a - retry immediately if client was connected
-            if (stateChange.previous == ARTRealtimeConnected && _shouldImmediatelyReconnect) {
-                retryDelay = 0.1;
-            } else {
+            if (stateChange.previous == ARTRealtimeConnected && _shouldImmediatelyReconnect) { // RTN15a
+                retryDelay = _immediateReconnectionDelay;
+            }
+            else {
                 // Note: we currently reset the retry sequence every time we wish to perform a retry (defeating the point of using it in the first place, but it's OK since the delays are all constant). As part of implementing #1431 we will reuse any existing retry sequence, resetting it only in response to certain state changes.
                 self.connectRetrySequence = [[ARTRetrySequence alloc] initWithDelayCalculator:self.connectRetryDelayCalculator];
                 ARTLogVerbose(self.logger, @"RT:%p Created connect retry sequence %@", self, self.connectRetrySequence);
@@ -767,6 +779,18 @@ NS_ASSUME_NONNULL_END
     [self performPendingAuthorizationWithState:stateChange.current error:stateChange.reason];
     
     return stateChangeEventListener;
+}
+
+- (void)createAndConnectTransportWithConnectionResume:(BOOL)resume {
+    NSString *resumeKey = nil;
+    NSNumber *connectionSerial = nil;
+    if (resume) {
+        resumeKey = self.connection.key_nosync;
+        connectionSerial = [NSNumber numberWithLongLong:self.connection.serial_nosync];
+        _resuming = true;
+    }
+    [self setTransportWithResumeKey:resumeKey connectionSerial:connectionSerial];
+    [self transportConnectForcingNewToken:_renewingToken newConnection:true];
 }
 
 - (void)abortAndReleaseTransport:(ARTStatus *)status {
