@@ -18,7 +18,6 @@ final class JSONUtility {
     
     private let encoder: JSONEncoder = {
         let jsonEncoder = JSONEncoder()
-        jsonEncoder.keyEncodingStrategy = .convertToSnakeCase
         
         return jsonEncoder
     }()
