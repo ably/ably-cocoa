@@ -167,11 +167,11 @@ cd ..
 
 xcparse_attachment_descriptors_file="${xcparse_output_directory}/xcparseAttachmentDescriptors.json"
 
-# 7. Filter the output of xcparse to find just the crash reports (files whose name ends in .crash).
+# 7. Filter the output of xcparse to find just the crash reports (files whose name ends in .crash or .ips).
 
 filtered_xcparse_attachment_descriptors_file=$(mktemp)
 
-jq 'map(select(.attachmentName | endswith(".crash")))' < "${xcparse_attachment_descriptors_file}" > "${filtered_xcparse_attachment_descriptors_file}"
+jq 'map(select(.attachmentName | (endswith(".crash") or endswith(".ips"))))' < "${xcparse_attachment_descriptors_file}" > "${filtered_xcparse_attachment_descriptors_file}"
 
 declare -i number_of_filtered_attachments
 number_of_filtered_attachments=$(jq '. | length' < "${filtered_xcparse_attachment_descriptors_file}")
