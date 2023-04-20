@@ -1,7 +1,6 @@
 import Ably
 import Nimble
 import XCTest
-import SwiftyJSON
 
 private let key = "+/h4eHh4eHh4eHh4eHh4eA=="
 private let binaryKey = Data(base64Encoded: key, options: .ignoreUnknownCharacters)!
@@ -200,24 +199,24 @@ class CryptoTests: XCTestCase {
         let cipherParams = ARTCipherParams(algorithm: "aes", key: key as ARTCipherKeyCompatible, iv: iv)
         let channelOptions = ARTChannelOptions(cipher: cipherParams)
         
-        func extractMessage(_ rawFixture: JSON) -> ARTMessage {
-            let msg = ARTMessage(name: rawFixture["name"].stringValue, data: rawFixture["data"].stringValue)
-            msg.encoding = rawFixture["encoding"].stringValue
+        func extractMessage(_ rawFixture: CryptoData.Item.Encoded) -> ARTMessage {
+            let msg = ARTMessage(name: rawFixture.name, data: rawFixture.data)
+            msg.encoding = rawFixture.encoding
             return msg
         }
         
         // one by one
         for jsonItem in jsonItems {
-            let fixture = extractMessage(jsonItem["encoded"])
-            let encryptedFixture = jsonItem["encrypted"]
-            expect(encryptedFixture["encoding"].stringValue).to(endWith("\(expectedEncryptedEncoding)/base64"))
+            let fixture = extractMessage(jsonItem.encoded)
+            let encryptedFixture = jsonItem.encrypted
+            expect(encryptedFixture.encoding).to(endWith("\(expectedEncryptedEncoding)/base64"))
             
             var error: NSError?
             let decoded = fixture.decode(with: decoder, error: &error) as! ARTMessage
             XCTAssertNil(error)
             XCTAssertNotNil(decoded)
             
-            let rawDictionary = try XCTUnwrap(encryptedFixture.dictionaryObject)
+            let rawDictionary = try XCTUnwrap(jsonUtility.codableToDictionary(encryptedFixture))
             let decrypted = try XCTUnwrap(ARTMessage.fromEncoded(rawDictionary, channelOptions: channelOptions))
             XCTAssertNotNil(decrypted)
             
@@ -225,13 +224,13 @@ class CryptoTests: XCTestCase {
         }
         
         // a bunch at once
-        let encryptedFixtures = try jsonItems.map { try XCTUnwrap($0["encrypted"].dictionaryObject) }
+        let encryptedFixtures = try jsonItems.map { try XCTUnwrap(jsonUtility.codableToDictionary($0.encrypted)) }
 
         let decryptedArray = try XCTUnwrap(ARTMessage.fromEncodedArray(encryptedFixtures, channelOptions: channelOptions))
         XCTAssertEqual(decryptedArray.count, jsonItems.count)
         
         for i in 0..<jsonItems.count {
-            let fixture = extractMessage(jsonItems[i]["encoded"])
+            let fixture = extractMessage(jsonItems[i].encoded)
 
             var error: NSError?
             let decoded = fixture.decode(with: decoder, error: &error) as! ARTMessage

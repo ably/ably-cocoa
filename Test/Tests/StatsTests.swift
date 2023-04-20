@@ -2,29 +2,28 @@ import Ably
 import Foundation
 import Nimble
 import XCTest
-import SwiftyJSON
 
 private let encoder = ARTJsonLikeEncoder()
 private let subject: ARTStatsConnectionTypes? = {
-    let data: JSON = [
+    let data: [[String: Any]] = [
         ["connections": ["tls": ["opened": 5], "all": ["peak": 10]]],
     ]
-    let rawData = try! data.rawData()
+    let rawData = try! jsonUtility.serialize(data)
     let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
     return stats?.connections
 }()
 
 private let channelsTestsSubject: ARTStatsResourceCount? = {
-    let data: JSON = [
+    let data: [[String: Any]] = [
         ["channels": ["opened": 5, "peak": 10]],
     ]
-    let rawData = try! data.rawData()
+    let rawData = try! jsonUtility.serialize(data)
     let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
     return stats?.channels
 }()
 
 private let pushTestsSubject: ARTStatsPushCount? = {
-    let data: JSON = [
+    let data: [[String: Any]] = [
         ["push":
             [
                 "messages": 10,
@@ -35,26 +34,26 @@ private let pushTestsSubject: ARTStatsPushCount? = {
                     "failed": 4,
                 ],
                 "directPublishes": 5,
-            ]],
+            ] as [String : Any]],
     ]
-    let rawData = try! data.rawData()
+    let rawData = try! jsonUtility.serialize(data)
     let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
     return stats?.pushes
 }()
 
 private let inProgressTestsStats: ARTStats? = {
-    let data: JSON = [
+    let data: [[String: Any]] = [
         ["inProgress": "2004-02-01:05:06"],
     ]
-    let rawData = try! data.rawData()
+    let rawData = try! jsonUtility.serialize(data)
     return try! encoder.decodeStats(rawData)[0] as? ARTStats
 }()
 
 private let countTestStats: ARTStats? = {
-    let data: JSON = [
+    let data: [[String: Any]] = [
         ["count": 55],
     ]
-    let rawData = try! data.rawData()
+    let rawData = try! jsonUtility.serialize(data)
     return try! encoder.decodeStats(rawData)[0] as? ARTStats
 }()
 
@@ -80,10 +79,10 @@ class StatsTests: XCTestCase {
 
     // TS6
     func reusableTestsTestAttribute(_ attribute: String, testCase: TestCase_ReusableTestsTestAttribute, beforeEach contextBeforeEach: (() -> Void)? = nil, afterEach contextAfterEach: (() -> Void)? = nil) {
-        let data: JSON = [
+        let data: [[String: Any]] = [
             [attribute: ["messages": ["count": 5], "all": ["data": 10]]],
         ]
-        let rawData = try! data.rawData()
+        let rawData = try! jsonUtility.serialize(data)
         let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
         let subject = stats?.value(forKey: attribute) as? ARTStatsMessageTypes
 
@@ -182,13 +181,13 @@ class StatsTests: XCTestCase {
 
     // TS7
     func reusableTestsTestDirection(_ direction: String, testCase: TestCase_ReusableTestsTestDirection, beforeEach contextBeforeEach: (() -> Void)? = nil, afterEach contextAfterEach: (() -> Void)? = nil) {
-        let data: JSON = [
+        let data: [[String: Any]] = [
             [direction: [
                 "realtime": ["messages": ["count": 5]],
                 "all": ["messages": ["count": 25], "presence": ["data": 210]],
             ]],
         ]
-        let rawData = try! data.rawData()
+        let rawData = try! jsonUtility.serialize(data)
         let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
         let subject = stats?.value(forKey: direction) as? ARTStatsMessageTraffic
 
@@ -306,10 +305,10 @@ class StatsTests: XCTestCase {
 
     // TS8
     func reusableTestsTestRequestType(_ requestType: String, testCase: TestCase_ReusableTestsTestRequestType, beforeEach contextBeforeEach: (() -> Void)? = nil, afterEach contextAfterEach: (() -> Void)? = nil) {
-        let data: JSON = [
+        let data: [[String: Any]] = [
             [requestType: ["succeeded": 5, "failed": 10]],
         ]
-        let rawData = try! data.rawData()
+        let rawData = try! jsonUtility.serialize(data)
         let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
         let subject = stats?.value(forKey: requestType) as? ARTStatsRequestCount
 
@@ -380,10 +379,10 @@ class StatsTests: XCTestCase {
     }
 
     func test__029__Stats__interval__should_return_a_Date_object_representing_the_start_of_the_interval() {
-        let data: JSON = [
+        let data: [[String: Any]] = [
             ["intervalId": "2004-02-01:05:06"],
         ]
-        let rawData = try! data.rawData()
+        let rawData = try! jsonUtility.serialize(data)
         let stats = try! encoder.decodeStats(rawData)[0] as? ARTStats
 
         let dateComponents = NSDateComponents()
