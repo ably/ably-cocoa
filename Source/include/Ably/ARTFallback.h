@@ -11,7 +11,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Init with fallback hosts array.
  */
-- (instancetype)initWithFallbackHosts:(nullable NSArray<NSString *> *)fallbackHosts;
+- (instancetype)initWithFallbackHosts:(nullable NSArray<NSString *> *)fallbackHosts shuffleArray:(void (^)(NSMutableArray *))shuffleArray;
+- (instancetype)init NS_UNAVAILABLE;
 
 /**
  returns a random fallback host, returns null when all hosts have been popped.

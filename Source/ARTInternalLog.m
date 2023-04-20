@@ -1,18 +1,24 @@
 #import "ARTInternalLog.h"
+#import "ARTInternalLog+Testing.h"
 #import "ARTInternalLogCore.h"
 #import "ARTVersion2Log.h"
-
-NS_ASSUME_NONNULL_BEGIN
-
-@interface ARTInternalLog ()
-
-@property (nonatomic, readonly) id<ARTInternalLogCore> core;
-
-@end
-
-NS_ASSUME_NONNULL_END
+#import "ARTLogAdapter.h"
 
 @implementation ARTInternalLog
+
++ (ARTInternalLog *)sharedClassMethodLogger_readDocumentationBeforeUsing {
+    static ARTInternalLog *logger;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        ARTLog *const artLog = [[ARTLog alloc] init];
+        artLog.logLevel = ARTLogLevelNone;
+        const id<ARTVersion2Log> version2Log = [[ARTLogAdapter alloc] initWithLogger:artLog];
+        const id<ARTInternalLogCore> core = [[ARTDefaultInternalLogCore alloc] initWithLogger:version2Log];
+        logger = [[ARTInternalLog alloc] initWithCore:core];
+    });
+
+    return logger;
+}
 
 - (instancetype)initWithCore:(id<ARTInternalLogCore>)core {
     if (self = [super init]) {

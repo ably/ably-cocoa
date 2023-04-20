@@ -80,7 +80,6 @@ framework module Ably {
         header "ARTNSError+ARTUtils.h"
         header "ARTNSURL+ARTUtils.h"
         header "ARTNSMutableURLRequest+ARTUtils.h"
-        header "ARTTime.h"
         header "ARTErrorChecker.h"
         header "ARTResumeRequestResponse.h"
         header "ARTJitterCoefficientGenerator.h"
@@ -96,6 +95,7 @@ framework module Ably {
         header "ARTTestClientOptions.h"
         header "ARTVersion2Log.h"
         header "ARTInternalLog.h"
+        header "ARTInternalLog+Testing.h"
         header "ARTLogAdapter.h"
         header "ARTLogAdapter+Testing.h"
         header "ARTDeviceIdentityTokenDetails+Private.h"
@@ -104,5 +104,8 @@ framework module Ably {
         header "ARTPresenceMap.h"
         header "ARTInternalLogCore.h"
         header "ARTInternalLogCore+Testing.h"
+        header "ARTDataEncoder.h"
+        header "ARTRealtimeTransportFactory.h"
+        header "ARTContinuousClock.h"
     }
 }

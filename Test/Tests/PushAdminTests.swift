@@ -105,29 +105,25 @@ class PushAdminTests: XCTestCase {
         super.setUp()
         let options = AblyTests.commonAppSetup()
         options.pushFullWait = true
-        options.dispatchQueue = AblyTests.userQueue
+        options.dispatchQueue = AblyTests.createUserQueue()
         let rest = ARTRest(options: options)
         rest.internal.storage = MockDeviceStorage()
         let group = DispatchGroup()
 
-        group.enter()
         for device in allDeviceDetails {
+            group.enter()
             rest.push.admin.deviceRegistrations.save(device) { error in
                 assert(error == nil, error?.message ?? "no message")
-                if allDeviceDetails.last == device {
-                    group.leave()
-                }
+                group.leave()
             }
         }
         group.wait()
 
-        group.enter()
         for subscription in allSubscriptions {
+            group.enter()
             rest.push.admin.channelSubscriptions.save(subscription) { error in
                 assert(error == nil, error?.message ?? "no message")
-                if allSubscriptions.last == subscription {
-                    group.leave()
-                }
+                group.leave()
             }
         }
 
@@ -136,7 +132,7 @@ class PushAdminTests: XCTestCase {
 
     override class func tearDown() {
         let options = AblyTests.commonAppSetup()
-        options.dispatchQueue = AblyTests.userQueue
+        options.dispatchQueue = AblyTests.createUserQueue()
         let rest = ARTRest(options: options)
         rest.internal.storage = MockDeviceStorage()
         let group = DispatchGroup()
@@ -647,7 +643,7 @@ class PushAdminTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         let realtime = ARTRealtime(options: options)
         defer { realtime.dispose(); realtime.close() }
-        let testProxyHTTPExecutor = TestProxyHTTPExecutor(.init(clientOptions: options))
+        let testProxyHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         realtime.internal.rest.httpExecutor = testProxyHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -787,7 +783,7 @@ class PushAdminTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         let realtime = ARTRealtime(options: options)
         defer { realtime.dispose(); realtime.close() }
-        let testProxyHTTPExecutor = TestProxyHTTPExecutor(.init(clientOptions: options))
+        let testProxyHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         realtime.internal.rest.httpExecutor = testProxyHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in

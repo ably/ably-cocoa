@@ -1,6 +1,7 @@
 @import XCTest;
 #import <Ably/ARTCrypto.h>
 #import <Ably/ARTCrypto+Private.h>
+#import "Ably_Tests-Swift.h"
 
 @interface CryptoTest : XCTestCase
 @end
@@ -25,7 +26,8 @@
     NSData *const iv = [NSData dataWithBytes:ivBytes length:16];
     ARTCipherParams *const params =
         [[ARTCipherParams alloc] initWithAlgorithm:@"aes" key:key iv:iv];
-    id<ARTChannelCipher> cipher = [ARTCrypto cipherWithParams:params];
+    ARTInternalLog *const logger = [[ARTInternalLog alloc] initWithCore:[[ARTMockInternalLogCore alloc] init]];
+    id<ARTChannelCipher> cipher = [ARTCrypto cipherWithParams:params logger:logger];
     
     // Prepare message data.
     const NSUInteger maxLength = 70;

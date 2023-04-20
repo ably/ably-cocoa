@@ -1,7 +1,6 @@
 #import <Foundation/Foundation.h>
 
 #import <Ably/ARTTypes.h>
-#import <Ably/ARTDataEncoder.h>
 
 @class ARTRest;
 @class ARTChannelOptions;

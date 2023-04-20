@@ -32,6 +32,17 @@ NS_SWIFT_NAME(InternalLog)
 @interface ARTInternalLog: NSObject
 
 /**
+ Provides a shared logger to be used by all public class methods meeting the following criteria:
+
+ - they wish to perform logging
+ - they do not have access to any more appropriate logger
+ - their signature is already locked since they are part of the public API of the library
+
+ Currently, this returns a logger that will not actually output any log messages, but I’ve created https://github.com/ably/ably-cocoa/issues/1652 for us to revisit this.
+ */
+@property (nonatomic, readonly, class) ARTInternalLog *sharedClassMethodLogger_readDocumentationBeforeUsing;
+
+/**
  Creates a logger which forwards its generated messages to the given core object.
  */
 - (instancetype)initWithCore:(id<ARTInternalLogCore>)core NS_DESIGNATED_INITIALIZER;

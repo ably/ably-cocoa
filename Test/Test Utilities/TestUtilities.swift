@@ -101,15 +101,7 @@ class AblyTests {
         checkError(errorInfo, withAlternative: "")
     }
 
-    class var jsonRestOptions: ARTClientOptions {
-        get {
-            let options = AblyTests.clientOptions()
-            return options
-        }
-    }
-
     static var testApplication: [String: Any]?
-    static fileprivate var setupOptionsCounter = 0
 
     struct QueueIdentity {
         let label: String
@@ -123,31 +115,28 @@ class AblyTests {
         return queue
     }()
 
-    static var userQueue: DispatchQueue = {
-        let queue = DispatchQueue(label: "io.ably.tests.callbacks", qos: .userInitiated)
+    static func createUserQueue() -> DispatchQueue {
+        let queue = DispatchQueue(label: "io.ably.tests.callbacks.\(UUID().uuidString)", qos: .userInitiated)
         queue.setSpecific(key: queueIdentityKey, value: QueueIdentity(label: queue.label))
         return queue
-    }()
-    
-    static var extraQueue: DispatchQueue = {
-        let queue = DispatchQueue(label: "io.ably.tests.extra", qos: .userInitiated)
-        queue.setSpecific(key: queueIdentityKey, value: QueueIdentity(label: queue.label))
-        return queue
-    }()
+    }
 
     static func currentQueueLabel() -> String? {
         return DispatchQueue.getSpecific(key: queueIdentityKey)?.label
     }
 
-    class func setupOptions(_ options: ARTClientOptions, forceNewApp: Bool = false, debug: Bool = false) -> ARTClientOptions {
-        options.testOptions.channelNamePrefix = "test-\(setupOptionsCounter)"
-        setupOptionsCounter += 1
+    class func commonAppSetup(debug: Bool = false, forceNewApp: Bool = false) -> ARTClientOptions {
+        let options = AblyTests.clientOptions(debug: debug)
+        options.testOptions.channelNamePrefix = "test-\(UUID().uuidString)"
 
         if forceNewApp {
             testApplication = nil
         }
 
-        guard let app = testApplication else {
+        let app: [String: Any]
+        if let testApplication {
+            app = testApplication
+        } else {
             let request = NSMutableURLRequest(url: URL(string: "https://\(options.restHost):\(options.tlsPort)/apps")!)
             request.httpMethod = "POST"
             request.httpBody = try? appSetupModel.postApps.rawData()
@@ -157,42 +146,31 @@ class AblyTests {
                 "Content-Type" : "application/json"
             ]
 
-            let (responseData, responseError, _) = NSURLSessionServerTrustSync().get(request)
+            let (responseData, responseError, _) = SynchronousHTTPClient().perform(request)
 
             if let error = responseError {
                 fatalError(error.localizedDescription)
             }
 
-            testApplication = responseData?.jsonObject as? [String: Any]
+            app = responseData!.jsonObject as! [String: Any]
+            testApplication = app
             
             if debug {
-                print(testApplication!)
+                print(app)
             }
-
-            return setupOptions(options, debug: debug)
         }
-        
         let keysArray = app["keys"] as! [[String: Any]]
         let key = keysArray[0]
         options.key = key["keyStr"] as? String
-        options.dispatchQueue = DispatchQueue.main
-        options.internalDispatchQueue = queue
-        if debug {
-            options.logLevel = .verbose
-        }
+
         return options
     }
-    
-    class func commonAppSetup(_ debug: Bool = false) -> ARTClientOptions {
-        return AblyTests.setupOptions(AblyTests.jsonRestOptions, debug: debug)
-    }
 
-    class func clientOptions(_ debug: Bool = false, key: String? = nil, requestToken: Bool = false) -> ARTClientOptions {
+    class func clientOptions(debug: Bool = false, key: String? = nil, requestToken: Bool = false) -> ARTClientOptions {
         let options = ARTClientOptions()
         options.environment = getEnvironment()
-        options.logExceptionReportingUrl = nil
         if debug {
-            options.logLevel = .debug
+            options.logLevel = .verbose
         }
         if let key = key {
             options.key = key
@@ -225,17 +203,24 @@ class AblyTests {
         return protocolMessage
     }
 
-    class func newRealtime(_ options: ARTClientOptions) -> ARTRealtime {
-        let autoConnect = options.autoConnect
-        options.autoConnect = false
-        let realtime = ARTRealtime(options: options)
-        realtime.internal.setTransport(TestProxyTransport.self)
+    struct RealtimeTestEnvironment {
+        let client: ARTRealtime
+        let transportFactory: TestProxyTransportFactory
+    }
+
+    class func newRealtime(_ options: ARTClientOptions) -> RealtimeTestEnvironment {
+        let modifiedOptions = options.copy() as! ARTClientOptions
+
+        let autoConnect = modifiedOptions.autoConnect
+        modifiedOptions.autoConnect = false
+        let transportFactory = TestProxyTransportFactory()
+        modifiedOptions.testOptions.transportFactory = transportFactory
+        let realtime = ARTRealtime(options: modifiedOptions)
         realtime.internal.setReachabilityClass(TestReachability.self)
         if autoConnect {
-            options.autoConnect = true
             realtime.connect()
         }
-        return realtime
+        return .init(client: realtime, transportFactory: transportFactory)
     }
 
     class func newRandomString() -> String {
@@ -385,9 +370,11 @@ class AblyTests {
     }
 }
 
-class NSURLSessionServerTrustSync: NSObject, URLSessionDelegate, URLSessionTaskDelegate {
+/// A helper class for performing HTTP requests synchronously in tests.
+class SynchronousHTTPClient: NSObject, URLSessionDelegate, URLSessionTaskDelegate {
+    private static let delegateQueue = DispatchQueue(label: "io.ably.tests.NSURLSessionServerTrustSync", qos: .userInitiated)
 
-    func get(_ request: NSMutableURLRequest) -> (Data?, NSError?, HTTPURLResponse?) {
+    func perform(_ request: NSMutableURLRequest) -> (Data?, NSError?, HTTPURLResponse?) {
         var responseError: NSError?
         var responseData: Data?
         var httpResponse: HTTPURLResponse?;
@@ -395,7 +382,7 @@ class NSURLSessionServerTrustSync: NSObject, URLSessionDelegate, URLSessionTaskD
 
         let configuration = URLSessionConfiguration.default
         let queue = OperationQueue()
-        queue.underlyingQueue = AblyTests.extraQueue
+        queue.underlyingQueue = Self.delegateQueue
         let session = Foundation.URLSession(configuration:configuration, delegate:self, delegateQueue:queue)
 
         let task = session.dataTask(with: request as URLRequest, completionHandler: { data, response, error in
@@ -417,20 +404,6 @@ class NSURLSessionServerTrustSync: NSObject, URLSessionDelegate, URLSessionTaskD
 
         return (responseData, responseError, httpResponse)
     }
-
-    func urlSession(_ session: URLSession, task: URLSessionTask, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        // Try to extract the server certificate for trust validation
-        if let serverTrust = challenge.protectionSpace.serverTrust {
-            // Server trust authentication
-            // Reference: https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/URLLoadingSystem/Articles/AuthenticationChallenges.html
-            completionHandler(Foundation.URLSession.AuthChallengeDisposition.useCredential, URLCredential(trust: serverTrust))
-        }
-        else {
-            challenge.sender?.performDefaultHandling?(for: challenge)
-            XCTFail("Current authentication: \(challenge.protectionSpace.authenticationMethod)")
-        }
-    }
-
 }
 
 extension Date {
@@ -626,7 +599,7 @@ func getJWTToken(invalid: Bool = false, expiresIn: Int = 3600, clientId: String 
     ]
     
     let request = NSMutableURLRequest(url: urlComponents!.url!)
-    let (responseData, responseError, _) = NSURLSessionServerTrustSync().get(request)
+    let (responseData, responseError, _) = SynchronousHTTPClient().perform(request)
     if let error = responseError {
         fail(error.localizedDescription)
         return nil
@@ -811,7 +784,7 @@ class MockHTTP: ARTHttp {
     private var count: Int = 0
 
     init(logger: InternalLog) {
-        super.init(AblyTests.queue, logger: logger)
+        super.init(queue: AblyTests.queue, logger: logger)
     }
 
     func setNetworkState(network: FakeNetworkResponse, resetAfter numberOfRequests: Int) {
@@ -1000,9 +973,9 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
     private var callbackAfterRequest: ((URLRequest) -> Void)?
     private var callbackProcessingDataResponse: ((Data?) -> Data)?
 
-    init(_ logger: InternalLog) {
+    init(logger: InternalLog) {
         self.logger = logger
-        self.http = ARTHttp(AblyTests.queue, logger: logger)
+        self.http = ARTHttp(queue: AblyTests.queue, logger: logger)
     }
 
     init(http: ARTHttp, logger: InternalLog) {
@@ -1108,12 +1081,19 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
 
 /// Records each message for test purpose.
 class TestProxyTransport: ARTWebSocketTransport {
+    /// The factory that created this TestProxyTransport instance.
+    private weak var _factory: TestProxyTransportFactory?
+    private var factory: TestProxyTransportFactory {
+        guard let _factory else {
+            preconditionFailure("Tried to fetch factory but it's already been deallocated")
+        }
+        return _factory
+    }
 
-    /// This will affect all WebSocketTransport instances.
-    /// Set it to nil after the test ends.
-    static var fakeNetworkResponse: FakeNetworkResponse?
-    static var networkConnectEvent: ((ARTRealtimeTransport, URL) -> Void)?
-
+    init(factory: TestProxyTransportFactory, rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, connectionSerial: NSNumber?, logger: InternalLog) {
+        self._factory = factory
+        super.init(rest: rest, options: options, resumeKey: resumeKey, connectionSerial: connectionSerial, logger: logger)
+    }
 
     fileprivate(set) var lastUrl: URL?
 
@@ -1210,7 +1190,7 @@ class TestProxyTransport: ARTWebSocketTransport {
     // MARK: ARTWebSocket
 
     override func connect(withKey key: String) {
-        if let fakeResponse = TestProxyTransport.fakeNetworkResponse {
+        if let fakeResponse = factory.fakeNetworkResponse {
             setupFakeNetworkResponse(fakeResponse)
         }
         super.connect(withKey: key)
@@ -1218,7 +1198,7 @@ class TestProxyTransport: ARTWebSocketTransport {
     }
 
     override func connect(withToken token: String) {
-        if let fakeResponse = TestProxyTransport.fakeNetworkResponse {
+        if let fakeResponse = factory.fakeNetworkResponse {
             setupFakeNetworkResponse(fakeResponse)
         }
         super.connect(withToken: token)
@@ -1228,7 +1208,7 @@ class TestProxyTransport: ARTWebSocketTransport {
     private func setupFakeNetworkResponse(_ networkResponse: FakeNetworkResponse) {
         var hook: AspectToken?
         hook = ARTSRWebSocket.testSuite_replaceClassMethod(#selector(ARTSRWebSocket.open)) {
-            if TestProxyTransport.fakeNetworkResponse == nil {
+            if self.factory.fakeNetworkResponse == nil {
                 return
             }
 
@@ -1256,7 +1236,7 @@ class TestProxyTransport: ARTWebSocketTransport {
     }
 
     private func performNetworkConnectEvent() {
-        guard let networkConnectEventHandler = TestProxyTransport.networkConnectEvent else {
+        guard let networkConnectEventHandler = factory.networkConnectEvent else {
             return
         }
         if let lastUrl = self.lastUrl {
@@ -1283,7 +1263,7 @@ class TestProxyTransport: ARTWebSocketTransport {
 
     @discardableResult
     override func send(_ data: Data, withSource decodedObject: Any?) -> Bool {
-        if let networkAnswer = TestProxyTransport.fakeNetworkResponse, let ws = self.websocket {
+        if let networkAnswer = factory.fakeNetworkResponse, let ws = self.websocket {
             // Ignore it because it should fake a failure.
             self.webSocket(ws, didFailWithError: networkAnswer.error)
             return false
@@ -1360,7 +1340,7 @@ class TestProxyTransport: ARTWebSocketTransport {
     }
 
     override func webSocket(_ webSocket: ARTWebSocket, didReceiveMessage message: Any?) {
-        if let networkAnswer = TestProxyTransport.fakeNetworkResponse, let ws = self.websocket {
+        if let networkAnswer = factory.fakeNetworkResponse, let ws = self.websocket {
             // Ignore it because it should fake a failure.
             self.webSocket(ws, didFailWithError: networkAnswer.error)
             return
@@ -1562,24 +1542,24 @@ extension ARTRealtime {
         }
     }
 
-    func simulateNoInternetConnection() {
+    func simulateNoInternetConnection(transportFactory: TestProxyTransportFactory) {
         guard let reachability = self.internal.reachability as? TestReachability else {
             fatalError("Expected test reachability")
         }
 
         AblyTests.queue.async {
-            TestProxyTransport.fakeNetworkResponse = .noInternet
+            transportFactory.fakeNetworkResponse = .noInternet
             reachability.simulate(false)
         }
     }
 
-    func simulateRestoreInternetConnection(after seconds: TimeInterval? = nil) {
+    func simulateRestoreInternetConnection(after seconds: TimeInterval? = nil, transportFactory: TestProxyTransportFactory) {
         guard let reachability = self.internal.reachability as? TestReachability else {
             fatalError("Expected test reachability")
         }
 
         AblyTests.queue.asyncAfter(deadline: .now() + (seconds ?? 0)) {
-            TestProxyTransport.fakeNetworkResponse = nil
+            transportFactory.fakeNetworkResponse = nil
             reachability.simulate(true)
         }
     }

@@ -4,7 +4,7 @@ import Nimble
 import XCTest
 
 private func postTestStats(_ stats: [[String: Any]]) -> ARTClientOptions {
-    let options = AblyTests.setupOptions(AblyTests.jsonRestOptions, forceNewApp: true)
+    let options = AblyTests.commonAppSetup(forceNewApp: true)
 
     let keyBase64 = encodeBase64(options.key ?? "")
 
@@ -15,7 +15,7 @@ private func postTestStats(_ stats: [[String: Any]]) -> ARTClientOptions {
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Basic \(keyBase64)", forHTTPHeaderField: "Authorization")
 
-    let (_, responseError, httpResponse) = NSURLSessionServerTrustSync().get(request)
+    let (_, responseError, httpResponse) = SynchronousHTTPClient().perform(request)
 
     if let error = responseError {
         XCTFail(error.localizedDescription)

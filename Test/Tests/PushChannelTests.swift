@@ -14,12 +14,15 @@ class PushChannelTests: XCTestCase {
         return super.defaultTestSuite
     }
 
+    private var userQueue: DispatchQueue!
+
     override func setUp() {
         super.setUp()
 
         mockHttpExecutor = MockHTTPExecutor()
         let options = ARTClientOptions(key: "xxxx:xxxx")
-        options.dispatchQueue = AblyTests.userQueue
+        userQueue = AblyTests.createUserQueue()
+        options.dispatchQueue = userQueue
         options.internalDispatchQueue = AblyTests.queue
         rest = ARTRest(options: options)
         rest.internal.options.clientId = "tester"
@@ -33,13 +36,13 @@ class PushChannelTests: XCTestCase {
 
     // RSH7a1
     func test__001__Push_Channel__subscribeDevice__should_fail_if_the_LocalDevice_doesn_t_have_an_deviceIdentityToken() {
-        waitUntil(timeout: testTimeout) { done in
+        waitUntil(timeout: testTimeout) { [userQueue] done in
             rest.channels.get(uniqueChannelName()).push.subscribeDevice { error in
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
                 expect(error.message).to(contain("cannot use device before device activation has finished"))
-                XCTAssertTrue(AblyTests.currentQueueLabel() == AblyTests.userQueue.label)
+                XCTAssertTrue(AblyTests.currentQueueLabel() == userQueue!.label)
                 done()
             }
         }
@@ -87,13 +90,13 @@ class PushChannelTests: XCTestCase {
         rest.device.clientId = nil
         defer { rest.device.clientId = originalClientId }
 
-        waitUntil(timeout: testTimeout) { done in
+        waitUntil(timeout: testTimeout) { [userQueue] done in
             rest.channels.get(uniqueChannelName()).push.subscribeClient { error in
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
                 expect(error.message).to(contain("null client ID"))
-                XCTAssertTrue(AblyTests.currentQueueLabel() == AblyTests.userQueue.label)
+                XCTAssertTrue(AblyTests.currentQueueLabel() == userQueue!.label)
                 done()
             }
         }
@@ -132,13 +135,13 @@ class PushChannelTests: XCTestCase {
 
     // RSH7c1
     func test__005__Push_Channel__unsubscribeDevice__should_fail_if_the_LocalDevice_doesn_t_have_a_deviceIdentityToken() {
-        waitUntil(timeout: testTimeout) { done in
+        waitUntil(timeout: testTimeout) { [userQueue] done in
             rest.channels.get(uniqueChannelName()).push.unsubscribeDevice { error in
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
                 expect(error.message).to(contain("cannot use device before device activation has finished"))
-                XCTAssertTrue(AblyTests.currentQueueLabel() == AblyTests.userQueue.label)
+                XCTAssertTrue(AblyTests.currentQueueLabel() == userQueue!.label)
                 done()
             }
         }
@@ -184,13 +187,13 @@ class PushChannelTests: XCTestCase {
         rest.device.clientId = nil
         defer { rest.device.clientId = originalClientId }
 
-        waitUntil(timeout: testTimeout) { done in
+        waitUntil(timeout: testTimeout) { [userQueue] done in
             rest.channels.get(uniqueChannelName()).push.unsubscribeClient { error in
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
                 expect(error.message).to(contain("null client ID"))
-                XCTAssertTrue(AblyTests.currentQueueLabel() == AblyTests.userQueue.label)
+                XCTAssertTrue(AblyTests.currentQueueLabel() == userQueue!.label)
                 done()
             }
         }

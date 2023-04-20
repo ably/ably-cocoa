@@ -112,12 +112,13 @@
 
 @implementation ARTCbcCipher
 
-- (id)initWithCipherParams:(ARTCipherParams *)cipherParams {
+- (id)initWithCipherParams:(ARTCipherParams *)cipherParams logger:(ARTInternalLog *)logger {
     self = [super init];
     if (self) {
         _keySpec = cipherParams.key;
         _iv = cipherParams.iv;
         _blockLength = ART_CBC_BLOCK_LENGTH;
+        _logger = logger;
 
         if (![cipherParams ccAlgorithm:&_algorithm error:nil]) {
             return nil;
@@ -130,8 +131,8 @@
     return [self.keySpec length] *8;
 }
 
-+ (instancetype)cbcCipherWithParams:(ARTCipherParams *)cipherParams {
-    return [[self alloc] initWithCipherParams:cipherParams];
++ (instancetype)cbcCipherWithParams:(ARTCipherParams *)cipherParams logger:(ARTInternalLog *)logger {
+    return [[self alloc] initWithCipherParams:cipherParams logger:logger];
 }
 
 - (ARTStatus *)encrypt:(NSData *)plaintext output:(NSData *__autoreleasing *)output {
@@ -336,8 +337,8 @@
     return [self generateSecureRandomData:length / 8];
 }
 
-+ (id<ARTChannelCipher>)cipherWithParams:(ARTCipherParams *)params {
-    return [ARTCbcCipher cbcCipherWithParams:params];
++ (id<ARTChannelCipher>)cipherWithParams:(ARTCipherParams *)params logger:(ARTInternalLog *)logger {
+    return [ARTCbcCipher cbcCipherWithParams:params logger:logger];
 }
 
 @end

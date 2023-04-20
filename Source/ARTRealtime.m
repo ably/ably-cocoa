@@ -46,6 +46,7 @@
 #import "ARTConstantRetryDelayCalculator.h"
 #import "ARTTypes+Private.h"
 #import "ARTInternalLog.h"
+#import "ARTRealtimeTransportFactory.h"
 
 @interface ARTConnectionStateChange ()
 
@@ -186,7 +187,6 @@ NS_ASSUME_NONNULL_END
     ARTEventEmitter<ARTEvent *, ARTErrorInfo *> *_pingEventEmitter;
     NSDate *_connectionLostAt;
     NSDate *_lastActivity;
-    Class _transportClass;
     Class _reachabilityClass;
     id<ARTRealtimeTransport> _transport;
     ARTFallback *_fallbacks;
@@ -214,7 +214,6 @@ NS_ASSUME_NONNULL_END
         _pingEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
         _channels = [[ARTRealtimeChannelsInternal alloc] initWithRealtime:self logger:self.logger];
         _transport = nil;
-        _transportClass = [ARTWebSocketTransport class];
         _reachabilityClass = [ARTOSReachability class];
         _msgSerial = 0;
         _queuedMessages = [NSMutableArray array];
@@ -500,7 +499,7 @@ NS_ASSUME_NONNULL_END
     [self.connection setState:state];
     [self.connection setErrorReason:metadata.errorInfo];
     
-    ARTEventListener *stateChangeEventListener = [self transitionSideEffects:stateChange];
+    ARTEventListener *stateChangeEventListener = [self performTransitionWithStateChange:stateChange];
     
     [_internalEventEmitter emit:[ARTEvent newWithConnectionEvent:(ARTRealtimeConnectionEvent)state] with:stateChange];
     
@@ -529,7 +528,7 @@ NS_ASSUME_NONNULL_END
     
     ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:self.connection.state_nosync previous:self.connection.state_nosync event:ARTRealtimeConnectionEventUpdate reason:errorInfo retryIn:0];
     
-    ARTEventListener *stateChangeEventListener = [self transitionSideEffects:stateChange];
+    ARTEventListener *stateChangeEventListener = [self performTransitionWithStateChange:stateChange];
     
     // stateChangeEventListener may be nil if we're in a failed state
     if (stateChangeEventListener != nil) {
@@ -537,7 +536,7 @@ NS_ASSUME_NONNULL_END
     }
 }
 
-- (ARTEventListener *)transitionSideEffects:(ARTConnectionStateChange *)stateChange {
+- (ARTEventListener *)performTransitionWithStateChange:(ARTConnectionStateChange *)stateChange {
     ARTChannelStateChangeMetadata *channelStateChangeMetadata = nil;
     ARTEventListener *stateChangeEventListener = nil;
     
@@ -789,7 +788,8 @@ NS_ASSUME_NONNULL_END
 }
 
 - (void)setTransportWithResumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial {
-    _transport = [[_transportClass alloc] initWithRest:self.rest options:self.options resumeKey:resumeKey connectionSerial:connectionSerial logger:self.logger];
+    const id<ARTRealtimeTransportFactory> factory = self.options.testOptions.transportFactory;
+    _transport = [factory transportWithRest:self.rest options:self.options resumeKey:resumeKey connectionSerial:connectionSerial logger:self.logger];
     _transport.delegate = self;
 }
 
@@ -1445,10 +1445,6 @@ NS_ASSUME_NONNULL_END
     _idleTimer = nil;
 }
 
-- (void)setTransportClass:(Class)transportClass {
-    _transportClass = transportClass;
-}
-
 - (void)setReachabilityClass:(Class)reachabilityClass {
     _reachabilityClass = reachabilityClass;
 }
@@ -1566,8 +1562,9 @@ NS_ASSUME_NONNULL_END
     if ([self shouldRetryWithFallback:transportError]) {
         ARTLogDebug(self.logger, @"R:%p host is down; can retry with fallback host", self);
         if (!_fallbacks && [transportError.url.host isEqualToString:[ARTDefault realtimeHost]]) {
-            NSArray *hosts = [ARTFallbackHosts hostsFromOptions:[self getClientOptions]];
-            self->_fallbacks = [[ARTFallback alloc] initWithFallbackHosts:hosts];
+            ARTClientOptions *const clientOptions = [self getClientOptions];
+            NSArray *hosts = [ARTFallbackHosts hostsFromOptions:clientOptions];
+            self->_fallbacks = [[ARTFallback alloc] initWithFallbackHosts:hosts shuffleArray:clientOptions.testOptions.shuffleArray];
             if (self->_fallbacks != nil) {
                 [self reconnectWithFallback];
             } else {

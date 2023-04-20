@@ -101,7 +101,8 @@ class CryptoTests: XCTestCase {
 
     func test__010__Crypto__encrypt__should_generate_a_new_IV_every_time_it_s_called__and_should_be_the_first_block_encrypted() {
         let params = ARTCipherParams(algorithm: "aes", key: key as ARTCipherKeyCompatible)
-        let cipher = ARTCrypto.cipher(with: params)
+        let logger = InternalLog(core: MockInternalLogCore())
+        let cipher = ARTCrypto.cipher(with: params, logger: logger)
         let data = "data".data(using: String.Encoding.utf8)!
 
         var distinctOutputs = Set<NSData>()
@@ -114,7 +115,7 @@ class CryptoTests: XCTestCase {
             let firstBlock = output!.subdata(with: NSMakeRange(0, Int((cipher as! ARTCbcCipher).blockLength)))
             let paramsWithIV = ARTCipherParams(algorithm: "aes", key: key as ARTCipherKeyCompatible, iv: firstBlock)
             var sameOutput: NSData?
-            ARTCrypto.cipher(with: paramsWithIV).encrypt(data, output: &sameOutput)
+            ARTCrypto.cipher(with: paramsWithIV, logger: logger).encrypt(data, output: &sameOutput)
 
             XCTAssertEqual(output!, sameOutput!)
         }
@@ -129,9 +130,10 @@ class CryptoTests: XCTestCase {
 
     func reusableTestsTestFixture(_ cryptoFixture: (fileName: String, expectedEncryptedEncoding: String, keyLength: UInt), testCase: TestCase_ReusableTestsTestFixture, beforeEach contextBeforeEach: (() -> Void)? = nil, afterEach contextAfterEach: (() -> Void)? = nil) throws {
         let (key, iv, items) = AblyTests.loadCryptoTestData(cryptoFixture.fileName)
-        let decoder = ARTDataEncoder(cipherParams: nil, error: nil)
+        let logger = InternalLog(core: MockInternalLogCore())
+        let decoder = ARTDataEncoder(cipherParams: nil, logger: logger, error: nil)
         let cipherParams = ARTCipherParams(algorithm: "aes", key: key as ARTCipherKeyCompatible, iv: iv)
-        let encrypter = ARTDataEncoder(cipherParams: cipherParams, error: nil)
+        let encrypter = ARTDataEncoder(cipherParams: cipherParams, logger: logger, error: nil)
 
         func extractMessage(_ fixture: AblyTests.CryptoTestItem.TestMessage) -> ARTMessage {
             let msg = ARTMessage(name: fixture.name, data: fixture.data)
@@ -195,7 +197,7 @@ class CryptoTests: XCTestCase {
     
     func reusableTestsTestManualDecryption(fileName: String, expectedEncryptedEncoding: String, keyLength: UInt) throws {
         let (key, iv, jsonItems) = AblyTests.loadCryptoTestRawData(fileName)
-        let decoder = ARTDataEncoder(cipherParams: nil, error: nil)
+        let decoder = ARTDataEncoder(cipherParams: nil, logger: .init(core: MockInternalLogCore()), error: nil)
         let cipherParams = ARTCipherParams(algorithm: "aes", key: key as ARTCipherKeyCompatible, iv: iv)
         let channelOptions = ARTChannelOptions(cipher: cipherParams)
         

@@ -1,5 +1,7 @@
 @import Foundation;
 
+@protocol ARTRealtimeTransportFactory;
+
 NS_ASSUME_NONNULL_BEGIN
 
 /**
@@ -18,6 +20,16 @@ NS_ASSUME_NONNULL_BEGIN
  Initial value is `ARTDefault.realtimeRequestTimeout`.
  */
 @property (nonatomic) NSTimeInterval realtimeRequestTimeout;
+
+/**
+ Initial value is `ARTFallback_shuffleArray`.
+ */
+@property (nonatomic) void (^shuffleArray)(NSMutableArray *);
+
+/**
+ Initial value is an instance of `ARTDefaultRealtimeTransportFactory`.
+ */
+@property (nonatomic) id<ARTRealtimeTransportFactory> transportFactory;
 
 @end
 

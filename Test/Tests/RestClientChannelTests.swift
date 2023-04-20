@@ -138,9 +138,9 @@ class RestClientChannelTests: XCTestCase {
     override func setUp() {
         super.setUp()
 
-        let options = AblyTests.setupOptions(AblyTests.jsonRestOptions)
+        let options = AblyTests.commonAppSetup()
         client = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(.init(clientOptions: options))
+        testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
     }
 
     // RSL1
@@ -316,7 +316,7 @@ class RestClientChannelTests: XCTestCase {
     func test__012__publish__ClientOptions_clientId__should_include_the_clientId_as_a_querystring_parameter_in_realtime_connection_requests() {
         let options = AblyTests.commonAppSetup()
         options.clientId = "john-doe"
-        let client = AblyTests.newRealtime(options)
+        let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
         waitUntil(timeout: testTimeout) { done in
             client.channels.get(uniqueChannelName(prefix: "RSA7e1"))
@@ -337,7 +337,7 @@ class RestClientChannelTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         options.clientId = "john-doe"
         let client = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(.init(clientOptions: options))
+        testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
         waitUntil(timeout: testTimeout) { done in
             client.channels.get(uniqueChannelName(prefix: "RSA7e1"))
@@ -871,7 +871,7 @@ class RestClientChannelTests: XCTestCase {
     func test__004__publish__should_include_attributes_supplied_by_the_caller_in_the_encoded_message() {
         let options = AblyTests.commonAppSetup()
         let client = ARTRest(options: options)
-        let proxyHTTPExecutor = TestProxyHTTPExecutor(.init(clientOptions: options))
+        let proxyHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = proxyHTTPExecutor
 
         let channel = client.channels.get(uniqueChannelName())
