@@ -277,9 +277,6 @@
 		841134782722205400CFA837 /* ARTArchiveTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 841134772722205400CFA837 /* ARTArchiveTests.m */; };
 		8412FDE72661AC37001FE9E6 /* AblyDeltaCodec.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE12661AC37001FE9E6 /* AblyDeltaCodec.xcframework */; };
 		8412FDED2661AC37001FE9E6 /* msgpack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE32661AC37001FE9E6 /* msgpack.xcframework */; };
-		8412FDF52661AC7B001FE9E6 /* Aspects.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF12661AC7A001FE9E6 /* Aspects.xcframework */; };
-		8412FDF62661AC7B001FE9E6 /* Aspects.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF12661AC7A001FE9E6 /* Aspects.xcframework */; };
-		8412FDF72661AC7B001FE9E6 /* Aspects.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF12661AC7A001FE9E6 /* Aspects.xcframework */; };
 		8412FDF82661AC7B001FE9E6 /* SwiftyJSON.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF22661AC7B001FE9E6 /* SwiftyJSON.xcframework */; };
 		8412FDF92661AC7B001FE9E6 /* SwiftyJSON.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF22661AC7B001FE9E6 /* SwiftyJSON.xcframework */; };
 		8412FDFA2661AC7B001FE9E6 /* SwiftyJSON.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF22661AC7B001FE9E6 /* SwiftyJSON.xcframework */; };
@@ -1227,7 +1224,6 @@
 		841134772722205400CFA837 /* ARTArchiveTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTArchiveTests.m; sourceTree = "<group>"; };
 		8412FDE12661AC37001FE9E6 /* AblyDeltaCodec.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = AblyDeltaCodec.xcframework; path = Carthage/Build/AblyDeltaCodec.xcframework; sourceTree = "<group>"; };
 		8412FDE32661AC37001FE9E6 /* msgpack.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = msgpack.xcframework; path = Carthage/Build/msgpack.xcframework; sourceTree = "<group>"; };
-		8412FDF12661AC7A001FE9E6 /* Aspects.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Aspects.xcframework; path = Carthage/Build/Aspects.xcframework; sourceTree = "<group>"; };
 		8412FDF22661AC7B001FE9E6 /* SwiftyJSON.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SwiftyJSON.xcframework; path = Carthage/Build/SwiftyJSON.xcframework; sourceTree = "<group>"; };
 		8412FDF42661AC7B001FE9E6 /* Nimble.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Nimble.xcframework; path = Carthage/Build/Nimble.xcframework; sourceTree = "<group>"; };
 		848ED97226E50D0F0087E800 /* ObjcppTest.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ObjcppTest.mm; sourceTree = "<group>"; };
@@ -1506,7 +1502,6 @@
 				8412FDF82661AC7B001FE9E6 /* SwiftyJSON.xcframework in Frameworks */,
 				8412FDFE2661AC7B001FE9E6 /* Nimble.xcframework in Frameworks */,
 				D70F277D2261046A00956251 /* Ably.framework in Frameworks */,
-				8412FDF52661AC7B001FE9E6 /* Aspects.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1526,7 +1521,6 @@
 				8412FDF92661AC7B001FE9E6 /* SwiftyJSON.xcframework in Frameworks */,
 				8412FDFF2661AC7B001FE9E6 /* Nimble.xcframework in Frameworks */,
 				D7093C0F219E2DB200723F17 /* Ably.framework in Frameworks */,
-				8412FDF62661AC7B001FE9E6 /* Aspects.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1537,7 +1531,6 @@
 				8412FDFA2661AC7B001FE9E6 /* SwiftyJSON.xcframework in Frameworks */,
 				8412FE002661AC7B001FE9E6 /* Nimble.xcframework in Frameworks */,
 				D7093C65219EE1AE00723F17 /* Ably.framework in Frameworks */,
-				8412FDF72661AC7B001FE9E6 /* Aspects.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2198,7 +2191,6 @@
 			children = (
 				8412FDE12661AC37001FE9E6 /* AblyDeltaCodec.xcframework */,
 				8412FDE32661AC37001FE9E6 /* msgpack.xcframework */,
-				8412FDF12661AC7A001FE9E6 /* Aspects.xcframework */,
 				8412FDF42661AC7B001FE9E6 /* Nimble.xcframework */,
 				8412FDF22661AC7B001FE9E6 /* SwiftyJSON.xcframework */,
 			);
