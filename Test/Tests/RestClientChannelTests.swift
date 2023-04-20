@@ -1225,16 +1225,16 @@ class RestClientChannelTests: XCTestCase {
                     }
                     
                     let jsonData = AblyTests.msgpackToData(httpBody)
-                    var model: ExpectedModel
+                    var model: ExpectedModel? = nil
                     do {
                         model = try jsonUtility.decode(data: jsonData)
                     } catch {
                         XCTFail("\(error)")
                     }
-                    if let s = model.data, let data = try? JSONSerialization.jsonObject(with: s.data(using: .utf8)!) {
+                    if let s = model?.data, let data = try? JSONSerialization.jsonObject(with: s.data(using: .utf8)!) {
                         // Make sure the formatting is the same by parsing
                         // and reformatting in the same way as the test case.
-                        model.data = jsonUtility.toJSONString(data)
+                        model?.data = jsonUtility.toJSONString(data)
                     }
 
                     XCTAssertEqual(model, caseTest.expected)
@@ -1275,14 +1275,14 @@ class RestClientChannelTests: XCTestCase {
                         done(); return
                     }
                     
-                    var model: ExpectedModel
+                    var model: ExpectedModel? = nil
                     do {
                         model = try jsonUtility.decode(data: AblyTests.msgpackToData(httpBody))
                     } catch {
                         XCTFail("\(error)")
                     }
                     
-                    XCTAssertEqual(model.encoding, caseItem.expected.encoding)
+                    XCTAssertEqual(model?.encoding, caseItem.expected.encoding)
                     done()
                 })
             }
