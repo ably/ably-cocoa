@@ -1,4 +1,4 @@
-name: "Integration Test: iOS 16.0"
+name: "Integration Test: iOS 16.2"
 
 on:
   pull_request:
@@ -51,7 +51,7 @@ jobs:
           make submodules
           bundle install
           make update_carthage_dependencies_ios
-          Scripts/continuously-run-tests-and-upload-results.sh --lane test_iOS16_0
+          Scripts/continuously-run-tests-and-upload-results.sh --lane test_iOS16_2
 
       - uses: actions/upload-artifact@v3
         with:

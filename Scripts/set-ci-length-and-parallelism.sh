@@ -70,7 +70,7 @@ if [[ $jobs_per_workflow -lt 1 ]]; then
   exit 1
 fi
 
-workflow_file_without_extension=".github/workflows/integration-test-iOS16_0"
+workflow_file_without_extension=".github/workflows/integration-test-iOS16_2"
 workflow_file_extension=".yaml"
 
 workflow_file="${workflow_file_without_extension}${workflow_file_extension}"
