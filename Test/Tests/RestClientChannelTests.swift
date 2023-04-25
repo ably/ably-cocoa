@@ -1491,7 +1491,7 @@ class RestClientChannelTests: XCTestCase {
         client.internal.httpExecutor = testHTTPExecutor
 
         let expectedMessage = ["something": 1]
-        let expectedData = try! JSONSerialization.data(withJSONObject: expectedMessage, options: JSONSerialization.WritingOptions(rawValue: 0))
+        let expectedData = try JSONSerialization.data(withJSONObject: expectedMessage, options: JSONSerialization.WritingOptions(rawValue: 0))
 
         testHTTPExecutor.setListenerProcessingDataResponse { data in
             let dataStr = String(data: data!, encoding: String.Encoding.utf8)!

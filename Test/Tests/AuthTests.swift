@@ -2238,7 +2238,7 @@ class AuthTests: XCTestCase {
 
         let hook = ARTRestInternal.aspect_hook(rest.internal)
         // Adds a block of code after `time` is triggered
-        _ = try? hook(#selector(ARTRestInternal._time(_:)), .positionBefore, unsafeBitCast(block, to: ARTRestInternal.self))
+        _ = try hook(#selector(ARTRestInternal._time(_:)), .positionBefore, unsafeBitCast(block, to: ARTRestInternal.self))
 
         let authOptions = ARTAuthOptions()
         authOptions.queryTime = true
@@ -2568,7 +2568,7 @@ class AuthTests: XCTestCase {
 
         let hook = ARTAuthInternal.aspect_hook(rest.auth.internal)
         // Adds a block of code after `requestToken` is triggered
-        let token = try? hook(#selector(ARTAuthInternal._requestToken(_:with:callback:)), [], unsafeBitCast(block, to: ARTAuthInternal.self))
+        let token = try hook(#selector(ARTAuthInternal._requestToken(_:with:callback:)), [], unsafeBitCast(block, to: ARTAuthInternal.self))
 
         XCTAssertNotNil(token)
 

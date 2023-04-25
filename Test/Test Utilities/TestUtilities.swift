@@ -138,7 +138,7 @@ class AblyTests {
         } else {
             let request = NSMutableURLRequest(url: URL(string: "https://\(options.restHost):\(options.tlsPort)/apps")!)
             request.httpMethod = "POST"
-            request.httpBody = try? JSONUtility.encode(appSetupModel.postApps)
+            request.httpBody = try JSONUtility.encode(appSetupModel.postApps)
 
             request.allHTTPHeaderFields = [
                 "Accept" : "application/json",

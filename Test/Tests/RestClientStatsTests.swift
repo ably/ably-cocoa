@@ -11,7 +11,7 @@ private func postTestStats(_ stats: [[String: Any]]) throws -> ARTClientOptions 
     let request = NSMutableURLRequest(url: URL(string: "\(try AblyTests.clientOptions().restUrl().absoluteString)/stats")!)
 
     request.httpMethod = "POST"
-    request.httpBody = try? JSONUtility.serialize(stats)
+    request.httpBody = try JSONUtility.serialize(stats)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Basic \(keyBase64)", forHTTPHeaderField: "Authorization")
 
