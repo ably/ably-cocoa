@@ -147,8 +147,8 @@ class AblyTests {
 
             let (responseData, responseError, _) = SynchronousHTTPClient().perform(request)
 
-            if let error = responseError {
-                fatalError(error.localizedDescription)
+            if let responseError {
+                throw responseError
             }
 
             app = JSONUtility.jsonObject(data: responseData)!
