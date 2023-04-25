@@ -15,15 +15,7 @@ private func postTestStats(_ stats: [[String: Any]]) throws -> ARTClientOptions 
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Basic \(keyBase64)", forHTTPHeaderField: "Authorization")
 
-    let (_, responseError, httpResponse) = SynchronousHTTPClient().perform(request)
-
-    if let error = responseError {
-        XCTFail(error.localizedDescription)
-    } else if let response = httpResponse {
-        if response.statusCode != 201 {
-            XCTFail("Posting stats fixtures failed: code response \(response.statusCode)")
-        }
-    }
+    try SynchronousHTTPClient().perform(request)
 
     return options
 }

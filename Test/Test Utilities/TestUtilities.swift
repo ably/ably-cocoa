@@ -145,11 +145,7 @@ class AblyTests {
                 "Content-Type" : "application/json"
             ]
 
-            let (responseData, responseError, _) = SynchronousHTTPClient().perform(request)
-
-            if let responseError {
-                throw responseError
-            }
+            let (responseData, _) = try SynchronousHTTPClient().perform(request)
 
             app = JSONUtility.jsonObject(data: responseData)!
             testApplication = app
@@ -376,10 +372,11 @@ class AblyTests {
 class SynchronousHTTPClient: NSObject, URLSessionDelegate, URLSessionTaskDelegate {
     private static let delegateQueue = DispatchQueue(label: "io.ably.tests.NSURLSessionServerTrustSync", qos: .userInitiated)
 
-    func perform(_ request: NSMutableURLRequest) -> (Data?, NSError?, HTTPURLResponse?) {
-        var responseError: NSError?
-        var responseData: Data?
-        var httpResponse: HTTPURLResponse?;
+    @discardableResult
+    func perform(_ request: NSMutableURLRequest) throws -> (Data, HTTPURLResponse) {
+        var callbackData: Data?
+        var callbackResponse: URLResponse?
+        var callbackError: Error?
         var requestCompleted = false
 
         let configuration = URLSessionConfiguration.default
@@ -388,14 +385,9 @@ class SynchronousHTTPClient: NSObject, URLSessionDelegate, URLSessionTaskDelegat
         let session = Foundation.URLSession(configuration:configuration, delegate:self, delegateQueue:queue)
 
         let task = session.dataTask(with: request as URLRequest, completionHandler: { data, response, error in
-            if let response = response as? HTTPURLResponse {
-                responseData = data
-                responseError = error as NSError?
-                httpResponse = response
-            }
-            else if let error = error {
-                responseError = error as NSError?
-            }
+            callbackData = data
+            callbackResponse = response
+            callbackError = error
             requestCompleted = true
         }) 
         task.resume()
@@ -404,7 +396,19 @@ class SynchronousHTTPClient: NSObject, URLSessionDelegate, URLSessionTaskDelegat
             CFRunLoopRunInMode(CFRunLoopMode.defaultMode, CFTimeInterval(0.1), Bool(truncating: 0))
         }
 
-        return (responseData, responseError, httpResponse)
+        if let callbackError {
+            throw callbackError
+        }
+
+        guard let httpResponse = callbackResponse as? HTTPURLResponse else {
+            fatalError("Expected HTTPURLResponse, got \(String(describing: callbackResponse))")
+        }
+
+        guard let callbackData else {
+            fatalError("Expected to have a response body")
+        }
+
+        return (callbackData, httpResponse)
     }
 }
 
@@ -620,12 +624,8 @@ func getJWTToken(invalid: Bool = false, expiresIn: Int = 3600, clientId: String 
     ]
     
     let request = NSMutableURLRequest(url: urlComponents!.url!)
-    let (responseData, responseError, _) = SynchronousHTTPClient().perform(request)
-    if let error = responseError {
-        fail(error.localizedDescription)
-        return nil
-    }
-    return String(data: responseData!, encoding: String.Encoding.utf8)
+    let (responseData, _) = try SynchronousHTTPClient().perform(request)
+    return String(data: responseData, encoding: String.Encoding.utf8)
 }
 
 func getKeys() throws -> Dictionary<String, String> {
