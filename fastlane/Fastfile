@@ -4,7 +4,7 @@ platform :ios do
 
   lane :test_iOS16_2 do
     run_tests(
-      scheme: "Ably-iOS-Tests",
+      scheme: "Ably-iOS",
       derived_data_path: "derived_data",
       devices: ["iPhone 14 (16.2)"],
       test_without_building: false,
@@ -15,7 +15,7 @@ platform :ios do
 
   lane :test_tvOS16_1 do
     run_tests(
-      scheme: "Ably-tvOS-Tests",
+      scheme: "Ably-tvOS",
       derived_data_path: "derived_data",
       devices: ["Apple TV 4K (2nd generation) (16.1)"],
       xcargs: { ABLY_ENV: ENV['ABLY_ENV'], CLANG_ANALYZER_OUTPUT: 'plist-html' },
@@ -25,7 +25,7 @@ platform :ios do
 
   lane :test_macOS do
     run_tests(
-      scheme: "Ably-macOS-Tests",
+      scheme: "Ably-macOS",
       derived_data_path: "derived_data",
       test_without_building: false,
       xcargs: { ABLY_ENV: ENV['ABLY_ENV'], CLANG_ANALYZER_OUTPUT: 'plist-html' },
