@@ -105,18 +105,17 @@ class PushTests: XCTestCase {
     }
 
     // https://github.com/ably/ably-cocoa/issues/877
-    func test__005__activation__should_update_LocalDevice_clientId_when_it_s_null_with_auth_clientId() {
+    func test__005__activation__should_update_LocalDevice_clientId_when_it_s_null_with_auth_clientId() throws {
         let expectedClientId = "foo"
-        let options = AblyTests.clientOptions()
+        let options = try AblyTests.clientOptions()
 
         options.authCallback = { _, completion in
-            getTestTokenDetails(clientId: expectedClientId, completion: { tokenDetails, error in
-                XCTAssertNil(error)
-                guard let tokenDetails = tokenDetails else {
+            getTestTokenDetails(clientId: expectedClientId, completion: { result in
+                guard case .success(let tokenDetails) = result else {
                     fail("TokenDetails are missing"); return
                 }
                 XCTAssertEqual(tokenDetails.clientId, expectedClientId)
-                completion(tokenDetails, error)
+                completion(tokenDetails, nil)
             })
         }
 
@@ -380,8 +379,8 @@ class PushTests: XCTestCase {
         XCTAssertEqual(rest.device.clientId, expectedClientId)
     }
 
-    func test__014__Registerer_Delegate_option__a_successful_activation_should_call_the_correct_registerer_delegate_method() {
-        let options = AblyTests.commonAppSetup()
+    func test__014__Registerer_Delegate_option__a_successful_activation_should_call_the_correct_registerer_delegate_method() throws {
+        let options = try AblyTests.commonAppSetup()
         options.key = "xxxx:xxxx"
         let pushRegistererDelegate = StateMachineDelegate()
         options.pushRegistererDelegate = pushRegistererDelegate
@@ -398,8 +397,8 @@ class PushTests: XCTestCase {
         }
     }
 
-    func test__015__Registerer_Delegate_option__registerer_delegate_should_not_hold_a_strong_instance_reference() {
-        let options = AblyTests.commonAppSetup()
+    func test__015__Registerer_Delegate_option__registerer_delegate_should_not_hold_a_strong_instance_reference() throws {
+        let options = try AblyTests.commonAppSetup()
         options.key = "xxxx:xxxx"
         var pushRegistererDelegate: StateMachineDelegate? = StateMachineDelegate()
         options.pushRegistererDelegate = pushRegistererDelegate

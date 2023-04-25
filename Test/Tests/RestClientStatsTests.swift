@@ -3,12 +3,12 @@ import Foundation
 import Nimble
 import XCTest
 
-private func postTestStats(_ stats: [[String: Any]]) -> ARTClientOptions {
-    let options = AblyTests.commonAppSetup(forceNewApp: true)
+private func postTestStats(_ stats: [[String: Any]]) throws -> ARTClientOptions {
+    let options = try AblyTests.commonAppSetup(forceNewApp: true)
 
     let keyBase64 = encodeBase64(options.key ?? "")
 
-    let request = NSMutableURLRequest(url: URL(string: "\(AblyTests.clientOptions().restUrl().absoluteString)/stats")!)
+    let request = NSMutableURLRequest(url: URL(string: "\(try AblyTests.clientOptions().restUrl().absoluteString)/stats")!)
 
     request.httpMethod = "POST"
     request.httpBody = try? JSONUtility.serialize(stats)
@@ -28,16 +28,16 @@ private func postTestStats(_ stats: [[String: Any]]) -> ARTClientOptions {
     return options
 }
 
-private func queryStats(_ client: ARTRest, _ query: ARTStatsQuery, file: FileString = #file, line: UInt = #line) -> ARTPaginatedResult<ARTStats> {
-    let (stats, error) = (AblyTests.waitFor(timeout: testTimeout, file: file, line: line) { value in
+private func queryStats(_ client: ARTRest, _ query: ARTStatsQuery, file: FileString = #file, line: UInt = #line) throws -> ARTPaginatedResult<ARTStats> {
+    let (stats, error) = try AblyTests.waitFor(timeout: testTimeout, file: file, line: line) { value in
         expect {
             try client.stats(query, callback: { result, err in
                 value((result, err))
             })
         }.toNot(throwError { _ in value(nil) })
-    })!
-    if let error = error {
-        fail(error.message, file: file, line: line)
+    }
+    if let error {
+        throw error
     }
     return stats!
 }
@@ -103,19 +103,19 @@ class RestClientStatsTests: XCTestCase {
 
     // RSC6a
 
-    func beforeEach__RestClient__stats__result() {
-        statsOptions = postTestStats(statsFixtures)
+    func beforeEach__RestClient__stats__result() throws {
+        statsOptions = try postTestStats(statsFixtures)
     }
 
-    func skipped__test__001__RestClient__stats__result__should_match_minute_level_inbound_and_outbound_fixture_data__forwards_() {
-        beforeEach__RestClient__stats__result()
+    func skipped__test__001__RestClient__stats__result__should_match_minute_level_inbound_and_outbound_fixture_data__forwards_() throws {
+        try beforeEach__RestClient__stats__result()
 
         let client = ARTRest(options: statsOptions)
         let query = ARTStatsQuery()
         query.start = date
         query.direction = .forwards
 
-        let result = queryStats(client, query)
+        let result = try queryStats(client, query)
         XCTAssertEqual(result.items.count, 3)
 
         let totalInbound = result.items.reduce(0 as UInt) {
@@ -129,8 +129,8 @@ class RestClientStatsTests: XCTestCase {
         XCTAssertEqual(totalOutbound, 20 + 10 + 40)
     }
 
-    func test__002__RestClient__stats__result__should_match_hour_level_inbound_and_outbound_fixture_data__forwards_() {
-        beforeEach__RestClient__stats__result()
+    func test__002__RestClient__stats__result__should_match_hour_level_inbound_and_outbound_fixture_data__forwards_() throws {
+        try beforeEach__RestClient__stats__result()
 
         let client = ARTRest(options: statsOptions)
         let query = ARTStatsQuery()
@@ -138,7 +138,7 @@ class RestClientStatsTests: XCTestCase {
         query.direction = .forwards
         query.unit = .hour
 
-        let result = queryStats(client, query)
+        let result = try queryStats(client, query)
         let totalInbound = result.items.reduce(0 as UInt) {
             $0 + $1.inbound.all.messages.count
         }
@@ -151,8 +151,8 @@ class RestClientStatsTests: XCTestCase {
         XCTAssertEqual(totalOutbound, 20 + 10 + 40)
     }
 
-    func test__003__RestClient__stats__result__should_match_day_level_inbound_and_outbound_fixture_data__forwards_() {
-        beforeEach__RestClient__stats__result()
+    func test__003__RestClient__stats__result__should_match_day_level_inbound_and_outbound_fixture_data__forwards_() throws {
+        try beforeEach__RestClient__stats__result()
 
         let client = ARTRest(options: statsOptions)
         let query = ARTStatsQuery()
@@ -160,7 +160,7 @@ class RestClientStatsTests: XCTestCase {
         query.direction = .forwards
         query.unit = .month
 
-        let result = queryStats(client, query)
+        let result = try queryStats(client, query)
         let totalInbound = (result.items).reduce(0) { $0 + $1.inbound.all.messages.count }
         let totalOutbound = (result.items).reduce(0) { $0 + $1.outbound.all.messages.count }
 
@@ -169,8 +169,8 @@ class RestClientStatsTests: XCTestCase {
         XCTAssertEqual(totalOutbound, 20 + 10 + 40)
     }
 
-    func skipped__test__004__RestClient__stats__result__should_match_month_level_inbound_and_outbound_fixture_data__forwards_() {
-        beforeEach__RestClient__stats__result()
+    func skipped__test__004__RestClient__stats__result__should_match_month_level_inbound_and_outbound_fixture_data__forwards_() throws {
+        try beforeEach__RestClient__stats__result()
 
         let client = ARTRest(options: statsOptions)
         let query = ARTStatsQuery()
@@ -178,7 +178,7 @@ class RestClientStatsTests: XCTestCase {
         query.direction = .forwards
         query.unit = .month
 
-        let result = queryStats(client, query)
+        let result = try queryStats(client, query)
         let totalInbound = (result.items).reduce(0) { $0 + $1.inbound.all.messages.count }
         let totalOutbound = (result.items).reduce(0) { $0 + $1.outbound.all.messages.count }
 
@@ -187,15 +187,15 @@ class RestClientStatsTests: XCTestCase {
         XCTAssertEqual(totalOutbound, 20 + 10 + 40)
     }
 
-    func skipped__test__005__RestClient__stats__result__should_contain_only_one_item_when_limit_is_1__backwards() {
-        beforeEach__RestClient__stats__result()
+    func skipped__test__005__RestClient__stats__result__should_contain_only_one_item_when_limit_is_1__backwards() throws {
+        try beforeEach__RestClient__stats__result()
 
         let client = ARTRest(options: statsOptions)
         let query = ARTStatsQuery()
         query.end = date.addingTimeInterval(60) // 20XX-02-03:16:04
         query.limit = 1
 
-        let result = queryStats(client, query)
+        let result = try queryStats(client, query)
         let totalInbound = (result.items).reduce(0) { $0 + $1.inbound.all.messages.count }
         let totalOutbound = (result.items).reduce(0) { $0 + $1.outbound.all.messages.count }
 
@@ -204,8 +204,8 @@ class RestClientStatsTests: XCTestCase {
         XCTAssertEqual(totalOutbound, 10)
     }
 
-    func test__006__RestClient__stats__result__should_contain_only_one_item_when_limit_is_1__forwards() {
-        beforeEach__RestClient__stats__result()
+    func test__006__RestClient__stats__result__should_contain_only_one_item_when_limit_is_1__forwards() throws {
+        try beforeEach__RestClient__stats__result()
 
         let client = ARTRest(options: statsOptions)
         let query = ARTStatsQuery()
@@ -213,7 +213,7 @@ class RestClientStatsTests: XCTestCase {
         query.limit = 1
         query.direction = .forwards
 
-        let result = queryStats(client, query)
+        let result = try queryStats(client, query)
         let totalInbound = (result.items).reduce(0) { $0 + $1.inbound.all.messages.count }
         let totalOutbound = (result.items).reduce(0) { $0 + $1.outbound.all.messages.count }
 
@@ -222,27 +222,25 @@ class RestClientStatsTests: XCTestCase {
         XCTAssertEqual(totalOutbound, 20)
     }
 
-    func test__007__RestClient__stats__result__should_be_paginated_according_to_the_limit__backwards() {
-        beforeEach__RestClient__stats__result()
+    func test__007__RestClient__stats__result__should_be_paginated_according_to_the_limit__backwards() throws {
+        try beforeEach__RestClient__stats__result()
 
         let client = ARTRest(options: statsOptions)
         let query = ARTStatsQuery()
         query.end = date.addingTimeInterval(120) // 20XX-02-03:16:05
         query.limit = 1
 
-        let firstPage = queryStats(client, query)
+        let firstPage = try queryStats(client, query)
         XCTAssertEqual(firstPage.items.count, 1)
         XCTAssertEqual((firstPage.items)[0].inbound.all.messages.data, 7000)
         XCTAssertTrue(firstPage.hasNext)
         XCTAssertFalse(firstPage.isLast)
 
-        guard let secondPage: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
+        let secondPage: ARTPaginatedResult<ARTStats> = try AblyTests.waitFor(timeout: testTimeout) { value in
             firstPage.next { page, err in
                 XCTAssertNil(err)
                 value(page)
             }
-        }) else {
-            return
         }
 
         XCTAssertEqual(secondPage.items.count, 1)
@@ -250,34 +248,30 @@ class RestClientStatsTests: XCTestCase {
         XCTAssertTrue(secondPage.hasNext)
         XCTAssertFalse(secondPage.isLast)
 
-        guard let thirdPage: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
+        let thirdPage: ARTPaginatedResult<ARTStats> = try AblyTests.waitFor(timeout: testTimeout) { value in
             secondPage.next { page, err in
                 XCTAssertNil(err)
                 value(page)
             }
-        }) else {
-            return
         }
 
         XCTAssertEqual(thirdPage.items.count, 1)
         XCTAssertEqual((thirdPage.items)[0].inbound.all.messages.data, 5000)
         XCTAssertTrue(thirdPage.isLast)
 
-        guard let firstPageAgain: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
+        let firstPageAgain: ARTPaginatedResult<ARTStats> = try AblyTests.waitFor(timeout: testTimeout) { value in
             thirdPage.first { page, err in
                 XCTAssertNil(err)
                 value(page)
             }
-        }) else {
-            return
         }
 
         XCTAssertEqual(firstPageAgain.items.count, 1)
         XCTAssertEqual((firstPageAgain.items)[0].inbound.all.messages.data, 7000)
     }
 
-    func skipped__test__008__RestClient__stats__result__should_be_paginated_according_to_the_limit__fowards_() {
-        beforeEach__RestClient__stats__result()
+    func skipped__test__008__RestClient__stats__result__should_be_paginated_according_to_the_limit__fowards_() throws {
+        try beforeEach__RestClient__stats__result()
 
         let client = ARTRest(options: statsOptions)
         let query = ARTStatsQuery()
@@ -285,19 +279,17 @@ class RestClientStatsTests: XCTestCase {
         query.limit = 1
         query.direction = .forwards
 
-        let firstPage = queryStats(client, query)
+        let firstPage = try queryStats(client, query)
         XCTAssertEqual(firstPage.items.count, 1)
         XCTAssertEqual((firstPage.items)[0].inbound.all.messages.data, 5000)
         XCTAssertTrue(firstPage.hasNext)
         XCTAssertFalse(firstPage.isLast)
 
-        guard let secondPage: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
+        let secondPage: ARTPaginatedResult<ARTStats> = try AblyTests.waitFor(timeout: testTimeout) { value in
             firstPage.next { page, err in
                 XCTAssertNil(err)
                 value(page)
             }
-        }) else {
-            return
         }
 
         XCTAssertEqual(secondPage.items.count, 1)
@@ -305,26 +297,22 @@ class RestClientStatsTests: XCTestCase {
         XCTAssertTrue(secondPage.hasNext)
         XCTAssertFalse(secondPage.isLast)
 
-        guard let thirdPage: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
+        let thirdPage: ARTPaginatedResult<ARTStats> = try AblyTests.waitFor(timeout: testTimeout) { value in
             secondPage.next { page, err in
                 XCTAssertNil(err)
                 value(page)
             }
-        }) else {
-            return
         }
 
         XCTAssertEqual(thirdPage.items.count, 1)
         XCTAssertEqual((thirdPage.items)[0].inbound.all.messages.data, 7000)
         XCTAssertTrue(thirdPage.isLast)
 
-        guard let firstPageAgain: ARTPaginatedResult<ARTStats> = (AblyTests.waitFor(timeout: testTimeout) { value in
+        let firstPageAgain: ARTPaginatedResult<ARTStats> = try AblyTests.waitFor(timeout: testTimeout) { value in
             thirdPage.first { page, err in
                 XCTAssertNil(err)
                 value(page)
             }
-        }) else {
-            return
         }
 
         XCTAssertEqual(firstPageAgain.items.count, 1)
