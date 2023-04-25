@@ -2,12 +2,18 @@ default_platform(:ios)
 
 class LaneConfig < Struct.new(:name, :scheme, :devices)
   def args_for_run_tests
+    ably_env = ENV['ABLY_ENV']
+
+    unless ably_env && !ably_env.empty?
+      raise 'You must provide ABLY_ENV as an environment variable.'
+    end
+
     {
       scheme: scheme,
       derived_data_path: "derived_data",
       devices: devices,
       test_without_building: false,
-      xcargs: { ABLY_ENV: ENV['ABLY_ENV'], CLANG_ANALYZER_OUTPUT: 'plist-html' },
+      xcargs: { ABLY_ENV: ably_env, CLANG_ANALYZER_OUTPUT: 'plist-html' },
       output_directory: "fastlane/test_output/sdk/#{name}"
     }
   end
