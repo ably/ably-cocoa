@@ -89,6 +89,13 @@ jobs:
           name: xcodebuild-logs
           path: ~/Library/Developer/Xcode/DerivedData/*/Logs
 
+      - name: Upload test output artifact
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: test-output
+          path: fastlane/test_output
+
       - name: Upload test results to observability server
         if: always()
         env:
