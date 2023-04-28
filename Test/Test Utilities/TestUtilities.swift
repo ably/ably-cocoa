@@ -3,8 +3,6 @@ import Foundation
 import XCTest
 import Nimble
 
-import Aspects
-
 import Ably.Private
 
 typealias HookToken = AspectToken

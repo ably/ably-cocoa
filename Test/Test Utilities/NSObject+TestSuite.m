@@ -1,7 +1,7 @@
 //
 
 #import "NSObject+TestSuite.h"
-#import <Aspects/Aspects.h>
+#import "Aspects.h"
 
 @implementation NSObject (TestSuite)
 

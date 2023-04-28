@@ -1,5 +1,4 @@
 import Ably
-import Aspects
 import Nimble
 import XCTest
 
