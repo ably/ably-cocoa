@@ -100,7 +100,9 @@ private func testMovesToDisconnectedWithNetworkingError(_ error: Error) {
 }
 
 private var internetConnectionNotAvailableTestsClient: ARTRealtime!
-private let fixtures = (try! Data(path: pathForTestResource(testResourcesPath + "messages-encoding.json"))).jsonObject
+private let fixtures: [String: Any] = JSONUtility.jsonObject(
+    data: try! Data(path: pathForTestResource(testResourcesPath + "messages-encoding.json"))
+)!
 
 private func expectDataToMatch(_ message: ARTMessage, _ fixtureMessage: Any) {
     let dictionaryValue = fixtureMessage as! [String: Any]
@@ -4476,8 +4478,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             return
         }
         
-        let dictionaryValue = fixtures as! [String: Any]
-        let messages = dictionaryValue["messages"] as! [[String: Any]]
+        let messages = fixtures["messages"] as! [[String: Any]]
         
         for fixtureMessage in messages {
             var receivedMessage: ARTMessage?
@@ -4526,7 +4527,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                             done()
                             return
                         }
-                        let messages = data!.jsonObject as! [[String: Any]]
+                        let messages: [[String: Any]] = JSONUtility.jsonObject(data: data)!
                         let persistedMessage = messages.first!
                         XCTAssertEqual(persistedMessage["data"] as? String, fixtureMessage["data"] as? String)
                         XCTAssertEqual(persistedMessage["encoding"] as? String, fixtureMessage["encoding"] as? String)
@@ -4556,8 +4557,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             realtimeSubscribeChannelJSON.attach { _ in partlyDone() }
         }
 
-        let dictionaryValue = fixtures as! [String: Any]
-        let messages = dictionaryValue["messages"] as! [[String: Any]]
+        let messages = fixtures["messages"] as! [[String: Any]]
         
         for fixtureMessage in messages {
             waitUntil(timeout: testTimeout) { done in
@@ -4600,8 +4600,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let restPublishChannelMsgPack = restPublishClientMsgPack.channels.get(uniqueChannelName())
         let restPublishChannelJSON = restPublishClientJSON.channels.get(restPublishChannelMsgPack.name)
 
-        let dictionaryValue = fixtures as! [String: Any]
-        let messages = dictionaryValue["messages"] as! [[String: Any]]
+        let messages = fixtures["messages"] as! [[String: Any]]
         
         for fixtureMessage in messages {
             var data: AnyObject
@@ -4633,7 +4632,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                             done()
                             return
                         }
-                        let messages = data!.jsonObject as! [[String: Any]]
+                        let messages: [[String: Any]] = JSONUtility.jsonObject(data: data)!
                         let persistedMessage = messages.first!
                         
                         XCTAssertEqual(persistedMessage["data"] as? String, persistedMessage["data"] as? String)

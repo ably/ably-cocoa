@@ -152,7 +152,7 @@ class AblyTests {
                 fatalError(error.localizedDescription)
             }
 
-            app = responseData!.jsonObject as! [String: Any]
+            app = JSONUtility.jsonObject(data: responseData)!
             testApplication = app
             
             if debug {

@@ -65,6 +65,14 @@ final class JSONUtility {
         
         return try? JSONSerialization.jsonObject(with: data) as? [String: Any]
     }
+    
+    static func jsonObject<T: Any>(data: Data?) -> T? {
+        guard let data else {
+            return nil
+        }
+        
+        return try? JSONSerialization.jsonObject(with: data) as? T
+    }
 }
 
 extension Encodable {
@@ -77,8 +85,5 @@ extension Data {
     init(path: String) throws {
         let url = URL(fileURLWithPath: path)
         try self.init(contentsOf: url)
-    }
-    var jsonObject: Any? {
-        try? JSONSerialization.jsonObject(with: self)
     }
 }

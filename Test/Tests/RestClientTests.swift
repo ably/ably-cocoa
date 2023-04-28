@@ -1578,7 +1578,7 @@ class RestClientTests: XCTestCase {
         }
 
         let transport = realtime.internal.transport as! TestProxyTransport
-        let jsonArray = transport.rawDataSent.map { AblyTests.msgpackToData($0).jsonObject as! [String: Any] }
+        let jsonArray: [[String: Any]] = transport.rawDataSent.map { JSONUtility.jsonObject(data: AblyTests.msgpackToData($0))! }
         let messageJson = jsonArray.filter { item in (item["action"] as! Int) == 15 }.last!
         let messages = messageJson["messages"] as! [[String: Any]]
         XCTAssertEqual(messages[0]["data"] as? String, "message")
