@@ -74,10 +74,3 @@ enum JSONUtility {
         return try? JSONSerialization.jsonObject(with: data) as? T
     }
 }
-
-extension Data {
-    init(path: String) throws {
-        let url = URL(fileURLWithPath: path)
-        try self.init(contentsOf: url)
-    }
-}

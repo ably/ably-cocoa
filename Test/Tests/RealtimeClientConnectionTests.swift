@@ -101,7 +101,7 @@ private func testMovesToDisconnectedWithNetworkingError(_ error: Error) {
 
 private var internetConnectionNotAvailableTestsClient: ARTRealtime!
 private let fixtures: [String: Any] = JSONUtility.jsonObject(
-    data: try! Data(path: pathForTestResource(testResourcesPath + "messages-encoding.json"))
+    data: try! Data(contentsOf: URL(fileURLWithPath: pathForTestResource(testResourcesPath + "messages-encoding.json")))
 )!
 
 private func expectDataToMatch(_ message: ARTMessage, _ fixtureMessage: Any) {
