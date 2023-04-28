@@ -75,12 +75,6 @@ enum JSONUtility {
     }
 }
 
-extension Encodable {
-    func rawData() throws -> Data {
-        try JSONUtility.encode(self)
-    }
-}
-
 extension Data {
     init(path: String) throws {
         let url = URL(fileURLWithPath: path)
