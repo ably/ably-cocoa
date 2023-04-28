@@ -4492,7 +4492,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
                 let request = NSMutableURLRequest(url: URL(string: "/channels/\(channel.name)/messages")!)
                 request.httpMethod = "POST"
-                request.httpBody = try! jsonUtility.serialize(fixtureMessage)
+                request.httpBody = try! JSONUtility.serialize(fixtureMessage)
                 request.allHTTPHeaderFields = [
                     "Accept": "application/json",
                     "Content-Type": "application/json",
@@ -4577,7 +4577,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
                 let request = NSMutableURLRequest(url: URL(string: "/channels/\(realtimeSubscribeChannelMsgPack.name)/messages")!)
                 request.httpMethod = "POST"
-                request.httpBody = try! jsonUtility.serialize(fixtureMessage)
+                request.httpBody = try! JSONUtility.serialize(fixtureMessage)
                 request.allHTTPHeaderFields = [
                     "Accept": "application/json",
                     "Content-Type": "application/json",

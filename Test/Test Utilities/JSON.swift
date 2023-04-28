@@ -8,41 +8,41 @@
 
 import Foundation
 
-final class JSONUtility {
-    private let decoder: JSONDecoder = {
+enum JSONUtility {
+    private static var decoder: JSONDecoder  {
         let jsonDecoder = JSONDecoder()
         jsonDecoder.keyDecodingStrategy = .convertFromSnakeCase
         
         return jsonDecoder
-    }()
+    }
     
-    private let encoder: JSONEncoder = {
+    private static var encoder: JSONEncoder {
         let jsonEncoder = JSONEncoder()
         
         return jsonEncoder
-    }()
+    }
     
-    func decode<T: Codable>(path: String) throws -> T {
+    static func decode<T: Codable>(path: String) throws -> T {
         let url = URL(fileURLWithPath: path)
         
         return try decode(url: url)
     }
     
-    func decode<T: Codable>(url: URL) throws -> T {
+    static func decode<T: Codable>(url: URL) throws -> T {
         let data = try Data(contentsOf: url)
         
         return try decode(data: data)
     }
     
-    func decode<T: Codable>(data: Data) throws -> T {
+    static func decode<T: Codable>(data: Data) throws -> T {
         try decoder.decode(T.self, from: data)
     }
     
-    func encode(_ model: Encodable) throws -> Data {
+    static func encode(_ model: Encodable) throws -> Data {
         try encoder.encode(model)
     }
     
-    func serialize(_ object: Any) throws -> Data {
+    static func serialize(_ object: Any) throws -> Data {
         if #available(iOS 11.0, *) {
             return try JSONSerialization.data(withJSONObject: object, options: .sortedKeys)
         } else {
@@ -50,7 +50,7 @@ final class JSONUtility {
         }
     }
     
-    func toJSONString( _ object: Any, encoding: String.Encoding = .utf8) -> String? {
+    static func toJSONString( _ object: Any, encoding: String.Encoding = .utf8) -> String? {
         guard let data = try? serialize(object) else {
             return nil
         }
@@ -58,7 +58,7 @@ final class JSONUtility {
         return String(bytes: data, encoding: encoding)
     }
     
-    func codableToDictionary( _ model: Codable) -> [String: Any]? {
+    static func codableToDictionary( _ model: Codable) -> [String: Any]? {
         guard let data = try? encode(model) else {
             return nil
         }
@@ -77,7 +77,7 @@ final class JSONUtility {
 
 extension Encodable {
     func rawData() throws -> Data {
-        try JSONUtility().encode(self)
+        try JSONUtility.encode(self)
     }
 }
 

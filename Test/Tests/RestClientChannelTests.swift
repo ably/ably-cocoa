@@ -95,9 +95,9 @@ struct ExpectedModel: Codable, Equatable {
     
     static func with(_ object: Any) -> Self {
         do {
-            let data = try jsonUtility.serialize(object)
+            let data = try JSONUtility.serialize(object)
             
-            return try jsonUtility.decode(data: data)
+            return try JSONUtility.decode(data: data)
         } catch {
             fatalError("\(error)")
         }
@@ -1198,8 +1198,8 @@ class RestClientChannelTests: XCTestCase {
             TestCase(value: text, expected: .with(["data": text])),
             TestCase(value: integer, expected: .with(["data": integer])),
             TestCase(value: decimal, expected: .with(["data": decimal])),
-            TestCase(value: dictionary, expected: .with(["data": jsonUtility.toJSONString(dictionary)!, "encoding": "json"])),
-            TestCase(value: array, expected: .with(["data": jsonUtility.toJSONString(array)!, "encoding": "json"])),
+            TestCase(value: dictionary, expected: .with(["data": JSONUtility.toJSONString(dictionary)!, "encoding": "json"])),
+            TestCase(value: array, expected: .with(["data": JSONUtility.toJSONString(array)!, "encoding": "json"])),
             TestCase(value: binaryData, expected: .with(["data": binaryData.toBase64, "encoding": "base64"])),
         ]
         
@@ -1220,14 +1220,14 @@ class RestClientChannelTests: XCTestCase {
                     let jsonData = AblyTests.msgpackToData(httpBody)
                     var model: ExpectedModel? = nil
                     do {
-                        model = try jsonUtility.decode(data: jsonData)
+                        model = try JSONUtility.decode(data: jsonData)
                     } catch {
                         XCTFail("\(error)")
                     }
                     if let s = model?.data, let data = try? JSONSerialization.jsonObject(with: s.data(using: .utf8)!) {
                         // Make sure the formatting is the same by parsing
                         // and reformatting in the same way as the test case.
-                        model?.data = jsonUtility.toJSONString(data)
+                        model?.data = JSONUtility.toJSONString(data)
                     }
 
                     XCTAssertEqual(model, caseTest.expected)
@@ -1270,7 +1270,7 @@ class RestClientChannelTests: XCTestCase {
                     
                     var model: ExpectedModel? = nil
                     do {
-                        model = try jsonUtility.decode(data: AblyTests.msgpackToData(httpBody))
+                        model = try JSONUtility.decode(data: AblyTests.msgpackToData(httpBody))
                     } catch {
                         XCTFail("\(error)")
                     }

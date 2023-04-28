@@ -218,7 +218,7 @@ class CryptoTests: XCTestCase {
             XCTAssertNil(error)
             XCTAssertNotNil(decoded)
             
-            let rawDictionary = try XCTUnwrap(jsonUtility.codableToDictionary(encryptedFixture))
+            let rawDictionary = try XCTUnwrap(JSONUtility.codableToDictionary(encryptedFixture))
             let decrypted = try XCTUnwrap(ARTMessage.fromEncoded(rawDictionary, channelOptions: channelOptions))
             XCTAssertNotNil(decrypted)
             
@@ -226,7 +226,7 @@ class CryptoTests: XCTestCase {
         }
         
         // a bunch at once
-        let encryptedFixtures = try jsonItems.map { try XCTUnwrap(jsonUtility.codableToDictionary($0.encrypted)) }
+        let encryptedFixtures = try jsonItems.map { try XCTUnwrap(JSONUtility.codableToDictionary($0.encrypted)) }
 
         let decryptedArray = try XCTUnwrap(ARTMessage.fromEncodedArray(encryptedFixtures, channelOptions: channelOptions))
         XCTAssertEqual(decryptedArray.count, jsonItems.count)

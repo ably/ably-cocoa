@@ -40,11 +40,9 @@ func pathForTestResource(_ resourcePath: String) -> String {
     return testBundle.path(forResource: resourcePath, ofType: "")!
 }
 
-
-let jsonUtility = JSONUtility()
 let appSetupModel: TestAppSetup = {
     do {
-        return try jsonUtility.decode(path: pathForTestResource(testResourcesPath + "test-app-setup.json"))
+        return try JSONUtility.decode(path: pathForTestResource(testResourcesPath + "test-app-setup.json"))
     } catch {
         fatalError("Can't parse `test-app-setup.json` \(error)")
     }
@@ -342,7 +340,7 @@ class AblyTests {
     
     class func loadCryptoTestRawData(_ fileName: String) -> (key: Data, iv: Data, jsonItems: [CryptoData.Item]) {
         let file = testResourcesPath + fileName + ".json";
-        let json: CryptoData = try! jsonUtility.decode(path: pathForTestResource(file))
+        let json: CryptoData = try! JSONUtility.decode(path: pathForTestResource(file))
 
         let keyData = Data(base64Encoded: json.key, options: Data.Base64DecodingOptions(rawValue: 0))!
         let ivData = Data(base64Encoded: json.iv, options: Data.Base64DecodingOptions(rawValue: 0))!
