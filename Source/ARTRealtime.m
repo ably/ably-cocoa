@@ -563,7 +563,7 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
 }
 
 - (void)setReachabilityActive:(BOOL)active {
-    if (!_reachability) {
+    if (active && _reachability == nil) {
         _reachability = [[_reachabilityClass alloc] initWithLogger:self.logger queue:_queue];
     }
     if (active) {
