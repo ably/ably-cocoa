@@ -179,12 +179,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 NS_ASSUME_NONNULL_END
 
+const NSTimeInterval _immediateReconnectionDelay = 0.1;
 
 @implementation ARTRealtimeInternal {
     BOOL _resuming;
     BOOL _renewingToken;
     BOOL _shouldImmediatelyReconnect;
-    NSTimeInterval _immediateReconnectionDelay;
     ARTEventEmitter<ARTEvent *, ARTErrorInfo *> *_pingEventEmitter;
     NSDate *_connectionLostAt;
     NSDate *_lastActivity;
@@ -224,7 +224,6 @@ NS_ASSUME_NONNULL_END
         _connection = [[ARTConnectionInternal alloc] initWithRealtime:self logger:self.logger];
         _connectionStateTtl = [ARTDefault connectionStateTtl];
         _shouldImmediatelyReconnect = true;
-        _immediateReconnectionDelay = 0.1;
         _connectRetryDelayCalculator = [[ARTConstantRetryDelayCalculator alloc] initWithConstantDelay:options.disconnectedRetryTimeout];
         self.auth.delegate = self;
         
