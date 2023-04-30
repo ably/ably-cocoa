@@ -580,7 +580,7 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
     }
 }
 
-- (void)resetInactiveConnection {
+- (void)clearConnectionStateIfInactive {
     NSTimeInterval intervalSinceLast = [[NSDate date] timeIntervalSinceDate:_lastActivity];
     if (intervalSinceLast > (_maxIdleInterval + _connectionStateTtl)) {
         [self.connection setId:nil];
@@ -600,7 +600,7 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
             
             // RTN15g We want to enforce a new connection also when there hasn't been activity for longer than (idle interval + TTL)
             if (stateChange.previous == ARTRealtimeDisconnected || stateChange.previous == ARTRealtimeSuspended) {
-                [self resetInactiveConnection];
+                [self clearConnectionStateIfInactive];
             }
             
             if (!_transport) {
