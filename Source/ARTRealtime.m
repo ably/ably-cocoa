@@ -603,6 +603,11 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
                 [self clearConnectionStateIfInactive];
             }
             
+            stateChangeEventListener = [self unlessStateChangesBefore:self.options.testOptions.realtimeRequestTimeout do:^{
+                [self onConnectionTimeOut];
+            }];
+            _connectingTimeoutListener = stateChangeEventListener;
+            
             if (!_transport) {
                 BOOL resume = stateChange.previous == ARTRealtimeFailed ||
                               stateChange.previous == ARTRealtimeDisconnected ||
@@ -611,11 +616,6 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
             }
             
             [self setReachabilityActive:YES];
-            
-            stateChangeEventListener = [self unlessStateChangesBefore:self.options.testOptions.realtimeRequestTimeout do:^{
-                [self onConnectionTimeOut];
-            }];
-            _connectingTimeoutListener = stateChangeEventListener;
             
             break;
         }
