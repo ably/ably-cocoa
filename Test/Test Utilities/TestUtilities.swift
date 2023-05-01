@@ -188,7 +188,7 @@ class AblyTests {
 
         let autoConnect = modifiedOptions.autoConnect
         modifiedOptions.autoConnect = false
-        let transportFactory = TestProxyTransportFactory()
+        let transportFactory = TestProxyTransportFactory(internalQueue: AblyTests.queue)
         modifiedOptions.testOptions.transportFactory = transportFactory
         let realtime = ARTRealtime(options: modifiedOptions)
         realtime.internal.setReachabilityClass(TestReachability.self)
@@ -1097,8 +1097,11 @@ class TestProxyTransport: ARTWebSocketTransport {
         return _factory
     }
 
-    init(factory: TestProxyTransportFactory, rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, connectionSerial: NSNumber?, logger: InternalLog, webSocketFactory: WebSocketFactory) {
+    private var internalQueue: DispatchQueue
+
+    init(factory: TestProxyTransportFactory, rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, connectionSerial: NSNumber?, logger: InternalLog, webSocketFactory: WebSocketFactory, internalQueue: DispatchQueue) {
         self._factory = factory
+        self.internalQueue = internalQueue
         super.init(rest: rest, options: options, resumeKey: resumeKey, connectionSerial: connectionSerial, logger: logger, webSocketFactory: webSocketFactory)
     }
 
@@ -1141,7 +1144,7 @@ class TestProxyTransport: ARTWebSocketTransport {
     var actionsIgnored = [ARTProtocolMessageAction]()
 
     var queue: DispatchQueue {
-        return websocket?.delegateDispatchQueue ?? AblyTests.queue
+        return websocket?.delegateDispatchQueue ?? internalQueue
     }
 
     private var callbackBeforeProcessingIncomingMessage: ((ARTProtocolMessage) -> Void)?
