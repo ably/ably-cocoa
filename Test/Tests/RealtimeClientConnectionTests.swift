@@ -99,7 +99,7 @@ private func testMovesToDisconnectedWithNetworkingError(_ error: Error) throws {
 }
 
 private var internetConnectionNotAvailableTestsClient: ARTRealtime!
-private let fixtures: [String: Any] = JSONUtility.jsonObject(
+private let fixtures: [String: Any] = try! JSONUtility.jsonObject(
     data: try! Data(contentsOf: URL(fileURLWithPath: pathForTestResource(testResourcesPath + "messages-encoding.json")))
 )!
 
@@ -4526,7 +4526,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                             done()
                             return
                         }
-                        let messages: [[String: Any]] = JSONUtility.jsonObject(data: data)!
+                        let messages: [[String: Any]] = try! JSONUtility.jsonObject(data: data)
                         let persistedMessage = messages.first!
                         XCTAssertEqual(persistedMessage["data"] as? String, fixtureMessage["data"] as? String)
                         XCTAssertEqual(persistedMessage["encoding"] as? String, fixtureMessage["encoding"] as? String)
@@ -4631,7 +4631,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                             done()
                             return
                         }
-                        let messages: [[String: Any]] = JSONUtility.jsonObject(data: data)!
+                        let messages: [[String: Any]] = try! JSONUtility.jsonObject(data: data)
                         let persistedMessage = messages.first!
                         
                         XCTAssertEqual(persistedMessage["data"] as? String, persistedMessage["data"] as? String)

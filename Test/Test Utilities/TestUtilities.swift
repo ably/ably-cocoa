@@ -147,7 +147,7 @@ class AblyTests {
 
             let (responseData, _) = try SynchronousHTTPClient().perform(request)
 
-            app = JSONUtility.jsonObject(data: responseData)!
+            app = try! JSONUtility.jsonObject(data: responseData)
             testApplication = app
             
             if debug {
