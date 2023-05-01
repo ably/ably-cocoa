@@ -191,7 +191,7 @@ class AuthTests: XCTestCase {
         let options = try AblyTests.clientOptions(for: test)
         options.token = try getTestToken(for: test)
         options.autoConnect = false
-        options.testOptions.transportFactory = TestProxyTransportFactory()
+        options.testOptions.transportFactory = TestProxyTransportFactory(internalQueue: AblyTests.queue)
 
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
@@ -264,7 +264,7 @@ class AuthTests: XCTestCase {
         let options = try AblyTests.clientOptions(for: test)
         options.tokenDetails = try getTestTokenDetails(for: test, ttl: 0.1)
         options.autoConnect = false
-        options.testOptions.transportFactory = TestProxyTransportFactory()
+        options.testOptions.transportFactory = TestProxyTransportFactory(internalQueue: AblyTests.queue)
 
         // Token will expire, expecting 40142
         waitUntil(timeout: testTimeout) { done in
@@ -915,7 +915,7 @@ class AuthTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = expectedClientId
         options.autoConnect = false
-        options.testOptions.transportFactory = TestProxyTransportFactory()
+        options.testOptions.transportFactory = TestProxyTransportFactory(internalQueue: AblyTests.queue)
 
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
@@ -4185,7 +4185,7 @@ class AuthTests: XCTestCase {
         options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
         options.authParams?.append(URLQueryItem(name: "expiresIn", value: String(UInt(tokenDuration))))
         options.autoConnect = false // Prevent auto connection so we can set the transport proxy
-        options.testOptions.transportFactory = TestProxyTransportFactory()
+        options.testOptions.transportFactory = TestProxyTransportFactory(internalQueue: AblyTests.queue)
 
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
