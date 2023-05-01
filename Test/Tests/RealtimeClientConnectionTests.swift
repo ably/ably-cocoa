@@ -2,7 +2,6 @@ import Ably
 import Aspects
 import Nimble
 import XCTest
-import SwiftyJSON
 
 func countChannels(_ channels: ARTRealtimeChannels) -> Int {
     var i = 0
@@ -101,28 +100,32 @@ private func testMovesToDisconnectedWithNetworkingError(_ error: Error) {
 }
 
 private var internetConnectionNotAvailableTestsClient: ARTRealtime!
-private let fixtures = try! JSON(data: NSData(contentsOfFile: pathForTestResource(testResourcesPath + "messages-encoding.json"))! as Data, options: .mutableContainers)
+private let fixtures: [String: Any] = JSONUtility.jsonObject(
+    data: try! Data(contentsOf: URL(fileURLWithPath: pathForTestResource(testResourcesPath + "messages-encoding.json")))
+)!
 
-private func expectDataToMatch(_ message: ARTMessage, _ fixtureMessage: JSON) {
-    switch fixtureMessage["expectedType"].string! {
+private func expectDataToMatch(_ message: ARTMessage, _ fixtureMessage: Any) {
+    let dictionaryValue = fixtureMessage as! [String: Any]
+    
+    switch dictionaryValue["expectedType"] as! String {
     case "string":
-        XCTAssertEqual(message.data as? NSString, fixtureMessage["expectedValue"].string! as NSString?)
+        XCTAssertEqual(message.data as? NSString, dictionaryValue["expectedValue"] as? NSString)
     case "jsonObject":
         if let data = message.data as? NSDictionary {
-            XCTAssertEqual(JSON(data), fixtureMessage["expectedValue"])
+            XCTAssertEqual(data, dictionaryValue["expectedValue"] as? NSDictionary)
         } else {
             fail("expected NSDictionary")
         }
     case "jsonArray":
         if let data = message.data as? NSArray {
-            XCTAssertEqual(JSON(data), fixtureMessage["expectedValue"])
+            XCTAssertEqual(data, dictionaryValue["expectedValue"] as? NSArray)
         } else {
             fail("expected NSArray")
         }
     case "binary":
-        XCTAssertEqual(message.data as? NSData, fixtureMessage["expectedHexValue"].string!.dataFromHexadecimalString()! as NSData?)
+        XCTAssertEqual(message.data as? NSData, (dictionaryValue["dictionaryValue"] as! String).dataFromHexadecimalString()! as NSData?)
     default:
-        fail("unhandled: \(fixtureMessage["expectedType"].string!)")
+        fail("unhandled: \(dictionaryValue["expectedType"] as! String)")
     }
 }
 
@@ -4474,8 +4477,10 @@ class RealtimeClientConnectionTests: XCTestCase {
         if channel.state != .attached {
             return
         }
-
-        for (_, fixtureMessage) in fixtures["messages"] {
+        
+        let messages = fixtures["messages"] as! [[String: Any]]
+        
+        for fixtureMessage in messages {
             var receivedMessage: ARTMessage?
 
             waitUntil(timeout: testTimeout) { done in
@@ -4487,7 +4492,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
                 let request = NSMutableURLRequest(url: URL(string: "/channels/\(channel.name)/messages")!)
                 request.httpMethod = "POST"
-                request.httpBody = try! fixtureMessage.rawData()
+                request.httpBody = try! JSONUtility.serialize(fixtureMessage)
                 request.allHTTPHeaderFields = [
                     "Accept": "application/json",
                     "Content-Type": "application/json",
@@ -4522,9 +4527,10 @@ class RealtimeClientConnectionTests: XCTestCase {
                             done()
                             return
                         }
-                        let persistedMessage = try! JSON(data: data!).array!.first!
-                        XCTAssertEqual(persistedMessage["data"], fixtureMessage["data"])
-                        XCTAssertEqual(persistedMessage["encoding"], fixtureMessage["encoding"])
+                        let messages: [[String: Any]] = JSONUtility.jsonObject(data: data)!
+                        let persistedMessage = messages.first!
+                        XCTAssertEqual(persistedMessage["data"] as? String, fixtureMessage["data"] as? String)
+                        XCTAssertEqual(persistedMessage["encoding"] as? String, fixtureMessage["encoding"] as? String)
                         done()
                     })
                 }
@@ -4551,7 +4557,9 @@ class RealtimeClientConnectionTests: XCTestCase {
             realtimeSubscribeChannelJSON.attach { _ in partlyDone() }
         }
 
-        for (_, fixtureMessage) in fixtures["messages"] {
+        let messages = fixtures["messages"] as! [[String: Any]]
+        
+        for fixtureMessage in messages {
             waitUntil(timeout: testTimeout) { done in
                 let partlyDone = AblyTests.splitDone(2, done: done)
 
@@ -4569,7 +4577,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
                 let request = NSMutableURLRequest(url: URL(string: "/channels/\(realtimeSubscribeChannelMsgPack.name)/messages")!)
                 request.httpMethod = "POST"
-                request.httpBody = try! fixtureMessage.rawData()
+                request.httpBody = try! JSONUtility.serialize(fixtureMessage)
                 request.allHTTPHeaderFields = [
                     "Accept": "application/json",
                     "Content-Type": "application/json",
@@ -4592,12 +4600,14 @@ class RealtimeClientConnectionTests: XCTestCase {
         let restPublishChannelMsgPack = restPublishClientMsgPack.channels.get(uniqueChannelName())
         let restPublishChannelJSON = restPublishClientJSON.channels.get(restPublishChannelMsgPack.name)
 
-        for (_, fixtureMessage) in fixtures["messages"] {
+        let messages = fixtures["messages"] as! [[String: Any]]
+        
+        for fixtureMessage in messages {
             var data: AnyObject
-            if fixtureMessage["expectedType"] == "binary" {
-                data = fixtureMessage["expectedHexValue"].string!.dataFromHexadecimalString()! as AnyObject
+            if let expectedType = fixtureMessage["expectedType"] as? String, expectedType == "binary" {
+                data = (fixtureMessage["expectedHexValue"] as! String).dataFromHexadecimalString()! as AnyObject
             } else {
-                data = fixtureMessage["expectedValue"].object as AnyObject
+                data = fixtureMessage["expectedValue"] as AnyObject
             }
 
             for restPublishChannel in [restPublishChannelMsgPack, restPublishChannelJSON] {
@@ -4622,9 +4632,11 @@ class RealtimeClientConnectionTests: XCTestCase {
                             done()
                             return
                         }
-                        let persistedMessage = try! JSON(data: data!).array!.first!
-                        XCTAssertEqual(persistedMessage["data"], persistedMessage["data"])
-                        XCTAssertEqual(persistedMessage["encoding"], fixtureMessage["encoding"])
+                        let messages: [[String: Any]] = JSONUtility.jsonObject(data: data)!
+                        let persistedMessage = messages.first!
+                        
+                        XCTAssertEqual(persistedMessage["data"] as? String, persistedMessage["data"] as? String)
+                        XCTAssertEqual(persistedMessage["encoding"] as? String  , fixtureMessage["encoding"] as? String)
                         done()
                     })
                 }

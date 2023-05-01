@@ -2,7 +2,6 @@ import Ably
 import Foundation
 import Nimble
 import XCTest
-import SwiftyJSON
 
 private var client: ARTRest!
 private var testHTTPExecutor: TestProxyHTTPExecutor!
@@ -29,7 +28,7 @@ private func assertMessagePayloadId(id: String?, expectedSerial: String) {
     XCTAssertEqual(serial, expectedSerial)
 }
 
-private let presenceFixtures = appSetupJson["post_apps"]["channels"][0]["presence"]
+private let presenceFixtures = appSetupModel.postApps.channels[0].presence
 
 private let text = "John"
 private let integer = "5"
@@ -64,10 +63,10 @@ private func testSupportsAESEncryptionWithKeyLength(_ encryptionKeyLength: UInt,
         fail("HTTPBody is empty")
         return
     }
-    let httpBodyAsJSON = AblyTests.msgpackToJSON(httpBody)
-    XCTAssertEqual(httpBodyAsJSON["encoding"].string, "utf-8/cipher+aes-\(encryptionKeyLength)-cbc/base64")
-    XCTAssertEqual(httpBodyAsJSON["name"].string, "test")
-    XCTAssertNotEqual(httpBodyAsJSON["data"].string, "message1")
+    let dictionaryValue: [String: Any]? = JSONUtility.jsonObject(data: AblyTests.msgpackToData(httpBody))
+    XCTAssertEqual(dictionaryValue?["encoding"] as? String, "utf-8/cipher+aes-\(encryptionKeyLength)-cbc/base64")
+    XCTAssertEqual(dictionaryValue?["name"] as? String, "test")
+    XCTAssertNotEqual(dictionaryValue?["data"] as? String, "message1")
 
     waitUntil(timeout: testTimeout) { done in
         channel.history { result, error in
@@ -87,6 +86,25 @@ private func testSupportsAESEncryptionWithKeyLength(_ encryptionKeyLength: UInt,
             XCTAssertEqual(items[0].data as? String, "message1")
             done()
         }
+    }
+}
+
+struct ExpectedModel: Codable, Equatable {
+    var data: String?
+    let encoding: String?
+    
+    static func with(_ object: Any) -> Self {
+        do {
+            let data = try JSONUtility.serialize(object)
+            
+            return try JSONUtility.decode(data: data)
+        } catch {
+            fatalError("\(error)")
+        }
+    }
+    
+    static func ==(lhs: Self, rhs: Self) -> Bool {
+        lhs.data == rhs.data && lhs.encoding == rhs.encoding
     }
 }
 
@@ -113,7 +131,7 @@ class RestClientChannelTests: XCTestCase {
 
     struct TestCase {
         let value: Any?
-        let expected: JSON
+        let expected: ExpectedModel
     }
 
     override func setUp() {
@@ -593,7 +611,7 @@ class RestClientChannelTests: XCTestCase {
 
     // RSL1k1
 
-    func test__027__publish__idempotent_publishing__random_idempotent_publish_id__should_generate_for_one_message_with_empty_id() {
+    func test__027__publish__idempotent_publishing__random_idempotent_publish_id__should_generate_for_one_message_with_empty_id() throws {
         let message = ARTMessage(name: nil, data: "foo")
         XCTAssertNil(message.id)
 
@@ -614,12 +632,14 @@ class RestClientChannelTests: XCTestCase {
             fail("Body from the last request is empty"); return
         }
 
-        let json = AblyTests.msgpackToJSON(encodedBody)
-        assertMessagePayloadId(id: json.arrayValue.first?["id"].string, expectedSerial: "0")
+        let arrayValue: [[String: Any]] = try XCTUnwrap(JSONUtility.jsonObject(data: AblyTests.msgpackToData(encodedBody)))
+        let id = arrayValue.first?["id"] as? String
+        
+        assertMessagePayloadId(id: id, expectedSerial: "0")
         XCTAssertNil(message.id)
     }
 
-    func test__028__publish__idempotent_publishing__random_idempotent_publish_id__should_generate_for_multiple_messages_with_empty_id() {
+    func test__028__publish__idempotent_publishing__random_idempotent_publish_id__should_generate_for_multiple_messages_with_empty_id() throws {
         let message1 = ARTMessage(name: nil, data: "foo1")
         XCTAssertNil(message1.id)
         let message2 = ARTMessage(name: "john", data: "foo2")
@@ -642,10 +662,10 @@ class RestClientChannelTests: XCTestCase {
             fail("Body from the last request is empty"); return
         }
 
-        let json = AblyTests.msgpackToJSON(encodedBody)
-        let id1 = json.arrayValue.first?["id"].string
+        let arrayValue: [[String: Any]] = try XCTUnwrap(JSONUtility.jsonObject(data: AblyTests.msgpackToData(encodedBody)))
+        let id1 = arrayValue.first?["id"] as? String
         assertMessagePayloadId(id: id1, expectedSerial: "0")
-        let id2 = json.arrayValue.last?["id"].string
+        let id2 = arrayValue.last?["id"] as? String
         assertMessagePayloadId(id: id2, expectedSerial: "1")
 
         // Same Base ID
@@ -653,7 +673,7 @@ class RestClientChannelTests: XCTestCase {
     }
 
     // RSL1k2
-    func test__021__publish__idempotent_publishing__should_not_generate_for_message_with_a_non_empty_id() {
+    func test__021__publish__idempotent_publishing__should_not_generate_for_message_with_a_non_empty_id() throws {
         let message = ARTMessage(name: nil, data: "foo")
         message.id = "123"
 
@@ -674,11 +694,13 @@ class RestClientChannelTests: XCTestCase {
             fail("Body from the last request is empty"); return
         }
 
-        let json = AblyTests.msgpackToJSON(encodedBody)
-        XCTAssertEqual(json.arrayValue.first?["id"].string, "123")
+        let arrayValue: [[String: Any]] = try XCTUnwrap(JSONUtility.jsonObject(data: AblyTests.msgpackToData(encodedBody)))
+        let id = arrayValue.first?["id"] as? String
+        
+        XCTAssertEqual(id, "123")
     }
 
-    func test__022__publish__idempotent_publishing__should_generate_for_internal_message_that_is_created_in_publish_name_data___method() {
+    func test__022__publish__idempotent_publishing__should_generate_for_internal_message_that_is_created_in_publish_name_data___method() throws {
         let rest = ARTRest(key: "xxxx:xxxx")
         rest.internal.options.idempotentRestPublishing = true
         let mockHTTPExecutor = MockHTTPExecutor()
@@ -696,12 +718,13 @@ class RestClientChannelTests: XCTestCase {
             fail("Body from the last request is empty"); return
         }
 
-        let json = AblyTests.msgpackToJSON(encodedBody)
-        assertMessagePayloadId(id: json["id"].string, expectedSerial: "0")
+        let dictionaryValue: [String: Any] = try XCTUnwrap(JSONUtility.jsonObject(data: AblyTests.msgpackToData(encodedBody)))
+        let id = dictionaryValue["id"] as? String
+        assertMessagePayloadId(id: id, expectedSerial: "0")
     }
 
     // RSL1k3
-    func test__023__publish__idempotent_publishing__should_not_generate_for_multiple_messages_with_a_non_empty_id() {
+    func test__023__publish__idempotent_publishing__should_not_generate_for_multiple_messages_with_a_non_empty_id() throws {
         let message1 = ARTMessage(name: nil, data: "foo1")
         XCTAssertNil(message1.id)
         let message2 = ARTMessage(name: "john", data: "foo2")
@@ -724,12 +747,12 @@ class RestClientChannelTests: XCTestCase {
             fail("Body from the last request is empty"); return
         }
 
-        let json = AblyTests.msgpackToJSON(encodedBody)
-        XCTAssertNil(json.arrayValue.first?["id"].string)
-        XCTAssertEqual(json.arrayValue.last?["id"].string, "123")
+        let arrayValue: [[String: Any]] = try XCTUnwrap(JSONUtility.jsonObject(data: AblyTests.msgpackToData(encodedBody)))
+        XCTAssertNil(arrayValue.first?["id"])
+        XCTAssertEqual(arrayValue.last?["id"] as? String, "123")
     }
 
-    func test__024__publish__idempotent_publishing__should_not_generate_when_idempotentRestPublishing_flag_is_off() {
+    func test__024__publish__idempotent_publishing__should_not_generate_when_idempotentRestPublishing_flag_is_off() throws {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.idempotentRestPublishing = false
 
@@ -754,9 +777,9 @@ class RestClientChannelTests: XCTestCase {
             fail("Body from the last request is empty"); return
         }
 
-        let json = AblyTests.msgpackToJSON(encodedBody)
-        XCTAssertNil(json.arrayValue.first?["id"].string)
-        XCTAssertNil(json.arrayValue.last?["id"].string)
+        let arrayValue: [[String: Any]] = try XCTUnwrap(JSONUtility.jsonObject(data: AblyTests.msgpackToData(encodedBody)))
+        XCTAssertNil(arrayValue.first?["id"])
+        XCTAssertNil(arrayValue.last?["id"])
     }
 
     // RSL1k4
@@ -860,12 +883,15 @@ class RestClientChannelTests: XCTestCase {
             fail("Body from the last request is empty"); return
         }
 
-        guard let jsonMessage = AblyTests.msgpackToJSON(encodedBody).array?.first else {
+        guard
+            let object: [[String: Any]] = JSONUtility.jsonObject(data: AblyTests.msgpackToData(encodedBody)),
+            let jsonMessage = object.first
+        else {
             fail("Body from the last request is invalid"); return
         }
-        XCTAssertEqual(jsonMessage["name"].string, "tester")
-        XCTAssertEqual(jsonMessage["data"].string, "")
-        XCTAssertEqual(jsonMessage["id"].string, message.id)
+        XCTAssertEqual(jsonMessage["name"] as? String, "tester")
+        XCTAssertEqual(jsonMessage["data"] as? String, "")
+        XCTAssertEqual(jsonMessage["id"] as? String, message.id)
     }
 
     // RSL2
@@ -1129,11 +1155,11 @@ class RestClientChannelTests: XCTestCase {
         let options = AblyTests.commonAppSetup()
         options.testOptions.channelNamePrefix = nil
         client = ARTRest(options: options)
-        let key = appSetupJson["cipher"]["key"].string!
+        let key = appSetupModel.cipher.key
         let cipherParams = ARTCipherParams(
-            algorithm: appSetupJson["cipher"]["algorithm"].string!,
+            algorithm: appSetupModel.cipher.algorithm,
             key: key as ARTCipherKeyCompatible,
-            iv: Data(base64Encoded: appSetupJson["cipher"]["iv"].string!, options: Data.Base64DecodingOptions(rawValue: 0))!
+            iv: Data(base64Encoded: appSetupModel.cipher.iv, options: Data.Base64DecodingOptions(rawValue: 0))!
         )
         let channel = client.channels.get("persisted:presence_fixtures", options: ARTChannelOptions(cipher: cipherParams))
         var presenceMessages: [ARTPresenceMessage] = []
@@ -1148,16 +1174,16 @@ class RestClientChannelTests: XCTestCase {
 
         expect(presenceMessages.count).toEventually(equal(presenceFixtures.count), timeout: testTimeout)
         for message in presenceMessages {
-            let fixtureMessage = presenceFixtures.filter { _, value -> Bool in
-                message.clientId == value["clientId"].stringValue
-            }.first!.1
+            let fixtureMessage = presenceFixtures.filter { obj -> Bool in
+                message.clientId == obj.clientId
+            }.first!
 
             XCTAssertNotNil(message.data)
             XCTAssertEqual(message.action, ARTPresenceAction.present)
 
             let encodedFixture = channel.internal.dataEncoder.decode(
-                fixtureMessage["data"].object,
-                encoding: fixtureMessage.asDictionary!["encoding"] as? String
+                fixtureMessage.data,
+                encoding: fixtureMessage.encoding
             )
             XCTAssertEqual(message.data as? NSObject, encodedFixture.data as? NSObject)
         }
@@ -1167,29 +1193,16 @@ class RestClientChannelTests: XCTestCase {
 
     // RSL4a
     func test__036__message_encoding__payloads_should_be_binary__strings__or_objects_capable_of_JSON_representation() {
-        let validCases: [TestCase]
-        if #available(iOS 11.0, *) {
-            validCases = [
-                TestCase(value: nil, expected: JSON([:])),
-                TestCase(value: text, expected: JSON(["data": text])),
-                TestCase(value: integer, expected: JSON(["data": integer])),
-                TestCase(value: decimal, expected: JSON(["data": decimal])),
-                TestCase(value: dictionary, expected: ["data": JSON(dictionary).rawString(options: [.sortedKeys])!, "encoding": "json"] as JSON),
-                TestCase(value: array, expected: JSON(["data": JSON(array).rawString(options: [.sortedKeys])!, "encoding": "json"])),
-                TestCase(value: binaryData, expected: JSON(["data": binaryData.toBase64, "encoding": "base64"])),
-            ]
-        } else {
-            validCases = [
-                TestCase(value: nil, expected: JSON([:])),
-                TestCase(value: text, expected: JSON(["data": text])),
-                TestCase(value: integer, expected: JSON(["data": integer])),
-                TestCase(value: decimal, expected: JSON(["data": decimal])),
-                TestCase(value: dictionary, expected: ["data": JSON(dictionary).rawString()!, "encoding": "json"] as JSON),
-                TestCase(value: array, expected: JSON(["data": JSON(array).rawString()!, "encoding": "json"])),
-                TestCase(value: binaryData, expected: JSON(["data": binaryData.toBase64, "encoding": "base64"])),
-            ]
-        }
-
+        let validCases: [TestCase] = [
+            TestCase(value: nil, expected: .with([:] as [String: Any])),
+            TestCase(value: text, expected: .with(["data": text])),
+            TestCase(value: integer, expected: .with(["data": integer])),
+            TestCase(value: decimal, expected: .with(["data": decimal])),
+            TestCase(value: dictionary, expected: .with(["data": JSONUtility.toJSONString(dictionary)!, "encoding": "json"])),
+            TestCase(value: array, expected: .with(["data": JSONUtility.toJSONString(array)!, "encoding": "json"])),
+            TestCase(value: binaryData, expected: .with(["data": binaryData.toBase64, "encoding": "base64"])),
+        ]
+        
         client.internal.options.idempotentRestPublishing = false
         client.internal.httpExecutor = testHTTPExecutor
 
@@ -1203,18 +1216,21 @@ class RestClientChannelTests: XCTestCase {
                         XCTFail("HTTPBody is nil")
                         done(); return
                     }
-                    var json = AblyTests.msgpackToJSON(httpBody)
-                    if let s = json["data"].string, let data = try? JSONSerialization.jsonObject(with: s.data(using: .utf8)!) {
+                    
+                    let jsonData = AblyTests.msgpackToData(httpBody)
+                    var model: ExpectedModel? = nil
+                    do {
+                        model = try JSONUtility.decode(data: jsonData)
+                    } catch {
+                        XCTFail("\(error)")
+                    }
+                    if let s = model?.data, let data = try? JSONSerialization.jsonObject(with: s.data(using: .utf8)!) {
                         // Make sure the formatting is the same by parsing
                         // and reformatting in the same way as the test case.
-                        if #available(iOS 11.0, *) {
-                            json["data"] = JSON(JSON(data).rawString(options: [.sortedKeys])!)
-                        } else {
-                            json["data"] = JSON(JSON(data).rawString()!)
-                        }
+                        model?.data = JSONUtility.toJSONString(data)
                     }
-                    let mergedWithExpectedJSON = try! json.merged(with: caseTest.expected)
-                    XCTAssertEqual(json, mergedWithExpectedJSON)
+
+                    XCTAssertEqual(model, caseTest.expected)
                     done()
                 }
             }
@@ -1233,10 +1249,10 @@ class RestClientChannelTests: XCTestCase {
     // RSL4b
     func test__037__message_encoding__encoding_attribute_should_represent_the_encoding_s__applied_in_right_to_left() {
         let encodingCases = [
-            TestCase(value: text, expected: JSON.null),
-            TestCase(value: dictionary, expected: "json"),
-            TestCase(value: array, expected: "json"),
-            TestCase(value: binaryData, expected: "base64"),
+            TestCase(value: text, expected: .init(encoding: nil)),
+            TestCase(value: dictionary, expected: .init(encoding: "json")),
+            TestCase(value: array, expected: .init(encoding: "json")),
+            TestCase(value: binaryData, expected: .init(encoding: "base64")),
         ]
 
         client.internal.httpExecutor = testHTTPExecutor
@@ -1251,7 +1267,15 @@ class RestClientChannelTests: XCTestCase {
                         XCTFail("HTTPBody is nil")
                         done(); return
                     }
-                    XCTAssertEqual(AblyTests.msgpackToJSON(httpBody)["encoding"], caseItem.expected)
+                    
+                    var model: ExpectedModel? = nil
+                    do {
+                        model = try JSONUtility.decode(data: AblyTests.msgpackToData(httpBody))
+                    } catch {
+                        XCTFail("\(error)")
+                    }
+                    
+                    XCTAssertEqual(model?.encoding, caseItem.expected.encoding)
                     done()
                 })
             }
@@ -1259,7 +1283,7 @@ class RestClientChannelTests: XCTestCase {
     }
 
     // RSL4d1
-    func test__038__message_encoding__json__binary_payload_should_be_encoded_as_Base64_and_represented_as_a_JSON_string() {
+    func test__038__message_encoding__json__binary_payload_should_be_encoded_as_Base64_and_represented_as_a_JSON_string() throws {
         client.internal.httpExecutor = testHTTPExecutor
         
         let channel = client.channels.get(uniqueChannelName())
@@ -1272,9 +1296,9 @@ class RestClientChannelTests: XCTestCase {
                     done(); return
                 }
                 // Binary
-                let json = AblyTests.msgpackToJSON(httpBody)
-                XCTAssertEqual(json["data"].string, binaryData.toBase64)
-                XCTAssertEqual(json["encoding"], "base64")
+                let dictionaryObject: [String: Any]? = JSONUtility.jsonObject(data: AblyTests.msgpackToData(httpBody))
+                XCTAssertEqual(dictionaryObject?["data"] as? String, binaryData.toBase64)
+                XCTAssertEqual(dictionaryObject?["encoding"] as? String, "base64")
                 done()
             })
         }
@@ -1292,9 +1316,9 @@ class RestClientChannelTests: XCTestCase {
 
                 if let request = testHTTPExecutor.requests.last, let http = request.httpBody {
                     // String (UTF-8)
-                    let json = AblyTests.msgpackToJSON(http)
-                    XCTAssertEqual(json["data"].string, text)
-                    XCTAssertNil(json["encoding"].string)
+                    let dictionaryObject: [String: Any]? = JSONUtility.jsonObject(data: AblyTests.msgpackToData(http))
+                    XCTAssertEqual(dictionaryObject?["data"] as? String, text)
+                    XCTAssertNil(dictionaryObject?["encoding"])
                 } else {
                     XCTFail("No request or HTTP body found")
                 }
@@ -1317,9 +1341,12 @@ class RestClientChannelTests: XCTestCase {
 
                 if let request = testHTTPExecutor.requests.last, let http = request.httpBody {
                     // Array
-                    let json = AblyTests.msgpackToJSON(http)
-                    XCTAssertEqual(try! JSON(data: json["data"].stringValue.data(using: .utf8)!).asArray, array as NSArray?)
-                    XCTAssertEqual(json["encoding"].string, "json")
+                    let dictionaryValue: [String: Any]? = JSONUtility.jsonObject(data: AblyTests.msgpackToData(http))
+                    let data = (dictionaryValue?["data"] as? String)?.data(using: .utf8)
+                    let jsonArray: NSArray? = JSONUtility.jsonObject(data: data)
+                    
+                    XCTAssertEqual(jsonArray, array as NSArray?)
+                    XCTAssertEqual(dictionaryValue?["encoding"] as? String, "json")
                 } else {
                     XCTFail("No request or HTTP body found")
                 }
@@ -1340,9 +1367,12 @@ class RestClientChannelTests: XCTestCase {
 
                 if let request = testHTTPExecutor.requests.last, let http = request.httpBody {
                     // Dictionary
-                    let json = AblyTests.msgpackToJSON(http)
-                    XCTAssertEqual(try! JSON(data: json["data"].stringValue.data(using: .utf8)!).asDictionary, dictionary as NSDictionary?)
-                    XCTAssertEqual(json["encoding"].string, "json")
+                    let dictionaryValue: [String: Any]? = JSONUtility.jsonObject(data: AblyTests.msgpackToData(http))
+                    let data = (dictionaryValue?["data"] as? String)?.data(using: .utf8)
+                    let jsonDictionary: NSDictionary? = JSONUtility.jsonObject(data: data)
+                    
+                    XCTAssertEqual(jsonDictionary, dictionary as NSDictionary?)
+                    XCTAssertEqual(dictionaryValue?["encoding"] as? String, "json")
                 } else {
                     XCTFail("No request or HTTP body found")
                 }

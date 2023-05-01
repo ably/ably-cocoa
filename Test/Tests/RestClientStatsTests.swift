@@ -2,9 +2,8 @@ import Ably
 import Foundation
 import Nimble
 import XCTest
-import SwiftyJSON
 
-private func postTestStats(_ stats: JSON) -> ARTClientOptions {
+private func postTestStats(_ stats: [[String: Any]]) -> ARTClientOptions {
     let options = AblyTests.commonAppSetup(forceNewApp: true)
 
     let keyBase64 = encodeBase64(options.key ?? "")
@@ -12,7 +11,7 @@ private func postTestStats(_ stats: JSON) -> ARTClientOptions {
     let request = NSMutableURLRequest(url: URL(string: "\(AblyTests.clientOptions().restUrl().absoluteString)/stats")!)
 
     request.httpMethod = "POST"
-    request.httpBody = try? stats.rawData()
+    request.httpBody = try? JSONUtility.serialize(stats)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Basic \(keyBase64)", forHTTPHeaderField: "Authorization")
 
@@ -62,7 +61,7 @@ private let dateFormatter: DateFormatter = {
     return dateFormatter
 }()
 
-private let statsFixtures: JSON = [
+private let statsFixtures: [[String: Any]] = [
     [
         "intervalId": dateFormatter.string(from: date), // 20XX-02-03:16:03
         "inbound": ["realtime": ["messages": ["count": 50, "data": 5000]]],
