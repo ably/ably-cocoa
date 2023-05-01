@@ -1,6 +1,5 @@
 import Ably
 import Ably.Private
-import Aspects
 import Nimble
 import XCTest
 
