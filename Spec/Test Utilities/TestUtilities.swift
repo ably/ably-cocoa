@@ -2,7 +2,7 @@ import Ably
 import Foundation
 import XCTest
 import Nimble
-import SwiftyJSON
+
 import Aspects
 
 import Ably.Private
@@ -40,7 +40,13 @@ func pathForTestResource(_ resourcePath: String) -> String {
     return testBundle.path(forResource: resourcePath, ofType: "")!
 }
 
-let appSetupJson = JSON(parseJSON: try! String(contentsOfFile: pathForTestResource(testResourcesPath + "test-app-setup.json")))
+let appSetupModel: TestAppSetup = {
+    do {
+        return try JSONUtility.decode(path: pathForTestResource(testResourcesPath + "test-app-setup.json"))
+    } catch {
+        fatalError("Can't parse `test-app-setup.json` \(error)")
+    }
+}()
 
 let testTimeout = DispatchTimeInterval.seconds(20)
 let testResourcesPath = "ably-common/test-resources/"
@@ -73,10 +79,11 @@ class AblyTests {
         return Data(base64Encoded: base64, options: NSData.Base64DecodingOptions(rawValue: 0))!
     }
 
-    class func msgpackToJSON(_ data: Data) -> JSON {
+    class func msgpackToData(_ data: Data) -> Data {
         let decoded = try! ARTMsgPackEncoder().decode(data)
         let encoded = try! ARTJsonEncoder().encode(decoded)
-        return try! JSON(data: encoded)
+        
+        return encoded
     }
 
     class func checkError(_ errorInfo: ARTErrorInfo?, withAlternative message: String) {
@@ -99,7 +106,7 @@ class AblyTests {
         }
     }
 
-    static var testApplication: JSON?
+    static var testApplication: [String: Any]?
     static fileprivate var setupOptionsCounter = 0
 
     struct QueueIdentity {
@@ -138,10 +145,13 @@ class AblyTests {
             testApplication = nil
         }
 
-        guard let app = testApplication else {
+        let app: [String: Any]
+        if let testApplication {
+            app = testApplication
+        } else {
             let request = NSMutableURLRequest(url: URL(string: "https://\(options.restHost):\(options.tlsPort)/apps")!)
             request.httpMethod = "POST"
-            request.httpBody = try? appSetupJson["post_apps"].rawData()
+            request.httpBody = try? JSONUtility.encode(appSetupModel.postApps)
 
             request.allHTTPHeaderFields = [
                 "Accept" : "application/json",
@@ -154,7 +164,8 @@ class AblyTests {
                 fatalError(error.localizedDescription)
             }
 
-            testApplication = try! JSON(data: responseData!)
+            app = JSONUtility.jsonObject(data: responseData)!
+            testApplication = app
             
             if debug {
                 print(testApplication!)
@@ -163,7 +174,9 @@ class AblyTests {
             return setupOptions(options, debug: debug)
         }
         
-        let key = app["keys"][0]
+        let keysArray = app["keys"] as! [[String: Any]]
+        let key = keysArray[0]
+        options.key = key["keyStr"] as? String
         options.key = key["keyStr"].stringValue
         options.dispatchQueue = DispatchQueue.main
         options.internalDispatchQueue = queue
@@ -336,23 +349,23 @@ class AblyTests {
         let encoded: TestMessage
         let encrypted: TestMessage
 
-        init(object: JSON) {
-            let encodedJson = object["encoded"]
-            encoded = TestMessage(name: encodedJson["name"].stringValue, data: encodedJson["data"].stringValue, encoding: encodedJson["encoding"].string ?? "")
-            let encryptedJson = object["encrypted"]
-            encrypted = TestMessage(name: encryptedJson["name"].stringValue, data: encryptedJson["data"].stringValue, encoding: encryptedJson["encoding"].stringValue)
+        init(object: CryptoData.Item) {
+            let encodedJson = object.encoded
+            encoded = TestMessage(name: encodedJson.name, data: encodedJson.data, encoding: encodedJson.encoding ?? "")
+            let encryptedJson = object.encrypted
+            encrypted = TestMessage(name: encryptedJson.name, data: encryptedJson.data, encoding: encryptedJson.encoding)
         }
 
     }
     
-    class func loadCryptoTestRawData(_ fileName: String) -> (key: Data, iv: Data, jsonItems: [JSON]) {
+    class func loadCryptoTestRawData(_ fileName: String) -> (key: Data, iv: Data, jsonItems: [CryptoData.Item]) {
         let file = testResourcesPath + fileName + ".json";
-        let json = JSON(parseJSON: try! String(contentsOfFile: pathForTestResource(file)))
+        let json: CryptoData = try! JSONUtility.decode(path: pathForTestResource(file))
 
-        let keyData = Data(base64Encoded: json["key"].stringValue, options: Data.Base64DecodingOptions(rawValue: 0))!
-        let ivData = Data(base64Encoded: json["iv"].stringValue, options: Data.Base64DecodingOptions(rawValue: 0))!
+        let keyData = Data(base64Encoded: json.key, options: Data.Base64DecodingOptions(rawValue: 0))!
+        let ivData = Data(base64Encoded: json.iv, options: Data.Base64DecodingOptions(rawValue: 0))!
 
-        return (keyData, ivData, json["items"].arrayValue)
+        return (keyData, ivData, json.items)
     }
     
     class func loadCryptoTestData(_ fileName: String) -> (key: Data, iv: Data, items: [CryptoTestItem]) {
@@ -881,12 +894,12 @@ struct ErrorSimulator {
     }
 
     lazy var stubData: Data? = {
-        let jsonObject = ["error": [
+        let jsonObject: [String: Any] = ["error": [
             "statusCode": modf(Float(self.value)/100).0, //whole number part
             "code": self.value,
             "message": self.description,
             "serverId": self.serverId,
-            ]
+        ] as [String: Any]
         ]
         return try? JSONSerialization.data(withJSONObject: jsonObject, options: JSONSerialization.WritingOptions.init(rawValue: 0))
     }()
@@ -1487,18 +1500,6 @@ extension NSData {
         }
 
         return result.uppercased()
-    }
-
-}
-
-extension JSON {
-
-    var asArray: NSArray? {
-        return object as? NSArray
-    }
-
-    var asDictionary: NSDictionary? {
-        return object as? NSDictionary
     }
 
 }

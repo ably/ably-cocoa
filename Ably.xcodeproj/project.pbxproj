@@ -94,9 +94,6 @@
 		8412FDF52661AC7B001FE9E6 /* Aspects.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF12661AC7A001FE9E6 /* Aspects.xcframework */; };
 		8412FDF62661AC7B001FE9E6 /* Aspects.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF12661AC7A001FE9E6 /* Aspects.xcframework */; };
 		8412FDF72661AC7B001FE9E6 /* Aspects.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF12661AC7A001FE9E6 /* Aspects.xcframework */; };
-		8412FDF82661AC7B001FE9E6 /* SwiftyJSON.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF22661AC7B001FE9E6 /* SwiftyJSON.xcframework */; };
-		8412FDF92661AC7B001FE9E6 /* SwiftyJSON.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF22661AC7B001FE9E6 /* SwiftyJSON.xcframework */; };
-		8412FDFA2661AC7B001FE9E6 /* SwiftyJSON.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF22661AC7B001FE9E6 /* SwiftyJSON.xcframework */; };
 		8412FDFE2661AC7B001FE9E6 /* Nimble.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF42661AC7B001FE9E6 /* Nimble.xcframework */; };
 		8412FDFF2661AC7B001FE9E6 /* Nimble.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF42661AC7B001FE9E6 /* Nimble.xcframework */; };
 		8412FE002661AC7B001FE9E6 /* Nimble.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDF42661AC7B001FE9E6 /* Nimble.xcframework */; };
@@ -151,6 +148,9 @@
 		96E408481A3895E800087F77 /* ARTWebSocketTransport.m in Sources */ = {isa = PBXBuildFile; fileRef = 96E408461A3895E800087F77 /* ARTWebSocketTransport.m */; };
 		D3AD0EBD215E2FB000312105 /* ARTNSString+ARTUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = D3AD0EBB215E2FB000312105 /* ARTNSString+ARTUtil.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D3AD0EBE215E2FB000312105 /* ARTNSString+ARTUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = D3AD0EBC215E2FB000312105 /* ARTNSString+ARTUtil.m */; };
+		D50D86E929E9444600EA72EA /* JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = D50D86E829E9444600EA72EA /* JSON.swift */; };
+		D50D86EA29E9444600EA72EA /* JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = D50D86E829E9444600EA72EA /* JSON.swift */; };
+		D50D86EB29E9444600EA72EA /* JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = D50D86E829E9444600EA72EA /* JSON.swift */; };
 		D520C4D626809BB5000012B2 /* ARTStringifiable.h in Headers */ = {isa = PBXBuildFile; fileRef = D520C4D426809BB5000012B2 /* ARTStringifiable.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D520C4DB26809BB5000012B2 /* ARTStringifiable.m in Sources */ = {isa = PBXBuildFile; fileRef = D520C4D526809BB5000012B2 /* ARTStringifiable.m */; };
 		D520C4E32680A1FC000012B2 /* StringifiableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D520C4DD2680A1E3000012B2 /* StringifiableTests.swift */; };
@@ -217,6 +217,12 @@
 		D5D83C0826AAED1A00AADC8E /* ARTStringifiable+Private.h in Headers */ = {isa = PBXBuildFile; fileRef = D520C4DC26809D49000012B2 /* ARTStringifiable+Private.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D5D83C0926AAEFEA00AADC8E /* NSURLQueryItem+Stringifiable.m in Sources */ = {isa = PBXBuildFile; fileRef = D5C0CB3C268317B500C06521 /* NSURLQueryItem+Stringifiable.m */; };
 		D5D83C0A26AAEFEB00AADC8E /* NSURLQueryItem+Stringifiable.m in Sources */ = {isa = PBXBuildFile; fileRef = D5C0CB3C268317B500C06521 /* NSURLQueryItem+Stringifiable.m */; };
+		D5FFA6A429E96C960082DB4B /* TestAppSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5FFA6A329E96C960082DB4B /* TestAppSetup.swift */; };
+		D5FFA6A529E96C960082DB4B /* TestAppSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5FFA6A329E96C960082DB4B /* TestAppSetup.swift */; };
+		D5FFA6A629E96C960082DB4B /* TestAppSetup.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5FFA6A329E96C960082DB4B /* TestAppSetup.swift */; };
+		D5FFA6A829E97EF30082DB4B /* CryptoData.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5FFA6A729E97EF30082DB4B /* CryptoData.swift */; };
+		D5FFA6A929E97EF30082DB4B /* CryptoData.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5FFA6A729E97EF30082DB4B /* CryptoData.swift */; };
+		D5FFA6AA29E97EF30082DB4B /* CryptoData.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5FFA6A729E97EF30082DB4B /* CryptoData.swift */; };
 		D7093C0F219E2DB200723F17 /* Ably.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D710D45B219495E2008F54AD /* Ably.framework */; };
 		D7093C19219E465300723F17 /* TestUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 856AAC961B6E30C800B07119 /* TestUtilities.swift */; };
 		D7093C1A219E465C00723F17 /* NSObject+TestSuite.m in Sources */ = {isa = PBXBuildFile; fileRef = D780846D1C68B3E50083009D /* NSObject+TestSuite.m */; };
@@ -1008,7 +1014,6 @@
 		8412FDE12661AC37001FE9E6 /* AblyDeltaCodec.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = AblyDeltaCodec.xcframework; path = Carthage/Build/AblyDeltaCodec.xcframework; sourceTree = "<group>"; };
 		8412FDE32661AC37001FE9E6 /* msgpack.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = msgpack.xcframework; path = Carthage/Build/msgpack.xcframework; sourceTree = "<group>"; };
 		8412FDF12661AC7A001FE9E6 /* Aspects.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Aspects.xcframework; path = Carthage/Build/Aspects.xcframework; sourceTree = "<group>"; };
-		8412FDF22661AC7B001FE9E6 /* SwiftyJSON.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = SwiftyJSON.xcframework; path = Carthage/Build/SwiftyJSON.xcframework; sourceTree = "<group>"; };
 		8412FDF42661AC7B001FE9E6 /* Nimble.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = Nimble.xcframework; path = Carthage/Build/Nimble.xcframework; sourceTree = "<group>"; };
 		84569FA226B46ADC00457CF5 /* ClientOptionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClientOptionsTests.swift; sourceTree = "<group>"; };
 		848ED97226E50D0F0087E800 /* ObjcppTest.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ObjcppTest.mm; sourceTree = "<group>"; };
@@ -1063,6 +1068,7 @@
 		96E408461A3895E800087F77 /* ARTWebSocketTransport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTWebSocketTransport.m; sourceTree = "<group>"; };
 		D3AD0EBB215E2FB000312105 /* ARTNSString+ARTUtil.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTNSString+ARTUtil.h"; path = "Private/ARTNSString+ARTUtil.h"; sourceTree = "<group>"; };
 		D3AD0EBC215E2FB000312105 /* ARTNSString+ARTUtil.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = "ARTNSString+ARTUtil.m"; path = "Private/ARTNSString+ARTUtil.m"; sourceTree = "<group>"; };
+		D50D86E829E9444600EA72EA /* JSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSON.swift; sourceTree = "<group>"; };
 		D520C4D426809BB5000012B2 /* ARTStringifiable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTStringifiable.h; sourceTree = "<group>"; };
 		D520C4D526809BB5000012B2 /* ARTStringifiable.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTStringifiable.m; sourceTree = "<group>"; };
 		D520C4DC26809D49000012B2 /* ARTStringifiable+Private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ARTStringifiable+Private.h"; sourceTree = "<group>"; };
@@ -1081,6 +1087,8 @@
 		D5BB213526AAA60500AA5F3E /* ARTNSError+ARTUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "ARTNSError+ARTUtils.h"; sourceTree = "<group>"; };
 		D5C0CB3B268317B500C06521 /* NSURLQueryItem+Stringifiable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSURLQueryItem+Stringifiable.h"; sourceTree = "<group>"; };
 		D5C0CB3C268317B500C06521 /* NSURLQueryItem+Stringifiable.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSURLQueryItem+Stringifiable.m"; sourceTree = "<group>"; };
+		D5FFA6A329E96C960082DB4B /* TestAppSetup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestAppSetup.swift; sourceTree = "<group>"; };
+		D5FFA6A729E97EF30082DB4B /* CryptoData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoData.swift; sourceTree = "<group>"; };
 		D7093C0A219E2DB200723F17 /* Ably-macOS-Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Ably-macOS-Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D7093C0E219E2DB200723F17 /* Info-macOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-macOS.plist"; sourceTree = "<group>"; };
 		D7093C60219EE1AE00723F17 /* Ably-tvOS-Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Ably-tvOS-Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1282,7 +1290,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8412FDF82661AC7B001FE9E6 /* SwiftyJSON.xcframework in Frameworks */,
 				8412FDFE2661AC7B001FE9E6 /* Nimble.xcframework in Frameworks */,
 				D70F277D2261046A00956251 /* Ably.framework in Frameworks */,
 				8412FDF52661AC7B001FE9E6 /* Aspects.xcframework in Frameworks */,
@@ -1302,7 +1309,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8412FDF92661AC7B001FE9E6 /* SwiftyJSON.xcframework in Frameworks */,
 				8412FDFF2661AC7B001FE9E6 /* Nimble.xcframework in Frameworks */,
 				D7093C0F219E2DB200723F17 /* Ably.framework in Frameworks */,
 				8412FDF62661AC7B001FE9E6 /* Aspects.xcframework in Frameworks */,
@@ -1313,7 +1319,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8412FDFA2661AC7B001FE9E6 /* SwiftyJSON.xcframework in Frameworks */,
 				8412FE002661AC7B001FE9E6 /* Nimble.xcframework in Frameworks */,
 				D7093C65219EE1AE00723F17 /* Ably.framework in Frameworks */,
 				8412FDF72661AC7B001FE9E6 /* Aspects.xcframework in Frameworks */,
@@ -1504,6 +1509,7 @@
 				D780846D1C68B3E50083009D /* NSObject+TestSuite.m */,
 				D714A63D1C74D4B2002F2CA0 /* NSObject+TestSuite.swift */,
 				856AAC961B6E30C800B07119 /* TestUtilities.swift */,
+				D50D86E829E9444600EA72EA /* JSON.swift */,
 			);
 			path = "Test Utilities";
 			sourceTree = "<group>";
@@ -1511,6 +1517,7 @@
 		856AAC8B1B6E304B00B07119 /* Spec */ = {
 			isa = PBXGroup;
 			children = (
+				D5FFA6A229E96C790082DB4B /* Codables */,
 				21BF06092758477700AE4C43 /* Tests */,
 				21BF060A2758477E00AE4C43 /* Test Utilities */,
 				856AAC9A1B6E326E00B07119 /* ably-common */,
@@ -1585,6 +1592,15 @@
 				D710D478219495FC008F54AD /* Info-tvOS.plist */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		D5FFA6A229E96C790082DB4B /* Codables */ = {
+			isa = PBXGroup;
+			children = (
+				D5FFA6A329E96C960082DB4B /* TestAppSetup.swift */,
+				D5FFA6A729E97EF30082DB4B /* CryptoData.swift */,
+			);
+			path = Codables;
 			sourceTree = "<group>";
 		};
 		D71966E61E5DFFB2000974DD /* Admin */ = {
@@ -1892,7 +1908,6 @@
 				8412FDE32661AC37001FE9E6 /* msgpack.xcframework */,
 				8412FDF12661AC7A001FE9E6 /* Aspects.xcframework */,
 				8412FDF42661AC7B001FE9E6 /* Nimble.xcframework */,
-				8412FDF22661AC7B001FE9E6 /* SwiftyJSON.xcframework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -2634,6 +2649,7 @@
 				21881E7C283BD0E100CFD9E2 /* StringifiableTests.swift in Sources */,
 				856AAC971B6E30C800B07119 /* TestUtilities.swift in Sources */,
 				D72768211C9C19040022F8B2 /* RestClientPresenceTests.swift in Sources */,
+				D5FFA6A829E97EF30082DB4B /* CryptoData.swift in Sources */,
 				D780846E1C68B3E50083009D /* NSObject+TestSuite.m in Sources */,
 				21881E7A283BD08300CFD9E2 /* GCDTests.swift in Sources */,
 				84569FA626B46F4E00457CF5 /* ClientOptionsTests.swift in Sources */,
@@ -2645,9 +2661,11 @@
 				EB1AE0CE1C5C3A4900D62250 /* UtilitiesTests.swift in Sources */,
 				848ED97326E50D0F0087E800 /* ObjcppTest.mm in Sources */,
 				D798554823EB96C000946BE2 /* DeltaCodecTests.swift in Sources */,
+				D50D86E929E9444600EA72EA /* JSON.swift in Sources */,
 				D74CBC0B212EC22800D090E4 /* RestPaginatedTests.swift in Sources */,
 				D72304701BB72CED00F1ABDA /* RealtimeClientTests.swift in Sources */,
 				841134782722205400CFA837 /* ARTArchiveTests.m in Sources */,
+				D5FFA6A429E96C960082DB4B /* TestAppSetup.swift in Sources */,
 				D74A17B81FA0D9A3006D27B5 /* PushAdminTests.swift in Sources */,
 				EB7913A81C6E54C3000ABF9B /* CryptoTests.swift in Sources */,
 				D777EEE820650ADF002EBA03 /* PushChannelTests.swift in Sources */,
@@ -2780,6 +2798,7 @@
 				D7093C23219E466E00723F17 /* RestPaginatedTests.swift in Sources */,
 				D7093C19219E465300723F17 /* TestUtilities.swift in Sources */,
 				560579DA24AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */,
+				D5FFA6A929E97EF30082DB4B /* CryptoData.swift in Sources */,
 				D7093C1C219E466400723F17 /* ReadmeExamplesTests.swift in Sources */,
 				21881E7B283BD0DF00CFD9E2 /* StringifiableTests.swift in Sources */,
 				D7093C27219E466E00723F17 /* RealtimeClientChannelsTests.swift in Sources */,
@@ -2789,6 +2808,7 @@
 				D7093C1F219E466E00723F17 /* RestClientStatsTests.swift in Sources */,
 				D7093C1A219E465C00723F17 /* NSObject+TestSuite.m in Sources */,
 				D7093C1E219E466900723F17 /* RestClientTests.swift in Sources */,
+				D50D86EA29E9444600EA72EA /* JSON.swift in Sources */,
 				D7093C2B219E466E00723F17 /* CryptoTests.swift in Sources */,
 				D7093C20219E466E00723F17 /* RestClientChannelTests.swift in Sources */,
 				EB1B53FA22F85CE4006A59AC /* ObjectLifetimesTests.swift in Sources */,
@@ -2814,6 +2834,7 @@
 				D7093C7F219EE26400723F17 /* RealtimeClientPresenceTests.swift in Sources */,
 				D7093C73219EE26000723F17 /* ReadmeExamplesTests.swift in Sources */,
 				560579DB24AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */,
+				D5FFA6AA29E97EF30082DB4B /* CryptoData.swift in Sources */,
 				D7093C71219EE25800723F17 /* NSObject+TestSuite.m in Sources */,
 				D7093C70219EE25400723F17 /* TestUtilities.swift in Sources */,
 				84569FA826B46F5100457CF5 /* ClientOptionsTests.swift in Sources */,
@@ -2824,6 +2845,7 @@
 				D7093C79219EE26400723F17 /* RestClientPresenceTests.swift in Sources */,
 				D7093C78219EE26400723F17 /* RestClientChannelsTests.swift in Sources */,
 				D7093C76219EE26400723F17 /* RestClientStatsTests.swift in Sources */,
+				D50D86EB29E9444600EA72EA /* JSON.swift in Sources */,
 				D7093C82219EE26400723F17 /* CryptoTests.swift in Sources */,
 				D5A22174266F526600C87C42 /* GCDTests.swift in Sources */,
 				EB1B53FB22F85CE4006A59AC /* ObjectLifetimesTests.swift in Sources */,

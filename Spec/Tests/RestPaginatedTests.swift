@@ -1,7 +1,6 @@
 import Ably
 import Nimble
 import XCTest
-import SwiftyJSON
 
 private let links = "<./messages?start=0&end=1535035746063&limit=100&direction=backwards&format=msgpack&firstEnd=1535035746063&fromDate=1535035746063&mode=all>; rel=\"first\", <./messages?start=0&end=1535035746063&limit=100&direction=backwards&format=msgpack&firstEnd=1535035746063&fromDate=1535035746063&mode=all>; rel=\"current\""
 
