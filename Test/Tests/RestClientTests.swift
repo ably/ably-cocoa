@@ -148,8 +148,8 @@ class RestClientTests: XCTestCase {
     }
 
     // G4
-    func test__001__RestClient__All_REST_requests_should_include_the_current_API_version() {
-        let options = AblyTests.commonAppSetup()
+    func test__001__RestClient__All_REST_requests_should_include_the_current_API_version() throws {
+        let options = try AblyTests.commonAppSetup()
         let client = ARTRest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
@@ -170,8 +170,8 @@ class RestClientTests: XCTestCase {
 
     // RSC1
 
-    func test__015__RestClient__initializer__should_accept_an_API_key() {
-        let options = AblyTests.commonAppSetup()
+    func test__015__RestClient__initializer__should_accept_an_API_key() throws {
+        let options = try AblyTests.commonAppSetup()
 
         let client = ARTRest(key: options.key!)
         client.internal.prioritizedHost = options.restHost
@@ -193,17 +193,17 @@ class RestClientTests: XCTestCase {
         expect(publishTask.error?.code).toEventually(equal(ARTErrorCode.invalidCredential.intValue), timeout: testTimeout)
     }
 
-    func test__018__RestClient__initializer__should_accept_a_token() {
+    func test__018__RestClient__initializer__should_accept_a_token() throws {
         ARTClientOptions.setDefaultEnvironment(getEnvironment())
         defer { ARTClientOptions.setDefaultEnvironment(nil) }
 
-        let client = ARTRest(token: getTestToken())
+        let client = ARTRest(token: try getTestToken())
         let publishTask = publishTestMessage(client, channelName: uniqueChannelName())
         expect(publishTask.error).toEventually(beNil(), timeout: testTimeout)
     }
 
-    func test__019__RestClient__initializer__should_accept_an_options_object() {
-        let options = AblyTests.commonAppSetup()
+    func test__019__RestClient__initializer__should_accept_an_options_object() throws {
+        let options = try AblyTests.commonAppSetup()
         let client = ARTRest(options: options)
 
         let publishTask = publishTestMessage(client, channelName: uniqueChannelName())
@@ -211,8 +211,8 @@ class RestClientTests: XCTestCase {
         expect(publishTask.error).toEventually(beNil(), timeout: testTimeout)
     }
 
-    func test__020__RestClient__initializer__should_accept_an_options_object_with_token_authentication() {
-        let options = AblyTests.clientOptions(requestToken: true)
+    func test__020__RestClient__initializer__should_accept_an_options_object_with_token_authentication() throws {
+        let options = try AblyTests.clientOptions(requestToken: true)
         let client = ARTRest(options: options)
 
         let publishTask = publishTestMessage(client, channelName: uniqueChannelName())
@@ -220,8 +220,8 @@ class RestClientTests: XCTestCase {
         expect(publishTask.error).toEventually(beNil(), timeout: testTimeout)
     }
 
-    func test__021__RestClient__initializer__should_result_in_error_status_when_provided_a_bad_token() {
-        let options = AblyTests.clientOptions()
+    func test__021__RestClient__initializer__should_result_in_error_status_when_provided_a_bad_token() throws {
+        let options = try AblyTests.clientOptions()
         options.token = "invalid_token"
         let client = ARTRest(options: options)
 
@@ -253,8 +253,8 @@ class RestClientTests: XCTestCase {
     }
 
     // RSC3
-    func test__023__RestClient__logging__should_have_a_mutable_log_level() {
-        let options = AblyTests.commonAppSetup()
+    func test__023__RestClient__logging__should_have_a_mutable_log_level() throws {
+        let options = try AblyTests.commonAppSetup()
         options.logHandler = ARTLog(capturingOutput: true)
         let client = ARTRest(options: options)
         client.internal.logger_onlyForUseInClassMethodsAndTests.logLevel = .error
@@ -267,7 +267,7 @@ class RestClientTests: XCTestCase {
     }
 
     // RSC4
-    func test__024__RestClient__logging__should_accept_a_custom_logger() {
+    func test__024__RestClient__logging__should_accept_a_custom_logger() throws {
         enum Log {
             static var interceptedLog: (String, ARTLogLevel) = ("", .none)
         }
@@ -277,7 +277,7 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        let options = AblyTests.commonAppSetup()
+        let options = try AblyTests.commonAppSetup()
         let customLogger = MyLogger()
         options.logHandler = customLogger
         options.logLevel = .verbose
@@ -343,8 +343,8 @@ class RestClientTests: XCTestCase {
         expect(testHTTPExecutor.requests.first?.url?.absoluteString).toEventually(beginWith("https://rest.ably.io"), timeout: testTimeout)
     }
 
-    func test__029__RestClient__endpoint__should_connect_over_plain_http____when_tls_is_off() {
-        let options = AblyTests.clientOptions(requestToken: true)
+    func test__029__RestClient__endpoint__should_connect_over_plain_http____when_tls_is_off() throws {
+        let options = try AblyTests.clientOptions(requestToken: true)
         options.tls = false
         let client = ARTRest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
@@ -436,8 +436,8 @@ class RestClientTests: XCTestCase {
     }
 
     // RSC5
-    func test__002__RestClient__should_provide_access_to_the_AuthOptions_object_passed_in_ClientOptions() {
-        let options = AblyTests.commonAppSetup()
+    func test__002__RestClient__should_provide_access_to_the_AuthOptions_object_passed_in_ClientOptions() throws {
+        let options = try AblyTests.commonAppSetup()
         let client = ARTRest(options: options)
 
         let authOptions = client.auth.internal.options
@@ -468,8 +468,8 @@ class RestClientTests: XCTestCase {
 
     // RSC16
 
-    func test__034__RestClient__time__should_return_server_time() {
-        let options = AblyTests.commonAppSetup()
+    func test__034__RestClient__time__should_return_server_time() throws {
+        let options = try AblyTests.commonAppSetup()
         let client = ARTRest(options: options)
 
         var time: NSDate?
@@ -483,7 +483,7 @@ class RestClientTests: XCTestCase {
 
     // RSC7, RSC18
     func test__004__RestClient__should_send_requests_over_http_and_https() throws {
-        let options = AblyTests.commonAppSetup()
+        let options = try AblyTests.commonAppSetup()
 
         let clientHttps = ARTRest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
@@ -519,11 +519,9 @@ class RestClientTests: XCTestCase {
     }
 
     // RSC9
-    func test__005__RestClient__should_use_Auth_to_manage_authentication() {
-        let options = AblyTests.clientOptions()
-        guard let testTokenDetails = getTestTokenDetails() else {
-            fail("No test token details"); return
-        }
+    func test__005__RestClient__should_use_Auth_to_manage_authentication() throws {
+        let options = try AblyTests.clientOptions()
+        let testTokenDetails = try getTestTokenDetails()
         options.tokenDetails = testTokenDetails
         options.authCallback = { _, completion in
             completion(testTokenDetails, nil)
@@ -551,9 +549,9 @@ class RestClientTests: XCTestCase {
     }
 
     // RSC10
-    func test__006__RestClient__should_request_another_token_after_current_one_is_no_longer_valid() {
-        let options = AblyTests.commonAppSetup()
-        options.token = getTestToken(ttl: 0.5)
+    func test__006__RestClient__should_request_another_token_after_current_one_is_no_longer_valid() throws {
+        let options = try AblyTests.commonAppSetup()
+        options.token = try getTestToken(ttl: 0.5)
         let client = ARTRest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
@@ -580,9 +578,9 @@ class RestClientTests: XCTestCase {
     }
 
     // RSC10
-    func test__007__RestClient__should_result_in_an_error_when_user_does_not_have_sufficient_permissions() {
-        let options = AblyTests.clientOptions()
-        options.token = getTestToken(capability: "{ \"main\":[\"subscribe\"] }")
+    func test__007__RestClient__should_result_in_an_error_when_user_does_not_have_sufficient_permissions() throws {
+        let options = try AblyTests.clientOptions()
+        options.token = try getTestToken(capability: "{ \"main\":[\"subscribe\"] }")
         let client = ARTRest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
@@ -609,8 +607,8 @@ class RestClientTests: XCTestCase {
     // RSC14
 
     // RSC14a
-    func test__035__RestClient__Authentication__should_support_basic_authentication_when_an_API_key_is_provided_with_the_key_option() {
-        let options = AblyTests.commonAppSetup()
+    func test__035__RestClient__Authentication__should_support_basic_authentication_when_an_API_key_is_provided_with_the_key_option() throws {
+        let options = try AblyTests.commonAppSetup()
         guard let components = options.key?.components(separatedBy: ":"), let keyName = components.first, let keySecret = components.last else {
             fail("Invalid API key: \(options.key ?? "nil")"); return
         }
@@ -659,14 +657,14 @@ class RestClientTests: XCTestCase {
     }
 
     // RSC14c
-    func test__036__RestClient__Authentication__should_error_when_expired_token_and_no_means_to_renew() {
-        let client = ARTRest(options: AblyTests.commonAppSetup())
+    func test__036__RestClient__Authentication__should_error_when_expired_token_and_no_means_to_renew() throws {
+        let client = ARTRest(options: try AblyTests.commonAppSetup())
         let auth = client.auth
 
         let tokenParams = ARTTokenParams()
         tokenParams.ttl = 3.0 // Seconds
 
-        guard let options: ARTClientOptions = (AblyTests.waitFor(timeout: testTimeout) { value in
+        let options: ARTClientOptions = try AblyTests.waitFor(timeout: testTimeout) { value in
             auth.requestToken(tokenParams, with: nil) { tokenDetails, error in
                 if let e = error {
                     XCTFail(e.localizedDescription)
@@ -680,7 +678,14 @@ class RestClientTests: XCTestCase {
                     return
                 }
 
-                let options = AblyTests.clientOptions()
+                let options: ARTClientOptions
+                do {
+                    options = try AblyTests.clientOptions()
+                } catch {
+                    XCTFail(error.localizedDescription)
+                    value(nil)
+                    return
+                }
                 options.key = client.internal.options.key
 
                 // Expired token
@@ -695,8 +700,6 @@ class RestClientTests: XCTestCase {
                 options.authUrl = URL(string: "http://test-auth.ably.io")
                 value(options)
             }
-        }) else {
-            return
         }
 
         let rest = ARTRest(options: options)
@@ -722,8 +725,8 @@ class RestClientTests: XCTestCase {
     }
 
     // RSC14d
-    func test__037__RestClient__Authentication__should_renew_the_token_when_it_has_expired() {
-        let client = ARTRest(options: AblyTests.commonAppSetup())
+    func test__037__RestClient__Authentication__should_renew_the_token_when_it_has_expired() throws {
+        let client = ARTRest(options: try AblyTests.commonAppSetup())
         let auth = client.auth
 
         let tokenParams = ARTTokenParams()
@@ -743,7 +746,14 @@ class RestClientTests: XCTestCase {
                     return
                 }
 
-                let options = AblyTests.clientOptions()
+                let options: ARTClientOptions
+                do {
+                    options = try AblyTests.clientOptions()
+                } catch {
+                    XCTFail(error.localizedDescription)
+                    done()
+                    return
+                }
                 options.key = client.internal.options.key
 
                 // Expired token
@@ -1549,7 +1559,7 @@ class RestClientTests: XCTestCase {
 
     // RSC8a
     func test__008__RestClient__should_use_MsgPack_binary_protocol() throws {
-        let options = AblyTests.commonAppSetup()
+        let options = try AblyTests.commonAppSetup()
         XCTAssertTrue(options.useBinaryProtocol)
 
         let rest = ARTRest(options: options)
@@ -1578,7 +1588,7 @@ class RestClientTests: XCTestCase {
         }
 
         let transport = realtime.internal.transport as! TestProxyTransport
-        let jsonArray: [[String: Any]] = transport.rawDataSent.map { JSONUtility.jsonObject(data: AblyTests.msgpackToData($0))! }
+        let jsonArray: [[String: Any]] = transport.rawDataSent.map { try! JSONUtility.jsonObject(data: AblyTests.msgpackToData($0)) }
         let messageJson = jsonArray.filter { item in (item["action"] as! Int) == 15 }.last!
         let messages = messageJson["messages"] as! [[String: Any]]
         XCTAssertEqual(messages[0]["data"] as? String, "message")
@@ -1586,7 +1596,7 @@ class RestClientTests: XCTestCase {
 
     // RSC8b
     func test__009__RestClient__should_use_JSON_text_protocol() throws {
-        let options = AblyTests.commonAppSetup()
+        let options = try AblyTests.commonAppSetup()
         options.useBinaryProtocol = false
 
         let rest = ARTRest(options: options)
@@ -1620,8 +1630,8 @@ class RestClientTests: XCTestCase {
     }
 
     // RSC7a
-    func test__010__RestClient__X_Ably_Version_must_be_included_in_all_REST_requests() {
-        let options = AblyTests.commonAppSetup()
+    func test__010__RestClient__X_Ably_Version_must_be_included_in_all_REST_requests() throws {
+        let options = try AblyTests.commonAppSetup()
         let client = ARTRest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
@@ -1645,8 +1655,8 @@ class RestClientTests: XCTestCase {
     // RSC7b (Deprecated in favor of RCS7d)
 
     // RSC7d
-    func test__011__RestClient__The_Agent_library_identifier_is_composed_of_a_series_of_key__value__entries_joined_by_spaces() {
-        let options = AblyTests.commonAppSetup()
+    func test__011__RestClient__The_Agent_library_identifier_is_composed_of_a_series_of_key__value__entries_joined_by_spaces() throws {
+        let options = try AblyTests.commonAppSetup()
         let client = ARTRest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
@@ -1664,9 +1674,9 @@ class RestClientTests: XCTestCase {
     }
 
     // https://github.com/ably/ably-cocoa/issues/117
-    func test__012__RestClient__should_indicate_an_error_if_there_is_no_way_to_renew_the_token() {
-        let options = AblyTests.clientOptions()
-        options.token = getTestToken(ttl: 0.1)
+    func test__012__RestClient__should_indicate_an_error_if_there_is_no_way_to_renew_the_token() throws {
+        let options = try AblyTests.clientOptions()
+        options.token = try getTestToken(ttl: 0.1)
         let client = ARTRest(options: options)
         waitUntil(timeout: testTimeout) { done in
             delay(0.1) {
@@ -1684,8 +1694,8 @@ class RestClientTests: XCTestCase {
     }
 
     // https://github.com/ably/ably-cocoa/issues/577
-    func test__013__RestClient__background_behaviour() {
-        let options = AblyTests.commonAppSetup()
+    func test__013__RestClient__background_behaviour() throws {
+        let options = try AblyTests.commonAppSetup()
         waitUntil(timeout: testTimeout) { done in
             URLSession.shared.dataTask(with: URL(string: "https://ably.io")!) { _, _, _ in
                 let rest = ARTRest(options: options)
@@ -1864,7 +1874,7 @@ class RestClientTests: XCTestCase {
     }
 
     func test__092__RestClient__request__method_signature_and_arguments__should_do_a_request_and_receive_a_valid_response() throws {
-        let options = AblyTests.commonAppSetup()
+        let options = try AblyTests.commonAppSetup()
         let rest = ARTRest(options: options)
         let channel = rest.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
@@ -1913,7 +1923,7 @@ class RestClientTests: XCTestCase {
     }
 
     func test__093__RestClient__request__method_signature_and_arguments__should_handle_response_failures() throws {
-        let options = AblyTests.commonAppSetup()
+        let options = try AblyTests.commonAppSetup()
         let rest = ARTRest(options: options)
         let channel = rest.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
@@ -1957,9 +1967,9 @@ class RestClientTests: XCTestCase {
     }
 
     // RSA4e
-    func test__094__RestClient__if_in_the_course_of_a_REST_request_an_attempt_to_authenticate_using_authUrl_fails_due_to_a_timeout__the_request_should_result_in_an_error_with_code_40170__statusCode_401__and_a_suitable_error_message() {
-        let options = AblyTests.commonAppSetup()
-        let token = getTestToken()
+    func test__094__RestClient__if_in_the_course_of_a_REST_request_an_attempt_to_authenticate_using_authUrl_fails_due_to_a_timeout__the_request_should_result_in_an_error_with_code_40170__statusCode_401__and_a_suitable_error_message() throws {
+        let options = try AblyTests.commonAppSetup()
+        let token = try getTestToken()
         options.httpRequestTimeout = 3 // short timeout to make it fail faster
         options.authUrl = URL(string: "http://10.255.255.1")!
         options.authParams = [URLQueryItem]()

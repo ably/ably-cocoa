@@ -37,8 +37,8 @@ private let dictionary = ["number": 3, "name": "John"] as [String: Any]
 private let array = ["John", "Mary"]
 private let binaryData = "123456".data(using: .utf8)!
 
-private func testSupportsAESEncryptionWithKeyLength(_ encryptionKeyLength: UInt, channelName: String) {
-    let options = AblyTests.commonAppSetup()
+private func testSupportsAESEncryptionWithKeyLength(_ encryptionKeyLength: UInt, channelName: String) throws {
+    let options = try AblyTests.commonAppSetup()
     let client = ARTRest(options: options)
     client.internal.httpExecutor = testHTTPExecutor
 
@@ -63,7 +63,7 @@ private func testSupportsAESEncryptionWithKeyLength(_ encryptionKeyLength: UInt,
         fail("HTTPBody is empty")
         return
     }
-    let dictionaryValue: [String: Any]? = JSONUtility.jsonObject(data: AblyTests.msgpackToData(httpBody))
+    let dictionaryValue: [String: Any]? = try? JSONUtility.jsonObject(data: AblyTests.msgpackToData(httpBody))
     XCTAssertEqual(dictionaryValue?["encoding"] as? String, "utf-8/cipher+aes-\(encryptionKeyLength)-cbc/base64")
     XCTAssertEqual(dictionaryValue?["name"] as? String, "test")
     XCTAssertNotEqual(dictionaryValue?["data"] as? String, "message1")
@@ -134,10 +134,10 @@ class RestClientChannelTests: XCTestCase {
         let expected: ExpectedModel
     }
 
-    override func setUp() {
-        super.setUp()
+    override func setUpWithError() throws {
+        try super.setUpWithError()
 
-        let options = AblyTests.commonAppSetup()
+        let options = try AblyTests.commonAppSetup()
         client = ARTRest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
     }
@@ -287,8 +287,8 @@ class RestClientChannelTests: XCTestCase {
     // RSL1f
 
     // RSL1f1
-    func test__011__publish__Unidentified_clients_using_Basic_Auth__should_publish_message_with_the_provided_clientId() {
-        let client = ARTRest(options: AblyTests.commonAppSetup())
+    func test__011__publish__Unidentified_clients_using_Basic_Auth__should_publish_message_with_the_provided_clientId() throws {
+        let client = ARTRest(options: try AblyTests.commonAppSetup())
         let channel = client.channels.get(uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.publish([ARTMessage(name: nil, data: "message", clientId: "tester")]) { error in
@@ -312,8 +312,8 @@ class RestClientChannelTests: XCTestCase {
     // RSA7e
 
     // RSA7e1
-    func test__012__publish__ClientOptions_clientId__should_include_the_clientId_as_a_querystring_parameter_in_realtime_connection_requests() {
-        let options = AblyTests.commonAppSetup()
+    func test__012__publish__ClientOptions_clientId__should_include_the_clientId_as_a_querystring_parameter_in_realtime_connection_requests() throws {
+        let options = try AblyTests.commonAppSetup()
         options.clientId = "john-doe"
         let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
@@ -332,8 +332,8 @@ class RestClientChannelTests: XCTestCase {
     }
 
     // RSA7e2
-    func test__013__publish__ClientOptions_clientId__should_include_an_X_Ably_ClientId_header_with_value_set_to_the_clientId_as_Base64_encoded_string_in_REST_connection_requests() {
-        let options = AblyTests.commonAppSetup()
+    func test__013__publish__ClientOptions_clientId__should_include_an_X_Ably_ClientId_header_with_value_set_to_the_clientId_as_Base64_encoded_string_in_REST_connection_requests() throws {
+        let options = try AblyTests.commonAppSetup()
         options.clientId = "john-doe"
         let client = ARTRest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
@@ -358,8 +358,8 @@ class RestClientChannelTests: XCTestCase {
     // RSL1m
 
     // RSL1m1
-    func test__014__publish__Message_clientId__publishing_with_no_clientId_when_the_clientId_is_set_to_some_value_in_the_client_options_should_result_in_a_message_received_with_the_clientId_property_set_to_that_value() {
-        let options = AblyTests.commonAppSetup()
+    func test__014__publish__Message_clientId__publishing_with_no_clientId_when_the_clientId_is_set_to_some_value_in_the_client_options_should_result_in_a_message_received_with_the_clientId_property_set_to_that_value() throws {
+        let options = try AblyTests.commonAppSetup()
         options.clientId = "client-rest"
         let expectedClientId = options.clientId
         let rest = ARTRest(options: options)
@@ -389,8 +389,8 @@ class RestClientChannelTests: XCTestCase {
     }
 
     // RSL1m2
-    func test__015__publish__Message_clientId__publishing_with_a_clientId_set_to_the_same_value_as_the_clientId_in_the_client_options_should_result_in_a_message_received_with_the_clientId_property_set_to_that_value() {
-        let options = AblyTests.commonAppSetup()
+    func test__015__publish__Message_clientId__publishing_with_a_clientId_set_to_the_same_value_as_the_clientId_in_the_client_options_should_result_in_a_message_received_with_the_clientId_property_set_to_that_value() throws {
+        let options = try AblyTests.commonAppSetup()
         options.clientId = "client-rest"
         let expectedClientId = options.clientId!
         let rest = ARTRest(options: options)
@@ -420,9 +420,9 @@ class RestClientChannelTests: XCTestCase {
     }
 
     // RSL1m3
-    func test__016__publish__Message_clientId__publishing_with_a_clientId_set_to_a_value_from_an_unidentified_client_should_result_in_a_message_received_with_the_clientId_property_set_to_that_value() {
+    func test__016__publish__Message_clientId__publishing_with_a_clientId_set_to_a_value_from_an_unidentified_client_should_result_in_a_message_received_with_the_clientId_property_set_to_that_value() throws {
         let expectedClientId = "client-rest"
-        let options = AblyTests.commonAppSetup()
+        let options = try AblyTests.commonAppSetup()
         let rest = ARTRest(options: options)
         let realtime = ARTRealtime(options: options)
 
@@ -449,8 +449,8 @@ class RestClientChannelTests: XCTestCase {
     }
 
     // RSL1m4
-    func test__017__publish__Message_clientId__publishing_with_a_clientId_set_to_a_different_value_from_the_clientId_in_the_client_options_should_result_in_a_message_being_rejected_by_the_server() {
-        let options = AblyTests.commonAppSetup()
+    func test__017__publish__Message_clientId__publishing_with_a_clientId_set_to_a_different_value_from_the_clientId_in_the_client_options_should_result_in_a_message_being_rejected_by_the_server() throws {
+        let options = try AblyTests.commonAppSetup()
         options.clientId = "client-rest"
         let rest = ARTRest(options: options)
         options.clientId = "client-realtime"
@@ -478,11 +478,16 @@ class RestClientChannelTests: XCTestCase {
     }
 
     // https://github.com/ably/ably-cocoa/issues/1074 and related with RSL1m
-    func test__001__publish__should_not_fail_sending_a_message_with_no_clientId_in_the_client_options_and_credentials_that_can_assume_any_clientId() {
-        let options = AblyTests.clientOptions()
+    func test__001__publish__should_not_fail_sending_a_message_with_no_clientId_in_the_client_options_and_credentials_that_can_assume_any_clientId() throws {
+        let options = try AblyTests.clientOptions()
         options.authCallback = { _, callback in
-            getTestTokenDetails(clientId: "*") { token, error in
-                callback(token, error)
+            getTestTokenDetails(clientId: "*") { result in
+                switch result {
+                case .success(let tokenDetails):
+                    callback(tokenDetails, nil)
+                case .failure(let error):
+                    callback(nil, error)
+                }
             }
         }
 
@@ -506,8 +511,8 @@ class RestClientChannelTests: XCTestCase {
     }
 
     // RSL1h
-    func test__002__publish__should_provide_an_optional_argument_that_allows_the_clientId_value_to_be_specified() {
-        let options = AblyTests.commonAppSetup()
+    func test__002__publish__should_provide_an_optional_argument_that_allows_the_clientId_value_to_be_specified() throws {
+        let options = try AblyTests.commonAppSetup()
         options.clientId = "john"
         let client = ARTRest(options: options)
         let channel = client.channels.get(uniqueChannelName())
@@ -520,8 +525,8 @@ class RestClientChannelTests: XCTestCase {
     }
 
     // RSL1h, RSL6a2
-    func test__003__publish__should_provide_an_optional_argument_that_allows_the_extras_value_to_be_specified() {
-        let options = AblyTests.commonAppSetup()
+    func test__003__publish__should_provide_an_optional_argument_that_allows_the_extras_value_to_be_specified() throws {
+        let options = try AblyTests.commonAppSetup()
         // Prevent channel name to be prefixed by test-*
         options.testOptions.channelNamePrefix = nil
         let client = ARTRest(options: options)
@@ -561,8 +566,8 @@ class RestClientChannelTests: XCTestCase {
 
     // RSL1i
 
-    func test__018__publish__If_the_total_size_of_message_s__exceeds_the_maxMessageSize__the_client_library_should_reject_the_publish_and_indicate_an_error() {
-        let options = AblyTests.commonAppSetup()
+    func test__018__publish__If_the_total_size_of_message_s__exceeds_the_maxMessageSize__the_client_library_should_reject_the_publish_and_indicate_an_error() throws {
+        let options = try AblyTests.commonAppSetup()
         let client = ARTRest(options: options)
         let channel = client.channels.get(uniqueChannelName())
         let messages = buildMessagesThatExceedMaxMessageSize()
@@ -575,8 +580,8 @@ class RestClientChannelTests: XCTestCase {
         }
     }
 
-    func test__019__publish__If_the_total_size_of_message_s__exceeds_the_maxMessageSize__also_when_using_publish_data_clientId_extras() {
-        let options = AblyTests.commonAppSetup()
+    func test__019__publish__If_the_total_size_of_message_s__exceeds_the_maxMessageSize__also_when_using_publish_data_clientId_extras() throws {
+        let options = try AblyTests.commonAppSetup()
         let client = ARTRest(options: options)
         let channel = client.channels.get(uniqueChannelName())
         let name = buildStringThatExceedMaxMessageSize()
@@ -592,7 +597,7 @@ class RestClientChannelTests: XCTestCase {
     // RSL1k
 
     // TO3n
-    func test__020__publish__idempotent_publishing__idempotentRestPublishing_option() {
+    func test__020__publish__idempotent_publishing__idempotentRestPublishing_option() throws {
         XCTAssertEqual(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "2"), true)
         XCTAssertEqual(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "2.0.0"), true)
         XCTAssertEqual(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "1.1"), false)
@@ -605,7 +610,7 @@ class RestClientChannelTests: XCTestCase {
         XCTAssertEqual(ARTClientOptions.getDefaultIdempotentRestPublishing(forVersion: "0.9.1"), false)
 
         // Current version
-        let options = AblyTests.clientOptions()
+        let options = try AblyTests.clientOptions()
         XCTAssertEqual(options.idempotentRestPublishing, true)
     }
 
@@ -829,8 +834,8 @@ class RestClientChannelTests: XCTestCase {
     }
 
     // RSL1k5
-    func test__026__publish__idempotent_publishing__should_publish_a_message_with_implicit_Id_only_once() {
-        let options = AblyTests.commonAppSetup()
+    func test__026__publish__idempotent_publishing__should_publish_a_message_with_implicit_Id_only_once() throws {
+        let options = try AblyTests.commonAppSetup()
         let rest = ARTRest(options: options)
         rest.internal.options.idempotentRestPublishing = true
         let channel = rest.channels.get(uniqueChannelName())
@@ -861,8 +866,8 @@ class RestClientChannelTests: XCTestCase {
     }
 
     // RSL1j
-    func test__004__publish__should_include_attributes_supplied_by_the_caller_in_the_encoded_message() {
-        let options = AblyTests.commonAppSetup()
+    func test__004__publish__should_include_attributes_supplied_by_the_caller_in_the_encoded_message() throws {
+        let options = try AblyTests.commonAppSetup()
         let client = ARTRest(options: options)
         let proxyHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = proxyHTTPExecutor
@@ -884,7 +889,7 @@ class RestClientChannelTests: XCTestCase {
         }
 
         guard
-            let object: [[String: Any]] = JSONUtility.jsonObject(data: AblyTests.msgpackToData(encodedBody)),
+            let object: [[String: Any]] = try? JSONUtility.jsonObject(data: AblyTests.msgpackToData(encodedBody)),
             let jsonMessage = object.first
         else {
             fail("Body from the last request is invalid"); return
@@ -897,8 +902,8 @@ class RestClientChannelTests: XCTestCase {
     // RSL2
 
     // RSL2a
-    func test__029__history__should_return_a_PaginatedResult_page_containing_the_first_page_of_messages() {
-        let client = ARTRest(options: AblyTests.commonAppSetup())
+    func test__029__history__should_return_a_PaginatedResult_page_containing_the_first_page_of_messages() throws {
+        let client = ARTRest(options: try AblyTests.commonAppSetup())
         let channel = client.channels.get(uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
@@ -974,8 +979,8 @@ class RestClientChannelTests: XCTestCase {
     // RSL2b
 
     // RSL2b1
-    func test__030__history__query_arguments__start_and_end_should_filter_messages_between_those_two_times() {
-        let client = ARTRest(options: AblyTests.commonAppSetup())
+    func test__030__history__query_arguments__start_and_end_should_filter_messages_between_those_two_times() throws {
+        let client = ARTRest(options: try AblyTests.commonAppSetup())
         let channel = client.channels.get(uniqueChannelName())
 
         let query = ARTDataQuery()
@@ -1033,8 +1038,8 @@ class RestClientChannelTests: XCTestCase {
     }
 
     // RSL2b1
-    func test__031__history__query_arguments__start_must_be_equal_to_or_less_than_end_and_is_unaffected_by_the_request_direction() {
-        let client = ARTRest(options: AblyTests.commonAppSetup())
+    func test__031__history__query_arguments__start_must_be_equal_to_or_less_than_end_and_is_unaffected_by_the_request_direction() throws {
+        let client = ARTRest(options: try AblyTests.commonAppSetup())
         let channel = client.channels.get(uniqueChannelName())
 
         let query = ARTDataQuery()
@@ -1054,8 +1059,8 @@ class RestClientChannelTests: XCTestCase {
     }
 
     // RSL2b2
-    func test__032__history__query_arguments__direction_backwards_or_forwards() {
-        let client = ARTRest(options: AblyTests.commonAppSetup())
+    func test__032__history__query_arguments__direction_backwards_or_forwards() throws {
+        let client = ARTRest(options: try AblyTests.commonAppSetup())
         let channel = client.channels.get(uniqueChannelName())
 
         let query = ARTDataQuery()
@@ -1095,8 +1100,8 @@ class RestClientChannelTests: XCTestCase {
     }
 
     // RSL2b3
-    func test__033__history__query_arguments__limit_items_result() {
-        let client = ARTRest(options: AblyTests.commonAppSetup())
+    func test__033__history__query_arguments__limit_items_result() throws {
+        let client = ARTRest(options: try AblyTests.commonAppSetup())
         let channel = client.channels.get(uniqueChannelName())
 
         let query = ARTDataQuery()
@@ -1133,8 +1138,8 @@ class RestClientChannelTests: XCTestCase {
     }
 
     // RSL2b3
-    func test__034__history__query_arguments__limit_supports_up_to_1000_items() {
-        let client = ARTRest(options: AblyTests.commonAppSetup())
+    func test__034__history__query_arguments__limit_supports_up_to_1000_items() throws {
+        let client = ARTRest(options: try AblyTests.commonAppSetup())
         let channel = client.channels.get(uniqueChannelName())
 
         let query = ARTDataQuery()
@@ -1151,8 +1156,8 @@ class RestClientChannelTests: XCTestCase {
 
     // RSP3
 
-    func skipped__test__035__presence__get__should_return_presence_fixture_data() {
-        let options = AblyTests.commonAppSetup()
+    func skipped__test__035__presence__get__should_return_presence_fixture_data() throws {
+        let options = try AblyTests.commonAppSetup()
         options.testOptions.channelNamePrefix = nil
         client = ARTRest(options: options)
         let key = appSetupModel.cipher.key
@@ -1198,8 +1203,8 @@ class RestClientChannelTests: XCTestCase {
             TestCase(value: text, expected: .with(["data": text])),
             TestCase(value: integer, expected: .with(["data": integer])),
             TestCase(value: decimal, expected: .with(["data": decimal])),
-            TestCase(value: dictionary, expected: .with(["data": JSONUtility.toJSONString(dictionary)!, "encoding": "json"])),
-            TestCase(value: array, expected: .with(["data": JSONUtility.toJSONString(array)!, "encoding": "json"])),
+            TestCase(value: dictionary, expected: .with(["data": try! JSONUtility.toJSONString(dictionary), "encoding": "json"])),
+            TestCase(value: array, expected: .with(["data": try! JSONUtility.toJSONString(array), "encoding": "json"])),
             TestCase(value: binaryData, expected: .with(["data": binaryData.toBase64, "encoding": "base64"])),
         ]
         
@@ -1227,7 +1232,7 @@ class RestClientChannelTests: XCTestCase {
                     if let s = model?.data, let data = try? JSONSerialization.jsonObject(with: s.data(using: .utf8)!) {
                         // Make sure the formatting is the same by parsing
                         // and reformatting in the same way as the test case.
-                        model?.data = JSONUtility.toJSONString(data)
+                        model?.data = try? JSONUtility.toJSONString(data)
                     }
 
                     XCTAssertEqual(model, caseTest.expected)
@@ -1296,7 +1301,7 @@ class RestClientChannelTests: XCTestCase {
                     done(); return
                 }
                 // Binary
-                let dictionaryObject: [String: Any]? = JSONUtility.jsonObject(data: AblyTests.msgpackToData(httpBody))
+                let dictionaryObject: [String: Any]? = try? JSONUtility.jsonObject(data: AblyTests.msgpackToData(httpBody))
                 XCTAssertEqual(dictionaryObject?["data"] as? String, binaryData.toBase64)
                 XCTAssertEqual(dictionaryObject?["encoding"] as? String, "base64")
                 done()
@@ -1316,7 +1321,7 @@ class RestClientChannelTests: XCTestCase {
 
                 if let request = testHTTPExecutor.requests.last, let http = request.httpBody {
                     // String (UTF-8)
-                    let dictionaryObject: [String: Any]? = JSONUtility.jsonObject(data: AblyTests.msgpackToData(http))
+                    let dictionaryObject: [String: Any]? = try? JSONUtility.jsonObject(data: AblyTests.msgpackToData(http))
                     XCTAssertEqual(dictionaryObject?["data"] as? String, text)
                     XCTAssertNil(dictionaryObject?["encoding"])
                 } else {
@@ -1341,9 +1346,9 @@ class RestClientChannelTests: XCTestCase {
 
                 if let request = testHTTPExecutor.requests.last, let http = request.httpBody {
                     // Array
-                    let dictionaryValue: [String: Any]? = JSONUtility.jsonObject(data: AblyTests.msgpackToData(http))
+                    let dictionaryValue: [String: Any]? = try? JSONUtility.jsonObject(data: AblyTests.msgpackToData(http))
                     let data = (dictionaryValue?["data"] as? String)?.data(using: .utf8)
-                    let jsonArray: NSArray? = JSONUtility.jsonObject(data: data)
+                    let jsonArray: NSArray? = try? JSONUtility.jsonObject(data: data)
                     
                     XCTAssertEqual(jsonArray, array as NSArray?)
                     XCTAssertEqual(dictionaryValue?["encoding"] as? String, "json")
@@ -1367,9 +1372,9 @@ class RestClientChannelTests: XCTestCase {
 
                 if let request = testHTTPExecutor.requests.last, let http = request.httpBody {
                     // Dictionary
-                    let dictionaryValue: [String: Any]? = JSONUtility.jsonObject(data: AblyTests.msgpackToData(http))
+                    let dictionaryValue: [String: Any]? = try? JSONUtility.jsonObject(data: AblyTests.msgpackToData(http))
                     let data = (dictionaryValue?["data"] as? String)?.data(using: .utf8)
-                    let jsonDictionary: NSDictionary? = JSONUtility.jsonObject(data: data)
+                    let jsonDictionary: NSDictionary? = try? JSONUtility.jsonObject(data: data)
                     
                     XCTAssertEqual(jsonDictionary, dictionary as NSDictionary?)
                     XCTAssertEqual(dictionaryValue?["encoding"] as? String, "json")
@@ -1429,19 +1434,19 @@ class RestClientChannelTests: XCTestCase {
 
     // RSL5b
 
-    func test__043__message_payload_encryption__should_support_AES_encryption__128_CBC_mode() {
-        testSupportsAESEncryptionWithKeyLength(128, channelName: uniqueChannelName())
+    func test__043__message_payload_encryption__should_support_AES_encryption__128_CBC_mode() throws {
+        try testSupportsAESEncryptionWithKeyLength(128, channelName: uniqueChannelName())
     }
 
-    func test__044__message_payload_encryption__should_support_AES_encryption__256_CBC_mode() {
-        testSupportsAESEncryptionWithKeyLength(256, channelName: uniqueChannelName())
+    func test__044__message_payload_encryption__should_support_AES_encryption__256_CBC_mode() throws {
+        try testSupportsAESEncryptionWithKeyLength(256, channelName: uniqueChannelName())
     }
 
     // RSL6
 
     // RSL6b
-    func test__045__message_decoding__should_deliver_with_a_binary_payload_when_the_payload_was_successfully_decoded_but_it_could_not_be_decrypted() {
-        let options = AblyTests.commonAppSetup()
+    func test__045__message_decoding__should_deliver_with_a_binary_payload_when_the_payload_was_successfully_decoded_but_it_could_not_be_decrypted() throws {
+        let options = try AblyTests.commonAppSetup()
         let clientEncrypted = ARTRest(options: options)
 
         let channelName = uniqueChannelName()
@@ -1476,8 +1481,8 @@ class RestClientChannelTests: XCTestCase {
     }
 
     // RSL6b
-    func test__046__message_decoding__should_deliver_with_encoding_attribute_set_indicating_the_residual_encoding_and_error_should_be_emitted() {
-        let options = AblyTests.commonAppSetup()
+    func test__046__message_decoding__should_deliver_with_encoding_attribute_set_indicating_the_residual_encoding_and_error_should_be_emitted() throws {
+        let options = try AblyTests.commonAppSetup()
         options.useBinaryProtocol = false
         options.logHandler = ARTLog(capturingOutput: true)
         let client = ARTRest(options: options)
@@ -1486,7 +1491,7 @@ class RestClientChannelTests: XCTestCase {
         client.internal.httpExecutor = testHTTPExecutor
 
         let expectedMessage = ["something": 1]
-        let expectedData = try! JSONSerialization.data(withJSONObject: expectedMessage, options: JSONSerialization.WritingOptions(rawValue: 0))
+        let expectedData = try JSONSerialization.data(withJSONObject: expectedMessage, options: JSONSerialization.WritingOptions(rawValue: 0))
 
         testHTTPExecutor.setListenerProcessingDataResponse { data in
             let dataStr = String(data: data!, encoding: String.Encoding.utf8)!
@@ -1520,8 +1525,8 @@ class RestClientChannelTests: XCTestCase {
     }
     
     // RSL8a, CHD2b, CHS2b, CHO2a
-    func test__047__status__with_subscribers__returns_a_channel_details_object_populated_with_channel_metrics() {
-        let options = AblyTests.commonAppSetup()
+    func test__047__status__with_subscribers__returns_a_channel_details_object_populated_with_channel_metrics() throws {
+        let options = try AblyTests.commonAppSetup()
         options.clientId = "Client 1"
         let rest = ARTRest(options: options)
         let realtime = ARTRealtime(options: options)

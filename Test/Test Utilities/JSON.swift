@@ -9,6 +9,12 @@
 import Foundation
 
 enum JSONUtility {
+    enum Error: Swift.Error {
+        case couldNotDecodeString
+        case serializedObjectIsNotOfExpectedType
+        case dataArgumentIsNil
+    }
+
     private static var decoder: JSONDecoder  {
         let jsonDecoder = JSONDecoder()
         jsonDecoder.keyDecodingStrategy = .convertFromSnakeCase
@@ -50,27 +56,35 @@ enum JSONUtility {
         }
     }
     
-    static func toJSONString( _ object: Any, encoding: String.Encoding = .utf8) -> String? {
-        guard let data = try? serialize(object) else {
-            return nil
+    static func toJSONString( _ object: Any, encoding: String.Encoding = .utf8) throws -> String {
+        let data = try serialize(object)
+
+        guard let string = String(bytes: data, encoding: encoding) else {
+            throw Error.couldNotDecodeString
         }
-        
-        return String(bytes: data, encoding: encoding)
+
+        return string
     }
     
-    static func codableToDictionary( _ model: Codable) -> [String: Any]? {
-        guard let data = try? encode(model) else {
-            return nil
+    static func codableToDictionary( _ model: Codable) throws -> [String: Any] {
+        let data = try encode(model)
+
+        guard let object = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            throw Error.serializedObjectIsNotOfExpectedType
         }
-        
-        return try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+
+        return object
     }
     
-    static func jsonObject<T: Any>(data: Data?) -> T? {
+    static func jsonObject<T: Any>(data: Data?) throws -> T {
         guard let data else {
-            return nil
+            throw Error.dataArgumentIsNil
         }
         
-        return try? JSONSerialization.jsonObject(with: data) as? T
+        guard let object = try JSONSerialization.jsonObject(with: data) as? T else {
+            throw Error.serializedObjectIsNotOfExpectedType
+        }
+
+        return object
     }
 }

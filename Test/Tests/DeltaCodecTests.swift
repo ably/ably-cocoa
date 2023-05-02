@@ -20,8 +20,8 @@ class DeltaCodecTests: XCTestCase {
     }
 
     // RTL19
-    func test__001__DeltaCodec__decoding__should_decode_vcdiff_encoded_messages() {
-        let options = AblyTests.commonAppSetup()
+    func test__001__DeltaCodec__decoding__should_decode_vcdiff_encoded_messages() throws {
+        let options = try AblyTests.commonAppSetup()
         let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
 
@@ -73,8 +73,8 @@ class DeltaCodecTests: XCTestCase {
     }
 
     // RTL20
-    func test__002__DeltaCodec__decoding__should_fail_and_recover_when_the_vcdiff_messages_are_out_of_order() {
-        let options = AblyTests.commonAppSetup()
+    func test__002__DeltaCodec__decoding__should_fail_and_recover_when_the_vcdiff_messages_are_out_of_order() throws {
+        let options = try AblyTests.commonAppSetup()
         let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
         let channelOptions = ARTRealtimeChannelOptions()
@@ -132,8 +132,8 @@ class DeltaCodecTests: XCTestCase {
     }
 
     // RTL18
-    func test__003__DeltaCodec__decoding__should_recover_when_the_vcdiff_message_decoding_fails() {
-        let options = AblyTests.commonAppSetup()
+    func test__003__DeltaCodec__decoding__should_recover_when_the_vcdiff_message_decoding_fails() throws {
+        let options = try AblyTests.commonAppSetup()
         let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
         let channelOptions = ARTRealtimeChannelOptions()

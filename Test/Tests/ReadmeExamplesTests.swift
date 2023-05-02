@@ -16,8 +16,8 @@ class ReadmeExamplesTests: XCTestCase {
         client.connection.close()
     }
 
-    func test__003__testListenToConnectionStateChanges() {
-        let options = AblyTests.clientOptions(requestToken: true)
+    func test__003__testListenToConnectionStateChanges() throws {
+        let options = try AblyTests.clientOptions(requestToken: true)
         let client = ARTRealtime(options: options)
         defer { client.close() }
 
@@ -41,8 +41,8 @@ class ReadmeExamplesTests: XCTestCase {
         client.connection.close()
     }
 
-    func test__005__testSubscribeAndPublishingToChannel() {
-        let options = AblyTests.clientOptions(requestToken: true)
+    func test__005__testSubscribeAndPublishingToChannel() throws {
+        let options = try AblyTests.clientOptions(requestToken: true)
         let client = ARTRealtime(options: options)
         defer { client.close() }
 
@@ -61,8 +61,8 @@ class ReadmeExamplesTests: XCTestCase {
         channel.publish("greeting", data: "Hello World!")
     }
 
-    func test__006__testQueryingTheHistory() {
-        let options = AblyTests.clientOptions(requestToken: true)
+    func test__006__testQueryingTheHistory() throws {
+        let options = try AblyTests.clientOptions(requestToken: true)
         let client = ARTRealtime(options: options)
         defer { client.close() }
 
@@ -81,8 +81,8 @@ class ReadmeExamplesTests: XCTestCase {
         }
     }
 
-    func test__007__testPresenceOnAChannel() {
-        let options = AblyTests.clientOptions(requestToken: true)
+    func test__007__testPresenceOnAChannel() throws {
+        let options = try AblyTests.clientOptions(requestToken: true)
         options.clientId = "foo"
         let client = ARTRealtime(options: options)
         defer { client.close() }
@@ -100,8 +100,8 @@ class ReadmeExamplesTests: XCTestCase {
         }
     }
 
-    func test__008__testQueryingThePresenceHistory() {
-        let options = AblyTests.clientOptions(requestToken: true)
+    func test__008__testQueryingThePresenceHistory() throws {
+        let options = try AblyTests.clientOptions(requestToken: true)
         let client = ARTRealtime(options: options)
         defer { client.close() }
 
@@ -126,16 +126,16 @@ class ReadmeExamplesTests: XCTestCase {
         _ = channel
     }
 
-    func test__010__testRestPublishMessage() {
-        let options = AblyTests.clientOptions(requestToken: true)
+    func test__010__testRestPublishMessage() throws {
+        let options = try AblyTests.clientOptions(requestToken: true)
         let client = ARTRest(options: options)
         let channel = client.channels.get(uniqueChannelName())
 
         channel.publish("myEvent", data: "Hello!")
     }
 
-    func test__011__testRestQueryingTheHistory() {
-        let options = AblyTests.clientOptions(requestToken: true)
+    func test__011__testRestQueryingTheHistory() throws {
+        let options = try AblyTests.clientOptions(requestToken: true)
         let client = ARTRest(options: options)
         let channel = client.channels.get(uniqueChannelName())
 
@@ -150,8 +150,8 @@ class ReadmeExamplesTests: XCTestCase {
         }
     }
 
-    func test__012__testRestPresenceOnAChannel() {
-        let options = AblyTests.clientOptions(requestToken: true)
+    func test__012__testRestPresenceOnAChannel() throws {
+        let options = try AblyTests.clientOptions(requestToken: true)
         let client = ARTRest(options: options)
         let channel = client.channels.get(uniqueChannelName())
 
@@ -166,8 +166,8 @@ class ReadmeExamplesTests: XCTestCase {
         }
     }
 
-    func test__013__testRestQueryingThePresenceHistory() {
-        let options = AblyTests.clientOptions(requestToken: true)
+    func test__013__testRestQueryingThePresenceHistory() throws {
+        let options = try AblyTests.clientOptions(requestToken: true)
         let client = ARTRest(options: options)
         let channel = client.channels.get(uniqueChannelName())
 
@@ -182,8 +182,8 @@ class ReadmeExamplesTests: XCTestCase {
         }
     }
 
-    func test__014__testGenerateToken() {
-        let client = ARTRest(options: AblyTests.commonAppSetup())
+    func test__014__testGenerateToken() throws {
+        let client = ARTRest(options: try AblyTests.commonAppSetup())
 
         client.auth.requestToken(nil, with: nil) { tokenDetails, _ in
             let tokenDetails = tokenDetails!
@@ -193,8 +193,8 @@ class ReadmeExamplesTests: XCTestCase {
         }
     }
 
-    func test__015__testFetchingStats() {
-        let client = ARTRest(options: AblyTests.commonAppSetup())
+    func test__015__testFetchingStats() throws {
+        let client = ARTRest(options: try AblyTests.commonAppSetup())
         client.channels.get(uniqueChannelName()).publish("foo", data: "bar") { _ in
             client.stats { statsPage, _ in
                 let statsPage = statsPage!
@@ -206,8 +206,8 @@ class ReadmeExamplesTests: XCTestCase {
         }
     }
 
-    func test__016__testFetchingTime() {
-        let client = ARTRest(options: AblyTests.commonAppSetup())
+    func test__016__testFetchingTime() throws {
+        let client = ARTRest(options: try AblyTests.commonAppSetup())
 
         client.time { time, _ in
             print(time as Any) // 2016-02-09 03:59:24 +0000
