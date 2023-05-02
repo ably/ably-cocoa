@@ -8,10 +8,10 @@ class PushChannelTests: XCTestCase {
         var mockHttpExecutor: MockHTTPExecutor
         var userQueue: DispatchQueue
 
-        init() {
+        init(test: Test) {
             mockHttpExecutor = MockHTTPExecutor()
             let options = ARTClientOptions(key: "xxxx:xxxx")
-            userQueue = AblyTests.createUserQueue()
+            userQueue = AblyTests.createUserQueue(for: test)
             options.dispatchQueue = userQueue
             options.internalDispatchQueue = AblyTests.queue
             rest = ARTRest(options: options)
@@ -27,10 +27,11 @@ class PushChannelTests: XCTestCase {
 
     // RSH7a1
     func test__001__Push_Channel__subscribeDevice__should_fail_if_the_LocalDevice_doesn_t_have_an_deviceIdentityToken() {
-        let testEnvironment = TestEnvironment()
+        let test = Test()
+        let testEnvironment = TestEnvironment(test: test)
 
         waitUntil(timeout: testTimeout) { done in
-            testEnvironment.rest.channels.get(uniqueChannelName()).push.subscribeDevice { error in
+            testEnvironment.rest.channels.get(uniqueChannelName(for: test)).push.subscribeDevice { error in
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
@@ -43,14 +44,15 @@ class PushChannelTests: XCTestCase {
 
     // RSH7a2, RSH7a3
     func test__002__Push_Channel__subscribeDevice__should_do_a_POST_request_to__push_channelSubscriptions_and_include_device_authentication() throws {
-        let testEnvironment = TestEnvironment()
+        let test = Test()
+        let testEnvironment = TestEnvironment(test: test)
         let rest = testEnvironment.rest
 
         let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
         defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
-        let channel = rest.channels.get(uniqueChannelName())
+        let channel = rest.channels.get(uniqueChannelName(for: test))
         waitUntil(timeout: testTimeout) { done in
             channel.push.subscribeDevice { error in
                 XCTAssertNil(error)
@@ -78,7 +80,8 @@ class PushChannelTests: XCTestCase {
 
     // RSH7b1
     func test__003__Push_Channel__subscribeClient__should_fail_if_the_LocalDevice_doesn_t_have_a_clientId() {
-        let testEnvironment = TestEnvironment()
+        let test = Test()
+        let testEnvironment = TestEnvironment(test: test)
         let rest = testEnvironment.rest
 
         let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
@@ -90,7 +93,7 @@ class PushChannelTests: XCTestCase {
         defer { rest.device.clientId = originalClientId }
 
         waitUntil(timeout: testTimeout) { done in
-            rest.channels.get(uniqueChannelName()).push.subscribeClient { error in
+            rest.channels.get(uniqueChannelName(for: test)).push.subscribeClient { error in
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
@@ -103,14 +106,15 @@ class PushChannelTests: XCTestCase {
 
     // RSH7b2
     func test__004__Push_Channel__subscribeClient__should_do_a_POST_request_to__push_channelSubscriptions() throws {
-        let testEnvironment = TestEnvironment()
+        let test = Test()
+        let testEnvironment = TestEnvironment(test: test)
         let rest = testEnvironment.rest
 
         let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
         defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
-        let channel = rest.channels.get(uniqueChannelName())
+        let channel = rest.channels.get(uniqueChannelName(for: test))
         waitUntil(timeout: testTimeout) { done in
             channel.push.subscribeClient { error in
                 XCTAssertNil(error)
@@ -137,10 +141,11 @@ class PushChannelTests: XCTestCase {
 
     // RSH7c1
     func test__005__Push_Channel__unsubscribeDevice__should_fail_if_the_LocalDevice_doesn_t_have_a_deviceIdentityToken() {
-        let testEnvironment = TestEnvironment()
+        let test = Test()
+        let testEnvironment = TestEnvironment(test: test)
 
         waitUntil(timeout: testTimeout) { done in
-            testEnvironment.rest.channels.get(uniqueChannelName()).push.unsubscribeDevice { error in
+            testEnvironment.rest.channels.get(uniqueChannelName(for: test)).push.unsubscribeDevice { error in
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
@@ -153,14 +158,15 @@ class PushChannelTests: XCTestCase {
 
     // RSH7c2, RSH7c3
     func test__006__Push_Channel__unsubscribeDevice__should_do_a_DELETE_request_to__push_channelSubscriptions_and_include_device_authentication() throws {
-        let testEnvironment = TestEnvironment()
+        let test = Test()
+        let testEnvironment = TestEnvironment(test: test)
         let rest = testEnvironment.rest
 
         let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
         defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
-        let channel = rest.channels.get(uniqueChannelName())
+        let channel = rest.channels.get(uniqueChannelName(for: test))
         waitUntil(timeout: testTimeout) { done in
             channel.push.unsubscribeDevice { error in
                 XCTAssertNil(error)
@@ -186,7 +192,8 @@ class PushChannelTests: XCTestCase {
 
     // RSH7d1
     func test__007__Push_Channel__unsubscribeClient__should_fail_if_the_LocalDevice_doesn_t_have_a_clientId() {
-        let testEnvironment = TestEnvironment()
+        let test = Test()
+        let testEnvironment = TestEnvironment(test: test)
         let rest = testEnvironment.rest
 
         let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
@@ -198,7 +205,7 @@ class PushChannelTests: XCTestCase {
         defer { rest.device.clientId = originalClientId }
 
         waitUntil(timeout: testTimeout) { done in
-            rest.channels.get(uniqueChannelName()).push.unsubscribeClient { error in
+            rest.channels.get(uniqueChannelName(for: test)).push.unsubscribeClient { error in
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
@@ -211,14 +218,15 @@ class PushChannelTests: XCTestCase {
 
     // RSH7d2
     func test__008__Push_Channel__unsubscribeClient__should_do_a_DELETE_request_to__push_channelSubscriptions() throws {
-        let testEnvironment = TestEnvironment()
+        let test = Test()
+        let testEnvironment = TestEnvironment(test: test)
         let rest = testEnvironment.rest
 
         let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
         defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
-        let channel = rest.channels.get(uniqueChannelName())
+        let channel = rest.channels.get(uniqueChannelName(for: test))
         waitUntil(timeout: testTimeout) { done in
             channel.push.unsubscribeClient { error in
                 XCTAssertNil(error)
@@ -242,14 +250,15 @@ class PushChannelTests: XCTestCase {
     // RSH7e
 
     func test__009__Push_Channel__listSubscriptions__should_return_a_paginated_result_with_PushChannelSubscription_filtered_by_channel_and_device() throws {
-        let testEnvironment = TestEnvironment()
+        let test = Test()
+        let testEnvironment = TestEnvironment(test: test)
         let rest = testEnvironment.rest
 
         let params = [
             "deviceId": "111",
             "channel": "aaa",
         ]
-        let channel = rest.channels.get(uniqueChannelName())
+        let channel = rest.channels.get(uniqueChannelName(for: test))
         waitUntil(timeout: testTimeout) { done in
             try? channel.push.listSubscriptions(params) { result, error in
                 XCTAssertNil(error)
@@ -270,14 +279,15 @@ class PushChannelTests: XCTestCase {
     }
 
     func test__010__Push_Channel__listSubscriptions__should_return_a_paginated_result_with_PushChannelSubscription_filtered_by_channel_and_client() throws {
-        let testEnvironment = TestEnvironment()
+        let test = Test()
+        let testEnvironment = TestEnvironment(test: test)
         let rest = testEnvironment.rest
 
         let params = [
             "clientId": "tester",
             "channel": "aaa",
         ]
-        let channel = rest.channels.get(uniqueChannelName())
+        let channel = rest.channels.get(uniqueChannelName(for: test))
         waitUntil(timeout: testTimeout) { done in
             try? channel.push.listSubscriptions(params) { result, error in
                 XCTAssertNil(error)
@@ -298,31 +308,34 @@ class PushChannelTests: XCTestCase {
     }
 
     func test__011__Push_Channel__listSubscriptions__should_not_accept_null_deviceId_and_null_clientId() {
-        let testEnvironment = TestEnvironment()
+        let test = Test()
+        let testEnvironment = TestEnvironment(test: test)
 
-        let channel = testEnvironment.rest.channels.get(uniqueChannelName())
+        let channel = testEnvironment.rest.channels.get(uniqueChannelName(for: test))
         expect { try channel.push.listSubscriptions([:]) { _, _ in } }.to(throwError { (error: NSError) in
             XCTAssertEqual(error.code, ARTDataQueryError.missingRequiredFields.rawValue)
         })
     }
 
     func test__012__Push_Channel__listSubscriptions__should_not_accept_both_deviceId_and_clientId_params_at_the_same_time() {
-        let testEnvironment = TestEnvironment()
+        let test = Test()
+        let testEnvironment = TestEnvironment(test: test)
 
         let params = [
             "deviceId": "x",
             "clientId": "y",
         ]
-        let channel = testEnvironment.rest.channels.get(uniqueChannelName())
+        let channel = testEnvironment.rest.channels.get(uniqueChannelName(for: test))
         expect { try channel.push.listSubscriptions(params) { _, _ in } }.to(throwError { (error: NSError) in
             XCTAssertEqual(error.code, ARTDataQueryError.invalidParameters.rawValue)
         })
     }
 
     func test__013__Push_Channel__listSubscriptions__should_return_a_paginated_result_with_PushChannelSubscription() throws {
-        let _ = TestEnvironment()
+        let test = Test()
+        let _ = TestEnvironment(test: test)
 
-        let options = try AblyTests.commonAppSetup()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = "tester"
         // Prevent channel name to be prefixed by test-*
         options.testOptions.channelNamePrefix = nil
@@ -334,7 +347,7 @@ class PushChannelTests: XCTestCase {
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
         defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
-        let channel = rest.channels.get("pushenabled:\(uniqueChannelName())")
+        let channel = rest.channels.get("pushenabled:\(uniqueChannelName(for: test))")
         waitUntil(timeout: testTimeout) { done in
             channel.push.subscribeClient { error in
                 XCTAssertNil(error)

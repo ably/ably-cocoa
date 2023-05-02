@@ -42,8 +42,8 @@ private func check(_ details: ARTTokenDetails) {
 
 private let channelName = "test_JWT"
 private let messageName = "message_JWT"
-private func createAuthUrlTestsOptions() throws -> ARTClientOptions {
-    let options = try AblyTests.clientOptions()
+private func createAuthUrlTestsOptions(for test: Test) throws -> ARTClientOptions {
+    let options = try AblyTests.clientOptions(for: test)
     options.authUrl = URL(string: echoServerAddress)!
     return options
 }
@@ -54,9 +54,9 @@ private func createJsonEncoder() -> ARTJsonLikeEncoder {
     return encoder
 }
 
-private func jwtContentTypeTestsSetupDependencies() throws -> ARTRest {
-    let options = try AblyTests.clientOptions()
-    let keys = try getKeys()
+private func jwtContentTypeTestsSetupDependencies(for test: Test) throws -> ARTRest {
+    let options = try AblyTests.clientOptions(for: test)
+    let keys = try getKeys(for: test)
     options.authUrl = URL(string: echoServerAddress)!
     options.authParams = [URLQueryItem]()
     options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
@@ -74,7 +74,8 @@ class AuthTests: XCTestCase {
 
     // RSA1
     func test__003__Basic__should_work_over_HTTPS_only() throws {
-        let clientOptions = try AblyTests.commonAppSetup()
+        let test = Test()
+        let clientOptions = try AblyTests.commonAppSetup(for: test)
         clientOptions.tls = false
 
         expect { ARTRest(options: clientOptions) }.to(raiseException())
@@ -82,13 +83,14 @@ class AuthTests: XCTestCase {
 
     // RSA11
     func test__004__Basic__should_send_the_API_key_in_the_Authorization_header() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRest(options: options)
         let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
-            client.channels.get(uniqueChannelName()).publish(nil, data: "message") { _ in
+            client.channels.get(uniqueChannelName(for: test)).publish(nil, data: "message") { _ in
                 done()
             }
         }
@@ -117,14 +119,15 @@ class AuthTests: XCTestCase {
 
     // RSA3a
     func test__010__Token__token_auth__should_work_over_HTTP() throws {
-        let options = try AblyTests.clientOptions(requestToken: true)
+        let test = Test()
+        let options = try AblyTests.clientOptions(for: test, requestToken: true)
         options.tls = false
         let clientHTTP = ARTRest(options: options)
         let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         clientHTTP.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
-            clientHTTP.channels.get(uniqueChannelName()).publish(nil, data: "message") { _ in
+            clientHTTP.channels.get(uniqueChannelName(for: test)).publish(nil, data: "message") { _ in
                 done()
             }
         }
@@ -135,14 +138,15 @@ class AuthTests: XCTestCase {
     }
 
     func test__011__Token__token_auth__should_work_over_HTTPS() throws {
-        let options = try AblyTests.clientOptions(requestToken: true)
+        let test = Test()
+        let options = try AblyTests.clientOptions(for: test, requestToken: true)
         options.tls = true
         let clientHTTPS = ARTRest(options: options)
         let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         clientHTTPS.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
-            clientHTTPS.channels.get(uniqueChannelName()).publish(nil, data: "message") { _ in
+            clientHTTPS.channels.get(uniqueChannelName(for: test)).publish(nil, data: "message") { _ in
                 done()
             }
         }
@@ -155,15 +159,16 @@ class AuthTests: XCTestCase {
     // RSA3b
 
     func test__012__Token__token_auth__for_REST_requests__should_send_the_token_in_the_Authorization_header() throws {
-        let options = try AblyTests.clientOptions()
-        options.token = try getTestToken()
+        let test = Test()
+        let options = try AblyTests.clientOptions(for: test)
+        options.token = try getTestToken(for: test)
 
         let client = ARTRest(options: options)
         let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
-            client.channels.get(uniqueChannelName()).publish(nil, data: "message") { _ in
+            client.channels.get(uniqueChannelName(for: test)).publish(nil, data: "message") { _ in
                 done()
             }
         }
@@ -182,8 +187,9 @@ class AuthTests: XCTestCase {
     // RSA3c
 
     func test__013__Token__token_auth__for_Realtime_connections__should_send_the_token_in_the_querystring_as_a_param_named_accessToken() throws {
-        let options = try AblyTests.clientOptions()
-        options.token = try getTestToken()
+        let test = Test()
+        let options = try AblyTests.clientOptions(for: test)
+        options.token = try getTestToken(for: test)
         options.autoConnect = false
         options.testOptions.transportFactory = TestProxyTransportFactory()
 
@@ -226,8 +232,9 @@ class AuthTests: XCTestCase {
 
     // RSA4a
     func test__020__Token__authentication_method__should_indicate_an_error_and_not_retry_the_request_when_the_server_responds_with_a_token_error_and_there_is_no_way_to_renew_the_token() throws {
-        let options = try AblyTests.clientOptions()
-        options.token = try getTestToken()
+        let test = Test()
+        let options = try AblyTests.clientOptions(for: test)
+        options.token = try getTestToken(for: test)
 
         let rest = ARTRest(options: options)
         // No means to renew the token is provided
@@ -237,7 +244,7 @@ class AuthTests: XCTestCase {
         let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
 
-        let channel = rest.channels.get(uniqueChannelName())
+        let channel = rest.channels.get(uniqueChannelName(for: test))
 
         testHTTPExecutor.simulateIncomingServerErrorOnNextRequest(ARTErrorCode.tokenRevoked.intValue, description: "token revoked")
         waitUntil(timeout: testTimeout) { done in
@@ -253,8 +260,9 @@ class AuthTests: XCTestCase {
 
     // RSA4a
     func test__021__Token__authentication_method__should_transition_the_connection_to_the_FAILED_state_when_the_server_responds_with_a_token_error_and_there_is_no_way_to_renew_the_token() throws {
-        let options = try AblyTests.clientOptions()
-        options.tokenDetails = try getTestTokenDetails(ttl: 0.1)
+        let test = Test()
+        let options = try AblyTests.clientOptions(for: test)
+        options.tokenDetails = try getTestTokenDetails(for: test, ttl: 0.1)
         options.autoConnect = false
         options.testOptions.transportFactory = TestProxyTransportFactory()
 
@@ -270,7 +278,7 @@ class AuthTests: XCTestCase {
         XCTAssertNil(realtime.internal.options.authCallback)
         XCTAssertNil(realtime.internal.options.authUrl)
 
-        let channel = realtime.channels.get(uniqueChannelName())
+        let channel = realtime.channels.get(uniqueChannelName(for: test))
 
         waitUntil(timeout: testTimeout.multiplied(by: 2)) { done in
             realtime.connect()
@@ -287,12 +295,13 @@ class AuthTests: XCTestCase {
 
     // RSA4b
     func test__022__Token__authentication_method__on_token_error__reissues_token_and_retries_REST_requests() throws {
+        let test = Test()
         var authCallbackCalled = 0
 
-        let options = try AblyTests.commonAppSetup()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.authCallback = { _, callback in
             authCallbackCalled += 1
-            getTestTokenDetails { token, err in
+            getTestTokenDetails(for: test) { token, err in
                 callback(token, err)
             }
         }
@@ -301,7 +310,7 @@ class AuthTests: XCTestCase {
         let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
 
-        let channel = rest.channels.get(uniqueChannelName())
+        let channel = rest.channels.get(uniqueChannelName(for: test))
 
         testHTTPExecutor.simulateIncomingServerErrorOnNextRequest(ARTErrorCode.tokenRevoked.intValue, description: "token revoked")
 
@@ -321,14 +330,15 @@ class AuthTests: XCTestCase {
 
     // RSA4b
     func test__023__Token__authentication_method__in_REST__if_the_token_creation_failed_or_the_subsequent_request_with_the_new_token_failed_due_to_a_token_error__then_the_request_should_result_in_an_error() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.useTokenAuth = true
 
         let rest = ARTRest(options: options)
         let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
 
-        let channel = rest.channels.get(uniqueChannelName())
+        let channel = rest.channels.get(uniqueChannelName(for: test))
 
         testHTTPExecutor.setListenerAfterRequest { _ in
             testHTTPExecutor.simulateIncomingServerErrorOnNextRequest(ARTErrorCode.tokenRevoked.intValue, description: "token revoked")
@@ -351,7 +361,8 @@ class AuthTests: XCTestCase {
 
     // RSA4b
     func test__024__Token__authentication_method__in_Realtime__if_the_token_creation_failed_then_the_connection_should_move_to_the_DISCONNECTED_state_and_reports_the_error() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.authCallback = { _, completion in
             completion(nil, NSError(domain: NSURLErrorDomain, code: -1003, userInfo: [NSLocalizedDescriptionKey: "A server with the specified hostname could not be found."]))
         }
@@ -377,9 +388,10 @@ class AuthTests: XCTestCase {
 
     // RSA4b
     func test__025__Token__authentication_method__in_Realtime__if_the_connection_fails_due_to_a_terminal_token_error__then_the_connection_should_move_to_the_FAILED_state_and_reports_the_error() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.authCallback = { _, completion in
-            getTestToken { result in
+            getTestToken(for: test) { result in
                 switch result {
                 case .success(let token):
                     let invalidToken = String(token.reversed())
@@ -412,10 +424,11 @@ class AuthTests: XCTestCase {
     // RSA4b1
 
     func test__028__Token__authentication_method__local_token_validity_check__should_be_done_if_queryTime_is_true_and_local_time_is_in_sync_with_server() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         let testKey = options.key!
 
-        let tokenDetails = try getTestTokenDetails(key: testKey, ttl: 5.0, queryTime: true)
+        let tokenDetails = try getTestTokenDetails(for: test, key: testKey, ttl: 5.0, queryTime: true)
 
         options.queryTime = true
         options.tokenDetails = tokenDetails
@@ -446,7 +459,7 @@ class AuthTests: XCTestCase {
 
         rest.internal.httpExecutor = proxyHTTPExecutor
         waitUntil(timeout: testTimeout) { done in
-            rest.channels.get(uniqueChannelName()).history { _, error in
+            rest.channels.get(uniqueChannelName(for: test)).history { _, error in
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
@@ -462,10 +475,11 @@ class AuthTests: XCTestCase {
     }
 
     func test__029__Token__authentication_method__local_token_validity_check__should_NOT_be_done_if_queryTime_is_false_and_local_time_is_NOT_in_sync_with_server() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         let testKey = options.key!
 
-        let tokenDetails = try getTestTokenDetails(key: testKey, ttl: 5.0, queryTime: true)
+        let tokenDetails = try getTestTokenDetails(for: test, key: testKey, ttl: 5.0, queryTime: true)
 
         options.queryTime = false
         options.tokenDetails = tokenDetails
@@ -486,7 +500,7 @@ class AuthTests: XCTestCase {
         }
 
         waitUntil(timeout: testTimeout) { done in
-            rest.channels.get(uniqueChannelName()).history { _, error in
+            rest.channels.get(uniqueChannelName(for: test)).history { _, error in
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
@@ -505,7 +519,8 @@ class AuthTests: XCTestCase {
 
     // RSA4d
     func test__026__Token__authentication_method__if_a_request_by_a_realtime_client_to_an_authUrl_results_in_an_HTTP_403_the_client_library_should_transition_to_the_FAILED_state() throws {
-        let options = try AblyTests.clientOptions()
+        let test = Test()
+        let options = try AblyTests.clientOptions(for: test)
         options.autoConnect = false
         options.authUrl = URL(string: "https://echo.ably.io/respondwith?status=403")!
         let realtime = ARTRealtime(options: options)
@@ -523,7 +538,8 @@ class AuthTests: XCTestCase {
 
     // RSA4d
     func test__027__Token__authentication_method__if_an_authCallback_results_in_an_HTTP_403_the_client_library_should_transition_to_the_FAILED_state() throws {
-        let options = try AblyTests.clientOptions()
+        let test = Test()
+        let options = try AblyTests.clientOptions(for: test)
         options.autoConnect = false
         var authCallbackHasBeenInvoked = false
         options.authCallback = { _, completion in
@@ -558,7 +574,8 @@ class AuthTests: XCTestCase {
 
     // RSA4c1 & RSA4c2
     func test__032__Token__options__if_an_attempt_by_the_realtime_client_library_to_authenticate_is_made_using_the_authUrl_or_authCallback__the_request_to_authUrl_fails__if_the_connection_is_CONNECTING__then_the_connection_attempt_should_be_treated_as_unsuccessful() throws {
-        let options = try AblyTests.clientOptions()
+        let test = Test()
+        let options = try AblyTests.clientOptions(for: test)
         options.autoConnect = false
         options.authUrl = URL(string: "http://echo.ably.io")!
         let realtime = ARTRealtime(options: options)
@@ -584,8 +601,9 @@ class AuthTests: XCTestCase {
 
     // RSA4c3
     func test__033__Token__options__if_an_attempt_by_the_realtime_client_library_to_authenticate_is_made_using_the_authUrl_or_authCallback__the_request_to_authUrl_fails__if_the_connection_is_CONNECTED__then_the_connection_should_remain_CONNECTED() throws {
-        let token = try getTestToken()
-        let options = try AblyTests.clientOptions()
+        let test = Test()
+        let token = try getTestToken(for: test)
+        let options = try AblyTests.clientOptions(for: test)
         options.authUrl = URL(string: "http://echo.ably.io")!
         options.authParams = [URLQueryItem]()
         options.authParams?.append(URLQueryItem(name: "type", value: "text"))
@@ -621,7 +639,8 @@ class AuthTests: XCTestCase {
 
     // RSA4c1 & RSA4c2
     func test__034__Token__options__if_an_attempt_by_the_realtime_client_library_to_authenticate_is_made_using_the_authUrl_or_authCallback__the_request_to_authCallback_fails__if_the_connection_is_CONNECTING__then_the_connection_attempt_should_be_treated_as_unsuccessful() throws {
-        let options = try AblyTests.clientOptions()
+        let test = Test()
+        let options = try AblyTests.clientOptions(for: test)
         options.autoConnect = false
         options.authCallback = { _, completion in
             completion(nil, NSError(domain: NSURLErrorDomain, code: -1003, userInfo: [NSLocalizedDescriptionKey: "A server with the specified hostname could not be found."]))
@@ -651,9 +670,10 @@ class AuthTests: XCTestCase {
 
     // RSA4c3
     func test__035__Token__options__if_an_attempt_by_the_realtime_client_library_to_authenticate_is_made_using_the_authUrl_or_authCallback__the_request_to_authCallback_fails__if_the_connection_is_CONNECTED__then_the_connection_should_remain_CONNECTED() throws {
-        let options = try AblyTests.clientOptions()
+        let test = Test()
+        let options = try AblyTests.clientOptions(for: test)
         options.authCallback = { _, completion in
-            getTestTokenDetails(completion: completion)
+            getTestTokenDetails(for: test, completion: completion)
         }
         let realtime = ARTRealtime(options: options)
         defer { realtime.dispose(); realtime.close() }
@@ -687,7 +707,8 @@ class AuthTests: XCTestCase {
 
     // RSA4c1 & RSA4c2
     func test__036__Token__options__if_an_attempt_by_the_realtime_client_library_to_authenticate_is_made_using_the_authUrl_or_authCallback__the_provided_token_is_in_an_invalid_format__if_the_connection_is_CONNECTING__then_the_connection_attempt_should_be_treated_as_unsuccessful() throws {
-        let options = try AblyTests.clientOptions()
+        let test = Test()
+        let options = try AblyTests.clientOptions(for: test)
         options.autoConnect = false
         options.authUrl = URL(string: "http://echo.ably.io")!
         options.authParams = [URLQueryItem]()
@@ -720,12 +741,13 @@ class AuthTests: XCTestCase {
 
     // RSA4c3
     func test__037__Token__options__if_an_attempt_by_the_realtime_client_library_to_authenticate_is_made_using_the_authUrl_or_authCallback__the_provided_token_is_in_an_invalid_format__if_the_connection_is_CONNECTED__then_the_connection_should_remain_CONNECTED() throws {
-        let options = try AblyTests.clientOptions()
+        let test = Test()
+        let options = try AblyTests.clientOptions(for: test)
         options.authUrl = URL(string: "http://echo.ably.io")!
         options.authParams = [URLQueryItem]()
         options.authParams?.append(URLQueryItem(name: "type", value: "text"))
 
-        let token = try getTestToken()
+        let token = try getTestToken(for: test)
         options.authParams?.append(URLQueryItem(name: "body", value: token))
 
         let realtime = ARTRealtime(options: options)
@@ -772,7 +794,8 @@ class AuthTests: XCTestCase {
 
     // RSA4c1 & RSA4c2
     func test__038__Token__options__if_an_attempt_by_the_realtime_client_library_to_authenticate_is_made_using_the_authUrl_or_authCallback__the_attempt_times_out_after_realtimeRequestTimeout__if_the_connection_is_CONNECTING__then_the_connection_attempt_should_be_treated_as_unsuccessful() throws {
-        let options = try AblyTests.clientOptions()
+        let test = Test()
+        let options = try AblyTests.clientOptions(for: test)
         options.autoConnect = false
         options.authCallback = { _, _ in
             // Ignore `completion` closure to force a time out
@@ -803,10 +826,11 @@ class AuthTests: XCTestCase {
 
     // RSA4c3
     func test__039__Token__options__if_an_attempt_by_the_realtime_client_library_to_authenticate_is_made_using_the_authUrl_or_authCallback__the_attempt_times_out_after_realtimeRequestTimeout__if_the_connection_is_CONNECTED__then_the_connection_should_remain_CONNECTED() throws {
-        let options = try AblyTests.clientOptions()
+        let test = Test()
+        let options = try AblyTests.clientOptions(for: test)
         options.autoConnect = false
         options.authCallback = { _, completion in
-            getTestTokenDetails(completion: completion)
+            getTestTokenDetails(for: test, completion: completion)
         }
         options.testOptions.realtimeRequestTimeout = 0.5
 
@@ -851,8 +875,9 @@ class AuthTests: XCTestCase {
     // RSA15a
 
     func test__041__Token__token_auth_and_clientId__should_check_clientId_consistency__on_rest() throws {
+        let test = Test()
         let expectedClientId = "client_string"
-        let options = try AblyTests.commonAppSetup()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.useTokenAuth = true
         options.clientId = expectedClientId
 
@@ -885,8 +910,9 @@ class AuthTests: XCTestCase {
     }
 
     func test__042__Token__token_auth_and_clientId__should_check_clientId_consistency__on_realtime() throws {
+        let test = Test()
         let expectedClientId = "client_string"
-        let options = try AblyTests.commonAppSetup()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = expectedClientId
         options.autoConnect = false
         options.testOptions.transportFactory = TestProxyTransportFactory()
@@ -900,7 +926,7 @@ class AuthTests: XCTestCase {
                 let state = stateChange.current
                 let error = stateChange.reason
                 if state == .connected, error == nil {
-                    let currentChannel = client.channels.get(uniqueChannelName())
+                    let currentChannel = client.channels.get(uniqueChannelName(for: test))
                     currentChannel.subscribe { _ in
                         done()
                     }
@@ -917,7 +943,8 @@ class AuthTests: XCTestCase {
     }
 
     func test__043__Token__token_auth_and_clientId__should_check_clientId_consistency__with_wildcard() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = "*"
         expect { ARTRest(options: options) }.to(raiseException())
         expect { ARTRealtime(options: options) }.to(raiseException())
@@ -925,7 +952,8 @@ class AuthTests: XCTestCase {
 
     // RSA15b
     func test__040__Token__token_auth_and_clientId__should_permit_to_be_unauthenticated() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = nil
 
         let clientBasic = ARTRest(options: options)
@@ -955,8 +983,9 @@ class AuthTests: XCTestCase {
     // RSA15c
 
     func test__044__Token__token_auth_and_clientId__Incompatible_client__with_Realtime__it_should_change_the_connection_state_to_FAILED_and_emit_an_error() throws {
-        let options = try AblyTests.commonAppSetup()
-        let wrongTokenDetails = try getTestTokenDetails(clientId: "wrong")
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        let wrongTokenDetails = try getTestTokenDetails(for: test, clientId: "wrong")
 
         options.clientId = "john"
         options.autoConnect = false
@@ -976,7 +1005,8 @@ class AuthTests: XCTestCase {
     }
 
     func test__045__Token__token_auth_and_clientId__Incompatible_client__with_Rest__it_should_result_in_an_appropriate_error_response() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = "john"
         let rest = ARTRest(options: options)
 
@@ -1022,10 +1052,11 @@ class AuthTests: XCTestCase {
 
     // RSA6
     func test__008__Token__should_omit_capability_field_if_it_is_not_specified() throws {
+        let test = Test()
         let tokenParams = ARTTokenParams()
         XCTAssertNil(tokenParams.capability)
 
-        let options = try AblyTests.commonAppSetup()
+        let options = try AblyTests.commonAppSetup(for: test)
         let rest = ARTRest(options: options)
         let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
@@ -1054,10 +1085,11 @@ class AuthTests: XCTestCase {
 
     // RSA6
     func test__009__Token__should_add_capability_field_if_the_user_specifies_it() throws {
+        let test = Test()
         let tokenParams = ARTTokenParams()
         tokenParams.capability = "{\"*\":[\"*\"]}"
 
-        let options = try AblyTests.commonAppSetup()
+        let options = try AblyTests.commonAppSetup(for: test)
         let rest = ARTRest(options: options)
         let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
@@ -1087,12 +1119,13 @@ class AuthTests: XCTestCase {
 
     // RSA7a1
     func test__046__Token__clientId_and_authenticated_clients__should_not_pass_clientId_with_published_message() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = "mary"
         let rest = ARTRest(options: options)
         let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
-        let channel = rest.channels.get(uniqueChannelName())
+        let channel = rest.channels.get(uniqueChannelName(for: test))
         waitUntil(timeout: testTimeout) { done in
             channel.publish("foo", data: nil) { error in
                 XCTAssertNil(error)
@@ -1111,7 +1144,8 @@ class AuthTests: XCTestCase {
 
     // RSA7a2
     func test__047__Token__clientId_and_authenticated_clients__should_obtain_a_token_if_clientId_is_assigned() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = "client_string"
 
         let client = ARTRest(options: options)
@@ -1119,7 +1153,7 @@ class AuthTests: XCTestCase {
         client.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
-            client.channels.get(uniqueChannelName()).publish(nil, data: "message") { error in
+            client.channels.get(uniqueChannelName(for: test)).publish(nil, data: "message") { error in
                 if let e = error {
                     XCTFail(e.localizedDescription)
                 }
@@ -1134,7 +1168,8 @@ class AuthTests: XCTestCase {
 
     // RSA7a3
     func test__048__Token__clientId_and_authenticated_clients__should_convenience_clientId_return_a_string() throws {
-        let clientOptions = try AblyTests.commonAppSetup()
+        let test = Test()
+        let clientOptions = try AblyTests.commonAppSetup(for: test)
         clientOptions.clientId = "String"
 
         XCTAssertEqual(ARTRest(options: clientOptions).internal.options.clientId, "String")
@@ -1142,11 +1177,12 @@ class AuthTests: XCTestCase {
 
     // RSA7a4
     func test__049__Token__clientId_and_authenticated_clients__ClientOptions_clientId_takes_precendence_when_a_clientId_value_is_provided_in_both_ClientOptions_clientId_and_ClientOptions_defaultTokenParams() throws {
-        let options = try AblyTests.clientOptions()
+        let test = Test()
+        let options = try AblyTests.clientOptions(for: test)
         options.clientId = "john"
         options.authCallback = { tokenParams, completion in
             XCTAssertEqual(tokenParams.clientId, options.clientId)
-            getTestToken(clientId: tokenParams.clientId) { result in
+            getTestToken(for: test, clientId: tokenParams.clientId) { result in
                 switch result {
                 case .success(let token):
                     completion(token as ARTTokenDetailsCompatible, nil)
@@ -1157,7 +1193,7 @@ class AuthTests: XCTestCase {
         }
         options.defaultTokenParams = ARTTokenParams(clientId: "tester")
         let client = ARTRest(options: options)
-        let channel = client.channels.get(uniqueChannelName())
+        let channel = client.channels.get(uniqueChannelName(for: test))
 
         XCTAssertEqual(client.auth.clientId, "john")
         waitUntil(timeout: testTimeout) { done in
@@ -1181,7 +1217,8 @@ class AuthTests: XCTestCase {
 
     // RSA12a
     func test__051__Token__clientId_and_authenticated_clients__Auth_clientId_attribute_is_null__identity_should_be_anonymous_for_all_operations() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.autoConnect = false
         let realtime = AblyTests.newRealtime(options).client
         defer { realtime.dispose(); realtime.close() }
@@ -1209,9 +1246,10 @@ class AuthTests: XCTestCase {
 
     // RSA12b
     func test__052__Token__clientId_and_authenticated_clients__Auth_clientId_attribute_is_null__identity_may_change_and_become_identified() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.autoConnect = false
-        options.token = try getTestToken(clientId: "tester")
+        options.token = try getTestToken(for: test, clientId: "tester")
         let realtime = ARTRealtime(options: options)
         defer { realtime.dispose(); realtime.close() }
         XCTAssertNil(realtime.auth.clientId)
@@ -1234,7 +1272,8 @@ class AuthTests: XCTestCase {
 
     // RSA7b1
     func test__053__Token__clientId_and_authenticated_clients__auth_clientId_not_null__when_clientId_attribute_is_assigned_on_client_options() throws {
-        let clientOptions = try AblyTests.commonAppSetup()
+        let test = Test()
+        let clientOptions = try AblyTests.commonAppSetup(for: test)
         clientOptions.clientId = "Exist"
 
         XCTAssertEqual(ARTRest(options: clientOptions).auth.clientId, "Exist")
@@ -1242,7 +1281,8 @@ class AuthTests: XCTestCase {
 
     // RSA7b2
     func test__054__Token__clientId_and_authenticated_clients__auth_clientId_not_null__when_tokenRequest_or_tokenDetails_has_clientId_not_null_or_wildcard_string() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = "client_string"
         options.useTokenAuth = true
 
@@ -1273,8 +1313,9 @@ class AuthTests: XCTestCase {
 
     // RSA7b3
     func test__055__Token__clientId_and_authenticated_clients__auth_clientId_not_null__should_CONNECTED_ProtocolMessages_contain_a_clientId() throws {
-        let options = try AblyTests.clientOptions()
-        options.token = try getTestToken(clientId: "john")
+        let test = Test()
+        let options = try AblyTests.clientOptions(for: test)
+        options.token = try getTestToken(for: test, clientId: "john")
         XCTAssertNil(options.clientId)
         options.autoConnect = false
         let realtime = AblyTests.newRealtime(options).client
@@ -1296,8 +1337,9 @@ class AuthTests: XCTestCase {
 
     // RSA7b4
     func test__056__Token__clientId_and_authenticated_clients__auth_clientId_not_null__client_does_not_have_an_identity_when_a_wildcard_string_____is_present() throws {
-        let options = try AblyTests.clientOptions()
-        options.token = try getTestToken(clientId: "*")
+        let test = Test()
+        let options = try AblyTests.clientOptions(for: test)
+        options.token = try getTestToken(for: test, clientId: "*")
         let realtime = ARTRealtime(options: options)
         defer { realtime.dispose(); realtime.close() }
         waitUntil(timeout: testTimeout) { done in
@@ -1310,7 +1352,8 @@ class AuthTests: XCTestCase {
 
     // RSA7c
     func test__050__Token__clientId_and_authenticated_clients__should_clientId_be_null_or_string() throws {
-        let clientOptions = try AblyTests.commonAppSetup()
+        let test = Test()
+        let clientOptions = try AblyTests.commonAppSetup(for: test)
         clientOptions.clientId = "*"
 
         expect { ARTRest(options: clientOptions) }.to(raiseException())
@@ -1320,7 +1363,8 @@ class AuthTests: XCTestCase {
 
     // RSA8e
     func test__062__requestToken__arguments__should_not_merge_with_the_configured_params_and_options_but_instead_replace_all_corresponding_values__even_when__null_() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = "сlientId"
         let rest = ARTRest(options: options)
 
@@ -1328,7 +1372,7 @@ class AuthTests: XCTestCase {
         tokenParams.ttl = 2000
         tokenParams.capability = "{\"cansubscribe:*\":[\"subscribe\"]}"
 
-        let precedenceOptions = try AblyTests.commonAppSetup()
+        let precedenceOptions = try AblyTests.commonAppSetup(for: test)
 
         waitUntil(timeout: testTimeout) { done in
             rest.auth.requestToken(tokenParams, with: precedenceOptions) { tokenDetails, error in
@@ -1341,11 +1385,11 @@ class AuthTests: XCTestCase {
             }
         }
 
-        let options2 = try AblyTests.commonAppSetup()
+        let options2 = try AblyTests.commonAppSetup(for: test)
         options2.clientId = nil
         let rest2 = ARTRest(options: options2)
 
-        let precedenceOptions2 = try AblyTests.commonAppSetup()
+        let precedenceOptions2 = try AblyTests.commonAppSetup(for: test)
         precedenceOptions2.clientId = nil
 
         waitUntil(timeout: testTimeout) { done in
@@ -1362,7 +1406,8 @@ class AuthTests: XCTestCase {
 
     // RSA8e
     func test__063__requestToken__arguments__should_use_configured_defaults_if_the_object_arguments_are_omitted() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = "tester"
         let rest = ARTRest(options: options)
 
@@ -1423,9 +1468,10 @@ class AuthTests: XCTestCase {
     // RSA8c
 
     func test__064__requestToken__authUrl__query_will_provide_a_token_string() throws {
-        let testToken = try getTestToken()
+        let test = Test()
+        let testToken = try getTestToken(for: test)
 
-        let options = try AblyTests.clientOptions()
+        let options = try AblyTests.clientOptions(for: test)
         options.authUrl = URL(string: "http://echo.ably.io")
         XCTAssertNotNil(options.authUrl)
         // Plain text
@@ -1449,7 +1495,8 @@ class AuthTests: XCTestCase {
     }
 
     func test__065__requestToken__authUrl__query_will_provide_a_TokenDetails() throws {
-        let testTokenDetails = try XCTUnwrap(getTestTokenDetails(clientId: "tester"), "TokenDetails is empty")
+        let test = Test()
+        let testTokenDetails = try XCTUnwrap(getTestTokenDetails(for: test, clientId: "tester"), "TokenDetails is empty")
         let jsonTokenDetails = try XCTUnwrap(createJsonEncoder().encode(testTokenDetails), "Invalid TokenDetails")
 
         let options = ARTClientOptions()
@@ -1485,10 +1532,11 @@ class AuthTests: XCTestCase {
     }
 
     func test__066__requestToken__authUrl__query_will_provide_a_TokenRequest() throws {
+        let test = Test()
         let tokenParams = ARTTokenParams()
         tokenParams.capability = "{\"test\":[\"subscribe\"]}"
 
-        let options = try AblyTests.commonAppSetup()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.authUrl = URL(string: "http://echo.ably.io")
         XCTAssertNotNil(options.authUrl)
 
@@ -1666,7 +1714,8 @@ class AuthTests: XCTestCase {
 
     // RSA8a
     func test__057__requestToken__implicitly_creates_a_TokenRequest_and_requests_a_token() throws {
-        let rest = ARTRest(options: try AblyTests.commonAppSetup())
+        let test = Test()
+        let rest = ARTRest(options: try AblyTests.commonAppSetup(for: test))
 
         var createTokenRequestMethodWasCalled = false
 
@@ -1690,7 +1739,8 @@ class AuthTests: XCTestCase {
     // RSA8b
 
     func test__071__requestToken__should_support_all_TokenParams__using_defaults() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = currentClientId
         let rest = ARTRest(options: options)
 
@@ -1714,7 +1764,8 @@ class AuthTests: XCTestCase {
     }
 
     func test__072__requestToken__should_support_all_TokenParams__overriding_defaults() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = currentClientId
         let rest = ARTRest(options: options)
 
@@ -1744,7 +1795,8 @@ class AuthTests: XCTestCase {
     // RSA8d
 
     func test__073__requestToken__When_authCallback_option_is_set__it_will_invoke_the_callback__with_a_token_string() throws {
-        let options = try AblyTests.clientOptions()
+        let test = Test()
+        let options = try AblyTests.clientOptions(for: test)
         let expectedTokenParams = ARTTokenParams()
 
         options.authCallback = { tokenParams, completion in
@@ -1763,9 +1815,10 @@ class AuthTests: XCTestCase {
     }
 
     func test__074__requestToken__When_authCallback_option_is_set__it_will_invoke_the_callback__with_a_TokenDetails() throws {
+        let test = Test()
         let expectedTokenParams = ARTTokenParams()
 
-        let options = try AblyTests.clientOptions()
+        let options = try AblyTests.clientOptions(for: test)
         options.authCallback = { tokenParams, completion in
             XCTAssertNil(tokenParams.clientId)
             completion(ARTTokenDetails(token: "token_from_details"), nil)
@@ -1782,7 +1835,8 @@ class AuthTests: XCTestCase {
     }
 
     func test__075__requestToken__When_authCallback_option_is_set__it_will_invoke_the_callback__with_a_TokenRequest() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         let expectedTokenParams = ARTTokenParams()
         expectedTokenParams.clientId = "foo"
         var rest: ARTRest!
@@ -1810,12 +1864,13 @@ class AuthTests: XCTestCase {
 
     // RSA8f1
     func test__058__requestToken__ensure_the_message_published_does_not_have_a_clientId() throws {
-        let options = try AblyTests.commonAppSetup()
-        options.token = try getTestToken(clientId: nil)
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        options.token = try getTestToken(for: test, clientId: nil)
         let rest = ARTRest(options: options)
         let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
-        let channel = rest.channels.get(uniqueChannelName())
+        let channel = rest.channels.get(uniqueChannelName(for: test))
 
         waitUntil(timeout: testTimeout) { done in
             let message = ARTMessage(name: nil, data: "message without an explicit clientId")
@@ -1844,10 +1899,11 @@ class AuthTests: XCTestCase {
 
     // RSA8f2
     func test__059__requestToken__ensure_that_the_message_is_rejected() throws {
-        let options = try AblyTests.commonAppSetup()
-        options.token = try getTestToken(clientId: nil)
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        options.token = try getTestToken(for: test, clientId: nil)
         let rest = ARTRest(options: options)
-        let channel = rest.channels.get(uniqueChannelName())
+        let channel = rest.channels.get(uniqueChannelName(for: test))
 
         waitUntil(timeout: testTimeout) { done in
             let message = ARTMessage(name: nil, data: "message with an explicit clientId", clientId: "john")
@@ -1864,7 +1920,8 @@ class AuthTests: XCTestCase {
 
     // RSA8f3
     func test__060__requestToken__ensure_the_message_published_with_a_wildcard_____does_not_have_a_clientId() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         let rest = ARTRest(options: options)
 
         waitUntil(timeout: testTimeout) { done in
@@ -1876,7 +1933,7 @@ class AuthTests: XCTestCase {
 
         let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
-        let channel = rest.channels.get(uniqueChannelName())
+        let channel = rest.channels.get(uniqueChannelName(for: test))
 
         waitUntil(timeout: testTimeout) { done in
             let message = ARTMessage(name: nil, data: "no client")
@@ -1905,11 +1962,12 @@ class AuthTests: XCTestCase {
 
     // RSA8f4
     func test__061__requestToken__ensure_the_message_published_with_a_wildcard_____has_the_provided_clientId() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         // Request a token with a wildcard '*' value clientId
-        options.token = try getTestToken(clientId: "*")
+        options.token = try getTestToken(for: test, clientId: "*")
         let rest = ARTRest(options: options)
-        let channel = rest.channels.get(uniqueChannelName())
+        let channel = rest.channels.get(uniqueChannelName(for: test))
 
         waitUntil(timeout: testTimeout) { done in
             let message = ARTMessage(name: nil, data: "message with an explicit clientId", clientId: "john")
@@ -1935,7 +1993,8 @@ class AuthTests: XCTestCase {
 
     // RSA9h
     func test__076__createTokenRequest__should_not_merge_with_the_configured_params_and_options_but_instead_replace_all_corresponding_values__even_when__null_() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = "client_string"
         let rest = ARTRest(options: options)
 
@@ -2020,7 +2079,8 @@ class AuthTests: XCTestCase {
     }
 
     func test__077__createTokenRequest__should_override_defaults_if_AuthOptions_provided() throws {
-        let defaultOptions = try AblyTests.commonAppSetup()
+        let test = Test()
+        let defaultOptions = try AblyTests.commonAppSetup(for: test)
         defaultOptions.authCallback = { _, _ in
             fail("Should not be called")
         }
@@ -2049,10 +2109,11 @@ class AuthTests: XCTestCase {
     }
 
     func test__078__createTokenRequest__should_use_defaults_if_no_AuthOptions_is_provided() throws {
+        let test = Test()
         var currentTokenRequest: ARTTokenRequest?
         var callbackCalled = false
 
-        let defaultOptions = try AblyTests.commonAppSetup()
+        let defaultOptions = try AblyTests.commonAppSetup(for: test)
         defaultOptions.authCallback = { _, completion in
             callbackCalled = true
             guard let tokenRequest = currentTokenRequest else {
@@ -2077,7 +2138,8 @@ class AuthTests: XCTestCase {
     }
 
     func test__079__createTokenRequest__should_replace_defaults_if__nil__option_s_field_passed() throws {
-        let defaultOptions = try AblyTests.commonAppSetup()
+        let test = Test()
+        let defaultOptions = try AblyTests.commonAppSetup(for: test)
         let rest = ARTRest(options: defaultOptions)
 
         let customOptions = ARTAuthOptions()
@@ -2095,7 +2157,8 @@ class AuthTests: XCTestCase {
 
     // RSA9h
     func test__080__createTokenRequest__should_use_configured_defaults_if_the_object_arguments_are_omitted() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         let rest = ARTRest(options: options)
 
         let tokenParams = ARTTokenParams()
@@ -2144,7 +2207,8 @@ class AuthTests: XCTestCase {
 
     // RSA9a
     func test__081__createTokenRequest__should_create_and_sign_a_TokenRequest() throws {
-        let rest = ARTRest(options: try AblyTests.commonAppSetup())
+        let test = Test()
+        let rest = ARTRest(options: try AblyTests.commonAppSetup(for: test))
         let expectedClientId = "client_string"
         let tokenParams = ARTTokenParams(clientId: expectedClientId)
 
@@ -2165,7 +2229,8 @@ class AuthTests: XCTestCase {
 
     // RSA9b
     func test__082__createTokenRequest__should_support_AuthOptions() throws {
-        let rest = ARTRest(options: try AblyTests.commonAppSetup())
+        let test = Test()
+        let rest = ARTRest(options: try AblyTests.commonAppSetup(for: test))
         let auth: ARTAuth = rest.auth
 
         let authOptions = ARTAuthOptions(key: "key:secret")
@@ -2184,7 +2249,8 @@ class AuthTests: XCTestCase {
 
     // RSA9c
     func test__083__createTokenRequest__should_generate_a_unique_16_plus_character_nonce_if_none_is_provided() throws {
-        let rest = ARTRest(options: try AblyTests.commonAppSetup())
+        let test = Test()
+        let rest = ARTRest(options: try AblyTests.commonAppSetup(for: test))
 
         waitUntil(timeout: testTimeout) { done in
             // First
@@ -2214,7 +2280,8 @@ class AuthTests: XCTestCase {
     // RSA9d
 
     func test__087__createTokenRequest__should_generate_a_timestamp__from_current_time_if_not_provided() throws {
-        let rest = ARTRest(options: try AblyTests.commonAppSetup())
+        let test = Test()
+        let rest = ARTRest(options: try AblyTests.commonAppSetup(for: test))
 
         waitUntil(timeout: testTimeout) { done in
             rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
@@ -2229,7 +2296,8 @@ class AuthTests: XCTestCase {
     }
 
     func test__088__createTokenRequest__should_generate_a_timestamp__will_retrieve_the_server_time_if_queryTime_is_true() throws {
-        let rest = ARTRest(options: try AblyTests.commonAppSetup())
+        let test = Test()
+        let rest = ARTRest(options: try AblyTests.commonAppSetup(for: test))
 
         var serverTimeRequestWasMade = false
         let block: @convention(block) (AspectInfo) -> Void = { _ in
@@ -2242,7 +2310,7 @@ class AuthTests: XCTestCase {
 
         let authOptions = ARTAuthOptions()
         authOptions.queryTime = true
-        authOptions.key = try AblyTests.commonAppSetup().key
+        authOptions.key = try AblyTests.commonAppSetup(for: test).key
 
         waitUntil(timeout: testTimeout) { done in
             rest.auth.createTokenRequest(nil, options: authOptions, callback: { tokenRequest, error in
@@ -2260,7 +2328,8 @@ class AuthTests: XCTestCase {
     // RSA9e
 
     func test__089__createTokenRequest__TTL__should_be_optional() throws {
-        let rest = ARTRest(options: try AblyTests.commonAppSetup())
+        let test = Test()
+        let rest = ARTRest(options: try AblyTests.commonAppSetup(for: test))
 
         waitUntil(timeout: testTimeout) { done in
             rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, error in
@@ -2293,7 +2362,8 @@ class AuthTests: XCTestCase {
     }
 
     func test__090__createTokenRequest__TTL__should_be_specified_in_milliseconds() throws {
-        let rest = ARTRest(options: try AblyTests.commonAppSetup())
+        let test = Test()
+        let rest = ARTRest(options: try AblyTests.commonAppSetup(for: test))
 
         let params = ARTTokenParams()
         params.ttl = NSNumber(value: 42)
@@ -2321,7 +2391,8 @@ class AuthTests: XCTestCase {
     }
 
     func test__091__createTokenRequest__TTL__should_be_valid_to_request_a_token_for_24_hours() throws {
-        let rest = ARTRest(options: try AblyTests.commonAppSetup())
+        let test = Test()
+        let rest = ARTRest(options: try AblyTests.commonAppSetup(for: test))
         let tokenParams = ARTTokenParams()
         let dayInSeconds = TimeInterval(24 * 60 * 60)
         tokenParams.ttl = dayInSeconds as NSNumber
@@ -2340,7 +2411,8 @@ class AuthTests: XCTestCase {
 
     // RSA9f
     func test__084__createTokenRequest__should_provide_capability_has_json_text() throws {
-        let rest = ARTRest(options: try AblyTests.commonAppSetup())
+        let test = Test()
+        let rest = ARTRest(options: try AblyTests.commonAppSetup(for: test))
 
         let tokenParams = ARTTokenParams()
         tokenParams.capability = "{ - }"
@@ -2370,7 +2442,8 @@ class AuthTests: XCTestCase {
 
     // RSA9g
     func test__085__createTokenRequest__should_generate_a_valid_HMAC() throws {
-        let rest = ARTRest(options: try AblyTests.commonAppSetup())
+        let test = Test()
+        let rest = ARTRest(options: try AblyTests.commonAppSetup(for: test))
 
         let tokenParams = ARTTokenParams(clientId: "client_string")
 
@@ -2398,7 +2471,8 @@ class AuthTests: XCTestCase {
 
     // RSA9i
     func test__086__createTokenRequest__should_respect_all_requirements() throws {
-        let rest = ARTRest(options: try AblyTests.commonAppSetup())
+        let test = Test()
+        let rest = ARTRest(options: try AblyTests.commonAppSetup(for: test))
         let expectedClientId = "client_string"
         let tokenParams = ARTTokenParams(clientId: expectedClientId)
         let expectedTtl = 6.0
@@ -2408,7 +2482,7 @@ class AuthTests: XCTestCase {
 
         let authOptions = ARTAuthOptions()
         authOptions.queryTime = true
-        authOptions.key = try AblyTests.commonAppSetup().key
+        authOptions.key = try AblyTests.commonAppSetup(for: test).key
 
         var serverTime: Date?
         waitUntil(timeout: testTimeout) { done in
@@ -2440,10 +2514,11 @@ class AuthTests: XCTestCase {
 
     // RSA10a
     func test__092__authorize__should_always_create_a_token() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.useTokenAuth = true
         let rest = ARTRest(options: options)
-        let channel = rest.channels.get(uniqueChannelName())
+        let channel = rest.channels.get(uniqueChannelName(for: test))
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "first check") { error in
@@ -2494,8 +2569,9 @@ class AuthTests: XCTestCase {
 
     // RSA10a
     func test__093__authorize__should_create_a_new_token_if_one_already_exist_and_ensure_Token_Auth_is_used_for_all_future_requests() throws {
-        let options = try AblyTests.commonAppSetup()
-        let testToken = try getTestToken()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        let testToken = try getTestToken(for: test)
         options.token = testToken
         let rest = ARTRest(options: options)
 
@@ -2508,7 +2584,7 @@ class AuthTests: XCTestCase {
                 XCTAssertNotEqual(tokenDetails.token, testToken)
                 XCTAssertEqual(rest.auth.internal.method, ARTAuthMethod.token)
 
-                publishTestMessage(rest, channelName: uniqueChannelName(), completion: { error in
+                publishTestMessage(rest, channelName: uniqueChannelName(for: test), completion: { error in
                     XCTAssertNil(error)
                     XCTAssertEqual(rest.auth.internal.method, ARTAuthMethod.token)
                     XCTAssertEqual(rest.auth.tokenDetails?.token, tokenDetails.token)
@@ -2520,7 +2596,8 @@ class AuthTests: XCTestCase {
 
     // RSA10a
     func test__094__authorize__should_create_a_token_immediately_and_ensures_Token_Auth_is_used_for_all_future_requests() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         let rest = ARTRest(options: options)
 
         XCTAssertNil(rest.auth.tokenDetails?.token)
@@ -2532,7 +2609,7 @@ class AuthTests: XCTestCase {
                 XCTAssertNotNil(tokenDetails.token)
                 XCTAssertEqual(rest.auth.internal.method, ARTAuthMethod.token)
 
-                publishTestMessage(rest, channelName: uniqueChannelName(), completion: { error in
+                publishTestMessage(rest, channelName: uniqueChannelName(for: test), completion: { error in
                     XCTAssertNil(error)
                     XCTAssertEqual(rest.auth.internal.method, ARTAuthMethod.token)
                     XCTAssertEqual(rest.auth.tokenDetails?.token, tokenDetails.token)
@@ -2544,7 +2621,8 @@ class AuthTests: XCTestCase {
 
     // RSA10b
     func test__095__authorize__should_supports_all_TokenParams_and_AuthOptions() throws {
-        let rest = ARTRest(options: try AblyTests.commonAppSetup())
+        let test = Test()
+        let rest = ARTRest(options: try AblyTests.commonAppSetup(for: test))
 
         waitUntil(timeout: testTimeout) { done in
             rest.auth.authorize(ARTTokenParams(), options: ARTAuthOptions(), callback: { _, error in
@@ -2559,7 +2637,8 @@ class AuthTests: XCTestCase {
 
     // RSA10e
     func test__096__authorize__should_use_the_requestToken_implementation() throws {
-        let rest = ARTRest(options: try AblyTests.commonAppSetup())
+        let test = Test()
+        let rest = ARTRest(options: try AblyTests.commonAppSetup(for: test))
 
         var requestMethodWasCalled = false
         let block: @convention(block) (AspectInfo) -> Void = { _ in
@@ -2588,7 +2667,8 @@ class AuthTests: XCTestCase {
 
     // RSA10f
     func test__097__authorize__should_return_TokenDetails_with_valid_token_metadata() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = "client_string"
         let rest = ARTRest(options: options)
 
@@ -2610,13 +2690,14 @@ class AuthTests: XCTestCase {
     // RSA10g
 
     func test__099__authorize__on_subsequent_authorisations__should_store_the_AuthOptions_with_authUrl() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         let rest = ARTRest(options: options)
         let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
         let auth = rest.auth
 
-        let token = try getTestToken()
+        let token = try getTestToken(for: test)
         let authOptions = ARTAuthOptions()
         // Use authUrl for authentication with plain text token response
         authOptions.authUrl = URL(string: "http://echo.ably.io")!
@@ -2653,7 +2734,8 @@ class AuthTests: XCTestCase {
     }
 
     func test__100__authorize__on_subsequent_authorisations__should_store_the_AuthOptions_with_authCallback() throws {
-        let rest = ARTRest(options: try AblyTests.commonAppSetup())
+        let test = Test()
+        let rest = ARTRest(options: try AblyTests.commonAppSetup(for: test))
         let auth = rest.auth
 
         var authCallbackHasBeenInvoked = false
@@ -2686,7 +2768,8 @@ class AuthTests: XCTestCase {
     }
 
     func test__101__authorize__on_subsequent_authorisations__should_not_store_queryTime() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         let rest = ARTRest(options: options)
         let authOptions = ARTAuthOptions()
         authOptions.key = options.key
@@ -2720,7 +2803,8 @@ class AuthTests: XCTestCase {
     }
 
     func test__102__authorize__on_subsequent_authorisations__should_store_the_TokenParams() throws {
-        let rest = ARTRest(options: try AblyTests.commonAppSetup())
+        let test = Test()
+        let rest = ARTRest(options: try AblyTests.commonAppSetup(for: test))
 
         let tokenParams = ARTTokenParams()
         tokenParams.clientId = ExpectedTokenParams.clientId
@@ -2752,7 +2836,8 @@ class AuthTests: XCTestCase {
     }
 
     func test__103__authorize__on_subsequent_authorisations__should_use_configured_defaults_if_the_object_arguments_are_omitted() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         let rest = ARTRest(options: options)
 
         let tokenParams = ARTTokenParams()
@@ -2767,7 +2852,7 @@ class AuthTests: XCTestCase {
             XCTAssertEqual(tokenParams.ttl as? TimeInterval, ExpectedTokenParams.ttl)
             XCTAssertEqual(tokenParams.capability, ExpectedTokenParams.capability)
             authCallbackCalled += 1
-            getTestTokenDetails(key: options.key, completion: completion)
+            getTestTokenDetails(for: test, key: options.key, completion: completion)
         }
 
         waitUntil(timeout: testTimeout) { done in
@@ -2791,7 +2876,8 @@ class AuthTests: XCTestCase {
 
     // RSA10h
     func test__098__authorize__should_use_the_configured_Auth_clientId__if_not_null__by_default() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         var rest = ARTRest(options: options)
 
         // ClientId null
@@ -2825,7 +2911,8 @@ class AuthTests: XCTestCase {
     // RSA10i
 
     func test__104__authorize__should_adhere_to_all_requirements_relating_to__TokenParams() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = "client_string"
         let rest = ARTRest(options: options)
 
@@ -2851,9 +2938,10 @@ class AuthTests: XCTestCase {
     }
 
     func test__105__authorize__should_adhere_to_all_requirements_relating_to__authCallback() throws {
+        let test = Test()
         var currentTokenRequest: ARTTokenRequest?
 
-        var rest = ARTRest(options: try AblyTests.commonAppSetup())
+        var rest = ARTRest(options: try AblyTests.commonAppSetup(for: test))
         rest.auth.createTokenRequest(nil, options: nil, callback: { tokenRequest, _ in
             currentTokenRequest = tokenRequest
         })
@@ -2861,7 +2949,7 @@ class AuthTests: XCTestCase {
 
         currentTokenRequest = try XCTUnwrap(currentTokenRequest, "Token request is nil")
 
-        let options = try AblyTests.clientOptions()
+        let options = try AblyTests.clientOptions(for: test)
         options.authCallback = { _, completion in
             completion(currentTokenRequest!, nil)
         }
@@ -2899,8 +2987,9 @@ class AuthTests: XCTestCase {
     }
 
     func test__107__authorize__should_adhere_to_all_requirements_relating_to__authUrl_with_json() throws {
+        let test = Test()
         
-        let tokenDetails = try XCTUnwrap(getTestTokenDetails(), "TokenDetails is empty")
+        let tokenDetails = try XCTUnwrap(getTestTokenDetails(for: test), "TokenDetails is empty")
         let tokenDetailsData = try XCTUnwrap(createJsonEncoder().encode(tokenDetails), "Couldn't encode token details")
         let tokenDetailsJSON = try XCTUnwrap(String(data: tokenDetailsData, encoding: .utf8), "JSON TokenDetails is empty")
 
@@ -2940,7 +3029,8 @@ class AuthTests: XCTestCase {
 
     // https://github.com/ably/ably-cocoa/issues/618
     func test__108__authorize__should_adhere_to_all_requirements_relating_to__authUrl_returning_TokenRequest_decodes_TTL_as_expected() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
 
         var rest = ARTRest(options: options)
         var tokenRequest: ARTTokenRequest!
@@ -2975,7 +3065,8 @@ class AuthTests: XCTestCase {
     }
 
     func test__109__authorize__should_adhere_to_all_requirements_relating_to__authUrl_with_plain_text() throws {
-        let token = try getTestToken()
+        let test = Test()
+        let token = try getTestToken(for: test)
         let options = ARTClientOptions()
         // Use authUrl for authentication with plain text token response
         options.authUrl = URL(string: "http://echo.ably.io")!
@@ -3010,12 +3101,13 @@ class AuthTests: XCTestCase {
     // RSA10j
 
     func test__110__authorize__when_TokenParams_and_AuthOptions_are_provided__should_supersede_configured_AuthOptions__using_key__even_if_arguments_objects_are_empty() throws {
-        let defaultOptions = try AblyTests.clientOptions() // sandbox
+        let test = Test()
+        let defaultOptions = try AblyTests.clientOptions(for: test) // sandbox
         defaultOptions.key = "xxxx:xxxx"
         let rest = ARTRest(options: defaultOptions)
 
         let authOptions = ARTAuthOptions()
-        authOptions.key = try AblyTests.commonAppSetup().key // valid key
+        authOptions.key = try AblyTests.commonAppSetup(for: test).key // valid key
         let tokenParams = ARTTokenParams()
         tokenParams.ttl = 1.0
 
@@ -3060,9 +3152,10 @@ class AuthTests: XCTestCase {
     }
 
     func test__111__authorize__when_TokenParams_and_AuthOptions_are_provided__should_supersede_configured_AuthOptions__using_authUrl__even_if_arguments_objects_are_empty() throws {
-        let rest = ARTRest(options: try AblyTests.commonAppSetup())
+        let test = Test()
+        let rest = ARTRest(options: try AblyTests.commonAppSetup(for: test))
 
-        let testTokenDetails = try XCTUnwrap(getTestTokenDetails(ttl: 0.1))
+        let testTokenDetails = try XCTUnwrap(getTestTokenDetails(for: test, ttl: 0.1))
         let tokenRequestData = try XCTUnwrap(createJsonEncoder().encode(testTokenDetails), "Encode failure")
 
         let authOptions = ARTAuthOptions()
@@ -3149,7 +3242,8 @@ class AuthTests: XCTestCase {
     }
 
     func test__112__authorize__when_TokenParams_and_AuthOptions_are_provided__should_supersede_configured_AuthOptions__using_authCallback__even_if_arguments_objects_are_empty() throws {
-        let rest = ARTRest(options: try AblyTests.commonAppSetup())
+        let test = Test()
+        let rest = ARTRest(options: try AblyTests.commonAppSetup(for: test))
 
         let testTokenDetails = ARTTokenDetails(token: "token", expires: Date(), issued: Date(), capability: nil, clientId: nil)
         var authCallbackHasBeenInvoked = false
@@ -3210,7 +3304,8 @@ class AuthTests: XCTestCase {
     }
 
     func test__113__authorize__when_TokenParams_and_AuthOptions_are_provided__should_supersede_configured_params_and_options_even_if_arguments_objects_are_empty() throws {
-        let options = try AblyTests.clientOptions()
+        let test = Test()
+        let options = try AblyTests.clientOptions(for: test)
         options.key = "xxxx:xxxx"
         options.clientId = "client_string"
         let rest = ARTRest(options: options)
@@ -3235,7 +3330,7 @@ class AuthTests: XCTestCase {
         tokenParams.clientId = nil
 
         let authOptions = ARTAuthOptions()
-        authOptions.key = try AblyTests.commonAppSetup().key
+        authOptions.key = try AblyTests.commonAppSetup(for: test).key
         authOptions.queryTime = true
 
         var serverTimeRequestCount = 0
@@ -3277,7 +3372,8 @@ class AuthTests: XCTestCase {
     }
 
     func test__114__authorize__when_TokenParams_and_AuthOptions_are_provided__example__if_a_client_is_initialised_with_TokenParams_ttl_configured_with_a_custom_value__and_a_TokenParams_object_is_passed_in_as_an_argument_to__authorize_with_a_null_value_for_ttl__then_the_ttl_used_for_every_subsequent_authorization_will_be_null() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.defaultTokenParams = {
             $0.ttl = 0.1
             $0.clientId = "tester"
@@ -3332,7 +3428,8 @@ class AuthTests: XCTestCase {
     // RSA10k
 
     func skipped__test__115__authorize__server_time_offset__should_obtain_server_time_once_and_persist_the_offset_from_the_local_clock() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         let rest = ARTRest(options: options)
 
         let mockServerDate = Date().addingTimeInterval(120)
@@ -3388,7 +3485,8 @@ class AuthTests: XCTestCase {
     }
 
     func test__116__authorize__server_time_offset__should_be_consistent_the_timestamp_request_with_the_server_time() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         let rest = ARTRest(options: options)
 
         let mockServerDate = Date().addingTimeInterval(120)
@@ -3423,7 +3521,8 @@ class AuthTests: XCTestCase {
     }
 
     func test__117__authorize__server_time_offset__should_be_possible_by_lib_Client_to_discard_the_cached_local_clock_offset() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.queryTime = true
         let rest = ARTRest(options: options)
 
@@ -3472,7 +3571,8 @@ class AuthTests: XCTestCase {
     }
 
     func test__118__authorize__server_time_offset__should_use_the_local_clock_offset_to_calculate_the_server_time() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         let rest = ARTRest(options: options)
 
         let authOptions = ARTAuthOptions()
@@ -3500,7 +3600,8 @@ class AuthTests: XCTestCase {
     }
 
     func test__119__authorize__server_time_offset__should_request_server_time_when_queryTime_is_true_even_if_the_time_offset_is_assigned() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         let rest = ARTRest(options: options)
 
         var serverTimeRequestCount = 0
@@ -3531,7 +3632,8 @@ class AuthTests: XCTestCase {
     }
 
     func test__120__authorize__server_time_offset__should_discard_the_time_offset_in_situations_in_which_it_may_have_been_invalidated() throws {
-        let rest = ARTRest(options: try AblyTests.commonAppSetup())
+        let test = Test()
+        let rest = ARTRest(options: try AblyTests.commonAppSetup(for: test))
 
         var discardTimeOffsetCallCount = 0
         let hook = rest.auth.internal.testSuite_injectIntoMethod(after: #selector(rest.auth.internal.discardTimeOffset)) {
@@ -3561,7 +3663,8 @@ class AuthTests: XCTestCase {
     }
 
     func test__121__authorize__two_consecutive_authorizations__using_REST__should_call_each_authorize_callback() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.useTokenAuth = true
         let rest = ARTRest(options: options)
 
@@ -3601,7 +3704,8 @@ class AuthTests: XCTestCase {
     }
 
     func test__122__authorize__two_consecutive_authorizations__using_Realtime_and_connection_is_CONNECTING__should_call_each_Realtime_authorize_callback() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.useTokenAuth = true
         let realtime = AblyTests.newRealtime(options).client
         defer { realtime.close(); realtime.dispose() }
@@ -3648,7 +3752,8 @@ class AuthTests: XCTestCase {
     }
 
     func test__123__authorize__two_consecutive_authorizations__using_Realtime_and_connection_is_CONNECTED__should_call_each_Realtime_authorize_callback() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.useTokenAuth = true
         let realtime = ARTRealtime(options: options)
         defer { realtime.close(); realtime.dispose() }
@@ -3726,12 +3831,13 @@ class AuthTests: XCTestCase {
 
     // RTC8
     func test__127__Reauth__should_use_authorize__force__true___to_reauth_with_a_token_with_a_different_set_of_capabilities() throws {
-        let options = try AblyTests.commonAppSetup()
-        let initialToken = try getTestToken(clientId: "tester", capability: "{\"restricted\":[\"*\"]}")
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        let initialToken = try getTestToken(for: test, clientId: "tester", capability: "{\"restricted\":[\"*\"]}")
         options.token = initialToken
         let realtime = ARTRealtime(options: options)
         defer { realtime.dispose(); realtime.close() }
-        let channel = realtime.channels.get(uniqueChannelName())
+        let channel = realtime.channels.get(uniqueChannelName(for: test))
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
@@ -3768,7 +3874,8 @@ class AuthTests: XCTestCase {
 
     // RTC8
     func test__128__Reauth__for_a_token_change_that_fails_due_to_an_incompatible_token__which_should_result_in_the_connection_entering_the_FAILED_state() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = "tester"
         options.useTokenAuth = true
         let realtime = ARTRealtime(options: options)
@@ -3805,7 +3912,8 @@ class AuthTests: XCTestCase {
 
     // TK2d
     func test__129__TokenParams__timestamp_should_not_be_a_member_of_any_default_token_params() throws {
-        let rest = ARTRest(options: try AblyTests.commonAppSetup())
+        let test = Test()
+        let rest = ARTRest(options: try AblyTests.commonAppSetup(for: test))
         waitUntil(timeout: testTimeout) { done in
             rest.auth.authorize(nil, options: nil) { _, error in
                 XCTAssertNil(error)
@@ -3948,8 +4056,9 @@ class AuthTests: XCTestCase {
     }
 
     func skipped__test__140__JWT_and_realtime__client_initialized_with_a_JWT_token_in_ClientOptions__with_valid_credentials__pulls_stats_successfully() throws {
-        let options = try AblyTests.clientOptions()
-        options.token = try getJWTToken()
+        let test = Test()
+        let options = try AblyTests.clientOptions(for: test)
+        options.token = try getJWTToken(for: test)
         let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
 
@@ -3962,8 +4071,9 @@ class AuthTests: XCTestCase {
     }
 
     func test__141__JWT_and_realtime__client_initialized_with_a_JWT_token_in_ClientOptions__with_invalid_credentials__fails_to_connect_with_reason__invalid_signature_() throws {
-        let options = try AblyTests.clientOptions()
-        options.token = try getJWTToken(invalid: true)
+        let test = Test()
+        let options = try AblyTests.clientOptions(for: test)
+        options.token = try getJWTToken(for: test, invalid: true)
         options.autoConnect = false
         let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
@@ -3984,9 +4094,10 @@ class AuthTests: XCTestCase {
     // RSA8g RSA8c
 
     func test__142__JWT_and_realtime__when_using_authUrl__with_valid_credentials__fetches_a_channels_and_posts_a_message() throws {
-        let keys = try getKeys()
+        let test = Test()
+        let keys = try getKeys(for: test)
 
-        let options = try createAuthUrlTestsOptions()
+        let options = try createAuthUrlTestsOptions(for: test)
         options.authParams = [URLQueryItem]()
         options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
         options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
@@ -4007,9 +4118,10 @@ class AuthTests: XCTestCase {
     }
 
     func test__143__JWT_and_realtime__when_using_authUrl__with_wrong_credentials__fails_to_connect_with_reason__invalid_signature_() throws {
-        let keys = try getKeys()
+        let test = Test()
+        let keys = try getKeys(for: test)
 
-        let options = try createAuthUrlTestsOptions()
+        let options = try createAuthUrlTestsOptions(for: test)
         options.authParams = [URLQueryItem]()
         options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
         options.authParams?.append(URLQueryItem(name: "keySecret", value: "INVALID"))
@@ -4031,11 +4143,12 @@ class AuthTests: XCTestCase {
     }
 
     func test__144__JWT_and_realtime__when_using_authUrl__when_token_expires__receives_a_40142_error_from_the_server() throws {
-        let keys = try getKeys()
+        let test = Test()
+        let keys = try getKeys(for: test)
 
         let tokenDuration = 5.0
 
-        let options = try createAuthUrlTestsOptions()
+        let options = try createAuthUrlTestsOptions(for: test)
         options.authParams = [URLQueryItem]()
         options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
         options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
@@ -4059,13 +4172,14 @@ class AuthTests: XCTestCase {
     // RTC8a4
 
     func test__145__JWT_and_realtime__when_using_authUrl__when_the_server_sends_and_AUTH_protocol_message__client_reauths_correctly_without_going_through_a_disconnection() throws {
-        let keys = try getKeys()
+        let test = Test()
+        let keys = try getKeys(for: test)
 
         // The server sends an AUTH protocol message 30 seconds before a token expires
         // We create a token that lasts 35 seconds, so there's room to receive the AUTH message
         let tokenDuration = 35.0
 
-        let options = try createAuthUrlTestsOptions()
+        let options = try createAuthUrlTestsOptions(for: test)
         options.authParams = [URLQueryItem]()
         options.authParams?.append(URLQueryItem(name: "keyName", value: keys["keyName"]))
         options.authParams?.append(URLQueryItem(name: "keySecret", value: keys["keySecret"]))
@@ -4094,11 +4208,12 @@ class AuthTests: XCTestCase {
     // RSA8g
 
     func skipped__test__146__JWT_and_realtime__when_using_authCallback__with_valid_credentials__pulls_stats_successfully() throws {
-        let options = try AblyTests.clientOptions()
+        let test = Test()
+        let options = try AblyTests.clientOptions(for: test)
         options.authCallback = { _, completion in
             let token: ARTTokenDetails
             do {
-                token = .init(token: try getJWTToken()!)
+                token = .init(token: try getJWTToken(for: test)!)
             } catch {
                 XCTFail("Failed to get JWT: \(error)")
                 completion(nil, error)
@@ -4118,11 +4233,12 @@ class AuthTests: XCTestCase {
     }
 
     func test__147__JWT_and_realtime__when_using_authCallback__with_invalid_credentials__fails_to_connect() throws {
-        let options = try AblyTests.clientOptions()
+        let test = Test()
+        let options = try AblyTests.clientOptions(for: test)
         options.authCallback = { _, completion in
             let token: ARTTokenDetails
             do {
-                token = .init(token: try getJWTToken(invalid: true)!)
+                token = .init(token: try getJWTToken(for: test, invalid: true)!)
             } catch {
                 XCTFail("Failed to get JWT: \(error)")
                 completion(nil, error)
@@ -4147,14 +4263,15 @@ class AuthTests: XCTestCase {
     }
 
     func test__148__JWT_and_realtime__when_token_expires_and_has_a_means_to_renew__reconnects_using_authCallback_and_obtains_a_new_token() throws {
+        let test = Test()
         let tokenDuration = 3.0
-        let options = try AblyTests.clientOptions()
+        let options = try AblyTests.clientOptions(for: test)
         options.useTokenAuth = true
         options.autoConnect = false
         options.authCallback = { _, completion in
             let token: ARTTokenDetails
             do {
-                token = .init(token: try getJWTToken(expiresIn: Int(tokenDuration))!)
+                token = .init(token: try getJWTToken(for: test, expiresIn: Int(tokenDuration))!)
             } catch {
                 XCTFail("Failed to get JWT: \(error)")
                 completion(nil, error)
@@ -4186,9 +4303,10 @@ class AuthTests: XCTestCase {
     }
 
     func test__149__JWT_and_realtime__when_the_token_request_includes_a_clientId__the_clientId_is_the_same_specified_in_the_JWT_token_request() throws {
+        let test = Test()
         let clientId = "JWTClientId"
-        let options = try AblyTests.clientOptions()
-        options.tokenDetails = ARTTokenDetails(token: try getJWTToken(clientId: clientId)!)
+        let options = try AblyTests.clientOptions(for: test)
+        options.tokenDetails = ARTTokenDetails(token: try getJWTToken(for: test, clientId: clientId)!)
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
@@ -4202,9 +4320,10 @@ class AuthTests: XCTestCase {
     }
 
     func test__150__JWT_and_realtime__when_the_token_request_includes_subscribe_only_capabilities__fails_to_publish_to_a_channel_with_subscribe_only_capability() throws {
+        let test = Test()
         let capability = "{\"\(channelName)\":[\"subscribe\"]}"
-        let options = try AblyTests.clientOptions()
-        options.tokenDetails = ARTTokenDetails(token: try getJWTToken(capability: capability)!)
+        let options = try AblyTests.clientOptions(for: test)
+        options.tokenDetails = ARTTokenDetails(token: try getJWTToken(for: test, capability: capability)!)
         // Prevent channel name to be prefixed by test-*
         options.testOptions.channelNamePrefix = nil
         let client = ARTRealtime(options: options)
@@ -4223,14 +4342,16 @@ class AuthTests: XCTestCase {
 
     // RSA11b
     func test__151__currentTokenDetails__should_hold_a__TokenDetails__instance_in_which_only_the__token__attribute_is_populated_with_that_token_string() throws {
-        let token = try getTestToken()
+        let test = Test()
+        let token = try getTestToken(for: test)
         let rest = ARTRest(token: token)
         XCTAssertEqual(rest.auth.tokenDetails?.token, token)
     }
 
     // RSA11c
     func test__152__currentTokenDetails__should_be_set_with_the_current_token__if_applicable__on_instantiation_and_each_time_it_is_replaced() throws {
-        let rest = ARTRest(options: try AblyTests.commonAppSetup())
+        let test = Test()
+        let rest = ARTRest(options: try AblyTests.commonAppSetup(for: test))
         XCTAssertNil(rest.auth.tokenDetails)
         var authenticatedTokenDetails: ARTTokenDetails?
         waitUntil(timeout: testTimeout) { done in
@@ -4245,15 +4366,17 @@ class AuthTests: XCTestCase {
 
     // RSA11d
     func test__153__currentTokenDetails__should_be_empty_if_there_is_no_current_token() throws {
-        let rest = ARTRest(options: try AblyTests.commonAppSetup())
+        let test = Test()
+        let rest = ARTRest(options: try AblyTests.commonAppSetup(for: test))
         XCTAssertNil(rest.auth.tokenDetails)
     }
 
     // RSC1 RSC1a RSC1c RSA3d
 
     func test__154__JWT_and_rest__when_the_JWT_token_embeds_an_Ably_token__pulls_stats_successfully() throws {
-        let options = try AblyTests.clientOptions()
-        options.tokenDetails = ARTTokenDetails(token: try getJWTToken(jwtType: "embedded")!)
+        let test = Test()
+        let options = try AblyTests.clientOptions(for: test)
+        options.tokenDetails = ARTTokenDetails(token: try getJWTToken(for: test, jwtType: "embedded")!)
         let client = ARTRest(options: options)
         waitUntil(timeout: testTimeout) { done in
             client.stats { _, error in
@@ -4264,8 +4387,9 @@ class AuthTests: XCTestCase {
     }
 
     func test__155__JWT_and_rest__when_the_JWT_token_embeds_an_Ably_token_and_it_is_requested_as_encrypted__pulls_stats_successfully() throws {
-        let options = try AblyTests.clientOptions()
-        options.tokenDetails = ARTTokenDetails(token: try getJWTToken(jwtType: "embedded", encrypted: 1)!)
+        let test = Test()
+        let options = try AblyTests.clientOptions(for: test)
+        options.tokenDetails = ARTTokenDetails(token: try getJWTToken(for: test, jwtType: "embedded", encrypted: 1)!)
         let client = ARTRest(options: options)
         waitUntil(timeout: testTimeout) { done in
             client.stats { _, error in
@@ -4278,7 +4402,8 @@ class AuthTests: XCTestCase {
     // RSA4f, RSA8c
 
     func test__156__JWT_and_rest__when_the_JWT_token_is_returned_with_application_jwt_content_type__the_client_successfully_connects_and_pulls_stats() throws {
-        let client = try jwtContentTypeTestsSetupDependencies()
+        let test = Test()
+        let client = try jwtContentTypeTestsSetupDependencies(for: test)
 
         waitUntil(timeout: testTimeout) { done in
             client.stats { _, error in
@@ -4289,13 +4414,14 @@ class AuthTests: XCTestCase {
     }
 
     func test__157__JWT_and_rest__when_the_JWT_token_is_returned_with_application_jwt_content_type__the_client_can_request_a_new_token_to_initilize_another_client_that_connects_and_pulls_stats() throws {
-        let client = try jwtContentTypeTestsSetupDependencies()
+        let test = Test()
+        let client = try jwtContentTypeTestsSetupDependencies(for: test)
 
         waitUntil(timeout: testTimeout) { done in
             client.auth.requestToken(nil, with: nil, callback: { tokenDetails, error in
                 let newClientOptions: ARTClientOptions
                 do {
-                    newClientOptions = try AblyTests.clientOptions()
+                    newClientOptions = try AblyTests.clientOptions(for: test)
                 } catch {
                     XCTFail("Got unexpected error when creating client options: \(error.localizedDescription)")
                     done()
@@ -4313,17 +4439,19 @@ class AuthTests: XCTestCase {
 
     // https://github.com/ably/ably-cocoa/issues/849
     func test__001__should_not_force_token_auth_when_clientId_is_set() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = "foo"
         XCTAssertTrue(options.isBasicAuth())
     }
 
     // https://github.com/ably/ably-cocoa/issues/1093
     func test__002__should_accept_authURL_response_with_timestamp_argument_as_string() throws {
+        let test = Test()
         var originalTokenRequest: ARTTokenRequest!
-        let tmpRest = ARTRest(options: try AblyTests.commonAppSetup())
+        let tmpRest = ARTRest(options: try AblyTests.commonAppSetup(for: test))
         
-        let channelName = uniqueChannelName()
+        let channelName = uniqueChannelName(for: test)
         waitUntil(timeout: testTimeout) { done in
             let tokenParams = ARTTokenParams()
             tokenParams.clientId = "john"
@@ -4342,7 +4470,7 @@ class AuthTests: XCTestCase {
         {"keyName":"\(originalTokenRequest.keyName)","timestamp":"\(String(dateToMilliseconds(originalTokenRequest.timestamp))))","clientId":"\(originalTokenRequest.clientId!)","nonce":"\(originalTokenRequest.nonce)","mac":"\(originalTokenRequest.mac)","ttl":"\(String(originalTokenRequest.ttl!.intValue * 1000)))","capability":"\(originalTokenRequest.capability!.replace("\"", withString: "\\\""))"}
         """
 
-        let options = try AblyTests.clientOptions()
+        let options = try AblyTests.clientOptions(for: test)
         options.authUrl = URL(string: "http://auth-test.ably.cocoa")
 
         let rest = ARTRest(options: options)
