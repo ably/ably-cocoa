@@ -268,6 +268,9 @@
 		21881E7A283BD08300CFD9E2 /* GCDTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A22171266F526600C87C42 /* GCDTests.swift */; };
 		21881E7B283BD0DF00CFD9E2 /* StringifiableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D520C4DD2680A1E3000012B2 /* StringifiableTests.swift */; };
 		21881E7C283BD0E100CFD9E2 /* StringifiableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D520C4DD2680A1E3000012B2 /* StringifiableTests.swift */; };
+		21FD9F272A015BE400216482 /* Test.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21FD9F262A015BE400216482 /* Test.swift */; };
+		21FD9F282A015BE400216482 /* Test.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21FD9F262A015BE400216482 /* Test.swift */; };
+		21FD9F292A015BE400216482 /* Test.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21FD9F262A015BE400216482 /* Test.swift */; };
 		560579D924AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */; };
 		560579DA24AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */; };
 		560579DB24AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */; };
@@ -1219,6 +1222,7 @@
 		21DCDA8229F818630073A211 /* Ably-iOS.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Ably-iOS.xctestplan"; path = "Test/Ably-iOS.xctestplan"; sourceTree = SOURCE_ROOT; };
 		21DCDA8329F81B350073A211 /* Ably-macOS.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Ably-macOS.xctestplan"; sourceTree = "<group>"; };
 		21DCDA8429F81B550073A211 /* Ably-tvOS.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Ably-tvOS.xctestplan"; sourceTree = "<group>"; };
+		21FD9F262A015BE400216482 /* Test.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test.swift; sourceTree = "<group>"; };
 		560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARTDefaultTests.swift; sourceTree = "<group>"; };
 		56190953238C3D3200A862A6 /* CryptoTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CryptoTest.m; sourceTree = "<group>"; };
 		841134772722205400CFA837 /* ARTArchiveTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTArchiveTests.m; sourceTree = "<group>"; };
@@ -1733,6 +1737,7 @@
 				2147F03429E5872C0071CB94 /* MockInternalLogCore.swift */,
 				D50D86E829E9444600EA72EA /* JSON.swift */,
 				210F67B029E9DB62007B9345 /* TestProxyTransportFactory.swift */,
+				21FD9F262A015BE400216482 /* Test.swift */,
 			);
 			path = "Test Utilities";
 			sourceTree = "<group>";
@@ -3040,6 +3045,7 @@
 				2132C21629D20F69000C4355 /* ResumeRequestResponseTests.swift in Sources */,
 				EB7913A81C6E54C3000ABF9B /* CryptoTests.swift in Sources */,
 				2132C22229D233EB000C4355 /* DefaultErrorCheckerTests.swift in Sources */,
+				21FD9F272A015BE400216482 /* Test.swift in Sources */,
 				D777EEE820650ADF002EBA03 /* PushChannelTests.swift in Sources */,
 				217FCF3F29D626E4006E5F2D /* StaticJitterCoefficients.swift in Sources */,
 				D746AE2D1BBB625E003ECEF8 /* RestClientChannelsTests.swift in Sources */,
@@ -3229,6 +3235,7 @@
 				56190955238C3D3200A862A6 /* CryptoTest.m in Sources */,
 				D7093C1D219E466600723F17 /* AuthTests.swift in Sources */,
 				21276CC329F00BAA00107B5F /* ContinuousClockTests.swift in Sources */,
+				21FD9F282A015BE400216482 /* Test.swift in Sources */,
 				D7093C25219E466E00723F17 /* RealtimeClientConnectionTests.swift in Sources */,
 				217FCF4029D626E4006E5F2D /* StaticJitterCoefficients.swift in Sources */,
 			);
@@ -3285,6 +3292,7 @@
 				56190956238C3D3200A862A6 /* CryptoTest.m in Sources */,
 				D7093C7A219EE26400723F17 /* RestPaginatedTests.swift in Sources */,
 				21276CC429F00BAA00107B5F /* ContinuousClockTests.swift in Sources */,
+				21FD9F292A015BE400216482 /* Test.swift in Sources */,
 				D7093C81219EE26400723F17 /* UtilitiesTests.swift in Sources */,
 				217FCF4129D626E4006E5F2D /* StaticJitterCoefficients.swift in Sources */,
 			);

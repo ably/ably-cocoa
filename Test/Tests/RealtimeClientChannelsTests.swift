@@ -12,13 +12,14 @@ extension ARTRealtimeChannels: Sequence {
 class RealtimeClientChannelsTests: XCTestCase {
     // RTS2
     func test__001__Channels__should_exist_methods_to_check_if_a_channel_exists_or_iterate_through_the_existing_channels() throws {
-        let client = ARTRealtime(options: try AblyTests.commonAppSetup())
+        let test = Test()
+        let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
         var disposable = [String]()
 
-        let channelName1 = uniqueChannelName(prefix: "1")
-        let channelName2 = uniqueChannelName(prefix: "2")
-        let channelName3 = uniqueChannelName(prefix: "3")
+        let channelName1 = uniqueChannelName(for: test, prefix: "1")
+        let channelName2 = uniqueChannelName(for: test, prefix: "2")
+        let channelName3 = uniqueChannelName(for: test, prefix: "3")
 
         disposable.append(client.channels.get(channelName1).name)
         disposable.append(client.channels.get(channelName2).name)
@@ -37,12 +38,13 @@ class RealtimeClientChannelsTests: XCTestCase {
 
     // RTS3a
     func test__002__Channels__get__should_create_a_new_Channel_if_none_exists_or_return_the_existing_one() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
         XCTAssertEqual(client.channels.internal.collection.count, 0)
-        let channelName = uniqueChannelName()
+        let channelName = uniqueChannelName(for: test)
         let channel = client.channels.get(channelName)
         XCTAssertEqual(channel.name, "\(options.testOptions.channelNamePrefix!)-\(channelName)")
 
@@ -53,18 +55,20 @@ class RealtimeClientChannelsTests: XCTestCase {
 
     // RTS3b
     func test__003__Channels__get__should_be_possible_to_specify_a_ChannelOptions() throws {
-        let client = ARTRealtime(options: try AblyTests.commonAppSetup())
+        let test = Test()
+        let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
         let options = ARTRealtimeChannelOptions()
-        let channel = client.channels.get(uniqueChannelName(), options: options)
+        let channel = client.channels.get(uniqueChannelName(for: test), options: options)
         XCTAssertTrue(channel.options === options)
     }
 
     // RTS3c
     func test__004__Channels__get__accessing_an_existing_Channel_with_options_should_update_the_options_and_then_return_the_object() throws {
-        let client = ARTRealtime(options: try AblyTests.commonAppSetup())
+        let test = Test()
+        let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
-        let channelName = uniqueChannelName()
+        let channelName = uniqueChannelName(for: test)
         XCTAssertNil(client.channels.get(channelName).options)
         let options = ARTRealtimeChannelOptions()
         let channel = client.channels.get(channelName, options: options)
@@ -74,10 +78,11 @@ class RealtimeClientChannelsTests: XCTestCase {
     // RTS4
 
     func test__005__Channels__release__should_release_a_channel() throws {
-        let client = ARTRealtime(options: try AblyTests.commonAppSetup())
+        let test = Test()
+        let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
 
-        let channelName = uniqueChannelName()
+        let channelName = uniqueChannelName(for: test)
         let channel = client.channels.get(channelName)
         channel.subscribe { _ in
             fail("shouldn't happen")
