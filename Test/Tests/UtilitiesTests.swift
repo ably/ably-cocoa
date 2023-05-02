@@ -105,12 +105,13 @@ class UtilitiesTests: XCTestCase {
     }
 
     func test__005__Utilities__JSON_Encoder__in_Realtime__should_handle_and_emit_the_invalid_data_error() throws {
+        let test = Test()
         beforeEach__Utilities__JSON_Encoder()
 
-        let options = try AblyTests.commonAppSetup()
+        let options = try AblyTests.commonAppSetup(for: test)
         let realtime = ARTRealtime(options: options)
         defer { realtime.close() }
-        let channel = realtime.channels.get(uniqueChannelName())
+        let channel = realtime.channels.get(uniqueChannelName(for: test))
         waitUntil(timeout: testTimeout) { done in
             channel.publish("test", data: NSDate()) { error in
                 guard let error = error else {
@@ -134,12 +135,13 @@ class UtilitiesTests: XCTestCase {
     }
 
     func test__006__Utilities__JSON_Encoder__in_Realtime__should_ignore_invalid_transport_message() throws {
+        let test = Test()
         beforeEach__Utilities__JSON_Encoder()
 
-        let options = try AblyTests.commonAppSetup()
+        let options = try AblyTests.commonAppSetup(for: test)
         let realtime = ARTRealtime(options: options)
         defer { realtime.close() }
-        let channel = realtime.channels.get(uniqueChannelName())
+        let channel = realtime.channels.get(uniqueChannelName(for: test))
 
         // Garbage values (whatever is on the heap)
         let bytes = UnsafeMutablePointer<Int>.allocate(capacity: 1)
@@ -171,11 +173,12 @@ class UtilitiesTests: XCTestCase {
     }
 
     func test__007__Utilities__JSON_Encoder__in_Rest__should_handle_and_emit_the_invalid_data_error() throws {
+        let test = Test()
         beforeEach__Utilities__JSON_Encoder()
 
-        let options = try AblyTests.commonAppSetup()
+        let options = try AblyTests.commonAppSetup(for: test)
         let rest = ARTRest(options: options)
-        let channel = rest.channels.get(uniqueChannelName())
+        let channel = rest.channels.get(uniqueChannelName(for: test))
         waitUntil(timeout: testTimeout) { done in
             channel.publish("test", data: NSDate()) { error in
                 guard let error = error else {
@@ -199,13 +202,14 @@ class UtilitiesTests: XCTestCase {
     }
 
     func test__008__Utilities__JSON_Encoder__in_Rest__should_ignore_invalid_response_payload() throws {
+        let test = Test()
         beforeEach__Utilities__JSON_Encoder()
 
-        let options = try AblyTests.commonAppSetup()
+        let options = try AblyTests.commonAppSetup(for: test)
         let rest = ARTRest(options: options)
         let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
-        let channel = rest.channels.get(uniqueChannelName())
+        let channel = rest.channels.get(uniqueChannelName(for: test))
 
         // Garbage values (whatever is on the heap)
         let bytes = UnsafeMutablePointer<Int>.allocate(capacity: 1)
@@ -439,11 +443,12 @@ class UtilitiesTests: XCTestCase {
     }
 
     func test__021__Utilities__Logger__should_have_a_history_of_logs() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         options.logLevel = .verbose
         let realtime = ARTRealtime(options: options)
         defer { realtime.close() }
-        let channel = realtime.channels.get(uniqueChannelName())
+        let channel = realtime.channels.get(uniqueChannelName(for: test))
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in

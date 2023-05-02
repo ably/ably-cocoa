@@ -3,12 +3,12 @@ import Foundation
 import Nimble
 import XCTest
 
-private func postTestStats(_ stats: [[String: Any]]) throws -> ARTClientOptions {
-    let options = try AblyTests.commonAppSetup(forceNewApp: true)
+private func postTestStats(_ stats: [[String: Any]], for test: Test) throws -> ARTClientOptions {
+    let options = try AblyTests.commonAppSetup(for: test, forceNewApp: true)
 
     let keyBase64 = encodeBase64(options.key ?? "")
 
-    let request = NSMutableURLRequest(url: URL(string: "\(try AblyTests.clientOptions().restUrl().absoluteString)/stats")!)
+    let request = NSMutableURLRequest(url: URL(string: "\(try AblyTests.clientOptions(for: test).restUrl().absoluteString)/stats")!)
 
     request.httpMethod = "POST"
     request.httpBody = try JSONUtility.serialize(stats)
@@ -95,12 +95,13 @@ class RestClientStatsTests: XCTestCase {
 
     // RSC6a
 
-    func beforeEach__RestClient__stats__result() throws {
-        statsOptions = try postTestStats(statsFixtures)
+    func beforeEach__RestClient__stats__result(for test: Test) throws {
+        statsOptions = try postTestStats(statsFixtures, for: test)
     }
 
     func skipped__test__001__RestClient__stats__result__should_match_minute_level_inbound_and_outbound_fixture_data__forwards_() throws {
-        try beforeEach__RestClient__stats__result()
+        let test = Test()
+        try beforeEach__RestClient__stats__result(for: test)
 
         let client = ARTRest(options: statsOptions)
         let query = ARTStatsQuery()
@@ -122,7 +123,8 @@ class RestClientStatsTests: XCTestCase {
     }
 
     func test__002__RestClient__stats__result__should_match_hour_level_inbound_and_outbound_fixture_data__forwards_() throws {
-        try beforeEach__RestClient__stats__result()
+        let test = Test()
+        try beforeEach__RestClient__stats__result(for: test)
 
         let client = ARTRest(options: statsOptions)
         let query = ARTStatsQuery()
@@ -144,7 +146,8 @@ class RestClientStatsTests: XCTestCase {
     }
 
     func test__003__RestClient__stats__result__should_match_day_level_inbound_and_outbound_fixture_data__forwards_() throws {
-        try beforeEach__RestClient__stats__result()
+        let test = Test()
+        try beforeEach__RestClient__stats__result(for: test)
 
         let client = ARTRest(options: statsOptions)
         let query = ARTStatsQuery()
@@ -162,7 +165,8 @@ class RestClientStatsTests: XCTestCase {
     }
 
     func skipped__test__004__RestClient__stats__result__should_match_month_level_inbound_and_outbound_fixture_data__forwards_() throws {
-        try beforeEach__RestClient__stats__result()
+        let test = Test()
+        try beforeEach__RestClient__stats__result(for: test)
 
         let client = ARTRest(options: statsOptions)
         let query = ARTStatsQuery()
@@ -180,7 +184,8 @@ class RestClientStatsTests: XCTestCase {
     }
 
     func skipped__test__005__RestClient__stats__result__should_contain_only_one_item_when_limit_is_1__backwards() throws {
-        try beforeEach__RestClient__stats__result()
+        let test = Test()
+        try beforeEach__RestClient__stats__result(for: test)
 
         let client = ARTRest(options: statsOptions)
         let query = ARTStatsQuery()
@@ -197,7 +202,8 @@ class RestClientStatsTests: XCTestCase {
     }
 
     func test__006__RestClient__stats__result__should_contain_only_one_item_when_limit_is_1__forwards() throws {
-        try beforeEach__RestClient__stats__result()
+        let test = Test()
+        try beforeEach__RestClient__stats__result(for: test)
 
         let client = ARTRest(options: statsOptions)
         let query = ARTStatsQuery()
@@ -215,7 +221,8 @@ class RestClientStatsTests: XCTestCase {
     }
 
     func test__007__RestClient__stats__result__should_be_paginated_according_to_the_limit__backwards() throws {
-        try beforeEach__RestClient__stats__result()
+        let test = Test()
+        try beforeEach__RestClient__stats__result(for: test)
 
         let client = ARTRest(options: statsOptions)
         let query = ARTStatsQuery()
@@ -263,7 +270,8 @@ class RestClientStatsTests: XCTestCase {
     }
 
     func skipped__test__008__RestClient__stats__result__should_be_paginated_according_to_the_limit__fowards_() throws {
-        try beforeEach__RestClient__stats__result()
+        let test = Test()
+        try beforeEach__RestClient__stats__result(for: test)
 
         let client = ARTRest(options: statsOptions)
         let query = ARTStatsQuery()
