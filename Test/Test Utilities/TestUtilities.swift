@@ -82,8 +82,17 @@ class AblyTests {
 
     static var testApplication: [String: Any]?
 
-    struct QueueIdentity {
+    class QueueIdentity {
         let label: String
+
+        init(label: String) {
+            self.label = label
+            NSLog("Created QueueIdentity \(label)")
+        }
+
+        deinit {
+            NSLog("deinit QueueIdentity \(label)")
+        }
     }
 
     static let queueIdentityKey = DispatchSpecificKey<QueueIdentity>()
