@@ -1,13 +1,19 @@
 /**
  Represents an execution of a test case method.
  */
-struct Test {
+struct Test: CustomStringConvertible {
     var id = UUID()
-    private var function: StaticString
+    var fileID: String
+    var function: String
 
-    init(function: StaticString = #function) {
+    init(fileID: String = #fileID, function: String = #function) {
+        self.fileID = fileID
         self.function = function
-        NSLog("Created test \(id) for function \(function)")
+        NSLog("Created test \(id) for function \(function) in file \(fileID)")
+    }
+
+    var description: String {
+        return "Test(id: \(id), fileID: \(fileID), function: \(function))"
     }
 
     func uniqueChannelName(prefix: String = "",

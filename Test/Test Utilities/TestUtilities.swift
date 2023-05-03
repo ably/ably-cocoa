@@ -23,6 +23,34 @@ class AblyTestsConfiguration: NSObject, XCTestObservation {
             performedPreFirstTestCaseSetup = true
         }
     }
+
+    func testSuiteDidFinish(_ testSuite: XCTestSuite) {
+        let activeQueueIdentities = AblyTests.QueueIdentity.active
+
+        if activeQueueIdentities.isEmpty {
+            print("No active queue identities.")
+        } else {
+            print("\(activeQueueIdentities.count) active queue \(activeQueueIdentities.count == 1 ? "identity" : "identities"):")
+
+            let activeQueueIdentitiesGroupedByFileID = Dictionary(grouping: activeQueueIdentities, by: \.test.fileID)
+            let sortedFileIDs = activeQueueIdentitiesGroupedByFileID.keys.sorted()
+            for fileID in sortedFileIDs {
+                print("\t\(fileID):")
+                let activeQueueIdentitiesForFileID = activeQueueIdentitiesGroupedByFileID[fileID]!
+
+                let activeQueueIdentitiesForFileIDGroupedByFunction = Dictionary(grouping: activeQueueIdentitiesForFileID, by: \.test.function)
+                let sortedFunctions = activeQueueIdentitiesForFileIDGroupedByFunction.keys.sorted()
+                for function in sortedFunctions {
+                    print("\t\t\(function):")
+                    let activeQueueIdentitiesForFunction = activeQueueIdentitiesForFileIDGroupedByFunction[function]!
+
+                    for queueIdentity in activeQueueIdentitiesForFunction {
+                        print("\t\t\t\(queueIdentity.label)")
+                    }
+                }
+            }
+        }
+    }
     
     private func preFirstTestCaseSetup() {
         // This is code that, when we were using the Quick testing
@@ -82,16 +110,46 @@ class AblyTests {
 
     static var testApplication: [String: Any]?
 
-    class QueueIdentity {
+    class QueueIdentity: CustomStringConvertible, Hashable {
         let label: String
+        let test: Test
 
-        init(label: String) {
+        private static let semaphore = DispatchSemaphore(value: 1)
+        private static var _active: Set<QueueIdentity> = []
+
+        static var active: Set<QueueIdentity> {
+            semaphore.wait()
+            let active = _active
+            semaphore.signal()
+            return active
+        }
+
+        init(label: String, test: Test) {
             self.label = label
+            self.test = test
+            Self.semaphore.wait()
+            Self._active.insert(self)
+            Self.semaphore.signal()
             NSLog("Created QueueIdentity \(label)")
         }
 
         deinit {
+            Self.semaphore.wait()
+            Self._active.remove(self)
+            Self.semaphore.signal()
             NSLog("deinit QueueIdentity \(label)")
+        }
+
+        var description: String {
+            return "QueueIdentity(label: \(label), test: \(test))"
+        }
+
+        static func == (lhs: AblyTests.QueueIdentity, rhs: AblyTests.QueueIdentity) -> Bool {
+            return ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
+        }
+
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(ObjectIdentifier(self))
         }
     }
 
@@ -99,13 +157,13 @@ class AblyTests {
 
     static func createInternalQueue(for test: Test) -> DispatchQueue {
         let queue = DispatchQueue(label: "io.ably.tests.\(test.id).\(UUID().uuidString)", qos: .userInitiated)
-        queue.setSpecific(key: queueIdentityKey, value: QueueIdentity(label: queue.label))
+        queue.setSpecific(key: queueIdentityKey, value: QueueIdentity(label: queue.label, test: test))
         return queue
     }
 
     static func createUserQueue(for test: Test) -> DispatchQueue {
         let queue = DispatchQueue(label: "io.ably.tests.callbacks.\(test.id).\(UUID().uuidString)", qos: .userInitiated)
-        queue.setSpecific(key: queueIdentityKey, value: QueueIdentity(label: queue.label))
+        queue.setSpecific(key: queueIdentityKey, value: QueueIdentity(label: queue.label, test: test))
         return queue
     }
 
