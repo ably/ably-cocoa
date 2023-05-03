@@ -234,6 +234,8 @@ jq -n \
   '{ junit_report_xml: $junit_report_xml | @base64, crash_reports: $crash_reports[0], github_repository: $github_repository, github_sha: $github_sha, github_ref_name: $github_ref_name, github_retention_days: $github_retention_days, github_action: $github_action, github_run_number: $github_run_number, github_run_attempt: $github_run_attempt, github_run_id: $github_run_id, github_base_ref: $github_base_ref, github_head_ref: $github_head_ref, github_job: $github_job, iteration: $iteration }' \
   > "${temp_request_body_file}"
 
+printf "Created request body:\n$(cat "${temp_request_body_file}")\n\n" 2>&1
+
 # 9. Send the request.
 
 echo "Uploading test report." 2>&1
