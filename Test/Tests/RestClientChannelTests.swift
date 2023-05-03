@@ -924,7 +924,7 @@ class RestClientChannelTests: XCTestCase {
         query.direction = .forwards
         query.limit = 2
 
-        try! channel.history(query) { result, error in
+        try channel.history(query) { result, error in
             guard let result = result else {
                 fail("Result is empty"); return
             }
@@ -1197,14 +1197,14 @@ class RestClientChannelTests: XCTestCase {
     // RSL4
 
     // RSL4a
-    func test__036__message_encoding__payloads_should_be_binary__strings__or_objects_capable_of_JSON_representation() {
+    func test__036__message_encoding__payloads_should_be_binary__strings__or_objects_capable_of_JSON_representation() throws {
         let validCases: [TestCase] = [
             TestCase(value: nil, expected: .with([:] as [String: Any])),
             TestCase(value: text, expected: .with(["data": text])),
             TestCase(value: integer, expected: .with(["data": integer])),
             TestCase(value: decimal, expected: .with(["data": decimal])),
-            TestCase(value: dictionary, expected: .with(["data": try! JSONUtility.toJSONString(dictionary), "encoding": "json"])),
-            TestCase(value: array, expected: .with(["data": try! JSONUtility.toJSONString(array), "encoding": "json"])),
+            TestCase(value: dictionary, expected: .with(["data": try JSONUtility.toJSONString(dictionary), "encoding": "json"])),
+            TestCase(value: array, expected: .with(["data": try JSONUtility.toJSONString(array), "encoding": "json"])),
             TestCase(value: binaryData, expected: .with(["data": binaryData.toBase64, "encoding": "base64"])),
         ]
         

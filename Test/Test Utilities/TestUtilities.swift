@@ -147,7 +147,7 @@ class AblyTests {
 
             let (responseData, _) = try SynchronousHTTPClient().perform(request)
 
-            app = try! JSONUtility.jsonObject(data: responseData)
+            app = try JSONUtility.jsonObject(data: responseData)
             testApplication = app
             
             if debug {
@@ -718,7 +718,12 @@ func extractBodyAsMsgPack(_ request: URLRequest?) -> Result<NSDictionary> {
     guard let bodyData = request.httpBody
         else { return Result(error: "No HTTPBody") }
 
-    let json = try! ARTMsgPackEncoder().decode(bodyData)
+    let json: Any
+    do {
+        json = try ARTMsgPackEncoder().decode(bodyData)
+    } catch {
+        return Result(error: error.localizedDescription)
+    }
 
     guard let httpBody = json as? NSDictionary
         else { return Result(error: "expected dictionary, got \(type(of: (json) as AnyObject)): \(json)") }
@@ -733,7 +738,12 @@ func extractBodyAsMessages(_ request: URLRequest?) -> Result<[NSDictionary]> {
     guard let bodyData = request.httpBody
         else { return Result(error: "No HTTPBody") }
 
-    let json = try! ARTMsgPackEncoder().decode(bodyData)
+    let json: Any
+    do {
+        json = try ARTMsgPackEncoder().decode(bodyData)
+    } catch {
+        return Result(error: error.localizedDescription)
+    }
 
     guard let httpBody = json as? NSArray
         else { return Result(error: "expected array, got \(type(of: (json) as AnyObject)): \(json)") }
