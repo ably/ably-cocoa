@@ -712,7 +712,7 @@ class RestClientTests: XCTestCase {
                 // [40140, 40150) - token expired and will not recover because authUrl is invalid
                 publishTestMessage(rest, channelName: uniqueChannelName()) { error in
                     guard let errorCode = testHTTPExecutor.responses.first?.value(forHTTPHeaderField: "X-Ably-Errorcode") else {
-                        fail("expected X-Ably-Errorcode header in request")
+                        fail("expected X-Ably-Errorcode header in response")
                         return
                     }
                     expect(Int(errorCode)).to(beGreaterThanOrEqualTo(ARTErrorCode.tokenErrorUnspecified.intValue))
@@ -774,7 +774,7 @@ class RestClientTests: XCTestCase {
                     // [40140, 40150) - token expired and will not recover because authUrl is invalid
                     publishTestMessage(rest, channelName: uniqueChannelName()) { error in
                         guard let errorCode = testHTTPExecutor.responses.first?.value(forHTTPHeaderField: "X-Ably-Errorcode") else {
-                            fail("expected X-Ably-Errorcode header in request")
+                            fail("expected X-Ably-Errorcode header in response")
                             return
                         }
                         expect(Int(errorCode)).to(beGreaterThanOrEqualTo(ARTErrorCode.tokenErrorUnspecified.intValue))
