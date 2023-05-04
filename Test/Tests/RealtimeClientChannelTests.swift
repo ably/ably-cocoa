@@ -3272,7 +3272,7 @@ class RealtimeClientChannelTests: XCTestCase {
         let channel = client.channels.get(uniqueChannelName(), options: channelOptions)
 
         let expectedMessage = ["key": 1]
-        let expectedData = try! JSONSerialization.data(withJSONObject: expectedMessage, options: JSONSerialization.WritingOptions(rawValue: 0))
+        let expectedData = try JSONSerialization.data(withJSONObject: expectedMessage, options: JSONSerialization.WritingOptions(rawValue: 0))
 
         let transport = client.internal.transport as! TestProxyTransport
 

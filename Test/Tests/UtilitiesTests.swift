@@ -43,7 +43,7 @@ class UtilitiesTests: XCTestCase {
         jsonEncoder.delegate = ARTJsonEncoder()
     }
 
-    func test__001__Utilities__JSON_Encoder__should_decode_a_protocol_message_that_has_an_error_without_a_message() {
+    func test__001__Utilities__JSON_Encoder__should_decode_a_protocol_message_that_has_an_error_without_a_message() throws {
         beforeEach__Utilities__JSON_Encoder()
 
         let jsonObject: NSDictionary = [
@@ -53,7 +53,7 @@ class UtilitiesTests: XCTestCase {
                 "statusCode": "401",
             ],
         ]
-        let data = try! JSONSerialization.data(withJSONObject: jsonObject, options: [])
+        let data = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
         guard let protocolMessage = try? jsonEncoder.decodeProtocolMessage(data) else {
             fail("Decoder has failed"); return
         }
