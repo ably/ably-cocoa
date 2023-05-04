@@ -86,7 +86,7 @@ class ObjectLifetimesTests: XCTestCase {
         XCTAssertNotNil(weakClient)
         defer { client?.close() }
 
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         waitUntil(timeout: testTimeout) { done in
             client!.channels.get(channelName).subscribe(attachCallback: { _ in
                 client = nil
@@ -105,7 +105,7 @@ class ObjectLifetimesTests: XCTestCase {
         var client: ARTRealtime? = ARTRealtime(options: options)
         weak var weakClient = client!.internal
 
-        var channel: ARTRealtimeChannel? = client!.channels.get(uniqueChannelName(for: test))
+        var channel: ARTRealtimeChannel? = client!.channels.get(test.uniqueChannelName())
         weak var weakChannel = channel!.internal
 
         waitUntil(timeout: testTimeout) { done in

@@ -90,7 +90,7 @@ class AuthTests: XCTestCase {
         client.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
-            client.channels.get(uniqueChannelName(for: test)).publish(nil, data: "message") { _ in
+            client.channels.get(test.uniqueChannelName()).publish(nil, data: "message") { _ in
                 done()
             }
         }
@@ -127,7 +127,7 @@ class AuthTests: XCTestCase {
         clientHTTP.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
-            clientHTTP.channels.get(uniqueChannelName(for: test)).publish(nil, data: "message") { _ in
+            clientHTTP.channels.get(test.uniqueChannelName()).publish(nil, data: "message") { _ in
                 done()
             }
         }
@@ -146,7 +146,7 @@ class AuthTests: XCTestCase {
         clientHTTPS.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
-            clientHTTPS.channels.get(uniqueChannelName(for: test)).publish(nil, data: "message") { _ in
+            clientHTTPS.channels.get(test.uniqueChannelName()).publish(nil, data: "message") { _ in
                 done()
             }
         }
@@ -168,7 +168,7 @@ class AuthTests: XCTestCase {
         client.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
-            client.channels.get(uniqueChannelName(for: test)).publish(nil, data: "message") { _ in
+            client.channels.get(test.uniqueChannelName()).publish(nil, data: "message") { _ in
                 done()
             }
         }
@@ -244,7 +244,7 @@ class AuthTests: XCTestCase {
         let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
 
-        let channel = rest.channels.get(uniqueChannelName(for: test))
+        let channel = rest.channels.get(test.uniqueChannelName())
 
         testHTTPExecutor.simulateIncomingServerErrorOnNextRequest(ARTErrorCode.tokenRevoked.intValue, description: "token revoked")
         waitUntil(timeout: testTimeout) { done in
@@ -278,7 +278,7 @@ class AuthTests: XCTestCase {
         XCTAssertNil(realtime.internal.options.authCallback)
         XCTAssertNil(realtime.internal.options.authUrl)
 
-        let channel = realtime.channels.get(uniqueChannelName(for: test))
+        let channel = realtime.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout.multiplied(by: 2)) { done in
             realtime.connect()
@@ -310,7 +310,7 @@ class AuthTests: XCTestCase {
         let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
 
-        let channel = rest.channels.get(uniqueChannelName(for: test))
+        let channel = rest.channels.get(test.uniqueChannelName())
 
         testHTTPExecutor.simulateIncomingServerErrorOnNextRequest(ARTErrorCode.tokenRevoked.intValue, description: "token revoked")
 
@@ -338,7 +338,7 @@ class AuthTests: XCTestCase {
         let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
 
-        let channel = rest.channels.get(uniqueChannelName(for: test))
+        let channel = rest.channels.get(test.uniqueChannelName())
 
         testHTTPExecutor.setListenerAfterRequest { _ in
             testHTTPExecutor.simulateIncomingServerErrorOnNextRequest(ARTErrorCode.tokenRevoked.intValue, description: "token revoked")
@@ -459,7 +459,7 @@ class AuthTests: XCTestCase {
 
         rest.internal.httpExecutor = proxyHTTPExecutor
         waitUntil(timeout: testTimeout) { done in
-            rest.channels.get(uniqueChannelName(for: test)).history { _, error in
+            rest.channels.get(test.uniqueChannelName()).history { _, error in
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
@@ -500,7 +500,7 @@ class AuthTests: XCTestCase {
         }
 
         waitUntil(timeout: testTimeout) { done in
-            rest.channels.get(uniqueChannelName(for: test)).history { _, error in
+            rest.channels.get(test.uniqueChannelName()).history { _, error in
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
@@ -926,7 +926,7 @@ class AuthTests: XCTestCase {
                 let state = stateChange.current
                 let error = stateChange.reason
                 if state == .connected, error == nil {
-                    let currentChannel = client.channels.get(uniqueChannelName(for: test))
+                    let currentChannel = client.channels.get(test.uniqueChannelName())
                     currentChannel.subscribe { _ in
                         done()
                     }
@@ -1125,7 +1125,7 @@ class AuthTests: XCTestCase {
         let rest = ARTRest(options: options)
         let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
-        let channel = rest.channels.get(uniqueChannelName(for: test))
+        let channel = rest.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.publish("foo", data: nil) { error in
                 XCTAssertNil(error)
@@ -1153,7 +1153,7 @@ class AuthTests: XCTestCase {
         client.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
-            client.channels.get(uniqueChannelName(for: test)).publish(nil, data: "message") { error in
+            client.channels.get(test.uniqueChannelName()).publish(nil, data: "message") { error in
                 if let e = error {
                     XCTFail(e.localizedDescription)
                 }
@@ -1193,7 +1193,7 @@ class AuthTests: XCTestCase {
         }
         options.defaultTokenParams = ARTTokenParams(clientId: "tester")
         let client = ARTRest(options: options)
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         XCTAssertEqual(client.auth.clientId, "john")
         waitUntil(timeout: testTimeout) { done in
@@ -1870,7 +1870,7 @@ class AuthTests: XCTestCase {
         let rest = ARTRest(options: options)
         let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
-        let channel = rest.channels.get(uniqueChannelName(for: test))
+        let channel = rest.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             let message = ARTMessage(name: nil, data: "message without an explicit clientId")
@@ -1903,7 +1903,7 @@ class AuthTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         options.token = try getTestToken(for: test, clientId: nil)
         let rest = ARTRest(options: options)
-        let channel = rest.channels.get(uniqueChannelName(for: test))
+        let channel = rest.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             let message = ARTMessage(name: nil, data: "message with an explicit clientId", clientId: "john")
@@ -1933,7 +1933,7 @@ class AuthTests: XCTestCase {
 
         let testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
-        let channel = rest.channels.get(uniqueChannelName(for: test))
+        let channel = rest.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             let message = ARTMessage(name: nil, data: "no client")
@@ -1967,7 +1967,7 @@ class AuthTests: XCTestCase {
         // Request a token with a wildcard '*' value clientId
         options.token = try getTestToken(for: test, clientId: "*")
         let rest = ARTRest(options: options)
-        let channel = rest.channels.get(uniqueChannelName(for: test))
+        let channel = rest.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             let message = ARTMessage(name: nil, data: "message with an explicit clientId", clientId: "john")
@@ -2518,7 +2518,7 @@ class AuthTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         options.useTokenAuth = true
         let rest = ARTRest(options: options)
-        let channel = rest.channels.get(uniqueChannelName(for: test))
+        let channel = rest.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "first check") { error in
@@ -2584,7 +2584,7 @@ class AuthTests: XCTestCase {
                 XCTAssertNotEqual(tokenDetails.token, testToken)
                 XCTAssertEqual(rest.auth.internal.method, ARTAuthMethod.token)
 
-                publishTestMessage(rest, channelName: uniqueChannelName(for: test), completion: { error in
+                publishTestMessage(rest, channelName: test.uniqueChannelName(), completion: { error in
                     XCTAssertNil(error)
                     XCTAssertEqual(rest.auth.internal.method, ARTAuthMethod.token)
                     XCTAssertEqual(rest.auth.tokenDetails?.token, tokenDetails.token)
@@ -2609,7 +2609,7 @@ class AuthTests: XCTestCase {
                 XCTAssertNotNil(tokenDetails.token)
                 XCTAssertEqual(rest.auth.internal.method, ARTAuthMethod.token)
 
-                publishTestMessage(rest, channelName: uniqueChannelName(for: test), completion: { error in
+                publishTestMessage(rest, channelName: test.uniqueChannelName(), completion: { error in
                     XCTAssertNil(error)
                     XCTAssertEqual(rest.auth.internal.method, ARTAuthMethod.token)
                     XCTAssertEqual(rest.auth.tokenDetails?.token, tokenDetails.token)
@@ -3837,7 +3837,7 @@ class AuthTests: XCTestCase {
         options.token = initialToken
         let realtime = ARTRealtime(options: options)
         defer { realtime.dispose(); realtime.close() }
-        let channel = realtime.channels.get(uniqueChannelName(for: test))
+        let channel = realtime.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
@@ -4451,7 +4451,7 @@ class AuthTests: XCTestCase {
         var originalTokenRequest: ARTTokenRequest!
         let tmpRest = ARTRest(options: try AblyTests.commonAppSetup(for: test))
         
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         waitUntil(timeout: testTimeout) { done in
             let tokenParams = ARTTokenParams()
             tokenParams.clientId = "john"

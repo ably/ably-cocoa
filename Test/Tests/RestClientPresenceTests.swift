@@ -10,7 +10,7 @@ class RestClientPresenceTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRest(options: options)
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 
         var disposable = [ARTRealtime]()
@@ -68,7 +68,7 @@ class RestClientPresenceTests: XCTestCase {
     func test__003__Presence__get__limit_should_support_up_to_1000_items() throws {
         let test = Test()
         let client = ARTRest(options: try AblyTests.commonAppSetup(for: test))
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         let query = ARTPresenceQuery()
         XCTAssertEqual(query.limit, 100)
@@ -84,7 +84,7 @@ class RestClientPresenceTests: XCTestCase {
     func test__004__Presence__get__clientId_should_filter_members_by_the_provided_clientId() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         
         let client = ARTRest(options: options)
         let channel = client.channels.get(channelName)
@@ -122,7 +122,7 @@ class RestClientPresenceTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRest(options: options)
         
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 
         var disposable = [ARTRealtime]()
@@ -168,7 +168,7 @@ class RestClientPresenceTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRest(options: options)
         
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 
         var realtime: ARTRealtime!
@@ -230,7 +230,7 @@ class RestClientPresenceTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRest(options: options)
         
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 
         var disposable = [ARTRealtime]()
@@ -285,7 +285,7 @@ class RestClientPresenceTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRest(options: options)
         
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 
         var realtime: ARTRealtime!
@@ -321,7 +321,7 @@ class RestClientPresenceTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRest(options: options)
         
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 
         var disposable = [ARTRealtime]()
@@ -369,7 +369,7 @@ class RestClientPresenceTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRest(options: options)
         
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 
         var disposable = [ARTRealtime]()
@@ -423,7 +423,7 @@ class RestClientPresenceTests: XCTestCase {
     func test__011__Presence__history__query_argument__start_must_be_equal_to_or_less_than_end_and_is_unaffected_by_the_request_direction() throws {
         let test = Test()
         let client = ARTRest(options: try AblyTests.commonAppSetup(for: test))
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         let query = ARTDataQuery()
         query.direction = .backwards
@@ -447,7 +447,7 @@ class RestClientPresenceTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRest(options: options)
         
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 
         let expectedData = ["test": 1]

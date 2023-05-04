@@ -31,7 +31,7 @@ class PushChannelTests: XCTestCase {
         let testEnvironment = TestEnvironment(test: test)
 
         waitUntil(timeout: testTimeout) { done in
-            testEnvironment.rest.channels.get(uniqueChannelName(for: test)).push.subscribeDevice { error in
+            testEnvironment.rest.channels.get(test.uniqueChannelName()).push.subscribeDevice { error in
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
@@ -52,7 +52,7 @@ class PushChannelTests: XCTestCase {
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
         defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
-        let channel = rest.channels.get(uniqueChannelName(for: test))
+        let channel = rest.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.push.subscribeDevice { error in
                 XCTAssertNil(error)
@@ -93,7 +93,7 @@ class PushChannelTests: XCTestCase {
         defer { rest.device.clientId = originalClientId }
 
         waitUntil(timeout: testTimeout) { done in
-            rest.channels.get(uniqueChannelName(for: test)).push.subscribeClient { error in
+            rest.channels.get(test.uniqueChannelName()).push.subscribeClient { error in
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
@@ -114,7 +114,7 @@ class PushChannelTests: XCTestCase {
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
         defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
-        let channel = rest.channels.get(uniqueChannelName(for: test))
+        let channel = rest.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.push.subscribeClient { error in
                 XCTAssertNil(error)
@@ -145,7 +145,7 @@ class PushChannelTests: XCTestCase {
         let testEnvironment = TestEnvironment(test: test)
 
         waitUntil(timeout: testTimeout) { done in
-            testEnvironment.rest.channels.get(uniqueChannelName(for: test)).push.unsubscribeDevice { error in
+            testEnvironment.rest.channels.get(test.uniqueChannelName()).push.unsubscribeDevice { error in
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
@@ -166,7 +166,7 @@ class PushChannelTests: XCTestCase {
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
         defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
-        let channel = rest.channels.get(uniqueChannelName(for: test))
+        let channel = rest.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.push.unsubscribeDevice { error in
                 XCTAssertNil(error)
@@ -205,7 +205,7 @@ class PushChannelTests: XCTestCase {
         defer { rest.device.clientId = originalClientId }
 
         waitUntil(timeout: testTimeout) { done in
-            rest.channels.get(uniqueChannelName(for: test)).push.unsubscribeClient { error in
+            rest.channels.get(test.uniqueChannelName()).push.unsubscribeClient { error in
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
@@ -226,7 +226,7 @@ class PushChannelTests: XCTestCase {
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
         defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
-        let channel = rest.channels.get(uniqueChannelName(for: test))
+        let channel = rest.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.push.unsubscribeClient { error in
                 XCTAssertNil(error)
@@ -258,7 +258,7 @@ class PushChannelTests: XCTestCase {
             "deviceId": "111",
             "channel": "aaa",
         ]
-        let channel = rest.channels.get(uniqueChannelName(for: test))
+        let channel = rest.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             try? channel.push.listSubscriptions(params) { result, error in
                 XCTAssertNil(error)
@@ -287,7 +287,7 @@ class PushChannelTests: XCTestCase {
             "clientId": "tester",
             "channel": "aaa",
         ]
-        let channel = rest.channels.get(uniqueChannelName(for: test))
+        let channel = rest.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             try? channel.push.listSubscriptions(params) { result, error in
                 XCTAssertNil(error)
@@ -311,7 +311,7 @@ class PushChannelTests: XCTestCase {
         let test = Test()
         let testEnvironment = TestEnvironment(test: test)
 
-        let channel = testEnvironment.rest.channels.get(uniqueChannelName(for: test))
+        let channel = testEnvironment.rest.channels.get(test.uniqueChannelName())
         expect { try channel.push.listSubscriptions([:]) { _, _ in } }.to(throwError { (error: NSError) in
             XCTAssertEqual(error.code, ARTDataQueryError.missingRequiredFields.rawValue)
         })
@@ -325,7 +325,7 @@ class PushChannelTests: XCTestCase {
             "deviceId": "x",
             "clientId": "y",
         ]
-        let channel = testEnvironment.rest.channels.get(uniqueChannelName(for: test))
+        let channel = testEnvironment.rest.channels.get(test.uniqueChannelName())
         expect { try channel.push.listSubscriptions(params) { _, _ in } }.to(throwError { (error: NSError) in
             XCTAssertEqual(error.code, ARTDataQueryError.invalidParameters.rawValue)
         })
@@ -347,7 +347,7 @@ class PushChannelTests: XCTestCase {
         rest.device.setAndPersistIdentityTokenDetails(testIdentityTokenDetails)
         defer { rest.device.setAndPersistIdentityTokenDetails(nil) }
 
-        let channel = rest.channels.get("pushenabled:\(uniqueChannelName(for: test))")
+        let channel = rest.channels.get("pushenabled:\(test.uniqueChannelName())")
         waitUntil(timeout: testTimeout) { done in
             channel.push.subscribeClient { error in
                 XCTAssertNil(error)

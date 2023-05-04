@@ -227,7 +227,7 @@ class PushAdminTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         let realtime = ARTRealtime(options: options)
         defer { realtime.dispose(); realtime.close() }
-        let channel = realtime.channels.get("pushenabled:\(uniqueChannelName(for: test))") // works with pure uniqueChannelName(for: test) as well
+        let channel = realtime.channels.get("pushenabled:\(test.uniqueChannelName())") // works with pure test.uniqueChannelName() as well
         let publishObject = ["transportType": "ablyChannel",
                              "channel": channel.name,
                              "ablyKey": options.key!,
@@ -260,7 +260,7 @@ class PushAdminTests: XCTestCase {
         let test = Test()
         let realtime = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { realtime.dispose(); realtime.close() }
-        let channel = realtime.channels.get("pushenabled:\(uniqueChannelName(for: test))") // works with pure uniqueChannelName(for: test) as well
+        let channel = realtime.channels.get("pushenabled:\(test.uniqueChannelName())") // works with pure test.uniqueChannelName() as well
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
@@ -288,7 +288,7 @@ class PushAdminTests: XCTestCase {
         let test = Test()
         let realtime = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { realtime.dispose(); realtime.close() }
-        let channel = realtime.channels.get("pushenabled:\(uniqueChannelName(for: test))") // works with pure uniqueChannelName(for: test) as well
+        let channel = realtime.channels.get("pushenabled:\(test.uniqueChannelName())") // works with pure test.uniqueChannelName() as well
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
@@ -315,7 +315,7 @@ class PushAdminTests: XCTestCase {
         let test = Test()
         let realtime = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { realtime.dispose(); realtime.close() }
-        let channel = realtime.channels.get("pushenabled:\(uniqueChannelName(for: test))") // works with pure uniqueChannelName(for: test) as well
+        let channel = realtime.channels.get("pushenabled:\(test.uniqueChannelName())") // works with pure test.uniqueChannelName() as well
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in

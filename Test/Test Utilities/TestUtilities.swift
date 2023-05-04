@@ -50,26 +50,6 @@ let testTimeout = DispatchTimeInterval.seconds(20)
 let testResourcesPath = "ably-common/test-resources/"
 let echoServerAddress = "https://echo.ably.io/createJWT"
 
-func uniqueChannelName(for test: Test,
-                       prefix: String = "",
-                       timestamp: TimeInterval = Date.timeIntervalSinceReferenceDate) -> String {
-    let platform: String
-#if targetEnvironment(macCatalyst)
-    platform = "macCatalyst"
-#elseif os(OSX)
-    platform = "OSX"
-#elseif os(iOS)
-    platform = "iOS"
-#elseif os(tvOS)
-    platform = "tvOS"
-#elseif os(watchOS)
-    platform = "watchOS"
-#else
-    platform = "Unknown"
-#endif
-    return "\(prefix)-\(platform)-\(test.id)-\(timestamp)-\(NSUUID().uuidString)"
-}
-
 /// Common test utilities.
 class AblyTests {
     enum Error: Swift.Error {

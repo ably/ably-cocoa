@@ -114,7 +114,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let client = ARTRealtime(options: options)
         client.connect()
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
         channel.attach()
 
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
@@ -140,7 +140,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
         }
 
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         disposable += [AblyTests.addMembersSequentiallyToChannel(channelName, members: 250, options: options)]
 
         options.autoConnect = false
@@ -175,7 +175,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
@@ -259,7 +259,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
@@ -321,7 +321,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     func skipped__test__013__Presence__PresenceMap_has_existing_members_when_a_SYNC_is_started__should_ensure_that_members_no_longer_present_on_the_channel_are_removed_from_the_local_PresenceMap_once_the_sync_is_complete() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         var clientMembers: ARTRealtime?
         defer { clientMembers?.dispose(); clientMembers?.close() }
         clientMembers = AblyTests.addMembersSequentiallyToChannel(channelName, members: 2, options: options)
@@ -394,7 +394,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 
         // Inject local members
@@ -446,7 +446,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         var clientSource: ARTRealtime!
         defer { clientSource.dispose(); clientSource.close() }
         
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         clientSource = AblyTests.addMembersSequentiallyToChannel(channelName, members: 250, options: options)
 
         let clientTarget = ARTRealtime(options: options)
@@ -487,7 +487,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let client1 = AblyTests.newRealtime(options).client
         defer { client1.close() }
         
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         let channel1 = client1.channels.get(channelName)
         // We want to make sure that the ENTER presence action that we publish
         // gets sent by Realtime as a PRESENCE protocol message, and not in the
@@ -539,7 +539,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         let listener = channel.presence.subscribe { _ in }!
         XCTAssertEqual(channel.internal.presenceEventEmitter.anyListeners.count, 1)
@@ -555,7 +555,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             let protocolError = AblyTests.newErrorProtocolMessage()
@@ -575,7 +575,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
             channel.presence.enterClient("user", data: nil) { error in
@@ -615,7 +615,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.once(.attaching) { _ in
@@ -633,7 +633,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
             channel.presence.enterClient("user", data: nil) { error in
@@ -673,7 +673,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let client1 = AblyTests.newRealtime(options).client
         defer { client1.dispose(); client1.close() }
         
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         let channel1 = client1.channels.get(channelName)
 
         waitUntil(timeout: testTimeout) { done in
@@ -727,7 +727,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 
         waitUntil(timeout: testTimeout) { done in
@@ -759,7 +759,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     func test__023__Presence__Channel_state_change_side_effects__channel_enters_the_SUSPENDED_state__should_maintain_the_PresenceMap_and_any_members_present_before_and_after_the_sync_should_not_emit_presence_events() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
 
         var clientMembers: ARTRealtime?
         clientMembers = AblyTests.addMembersSequentiallyToChannel(channelName, members: 3, options: options)
@@ -850,7 +850,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let client1 = ARTRealtime(options: options)
         defer { client1.close() }
         
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         let channel1 = client1.channels.get(channelName)
 
         let client2 = ARTRealtime(options: options)
@@ -877,7 +877,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         let listener = channel.presence.subscribe(.present) { _ in }!
         XCTAssertEqual(channel.internal.presenceEventEmitter.listeners.count, 1)
@@ -892,7 +892,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         XCTAssertEqual(channel.state, ARTRealtimeChannelState.initialized)
         channel.presence.subscribe { _ in }
@@ -913,7 +913,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
         channel.internal.onError(AblyTests.newErrorProtocolMessage())
         XCTAssertEqual(channel.state, ARTRealtimeChannelState.failed)
 
@@ -934,7 +934,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             let error = AblyTests.newErrorProtocolMessage()
@@ -962,7 +962,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let client1 = ARTRealtime(options: options)
         defer { client1.close() }
         
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         let channel1 = client1.channels.get(channelName)
 
         let client2 = ARTRealtime(options: options)
@@ -1005,7 +1005,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let client1 = ARTRealtime(options: options)
         defer { client1.close() }
         
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         let channel1 = client1.channels.get(channelName)
 
         let client2 = ARTRealtime(options: options)
@@ -1034,7 +1034,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let client1 = ARTRealtime(options: options)
         defer { client1.close() }
         
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         let channel1 = client1.channels.get(channelName)
 
         let client2 = ARTRealtime(options: options)
@@ -1063,7 +1063,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         options.clientId = "john"
         let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
         // We want to make sure that the ENTER presence action that we publish
         // gets sent by Realtime as a PRESENCE protocol message, and not in the
         // channel’s initial post-attach SYNC. So, we wait for any initial SYNC
@@ -1100,7 +1100,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
         
         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected))
         
@@ -1119,7 +1119,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let client = ARTRealtime(options: options)
         options.clientId = "*"
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
         
         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected))
         
@@ -1138,7 +1138,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         options.clientId = "john"
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { _ in
@@ -1163,7 +1163,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         options.clientId = "john"
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             AblyTests.queue.async {
@@ -1187,7 +1187,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enter(nil) { error in
@@ -1207,7 +1207,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
         // We want to make sure that the ENTER presence action that we publish
         // gets sent by Realtime as a PRESENCE protocol message, and not in the
         // channel’s initial post-attach SYNC. So, we wait for any initial SYNC
@@ -1238,7 +1238,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         options.clientId = "john"
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.subscribe(.enter) { member in
@@ -1267,7 +1267,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         options.clientId = "john"
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         XCTAssertEqual(channel.internal.presenceMap.members.count, 0)
         waitUntil(timeout: testTimeout) { done in
@@ -1289,7 +1289,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         options.clientId = "john"
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.update("online") { error in
@@ -1306,7 +1306,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         options.clientId = "john"
         let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             let protocolError = AblyTests.newErrorProtocolMessage()
@@ -1330,7 +1330,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         options.clientId = "john"
         let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enter("online") { error in
@@ -1362,7 +1362,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         options.clientId = "john"
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.subscribe(.enter) { member in
@@ -1392,7 +1392,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         options.clientId = "john"
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.subscribe(.enter) { member in
@@ -1418,7 +1418,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         var clientSecondary: ARTRealtime!
         defer { clientSecondary.dispose(); clientSecondary.close() }
         
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         clientSecondary = AblyTests.addMembersSequentiallyToChannel(channelName, members: 100, options: options)
 
         let client = AblyTests.newRealtime(options).client
@@ -1454,7 +1454,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 
         waitUntil(timeout: testTimeout) { done in
@@ -1508,7 +1508,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let now = NSDate()
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         var clientMembers: ARTRealtime?
         defer { clientMembers?.dispose(); clientMembers?.close() }
         clientMembers = AblyTests.addMembersSequentiallyToChannel(channelName, members: 101, options: options)
@@ -1588,7 +1588,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let now = NSDate()
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         var clientMembers: ARTRealtime?
         defer { clientMembers?.dispose(); clientMembers?.close() }
         clientMembers = AblyTests.addMembersSequentiallyToChannel(channelName, members: 101, options: options)
@@ -1670,7 +1670,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let timeBeforeSync = NSDate()
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         var clientMembers: ARTRealtime?
         defer { clientMembers?.dispose(); clientMembers?.close() }
         clientMembers = AblyTests.addMembersSequentiallyToChannel(channelName, members: 120, options: options)
@@ -1724,7 +1724,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     func skipped__test__055__Presence__PresenceMap__all_presence_messages_from_a_SYNC_must_also_be_compared_for_newness_in_the_same_way_as_they_would_from_a_PRESENCE__accept_members_where_message_have_arrived_after_the_SYNC() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         var clientMembers: ARTRealtime?
         defer { clientMembers?.dispose(); clientMembers?.close() }
         clientMembers = AblyTests.addMembersSequentiallyToChannel(channelName, members: 120, options: options)
@@ -1779,7 +1779,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 
         waitUntil(timeout: testTimeout) { done in
@@ -1804,7 +1804,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 
         waitUntil(timeout: testTimeout) { done in
@@ -1831,7 +1831,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     func test__048__Presence__PresenceMap__if_action_of_PRESENT_arrives__it_should_be_added_to_the_presence_map_with_the_action_set_to_PRESENT() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         var clientMembers: ARTRealtime!
         defer { clientMembers.dispose(); clientMembers.close() }
         clientMembers = AblyTests.addMembersSequentiallyToChannel(channelName, members: 1, options: options)
@@ -1862,7 +1862,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         var clientMembers: ARTRealtime?
         defer { clientMembers?.dispose(); clientMembers?.close() }
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         clientMembers = AblyTests.addMembersSequentiallyToChannel(channelName, members: 20, options: options)
 
         let client = AblyTests.newRealtime(options).client
@@ -1905,7 +1905,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     func skipped__test__050__Presence__PresenceMap__if_a_SYNC_is_in_progress__then_when_a_presence_message_with_an_action_of_LEAVE_arrives__it_should_be_stored_in_the_presence_map_with_the_action_set_to_ABSENT() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
 
         var clientMembers: ARTRealtime?
         defer { clientMembers?.dispose(); clientMembers?.close() }
@@ -1971,7 +1971,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 
         waitUntil(timeout: testTimeout) { done in
@@ -2001,7 +2001,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         options.clientId = "john"
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enter(nil) { error in
@@ -2021,7 +2021,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.update(nil) { error in
@@ -2038,7 +2038,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         options.clientId = "john"
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         channel.attach()
         channel.detach()
@@ -2059,7 +2059,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         options.clientId = "john"
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         AblyTests.queue.async {
             channel.internal.onError(AblyTests.newErrorProtocolMessage())
@@ -2081,7 +2081,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         options.clientId = "john"
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.update(nil) { error in
@@ -2099,7 +2099,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.update(nil) { error in
@@ -2118,7 +2118,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         options.clientId = "john"
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enter("online") { error in
@@ -2142,7 +2142,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         options.clientId = "john"
         let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enter("online") { error in
@@ -2168,7 +2168,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.presence.leave("offline") { error in
                 XCTAssertEqual(error?.code, Int(ARTErrorCode.invalidClientId.rawValue))
@@ -2184,7 +2184,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         options.clientId = "john"
         let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enter("online") { error in
@@ -2216,7 +2216,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 
         waitUntil(timeout: testTimeout) { done in
@@ -2250,7 +2250,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         XCTAssertEqual(channel.state, ARTRealtimeChannelState.initialized)
         waitUntil(timeout: testTimeout) { done in
@@ -2271,7 +2271,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         AblyTests.queue.async {
             channel.internal.onError(AblyTests.newErrorProtocolMessage())
@@ -2294,7 +2294,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
@@ -2324,7 +2324,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.leave(nil) { error in
@@ -2341,7 +2341,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         options.clientId = "john"
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enter(nil) { error in
@@ -2367,7 +2367,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         options.clientId = "john"
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enter(nil) { error in
@@ -2396,7 +2396,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         options.clientId = "john"
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.leaveClient("other", data: nil) { error in
@@ -2411,7 +2411,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.leave(nil) { error in
@@ -2428,7 +2428,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         XCTAssertEqual(channel.state, ARTRealtimeChannelState.initialized)
         channel.presence.subscribe { _ in }
@@ -2448,7 +2448,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         let protocolError = AblyTests.newErrorProtocolMessage()
         AblyTests.queue.async {
@@ -2471,7 +2471,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             let error = AblyTests.newErrorProtocolMessage()
@@ -2499,7 +2499,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let client1 = AblyTests.newRealtime(options).client
         defer { client1.close() }
         
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         let channel1 = client1.channels.get(channelName)
         // We want to make sure that the ENTER presence action that we publish
         // gets sent by Realtime as a PRESENCE protocol message, and not in the
@@ -2536,7 +2536,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let client1 = ARTRealtime(options: options)
         defer { client1.close() }
         
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         let channel1 = client1.channels.get(channelName)
 
         options.clientId = "mary"
@@ -2575,7 +2575,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     func skipped__test__080__Presence__private_and_internal_PresenceMap_containing_only_members_that_match_the_current_connectionId__any_ENTER__PRESENT__UPDATE_or_LEAVE_event_that_matches_the_current_connectionId_should_be_applied_to_this_object() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
 
         options.clientId = "a"
         let clientA = ARTRealtime(options: options)
@@ -2707,7 +2707,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     func skipped__test__081__Presence__private_and_internal_PresenceMap_containing_only_members_that_match_the_current_connectionId__all_members_belonging_to_the_current_connection_are_published_as_a_PresenceMessage_on_the_Channel_by_the_server_irrespective_of_whether_the_client_has_permission_to_subscribe_or_the_Channel_is_configured_to_publish_presence_events() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         let clientId = NSUUID().uuidString
         options.tokenDetails = try getTestTokenDetails(for: test, clientId: clientId, capability: "{\"\(channelName)\":[\"presence\",\"publish\"]}")
         // Prevent channel name to be prefixed by test-*
@@ -2749,7 +2749,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
             channel.presence.subscribe(.enter) { presence in
@@ -2849,7 +2849,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         client.internal.shouldImmediatelyReconnect = false
         defer { client.dispose(); client.close() }
 
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
             channel.presence.subscribe(.enter) { presence in
@@ -2901,7 +2901,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enterClient("Client 1", data: nil) { errorInfo in
@@ -2918,7 +2918,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         options.token = try getTestToken(for: test, capability: "{ \"room\":[\"subscribe\"] }")
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enterClient("Client 1", data: nil) { errorInfo in
@@ -2939,7 +2939,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         options.clientId = "john"
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enter(nil) { error in
@@ -2972,7 +2972,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
             let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
             defer { client.dispose(); client.close() }
-            let channel = client.channels.get(uniqueChannelName(for: test))
+            let channel = client.channels.get(test.uniqueChannelName())
 
             XCTAssertEqual(channel.state, ARTRealtimeChannelState.initialized)
             waitUntil(timeout: testTimeout) { done in
@@ -2993,7 +2993,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
             let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
             defer { client.dispose(); client.close() }
-            let channel = client.channels.get(uniqueChannelName(for: test))
+            let channel = client.channels.get(test.uniqueChannelName())
 
             let expectedErrorMessage = "Something has failed"
             AblyTests.queue.async {
@@ -3021,7 +3021,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
             let client = AblyTests.newRealtime(try AblyTests.commonAppSetup(for: test)).client
             defer { client.dispose(); client.close() }
-            let channel = client.channels.get(uniqueChannelName(for: test))
+            let channel = client.channels.get(test.uniqueChannelName())
 
             waitUntil(timeout: testTimeout) { done in
                 let error = AblyTests.newErrorProtocolMessage()
@@ -3109,7 +3109,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         options.clientId = "john"
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enter("browser") { error in
@@ -3136,7 +3136,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enterClient("user", data: nil) { error in
@@ -3156,7 +3156,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
         XCTAssertTrue(client.internal.options.queueMessages)
 
         waitUntil(timeout: testTimeout) { done in
@@ -3185,7 +3185,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         options.queueMessages = false
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
         XCTAssertFalse(client.internal.options.queueMessages)
 
         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
@@ -3214,7 +3214,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         options.queueMessages = false
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         XCTAssertEqual(client.connection.state, ARTRealtimeConnectionState.initialized)
 
@@ -3230,7 +3230,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     func test__097__Presence__Connection_state_conditions__should_result_in_an_error_if_the_connection_state_is__suspended() throws {
         let test = Test()
-        try testResultsInErrorWithConnectionState(.suspended, for: test, channelName: uniqueChannelName(for: test)) { client in
+        try testResultsInErrorWithConnectionState(.suspended, for: test, channelName: test.uniqueChannelName()) { client in
             AblyTests.queue.async {
                 client.internal.onSuspended()
             }
@@ -3239,14 +3239,14 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     func test__098__Presence__Connection_state_conditions__should_result_in_an_error_if_the_connection_state_is__closed() throws {
         let test = Test()
-        try testResultsInErrorWithConnectionState(.closed, for: test, channelName: uniqueChannelName(for: test)) { client in
+        try testResultsInErrorWithConnectionState(.closed, for: test, channelName: test.uniqueChannelName()) { client in
             client.close()
         }
     }
 
     func test__099__Presence__Connection_state_conditions__should_result_in_an_error_if_the_connection_state_is__failed() throws {
         let test = Test()
-        try testResultsInErrorWithConnectionState(.failed, for: test, channelName: uniqueChannelName(for: test)) { client in
+        try testResultsInErrorWithConnectionState(.failed, for: test, channelName: test.uniqueChannelName()) { client in
             AblyTests.queue.async {
                 client.internal.onError(AblyTests.newErrorProtocolMessage())
             }
@@ -3275,7 +3275,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         let expectedData = "online"
 
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         disposable += [AblyTests.addMembersSequentiallyToChannel(channelName, members: 150, data: expectedData as AnyObject?, options: options)]
 
         let client = ARTRealtime(options: options)
@@ -3309,7 +3309,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         XCTAssertEqual(channel.state, ARTRealtimeChannelState.initialized)
         waitUntil(timeout: testTimeout) { done in
@@ -3328,7 +3328,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         let pm = AblyTests.newErrorProtocolMessage()
         AblyTests.queue.async {
@@ -3360,7 +3360,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let client = AblyTests.newRealtime(try AblyTests.commonAppSetup(for: test)).client
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             let pm = AblyTests.newErrorProtocolMessage()
@@ -3391,7 +3391,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach()
@@ -3422,7 +3422,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         var clientMembers: ARTRealtime?
         defer { clientMembers?.dispose(); clientMembers?.close() }
         
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         clientMembers = AblyTests.addMembersSequentiallyToChannel(channelName, members: 120, options: options)
 
         let channel = client.channels.get(channelName)
@@ -3449,14 +3449,14 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     func test__107__Presence__get__If_the_Channel_is_in_the_SUSPENDED_state_then__by_default__results_in_an_error() throws {
         let test = Test()
-        try testSuspendedStateResultsInError(for: test, channelName: uniqueChannelName(for: test)) { channel, callback in
+        try testSuspendedStateResultsInError(for: test, channelName: test.uniqueChannelName()) { channel, callback in
             channel.presence.get(callback)
         }
     }
 
     func test__108__Presence__get__If_the_Channel_is_in_the_SUSPENDED_state_then__if_waitForSync_is_true__results_in_an_error() throws {
         let test = Test()
-        try testSuspendedStateResultsInError(for: test, channelName: uniqueChannelName(for: test)) { channel, callback in
+        try testSuspendedStateResultsInError(for: test, channelName: test.uniqueChannelName()) { channel, callback in
             let params = ARTRealtimePresenceQuery()
             params.waitForSync = true
             channel.presence.get(params, callback: callback)
@@ -3465,7 +3465,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     func test__109__Presence__get__If_the_Channel_is_in_the_SUSPENDED_state_then__if_waitForSync_is_false__returns_the_members_in_the_current_PresenceMap() throws {
         let test = Test()
-        let (channel, client) = try getSuspendedChannel(named: uniqueChannelName(for: test), for: test)
+        let (channel, client) = try getSuspendedChannel(named: test.uniqueChannelName(), for: test)
         defer { client.dispose(); client.close() }
 
         var msgs = [String: ARTPresenceMessage]()
@@ -3498,7 +3498,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         var clientSecondary: ARTRealtime!
         defer { clientSecondary.dispose(); clientSecondary.close() }
         
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         clientSecondary = AblyTests.addMembersSequentiallyToChannel(channelName, members: 150, options: options)
 
         let client = AblyTests.newRealtime(options).client
@@ -3538,7 +3538,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         var clientSecondary: ARTRealtime!
         defer { clientSecondary.dispose(); clientSecondary.close() }
         
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         clientSecondary = AblyTests.addMembersSequentiallyToChannel(channelName, members: 150, options: options)
 
         let client = AblyTests.newRealtime(options).client
@@ -3592,7 +3592,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 
         let presenceData: [ARTPresenceMessage] = [
@@ -3649,7 +3649,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let now = NSDate()
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         var clientMembers: ARTRealtime?
         defer { clientMembers?.dispose(); clientMembers?.close() }
         clientMembers = AblyTests.addMembersSequentiallyToChannel(channelName, members: 101, options: options)
@@ -3737,7 +3737,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let realtime = ARTRealtime(options: options)
         defer { realtime.dispose(); realtime.close() }
 
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         let channelRest = rest.channels.get(channelName)
         let channelRealtime = realtime.channels.get(channelName)
 
@@ -3794,7 +3794,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let expectedData = ["x", "y"]
         let expectedPattern = "^user(\\d+)$"
         
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         clientSecondary = AblyTests.addMembersSequentiallyToChannel(channelName, members: 150, data: expectedData as AnyObject?, options: options)
 
         let client = ARTRealtime(options: options)
@@ -3854,7 +3854,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
         }
 
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         disposable += [AblyTests.addMembersSequentiallyToChannel(channelName, members: 250, options: options)]
 
         let client = AblyTests.newRealtime(options).client
@@ -3883,7 +3883,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
         XCTAssertEqual(channel.internal.presenceMap.members.count, 0)
 
         let expectedData = ["test": 1]
@@ -3933,7 +3933,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 
         let john = "john"

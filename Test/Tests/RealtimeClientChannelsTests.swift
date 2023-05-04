@@ -17,9 +17,9 @@ class RealtimeClientChannelsTests: XCTestCase {
         defer { client.dispose(); client.close() }
         var disposable = [String]()
 
-        let channelName1 = uniqueChannelName(for: test, prefix: "1")
-        let channelName2 = uniqueChannelName(for: test, prefix: "2")
-        let channelName3 = uniqueChannelName(for: test, prefix: "3")
+        let channelName1 = test.uniqueChannelName(prefix: "1")
+        let channelName2 = test.uniqueChannelName(prefix: "2")
+        let channelName3 = test.uniqueChannelName(prefix: "3")
 
         disposable.append(client.channels.get(channelName1).name)
         disposable.append(client.channels.get(channelName2).name)
@@ -44,7 +44,7 @@ class RealtimeClientChannelsTests: XCTestCase {
         defer { client.dispose(); client.close() }
 
         XCTAssertEqual(client.channels.internal.collection.count, 0)
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
         XCTAssertEqual(channel.name, "\(options.testOptions.channelNamePrefix!)-\(channelName)")
 
@@ -59,7 +59,7 @@ class RealtimeClientChannelsTests: XCTestCase {
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
         let options = ARTRealtimeChannelOptions()
-        let channel = client.channels.get(uniqueChannelName(for: test), options: options)
+        let channel = client.channels.get(test.uniqueChannelName(), options: options)
         XCTAssertTrue(channel.options === options)
     }
 
@@ -68,7 +68,7 @@ class RealtimeClientChannelsTests: XCTestCase {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         XCTAssertNil(client.channels.get(channelName).options)
         let options = ARTRealtimeChannelOptions()
         let channel = client.channels.get(channelName, options: options)
@@ -82,7 +82,7 @@ class RealtimeClientChannelsTests: XCTestCase {
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
 
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
         channel.subscribe { _ in
             fail("shouldn't happen")

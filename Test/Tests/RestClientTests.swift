@@ -154,7 +154,7 @@ class RestClientTests: XCTestCase {
         let client = ARTRest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "message") { error in
                 XCTAssertNil(error)
@@ -178,7 +178,7 @@ class RestClientTests: XCTestCase {
         let client = ARTRest(key: options.key!)
         client.internal.prioritizedHost = options.restHost
 
-        let publishTask = publishTestMessage(client, channelName: uniqueChannelName(for: test))
+        let publishTask = publishTestMessage(client, channelName: test.uniqueChannelName())
 
         expect(publishTask.error).toEventually(beNil(), timeout: testTimeout)
     }
@@ -191,7 +191,7 @@ class RestClientTests: XCTestCase {
         let test = Test()
         let client = ARTRest(key: "fake:key")
 
-        let publishTask = publishTestMessage(client, channelName: uniqueChannelName(for: test), failOnError: false)
+        let publishTask = publishTestMessage(client, channelName: test.uniqueChannelName(), failOnError: false)
 
         expect(publishTask.error?.code).toEventually(equal(ARTErrorCode.invalidCredential.intValue), timeout: testTimeout)
     }
@@ -202,7 +202,7 @@ class RestClientTests: XCTestCase {
         defer { ARTClientOptions.setDefaultEnvironment(nil) }
 
         let client = ARTRest(token: try getTestToken(for: test))
-        let publishTask = publishTestMessage(client, channelName: uniqueChannelName(for: test))
+        let publishTask = publishTestMessage(client, channelName: test.uniqueChannelName())
         expect(publishTask.error).toEventually(beNil(), timeout: testTimeout)
     }
 
@@ -211,7 +211,7 @@ class RestClientTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRest(options: options)
 
-        let publishTask = publishTestMessage(client, channelName: uniqueChannelName(for: test))
+        let publishTask = publishTestMessage(client, channelName: test.uniqueChannelName())
 
         expect(publishTask.error).toEventually(beNil(), timeout: testTimeout)
     }
@@ -221,7 +221,7 @@ class RestClientTests: XCTestCase {
         let options = try AblyTests.clientOptions(for: test, requestToken: true)
         let client = ARTRest(options: options)
 
-        let publishTask = publishTestMessage(client, channelName: uniqueChannelName(for: test))
+        let publishTask = publishTestMessage(client, channelName: test.uniqueChannelName())
 
         expect(publishTask.error).toEventually(beNil(), timeout: testTimeout)
     }
@@ -232,7 +232,7 @@ class RestClientTests: XCTestCase {
         options.token = "invalid_token"
         let client = ARTRest(options: options)
 
-        let publishTask = publishTestMessage(client, channelName: uniqueChannelName(for: test), failOnError: false)
+        let publishTask = publishTestMessage(client, channelName: test.uniqueChannelName(), failOnError: false)
 
         expect(publishTask.error?.code).toEventually(equal(ARTErrorCode.invalidCredential.intValue), timeout: testTimeout)
     }
@@ -312,7 +312,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
-        publishTestMessage(client, channelName: uniqueChannelName(for: test), failOnError: false)
+        publishTestMessage(client, channelName: test.uniqueChannelName(), failOnError: false)
 
         expect(testHTTPExecutor.requests.first?.url?.host).toEventually(equal("fake.ably.io"), timeout: testTimeout)
     }
@@ -326,7 +326,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
-        publishTestMessage(client, channelName: uniqueChannelName(for: test), failOnError: false)
+        publishTestMessage(client, channelName: test.uniqueChannelName(), failOnError: false)
 
         expect(testHTTPExecutor.requests.first?.url?.host).toEventually(equal("fake.ably.io"), timeout: testTimeout)
     }
@@ -340,7 +340,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
-        publishTestMessage(client, channelName: uniqueChannelName(for: test), failOnError: false)
+        publishTestMessage(client, channelName: test.uniqueChannelName(), failOnError: false)
 
         expect(testHTTPExecutor.requests.first?.url?.host).toEventually(equal("myEnvironment-rest.ably.io"), timeout: testTimeout)
     }
@@ -352,7 +352,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
-        publishTestMessage(client, channelName: uniqueChannelName(for: test), failOnError: false)
+        publishTestMessage(client, channelName: test.uniqueChannelName(), failOnError: false)
 
         expect(testHTTPExecutor.requests.first?.url?.absoluteString).toEventually(beginWith("https://rest.ably.io"), timeout: testTimeout)
     }
@@ -365,7 +365,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
-        publishTestMessage(client, channelName: uniqueChannelName(for: test), failOnError: false)
+        publishTestMessage(client, channelName: test.uniqueChannelName(), failOnError: false)
 
         expect(testHTTPExecutor.requests.first?.url?.scheme).toEventually(equal("http"), timeout: testTimeout)
     }
@@ -388,7 +388,7 @@ class RestClientTests: XCTestCase {
         XCTAssertEqual(options.httpRequestTimeout, 10.0) // Seconds
         options.httpRequestTimeout = 1.0
         let client = ARTRest(options: options)
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             let start = NSDate()
             channel.publish(nil, data: "message") { error in
@@ -422,7 +422,7 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "nil") { _ in
                 done()
@@ -442,7 +442,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .requestTimeout(timeout: 0.1))
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             let start = Date()
             channel.publish(nil, data: "nil") { _ in
@@ -475,7 +475,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
         waitUntil(timeout: testTimeout) { done in
-            client.channels.get(uniqueChannelName(for: test)).publish(nil, data: "message") { error in
+            client.channels.get(test.uniqueChannelName()).publish(nil, data: "message") { error in
                 XCTAssertNotNil(error)
                 done()
             }
@@ -511,7 +511,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         clientHttps.internal.httpExecutor = testHTTPExecutor
 
-        let channelName = uniqueChannelName(for: test)
+        let channelName = test.uniqueChannelName()
         
         waitUntil(timeout: testTimeout) { done in
             publishTestMessage(clientHttps, channelName: channelName) { _ in
@@ -583,7 +583,7 @@ class RestClientTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             delay(1.0) {
-                client.channels.get(uniqueChannelName(for: test)).history { result, error in
+                client.channels.get(test.uniqueChannelName()).history { result, error in
                     XCTAssertNil(error)
                     XCTAssertNotNil(result)
 
@@ -611,7 +611,7 @@ class RestClientTests: XCTestCase {
         client.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
-            client.channels.get(uniqueChannelName(for: test)).history { result, error in
+            client.channels.get(test.uniqueChannelName()).history { result, error in
                 guard let errorCode = error?.code else {
                     fail("Error is empty"); done()
                     return
@@ -644,7 +644,7 @@ class RestClientTests: XCTestCase {
         }
         let rest = ARTRest(key: "\(keyName):\(keySecret)")
         waitUntil(timeout: testTimeout) { done in
-            rest.channels.get(uniqueChannelName(for: test)).publish(nil, data: "testing") { error in
+            rest.channels.get(test.uniqueChannelName()).publish(nil, data: "testing") { error in
                 XCTAssertNil(error)
                 done()
             }
@@ -737,7 +737,7 @@ class RestClientTests: XCTestCase {
             // Delay for token expiration
             delay(TimeInterval(truncating: tokenParams.ttl!)) {
                 // [40140, 40150) - token expired and will not recover because authUrl is invalid
-                publishTestMessage(rest, channelName: uniqueChannelName(for: test)) { error in
+                publishTestMessage(rest, channelName: test.uniqueChannelName()) { error in
                     guard let errorCode = testHTTPExecutor.responses.first?.value(forHTTPHeaderField: "X-Ably-Errorcode") else {
                         fail("expected X-Ably-Errorcode header in response")
                         return
@@ -800,7 +800,7 @@ class RestClientTests: XCTestCase {
                 // Delay for token expiration
                 delay(TimeInterval(truncating: tokenParams.ttl!)) {
                     // [40140, 40150) - token expired and will not recover because authUrl is invalid
-                    publishTestMessage(rest, channelName: uniqueChannelName(for: test)) { error in
+                    publishTestMessage(rest, channelName: test.uniqueChannelName()) { error in
                         guard let errorCode = testHTTPExecutor.responses.first?.value(forHTTPHeaderField: "X-Ably-Errorcode") else {
                             fail("expected X-Ably-Errorcode header in response")
                             return
@@ -898,7 +898,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable, resetAfter: 2)
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "") { error in
@@ -926,7 +926,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "") { error in
@@ -953,7 +953,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "") { error in
@@ -979,7 +979,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "") { error in
@@ -1005,7 +1005,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "") { error in
@@ -1033,7 +1033,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable, resetAfter: 2)
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "") { error in
@@ -1060,7 +1060,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "message") { error in
                 expect(error?.message).to(contain("hostname could not be found"))
@@ -1083,7 +1083,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "") { error in
@@ -1109,7 +1109,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable, resetAfter: 2)
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "") { error in
@@ -1136,7 +1136,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "") { error in
@@ -1164,7 +1164,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "") { error in
@@ -1194,7 +1194,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable, resetAfter: 1)
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "nil") { error in
@@ -1219,7 +1219,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "nil") { _ in
@@ -1243,7 +1243,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable, resetAfter: 1)
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "nil") { _ in
@@ -1272,7 +1272,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable, resetAfter: 1)
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "nil") { _ in
@@ -1326,7 +1326,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "nil") { _ in
@@ -1362,7 +1362,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "nil") { _ in
@@ -1392,7 +1392,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "nil") { _ in
@@ -1424,7 +1424,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "nil") { _ in
@@ -1457,7 +1457,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "nil") { _ in
@@ -1489,7 +1489,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "nil") { _ in
@@ -1522,7 +1522,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "nil") { _ in
@@ -1538,17 +1538,17 @@ class RestClientTests: XCTestCase {
 
     func test__074__RestClient__Host_Fallback__should_use_an_alternative_host_when___hostUnreachable() {
         let test = Test()
-        testUsesAlternativeHost(.hostUnreachable, channelName: uniqueChannelName(for: test))
+        testUsesAlternativeHost(.hostUnreachable, channelName: test.uniqueChannelName())
     }
 
     func test__075__RestClient__Host_Fallback__should_use_an_alternative_host_when___requestTimeout_timeout__0_1_() {
         let test = Test()
-        testUsesAlternativeHost(.requestTimeout(timeout: 0.1), channelName: uniqueChannelName(for: test))
+        testUsesAlternativeHost(.requestTimeout(timeout: 0.1), channelName: test.uniqueChannelName())
     }
 
     func test__076__RestClient__Host_Fallback__should_use_an_alternative_host_when___hostInternalError_code__501_() {
         let test = Test()
-        testUsesAlternativeHost(.hostInternalError(code: 501), channelName: uniqueChannelName(for: test))
+        testUsesAlternativeHost(.hostInternalError(code: 501), channelName: test.uniqueChannelName())
     }
 
     // RSC15d
@@ -1561,7 +1561,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .host400BadRequest, resetAfter: 1)
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "nil") { _ in
@@ -1577,47 +1577,47 @@ class RestClientTests: XCTestCase {
 
     func test__077__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host___hostUnreachable() {
         let test = Test()
-        testStoresSuccessfulFallbackHostAsDefaultHost(.hostUnreachable, channelName: uniqueChannelName(for: test))
+        testStoresSuccessfulFallbackHostAsDefaultHost(.hostUnreachable, channelName: test.uniqueChannelName())
     }
 
     func test__078__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host___requestTimeout_timeout__0_1_() {
         let test = Test()
-        testStoresSuccessfulFallbackHostAsDefaultHost(.requestTimeout(timeout: 0.1), channelName: uniqueChannelName(for: test))
+        testStoresSuccessfulFallbackHostAsDefaultHost(.requestTimeout(timeout: 0.1), channelName: test.uniqueChannelName())
     }
 
     func test__079__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host___hostInternalError_code__501_() {
         let test = Test()
-        testStoresSuccessfulFallbackHostAsDefaultHost(.hostInternalError(code: 501), channelName: uniqueChannelName(for: test))
+        testStoresSuccessfulFallbackHostAsDefaultHost(.hostInternalError(code: 501), channelName: test.uniqueChannelName())
     }
 
     func test__080__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_restore_default_primary_host_after_fallbackRetryTimeout_expired___hostUnreachable() {
         let test = Test()
-        testRestoresDefaultPrimaryHostAfterTimeoutExpires(.hostUnreachable, channelName: uniqueChannelName(for: test))
+        testRestoresDefaultPrimaryHostAfterTimeoutExpires(.hostUnreachable, channelName: test.uniqueChannelName())
     }
 
     func test__081__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_restore_default_primary_host_after_fallbackRetryTimeout_expired___requestTimeout_timeout__0_1_() {
         let test = Test()
-        testRestoresDefaultPrimaryHostAfterTimeoutExpires(.requestTimeout(timeout: 0.1), channelName: uniqueChannelName(for: test))
+        testRestoresDefaultPrimaryHostAfterTimeoutExpires(.requestTimeout(timeout: 0.1), channelName: test.uniqueChannelName())
     }
 
     func test__082__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_restore_default_primary_host_after_fallbackRetryTimeout_expired___hostInternalError_code__501_() {
         let test = Test()
-        testRestoresDefaultPrimaryHostAfterTimeoutExpires(.hostInternalError(code: 501), channelName: uniqueChannelName(for: test))
+        testRestoresDefaultPrimaryHostAfterTimeoutExpires(.hostInternalError(code: 501), channelName: test.uniqueChannelName())
     }
 
     func test__083__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_use_another_fallback_host_if_previous_fallback_request_failed_and_store_it_as_default_if_current_fallback_request_succseeded___hostUnreachable() {
         let test = Test()
-        testUsesAnotherFallbackHost(.hostUnreachable, channelName: uniqueChannelName(for: test))
+        testUsesAnotherFallbackHost(.hostUnreachable, channelName: test.uniqueChannelName())
     }
 
     func test__084__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_use_another_fallback_host_if_previous_fallback_request_failed_and_store_it_as_default_if_current_fallback_request_succseeded___requestTimeout_timeout__0_1_() {
         let test = Test()
-        testUsesAnotherFallbackHost(.requestTimeout(timeout: 0.1), channelName: uniqueChannelName(for: test))
+        testUsesAnotherFallbackHost(.requestTimeout(timeout: 0.1), channelName: test.uniqueChannelName())
     }
 
     func test__085__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_use_another_fallback_host_if_previous_fallback_request_failed_and_store_it_as_default_if_current_fallback_request_succseeded___hostInternalError_code__501_() {
         let test = Test()
-        testUsesAnotherFallbackHost(.hostInternalError(code: 501), channelName: uniqueChannelName(for: test))
+        testUsesAnotherFallbackHost(.hostInternalError(code: 501), channelName: test.uniqueChannelName())
     }
 
     // RSC8a
@@ -1630,7 +1630,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
         waitUntil(timeout: testTimeout) { done in
-            rest.channels.get(uniqueChannelName(for: test, prefix: "rest")).publish(nil, data: "message") { _ in
+            rest.channels.get(test.uniqueChannelName(prefix: "rest")).publish(nil, data: "message") { _ in
                 done()
             }
         }
@@ -1646,7 +1646,7 @@ class RestClientTests: XCTestCase {
         let realtime = AblyTests.newRealtime(options).client
         defer { realtime.close() }
         waitUntil(timeout: testTimeout) { done in
-            realtime.channels.get(uniqueChannelName(for: test, prefix: "realtime")).publish(nil, data: "message") { _ in
+            realtime.channels.get(test.uniqueChannelName(prefix: "realtime")).publish(nil, data: "message") { _ in
                 done()
             }
         }
@@ -1668,7 +1668,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
         waitUntil(timeout: testTimeout) { done in
-            rest.channels.get(uniqueChannelName(for: test, prefix: "rest")).publish(nil, data: "message") { _ in
+            rest.channels.get(test.uniqueChannelName(prefix: "rest")).publish(nil, data: "message") { _ in
                 done()
             }
         }
@@ -1684,7 +1684,7 @@ class RestClientTests: XCTestCase {
         let realtime = AblyTests.newRealtime(options).client
         defer { realtime.close() }
         waitUntil(timeout: testTimeout) { done in
-            realtime.channels.get(uniqueChannelName(for: test, prefix: "realtime")).publish(nil, data: "message") { _ in
+            realtime.channels.get(test.uniqueChannelName(prefix: "realtime")).publish(nil, data: "message") { _ in
                 done()
             }
         }
@@ -1702,7 +1702,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
         waitUntil(timeout: testTimeout) { done in
-            client.channels.get(uniqueChannelName(for: test)).publish(nil, data: "message") { error in
+            client.channels.get(test.uniqueChannelName()).publish(nil, data: "message") { error in
                 XCTAssertNil(error)
                 guard let headerAblyVersion = testHTTPExecutor.requests.first?.allHTTPHeaderFields?["X-Ably-Version"] else {
                     fail("X-Ably-Version header not found"); done()
@@ -1727,7 +1727,7 @@ class RestClientTests: XCTestCase {
         let client = ARTRest(options: options)
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "message") { error in
                 XCTAssertNil(error)
@@ -1748,7 +1748,7 @@ class RestClientTests: XCTestCase {
         let client = ARTRest(options: options)
         waitUntil(timeout: testTimeout) { done in
             delay(0.1) {
-                client.channels.get(uniqueChannelName(for: test)).publish(nil, data: "message") { error in
+                client.channels.get(test.uniqueChannelName()).publish(nil, data: "message") { error in
                     guard let error = error else {
                         fail("Error is empty"); done()
                         return
@@ -1768,7 +1768,7 @@ class RestClientTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             URLSession.shared.dataTask(with: URL(string: "https://ably.io")!) { _, _, _ in
                 let rest = ARTRest(options: options)
-                rest.channels.get(uniqueChannelName(for: test)).history { _, _ in
+                rest.channels.get(test.uniqueChannelName()).history { _, _ in
                     done()
                 }
             }.resume()
@@ -1946,7 +1946,7 @@ class RestClientTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let rest = ARTRest(options: options)
-        let channel = rest.channels.get(uniqueChannelName(for: test))
+        let channel = rest.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.publish("a", data: nil) { error in
                 XCTAssertNil(error)
@@ -1996,7 +1996,7 @@ class RestClientTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let rest = ARTRest(options: options)
-        let channel = rest.channels.get(uniqueChannelName(for: test))
+        let channel = rest.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.publish("a", data: nil) { error in
                 XCTAssertNil(error)
@@ -2050,7 +2050,7 @@ class RestClientTests: XCTestCase {
 
         let client = ARTRest(options: options)
         waitUntil(timeout: testTimeout) { done in
-            let channel = client.channels.get(uniqueChannelName(for: test))
+            let channel = client.channels.get(test.uniqueChannelName())
             channel.publish("test", data: "test-data") { error in
                 guard let error = error else {
                     fail("Error should not be empty")
@@ -2076,7 +2076,7 @@ class RestClientTests: XCTestCase {
         let mockHttpExecutor = MockHTTPExecutor()
         restA.internal.httpExecutor = mockHttpExecutor
         waitUntil(timeout: testTimeout) { done in
-            restA.channels.get(uniqueChannelName(for: test)).publish(nil, data: "something") { error in
+            restA.channels.get(test.uniqueChannelName()).publish(nil, data: "something") { error in
                 XCTAssertNil(error)
                 guard let url = mockHttpExecutor.requests.first?.url else {
                     fail("No requests found")
@@ -2093,7 +2093,7 @@ class RestClientTests: XCTestCase {
         let restB = ARTRest(options: options)
         restB.internal.httpExecutor = mockHttpExecutor
         waitUntil(timeout: testTimeout) { done in
-            restB.channels.get(uniqueChannelName(for: test)).publish(nil, data: "something") { error in
+            restB.channels.get(test.uniqueChannelName()).publish(nil, data: "something") { error in
                 XCTAssertNil(error)
                 XCTAssertEqual(mockHttpExecutor.requests.count, 1)
                 guard let url = mockHttpExecutor.requests.first?.url else {
@@ -2128,7 +2128,7 @@ class RestClientTests: XCTestCase {
         }
 
         var requestId: String = ""
-        let channel = client.channels.get(uniqueChannelName(for: test))
+        let channel = client.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "something") { error in
                 guard let error = error else {
@@ -2158,7 +2158,7 @@ class RestClientTests: XCTestCase {
         rest.internal.httpExecutor = mockHttpExecutor
 
         waitUntil(timeout: testTimeout) { done in
-            rest.channels.get(uniqueChannelName(for: test)).publish(nil, data: "something") { error in
+            rest.channels.get(test.uniqueChannelName()).publish(nil, data: "something") { error in
                 XCTAssertNotNil(error)
                 XCTAssertNotNil(error?.requestId)
                 done()
