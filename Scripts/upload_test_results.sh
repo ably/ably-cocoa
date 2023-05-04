@@ -243,8 +243,10 @@ then
   upload_server_base_url="https://test-observability.herokuapp.com"
 fi
 
+request_id=$(uuidgen)
+
 temp_response_body_file=$(mktemp)
-curl -vvv --fail-with-body --data-binary "@${temp_request_body_file}" --header "Content-Type: application/json" --header "Test-Observability-Auth-Key: ${TEST_OBSERVABILITY_SERVER_AUTH_KEY}" "${upload_server_base_url}/uploads" | tee "${temp_response_body_file}"
+curl -vvv --fail-with-body --data-binary "@${temp_request_body_file}" --header "Content-Type: application/json" --header "Test-Observability-Auth-Key: ${TEST_OBSERVABILITY_SERVER_AUTH_KEY}" --header "X-Request-ID: ${request_id}" "${upload_server_base_url}/uploads" | tee "${temp_response_body_file}"
 echo 2>&1 # Print a newline to separate the `curl` output from the next log line.
 
 # 10. Extract the ID of the created upload and log the web UI URL.
