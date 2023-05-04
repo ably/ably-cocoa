@@ -50,26 +50,6 @@ let testTimeout = DispatchTimeInterval.seconds(20)
 let testResourcesPath = "ably-common/test-resources/"
 let echoServerAddress = "https://echo.ably.io/createJWT"
 
-func uniqueChannelName(prefix: String = "",
-                       testIdentifier: String = #function,
-                       timestamp: TimeInterval = Date.timeIntervalSinceReferenceDate) -> String {
-    let platform: String
-#if targetEnvironment(macCatalyst)
-    platform = "macCatalyst"
-#elseif os(OSX)
-    platform = "OSX"
-#elseif os(iOS)
-    platform = "iOS"
-#elseif os(tvOS)
-    platform = "tvOS"
-#elseif os(watchOS)
-    platform = "watchOS"
-#else
-    platform = "Unknown"
-#endif
-    return "\(prefix)-\(platform)-\(testIdentifier.replacingOccurrences(of: "()", with: ""))-\(timestamp)-\(NSUUID().uuidString)"
-}
-
 /// Common test utilities.
 class AblyTests {
     enum Error: Swift.Error {
@@ -114,8 +94,8 @@ class AblyTests {
         return queue
     }()
 
-    static func createUserQueue() -> DispatchQueue {
-        let queue = DispatchQueue(label: "io.ably.tests.callbacks.\(UUID().uuidString)", qos: .userInitiated)
+    static func createUserQueue(for test: Test) -> DispatchQueue {
+        let queue = DispatchQueue(label: "io.ably.tests.callbacks.\(test.id).\(UUID().uuidString)", qos: .userInitiated)
         queue.setSpecific(key: queueIdentityKey, value: QueueIdentity(label: queue.label))
         return queue
     }
@@ -124,9 +104,9 @@ class AblyTests {
         return DispatchQueue.getSpecific(key: queueIdentityKey)?.label
     }
 
-    class func commonAppSetup(debug: Bool = false, forceNewApp: Bool = false) throws -> ARTClientOptions {
-        let options = try AblyTests.clientOptions(debug: debug)
-        options.testOptions.channelNamePrefix = "test-\(UUID().uuidString)"
+    class func commonAppSetup(for test: Test, debug: Bool = false, forceNewApp: Bool = false) throws -> ARTClientOptions {
+        let options = try AblyTests.clientOptions(for: test, debug: debug)
+        options.testOptions.channelNamePrefix = "test-\(test.id)-\(UUID().uuidString)"
 
         if forceNewApp {
             testApplication = nil
@@ -161,7 +141,7 @@ class AblyTests {
         return options
     }
 
-    class func clientOptions(debug: Bool = false, key: String? = nil, requestToken: Bool = false) throws -> ARTClientOptions {
+    class func clientOptions(for test: Test, debug: Bool = false, key: String? = nil, requestToken: Bool = false) throws -> ARTClientOptions {
         let options = ARTClientOptions()
         options.environment = getEnvironment()
         if debug {
@@ -171,7 +151,7 @@ class AblyTests {
             options.key = key
         }
         if requestToken {
-            options.token = try getTestToken()
+            options.token = try getTestToken(for: test)
         }
         options.dispatchQueue = DispatchQueue.main
         options.internalDispatchQueue = queue
@@ -518,22 +498,22 @@ class PublishTestMessage {
 }
 
 /// Access Token
-func getTestToken(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, file: FileString = #file, line: UInt = #line) throws -> String {
-    return try getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl, file: file, line: line).token
+func getTestToken(for test: Test, key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, file: FileString = #file, line: UInt = #line) throws -> String {
+    return try getTestTokenDetails(for: test, key: key, clientId: clientId, capability: capability, ttl: ttl, file: file, line: line).token
 }
 
-func getTestToken(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, file: FileString = #file, line: UInt = #line, completion: @escaping (Swift.Result<String, Error>) -> Void) {
-    getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl) { result in
+func getTestToken(for test: Test, key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, file: FileString = #file, line: UInt = #line, completion: @escaping (Swift.Result<String, Error>) -> Void) {
+    getTestTokenDetails(for: test, key: key, clientId: clientId, capability: capability, ttl: ttl) { result in
         completion(result.map(\.token))
     }
 }
 
 /// Access TokenDetails
-func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, queryTime: Bool? = nil, completion: @escaping (Swift.Result<ARTTokenDetails, Error>) -> Void) {
+func getTestTokenDetails(for test: Test, key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, queryTime: Bool? = nil, completion: @escaping (Swift.Result<ARTTokenDetails, Error>) -> Void) {
     let options: ARTClientOptions
     if let key = key {
         do {
-            options = try AblyTests.clientOptions()
+            options = try AblyTests.clientOptions(for: test)
         } catch {
             completion(.failure(error))
             return
@@ -542,7 +522,7 @@ func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability
     }
     else {
         do {
-            options = try AblyTests.commonAppSetup()
+            options = try AblyTests.commonAppSetup(for: test)
         } catch {
             completion(.failure(error))
             return
@@ -580,8 +560,8 @@ func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability
     }
 }
 
-func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, queryTime: Bool? = nil, completion: @escaping (ARTTokenDetails?, Error?) -> Void) {
-    getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl, queryTime: queryTime) { result in
+func getTestTokenDetails(for test: Test, key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, queryTime: Bool? = nil, completion: @escaping (ARTTokenDetails?, Error?) -> Void) {
+    getTestTokenDetails(for: test, key: key, clientId: clientId, capability: capability, ttl: ttl, queryTime: queryTime) { result in
         switch result {
         case .success(let tokenDetails):
             completion(tokenDetails, nil)
@@ -591,9 +571,9 @@ func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability
     }
 }
 
-func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, queryTime: Bool? = nil, file: FileString = #file, line: UInt = #line) throws -> ARTTokenDetails {
+func getTestTokenDetails(for test: Test, key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, queryTime: Bool? = nil, file: FileString = #file, line: UInt = #line) throws -> ARTTokenDetails {
     let result = try AblyTests.waitFor(timeout: testTimeout, file: file, line: line) { value in
-        getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl, queryTime: queryTime) { result in
+        getTestTokenDetails(for: test, key: key, clientId: clientId, capability: capability, ttl: ttl, queryTime: queryTime) { result in
             value(result)
         }
     }
@@ -601,8 +581,8 @@ func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability
     return try result.get()
 }
 
-func getJWTToken(invalid: Bool = false, expiresIn: Int = 3600, clientId: String = "testClientIDiOS", capability: String = "{\"*\":[\"*\"]}", jwtType: String = "", encrypted: Int = 0) throws -> String? {
-    let options = try AblyTests.commonAppSetup()
+func getJWTToken(for test: Test, invalid: Bool = false, expiresIn: Int = 3600, clientId: String = "testClientIDiOS", capability: String = "{\"*\":[\"*\"]}", jwtType: String = "", encrypted: Int = 0) throws -> String? {
+    let options = try AblyTests.commonAppSetup(for: test)
     guard let components = options.key?.components(separatedBy: ":"), let keyName = components.first, var keySecret = components.last else {
         fail("Invalid API key: \(options.key ?? "nil")")
         return nil
@@ -628,8 +608,8 @@ func getJWTToken(invalid: Bool = false, expiresIn: Int = 3600, clientId: String 
     return String(data: responseData, encoding: String.Encoding.utf8)
 }
 
-func getKeys() throws -> Dictionary<String, String> {
-    let options = try AblyTests.commonAppSetup()
+func getKeys(for test: Test) throws -> Dictionary<String, String> {
+    let options = try AblyTests.commonAppSetup(for: test)
     guard let components = options.key?.components(separatedBy: ":"), let keyName = components.first, let keySecret = components.last else {
         fatalError("Invalid API key)")
     }

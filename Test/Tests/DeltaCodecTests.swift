@@ -21,7 +21,8 @@ class DeltaCodecTests: XCTestCase {
 
     // RTL19
     func test__001__DeltaCodec__decoding__should_decode_vcdiff_encoded_messages() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
 
@@ -31,7 +32,7 @@ class DeltaCodecTests: XCTestCase {
             "delta": "vcdiff",
         ]
 
-        let channel = client.channels.get(uniqueChannelName(), options: channelOptions)
+        let channel = client.channels.get(test.uniqueChannelName(), options: channelOptions)
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
@@ -74,12 +75,13 @@ class DeltaCodecTests: XCTestCase {
 
     // RTL20
     func test__002__DeltaCodec__decoding__should_fail_and_recover_when_the_vcdiff_messages_are_out_of_order() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
         let channelOptions = ARTRealtimeChannelOptions()
         channelOptions.params = ["delta": "vcdiff"]
-        let channel = client.channels.get(uniqueChannelName(), options: channelOptions)
+        let channel = client.channels.get(test.uniqueChannelName(), options: channelOptions)
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
@@ -133,12 +135,13 @@ class DeltaCodecTests: XCTestCase {
 
     // RTL18
     func test__003__DeltaCodec__decoding__should_recover_when_the_vcdiff_message_decoding_fails() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
         let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
         let channelOptions = ARTRealtimeChannelOptions()
         channelOptions.params = ["delta": "vcdiff"]
-        let channel = client.channels.get(uniqueChannelName(), options: channelOptions)
+        let channel = client.channels.get(test.uniqueChannelName(), options: channelOptions)
 
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in

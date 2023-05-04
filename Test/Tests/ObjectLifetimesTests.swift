@@ -77,7 +77,8 @@ class ObjectLifetimesTests: XCTestCase {
     }
 
     func test__004__ObjectLifetimes__when_user_leaves_Realtime_open__still_works() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
 
         var client: ARTRealtime? = ARTRealtime(options: options)
 
@@ -85,7 +86,7 @@ class ObjectLifetimesTests: XCTestCase {
         XCTAssertNotNil(weakClient)
         defer { client?.close() }
 
-        let channelName = uniqueChannelName()
+        let channelName = test.uniqueChannelName()
         waitUntil(timeout: testTimeout) { done in
             client!.channels.get(channelName).subscribe(attachCallback: { _ in
                 client = nil
@@ -98,12 +99,13 @@ class ObjectLifetimesTests: XCTestCase {
     }
 
     func test__005__ObjectLifetimes__when_Realtime_is_closed_and_user_loses_its_reference__channels_don_t_leak() throws {
-        let options = try AblyTests.commonAppSetup()
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
 
         var client: ARTRealtime? = ARTRealtime(options: options)
         weak var weakClient = client!.internal
 
-        var channel: ARTRealtimeChannel? = client!.channels.get(uniqueChannelName())
+        var channel: ARTRealtimeChannel? = client!.channels.get(test.uniqueChannelName())
         weak var weakChannel = channel!.internal
 
         waitUntil(timeout: testTimeout) { done in
