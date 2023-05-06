@@ -31,6 +31,12 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic) id<ARTRealtimeTransportFactory> transportFactory;
 
+/**
+ RTN20c helper.
+ This property is used to provide a way for the test code to simulate the case where a reconnection attempt results in a different outcome to the original connection attempt. Initial value is `nil`.
+ */
+@property (readwrite, nonatomic) NSString *reconnectionRealtimeHost;
+
 @end
 
 NS_ASSUME_NONNULL_END

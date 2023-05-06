@@ -21,6 +21,7 @@
     copied.realtimeRequestTimeout = self.realtimeRequestTimeout;
     copied.shuffleArray = self.shuffleArray;
     copied.transportFactory = self.transportFactory;
+    copied.reconnectionRealtimeHost = self.reconnectionRealtimeHost;
 
     return copied;
 }

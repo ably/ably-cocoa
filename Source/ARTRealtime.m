@@ -180,12 +180,14 @@ NS_ASSUME_NONNULL_BEGIN
 NS_ASSUME_NONNULL_END
 
 const NSTimeInterval _immediateReconnectionDelay = 0.1;
+const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
 
 @implementation ARTRealtimeInternal {
     BOOL _resuming;
     BOOL _renewingToken;
     BOOL _shouldImmediatelyReconnect;
     ARTEventEmitter<ARTEvent *, ARTErrorInfo *> *_pingEventEmitter;
+    NSDate *_reachabilityActivatedAt;
     NSDate *_connectionLostAt;
     NSDate *_lastActivity;
     Class _reachabilityClass;
@@ -540,6 +542,16 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
 - (void)handleNetworkIsReachable:(BOOL)reachable {
     if (reachable) {
         switch (_connection.state_nosync) {
+            case ARTRealtimeConnecting: {
+                // There is no certain way to detect whether reachability callback was called because you've just set it up,
+                // or because it really has detected reachability of the host. So we rely on a short timeout here - if the callback was called
+                // shortly after the setting up reachability, then reconnection shouldn't be done. Whereas if it was called after the certain delay (a threshold) - than it means you are in the middle of the dead-end connection attemt and it should be restarted.
+                // See https://github.com/ably/ably-cocoa/issues/1713 for more details.
+                if ([self shouldRestartPendingConnectionAttempt]) {
+                    [self transportReconnectWithExistingParameters];
+                }
+                break;
+            }
             case ARTRealtimeDisconnected:
             case ARTRealtimeSuspended:
                 [self transition:ARTRealtimeConnecting withMetadata:[[ARTConnectionStateChangeMetadata alloc] init]];
@@ -567,6 +579,7 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
         _reachability = [[_reachabilityClass alloc] initWithLogger:self.logger queue:_queue];
     }
     if (active) {
+        _reachabilityActivatedAt = [NSDate date];
         __weak ARTRealtimeInternal *weakSelf = self;
         [_reachability listenForHost:[_transport host] callback:^(BOOL reachable) {
             ARTRealtimeInternal *strongSelf = weakSelf;
@@ -577,6 +590,7 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
     }
     else {
         [_reachability off];
+        _reachabilityActivatedAt = nil;
     }
 }
 
@@ -1036,6 +1050,15 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
     return error != nil && [[[ARTDefaultErrorChecker alloc] init] isTokenError:error];
 }
 
+- (void)transportReconnectWithExistingParameters {
+    [self resetTransportWithResumeKey:_transport.resumeKey connectionSerial:_transport.connectionSerial];
+    NSString *host = [self getClientOptions].testOptions.reconnectionRealtimeHost; // for tests purposes only, always `nil` in production
+    if (host != nil) {
+        [self.transport setHost:host];
+    }
+    [self transportConnectForcingNewToken:false newConnection:true];
+}
+
 - (void)transportReconnectWithHost:(NSString *)host {
     [self resetTransportWithResumeKey:_transport.resumeKey connectionSerial:_transport.connectionSerial];
     [self.transport setHost:host];
@@ -1206,6 +1229,13 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
         default:
             return false;
     }
+}
+
+- (BOOL)shouldRestartPendingConnectionAttempt {
+    if (!_reachabilityActivatedAt)
+        return NO;
+    NSDate *currentTime = [NSDate date];
+    return [currentTime timeIntervalSinceDate:_reachabilityActivatedAt] > _reachabilityReconnectionAttemptThreshold;
 }
 
 - (BOOL)isActive {

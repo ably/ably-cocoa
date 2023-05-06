@@ -4238,6 +4238,40 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.connect()
         }
     }
+    
+    // RTN20c
+    func test__106_b__Connection__Operating_System_events_for_network_internet_connectivity_changes__should_restart_the_pending_connection_attempt_if_the_operating_system_indicates_that_the_underlying_internet_connection_is_now_available_when_CONNECTING() throws {
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        let realtimeHost = options.realtimeHost
+        options.realtimeHost = "10.255.255.1" // non-routable IP address
+        options.autoConnect = false
+        options.testOptions.reconnectionRealtimeHost = realtimeHost
+        let client = ARTRealtime(options: options)
+        client.internal.setReachabilityClass(TestReachability.self)
+        defer { client.dispose(); client.close() }
+
+        waitUntil(timeout: testTimeout) { done in
+            client.connection.on { stateChange in
+                switch stateChange.current {
+                case .connecting:
+                    guard let reachability = client.internal.reachability as? TestReachability else {
+                        XCTFail("expected test reachability"); return
+                    }
+                    delay(0.2) { // delay more than `_reachabilityReconnectionAttemptThreshold` constant (0.1)
+                        reachability.simulate(true)
+                    }
+                case .connected:
+                    done()
+                case .disconnected, .suspended:
+                    XCTFail("Should never reach these states in this test.")
+                default:
+                    break
+                }
+            }
+            client.connect()
+        }
+    }
 
     // RTN22
     func test__107__Connection__Operating_System_events_for_network_internet_connectivity_changes__Ably_can_request_that_a_connected_client_re_authenticates_by_sending_the_client_an_AUTH_ProtocolMessage() throws {
