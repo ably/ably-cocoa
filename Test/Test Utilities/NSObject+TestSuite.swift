@@ -1,5 +1,3 @@
-import Aspects
-
 extension NSObject {
 
     /// Inject a block of code to the identified class method.

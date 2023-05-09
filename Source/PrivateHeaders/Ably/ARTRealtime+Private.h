@@ -102,7 +102,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)onNack:(ARTProtocolMessage *)message;
 - (void)onChannelMessage:(ARTProtocolMessage *)message;
 
-- (void)setTransportClass:(Class)transportClass;
 - (void)setReachabilityClass:(Class _Nullable)reachabilityClass;
 
 // Message sending

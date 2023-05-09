@@ -1,0 +1,26 @@
+{
+  "configurations" : [
+    {
+      "id" : "5A5794E1-7811-4329-BE52-3D5001381E04",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false,
+    "language" : "en",
+    "region" : "US"
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:Ably.xcodeproj",
+        "identifier" : "856AAC891B6E304B00B07119",
+        "name" : "Ably-iOS-Tests"
+      }
+    }
+  ],
+  "version" : 1
+}

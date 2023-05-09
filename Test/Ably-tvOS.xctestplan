@@ -1,0 +1,26 @@
+{
+  "configurations" : [
+    {
+      "id" : "A936E4FC-59F0-4655-BB9B-E323F94EA52B",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false,
+    "language" : "en",
+    "region" : "US"
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:Ably.xcodeproj",
+        "identifier" : "D7093C5F219EE1AE00723F17",
+        "name" : "Ably-tvOS-Tests"
+      }
+    }
+  ],
+  "version" : 1
+}

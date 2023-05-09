@@ -1,5 +1,4 @@
 import Ably
-import Aspects
 import Nimble
 import XCTest
 
@@ -12,7 +11,7 @@ extension ARTRestChannels: Sequence {
 
 private func beAChannel(named expectedValue: String) -> Predicate<ARTChannel> {
     return Predicate.define("be a channel with name \"\(expectedValue)\"") { actualExpression, msg -> PredicateResult in
-        let actualValue = try! actualExpression.evaluate()
+        let actualValue = try actualExpression.evaluate()
         let m = msg.appended(details: "\"\(actualValue?.name ?? "nil")\" instead")
         return PredicateResult(status: PredicateStatus(bool: actualValue?.name == expectedValue), message: m)
     }

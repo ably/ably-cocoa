@@ -1,0 +1,26 @@
+{
+  "configurations" : [
+    {
+      "id" : "CC2F82B3-2DDE-431F-8B20-712F808365D3",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false,
+    "language" : "en",
+    "region" : "US"
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:Ably.xcodeproj",
+        "identifier" : "D7093C09219E2DB200723F17",
+        "name" : "Ably-macOS-Tests"
+      }
+    }
+  ],
+  "version" : 1
+}

@@ -36,13 +36,13 @@
 #import "ARTNSError+ARTUtils.h"
 #import "ARTNSMutableURLRequest+ARTUtils.h"
 #import "ARTNSURL+ARTUtils.h"
-#import "ARTTime.h"
 #import "ARTClientInformation.h"
 #import "ARTErrorChecker.h"
 #import "ARTInternalLog.h"
 #import "ARTLogAdapter.h"
 #import "ARTClientOptions+TestConfiguration.h"
 #import "ARTTestClientOptions.h"
+#import "ARTContinuousClock.h"
 
 @implementation ARTRest {
     ARTQueuedDealloc *_dealloc;
@@ -150,6 +150,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface ARTRestInternal ()
 
 @property (nonatomic, readonly) ARTInternalLog *logger;
+@property (nonatomic, readonly) ARTContinuousClock *continuousClock;
 
 @end
 
@@ -175,6 +176,7 @@ NS_ASSUME_NONNULL_END
         _realtime = realtime;
         _options = [options copy];
         _logger = logger;
+        _continuousClock = [[ARTContinuousClock alloc] init];
         _queue = options.internalDispatchQueue;
         _userQueue = options.dispatchQueue;
 #if TARGET_OS_IOS
@@ -343,7 +345,7 @@ NS_ASSUME_NONNULL_END
         // RSC15f - reset the successed fallback host on fallbackRetryTimeout expiration
         // change URLRequest host from `fallback host` to `default host`
         //
-        if (self.currentFallbackHost != nil && self.fallbackRetryExpiration < [ARTTime timeSinceBoot]) {
+        if (self.currentFallbackHost != nil && self.fallbackRetryExpiration != nil && [[self.continuousClock now] isAfter:self.fallbackRetryExpiration]) {
             ARTLogDebug(self.logger, @"RS:%p fallbackRetryExpiration ids expired, reset `prioritizedHost` and `currentFallbackHost`", self);
             
             self.currentFallbackHost = nil;
@@ -713,7 +715,7 @@ dispatch_async(_queue, ^{
 
 - (void)setCurrentFallbackHost:(NSString *)value {
     if (value == nil) {
-        _fallbackRetryExpiration = 0.0;
+        _fallbackRetryExpiration = nil;
     }
     
     if ([_currentFallbackHost isEqual:value]) {
@@ -722,7 +724,8 @@ dispatch_async(_queue, ^{
     
     _currentFallbackHost = value;
 
-    _fallbackRetryExpiration = [ARTTime timeSinceBoot] + _options.fallbackRetryTimeout;
+    ARTContinuousClockInstant *const now = [self.continuousClock now];
+    _fallbackRetryExpiration = [self.continuousClock addingDuration:_options.fallbackRetryTimeout toInstant:now];
 }
 
 #if TARGET_OS_IOS

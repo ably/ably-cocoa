@@ -2,8 +2,6 @@ import Ably
 import Foundation
 import XCTest
 import Nimble
-import SwiftyJSON
-import Aspects
 
 import Ably.Private
 
@@ -40,43 +38,33 @@ func pathForTestResource(_ resourcePath: String) -> String {
     return testBundle.path(forResource: resourcePath, ofType: "")!
 }
 
-let appSetupJson = JSON(parseJSON: try! String(contentsOfFile: pathForTestResource(testResourcesPath + "test-app-setup.json")))
+let appSetupModel: TestAppSetup = {
+    do {
+        return try JSONUtility.decode(path: pathForTestResource(testResourcesPath + "test-app-setup.json"))
+    } catch {
+        fatalError("Can't parse `test-app-setup.json` \(error)")
+    }
+}()
 
 let testTimeout = DispatchTimeInterval.seconds(20)
 let testResourcesPath = "ably-common/test-resources/"
 let echoServerAddress = "https://echo.ably.io/createJWT"
 
-func uniqueChannelName(prefix: String = "",
-                       testIdentifier: String = #function,
-                       timestamp: TimeInterval = Date.timeIntervalSinceReferenceDate) -> String {
-    let platform: String
-#if targetEnvironment(macCatalyst)
-    platform = "macCatalyst"
-#elseif os(OSX)
-    platform = "OSX"
-#elseif os(iOS)
-    platform = "iOS"
-#elseif os(tvOS)
-    platform = "tvOS"
-#elseif os(watchOS)
-    platform = "watchOS"
-#else
-    platform = "Unknown"
-#endif
-    return "\(prefix)-\(platform)-\(testIdentifier.replacingOccurrences(of: "()", with: ""))-\(timestamp)-\(NSUUID().uuidString)"
-}
-
 /// Common test utilities.
 class AblyTests {
+    enum Error: Swift.Error {
+        case timedOut
+    }
 
     class func base64ToData(_ base64: String) -> Data {
         return Data(base64Encoded: base64, options: NSData.Base64DecodingOptions(rawValue: 0))!
     }
 
-    class func msgpackToJSON(_ data: Data) -> JSON {
+    class func msgpackToData(_ data: Data) -> Data {
         let decoded = try! ARTMsgPackEncoder().decode(data)
         let encoded = try! ARTJsonEncoder().encode(decoded)
-        return try! JSON(data: encoded)
+        
+        return encoded
     }
 
     class func checkError(_ errorInfo: ARTErrorInfo?, withAlternative message: String) {
@@ -92,14 +80,7 @@ class AblyTests {
         checkError(errorInfo, withAlternative: "")
     }
 
-    class var jsonRestOptions: ARTClientOptions {
-        get {
-            let options = AblyTests.clientOptions()
-            return options
-        }
-    }
-
-    static var testApplication: JSON?
+    static var testApplication: [String: Any]?
 
     struct QueueIdentity {
         let label: String
@@ -113,8 +94,8 @@ class AblyTests {
         return queue
     }()
 
-    static func createUserQueue() -> DispatchQueue {
-        let queue = DispatchQueue(label: "io.ably.tests.callbacks.\(UUID().uuidString)", qos: .userInitiated)
+    static func createUserQueue(for test: Test) -> DispatchQueue {
+        let queue = DispatchQueue(label: "io.ably.tests.callbacks.\(test.id).\(UUID().uuidString)", qos: .userInitiated)
         queue.setSpecific(key: queueIdentityKey, value: QueueIdentity(label: queue.label))
         return queue
     }
@@ -123,64 +104,54 @@ class AblyTests {
         return DispatchQueue.getSpecific(key: queueIdentityKey)?.label
     }
 
-    class func setupOptions(_ options: ARTClientOptions, forceNewApp: Bool = false, debug: Bool = false) -> ARTClientOptions {
-        options.testOptions.channelNamePrefix = "test-\(UUID().uuidString)"
+    class func commonAppSetup(for test: Test, debug: Bool = false, forceNewApp: Bool = false) throws -> ARTClientOptions {
+        let options = try AblyTests.clientOptions(for: test, debug: debug)
+        options.testOptions.channelNamePrefix = "test-\(test.id)-\(UUID().uuidString)"
 
         if forceNewApp {
             testApplication = nil
         }
 
-        guard let app = testApplication else {
+        let app: [String: Any]
+        if let testApplication {
+            app = testApplication
+        } else {
             let request = NSMutableURLRequest(url: URL(string: "https://\(options.restHost):\(options.tlsPort)/apps")!)
             request.httpMethod = "POST"
-            request.httpBody = try? appSetupJson["post_apps"].rawData()
+            request.httpBody = try JSONUtility.encode(appSetupModel.postApps)
 
             request.allHTTPHeaderFields = [
                 "Accept" : "application/json",
                 "Content-Type" : "application/json"
             ]
 
-            let (responseData, responseError, _) = NSURLSessionServerTrustSync().get(request)
+            let (responseData, _) = try SynchronousHTTPClient().perform(request)
 
-            if let error = responseError {
-                fatalError(error.localizedDescription)
-            }
-
-            testApplication = try! JSON(data: responseData!)
+            app = try JSONUtility.jsonObject(data: responseData)
+            testApplication = app
             
             if debug {
-                print(testApplication!)
+                print(app)
             }
+        }
+        let keysArray = app["keys"] as! [[String: Any]]
+        let key = keysArray[0]
+        options.key = key["keyStr"] as? String
 
-            return setupOptions(options, debug: debug)
-        }
-        
-        let key = app["keys"][0]
-        options.key = key["keyStr"].stringValue
-        options.dispatchQueue = DispatchQueue.main
-        options.internalDispatchQueue = queue
-        if debug {
-            options.logLevel = .verbose
-        }
         return options
     }
-    
-    class func commonAppSetup(_ debug: Bool = false) -> ARTClientOptions {
-        return AblyTests.setupOptions(AblyTests.jsonRestOptions, debug: debug)
-    }
 
-    class func clientOptions(_ debug: Bool = false, key: String? = nil, requestToken: Bool = false) -> ARTClientOptions {
+    class func clientOptions(for test: Test, debug: Bool = false, key: String? = nil, requestToken: Bool = false) throws -> ARTClientOptions {
         let options = ARTClientOptions()
         options.environment = getEnvironment()
-        options.logExceptionReportingUrl = nil
         if debug {
-            options.logLevel = .debug
+            options.logLevel = .verbose
         }
         if let key = key {
             options.key = key
         }
         if requestToken {
-            options.token = getTestToken()
+            options.token = try getTestToken(for: test)
         }
         options.dispatchQueue = DispatchQueue.main
         options.internalDispatchQueue = queue
@@ -207,17 +178,24 @@ class AblyTests {
         return protocolMessage
     }
 
-    class func newRealtime(_ options: ARTClientOptions) -> ARTRealtime {
-        let autoConnect = options.autoConnect
-        options.autoConnect = false
-        let realtime = ARTRealtime(options: options)
-        realtime.internal.setTransport(TestProxyTransport.self)
+    struct RealtimeTestEnvironment {
+        let client: ARTRealtime
+        let transportFactory: TestProxyTransportFactory
+    }
+
+    class func newRealtime(_ options: ARTClientOptions) -> RealtimeTestEnvironment {
+        let modifiedOptions = options.copy() as! ARTClientOptions
+
+        let autoConnect = modifiedOptions.autoConnect
+        modifiedOptions.autoConnect = false
+        let transportFactory = TestProxyTransportFactory()
+        modifiedOptions.testOptions.transportFactory = transportFactory
+        let realtime = ARTRealtime(options: modifiedOptions)
         realtime.internal.setReachabilityClass(TestReachability.self)
         if autoConnect {
-            options.autoConnect = true
             realtime.connect()
         }
-        return realtime
+        return .init(client: realtime, transportFactory: transportFactory)
     }
 
     class func newRandomString() -> String {
@@ -280,13 +258,16 @@ class AblyTests {
         }
     }
 
-    class func waitFor<T>(timeout: DispatchTimeInterval, file: FileString = #file, line: UInt = #line, f: @escaping (@escaping (T?) -> Void) -> Void) -> T? {
+    class func waitFor<T>(timeout: DispatchTimeInterval, file: FileString = #file, line: UInt = #line, f: @escaping (@escaping (T?) -> Void) -> Void) throws -> T {
         var value: T?
         waitUntil(timeout: timeout, file: file, line: line) { done in
             f() { v in
                 value = v
                 done()
             }
+        }
+        guard let value else {
+            throw Error.timedOut
         }
         return value
     }
@@ -328,23 +309,23 @@ class AblyTests {
         let encoded: TestMessage
         let encrypted: TestMessage
 
-        init(object: JSON) {
-            let encodedJson = object["encoded"]
-            encoded = TestMessage(name: encodedJson["name"].stringValue, data: encodedJson["data"].stringValue, encoding: encodedJson["encoding"].string ?? "")
-            let encryptedJson = object["encrypted"]
-            encrypted = TestMessage(name: encryptedJson["name"].stringValue, data: encryptedJson["data"].stringValue, encoding: encryptedJson["encoding"].stringValue)
+        init(object: CryptoData.Item) {
+            let encodedJson = object.encoded
+            encoded = TestMessage(name: encodedJson.name, data: encodedJson.data, encoding: encodedJson.encoding ?? "")
+            let encryptedJson = object.encrypted
+            encrypted = TestMessage(name: encryptedJson.name, data: encryptedJson.data, encoding: encryptedJson.encoding)
         }
 
     }
     
-    class func loadCryptoTestRawData(_ fileName: String) -> (key: Data, iv: Data, jsonItems: [JSON]) {
+    class func loadCryptoTestRawData(_ fileName: String) -> (key: Data, iv: Data, jsonItems: [CryptoData.Item]) {
         let file = testResourcesPath + fileName + ".json";
-        let json = JSON(parseJSON: try! String(contentsOfFile: pathForTestResource(file)))
+        let json: CryptoData = try! JSONUtility.decode(path: pathForTestResource(file))
 
-        let keyData = Data(base64Encoded: json["key"].stringValue, options: Data.Base64DecodingOptions(rawValue: 0))!
-        let ivData = Data(base64Encoded: json["iv"].stringValue, options: Data.Base64DecodingOptions(rawValue: 0))!
+        let keyData = Data(base64Encoded: json.key, options: Data.Base64DecodingOptions(rawValue: 0))!
+        let ivData = Data(base64Encoded: json.iv, options: Data.Base64DecodingOptions(rawValue: 0))!
 
-        return (keyData, ivData, json["items"].arrayValue)
+        return (keyData, ivData, json.items)
     }
     
     class func loadCryptoTestData(_ fileName: String) -> (key: Data, iv: Data, items: [CryptoTestItem]) {
@@ -367,13 +348,15 @@ class AblyTests {
     }
 }
 
-class NSURLSessionServerTrustSync: NSObject, URLSessionDelegate, URLSessionTaskDelegate {
+/// A helper class for performing HTTP requests synchronously in tests.
+class SynchronousHTTPClient: NSObject, URLSessionDelegate, URLSessionTaskDelegate {
     private static let delegateQueue = DispatchQueue(label: "io.ably.tests.NSURLSessionServerTrustSync", qos: .userInitiated)
 
-    func get(_ request: NSMutableURLRequest) -> (Data?, NSError?, HTTPURLResponse?) {
-        var responseError: NSError?
-        var responseData: Data?
-        var httpResponse: HTTPURLResponse?;
+    @discardableResult
+    func perform(_ request: NSMutableURLRequest) throws -> (Data, HTTPURLResponse) {
+        var callbackData: Data?
+        var callbackResponse: URLResponse?
+        var callbackError: Error?
         var requestCompleted = false
 
         let configuration = URLSessionConfiguration.default
@@ -382,14 +365,9 @@ class NSURLSessionServerTrustSync: NSObject, URLSessionDelegate, URLSessionTaskD
         let session = Foundation.URLSession(configuration:configuration, delegate:self, delegateQueue:queue)
 
         let task = session.dataTask(with: request as URLRequest, completionHandler: { data, response, error in
-            if let response = response as? HTTPURLResponse {
-                responseData = data
-                responseError = error as NSError?
-                httpResponse = response
-            }
-            else if let error = error {
-                responseError = error as NSError?
-            }
+            callbackData = data
+            callbackResponse = response
+            callbackError = error
             requestCompleted = true
         }) 
         task.resume()
@@ -398,22 +376,20 @@ class NSURLSessionServerTrustSync: NSObject, URLSessionDelegate, URLSessionTaskD
             CFRunLoopRunInMode(CFRunLoopMode.defaultMode, CFTimeInterval(0.1), Bool(truncating: 0))
         }
 
-        return (responseData, responseError, httpResponse)
-    }
-
-    func urlSession(_ session: URLSession, task: URLSessionTask, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        // Try to extract the server certificate for trust validation
-        if let serverTrust = challenge.protectionSpace.serverTrust {
-            // Server trust authentication
-            // Reference: https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/URLLoadingSystem/Articles/AuthenticationChallenges.html
-            completionHandler(Foundation.URLSession.AuthChallengeDisposition.useCredential, URLCredential(trust: serverTrust))
+        if let callbackError {
+            throw callbackError
         }
-        else {
-            challenge.sender?.performDefaultHandling?(for: challenge)
-            XCTFail("Current authentication: \(challenge.protectionSpace.authenticationMethod)")
-        }
-    }
 
+        guard let httpResponse = callbackResponse as? HTTPURLResponse else {
+            fatalError("Expected HTTPURLResponse, got \(String(describing: callbackResponse))")
+        }
+
+        guard let callbackData else {
+            fatalError("Expected to have a response body")
+        }
+
+        return (callbackData, httpResponse)
+    }
 }
 
 extension Date {
@@ -522,28 +498,35 @@ class PublishTestMessage {
 }
 
 /// Access Token
-func getTestToken(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, file: FileString = #file, line: UInt = #line) -> String {
-    return getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl, file: file, line: line)?.token ?? ""
+func getTestToken(for test: Test, key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, file: FileString = #file, line: UInt = #line) throws -> String {
+    return try getTestTokenDetails(for: test, key: key, clientId: clientId, capability: capability, ttl: ttl, file: file, line: line).token
 }
 
-func getTestToken(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, file: FileString = #file, line: UInt = #line, completion: @escaping (String) -> Void) {
-    getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl) { tokenDetails, error in
-        if let e = error {
-            fail(e.localizedDescription, file: file, line: line)
-        }
-        completion(tokenDetails?.token ?? "")
+func getTestToken(for test: Test, key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, file: FileString = #file, line: UInt = #line, completion: @escaping (Swift.Result<String, Error>) -> Void) {
+    getTestTokenDetails(for: test, key: key, clientId: clientId, capability: capability, ttl: ttl) { result in
+        completion(result.map(\.token))
     }
 }
 
 /// Access TokenDetails
-func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, queryTime: Bool? = nil, completion: @escaping (ARTTokenDetails?, Error?) -> Void) {
+func getTestTokenDetails(for test: Test, key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, queryTime: Bool? = nil, completion: @escaping (Swift.Result<ARTTokenDetails, Error>) -> Void) {
     let options: ARTClientOptions
     if let key = key {
-        options = AblyTests.clientOptions()
+        do {
+            options = try AblyTests.clientOptions(for: test)
+        } catch {
+            completion(.failure(error))
+            return
+        }
         options.key = key
     }
     else {
-        options = AblyTests.commonAppSetup()
+        do {
+            options = try AblyTests.commonAppSetup(for: test)
+        } catch {
+            completion(.failure(error))
+            return
+        }
     }
     if let queryTime = queryTime {
         options.queryTime = queryTime
@@ -567,27 +550,39 @@ func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability
 
     client.auth.requestToken(tokenParams, with: nil) { details, error in
         _ = client // Hold reference to client, since requestToken is async and will lose it.
-        completion(details, error)
-    }
-}
-
-func getTestTokenDetails(key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, queryTime: Bool? = nil, file: FileString = #file, line: UInt = #line) -> ARTTokenDetails? {
-    guard let (tokenDetails, error) = (AblyTests.waitFor(timeout: testTimeout, file: file, line: line) { value in
-        getTestTokenDetails(key: key, clientId: clientId, capability: capability, ttl: ttl, queryTime: queryTime) { tokenDetails, error in
-            value((tokenDetails, error))
+        if let error {
+            completion(.failure(error))
+        } else if let details {
+            completion(.success(details))
+        } else {
+            fatalError("Got neither details nor error")
         }
-    }) else {
-        return nil
     }
-
-    if let e = error {
-        fail(e.localizedDescription, file: file, line: line)
-    }
-    return tokenDetails
 }
 
-func getJWTToken(invalid: Bool = false, expiresIn: Int = 3600, clientId: String = "testClientIDiOS", capability: String = "{\"*\":[\"*\"]}", jwtType: String = "", encrypted: Int = 0) -> String? {
-    let options = AblyTests.commonAppSetup()
+func getTestTokenDetails(for test: Test, key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, queryTime: Bool? = nil, completion: @escaping (ARTTokenDetails?, Error?) -> Void) {
+    getTestTokenDetails(for: test, key: key, clientId: clientId, capability: capability, ttl: ttl, queryTime: queryTime) { result in
+        switch result {
+        case .success(let tokenDetails):
+            completion(tokenDetails, nil)
+        case .failure(let error):
+            completion(nil, error)
+        }
+    }
+}
+
+func getTestTokenDetails(for test: Test, key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, queryTime: Bool? = nil, file: FileString = #file, line: UInt = #line) throws -> ARTTokenDetails {
+    let result = try AblyTests.waitFor(timeout: testTimeout, file: file, line: line) { value in
+        getTestTokenDetails(for: test, key: key, clientId: clientId, capability: capability, ttl: ttl, queryTime: queryTime) { result in
+            value(result)
+        }
+    }
+
+    return try result.get()
+}
+
+func getJWTToken(for test: Test, invalid: Bool = false, expiresIn: Int = 3600, clientId: String = "testClientIDiOS", capability: String = "{\"*\":[\"*\"]}", jwtType: String = "", encrypted: Int = 0) throws -> String? {
+    let options = try AblyTests.commonAppSetup(for: test)
     guard let components = options.key?.components(separatedBy: ":"), let keyName = components.first, var keySecret = components.last else {
         fail("Invalid API key: \(options.key ?? "nil")")
         return nil
@@ -609,16 +604,12 @@ func getJWTToken(invalid: Bool = false, expiresIn: Int = 3600, clientId: String 
     ]
     
     let request = NSMutableURLRequest(url: urlComponents!.url!)
-    let (responseData, responseError, _) = NSURLSessionServerTrustSync().get(request)
-    if let error = responseError {
-        fail(error.localizedDescription)
-        return nil
-    }
-    return String(data: responseData!, encoding: String.Encoding.utf8)
+    let (responseData, _) = try SynchronousHTTPClient().perform(request)
+    return String(data: responseData, encoding: String.Encoding.utf8)
 }
 
-func getKeys() -> Dictionary<String, String> {
-    let options = AblyTests.commonAppSetup()
+func getKeys(for test: Test) throws -> Dictionary<String, String> {
+    let options = try AblyTests.commonAppSetup(for: test)
     guard let components = options.key?.components(separatedBy: ":"), let keyName = components.first, let keySecret = components.last else {
         fatalError("Invalid API key)")
     }
@@ -707,7 +698,12 @@ func extractBodyAsMsgPack(_ request: URLRequest?) -> Result<NSDictionary> {
     guard let bodyData = request.httpBody
         else { return Result(error: "No HTTPBody") }
 
-    let json = try! ARTMsgPackEncoder().decode(bodyData)
+    let json: Any
+    do {
+        json = try ARTMsgPackEncoder().decode(bodyData)
+    } catch {
+        return Result(error: error.localizedDescription)
+    }
 
     guard let httpBody = json as? NSDictionary
         else { return Result(error: "expected dictionary, got \(type(of: (json) as AnyObject)): \(json)") }
@@ -722,7 +718,12 @@ func extractBodyAsMessages(_ request: URLRequest?) -> Result<[NSDictionary]> {
     guard let bodyData = request.httpBody
         else { return Result(error: "No HTTPBody") }
 
-    let json = try! ARTMsgPackEncoder().decode(bodyData)
+    let json: Any
+    do {
+        json = try ARTMsgPackEncoder().decode(bodyData)
+    } catch {
+        return Result(error: error.localizedDescription)
+    }
 
     guard let httpBody = json as? NSArray
         else { return Result(error: "expected array, got \(type(of: (json) as AnyObject)): \(json)") }
@@ -887,12 +888,12 @@ struct ErrorSimulator {
     }
 
     lazy var stubData: Data? = {
-        let jsonObject = ["error": [
+        let jsonObject: [String: Any] = ["error": [
             "statusCode": modf(Float(self.value)/100).0, //whole number part
             "code": self.value,
             "message": self.description,
             "serverId": self.serverId,
-            ]
+        ] as [String: Any]
         ]
         return try? JSONSerialization.data(withJSONObject: jsonObject, options: JSONSerialization.WritingOptions.init(rawValue: 0))
     }()
@@ -1091,12 +1092,19 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
 
 /// Records each message for test purpose.
 class TestProxyTransport: ARTWebSocketTransport {
+    /// The factory that created this TestProxyTransport instance.
+    private weak var _factory: TestProxyTransportFactory?
+    private var factory: TestProxyTransportFactory {
+        guard let _factory else {
+            preconditionFailure("Tried to fetch factory but it's already been deallocated")
+        }
+        return _factory
+    }
 
-    /// This will affect all WebSocketTransport instances.
-    /// Set it to nil after the test ends.
-    static var fakeNetworkResponse: FakeNetworkResponse?
-    static var networkConnectEvent: ((ARTRealtimeTransport, URL) -> Void)?
-
+    init(factory: TestProxyTransportFactory, rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, logger: InternalLog) {
+        self._factory = factory
+        super.init(rest: rest, options: options, resumeKey: resumeKey, logger: logger)
+    }
 
     fileprivate(set) var lastUrl: URL?
 
@@ -1193,7 +1201,7 @@ class TestProxyTransport: ARTWebSocketTransport {
     // MARK: ARTWebSocket
 
     override func connect(withKey key: String) {
-        if let fakeResponse = TestProxyTransport.fakeNetworkResponse {
+        if let fakeResponse = factory.fakeNetworkResponse {
             setupFakeNetworkResponse(fakeResponse)
         }
         super.connect(withKey: key)
@@ -1201,7 +1209,7 @@ class TestProxyTransport: ARTWebSocketTransport {
     }
 
     override func connect(withToken token: String) {
-        if let fakeResponse = TestProxyTransport.fakeNetworkResponse {
+        if let fakeResponse = factory.fakeNetworkResponse {
             setupFakeNetworkResponse(fakeResponse)
         }
         super.connect(withToken: token)
@@ -1211,7 +1219,7 @@ class TestProxyTransport: ARTWebSocketTransport {
     private func setupFakeNetworkResponse(_ networkResponse: FakeNetworkResponse) {
         var hook: AspectToken?
         hook = ARTSRWebSocket.testSuite_replaceClassMethod(#selector(ARTSRWebSocket.open)) {
-            if TestProxyTransport.fakeNetworkResponse == nil {
+            if self.factory.fakeNetworkResponse == nil {
                 return
             }
 
@@ -1239,7 +1247,7 @@ class TestProxyTransport: ARTWebSocketTransport {
     }
 
     private func performNetworkConnectEvent() {
-        guard let networkConnectEventHandler = TestProxyTransport.networkConnectEvent else {
+        guard let networkConnectEventHandler = factory.networkConnectEvent else {
             return
         }
         if let lastUrl = self.lastUrl {
@@ -1266,7 +1274,7 @@ class TestProxyTransport: ARTWebSocketTransport {
 
     @discardableResult
     override func send(_ data: Data, withSource decodedObject: Any?) -> Bool {
-        if let networkAnswer = TestProxyTransport.fakeNetworkResponse, let ws = self.websocket {
+        if let networkAnswer = factory.fakeNetworkResponse, let ws = self.websocket {
             // Ignore it because it should fake a failure.
             self.webSocket(ws, didFailWithError: networkAnswer.error)
             return false
@@ -1343,7 +1351,7 @@ class TestProxyTransport: ARTWebSocketTransport {
     }
 
     override func webSocket(_ webSocket: ARTWebSocket, didReceiveMessage message: Any?) {
-        if let networkAnswer = TestProxyTransport.fakeNetworkResponse, let ws = self.websocket {
+        if let networkAnswer = factory.fakeNetworkResponse, let ws = self.websocket {
             // Ignore it because it should fake a failure.
             self.webSocket(ws, didFailWithError: networkAnswer.error)
             return
@@ -1488,18 +1496,6 @@ extension NSData {
 
 }
 
-extension JSON {
-
-    var asArray: NSArray? {
-        return object as? NSArray
-    }
-
-    var asDictionary: NSDictionary? {
-        return object as? NSDictionary
-    }
-
-}
-
 extension NSRegularExpression {
 
     class func match(_ value: String?, pattern: String) -> Bool {
@@ -1560,24 +1556,24 @@ extension ARTRealtime {
         }
     }
 
-    func simulateNoInternetConnection() {
+    func simulateNoInternetConnection(transportFactory: TestProxyTransportFactory) {
         guard let reachability = self.internal.reachability as? TestReachability else {
             fatalError("Expected test reachability")
         }
 
         AblyTests.queue.async {
-            TestProxyTransport.fakeNetworkResponse = .noInternet
+            transportFactory.fakeNetworkResponse = .noInternet
             reachability.simulate(false)
         }
     }
 
-    func simulateRestoreInternetConnection(after seconds: TimeInterval? = nil) {
+    func simulateRestoreInternetConnection(after seconds: TimeInterval? = nil, transportFactory: TestProxyTransportFactory) {
         guard let reachability = self.internal.reachability as? TestReachability else {
             fatalError("Expected test reachability")
         }
 
         AblyTests.queue.asyncAfter(deadline: .now() + (seconds ?? 0)) {
-            TestProxyTransport.fakeNetworkResponse = nil
+            transportFactory.fakeNetworkResponse = nil
             reachability.simulate(true)
         }
     }

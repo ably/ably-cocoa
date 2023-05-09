@@ -167,11 +167,11 @@ cd ..
 
 xcparse_attachment_descriptors_file="${xcparse_output_directory}/xcparseAttachmentDescriptors.json"
 
-# 7. Filter the output of xcparse to find just the crash reports (files whose name ends in .crash).
+# 7. Filter the output of xcparse to find just the crash reports (files whose name ends in .crash or .ips).
 
 filtered_xcparse_attachment_descriptors_file=$(mktemp)
 
-jq 'map(select(.attachmentName | endswith(".crash")))' < "${xcparse_attachment_descriptors_file}" > "${filtered_xcparse_attachment_descriptors_file}"
+jq 'map(select(.attachmentName | (endswith(".crash") or endswith(".ips"))))' < "${xcparse_attachment_descriptors_file}" > "${filtered_xcparse_attachment_descriptors_file}"
 
 declare -i number_of_filtered_attachments
 number_of_filtered_attachments=$(jq '. | length' < "${filtered_xcparse_attachment_descriptors_file}")
@@ -234,6 +234,8 @@ jq -n \
   '{ junit_report_xml: $junit_report_xml | @base64, crash_reports: $crash_reports[0], github_repository: $github_repository, github_sha: $github_sha, github_ref_name: $github_ref_name, github_retention_days: $github_retention_days, github_action: $github_action, github_run_number: $github_run_number, github_run_attempt: $github_run_attempt, github_run_id: $github_run_id, github_base_ref: $github_base_ref, github_head_ref: $github_head_ref, github_job: $github_job, iteration: $iteration }' \
   > "${temp_request_body_file}"
 
+printf "Created request body:\n$(cat "${temp_request_body_file}")\n\n" 2>&1
+
 # 9. Send the request.
 
 echo "Uploading test report." 2>&1
@@ -243,4 +245,14 @@ then
   upload_server_base_url="https://test-observability.herokuapp.com"
 fi
 
-curl -vvv --fail-with-body --data-binary "@${temp_request_body_file}" --header "Content-Type: application/json" --header "Test-Observability-Auth-Key: ${TEST_OBSERVABILITY_SERVER_AUTH_KEY}" "${upload_server_base_url}/uploads"
+request_id=$(uuidgen)
+
+temp_response_body_file=$(mktemp)
+curl -vvv --fail-with-body --data-binary "@${temp_request_body_file}" --header "Content-Type: application/json" --header "Test-Observability-Auth-Key: ${TEST_OBSERVABILITY_SERVER_AUTH_KEY}" --header "X-Request-ID: ${request_id}" "${upload_server_base_url}/uploads" | tee "${temp_response_body_file}"
+echo 2>&1 # Print a newline to separate the `curl` output from the next log line.
+
+# 10. Extract the ID of the created upload and log the web UI URL.
+
+upload_id=$(jq --exit-status --raw-output '.id' < "${temp_response_body_file}")
+web_ui_url="${upload_server_base_url}/repos/${GITHUB_REPOSITORY}/uploads/${upload_id}"
+echo "Test results uploaded successfully: ${web_ui_url}"
