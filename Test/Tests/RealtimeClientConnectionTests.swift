@@ -63,8 +63,8 @@ private func testUsesAlternativeHostOnResponse(_ caseTest: FakeNetworkResponse, 
     XCTAssertTrue(NSRegularExpression.match(urlConnections[1].absoluteString, pattern: "//[a-e].ably-realtime.com"))
 }
 
-private func testMovesToDisconnectedWithNetworkingError(_ error: Error, for test: Test) throws {
-    let options = try AblyTests.commonAppSetup(for: test)
+private func testMovesToDisconnectedWithNetworkingError(_ error: Error, for test: Test, debug: Bool = false) throws {
+    let options = try AblyTests.commonAppSetup(for: test, debug: debug)
     options.autoConnect = false
     options.testOptions.transportFactory = TestProxyTransportFactory()
     let client = AblyTests.newRealtime(options).client
@@ -3599,7 +3599,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
     func test__100__Connection__Host_Fallback__should_move_to_disconnected_when_there_s_no_internet__with_NSPOSIXErrorDomain_with_code_57() throws {
         let test = Test()
-        try testMovesToDisconnectedWithNetworkingError(NSError(domain: "NSPOSIXErrorDomain", code: 57, userInfo: [NSLocalizedDescriptionKey: "shouldn't matter"]), for: test)
+        try testMovesToDisconnectedWithNetworkingError(NSError(domain: "NSPOSIXErrorDomain", code: 57, userInfo: [NSLocalizedDescriptionKey: "shouldn't matter"]), for: test, debug: true)
     }
 
     func test__101__Connection__Host_Fallback__should_move_to_disconnected_when_there_s_no_internet__with_NSPOSIXErrorDomain_with_code_50() throws {
