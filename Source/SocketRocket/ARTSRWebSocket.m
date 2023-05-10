@@ -86,6 +86,8 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 
 @end
 
+#define dispatchToWorkQueue(block) ARTSRDebugLog(self.logger, @"Dispatching to work queue"); __unused ARTInternalLog *const _logger = self.logger; dispatch_async(self->_workQueue, ^{ ARTSRDebugLog(_logger, @"On work queue"); block(); })
+
 @implementation ARTSRWebSocket {
     ARTSRMutex _kvoLock;
     os_unfair_lock _propertyLock;
@@ -358,14 +360,14 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
         // If we don't require SSL validation - consider that we connected.
         // Otherwise `didConnect` is called when SSL validation finishes.
         if (!_requestRequiresSSL) {
-            dispatch_async(_workQueue, ^{
+            dispatchToWorkQueue(^{
                 [self didConnect];
             });
         }
     }
     // Schedule to run on a work queue, to make sure we don't run this inline and deallocate `self` inside `ARTSRProxyConnect`.
     // TODO: (nlutsenko) Find a better structure for this, maybe Bolts Tasks?
-    dispatch_async(_workQueue, ^{
+    dispatchToWorkQueue(^{
         self->_proxyConnect = nil;
     });
 }
@@ -506,7 +508,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 - (void)closeWithCode:(NSInteger)code reason:(NSString *)reason;
 {
     assert(code);
-    dispatch_async(_workQueue, ^{
+    dispatchToWorkQueue(^{
         if (self.readyState == ARTSR_CLOSING || self.readyState == ARTSR_CLOSED) {
             return;
         }
@@ -534,7 +536,6 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
             NSUInteger usedLength = 0;
 
             BOOL success = [reason getBytes:(char *)mutablePayload.mutableBytes + sizeof(uint16_t) maxLength:payload.length - sizeof(uint16_t) usedLength:&usedLength encoding:NSUTF8StringEncoding options:NSStringEncodingConversionExternalRepresentation range:NSMakeRange(0, reason.length) remainingRange:&remainingRange];
-#pragma unused (success)
 
             assert(success);
             assert(remainingRange.length == 0);
@@ -554,7 +555,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
     // Need to shunt this on the _callbackQueue first to see if they received any messages
     [self.delegateController performDelegateQueueBlock:^{
         [self closeWithCode:ARTSRStatusCodeProtocolError reason:message];
-        dispatch_async(self->_workQueue, ^{
+        dispatchToWorkQueue(^{
             [self closeConnection];
         });
     }];
@@ -562,7 +563,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 
 - (void)_failWithError:(NSError *)error;
 {
-    dispatch_async(self->_workQueue, ^{
+    dispatchToWorkQueue(^{
         if (self.readyState != ARTSR_CLOSED) {
             self->_failed = YES;
             [self.delegateController performDelegateBlock:^(id<ARTSRWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
@@ -622,7 +623,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
     }
 
     string = [string copy];
-    dispatch_async(_workQueue, ^{
+    dispatchToWorkQueue(^{
         [self _sendFrameWithOpcode:ARTSROpCodeTextFrame data:[string dataUsingEncoding:NSUTF8StringEncoding]];
     });
     return YES;
@@ -645,7 +646,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
         return NO;
     }
 
-    dispatch_async(_workQueue, ^{
+    dispatchToWorkQueue(^{
         if (data) {
             [self _sendFrameWithOpcode:ARTSROpCodeBinaryFrame data:data];
         } else {
@@ -667,7 +668,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
     }
 
     data = [data copy] ?: [NSData data]; // It's okay for a ping to be empty
-    dispatch_async(_workQueue, ^{
+    dispatchToWorkQueue(^{
         [self _sendFrameWithOpcode:ARTSROpCodePing data:data];
     });
     return YES;
@@ -680,7 +681,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
         if (availableMethods.didReceivePing) {
             [delegate webSocket:self didReceivePingWithData:data];
         }
-        dispatch_async(self->_workQueue, ^{
+        dispatchToWorkQueue(^{
             [self _sendFrameWithOpcode:ARTSROpCodePong data:data];
         });
     }];
@@ -765,7 +766,7 @@ static inline BOOL closeCodeIsValid(int closeCode) {
     if (self.readyState == ARTSR_OPEN) {
         [self closeWithCode:1000 reason:nil];
     }
-    dispatch_async(_workQueue, ^{
+    dispatchToWorkQueue(^{
         [self closeConnection];
     });
 }
@@ -788,7 +789,7 @@ static inline BOOL closeCodeIsValid(int closeCode) {
         //otherwise there can be misbehaviours when value at the pointer is changed
         frameData = [frameData copy];
 
-        dispatch_async(_workQueue, ^{
+        dispatchToWorkQueue(^{
             [self _readFrameContinue];
         });
     } else {
@@ -800,7 +801,7 @@ static inline BOOL closeCodeIsValid(int closeCode) {
             NSString *string = [[NSString alloc] initWithData:frameData encoding:NSUTF8StringEncoding];
             if (!string && frameData) {
                 [self closeWithCode:ARTSRStatusCodeInvalidUTF8 reason:@"Text frames must be valid UTF-8."];
-                dispatch_async(_workQueue, ^{
+                dispatchToWorkQueue(^{
                     [self closeConnection];
                 });
                 return;
@@ -1031,7 +1032,7 @@ static const uint8_t ARTSRPayloadLenMask   = 0x7F;
 
 - (void)_readFrameNew;
 {
-    dispatch_async(_workQueue, ^{
+    dispatchToWorkQueue(^{
         // Don't reset the length, since Apple doesn't guarantee that this will free the memory (and in tests on
         // some platforms, it doesn't seem to, effectively causing a leak the size of the biggest frame so far).
         self->_currentFrameData = [[NSMutableData alloc] init];
@@ -1162,7 +1163,7 @@ static const uint8_t ARTSRPayloadLenMask   = 0x7F;
     }
 
     // Cleanup selfRetain in the same GCD queue as usual
-    dispatch_async(_workQueue, ^{
+    dispatchToWorkQueue(^{
         self->_selfRetain = nil;
     });
 }
@@ -1285,7 +1286,7 @@ static const char CRLFCRLFBytes[] = {'\r', '\n', '\r', '\n'};
 
                     if (valid_utf8_size == -1) {
                         [self closeWithCode:ARTSRStatusCodeInvalidUTF8 reason:@"Text frames must be valid UTF-8"];
-                        dispatch_async(_workQueue, ^{
+                        dispatchToWorkQueue(^{
                             [self closeConnection];
                         });
                         return didWork;
@@ -1414,7 +1415,7 @@ static const size_t ARTSRFrameHeaderOverhead = 32;
             _streamSecurityValidated = [_securityPolicy evaluateServerTrust:trust forDomain:_urlRequest.URL.host];
         }
         if (!_streamSecurityValidated) {
-            dispatch_async(_workQueue, ^{
+            dispatchToWorkQueue(^{
                 NSError *error = ARTSRErrorWithDomainCodeDescription(NSURLErrorDomain,
                                                                   NSURLErrorClientCertificateRejected,
                                                                   @"Invalid server certificate.");
@@ -1422,11 +1423,11 @@ static const size_t ARTSRFrameHeaderOverhead = 32;
             });
             return;
         }
-        dispatch_async(_workQueue, ^{
+        dispatchToWorkQueue(^{
             [self didConnect];
         });
     }
-    dispatch_async(_workQueue, ^{
+    dispatchToWorkQueue(^{
         [wself safeHandleEvent:eventCode stream:aStream];
     });
 }
@@ -1467,7 +1468,7 @@ static const size_t ARTSRFrameHeaderOverhead = 32;
             if (aStream.streamError) {
                 [self _failWithError:aStream.streamError];
             } else {
-                dispatch_async(_workQueue, ^{
+                dispatchToWorkQueue(^{
                     if (self.readyState != ARTSR_CLOSED) {
                         self.readyState = ARTSR_CLOSED;
                         [self _scheduleCleanup];
