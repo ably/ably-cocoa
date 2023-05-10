@@ -199,7 +199,6 @@
 		217D1833254222F600DFF07E /* ARTSRPinningSecurityPolicy.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D17F825421FED00DFF07E /* ARTSRPinningSecurityPolicy.m */; };
 		217D1834254222F600DFF07E /* ARTSRURLUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180C25421FED00DFF07E /* ARTSRURLUtilities.m */; };
 		217D1835254222F600DFF07E /* ARTSRIOConsumer.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D181225421FED00DFF07E /* ARTSRIOConsumer.m */; };
-		217D1836254222F600DFF07E /* ARTSRLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D17FF25421FED00DFF07E /* ARTSRLog.m */; };
 		217D1837254222F600DFF07E /* ARTSRError.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180E25421FED00DFF07E /* ARTSRError.m */; };
 		217D1838254222F600DFF07E /* NSRunLoop+ARTSRWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D181D25421FED00DFF07E /* NSRunLoop+ARTSRWebSocket.m */; };
 		217D1839254222F600DFF07E /* ARTSRHTTPConnectMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180D25421FED00DFF07E /* ARTSRHTTPConnectMessage.m */; };
@@ -218,7 +217,6 @@
 		217D184A254222F700DFF07E /* ARTSRPinningSecurityPolicy.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D17F825421FED00DFF07E /* ARTSRPinningSecurityPolicy.m */; };
 		217D184B254222F700DFF07E /* ARTSRURLUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180C25421FED00DFF07E /* ARTSRURLUtilities.m */; };
 		217D184C254222F700DFF07E /* ARTSRIOConsumer.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D181225421FED00DFF07E /* ARTSRIOConsumer.m */; };
-		217D184D254222F700DFF07E /* ARTSRLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D17FF25421FED00DFF07E /* ARTSRLog.m */; };
 		217D184E254222F700DFF07E /* ARTSRError.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180E25421FED00DFF07E /* ARTSRError.m */; };
 		217D184F254222F700DFF07E /* NSRunLoop+ARTSRWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D181D25421FED00DFF07E /* NSRunLoop+ARTSRWebSocket.m */; };
 		217D1850254222F700DFF07E /* ARTSRHTTPConnectMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180D25421FED00DFF07E /* ARTSRHTTPConnectMessage.m */; };
@@ -237,7 +235,6 @@
 		217D1861254222FA00DFF07E /* ARTSRPinningSecurityPolicy.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D17F825421FED00DFF07E /* ARTSRPinningSecurityPolicy.m */; };
 		217D1862254222FA00DFF07E /* ARTSRURLUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180C25421FED00DFF07E /* ARTSRURLUtilities.m */; };
 		217D1863254222FA00DFF07E /* ARTSRIOConsumer.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D181225421FED00DFF07E /* ARTSRIOConsumer.m */; };
-		217D1864254222FA00DFF07E /* ARTSRLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D17FF25421FED00DFF07E /* ARTSRLog.m */; };
 		217D1865254222FA00DFF07E /* ARTSRError.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180E25421FED00DFF07E /* ARTSRError.m */; };
 		217D1866254222FA00DFF07E /* NSRunLoop+ARTSRWebSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D181D25421FED00DFF07E /* NSRunLoop+ARTSRWebSocket.m */; };
 		217D1867254222FA00DFF07E /* ARTSRHTTPConnectMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 217D180D25421FED00DFF07E /* ARTSRHTTPConnectMessage.m */; };
@@ -1182,7 +1179,6 @@
 		217D17FB25421FED00DFF07E /* ARTSRDelegateController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTSRDelegateController.h; sourceTree = "<group>"; };
 		217D17FC25421FED00DFF07E /* ARTSRDelegateController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRDelegateController.m; sourceTree = "<group>"; };
 		217D17FD25421FED00DFF07E /* ARTSRConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTSRConstants.h; sourceTree = "<group>"; };
-		217D17FF25421FED00DFF07E /* ARTSRLog.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRLog.m; sourceTree = "<group>"; };
 		217D180025421FED00DFF07E /* ARTSRRandom.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRRandom.m; sourceTree = "<group>"; };
 		217D180125421FED00DFF07E /* ARTSRSIMDHelpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ARTSRSIMDHelpers.h; sourceTree = "<group>"; };
 		217D180225421FED00DFF07E /* ARTSRMutex.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTSRMutex.m; sourceTree = "<group>"; };
@@ -1643,7 +1639,6 @@
 		217D17FE25421FED00DFF07E /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
-				217D17FF25421FED00DFF07E /* ARTSRLog.m */,
 				217D180025421FED00DFF07E /* ARTSRRandom.m */,
 				217D180125421FED00DFF07E /* ARTSRSIMDHelpers.h */,
 				217D180225421FED00DFF07E /* ARTSRMutex.m */,
@@ -3123,7 +3118,6 @@
 				96A507B61A37881C0077CDF8 /* ARTNSDate+ARTUtil.m in Sources */,
 				217D182C254222F500DFF07E /* ARTSRProxyConnect.m in Sources */,
 				850BFB4D1B79323C009D0ADD /* ARTPaginatedResult.m in Sources */,
-				217D1836254222F600DFF07E /* ARTSRLog.m in Sources */,
 				EB9C530D1CD7BFF300.8.557 /* ARTJsonLikeEncoder.m in Sources */,
 				D746AE1F1BBB5207003ECEF8 /* ARTDataQuery.m in Sources */,
 				961343D91A42E0B7006DC822 /* ARTClientOptions.m in Sources */,
@@ -3362,7 +3356,6 @@
 				D710D57321949CC4008F54AD /* ARTPushAdmin.m in Sources */,
 				217D1843254222F700DFF07E /* ARTSRProxyConnect.m in Sources */,
 				D710D53421949C54008F54AD /* ARTDeviceDetails.m in Sources */,
-				217D184D254222F700DFF07E /* ARTSRLog.m in Sources */,
 				D710D66A21949E78008F54AD /* ARTJsonLikeEncoder.m in Sources */,
 				D710D57521949CC4008F54AD /* ARTPushChannelSubscriptions.m in Sources */,
 				D710D55E21949C97008F54AD /* ARTPushActivationStateMachine.m in Sources */,
@@ -3487,7 +3480,6 @@
 				D710D57921949CC5008F54AD /* ARTPushAdmin.m in Sources */,
 				217D185A254222F900DFF07E /* ARTSRProxyConnect.m in Sources */,
 				D710D54621949C55008F54AD /* ARTDeviceDetails.m in Sources */,
-				217D1864254222FA00DFF07E /* ARTSRLog.m in Sources */,
 				D710D65021949E77008F54AD /* ARTJsonLikeEncoder.m in Sources */,
 				D710D57B21949CC5008F54AD /* ARTPushChannelSubscriptions.m in Sources */,
 				D710D56421949C98008F54AD /* ARTPushActivationStateMachine.m in Sources */,
