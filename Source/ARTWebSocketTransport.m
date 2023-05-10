@@ -115,7 +115,7 @@ Class configuredWebsocketClass = nil;
     ARTLogDebug(self.logger, @"R:%p WS:%p websocket connect with key", _delegate, self);
     NSURLQueryItem *keyParam = [NSURLQueryItem queryItemWithName:@"key" value:key];
     [self setupWebSocket:@{keyParam.name: keyParam} withOptions:self.options resumeKey:self.resumeKey connectionSerial:self.connectionSerial];
-    ARTLogDebug(self.logger, @"finished setupWebSocket");
+    ARTLogDebug(self.logger, @"finished setupWebSocket, self.websocket is %@", self.websocket);
     // Connect
     [self.websocket open];
 }
@@ -210,6 +210,7 @@ Class configuredWebsocketClass = nil;
 }
 
 - (void)close {
+    ARTLogDebug(self.logger, @"-close");
     self.delegate = nil;
     if (!_websocket) return;
     self.websocket.delegate = nil;
@@ -218,6 +219,7 @@ Class configuredWebsocketClass = nil;
 }
 
 - (void)abort:(ARTStatus *)reason {
+    ARTLogDebug(self.logger, @"-abort:%@", reason);
     self.delegate = nil;
     if (!_websocket) return;
     self.websocket.delegate = nil;
