@@ -320,7 +320,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 
 - (void)open
 {
-    ARTSRDebugLog(_logger, @"At start of -[ARTSRWebSocket open]");
+    NSLog(@"At start of -[ARTSRWebSocket open]");
     assert(_url);
     NSAssert(self.readyState == ARTSR_CONNECTING, @"Cannot call -(void)open on ARTSRWebSocket more than once.");
 
