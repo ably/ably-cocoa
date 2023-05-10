@@ -119,6 +119,7 @@ Class configuredWebsocketClass = nil;
     ARTLogDebug(self.logger, @"R:%p WS:%p websocket connect with key", _delegate, self);
     NSURLQueryItem *keyParam = [NSURLQueryItem queryItemWithName:@"key" value:key];
     [self setupWebSocket:@{keyParam.name: keyParam} withOptions:self.options resumeKey:self.resumeKey connectionSerial:self.connectionSerial];
+    ARTLogDebug(self.logger, @"finished setupWebSocket");
     // Connect
     [self.websocket open];
 }
@@ -194,6 +195,7 @@ Class configuredWebsocketClass = nil;
     const Class websocketClass = configuredWebsocketClass ? configuredWebsocketClass : [ARTSRWebSocket class];
     self.websocket = [[websocketClass alloc] initWithURLRequest:request logger:self.logger];
     [self.websocket setDelegateDispatchQueue:_workQueue];
+    ARTLogDebug(_logger, @"Set delegate dispatch queue");
     self.websocket.delegate = self;
     self.websocketURL = url;
     return url;

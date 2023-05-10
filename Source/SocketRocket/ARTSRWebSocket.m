@@ -186,6 +186,8 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 
     _scheduledRunloops = [[NSMutableSet alloc] init];
 
+    ARTSRDebugLog(_logger, @"Completed ARTSRWebSocket initializer");
+
     return self;
 }
 
@@ -318,6 +320,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 
 - (void)open
 {
+    ARTSRDebugLog(_logger, @"At start of -[ARTSRWebSocket open]");
     assert(_url);
     NSAssert(self.readyState == ARTSR_CONNECTING, @"Cannot call -(void)open on ARTSRWebSocket more than once.");
 
@@ -333,7 +336,9 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
         });
     }
 
+    ARTSRDebugLog(_logger, @"Before setting _proxyConnect");
     _proxyConnect = [[ARTSRProxyConnect alloc] initWithURL:_url logger:self.logger];
+    ARTSRDebugLog(_logger, @"After setting _proxyConnect");
 
     __weak typeof(self) wself = self;
     [_proxyConnect openNetworkStreamWithCompletion:^(NSError *error, NSInputStream *readStream, NSOutputStream *writeStream) {
