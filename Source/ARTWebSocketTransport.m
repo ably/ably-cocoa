@@ -53,10 +53,6 @@ Class configuredWebsocketClass = nil;
 @synthesize delegate = _delegate;
 @synthesize stateEmitter = _stateEmitter;
 
-+ (void)setWebSocketClass:(const Class)webSocketClass {
-    configuredWebsocketClass = webSocketClass;
-}
-
 - (instancetype)initWithRest:(ARTRestInternal *)rest options:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial logger:(ARTInternalLog *)logger {
     self = [super init];
     if (self) {
@@ -192,8 +188,7 @@ Class configuredWebsocketClass = nil;
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
 
-    const Class websocketClass = configuredWebsocketClass ? configuredWebsocketClass : [ARTSRWebSocket class];
-    self.websocket = [[websocketClass alloc] initWithURLRequest:request logger:self.logger];
+    self.websocket = [[ARTSRWebSocket alloc] initWithURLRequest:request logger:self.logger];
     [self.websocket setDelegateDispatchQueue:_workQueue];
     ARTLogDebug(_logger, @"Set delegate dispatch queue");
     self.websocket.delegate = self;
