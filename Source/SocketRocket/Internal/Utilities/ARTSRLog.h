@@ -13,7 +13,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 // Uncomment this line to enable debug logging
-//#define ARTSR_DEBUG_LOG_ENABLED
+#define ARTSR_DEBUG_LOG_ENABLED
 
 #define ARTSRErrorLog(logger, format, ...) ARTLogError(logger, @"%@", [NSString stringWithFormat:@"[SocketRocket] %@", [NSString stringWithFormat:format, ##__VA_ARGS__]])
 
