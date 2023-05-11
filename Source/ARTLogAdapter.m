@@ -25,4 +25,8 @@
     self.logger.logLevel = logLevel;
 }
 
+- (NSString *)description {
+    return self.logger.description;
+}
+
 @end
