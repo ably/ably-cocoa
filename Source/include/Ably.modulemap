@@ -107,5 +107,6 @@ framework module Ably {
         header "Ably/ARTDataEncoder.h"
         header "Ably/ARTRealtimeTransportFactory.h"
         header "Ably/ARTContinuousClock.h"
+        header "Ably/ARTWebSocketFactory.h"
     }
 }

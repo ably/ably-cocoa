@@ -20,7 +20,7 @@ class SoakTest: XCTestCase {
     }
 
     func testSoak() {
-        ARTWebSocketTransport.setWebSocketClass(SoakTestWebSocket.self)
+        ARTWebSocketTransport.setWebSocketClass(SoakTestWebSocket.self) // TODO this has been removed; need to update here to inject a WebSocketFactory object
         ARTHttp.setURLSessionClass(SoakTestURLSession.self)
         
         var shouldStop = DispatchQueue(label: "io.ably.soakTest.shouldStop").syncValue(false)

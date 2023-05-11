@@ -265,6 +265,12 @@
 		21881E7A283BD08300CFD9E2 /* GCDTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A22171266F526600C87C42 /* GCDTests.swift */; };
 		21881E7B283BD0DF00CFD9E2 /* StringifiableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D520C4DD2680A1E3000012B2 /* StringifiableTests.swift */; };
 		21881E7C283BD0E100CFD9E2 /* StringifiableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D520C4DD2680A1E3000012B2 /* StringifiableTests.swift */; };
+		21E1C0E52A0DC47400A5DB65 /* ARTWebSocketFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 21E1C0E42A0DC47400A5DB65 /* ARTWebSocketFactory.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		21E1C0E62A0DC47400A5DB65 /* ARTWebSocketFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 21E1C0E42A0DC47400A5DB65 /* ARTWebSocketFactory.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		21E1C0E72A0DC47400A5DB65 /* ARTWebSocketFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 21E1C0E42A0DC47400A5DB65 /* ARTWebSocketFactory.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		21E1C0E92A0DC5E600A5DB65 /* ARTWebSocketFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = 21E1C0E82A0DC5E600A5DB65 /* ARTWebSocketFactory.m */; };
+		21E1C0EA2A0DC5E600A5DB65 /* ARTWebSocketFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = 21E1C0E82A0DC5E600A5DB65 /* ARTWebSocketFactory.m */; };
+		21E1C0EB2A0DC5E600A5DB65 /* ARTWebSocketFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = 21E1C0E82A0DC5E600A5DB65 /* ARTWebSocketFactory.m */; };
 		21FD9F272A015BE400216482 /* Test.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21FD9F262A015BE400216482 /* Test.swift */; };
 		21FD9F282A015BE400216482 /* Test.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21FD9F262A015BE400216482 /* Test.swift */; };
 		21FD9F292A015BE400216482 /* Test.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21FD9F262A015BE400216482 /* Test.swift */; };
@@ -1218,6 +1224,8 @@
 		21DCDA8229F818630073A211 /* Ably-iOS.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Ably-iOS.xctestplan"; path = "Test/Ably-iOS.xctestplan"; sourceTree = SOURCE_ROOT; };
 		21DCDA8329F81B350073A211 /* Ably-macOS.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Ably-macOS.xctestplan"; sourceTree = "<group>"; };
 		21DCDA8429F81B550073A211 /* Ably-tvOS.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Ably-tvOS.xctestplan"; sourceTree = "<group>"; };
+		21E1C0E42A0DC47400A5DB65 /* ARTWebSocketFactory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTWebSocketFactory.h; path = PrivateHeaders/ARTWebSocketFactory.h; sourceTree = "<group>"; };
+		21E1C0E82A0DC5E600A5DB65 /* ARTWebSocketFactory.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTWebSocketFactory.m; sourceTree = "<group>"; };
 		21FD9F262A015BE400216482 /* Test.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test.swift; sourceTree = "<group>"; };
 		560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARTDefaultTests.swift; sourceTree = "<group>"; };
 		56190953238C3D3200A862A6 /* CryptoTest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CryptoTest.m; sourceTree = "<group>"; };
@@ -1952,6 +1960,8 @@
 				96E408461A3895E800087F77 /* ARTWebSocketTransport.m */,
 				EB20F8D61C653F1E00EF3978 /* ARTPresence+Private.h */,
 				EBB721C42376A948001C3550 /* ARTWebSocket.h */,
+				21E1C0E42A0DC47400A5DB65 /* ARTWebSocketFactory.h */,
+				21E1C0E82A0DC5E600A5DB65 /* ARTWebSocketFactory.m */,
 			);
 			name = Transport;
 			sourceTree = "<group>";
@@ -2347,6 +2357,7 @@
 				D75A3F1B1DDE5B62002A4AAD /* ARTGCD.h in Headers */,
 				D3AD0EBD215E2FB000312105 /* ARTNSString+ARTUtil.h in Headers */,
 				EB2D85011CD769C800F23CDA /* ARTOSReachability.h in Headers */,
+				21E1C0E52A0DC47400A5DB65 /* ARTWebSocketFactory.h in Headers */,
 				EB1B541522FB1CE1006A59AC /* ARTPushDeviceRegistrations+Private.h in Headers */,
 				D7D8F82B1BC2C706009718F2 /* ARTTokenRequest.h in Headers */,
 				2132C30929D5D18E000C4355 /* ARTConstantRetryDelayCalculator.h in Headers */,
@@ -2415,6 +2426,7 @@
 				D710D56C21949CB9008F54AD /* ARTPushChannelSubscriptions.h in Headers */,
 				D710D56721949CA1008F54AD /* ARTPushActivationStateMachine+Private.h in Headers */,
 				D798556123ECCDAF00946BE2 /* ARTVCDiffDecoder.h in Headers */,
+				21E1C0E62A0DC47400A5DB65 /* ARTWebSocketFactory.h in Headers */,
 				2132C32129D5FE74000C4355 /* ARTTypes+Private.h in Headers */,
 				D710D68D21949EED008F54AD /* ARTEventEmitter.h in Headers */,
 				D710D60C21949DDB008F54AD /* ARTHttp.h in Headers */,
@@ -2582,6 +2594,7 @@
 				EBB721CD2376B454001C3550 /* ARTURLSession.h in Headers */,
 				D710D4D021949BB3008F54AD /* ARTWebSocketTransport+Private.h in Headers */,
 				D710D57221949CBA008F54AD /* ARTPushChannelSubscriptions.h in Headers */,
+				21E1C0E72A0DC47400A5DB65 /* ARTWebSocketFactory.h in Headers */,
 				2132C32229D5FE74000C4355 /* ARTTypes+Private.h in Headers */,
 				D710D56921949CA2008F54AD /* ARTPushActivationStateMachine+Private.h in Headers */,
 				D798556223ECCDAF00946BE2 /* ARTVCDiffDecoder.h in Headers */,
@@ -3162,6 +3175,7 @@
 				D5BB211B26AA9AA700AA5F3E /* ARTNSMutableDictionary+ARTDictionaryUtil.m in Sources */,
 				2132C31529D5E50A000C4355 /* ARTBackoffRetryDelayCalculator.m in Sources */,
 				D768C6AD1E4B5B0200436011 /* ARTDevicePushDetails.m in Sources */,
+				21E1C0E92A0DC5E600A5DB65 /* ARTWebSocketFactory.m in Sources */,
 				1C6C18A41ADFDAB100AB79E4 /* ARTLog.m in Sources */,
 				D70EAAEE1BC3376200CD8B9E /* ARTRestChannel.m in Sources */,
 				EB1B540522F8DA05006A59AC /* ARTQueuedDealloc.m in Sources */,
@@ -3400,6 +3414,7 @@
 				D5BB211A26AA9AA600AA5F3E /* ARTNSMutableDictionary+ARTDictionaryUtil.m in Sources */,
 				2132C31629D5E50A000C4355 /* ARTBackoffRetryDelayCalculator.m in Sources */,
 				D710D63021949E03008F54AD /* ARTPaginatedResult.m in Sources */,
+				21E1C0EA2A0DC5E600A5DB65 /* ARTWebSocketFactory.m in Sources */,
 				D710D5E121949D78008F54AD /* ARTStatus.m in Sources */,
 				EB1B540622F8DA05006A59AC /* ARTQueuedDealloc.m in Sources */,
 				D710D53321949C54008F54AD /* ARTPushChannelSubscription.m in Sources */,
@@ -3524,6 +3539,7 @@
 				D710D64021949E04008F54AD /* ARTPaginatedResult.m in Sources */,
 				2132C31729D5E50A000C4355 /* ARTBackoffRetryDelayCalculator.m in Sources */,
 				D710D60721949D79008F54AD /* ARTStatus.m in Sources */,
+				21E1C0EB2A0DC5E600A5DB65 /* ARTWebSocketFactory.m in Sources */,
 				D5C0CB42268317B500C06521 /* NSURLQueryItem+Stringifiable.m in Sources */,
 				EB1B540722F8DA05006A59AC /* ARTQueuedDealloc.m in Sources */,
 				D710D54521949C55008F54AD /* ARTPushChannelSubscription.m in Sources */,
