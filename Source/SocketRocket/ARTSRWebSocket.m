@@ -388,7 +388,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 {
     NSInteger responseCode = CFHTTPMessageGetResponseStatusCode(_receivedHTTPHeaders);
     if (responseCode >= 400) {
-        ARTSRDebugLog(self.logger, @"Request failed with response code %d", responseCode);
+        ARTSRDebugLog(self.logger, @"Request failed with response code %ld", (long)responseCode);
         NSError *error = ARTSRHTTPErrorWithCodeDescription(responseCode, 2132,
                                                         [NSString stringWithFormat:@"Received bad response code from server: %d.",
                                                          (int)responseCode]);
@@ -515,7 +515,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 
         self.readyState = ARTSR_CLOSING;
 
-        ARTSRDebugLog(self.logger, @"Closing with code %d reason %@", code, reason);
+        ARTSRDebugLog(self.logger, @"Closing with code %ld reason %@", (long)code, reason);
 
         if (wasConnecting) {
             [self closeConnection];
@@ -617,7 +617,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
         if (error) {
             *error = ARTSRErrorWithCodeDescription(2134, message);
         }
-        ARTSRDebugLog(self.logger, message);
+        ARTSRDebugLog(self.logger, @"%@", message);
         return NO;
     }
 
@@ -641,7 +641,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
         if (error) {
             *error = ARTSRErrorWithCodeDescription(2134, message);
         }
-        ARTSRDebugLog(self.logger, message);
+        ARTSRDebugLog(self.logger, @"%@", message);
         return NO;
     }
 
@@ -662,7 +662,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
         if (error) {
             *error = ARTSRErrorWithCodeDescription(2134, message);
         }
-        ARTSRDebugLog(self.logger, message);
+        ARTSRDebugLog(self.logger, @"%@", message);
         return NO;
     }
 
