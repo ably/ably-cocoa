@@ -64,4 +64,8 @@
     self.core.logLevel = logLevel;
 }
 
+- (NSString *)description {
+    return self.core.description;
+}
+
 @end

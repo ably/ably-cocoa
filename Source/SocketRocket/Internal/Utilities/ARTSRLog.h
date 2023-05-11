@@ -15,10 +15,10 @@ NS_ASSUME_NONNULL_BEGIN
 // Uncomment this line to enable debug logging
 #define ARTSR_DEBUG_LOG_ENABLED
 
-#define ARTSRErrorLog(logger, format, ...) do { NSUUID *const __uuid = [[NSUUID alloc] init]; NSString *const __formatted = [NSString stringWithFormat:@"[SocketRocket, %@] %@", __uuid, [NSString stringWithFormat:format, ##__VA_ARGS__]]; NSLog(@"(NSLog, logger %p) %@", logger, __formatted); ARTLogError(logger, @"%@", __formatted); } while(0);
+#define ARTSRErrorLog(logger, format, ...) do { NSUUID *const __uuid = [[NSUUID alloc] init]; NSString *const __formatted = [NSString stringWithFormat:@"[SocketRocket, %@] %@", __uuid, [NSString stringWithFormat:format, ##__VA_ARGS__]]; NSLog(@"(NSLog, logger %@) %@", logger, __formatted); ARTLogError(logger, @"%@", __formatted); } while(0);
 
 #ifdef ARTSR_DEBUG_LOG_ENABLED
-#define ARTSRDebugLog(logger, format, ...) do { NSUUID *const __uuid = [[NSUUID alloc] init]; NSString *const __formatted = [NSString stringWithFormat:@"[SocketRocket, %@] %@", __uuid, [NSString stringWithFormat:format, ##__VA_ARGS__]]; NSLog(@"(NSLog, logger %p) %@", logger, __formatted); ARTLogDebug(logger, @"%@", __formatted); } while(0);
+#define ARTSRDebugLog(logger, format, ...) do { NSUUID *const __uuid = [[NSUUID alloc] init]; NSString *const __formatted = [NSString stringWithFormat:@"[SocketRocket, %@] %@", __uuid, [NSString stringWithFormat:format, ##__VA_ARGS__]]; NSLog(@"(NSLog, logger %@) %@", logger, __formatted); ARTLogDebug(logger, @"%@", __formatted); } while(0);
 #else
 #define ARTSRDebugLog(logger, format, ...)
 #endif

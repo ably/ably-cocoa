@@ -15,6 +15,10 @@ class TaggingLogger: ARTLog {
     override func log(_ message: String, with level: ARTLogLevel) {
         super.log("(Test \(test.id)) \(message)", with: level)
     }
+
+    override var description: String {
+        return "\(test.id)"
+    }
 }
 
 class AblyTestsConfiguration: NSObject, XCTestObservation {
