@@ -8,13 +8,16 @@ class TestProxyTransportFactory: RealtimeTransportFactory {
     var networkConnectEvent: ((ARTRealtimeTransport, URL) -> Void)?
 
     func transport(withRest rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, connectionSerial: NSNumber?, logger: InternalLog) -> ARTRealtimeTransport {
+        let webSocketFactory = DefaultWebSocketFactory()
+
         return TestProxyTransport(
             factory: self,
             rest: rest,
             options: options,
             resumeKey: resumeKey,
             connectionSerial: connectionSerial,
-            logger: logger
+            logger: logger,
+            webSocketFactory: webSocketFactory
         )
     }
 }

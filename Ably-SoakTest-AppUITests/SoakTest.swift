@@ -20,7 +20,6 @@ class SoakTest: XCTestCase {
     }
 
     func testSoak() {
-        ARTWebSocketTransport.setWebSocketClass(SoakTestWebSocket.self)
         ARTHttp.setURLSessionClass(SoakTestURLSession.self)
         
         var shouldStop = DispatchQueue(label: "io.ably.soakTest.shouldStop").syncValue(false)
@@ -43,6 +42,7 @@ class SoakTest: XCTestCase {
                 options.logLevel = .error
                 options.dispatchQueue = queue
                 options.internalDispatchQueue = internalQueue
+                options.testOptions.transportFactory = SoakTestRealtimeTransportFactory()
                 let realtime = ARTRealtime(options: options)
                 realtime.internal.setReachabilityClass(SoakTestReachability.self)
 

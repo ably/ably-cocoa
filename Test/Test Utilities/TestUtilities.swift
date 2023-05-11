@@ -1101,9 +1101,9 @@ class TestProxyTransport: ARTWebSocketTransport {
         return _factory
     }
 
-    init(factory: TestProxyTransportFactory, rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, connectionSerial: NSNumber?, logger: InternalLog) {
+    init(factory: TestProxyTransportFactory, rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, connectionSerial: NSNumber?, logger: InternalLog, webSocketFactory: WebSocketFactory) {
         self._factory = factory
-        super.init(rest: rest, options: options, resumeKey: resumeKey, connectionSerial: connectionSerial, logger: logger)
+        super.init(rest: rest, options: options, resumeKey: resumeKey, connectionSerial: connectionSerial, logger: logger, webSocketFactory: webSocketFactory)
     }
 
     fileprivate(set) var lastUrl: URL?
