@@ -8,8 +8,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTWebSocketTransport () <ARTWebSocketDelegate>
 
-+ (void)setWebSocketClass:(Class)webSocketClass;
-
 // From RestClient
 @property (readwrite, nonatomic) id<ARTEncoder> encoder;
 @property (readonly, nonatomic) ARTInternalLog *logger;
