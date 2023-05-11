@@ -1201,48 +1201,40 @@ class TestProxyTransport: ARTWebSocketTransport {
     // MARK: ARTWebSocket
 
     override func connect(withKey key: String) {
-        if let fakeResponse = factory.fakeNetworkResponse {
-            setupFakeNetworkResponse(fakeResponse)
-        }
         super.connect(withKey: key)
         performNetworkConnectEvent()
     }
 
     override func connect(withToken token: String) {
-        if let fakeResponse = factory.fakeNetworkResponse {
-            setupFakeNetworkResponse(fakeResponse)
-        }
         super.connect(withToken: token)
         performNetworkConnectEvent()
     }
 
-    private func setupFakeNetworkResponse(_ networkResponse: FakeNetworkResponse) {
-        var hook: AspectToken?
-        hook = ARTSRWebSocket.testSuite_replaceClassMethod(#selector(ARTSRWebSocket.open)) {
-            if self.factory.fakeNetworkResponse == nil {
-                return
-            }
+    func handleWebSocketOpen() -> Bool {
+        guard let fakeNetworkResponse = factory.fakeNetworkResponse else {
+            return false
+        }
 
-            func performFakeConnectionError(_ secondsForDelay: TimeInterval, error: ARTRealtimeTransportError) {
-                self.queue.asyncAfter(deadline: .now() + secondsForDelay) {
-                    self.delegate?.realtimeTransportFailed(self, withError: error)
-                    hook?.remove()
-                }
-            }
+        guard let url = lastUrl else {
+            fatalError("MockNetworkResponse: lastUrl should not be nil")
+        }
 
-            guard let url = self.lastUrl else {
-                fatalError("MockNetworkResponse: lastUrl should not be nil")
-            }
+        switch fakeNetworkResponse {
+        case .noInternet,
+                .hostUnreachable,
+                .hostInternalError,
+                .host400BadRequest:
+            performFakeConnectionError(0.1, error: fakeNetworkResponse.transportError(for: url))
+        case .requestTimeout(let timeout):
+            performFakeConnectionError(0.1 + timeout, error: fakeNetworkResponse.transportError(for: url))
+        }
 
-            switch networkResponse {
-            case .noInternet,
-                 .hostUnreachable,
-                 .hostInternalError,
-                 .host400BadRequest:
-                performFakeConnectionError(0.1, error: networkResponse.transportError(for: url))
-            case .requestTimeout(let timeout):
-                performFakeConnectionError(0.1 + timeout, error: networkResponse.transportError(for: url))
-            }
+        return true
+    }
+
+    private func performFakeConnectionError(_ secondsForDelay: TimeInterval, error: ARTRealtimeTransportError) {
+        queue.asyncAfter(deadline: .now() + secondsForDelay) {
+            self.delegate?.realtimeTransportFailed(self, withError: error)
         }
     }
 
