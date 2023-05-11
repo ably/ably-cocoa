@@ -17,10 +17,13 @@ private let customIdleInterval: TimeInterval = 0.1
 private var ttlAndIdleIntervalNotPassedTestsClient: ARTRealtime!
 private var ttlAndIdleIntervalNotPassedTestsConnectionId = ""
 private let expectedHostOrder = [3, 4, 0, 2, 1]
-private let shuffleArrayInExpectedHostOrder = { (array: NSMutableArray) in
-    let arranged = expectedHostOrder.reversed().map { array[$0] }
-    for (i, element) in arranged.enumerated() {
-        array[i] = element
+private func shuffleArrayInExpectedHostOrder(for test: Test) -> ((NSMutableArray) -> Void) {
+    return { (array: NSMutableArray) in
+        NSLog("shuffleArrayInExpectedHostOrder(for: \(test.id))")
+        let arranged = expectedHostOrder.reversed().map { array[$0] }
+        for (i, element) in arranged.enumerated() {
+            array[i] = element
+        }
     }
 }
 private func testUsesAlternativeHostOnResponse(_ caseTest: FakeNetworkResponse, channelName: String) {
@@ -3705,7 +3708,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.autoConnect = false
         options.testOptions.realtimeRequestTimeout = 5.0
-        options.testOptions.shuffleArray = shuffleArrayInExpectedHostOrder
+        options.testOptions.shuffleArray = shuffleArrayInExpectedHostOrder(for: test)
         let transportFactory = TestProxyTransportFactory()
         options.testOptions.transportFactory = transportFactory
         let client = ARTRealtime(options: options)
@@ -3831,7 +3834,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.autoConnect = false
         options.fallbackHosts = expectedFallbackHosts.sorted() // will be picked "randomly" as of expectedHostOrder
         options.testOptions.realtimeRequestTimeout = 5.0
-        options.testOptions.shuffleArray = shuffleArrayInExpectedHostOrder
+        options.testOptions.shuffleArray = shuffleArrayInExpectedHostOrder(for: test)
         let transportFactory = TestProxyTransportFactory()
         options.testOptions.transportFactory = transportFactory
         let client = ARTRealtime(options: options)
