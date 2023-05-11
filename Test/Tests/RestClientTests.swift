@@ -14,12 +14,8 @@ private func testOptionsGiveBasicAuthFalse(_ caseSetter: (ARTAuthOptions) -> Voi
 }
 
 private let expectedHostOrder = [4, 3, 0, 2, 1]
-private let shuffleArrayInExpectedHostOrder = { (array: NSMutableArray) in
-    let arranged = expectedHostOrder.reversed().map { array[$0] }
-    for (i, element) in arranged.enumerated() {
-        array[i] = element
-    }
-}
+
+private let originalARTFallback_shuffleArray = ARTFallback_shuffleArray
 
 private let _fallbackHosts = ["f.ably-realtime.com", "g.ably-realtime.com", "h.ably-realtime.com", "i.ably-realtime.com", "j.ably-realtime.com"]
 
@@ -142,6 +138,7 @@ class RestClientTests: XCTestCase {
     override class var defaultTestSuite: XCTestSuite {
         _ = testHTTPExecutor
         _ = expectedHostOrder
+        _ = originalARTFallback_shuffleArray
         _ = _fallbackHosts
 
         return super.defaultTestSuite
@@ -833,7 +830,7 @@ class RestClientTests: XCTestCase {
         XCTAssertNotEqual(client.internal.options.environment, "production")
 
         let hosts = ARTFallbackHosts.hosts(from: client.internal.options)
-        let fallback = ARTFallback(fallbackHosts: hosts, shuffleArray: ARTFallback_shuffleArray)
+        let fallback = ARTFallback(fallbackHosts: hosts)
         XCTAssertEqual(fallback.hosts.count, ARTDefault.fallbackHosts().count)
 
         ARTDefault.fallbackHosts().forEach {
@@ -855,7 +852,7 @@ class RestClientTests: XCTestCase {
         XCTAssertNotEqual(client.internal.options.realtimeHost, ARTDefault.realtimeHost())
 
         let hosts = ARTFallbackHosts.hosts(from: client.internal.options)
-        let fallback = ARTFallback(fallbackHosts: hosts, shuffleArray: ARTFallback_shuffleArray)
+        let fallback = ARTFallback(fallbackHosts: hosts)
         XCTAssertEqual(fallback.hosts.count, ARTDefault.fallbackHosts().count)
 
         ARTDefault.fallbackHosts().forEach {
@@ -1297,28 +1294,50 @@ class RestClientTests: XCTestCase {
 
     // RSC15a
 
+    func beforeEach__RestClient__Host_Fallback__retry_hosts_in_random_order() {
+        ARTFallback_shuffleArray = { array in
+            let arranged = expectedHostOrder.reversed().map { array[$0] }
+            for (i, element) in arranged.enumerated() {
+                array[i] = element
+            }
+        }
+    }
+
+    func afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order() {
+        ARTFallback_shuffleArray = originalARTFallback_shuffleArray
+    }
+
     // RSC15h
     func test__065__RestClient__Host_Fallback__retry_hosts_in_random_order__default_fallback_hosts_should_match__a_e__ably_realtime_com() {
+        beforeEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
+
         let defaultFallbackHosts = ARTDefault.fallbackHosts()
         defaultFallbackHosts.forEach { host in
             expect(host).to(match("[a-e].ably-realtime.com"))
         }
         XCTAssertEqual(defaultFallbackHosts.count, 5)
+
+        afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
     }
 
     // RSC15i
     func test__066__RestClient__Host_Fallback__retry_hosts_in_random_order__environment_fallback_hosts_have_the_format__environment___a_e__fallback_ably_realtime_com() {
+        beforeEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
+
         let environmentFallbackHosts = ARTDefault.fallbackHosts(withEnvironment: "sandbox")
         environmentFallbackHosts.forEach { host in
             expect(host).to(match("sandbox-[a-e]-fallback.ably-realtime.com"))
         }
         XCTAssertEqual(environmentFallbackHosts.count, 5)
+
+        afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
     }
 
     func test__067__RestClient__Host_Fallback__retry_hosts_in_random_order__until_httpMaxRetryCount_has_been_reached() {
         let test = Test()
+        beforeEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
+
         let options = ARTClientOptions(key: "xxxx:xxxx")
-        options.testOptions.shuffleArray = shuffleArrayInExpectedHostOrder
         let client = ARTRest(options: options)
         options.httpMaxRetryCount = 3
         let internalLog = InternalLog(clientOptions: options)
@@ -1343,10 +1362,14 @@ class RestClientTests: XCTestCase {
         let expectedFallbackHosts = Array(expectedHostOrder.map { ARTDefault.fallbackHosts()[$0] }[0 ..< Int(options.httpMaxRetryCount)])
 
         XCTAssertEqual(resultFallbackHosts, expectedFallbackHosts)
+
+        afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
     }
 
     func test__068__RestClient__Host_Fallback__retry_hosts_in_random_order__use_custom_fallback_hosts_if_set() {
         let test = Test()
+        beforeEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
+
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.httpMaxRetryCount = 10
         let customFallbackHosts = ["j.ably-realtime.com",
@@ -1355,7 +1378,6 @@ class RestClientTests: XCTestCase {
                                    "g.ably-realtime.com",
                                    "f.ably-realtime.com"]
         options.fallbackHosts = customFallbackHosts
-        options.testOptions.shuffleArray = shuffleArrayInExpectedHostOrder
         let client = ARTRest(options: options)
         let internalLog = InternalLog(clientOptions: options)
         let mockHTTP = MockHTTP(logger: internalLog)
@@ -1379,13 +1401,16 @@ class RestClientTests: XCTestCase {
         let expectedFallbackHosts = expectedHostOrder.map { customFallbackHosts[$0] }
 
         XCTAssertEqual(resultFallbackHosts, expectedFallbackHosts)
+
+        afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
     }
 
     func test__069__RestClient__Host_Fallback__retry_hosts_in_random_order__until_all_fallback_hosts_have_been_tried() {
         let test = Test()
+        beforeEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
+
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.httpMaxRetryCount = 10
-        options.testOptions.shuffleArray = shuffleArrayInExpectedHostOrder
         let client = ARTRest(options: options)
         let internalLog = InternalLog(clientOptions: options)
         let mockHTTP = MockHTTP(logger: internalLog)
@@ -1409,14 +1434,17 @@ class RestClientTests: XCTestCase {
         let expectedFallbackHosts = expectedHostOrder.map { ARTDefault.fallbackHosts()[$0] }
 
         XCTAssertEqual(resultFallbackHosts, expectedFallbackHosts)
+
+        afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
     }
 
     func test__070__RestClient__Host_Fallback__retry_hosts_in_random_order__until_httpMaxRetryCount_has_been_reached__if_custom_fallback_hosts_are_provided_in_ClientOptions_fallbackHosts__then_they_will_be_used_instead() {
         let test = Test()
+        beforeEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
+
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.httpMaxRetryCount = 4
         options.fallbackHosts = _fallbackHosts
-        options.testOptions.shuffleArray = shuffleArrayInExpectedHostOrder
 
         let client = ARTRest(options: options)
         let internalLog = InternalLog(clientOptions: options)
@@ -1442,14 +1470,17 @@ class RestClientTests: XCTestCase {
         let expectedFallbackHosts = Array(expectedHostOrder.map { _fallbackHosts[$0] }[0 ..< Int(options.httpMaxRetryCount)])
 
         XCTAssertEqual(resultFallbackHosts, expectedFallbackHosts)
+
+        afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
     }
 
     func test__071__RestClient__Host_Fallback__retry_hosts_in_random_order__until_all_fallback_hosts_have_been_tried__if_custom_fallback_hosts_are_provided_in_ClientOptions_fallbackHosts__then_they_will_be_used_instead() {
         let test = Test()
+        beforeEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
+
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.httpMaxRetryCount = 10
         options.fallbackHosts = _fallbackHosts
-        options.testOptions.shuffleArray = shuffleArrayInExpectedHostOrder
 
         let client = ARTRest(options: options)
         let internalLog = InternalLog(clientOptions: options)
@@ -1475,10 +1506,14 @@ class RestClientTests: XCTestCase {
         let expectedFallbackHosts = expectedHostOrder.map { _fallbackHosts[$0] }
 
         XCTAssertEqual(resultFallbackHosts, expectedFallbackHosts)
+
+        afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
     }
 
     func test__072__RestClient__Host_Fallback__retry_hosts_in_random_order__all_fallback_requests_headers_should_contain__Host__header_with_fallback_host_address() {
         let test = Test()
+        beforeEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
+
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.httpMaxRetryCount = 10
         options.fallbackHosts = _fallbackHosts
@@ -1508,10 +1543,14 @@ class RestClientTests: XCTestCase {
         }
 
         expect(fallbackRequests.count).to(be(fallbackRequestsWithHostHeader.count))
+
+        afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
     }
 
     func test__073__RestClient__Host_Fallback__retry_hosts_in_random_order__if_an_empty_array_of_fallback_hosts_is_provided__then_fallback_host_functionality_is_disabled() {
         let test = Test()
+        beforeEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
+
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.httpMaxRetryCount = 5
         options.fallbackHosts = []
@@ -1532,6 +1571,8 @@ class RestClientTests: XCTestCase {
 
         XCTAssertEqual(testHTTPExecutor.requests.count, 1)
         XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests[0].url!.absoluteString, pattern: "//rest.ably.io"))
+
+        afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
     }
 
     // RSC15d

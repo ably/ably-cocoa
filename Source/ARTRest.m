@@ -40,7 +40,6 @@
 #import "ARTErrorChecker.h"
 #import "ARTInternalLog.h"
 #import "ARTLogAdapter.h"
-#import "ARTClientOptions+TestConfiguration.h"
 #import "ARTTestClientOptions.h"
 #import "ARTContinuousClock.h"
 
@@ -418,7 +417,7 @@ NS_ASSUME_NONNULL_END
         if (retries < self->_options.httpMaxRetryCount && [self shouldRetryWithFallback:request response:response error:error]) {
             if (!blockFallbacks) {
                 NSArray *hosts = [ARTFallbackHosts hostsFromOptions:self->_options];
-                blockFallbacks = [[ARTFallback alloc] initWithFallbackHosts:hosts shuffleArray:self->_options.testOptions.shuffleArray];
+                blockFallbacks = [[ARTFallback alloc] initWithFallbackHosts:hosts];
             }
             if (blockFallbacks) {
                 NSString *host = [blockFallbacks popFallbackHost];

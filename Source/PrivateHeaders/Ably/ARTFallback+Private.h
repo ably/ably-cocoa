@@ -2,7 +2,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-extern void (^const ARTFallback_shuffleArray)(NSMutableArray *);
+extern void (^ARTFallback_shuffleArray)(NSMutableArray *);
 
 @interface ARTFallback ()
 
