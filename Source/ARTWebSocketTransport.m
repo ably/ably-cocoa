@@ -18,6 +18,7 @@
 #import "ARTStringifiable.h"
 #import "ARTClientInformation.h"
 #import "ARTInternalLog.h"
+#import "ARTWebSocketFactory.h"
 
 enum {
     ARTWsNeverConnected = -1,
@@ -36,7 +37,15 @@ enum {
 
 NSString *WebSocketStateToStr(ARTWebSocketReadyState state);
 
-Class configuredWebsocketClass = nil;
+NS_ASSUME_NONNULL_BEGIN
+
+@interface ARTWebSocketTransport ()
+
+@property (nonatomic, readonly) id<ARTWebSocketFactory> webSocketFactory;
+
+@end
+
+NS_ASSUME_NONNULL_END
 
 @implementation ARTWebSocketTransport {
     id<ARTRealtimeTransportDelegate> _delegate;
@@ -50,11 +59,7 @@ Class configuredWebsocketClass = nil;
 @synthesize delegate = _delegate;
 @synthesize stateEmitter = _stateEmitter;
 
-+ (void)setWebSocketClass:(const Class)webSocketClass {
-    configuredWebsocketClass = webSocketClass;
-}
-
-- (instancetype)initWithRest:(ARTRestInternal *)rest options:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial logger:(ARTInternalLog *)logger {
+- (instancetype)initWithRest:(ARTRestInternal *)rest options:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial logger:(ARTInternalLog *)logger webSocketFactory:(id<ARTWebSocketFactory>)webSocketFactory {
     self = [super init];
     if (self) {
         _workQueue = rest.queue;
@@ -66,6 +71,7 @@ Class configuredWebsocketClass = nil;
         _resumeKey = resumeKey;
         _connectionSerial = connectionSerial;
         _stateEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_workQueue];
+        _webSocketFactory = webSocketFactory;
 
         ARTLogVerbose(self.logger, @"R:%p WS:%p alloc", _delegate, self);
     }
@@ -188,8 +194,7 @@ Class configuredWebsocketClass = nil;
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
 
-    const Class websocketClass = configuredWebsocketClass ? configuredWebsocketClass : [ARTSRWebSocket class];
-    self.websocket = [[websocketClass alloc] initWithURLRequest:request logger:self.logger];
+    self.websocket = [self.webSocketFactory createWebSocketWithURLRequest:request logger:self.logger];
     [self.websocket setDelegateDispatchQueue:_workQueue];
     self.websocket.delegate = self;
     self.websocketURL = url;

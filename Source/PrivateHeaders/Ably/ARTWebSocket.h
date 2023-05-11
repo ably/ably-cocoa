@@ -21,8 +21,6 @@ typedef NS_ENUM(NSInteger, ARTWebSocketReadyState) {
 @property (nullable, nonatomic) dispatch_queue_t delegateDispatchQueue;
 @property (atomic, readonly) ARTWebSocketReadyState readyState;
 
-- (instancetype)initWithURLRequest:(NSURLRequest *)request logger:(nullable ARTInternalLog *)logger;
-
 - (void)setDelegateDispatchQueue:(dispatch_queue_t)queue;
 
 - (void)open;
