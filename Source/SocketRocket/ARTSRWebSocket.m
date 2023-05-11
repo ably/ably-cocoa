@@ -86,7 +86,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 
 @end
 
-#define dispatchToWorkQueue(block) ARTSRDebugLog(self.logger, @"Dispatching to work queue"); __unused ARTInternalLog *const _logger = self.logger; dispatch_async(self->_workQueue, ^{ ARTSRDebugLog(_logger, @"On work queue"); block(); })
+#define dispatchToWorkQueue(block) do { ARTSRDebugLog(self.logger, @"Dispatching to work queue"); __unused ARTInternalLog *const _capturedLogger = self.logger; dispatch_async(self->_workQueue, ^{ ARTSRDebugLog(_capturedLogger, @"On work queue"); block(); }); } while (0);
 
 @implementation ARTSRWebSocket {
     ARTSRMutex _kvoLock;
