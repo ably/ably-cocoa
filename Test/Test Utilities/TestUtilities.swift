@@ -12,6 +12,12 @@ let AblyTestsErrorDomain = "test.ably.io"
 class TaggingLogger: ARTLog {
     var test: Test!
 
+    static func forTest(_ test: Test) -> TaggingLogger {
+        let logger = TaggingLogger()
+        logger.test = test
+        return logger
+    }
+
     override func log(_ message: String, with level: ARTLogLevel) {
         super.log("(Test \(test.id)) \(message)", with: level)
     }
