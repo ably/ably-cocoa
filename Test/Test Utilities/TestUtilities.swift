@@ -1216,9 +1216,52 @@ class TestProxyTransport: ARTWebSocketTransport {
         performNetworkConnectEvent()
     }
 
+    class Hook {
+        private var implementation: () -> Void
+
+        init(implementation: @escaping () -> Void) {
+            self.implementation = implementation
+        }
+
+        func performImplementation() -> Void {
+            implementation()
+        }
+    }
+
+    private var webSocketOpenHook: Hook?
+    private var webSocketOpenHookSempahore = DispatchSemaphore(value: 1)
+
+    private func addWebSocketOpenHook(_ hook: Hook) {
+        webSocketOpenHookSempahore.wait()
+        webSocketOpenHook = hook
+        webSocketOpenHookSempahore.signal()
+    }
+
+    private func removeWebSocketOpenHook(_ hook: Hook) {
+        webSocketOpenHookSempahore.wait()
+        if (webSocketOpenHook === hook) {
+            webSocketOpenHook = nil
+        }
+        webSocketOpenHookSempahore.signal()
+    }
+
+    func handleWebSocketOpen() -> Bool {
+        let hook: Hook?
+        webSocketOpenHookSempahore.wait()
+        hook = webSocketOpenHook
+        webSocketOpenHookSempahore.signal()
+
+        if let hook {
+            hook.performImplementation()
+            return true
+        } else {
+            return false
+        }
+    }
+
     private func setupFakeNetworkResponse(_ networkResponse: FakeNetworkResponse) {
-        var hook: AspectToken?
-        hook = ARTSRWebSocket.testSuite_replaceClassMethod(#selector(ARTSRWebSocket.open)) {
+        var hook: Hook?
+        hook = Hook {
             if self.factory.fakeNetworkResponse == nil {
                 return
             }
@@ -1226,7 +1269,9 @@ class TestProxyTransport: ARTWebSocketTransport {
             func performFakeConnectionError(_ secondsForDelay: TimeInterval, error: ARTRealtimeTransportError) {
                 self.queue.asyncAfter(deadline: .now() + secondsForDelay) {
                     self.delegate?.realtimeTransportFailed(self, withError: error)
-                    hook?.remove()
+                    if let hook {
+                        self.removeWebSocketOpenHook(hook)
+                    }
                 }
             }
 
@@ -1244,6 +1289,7 @@ class TestProxyTransport: ARTWebSocketTransport {
                 performFakeConnectionError(0.1 + timeout, error: networkResponse.transportError(for: url))
             }
         }
+        addWebSocketOpenHook(hook!)
     }
 
     private func performNetworkConnectEvent() {
