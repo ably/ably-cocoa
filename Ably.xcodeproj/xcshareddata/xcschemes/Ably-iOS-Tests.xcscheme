@@ -44,6 +44,326 @@
                BlueprintName = "Ably-iOS-Tests"
                ReferencedContainer = "container:Ably.xcodeproj">
             </BuildableReference>
+            <SkippedTests>
+               <Test
+                  Identifier = "ARTArchiveTests">
+               </Test>
+               <Test
+                  Identifier = "ARTDefaultTests">
+               </Test>
+               <Test
+                  Identifier = "ARTInternalLogTests">
+               </Test>
+               <Test
+                  Identifier = "AuthTests">
+               </Test>
+               <Test
+                  Identifier = "BackoffRetryDelayCalculatorTests">
+               </Test>
+               <Test
+                  Identifier = "ClientInformationTests">
+               </Test>
+               <Test
+                  Identifier = "ConstantRetryDelayCalculatorTests">
+               </Test>
+               <Test
+                  Identifier = "CryptoTest">
+               </Test>
+               <Test
+                  Identifier = "CryptoTests">
+               </Test>
+               <Test
+                  Identifier = "DefaultErrorCheckerTests">
+               </Test>
+               <Test
+                  Identifier = "DefaultJitterCoefficientGeneratorTests">
+               </Test>
+               <Test
+                  Identifier = "DeltaCodecTests">
+               </Test>
+               <Test
+                  Identifier = "GCDTests">
+               </Test>
+               <Test
+                  Identifier = "InternalLogTests">
+               </Test>
+               <Test
+                  Identifier = "LogAdapterTests">
+               </Test>
+               <Test
+                  Identifier = "ObjcppTest">
+               </Test>
+               <Test
+                  Identifier = "ObjectLifetimesTests">
+               </Test>
+               <Test
+                  Identifier = "PushActivationStateMachineTests">
+               </Test>
+               <Test
+                  Identifier = "PushAdminTests">
+               </Test>
+               <Test
+                  Identifier = "PushChannelTests">
+               </Test>
+               <Test
+                  Identifier = "PushTests">
+               </Test>
+               <Test
+                  Identifier = "ReadmeExamplesTests">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientChannelTests">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientChannelsTests">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__001__Connection__should_connect_automatically()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__002__Connection__should_connect_manually()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__003__Connection__API_version_param_must_be_included_in_all_connections()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__004__Connection__Library_and_version_param__agent__should_include_the__Ably_Agent__header_value()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__005__Connection__basic_operations_should_work_simultaneously()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__006__Connection__should_have_an_opened_websocket_connection_and_received_a_CONNECTED_ProtocolMessage()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__007__Connection__should_make_a_new_connection_with_a_new_transport_instance_if_the_state_is_CLOSING()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__008__Connection__it_should_make_sure_that__when_the_CLOSED_ProtocolMessage_arrives_for_the_old_connection__it_doesn_t_affect_the_new_one()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__009__Connection__should_enter_FAILED_state_when_API_key_is_invalid()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__010__Connection__attributes_within_ConnectionDetails_should_be_used_as_defaults()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__016__Connection__ConnectionDetails__maxMessageSize_overrides_the_default_maxMessageSize()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__017__Connection__url__should_connect_to_the_default_host()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__018__Connection__url__should_connect_with_query_string_params()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__019__Connection__url__should_connect_with_query_string_params_including_clientId()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__020__Connection__event_emitter__should_emit_events_for_state_changes()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__021__Connection__event_emitter__should_never_emit_a_ConnectionState_event_for_a_state_equal_to_the_previous_state()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__022__Connection__event_emitter__should_emit_states_on_a_new_connection()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__023__Connection__event_emitter__should_emit_states_when_connection_is_closed()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__024__Connection__event_emitter__should_have_the_current_state()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__025__Connection__event_emitter__should_have_a_ConnectionStateChange_as_first_argument_for_every_connection_state_change()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__026__Connection__event_emitter__should_have_the_reason_which_contains_an_ErrorInfo()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__027__Connection__event_emitter__any_state_change_triggered_by_a_ProtocolMessage_that_contains_an_Error_member_should_populate_the_Reason_property()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__028__Connection__ACK_and_NACK__should_expect_either_an_ACK_or_NACK_to_confirm__successful_receipt_and_acceptance_of_message()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__029__Connection__ACK_and_NACK__should_expect_either_an_ACK_or_NACK_to_confirm__successful_receipt_and_acceptance_of_presence()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__030__Connection__ACK_and_NACK__should_expect_either_an_ACK_or_NACK_to_confirm__message_failure()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__031__Connection__ACK_and_NACK__should_expect_either_an_ACK_or_NACK_to_confirm__presence_failure()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__032__Connection__ACK_and_NACK__ProtocolMessage__should_contain_unique_serially_incrementing_msgSerial_along_with_the_count()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__033__Connection__ACK_and_NACK__ProtocolMessage__should_continue_incrementing_msgSerial_serially_if_the_connection_resumes_successfully()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__034__Connection__ACK_and_NACK__ProtocolMessage__should_reset_msgSerial_serially_if_the_connection_does_not_resume()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__035__Connection__ACK_and_NACK__should_trigger_the_failure_callback_for_the_remaining_pending_messages_if__connection_is_closed()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__036__Connection__ACK_and_NACK__should_trigger_the_failure_callback_for_the_remaining_pending_messages_if__connection_state_enters_FAILED()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__037__Connection__ACK_and_NACK__should_trigger_the_failure_callback_for_the_remaining_pending_messages_if__lost_connection_state()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__038__Connection__connection_id__should_be_null_until_connected()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__039__Connection__connection_id__should_have_unique_IDs()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__040__Connection__connection_key__should_be_null_until_connected()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__041__Connection__connection_key__should_have_unique_connection_keys()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__042__Connection__serial__should_be_minus_1_once_connected()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__043__Connection__serial__should_not_update_when_a_message_is_sent_but_increments_by_one_when_ACK_is_received()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__044__Connection__serial__should_have_last_known_connection_serial_from_restored_connection()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__045__Connection__close__if_CONNECTING__do_the_operation_once_CONNECTED()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__046__Connection__close__if_CONNECTED__should_send_a_CLOSE_action__change_state_to_CLOSING_and_receive_a_CLOSED_action()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__047__Connection__close__should_transition_to_CLOSED_action_when_the_close_process_timeouts()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__048__Connection__close__transitions_to_the_CLOSING_state_and_then_to_the_CLOSED_state_if_the_transport_is_abruptly_closed()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__049__Connection__close__if_DISCONNECTED__aborts_the_retry_and_moves_immediately_to_CLOSED()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__050__Connection__close__if_SUSPENDED__aborts_the_retry_and_moves_immediately_to_CLOSED()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__051__Connection__ping__fails_if_in_the_INITIALIZED__SUSPENDED__CLOSING__CLOSED_or_FAILED_state()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__052__Connection__ping__should_send_a_ProtocolMessage_with_action_HEARTBEAT_and_expects_a_HEARTBEAT_message_in_response()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__053__Connection__ping__should_fail_if_a_HEARTBEAT_ProtocolMessage_is_not_received_within_the_default_realtime_request_timeout()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__054__Connection__connection_request_fails__on_DISCONNECTED_after_CONNECTED__should_not_emit_error_with_a_renewable_token()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__055__Connection__connection_request_fails__on_token_error_while_CONNECTING__reissues_token_and_reconnects()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__056__Connection__connection_request_fails__should_transition_to_disconnected_when_the_token_renewal_fails()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__057__Connection__connection_request_fails__should_transition_to_Failed_state_because_the_token_is_invalid_and_not_renewable()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__058__Connection__connection_request_fails__connection_attempt_should_fail_if_not_connected_within_the_default_realtime_request_timeout()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__059__Connection__connection_request_fails__connection_attempt_fails_for_any_recoverable_reason()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__060__Connection__connection_request_fails__connection_state_has_been_in_the_DISCONNECTED_state_for_more_than_the_default_connectionStateTtl_should_change_the_state_to_SUSPENDED()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__061__Connection__connection_request_fails__should_change_the_state_to_SUSPENDED_when_the_connection_state_has_been_in_the_DISCONNECTED_state_for_more_than_the_connectionStateTtl()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__062__Connection__connection_request_fails__on_CLOSE_the_connection_should_stop_connection_retries()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__063__Connection__connection_failures_once_CONNECTED__should_not_receive_published_messages_until_the_connection_reconnects_successfully()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__064__Connection__connection_failures_once_CONNECTED__if_a_Connection_transport_is_disconnected_unexpectedly_or_if_a_token_expires__then_the_Connection_manager_will_immediately_attempt_to_reconnect()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__067__Connection__connection_failures_once_CONNECTED__reconnects_to_the_websocket_endpoint_with_additional_querystring_params__resume_is_the_private_connection_key_and_connection_serial_is_the_most_recent_ProtocolMessage_connectionSerial_received()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__068__Connection__connection_failures_once_CONNECTED__System_s_response_to_a_resume_request__CONNECTED_ProtocolMessage_with_the_same_connectionId_as_the_current_client__and_no_error()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__069__Connection__connection_failures_once_CONNECTED__System_s_response_to_a_resume_request__CONNECTED_ProtocolMessage_with_the_same_connectionId_as_the_current_client_and_an_non_fatal_error()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__101__Connection__Host_Fallback__should_move_to_disconnected_when_there_s_no_internet__with_NSPOSIXErrorDomain_with_code_50()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__102__Connection__Host_Fallback__should_move_to_disconnected_when_there_s_no_internet__with_any_kCFErrorDomainCFNetwork()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__106__Connection__Operating_System_events_for_network_internet_connectivity_changes__should_immediately_attempt_to_connect_if_the_operating_system_indicates_that_the_underlying_internet_connection_is_now_available_when_DISCONNECTED_or_SUSPENDED()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__107__Connection__Operating_System_events_for_network_internet_connectivity_changes__Ably_can_request_that_a_connected_client_re_authenticates_by_sending_the_client_an_AUTH_ProtocolMessage()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__108__Connection__Operating_System_events_for_network_internet_connectivity_changes__re_authenticate_and_resume_the_connection_when_the_client_is_forcibly_disconnected_following_a_DISCONNECTED_message_containing_an_error_code_greater_than_or_equal_to_40140_and_less_than_40150()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__109__Connection__Operating_System_events_for_network_internet_connectivity_changes__should_immediately_change_the_state_to_DISCONNECTED_if_the_operating_system_indicates_that_the_underlying_internet_connection_is_no_longer_available__when_CONNECTING()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientConnectionTests/test__110__Connection__Operating_System_events_for_network_internet_connectivity_changes__should_immediately_change_the_state_to_DISCONNECTED_if_the_operating_system_indicates_that_the_underlying_internet_connection_is_no_longer_available__when_CONNECTED()">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientPresenceTests">
+               </Test>
+               <Test
+                  Identifier = "RealtimeClientTests">
+               </Test>
+               <Test
+                  Identifier = "RestClientChannelTests">
+               </Test>
+               <Test
+                  Identifier = "RestClientChannelsTests">
+               </Test>
+               <Test
+                  Identifier = "RestClientPresenceTests">
+               </Test>
+               <Test
+                  Identifier = "RestClientStatsTests">
+               </Test>
+               <Test
+                  Identifier = "RestClientTests">
+               </Test>
+               <Test
+                  Identifier = "RestPaginatedTests">
+               </Test>
+               <Test
+                  Identifier = "ResumeRequestResponseTests">
+               </Test>
+               <Test
+                  Identifier = "RetrySequenceTests">
+               </Test>
+               <Test
+                  Identifier = "StatsTests">
+               </Test>
+               <Test
+                  Identifier = "StringifiableTests">
+               </Test>
+               <Test
+                  Identifier = "UtilitiesTests">
+               </Test>
+            </SkippedTests>
          </TestableReference>
       </Testables>
    </TestAction>
