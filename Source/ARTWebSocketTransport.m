@@ -118,6 +118,7 @@ Class configuredWebsocketClass = nil;
     ARTLogDebug(self.logger, @"finished setupWebSocket, self.websocket is %@", self.websocket);
     // Connect
     [self.websocket open];
+    ARTLogDebug(self.logger, @"called open on self.websocket");
 }
 
 - (void)connectWithToken:(NSString *)token {
