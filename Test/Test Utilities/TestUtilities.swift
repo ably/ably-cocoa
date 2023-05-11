@@ -9,6 +9,14 @@ typealias HookToken = AspectToken
 
 let AblyTestsErrorDomain = "test.ably.io"
 
+class TaggingLogger: ARTLog {
+    var test: Test!
+
+    override func log(_ message: String, with level: ARTLogLevel) {
+        super.log("(Test \(test.id)) \(message)", with: level)
+    }
+}
+
 class AblyTestsConfiguration: NSObject, XCTestObservation {
     override init() {
         super.init()
@@ -144,6 +152,9 @@ class AblyTests {
     class func clientOptions(for test: Test, debug: Bool = false, key: String? = nil, requestToken: Bool = false) throws -> ARTClientOptions {
         let options = ARTClientOptions()
         options.environment = getEnvironment()
+        let logger = TaggingLogger()
+        logger.test = test
+        options.logHandler = logger
         if debug {
             options.logLevel = .verbose
         }
