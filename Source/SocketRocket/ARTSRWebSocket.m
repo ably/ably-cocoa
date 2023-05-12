@@ -72,7 +72,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 
 @interface ARTSRWebSocket ()  <NSStreamDelegate>
 
-@property (atomic, readwrite) ARTSRReadyState readyState;
+@property (atomic, readwrite) ARTWebSocketReadyState readyState;
 
 // Specifies whether SSL trust chain should NOT be evaluated.
 // By default this flag is set to NO, meaning only secure SSL connections are allowed.
@@ -162,7 +162,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
     _requestRequiresSSL = ARTSRURLRequiresSSL(_url);
     _logger = logger;
 
-    _readyState = ARTSR_CONNECTING;
+    _readyState = ARTWebSocketReadyStateConnecting;
 
     _propertyLock = OS_UNFAIR_LOCK_INIT;
     _kvoLock = ARTSRMutexInitRecursive();
@@ -280,7 +280,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 
 #pragma mark readyState
 
-- (void)setReadyState:(ARTSRReadyState)readyState
+- (void)setReadyState:(ARTWebSocketReadyState)readyState
 {
     @try {
         ARTSRMutexLock(_kvoLock);
@@ -297,9 +297,9 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
     }
 }
 
-- (ARTSRReadyState)readyState
+- (ARTWebSocketReadyState)readyState
 {
-    ARTSRReadyState state = 0;
+    ARTWebSocketReadyState state = 0;
     os_unfair_lock_lock(&_propertyLock);
     state = _readyState;
     os_unfair_lock_unlock(&_propertyLock);
@@ -317,14 +317,14 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 - (void)open
 {
     assert(_url);
-    NSAssert(self.readyState == ARTSR_CONNECTING, @"Cannot call -(void)open on ARTSRWebSocket more than once.");
+    NSAssert(self.readyState == ARTWebSocketReadyStateConnecting, @"Cannot call -(void)open on ARTSRWebSocket more than once.");
 
     _selfRetain = self;
 
     if (_urlRequest.timeoutInterval > 0) {
         dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(_urlRequest.timeoutInterval * NSEC_PER_SEC));
         dispatch_after(popTime, dispatch_get_main_queue(), ^{
-            if (self.readyState == ARTSR_CONNECTING) {
+            if (self.readyState == ARTWebSocketReadyStateConnecting) {
                 NSError *error = ARTSRErrorWithDomainCodeDescription(NSURLErrorDomain, NSURLErrorTimedOut, @"Timed out connecting to server.");
                 [self _failWithError:error];
             }
@@ -414,13 +414,13 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
         _protocol = negotiatedProtocol;
     }
 
-    self.readyState = ARTSR_OPEN;
+    self.readyState = ARTWebSocketReadyStateOpen;
 
     if (!_didFail) {
         [self _readFrameNew];
     }
 
-    [self.delegateController performDelegateBlock:^(id<ARTSRWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
+    [self.delegateController performDelegateBlock:^(id<ARTWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
         if (availableMethods.didOpen) {
             [delegate webSocketDidOpen:self];
         }
@@ -507,13 +507,13 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 {
     assert(code);
     dispatch_async(_workQueue, ^{
-        if (self.readyState == ARTSR_CLOSING || self.readyState == ARTSR_CLOSED) {
+        if (self.readyState == ARTWebSocketReadyStateClosing || self.readyState == ARTWebSocketReadyStateClosed) {
             return;
         }
 
-        BOOL wasConnecting = self.readyState == ARTSR_CONNECTING;
+        BOOL wasConnecting = self.readyState == ARTWebSocketReadyStateConnecting;
 
-        self.readyState = ARTSR_CLOSING;
+        self.readyState = ARTWebSocketReadyStateClosing;
 
         ARTSRDebugLog(self.logger, @"Closing with code %ld reason %@", (long)code, reason);
 
@@ -563,15 +563,15 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 - (void)_failWithError:(NSError *)error;
 {
     dispatch_async(self->_workQueue, ^{
-        if (self.readyState != ARTSR_CLOSED) {
+        if (self.readyState != ARTWebSocketReadyStateClosed) {
             self->_failed = YES;
-            [self.delegateController performDelegateBlock:^(id<ARTSRWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
+            [self.delegateController performDelegateBlock:^(id<ARTWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
                 if (availableMethods.didFailWithError) {
                     [delegate webSocket:self didFailWithError:error];
                 }
             }];
 
-            self.readyState = ARTSR_CLOSED;
+            self.readyState = ARTWebSocketReadyStateClosed;
 
             ARTSRDebugLog(self.logger, @"Failing with error %@", error.localizedDescription);
 
@@ -612,7 +612,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 
 - (BOOL)sendString:(NSString *)string error:(NSError **)error
 {
-    if (self.readyState != ARTSR_OPEN) {
+    if (self.readyState != ARTWebSocketReadyStateOpen) {
         NSString *message = @"Invalid State: Cannot call `sendString:error:` until connection is open.";
         if (error) {
             *error = ARTSRErrorWithCodeDescription(2134, message);
@@ -636,7 +636,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 
 - (BOOL)sendDataNoCopy:(nullable NSData *)data error:(NSError **)error
 {
-    if (self.readyState != ARTSR_OPEN) {
+    if (self.readyState != ARTWebSocketReadyStateOpen) {
         NSString *message = @"Invalid State: Cannot call `sendDataNoCopy:error:` until connection is open.";
         if (error) {
             *error = ARTSRErrorWithCodeDescription(2134, message);
@@ -657,7 +657,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 
 - (BOOL)sendPing:(nullable NSData *)data error:(NSError **)error
 {
-    if (self.readyState != ARTSR_OPEN) {
+    if (self.readyState != ARTWebSocketReadyStateOpen) {
         NSString *message = @"Invalid State: Cannot call `sendPing:error:` until connection is open.";
         if (error) {
             *error = ARTSRErrorWithCodeDescription(2134, message);
@@ -676,7 +676,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 - (void)_handlePingWithData:(nullable NSData *)data
 {
     // Need to pingpong this off _callbackQueue first to make sure messages happen in order
-    [self.delegateController performDelegateBlock:^(id<ARTSRWebSocketDelegate> _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
+    [self.delegateController performDelegateBlock:^(id<ARTWebSocketDelegate> _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
         if (availableMethods.didReceivePing) {
             [delegate webSocket:self didReceivePingWithData:data];
         }
@@ -689,7 +689,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 - (void)handlePong:(NSData *)pongData;
 {
     ARTSRDebugLog(self.logger, @"Received pong");
-    [self.delegateController performDelegateBlock:^(id<ARTSRWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
+    [self.delegateController performDelegateBlock:^(id<ARTWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
         if (availableMethods.didReceivePong) {
             [delegate webSocket:self didReceivePong:pongData];
         }
@@ -762,7 +762,7 @@ static inline BOOL closeCodeIsValid(int closeCode) {
 
     [self assertOnWorkQueue];
 
-    if (self.readyState == ARTSR_OPEN) {
+    if (self.readyState == ARTWebSocketReadyStateOpen) {
         [self closeWithCode:1000 reason:nil];
     }
     dispatch_async(_workQueue, ^{
@@ -806,7 +806,7 @@ static inline BOOL closeCodeIsValid(int closeCode) {
                 return;
             }
             ARTSRDebugLog(self.logger, @"Received text message.");
-            [self.delegateController performDelegateBlock:^(id<ARTSRWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
+            [self.delegateController performDelegateBlock:^(id<ARTWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
                 // Don't convert into string - iff `delegate` tells us not to. Otherwise - create UTF8 string and handle that.
                 if (availableMethods.shouldConvertTextFrameToString && ![delegate webSocketShouldConvertTextFrameToString:self]) {
                     if (availableMethods.didReceiveMessage) {
@@ -828,7 +828,7 @@ static inline BOOL closeCodeIsValid(int closeCode) {
         }
         case ARTSROpCodeBinaryFrame: {
             ARTSRDebugLog(self.logger, @"Received data message.");
-            [self.delegateController performDelegateBlock:^(id<ARTSRWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
+            [self.delegateController performDelegateBlock:^(id<ARTWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
                 if (availableMethods.didReceiveMessage) {
                     [delegate webSocket:self didReceiveMessage:frameData];
                 }
@@ -858,7 +858,7 @@ static inline BOOL closeCodeIsValid(int closeCode) {
 {
     assert(frame_header.opcode != 0);
 
-    if (self.readyState == ARTSR_CLOSED) {
+    if (self.readyState == ARTWebSocketReadyStateClosed) {
         return;
     }
 
@@ -1099,7 +1099,7 @@ static const uint8_t ARTSRPayloadLenMask   = 0x7F;
         }
 
         if (!_failed) {
-            [self.delegateController performDelegateBlock:^(id<ARTSRWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
+            [self.delegateController performDelegateBlock:^(id<ARTWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
                 if (availableMethods.didCloseWithCode) {
                     [delegate webSocket:self didCloseWithCode:self->_closeCode reason:self->_closeReason wasClean:YES];
                 }
@@ -1206,7 +1206,7 @@ static const char CRLFCRLFBytes[] = {'\r', '\n', '\r', '\n'};
 
     BOOL didWork = NO;
 
-    if (self.readyState >= ARTSR_CLOSED) {
+    if (self.readyState >= ARTWebSocketReadyStateClosed) {
         return didWork;
     }
 
@@ -1436,12 +1436,12 @@ static const size_t ARTSRFrameHeaderOverhead = 32;
     switch (eventCode) {
         case NSStreamEventOpenCompleted: {
             ARTSRDebugLog(self.logger, @"NSStreamEventOpenCompleted %@", aStream);
-            if (self.readyState >= ARTSR_CLOSING) {
+            if (self.readyState >= ARTWebSocketReadyStateClosing) {
                 return;
             }
             assert(_readBuffer);
 
-            if (!_requestRequiresSSL && self.readyState == ARTSR_CONNECTING && aStream == _inputStream) {
+            if (!_requestRequiresSSL && self.readyState == ARTWebSocketReadyStateConnecting && aStream == _inputStream) {
                 [self didConnect];
             }
 
@@ -1468,15 +1468,15 @@ static const size_t ARTSRFrameHeaderOverhead = 32;
                 [self _failWithError:aStream.streamError];
             } else {
                 dispatch_async(_workQueue, ^{
-                    if (self.readyState != ARTSR_CLOSED) {
-                        self.readyState = ARTSR_CLOSED;
+                    if (self.readyState != ARTWebSocketReadyStateClosed) {
+                        self.readyState = ARTWebSocketReadyStateClosed;
                         [self _scheduleCleanup];
                     }
 
                     if (!self->_sentClose && !self->_failed) {
                         self->_sentClose = YES;
                         // If we get closed in this state it's probably not clean because we should be sending this when we send messages
-                        [self.delegateController performDelegateBlock:^(id<ARTSRWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
+                        [self.delegateController performDelegateBlock:^(id<ARTWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
                             if (availableMethods.didCloseWithCode) {
                                 [delegate webSocket:self
                                    didCloseWithCode:ARTSRStatusCodeGoingAway
@@ -1530,12 +1530,12 @@ static const size_t ARTSRFrameHeaderOverhead = 32;
 #pragma mark - Delegate
 ///--------------------------------------
 
-- (id<ARTSRWebSocketDelegate> _Nullable)delegate
+- (id<ARTWebSocketDelegate> _Nullable)delegate
 {
     return self.delegateController.delegate;
 }
 
-- (void)setDelegate:(id<ARTSRWebSocketDelegate> _Nullable)delegate
+- (void)setDelegate:(id<ARTWebSocketDelegate> _Nullable)delegate
 {
     self.delegateController.delegate = delegate;
 }

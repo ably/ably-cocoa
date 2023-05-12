@@ -18,6 +18,7 @@
 #import "ARTStringifiable.h"
 #import "ARTClientInformation.h"
 #import "ARTInternalLog.h"
+#import "ARTWebSocketFactory.h"
 
 enum {
     ARTWsNeverConnected = -1,
@@ -34,12 +35,17 @@ enum {
     ARTWsTlsError = 1015
 };
 
-NSString *WebSocketStateToStr(ARTSRReadyState state);
+NSString *WebSocketStateToStr(ARTWebSocketReadyState state);
 
-@interface ARTSRWebSocket () <ARTWebSocket>
+NS_ASSUME_NONNULL_BEGIN
+
+@interface ARTWebSocketTransport ()
+
+@property (nonatomic, readonly) id<ARTWebSocketFactory> webSocketFactory;
+
 @end
 
-Class configuredWebsocketClass = nil;
+NS_ASSUME_NONNULL_END
 
 @implementation ARTWebSocketTransport {
     id<ARTRealtimeTransportDelegate> _delegate;
@@ -53,11 +59,7 @@ Class configuredWebsocketClass = nil;
 @synthesize delegate = _delegate;
 @synthesize stateEmitter = _stateEmitter;
 
-+ (void)setWebSocketClass:(const Class)webSocketClass {
-    configuredWebsocketClass = webSocketClass;
-}
-
-- (instancetype)initWithRest:(ARTRestInternal *)rest options:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial logger:(ARTInternalLog *)logger {
+- (instancetype)initWithRest:(ARTRestInternal *)rest options:(ARTClientOptions *)options resumeKey:(NSString *)resumeKey connectionSerial:(NSNumber *)connectionSerial logger:(ARTInternalLog *)logger webSocketFactory:(id<ARTWebSocketFactory>)webSocketFactory {
     self = [super init];
     if (self) {
         _workQueue = rest.queue;
@@ -69,6 +71,7 @@ Class configuredWebsocketClass = nil;
         _resumeKey = resumeKey;
         _connectionSerial = connectionSerial;
         _stateEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_workQueue];
+        _webSocketFactory = webSocketFactory;
 
         ARTLogVerbose(self.logger, @"R:%p WS:%p alloc", _delegate, self);
     }
@@ -83,7 +86,7 @@ Class configuredWebsocketClass = nil;
 }
 
 - (BOOL)send:(NSData *)data withSource:(id)decodedObject {
-    if (self.websocket.readyState == ARTSR_OPEN) {
+    if (self.websocket.readyState == ARTWebSocketReadyStateOpen) {
         [self.websocket send:data];
         return true;
     }
@@ -191,8 +194,7 @@ Class configuredWebsocketClass = nil;
 
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
 
-    const Class websocketClass = configuredWebsocketClass ? configuredWebsocketClass : [ARTSRWebSocket class];
-    self.websocket = [[websocketClass alloc] initWithURLRequest:request logger:self.logger];
+    self.websocket = [self.webSocketFactory createWebSocketWithURLRequest:request logger:self.logger];
     [self.websocket setDelegateDispatchQueue:_workQueue];
     self.websocket.delegate = self;
     self.websocketURL = url;
@@ -242,7 +244,7 @@ Class configuredWebsocketClass = nil;
 }
 
 - (ARTRealtimeTransportState)state {
-    if (self.websocket.readyState == ARTSR_OPEN) {
+    if (self.websocket.readyState == ARTWebSocketReadyStateOpen) {
         return ARTRealtimeTransportStateOpened;
     }
     return _state;
@@ -252,7 +254,7 @@ Class configuredWebsocketClass = nil;
     _state = state;
 }
 
-#pragma mark - ARTSRWebSocketDelegate
+#pragma mark - ARTWebSocketDelegate
 
 // All delegate methods from SocketRocket are called from rest's serial queue,
 // since we pass it as delegate queue on setupWebSocket. So we can safely
@@ -334,7 +336,7 @@ Class configuredWebsocketClass = nil;
 - (void)webSocket:(id<ARTWebSocket>)webSocket didReceiveMessage:(id)message {
     ARTLogVerbose(self.logger, @"R:%p WS:%p websocket did receive message", _delegate, self);
 
-    if (self.websocket.readyState == ARTSR_CLOSED) {
+    if (self.websocket.readyState == ARTWebSocketReadyStateClosed) {
         ARTLogDebug(self.logger, @"R:%p WS:%p websocket is closed, message has been ignored", _delegate, self);
         return;
     }
@@ -371,15 +373,15 @@ Class configuredWebsocketClass = nil;
 
 @end
 
-NSString *WebSocketStateToStr(ARTSRReadyState state) {
+NSString *WebSocketStateToStr(ARTWebSocketReadyState state) {
     switch (state) {
-        case ARTSR_CONNECTING:
+        case ARTWebSocketReadyStateConnecting:
             return @"Connecting"; //0
-        case ARTSR_OPEN:
+        case ARTWebSocketReadyStateOpen:
             return @"Open"; //1
-        case ARTSR_CLOSING:
+        case ARTWebSocketReadyStateClosing:
             return @"Closing"; //2
-        case ARTSR_CLOSED:
+        case ARTWebSocketReadyStateClosed:
             return @"Closed"; //3
     }
 }
