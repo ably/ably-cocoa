@@ -9,7 +9,7 @@ import Foundation
 import Ably.Private
 
 class SoakTestWebSocket: NSObject, ARTWebSocket {
-    var readyState: ARTSRReadyState
+    var readyState: ARTWebSocketReadyState
     var queue: DispatchQueue!
     var delegate: ARTWebSocketDelegate?
 

@@ -34,7 +34,7 @@ enum {
     ARTWsTlsError = 1015
 };
 
-NSString *WebSocketStateToStr(ARTSRReadyState state);
+NSString *WebSocketStateToStr(ARTWebSocketReadyState state);
 
 @interface ARTSRWebSocket () <ARTWebSocket>
 @end
@@ -371,7 +371,7 @@ Class configuredWebsocketClass = nil;
 
 @end
 
-NSString *WebSocketStateToStr(ARTSRReadyState state) {
+NSString *WebSocketStateToStr(ARTWebSocketReadyState state) {
     switch (state) {
         case ARTSR_CONNECTING:
             return @"Connecting"; //0
