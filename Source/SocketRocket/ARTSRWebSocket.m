@@ -420,7 +420,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
         [self _readFrameNew];
     }
 
-    [self.delegateController performDelegateBlock:^(id<ARTSRWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
+    [self.delegateController performDelegateBlock:^(id<ARTWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
         if (availableMethods.didOpen) {
             [delegate webSocketDidOpen:self];
         }
@@ -565,7 +565,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
     dispatch_async(self->_workQueue, ^{
         if (self.readyState != ARTWebSocketReadyStateClosed) {
             self->_failed = YES;
-            [self.delegateController performDelegateBlock:^(id<ARTSRWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
+            [self.delegateController performDelegateBlock:^(id<ARTWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
                 if (availableMethods.didFailWithError) {
                     [delegate webSocket:self didFailWithError:error];
                 }
@@ -676,7 +676,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 - (void)_handlePingWithData:(nullable NSData *)data
 {
     // Need to pingpong this off _callbackQueue first to make sure messages happen in order
-    [self.delegateController performDelegateBlock:^(id<ARTSRWebSocketDelegate> _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
+    [self.delegateController performDelegateBlock:^(id<ARTWebSocketDelegate> _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
         if (availableMethods.didReceivePing) {
             [delegate webSocket:self didReceivePingWithData:data];
         }
@@ -689,7 +689,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 - (void)handlePong:(NSData *)pongData;
 {
     ARTSRDebugLog(self.logger, @"Received pong");
-    [self.delegateController performDelegateBlock:^(id<ARTSRWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
+    [self.delegateController performDelegateBlock:^(id<ARTWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
         if (availableMethods.didReceivePong) {
             [delegate webSocket:self didReceivePong:pongData];
         }
@@ -806,7 +806,7 @@ static inline BOOL closeCodeIsValid(int closeCode) {
                 return;
             }
             ARTSRDebugLog(self.logger, @"Received text message.");
-            [self.delegateController performDelegateBlock:^(id<ARTSRWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
+            [self.delegateController performDelegateBlock:^(id<ARTWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
                 // Don't convert into string - iff `delegate` tells us not to. Otherwise - create UTF8 string and handle that.
                 if (availableMethods.shouldConvertTextFrameToString && ![delegate webSocketShouldConvertTextFrameToString:self]) {
                     if (availableMethods.didReceiveMessage) {
@@ -828,7 +828,7 @@ static inline BOOL closeCodeIsValid(int closeCode) {
         }
         case ARTSROpCodeBinaryFrame: {
             ARTSRDebugLog(self.logger, @"Received data message.");
-            [self.delegateController performDelegateBlock:^(id<ARTSRWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
+            [self.delegateController performDelegateBlock:^(id<ARTWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
                 if (availableMethods.didReceiveMessage) {
                     [delegate webSocket:self didReceiveMessage:frameData];
                 }
@@ -1099,7 +1099,7 @@ static const uint8_t ARTSRPayloadLenMask   = 0x7F;
         }
 
         if (!_failed) {
-            [self.delegateController performDelegateBlock:^(id<ARTSRWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
+            [self.delegateController performDelegateBlock:^(id<ARTWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
                 if (availableMethods.didCloseWithCode) {
                     [delegate webSocket:self didCloseWithCode:self->_closeCode reason:self->_closeReason wasClean:YES];
                 }
@@ -1476,7 +1476,7 @@ static const size_t ARTSRFrameHeaderOverhead = 32;
                     if (!self->_sentClose && !self->_failed) {
                         self->_sentClose = YES;
                         // If we get closed in this state it's probably not clean because we should be sending this when we send messages
-                        [self.delegateController performDelegateBlock:^(id<ARTSRWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
+                        [self.delegateController performDelegateBlock:^(id<ARTWebSocketDelegate>  _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods) {
                             if (availableMethods.didCloseWithCode) {
                                 [delegate webSocket:self
                                    didCloseWithCode:ARTSRStatusCodeGoingAway
@@ -1530,12 +1530,12 @@ static const size_t ARTSRFrameHeaderOverhead = 32;
 #pragma mark - Delegate
 ///--------------------------------------
 
-- (id<ARTSRWebSocketDelegate> _Nullable)delegate
+- (id<ARTWebSocketDelegate> _Nullable)delegate
 {
     return self.delegateController.delegate;
 }
 
-- (void)setDelegate:(id<ARTSRWebSocketDelegate> _Nullable)delegate
+- (void)setDelegate:(id<ARTWebSocketDelegate> _Nullable)delegate
 {
     self.delegateController.delegate = delegate;
 }

@@ -36,9 +36,6 @@ enum {
 
 NSString *WebSocketStateToStr(ARTWebSocketReadyState state);
 
-@interface ARTSRWebSocket () <ARTWebSocket>
-@end
-
 Class configuredWebsocketClass = nil;
 
 @implementation ARTWebSocketTransport {
@@ -252,7 +249,7 @@ Class configuredWebsocketClass = nil;
     _state = state;
 }
 
-#pragma mark - ARTSRWebSocketDelegate
+#pragma mark - ARTWebSocketDelegate
 
 // All delegate methods from SocketRocket are called from rest's serial queue,
 // since we pass it as delegate queue on setupWebSocket. So we can safely
