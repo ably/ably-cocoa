@@ -4407,7 +4407,8 @@ class RealtimeClientConnectionTests: XCTestCase {
     func test__011__Connection__should_disconnect_the_transport_when_no_activity_exist() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let realtimeRequestTimeout = 0.5
+        // This needs to be sufficiently long such that we can expect to receive a CONNECTED ProtocolMessage within this duration after starting a connection attempt (there's no "correct" value since it depends on network conditions, but 1.5s seemed to work locally and in CI at time of writing). But we also don't want it to be longer than necessary since that would impact test execution time.
+        let realtimeRequestTimeout = 1.5
         options.testOptions.realtimeRequestTimeout = realtimeRequestTimeout
         let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
@@ -4462,7 +4463,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
         }
 
-        XCTAssertEqual(expectedInactivityTimeout, 3.5)
+        XCTAssertEqual(expectedInactivityTimeout, 4.5)
         XCTAssertEqual(client.internal.maxIdleInterval, 3.0)
     }
 
