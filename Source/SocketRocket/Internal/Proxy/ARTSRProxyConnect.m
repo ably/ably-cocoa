@@ -372,7 +372,7 @@
 
 - (void)stream:(NSStream *)aStream handleEvent:(NSStreamEvent)eventCode;
 {
-    ARTSRDebugLog(self.logger, @"stream handleEvent %u", eventCode);
+    ARTSRDebugLog(self.logger, @"stream handleEvent %lu", (unsigned long)eventCode);
     switch (eventCode) {
         case NSStreamEventOpenCompleted: {
             if (aStream == self.inputStream) {
@@ -472,14 +472,14 @@
     NSInteger responseCode = CFHTTPMessageGetResponseStatusCode(_receivedHTTPHeaders);
 
     if (responseCode >= 299) {
-        ARTSRDebugLog(self.logger, @"Connect to Proxy Request failed with response code %d", responseCode);
+        ARTSRDebugLog(self.logger, @"Connect to Proxy Request failed with response code %ld", (long)responseCode);
         NSError *error = ARTSRHTTPErrorWithCodeDescription(responseCode, 2132,
                                                         [NSString stringWithFormat:@"Received bad response code from proxy server: %d.",
                                                          (int)responseCode]);
         [self _failWithError:error];
         return;
     }
-    ARTSRDebugLog(self.logger, @"proxy connect return %d, call socket connect", responseCode);
+    ARTSRDebugLog(self.logger, @"proxy connect return %ld, call socket connect", (long)responseCode);
     [self _didConnect];
 }
 

@@ -8,31 +8,46 @@
 import Foundation
 import Ably.Private
 
+class SoakTestWebSocketFactory: WebSocketFactory {
+    func createWebSocket(with request: URLRequest, logger: InternalLog?) -> ARTWebSocket {
+        return SoakTestWebSocket(urlRequest: request)
+    }
+}
+
+class SoakTestRealtimeTransportFactory: RealtimeTransportFactory {
+    func transport(withRest rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, connectionSerial: NSNumber?, logger: InternalLog) -> ARTRealtimeTransport {
+        return ARTWebSocketTransport(
+            rest: rest,
+            options: options,
+            resumeKey: resumeKey,
+            connectionSerial: connectionSerial,
+            logger: logger,
+            webSocketFactory: SoakTestWebSocketFactory()
+        )
+    }
+}
+
 class SoakTestWebSocket: NSObject, ARTWebSocket {
-    var readyState: ARTSRReadyState
-    var queue: DispatchQueue!
+    var readyState: ARTWebSocketReadyState
+    var delegateDispatchQueue: DispatchQueue?
     var delegate: ARTWebSocketDelegate?
 
     let id = nextGlobalSerial()
     let nextConnectionSerial: () -> Int64
 
     required init(urlRequest request: URLRequest) {
-        readyState = .CLOSED
+        readyState = .closed
         // TODO (maybe?): Extract connectionKey from params, resume conn state if
         // connectionStateTtl hasn't passed yet.
         nextConnectionSerial = serialSequence(label: "fakeConnection.\(id)", first: -1)
     }
     
-    func setDelegateDispatchQueue(_ queue: DispatchQueue) {
-        self.queue = queue
-    }
-    
     func open() {
-        readyState = .CONNECTING
-        queue.afterSeconds(between: 0.1 ... ARTDefault.realtimeRequestTimeout() + 1.0) {
+        readyState = .connecting
+        delegateDispatchQueue!.afterSeconds(between: 0.1 ... ARTDefault.realtimeRequestTimeout() + 1.0) {
             if true.times(9, outOf: 10) {
-                self.readyState = .OPEN
-                self.delegate?.webSocketDidOpen(self)
+                self.readyState = .open
+                self.delegate?.webSocketDidOpen?(self)
                 
                 self.doIfStillOpen(afterSecondsBetween: 0.1 ... 3.0) {
                     if true.times(9, outOf: 10) {
@@ -67,10 +82,10 @@ class SoakTestWebSocket: NSObject, ARTWebSocket {
                         (.codeMessageTooBig, true),
                         (.codeInternalError, true),
                     ].randomElement(using: &seededRandomNumberGenerator)!
-                    self.delegate?.webSocket(self, didCloseWithCode: code.rawValue, reason: "fake close", wasClean: clean)
+                    self.delegate?.webSocket?(self, didCloseWithCode: code.rawValue, reason: "fake close", wasClean: clean)
                 }
             } else {
-                self.delegate?.webSocket(self, didFailWithError: fakeError)
+                self.delegate?.webSocket?(self, didFailWithError: fakeError)
             }
         }
     }
@@ -92,16 +107,16 @@ class SoakTestWebSocket: NSObject, ARTWebSocket {
     
     func messageToClient(action: ARTProtocolMessageAction, setUp: (ARTProtocolMessage) -> Void = { _ in }) {
         let message = protocolMessage(action: action, setUp: setUp)
-        self.delegate?.webSocket(self, didReceiveMessage: message)
+        self.delegate?.webSocket?(self, didReceiveMessage: message)
     }
     
     func close(withCode code: Int, reason: String?) {
-        readyState = .CLOSING
-        queue.afterSeconds(between: 0.1 ... 3.0) {
-            if self.readyState != .CLOSING {
+        readyState = .closing
+        delegateDispatchQueue!.afterSeconds(between: 0.1 ... 3.0) {
+            if self.readyState != .closing {
                 return
             }
-            self.readyState = .CLOSED
+            self.readyState = .closed
         }
     }
     
@@ -139,11 +154,11 @@ class SoakTestWebSocket: NSObject, ARTWebSocket {
             doIfStillOpen(afterSecondsBetween: 0.1 ... 3.0) {
                 self.messageToClient(action: .closed)
                 self.doIfStillOpen(afterSecondsBetween: 0.1 ... 0.5) {
-                    self.delegate?.webSocket(self, didCloseWithCode: 1000, reason: nil, wasClean: true)
+                    self.delegate?.webSocket?(self, didCloseWithCode: 1000, reason: nil, wasClean: true)
                 }
             }
         case .message:
-            queue.async {
+            delegateDispatchQueue!.async {
                 self.pendingSerials.append(message.msgSerial!)
             }
         case .attach:
@@ -316,8 +331,8 @@ class SoakTestWebSocket: NSObject, ARTWebSocket {
     }
     
     func doIfStillOpen(afterSecondsBetween between: ClosedRange<TimeInterval>, execute: @escaping () -> Void) {
-        queue.afterSeconds(between: between) {
-            if self.readyState != .OPEN {
+        delegateDispatchQueue!.afterSeconds(between: between) {
+            if self.readyState != .open {
                 return
             }
             execute()

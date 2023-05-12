@@ -1101,9 +1101,9 @@ class TestProxyTransport: ARTWebSocketTransport {
         return _factory
     }
 
-    init(factory: TestProxyTransportFactory, rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, logger: InternalLog) {
+    init(factory: TestProxyTransportFactory, rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, logger: InternalLog, webSocketFactory: WebSocketFactory) {
         self._factory = factory
-        super.init(rest: rest, options: options, resumeKey: resumeKey, logger: logger)
+        super.init(rest: rest, options: options, resumeKey: resumeKey, logger: logger, webSocketFactory: webSocketFactory)
     }
 
     fileprivate(set) var lastUrl: URL?
@@ -1604,19 +1604,19 @@ extension ARTWebSocketTransport {
         let CLOSE_NORMAL = 1000
         self.setState(ARTRealtimeTransportState.closing)
         let webSocketDelegate = self as ARTWebSocketDelegate
-        webSocketDelegate.webSocket(self.websocket!, didCloseWithCode: CLOSE_NORMAL, reason: "", wasClean: true)
+        webSocketDelegate.webSocket?(self.websocket!, didCloseWithCode: CLOSE_NORMAL, reason: "", wasClean: true)
     }
 
     func simulateIncomingAbruptlyClose() {
         let CLOSE_ABNORMAL = 1006
         let webSocketDelegate = self as ARTWebSocketDelegate
-        webSocketDelegate.webSocket(self.websocket!, didCloseWithCode: CLOSE_ABNORMAL, reason: "connection was closed abnormally", wasClean: false)
+        webSocketDelegate.webSocket?(self.websocket!, didCloseWithCode: CLOSE_ABNORMAL, reason: "connection was closed abnormally", wasClean: false)
     }
 
     func simulateIncomingError() {
         let error = NSError(domain: ARTAblyErrorDomain, code: 0, userInfo: [NSLocalizedDescriptionKey:"Fail test"])
         let webSocketDelegate = self as ARTWebSocketDelegate
-        webSocketDelegate.webSocket(self.websocket!, didFailWithError: error)
+        webSocketDelegate.webSocket?(self.websocket!, didFailWithError: error)
     }
 }
 

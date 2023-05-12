@@ -10,15 +10,9 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "ARTWebSocket.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-typedef NS_ENUM(NSInteger, ARTSRReadyState) {
-    ARTSR_CONNECTING   = 0,
-    ARTSR_OPEN         = 1,
-    ARTSR_CLOSING      = 2,
-    ARTSR_CLOSED       = 3,
-};
 
 typedef NS_ENUM(NSInteger, ARTSRStatusCode) {
     // 0-999: Reserved and not used.
@@ -58,7 +52,7 @@ extern NSString *const ARTSRWebSocketErrorDomain;
  */
 extern NSString *const ARTSRHTTPResponseErrorKey;
 
-@protocol ARTSRWebSocketDelegate;
+@protocol ARTWebSocketDelegate;
 
 ///--------------------------------------
 #pragma mark - ARTSRWebSocket
@@ -67,14 +61,14 @@ extern NSString *const ARTSRHTTPResponseErrorKey;
 /**
  A `ARTSRWebSocket` object lets you connect, send and receive data to a remote Web Socket.
  */
-@interface ARTSRWebSocket : NSObject <NSStreamDelegate>
+@interface ARTSRWebSocket : NSObject <ARTWebSocket, NSStreamDelegate>
 
 /**
  The delegate of the web socket.
 
  The web socket delegate is notified on all state changes that happen to the web socket.
  */
-@property (nonatomic, weak) id <ARTSRWebSocketDelegate> delegate;
+@property (nonatomic, weak) id <ARTWebSocketDelegate> delegate;
 
 /**
  A dispatch queue for scheduling the delegate calls. The queue doesn't need be a serial queue.
@@ -91,11 +85,11 @@ extern NSString *const ARTSRHTTPResponseErrorKey;
 @property (nullable, nonatomic) NSOperationQueue *delegateOperationQueue;
 
 /**
- Current ready state of the socket. Default: `ARTSR_CONNECTING`.
+ Current ready state of the socket. Default: `ARTWebSocketReadyStateConnecting`.
 
  This property is Key-Value Observable and fully thread-safe.
  */
-@property (atomic, readonly) ARTSRReadyState readyState;
+@property (atomic, readonly) ARTWebSocketReadyState readyState;
 
 /**
  An instance of `NSURL` that this socket connects to.
@@ -316,100 +310,6 @@ extern NSString *const ARTSRHTTPResponseErrorKey;
  @return `YES` if the string was scheduled to send, otherwise - `NO`.
  */
 - (BOOL)sendPing:(nullable NSData *)data error:(NSError **)error NS_SWIFT_NAME(sendPing(_:));
-
-@end
-
-///--------------------------------------
-#pragma mark - ARTSRWebSocketDelegate
-///--------------------------------------
-
-/**
- The `ARTSRWebSocketDelegate` protocol describes the methods that `ARTSRWebSocket` objects
- call on their delegates to handle status and messsage events.
- */
-@protocol ARTSRWebSocketDelegate <NSObject>
-
-@optional
-
-#pragma mark Receive Messages
-
-/**
- Called when any message was received from a web socket.
- This method is suboptimal and might be deprecated in a future release.
-
- @param webSocket An instance of `ARTSRWebSocket` that received a message.
- @param message   Received message. Either a `String` or `NSData`.
- */
-- (void)webSocket:(ARTSRWebSocket *)webSocket didReceiveMessage:(id)message;
-
-/**
- Called when a frame was received from a web socket.
-
- @param webSocket An instance of `ARTSRWebSocket` that received a message.
- @param string    Received text in a form of UTF-8 `String`.
- */
-- (void)webSocket:(ARTSRWebSocket *)webSocket didReceiveMessageWithString:(NSString *)string;
-
-/**
- Called when a frame was received from a web socket.
-
- @param webSocket An instance of `ARTSRWebSocket` that received a message.
- @param data      Received data in a form of `NSData`.
- */
-- (void)webSocket:(ARTSRWebSocket *)webSocket didReceiveMessageWithData:(NSData *)data;
-
-#pragma mark Status & Connection
-
-/**
- Called when a given web socket was open and authenticated.
-
- @param webSocket An instance of `ARTSRWebSocket` that was open.
- */
-- (void)webSocketDidOpen:(ARTSRWebSocket *)webSocket;
-
-/**
- Called when a given web socket encountered an error.
-
- @param webSocket An instance of `ARTSRWebSocket` that failed with an error.
- @param error     An instance of `NSError`.
- */
-- (void)webSocket:(ARTSRWebSocket *)webSocket didFailWithError:(NSError *)error;
-
-/**
- Called when a given web socket was closed.
-
- @param webSocket An instance of `ARTSRWebSocket` that was closed.
- @param code      Code reported by the server.
- @param reason    Reason in a form of a String that was reported by the server or `nil`.
- @param wasClean  Boolean value indicating whether a socket was closed in a clean state.
- */
-- (void)webSocket:(ARTSRWebSocket *)webSocket didCloseWithCode:(NSInteger)code reason:(nullable NSString *)reason wasClean:(BOOL)wasClean;
-
-/**
- Called on receive of a ping message from the server.
-
- @param webSocket An instance of `ARTSRWebSocket` that received a ping frame.
- @param data      Payload that was received or `nil` if there was no payload.
- */
-- (void)webSocket:(ARTSRWebSocket *)webSocket didReceivePingWithData:(nullable NSData *)data;
-
-/**
- Called when a pong data was received in response to ping.
-
- @param webSocket An instance of `ARTSRWebSocket` that received a pong frame.
- @param pongData  Payload that was received or `nil` if there was no payload.
- */
-- (void)webSocket:(ARTSRWebSocket *)webSocket didReceivePong:(nullable NSData *)pongData;
-
-/**
- Sent before reporting a text frame to be able to configure if it shuold be convert to a UTF-8 String or passed as `NSData`.
- If the method is not implemented - it will always convert text frames to String.
-
- @param webSocket An instance of `ARTSRWebSocket` that received a text frame.
-
- @return `YES` if text frame should be converted to UTF-8 String, otherwise - `NO`. Default: `YES`.
- */
-- (BOOL)webSocketShouldConvertTextFrameToString:(ARTSRWebSocket *)webSocket NS_SWIFT_NAME(webSocketShouldConvertTextFrameToString(_:));
 
 @end
 
