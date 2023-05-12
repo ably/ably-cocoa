@@ -832,7 +832,9 @@ class AuthTests: XCTestCase {
         options.authCallback = { _, completion in
             getTestTokenDetails(for: test, completion: completion)
         }
-        options.testOptions.realtimeRequestTimeout = 0.5
+
+        // This needs to be sufficiently long such that we can expect to receive a CONNECTED ProtocolMessage within this duration after starting a connection attempt (there's no "correct" value since it depends on network conditions, but 1.5s seemed to work locally and in CI at time of writing). But we also don't want it to be longer than necessary since that would impact test execution time.
+        options.testOptions.realtimeRequestTimeout = 1.5
 
         let realtime = ARTRealtime(options: options)
         defer { realtime.dispose(); realtime.close() }
