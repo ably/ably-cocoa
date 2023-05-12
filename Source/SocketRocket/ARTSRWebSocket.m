@@ -72,7 +72,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 
 @interface ARTSRWebSocket ()  <NSStreamDelegate>
 
-@property (atomic, readwrite) ARTSRReadyState readyState;
+@property (atomic, readwrite) ARTWebSocketReadyState readyState;
 
 // Specifies whether SSL trust chain should NOT be evaluated.
 // By default this flag is set to NO, meaning only secure SSL connections are allowed.
@@ -280,7 +280,7 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 
 #pragma mark readyState
 
-- (void)setReadyState:(ARTSRReadyState)readyState
+- (void)setReadyState:(ARTWebSocketReadyState)readyState
 {
     @try {
         ARTSRMutexLock(_kvoLock);
@@ -297,9 +297,9 @@ NSString *const ARTSRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
     }
 }
 
-- (ARTSRReadyState)readyState
+- (ARTWebSocketReadyState)readyState
 {
-    ARTSRReadyState state = 0;
+    ARTWebSocketReadyState state = 0;
     os_unfair_lock_lock(&_propertyLock);
     state = _readyState;
     os_unfair_lock_unlock(&_propertyLock);
