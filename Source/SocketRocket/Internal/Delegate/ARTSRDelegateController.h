@@ -45,11 +45,11 @@ struct ARTSRDelegateAvailableMethods {
 
 typedef struct ARTSRDelegateAvailableMethods ARTSRDelegateAvailableMethods;
 
-typedef void(^ARTSRDelegateBlock)(id<ARTSRWebSocketDelegate> _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods);
+typedef void(^ARTSRDelegateBlock)(id<ARTWebSocketDelegate> _Nullable delegate, ARTSRDelegateAvailableMethods availableMethods);
 
 @interface ARTSRDelegateController : NSObject
 
-@property (nonatomic, weak) id<ARTSRWebSocketDelegate> delegate;
+@property (nonatomic, weak) id<ARTWebSocketDelegate> delegate;
 @property (atomic, readonly) ARTSRDelegateAvailableMethods availableDelegateMethods;
 
 @property (nullable, nonatomic) dispatch_queue_t dispatchQueue;
