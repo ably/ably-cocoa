@@ -6,10 +6,10 @@ NS_ASSUME_NONNULL_BEGIN
 @class ARTInternalLog;
 
 typedef NS_ENUM(NSInteger, ARTWebSocketReadyState) {
-    ARTSR_CONNECTING   = 0,
-    ARTSR_OPEN         = 1,
-    ARTSR_CLOSING      = 2,
-    ARTSR_CLOSED       = 3,
+    ARTWebSocketReadyStateConnecting   = 0,
+    ARTWebSocketReadyStateOpen         = 1,
+    ARTWebSocketReadyStateClosing      = 2,
+    ARTWebSocketReadyStateClosed       = 3,
 };
 
 /**

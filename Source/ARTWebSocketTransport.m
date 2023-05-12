@@ -83,7 +83,7 @@ Class configuredWebsocketClass = nil;
 }
 
 - (BOOL)send:(NSData *)data withSource:(id)decodedObject {
-    if (self.websocket.readyState == ARTSR_OPEN) {
+    if (self.websocket.readyState == ARTWebSocketReadyStateOpen) {
         [self.websocket send:data];
         return true;
     }
@@ -242,7 +242,7 @@ Class configuredWebsocketClass = nil;
 }
 
 - (ARTRealtimeTransportState)state {
-    if (self.websocket.readyState == ARTSR_OPEN) {
+    if (self.websocket.readyState == ARTWebSocketReadyStateOpen) {
         return ARTRealtimeTransportStateOpened;
     }
     return _state;
@@ -334,7 +334,7 @@ Class configuredWebsocketClass = nil;
 - (void)webSocket:(id<ARTWebSocket>)webSocket didReceiveMessage:(id)message {
     ARTLogVerbose(self.logger, @"R:%p WS:%p websocket did receive message", _delegate, self);
 
-    if (self.websocket.readyState == ARTSR_CLOSED) {
+    if (self.websocket.readyState == ARTWebSocketReadyStateClosed) {
         ARTLogDebug(self.logger, @"R:%p WS:%p websocket is closed, message has been ignored", _delegate, self);
         return;
     }
@@ -373,13 +373,13 @@ Class configuredWebsocketClass = nil;
 
 NSString *WebSocketStateToStr(ARTWebSocketReadyState state) {
     switch (state) {
-        case ARTSR_CONNECTING:
+        case ARTWebSocketReadyStateConnecting:
             return @"Connecting"; //0
-        case ARTSR_OPEN:
+        case ARTWebSocketReadyStateOpen:
             return @"Open"; //1
-        case ARTSR_CLOSING:
+        case ARTWebSocketReadyStateClosing:
             return @"Closing"; //2
-        case ARTSR_CLOSED:
+        case ARTWebSocketReadyStateClosed:
             return @"Closed"; //3
     }
 }
