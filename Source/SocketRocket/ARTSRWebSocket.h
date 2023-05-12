@@ -10,15 +10,9 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "ARTWebSocket.h"
 
 NS_ASSUME_NONNULL_BEGIN
-
-typedef NS_ENUM(NSInteger, ARTSRReadyState) {
-    ARTSR_CONNECTING   = 0,
-    ARTSR_OPEN         = 1,
-    ARTSR_CLOSING      = 2,
-    ARTSR_CLOSED       = 3,
-};
 
 typedef NS_ENUM(NSInteger, ARTSRStatusCode) {
     // 0-999: Reserved and not used.
@@ -95,7 +89,7 @@ extern NSString *const ARTSRHTTPResponseErrorKey;
 
  This property is Key-Value Observable and fully thread-safe.
  */
-@property (atomic, readonly) ARTSRReadyState readyState;
+@property (atomic, readonly) ARTWebSocketReadyState readyState;
 
 /**
  An instance of `NSURL` that this socket connects to.
