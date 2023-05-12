@@ -17,7 +17,7 @@ class SoakTestWebSocket: NSObject, ARTWebSocket {
     let nextConnectionSerial: () -> Int64
 
     required init(urlRequest request: URLRequest) {
-        readyState = .CLOSED
+        readyState = .closed
         // TODO (maybe?): Extract connectionKey from params, resume conn state if
         // connectionStateTtl hasn't passed yet.
         nextConnectionSerial = serialSequence(label: "fakeConnection.\(id)", first: -1)
@@ -28,10 +28,10 @@ class SoakTestWebSocket: NSObject, ARTWebSocket {
     }
     
     func open() {
-        readyState = .CONNECTING
+        readyState = .connecting
         queue.afterSeconds(between: 0.1 ... ARTDefault.realtimeRequestTimeout() + 1.0) {
             if true.times(9, outOf: 10) {
-                self.readyState = .OPEN
+                self.readyState = .open
                 self.delegate?.webSocketDidOpen(self)
                 
                 self.doIfStillOpen(afterSecondsBetween: 0.1 ... 3.0) {
@@ -96,12 +96,12 @@ class SoakTestWebSocket: NSObject, ARTWebSocket {
     }
     
     func close(withCode code: Int, reason: String?) {
-        readyState = .CLOSING
+        readyState = .closing
         queue.afterSeconds(between: 0.1 ... 3.0) {
-            if self.readyState != .CLOSING {
+            if self.readyState != .closing {
                 return
             }
-            self.readyState = .CLOSED
+            self.readyState = .closed
         }
     }
     
@@ -317,7 +317,7 @@ class SoakTestWebSocket: NSObject, ARTWebSocket {
     
     func doIfStillOpen(afterSecondsBetween between: ClosedRange<TimeInterval>, execute: @escaping () -> Void) {
         queue.afterSeconds(between: between) {
-            if self.readyState != .OPEN {
+            if self.readyState != .open {
                 return
             }
             execute()

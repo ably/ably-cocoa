@@ -85,7 +85,7 @@ extern NSString *const ARTSRHTTPResponseErrorKey;
 @property (nullable, nonatomic) NSOperationQueue *delegateOperationQueue;
 
 /**
- Current ready state of the socket. Default: `ARTSR_CONNECTING`.
+ Current ready state of the socket. Default: `ARTWebSocketReadyStateConnecting`.
 
  This property is Key-Value Observable and fully thread-safe.
  */
