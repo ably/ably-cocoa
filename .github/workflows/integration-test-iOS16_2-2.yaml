@@ -1,0 +1,278 @@
+name: "Integration Test: iOS 16.2 (workflow 2)"
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+# IMPORTANT NOTES:
+# - Changes made to this file needs to replicated across other integration-test-*.yaml files.
+# - The Fastlane lane name is duplicated in more than one place within this workflow.
+jobs:
+  check-1:
+    runs-on: macos-latest
+    env:
+      LC_CTYPE: en_US.UTF-8
+      LANG: en_US.UTF-8
+      ABLY_ENV: sandbox
+    steps:
+      - name: Check out SDK repo
+        uses: actions/checkout@v2
+      - name: Log environment information
+        run: ./Scripts/log-environment-information.sh
+      - name: Check out xcparse repo
+        uses: actions/checkout@v3
+        with:
+          repository: ably-forks/xcparse
+          ref: emit-test-case-info
+          path: xcparse
+      - id: get-xcparse-commit-sha
+        name: Get xcparse commit SHA
+        run: |
+          cd xcparse
+          echo "::set-output name=sha::$(git rev-parse HEAD)"
+      - name: "actions/cache@v3 (xcparse binary)"
+        uses: actions/cache@v3
+        with:
+          path: xcparse/.build/debug/xcparse
+          key: ${{ runner.os }}-xcparse-${{ steps.get-xcparse-commit-sha.outputs.sha }}
+      - name: Install Dependencies and Run Tests Continuously
+        env:
+          TEST_OBSERVABILITY_SERVER_AUTH_KEY: ${{ secrets.TEST_OBSERVABILITY_SERVER_AUTH_KEY }}
+        run: |
+          brew install xcbeautify
+          brew install coreutils # for `timeout`
+          make submodules
+          bundle install
+          make update_carthage_dependencies_ios
+          Scripts/continuously-run-tests-and-upload-results.sh --lane test_iOS16_2
+      - name: Upload .xcresult bundles
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: xcresult-bundles-1.tar.gz
+          path: xcresult-bundles.tar.gz
+  check-2:
+    runs-on: macos-latest
+    env:
+      LC_CTYPE: en_US.UTF-8
+      LANG: en_US.UTF-8
+      ABLY_ENV: sandbox
+    steps:
+      - name: Check out SDK repo
+        uses: actions/checkout@v2
+      - name: Log environment information
+        run: ./Scripts/log-environment-information.sh
+      - name: Check out xcparse repo
+        uses: actions/checkout@v3
+        with:
+          repository: ably-forks/xcparse
+          ref: emit-test-case-info
+          path: xcparse
+      - id: get-xcparse-commit-sha
+        name: Get xcparse commit SHA
+        run: |
+          cd xcparse
+          echo "::set-output name=sha::$(git rev-parse HEAD)"
+      - name: "actions/cache@v3 (xcparse binary)"
+        uses: actions/cache@v3
+        with:
+          path: xcparse/.build/debug/xcparse
+          key: ${{ runner.os }}-xcparse-${{ steps.get-xcparse-commit-sha.outputs.sha }}
+      - name: Install Dependencies and Run Tests Continuously
+        env:
+          TEST_OBSERVABILITY_SERVER_AUTH_KEY: ${{ secrets.TEST_OBSERVABILITY_SERVER_AUTH_KEY }}
+        run: |
+          brew install xcbeautify
+          brew install coreutils # for `timeout`
+          make submodules
+          bundle install
+          make update_carthage_dependencies_ios
+          Scripts/continuously-run-tests-and-upload-results.sh --lane test_iOS16_2
+      - name: Upload .xcresult bundles
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: xcresult-bundles-2.tar.gz
+          path: xcresult-bundles.tar.gz
+    needs:
+      - check-1
+  check-3:
+    runs-on: macos-latest
+    env:
+      LC_CTYPE: en_US.UTF-8
+      LANG: en_US.UTF-8
+      ABLY_ENV: sandbox
+    steps:
+      - name: Check out SDK repo
+        uses: actions/checkout@v2
+      - name: Log environment information
+        run: ./Scripts/log-environment-information.sh
+      - name: Check out xcparse repo
+        uses: actions/checkout@v3
+        with:
+          repository: ably-forks/xcparse
+          ref: emit-test-case-info
+          path: xcparse
+      - id: get-xcparse-commit-sha
+        name: Get xcparse commit SHA
+        run: |
+          cd xcparse
+          echo "::set-output name=sha::$(git rev-parse HEAD)"
+      - name: "actions/cache@v3 (xcparse binary)"
+        uses: actions/cache@v3
+        with:
+          path: xcparse/.build/debug/xcparse
+          key: ${{ runner.os }}-xcparse-${{ steps.get-xcparse-commit-sha.outputs.sha }}
+      - name: Install Dependencies and Run Tests Continuously
+        env:
+          TEST_OBSERVABILITY_SERVER_AUTH_KEY: ${{ secrets.TEST_OBSERVABILITY_SERVER_AUTH_KEY }}
+        run: |
+          brew install xcbeautify
+          brew install coreutils # for `timeout`
+          make submodules
+          bundle install
+          make update_carthage_dependencies_ios
+          Scripts/continuously-run-tests-and-upload-results.sh --lane test_iOS16_2
+      - name: Upload .xcresult bundles
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: xcresult-bundles-3.tar.gz
+          path: xcresult-bundles.tar.gz
+    needs:
+      - check-2
+  check-4:
+    runs-on: macos-latest
+    env:
+      LC_CTYPE: en_US.UTF-8
+      LANG: en_US.UTF-8
+      ABLY_ENV: sandbox
+    steps:
+      - name: Check out SDK repo
+        uses: actions/checkout@v2
+      - name: Log environment information
+        run: ./Scripts/log-environment-information.sh
+      - name: Check out xcparse repo
+        uses: actions/checkout@v3
+        with:
+          repository: ably-forks/xcparse
+          ref: emit-test-case-info
+          path: xcparse
+      - id: get-xcparse-commit-sha
+        name: Get xcparse commit SHA
+        run: |
+          cd xcparse
+          echo "::set-output name=sha::$(git rev-parse HEAD)"
+      - name: "actions/cache@v3 (xcparse binary)"
+        uses: actions/cache@v3
+        with:
+          path: xcparse/.build/debug/xcparse
+          key: ${{ runner.os }}-xcparse-${{ steps.get-xcparse-commit-sha.outputs.sha }}
+      - name: Install Dependencies and Run Tests Continuously
+        env:
+          TEST_OBSERVABILITY_SERVER_AUTH_KEY: ${{ secrets.TEST_OBSERVABILITY_SERVER_AUTH_KEY }}
+        run: |
+          brew install xcbeautify
+          brew install coreutils # for `timeout`
+          make submodules
+          bundle install
+          make update_carthage_dependencies_ios
+          Scripts/continuously-run-tests-and-upload-results.sh --lane test_iOS16_2
+      - name: Upload .xcresult bundles
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: xcresult-bundles-4.tar.gz
+          path: xcresult-bundles.tar.gz
+    needs:
+      - check-3
+  check-5:
+    runs-on: macos-latest
+    env:
+      LC_CTYPE: en_US.UTF-8
+      LANG: en_US.UTF-8
+      ABLY_ENV: sandbox
+    steps:
+      - name: Check out SDK repo
+        uses: actions/checkout@v2
+      - name: Log environment information
+        run: ./Scripts/log-environment-information.sh
+      - name: Check out xcparse repo
+        uses: actions/checkout@v3
+        with:
+          repository: ably-forks/xcparse
+          ref: emit-test-case-info
+          path: xcparse
+      - id: get-xcparse-commit-sha
+        name: Get xcparse commit SHA
+        run: |
+          cd xcparse
+          echo "::set-output name=sha::$(git rev-parse HEAD)"
+      - name: "actions/cache@v3 (xcparse binary)"
+        uses: actions/cache@v3
+        with:
+          path: xcparse/.build/debug/xcparse
+          key: ${{ runner.os }}-xcparse-${{ steps.get-xcparse-commit-sha.outputs.sha }}
+      - name: Install Dependencies and Run Tests Continuously
+        env:
+          TEST_OBSERVABILITY_SERVER_AUTH_KEY: ${{ secrets.TEST_OBSERVABILITY_SERVER_AUTH_KEY }}
+        run: |
+          brew install xcbeautify
+          brew install coreutils # for `timeout`
+          make submodules
+          bundle install
+          make update_carthage_dependencies_ios
+          Scripts/continuously-run-tests-and-upload-results.sh --lane test_iOS16_2
+      - name: Upload .xcresult bundles
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: xcresult-bundles-5.tar.gz
+          path: xcresult-bundles.tar.gz
+    needs:
+      - check-4
+  check-6:
+    runs-on: macos-latest
+    env:
+      LC_CTYPE: en_US.UTF-8
+      LANG: en_US.UTF-8
+      ABLY_ENV: sandbox
+    steps:
+      - name: Check out SDK repo
+        uses: actions/checkout@v2
+      - name: Log environment information
+        run: ./Scripts/log-environment-information.sh
+      - name: Check out xcparse repo
+        uses: actions/checkout@v3
+        with:
+          repository: ably-forks/xcparse
+          ref: emit-test-case-info
+          path: xcparse
+      - id: get-xcparse-commit-sha
+        name: Get xcparse commit SHA
+        run: |
+          cd xcparse
+          echo "::set-output name=sha::$(git rev-parse HEAD)"
+      - name: "actions/cache@v3 (xcparse binary)"
+        uses: actions/cache@v3
+        with:
+          path: xcparse/.build/debug/xcparse
+          key: ${{ runner.os }}-xcparse-${{ steps.get-xcparse-commit-sha.outputs.sha }}
+      - name: Install Dependencies and Run Tests Continuously
+        env:
+          TEST_OBSERVABILITY_SERVER_AUTH_KEY: ${{ secrets.TEST_OBSERVABILITY_SERVER_AUTH_KEY }}
+        run: |
+          brew install xcbeautify
+          brew install coreutils # for `timeout`
+          make submodules
+          bundle install
+          make update_carthage_dependencies_ios
+          Scripts/continuously-run-tests-and-upload-results.sh --lane test_iOS16_2
+      - name: Upload .xcresult bundles
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: xcresult-bundles-6.tar.gz
+          path: xcresult-bundles.tar.gz
+    needs:
+      - check-5
