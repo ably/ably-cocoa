@@ -13,7 +13,7 @@
 #import "NSURLRequest+ARTSRWebSocketPrivate.h"
 
 // Required for object file to always be linked.
-void import_NSURLRequest_ARTSRWebSocket() { }
+void import_NSURLRequest_ARTSRWebSocket(void) { }
 
 NS_ASSUME_NONNULL_BEGIN
 

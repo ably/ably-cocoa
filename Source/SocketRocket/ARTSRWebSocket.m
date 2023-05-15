@@ -45,7 +45,7 @@
 #error SocketRocket must be compiled with ARC enabled
 #endif
 
-__attribute__((used)) static void importCategories()
+__attribute__((used)) static void importCategories(void)
 {
     import_NSURLRequest_ARTSRWebSocket();
     import_NSRunLoop_ARTSRWebSocket();
