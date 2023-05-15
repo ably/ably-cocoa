@@ -2731,7 +2731,7 @@ class RealtimeClientChannelTests: XCTestCase {
         channelOne.publish("i", data: ["expectedBundle": 5], clientId: "bar")
         channelOne.publish("j", data: ["expectedBundle": 6])
         // RTL6d1
-        channelOne.publish("k", data: ["expectedBundle": 7, "moreData": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"])
+        channelOne.publish("k", data: ["expectedBundle": 7, "moreData": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"] as [String : Any])
         channelOne.publish("l", data: ["expectedBundle": 8])
         // RTL6d7
         channelOne.publish([ARTMessage(id: "bundle_m", name: "m", data: ["expectedBundle": 9])])

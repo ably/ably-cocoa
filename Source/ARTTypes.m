@@ -27,7 +27,7 @@ NSTimeInterval millisecondsToTimeInterval(uint64_t msecs) {
     return ((NSTimeInterval)msecs) / 1000;
 }
 
-NSString *generateNonce() {
+NSString *generateNonce(void) {
     // Generate two random numbers up to 8 digits long and concatenate them to produce a 16 digit random number
     NSUInteger r1 = arc4random_uniform(100000000);
     NSUInteger r2 = arc4random_uniform(100000000);
