@@ -1,6 +1,8 @@
 # Change Log
 
-## Unreleased
+## [1.2.20](https://github.com/ably/ably-cocoa/tree/1.2.20)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.19...1.2.20)
 
 **Public API changes:**
 
@@ -9,6 +11,23 @@
 **Internal changes:**
 
 - The ably-cocoa library no longer calls any of the `ARTLog` methods in the `ARTLog (Shorthand)` category, nor the `-logWithError:` method. Be aware that if you have created a custom subclass of `ARTLog` which overrides any of these methods, they will no longer be called. `ARTLog` now performs all of its logging using only the `-log:withLevel:` method.
+
+**Fixed bugs:**
+
+- Fallback host is being discarded before `fallbackRetryTimeout` elapses [\#1683](https://github.com/ably/ably-cocoa/issues/1683)
+- Compilation error in SocketRocket in Xcode 14.3 [\#1591](https://github.com/ably/ably-cocoa/issues/1591)
+- Call to `_connect` in `ARTRealtimeInternal` constructor [\#1566](https://github.com/ably/ably-cocoa/issues/1566)
+- SCNetworkReachabilitySetCallback \(Crashed: io.ably.main\) [\#1380](https://github.com/ably/ably-cocoa/issues/1380)
+- Crash in ARTOSReachability [\#593](https://github.com/ably/ably-cocoa/issues/593)
+
+**Closed issues:**
+
+- Run tests in Ably-iOS and Ably-macOS using Xcode 14.3 [\#1653](https://github.com/ably/ably-cocoa/issues/1653)
+- Emit file name and line number with every logged message [\#1643](https://github.com/ably/ably-cocoa/issues/1643)
+- Thread running at QOS\_CLASS\_USER\_INTERACTIVE waiting on a lower QoS thread running at QOS\_CLASS\_DEFAULT. Investigate ways to avoid priority inversions [\#1569](https://github.com/ably/ably-cocoa/issues/1569)
+- App Store publication issues when using Carthage [\#1559](https://github.com/ably/ably-cocoa/issues/1559)
+- Remove extra callback with `setSuspended` [\#1550](https://github.com/ably/ably-cocoa/issues/1550)
+- Make sure we can build the library and run the tests using Xcode 14 [\#1523](https://github.com/ably/ably-cocoa/issues/1523)
 
 ## [1.2.19](https://github.com/ably/ably-cocoa/tree/1.2.19)
 
