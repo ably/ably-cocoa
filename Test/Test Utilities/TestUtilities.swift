@@ -1154,6 +1154,24 @@ class TestProxyTransport: ARTWebSocketTransport {
     private var callbackBeforeIncomingMessageModifier: ((ARTProtocolMessage) -> ARTProtocolMessage?)?
     private var callbackAfterIncomingMessageModifier: ((ARTProtocolMessage) -> ARTProtocolMessage?)?
 
+    // Represents a request to replace the implementation of a method.
+    private class Hook {
+        private var implementation: () -> Void
+
+        init(implementation: @escaping () -> Void) {
+            self.implementation = implementation
+        }
+
+        func performImplementation() -> Void {
+            implementation()
+        }
+    }
+
+    /// The active request, if any, to replace the implementation of the ARTWebSocket#open method for all WebSocket objects created by this transport. Access must be synchronised using webSocketOpenHookSemaphore.
+    private var webSocketOpenHook: Hook?
+    /// Used for synchronising access to webSocketOpenHook.
+    private let webSocketOpenHookSempahore = DispatchSemaphore(value: 1)
+
     func setListenerBeforeProcessingIncomingMessage(_ callback: ((ARTProtocolMessage) -> Void)?) {
         queue.sync {
             self.callbackBeforeProcessingIncomingMessage = callback
@@ -1216,9 +1234,40 @@ class TestProxyTransport: ARTWebSocketTransport {
         performNetworkConnectEvent()
     }
 
+    private func addWebSocketOpenHook(withImplementation implementation: @escaping () -> Void) -> Hook {
+        webSocketOpenHookSempahore.wait()
+        let hook = Hook(implementation: implementation)
+        webSocketOpenHook = hook
+        webSocketOpenHookSempahore.signal()
+        return hook
+    }
+
+    private func removeWebSocketOpenHook(_ hook: Hook) {
+        webSocketOpenHookSempahore.wait()
+        if (webSocketOpenHook === hook) {
+            webSocketOpenHook = nil
+        }
+        webSocketOpenHookSempahore.signal()
+    }
+
+    /// If this transport has been configured with a replacement implementation of ARTWebSocket#open, then this performs that implementation and returns `true`. Else, returns `false`.
+    func handleWebSocketOpen() -> Bool {
+        let hook: Hook?
+        webSocketOpenHookSempahore.wait()
+        hook = webSocketOpenHook
+        webSocketOpenHookSempahore.signal()
+
+        if let hook {
+            hook.performImplementation()
+            return true
+        } else {
+            return false
+        }
+    }
+
     private func setupFakeNetworkResponse(_ networkResponse: FakeNetworkResponse) {
-        var hook: AspectToken?
-        hook = ARTSRWebSocket.testSuite_replaceClassMethod(#selector(ARTSRWebSocket.open)) {
+        var hook: Hook?
+        hook = addWebSocketOpenHook {
             if self.factory.fakeNetworkResponse == nil {
                 return
             }
@@ -1226,7 +1275,9 @@ class TestProxyTransport: ARTWebSocketTransport {
             func performFakeConnectionError(_ secondsForDelay: TimeInterval, error: ARTRealtimeTransportError) {
                 self.queue.asyncAfter(deadline: .now() + secondsForDelay) {
                     self.delegate?.realtimeTransportFailed(self, withError: error)
-                    hook?.remove()
+                    if let hook {
+                        self.removeWebSocketOpenHook(hook)
+                    }
                 }
             }
 
