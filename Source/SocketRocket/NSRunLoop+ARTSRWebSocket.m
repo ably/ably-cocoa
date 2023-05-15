@@ -15,7 +15,7 @@
 #import "ARTSRRunLoopThread.h"
 
 // Required for object file to always be linked.
-void import_NSRunLoop_ARTSRWebSocket() { }
+void import_NSRunLoop_ARTSRWebSocket(void) { }
 
 @implementation NSRunLoop (ARTSRWebSocket)
 

@@ -46,12 +46,12 @@ class UtilitiesTests: XCTestCase {
     func test__001__Utilities__JSON_Encoder__should_decode_a_protocol_message_that_has_an_error_without_a_message() throws {
         beforeEach__Utilities__JSON_Encoder()
 
-        let jsonObject: NSDictionary = [
+        let jsonObject: [String : Any] = [
             "action": 9,
             "error": [
                 "code": 40142,
                 "statusCode": "401",
-            ],
+            ] as [String : Any],
         ]
         let data = try JSONSerialization.data(withJSONObject: jsonObject, options: [])
         guard let protocolMessage = try? jsonEncoder.decodeProtocolMessage(data) else {
