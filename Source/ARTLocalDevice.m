@@ -101,9 +101,18 @@ NSString *const ARTDevicePushTransportType = @"apns";
     self.push.recipient[@"deviceToken"] = token;
 }
 
+- (void)setAPNSLocationPushDeviceToken:(NSString *_Nonnull)token {
+    self.push.recipient[@"locationDeviceToken"] = token;
+}
+
 - (void)setAndPersistAPNSDeviceToken:(NSString *)token {
     [self.storage setObject:token forKey:ARTAPNSDeviceTokenKey];
     [self setAPNSDeviceToken:token];
+}
+
+- (void)setAndPersistAPNSLocationPushDeviceToken:(NSString *)token {
+    [self.storage setObject:token forKey:ARTAPNSLocationPushDeviceTokenKey];
+    [self setAPNSLocationPushDeviceToken:token];
 }
 
 - (void)setAndPersistIdentityTokenDetails:(ARTDeviceIdentityTokenDetails *)tokenDetails {

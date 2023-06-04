@@ -9,6 +9,7 @@ extern NSString *const ARTDeviceIdKey;
 extern NSString *const ARTDeviceSecretKey;
 extern NSString *const ARTDeviceIdentityTokenKey;
 extern NSString *const ARTAPNSDeviceTokenKey;
+extern NSString *const ARTAPNSLocationPushDeviceTokenKey;
 
 @interface ARTLocalDevice ()
 
@@ -17,6 +18,7 @@ extern NSString *const ARTAPNSDeviceTokenKey;
 + (ARTLocalDevice *)load:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage logger:(nullable ARTInternalLog *)logger;
 - (nullable NSString *)apnsDeviceToken;
 - (void)setAndPersistAPNSDeviceToken:(nullable NSString *)deviceToken;
+- (void)setAndPersistAPNSLocationPushDeviceToken:(nullable NSString *)deviceToken;
 - (void)setAndPersistIdentityTokenDetails:(nullable ARTDeviceIdentityTokenDetails *)tokenDetails;
 - (BOOL)isRegistered;
 
