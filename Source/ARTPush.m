@@ -166,17 +166,20 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
     return machine;
 }
 
-+ (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceTokenData restInternal:(ARTRestInternal *)rest {
-    ARTLogDebug(rest.logger_onlyForUseInClassMethodsAndTests, @"ARTPush: device token data received: %@", [deviceTokenData base64EncodedStringWithOptions:0]);
-
-    NSUInteger dataLength = deviceTokenData.length;
-    const unsigned char *dataBuffer = deviceTokenData.bytes;
++ (NSString *)deviceTokenStringFromData:(NSData *)data {
+    NSUInteger dataLength = data.length;
+    const unsigned char *dataBuffer = data.bytes;
     NSMutableString *hexString = [NSMutableString stringWithCapacity:(dataLength * 2)];
     for (int i = 0; i < dataLength; ++i) {
         [hexString appendFormat:@"%02x", dataBuffer[i]];
     }
+    return [hexString copy];
+}
 
-    NSString *deviceToken = [hexString copy];
++ (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceTokenData restInternal:(ARTRestInternal *)rest {
+    ARTLogDebug(rest.logger_onlyForUseInClassMethodsAndTests, @"ARTPush: device token data received: %@", [deviceTokenData base64EncodedStringWithOptions:0]);
+    
+    NSString *deviceToken = [self deviceTokenStringFromData:deviceTokenData];
 
     ARTLogInfo(rest.logger_onlyForUseInClassMethodsAndTests, @"ARTPush: device token: %@", deviceToken);
     NSString *currentDeviceToken = [rest.storage objectForKey:ARTAPNSDeviceTokenKey];
