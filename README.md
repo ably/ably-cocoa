@@ -95,7 +95,7 @@ to build the framework and drag the built (in `[PROJECT_ROOT]/Carthage/Build`)
 - `AblyDeltaCodec.xcframework`
 - `msgpack.xcframework`
 
-into your Xcode project.
+into the "Frameworks, Libraries, and Embedded Content" section of the General tab of your Xcode target's settings.
 
 If you see, for example, a `dyld: Library not loaded: @rpath/AblyDeltaCodec.framework/AblyDeltaCodec` error, then most likely you forgot to add all the dependencies to your project. You have more detailed information [here](https://github.com/Carthage/Carthage#adding-frameworks-to-an-application).
 
