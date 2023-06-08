@@ -1,7 +1,7 @@
 #import <Ably/ARTPushAdmin.h>
 #import <Ably/ARTPushDeviceRegistrations+Private.h>
 #import <Ably/ARTPushChannelSubscriptions+Private.h>
-#import "ARTQueuedDealloc.h"
+#import <Ably/ARTQueuedDealloc.h>
 
 @class ARTRestInternal;
 

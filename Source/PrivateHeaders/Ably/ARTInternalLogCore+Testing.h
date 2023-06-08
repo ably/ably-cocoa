@@ -1,5 +1,5 @@
 @import Foundation;
-#import "ARTInternalLog.h"
+#import <Ably/ARTInternalLog.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
