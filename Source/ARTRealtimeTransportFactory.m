@@ -1,5 +1,5 @@
 #import "ARTRealtimeTransportFactory.h"
-#import "ARTWebsocketTransport+Private.h"
+#import "ARTWebSocketTransport+Private.h"
 #import "ARTWebSocketFactory.h"
 
 @implementation ARTDefaultRealtimeTransportFactory
