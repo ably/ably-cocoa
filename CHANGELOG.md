@@ -1,5 +1,19 @@
 # Change Log
 
+## [1.2.21](https://github.com/ably/ably-cocoa/tree/1.2.21)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.20...1.2.21)
+
+**Closed issues:**
+
+- App build fails due to missing dependencies [\#1755](https://github.com/ably/ably-cocoa/issues/1755)
+- Compiler warning "Non-portable path to file..." [\#1757](https://github.com/ably/ably-cocoa/issues/1757)
+- App crash and dyld error message "AblyDeltaCodec cannot be loaded, image not found" [\#1183](https://github.com/ably/ably-cocoa/issues/1183)
+
+**Implemented features:**
+
+- Implement RTN20C: Handle os connectivity event while CONNECTING [\#1626](https://github.com/ably/ably-cocoa/issues/1626)
+
 ## [1.2.20](https://github.com/ably/ably-cocoa/tree/1.2.20)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.19...1.2.20)
