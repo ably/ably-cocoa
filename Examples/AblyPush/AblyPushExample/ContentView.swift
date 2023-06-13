@@ -10,8 +10,12 @@ struct ContentView: View {
     var body: some View {
         VStack {
             Spacer()
-            Button("Activate") {
+            Button("Activate Push") {
                 AblyHelper.shared.activatePush()
+            }
+            .padding()
+            Button("Activate Location Push") {
+                AblyHelper.shared.activateLocationPush()
             }
             .padding()
             Button("Dectivate") {

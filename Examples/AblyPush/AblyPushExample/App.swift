@@ -16,6 +16,7 @@ struct AblyCocoaAPNSExampleApp: App {
 class AppDelegate: NSObject, UIApplicationDelegate {
     
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        AblyHelper.shared.apnsActivated = true
         ARTPush.didRegisterForRemoteNotifications(withDeviceToken: deviceToken, realtime: AblyHelper.shared.realtime)
     }
     

@@ -1,10 +1,15 @@
 import Ably
 import UIKit
+import CoreLocation
 
 class AblyHelper: NSObject {
     
     static let shared = AblyHelper()
     
+    var apnsActivated = false
+    
+    private var locationManager: CLLocationManager!
+
     private(set) var realtime: ARTRealtime!
     
     private let key = "" // Your API Key from your app's dashboard
@@ -27,6 +32,15 @@ extension AblyHelper {
     func activatePush() {
         Self.requestUserNotificationAuthorization()
         realtime.push.activate()
+    }
+    
+    func activateLocationPush() {
+        guard apnsActivated else {
+            return print("Press 'Activate Push' button and wait for receiving regular APNs token first.")
+        }
+        locationManager = CLLocationManager()
+        locationManager.delegate = self
+        locationManager.requestAlwaysAuthorization()
     }
     
     func deactivatePush() {
@@ -94,5 +108,26 @@ extension AblyHelper: UNUserNotificationCenterDelegate {
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         print("Got push notification!")
         completionHandler([.banner, .sound])
+    }
+}
+
+extension AblyHelper : CLLocationManagerDelegate {
+    
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        switch manager.authorizationStatus {
+        case .authorizedAlways:
+            print("Location services always authorized.")
+            locationManager.startMonitoringLocationPushes { deviceToken, error in
+                guard error == nil else {
+                    return ARTPush.didFailToRegisterForLocationNotificationsWithError(error!, realtime: self.realtime)
+                }
+                ARTPush.didRegisterForLocationNotifications(withDeviceToken: deviceToken!, realtime: self.realtime)
+            }
+        case .notDetermined, .authorizedWhenInUse, .restricted, .denied:
+            print("Location services unavailable for location pushes.")
+            break
+        default:
+            break
+        }
     }
 }
