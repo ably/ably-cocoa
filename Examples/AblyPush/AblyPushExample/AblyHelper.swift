@@ -40,7 +40,13 @@ extension AblyHelper {
         }
         locationManager = CLLocationManager()
         locationManager.delegate = self
-        locationManager.requestAlwaysAuthorization()
+//        locationManager.requestAlwaysAuthorization()
+        locationManager.startMonitoringLocationPushes { deviceToken, error in
+            guard error == nil else {
+                return ARTPush.didFailToRegisterForLocationNotificationsWithError(error!, realtime: self.realtime)
+            }
+            ARTPush.didRegisterForLocationNotifications(withDeviceToken: deviceToken!, realtime: self.realtime)
+        }
     }
     
     func deactivatePush() {
@@ -117,12 +123,6 @@ extension AblyHelper : CLLocationManagerDelegate {
         switch manager.authorizationStatus {
         case .authorizedAlways:
             print("Location services always authorized.")
-            locationManager.startMonitoringLocationPushes { deviceToken, error in
-                guard error == nil else {
-                    return ARTPush.didFailToRegisterForLocationNotificationsWithError(error!, realtime: self.realtime)
-                }
-                ARTPush.didRegisterForLocationNotifications(withDeviceToken: deviceToken!, realtime: self.realtime)
-            }
         case .notDetermined, .authorizedWhenInUse, .restricted, .denied:
             print("Location services unavailable for location pushes.")
             break
