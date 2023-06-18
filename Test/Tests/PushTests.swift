@@ -409,7 +409,6 @@ class PushTests: XCTestCase {
                 fail("should not be called")
             }
             rest.push.activate()
-            ARTPush.didRegisterForRemoteNotifications(withDeviceToken: TestDeviceToken.tokenData, rest: rest)
         }
     }
 
