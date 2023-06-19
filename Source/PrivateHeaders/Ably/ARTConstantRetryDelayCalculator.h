@@ -1,5 +1,5 @@
 @import Foundation;
-#import <Ably/ARTRetryDelayCalculator.h>
+#import "ARTRetryDelayCalculator.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
