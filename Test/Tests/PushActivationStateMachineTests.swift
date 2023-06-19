@@ -9,7 +9,7 @@ private var initialStateMachine: ARTPushActivationStateMachine!
 
 private let expectedFormFactor = "phone"
 private let expectedPlatform = "ios"
-private let expectedPushRecipient: [String: [String: String]] = ["recipient": ["transportType": "apns"]]
+private let expectedPushRecipient: [String: [String: AnyHashable]] = ["recipient": ["transportType": "apns"]]
 
 private var stateMachine: ARTPushActivationStateMachine!
 
@@ -330,7 +330,7 @@ class PushActivationStateMachineTests: XCTestCase {
         XCTAssertEqual(url.host, rest.internal.options.restUrl().host)
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertEqual(body.value(forKey: "id") as? String, rest.device.id)
-        XCTAssertEqual(body.value(forKey: "push") as? [String: [String: String]], expectedPushRecipient)
+        XCTAssertEqual(body.value(forKey: "push") as? [String: [String: AnyHashable]], expectedPushRecipient)
         XCTAssertEqual(body.value(forKey: "formFactor") as? String, expectedFormFactor)
         XCTAssertEqual(body.value(forKey: "platform") as? String, expectedPlatform)
     }
@@ -375,7 +375,7 @@ class PushActivationStateMachineTests: XCTestCase {
         let body = try XCTUnwrap(decodedBody as? NSDictionary, "Request body is invalid")
         
         XCTAssertEqual(body.value(forKey: "id") as? String, rest.device.id)
-        XCTAssertEqual(body.value(forKey: "push") as? [String: [String: String]], expectedPushRecipient)
+        XCTAssertEqual(body.value(forKey: "push") as? [String: [String: AnyHashable]], expectedPushRecipient)
         XCTAssertEqual(body.value(forKey: "formFactor") as? String, expectedFormFactor)
         XCTAssertEqual(body.value(forKey: "platform") as? String, expectedPlatform)
     }
@@ -1040,7 +1040,7 @@ class PushActivationStateMachineTests: XCTestCase {
             XCTAssertEqual(url.host, rest.internal.options.restUrl().host)
             XCTAssertEqual(request.httpMethod, "PUT")
             XCTAssertEqual(body.value(forKey: "id") as? String, rest.device.id)
-            XCTAssertEqual(body.value(forKey: "push") as? [String: [String: String]], expectedPushRecipient)
+            XCTAssertEqual(body.value(forKey: "push") as? [String: [String: AnyHashable]], expectedPushRecipient)
             XCTAssertEqual(body.value(forKey: "formFactor") as? String, expectedFormFactor)
             XCTAssertEqual(body.value(forKey: "platform") as? String, expectedPlatform)
 

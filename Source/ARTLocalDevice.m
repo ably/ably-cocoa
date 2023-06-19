@@ -26,6 +26,18 @@ NSString *const ARTDeviceFormFactor = @"embedded";
 
 NSString *const ARTDevicePushTransportType = @"apns";
 
+NSString *const ARTDeviceIdKey = @"ARTDeviceId";
+NSString *const ARTDeviceSecretKey = @"ARTDeviceSecret";
+NSString *const ARTDeviceIdentityTokenKey = @"ARTDeviceIdentityToken";
+NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
+
+NSString *const ARTAPNSDeviceDefaultTokenType = @"default";
+NSString *const ARTAPNSDeviceLocationTokenType = @"location";
+
+NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
+    return [ARTAPNSDeviceTokenKey stringByAppendingFormat:@"-%@", tokenType ?: ARTAPNSDeviceDefaultTokenType];
+}
+
 @interface ARTLocalDevice ()
 
 @property (nullable, nonatomic, readonly) ARTInternalLog *logger;
@@ -78,8 +90,18 @@ NSString *const ARTDevicePushTransportType = @"apns";
     ARTDeviceIdentityTokenDetails *identityTokenDetails = [ARTDeviceIdentityTokenDetails unarchive:identityTokenDetailsInfo withLogger:logger];
     device->_identityTokenDetails = identityTokenDetails;
 
-    [device setAPNSDeviceToken:[storage objectForKey:ARTAPNSDeviceTokenKey]];
-
+    NSArray *supportedTokenTypes = @[
+        ARTAPNSDeviceDefaultTokenType,
+        ARTAPNSDeviceLocationTokenType
+    ];
+    
+    for (NSString *tokenType in supportedTokenTypes) {
+        NSString *token = [storage objectForKey:ARTAPNSDeviceTokenKeyOfType(tokenType)];
+        if ([tokenType isEqualToString:ARTAPNSDeviceDefaultTokenType] && token == nil) {
+            token = [storage objectForKey:ARTAPNSDeviceTokenKey]; // Read legacy token
+        }
+        [device setAPNSDeviceToken:token tokenType:tokenType];
+    }
     return device;
 }
 
@@ -94,16 +116,23 @@ NSString *const ARTDevicePushTransportType = @"apns";
 }
 
 - (NSString *)apnsDeviceToken {
-    return self.push.recipient[@"deviceToken"];
+    NSDictionary *deviceTokens = (NSDictionary *)self.push.recipient[@"apnsDeviceTokens"];
+    return deviceTokens[ARTAPNSDeviceDefaultTokenType];
 }
 
-- (void)setAPNSDeviceToken:(NSString *_Nonnull)token {
-    self.push.recipient[@"deviceToken"] = token;
+- (void)setAPNSDeviceToken:(NSString *)token tokenType:(NSString *)tokenType {
+    NSMutableDictionary *deviceTokens = [(self.push.recipient[@"apnsDeviceTokens"] ?: (token != nil ? @{} : nil)) mutableCopy];
+    deviceTokens[tokenType] = token;
+    self.push.recipient[@"apnsDeviceTokens"] = [deviceTokens copy];
+}
+
+- (void)setAndPersistAPNSDeviceToken:(NSString *)token tokenType:(NSString *)tokenType {
+    [self.storage setObject:token forKey:ARTAPNSDeviceTokenKeyOfType(tokenType)];
+    [self setAPNSDeviceToken:token tokenType:tokenType];
 }
 
 - (void)setAndPersistAPNSDeviceToken:(NSString *)token {
-    [self.storage setObject:token forKey:ARTAPNSDeviceTokenKey];
-    [self setAPNSDeviceToken:token];
+    [self setAndPersistAPNSDeviceToken:token tokenType:ARTAPNSDeviceDefaultTokenType];
 }
 
 - (void)setAndPersistIdentityTokenDetails:(ARTDeviceIdentityTokenDetails *)tokenDetails {

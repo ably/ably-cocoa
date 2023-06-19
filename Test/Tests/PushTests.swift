@@ -13,6 +13,12 @@ class PushTests: XCTestCase {
         static let tokenData = Data(base64Encoded: tokenBase64, options: [])!
         static let tokenString = tokenData.map { String(format: "%02x", $0) }.joined()
     }
+    
+    enum TestLocationDeviceToken {
+        static let tokenBase64 = "bG9jYXRpb24gZGV2aWNlIHRva2Vu"
+        static let tokenData = Data(base64Encoded: tokenBase64, options: [])!
+        static let tokenString = tokenData.map { String(format: "%02x", $0) }.joined()
+    }
 
     // XCTest invokes this method before executing the first test in the test suite. We use it to ensure that the global variables are initialized at the same moment, and in the same order, as they would have been when we used the Quick testing framework.
     override class var defaultTestSuite: XCTestSuite {
@@ -183,17 +189,25 @@ class PushTests: XCTestCase {
     // https://github.com/ably/ably-cocoa/issues/889
     func test__006__activation__should_store_the_device_token_data_as_string() {
         let expectedDeviceToken = TestDeviceToken.tokenString
+        let expectedLocationDeviceToken = TestLocationDeviceToken.tokenString
         defer { rest.push.internal.activationMachine.transitions = nil }
         waitUntil(timeout: testTimeout) { done in
+            let partialDone = AblyTests.splitDone(2, done: done)
             rest.push.internal.activationMachine.onEvent = { event, _ in
                 if event is ARTPushActivationEventGotPushDeviceDetails {
-                    done()
+                    partialDone()
                 }
             }
             ARTPush.didRegisterForRemoteNotifications(withDeviceToken: TestDeviceToken.tokenData, rest: rest)
+            ARTPush.didRegisterForLocationNotifications(withDeviceToken: TestLocationDeviceToken.tokenData, rest: rest)
         }
-        expect(storage.keysWritten.keys).to(contain(["ARTAPNSDeviceToken"]))
-        XCTAssertEqual(storage.keysWritten.at("ARTAPNSDeviceToken")?.value as? String, expectedDeviceToken)
+        let expectedDeviceTokenKey = "ARTAPNSDeviceToken-default" // ARTAPNSDeviceTokenKeyOfType(nil)
+        expect(storage.keysWritten.keys).to(contain([expectedDeviceTokenKey]))
+        XCTAssertEqual(storage.keysWritten.at(expectedDeviceTokenKey)?.value as? String, expectedDeviceToken)
+        
+        let expectedLocationDeviceTokenKey = "ARTAPNSDeviceToken-location" // ARTAPNSDeviceTokenKeyOfType("location")
+        expect(storage.keysWritten.keys).to(contain([expectedLocationDeviceTokenKey]))
+        XCTAssertEqual(storage.keysWritten.at(expectedLocationDeviceTokenKey)?.value as? String, expectedLocationDeviceToken)
     }
 
     // https://github.com/ably/ably-cocoa/issues/888
@@ -431,5 +445,147 @@ class PushTests: XCTestCase {
             rest.push.activate()
         }
         XCTAssertTrue(registerForAPNSMethodWasCalled)
+    }
+
+    // RSH8i
+    
+    func test__017__LocalDevice__must_verify_the_validity_of_saved_push_details_and_update_if_needed_on_the_Ably_server_by_triggering_GotPushDeviceDetails() throws {
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        options.key = "xxxx:xxxx"
+        let rest = ARTRest(options: options)
+        let mockHttpExecutor = MockHTTPExecutor()
+        rest.internal.httpExecutor = mockHttpExecutor
+        let storage = MockDeviceStorage()
+        rest.internal.storage = storage
+
+        rest.internal.resetDeviceSingleton()
+
+        var stateMachine: ARTPushActivationStateMachine!
+        waitUntil(timeout: testTimeout) { done in
+            rest.push.internal.getActivationMachine { machine in
+                stateMachine = machine
+                done()
+            }
+        }
+
+        let testDeviceToken = "xxxx-xxxx-xxxx-xxxx-xxxx"
+        stateMachine.rest.device.setAndPersistAPNSDeviceToken(testDeviceToken)
+        defer { stateMachine.rest.device.setAndPersistAPNSDeviceToken(nil) }
+
+        waitUntil(timeout: testTimeout) { done in
+            let partialDone = AblyTests.splitDone(4, done: done)
+            stateMachine.transitions = { event, _, _ in
+                if event is ARTPushActivationEventGotPushDeviceDetails {
+                    partialDone()
+                }
+                else if event is ARTPushActivationEventGotDeviceRegistration {
+                    partialDone()
+                    ARTPush.didRegisterForRemoteNotifications(withDeviceToken: TestDeviceToken.tokenData, rest: rest)
+                }
+                else if event is ARTPushActivationEventRegistrationSynced {
+                    stateMachine.transitions = nil
+                    partialDone()
+                }
+            }
+            rest.push.activate()
+        }
+
+        let registerRequest = mockHttpExecutor.requests.filter { req in
+            req.httpMethod == "POST" && req.url!.path == "/push/deviceRegistrations"
+        }.first
+
+        switch extractBodyAsMsgPack(registerRequest) {
+        case let .failure(error):
+            fail(error)
+        case let .success(httpBody):
+            guard let pushDict = httpBody.unbox["push"] as? NSDictionary else {
+                fail("No clientId field in HTTPBody"); return
+            }
+            let expectedTokenString = pushDict.value(forKeyPath: "recipient.apnsDeviceTokens.default") as? String
+            XCTAssertEqual(expectedTokenString, testDeviceToken)
+        }
+        
+        let updateRequest = mockHttpExecutor.requests.filter { req in
+            req.httpMethod == "PATCH" && req.url!.path.hasPrefix("/push/deviceRegistrations/")
+        }.first
+
+        switch extractBodyAsMsgPack(updateRequest) {
+        case let .failure(error):
+            fail(error)
+        case let .success(httpBody):
+            guard let pushDict = httpBody.unbox["push"] as? NSDictionary else {
+                fail("No `push` field in HTTPBody"); return
+            }
+            let expectedTokenString = pushDict.value(forKeyPath: "recipient.apnsDeviceTokens.default") as? String
+            XCTAssertEqual(expectedTokenString, TestDeviceToken.tokenString)
+        }
+    }
+    
+    func test__018__LocalDevice__when_alternative_device_token_available_update_push_details_on_the_Ably_server_by_triggering_GotPushDeviceDetails() throws {
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        options.key = "xxxx:xxxx"
+        let pushRegistererDelegate = StateMachineDelegate()
+        options.pushRegistererDelegate = pushRegistererDelegate
+        let rest = ARTRest(options: options)
+        let mockHttpExecutor = MockHTTPExecutor()
+        rest.internal.httpExecutor = mockHttpExecutor
+        let storage = MockDeviceStorage()
+        rest.internal.storage = storage
+
+        rest.internal.resetDeviceSingleton()
+
+        let testDeviceToken = "xxxx-xxxx-xxxx-xxxx-xxxx"
+        rest.device.setAndPersistAPNSDeviceToken(testDeviceToken)
+        defer { rest.device.setAndPersistAPNSDeviceToken(nil) }
+        
+        func requestLocationDeviceToken(_ completion: @escaping () -> Void) {
+            ARTPush.didRegisterForLocationNotifications(withDeviceToken: TestLocationDeviceToken.tokenData, rest: rest)
+            delay(1) { // give state machine time to complete registration of a new token
+                completion()
+            }
+        }
+        
+        waitUntil(timeout: testTimeout) { done in
+            pushRegistererDelegate.onDidActivateAblyPush = { _ in
+                requestLocationDeviceToken() {
+                    done()
+                }
+            }
+            rest.push.activate()
+        }
+        
+        let registerRequest = mockHttpExecutor.requests.filter { req in
+            req.httpMethod == "POST" && req.url!.path == "/push/deviceRegistrations"
+        }.first
+
+        switch extractBodyAsMsgPack(registerRequest) {
+        case let .failure(error):
+            fail(error)
+        case let .success(httpBody):
+            guard let pushDict = httpBody.unbox["push"] as? NSDictionary else {
+                fail("No `push` field in HTTPBody"); return
+            }
+            let expectedTokenString = pushDict.value(forKeyPath: "recipient.apnsDeviceTokens.default") as? String
+            XCTAssertEqual(expectedTokenString, testDeviceToken)
+        }
+        
+        let updateRequest = mockHttpExecutor.requests.filter { req in
+            req.httpMethod == "PATCH" && req.url!.path.hasPrefix("/push/deviceRegistrations/")
+        }.first
+
+        switch extractBodyAsMsgPack(updateRequest) {
+        case let .failure(error):
+            fail(error)
+        case let .success(httpBody):
+            guard let pushDict = httpBody.unbox["push"] as? NSDictionary else {
+                fail("No `push` field in HTTPBody"); return
+            }
+            let expectedDefaultTokenString = pushDict.value(forKeyPath: "recipient.apnsDeviceTokens.default") as? String
+            XCTAssertEqual(expectedDefaultTokenString, testDeviceToken)
+            let expectedLocationTokenString = pushDict.value(forKeyPath: "recipient.apnsDeviceTokens.location") as? String
+            XCTAssertEqual(expectedLocationTokenString, TestLocationDeviceToken.tokenString)
+        }
     }
 }

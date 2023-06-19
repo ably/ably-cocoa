@@ -53,6 +53,22 @@
     return [ARTPushInternal didFailToRegisterForRemoteNotificationsWithError:error realtime:realtime];
 }
 
++ (void)didRegisterForLocationNotificationsWithDeviceToken:(NSData *)deviceToken rest:(ARTRest *)rest; {
+    return [ARTPushInternal didRegisterForLocationNotificationsWithDeviceToken:deviceToken rest:rest];
+}
+
++ (void)didRegisterForLocationNotificationsWithDeviceToken:(NSData *)deviceToken realtime:(ARTRealtime *)realtime; {
+    return [ARTPushInternal didRegisterForLocationNotificationsWithDeviceToken:deviceToken realtime:realtime];
+}
+
++ (void)didFailToRegisterForLocationNotificationsWithError:(NSError *)error rest:(ARTRest *)rest; {
+    return [ARTPushInternal didFailToRegisterForLocationNotificationsWithError:error rest:rest];
+}
+
++ (void)didFailToRegisterForLocationNotificationsWithError:(NSError *)error realtime:(ARTRealtime *)realtime; {
+    return [ARTPushInternal didFailToRegisterForLocationNotificationsWithError:error realtime:realtime];
+}
+
 - (void)activate {
     [_internal activate];
 }
@@ -64,11 +80,6 @@
 #endif
 
 @end
-
-NSString *const ARTDeviceIdKey = @"ARTDeviceId";
-NSString *const ARTDeviceSecretKey = @"ARTDeviceSecret";
-NSString *const ARTDeviceIdentityTokenKey = @"ARTDeviceIdentityToken";
-NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
 
 @implementation ARTPushInternal {
     __weak ARTRestInternal *_rest; // weak because rest owns self
@@ -168,28 +179,7 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
 
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceTokenData restInternal:(ARTRestInternal *)rest {
     ARTLogDebug(rest.logger_onlyForUseInClassMethodsAndTests, @"ARTPush: device token data received: %@", [deviceTokenData base64EncodedStringWithOptions:0]);
-
-    NSUInteger dataLength = deviceTokenData.length;
-    const unsigned char *dataBuffer = deviceTokenData.bytes;
-    NSMutableString *hexString = [NSMutableString stringWithCapacity:(dataLength * 2)];
-    for (int i = 0; i < dataLength; ++i) {
-        [hexString appendFormat:@"%02x", dataBuffer[i]];
-    }
-
-    NSString *deviceToken = [hexString copy];
-
-    ARTLogInfo(rest.logger_onlyForUseInClassMethodsAndTests, @"ARTPush: device token: %@", deviceToken);
-    NSString *currentDeviceToken = [rest.storage objectForKey:ARTAPNSDeviceTokenKey];
-    if ([currentDeviceToken isEqualToString:deviceToken]) {
-        // Already stored.
-        return;
-    }
-
-    [rest.device_nosync setAndPersistAPNSDeviceToken:deviceToken];
-    ARTLogDebug(rest.logger_onlyForUseInClassMethodsAndTests, @"ARTPush: device token stored");
-    [rest.push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
-        [stateMachine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
-    }];
+    [rest setAndPersistAPNSDeviceTokenData:deviceTokenData tokenType:ARTAPNSDeviceDefaultTokenType];
 }
 
 + (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken realtime:(ARTRealtime *)realtime {
@@ -220,6 +210,42 @@ NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error rest:(ARTRest *)rest {
     [rest internalAsync:^(ARTRestInternal *rest) {
         [ARTPushInternal didFailToRegisterForRemoteNotificationsWithError:error restInternal:rest];
+    }];
+}
+
++ (void)didRegisterForLocationNotificationsWithDeviceToken:(NSData *)deviceTokenData restInternal:(ARTRestInternal *)rest {
+    ARTLogDebug(rest.logger_onlyForUseInClassMethodsAndTests, @"ARTPush: location push device token data received: %@", [deviceTokenData base64EncodedStringWithOptions:0]);
+    [rest setAndPersistAPNSDeviceTokenData:deviceTokenData tokenType:ARTAPNSDeviceLocationTokenType];
+}
+
++ (void)didRegisterForLocationNotificationsWithDeviceToken:(NSData *)deviceToken realtime:(ARTRealtime *)realtime {
+    [realtime internalAsync:^(ARTRealtimeInternal *realtime) {
+        [ARTPushInternal didRegisterForLocationNotificationsWithDeviceToken:deviceToken restInternal:realtime.rest];
+    }];
+}
+
++ (void)didRegisterForLocationNotificationsWithDeviceToken:(NSData *)deviceToken rest:(ARTRest *)rest {
+    [rest internalAsync:^(ARTRestInternal *rest) {
+        [ARTPushInternal didRegisterForLocationNotificationsWithDeviceToken:deviceToken restInternal:rest];
+    }];
+}
+
++ (void)didFailToRegisterForLocationNotificationsWithError:(NSError *)error restInternal:(ARTRestInternal *)rest {
+    ARTLogError(rest.logger_onlyForUseInClassMethodsAndTests, @"ARTPush: location push device token not received (%@)", [error localizedDescription]);
+    [rest.push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
+        [stateMachine sendEvent:[ARTPushActivationEventGettingPushDeviceDetailsFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
+    }];
+}
+
++ (void)didFailToRegisterForLocationNotificationsWithError:(NSError *)error realtime:(ARTRealtime *)realtime {
+    [realtime internalAsync:^(ARTRealtimeInternal *realtime) {
+        [ARTPushInternal didFailToRegisterForLocationNotificationsWithError:error restInternal:realtime.rest];
+    }];
+}
+
++ (void)didFailToRegisterForLocationNotificationsWithError:(NSError *)error rest:(ARTRest *)rest {
+    [rest internalAsync:^(ARTRestInternal *rest) {
+        [ARTPushInternal didFailToRegisterForLocationNotificationsWithError:error restInternal:rest];
     }];
 }
 

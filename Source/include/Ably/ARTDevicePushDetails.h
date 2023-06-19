@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * A JSON object of key-value pairs that contains of the push transport and address.
  */
-@property (nonatomic) NSMutableDictionary<NSString *, NSString *> *recipient;
+@property (nonatomic) NSMutableDictionary<NSString *, NSObject *> *recipient;
 
 /**
  * The current state of the push registration.

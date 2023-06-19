@@ -73,6 +73,20 @@ NS_ASSUME_NONNULL_BEGIN
 /// See [iOS push notifications tutorial](https://ably.com/tutorials/ios-push-notifications#step7-register-push-ably) for details.
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error realtime:(ARTRealtime *)realtime;
 
+// Location Push Registration token
+
+/// See [iOS push notifications tutorial](https://ably.com/tutorials/ios-location-push-notifications) for details.
++ (void)didRegisterForLocationNotificationsWithDeviceToken:(NSData *)deviceToken rest:(ARTRest *)rest;
+
+/// See [iOS push notifications tutorial](https://ably.com/tutorials/ios-location-push-notifications) for details.
++ (void)didRegisterForLocationNotificationsWithDeviceToken:(NSData *)deviceToken realtime:(ARTRealtime *)realtime;
+
+/// See [iOS push notifications tutorial](https://ably.com/tutorials/ios-location-push-notifications) for details.
++ (void)didFailToRegisterForLocationNotificationsWithError:(NSError *)error rest:(ARTRest *)rest;
+
+/// See [iOS push notifications tutorial](https://ably.com/tutorials/ios-location-push-notifications) for details.
++ (void)didFailToRegisterForLocationNotificationsWithError:(NSError *)error realtime:(ARTRealtime *)realtime;
+
 /**
  * Activates the device for push notifications with APNS, obtaining a unique identifier from it. Subsequently registers the device with Ably and stores the `ARTLocalDevice.identityTokenDetails` in local storage.
  * You should implement `-[ARTPushRegistererDelegate didActivateAblyPush:]` to handle success or failure of this operation.
