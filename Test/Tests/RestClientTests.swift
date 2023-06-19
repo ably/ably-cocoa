@@ -23,11 +23,11 @@ private let shuffleArrayInExpectedHostOrder = { (array: NSMutableArray) in
 
 private let _fallbackHosts = ["f.ably-realtime.com", "g.ably-realtime.com", "h.ably-realtime.com", "i.ably-realtime.com", "j.ably-realtime.com"]
 
-private func testUsesAlternativeHost(_ caseTest: FakeNetworkResponse, channelName: String) {
+private func testUsesAlternativeHost(_ caseTest: FakeNetworkResponse, for test: Test, channelName: String) {
     let options = ARTClientOptions(key: "xxxx:xxxx")
     let client = ARTRest(options: options)
     let internalLog = InternalLog(clientOptions: options)
-    let mockHTTP = MockHTTP(logger: internalLog)
+    let mockHTTP = MockHTTP(queue: AblyTests.createInternalQueue(for: test), logger: internalLog)
     testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
     client.internal.httpExecutor = testHTTPExecutor
     mockHTTP.setNetworkState(network: caseTest, resetAfter: 1)
@@ -47,11 +47,11 @@ private func testUsesAlternativeHost(_ caseTest: FakeNetworkResponse, channelNam
     XCTAssertTrue(NSRegularExpression.match(testHTTPExecutor.requests[1].url!.absoluteString, pattern: "//[a-e].ably-realtime.com"))
 }
 
-private func testStoresSuccessfulFallbackHostAsDefaultHost(_ caseTest: FakeNetworkResponse, channelName: String) {
+private func testStoresSuccessfulFallbackHostAsDefaultHost(_ caseTest: FakeNetworkResponse, for test: Test, channelName: String) {
     let options = ARTClientOptions(key: "xxxx:xxxx")
     let client = ARTRest(options: options)
     let internalLog = InternalLog(clientOptions: options)
-    let mockHTTP = MockHTTP(logger: internalLog)
+    let mockHTTP = MockHTTP(queue: AblyTests.createInternalQueue(for: test), logger: internalLog)
     testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
     client.internal.httpExecutor = testHTTPExecutor
     mockHTTP.setNetworkState(network: caseTest, resetAfter: 1)
@@ -83,13 +83,13 @@ private func testStoresSuccessfulFallbackHostAsDefaultHost(_ caseTest: FakeNetwo
     XCTAssertEqual(usedFallbackURL.host, reusedURL.host)
 }
 
-private func testRestoresDefaultPrimaryHostAfterTimeoutExpires(_ caseTest: FakeNetworkResponse, channelName: String) {
+private func testRestoresDefaultPrimaryHostAfterTimeoutExpires(_ caseTest: FakeNetworkResponse, for test: Test, channelName: String) {
     let options = ARTClientOptions(key: "xxxx:xxxx")
     options.logLevel = .debug
     options.fallbackRetryTimeout = 1
     let client = ARTRest(options: options)
     let internalLog = InternalLog(clientOptions: options)
-    let mockHTTP = MockHTTP(logger: internalLog)
+    let mockHTTP = MockHTTP(queue: AblyTests.createInternalQueue(for: test), logger: internalLog)
     testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
     client.internal.httpExecutor = testHTTPExecutor
     mockHTTP.setNetworkState(network: caseTest, resetAfter: 1)
@@ -113,13 +113,13 @@ private func testRestoresDefaultPrimaryHostAfterTimeoutExpires(_ caseTest: FakeN
     XCTAssertEqual(testHTTPExecutor.requests[2].url!.host, "rest.ably.io")
 }
 
-private func testUsesAnotherFallbackHost(_ caseTest: FakeNetworkResponse, channelName: String) {
+private func testUsesAnotherFallbackHost(_ caseTest: FakeNetworkResponse, for test: Test, channelName: String) {
     let options = ARTClientOptions(key: "xxxx:xxxx")
     options.fallbackRetryTimeout = 10
     options.logLevel = .debug
     let client = ARTRest(options: options)
     let internalLog = InternalLog(clientOptions: options)
-    let mockHTTP = MockHTTP(logger: internalLog)
+    let mockHTTP = MockHTTP(queue: AblyTests.createInternalQueue(for: test), logger: internalLog)
     testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
     client.internal.httpExecutor = testHTTPExecutor
     mockHTTP.setNetworkState(network: caseTest, resetAfter: 2)
@@ -152,7 +152,7 @@ class RestClientTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        testHTTPExecutor = TestProxyHTTPExecutor(queue: options.internalDispatchQueue, logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
         let channel = client.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
@@ -309,7 +309,7 @@ class RestClientTests: XCTestCase {
         let options = ARTClientOptions(key: "fake:key")
         options.restHost = "fake.ably.io"
         let client = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.createInternalQueue(for: test), logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
         publishTestMessage(client, channelName: test.uniqueChannelName(), failOnError: false)
@@ -323,7 +323,7 @@ class RestClientTests: XCTestCase {
         options.environment = "test"
         options.restHost = "fake.ably.io"
         let client = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.createInternalQueue(for: test), logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
         publishTestMessage(client, channelName: test.uniqueChannelName(), failOnError: false)
@@ -337,7 +337,7 @@ class RestClientTests: XCTestCase {
         let options = ARTClientOptions(key: "fake:key")
         options.environment = "myEnvironment"
         let client = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.createInternalQueue(for: test), logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
         publishTestMessage(client, channelName: test.uniqueChannelName(), failOnError: false)
@@ -349,7 +349,7 @@ class RestClientTests: XCTestCase {
         let test = Test()
         let options = ARTClientOptions(key: "fake:key")
         let client = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.createInternalQueue(for: test),logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
         publishTestMessage(client, channelName: test.uniqueChannelName(), failOnError: false)
@@ -362,7 +362,7 @@ class RestClientTests: XCTestCase {
         let options = try AblyTests.clientOptions(for: test, requestToken: true)
         options.tls = false
         let client = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        testHTTPExecutor = TestProxyHTTPExecutor(queue: options.internalDispatchQueue, logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
         publishTestMessage(client, channelName: test.uniqueChannelName(), failOnError: false)
@@ -410,7 +410,7 @@ class RestClientTests: XCTestCase {
         options.httpMaxRetryCount = 1
         let client = ARTRest(options: options)
         let internalLog = InternalLog(clientOptions: options)
-        let mockHTTP = MockHTTP(logger: internalLog)
+        let mockHTTP = MockHTTP(queue: AblyTests.createInternalQueue(for: test), logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
@@ -438,7 +438,7 @@ class RestClientTests: XCTestCase {
         options.httpMaxRetryDuration = 1.0
         let client = ARTRest(options: options)
         let internalLog = InternalLog(clientOptions: options)
-        let mockHTTP = MockHTTP(logger: internalLog)
+        let mockHTTP = MockHTTP(queue: AblyTests.createInternalQueue(for: test), logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .requestTimeout(timeout: 0.1))
@@ -472,7 +472,7 @@ class RestClientTests: XCTestCase {
         options.restHost = "rest.ably.test"
         XCTAssertEqual(options.restHost, "rest.ably.test")
         let client = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        testHTTPExecutor = TestProxyHTTPExecutor(queue: AblyTests.createInternalQueue(for: test), logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
         waitUntil(timeout: testTimeout) { done in
             client.channels.get(test.uniqueChannelName()).publish(nil, data: "message") { error in
@@ -508,7 +508,7 @@ class RestClientTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
 
         let clientHttps = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        testHTTPExecutor = TestProxyHTTPExecutor(queue: options.internalDispatchQueue, logger: .init(clientOptions: options))
         clientHttps.internal.httpExecutor = testHTTPExecutor
 
         let channelName = test.uniqueChannelName()
@@ -527,7 +527,7 @@ class RestClientTests: XCTestCase {
         options.useTokenAuth = true
         options.tls = false
         let clientHttp = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        testHTTPExecutor = TestProxyHTTPExecutor(queue: options.internalDispatchQueue, logger: .init(clientOptions: options))
         clientHttp.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -577,7 +577,7 @@ class RestClientTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         options.token = try getTestToken(for: test, ttl: 0.5)
         let client = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        testHTTPExecutor = TestProxyHTTPExecutor(queue: options.internalDispatchQueue, logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
         let auth = client.auth
 
@@ -607,7 +607,7 @@ class RestClientTests: XCTestCase {
         let options = try AblyTests.clientOptions(for: test)
         options.token = try getTestToken(for: test, capability: "{ \"main\":[\"subscribe\"] }")
         let client = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        testHTTPExecutor = TestProxyHTTPExecutor(queue: options.internalDispatchQueue, logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -730,7 +730,7 @@ class RestClientTests: XCTestCase {
         }
 
         let rest = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        testHTTPExecutor = TestProxyHTTPExecutor(queue: options.internalDispatchQueue, logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -794,7 +794,7 @@ class RestClientTests: XCTestCase {
                 )
 
                 let rest = ARTRest(options: options)
-                testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+                testHTTPExecutor = TestProxyHTTPExecutor(queue: options.internalDispatchQueue, logger: .init(clientOptions: options))
                 rest.internal.httpExecutor = testHTTPExecutor
 
                 // Delay for token expiration
@@ -894,7 +894,7 @@ class RestClientTests: XCTestCase {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         let client = ARTRest(options: options)
         let internalLog = InternalLog(clientOptions: options)
-        let mockHTTP = MockHTTP(logger: internalLog)
+        let mockHTTP = MockHTTP(queue: AblyTests.createInternalQueue(for: test), logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable, resetAfter: 2)
@@ -922,7 +922,7 @@ class RestClientTests: XCTestCase {
         options.restHost = "fake.ably.io"
         let client = ARTRest(options: options)
         let internalLog = InternalLog(clientOptions: options)
-        let mockHTTP = MockHTTP(logger: internalLog)
+        let mockHTTP = MockHTTP(queue: AblyTests.createInternalQueue(for: test), logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
@@ -949,7 +949,7 @@ class RestClientTests: XCTestCase {
         options.port = 999
         let client = ARTRest(options: options)
         let internalLog = InternalLog(clientOptions: options)
-        let mockHTTP = MockHTTP(logger: internalLog)
+        let mockHTTP = MockHTTP(queue: AblyTests.createInternalQueue(for: test), logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
@@ -975,7 +975,7 @@ class RestClientTests: XCTestCase {
         options.tlsPort = 999
         let client = ARTRest(options: options)
         let internalLog = InternalLog(clientOptions: options)
-        let mockHTTP = MockHTTP(logger: internalLog)
+        let mockHTTP = MockHTTP(queue: AblyTests.createInternalQueue(for: test), logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
@@ -1001,7 +1001,7 @@ class RestClientTests: XCTestCase {
         options.fallbackHosts = ["a.cocoa.ably", "b.cocoa.ably"]
         let client = ARTRest(options: options)
         let internalLog = InternalLog(clientOptions: options)
-        let mockHTTP = MockHTTP(logger: internalLog)
+        let mockHTTP = MockHTTP(queue: AblyTests.createInternalQueue(for: test), logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
@@ -1029,7 +1029,7 @@ class RestClientTests: XCTestCase {
         options.fallbackHostsUseDefault = true
         let client = ARTRest(options: options)
         let internalLog = InternalLog(clientOptions: options)
-        let mockHTTP = MockHTTP(logger: internalLog)
+        let mockHTTP = MockHTTP(queue: AblyTests.createInternalQueue(for: test), logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable, resetAfter: 2)
@@ -1056,7 +1056,7 @@ class RestClientTests: XCTestCase {
         options.restHost = "fake.ably.io"
         let client = ARTRest(options: options)
         let internalLog = InternalLog(clientOptions: options)
-        let mockHTTP = MockHTTP(logger: internalLog)
+        let mockHTTP = MockHTTP(queue: AblyTests.createInternalQueue(for: test), logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
@@ -1079,7 +1079,7 @@ class RestClientTests: XCTestCase {
         options.fallbackHosts = ["f.ably-realtime.com"]
         let client = ARTRest(options: options)
         let internalLog = InternalLog(clientOptions: options)
-        let mockHTTP = MockHTTP(logger: internalLog)
+        let mockHTTP = MockHTTP(queue: AblyTests.createInternalQueue(for: test), logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
@@ -1105,7 +1105,7 @@ class RestClientTests: XCTestCase {
         options.environment = "test"
         let client = ARTRest(options: options)
         let internalLog = InternalLog(clientOptions: options)
-        let mockHTTP = MockHTTP(logger: internalLog)
+        let mockHTTP = MockHTTP(queue: AblyTests.createInternalQueue(for: test), logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable, resetAfter: 2)
@@ -1132,7 +1132,7 @@ class RestClientTests: XCTestCase {
         options.environment = "production"
         let client = ARTRest(options: options)
         let internalLog = InternalLog(clientOptions: options)
-        let mockHTTP = MockHTTP(logger: internalLog)
+        let mockHTTP = MockHTTP(queue: AblyTests.createInternalQueue(for: test), logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
@@ -1160,7 +1160,7 @@ class RestClientTests: XCTestCase {
         options.environment = ""
         let client = ARTRest(options: options)
         let internalLog = InternalLog(clientOptions: options)
-        let mockHTTP = MockHTTP(logger: internalLog)
+        let mockHTTP = MockHTTP(queue: AblyTests.createInternalQueue(for: test), logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
@@ -1190,7 +1190,7 @@ class RestClientTests: XCTestCase {
         options.fallbackHostsUseDefault = true
         let client = ARTRest(options: options)
         let internalLog = InternalLog(clientOptions: options)
-        let mockHTTP = MockHTTP(logger: internalLog)
+        let mockHTTP = MockHTTP(queue: AblyTests.createInternalQueue(for: test), logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable, resetAfter: 1)
@@ -1215,7 +1215,7 @@ class RestClientTests: XCTestCase {
         options.fallbackHosts = [] // to test TO3k6
         let client = ARTRest(options: options)
         let internalLog = InternalLog(clientOptions: options)
-        let mockHTTP = MockHTTP(logger: internalLog)
+        let mockHTTP = MockHTTP(queue: AblyTests.createInternalQueue(for: test), logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
@@ -1239,7 +1239,7 @@ class RestClientTests: XCTestCase {
         options.fallbackHosts = nil
         let client = ARTRest(options: options)
         let internalLog = InternalLog(clientOptions: options)
-        let mockHTTP = MockHTTP(logger: internalLog)
+        let mockHTTP = MockHTTP(queue: AblyTests.createInternalQueue(for: test), logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable, resetAfter: 1)
@@ -1268,7 +1268,7 @@ class RestClientTests: XCTestCase {
         options.fallbackRetryTimeout = 1 // RSC15j exception
         let client = ARTRest(options: options)
         let internalLog = InternalLog(clientOptions: options)
-        let mockHTTP = MockHTTP(logger: internalLog)
+        let mockHTTP = MockHTTP(queue: AblyTests.createInternalQueue(for: test), logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable, resetAfter: 1)
@@ -1322,7 +1322,7 @@ class RestClientTests: XCTestCase {
         let client = ARTRest(options: options)
         options.httpMaxRetryCount = 3
         let internalLog = InternalLog(clientOptions: options)
-        let mockHTTP = MockHTTP(logger: internalLog)
+        let mockHTTP = MockHTTP(queue: AblyTests.createInternalQueue(for: test), logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
@@ -1358,7 +1358,7 @@ class RestClientTests: XCTestCase {
         options.testOptions.shuffleArray = shuffleArrayInExpectedHostOrder
         let client = ARTRest(options: options)
         let internalLog = InternalLog(clientOptions: options)
-        let mockHTTP = MockHTTP(logger: internalLog)
+        let mockHTTP = MockHTTP(queue: AblyTests.createInternalQueue(for: test), logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
@@ -1388,7 +1388,7 @@ class RestClientTests: XCTestCase {
         options.testOptions.shuffleArray = shuffleArrayInExpectedHostOrder
         let client = ARTRest(options: options)
         let internalLog = InternalLog(clientOptions: options)
-        let mockHTTP = MockHTTP(logger: internalLog)
+        let mockHTTP = MockHTTP(queue: AblyTests.createInternalQueue(for: test), logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
@@ -1420,7 +1420,7 @@ class RestClientTests: XCTestCase {
 
         let client = ARTRest(options: options)
         let internalLog = InternalLog(clientOptions: options)
-        let mockHTTP = MockHTTP(logger: internalLog)
+        let mockHTTP = MockHTTP(queue: AblyTests.createInternalQueue(for: test), logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
@@ -1453,7 +1453,7 @@ class RestClientTests: XCTestCase {
 
         let client = ARTRest(options: options)
         let internalLog = InternalLog(clientOptions: options)
-        let mockHTTP = MockHTTP(logger: internalLog)
+        let mockHTTP = MockHTTP(queue: AblyTests.createInternalQueue(for: test), logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
@@ -1485,7 +1485,7 @@ class RestClientTests: XCTestCase {
 
         let client = ARTRest(options: options)
         let internalLog = InternalLog(clientOptions: options)
-        let mockHTTP = MockHTTP(logger: internalLog)
+        let mockHTTP = MockHTTP(queue: AblyTests.createInternalQueue(for: test), logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
@@ -1518,7 +1518,7 @@ class RestClientTests: XCTestCase {
 
         let client = ARTRest(options: options)
         let internalLog = InternalLog(clientOptions: options)
-        let mockHTTP = MockHTTP(logger: internalLog)
+        let mockHTTP = MockHTTP(queue: AblyTests.createInternalQueue(for: test), logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)
@@ -1538,17 +1538,17 @@ class RestClientTests: XCTestCase {
 
     func test__074__RestClient__Host_Fallback__should_use_an_alternative_host_when___hostUnreachable() {
         let test = Test()
-        testUsesAlternativeHost(.hostUnreachable, channelName: test.uniqueChannelName())
+        testUsesAlternativeHost(.hostUnreachable, for: test, channelName: test.uniqueChannelName())
     }
 
     func test__075__RestClient__Host_Fallback__should_use_an_alternative_host_when___requestTimeout_timeout__0_1_() {
         let test = Test()
-        testUsesAlternativeHost(.requestTimeout(timeout: 0.1), channelName: test.uniqueChannelName())
+        testUsesAlternativeHost(.requestTimeout(timeout: 0.1), for: test, channelName: test.uniqueChannelName())
     }
 
     func test__076__RestClient__Host_Fallback__should_use_an_alternative_host_when___hostInternalError_code__501_() {
         let test = Test()
-        testUsesAlternativeHost(.hostInternalError(code: 501), channelName: test.uniqueChannelName())
+        testUsesAlternativeHost(.hostInternalError(code: 501), for: test, channelName: test.uniqueChannelName())
     }
 
     // RSC15d
@@ -1557,7 +1557,7 @@ class RestClientTests: XCTestCase {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         let client = ARTRest(options: options)
         let internalLog = InternalLog(clientOptions: options)
-        let mockHTTP = MockHTTP(logger: internalLog)
+        let mockHTTP = MockHTTP(queue: AblyTests.createInternalQueue(for: test), logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .host400BadRequest, resetAfter: 1)
@@ -1577,47 +1577,47 @@ class RestClientTests: XCTestCase {
 
     func test__077__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host___hostUnreachable() {
         let test = Test()
-        testStoresSuccessfulFallbackHostAsDefaultHost(.hostUnreachable, channelName: test.uniqueChannelName())
+        testStoresSuccessfulFallbackHostAsDefaultHost(.hostUnreachable, for: test, channelName: test.uniqueChannelName())
     }
 
     func test__078__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host___requestTimeout_timeout__0_1_() {
         let test = Test()
-        testStoresSuccessfulFallbackHostAsDefaultHost(.requestTimeout(timeout: 0.1), channelName: test.uniqueChannelName())
+        testStoresSuccessfulFallbackHostAsDefaultHost(.requestTimeout(timeout: 0.1), for: test, channelName: test.uniqueChannelName())
     }
 
     func test__079__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host___hostInternalError_code__501_() {
         let test = Test()
-        testStoresSuccessfulFallbackHostAsDefaultHost(.hostInternalError(code: 501), channelName: test.uniqueChannelName())
+        testStoresSuccessfulFallbackHostAsDefaultHost(.hostInternalError(code: 501), for: test, channelName: test.uniqueChannelName())
     }
 
     func test__080__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_restore_default_primary_host_after_fallbackRetryTimeout_expired___hostUnreachable() {
         let test = Test()
-        testRestoresDefaultPrimaryHostAfterTimeoutExpires(.hostUnreachable, channelName: test.uniqueChannelName())
+        testRestoresDefaultPrimaryHostAfterTimeoutExpires(.hostUnreachable, for: test, channelName: test.uniqueChannelName())
     }
 
     func test__081__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_restore_default_primary_host_after_fallbackRetryTimeout_expired___requestTimeout_timeout__0_1_() {
         let test = Test()
-        testRestoresDefaultPrimaryHostAfterTimeoutExpires(.requestTimeout(timeout: 0.1), channelName: test.uniqueChannelName())
+        testRestoresDefaultPrimaryHostAfterTimeoutExpires(.requestTimeout(timeout: 0.1), for: test, channelName: test.uniqueChannelName())
     }
 
     func test__082__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_restore_default_primary_host_after_fallbackRetryTimeout_expired___hostInternalError_code__501_() {
         let test = Test()
-        testRestoresDefaultPrimaryHostAfterTimeoutExpires(.hostInternalError(code: 501), channelName: test.uniqueChannelName())
+        testRestoresDefaultPrimaryHostAfterTimeoutExpires(.hostInternalError(code: 501), for: test, channelName: test.uniqueChannelName())
     }
 
     func test__083__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_use_another_fallback_host_if_previous_fallback_request_failed_and_store_it_as_default_if_current_fallback_request_succseeded___hostUnreachable() {
         let test = Test()
-        testUsesAnotherFallbackHost(.hostUnreachable, channelName: test.uniqueChannelName())
+        testUsesAnotherFallbackHost(.hostUnreachable, for: test, channelName: test.uniqueChannelName())
     }
 
     func test__084__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_use_another_fallback_host_if_previous_fallback_request_failed_and_store_it_as_default_if_current_fallback_request_succseeded___requestTimeout_timeout__0_1_() {
         let test = Test()
-        testUsesAnotherFallbackHost(.requestTimeout(timeout: 0.1), channelName: test.uniqueChannelName())
+        testUsesAnotherFallbackHost(.requestTimeout(timeout: 0.1), for: test, channelName: test.uniqueChannelName())
     }
 
     func test__085__RestClient__Host_Fallback__should_store_successful_fallback_host_as_default_host__should_use_another_fallback_host_if_previous_fallback_request_failed_and_store_it_as_default_if_current_fallback_request_succseeded___hostInternalError_code__501_() {
         let test = Test()
-        testUsesAnotherFallbackHost(.hostInternalError(code: 501), channelName: test.uniqueChannelName())
+        testUsesAnotherFallbackHost(.hostInternalError(code: 501), for: test, channelName: test.uniqueChannelName())
     }
 
     // RSC8a
@@ -1627,7 +1627,7 @@ class RestClientTests: XCTestCase {
         XCTAssertTrue(options.useBinaryProtocol)
 
         let rest = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        testHTTPExecutor = TestProxyHTTPExecutor(queue: options.internalDispatchQueue, logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
         waitUntil(timeout: testTimeout) { done in
             rest.channels.get(test.uniqueChannelName(prefix: "rest")).publish(nil, data: "message") { _ in
@@ -1665,7 +1665,7 @@ class RestClientTests: XCTestCase {
         options.useBinaryProtocol = false
 
         let rest = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        testHTTPExecutor = TestProxyHTTPExecutor(queue: options.internalDispatchQueue, logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
         waitUntil(timeout: testTimeout) { done in
             rest.channels.get(test.uniqueChannelName(prefix: "rest")).publish(nil, data: "message") { _ in
@@ -1699,7 +1699,7 @@ class RestClientTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        testHTTPExecutor = TestProxyHTTPExecutor(queue: options.internalDispatchQueue, logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
         waitUntil(timeout: testTimeout) { done in
             client.channels.get(test.uniqueChannelName()).publish(nil, data: "message") { error in
@@ -1725,7 +1725,7 @@ class RestClientTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRest(options: options)
-        testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        testHTTPExecutor = TestProxyHTTPExecutor(queue: options.internalDispatchQueue, logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
         let channel = client.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
@@ -1954,7 +1954,7 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        let proxyHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        let proxyHTTPExecutor = TestProxyHTTPExecutor(queue: options.internalDispatchQueue, logger: .init(clientOptions: options))
         rest.internal.httpExecutor = proxyHTTPExecutor
 
         var httpPaginatedResponse: ARTHTTPPaginatedResponse!
@@ -2004,7 +2004,7 @@ class RestClientTests: XCTestCase {
             }
         }
 
-        let proxyHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
+        let proxyHTTPExecutor = TestProxyHTTPExecutor(queue: options.internalDispatchQueue, logger: .init(clientOptions: options))
         rest.internal.httpExecutor = proxyHTTPExecutor
 
         waitUntil(timeout: testTimeout) { done in
@@ -2115,7 +2115,7 @@ class RestClientTests: XCTestCase {
 
         let client = ARTRest(options: options)
         let internalLog = InternalLog(clientOptions: options)
-        let mockHTTP = MockHTTP(logger: internalLog)
+        let mockHTTP = MockHTTP(queue: AblyTests.createInternalQueue(for: test), logger: internalLog)
         testHTTPExecutor = TestProxyHTTPExecutor(http: mockHTTP, logger: internalLog)
         client.internal.httpExecutor = testHTTPExecutor
         mockHTTP.setNetworkState(network: .hostUnreachable)

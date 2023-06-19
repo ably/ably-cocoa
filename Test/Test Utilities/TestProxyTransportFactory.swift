@@ -1,6 +1,12 @@
 import Ably.Private
 
 class TestProxyTransportFactory: RealtimeTransportFactory {
+    let internalQueue: DispatchQueue
+
+    init(internalQueue: DispatchQueue) {
+        self.internalQueue = internalQueue
+    }
+
     // This value will be used by all TestProxyTransportFactory instances created by this factory (including those created before this property is updated).
     var fakeNetworkResponse: FakeNetworkResponse?
 
@@ -17,7 +23,8 @@ class TestProxyTransportFactory: RealtimeTransportFactory {
             resumeKey: resumeKey,
             connectionSerial: connectionSerial,
             logger: logger,
-            webSocketFactory: webSocketFactory
+            webSocketFactory: webSocketFactory,
+            internalQueue: internalQueue
         )
 
         webSocketFactory.testProxyTransport = testProxyTransport

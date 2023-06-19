@@ -23,6 +23,34 @@ class AblyTestsConfiguration: NSObject, XCTestObservation {
             performedPreFirstTestCaseSetup = true
         }
     }
+
+    func testSuiteDidFinish(_ testSuite: XCTestSuite) {
+        let activeQueueIdentities = AblyTests.QueueIdentity.active
+
+        if activeQueueIdentities.isEmpty {
+            print("No active queue identities.")
+        } else {
+            print("\(activeQueueIdentities.count) active queue \(activeQueueIdentities.count == 1 ? "identity" : "identities"):")
+
+            let activeQueueIdentitiesGroupedByFileID = Dictionary(grouping: activeQueueIdentities, by: \.test.fileID)
+            let sortedFileIDs = activeQueueIdentitiesGroupedByFileID.keys.sorted()
+            for fileID in sortedFileIDs {
+                print("\t\(fileID):")
+                let activeQueueIdentitiesForFileID = activeQueueIdentitiesGroupedByFileID[fileID]!
+
+                let activeQueueIdentitiesForFileIDGroupedByFunction = Dictionary(grouping: activeQueueIdentitiesForFileID, by: \.test.function)
+                let sortedFunctions = activeQueueIdentitiesForFileIDGroupedByFunction.keys.sorted()
+                for function in sortedFunctions {
+                    print("\t\t\(function):")
+                    let activeQueueIdentitiesForFunction = activeQueueIdentitiesForFileIDGroupedByFunction[function]!
+
+                    for queueIdentity in activeQueueIdentitiesForFunction {
+                        print("\t\t\t\(queueIdentity.label)")
+                    }
+                }
+            }
+        }
+    }
     
     private func preFirstTestCaseSetup() {
         // This is code that, when we were using the Quick testing
@@ -82,21 +110,60 @@ class AblyTests {
 
     static var testApplication: [String: Any]?
 
-    struct QueueIdentity {
+    class QueueIdentity: CustomStringConvertible, Hashable {
         let label: String
+        let test: Test
+
+        private static let semaphore = DispatchSemaphore(value: 1)
+        private static var _active: Set<QueueIdentity> = []
+
+        static var active: Set<QueueIdentity> {
+            semaphore.wait()
+            let active = _active
+            semaphore.signal()
+            return active
+        }
+
+        init(label: String, test: Test) {
+            self.label = label
+            self.test = test
+            Self.semaphore.wait()
+            Self._active.insert(self)
+            Self.semaphore.signal()
+            NSLog("Created QueueIdentity \(label)")
+        }
+
+        deinit {
+            Self.semaphore.wait()
+            Self._active.remove(self)
+            Self.semaphore.signal()
+            NSLog("deinit QueueIdentity \(label)")
+        }
+
+        var description: String {
+            return "QueueIdentity(label: \(label), test: \(test))"
+        }
+
+        static func == (lhs: AblyTests.QueueIdentity, rhs: AblyTests.QueueIdentity) -> Bool {
+            return ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
+        }
+
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(ObjectIdentifier(self))
+        }
     }
 
     static let queueIdentityKey = DispatchSpecificKey<QueueIdentity>()
 
-    static var queue: DispatchQueue = {
-        let queue = DispatchQueue(label: "io.ably.tests", qos: .userInitiated)
-        queue.setSpecific(key: queueIdentityKey, value: QueueIdentity(label: queue.label))
+    static func createInternalQueue(for test: Test) -> DispatchQueue {
+        let queue = DispatchQueue(label: "io.ably.tests.\(test.id).\(UUID().uuidString)", qos: .userInitiated)
+        queue.setSpecific(key: queueIdentityKey, value: QueueIdentity(label: queue.label, test: test))
         return queue
-    }()
+    }
 
     static func createUserQueue(for test: Test) -> DispatchQueue {
         let queue = DispatchQueue(label: "io.ably.tests.callbacks.\(test.id).\(UUID().uuidString)", qos: .userInitiated)
-        queue.setSpecific(key: queueIdentityKey, value: QueueIdentity(label: queue.label))
+        queue.setSpecific(key: queueIdentityKey, value: QueueIdentity(label: queue.label, test: test))
         return queue
     }
 
@@ -154,7 +221,7 @@ class AblyTests {
             options.token = try getTestToken(for: test)
         }
         options.dispatchQueue = DispatchQueue.main
-        options.internalDispatchQueue = queue
+        options.internalDispatchQueue = createInternalQueue(for: test)
         return options
     }
 
@@ -188,7 +255,7 @@ class AblyTests {
 
         let autoConnect = modifiedOptions.autoConnect
         modifiedOptions.autoConnect = false
-        let transportFactory = TestProxyTransportFactory()
+        let transportFactory = TestProxyTransportFactory(internalQueue: modifiedOptions.internalDispatchQueue)
         modifiedOptions.testOptions.transportFactory = transportFactory
         let realtime = ARTRealtime(options: modifiedOptions)
         realtime.internal.setReachabilityClass(TestReachability.self)
@@ -794,10 +861,6 @@ class MockHTTP: ARTHttp {
     private var rule: Rule?
     private var count: Int = 0
 
-    init(logger: InternalLog) {
-        super.init(queue: AblyTests.queue, logger: logger)
-    }
-
     func setNetworkState(network: FakeNetworkResponse, resetAfter numberOfRequests: Int) {
         queue.async {
             self.networkState = network
@@ -984,9 +1047,9 @@ class TestProxyHTTPExecutor: NSObject, ARTHTTPExecutor {
     private var callbackAfterRequest: ((URLRequest) -> Void)?
     private var callbackProcessingDataResponse: ((Data?) -> Data)?
 
-    init(logger: InternalLog) {
+    init(queue: DispatchQueue, logger: InternalLog) {
         self.logger = logger
-        self.http = ARTHttp(queue: AblyTests.queue, logger: logger)
+        self.http = ARTHttp(queue: queue, logger: logger)
     }
 
     init(http: ARTHttp, logger: InternalLog) {
@@ -1101,8 +1164,11 @@ class TestProxyTransport: ARTWebSocketTransport {
         return _factory
     }
 
-    init(factory: TestProxyTransportFactory, rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, connectionSerial: NSNumber?, logger: InternalLog, webSocketFactory: WebSocketFactory) {
+    private var internalQueue: DispatchQueue
+
+    init(factory: TestProxyTransportFactory, rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, connectionSerial: NSNumber?, logger: InternalLog, webSocketFactory: WebSocketFactory, internalQueue: DispatchQueue) {
         self._factory = factory
+        self.internalQueue = internalQueue
         super.init(rest: rest, options: options, resumeKey: resumeKey, connectionSerial: connectionSerial, logger: logger, webSocketFactory: webSocketFactory)
     }
 
@@ -1145,7 +1211,7 @@ class TestProxyTransport: ARTWebSocketTransport {
     var actionsIgnored = [ARTProtocolMessageAction]()
 
     var queue: DispatchQueue {
-        return websocket?.delegateDispatchQueue ?? AblyTests.queue
+        return websocket?.delegateDispatchQueue ?? internalQueue
     }
 
     private var callbackBeforeProcessingIncomingMessage: ((ARTProtocolMessage) -> Void)?
@@ -1604,23 +1670,23 @@ extension ARTRealtime {
         }
     }
 
-    func simulateNoInternetConnection(transportFactory: TestProxyTransportFactory) {
+    func simulateNoInternetConnection(transportFactory: TestProxyTransportFactory, internalQueue: DispatchQueue) {
         guard let reachability = self.internal.reachability as? TestReachability else {
             fatalError("Expected test reachability")
         }
 
-        AblyTests.queue.async {
+        internalQueue.async {
             transportFactory.fakeNetworkResponse = .noInternet
             reachability.simulate(false)
         }
     }
 
-    func simulateRestoreInternetConnection(after seconds: TimeInterval? = nil, transportFactory: TestProxyTransportFactory) {
+    func simulateRestoreInternetConnection(after seconds: TimeInterval? = nil, transportFactory: TestProxyTransportFactory, internalQueue: DispatchQueue) {
         guard let reachability = self.internal.reachability as? TestReachability else {
             fatalError("Expected test reachability")
         }
 
-        AblyTests.queue.asyncAfter(deadline: .now() + (seconds ?? 0)) {
+        internalQueue.asyncAfter(deadline: .now() + (seconds ?? 0)) {
             transportFactory.fakeNetworkResponse = nil
             reachability.simulate(true)
         }

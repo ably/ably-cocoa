@@ -4,15 +4,16 @@ import Nimble
 import XCTest
 
 // RTP16c
-private func testResultsInErrorWithConnectionState(_ connectionState: ARTRealtimeConnectionState, for test: Test, channelName: String, performMethod: @escaping (ARTRealtime) -> Void) throws {
-    let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
+private func testResultsInErrorWithConnectionState(_ connectionState: ARTRealtimeConnectionState, for test: Test, channelName: String, performMethod: @escaping (ARTRealtime, ARTClientOptions) -> Void) throws {
+    let options = try AblyTests.commonAppSetup(for: test)
+    let client = ARTRealtime(options: options)
     defer { client.dispose(); client.close() }
     let channel = client.channels.get(channelName)
     XCTAssertTrue(client.internal.options.queueMessages)
 
     waitUntil(timeout: testTimeout) { done in
         channel.attach { _ in
-            performMethod(client)
+            performMethod(client, options)
             done()
         }
     }
@@ -110,7 +111,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.autoConnect = false
-        options.testOptions.transportFactory = TestProxyTransportFactory()
+        options.testOptions.transportFactory = TestProxyTransportFactory(internalQueue: options.internalDispatchQueue)
         let client = ARTRealtime(options: options)
         client.connect()
         defer { client.dispose(); client.close() }
@@ -144,7 +145,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         disposable += [AblyTests.addMembersSequentiallyToChannel(channelName, members: 250, options: options)]
 
         options.autoConnect = false
-        options.testOptions.transportFactory = TestProxyTransportFactory()
+        options.testOptions.transportFactory = TestProxyTransportFactory(internalQueue: options.internalDispatchQueue)
         let client = ARTRealtime(options: options)
         client.connect()
         defer { client.dispose(); client.close() }
@@ -573,7 +574,8 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     func skipped__test__019__Presence__Channel_state_change_side_effects__if_the_channel_enters_the_FAILED_state__should_clear_the_PresenceMap_including_local_members_and_does_not_emit_any_presence_events() throws {
         let test = Test()
-        let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
+        let options = try AblyTests.commonAppSetup(for: test)
+        let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
@@ -603,7 +605,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 expect(channel.internal.presenceMap.localMembers).to(beEmpty())
                 done()
             }
-            AblyTests.queue.async {
+            options.internalDispatchQueue.async {
                 channel.internal.onError(AblyTests.newErrorProtocolMessage())
             }
         }
@@ -932,7 +934,8 @@ class RealtimeClientPresenceTests: XCTestCase {
     // RTP6c
     func test__028__Presence__subscribe__should_result_in_an_error_if_the_channel_moves_to_the_FAILED_state() throws {
         let test = Test()
-        let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
+        let options = try AblyTests.commonAppSetup(for: test)
+        let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(test.uniqueChannelName())
 
@@ -946,7 +949,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                     done()
                 }) { _ in }
             }) { _ in }
-            AblyTests.queue.async {
+            options.internalDispatchQueue.async {
                 channel.internal.onError(error)
             }
         }
@@ -1166,7 +1169,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
-            AblyTests.queue.async {
+            options.internalDispatchQueue.async {
                 channel.internal.onError(AblyTests.newErrorProtocolMessage())
                 done()
             }
@@ -1311,7 +1314,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             let protocolError = AblyTests.newErrorProtocolMessage()
             channel.once(.attaching) { _ in
-                AblyTests.queue.async {
+                options.internalDispatchQueue.async {
                     channel.internal.onError(protocolError)
                 }
             }
@@ -2061,7 +2064,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(test.uniqueChannelName())
 
-        AblyTests.queue.async {
+        options.internalDispatchQueue.async {
             channel.internal.onError(AblyTests.newErrorProtocolMessage())
         }
 
@@ -2273,7 +2276,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(test.uniqueChannelName())
 
-        AblyTests.queue.async {
+        options.internalDispatchQueue.async {
             channel.internal.onError(AblyTests.newErrorProtocolMessage())
         }
 
@@ -2376,7 +2379,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
         }
 
-        AblyTests.queue.async {
+        options.internalDispatchQueue.async {
             channel.internal.onError(AblyTests.newErrorProtocolMessage())
         }
 
@@ -2446,12 +2449,13 @@ class RealtimeClientPresenceTests: XCTestCase {
     // RTP6c
     func test__076__Presence__subscribe__should_result_in_an_error_if_the_channel_is_in_the_FAILED_state() throws {
         let test = Test()
-        let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
+        let options = try AblyTests.commonAppSetup(for: test)
+        let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(test.uniqueChannelName())
 
         let protocolError = AblyTests.newErrorProtocolMessage()
-        AblyTests.queue.async {
+        options.internalDispatchQueue.async {
             channel.internal.onError(protocolError)
         }
 
@@ -2469,7 +2473,8 @@ class RealtimeClientPresenceTests: XCTestCase {
     // RTP6c
     func test__077__Presence__subscribe__should_result_in_an_error_if_the_channel_moves_to_the_FAILED_state() throws {
         let test = Test()
-        let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
+        let options = try AblyTests.commonAppSetup(for: test)
+        let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(test.uniqueChannelName())
 
@@ -2482,7 +2487,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             }, callback: { _ in
                 fail("Should not be called")
             })
-            AblyTests.queue.async {
+            options.internalDispatchQueue.async {
                 channel.internal.onError(error)
             }
         }
@@ -2991,12 +2996,13 @@ class RealtimeClientPresenceTests: XCTestCase {
         func test__should_result_in_an_error_if_the_channel_is_in_the_FAILED_state() throws {
             contextBeforeEach?()
 
-            let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
+            let options = try AblyTests.commonAppSetup(for: test)
+            let client = ARTRealtime(options: options)
             defer { client.dispose(); client.close() }
             let channel = client.channels.get(test.uniqueChannelName())
 
             let expectedErrorMessage = "Something has failed"
-            AblyTests.queue.async {
+            options.internalDispatchQueue.async {
                 channel.internal.onError(AblyTests.newErrorProtocolMessage(message: expectedErrorMessage))
             }
 
@@ -3019,14 +3025,15 @@ class RealtimeClientPresenceTests: XCTestCase {
         func test__should_result_in_an_error_if_the_channel_moves_to_the_FAILED_state() throws {
             contextBeforeEach?()
 
-            let client = AblyTests.newRealtime(try AblyTests.commonAppSetup(for: test)).client
+            let options = try AblyTests.commonAppSetup(for: test)
+            let client = AblyTests.newRealtime(options).client
             defer { client.dispose(); client.close() }
             let channel = client.channels.get(test.uniqueChannelName())
 
             waitUntil(timeout: testTimeout) { done in
                 let error = AblyTests.newErrorProtocolMessage()
                 channel.once(.attaching) { _ in
-                    AblyTests.queue.async {
+                    options.internalDispatchQueue.async {
                         channel.internal.onError(error)
                     }
                 }
@@ -3230,8 +3237,8 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     func test__097__Presence__Connection_state_conditions__should_result_in_an_error_if_the_connection_state_is__suspended() throws {
         let test = Test()
-        try testResultsInErrorWithConnectionState(.suspended, for: test, channelName: test.uniqueChannelName()) { client in
-            AblyTests.queue.async {
+        try testResultsInErrorWithConnectionState(.suspended, for: test, channelName: test.uniqueChannelName()) { client, options in
+            options.internalDispatchQueue.async {
                 client.internal.onSuspended()
             }
         }
@@ -3239,15 +3246,15 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     func test__098__Presence__Connection_state_conditions__should_result_in_an_error_if_the_connection_state_is__closed() throws {
         let test = Test()
-        try testResultsInErrorWithConnectionState(.closed, for: test, channelName: test.uniqueChannelName()) { client in
+        try testResultsInErrorWithConnectionState(.closed, for: test, channelName: test.uniqueChannelName()) { client, _ in
             client.close()
         }
     }
 
     func test__099__Presence__Connection_state_conditions__should_result_in_an_error_if_the_connection_state_is__failed() throws {
         let test = Test()
-        try testResultsInErrorWithConnectionState(.failed, for: test, channelName: test.uniqueChannelName()) { client in
-            AblyTests.queue.async {
+        try testResultsInErrorWithConnectionState(.failed, for: test, channelName: test.uniqueChannelName()) { client, options in
+            options.internalDispatchQueue.async {
                 client.internal.onError(AblyTests.newErrorProtocolMessage())
             }
         }
@@ -3326,12 +3333,13 @@ class RealtimeClientPresenceTests: XCTestCase {
     // RTP11b
     func test__102__Presence__get__should_result_in_an_error_if_the_channel_is_in_the_FAILED_state() throws {
         let test = Test()
-        let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
+        let options = try AblyTests.commonAppSetup(for: test)
+        let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(test.uniqueChannelName())
 
         let pm = AblyTests.newErrorProtocolMessage()
-        AblyTests.queue.async {
+        options.internalDispatchQueue.async {
             channel.internal.onError(pm)
         }
 
@@ -3358,7 +3366,8 @@ class RealtimeClientPresenceTests: XCTestCase {
     // RTP11b
     func test__103__Presence__get__should_result_in_an_error_if_the_channel_moves_to_the_FAILED_state() throws {
         let test = Test()
-        let client = AblyTests.newRealtime(try AblyTests.commonAppSetup(for: test)).client
+        let options = try AblyTests.commonAppSetup(for: test)
+        let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(test.uniqueChannelName())
 
@@ -3369,7 +3378,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
             (client.internal.transport as! TestProxyTransport).actionsIgnored += [.attached]
             channel.once(.attaching) { _ in
-                AblyTests.queue.async {
+                options.internalDispatchQueue.async {
                     channel.internal.onError(pm)
                 }
             }
@@ -3992,7 +4001,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                     XCTAssertEqual(message.id, "protocolId:0")
                     done()
                 }
-                AblyTests.queue.async {
+                options.internalDispatchQueue.async {
                     channel.internal.onPresence(protocolMessage)
                 }
             }
