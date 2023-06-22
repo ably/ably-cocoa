@@ -38,7 +38,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: carthage-xcodebuild-logs
-          path: /var/folders/sp/*/T/carthage-xcodebuild*.log
+          path: /var/folders/2p/*/T/carthage-xcodebuild*.log
         
       - name: Print contents of generated ZIP file
         run: |
