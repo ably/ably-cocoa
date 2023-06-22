@@ -3740,7 +3740,7 @@ class AuthTests: XCTestCase {
             realtime.auth.authorize(callback)
         }
 
-        XCTAssertTrue(didCancelAuthorization)
+        expect(didCancelAuthorization).to(be(true))
         XCTAssertTrue(realtime.auth.tokenDetails === tokenDetailsLast)
         XCTAssertEqual(realtime.auth.tokenDetails?.token, tokenDetailsLast?.token)
 
