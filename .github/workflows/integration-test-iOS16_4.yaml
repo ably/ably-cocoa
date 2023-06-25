@@ -61,6 +61,13 @@ jobs:
           bundle install
           make update_carthage_dependencies_ios
           bundle exec fastlane test_iOS16_4
+          
+      - name: Upload carthage xcodebuild logs
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: carthage-xcodebuild-logs
+          path: /var/folders/2p/*/T/carthage-xcodebuild*.log
 
       - name: Check Static Analyzer Output
         id: analyzer-output
