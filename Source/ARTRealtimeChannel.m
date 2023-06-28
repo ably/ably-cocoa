@@ -619,7 +619,7 @@ dispatch_sync(_queue, ^{
             ARTLogDebug(self.logger, @"RT:%p C:%p Created attach retry sequence %@", _realtime, self, self.attachRetrySequence);
 
             ARTRetryAttempt *const retryAttempt = [self.attachRetrySequence addRetryAttempt];
-            ARTLogDebug(self.logger, @"RT:%p C:%p Adding attach retry attempt to %@ gave %@", retryAttempt, self, self.attachRetrySequence.id, retryAttempt);
+            ARTLogDebug(self.logger, @"RT:%p C:%p Adding attach retry attempt to %@ gave %@", _realtime, self, self.attachRetrySequence.id, retryAttempt);
 
             [_attachedEventEmitter emit:nil with:metadata.errorInfo];
             if (self.realtime.shouldSendEvents) {
