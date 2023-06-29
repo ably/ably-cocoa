@@ -42,6 +42,7 @@ extension AblyHelper {
         locationManager.delegate = self
         locationManager.requestAlwaysAuthorization()
         locationManager.startMonitoringLocationPushes { deviceToken, error in
+            print("Got deviceToken: \(deviceToken!.base64EncodedString())")
             guard error == nil else {
                 return ARTPush.didFailToRegisterForLocationNotificationsWithError(error!, realtime: self.realtime)
             }
