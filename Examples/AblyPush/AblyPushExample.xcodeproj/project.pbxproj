@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		219F937A2A4E0E44007DE767 /* LocationPushEventsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 219F93792A4E0E44007DE767 /* LocationPushEventsView.swift */; };
 		8405EE8427F0B06800C9E461 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8405EE8327F0B06800C9E461 /* App.swift */; };
 		8405EE8627F0B06800C9E461 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8405EE8527F0B06800C9E461 /* ContentView.swift */; };
 		8405EE8827F0B06C00C9E461 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8405EE8727F0B06C00C9E461 /* Assets.xcassets */; };
@@ -42,6 +43,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		219F93782A4DFE41007DE767 /* AblyLocationPush.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AblyLocationPush.entitlements; sourceTree = "<group>"; };
+		219F93792A4E0E44007DE767 /* LocationPushEventsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationPushEventsView.swift; sourceTree = "<group>"; };
 		8405EE8027F0B06800C9E461 /* Ably Push.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Ably Push.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8405EE8327F0B06800C9E461 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
 		8405EE8527F0B06800C9E461 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -101,6 +104,7 @@
 				8405EE8327F0B06800C9E461 /* App.swift */,
 				842F124927F0B29D0029692E /* AblyHelper.swift */,
 				8405EE8527F0B06800C9E461 /* ContentView.swift */,
+				219F93792A4E0E44007DE767 /* LocationPushEventsView.swift */,
 				842F124B27F0BFC10029692E /* Info.plist */,
 				8405EE8727F0B06C00C9E461 /* Assets.xcassets */,
 				842F124C27F0BFD40029692E /* AblyPushExample.entitlements */,
@@ -135,6 +139,7 @@
 		84C233C72A2D560C007DA23B /* AblyLocationPush */ = {
 			isa = PBXGroup;
 			children = (
+				219F93782A4DFE41007DE767 /* AblyLocationPush.entitlements */,
 				84C233C82A2D560C007DA23B /* LocationPushService.swift */,
 				84C233CA2A2D560C007DA23B /* Info.plist */,
 			);
@@ -246,6 +251,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				219F937A2A4E0E44007DE767 /* LocationPushEventsView.swift in Sources */,
 				8405EE8627F0B06800C9E461 /* ContentView.swift in Sources */,
 				842F124A27F0B29D0029692E /* AblyHelper.swift in Sources */,
 				8405EE8427F0B06800C9E461 /* App.swift in Sources */,
@@ -469,6 +475,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_ENTITLEMENTS = AblyLocationPush/AblyLocationPush.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
@@ -500,6 +507,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_ENTITLEMENTS = AblyLocationPush/AblyLocationPush.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
