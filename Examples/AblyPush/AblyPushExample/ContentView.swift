@@ -15,10 +15,6 @@ struct ContentView: View {
                     AblyHelper.shared.activatePush()
                 }
                 .padding()
-                Button("Activate Location Push") {
-                    AblyHelper.shared.activateLocationPush()
-                }
-                .padding()
                 Button("Dectivate") {
                     AblyHelper.shared.deactivatePush()
                 }

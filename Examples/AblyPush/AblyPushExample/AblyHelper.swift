@@ -6,8 +6,6 @@ class AblyHelper: NSObject {
     
     static let shared = AblyHelper()
     
-    var apnsActivated = false
-    
     private var locationManager: CLLocationManager!
 
     private(set) var realtime: ARTRealtime!
@@ -35,9 +33,6 @@ extension AblyHelper {
     }
     
     func activateLocationPush() {
-        guard apnsActivated else {
-            return print("Press 'Activate Push' button and wait for receiving regular APNs token first.")
-        }
         guard locationManager == nil else {
             return print("Location push activation was already called.")
         }
