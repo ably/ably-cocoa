@@ -7,12 +7,26 @@ struct ContentView: View {
     @State var deviceDetails: ARTDeviceDetails?
     @State var deviceDetailsError: ARTErrorInfo?
     
+    @State var showDeviceTokensAlert = false
+    @State var defaultDeviceToken: String?
+    @State var locationDeviceToken: String?
+    
     var body: some View {
         NavigationView {
             VStack {
                 Spacer()
                 Button("Activate Push") {
-                    AblyHelper.shared.activatePush()
+                    AblyHelper.shared.activatePush { token1, token2 in
+                        defaultDeviceToken = token1
+                        locationDeviceToken = token2
+                        showDeviceTokensAlert = true
+                    }
+                }
+                .alert(isPresented: $showDeviceTokensAlert) {
+                    guard let defaultDeviceToken = defaultDeviceToken, let locationDeviceToken = locationDeviceToken else {
+                        return Alert(title: Text("Device Tokens"), message: Text("Unknown result."))
+                    }
+                    return Alert(title: Text("Device Tokens"), message: Text("Default: \(defaultDeviceToken)\n\nLocation: \(locationDeviceToken)"))
                 }
                 .padding()
                 Button("Dectivate") {

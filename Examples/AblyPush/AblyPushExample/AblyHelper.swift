@@ -12,6 +12,12 @@ class AblyHelper: NSObject {
     
     private let key = "" // Your API Key from your app's dashboard
     
+    var defaultDeviceToken: String?
+    
+    var locationDeviceToken: String?
+    
+    var activatePushCallback: ((String?, String?) -> ())?
+    
     private override init() {
         super.init()
         guard key != "" else {
@@ -27,9 +33,10 @@ class AblyHelper: NSObject {
 
 extension AblyHelper {
     
-    func activatePush() {
+    func activatePush(_ callback: @escaping (String?, String?) -> ()) {
         Self.requestUserNotificationAuthorization()
         realtime.push.activate()
+        activatePushCallback = callback
     }
     
     func activateLocationPush() {
@@ -43,6 +50,7 @@ extension AblyHelper {
             guard error == nil else {
                 return ARTPush.didFailToRegisterForLocationNotificationsWithError(error!, realtime: self.realtime)
             }
+            self.locationDeviceToken = (deviceToken! as NSData).art_deviceTokenString()
             ARTPush.didRegisterForLocationNotifications(withDeviceToken: deviceToken!, realtime: self.realtime)
         }
     }
@@ -95,7 +103,11 @@ extension AblyHelper: ARTPushRegistererDelegate {
     }
     
     func shouldRequestAlternativeDeviceToken() {
-        activateLocationPush()
+        if locationDeviceToken == nil {
+            activateLocationPush()
+        } else { // here location token was saved and the state machine is ready to request for another token, hence we are done with tokens
+            activatePushCallback?(defaultDeviceToken, locationDeviceToken)
+        }
     }
 }
 
