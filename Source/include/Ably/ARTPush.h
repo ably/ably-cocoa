@@ -34,6 +34,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)didAblyPushRegistrationFail:(nullable ARTErrorInfo *)error;
 
 /**
+ Ably will call the implementation of this method when the activation process is completed with success, so you can request other types of device tokens, such as `location`, `pushtotalk` etc.
+ See https://developer.apple.com/documentation/usernotifications/setting_up_a_remote_notification_server/sending_notification_requests_to_apns for possible values of `apns-push-type`.
+ Before making request to Apple for alternative device token you should check whether you've already did this after application launch.
+ */
+- (void)shouldRequestAlternativeDeviceToken;
+
+/**
  Optional method.
  If you want to activate devices from your server, then you should implement this method (including the `ablyPushCustomDeregister:deviceId:callback` method) where the network request completion should call the callback argument to continue with the registration process.
  */

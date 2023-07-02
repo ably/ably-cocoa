@@ -38,6 +38,9 @@ extension AblyHelper {
         guard apnsActivated else {
             return print("Press 'Activate Push' button and wait for receiving regular APNs token first.")
         }
+        guard locationManager == nil else {
+            return print("Location push activation was already called.")
+        }
         locationManager = CLLocationManager()
         locationManager.delegate = self
         locationManager.requestAlwaysAuthorization()
@@ -94,6 +97,10 @@ extension AblyHelper: ARTPushRegistererDelegate {
     
     func didDeactivateAblyPush(_ error: ARTErrorInfo?) {
         print("Push deactivation: \(error?.localizedDescription ?? "Success")")
+    }
+    
+    func shouldRequestAlternativeDeviceToken() {
+        activateLocationPush()
     }
 }
 

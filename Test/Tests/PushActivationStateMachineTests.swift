@@ -1287,6 +1287,7 @@ class StateMachineDelegate: NSObject, ARTPushRegistererDelegate {
     var onDidActivateAblyPush: ((ARTErrorInfo?) -> Void)?
     var onDidDeactivateAblyPush: ((ARTErrorInfo?) -> Void)?
     var onDidAblyPushRegistrationFail: ((ARTErrorInfo?) -> Void)?
+    var onShouldRequestAlternativeDeviceToken: (() -> Void)?
 
     func didActivateAblyPush(_ error: ARTErrorInfo?) {
         onDidActivateAblyPush?(error)
@@ -1298,6 +1299,10 @@ class StateMachineDelegate: NSObject, ARTPushRegistererDelegate {
 
     func didAblyPushRegistrationFail(_ error: ARTErrorInfo?) {
         onDidAblyPushRegistrationFail?(error)
+    }
+    
+    func shouldRequestAlternativeDeviceToken() {
+        onShouldRequestAlternativeDeviceToken?()
     }
 }
 

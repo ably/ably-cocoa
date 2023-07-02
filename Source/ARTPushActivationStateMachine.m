@@ -138,6 +138,10 @@ dispatch_async(_queue, ^{
         if (self.transitions) self.transitions(event, _current, maybeNext);
         _current = maybeNext;
     }
+    
+    if ([_current isKindOfClass:[ARTPushActivationStateWaitingForNewPushDeviceDetails class]]) {
+        [self callShouldRequestAlternativeDeviceTokenCallback];
+    }
 
     [self persist];
 }
@@ -391,6 +395,17 @@ dispatch_async(_queue, ^{
         const id<ARTPushRegistererDelegate, NSObject> delegate = self.delegate;
         if ([delegate respondsToSelector:@selector(didAblyPushRegistrationFail:)]) {
             [delegate didAblyPushRegistrationFail:error];
+        }
+    });
+    #endif
+}
+
+- (void)callShouldRequestAlternativeDeviceTokenCallback {
+    #if TARGET_OS_IOS
+    dispatch_async(_userQueue, ^{
+        const id<ARTPushRegistererDelegate, NSObject> delegate = self.delegate;
+        if ([delegate respondsToSelector:@selector(shouldRequestAlternativeDeviceToken)]) {
+            [delegate shouldRequestAlternativeDeviceToken];
         }
     });
     #endif
