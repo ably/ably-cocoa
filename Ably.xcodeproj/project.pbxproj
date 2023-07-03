@@ -36,6 +36,15 @@
 		2105ED2629E830D600DE6D67 /* ARTInternalLog+Testing.h in Headers */ = {isa = PBXBuildFile; fileRef = 2105ED2529E830D600DE6D67 /* ARTInternalLog+Testing.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2105ED2729E830D600DE6D67 /* ARTInternalLog+Testing.h in Headers */ = {isa = PBXBuildFile; fileRef = 2105ED2529E830D600DE6D67 /* ARTInternalLog+Testing.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		2105ED2829E830D600DE6D67 /* ARTInternalLog+Testing.h in Headers */ = {isa = PBXBuildFile; fileRef = 2105ED2529E830D600DE6D67 /* ARTInternalLog+Testing.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		21088DC32A5354F10033C722 /* ARTConnectRetryState.h in Headers */ = {isa = PBXBuildFile; fileRef = 21088DC22A5354F10033C722 /* ARTConnectRetryState.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		21088DC42A5354F10033C722 /* ARTConnectRetryState.h in Headers */ = {isa = PBXBuildFile; fileRef = 21088DC22A5354F10033C722 /* ARTConnectRetryState.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		21088DC52A5354F10033C722 /* ARTConnectRetryState.h in Headers */ = {isa = PBXBuildFile; fileRef = 21088DC22A5354F10033C722 /* ARTConnectRetryState.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		21088DC72A5355510033C722 /* ARTConnectRetryState.m in Sources */ = {isa = PBXBuildFile; fileRef = 21088DC62A5355510033C722 /* ARTConnectRetryState.m */; };
+		21088DC82A5355510033C722 /* ARTConnectRetryState.m in Sources */ = {isa = PBXBuildFile; fileRef = 21088DC62A5355510033C722 /* ARTConnectRetryState.m */; };
+		21088DC92A5355510033C722 /* ARTConnectRetryState.m in Sources */ = {isa = PBXBuildFile; fileRef = 21088DC62A5355510033C722 /* ARTConnectRetryState.m */; };
+		21088DCB2A53560C0033C722 /* ConnectRetryStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21088DCA2A53560C0033C722 /* ConnectRetryStateTests.swift */; };
+		21088DCC2A53560C0033C722 /* ConnectRetryStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21088DCA2A53560C0033C722 /* ConnectRetryStateTests.swift */; };
+		21088DCD2A53560C0033C722 /* ConnectRetryStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21088DCA2A53560C0033C722 /* ConnectRetryStateTests.swift */; };
 		210F67A229E9D718007B9345 /* ARTRealtimeTransportFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 210F67A129E9D718007B9345 /* ARTRealtimeTransportFactory.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		210F67A329E9D718007B9345 /* ARTRealtimeTransportFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 210F67A129E9D718007B9345 /* ARTRealtimeTransportFactory.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		210F67A429E9D718007B9345 /* ARTRealtimeTransportFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = 210F67A129E9D718007B9345 /* ARTRealtimeTransportFactory.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -1138,6 +1147,9 @@
 		2105ED1D29E7242400DE6D67 /* ARTLogAdapter+Testing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTLogAdapter+Testing.h"; path = "PrivateHeaders/Ably/ARTLogAdapter+Testing.h"; sourceTree = "<group>"; };
 		2105ED2129E7429E00DE6D67 /* ARTPaginatedResult+Subclass.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTPaginatedResult+Subclass.h"; path = "PrivateHeaders/Ably/ARTPaginatedResult+Subclass.h"; sourceTree = "<group>"; };
 		2105ED2529E830D600DE6D67 /* ARTInternalLog+Testing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTInternalLog+Testing.h"; path = "PrivateHeaders/Ably/ARTInternalLog+Testing.h"; sourceTree = "<group>"; };
+		21088DC22A5354F10033C722 /* ARTConnectRetryState.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTConnectRetryState.h; path = PrivateHeaders/Ably/ARTConnectRetryState.h; sourceTree = "<group>"; };
+		21088DC62A5355510033C722 /* ARTConnectRetryState.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTConnectRetryState.m; sourceTree = "<group>"; };
+		21088DCA2A53560C0033C722 /* ConnectRetryStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectRetryStateTests.swift; sourceTree = "<group>"; };
 		210F67A129E9D718007B9345 /* ARTRealtimeTransportFactory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTRealtimeTransportFactory.h; path = PrivateHeaders/Ably/ARTRealtimeTransportFactory.h; sourceTree = "<group>"; };
 		210F67A529E9D93D007B9345 /* ARTRealtimeTransportFactory.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTRealtimeTransportFactory.m; sourceTree = "<group>"; };
 		210F67B029E9DB62007B9345 /* TestProxyTransportFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestProxyTransportFactory.swift; sourceTree = "<group>"; };
@@ -1736,6 +1748,7 @@
 				D520C4DD2680A1E3000012B2 /* StringifiableTests.swift */,
 				EB1AE0CD1C5C3A4900D62250 /* UtilitiesTests.swift */,
 				2110CC392A530D42007310D4 /* AttachRetryStateTests.swift */,
+				21088DCA2A53560C0033C722 /* ConnectRetryStateTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -1963,6 +1976,8 @@
 				2132C21129D20F05000C4355 /* ARTResumeRequestResponse.m */,
 				2104EFAB2A4CC33300CC1184 /* ARTAttachRetryState.h */,
 				2104EFA72A4CC30C00CC1184 /* ARTAttachRetryState.m */,
+				21088DC22A5354F10033C722 /* ARTConnectRetryState.h */,
+				21088DC62A5355510033C722 /* ARTConnectRetryState.m */,
 			);
 			name = Realtime;
 			sourceTree = "<group>";
@@ -2236,6 +2251,7 @@
 				96BF61531A35B39C004CF2B3 /* ARTRest.h in Headers */,
 				EB91213E1CA0AD6600BA0A40 /* ARTMsgPackEncoder.h in Headers */,
 				96A507BD1A3791490077CDF8 /* ARTRealtime.h in Headers */,
+				21088DC32A5354F10033C722 /* ARTConnectRetryState.h in Headers */,
 				EB5E058D1C77027600A48B39 /* ARTCrypto+Private.h in Headers */,
 				2132C2F529D5BE05000C4355 /* ARTRetrySequence.h in Headers */,
 				D72C67DF201AB74000978EBB /* ARTPushActivationStateMachine+Private.h in Headers */,
@@ -2437,6 +2453,7 @@
 				D710D64521949E61008F54AD /* ARTEventEmitter+Private.h in Headers */,
 				2105ED2329E7429E00DE6D67 /* ARTPaginatedResult+Subclass.h in Headers */,
 				D710D4D121949BC0008F54AD /* ARTPresence+Private.h in Headers */,
+				21088DC42A5354F10033C722 /* ARTConnectRetryState.h in Headers */,
 				2105ED2729E830D600DE6D67 /* ARTInternalLog+Testing.h in Headers */,
 				D710D69021949EFF008F54AD /* ARTCrypto.h in Headers */,
 				D710D68121949EB3008F54AD /* ARTReachability.h in Headers */,
@@ -2606,6 +2623,7 @@
 				D710D5AD21949D2A008F54AD /* ARTChannelOptions.h in Headers */,
 				2105ED2429E7429E00DE6D67 /* ARTPaginatedResult+Subclass.h in Headers */,
 				D710D64B21949E62008F54AD /* ARTEventEmitter+Private.h in Headers */,
+				21088DC52A5354F10033C722 /* ARTConnectRetryState.h in Headers */,
 				2105ED2829E830D600DE6D67 /* ARTInternalLog+Testing.h in Headers */,
 				D710D4D321949BC1008F54AD /* ARTPresence+Private.h in Headers */,
 				D710D69A21949F00008F54AD /* ARTCrypto.h in Headers */,
@@ -3084,6 +3102,7 @@
 				D746AE2D1BBB625E003ECEF8 /* RestClientChannelsTests.swift in Sources */,
 				EBAB9A6F1C69702800AF036B /* ReadmeExamplesTests.swift in Sources */,
 				56190954238C3D3200A862A6 /* CryptoTest.m in Sources */,
+				21088DCB2A53560C0033C722 /* ConnectRetryStateTests.swift in Sources */,
 				21113B6329DDF7E800652C86 /* ARTInternalLogTests.m in Sources */,
 				D7C1B8771BBEA81A0087B55F /* AuthTests.swift in Sources */,
 				D7EBE5A31BE8391E0086E675 /* RealtimeClientConnectionTests.swift in Sources */,
@@ -3209,6 +3228,7 @@
 				D70EECAD1FEAF331008A50CD /* ARTPendingMessage.m in Sources */,
 				217D182F254222F600DFF07E /* ARTSRIOConsumerPool.m in Sources */,
 				96A507BE1A3791490077CDF8 /* ARTRealtime.m in Sources */,
+				21088DC72A5355510033C722 /* ARTConnectRetryState.m in Sources */,
 				967A43221A39AEAF00E4CE23 /* ARTNSArray+ARTFunctional.m in Sources */,
 				217D1835254222F600DFF07E /* ARTSRIOConsumer.m in Sources */,
 				D71966EF1E5E0081000974DD /* ARTPushActivationEvent.m in Sources */,
@@ -3248,6 +3268,7 @@
 				211A60D829D6D2C400D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */,
 				215F76002922B30F009E0E76 /* ClientInformationTests.swift in Sources */,
 				D7093C1E219E466900723F17 /* RestClientTests.swift in Sources */,
+				21088DCC2A53560C0033C722 /* ConnectRetryStateTests.swift in Sources */,
 				2124B79829DB144600AD8361 /* DefaultInternalLogCoreTests.swift in Sources */,
 				D50D86EA29E9444600EA72EA /* JSON.swift in Sources */,
 				D7093C2B219E466E00723F17 /* CryptoTests.swift in Sources */,
@@ -3307,6 +3328,7 @@
 				211A60D929D6D2C500D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */,
 				D7093C78219EE26400723F17 /* RestClientChannelsTests.swift in Sources */,
 				D7093C76219EE26400723F17 /* RestClientStatsTests.swift in Sources */,
+				21088DCD2A53560C0033C722 /* ConnectRetryStateTests.swift in Sources */,
 				2124B79929DB144600AD8361 /* DefaultInternalLogCoreTests.swift in Sources */,
 				D50D86EB29E9444600EA72EA /* JSON.swift in Sources */,
 				D7093C82219EE26400723F17 /* CryptoTests.swift in Sources */,
@@ -3453,6 +3475,7 @@
 				D710D56021949C97008F54AD /* ARTPushActivationEvent.m in Sources */,
 				217D1846254222F700DFF07E /* ARTSRIOConsumerPool.m in Sources */,
 				D710D66921949E78008F54AD /* ARTCrypto.m in Sources */,
+				21088DC82A5355510033C722 /* ARTConnectRetryState.m in Sources */,
 				D710D63121949E03008F54AD /* ARTHTTPPaginatedResponse.m in Sources */,
 				217D184C254222F700DFF07E /* ARTSRIOConsumer.m in Sources */,
 				D710D5DC21949D78008F54AD /* ARTPresence.m in Sources */,
@@ -3579,6 +3602,7 @@
 				D54C554D268B31E500729EC4 /* ARTNSMutableDictionary+ARTDictionaryUtil.m in Sources */,
 				D710D56621949C98008F54AD /* ARTPushActivationEvent.m in Sources */,
 				217D185D254222F900DFF07E /* ARTSRIOConsumerPool.m in Sources */,
+				21088DC92A5355510033C722 /* ARTConnectRetryState.m in Sources */,
 				D710D64F21949E77008F54AD /* ARTCrypto.m in Sources */,
 				D710D64121949E04008F54AD /* ARTHTTPPaginatedResponse.m in Sources */,
 				217D1863254222FA00DFF07E /* ARTSRIOConsumer.m in Sources */,
