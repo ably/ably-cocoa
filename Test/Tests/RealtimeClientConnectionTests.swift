@@ -2291,47 +2291,72 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.close()
         }
 
-        var totalRetry = 0
-        waitUntil(timeout: testTimeout) { done in
-            let partialDone = AblyTests.splitDone(2, done: done)
-            var start: NSDate?
+        struct ObservedStateChange {
+            var observedAt: Date
+            var stateChange: ARTConnectionStateChange
+        }
+        let retrySequenceDataGatherer = DataGatherer(description: "Observe emitted state changes") { submit in
+            var observedStateChanges: [ObservedStateChange] = []
 
-            client.connection.once(.disconnected) { stateChange in
-                expect(stateChange.reason!.message).to(contain("timed out"))
-                XCTAssertEqual(stateChange.previous, ARTRealtimeConnectionState.connecting)
-                expect(stateChange.retryIn).to(beCloseTo(options.disconnectedRetryTimeout))
-                partialDone()
-                start = NSDate()
-            }
+            client.connection.on { stateChange in
+                observedStateChanges.append(.init(observedAt: .init(), stateChange: stateChange))
 
-            client.connection.on(.suspended) { _ in
-                let end = NSDate()
-
-                /* The below `expect` _should_ just be:
-
-                   expect(end.timeIntervalSince(start! as Date)).to(beCloseTo(connectionStateTtl, within: 0.1))
-
-                   but we have to account for the fact that, due to bug #1782, the connection will sometimes (in a manner that we can't predict) perform an extra retry before transitioning to SUSPENDED. Once #1782 is fixed, the expectation should be changed to the above.
-                 */
-
-                let timeTakenByPotentialExcessRetry = timeNeededToObserveASingleRetry
-
-                let tolerance = 0.1 // arbitrarily chosen
-                expect(end.timeIntervalSince(start! as Date))
-                    .to(beGreaterThan(connectionStateTtl - tolerance))
-                    .to(beLessThan(connectionStateTtl + timeTakenByPotentialExcessRetry + tolerance))
-                partialDone()
-            }
-
-            client.connect()
-
-            client.connection.on(.connecting) { stateChange in
-                XCTAssertEqual(stateChange.previous, ARTRealtimeConnectionState.disconnected)
-                totalRetry += 1
+                if (stateChange.current == .suspended) {
+                    submit(observedStateChanges)
+                }
             }
         }
 
-        XCTAssertGreaterThanOrEqual(totalRetry, numberOfRetriesToWaitFor)
+        client.connect()
+
+        let observedStateChanges = try retrySequenceDataGatherer.waitForData(timeout: testTimeout)
+
+        // We expect to get INITIALIZED -> CONNECTING, and then, repeated: CONNECTING -> DISCONNECTED, DISCONNECTED -> CONNECTING, and then finally CONNECTING -> SUSPENDED.
+
+        let expectedNumberOfObservedStateChanges = 2 * (numberOfRetriesToWaitFor + 1)
+        // Once #1782 is fixed, this can be changed to an equality check instead — see note below
+        XCTAssertGreaterThanOrEqual(observedStateChanges.count, expectedNumberOfObservedStateChanges)
+        guard observedStateChanges.count >= expectedNumberOfObservedStateChanges else {
+            return
+        }
+
+        var firstObservedStateChangeToDisconnected: ObservedStateChange? = nil
+
+        for retryNumber in 1 ... numberOfRetriesToWaitFor {
+            let observedStateChangesStartIndexForThisRetry = 1 + 2 * (retryNumber - 1)
+
+            let expectedRetryDelay = options.disconnectedRetryTimeout
+
+            let firstObservedStateChange = observedStateChanges[observedStateChangesStartIndexForThisRetry]
+            XCTAssertEqual(firstObservedStateChange.stateChange.previous, .connecting)
+            XCTAssertEqual(firstObservedStateChange.stateChange.current, .disconnected)
+            XCTAssertTrue(firstObservedStateChange.stateChange.reason!.message.contains("timed out"))
+            XCTAssertEqual(firstObservedStateChange.stateChange.retryIn, expectedRetryDelay)
+
+            if (firstObservedStateChangeToDisconnected == nil) {
+                firstObservedStateChangeToDisconnected = firstObservedStateChange
+            }
+
+            let secondObservedStateChange = observedStateChanges[observedStateChangesStartIndexForThisRetry + 1]
+            XCTAssertEqual(secondObservedStateChange.stateChange.previous, .disconnected)
+            XCTAssertEqual(secondObservedStateChange.stateChange.current, .connecting)
+        }
+
+        let finalStateChange = observedStateChanges.last!
+        XCTAssertEqual(finalStateChange.stateChange.current, .suspended)
+
+        /* The below `expect` _should_ just be:
+
+           expect(end.timeIntervalSince(firstObservedStateChangeToDisconnected!.observedAt)).to(beCloseTo(connectionStateTtl, within: 0.1))
+
+           but we have to account for the fact that, due to bug #1782, the connection will sometimes (in a manner that we can't predict) perform an extra retry before transitioning to SUSPENDED. Once #1782 is fixed, the expectation should be changed to the above.
+         */
+        let timeTakenByPotentialExcessRetry = timeNeededToObserveASingleRetry
+
+        let tolerance = 0.1 // arbitrarily chosen
+        expect(finalStateChange.observedAt.timeIntervalSince(firstObservedStateChangeToDisconnected!.observedAt))
+            .to(beGreaterThan(connectionStateTtl - tolerance))
+            .to(beLessThan(connectionStateTtl + timeTakenByPotentialExcessRetry + tolerance))
     }
 
     // RTN14e
