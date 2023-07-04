@@ -2266,15 +2266,23 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.disconnectedRetryTimeout = 1.0
         options.autoConnect = false
         options.testOptions.realtimeRequestTimeout = 0.1
-        let expectedTime = 3.0
 
         options.authCallback = { _, _ in
             // Ignore `completion` closure to force a time out
         }
 
+        let numberOfRetriesToWaitFor = 3 // arbitrarily chosen, large enough for us to have confidence that a sequence of retries is occurring
+        let timeNeededToObserveASingleRetry =
+            options.testOptions.realtimeRequestTimeout // waiting for connect to time out
+            + options.disconnectedRetryTimeout // waiting for retry to occur
+            + 0.2 // some extra tolerance, arbitrarily chosen
+        let timeNeededToObserveRetries = Double(numberOfRetriesToWaitFor) * timeNeededToObserveASingleRetry
+
+        let connectionStateTtl = timeNeededToObserveRetries + 1.0 // i.e. make sure that we don't become suspended before we've observed as many retries as we wish to
+
         let previousConnectionStateTtl = ARTDefault.connectionStateTtl()
         defer { ARTDefault.setConnectionStateTtl(previousConnectionStateTtl) }
-        ARTDefault.setConnectionStateTtl(expectedTime)
+        ARTDefault.setConnectionStateTtl(connectionStateTtl)
 
         let client = ARTRealtime(options: options)
         client.internal.shouldImmediatelyReconnect = false
@@ -2301,20 +2309,17 @@ class RealtimeClientConnectionTests: XCTestCase {
 
                 /* The below `expect` _should_ just be:
 
-                   expect(end.timeIntervalSince(start! as Date)).to(beCloseTo(expectedTime, within: 0.1))
+                   expect(end.timeIntervalSince(start! as Date)).to(beCloseTo(connectionStateTtl, within: 0.1))
 
                    but we have to account for the fact that, due to bug #1782, the connection will sometimes (in a manner that we can't predict) perform an extra retry before transitioning to SUSPENDED. Once #1782 is fixed, the expectation should be changed to the above.
                  */
 
-                let timeTakenByPotentialExcessRetry =
-                    options.testOptions.realtimeRequestTimeout // waiting for connect to time out
-                    + options.disconnectedRetryTimeout // waiting for retry to occur
-                    + 0.2 // some extra tolerance, arbitrarily chosen
+                let timeTakenByPotentialExcessRetry = timeNeededToObserveASingleRetry
 
                 let tolerance = 0.1 // arbitrarily chosen
                 expect(end.timeIntervalSince(start! as Date))
-                    .to(beGreaterThan(expectedTime - tolerance))
-                    .to(beLessThan(expectedTime + timeTakenByPotentialExcessRetry + tolerance))
+                    .to(beGreaterThan(connectionStateTtl - tolerance))
+                    .to(beLessThan(connectionStateTtl + timeTakenByPotentialExcessRetry + tolerance))
                 partialDone()
             }
 
@@ -2326,7 +2331,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
         }
 
-        XCTAssertGreaterThanOrEqual(totalRetry, Int(expectedTime / options.disconnectedRetryTimeout))
+        XCTAssertGreaterThanOrEqual(totalRetry, numberOfRetriesToWaitFor)
     }
 
     // RTN14e
