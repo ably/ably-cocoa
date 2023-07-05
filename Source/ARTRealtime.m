@@ -667,7 +667,11 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
             [self closeAndReleaseTransport];
             if (!_connectionLostAt) {
                 _connectionLostAt = [NSDate date];
-                ARTLogVerbose(self.logger, @"RT:%p set connection lost time; expected suspension at %@ (ttl=%f)", self, [self suspensionTime], self.connectionStateTtl);
+                NSISO8601DateFormatter *const formatter = [[NSISO8601DateFormatter alloc] init];
+                if (@available(macOS 10.13, *)) {
+                    formatter.formatOptions |= NSISO8601DateFormatWithFractionalSeconds;
+                }
+                ARTLogVerbose(self.logger, @"RT:%p set connection lost time; expected suspension at %@ (ttl=%f)", self, [formatter stringFromDate:[self suspensionTime]], self.connectionStateTtl);
             }
 
             NSTimeInterval retryDelay;
@@ -1092,6 +1096,7 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
             [self.auth setTokenDetails:nil];
             
             // Schedule timeout handler
+            ARTLogVerbose(self.logger, @"Scheduling timeout work in transportConnectForcingNewToken:newConnection:");
             _authenitcatingTimeoutWork = artDispatchScheduled(self.options.testOptions.realtimeRequestTimeout, _rest.queue, ^{
                 [self onConnectionTimeOut];
             });
