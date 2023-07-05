@@ -2412,7 +2412,8 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.close()
         }
 
-        let ttlHookToken = client.overrideConnectionStateTTL(3.0)
+        let connectionStateTTL = 3.0
+        let ttlHookToken = client.overrideConnectionStateTTL(connectionStateTTL)
         defer { ttlHookToken.remove() }
 
         waitUntil(timeout: testTimeout) { done in
@@ -2429,23 +2430,16 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
         client.simulateNoInternetConnection(transportFactory: transportFactory)
 
-        expect(events).toEventually(equal([
-            .disconnected,
-            .connecting, // 0.5 - 1
-            .disconnected,
-            .connecting, // 1.0 - 2
-            .disconnected,
-            .connecting, // 1.5 - 3
-            .disconnected,
-            .connecting, // 2.0 - 4
-            .disconnected,
-            .connecting, // 2.5 - 5
-            .disconnected,
-            .connecting, // 3.0 - 6
-            .suspended,
-            .connecting,
-            .suspended,
-        ]), timeout: testTimeout)
+        let expectedNumberOfDisconnectedRetries = Int(connectionStateTTL / options.disconnectedRetryTimeout)
+
+        expect(events).toEventually(equal(
+            Array(repeating: [.disconnected, .connecting], count: expectedNumberOfDisconnectedRetries).flatMap { $0 }
+            + [
+                .suspended,
+                .connecting,
+                .suspended,
+            ]
+        ), timeout: testTimeout)
 
         events.removeAll()
         client.simulateRestoreInternetConnection(after: 7.0, transportFactory: transportFactory)
