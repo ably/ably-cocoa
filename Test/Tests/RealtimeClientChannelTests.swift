@@ -4005,50 +4005,120 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__131b__Channel__if_the_channel_receives_a_server_initiated_DETACHED_message_and_if_the_attempt_to_reattach_fails_then_the_channel_will_transition_to_SUSPENDED_state_with_periodic_reattach_with_channelRetryTimeout() throws {
         let test = Test()
         
+        // Given...
+
+        /* ...a Realtime client, configured with a realtimeRequestTimeout of 1 second and a channelRetryTimeout of 1 second...
+
+           ## Motivation for chosen realtimeRequestTimeout value
+
+           As described by (C), in this test we aim to trigger a sequence of attach retries by making each attach attempt time out after realtimeRequestTimeout. Thus, the execution time of this test case will be proportional to the value of retryRequestTimeout. The default value is 20 seconds, which would lead to a very long test execution time, so we reduce it to 1 second.
+
+           ## Motivation for chosen channelRetryTimeout value
+
+           We expect the retries in this sequence to be spaced apart by channelRetryTimeout seconds. The default value is 15 seconds, so as above, in order to avoid a very long test execution time we reduce it to 1 second.
+         */
         let options = try AblyTests.commonAppSetup(for: test)
         options.channelRetryTimeout = 1.0
         options.autoConnect = false
         options.testOptions.realtimeRequestTimeout = 1.0
         options.testOptions.transportFactory = TestProxyTransportFactory()
         let client = ARTRealtime(options: options)
-        
         client.connect()
-        
         defer { client.dispose(); client.close() }
-        
-        let transport = client.internal.transport as! TestProxyTransport
-        transport.actionsIgnored += [.attached] // Make sure that each attach attempt times out (after realtimeRequestTimeout = 1.0)
-
         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
 
+        /* ...whose transport drops all incoming ATTACHED messages...
+
+           ## Motivation
+
+           1. So that the initial attach attempt triggered in (A) doesn’t complete, and hence we are sure that when the client receives the DETACHED ProtocolMessage injected in (B), the channel is still in the ATTACHING state, thus satisfying one of the preconditions of RTL13b;
+           2. (C) So that none of the client’s subsequent re-attach attempts (as described by the "repeated, indefinitely" of RTL13b) succeed, since they will each time out after realtimeRequestTimeout, hence creating conditions for the RTL13b retry sequence to indeed repeat indefinitely
+        */
+        let transport = client.internal.transport as! TestProxyTransport
+        transport.actionsIgnored += [.attached]
+
+        // ...from which we retrieve a channel...
         let channel = client.channels.get(test.uniqueChannelName())
+
+        // ...(A) which we put into the ATTACHING state,
         channel.attach()
-        
         XCTAssertEqual(channel.state, ARTRealtimeChannelState.attaching)
 
+        // When...
+
+        struct ObservedStateChange {
+            var observedAt: Date
+            var stateChange: ARTChannelStateChange
+        }
+        let numberOfRetriesToWaitFor = 5 // arbitrarily-chosen, see (D)
+        let retrySequenceDataGatherer = DataGatherer(description: "Observe emitted state changes") { submit in
+            var retryNumber = 1
+            var observedStateChanges: [ObservedStateChange] = []
+
+            channel.on { stateChange in
+                observedStateChanges.append(.init(observedAt: .init(), stateChange: stateChange))
+
+                if (stateChange.current == .attaching) {
+                    retryNumber += 1
+                }
+
+                if (stateChange.current == .suspended) {
+                    if retryNumber > numberOfRetriesToWaitFor {
+                        submit(observedStateChanges)
+                    }
+                }
+            }
+        }
+
+        // (B) ...the channel receives a DETACHED ProtocolMessage,
         let detachedMessageWithError = AblyTests.newErrorProtocolMessage()
         detachedMessageWithError.action = .detached
         detachedMessageWithError.channel = channel.name
-        
-        var retryNumber = 1
-        let numberOfRetriesToWaitFor = 5 // An arbitrary number to finish test before timeout for `waitUntil` fires
-        
-        waitUntil(timeout: testTimeout) { done in
-            channel.on(.attaching) { stateChange in
-                XCTAssertEqual(stateChange.previous, ARTRealtimeChannelState.suspended)
-                retryNumber += 1
-            }
-            channel.on(.suspended) { stateChange in
-                XCTAssertEqual(stateChange.previous, ARTRealtimeChannelState.attaching)
-                XCTAssertNotNil(stateChange.reason)
-                if retryNumber > numberOfRetriesToWaitFor {
-                    done()
-                }
-            }
-            channel.on(.attached) { _ in
-                fail("Should not receive attached message")
-            }
-            client.internal.transport?.receive(detachedMessageWithError) // force to .suspended
+        client.internal.transport?.receive(detachedMessageWithError)
+
+        // Then...
+
+        let timeout = Double(numberOfRetriesToWaitFor) * (
+            options.testOptions.realtimeRequestTimeout // waiting for attach to time out
+            + options.channelRetryTimeout // waiting for retry to occur
+            + 0.2 // some extra tolerance, arbitrarily chosen
+        )
+        let observedStateChanges = try retrySequenceDataGatherer.waitForData(timeout: timeout)
+
+        let expectedNumberOfObservedStateChanges = 1 + 2 * numberOfRetriesToWaitFor
+        XCTAssertEqual(observedStateChanges.count, expectedNumberOfObservedStateChanges)
+        guard observedStateChanges.count == expectedNumberOfObservedStateChanges else {
+            return
+        }
+
+        // ...the channel emits a state change to the SUSPENDED state...
+        let startObservedStateChange = observedStateChanges[0]
+        XCTAssertEqual(startObservedStateChange.stateChange.previous, .attaching)
+        XCTAssertEqual(startObservedStateChange.stateChange.current, .suspended)
+        XCTAssertNotNil(startObservedStateChange.stateChange.reason)
+
+        var previousSuspendedObservedStateChange = startObservedStateChange
+
+        // (D) ...and then, in the following order, we observe the following sequence of events occur numberOfRetriesToWaitFor (a number arbitrarily chosen to give us confidence that this sequence is going to repeat indefinitely) times:
+        for retryNumber in 1 ... numberOfRetriesToWaitFor {
+            let observedStateChangesStartIndexForThisRetry = 1 + 2 * (retryNumber - 1)
+
+            let expectedRetryDelay = options.channelRetryTimeout
+
+            // after channelRetryTimeout seconds (as described by the retry metadata attached to the channel state change, and as approximately measured), the channel emits a state change to the ATTACHING state...
+            let firstObservedStateChange = observedStateChanges[observedStateChangesStartIndexForThisRetry]
+            XCTAssertEqual(firstObservedStateChange.stateChange.previous, .suspended)
+            XCTAssertEqual(firstObservedStateChange.stateChange.current, .attaching)
+            XCTAssertEqual(firstObservedStateChange.stateChange.retryAttempt?.delay, expectedRetryDelay)
+            let measuredRetryDelay = firstObservedStateChange.observedAt.timeIntervalSince(previousSuspendedObservedStateChange.observedAt)
+            expect(measuredRetryDelay).to(beCloseTo(expectedRetryDelay, within: 0.2 /* arbitrarily-chosen tolerance */))
+
+            // ...and the channel emits a state change to the SUSPENDED state, whose `reason` is non-nil.
+            let secondObservedStateChange = observedStateChanges[observedStateChangesStartIndexForThisRetry + 1]
+            XCTAssertEqual(secondObservedStateChange.stateChange.previous, .attaching)
+            XCTAssertEqual(secondObservedStateChange.stateChange.current, .suspended)
+            XCTAssertNotNil(secondObservedStateChange.stateChange.reason)
+            previousSuspendedObservedStateChange = secondObservedStateChange
         }
     }
 
