@@ -2258,7 +2258,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
     }
 
-    // RTN14d
+    // RTN14d, RTB1
     func test__059__Connection__connection_request_fails__connection_attempt_fails_for_any_recoverable_reason() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
@@ -2266,15 +2266,35 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.disconnectedRetryTimeout = 1.0
         options.autoConnect = false
         options.testOptions.realtimeRequestTimeout = 0.1
-        let expectedTime = 3.0
+
+        let jitterCoefficients = StaticJitterCoefficients()
+        let mockJitterCoefficientGenerator = MockJitterCoefficientGenerator(coefficients: jitterCoefficients)
+        options.testOptions.jitterCoefficientGenerator = mockJitterCoefficientGenerator
 
         options.authCallback = { _, _ in
             // Ignore `completion` closure to force a time out
         }
 
+        let numberOfRetriesToWaitFor = 5 // arbitrarily chosen, large enough for us to have confidence that a sequence of retries is occurring, with the correct retry delays
+
+        let expectedRetryDelays = Array(
+            AblyTests.expectedRetryDelays(
+                forTimeout: options.disconnectedRetryTimeout,
+                jitterCoefficients: jitterCoefficients
+            ).prefix(numberOfRetriesToWaitFor + 1 /* The +1 can be removed after #1782 is fixed; see note below */)
+        )
+        let timesNeededToObserveRetries = expectedRetryDelays.map { retryDelay in
+            options.testOptions.realtimeRequestTimeout // waiting for connect to time out
+            + retryDelay // waiting for retry to occur
+            + 0.2 // some extra tolerance, arbitrarily chosen
+        }
+        let timeNeededToObserveRetries = timesNeededToObserveRetries.prefix(numberOfRetriesToWaitFor).reduce(0, +)
+
+        let connectionStateTtl = timeNeededToObserveRetries + 1.0 // i.e. make sure that we don't become suspended before we've observed as many retries as we wish to
+
         let previousConnectionStateTtl = ARTDefault.connectionStateTtl()
         defer { ARTDefault.setConnectionStateTtl(previousConnectionStateTtl) }
-        ARTDefault.setConnectionStateTtl(expectedTime)
+        ARTDefault.setConnectionStateTtl(connectionStateTtl)
 
         let client = ARTRealtime(options: options)
         client.internal.shouldImmediatelyReconnect = false
@@ -2283,34 +2303,72 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.close()
         }
 
-        var totalRetry = 0
-        waitUntil(timeout: testTimeout) { done in
-            let partialDone = AblyTests.splitDone(2, done: done)
-            var start: NSDate?
+        struct ObservedStateChange {
+            var observedAt: Date
+            var stateChange: ARTConnectionStateChange
+        }
+        let retrySequenceDataGatherer = DataGatherer(description: "Observe emitted state changes") { submit in
+            var observedStateChanges: [ObservedStateChange] = []
 
-            client.connection.once(.disconnected) { stateChange in
-                expect(stateChange.reason!.message).to(contain("timed out"))
-                XCTAssertEqual(stateChange.previous, ARTRealtimeConnectionState.connecting)
-                expect(stateChange.retryIn).to(beCloseTo(options.disconnectedRetryTimeout))
-                partialDone()
-                start = NSDate()
-            }
+            client.connection.on { stateChange in
+                observedStateChanges.append(.init(observedAt: .init(), stateChange: stateChange))
 
-            client.connection.on(.suspended) { _ in
-                let end = NSDate()
-                expect(end.timeIntervalSince(start! as Date)).to(beCloseTo(expectedTime, within: 0.9))
-                partialDone()
-            }
-
-            client.connect()
-
-            client.connection.on(.connecting) { stateChange in
-                XCTAssertEqual(stateChange.previous, ARTRealtimeConnectionState.disconnected)
-                totalRetry += 1
+                if (stateChange.current == .suspended) {
+                    submit(observedStateChanges)
+                }
             }
         }
 
-        XCTAssertEqual(totalRetry, Int(expectedTime / options.disconnectedRetryTimeout))
+        client.connect()
+
+        let observedStateChanges = try retrySequenceDataGatherer.waitForData(timeout: testTimeout)
+
+        // We expect to get INITIALIZED -> CONNECTING, and then, repeated: CONNECTING -> DISCONNECTED, DISCONNECTED -> CONNECTING, and then finally CONNECTING -> SUSPENDED.
+
+        let expectedNumberOfObservedStateChanges = 2 * (numberOfRetriesToWaitFor + 1)
+        // Once #1782 is fixed, this can be changed to an equality check instead — see note below
+        XCTAssertGreaterThanOrEqual(observedStateChanges.count, expectedNumberOfObservedStateChanges)
+        guard observedStateChanges.count >= expectedNumberOfObservedStateChanges else {
+            return
+        }
+
+        var firstObservedStateChangeToDisconnected: ObservedStateChange? = nil
+
+        for retryNumber in 1 ... numberOfRetriesToWaitFor {
+            let observedStateChangesStartIndexForThisRetry = 1 + 2 * (retryNumber - 1)
+
+            let expectedRetryDelay = expectedRetryDelays[retryNumber - 1]
+
+            let firstObservedStateChange = observedStateChanges[observedStateChangesStartIndexForThisRetry]
+            XCTAssertEqual(firstObservedStateChange.stateChange.previous, .connecting)
+            XCTAssertEqual(firstObservedStateChange.stateChange.current, .disconnected)
+            XCTAssertTrue(firstObservedStateChange.stateChange.reason!.message.contains("timed out"))
+            XCTAssertEqual(firstObservedStateChange.stateChange.retryIn, expectedRetryDelay)
+
+            if (firstObservedStateChangeToDisconnected == nil) {
+                firstObservedStateChangeToDisconnected = firstObservedStateChange
+            }
+
+            let secondObservedStateChange = observedStateChanges[observedStateChangesStartIndexForThisRetry + 1]
+            XCTAssertEqual(secondObservedStateChange.stateChange.previous, .disconnected)
+            XCTAssertEqual(secondObservedStateChange.stateChange.current, .connecting)
+        }
+
+        let finalStateChange = observedStateChanges.last!
+        XCTAssertEqual(finalStateChange.stateChange.current, .suspended)
+
+        /* The below `expect` _should_ just be:
+
+           expect(end.timeIntervalSince(firstObservedStateChangeToDisconnected!.observedAt)).to(beCloseTo(connectionStateTtl, within: 0.1))
+
+           but we have to account for the fact that, due to bug #1782, the connection will sometimes (in a manner that we can't predict) perform an extra retry before transitioning to SUSPENDED. Once #1782 is fixed, the expectation should be changed to the above.
+         */
+        let timeTakenByPotentialExcessRetry = timesNeededToObserveRetries[numberOfRetriesToWaitFor]
+
+        let tolerance = 0.1 // arbitrarily chosen
+        expect(finalStateChange.observedAt.timeIntervalSince(firstObservedStateChangeToDisconnected!.observedAt))
+            .to(beGreaterThan(connectionStateTtl - tolerance))
+            .to(beLessThan(connectionStateTtl + timeTakenByPotentialExcessRetry + tolerance))
     }
 
     // RTN14e
@@ -2358,6 +2416,10 @@ class RealtimeClientConnectionTests: XCTestCase {
         let transportFactory = TestProxyTransportFactory()
         options.testOptions.transportFactory = transportFactory
 
+        let jitterCoefficients = StaticJitterCoefficients()
+        let mockJitterCoefficientGenerator = MockJitterCoefficientGenerator(coefficients: jitterCoefficients)
+        options.testOptions.jitterCoefficientGenerator = mockJitterCoefficientGenerator
+
         let client = ARTRealtime(options: options)
         client.internal.setReachabilityClass(TestReachability.self)
         defer {
@@ -2366,7 +2428,8 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.close()
         }
 
-        let ttlHookToken = client.overrideConnectionStateTTL(3.0)
+        let connectionStateTTL = 3.0
+        let ttlHookToken = client.overrideConnectionStateTTL(connectionStateTTL)
         defer { ttlHookToken.remove() }
 
         waitUntil(timeout: testTimeout) { done in
@@ -2383,23 +2446,33 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
         client.simulateNoInternetConnection(transportFactory: transportFactory)
 
-        expect(events).toEventually(equal([
-            .disconnected,
-            .connecting, // 0.5 - 1
-            .disconnected,
-            .connecting, // 1.0 - 2
-            .disconnected,
-            .connecting, // 1.5 - 3
-            .disconnected,
-            .connecting, // 2.0 - 4
-            .disconnected,
-            .connecting, // 2.5 - 5
-            .disconnected,
-            .connecting, // 3.0 - 6
-            .suspended,
-            .connecting,
-            .suspended,
-        ]), timeout: testTimeout)
+        let expectedNumberOfDisconnectedRetries = {
+            let expectedRetryDelays = AblyTests.expectedRetryDelays(
+                forTimeout: options.disconnectedRetryTimeout,
+                jitterCoefficients: jitterCoefficients
+            )
+
+            var retryDelaySum = 0.0
+            var expectedNumberOfRetries = 0
+            for retryDelay in expectedRetryDelays {
+                retryDelaySum += retryDelay
+                expectedNumberOfRetries += 1
+                if (retryDelaySum >= connectionStateTTL) {
+                    break
+                }
+            }
+
+            return expectedNumberOfRetries
+        }()
+
+        expect(events).toEventually(equal(
+            Array(repeating: [.disconnected, .connecting], count: expectedNumberOfDisconnectedRetries).flatMap { $0 }
+            + [
+                .suspended,
+                .connecting,
+                .suspended,
+            ]
+        ), timeout: testTimeout)
 
         events.removeAll()
         client.simulateRestoreInternetConnection(after: 7.0, transportFactory: transportFactory)

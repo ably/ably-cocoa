@@ -43,10 +43,11 @@
 #import "ARTChannelStateChangeMetadata.h"
 #import "ARTAttachRequestMetadata.h"
 #import "ARTRetrySequence.h"
-#import "ARTConstantRetryDelayCalculator.h"
+#import "ARTBackoffRetryDelayCalculator.h"
 #import "ARTTypes+Private.h"
 #import "ARTInternalLog.h"
 #import "ARTRealtimeTransportFactory.h"
+#import "ARTConnectRetryState.h"
 
 @interface ARTConnectionStateChange ()
 
@@ -171,8 +172,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtimeInternal ()
 
-@property (nonatomic, readonly) id<ARTRetryDelayCalculator> connectRetryDelayCalculator;
-@property (nonatomic, nullable) ARTRetrySequence *connectRetrySequence;
+@property (nonatomic, readonly) ARTConnectRetryState *connectRetryState;
 @property (nonatomic, readonly) ARTInternalLog *logger;
 
 @end
@@ -226,7 +226,11 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
         _connection = [[ARTConnectionInternal alloc] initWithRealtime:self logger:self.logger];
         _connectionStateTtl = [ARTDefault connectionStateTtl];
         _shouldImmediatelyReconnect = true;
-        _connectRetryDelayCalculator = [[ARTConstantRetryDelayCalculator alloc] initWithConstantDelay:options.disconnectedRetryTimeout];
+        const id<ARTRetryDelayCalculator> connectRetryDelayCalculator = [[ARTBackoffRetryDelayCalculator alloc] initWithInitialRetryTimeout:options.disconnectedRetryTimeout
+                                                                                                                 jitterCoefficientGenerator:options.testOptions.jitterCoefficientGenerator];
+        _connectRetryState = [[ARTConnectRetryState alloc] initWithRetryDelayCalculator:connectRetryDelayCalculator
+                                                                                 logger:_logger
+                                                                       logMessagePrefix:[NSString stringWithFormat:@"RT: %p ", self]];
         self.auth.delegate = self;
         
         [self.connection setState:ARTRealtimeInitialized];
@@ -608,6 +612,8 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
     ARTEventListener *stateChangeEventListener = nil;
     
     ARTLogDebug(self.logger, @"RT:%p realtime is transitioning from %tu - %@ to %tu - %@", self, stateChange.previous, ARTRealtimeConnectionStateToStr(stateChange.previous), stateChange.current, ARTRealtimeConnectionStateToStr(stateChange.current));
+
+    [self.connectRetryState connectionWillTransitionToState:stateChange.current];
     
     switch (stateChange.current) {
         case ARTRealtimeConnecting: {
@@ -677,13 +683,7 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
                 retryDelay = _immediateReconnectionDelay;
             }
             else {
-                // Note: we currently reset the retry sequence every time we wish to perform a retry (defeating the point of using it in the first place, but it's OK since the delays are all constant). As part of implementing #1431 we will reuse any existing retry sequence, resetting it only in response to certain state changes.
-                self.connectRetrySequence = [[ARTRetrySequence alloc] initWithDelayCalculator:self.connectRetryDelayCalculator];
-                ARTLogVerbose(self.logger, @"RT:%p Created connect retry sequence %@", self, self.connectRetrySequence);
-
-                retryAttempt = [self.connectRetrySequence addRetryAttempt];
-                ARTLogVerbose(self.logger, @"RT:%p Adding connect retry attempt to %@ gave %@", self, self.connectRetrySequence.id, retryAttempt);
-
+                retryAttempt = [self.connectRetryState addRetryAttempt];
                 retryDelay = retryAttempt.delay;
             }
             [stateChange setRetryIn:retryDelay];

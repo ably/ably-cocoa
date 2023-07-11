@@ -84,7 +84,6 @@ framework module Ably {
         header "ARTResumeRequestResponse.h"
         header "ARTJitterCoefficientGenerator.h"
         header "ARTRetryDelayCalculator.h"
-        header "ARTConstantRetryDelayCalculator.h"
         header "ARTBackoffRetryDelayCalculator.h"
         header "ARTClientOptions+TestConfiguration.h"
         header "ARTConnectionStateChangeMetadata.h"
@@ -109,5 +108,6 @@ framework module Ably {
         header "ARTContinuousClock.h"
         header "ARTWebSocketFactory.h"
         header "ARTAttachRetryState.h"
+        header "ARTConnectRetryState.h"
     }
 }
