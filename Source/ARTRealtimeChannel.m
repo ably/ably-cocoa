@@ -30,8 +30,9 @@
 #import "ARTChannelStateChangeMetadata.h"
 #import "ARTAttachRequestMetadata.h"
 #import "ARTRetrySequence.h"
-#import "ARTConstantRetryDelayCalculator.h"
+#import "ARTBackoffRetryDelayCalculator.h"
 #import "ARTInternalLog.h"
+#import "ARTAttachRetryState.h"
 #if TARGET_OS_IPHONE
 #import "ARTPushChannel+Private.h"
 #endif
@@ -239,8 +240,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtimeChannelInternal ()
 
-@property (nonatomic, readonly) id<ARTRetryDelayCalculator> attachRetryDelayCalculator;
-@property (nonatomic, nullable) ARTRetrySequence *attachRetrySequence;
+@property (nonatomic, readonly) ARTAttachRetryState *attachRetryState;
 
 @end
 
@@ -269,7 +269,11 @@ NS_ASSUME_NONNULL_END
         _attachedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
         _detachedEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
         _internalEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
-        _attachRetryDelayCalculator = [[ARTConstantRetryDelayCalculator alloc] initWithConstantDelay:realtime.options.channelRetryTimeout];
+        const id<ARTRetryDelayCalculator> attachRetryDelayCalculator = [[ARTBackoffRetryDelayCalculator alloc] initWithInitialRetryTimeout:realtime.options.channelRetryTimeout
+                                                                                                                jitterCoefficientGenerator:realtime.options.testOptions.jitterCoefficientGenerator];
+        _attachRetryState = [[ARTAttachRetryState alloc] initWithRetryDelayCalculator:attachRetryDelayCalculator
+                                                                               logger:logger
+                                                                     logMessagePrefix:[NSString stringWithFormat:@"RT: %p C:%p ", _realtime, self]];
     }
     return self;
 }
@@ -608,18 +612,15 @@ dispatch_sync(_queue, ^{
         _errorReason = metadata.errorInfo;
     }
 
+    [self.attachRetryState channelWillTransitionToState:state];
+
     ARTEventListener *channelRetryListener = nil;
     switch (state) {
         case ARTRealtimeChannelAttached:
             self.attachResume = true;
             break;
         case ARTRealtimeChannelSuspended: {
-            // Note: we currently reset the retry sequence every time we wish to perform a retry (defeating the point of using it in the first place, but it's OK since the delays are all constant). As part of implementing #1431 we will reuse any existing retry sequence, resetting it only in response to certain state changes.
-            self.attachRetrySequence = [[ARTRetrySequence alloc] initWithDelayCalculator:self.attachRetryDelayCalculator];
-            ARTLogDebug(self.logger, @"RT:%p C:%p Created attach retry sequence %@", _realtime, self, self.attachRetrySequence);
-
-            ARTRetryAttempt *const retryAttempt = [self.attachRetrySequence addRetryAttempt];
-            ARTLogDebug(self.logger, @"RT:%p C:%p Adding attach retry attempt to %@ gave %@", _realtime, self, self.attachRetrySequence.id, retryAttempt);
+            ARTRetryAttempt *const retryAttempt = [self.attachRetryState addRetryAttempt];
 
             [_attachedEventEmitter emit:nil with:metadata.errorInfo];
             if (self.realtime.shouldSendEvents) {

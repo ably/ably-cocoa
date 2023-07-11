@@ -2,6 +2,7 @@
 #import "ARTDefault.h"
 #import "ARTFallback+Private.h"
 #import "ARTRealtimeTransportFactory.h"
+#import "ARTJitterCoefficientGenerator.h"
 
 @implementation ARTTestClientOptions
 
@@ -10,6 +11,7 @@
         _realtimeRequestTimeout = [ARTDefault realtimeRequestTimeout];
         _shuffleArray = ARTFallback_shuffleArray;
         _transportFactory = [[ARTDefaultRealtimeTransportFactory alloc] init];
+        _jitterCoefficientGenerator = [[ARTDefaultJitterCoefficientGenerator alloc] init];
     }
 
     return self;
@@ -22,6 +24,7 @@
     copied.shuffleArray = self.shuffleArray;
     copied.transportFactory = self.transportFactory;
     copied.reconnectionRealtimeHost = self.reconnectionRealtimeHost;
+    copied.jitterCoefficientGenerator = self.jitterCoefficientGenerator;
 
     return copied;
 }

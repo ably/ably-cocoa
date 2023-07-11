@@ -4001,7 +4001,7 @@ class RealtimeClientChannelTests: XCTestCase {
         }
     }
     
-    // RTL13b
+    // RTL13b, RTB1
     func test__131b__Channel__if_the_channel_receives_a_server_initiated_DETACHED_message_and_if_the_attempt_to_reattach_fails_then_the_channel_will_transition_to_SUSPENDED_state_with_periodic_reattach_with_channelRetryTimeout() throws {
         let test = Test()
         
@@ -4015,13 +4015,18 @@ class RealtimeClientChannelTests: XCTestCase {
 
            ## Motivation for chosen channelRetryTimeout value
 
-           We expect the retries in this sequence to be spaced apart by channelRetryTimeout seconds. The default value is 15 seconds, so as above, in order to avoid a very long test execution time we reduce it to 1 second.
+           We expect the retries in this sequence to be spaced apart by values in the range of [channelRequestTimeout seconds, 2 * channelRequestTimeout seconds]. The default value of channelRequestTimeout is 15 seconds, so as above, in order to avoid a very long test execution time we reduce it to 1 second.
          */
         let options = try AblyTests.commonAppSetup(for: test)
         options.channelRetryTimeout = 1.0
         options.autoConnect = false
         options.testOptions.realtimeRequestTimeout = 1.0
         options.testOptions.transportFactory = TestProxyTransportFactory()
+
+        let jitterCoefficients = StaticJitterCoefficients()
+        let mockJitterCoefficientGenerator = MockJitterCoefficientGenerator(coefficients: jitterCoefficients)
+        options.testOptions.jitterCoefficientGenerator = mockJitterCoefficientGenerator
+
         let client = ARTRealtime(options: options)
         client.connect()
         defer { client.dispose(); client.close() }
@@ -4078,11 +4083,17 @@ class RealtimeClientChannelTests: XCTestCase {
 
         // Then...
 
-        let timeout = Double(numberOfRetriesToWaitFor) * (
-            options.testOptions.realtimeRequestTimeout // waiting for attach to time out
-            + options.channelRetryTimeout // waiting for retry to occur
-            + 0.2 // some extra tolerance, arbitrarily chosen
+        let expectedRetryDelays = Array(
+            AblyTests.expectedRetryDelays(
+                forTimeout: options.channelRetryTimeout,
+                jitterCoefficients: jitterCoefficients
+            ).prefix(numberOfRetriesToWaitFor)
         )
+        let timeout = expectedRetryDelays.map { retryDelay in
+            options.testOptions.realtimeRequestTimeout // waiting for attach to time out
+            + retryDelay // waiting for retry to occur
+            + 0.2 // some extra tolerance, arbitrarily chosen
+        }.reduce(0, +)
         let observedStateChanges = try retrySequenceDataGatherer.waitForData(timeout: timeout)
 
         let expectedNumberOfObservedStateChanges = 1 + 2 * numberOfRetriesToWaitFor
@@ -4103,9 +4114,9 @@ class RealtimeClientChannelTests: XCTestCase {
         for retryNumber in 1 ... numberOfRetriesToWaitFor {
             let observedStateChangesStartIndexForThisRetry = 1 + 2 * (retryNumber - 1)
 
-            let expectedRetryDelay = options.channelRetryTimeout
+            let expectedRetryDelay = expectedRetryDelays[retryNumber - 1]
 
-            // after channelRetryTimeout seconds (as described by the retry metadata attached to the channel state change, and as approximately measured), the channel emits a state change to the ATTACHING state...
+            // after a delay (as described by the retry metadata attached to the channel state change, and as approximately measured) matching that defined by RTB1 (with initial retry timeout of channelRetryTimeout), the channel emits a state change to the ATTACHING state...
             let firstObservedStateChange = observedStateChanges[observedStateChangesStartIndexForThisRetry]
             XCTAssertEqual(firstObservedStateChange.stateChange.previous, .suspended)
             XCTAssertEqual(firstObservedStateChange.stateChange.current, .attaching)

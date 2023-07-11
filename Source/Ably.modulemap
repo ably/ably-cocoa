@@ -108,5 +108,6 @@ framework module Ably {
         header "ARTRealtimeTransportFactory.h"
         header "ARTContinuousClock.h"
         header "ARTWebSocketFactory.h"
+        header "ARTAttachRetryState.h"
     }
 }

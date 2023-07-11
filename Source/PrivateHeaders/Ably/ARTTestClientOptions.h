@@ -1,6 +1,7 @@
 @import Foundation;
 
 @protocol ARTRealtimeTransportFactory;
+@protocol ARTJitterCoefficientGenerator;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -36,6 +37,11 @@ NS_ASSUME_NONNULL_BEGIN
  This property is used to provide a way for the test code to simulate the case where a reconnection attempt results in a different outcome to the original connection attempt. Initial value is `nil`.
  */
 @property (readwrite, nonatomic) NSString *reconnectionRealtimeHost;
+
+/**
+ Initial value is an instance of `ARTDefaultJitterCoefficientGenerator`.
+ */
+@property (nonatomic) id<ARTJitterCoefficientGenerator> jitterCoefficientGenerator;
 
 @end
 
