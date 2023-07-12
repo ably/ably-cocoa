@@ -45,7 +45,7 @@ extension AblyHelper {
         }
         locationManager = CLLocationManager()
         locationManager.delegate = self
-        locationManager.requestAlwaysAuthorization()
+        locationManager.requestAlwaysAuthorization() // for simplicity we put it here, but in the real app you should care about particular moment, when you ask for any permissions
         locationManager.startMonitoringLocationPushes { deviceToken, error in
             guard error == nil else {
                 return ARTPush.didFailToRegisterForLocationNotificationsWithError(error!, realtime: self.realtime)

@@ -126,7 +126,7 @@ If you haven’t yet, you should first check the detailed [documentation](https:
 
 For more information, see [Push Notifications - Device activation and subscription](https://ably.com/docs/general/push/activate-subscribe).
 
-**`ARTPushRegistererDelegate`** defines 3 delegate methods to handle the outcome of push activation, deactivation and update events. By default, the Ably SDK will check if `UIApplication.sharedApplication.delegate` conforms to `ARTPushRegistererDelegate`, and call the delegate methods when appropriate. Therefore, specifying the `ARTPushRegistererDelegate` is optional. To use a different class implementing `ARTPushRegistererDelegate`, you must provide this class to Ably, by setting the `ARTClientOptions#pushRegistererDelegate` delegate. In SwiftUI applications, you must set the `ARTClientOptions#pushRegistererDelegate` delegate property.
+`ARTPushRegistererDelegate` defines 4 delegate methods to handle the outcome of push activation, deactivation and update events. By default, the Ably SDK will check if `UIApplication.sharedApplication.delegate` conforms to `ARTPushRegistererDelegate`, and call the delegate methods when appropriate. Therefore, specifying the `ARTPushRegistererDelegate` is optional. To use a different class implementing `ARTPushRegistererDelegate`, you must provide this class to Ably, by setting the `ARTClientOptions.pushRegistererDelegate` delegate. In SwiftUI applications, you must set the `ARTClientOptions.pushRegistererDelegate` delegate property.
 
 Do not forget that `ARTPush` has two corresponding methods that you should call from yours [application(_:didRegisterForRemoteNotificationsWithDeviceToken:)](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1622958-application) and [application(_:didFailToRegisterForRemoteNotificationsWithError:)](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1622962-application), passing to them also an `ARTRest` or `ARTRealtime` instance, configured with the authentication setup and other options you need:
 
@@ -139,6 +139,18 @@ func application(_ application: UIApplication, didFailToRegisterForRemoteNotific
     ARTPush.didFailToRegisterForRemoteNotificationsWithError(error, rest: rest)
 }
 ```
+
+### Location pushes
+
+Starting with iOS 15, Apple supports power efficient way to request location trough [location push service extension](https://developer.apple.com/documentation/corelocation/creating_a_location_push_service_extension).
+
+To use this new functionality you should obtain Apple entitlments, create location push service extension and make some tweaks in your push notifications code within your app:
+
+* In addition to saving your regular device token by calling `ARTPush.didRegisterForRemoteNotifications(withDeviceToken:rest:)` you should request another device token specifically for the location pushes purpose. You do so by calling `CLLocationManager.startMonitoringLocationPushes(completion:)` inside a new `ARTPushRegistererDelegate.shouldRequestAlternativeDeviceToken` delegate method. Library will call this method each time it's ready to save another type of device token (currently only location type of token is supported). Before you make a request for the new token, you should check whether you already have done this during the current application launch.
+
+* Once you receive the location push token, save it by calling a new `ARTPush.didRegisterForLocationNotifications(withDeviceToken:rest:)` method (note the "Location" word in the name of this method).
+
+See [embed APNs example app](https://github.com/ably/ably-cocoa/tree/main/Examples/AblyPush) for more details on how this should be implemented.
 
 Only one instance of `ARTRest` or `ARTRealtime` at a time must be [activated for receiving push notifications](https://www.ably.com/docs/general/push/activate-subscribe). Having more than one activated instance at a time may have unexpected consequences.
 
