@@ -655,7 +655,7 @@ class PushActivationStateMachineTests: XCTestCase {
             let expectedError = ARTErrorInfo(domain: ARTAblyErrorDomain, code: 1234, userInfo: nil)
 
             var updateFailedCallbackCalled = false
-            let hook = stateMachine.testSuite_getArgument(from: NSSelectorFromString("callUpdateFailedCallback:"), at: 0, callback: { arg0 in
+            let hook = stateMachine.testSuite_getArgument(from: NSSelectorFromString("callUpdatedCallback:"), at: 0, callback: { arg0 in
                 updateFailedCallbackCalled = true
                 guard let error = arg0 as? ARTErrorInfo else {
                     fail("Error is missing"); return

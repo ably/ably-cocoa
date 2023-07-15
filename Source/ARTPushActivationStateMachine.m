@@ -389,11 +389,14 @@ dispatch_async(_queue, ^{
     #endif
 }
 
-- (void)callUpdateFailedCallback:(nullable ARTErrorInfo *)error {
+- (void)callUpdatedCallback:(nullable ARTErrorInfo *)error {
     #if TARGET_OS_IOS
     dispatch_async(_userQueue, ^{
         const id<ARTPushRegistererDelegate, NSObject> delegate = self.delegate;
-        if ([delegate respondsToSelector:@selector(didAblyPushRegistrationFail:)]) {
+        if ([delegate respondsToSelector:@selector(didUpdateAblyPush:)]) {
+            [delegate didUpdateAblyPush:error];
+        }
+        else if (error && [delegate respondsToSelector:@selector(didAblyPushRegistrationFail:)]) {
             [delegate didAblyPushRegistrationFail:error];
         }
     });

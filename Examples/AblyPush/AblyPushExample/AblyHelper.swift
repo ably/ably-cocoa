@@ -102,6 +102,10 @@ extension AblyHelper: ARTPushRegistererDelegate {
         print("Push deactivation: \(error?.localizedDescription ?? "Success")")
     }
     
+    func didUpdateAblyPush(_ error: ARTErrorInfo?) {
+        print("Push update: \(error?.localizedDescription ?? "Success")")
+    }
+    
     func shouldRequestOtherDeviceTokensForAblyPush() {
         if locationDeviceToken == nil {
             activateLocationPush()

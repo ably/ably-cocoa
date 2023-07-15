@@ -29,7 +29,12 @@ NS_ASSUME_NONNULL_BEGIN
 @optional
 
 /**
- Ably will call the implementation of this method when the registration process is completed with failure.
+ Ably will call the implementation of this method when the token update process is completed with success or with failure.
+ */
+- (void)didUpdateAblyPush:(nullable ARTErrorInfo *)error;
+
+/**
+ Same as `didUpdateAblyPush:`, but called only in case of failure for backward compatibility.
  */
 - (void)didAblyPushRegistrationFail:(nullable ARTErrorInfo *)error;
 
