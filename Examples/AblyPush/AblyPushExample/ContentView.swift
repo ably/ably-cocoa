@@ -10,23 +10,32 @@ struct ContentView: View {
     @State var showDeviceTokensAlert = false
     @State var defaultDeviceToken: String?
     @State var locationDeviceToken: String?
-    
+    @State var deviceTokensError: ARTErrorInfo?
+
     var body: some View {
         NavigationView {
             VStack {
                 Spacer()
                 Button("Activate Push") {
-                    AblyHelper.shared.activatePush { token1, token2 in
-                        defaultDeviceToken = token1
-                        locationDeviceToken = token2
-                        showDeviceTokensAlert = true
+                    AblyHelper.shared.activatePush {
+                        defaultDeviceToken = $0
+                        locationDeviceToken = $1
+                        deviceTokensError = $2
+                        showDeviceTokensAlert = defaultDeviceToken != nil || locationDeviceToken != nil || deviceTokensError != nil
                     }
                 }
                 .alert(isPresented: $showDeviceTokensAlert) {
-                    guard let defaultDeviceToken = defaultDeviceToken, let locationDeviceToken = locationDeviceToken else {
-                        return Alert(title: Text("Device Tokens"), message: Text("Unknown result."))
+                    if let deviceTokensError = deviceTokensError {
+                        return Alert(title: Text("Device Tokens"), message: Text("Error: \(deviceTokensError)"))
                     }
-                    return Alert(title: Text("Device Tokens"), message: Text("Default: \(defaultDeviceToken)\n\nLocation: \(locationDeviceToken)"))
+                    else if let defaultDeviceToken = defaultDeviceToken, let locationDeviceToken = locationDeviceToken {
+                        return Alert(title: Text("Device Tokens"),
+                                     message: Text("Default: \(defaultDeviceToken)\n\nLocation: \(locationDeviceToken)"))
+                    }
+                    else if let defaultDeviceToken = defaultDeviceToken {
+                        return Alert(title: Text("Device Tokens"), message: Text("Default: \(defaultDeviceToken)"))
+                    }
+                    return Alert(title: Text("Device Tokens"), message: Text("No token updates or error."))
                 }
                 .padding()
                 Button("Dectivate") {

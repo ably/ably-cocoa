@@ -16,7 +16,7 @@ class AblyHelper: NSObject {
     
     var locationDeviceToken: String?
     
-    var activatePushCallback: ((String?, String?) -> ())?
+    var activatePushCallback: ((String?, String?, ARTErrorInfo?) -> ())?
     
     private override init() {
         super.init()
@@ -28,24 +28,21 @@ class AblyHelper: NSObject {
         options.pushRegistererDelegate = self
         self.realtime = ARTRealtime(options: options)
         UNUserNotificationCenter.current().delegate = self
+        locationManager = CLLocationManager()
+        locationManager.delegate = self
+        locationManager.requestAlwaysAuthorization() // for simplicity we put it here, but in the real app you should care about particular moment, when you ask for any permissions
     }
 }
 
 extension AblyHelper {
     
-    func activatePush(_ callback: @escaping (String?, String?) -> ()) {
+    func activatePush(_ callback: @escaping (String?, String?, ARTErrorInfo?) -> ()) {
         Self.requestUserNotificationAuthorization()
         realtime.push.activate()
         activatePushCallback = callback
     }
     
     func activateLocationPush() {
-        guard locationManager == nil else {
-            return print("Location push activation was already called.")
-        }
-        locationManager = CLLocationManager()
-        locationManager.delegate = self
-        locationManager.requestAlwaysAuthorization() // for simplicity we put it here, but in the real app you should care about particular moment, when you ask for any permissions
         locationManager.startMonitoringLocationPushes { deviceToken, error in
             guard error == nil else {
                 return ARTPush.didFailToRegisterForLocationNotificationsWithError(error!, realtime: self.realtime)
@@ -96,6 +93,7 @@ extension AblyHelper: ARTPushRegistererDelegate {
     
     func didActivateAblyPush(_ error: ARTErrorInfo?) {
         print("Push activation: \(error?.localizedDescription ?? "Success")")
+        activatePushCallback?(defaultDeviceToken, locationDeviceToken, error)
     }
     
     func didDeactivateAblyPush(_ error: ARTErrorInfo?) {
@@ -104,14 +102,11 @@ extension AblyHelper: ARTPushRegistererDelegate {
     
     func didUpdateAblyPush(_ error: ARTErrorInfo?) {
         print("Push update: \(error?.localizedDescription ?? "Success")")
+        activatePushCallback?(defaultDeviceToken, locationDeviceToken, error)
     }
     
     func shouldRequestOtherDeviceTokensForAblyPush() {
-        if locationDeviceToken == nil {
-            activateLocationPush()
-        } else { // here location token was saved and the state machine is ready to request for another token, hence we are done with tokens
-            activatePushCallback?(defaultDeviceToken, locationDeviceToken)
-        }
+        activateLocationPush()
     }
 }
 

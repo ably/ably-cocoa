@@ -120,6 +120,8 @@ dispatch_async(_queue, ^{
     }
     ARTLogDebug(_logger, @"%@: transition: %@ -> %@", NSStringFromClass(self.class), NSStringFromClass(_current.class), NSStringFromClass(maybeNext.class));
     if (self.transitions) self.transitions(event, _current, maybeNext);
+    
+    ARTPushActivationState *previous = _current;
     _current = maybeNext;
 
     while (true) {
@@ -139,7 +141,8 @@ dispatch_async(_queue, ^{
         _current = maybeNext;
     }
     
-    if ([_current isKindOfClass:[ARTPushActivationStateWaitingForNewPushDeviceDetails class]]) {
+    if ([_current isKindOfClass:[ARTPushActivationStateWaitingForNewPushDeviceDetails class]]
+        && ![previous isKindOfClass:[ARTPushActivationStateWaitingForRegistrationSync class]]) { // check to avoid duplicate call after sync
         [self callShouldRequestOtherDeviceTokensCallback];
     }
 
