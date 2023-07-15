@@ -38,7 +38,7 @@ NS_ASSUME_NONNULL_BEGIN
  See https://developer.apple.com/documentation/usernotifications/setting_up_a_remote_notification_server/sending_notification_requests_to_apns for possible values of `apns-push-type`.
  Before making request to Apple for alternative device token you should check whether you've already did this after application launch.
  */
-- (void)shouldRequestAlternativeDeviceToken;
+- (void)shouldRequestOtherDeviceTokensForAblyPush;
 
 /**
  Optional method.

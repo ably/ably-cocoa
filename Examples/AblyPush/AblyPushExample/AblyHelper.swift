@@ -102,7 +102,7 @@ extension AblyHelper: ARTPushRegistererDelegate {
         print("Push deactivation: \(error?.localizedDescription ?? "Success")")
     }
     
-    func shouldRequestAlternativeDeviceToken() {
+    func shouldRequestOtherDeviceTokensForAblyPush() {
         if locationDeviceToken == nil {
             activateLocationPush()
         } else { // here location token was saved and the state machine is ready to request for another token, hence we are done with tokens

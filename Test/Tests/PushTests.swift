@@ -551,7 +551,7 @@ class PushTests: XCTestCase {
         }
         
         waitUntil(timeout: testTimeout) { done in
-            pushRegistererDelegate.onShouldRequestAlternativeDeviceToken = {
+            pushRegistererDelegate.onShouldRequestOtherDeviceTokensForAblyPush = {
                 if locationDeviceToken == nil {
                     requestLocationDeviceToken() {
                         done()
