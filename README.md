@@ -146,9 +146,11 @@ Starting with iOS 15, Apple supports power efficient way to request location tro
 
 To use this new functionality you should obtain Apple entitlments, create location push service extension and make some tweaks in your push notifications code within your app:
 
-* In addition to saving your regular device token by calling `ARTPush.didRegisterForRemoteNotifications(withDeviceToken:rest:)` you should request another device token specifically for the location pushes purpose. You do so by calling `CLLocationManager.startMonitoringLocationPushes(completion:)` inside a new `ARTPushRegistererDelegate.shouldRequestOtherDeviceTokensForAblyPush` delegate method. Library will call this method each time it's ready to save another type of device token (currently only location type of token is supported). Before you make a request for the new token, you should check whether you already have done this during the current application launch.
+* Add Apple location pushes entitlments into your project.
 
-* Once you receive the location push token, save it by calling a new `ARTPush.didRegisterForLocationNotifications(withDeviceToken:rest:)` method (note the "Location" word in the name of this method).
+* In addition to saving your regular device token by calling `ARTPush.didRegisterForRemoteNotifications(withDeviceToken:realtime:)` you should request another device token specifically for the location pushes purpose. You do so by calling `CLLocationManager.startMonitoringLocationPushes(completion:)` and saving it with the `ARTPush.didRegisterForLocationNotifications(withDeviceToken:realtime:)` call (note the "Location" word in the name of this method). You can do it within a new `ARTPushRegistererDelegate.shouldRequestOtherDeviceTokensForAblyPush` delegate callback or whenever is appropriate in your app (this callback is called once for each `ARTPush.activate()` call).
+
+* Once you receive the location push token, save it by calling a new `ARTPush.didRegisterForLocationNotifications(withDeviceToken:realtime:)` method (note the "Location" word in the name of this method).
 
 See [embed APNs example app](https://github.com/ably/ably-cocoa/tree/main/Examples/AblyPush) for more details on how this should be implemented.
 
