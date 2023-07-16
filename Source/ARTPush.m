@@ -264,17 +264,3 @@
 #endif
 
 @end
-
-@implementation NSData (APNS)
-
-- (NSString *)art_deviceTokenString {
-    NSUInteger dataLength = self.length;
-    const unsigned char *dataBuffer = self.bytes;
-    NSMutableString *hexString = [NSMutableString stringWithCapacity:(dataLength * 2)];
-    for (int i = 0; i < dataLength; ++i) {
-        [hexString appendFormat:@"%02x", dataBuffer[i]];
-    }
-    return [hexString copy];
-}
-
-@end

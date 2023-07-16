@@ -787,7 +787,7 @@ static BOOL sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = YES;
 }
 
 - (void)setAndPersistAPNSDeviceTokenData:(NSData *)deviceTokenData tokenType:(NSString *)tokenType {
-    NSString *deviceToken = deviceTokenData.art_deviceTokenString;
+    NSString *deviceToken = deviceTokenData.deviceTokenString;
     ARTLogInfo(self.logger_onlyForUseInClassMethodsAndTests, @"ARTRest: device token: %@ of type: `%@`", deviceToken, tokenType);
     
     NSString *currentDeviceToken = [self.storage objectForKey:ARTAPNSDeviceTokenKeyOfType(tokenType)];
@@ -805,5 +805,19 @@ static BOOL sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = YES;
 }
 
 #endif
+
+@end
+
+@implementation NSData (APNS)
+
+- (NSString *)deviceTokenString {
+    NSUInteger dataLength = self.length;
+    const unsigned char *dataBuffer = self.bytes;
+    NSMutableString *hexString = [NSMutableString stringWithCapacity:(dataLength * 2)];
+    for (int i = 0; i < dataLength; ++i) {
+        [hexString appendFormat:@"%02x", dataBuffer[i]];
+    }
+    return [hexString copy];
+}
 
 @end

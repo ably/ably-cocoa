@@ -120,12 +120,4 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-// Utilities
-
-@interface NSData (APNS)
-
-- (NSString *)art_deviceTokenString;
-
-@end
-
 NS_ASSUME_NONNULL_END

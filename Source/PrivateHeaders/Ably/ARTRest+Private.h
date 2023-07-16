@@ -92,4 +92,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+@interface NSData (APNS)
+
+- (NSString *)deviceTokenString;
+
+@end
+
 NS_ASSUME_NONNULL_END
