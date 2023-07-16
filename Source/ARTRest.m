@@ -788,7 +788,7 @@ static BOOL sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = YES;
 
 - (void)setAndPersistAPNSDeviceTokenData:(NSData *)deviceTokenData tokenType:(NSString *)tokenType {
     NSString *deviceToken = deviceTokenData.deviceTokenString;
-    ARTLogInfo(self.logger_onlyForUseInClassMethodsAndTests, @"ARTRest: device token: %@ of type: `%@`", deviceToken, tokenType);
+    ARTLogInfo(self.logger, @"ARTRest: device token: %@ of type: `%@`", deviceToken, tokenType);
     
     NSString *currentDeviceToken = [self.storage objectForKey:ARTAPNSDeviceTokenKeyOfType(tokenType)];
     if ([currentDeviceToken isEqualToString:deviceToken]) {
@@ -797,7 +797,7 @@ static BOOL sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = YES;
     }
 
     [self.device_nosync setAndPersistAPNSDeviceToken:deviceToken tokenType:tokenType];
-    ARTLogDebug(self.logger_onlyForUseInClassMethodsAndTests, @"ARTRest: device token stored");
+    ARTLogDebug(self.logger, @"ARTRest: device token stored");
     
     [self.push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
         [stateMachine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
