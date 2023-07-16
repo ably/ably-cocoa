@@ -47,7 +47,7 @@ extension AblyHelper {
             guard error == nil else {
                 return ARTPush.didFailToRegisterForLocationNotificationsWithError(error!, realtime: self.realtime)
             }
-            self.locationDeviceToken = (deviceToken! as NSData).art_deviceTokenString()
+            self.locationDeviceToken = deviceToken!.deviceTokenString
             ARTPush.didRegisterForLocationNotifications(withDeviceToken: deviceToken!, realtime: self.realtime)
         }
     }
