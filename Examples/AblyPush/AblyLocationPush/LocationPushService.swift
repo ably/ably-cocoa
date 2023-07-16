@@ -21,7 +21,7 @@ class LocationPushService: NSObject, CLLocationPushServiceExtension, CLLocationM
     }
 
     private func recordPushPayload(_ payload: [String : Any]) {
-        let sharedContainerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.com.forooghian.AblyPushExample")!
+        let sharedContainerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.io.ably.basic-push-example")!
 
         let dataFileURL = sharedContainerURL.appendingPathComponent("dataFile")
 
