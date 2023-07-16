@@ -3,7 +3,7 @@ import CoreLocation
 struct LocationPushEvent: Codable {
     var id: UUID
     var receivedAt: Date
-    var jsonPayload: Data? // optional just because I've got some data sitting on my device from before this property
+    var jsonPayload: Data
 }
 
 class LocationPushService: NSObject, CLLocationPushServiceExtension, CLLocationManagerDelegate {
