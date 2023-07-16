@@ -80,16 +80,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 // Location Push Registration token
 
-/// See [iOS push notifications tutorial](https://ably.com/tutorials/ios-location-push-notifications) for details.
+/// Registers location device token within Ably service. You obtain it by calling `CLLocationManager.startMonitoringLocationPushes(completion:)`.
 + (void)didRegisterForLocationNotificationsWithDeviceToken:(NSData *)deviceToken rest:(ARTRest *)rest;
 
-/// See [iOS push notifications tutorial](https://ably.com/tutorials/ios-location-push-notifications) for details.
+/// Registers location device token within Ably service. You obtain it by calling `CLLocationManager.startMonitoringLocationPushes(completion:)`.
 + (void)didRegisterForLocationNotificationsWithDeviceToken:(NSData *)deviceToken realtime:(ARTRealtime *)realtime;
 
-/// See [iOS push notifications tutorial](https://ably.com/tutorials/ios-location-push-notifications) for details.
+/// Call this method if you got an error calling `CLLocationManager.startMonitoringLocationPushes(completion:)`.
 + (void)didFailToRegisterForLocationNotificationsWithError:(NSError *)error rest:(ARTRest *)rest;
 
-/// See [iOS push notifications tutorial](https://ably.com/tutorials/ios-location-push-notifications) for details.
+/// Call this method if you got an error calling `CLLocationManager.startMonitoringLocationPushes(completion:)`.
 + (void)didFailToRegisterForLocationNotificationsWithError:(NSError *)error realtime:(ARTRealtime *)realtime;
 
 /**
