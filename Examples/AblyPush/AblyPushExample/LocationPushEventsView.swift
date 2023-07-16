@@ -1,5 +1,10 @@
 import SwiftUI
 
+/**
+ * The content of this file is used to exchange information between the app and the extension.
+ * This gives a user, who testing location pushes without access to the debug console, to see actual notifications in the `LocationPushEventsView`.
+ */
+
 struct LocationPushEvent: Identifiable, Codable {
     var id: UUID
     var receivedAt: Date
