@@ -39,13 +39,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)didAblyPushRegistrationFail:(nullable ARTErrorInfo *)error;
 
 /**
- Ably will call the implementation of this method when the main token (regular pushes) activation or update process is completed with success (once for each `-[ARTPush activate]` call), so you can request other types of tokens, such as `location`, `pushtotalk` etc.
- See https://developer.apple.com/documentation/usernotifications/setting_up_a_remote_notification_server/sending_notification_requests_to_apns for possible values of `apns-push-type`, but currently only the `location` token type is supported.
- When you receive the location push token (by calling `-[CLLocationManager startMonitoringLocationPushesWithCompletion:]`), save it by calling `+[ARTPush didRegisterForLocationNotificationsWithDeviceToken:realtime:]` method.
- */
-- (void)shouldRequestOtherDeviceTokensForAblyPush;
-
-/**
  Optional method.
  If you want to activate devices from your server, then you should implement this method (including the `ablyPushCustomDeregister:deviceId:callback` method) where the network request completion should call the callback argument to continue with the registration process.
  */

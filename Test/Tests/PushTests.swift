@@ -551,11 +551,9 @@ class PushTests: XCTestCase {
         }
         
         waitUntil(timeout: testTimeout) { done in
-            pushRegistererDelegate.onShouldRequestOtherDeviceTokensForAblyPush = {
-                if locationDeviceToken == nil {
-                    requestLocationDeviceToken() {
-                        done()
-                    }
+            pushRegistererDelegate.onDidActivateAblyPush = { _ in
+                requestLocationDeviceToken() {
+                    done()
                 }
             }
             rest.push.activate()

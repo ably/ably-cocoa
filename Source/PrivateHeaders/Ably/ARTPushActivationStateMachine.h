@@ -30,7 +30,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)callActivatedCallback:(nullable ARTErrorInfo *)error;
 - (void)callDeactivatedCallback:(nullable ARTErrorInfo *)error;
 - (void)callUpdatedCallback:(nullable ARTErrorInfo *)error;
-- (void)callShouldRequestOtherDeviceTokensCallback;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -94,6 +94,7 @@ extension AblyHelper: ARTPushRegistererDelegate {
     func didActivateAblyPush(_ error: ARTErrorInfo?) {
         print("Push activation: \(error?.localizedDescription ?? "Success")")
         activatePushCallback?(defaultDeviceToken, locationDeviceToken, error)
+        activateLocationPush()
     }
     
     func didDeactivateAblyPush(_ error: ARTErrorInfo?) {
@@ -103,10 +104,6 @@ extension AblyHelper: ARTPushRegistererDelegate {
     func didUpdateAblyPush(_ error: ARTErrorInfo?) {
         print("Push update: \(error?.localizedDescription ?? "Success")")
         activatePushCallback?(defaultDeviceToken, locationDeviceToken, error)
-    }
-    
-    func shouldRequestOtherDeviceTokensForAblyPush() {
-        activateLocationPush()
     }
 }
 

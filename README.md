@@ -148,7 +148,7 @@ To use this new functionality you should obtain Apple entitlments, create locati
 
 * Add Apple location pushes entitlments into your project.
 
-* In addition to saving your regular device token by calling `ARTPush.didRegisterForRemoteNotifications(withDeviceToken:realtime:)` you should request another device token specifically for the location pushes purpose. You do so by calling `CLLocationManager.startMonitoringLocationPushes(completion:)` and saving it with the `ARTPush.didRegisterForLocationNotifications(withDeviceToken:realtime:)` call (note the "Location" word in the name of this method). You can do it within a new `ARTPushRegistererDelegate.shouldRequestOtherDeviceTokensForAblyPush` delegate callback or whenever is appropriate in your app (this callback is called once for each `ARTPush.activate()` call).
+* In addition to saving your regular device token by calling `ARTPush.didRegisterForRemoteNotifications(withDeviceToken:realtime:)` you should request another device token specifically for the location pushes purpose. You do so by calling `CLLocationManager.startMonitoringLocationPushes(completion:)` within a `ARTPushRegistererDelegate.didActivateAblyPush(:)` delegate callback or whenever is appropriate in your app.
 
 * Once you receive the location push token, save it by calling a new `ARTPush.didRegisterForLocationNotifications(withDeviceToken:realtime:)` method (note the "Location" word in the name of this method).
 
