@@ -1285,11 +1285,16 @@ class PushActivationStateMachineTests: XCTestCase {
 
 class StateMachineDelegate: NSObject, ARTPushRegistererDelegate {
     var onDidActivateAblyPush: ((ARTErrorInfo?) -> Void)?
+    var onDidUpdateAblyPush: ((ARTErrorInfo?) -> Void)?
     var onDidDeactivateAblyPush: ((ARTErrorInfo?) -> Void)?
     var onDidAblyPushRegistrationFail: ((ARTErrorInfo?) -> Void)?
 
     func didActivateAblyPush(_ error: ARTErrorInfo?) {
         onDidActivateAblyPush?(error)
+    }
+
+    func didUpdateAblyPush(_ error: ARTErrorInfo?) {
+        onDidUpdateAblyPush?(error)
     }
 
     func didDeactivateAblyPush(_ error: ARTErrorInfo?) {

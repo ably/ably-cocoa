@@ -540,21 +540,16 @@ class PushTests: XCTestCase {
         rest.device.setAndPersistAPNSDeviceToken(testDeviceToken)
         defer { rest.device.setAndPersistAPNSDeviceToken(nil) }
         
-        var locationDeviceToken: Data?
-        
-        func requestLocationDeviceToken(_ completion: @escaping () -> Void) {
-            locationDeviceToken = TestLocationDeviceToken.tokenData
-            ARTPush.didRegisterForLocationNotifications(withDeviceToken: locationDeviceToken!, rest: rest)
-            delay(1) { // give state machine time to complete registration of a new token
-                completion()
-            }
+        func requestLocationDeviceToken() {
+            ARTPush.didRegisterForLocationNotifications(withDeviceToken: TestLocationDeviceToken.tokenData, rest: rest)
         }
         
         waitUntil(timeout: testTimeout) { done in
             pushRegistererDelegate.onDidActivateAblyPush = { _ in
-                requestLocationDeviceToken() {
-                    done()
-                }
+                requestLocationDeviceToken()
+            }
+            pushRegistererDelegate.onDidUpdateAblyPush = { _ in
+                done()
             }
             rest.push.activate()
         }
