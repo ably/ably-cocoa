@@ -21,7 +21,7 @@ struct ContentView: View {
                         defaultDeviceToken = $0
                         locationDeviceToken = $1
                         deviceTokensError = $2
-                        showDeviceTokensAlert = defaultDeviceToken != nil || locationDeviceToken != nil || deviceTokensError != nil
+                        showDeviceTokensAlert = true
                     }
                 }
                 .alert(isPresented: $showDeviceTokensAlert) {
@@ -35,7 +35,7 @@ struct ContentView: View {
                     else if let defaultDeviceToken = defaultDeviceToken {
                         return Alert(title: Text("Device Tokens"), message: Text("Default: \(defaultDeviceToken)"))
                     }
-                    return Alert(title: Text("Device Tokens"), message: Text("No token updates or error."))
+                    return Alert(title: Text("Push activation"), message: Text("Success"))
                 }
                 .padding()
                 Button("Dectivate") {
