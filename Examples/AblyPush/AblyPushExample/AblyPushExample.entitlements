@@ -8,7 +8,7 @@
 	<true/>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.io.ably.basic-push-example</string>
+		<string>group.io.ably.basic-apns-example</string>
 	</array>
 </dict>
 </plist>

@@ -74,7 +74,7 @@ class DataLoader: NSObject, NSFilePresenter, ObservableObject {
     }
 
     var presentedItemURL: URL? {
-        let sharedContainerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.io.ably.basic-push-example")!
+        let sharedContainerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.io.ably.basic-apns-example")!
 
         return sharedContainerURL.appendingPathComponent("dataFile")
     }
