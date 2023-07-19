@@ -70,7 +70,7 @@ struct ContentView: View {
                 NavigationLink {
                     LocationPushEventsView()
                 } label: {
-                    Text("List of location push events")
+                    Text("Location push events")
                 }
                 .padding()
                 Spacer()
