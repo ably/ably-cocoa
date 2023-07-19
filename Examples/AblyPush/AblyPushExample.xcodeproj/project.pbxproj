@@ -43,6 +43,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		219F93782A4DFE41007DE767 /* AblyLocationPush.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AblyLocationPush.entitlements; sourceTree = "<group>"; };
 		219F93792A4E0E44007DE767 /* LocationPushEventsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationPushEventsView.swift; sourceTree = "<group>"; };
 		8405EE8027F0B06800C9E461 /* Ably Push.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Ably Push.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8405EE8327F0B06800C9E461 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
@@ -138,6 +139,7 @@
 		84C233C72A2D560C007DA23B /* AblyLocationPush */ = {
 			isa = PBXGroup;
 			children = (
+				219F93782A4DFE41007DE767 /* AblyLocationPush.entitlements */,
 				84C233C82A2D560C007DA23B /* LocationPushService.swift */,
 				84C233CA2A2D560C007DA23B /* Info.plist */,
 			);
