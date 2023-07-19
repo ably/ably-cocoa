@@ -96,10 +96,7 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     ];
     
     for (NSString *tokenType in supportedTokenTypes) {
-        NSString *token = [storage objectForKey:ARTAPNSDeviceTokenKeyOfType(tokenType)];
-        if ([tokenType isEqualToString:ARTAPNSDeviceDefaultTokenType] && token == nil) {
-            token = [storage objectForKey:ARTAPNSDeviceTokenKey]; // Read legacy token
-        }
+        NSString *token = [ARTLocalDevice apnsDeviceTokenOfType:tokenType fromStorage:storage];
         [device setAPNSDeviceToken:token tokenType:tokenType];
     }
     return device;
@@ -113,6 +110,14 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     NSData *randomData = [ARTCrypto generateSecureRandomData:32];
     NSData *hash = [ARTCrypto generateHashSHA256:randomData];
     return [hash base64EncodedStringWithOptions:0];
+}
+
++ (NSString *)apnsDeviceTokenOfType:(nullable NSString *)tokenType fromStorage:(id<ARTDeviceStorage>)storage {
+    NSString *token = [storage objectForKey:ARTAPNSDeviceTokenKeyOfType(tokenType)];
+    if ([tokenType isEqualToString:ARTAPNSDeviceDefaultTokenType] && token == nil) {
+        token = [storage objectForKey:ARTAPNSDeviceTokenKey]; // Read legacy token
+    }
+    return token;
 }
 
 - (NSString *)apnsDeviceToken {

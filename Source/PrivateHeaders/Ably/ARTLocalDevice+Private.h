@@ -29,6 +29,8 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString * _Nullable tokenType);
 + (NSString *)generateId;
 + (NSString *)generateSecret;
 
++ (NSString *)apnsDeviceTokenOfType:(nullable NSString *)tokenType fromStorage:(id<ARTDeviceStorage>)storage;
+
 @end
 
 NS_ASSUME_NONNULL_END
