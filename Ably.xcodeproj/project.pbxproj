@@ -69,15 +69,15 @@
 		21113B5529DC6ACD00652C86 /* ARTTestClientOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 21113B5429DC6ACD00652C86 /* ARTTestClientOptions.m */; };
 		21113B5629DC6ACD00652C86 /* ARTTestClientOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 21113B5429DC6ACD00652C86 /* ARTTestClientOptions.m */; };
 		21113B5729DC6ACD00652C86 /* ARTTestClientOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 21113B5429DC6ACD00652C86 /* ARTTestClientOptions.m */; };
+		21113B5929DCA4C700652C86 /* DataGatherer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21113B5829DCA4C700652C86 /* DataGatherer.swift */; };
+		21113B5A29DCA4C700652C86 /* DataGatherer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21113B5829DCA4C700652C86 /* DataGatherer.swift */; };
+		21113B5B29DCA4C700652C86 /* DataGatherer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21113B5829DCA4C700652C86 /* DataGatherer.swift */; };
 		21113B5F29DDDDD000652C86 /* LogAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21113B5E29DDDDD000652C86 /* LogAdapterTests.swift */; };
 		21113B6029DDDDD000652C86 /* LogAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21113B5E29DDDDD000652C86 /* LogAdapterTests.swift */; };
 		21113B6129DDDDD000652C86 /* LogAdapterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21113B5E29DDDDD000652C86 /* LogAdapterTests.swift */; };
 		21113B6329DDF7E800652C86 /* ARTInternalLogTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 21113B6229DDF7E800652C86 /* ARTInternalLogTests.m */; };
 		21113B6429DDF7ED00652C86 /* ARTInternalLogTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 21113B6229DDF7E800652C86 /* ARTInternalLogTests.m */; };
 		21113B6529DDF7EF00652C86 /* ARTInternalLogTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 21113B6229DDF7E800652C86 /* ARTInternalLogTests.m */; };
-		21113B5929DCA4C700652C86 /* DataGatherer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21113B5829DCA4C700652C86 /* DataGatherer.swift */; };
-		21113B5A29DCA4C700652C86 /* DataGatherer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21113B5829DCA4C700652C86 /* DataGatherer.swift */; };
-		21113B5B29DCA4C700652C86 /* DataGatherer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21113B5829DCA4C700652C86 /* DataGatherer.swift */; };
 		211A60D729D6D2C300D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */; };
 		211A60D829D6D2C400D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */; };
 		211A60D929D6D2C500D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */; };
@@ -343,6 +343,21 @@
 		96E408441A38939E00087F77 /* ARTProtocolMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 96E408421A38939E00087F77 /* ARTProtocolMessage.m */; };
 		96E408471A3895E800087F77 /* ARTWebSocketTransport.h in Headers */ = {isa = PBXBuildFile; fileRef = 96E408451A3895E800087F77 /* ARTWebSocketTransport.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		96E408481A3895E800087F77 /* ARTWebSocketTransport.m in Sources */ = {isa = PBXBuildFile; fileRef = 96E408461A3895E800087F77 /* ARTWebSocketTransport.m */; };
+		B17D45BA2A699B1400D61A54 /* ARTMessageExtrasFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17D45B92A699B1400D61A54 /* ARTMessageExtrasFilterTests.swift */; };
+		B17D45BB2A699B1400D61A54 /* ARTMessageExtrasFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17D45B92A699B1400D61A54 /* ARTMessageExtrasFilterTests.swift */; };
+		B17D45BC2A699B1400D61A54 /* ARTMessageExtrasFilterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B17D45B92A699B1400D61A54 /* ARTMessageExtrasFilterTests.swift */; };
+		B17D45BE2A699B9300D61A54 /* ARTMessageFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = B17D45BD2A699B9300D61A54 /* ARTMessageFilter.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		B17D45BF2A699B9300D61A54 /* ARTMessageFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = B17D45BD2A699B9300D61A54 /* ARTMessageFilter.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		B17D45C02A699B9300D61A54 /* ARTMessageFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = B17D45BD2A699B9300D61A54 /* ARTMessageFilter.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		B17D45C22A699BB700D61A54 /* ARTMessageExtrasFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = B17D45C12A699BB700D61A54 /* ARTMessageExtrasFilter.m */; };
+		B17D45C32A699BB700D61A54 /* ARTMessageExtrasFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = B17D45C12A699BB700D61A54 /* ARTMessageExtrasFilter.m */; };
+		B17D45C42A699BB700D61A54 /* ARTMessageExtrasFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = B17D45C12A699BB700D61A54 /* ARTMessageExtrasFilter.m */; };
+		B17D45CA2A699BE300D61A54 /* ARTMessageExtrasFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = B17D45C92A699BE300D61A54 /* ARTMessageExtrasFilter.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		B17D45CB2A699BE300D61A54 /* ARTMessageExtrasFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = B17D45C92A699BE300D61A54 /* ARTMessageExtrasFilter.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		B17D45CC2A699BE300D61A54 /* ARTMessageExtrasFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = B17D45C92A699BE300D61A54 /* ARTMessageExtrasFilter.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		B17D45D22A69A9E700D61A54 /* ARTMessageFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = B17D45D12A69A9E700D61A54 /* ARTMessageFilter.m */; };
+		B17D45D32A69A9E700D61A54 /* ARTMessageFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = B17D45D12A69A9E700D61A54 /* ARTMessageFilter.m */; };
+		B17D45D42A69A9E700D61A54 /* ARTMessageFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = B17D45D12A69A9E700D61A54 /* ARTMessageFilter.m */; };
 		D3AD0EBD215E2FB000312105 /* ARTNSString+ARTUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = D3AD0EBB215E2FB000312105 /* ARTNSString+ARTUtil.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D3AD0EBE215E2FB000312105 /* ARTNSString+ARTUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = D3AD0EBC215E2FB000312105 /* ARTNSString+ARTUtil.m */; };
 		D50D86E929E9444600EA72EA /* JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = D50D86E829E9444600EA72EA /* JSON.swift */; };
@@ -1149,9 +1164,9 @@
 		21113B4829DB60F800652C86 /* MockRetryDelayCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockRetryDelayCalculator.swift; sourceTree = "<group>"; };
 		21113B5029DC6AAF00652C86 /* ARTTestClientOptions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTTestClientOptions.h; path = PrivateHeaders/Ably/ARTTestClientOptions.h; sourceTree = "<group>"; };
 		21113B5429DC6ACD00652C86 /* ARTTestClientOptions.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTTestClientOptions.m; sourceTree = "<group>"; };
+		21113B5829DCA4C700652C86 /* DataGatherer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataGatherer.swift; sourceTree = "<group>"; };
 		21113B5E29DDDDD000652C86 /* LogAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogAdapterTests.swift; sourceTree = "<group>"; };
 		21113B6229DDF7E800652C86 /* ARTInternalLogTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTInternalLogTests.m; sourceTree = "<group>"; };
-		21113B5829DCA4C700652C86 /* DataGatherer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataGatherer.swift; sourceTree = "<group>"; };
 		211A60DA29D726F800D169C5 /* ARTConnectionStateChangeMetadata.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTConnectionStateChangeMetadata.h; path = PrivateHeaders/Ably/ARTConnectionStateChangeMetadata.h; sourceTree = "<group>"; };
 		211A60DE29D7272000D169C5 /* ARTConnectionStateChangeMetadata.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTConnectionStateChangeMetadata.m; sourceTree = "<group>"; };
 		211A60FA29D8ABCF00D169C5 /* ARTChannelStateChangeMetadata.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTChannelStateChangeMetadata.h; path = PrivateHeaders/Ably/ARTChannelStateChangeMetadata.h; sourceTree = "<group>"; };
@@ -1237,7 +1252,7 @@
 		217FCF3D29D626E4006E5F2D /* StaticJitterCoefficients.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StaticJitterCoefficients.swift; sourceTree = "<group>"; };
 		217FCF3E29D626E4006E5F2D /* MockJitterCoefficientGenerator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockJitterCoefficientGenerator.swift; sourceTree = "<group>"; };
 		217FCF4529D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DefaultJitterCoefficientGeneratorTests.swift; sourceTree = "<group>"; };
-		21DCDA8229F818630073A211 /* Ably-iOS.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Ably-iOS.xctestplan"; path = "Test/Ably-iOS.xctestplan"; sourceTree = SOURCE_ROOT; };
+		21DCDA8229F818630073A211 /* Ably-iOS.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = "Ably-iOS.xctestplan"; path = "Test/Ably-iOS.xctestplan"; sourceTree = SOURCE_ROOT; };
 		21DCDA8329F81B350073A211 /* Ably-macOS.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Ably-macOS.xctestplan"; sourceTree = "<group>"; };
 		21DCDA8429F81B550073A211 /* Ably-tvOS.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Ably-tvOS.xctestplan"; sourceTree = "<group>"; };
 		21E1C0E42A0DC47400A5DB65 /* ARTWebSocketFactory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTWebSocketFactory.h; path = PrivateHeaders/ARTWebSocketFactory.h; sourceTree = "<group>"; };
@@ -1298,6 +1313,11 @@
 		96E408421A38939E00087F77 /* ARTProtocolMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTProtocolMessage.m; sourceTree = "<group>"; };
 		96E408451A3895E800087F77 /* ARTWebSocketTransport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTWebSocketTransport.h; path = PrivateHeaders/Ably/ARTWebSocketTransport.h; sourceTree = "<group>"; };
 		96E408461A3895E800087F77 /* ARTWebSocketTransport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTWebSocketTransport.m; sourceTree = "<group>"; };
+		B17D45B92A699B1400D61A54 /* ARTMessageExtrasFilterTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ARTMessageExtrasFilterTests.swift; sourceTree = "<group>"; };
+		B17D45BD2A699B9300D61A54 /* ARTMessageFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTMessageFilter.h; path = include/Ably/ARTMessageFilter.h; sourceTree = "<group>"; };
+		B17D45C12A699BB700D61A54 /* ARTMessageExtrasFilter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTMessageExtrasFilter.m; sourceTree = "<group>"; };
+		B17D45C92A699BE300D61A54 /* ARTMessageExtrasFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTMessageExtrasFilter.h; path = PrivateHeaders/Ably/ARTMessageExtrasFilter.h; sourceTree = "<group>"; };
+		B17D45D12A69A9E700D61A54 /* ARTMessageFilter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTMessageFilter.m; sourceTree = "<group>"; };
 		D3AD0EBB215E2FB000312105 /* ARTNSString+ARTUtil.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTNSString+ARTUtil.h"; path = "PrivateHeaders/Ably/ARTNSString+ARTUtil.h"; sourceTree = "<group>"; };
 		D3AD0EBC215E2FB000312105 /* ARTNSString+ARTUtil.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "ARTNSString+ARTUtil.m"; sourceTree = "<group>"; };
 		D50D86E829E9444600EA72EA /* JSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSON.swift; sourceTree = "<group>"; };
@@ -1696,6 +1716,7 @@
 		21BF06092758477700AE4C43 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				B17D45B92A699B1400D61A54 /* ARTMessageExtrasFilterTests.swift */,
 				841134772722205400CFA837 /* ARTArchiveTests.m */,
 				560579D824AF1BA900A4D03D /* ARTDefaultTests.swift */,
 				D7C1B8761BBEA81A0087B55F /* AuthTests.swift */,
@@ -1929,6 +1950,8 @@
 		D746AE311BBC29B2003ECEF8 /* Realtime */ = {
 			isa = PBXGroup;
 			children = (
+				B17D45C92A699BE300D61A54 /* ARTMessageExtrasFilter.h */,
+				B17D45C12A699BB700D61A54 /* ARTMessageExtrasFilter.m */,
 				96A507BB1A3791490077CDF8 /* ARTRealtime.h */,
 				1C05CF1E1AC1D7EB00687AC9 /* ARTRealtime+Private.h */,
 				96A507BC1A3791490077CDF8 /* ARTRealtime.m */,
@@ -1991,6 +2014,7 @@
 		D746AE331BBC29FF003ECEF8 /* Types */ = {
 			isa = PBXGroup;
 			children = (
+				B17D45BD2A699B9300D61A54 /* ARTMessageFilter.h */,
 				D7D8F81F1BC2BE15009718F2 /* ARTAuthOptions.h */,
 				D7D5A6991CA3D9040071BD6D /* ARTAuthOptions+Private.h */,
 				D7D8F8201BC2BE15009718F2 /* ARTAuthOptions.m */,
@@ -2045,6 +2069,7 @@
 				D520C4D426809BB5000012B2 /* ARTStringifiable.h */,
 				D520C4D526809BB5000012B2 /* ARTStringifiable.m */,
 				D520C4DC26809D49000012B2 /* ARTStringifiable+Private.h */,
+				B17D45D12A69A9E700D61A54 /* ARTMessageFilter.m */,
 			);
 			name = Types;
 			sourceTree = "<group>";
@@ -2294,6 +2319,7 @@
 				1CD8DC9F1B1C7315007EAF36 /* ARTDefault.h in Headers */,
 				D70EECAC1FEAF331008A50CD /* ARTPendingMessage.h in Headers */,
 				217FCF3629D6269D006E5F2D /* ARTJitterCoefficientGenerator.h in Headers */,
+				B17D45BE2A699B9300D61A54 /* ARTMessageFilter.h in Headers */,
 				2132C32029D5FE74000C4355 /* ARTTypes+Private.h in Headers */,
 				D7D8F8211BC2BE16009718F2 /* ARTAuthOptions.h in Headers */,
 				EB82F8511C59D29B00661917 /* ARTDataEncoder.h in Headers */,
@@ -2304,6 +2330,7 @@
 				D746AE401BBC5B14003ECEF8 /* ARTEventEmitter.h in Headers */,
 				D746AE531BBD85C5003ECEF8 /* ARTChannels.h in Headers */,
 				D7D8F82D1BC2C706009718F2 /* ARTTokenParams.h in Headers */,
+				B17D45CA2A699BE300D61A54 /* ARTMessageExtrasFilter.h in Headers */,
 				211A60FB29D8ABCF00D169C5 /* ARTChannelStateChangeMetadata.h in Headers */,
 				EB0505FC1C5BD7C4006BA7E2 /* ARTBaseMessage+Private.h in Headers */,
 				D777EEE42063A64E002EBA03 /* ARTNSMutableRequest+ARTPush.h in Headers */,
@@ -2448,6 +2475,7 @@
 				D710D4CE21949BB2008F54AD /* ARTWebSocketTransport+Private.h in Headers */,
 				D710D56C21949CB9008F54AD /* ARTPushChannelSubscriptions.h in Headers */,
 				D710D56721949CA1008F54AD /* ARTPushActivationStateMachine+Private.h in Headers */,
+				B17D45BF2A699B9300D61A54 /* ARTMessageFilter.h in Headers */,
 				D798556123ECCDAF00946BE2 /* ARTVCDiffDecoder.h in Headers */,
 				21E1C0E62A0DC47400A5DB65 /* ARTWebSocketFactory.h in Headers */,
 				2132C32129D5FE74000C4355 /* ARTTypes+Private.h in Headers */,
@@ -2498,6 +2526,7 @@
 				D710D50721949C18008F54AD /* ARTConnectionDetails+Private.h in Headers */,
 				2132C30229D5D157000C4355 /* ARTRetryDelayCalculator.h in Headers */,
 				2132C21B29D230CF000C4355 /* ARTErrorChecker.h in Headers */,
+				B17D45CB2A699BE300D61A54 /* ARTMessageExtrasFilter.h in Headers */,
 				D710D51B21949C42008F54AD /* ARTDeviceIdentityTokenDetails.h in Headers */,
 				D76F153D23DB012100B5133C /* ARTRealtimeChannelOptions.h in Headers */,
 				D5D83C0826AAED1A00AADC8E /* ARTStringifiable+Private.h in Headers */,
@@ -2617,6 +2646,7 @@
 				21447D45254A2ED100B3905A /* ARTSRWebSocket.h in Headers */,
 				EBB721CD2376B454001C3550 /* ARTURLSession.h in Headers */,
 				D710D4D021949BB3008F54AD /* ARTWebSocketTransport+Private.h in Headers */,
+				B17D45C02A699B9300D61A54 /* ARTMessageFilter.h in Headers */,
 				D710D57221949CBA008F54AD /* ARTPushChannelSubscriptions.h in Headers */,
 				21E1C0E72A0DC47400A5DB65 /* ARTWebSocketFactory.h in Headers */,
 				2132C32229D5FE74000C4355 /* ARTTypes+Private.h in Headers */,
@@ -2667,6 +2697,7 @@
 				D710D51321949C19008F54AD /* ARTConnectionDetails+Private.h in Headers */,
 				2132C30329D5D157000C4355 /* ARTRetryDelayCalculator.h in Headers */,
 				2132C21C29D230D0000C4355 /* ARTErrorChecker.h in Headers */,
+				B17D45CC2A699BE300D61A54 /* ARTMessageExtrasFilter.h in Headers */,
 				D5BB210F26AA98A900AA5F3E /* ARTStringifiable.h in Headers */,
 				D5C0CB3F268317B500C06521 /* NSURLQueryItem+Stringifiable.h in Headers */,
 				D710D52D21949C44008F54AD /* ARTDeviceIdentityTokenDetails.h in Headers */,
@@ -2894,7 +2925,7 @@
 				CLASSPREFIX = ART;
 				DefaultBuildSystemTypeForWorkspace = Original;
 				LastSwiftUpdateCheck = 1120;
-				LastUpgradeCheck = 1310;
+				LastUpgradeCheck = 1420;
 				ORGANIZATIONNAME = Ably;
 				TargetAttributes = {
 					856AAC891B6E304B00B07119 = {
@@ -3054,6 +3085,7 @@
 				21113B5929DCA4C700652C86 /* DataGatherer.swift in Sources */,
 				D7093CA9219EFA8A00723F17 /* MockDeviceStorage.swift in Sources */,
 				D7CEF1321C8DD3BC004FB242 /* RealtimeClientPresenceTests.swift in Sources */,
+				B17D45BA2A699B1400D61A54 /* ARTMessageExtrasFilterTests.swift in Sources */,
 				853ED7C41B7A1A3C006F1C6F /* RestClientStatsTests.swift in Sources */,
 				217FCF4629D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift in Sources */,
 				D74EFAEB1C4D09B500CFF98E /* RealtimeClientChannelTests.swift in Sources */,
@@ -3155,6 +3187,7 @@
 				96A507B61A37881C0077CDF8 /* ARTNSDate+ARTUtil.m in Sources */,
 				217D182C254222F500DFF07E /* ARTSRProxyConnect.m in Sources */,
 				850BFB4D1B79323C009D0ADD /* ARTPaginatedResult.m in Sources */,
+				B17D45D22A69A9E700D61A54 /* ARTMessageFilter.m in Sources */,
 				EB9C530D1CD7BFF300.8.557 /* ARTJsonLikeEncoder.m in Sources */,
 				D746AE1F1BBB5207003ECEF8 /* ARTDataQuery.m in Sources */,
 				961343D91A42E0B7006DC822 /* ARTClientOptions.m in Sources */,
@@ -3212,6 +3245,7 @@
 				967A43221A39AEAF00E4CE23 /* ARTNSArray+ARTFunctional.m in Sources */,
 				217D1835254222F600DFF07E /* ARTSRIOConsumer.m in Sources */,
 				D71966EF1E5E0081000974DD /* ARTPushActivationEvent.m in Sources */,
+				B17D45C22A699BB700D61A54 /* ARTMessageExtrasFilter.m in Sources */,
 				96A507A61A377DE90077CDF8 /* ARTNSDictionary+ARTDictionaryUtil.m in Sources */,
 				217D182D254222F500DFF07E /* ARTSRSIMDHelpers.m in Sources */,
 				D5BB210D26AA98A500AA5F3E /* ARTStringifiable.m in Sources */,
@@ -3261,6 +3295,7 @@
 				D798554923EB96C000946BE2 /* DeltaCodecTests.swift in Sources */,
 				2124B78829DB127900AD8361 /* MockVersion2Log.swift in Sources */,
 				D510E4AC29F1659F00F77F43 /* Aspects.m in Sources */,
+				B17D45BB2A699B1400D61A54 /* ARTMessageExtrasFilterTests.swift in Sources */,
 				2132C21729D20F69000C4355 /* ResumeRequestResponseTests.swift in Sources */,
 				21113B4A29DB60F800652C86 /* MockRetryDelayCalculator.swift in Sources */,
 				217FCF4329D626E4006E5F2D /* MockJitterCoefficientGenerator.swift in Sources */,
@@ -3320,6 +3355,7 @@
 				D798554A23EB96C000946BE2 /* DeltaCodecTests.swift in Sources */,
 				2124B78929DB127900AD8361 /* MockVersion2Log.swift in Sources */,
 				D510E4AD29F1659F00F77F43 /* Aspects.m in Sources */,
+				B17D45BC2A699B1400D61A54 /* ARTMessageExtrasFilterTests.swift in Sources */,
 				2132C21829D20F69000C4355 /* ResumeRequestResponseTests.swift in Sources */,
 				21113B4B29DB60F800652C86 /* MockRetryDelayCalculator.swift in Sources */,
 				217FCF4429D626E4006E5F2D /* MockJitterCoefficientGenerator.swift in Sources */,
@@ -3399,6 +3435,7 @@
 				D710D57321949CC4008F54AD /* ARTPushAdmin.m in Sources */,
 				217D1843254222F700DFF07E /* ARTSRProxyConnect.m in Sources */,
 				D710D53421949C54008F54AD /* ARTDeviceDetails.m in Sources */,
+				B17D45D32A69A9E700D61A54 /* ARTMessageFilter.m in Sources */,
 				D710D66A21949E78008F54AD /* ARTJsonLikeEncoder.m in Sources */,
 				D710D57521949CC4008F54AD /* ARTPushChannelSubscriptions.m in Sources */,
 				D710D55E21949C97008F54AD /* ARTPushActivationStateMachine.m in Sources */,
@@ -3456,6 +3493,7 @@
 				D710D63121949E03008F54AD /* ARTHTTPPaginatedResponse.m in Sources */,
 				217D184C254222F700DFF07E /* ARTSRIOConsumer.m in Sources */,
 				D710D5DC21949D78008F54AD /* ARTPresence.m in Sources */,
+				B17D45C32A699BB700D61A54 /* ARTMessageExtrasFilter.m in Sources */,
 				D710D53821949C54008F54AD /* ARTLocalDeviceStorage.m in Sources */,
 				D5BB210C26AA98A500AA5F3E /* ARTStringifiable.m in Sources */,
 				217D1844254222F700DFF07E /* ARTSRSIMDHelpers.m in Sources */,
@@ -3525,6 +3563,7 @@
 				D710D57921949CC5008F54AD /* ARTPushAdmin.m in Sources */,
 				217D185A254222F900DFF07E /* ARTSRProxyConnect.m in Sources */,
 				D710D54621949C55008F54AD /* ARTDeviceDetails.m in Sources */,
+				B17D45D42A69A9E700D61A54 /* ARTMessageFilter.m in Sources */,
 				D710D65021949E77008F54AD /* ARTJsonLikeEncoder.m in Sources */,
 				D710D57B21949CC5008F54AD /* ARTPushChannelSubscriptions.m in Sources */,
 				D710D56421949C98008F54AD /* ARTPushActivationStateMachine.m in Sources */,
@@ -3582,6 +3621,7 @@
 				D710D64F21949E77008F54AD /* ARTCrypto.m in Sources */,
 				D710D64121949E04008F54AD /* ARTHTTPPaginatedResponse.m in Sources */,
 				217D1863254222FA00DFF07E /* ARTSRIOConsumer.m in Sources */,
+				B17D45C42A699BB700D61A54 /* ARTMessageExtrasFilter.m in Sources */,
 				D710D60221949D79008F54AD /* ARTPresence.m in Sources */,
 				D710D54A21949C55008F54AD /* ARTLocalDeviceStorage.m in Sources */,
 				217D185B254222F900DFF07E /* ARTSRSIMDHelpers.m in Sources */,
@@ -3670,7 +3710,7 @@
 					"TEST_SUITE=1",
 				);
 				INFOPLIST_FILE = "Test/Info-iOS.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -3699,7 +3739,7 @@
 					"TEST_SUITE=1",
 				);
 				INFOPLIST_FILE = "Test/Info-iOS.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -3767,7 +3807,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				RUN_CLANG_STATIC_ANALYZER = YES;
@@ -3825,7 +3865,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				RUN_CLANG_STATIC_ANALYZER = YES;
 				SDKROOT = iphoneos;
@@ -3850,7 +3890,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/Source/Private";
 				INFOPLIST_FILE = "Source/Info-iOS.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -3877,7 +3917,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/Source/Private";
 				INFOPLIST_FILE = "Source/Info-iOS.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -3905,6 +3945,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = "Test/Info-macOS.plist";
@@ -3913,7 +3954,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				OTHER_SWIFT_FLAGS = "-D TARGET_OS_OSX -D TARGET_OS_MAC";
@@ -3941,6 +3982,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = "Test/Info-macOS.plist";
@@ -3949,7 +3991,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
 				MTL_FAST_MATH = YES;
 				OTHER_SWIFT_FLAGS = "-D TARGET_OS_OSX -D TARGET_OS_MAC";
 				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.Ably-macOS-Tests";
@@ -4041,6 +4083,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEFINES_MODULE = YES;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -4054,7 +4097,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
 				MODULEMAP_FILE = Source/Ably.modulemap;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -4081,6 +4124,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEFINES_MODULE = YES;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
@@ -4094,7 +4138,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MACOSX_DEPLOYMENT_TARGET = "$(RECOMMENDED_MACOSX_DEPLOYMENT_TARGET)";
 				MODULEMAP_FILE = Source/Ably.modulemap;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = io.ably.Ably;
@@ -4139,7 +4183,7 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 10.0;
+				TVOS_DEPLOYMENT_TARGET = 12.0;
 			};
 			name = Debug;
 		};
@@ -4176,7 +4220,7 @@
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				TVOS_DEPLOYMENT_TARGET = 10.0;
+				TVOS_DEPLOYMENT_TARGET = 12.0;
 			};
 			name = Release;
 		};
