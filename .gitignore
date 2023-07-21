@@ -77,3 +77,6 @@ Docs/jazzy
 
 # Tooling
 xcparse/
+
+# Swift
+.swiftpm
