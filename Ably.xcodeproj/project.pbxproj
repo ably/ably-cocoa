@@ -373,9 +373,9 @@
 		B1AABD102A6AB90100E9A3E2 /* ARTFilteredListeners.h in Headers */ = {isa = PBXBuildFile; fileRef = B1AABD0F2A6AB90100E9A3E2 /* ARTFilteredListeners.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		B1AABD112A6AB90100E9A3E2 /* ARTFilteredListeners.h in Headers */ = {isa = PBXBuildFile; fileRef = B1AABD0F2A6AB90100E9A3E2 /* ARTFilteredListeners.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		B1AABD122A6AB90100E9A3E2 /* ARTFilteredListeners.h in Headers */ = {isa = PBXBuildFile; fileRef = B1AABD0F2A6AB90100E9A3E2 /* ARTFilteredListeners.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		B1D5DCE62A6AC857004A2156 /* ARTFilteredMessageCallbackFactoryTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1D5DCE52A6AC857004A2156 /* ARTFilteredMessageCallbackFactoryTest.swift */; };
-		B1D5DCE72A6AC857004A2156 /* ARTFilteredMessageCallbackFactoryTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1D5DCE52A6AC857004A2156 /* ARTFilteredMessageCallbackFactoryTest.swift */; };
-		B1D5DCE82A6AC857004A2156 /* ARTFilteredMessageCallbackFactoryTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1D5DCE52A6AC857004A2156 /* ARTFilteredMessageCallbackFactoryTest.swift */; };
+		B1D5DCE62A6AC857004A2156 /* ARTFilteredMessageCallbackFactoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1D5DCE52A6AC857004A2156 /* ARTFilteredMessageCallbackFactoryTests.swift */; };
+		B1D5DCE72A6AC857004A2156 /* ARTFilteredMessageCallbackFactoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1D5DCE52A6AC857004A2156 /* ARTFilteredMessageCallbackFactoryTests.swift */; };
+		B1D5DCE82A6AC857004A2156 /* ARTFilteredMessageCallbackFactoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1D5DCE52A6AC857004A2156 /* ARTFilteredMessageCallbackFactoryTests.swift */; };
 		D3AD0EBD215E2FB000312105 /* ARTNSString+ARTUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = D3AD0EBB215E2FB000312105 /* ARTNSString+ARTUtil.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		D3AD0EBE215E2FB000312105 /* ARTNSString+ARTUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = D3AD0EBC215E2FB000312105 /* ARTNSString+ARTUtil.m */; };
 		D50D86E929E9444600EA72EA /* JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = D50D86E829E9444600EA72EA /* JSON.swift */; };
@@ -1341,7 +1341,7 @@
 		B1AABD032A6A90B400E9A3E2 /* ARTFilteredMessageCallbackFactory.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTFilteredMessageCallbackFactory.m; sourceTree = "<group>"; };
 		B1AABD0B2A6AB71800E9A3E2 /* ARTFilteredListenersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARTFilteredListenersTests.swift; sourceTree = "<group>"; };
 		B1AABD0F2A6AB90100E9A3E2 /* ARTFilteredListeners.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTFilteredListeners.h; path = PrivateHeaders/Ably/ARTFilteredListeners.h; sourceTree = "<group>"; };
-		B1D5DCE52A6AC857004A2156 /* ARTFilteredMessageCallbackFactoryTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARTFilteredMessageCallbackFactoryTest.swift; sourceTree = "<group>"; };
+		B1D5DCE52A6AC857004A2156 /* ARTFilteredMessageCallbackFactoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARTFilteredMessageCallbackFactoryTests.swift; sourceTree = "<group>"; };
 		D3AD0EBB215E2FB000312105 /* ARTNSString+ARTUtil.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ARTNSString+ARTUtil.h"; path = "PrivateHeaders/Ably/ARTNSString+ARTUtil.h"; sourceTree = "<group>"; };
 		D3AD0EBC215E2FB000312105 /* ARTNSString+ARTUtil.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "ARTNSString+ARTUtil.m"; sourceTree = "<group>"; };
 		D50D86E829E9444600EA72EA /* JSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSON.swift; sourceTree = "<group>"; };
@@ -1782,7 +1782,7 @@
 				2110CC392A530D42007310D4 /* AttachRetryStateTests.swift */,
 				21088DCA2A53560C0033C722 /* ConnectRetryStateTests.swift */,
 				B1AABD0B2A6AB71800E9A3E2 /* ARTFilteredListenersTests.swift */,
-				B1D5DCE52A6AC857004A2156 /* ARTFilteredMessageCallbackFactoryTest.swift */,
+				B1D5DCE52A6AC857004A2156 /* ARTFilteredMessageCallbackFactoryTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -3105,7 +3105,7 @@
 				EB1B53F922F85CE4006A59AC /* ObjectLifetimesTests.swift in Sources */,
 				210F67B129E9DB62007B9345 /* TestProxyTransportFactory.swift in Sources */,
 				D7DF73851EA600240013CD36 /* PushActivationStateMachineTests.swift in Sources */,
-				B1D5DCE62A6AC857004A2156 /* ARTFilteredMessageCallbackFactoryTest.swift in Sources */,
+				B1D5DCE62A6AC857004A2156 /* ARTFilteredMessageCallbackFactoryTests.swift in Sources */,
 				211A60D729D6D2C300D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */,
 				217FCF3229D62460006E5F2D /* RetrySequenceTests.swift in Sources */,
 				D7FC1ECB209CEA2E001E4153 /* PushTests.swift in Sources */,
@@ -3303,7 +3303,7 @@
 				D7093C23219E466E00723F17 /* RestPaginatedTests.swift in Sources */,
 				21113B6029DDDDD000652C86 /* LogAdapterTests.swift in Sources */,
 				D7093C19219E465300723F17 /* TestUtilities.swift in Sources */,
-				B1D5DCE72A6AC857004A2156 /* ARTFilteredMessageCallbackFactoryTest.swift in Sources */,
+				B1D5DCE72A6AC857004A2156 /* ARTFilteredMessageCallbackFactoryTests.swift in Sources */,
 				217FCF4729D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift in Sources */,
 				560579DA24AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */,
 				21113B5A29DCA4C700652C86 /* DataGatherer.swift in Sources */,
@@ -3365,7 +3365,7 @@
 				D7093C7F219EE26400723F17 /* RealtimeClientPresenceTests.swift in Sources */,
 				21113B6129DDDDD000652C86 /* LogAdapterTests.swift in Sources */,
 				D7093C73219EE26000723F17 /* ReadmeExamplesTests.swift in Sources */,
-				B1D5DCE82A6AC857004A2156 /* ARTFilteredMessageCallbackFactoryTest.swift in Sources */,
+				B1D5DCE82A6AC857004A2156 /* ARTFilteredMessageCallbackFactoryTests.swift in Sources */,
 				217FCF4829D626F6006E5F2D /* DefaultJitterCoefficientGeneratorTests.swift in Sources */,
 				560579DB24AF1BA900A4D03D /* ARTDefaultTests.swift in Sources */,
 				21113B5B29DCA4C700652C86 /* DataGatherer.swift in Sources */,
