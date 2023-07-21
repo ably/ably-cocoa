@@ -368,6 +368,67 @@ channel.publish("greeting", data: "Hello World!")
 [channel publish:@"greeting" data:@"Hello World!"];
 ```
 
+### Message Interactions
+
+Message Interactions allow you to interact with messages previously sent to a channel. Once a channel is enabled with Message Interactions, messages received by that channel will contain a unique `timeSerial` that can be referenced by later messages.
+
+#### Publishing an Interaction
+
+This example assumes that a message with timeserial `1656424960320-1` has previously been published on the channel.
+
+**Swift**
+
+```swift
+    let message = ARTMessage()
+    message.clientId = "client"
+    message.name = "name"
+    message.extras = ["ref": ["type": "refType", "timeserial": "1656424960320-1"]] as ARTJsonCompatible
+    channel.publish([message])
+```
+
+**Objective-C**
+
+```objective-c
+    ARTMessage * message = [[ARTMessage init] alloc];
+    NSDictionary * ref = [[NSDictionary init] alloc];
+    [ref insertValue:@"1656424960320-1" inPropertyWithKey:@"timeserial"];
+    [ref insertValue:@"refType" inPropertyWithKey:@"type"];
+    NSDictionary * extras = [[NSDictionary init] alloc];
+    [extras insertValue:ref inPropertyWithKey:@"ref"];
+    message.extras = extras;
+    NSArray * messageArray = [[NSArray alloc] initWithObjects:message, nil];
+
+    [channel publish:messageArray];
+```
+
+#### Subscribing to Interactions
+
+You can also filter messages received on the channel so that only messages matching the filter are passed on to your listener.
+
+The following example sets up a listener that only receives messages that have an interaction type of `com.ably.reaction`.
+
+**Swift**
+
+```swift
+    let messageCallback = { (message: ARTMessage) in
+            // Your code
+    }
+    let filter = ARTMessageFilter()
+    filter.refType = "com.ably.reaction";
+    channel.subscribe(messageCallback, filter: filter)
+```
+
+**Objective-C**
+
+```objective-c
+    ARTMessageFilter * filter = [[ARTMessageFilter init] alloc];
+    filter.refType = @"com.ably.reaction";
+    [channel subscribe:^(ARTMessage *message) {
+        NSLog(@"%@", message.name);
+        NSLog(@"%@", message.data);
+    } filter:filter];
+```
+
 ### Querying the history
 
 **Swift**

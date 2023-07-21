@@ -3,7 +3,7 @@ import Ably
 import Ably.Private
 import XCTest
 
-class ARTFilteredMessageCallbackFactoryTest: XCTestCase {
+class ARTFilteredMessageCallbackFactoryTests: XCTestCase {
 
     func test_returnedInstanceCallsMessageHandlerIfFilterPasses()
     {

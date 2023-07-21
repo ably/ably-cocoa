@@ -4697,21 +4697,21 @@ class RealtimeClientChannelTests: XCTestCase {
 
 
         // Set up message handler for filtered messages
-        let filteredMessagesExpectation = XCTestExpectation(description: "filtered-messages-received");
-        let filteredMessages = NSMutableArray();
+        let filteredMessagesExpectation = XCTestExpectation(description: "filtered-messages-received")
+        let filteredMessages = NSMutableArray()
         let filteredHandler = { (message: ARTMessage) in
             filteredMessages.add(message)
 
             if (filteredMessages.count == 2) {
-                filteredMessagesExpectation.fulfill();
+                filteredMessagesExpectation.fulfill()
             }
         };
 
         // Set up message handler for unfiltered messages
-        let unfilteredMessagesExpectation1 = XCTestExpectation(description: "unfiltered-messages-received-1");
-        var firstUnfilteredExpectationFulfilled = false;
-        let unfilteredMessagesExpectation2 = XCTestExpectation(description: "unfiltered-messages-received-2");
-        let unfilteredMessages = NSMutableArray();
+        let unfilteredMessagesExpectation1 = XCTestExpectation(description: "unfiltered-messages-received-1")
+        var firstUnfilteredExpectationFulfilled = false
+        let unfilteredMessagesExpectation2 = XCTestExpectation(description: "unfiltered-messages-received-2")
+        let unfilteredMessages = NSMutableArray()
         let unfilteredHandler = { (message: ARTMessage) in
             unfilteredMessages.add(message)
 
@@ -4788,30 +4788,30 @@ class RealtimeClientChannelTests: XCTestCase {
 
 
         // Set up message handler for filtered messages
-        let filteredMessagesExpectation1 = XCTestExpectation(description: "filtered-messages-received");
-        let filteredMessages1 = NSMutableArray();
+        let filteredMessagesExpectation1 = XCTestExpectation(description: "filtered-messages-received")
+        let filteredMessages1 = NSMutableArray()
         let filteredHandler1 = { (message: ARTMessage) in
             filteredMessages1.add(message)
 
             if (filteredMessages1.count == 2) {
-                filteredMessagesExpectation1.fulfill();
+                filteredMessagesExpectation1.fulfill()
             }
         };
 
         // Set up another message handler for filtered messages
-        let filteredMessagesExpectation2 = XCTestExpectation(description: "filtered-messages-received-2");
+        let filteredMessagesExpectation2 = XCTestExpectation(description: "filtered-messages-received-2")
         let filteredMessages2 = NSMutableArray();
         let filteredHandler2 = { (message: ARTMessage) in
             filteredMessages2.add(message)
 
             if (filteredMessages2.count == 2) {
-                filteredMessagesExpectation2.fulfill();
+                filteredMessagesExpectation2.fulfill()
             }
-        };
+        }
 
         // Set up another message handler for filtered messages
-        let filteredMessagesExpectation3a = XCTestExpectation(description: "filtered-messages-received-3a");
-        let filteredMessagesExpectation3b = XCTestExpectation(description: "filtered-messages-received-3b");
+        let filteredMessagesExpectation3a = XCTestExpectation(description: "filtered-messages-received-3a")
+        let filteredMessagesExpectation3b = XCTestExpectation(description: "filtered-messages-received-3b")
         var firstFiltered3ExpectationMet = false;
         let filteredMessages3 = NSMutableArray();
         let filteredHandler3 = { (message: ARTMessage) in
@@ -4828,10 +4828,10 @@ class RealtimeClientChannelTests: XCTestCase {
         };
 
         // Set up message handler for unfiltered messages
-        let unfilteredMessagesExpectation1 = XCTestExpectation(description: "unfiltered-messages-received-1");
-        var firstUnfilteredExpectationFulfilled = false;
-        let unfilteredMessagesExpectation2 = XCTestExpectation(description: "unfiltered-messages-received-2");
-        let unfilteredMessages = NSMutableArray();
+        let unfilteredMessagesExpectation1 = XCTestExpectation(description: "unfiltered-messages-received-1")
+        var firstUnfilteredExpectationFulfilled = false
+        let unfilteredMessagesExpectation2 = XCTestExpectation(description: "unfiltered-messages-received-2")
+        let unfilteredMessages = NSMutableArray()
         let unfilteredHandler = { (message: ARTMessage) in
             unfilteredMessages.add(message)
 
