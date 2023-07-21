@@ -110,5 +110,7 @@ framework module Ably {
         header "ARTAttachRetryState.h"
         header "ARTConnectRetryState.h"
         header "ARTMessageExtrasFilter.h"
+        header "ARTFilteredMessageCallbackFactory.h"
+	header "ARTFilteredListeners.h"
     }
 }
