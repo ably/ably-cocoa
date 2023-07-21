@@ -33,6 +33,8 @@
 #import "ARTBackoffRetryDelayCalculator.h"
 #import "ARTInternalLog.h"
 #import "ARTAttachRetryState.h"
+#import <Ably/ARTFilteredListeners.h>
+#import <Ably/ARTFilteredMessageCallbackFactory.h>
 #if TARGET_OS_IPHONE
 #import "ARTPushChannel+Private.h"
 #endif
@@ -166,6 +168,10 @@
     return [_internal subscribe:name onAttach:onAttach callback:cb];
 }
 
+- (ARTEventListener * _Nullable)subscribe:(nonnull ARTMessageCallback)callback filter:(nonnull ARTMessageFilter *)filter {
+    return [_internal subscribe:callback filter:filter];
+}
+
 - (void)unsubscribe {
     [_internal unsubscribe];
 }
@@ -176,6 +182,10 @@
 
 - (void)unsubscribe:(NSString *)name listener:(ARTEventListener *_Nullable)listener {
     [_internal unsubscribe:name listener:listener];
+}
+
+- (void)unsubscribeFilter:(ARTMessageFilter *_Nullable)filter {
+    [_internal unsubscribeFilter:filter];
 }
 
 - (BOOL)history:(ARTRealtimeHistoryQuery *_Nullable)query callback:(ARTPaginatedMessagesCallback)callback error:(NSError *_Nullable *_Nullable)errorPtr {
@@ -218,6 +228,7 @@
     [_internal setOptions:options callback:cb];
 }
 
+
 @end
 
 @interface ARTRealtimeChannelInternal () {
@@ -250,6 +261,7 @@ NS_ASSUME_NONNULL_END
     dispatch_queue_t _queue;
     dispatch_queue_t _userQueue;
     ARTErrorInfo *_errorReason;
+    ARTFilteredListeners *_filteredListeners;
 }
 
 - (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime andName:(NSString *)name withOptions:(ARTRealtimeChannelOptions *)options logger:(ARTInternalLog *)logger {
@@ -274,6 +286,7 @@ NS_ASSUME_NONNULL_END
         _attachRetryState = [[ARTAttachRetryState alloc] initWithRetryDelayCalculator:attachRetryDelayCalculator
                                                                                logger:logger
                                                                      logMessagePrefix:[NSString stringWithFormat:@"RT: %p C:%p ", _realtime, self]];
+        _filteredListeners = [[ARTFilteredListeners alloc] init];
     }
     return self;
 }
@@ -540,8 +553,22 @@ dispatch_sync(_queue, ^{
     return listener;
 }
 
+- (ARTEventListener * _Nullable)subscribe:(nonnull ARTMessageCallback)callback filter:(nonnull ARTMessageFilter *)filter {
+    if (filter == nil) {
+        ARTLogVerbose(self.logger, @"R:%p C:%p (%@) filter passed to subscribe is null", self->_realtime, self, self.name);
+        return [self subscribe:callback];
+    }
+
+    ARTMessageCallback filteredListener = [ARTFilteredMessageCallbackFactory createFilteredCallback:callback filter:filter];
+    ARTEventListener * registeredListener = [self subscribeWithAttachCallback:nil callback:filteredListener];
+    [_filteredListeners addFilteredListener:registeredListener filter:filter];
+
+    return registeredListener;
+}
+
 - (void)unsubscribe {
 dispatch_sync(_queue, ^{
+    [_filteredListeners removeAllListeners];
     [self _unsubscribe];
     ARTLogVerbose(self.logger, @"R:%p C:%p (%@) unsubscribe to all events", self->_realtime, self, self.name);
 });
@@ -553,8 +580,19 @@ dispatch_sync(_queue, ^{
 
 - (void)unsubscribe:(ARTEventListener *)listener {
 dispatch_sync(_queue, ^{
+    [_filteredListeners removeFilteredListener:listener];
     [self.messagesEventEmitter off:listener];
     ARTLogVerbose(self.logger, @"RT:%p C:%p (%@) unsubscribe to all events", self->_realtime, self, self.name);
+});
+}
+
+- (void)unsubscribeFilter:(ARTMessageFilter *)filter {
+dispatch_sync(_queue, ^{
+    NSMutableArray<ARTEventListener *> * listenersToRemove = [_filteredListeners removeFilteredListenersByFilter:filter];
+    for (ARTEventListener * listener in listenersToRemove) {
+        [self.messagesEventEmitter off:listener];
+    }
+    ARTLogVerbose(self.logger, @"RT:%p C:%p (%@) unsubscribed to all events for filter", self->_realtime, self, self.name);
 });
 }
 

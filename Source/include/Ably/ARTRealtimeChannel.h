@@ -98,6 +98,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (ARTEventListener *_Nullable)subscribe:(NSString *)name onAttach:(nullable ARTCallback)onAttach callback:(ARTMessageCallback)callback;
 
 /**
+ * Registers a listener for messages on this channel. The caller supplies a listener function, which is called each time one or more messages arrives on the channel.
+ *
+ * @param callback An event listener function.
+ *
+ * @return An `ARTEventListener` object.
+ */
+- (ARTEventListener *_Nullable)subscribe:(ARTMessageCallback)callback filter:(ARTMessageFilter* ) filter;
+
+/**
  * Deregisters all listeners to messages on this channel. This removes all earlier subscriptions.
  */
 - (void)unsubscribe;
@@ -116,6 +125,14 @@ NS_ASSUME_NONNULL_BEGIN
  * @param listener An event listener object to unsubscribe.
  */
 - (void)unsubscribe:(NSString *)name listener:(ARTEventListener *_Nullable)listener;
+
+
+/**
+ * Deregisters any listener for the given filter.
+ *
+ * @param filter A filter object to unsubscribe.
+ */
+- (void)unsubscribeFilter:(ARTMessageFilter *_Nullable)filter;
 
 /**
  * Retrieves an `ARTPaginatedResult` object, containing an array of historical `ARTMessage` objects for the channel. If the channel is configured to persist messages, then messages can be retrieved from history for up to 72 hours in the past. If not, messages can only be retrieved from history for up to two minutes in the past.

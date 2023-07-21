@@ -2,6 +2,7 @@
 
 #import <Ably/ARTStatus.h>
 #import <Ably/ARTEventEmitter.h>
+#import <Ably/ARTMessageFilter.h>
 
 @class ARTStatus;
 @class ARTHttpResponse;

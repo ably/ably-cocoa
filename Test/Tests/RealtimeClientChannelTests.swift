@@ -4688,4 +4688,235 @@ class RealtimeClientChannelTests: XCTestCase {
             }
         }
     }
+
+    // RTL22
+    func test_it_subscribes_to_messages_with_filters() throws {
+        let test = Test()
+        let ably = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
+        defer { ably.dispose(); ably.close() }
+
+
+        // Set up message handler for filtered messages
+        let filteredMessagesExpectation = XCTestExpectation(description: "filtered-messages-received");
+        let filteredMessages = NSMutableArray();
+        let filteredHandler = { (message: ARTMessage) in
+            filteredMessages.add(message)
+
+            if (filteredMessages.count == 2) {
+                filteredMessagesExpectation.fulfill();
+            }
+        };
+
+        // Set up message handler for unfiltered messages
+        let unfilteredMessagesExpectation1 = XCTestExpectation(description: "unfiltered-messages-received-1");
+        var firstUnfilteredExpectationFulfilled = false;
+        let unfilteredMessagesExpectation2 = XCTestExpectation(description: "unfiltered-messages-received-2");
+        let unfilteredMessages = NSMutableArray();
+        let unfilteredHandler = { (message: ARTMessage) in
+            unfilteredMessages.add(message)
+
+            if (firstUnfilteredExpectationFulfilled && unfilteredMessages.count == 2) {
+                unfilteredMessagesExpectation2.fulfill()
+            }
+
+            if (unfilteredMessages.count == 4) {
+                firstUnfilteredExpectationFulfilled = true
+                unfilteredMessagesExpectation1.fulfill()
+            }
+        };
+
+        // Subscribe two listeners, one with a filter, one without.
+        let filter = ARTMessageFilter()
+        filter.name = "event-1"
+
+        let channel = ably.channels.get("client-filter-test");
+        let filteredListener = channel.subscribe(filteredHandler, filter: filter)
+        channel.subscribe(unfilteredHandler)
+
+        waitUntil(timeout: testTimeout) { done in
+            channel.attach { _ in
+                done()
+            }
+        }
+
+
+        // Publish some messages
+        channel.publish([ARTMessage(name: "event-1", data: "test-1")])
+        channel.publish([ARTMessage(name: "event-2", data: "test-2")])
+        channel.publish([ARTMessage(name: "event-3", data: "test-3")])
+        channel.publish([ARTMessage(name: "event-1", data: "test-4")])
+
+        AblyTests.wait(for: [unfilteredMessagesExpectation1], timeout: testTimeout)
+        AblyTests.wait(for: [filteredMessagesExpectation], timeout: testTimeout)
+
+        // Check we get them
+        XCTAssertEqual("test-1", (filteredMessages.object(at: 0) as! ARTMessage).data as! String)
+        XCTAssertEqual("test-4", (filteredMessages.object(at: 1) as! ARTMessage).data as! String)
+
+        XCTAssertEqual("test-1", (unfilteredMessages.object(at: 0) as! ARTMessage).data as! String)
+        XCTAssertEqual("test-2", (unfilteredMessages.object(at: 1) as! ARTMessage).data as! String)
+        XCTAssertEqual("test-3", (unfilteredMessages.object(at: 2) as! ARTMessage).data as! String)
+        XCTAssertEqual("test-4", (unfilteredMessages.object(at: 3) as! ARTMessage).data as! String)
+
+        // Reset
+        filteredMessages.removeAllObjects();
+        unfilteredMessages.removeAllObjects();
+
+        // Unsubscribe
+        channel.unsubscribe(filteredListener)
+
+        // Publish more
+        channel.publish([ARTMessage(name: "event-1", data: "test-5")])
+        channel.publish([ARTMessage(name: "event-1", data: "test-6")])
+
+        // Wait
+        AblyTests.wait(for: [unfilteredMessagesExpectation2], timeout: testTimeout)
+
+        // Check unfiltered
+        XCTAssertEqual("test-5", (unfilteredMessages.object(at: 0) as! ARTMessage).data as! String)
+        XCTAssertEqual("test-6", (unfilteredMessages.object(at: 1) as! ARTMessage).data as! String)
+
+        // Check filtered receives nothing
+        XCTAssertEqual(0, filteredMessages.count)
+    }
+
+    // RTL22
+    func test_it_unsubscribes_with_a_filter() throws {
+        let test = Test()
+        let ably = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
+        defer { ably.dispose(); ably.close() }
+
+
+        // Set up message handler for filtered messages
+        let filteredMessagesExpectation1 = XCTestExpectation(description: "filtered-messages-received");
+        let filteredMessages1 = NSMutableArray();
+        let filteredHandler1 = { (message: ARTMessage) in
+            filteredMessages1.add(message)
+
+            if (filteredMessages1.count == 2) {
+                filteredMessagesExpectation1.fulfill();
+            }
+        };
+
+        // Set up another message handler for filtered messages
+        let filteredMessagesExpectation2 = XCTestExpectation(description: "filtered-messages-received-2");
+        let filteredMessages2 = NSMutableArray();
+        let filteredHandler2 = { (message: ARTMessage) in
+            filteredMessages2.add(message)
+
+            if (filteredMessages2.count == 2) {
+                filteredMessagesExpectation2.fulfill();
+            }
+        };
+
+        // Set up another message handler for filtered messages
+        let filteredMessagesExpectation3a = XCTestExpectation(description: "filtered-messages-received-3a");
+        let filteredMessagesExpectation3b = XCTestExpectation(description: "filtered-messages-received-3b");
+        var firstFiltered3ExpectationMet = false;
+        let filteredMessages3 = NSMutableArray();
+        let filteredHandler3 = { (message: ARTMessage) in
+            filteredMessages3.add(message)
+
+            if (filteredMessages3.count == 1) {
+                if (firstFiltered3ExpectationMet) {
+                    filteredMessagesExpectation3b.fulfill()
+                } else {
+                    firstFiltered3ExpectationMet = true;
+                    filteredMessagesExpectation3a.fulfill()
+                }
+            }
+        };
+
+        // Set up message handler for unfiltered messages
+        let unfilteredMessagesExpectation1 = XCTestExpectation(description: "unfiltered-messages-received-1");
+        var firstUnfilteredExpectationFulfilled = false;
+        let unfilteredMessagesExpectation2 = XCTestExpectation(description: "unfiltered-messages-received-2");
+        let unfilteredMessages = NSMutableArray();
+        let unfilteredHandler = { (message: ARTMessage) in
+            unfilteredMessages.add(message)
+
+            if (firstUnfilteredExpectationFulfilled && unfilteredMessages.count == 3) {
+                unfilteredMessagesExpectation2.fulfill()
+            }
+
+            if (unfilteredMessages.count == 4) {
+                firstUnfilteredExpectationFulfilled = true
+                unfilteredMessagesExpectation1.fulfill()
+            }
+        };
+
+        // Subscribe listeners
+        let filter1 = ARTMessageFilter()
+        filter1.name = "event-1"
+
+        let filter2 = ARTMessageFilter()
+        filter2.name = "event-2"
+
+        let channel = ably.channels.get("client-filter-test");
+        channel.subscribe(filteredHandler1, filter: filter1)
+        channel.subscribe(filteredHandler2, filter: filter1)
+        channel.subscribe(filteredHandler3, filter: filter2)
+        channel.subscribe(unfilteredHandler)
+
+        waitUntil(timeout: testTimeout) { done in
+            channel.attach { _ in
+                done()
+            }
+        }
+
+
+        // Publish some messages
+        channel.publish([ARTMessage(name: "event-1", data: "test-1")])
+        channel.publish([ARTMessage(name: "event-2", data: "test-2")])
+        channel.publish([ARTMessage(name: "event-3", data: "test-3")])
+        channel.publish([ARTMessage(name: "event-1", data: "test-4")])
+
+        AblyTests.wait(for: [unfilteredMessagesExpectation1], timeout: testTimeout)
+        AblyTests.wait(for: [filteredMessagesExpectation1], timeout: testTimeout)
+        AblyTests.wait(for: [filteredMessagesExpectation2], timeout: testTimeout)
+        AblyTests.wait(for: [filteredMessagesExpectation3a], timeout: testTimeout)
+
+        // Check we get them
+        XCTAssertEqual("test-1", (filteredMessages1.object(at: 0) as! ARTMessage).data as! String)
+        XCTAssertEqual("test-4", (filteredMessages1.object(at: 1) as! ARTMessage).data as! String)
+
+        XCTAssertEqual("test-1", (filteredMessages2.object(at: 0) as! ARTMessage).data as! String)
+        XCTAssertEqual("test-4", (filteredMessages2.object(at: 1) as! ARTMessage).data as! String)
+
+        XCTAssertEqual("test-2", (filteredMessages3.object(at: 0) as! ARTMessage).data as! String)
+
+        XCTAssertEqual("test-1", (unfilteredMessages.object(at: 0) as! ARTMessage).data as! String)
+        XCTAssertEqual("test-2", (unfilteredMessages.object(at: 1) as! ARTMessage).data as! String)
+        XCTAssertEqual("test-3", (unfilteredMessages.object(at: 2) as! ARTMessage).data as! String)
+        XCTAssertEqual("test-4", (unfilteredMessages.object(at: 3) as! ARTMessage).data as! String)
+
+        // Reset
+        filteredMessages1.removeAllObjects();
+        filteredMessages2.removeAllObjects();
+        filteredMessages3.removeAllObjects();
+        unfilteredMessages.removeAllObjects();
+
+        // Unsubscribe
+        channel.unsubscribeFilter(filter1)
+
+        // Publish more
+        channel.publish([ARTMessage(name: "event-1", data: "test-5")])
+        channel.publish([ARTMessage(name: "event-1", data: "test-6")])
+        channel.publish([ARTMessage(name: "event-2", data: "test-7")])
+
+        // Wait
+        AblyTests.wait(for: [unfilteredMessagesExpectation2], timeout: testTimeout)
+        AblyTests.wait(for: [filteredMessagesExpectation3b], timeout: testTimeout)
+
+        // Check unfiltered and kept filtered receives
+        XCTAssertEqual("test-5", (unfilteredMessages.object(at: 0) as! ARTMessage).data as! String)
+        XCTAssertEqual("test-6", (unfilteredMessages.object(at: 1) as! ARTMessage).data as! String)
+        XCTAssertEqual("test-7", (unfilteredMessages.object(at: 2) as! ARTMessage).data as! String)
+
+        XCTAssertEqual("test-7", (filteredMessages3.object(at: 0) as! ARTMessage).data as! String)
+
+        // Check removed filtered receives nothing
+        XCTAssertEqual(0, filteredMessages1.count)
+        XCTAssertEqual(0, filteredMessages2.count)
+    }
 }
