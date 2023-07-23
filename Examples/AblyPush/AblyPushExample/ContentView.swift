@@ -67,12 +67,14 @@ struct ContentView: View {
                     AblyHelper.shared.sendAdminPush(title: "Hello", body: "This push was sent with deviceId")
                 }
                 .padding()
+                #if USE_LOCATION_PUSH
                 NavigationLink {
                     LocationPushEventsView()
                 } label: {
                     Text("Location push events")
                 }
                 .padding()
+                #endif
                 Spacer()
             }
             .navigationTitle("Ably Push Example")
