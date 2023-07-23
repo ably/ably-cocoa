@@ -25,7 +25,9 @@ class LocationPushService: NSObject, CLLocationPushServiceExtension, CLLocationM
      * This gives a user, who testing location pushes without access to the debug console, to see actual notifications in the `LocationPushEventsView`.
      */
     private func recordPushPayload(_ payload: [String : Any]) {
-        let sharedContainerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.io.ably.basic-apns-example")!
+        guard let sharedContainerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.\(Bundle.main.bundleIdentifier!)") else {
+            return print("App Groups were not configured properly. Check 'Signing & Capabilities' tab of the project settings.")
+        }
 
         let dataFileURL = sharedContainerURL.appendingPathComponent("dataFile")
 

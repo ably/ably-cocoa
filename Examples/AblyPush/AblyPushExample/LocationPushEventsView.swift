@@ -51,7 +51,9 @@ class DataLoader: NSObject, NSFilePresenter, ObservableObject {
     }
 
     func loadEvents() {
-        let dataFileURL = presentedItemURL!
+        guard let dataFileURL = presentedItemURL else {
+            return print("App Groups were not configured properly. Check 'Signing & Capabilities' tab of the project settings.")
+        }
 
         let readCoordinator = NSFileCoordinator()
         var readError: NSError? = nil
@@ -74,9 +76,9 @@ class DataLoader: NSObject, NSFilePresenter, ObservableObject {
     }
 
     var presentedItemURL: URL? {
-        let sharedContainerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.io.ably.basic-apns-example")!
+        let sharedContainerURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.\(Bundle.main.bundleIdentifier!).AblyLocationPush")
 
-        return sharedContainerURL.appendingPathComponent("dataFile")
+        return sharedContainerURL?.appendingPathComponent("dataFile")
     }
 
     func presentedItemDidChange() {
