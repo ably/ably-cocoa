@@ -17,10 +17,8 @@ You will need a real iOS device to test this functionality.
 
 * In order to use this capability (starting from iOS 15), you need to apply for the special entitlement on the Apple's developer portal. Follow instructions [here](https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_developer_location_push) on how to do that.
 
-* Update the `bundle-id` for the `AblyPushExample` and `AblyLocationPush` targets as needed.
+* Select `AblyPushExampleLP` scheme to build the version of the example, that utilizes location push service extension.
 
-* To receive location push notifications you need to request another device token specifically for the location pushes purpose. You do so by calling `CLLocationManager.startMonitoringLocationPushes(completion:)` within a `ARTPushRegistererDelegate.didActivateAblyPush(:)` delegate method (which is a callback for the `ARTRealtime.push.activate()` call).
+* Update the `bundle-id` for the `AblyPushExample`, `AblyPushExampleLP` and `AblyLocationPush` targets as needed (keep `AblyLocationPush` suffix for the latter). Find your app's `App ID` on the development portal and enable `Location Push Service Extension` setting in the `Additional Capabilities` tab. Make sure both your app's identifier and location push extension's identifier use the same `App Group`. This example uses `Automatically manage signing`, so all those identifiers are created for you by Xcode with `XC` prefix in their display name.
 
-* Once you receive the location push token, save it by calling a new `ARTPush.didRegisterForLocationNotifications(withDeviceToken:realtime:)` method (note the "Location" word in the name of this method). Ably will call the `ARTPushRegistererDelegate.didUpdateAblyPush:` callback on a successful or failed attempt to save the token.
-
-* Use the "Location push events" button in the example app to open a list of received location pushed notifications.
+* Use the "Location push events" button in the example app to open a list of received location push notifications.
