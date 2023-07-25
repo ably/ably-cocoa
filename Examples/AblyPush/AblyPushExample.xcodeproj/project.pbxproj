@@ -7,15 +7,51 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		219F937A2A4E0E44007DE767 /* LocationPushEventsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 219F93792A4E0E44007DE767 /* LocationPushEventsView.swift */; };
 		8405EE8427F0B06800C9E461 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8405EE8327F0B06800C9E461 /* App.swift */; };
 		8405EE8627F0B06800C9E461 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8405EE8527F0B06800C9E461 /* ContentView.swift */; };
 		8405EE8827F0B06C00C9E461 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8405EE8727F0B06C00C9E461 /* Assets.xcassets */; };
 		8405EE8B27F0B06C00C9E461 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8405EE8A27F0B06C00C9E461 /* Preview Assets.xcassets */; };
 		842F124A27F0B29D0029692E /* AblyHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842F124927F0B29D0029692E /* AblyHelper.swift */; };
 		848694D127F8958F00B41A5D /* Ably in Frameworks */ = {isa = PBXBuildFile; productRef = 848694D027F8958F00B41A5D /* Ably */; };
+		84C233C92A2D560C007DA23B /* LocationPushService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84C233C82A2D560C007DA23B /* LocationPushService.swift */; };
+		84E3D1942A6D886E0081E898 /* LocationPushEventsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 219F93792A4E0E44007DE767 /* LocationPushEventsView.swift */; };
+		84E3D1952A6D886E0081E898 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8405EE8527F0B06800C9E461 /* ContentView.swift */; };
+		84E3D1962A6D886E0081E898 /* AblyHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842F124927F0B29D0029692E /* AblyHelper.swift */; };
+		84E3D1972A6D886E0081E898 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8405EE8327F0B06800C9E461 /* App.swift */; };
+		84E3D1992A6D886E0081E898 /* Ably in Frameworks */ = {isa = PBXBuildFile; productRef = 84E3D1922A6D886E0081E898 /* Ably */; };
+		84E3D19B2A6D886E0081E898 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8405EE8A27F0B06C00C9E461 /* Preview Assets.xcassets */; };
+		84E3D19C2A6D886E0081E898 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8405EE8727F0B06C00C9E461 /* Assets.xcassets */; };
+		84E3D19E2A6D886E0081E898 /* AblyLocationPush.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 84C233C62A2D560C007DA23B /* AblyLocationPush.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		84E3D1912A6D886E0081E898 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8405EE7827F0B06800C9E461 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 84C233C52A2D560C007DA23B;
+			remoteInfo = AblyLocationPush;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		84E3D19D2A6D886E0081E898 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				84E3D19E2A6D886E0081E898 /* AblyLocationPush.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		219F93782A4DFE41007DE767 /* AblyLocationPush.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AblyLocationPush.entitlements; sourceTree = "<group>"; };
+		219F93792A4E0E44007DE767 /* LocationPushEventsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationPushEventsView.swift; sourceTree = "<group>"; };
 		8405EE8027F0B06800C9E461 /* Ably Push.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Ably Push.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8405EE8327F0B06800C9E461 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
 		8405EE8527F0B06800C9E461 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -25,6 +61,11 @@
 		842F124B27F0BFC10029692E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		842F124C27F0BFD40029692E /* AblyPushExample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AblyPushExample.entitlements; sourceTree = "<group>"; };
 		848694CE27F8957400B41A5D /* ably-cocoa */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "ably-cocoa"; path = ../..; sourceTree = "<group>"; };
+		84C233C62A2D560C007DA23B /* AblyLocationPush.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = AblyLocationPush.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		84C233C82A2D560C007DA23B /* LocationPushService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationPushService.swift; sourceTree = "<group>"; };
+		84C233CA2A2D560C007DA23B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		84E3D1A22A6D886E0081E898 /* AblyPushExampleLP.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AblyPushExampleLP.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		84E3D1A32A6D886E0081E898 /* InfoLP.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = InfoLP.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -36,6 +77,21 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		84C233C32A2D560C007DA23B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		84E3D1982A6D886E0081E898 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				84E3D1992A6D886E0081E898 /* Ably in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -44,6 +100,7 @@
 			children = (
 				8405EE8227F0B06800C9E461 /* AblyPushExample */,
 				848694CD27F8957400B41A5D /* Packages */,
+				84C233C72A2D560C007DA23B /* AblyLocationPush */,
 				8405EE8127F0B06800C9E461 /* Products */,
 				848694CF27F8958F00B41A5D /* Frameworks */,
 			);
@@ -53,6 +110,8 @@
 			isa = PBXGroup;
 			children = (
 				8405EE8027F0B06800C9E461 /* Ably Push.app */,
+				84C233C62A2D560C007DA23B /* AblyLocationPush.appex */,
+				84E3D1A22A6D886E0081E898 /* AblyPushExampleLP.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -63,7 +122,9 @@
 				8405EE8327F0B06800C9E461 /* App.swift */,
 				842F124927F0B29D0029692E /* AblyHelper.swift */,
 				8405EE8527F0B06800C9E461 /* ContentView.swift */,
+				219F93792A4E0E44007DE767 /* LocationPushEventsView.swift */,
 				842F124B27F0BFC10029692E /* Info.plist */,
+				84E3D1A32A6D886E0081E898 /* InfoLP.plist */,
 				8405EE8727F0B06C00C9E461 /* Assets.xcassets */,
 				842F124C27F0BFD40029692E /* AblyPushExample.entitlements */,
 				8405EE8927F0B06C00C9E461 /* Preview Content */,
@@ -94,6 +155,16 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		84C233C72A2D560C007DA23B /* AblyLocationPush */ = {
+			isa = PBXGroup;
+			children = (
+				219F93782A4DFE41007DE767 /* AblyLocationPush.entitlements */,
+				84C233C82A2D560C007DA23B /* LocationPushService.swift */,
+				84C233CA2A2D560C007DA23B /* Info.plist */,
+			);
+			path = AblyLocationPush;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -117,6 +188,45 @@
 			productReference = 8405EE8027F0B06800C9E461 /* Ably Push.app */;
 			productType = "com.apple.product-type.application";
 		};
+		84C233C52A2D560C007DA23B /* AblyLocationPush */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 84C233CE2A2D560C007DA23B /* Build configuration list for PBXNativeTarget "AblyLocationPush" */;
+			buildPhases = (
+				84C233C22A2D560C007DA23B /* Sources */,
+				84C233C32A2D560C007DA23B /* Frameworks */,
+				84C233C42A2D560C007DA23B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AblyLocationPush;
+			productName = AblyLocationPush;
+			productReference = 84C233C62A2D560C007DA23B /* AblyLocationPush.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		84E3D18F2A6D886E0081E898 /* AblyPushExampleLP */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 84E3D19F2A6D886E0081E898 /* Build configuration list for PBXNativeTarget "AblyPushExampleLP" */;
+			buildPhases = (
+				84E3D1932A6D886E0081E898 /* Sources */,
+				84E3D1982A6D886E0081E898 /* Frameworks */,
+				84E3D19A2A6D886E0081E898 /* Resources */,
+				84E3D19D2A6D886E0081E898 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				84E3D1902A6D886E0081E898 /* PBXTargetDependency */,
+			);
+			name = AblyPushExampleLP;
+			packageProductDependencies = (
+				84E3D1922A6D886E0081E898 /* Ably */,
+			);
+			productName = AblyPushExample;
+			productReference = 84E3D1A22A6D886E0081E898 /* AblyPushExampleLP.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -124,11 +234,14 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1300;
+				LastSwiftUpdateCheck = 1410;
 				LastUpgradeCheck = 1300;
 				TargetAttributes = {
 					8405EE7F27F0B06800C9E461 = {
 						CreatedOnToolsVersion = 13.0;
+					};
+					84C233C52A2D560C007DA23B = {
+						CreatedOnToolsVersion = 14.1;
 					};
 				};
 			};
@@ -148,6 +261,8 @@
 			projectRoot = "";
 			targets = (
 				8405EE7F27F0B06800C9E461 /* AblyPushExample */,
+				84E3D18F2A6D886E0081E898 /* AblyPushExampleLP */,
+				84C233C52A2D560C007DA23B /* AblyLocationPush */,
 			);
 		};
 /* End PBXProject section */
@@ -162,6 +277,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		84C233C42A2D560C007DA23B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		84E3D19A2A6D886E0081E898 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				84E3D19B2A6D886E0081E898 /* Preview Assets.xcassets in Resources */,
+				84E3D19C2A6D886E0081E898 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -169,13 +300,41 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				219F937A2A4E0E44007DE767 /* LocationPushEventsView.swift in Sources */,
 				8405EE8627F0B06800C9E461 /* ContentView.swift in Sources */,
 				842F124A27F0B29D0029692E /* AblyHelper.swift in Sources */,
 				8405EE8427F0B06800C9E461 /* App.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		84C233C22A2D560C007DA23B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				84C233C92A2D560C007DA23B /* LocationPushService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		84E3D1932A6D886E0081E898 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				84E3D1942A6D886E0081E898 /* LocationPushEventsView.swift in Sources */,
+				84E3D1952A6D886E0081E898 /* ContentView.swift in Sources */,
+				84E3D1962A6D886E0081E898 /* AblyHelper.swift in Sources */,
+				84E3D1972A6D886E0081E898 /* App.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		84E3D1902A6D886E0081E898 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 84C233C52A2D560C007DA23B /* AblyLocationPush */;
+			targetProxy = 84E3D1912A6D886E0081E898 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		8405EE8C27F0B06C00C9E461 /* Debug */ = {
@@ -299,7 +458,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = AblyPushExample/AblyPushExample.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"AblyPushExample/Preview Content\"";
@@ -307,18 +465,20 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AblyPushExample/Info.plist;
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Please allow this app to always access your location!";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Please allow this app to access your location while in use.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.basic-push-example";
+				PRODUCT_BUNDLE_IDENTIFIER = io.ably.AblyPushExample;
 				PRODUCT_NAME = "Ably Push";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -331,7 +491,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = AblyPushExample/AblyPushExample.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"AblyPushExample/Preview Content\"";
@@ -339,19 +498,149 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AblyPushExample/Info.plist;
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Please allow this app to always access your location!";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Please allow this app to access your location while in use.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "io.ably.basic-push-example";
+				PRODUCT_BUNDLE_IDENTIFIER = io.ably.AblyPushExample;
 				PRODUCT_NAME = "Ably Push";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		84C233CF2A2D560C007DA23B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_ENTITLEMENTS = AblyLocationPush/AblyLocationPush.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AblyLocationPush/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = AblyLocationPush;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.ably.AblyPushExample.AblyLocationPush;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		84C233D02A2D560C007DA23B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CODE_SIGN_ENTITLEMENTS = AblyLocationPush/AblyLocationPush.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AblyLocationPush/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = AblyLocationPush;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.ably.AblyPushExample.AblyLocationPush;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		84E3D1A02A6D886E0081E898 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = AblyPushExample/AblyPushExample.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"AblyPushExample/Preview Content\"";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AblyPushExample/InfoLP.plist;
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Please allow this app to always access your location!";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Please allow this app to access your location while in use.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.ably.AblyPushExample;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG USE_LOCATION_PUSH";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		84E3D1A12A6D886E0081E898 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = AblyPushExample/AblyPushExample.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"AblyPushExample/Preview Content\"";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = AblyPushExample/InfoLP.plist;
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "Please allow this app to always access your location!";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Please allow this app to access your location while in use.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.ably.AblyPushExample;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = USE_LOCATION_PUSH;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -379,10 +668,32 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		84C233CE2A2D560C007DA23B /* Build configuration list for PBXNativeTarget "AblyLocationPush" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				84C233CF2A2D560C007DA23B /* Debug */,
+				84C233D02A2D560C007DA23B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		84E3D19F2A6D886E0081E898 /* Build configuration list for PBXNativeTarget "AblyPushExampleLP" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				84E3D1A02A6D886E0081E898 /* Debug */,
+				84E3D1A12A6D886E0081E898 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		848694D027F8958F00B41A5D /* Ably */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Ably;
+		};
+		84E3D1922A6D886E0081E898 /* Ably */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Ably;
 		};

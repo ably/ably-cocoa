@@ -9,7 +9,7 @@ private var initialStateMachine: ARTPushActivationStateMachine!
 
 private let expectedFormFactor = "phone"
 private let expectedPlatform = "ios"
-private let expectedPushRecipient: [String: [String: String]] = ["recipient": ["transportType": "apns"]]
+private let expectedPushRecipient: [String: [String: AnyHashable]] = ["recipient": ["transportType": "apns"]]
 
 private var stateMachine: ARTPushActivationStateMachine!
 
@@ -330,7 +330,7 @@ class PushActivationStateMachineTests: XCTestCase {
         XCTAssertEqual(url.host, rest.internal.options.restUrl().host)
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertEqual(body.value(forKey: "id") as? String, rest.device.id)
-        XCTAssertEqual(body.value(forKey: "push") as? [String: [String: String]], expectedPushRecipient)
+        XCTAssertEqual(body.value(forKey: "push") as? [String: [String: AnyHashable]], expectedPushRecipient)
         XCTAssertEqual(body.value(forKey: "formFactor") as? String, expectedFormFactor)
         XCTAssertEqual(body.value(forKey: "platform") as? String, expectedPlatform)
     }
@@ -375,7 +375,7 @@ class PushActivationStateMachineTests: XCTestCase {
         let body = try XCTUnwrap(decodedBody as? NSDictionary, "Request body is invalid")
         
         XCTAssertEqual(body.value(forKey: "id") as? String, rest.device.id)
-        XCTAssertEqual(body.value(forKey: "push") as? [String: [String: String]], expectedPushRecipient)
+        XCTAssertEqual(body.value(forKey: "push") as? [String: [String: AnyHashable]], expectedPushRecipient)
         XCTAssertEqual(body.value(forKey: "formFactor") as? String, expectedFormFactor)
         XCTAssertEqual(body.value(forKey: "platform") as? String, expectedPlatform)
     }
@@ -630,6 +630,12 @@ class PushActivationStateMachineTests: XCTestCase {
                 activateCallbackCalled = true
             }
 
+            var updatedCallbackCalled = false
+            delegate.onDidUpdateAblyPush = { error in
+                XCTAssertNil(error)
+                updatedCallbackCalled = true
+            }
+
             let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(
                 token: "123456",
                 issued: Date(),
@@ -642,6 +648,8 @@ class PushActivationStateMachineTests: XCTestCase {
             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForNewPushDeviceDetails.self))
             XCTAssertTrue(setAndPersistIdentityTokenDetailsCalled)
 
+            // RSH3e2c
+            expect(updatedCallbackCalled).toEventually(equal(!(fromEvent is ARTPushActivationEventCalledActivate)), timeout: testTimeout)
             // RSH3e2b
             expect(activateCallbackCalled).toEventually(equal(fromEvent is ARTPushActivationEventCalledActivate), timeout: testTimeout)
 
@@ -654,9 +662,9 @@ class PushActivationStateMachineTests: XCTestCase {
 
             let expectedError = ARTErrorInfo(domain: ARTAblyErrorDomain, code: 1234, userInfo: nil)
 
-            var updateFailedCallbackCalled = false
-            let hook = stateMachine.testSuite_getArgument(from: NSSelectorFromString("callUpdateFailedCallback:"), at: 0, callback: { arg0 in
-                updateFailedCallbackCalled = true
+            var updatedCallbackCalled = false
+            let hook = stateMachine.testSuite_getArgument(from: NSSelectorFromString("callUpdatedCallback:"), at: 0, callback: { arg0 in
+                updatedCallbackCalled = true
                 guard let error = arg0 as? ARTErrorInfo else {
                     fail("Error is missing"); return
                 }
@@ -677,7 +685,7 @@ class PushActivationStateMachineTests: XCTestCase {
             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateAfterRegistrationSyncFailed.self))
 
             // RSH3e3a
-            expect(updateFailedCallbackCalled).toEventually(equal(!(fromEvent is ARTPushActivationEventCalledActivate)), timeout: testTimeout)
+            expect(updatedCallbackCalled).toEventually(equal(!(fromEvent is ARTPushActivationEventCalledActivate)), timeout: testTimeout)
             // RSH3e3c
             expect(activateCallbackCalled).toEventually(equal(fromEvent is ARTPushActivationEventCalledActivate), timeout: testTimeout)
 
@@ -1040,7 +1048,7 @@ class PushActivationStateMachineTests: XCTestCase {
             XCTAssertEqual(url.host, rest.internal.options.restUrl().host)
             XCTAssertEqual(request.httpMethod, "PUT")
             XCTAssertEqual(body.value(forKey: "id") as? String, rest.device.id)
-            XCTAssertEqual(body.value(forKey: "push") as? [String: [String: String]], expectedPushRecipient)
+            XCTAssertEqual(body.value(forKey: "push") as? [String: [String: AnyHashable]], expectedPushRecipient)
             XCTAssertEqual(body.value(forKey: "formFactor") as? String, expectedFormFactor)
             XCTAssertEqual(body.value(forKey: "platform") as? String, expectedPlatform)
 
@@ -1285,11 +1293,16 @@ class PushActivationStateMachineTests: XCTestCase {
 
 class StateMachineDelegate: NSObject, ARTPushRegistererDelegate {
     var onDidActivateAblyPush: ((ARTErrorInfo?) -> Void)?
+    var onDidUpdateAblyPush: ((ARTErrorInfo?) -> Void)?
     var onDidDeactivateAblyPush: ((ARTErrorInfo?) -> Void)?
     var onDidAblyPushRegistrationFail: ((ARTErrorInfo?) -> Void)?
 
     func didActivateAblyPush(_ error: ARTErrorInfo?) {
         onDidActivateAblyPush?(error)
+    }
+
+    func didUpdateAblyPush(_ error: ARTErrorInfo?) {
+        onDidUpdateAblyPush?(error)
     }
 
     func didDeactivateAblyPush(_ error: ARTErrorInfo?) {

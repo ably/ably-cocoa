@@ -43,6 +43,10 @@
 #import "ARTClientOptions+TestConfiguration.h"
 #import "ARTTestClientOptions.h"
 #import "ARTContinuousClock.h"
+#if TARGET_OS_IOS
+#import "ARTPushActivationStateMachine+Private.h"
+#import "ARTPushActivationEvent.h"
+#endif
 
 @implementation ARTRest {
     ARTQueuedDealloc *_dealloc;
@@ -781,6 +785,39 @@ static BOOL sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = YES;
         sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = YES;
     });
 }
+
+- (void)setAndPersistAPNSDeviceTokenData:(NSData *)deviceTokenData tokenType:(NSString *)tokenType {
+    NSString *deviceToken = deviceTokenData.deviceTokenString;
+    ARTLogInfo(self.logger, @"ARTRest: device token: %@ of type: `%@`", deviceToken, tokenType);
+    
+    NSString *currentDeviceToken = [ARTLocalDevice apnsDeviceTokenOfType:tokenType fromStorage:self.storage];
+    if ([currentDeviceToken isEqualToString:deviceToken]) {
+        // Already stored.
+        return;
+    }
+
+    [self.device_nosync setAndPersistAPNSDeviceToken:deviceToken tokenType:tokenType];
+    ARTLogDebug(self.logger, @"ARTRest: device token stored");
+    
+    [self.push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
+        [stateMachine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
+    }];
+}
+
 #endif
+
+@end
+
+@implementation NSData (APNS)
+
+- (NSString *)deviceTokenString {
+    NSUInteger dataLength = self.length;
+    const unsigned char *dataBuffer = self.bytes;
+    NSMutableString *hexString = [NSMutableString stringWithCapacity:(dataLength * 2)];
+    for (int i = 0; i < dataLength; ++i) {
+        [hexString appendFormat:@"%02x", dataBuffer[i]];
+    }
+    return [hexString copy];
+}
 
 @end

@@ -226,6 +226,8 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
 
         if ([_fromEvent isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
             [self.machine callActivatedCallback:nil];
+        } else {
+            [self.machine callUpdatedCallback:nil];
         }
 
         return [ARTPushActivationStateWaitingForNewPushDeviceDetails newWithMachine:self.machine logger:self.logger];
@@ -235,7 +237,7 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
         if ([_fromEvent isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
             [self.machine callActivatedCallback:error];
         } else {
-            [self.machine callUpdateFailedCallback:error];
+            [self.machine callUpdatedCallback:error];
         }
 
         return [ARTPushActivationStateAfterRegistrationSyncFailed newWithMachine:self.machine logger:self.logger];

@@ -29,7 +29,12 @@ NS_ASSUME_NONNULL_BEGIN
 @optional
 
 /**
- Ably will call the implementation of this method when the registration process is completed with failure.
+ Ably will call the implementation of this method when the token update process is completed with success or with failure.
+ */
+- (void)didUpdateAblyPush:(nullable ARTErrorInfo *)error;
+
+/**
+ Same as `didUpdateAblyPush:`, but called only in case of failure for backward compatibility.
  */
 - (void)didAblyPushRegistrationFail:(nullable ARTErrorInfo *)error;
 
@@ -72,6 +77,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// See [iOS push notifications tutorial](https://ably.com/tutorials/ios-push-notifications#step7-register-push-ably) for details.
 + (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error realtime:(ARTRealtime *)realtime;
+
+// Location Push Registration token
+
+/// Registers location device token within Ably service. You obtain it by calling `CLLocationManager.startMonitoringLocationPushes(completion:)`.
++ (void)didRegisterForLocationNotificationsWithDeviceToken:(NSData *)deviceToken rest:(ARTRest *)rest;
+
+/// Registers location device token within Ably service. You obtain it by calling `CLLocationManager.startMonitoringLocationPushes(completion:)`.
++ (void)didRegisterForLocationNotificationsWithDeviceToken:(NSData *)deviceToken realtime:(ARTRealtime *)realtime;
+
+/// Call this method if you got an error calling `CLLocationManager.startMonitoringLocationPushes(completion:)`.
++ (void)didFailToRegisterForLocationNotificationsWithError:(NSError *)error rest:(ARTRest *)rest;
+
+/// Call this method if you got an error calling `CLLocationManager.startMonitoringLocationPushes(completion:)`.
++ (void)didFailToRegisterForLocationNotificationsWithError:(NSError *)error realtime:(ARTRealtime *)realtime;
 
 /**
  * Activates the device for push notifications with APNS, obtaining a unique identifier from it. Subsequently registers the device with Ably and stores the `ARTLocalDevice.identityTokenDetails` in local storage.

@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)deviceUnregistration:(nullable ARTErrorInfo *)error;
 - (void)callActivatedCallback:(nullable ARTErrorInfo *)error;
 - (void)callDeactivatedCallback:(nullable ARTErrorInfo *)error;
-- (void)callUpdateFailedCallback:(nullable ARTErrorInfo *)error;
+- (void)callUpdatedCallback:(nullable ARTErrorInfo *)error;
 @end
 
 NS_ASSUME_NONNULL_END

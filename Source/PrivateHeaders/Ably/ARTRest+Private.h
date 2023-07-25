@@ -78,6 +78,8 @@ NS_ASSUME_NONNULL_BEGIN
 #if TARGET_OS_IOS
 // This is only intended to be called from test code.
 - (void)resetDeviceSingleton;
+
+- (void)setAndPersistAPNSDeviceTokenData:(NSData *)deviceTokenData tokenType:(NSString *)tokenType;
 #endif
 
 @end
@@ -87,6 +89,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) ARTRestInternal *internal;
 
 - (void)internalAsync:(void (^)(ARTRestInternal *))use;
+
+@end
+
+@interface NSData (APNS)
+
+- (NSString *)deviceTokenString;
 
 @end
 
