@@ -1,8 +1,8 @@
 # Change Log
 
-## [1.2.21](https://github.com/ably/ably-cocoa/tree/1.2.21)
+## [1.2.21-beta.1](https://github.com/ably/ably-cocoa/tree/1.2.21-beta.1)
 
-[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.20...1.2.21)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.20...1.2.21-beta.1)
 
 **Implemented features:**
 
