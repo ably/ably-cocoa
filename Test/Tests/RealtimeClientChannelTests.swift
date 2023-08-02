@@ -882,6 +882,7 @@ class RealtimeClientChannelTests: XCTestCase {
     }
 
     // RTL3d - https://github.com/ably/ably-cocoa/issues/881
+    // RTL2f
     func test__015__Channel__connection_state__should_attach_successfully_and_remain_attached_when_the_connection_state_without_a_successful_recovery_gets_CONNECTED() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
@@ -939,7 +940,7 @@ class RealtimeClientChannelTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.once(.attached) { stateChange in
-                XCTAssertFalse(stateChange.resumed)
+                XCTAssertFalse(stateChange.resumed) // RTL2f (resumed is false when the channel is ATTACHED following a failed connection recovery)
                 XCTAssertNil(stateChange.reason)
                 channel.on(.suspended) { _ in
                     fail("Should not reach SUSPENDED state")
