@@ -501,6 +501,7 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__011__Channel__EventEmitter__channel_states_and_events__ChannelStateChange_will_contain_a_resumed_boolean_attribute_with_value__true__if_the_bit_flag_RESUMED_was_included() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
+        options.testOptions.transportFactory = TestProxyTransportFactory()
         options.tokenDetails = try getTestTokenDetails(for: test, ttl: 5.0)
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
@@ -521,15 +522,12 @@ class RealtimeClientChannelTests: XCTestCase {
                     fail("Error is nil"); done(); return
                 }
                 XCTAssertEqual(error.code, ARTErrorCode.tokenExpired.intValue)
-
-                channel.on { stateChange in
-                    if stateChange.current == .attached {
-                        XCTAssertTrue(stateChange.resumed)
-                        XCTAssertNil(stateChange.reason)
-                        XCTAssertEqual(stateChange.current, ARTRealtimeChannelState.attached)
-                        XCTAssertEqual(stateChange.previous, ARTRealtimeChannelState.attached)
-                        done()
-                    }
+                XCTAssertEqual(channel.state, ARTRealtimeChannelState.attached)
+                client.connection.once(.connected) { stateChange in
+                    XCTAssertEqual(channel.state, ARTRealtimeChannelState.attached)
+                    let transport = client.internal.transport as! TestProxyTransport
+                    XCTAssertEqual(transport.protocolMessagesReceived.filter { $0.action == .attached && $0.resumed }.count, 1)
+                    done()
                 }
             }
             channel.attach()

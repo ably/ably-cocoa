@@ -741,11 +741,13 @@ dispatch_sync(_queue, ^{
     }
 
     if (self.state_nosync == ARTRealtimeChannelAttached) {
-        if (message.error != nil) {
-            _errorReason = message.error;
+        if (!message.resumed) { // RTL12
+            if (message.error != nil) {
+                _errorReason = message.error;
+            }
+            ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:self.state_nosync previous:self.state_nosync event:ARTChannelEventUpdate reason:message.error resumed:message.resumed];
+            [self emit:stateChange.event with:stateChange];
         }
-        ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:self.state_nosync previous:self.state_nosync event:ARTChannelEventUpdate reason:message.error resumed:message.resumed];
-        [self emit:stateChange.event with:stateChange];
         return;
     }
 
