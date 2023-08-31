@@ -572,7 +572,7 @@ func getTestTokenDetails(for test: Test, key: String? = nil, clientId: String? =
 }
 
 func getTestTokenDetails(for test: Test, key: String? = nil, clientId: String? = nil, capability: String? = nil, ttl: TimeInterval? = nil, queryTime: Bool? = nil, file: FileString = #file, line: UInt = #line) throws -> ARTTokenDetails {
-    let result = try AblyTests.waitFor(timeout: testTimeout, file: file, line: line) { value in
+    let result = try AblyTests.waitFor(timeout: DispatchTimeInterval.seconds(33), file: file, line: line) { value in
         getTestTokenDetails(for: test, key: key, clientId: clientId, capability: capability, ttl: ttl, queryTime: queryTime) { result in
             value(result)
         }
