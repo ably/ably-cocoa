@@ -591,7 +591,7 @@ dispatch_async(_queue, ^{
         void (^const canceledCallbackBlock)(NSError *) = ^(NSError *error) {
             ARTLogVerbose(self.logger, @"RS:%p ARTAuthInternal [authorize.%@]: canceled callback", self->_rest, authorizeId);
             if (callback) {
-                callback(nil, error ?: [ARTErrorInfo createWithCode:kCFURLErrorCancelled message:@"Authorization has been canceled"]);
+                callback(nil, error ?: [ARTErrorInfo createWithCode:kCFURLErrorCancelled message:@"Authorization has been canceled."]);
             }
         };
 
