@@ -645,7 +645,7 @@ dispatch_async(_queue, ^{
 
     [_cancelationEventEmitter once:^(ARTErrorInfo * _Nullable error) {
         hasBeenExplicitlyCanceled = YES;
-        explicitlyCanceledError = error;
+        explicitlyCanceledError = [ARTErrorInfo createWithCode:kCFURLErrorCancelled message:@"Authorization has been canceled.."];
         [task cancel];
     }];
 
