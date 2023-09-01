@@ -654,7 +654,7 @@ dispatch_async(_queue, ^{
 
 - (void)cancelAuthorization:(nullable ARTErrorInfo *)error {
     ARTLogDebug(self.logger, @"RS:%p authorization cancelled with %@", self->_rest, error);
-    [_cancelationEventEmitter emit:nil with:error];
+    [_cancelationEventEmitter emit:nil with:[ARTErrorInfo createWithCode:kCFURLErrorCancelled message:@"Authorization has been canceled..."]];
 }
 
 - (void)createTokenRequest:(void (^)(ARTTokenRequest *, NSError *))callback {
