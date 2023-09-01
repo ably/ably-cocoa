@@ -566,6 +566,7 @@ dispatch_async(_queue, ^{
 
     NSString *authorizeId = [[NSUUID new] UUIDString];
     __block BOOL hasBeenExplicitlyCanceled = NO;
+    __block ARTErrorInfo *explicitlyCanceledError = nil;
     // Request always a new token
     ARTLogVerbose(self.logger, @"RS:%p ARTAuthInternal [authorize.%@, delegate=%@]: requesting new token", _rest, authorizeId, lastDelegate ? @"YES" : @"NO");
     NSObject<ARTCancellable> *task;
@@ -587,10 +588,10 @@ dispatch_async(_queue, ^{
             }
         };
 
-        void (^const canceledCallbackBlock)(void) = ^{
+        void (^const canceledCallbackBlock)(NSError *) = ^(NSError *error) {
             ARTLogVerbose(self.logger, @"RS:%p ARTAuthInternal [authorize.%@]: canceled callback", self->_rest, authorizeId);
             if (callback) {
-                callback(nil, [ARTErrorInfo createWithCode:kCFURLErrorCancelled message:@"Authorization has been canceled"]);
+                callback(nil, error);
             }
         };
 
@@ -601,7 +602,7 @@ dispatch_async(_queue, ^{
         }
 
         if (hasBeenExplicitlyCanceled) {
-            canceledCallbackBlock();
+            canceledCallbackBlock(explicitlyCanceledError);
             return;
         }
 
@@ -618,7 +619,7 @@ dispatch_async(_queue, ^{
                 switch (state) {
                     case ARTAuthorizationSucceeded:
                         if (hasBeenExplicitlyCanceled) {
-                            canceledCallbackBlock();
+                            canceledCallbackBlock(explicitlyCanceledError);
                             return;
                         }
                         successCallbackBlock();
@@ -631,7 +632,7 @@ dispatch_async(_queue, ^{
                         break;
                     case ARTAuthorizationCancelled: {
                         ARTLogDebug(self.logger, @"RS:%p authorization cancelled but the request token has already completed", self->_rest);
-                        canceledCallbackBlock();
+                        canceledCallbackBlock(explicitlyCanceledError);
                         break;
                     }
                 }
@@ -644,6 +645,7 @@ dispatch_async(_queue, ^{
 
     [_cancelationEventEmitter once:^(ARTErrorInfo * _Nullable error) {
         hasBeenExplicitlyCanceled = YES;
+        explicitlyCanceledError = error;
         [task cancel];
     }];
 
