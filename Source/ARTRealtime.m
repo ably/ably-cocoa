@@ -650,7 +650,7 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
             _connection.id = nil;
             _transport = nil;
             self.rest.prioritizedHost = nil;
-            [self.auth cancelAuthorization:nil];
+            [self.auth cancelAuthorization:[ARTErrorInfo createWithCode:kCFURLErrorUnknown message:@"Connection was closed."]];
             [self failPendingMessages:[ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:ARTErrorConnectionClosed message:@"connection broken before receiving publishing acknowledgment"]]];
             break;
         case ARTRealtimeFailed: {
