@@ -650,7 +650,7 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
             _connection.id = nil;
             _transport = nil;
             self.rest.prioritizedHost = nil;
-            [self.auth cancelAuthorization:[ARTErrorInfo createWithCode:kCFURLErrorUnknown message:@"Connection was closed."]];
+            [self.auth cancelAuthorization:stateChange.reason ?: [ARTErrorInfo createWithCode:kCFURLErrorUnknown message:@"Connection was closed."]];
             [self failPendingMessages:[ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:ARTErrorConnectionClosed message:@"connection broken before receiving publishing acknowledgment"]]];
             break;
         case ARTRealtimeFailed: {
@@ -659,7 +659,7 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
                                                                                     errorInfo:status.errorInfo];
             [self abortAndReleaseTransport:status];
             self.rest.prioritizedHost = nil;
-            [self.auth cancelAuthorization:stateChange.reason];
+            [self.auth cancelAuthorization:stateChange.reason ?: [ARTErrorInfo createWithCode:kCFURLErrorUnknown message:@"Connection was failed."]];
             [self failPendingMessages:[ARTStatus state:ARTStateError info:[ARTErrorInfo createWithCode:ARTErrorConnectionFailed message:@"connection broken before receiving publishing acknowledgment"]]];
             break;
         }
@@ -699,7 +699,7 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
         case ARTRealtimeSuspended: {
             [_connectionRetryFromDisconnectedListener stopTimer];
             _connectionRetryFromDisconnectedListener = nil;
-            [self.auth cancelAuthorization:nil];
+            [self.auth cancelAuthorization:stateChange.reason ?: [ARTErrorInfo createWithCode:kCFURLErrorUnknown message:@"Connection was suspended."]];
             [self closeAndReleaseTransport];
             [stateChange setRetryIn:self.options.suspendedRetryTimeout];
             stateChangeEventListener = [self unlessStateChangesBefore:stateChange.retryIn do:^{
