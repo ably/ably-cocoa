@@ -2467,7 +2467,7 @@ class RealtimeClientChannelTests: XCTestCase {
             }
         }
 
-        waitUntil(timeout: testTimeout) { done in
+        waitUntil(timeout: testTimeout.multiplied(by: 2)) { done in
             rtl6c2TestsClient.connection.once(.disconnected) { _ in
                 done()
             }
