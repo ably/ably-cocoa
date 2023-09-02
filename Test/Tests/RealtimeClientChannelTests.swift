@@ -2459,7 +2459,7 @@ class RealtimeClientChannelTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             let tokenParams = ARTTokenParams()
-            tokenParams.ttl = 5.0
+            tokenParams.ttl = 15.0
             rtl6c2TestsClient.auth.authorize(tokenParams, options: nil) { tokenDetails, error in
                 XCTAssertNil(error, "Authorize failed.")
                 XCTAssertNotNil(tokenDetails)
