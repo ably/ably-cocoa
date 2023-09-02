@@ -2451,7 +2451,7 @@ class RealtimeClientChannelTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             rtl6c2TestsChannel.attach { error in
-                XCTAssertNil(error)
+                XCTAssertNil(error, "Attach failed.")
                 done()
             }
             rtl6c2TestsClient.connect()
@@ -2461,7 +2461,7 @@ class RealtimeClientChannelTests: XCTestCase {
             let tokenParams = ARTTokenParams()
             tokenParams.ttl = 5.0
             rtl6c2TestsClient.auth.authorize(tokenParams, options: nil) { tokenDetails, error in
-                XCTAssertNil(error)
+                XCTAssertNil(error, "Authorize failed.")
                 XCTAssertNotNil(tokenDetails)
                 done()
             }
