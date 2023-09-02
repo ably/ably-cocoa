@@ -632,7 +632,7 @@ dispatch_async(_queue, ^{
                         break;
                     case ARTAuthorizationCancelled: {
                         ARTLogDebug(self.logger, @"RS:%p authorization cancelled but the request token has already completed", self->_rest);
-                        canceledCallbackBlock(explicitlyCanceledError);
+                        canceledCallbackBlock(error);
                         break;
                     }
                 }

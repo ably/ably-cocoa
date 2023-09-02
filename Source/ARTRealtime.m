@@ -261,7 +261,7 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
                     completion(ARTAuthorizationFailed, [ARTErrorInfo createWithCode:ARTStateAuthorizationFailed message:@"Connection has been closed"]);
                     break;
                 case ARTRealtimeDisconnected:
-                    completion(ARTAuthorizationCancelled, nil);
+                    completion(ARTAuthorizationCancelled, error);
                     break;
                 case ARTRealtimeInitialized:
                 case ARTRealtimeConnecting:
