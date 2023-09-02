@@ -2459,7 +2459,7 @@ class RealtimeClientChannelTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             let tokenParams = ARTTokenParams()
-            tokenParams.ttl = 10.0
+            tokenParams.ttl = 5.0
             rtl6c2TestsClient.auth.authorize(tokenParams, options: nil) { tokenDetails, error in
                 XCTAssertNil(error, "Authorize failed.")
                 XCTAssertNotNil(tokenDetails)
@@ -2467,7 +2467,7 @@ class RealtimeClientChannelTests: XCTestCase {
             }
         }
 
-        waitUntil(timeout: testTimeout.multiplied(by: 3)) { done in
+        waitUntil(timeout: testTimeout) { done in
             rtl6c2TestsClient.connection.once(.disconnected) { _ in
                 done()
             }
