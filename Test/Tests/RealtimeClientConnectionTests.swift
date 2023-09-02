@@ -1022,7 +1022,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = "tester"
-        options.tokenDetails = try getTestTokenDetails(for: test, key: options.key!, clientId: options.clientId, ttl: 5.0)
+        options.tokenDetails = try getTestTokenDetails(for: test, key: options.key!, clientId: options.clientId, ttl: 15.0)
         let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
 
@@ -2051,7 +2051,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.authCallback = { tokenParams, callback in
             getTestTokenDetails(for: test, key: options.key, capability: tokenParams.capability, ttl: tokenParams.ttl as! TimeInterval?, completion: callback)
         }
-        let tokenTtl = 3.0
+        let tokenTtl = 13.0
         options.token = try getTestToken(for: test, key: options.key, ttl: tokenTtl)
         options.testOptions.transportFactory = TestProxyTransportFactory()
 
@@ -2140,7 +2140,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         options.autoConnect = false
         options.testOptions.transportFactory = TestProxyTransportFactory()
-        let tokenTtl = 3.0
+        let tokenTtl = 13.0
         let tokenDetails = try getTestTokenDetails(for: test, key: options.key, capability: nil, ttl: tokenTtl)
         options.token = tokenDetails.token
         options.authCallback = { _, callback in
@@ -3138,7 +3138,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let key = options.key
         // set the key to nil so that the client can't sign further token requests
         options.key = nil
-        let tokenTtl = 3.0
+        let tokenTtl = 13.0
         let tokenDetails = try getTestTokenDetails(for: test, key: key, ttl: tokenTtl)
         options.token = tokenDetails.token
         let client = ARTRealtime(options: options)
@@ -4361,7 +4361,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     func test__108__Connection__Operating_System_events_for_network_internet_connectivity_changes__re_authenticate_and_resume_the_connection_when_the_client_is_forcibly_disconnected_following_a_DISCONNECTED_message_containing_an_error_code_greater_than_or_equal_to_40140_and_less_than_40150() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        options.token = try getTestToken(for: test, key: options.key!, ttl: 5.0)
+        options.token = try getTestToken(for: test, key: options.key!, ttl: 15.0)
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
         
