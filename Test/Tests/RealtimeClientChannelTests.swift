@@ -2449,6 +2449,23 @@ class RealtimeClientChannelTests: XCTestCase {
         let test = Test()
         try beforeEach__Channel__publish__Connection_state_conditions__the_message(for: test, channelName: test.uniqueChannelName())
 
+        rtl6c2TestsClient.connect()
+        expect(rtl6c2TestsClient.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+        expect(rtl6c2TestsChannel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
+
+        waitUntil(timeout: testTimeout) { done in
+            rtl16c2TestsPublish(done)
+            XCTAssertEqual(rtl6c2TestsClient.internal.queuedMessages.count, 0)
+            XCTAssertEqual((rtl6c2TestsClient.internal.transport as! TestProxyTransport).protocolMessagesSent.filter { $0.action == .message }.count, 1)
+        }
+
+        afterEach__Channel__publish__Connection_state_conditions__the_message()
+    }
+    
+    func skip_test__081__Channel__publish__Connection_state_conditions__the_message__should_NOT_be_queued_instead_it_should_be_published_if_the_channel_is__ATTACHED() throws {
+        let test = Test()
+        try beforeEach__Channel__publish__Connection_state_conditions__the_message(for: test, channelName: test.uniqueChannelName())
+
         waitUntil(timeout: testTimeout) { done in
             rtl6c2TestsChannel.attach { error in
                 XCTAssertNil(error)
