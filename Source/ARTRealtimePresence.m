@@ -234,15 +234,7 @@ dispatch_async(_queue, ^{
 
 - (BOOL)history:(ARTRealtimeHistoryQuery *)query callback:(ARTPaginatedPresenceCallback)callback error:(NSError **)errorPtr {
     query.realtimeChannel = _channel;
-    @try {
-        return [_channel.restChannel.presence history:query callback:callback error:errorPtr];
-    }
-    @catch (NSError *error) {
-        if (errorPtr) {
-            *errorPtr = error;
-        }
-        return false;
-    }
+    return [_channel.restChannel.presence history:query callback:callback error:errorPtr];
 }
 
 - (void)enter:(id)data {
