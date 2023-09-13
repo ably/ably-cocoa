@@ -1022,12 +1022,12 @@ class RealtimeClientConnectionTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = "tester"
-        options.tokenDetails = try getTestTokenDetails(for: test, key: options.key!, clientId: options.clientId, ttl: 15.0)
+        options.tokenDetails = try getTestTokenDetails(for: test, key: options.key!, clientId: options.clientId, ttl: 25.0)
         let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
 
         let channel = client.channels.get(test.uniqueChannelName())
-        waitUntil(timeout: testTimeout) { done in
+        waitUntil(timeout: testTimeout.incremented(by: 25)) { done in
             channel.publish(nil, data: "message") { error in
                 XCTAssertNil(error)
                 done()
@@ -1038,7 +1038,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             fail("Connection ID is empty"); return
         }
 
-        waitUntil(timeout: testTimeout) { done in
+        waitUntil(timeout: testTimeout.incremented(by: 25)) { done in
             let partialDone = AblyTests.splitDone(4, done: done)
             (1 ... 3).forEach { index in
                 channel.publish(nil, data: "message\(index)") { error in
@@ -1055,7 +1055,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         XCTAssertEqual(client.internal.msgSerial, 5)
 
-        waitUntil(timeout: testTimeout) { done in
+        waitUntil(timeout: testTimeout.incremented(by: 25)) { done in
             client.connection.once(.disconnected) { stateChange in
                 XCTAssertNotNil(stateChange.reason)
                 // Token expired
@@ -1065,7 +1065,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         // Reconnected and resumed
         XCTAssertEqual(client.connection.id, initialConnectionId)
-        waitUntil(timeout: testTimeout) { done in
+        waitUntil(timeout: testTimeout.incremented(by: 25)) { done in
             let partialDone = AblyTests.splitDone(4, done: done)
             (1 ... 3).forEach { index in
                 channel.publish(nil, data: "message\(index)") { error in
@@ -2051,7 +2051,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.authCallback = { tokenParams, callback in
             getTestTokenDetails(for: test, key: options.key, capability: tokenParams.capability, ttl: tokenParams.ttl as! TimeInterval?, completion: callback)
         }
-        let tokenTtl = 13.0
+        let tokenTtl = 25.0
         options.token = try getTestToken(for: test, key: options.key, ttl: tokenTtl)
         options.testOptions.transportFactory = TestProxyTransportFactory()
 
@@ -2061,7 +2061,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.close()
         }
 
-        waitUntil(timeout: testTimeout) { done in
+        waitUntil(timeout: testTimeout.incremented(by: tokenTtl)) { done in
             // Let the token expire
             client.connection.once(.disconnected) { stateChange in
                 guard let reason = stateChange.reason else {
@@ -2140,7 +2140,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let options = try AblyTests.commonAppSetup(for: test)
         options.autoConnect = false
         options.testOptions.transportFactory = TestProxyTransportFactory()
-        let tokenTtl = 13.0
+        let tokenTtl = 25.0
         let tokenDetails = try getTestTokenDetails(for: test, key: options.key, capability: nil, ttl: tokenTtl)
         options.token = tokenDetails.token
         options.authCallback = { _, callback in
@@ -2155,7 +2155,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.close()
         }
 
-        waitUntil(timeout: testTimeout) { done in
+        waitUntil(timeout: testTimeout.incremented(by: tokenTtl)) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
             client.connection.once(.connected) { stateChange in
                 XCTAssertNil(stateChange.reason)
@@ -3211,13 +3211,13 @@ class RealtimeClientConnectionTests: XCTestCase {
         let key = options.key
         // set the key to nil so that the client can't sign further token requests
         options.key = nil
-        let tokenTtl = 13.0
+        let tokenTtl = 25.0
         let tokenDetails = try getTestTokenDetails(for: test, key: key, ttl: tokenTtl)
         options.token = tokenDetails.token
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
-        waitUntil(timeout: testTimeout) { done in
+        waitUntil(timeout: testTimeout.incremented(by: tokenTtl)) { done in
             client.connection.once(.failed) { stateChange in
                 XCTAssertEqual(stateChange.previous, ARTRealtimeConnectionState.connected)
                 XCTAssertEqual(stateChange.reason?.code, ARTErrorCode.tokenExpired.intValue)
@@ -4434,14 +4434,14 @@ class RealtimeClientConnectionTests: XCTestCase {
     func test__108__Connection__Operating_System_events_for_network_internet_connectivity_changes__re_authenticate_and_resume_the_connection_when_the_client_is_forcibly_disconnected_following_a_DISCONNECTED_message_containing_an_error_code_greater_than_or_equal_to_40140_and_less_than_40150() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        options.token = try getTestToken(for: test, key: options.key!, ttl: 15.0)
+        options.token = try getTestToken(for: test, key: options.key!, ttl: 25.0)
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
         
         let channelName = test.uniqueChannelName()
         let channel = client.channels.get(channelName)
 
-        waitUntil(timeout: testTimeout) { done in
+        waitUntil(timeout: testTimeout.incremented(by: 25)) { done in
             channel.attach { error in
                 XCTAssertNil(error)
                 done()
@@ -4466,7 +4466,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
         defer { hook.remove() }
 
-        waitUntil(timeout: testTimeout) { done in
+        waitUntil(timeout: testTimeout.incremented(by: 25)) { done in
             client.connection.once(.disconnected) { stateChange in
                 guard let error = stateChange.reason else {
                     fail("Error is nil"); done(); return
@@ -4476,7 +4476,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
         }
 
-        waitUntil(timeout: testTimeout) { done in
+        waitUntil(timeout: testTimeout.incremented(by: 25)) { done in
             client.connection.once(.connected) { stateChange in
                 XCTAssertNil(stateChange.reason)
                 XCTAssertNotEqual(initialToken, client.auth.tokenDetails?.token)
@@ -4491,7 +4491,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         restOptions.testOptions.channelNamePrefix = options.testOptions.channelNamePrefix
         let rest = ARTRest(options: restOptions)
 
-        waitUntil(timeout: testTimeout) { done in
+        waitUntil(timeout: testTimeout.incremented(by: 25)) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
             let expectedMessage = ARTMessage(name: "ios", data: "message1")
 

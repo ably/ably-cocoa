@@ -501,12 +501,12 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__011__Channel__EventEmitter__channel_states_and_events__ChannelStateChange_will_contain_a_resumed_boolean_attribute_with_value__true__if_the_bit_flag_RESUMED_was_included() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        options.tokenDetails = try getTestTokenDetails(for: test, ttl: 15.0)
+        options.tokenDetails = try getTestTokenDetails(for: test, ttl: 25.0)
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(test.uniqueChannelName())
 
-        waitUntil(timeout: testTimeout) { done in
+        waitUntil(timeout: testTimeout.incremented(by: 25)) { done in
             channel.on { stateChange in
                 switch stateChange.current {
                 case .attached:
@@ -993,7 +993,7 @@ class RealtimeClientChannelTests: XCTestCase {
     func test__016__Channel__connection_state__if_the_connection_state_enters_the_DISCONNECTED_state__it_will_have_no_effect_on_the_channel_states() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        options.token = try getTestToken(for: test, ttl: 15.0)
+        options.token = try getTestToken(for: test, ttl: 25.0)
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
@@ -1006,14 +1006,14 @@ class RealtimeClientChannelTests: XCTestCase {
             channel.off()
         }
 
-        waitUntil(timeout: testTimeout) { done in
+        waitUntil(timeout: testTimeout.incremented(by: 25)) { done in
             channel.attach { error in
                 XCTAssertNil(error)
                 done()
             }
         }
 
-        waitUntil(timeout: testTimeout) { done in
+        waitUntil(timeout: testTimeout.incremented(by: 25)) { done in
             client.connection.once(.disconnected) { _ in
                 XCTAssertEqual(channel.state, ARTRealtimeChannelState.attached)
                 done()
