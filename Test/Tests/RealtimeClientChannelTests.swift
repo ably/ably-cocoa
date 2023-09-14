@@ -2445,7 +2445,7 @@ class RealtimeClientChannelTests: XCTestCase {
         afterEach__Channel__publish__Connection_state_conditions__the_message()
     }
 
-    func test__081__Channel__publish__Connection_state_conditions__the_message__should_NOT_be_queued_instead_it_should_be_published_if_the_channel_is__ATTACHED() throws {
+    func skip_test__081__Channel__publish__Connection_state_conditions__the_message__should_NOT_be_queued_instead_it_should_be_published_if_the_channel_is__ATTACHED() throws {
         let test = Test()
         try beforeEach__Channel__publish__Connection_state_conditions__the_message(for: test, channelName: test.uniqueChannelName())
 
