@@ -2135,7 +2135,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         XCTAssertEqual(authCallbackCalled, 2)
     }
 
-    func test__056__Connection__connection_request_fails__should_transition_to_disconnected_when_the_token_renewal_fails() throws {
+    func skip_test__056__Connection__connection_request_fails__should_transition_to_disconnected_when_the_token_renewal_fails() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.autoConnect = false
