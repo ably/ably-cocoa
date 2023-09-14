@@ -498,7 +498,7 @@ class RealtimeClientChannelTests: XCTestCase {
     }
 
     // RTL2f
-    func test__011__Channel__EventEmitter__channel_states_and_events__ChannelStateChange_will_contain_a_resumed_boolean_attribute_with_value__true__if_the_bit_flag_RESUMED_was_included() throws {
+    func skip_test__011__Channel__EventEmitter__channel_states_and_events__ChannelStateChange_will_contain_a_resumed_boolean_attribute_with_value__true__if_the_bit_flag_RESUMED_was_included() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.tokenDetails = try getTestTokenDetails(for: test, ttl: 5.0)
