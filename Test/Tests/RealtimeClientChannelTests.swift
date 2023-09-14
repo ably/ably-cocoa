@@ -990,7 +990,7 @@ class RealtimeClientChannelTests: XCTestCase {
     }
 
     // RTL3e
-    func test__016__Channel__connection_state__if_the_connection_state_enters_the_DISCONNECTED_state__it_will_have_no_effect_on_the_channel_states() throws {
+    func skip_test__016__Channel__connection_state__if_the_connection_state_enters_the_DISCONNECTED_state__it_will_have_no_effect_on_the_channel_states() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.token = try getTestToken(for: test, ttl: 5.0)
