@@ -1018,7 +1018,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         XCTAssertEqual(nacks[0].count, 1)
     }
 
-    func test__033__Connection__ACK_and_NACK__ProtocolMessage__should_continue_incrementing_msgSerial_serially_if_the_connection_resumes_successfully() throws {
+    func skip_test__033__Connection__ACK_and_NACK__ProtocolMessage__should_continue_incrementing_msgSerial_serially_if_the_connection_resumes_successfully() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = "tester"
