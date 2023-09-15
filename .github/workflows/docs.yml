@@ -1,0 +1,52 @@
+name: Docs Generation
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+    tags:
+      - '*'
+
+jobs:
+  build:
+    runs-on: macos-13
+    
+    permissions:
+      deployments: write
+      id-token: write
+      
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Select Specific Xcode Version (14.2)
+        run: |
+          sudo xcode-select -s /Applications/Xcode_14.2.app
+          echo "Selected Xcode version:"
+          xcodebuild -version
+
+      - name: Install Dependencies
+        run: |
+          make submodules
+          bundle install
+          make update_carthage_dependencies_macos
+
+      - name: Build Documentation
+        run: |
+          ./Scripts/jazzy.sh
+          ls -al Docs/jazzy
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: eu-west-2
+          role-to-assume: arn:aws:iam::${{ secrets.ABLY_AWS_ACCOUNT_ID_SDK }}:role/ably-sdk-builds-ably-cocoa
+          role-session-name: "${{ github.run_id }}-${{ github.run_number }}"
+
+      - name: Upload Documentation
+        uses: ably/sdk-upload-action@v1
+        with:
+          sourcePath: Docs/jazzy
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          artifactName: jazzydoc
+          
