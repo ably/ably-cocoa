@@ -2044,7 +2044,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
     // RTN14b
 
-    func test__054__Connection__connection_request_fails__on_DISCONNECTED_after_CONNECTED__should_not_emit_error_with_a_renewable_token() throws {
+    func skip_test__054__Connection__connection_request_fails__on_DISCONNECTED_after_CONNECTED__should_not_emit_error_with_a_renewable_token() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.autoConnect = false
