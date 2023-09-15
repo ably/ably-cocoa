@@ -1,36 +1,29 @@
-default_platform(:ios)
-
+class LaneConfig < Struct.new(:name, :scheme, :devices)
+  def args_for_run_tests
+    ably_env = ENV['ABLY_ENV']
+    unless ably_env && !ably_env.empty?
+      raise 'You must provide ABLY_ENV as an environment variable.'
+    end
+    {
+      scheme: scheme,
+      derived_data_path: "derived_data",
+      devices: devices,
+      test_without_building: false,
+      xcargs: { ABLY_ENV: ably_env, CLANG_ANALYZER_OUTPUT: 'plist-html' },
+      output_directory: "fastlane/test_output/sdk/#{name}"
+    }
+  end
+end
 platform :ios do
 
-  lane :test_iOS14_4 do
-    run_tests(
-      scheme: "Ably-iOS-Tests",
-      derived_data_path: "derived_data",
-      devices: ["iPhone 12 (14.4)"],
-      test_without_building: false,
-      xcargs: { ABLY_ENV: ENV['ABLY_ENV'], CLANG_ANALYZER_OUTPUT: 'plist-html' },
-      output_directory: "fastlane/test_output/sdk/test_iOS14_4"
-    )
+  LANE_CONFIGS = [
+    LaneConfig.new(:test_iOS16_2, "Ably-iOS", ["iPhone 14 (16.2)"]),
+    LaneConfig.new(:test_tvOS16_1, "Ably-tvOS", ["Apple TV 4K (2nd generation) (16.1)"]),
+    LaneConfig.new(:test_macOS, "Ably-macOS")
+  ]
+  LANE_CONFIGS.each do |lane_config|
+    lane(lane_config.name) do
+      run_tests(**lane_config.args_for_run_tests)
+    end
   end
-
-  lane :test_tvOS14_3 do
-    run_tests(
-      scheme: "Ably-tvOS-Tests",
-      derived_data_path: "derived_data",
-      devices: ["Apple TV 4K (14.3)"],
-      xcargs: { ABLY_ENV: ENV['ABLY_ENV'], CLANG_ANALYZER_OUTPUT: 'plist-html' },
-      output_directory: "fastlane/test_output/sdk/test_tvOS14_3"
-    )
-  end
-
-  lane :test_macOS do
-    run_tests(
-      scheme: "Ably-macOS-Tests",
-      derived_data_path: "derived_data",
-      test_without_building: false,
-      xcargs: { ABLY_ENV: ENV['ABLY_ENV'], CLANG_ANALYZER_OUTPUT: 'plist-html' },
-      output_directory: "fastlane/test_output/sdk/test_macOS"
-    )
-  end
-
 end
