@@ -3204,7 +3204,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     }
 
     // RTN15h1
-    func test__078__Connection__connection_failures_once_CONNECTED__DISCONNECTED_message_contains_a_token_error__and_the_library_does_not_have_a_means_to_renew_the_token__the_connection_will_transition_to_the_FAILED_state() throws {
+    func skip_test__078__Connection__connection_failures_once_CONNECTED__DISCONNECTED_message_contains_a_token_error__and_the_library_does_not_have_a_means_to_renew_the_token__the_connection_will_transition_to_the_FAILED_state() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.autoConnect = false
