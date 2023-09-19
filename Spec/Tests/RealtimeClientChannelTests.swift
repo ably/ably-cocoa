@@ -219,13 +219,13 @@ class RealtimeClientChannelTests: XCTestCase {
         }
 
         expect(channel1.internal.presenceMap.members).toEventually(haveCount(2), timeout: testTimeout)
-        expect(channel1.internal.presenceMap.members.keys).to(allPass { $0!.hasPrefix("\(channel1.internal.connectionId):Client") || $0!.hasPrefix("\(channel2.internal.connectionId):Client") })
-        expect(channel1.internal.presenceMap.members.values).to(allPass { $0!.action == .present })
+        expect(channel1.internal.presenceMap.members.keys).to(allPass { $0.hasPrefix("\(channel1.internal.connectionId):Client") || $0.hasPrefix("\(channel2.internal.connectionId):Client") })
+        expect(channel1.internal.presenceMap.members.values).to(allPass { $0.action == .present })
 
         expect(channel2.internal.presenceMap.members).toEventually(haveCount(2), timeout: testTimeout)
-        expect(channel2.internal.presenceMap.members.keys).to(allPass { $0!.hasPrefix("\(channel1.internal.connectionId):Client") || $0!.hasPrefix("\(channel2.internal.connectionId):Client") })
-        expect(channel2.internal.presenceMap.members["\(channel1.internal.connectionId):Client 1"]!.action).to(equal(ARTPresenceAction.present))
-        expect(channel2.internal.presenceMap.members["\(channel2.internal.connectionId):Client 2"]!.action).to(equal(ARTPresenceAction.present))
+        expect(channel2.internal.presenceMap.members.keys).to(allPass { $0.hasPrefix("\(channel1.internal.connectionId):Client") || $0.hasPrefix("\(channel2.internal.connectionId):Client") })
+        XCTAssertEqual(channel2.internal.presenceMap.members["\(channel1.internal.connectionId):Client 1"]!.action, ARTPresenceAction.present)
+        XCTAssertEqual(channel2.internal.presenceMap.members["\(channel2.internal.connectionId):Client 2"]!.action, ARTPresenceAction.present)
     }
 
     // RTL2

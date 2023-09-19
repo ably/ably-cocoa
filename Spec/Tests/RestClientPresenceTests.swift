@@ -36,8 +36,8 @@ class RestClientPresenceTests: XCTestCase {
 
                 let members = membersPage.items
                 expect(members).to(allPass { member in
-                    NSRegularExpression.match(member!.clientId, pattern: expectedPattern)
-                        && (member!.data as? String) == expectedData
+                    NSRegularExpression.match(member.clientId, pattern: expectedPattern)
+                        && (member.data as? String) == expectedData
                 })
 
                 expect(membersPage.hasNext).to(beTrue())
@@ -51,8 +51,8 @@ class RestClientPresenceTests: XCTestCase {
 
                     let members = nextPage.items
                     expect(members).to(allPass { member in
-                        NSRegularExpression.match(member!.clientId, pattern: expectedPattern)
-                            && (member!.data as? String) == expectedData
+                        NSRegularExpression.match(member.clientId, pattern: expectedPattern)
+                            && (member.data as? String) == expectedData
                     })
 
                     expect(nextPage.hasNext).to(beFalse())
@@ -147,7 +147,6 @@ class RestClientPresenceTests: XCTestCase {
                     expect(membersPage!.hasNext).to(beFalse())
                     expect(membersPage!.isLast).to(beTrue())
                     expect(membersPage!.items).to(allPass { member in
-                        let member = member!
                         return NSRegularExpression.match(member.clientId, pattern: "^user(7|8|9)")
                     })
                     done()
@@ -184,8 +183,8 @@ class RestClientPresenceTests: XCTestCase {
 
                 let members = membersPage.items
                 expect(members).to(allPass { member in
-                    NSRegularExpression.match(member!.clientId, pattern: expectedPattern)
-                        && (member!.data as? String) == expectedData
+                    NSRegularExpression.match(member.clientId, pattern: expectedPattern)
+                        && (member.data as? String) == expectedData
                 })
 
                 expect(membersPage.hasNext).to(beTrue())
@@ -201,8 +200,8 @@ class RestClientPresenceTests: XCTestCase {
 
                     let members = nextPage.items
                     expect(members).to(allPass { member in
-                        NSRegularExpression.match(member!.clientId, pattern: expectedPattern)
-                            && (member!.data as? String) == expectedData
+                        NSRegularExpression.match(member.clientId, pattern: expectedPattern)
+                            && (member.data as? String) == expectedData
                     })
 
                     expect(nextPage.hasNext).to(beFalse())
@@ -342,8 +341,7 @@ class RestClientPresenceTests: XCTestCase {
                     expect(membersPage!.hasNext).to(beFalse())
                     expect(membersPage!.isLast).to(beTrue())
                     expect(membersPage!.items).to(allPass { member in
-                        let member = member
-                        return NSRegularExpression.match(member!.clientId, pattern: "^user(7|8|9)")
+                        return NSRegularExpression.match(member.clientId, pattern: "^user(7|8|9)")
                     })
                     done()
                 }

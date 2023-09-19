@@ -3170,8 +3170,8 @@ class RealtimeClientPresenceTests: XCTestCase {
                 expect(members).to(haveCount(150))
                 expect(members!.first).to(beAnInstanceOf(ARTPresenceMessage.self))
                 expect(members).to(allPass { member in
-                    NSRegularExpression.match(member!.clientId, pattern: "^user(\\d+)$")
-                        && (member!.data as? String) == expectedData
+                    NSRegularExpression.match(member.clientId, pattern: "^user(\\d+)$")
+                        && (member.data as? String) == expectedData
                 })
                 done()
             }
@@ -3664,8 +3664,8 @@ class RealtimeClientPresenceTests: XCTestCase {
 
                 let members = membersPage.items
                 expect(members).to(allPass { member in
-                    NSRegularExpression.match(member!.clientId, pattern: expectedPattern)
-                        && (member!.data as! [String]) == expectedData
+                    NSRegularExpression.match(member.clientId, pattern: expectedPattern)
+                        && (member.data as! [String]) == expectedData
                 })
 
                 expect(membersPage.hasNext).to(beTrue())
@@ -3681,8 +3681,8 @@ class RealtimeClientPresenceTests: XCTestCase {
 
                     let members = nextPage.items
                     expect(members).to(allPass { member in
-                        NSRegularExpression.match(member!.clientId, pattern: expectedPattern)
-                            && (member!.data as! [String]) == expectedData
+                        NSRegularExpression.match(member.clientId, pattern: expectedPattern)
+                            && (member.data as! [String]) == expectedData
                     })
 
                     expect(nextPage.hasNext).to(beFalse())

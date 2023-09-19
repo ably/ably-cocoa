@@ -3671,9 +3671,9 @@ class AuthTests: XCTestCase {
             realtime.auth.authorize(callback)
         }
 
-        expect(didCancelAuthorization).to(be(true))
-        expect(realtime.auth.tokenDetails).to(beIdenticalTo(tokenDetailsLast))
-        expect(realtime.auth.tokenDetails?.token).to(equal(tokenDetailsLast?.token))
+        XCTAssertTrue(didCancelAuthorization)
+        XCTAssertTrue(realtime.auth.tokenDetails === tokenDetailsLast)
+        XCTAssertEqual(realtime.auth.tokenDetails?.token, tokenDetailsLast?.token)
 
         if let transport = realtime.internal.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
             expect(query).to(haveParam("accessToken", withValue: realtime.auth.tokenDetails?.token ?? ""))

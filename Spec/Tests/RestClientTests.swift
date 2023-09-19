@@ -1456,7 +1456,7 @@ class RestClientTests: XCTestCase {
             $0.allHTTPHeaderFields!["Host"] == $0.url?.host
         }
 
-        expect(fallbackRequests.count).to(be(fallbackRequestsWithHostHeader.count))
+        XCTAssertEqual(fallbackRequests.count, fallbackRequestsWithHostHeader.count)
 
         afterEach__RestClient__Host_Fallback__retry_hosts_in_random_order()
     }
@@ -2071,7 +2071,7 @@ class RestClientTests: XCTestCase {
         }
 
         expect(fallbackRequests).toNot(beEmpty())
-        expect(fallbackRequests).to(allPass { extractURLQueryValue($0?.url, key: "request_id") == requestId })
+        expect(fallbackRequests).to(allPass { extractURLQueryValue($0.url, key: "request_id") == requestId })
     }
 
     func test__097__RestClient__request_IDs__ErrorInfo_should_have__requestId__property() {
