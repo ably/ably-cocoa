@@ -1744,7 +1744,7 @@ extension ARTPresenceAction : CustomStringConvertible {
 // MARK: - Custom Nimble Matchers
 
 /// A Nimble matcher that succeeds when two dates are quite the same.
-public func beCloseTo(_ expectedValue: Date) -> Predicate<Date> {
+public func beCloseTo(_ expectedValue: Date) -> Nimble.Predicate<Date> {
     let errorMessage = "be close to <\(expectedValue)> (within 0.5)"
     return Predicate.simple(errorMessage) { actualExpression in
         guard let actualValue = try actualExpression.evaluate() else {
@@ -1758,7 +1758,7 @@ public func beCloseTo(_ expectedValue: Date) -> Predicate<Date> {
 }
 
 /// A Nimble matcher that succeeds when a param exists.
-public func haveParam(_ key: String, withValue expectedValue: String? = nil) -> Predicate<String> {
+public func haveParam(_ key: String, withValue expectedValue: String? = nil) -> Nimble.Predicate<String> {
     let errorMessage = "param <\(key)=\(expectedValue ?? "nil")> exists"
     return Predicate.simple(errorMessage) { actualExpression in
         guard let actualValue = try actualExpression.evaluate() else {
@@ -1776,7 +1776,7 @@ public func haveParam(_ key: String, withValue expectedValue: String? = nil) -> 
 }
 
 /// A Nimble matcher that succeeds when a param value starts with a particular string.
-public func haveParam(_ key: String, hasPrefix expectedValue: String) -> Predicate<String> {
+public func haveParam(_ key: String, hasPrefix expectedValue: String) -> Nimble.Predicate<String> {
     let errorMessage = "param <\(key)> has prefix \(expectedValue)"
     return Predicate.simple(errorMessage) { actualExpression in
         guard let actualValue = try actualExpression.evaluate() else {

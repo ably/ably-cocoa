@@ -225,7 +225,7 @@ class RealtimeClientTests: XCTestCase {
                     /**
                      Test that replacing query string default values in ARTClientOptions works properly
                      */
-                    expect(absoluteString.components(separatedBy: "v=").count).to(be(2))
+                    XCTAssertEqual(absoluteString.components(separatedBy: "v=").count, 2)
                 } else {
                     XCTFail("Expected webSocketTransport.websocketURL?.absoluteString to be non-nil")
                 }
