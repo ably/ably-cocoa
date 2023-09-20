@@ -23,9 +23,9 @@ jobs:
       - name: Check out SDK repo
         uses: actions/checkout@v2
         
-      - name: Select Specific Xcode Version (14.2)
+      - name: Select Specific Xcode Version (14.3.1)
         run: |
-          sudo xcode-select -s /Applications/Xcode_14.2.app
+          sudo xcode-select -s /Applications/Xcode_14.3.1.app
           echo "Selected Xcode version:"
           xcodebuild -version
 
