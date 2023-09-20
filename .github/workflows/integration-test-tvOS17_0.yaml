@@ -1,4 +1,4 @@
-name: "Integration Test: iOS 16.2"
+name: "Integration Test: tvOS 17.0"
 
 on:
   pull_request:
@@ -59,8 +59,8 @@ jobs:
           brew install xcbeautify
           make submodules
           bundle install
-          make update_carthage_dependencies_ios
-          bundle exec fastlane test_iOS16_2
+          make update_carthage_dependencies_tvos
+          bundle exec fastlane test_tvOS17_0
 
       - name: Check Static Analyzer Output
         id: analyzer-output
@@ -76,7 +76,7 @@ jobs:
         if: ${{ failure() && steps.analyzer-output.outcome == 'failure' }}
         uses: actions/upload-artifact@v2
         with:
-          name: static-analyzer-reports-test_iOS16_2
+          name: static-analyzer-reports-test_tvOS17_0
           path: ./derived_data/**/report-*.html
 
       - name: Run Examples Tests
@@ -84,12 +84,7 @@ jobs:
         run: |
           pod repo update
           pod install
-          bundle exec fastlane scan -s Tests --output-directory "fastlane/test_output/examples/test_iOS16_2"
-
-      - name: Build APNS Example Project
-        working-directory: ./Examples/AblyPush
-        run: |
-          xcodebuild build -scheme "AblyPushExample" -destination "platform=iOS Simulator,name=iPhone 14" -configuration "Debug"
+          bundle exec fastlane scan -s Tests --output-directory "fastlane/test_output/examples/test_tvOS_17_0"
       
       - name: Xcodebuild Logs Artifact
         if: always()
