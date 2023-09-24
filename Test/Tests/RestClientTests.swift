@@ -34,7 +34,7 @@ private func testUsesAlternativeHost(_ caseTest: FakeNetworkResponse, channelNam
     let channel = client.channels.get(channelName)
 
     waitUntil(timeout: testTimeout) { done in
-        channel.publish(nil, data: "nil") { _ in
+        channel.publish(String.nil, data: "nil") { _ in
             done()
         }
     }
@@ -58,7 +58,7 @@ private func testStoresSuccessfulFallbackHostAsDefaultHost(_ caseTest: FakeNetwo
     let channel = client.channels.get(channelName)
 
     waitUntil(timeout: testTimeout) { done in
-        channel.publish(nil, data: "nil") { _ in
+        channel.publish(String.nil, data: "nil") { _ in
             done()
         }
     }
@@ -71,7 +71,7 @@ private func testStoresSuccessfulFallbackHostAsDefaultHost(_ caseTest: FakeNetwo
     let usedFallbackURL = testHTTPExecutor.requests[1].url!
 
     waitUntil(timeout: testTimeout) { done in
-        channel.publish(nil, data: "nil") { _ in
+        channel.publish(String.nil, data: "nil") { _ in
             done()
         }
     }
@@ -96,14 +96,14 @@ private func testRestoresDefaultPrimaryHostAfterTimeoutExpires(_ caseTest: FakeN
     let channel = client.channels.get(channelName)
 
     waitUntil(timeout: testTimeout) { done in
-        channel.publish(nil, data: "nil") { _ in
+        channel.publish(String.nil, data: "nil") { _ in
             done()
         }
     }
 
     waitUntil(timeout: testTimeout) { done in
         delay(1.1) {
-            channel.publish(nil, data: "nil") { _ in
+            channel.publish(String.nil, data: "nil") { _ in
                 done()
             }
         }
@@ -126,7 +126,7 @@ private func testUsesAnotherFallbackHost(_ caseTest: FakeNetworkResponse, channe
     let channel = client.channels.get(channelName)
 
     waitUntil(timeout: testTimeout) { done in
-        channel.publish(nil, data: "nil") { _ in
+        channel.publish(String.nil, data: "nil") { _ in
             done()
         }
     }
@@ -156,7 +156,7 @@ class RestClientTests: XCTestCase {
         client.internal.httpExecutor = testHTTPExecutor
         let channel = client.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: "message") { error in
+            channel.publish(String.nil, data: "message") { error in
                 XCTAssertNil(error)
                 let version = testHTTPExecutor.requests.first!.allHTTPHeaderFields?["X-Ably-Version"]
 
@@ -391,7 +391,7 @@ class RestClientTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             let start = NSDate()
-            channel.publish(nil, data: "message") { error in
+            channel.publish(String.nil, data: "message") { error in
                 let end = NSDate()
                 expect(end.timeIntervalSince(start as Date)).to(beCloseTo(options.httpRequestTimeout, within: 0.5))
                 XCTAssertNotNil(error)
@@ -424,7 +424,7 @@ class RestClientTests: XCTestCase {
 
         let channel = client.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: "nil") { _ in
+            channel.publish(String.nil, data: "nil") { _ in
                 done()
             }
         }
@@ -445,7 +445,7 @@ class RestClientTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
             let start = Date()
-            channel.publish(nil, data: "nil") { _ in
+            channel.publish(String.nil, data: "nil") { _ in
                 let end = Date()
                 expect(end.timeIntervalSince(start)).to(beCloseTo(options.httpMaxRetryDuration, within: 0.9))
                 done()
@@ -475,7 +475,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
         waitUntil(timeout: testTimeout) { done in
-            client.channels.get(test.uniqueChannelName()).publish(nil, data: "message") { error in
+            client.channels.get(test.uniqueChannelName()).publish(String.nil, data: "message") { error in
                 XCTAssertNotNil(error)
                 done()
             }
@@ -644,7 +644,7 @@ class RestClientTests: XCTestCase {
         }
         let rest = ARTRest(key: "\(keyName):\(keySecret)")
         waitUntil(timeout: testTimeout) { done in
-            rest.channels.get(test.uniqueChannelName()).publish(nil, data: "testing") { error in
+            rest.channels.get(test.uniqueChannelName()).publish(String.nil, data: "testing") { error in
                 XCTAssertNil(error)
                 done()
             }
@@ -901,7 +901,7 @@ class RestClientTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: "") { error in
+            channel.publish(String.nil, data: "") { error in
                 XCTAssertNil(error)
                 done()
             }
@@ -929,7 +929,7 @@ class RestClientTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: "") { error in
+            channel.publish(String.nil, data: "") { error in
                 expect(error?.message).to(contain("hostname could not be found"))
                 done()
             }
@@ -956,7 +956,7 @@ class RestClientTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: "") { error in
+            channel.publish(String.nil, data: "") { error in
                 expect(error?.message).to(contain("hostname could not be found"))
                 done()
             }
@@ -982,7 +982,7 @@ class RestClientTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: "") { error in
+            channel.publish(String.nil, data: "") { error in
                 expect(error?.message).to(contain("hostname could not be found"))
                 done()
             }
@@ -1008,7 +1008,7 @@ class RestClientTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: "") { error in
+            channel.publish(String.nil, data: "") { error in
                 expect(error?.message).to(contain("hostname could not be found"))
                 done()
             }
@@ -1036,7 +1036,7 @@ class RestClientTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: "") { error in
+            channel.publish(String.nil, data: "") { error in
                 XCTAssertNil(error)
                 done()
             }
@@ -1062,7 +1062,7 @@ class RestClientTests: XCTestCase {
         mockHTTP.setNetworkState(network: .hostUnreachable)
         let channel = client.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: "message") { error in
+            channel.publish(String.nil, data: "message") { error in
                 expect(error?.message).to(contain("hostname could not be found"))
                 done()
             }
@@ -1086,7 +1086,7 @@ class RestClientTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: "") { error in
+            channel.publish(String.nil, data: "") { error in
                 expect(error?.message).to(contain("hostname could not be found"))
                 done()
             }
@@ -1112,7 +1112,7 @@ class RestClientTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: "") { error in
+            channel.publish(String.nil, data: "") { error in
                 XCTAssertNil(error)
                 done()
             }
@@ -1139,7 +1139,7 @@ class RestClientTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: "") { error in
+            channel.publish(String.nil, data: "") { error in
                 expect(error?.message).to(contain("hostname could not be found"))
                 done()
             }
@@ -1167,7 +1167,7 @@ class RestClientTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: "") { error in
+            channel.publish(String.nil, data: "") { error in
                 expect(error?.message).to(contain("hostname could not be found"))
                 done()
             }
@@ -1197,7 +1197,7 @@ class RestClientTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: "nil") { error in
+            channel.publish(String.nil, data: "nil") { error in
                 XCTAssertNil(error)
                 done()
             }
@@ -1222,7 +1222,7 @@ class RestClientTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: "nil") { _ in
+            channel.publish(String.nil, data: "nil") { _ in
                 done()
             }
         }
@@ -1246,7 +1246,7 @@ class RestClientTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: "nil") { _ in
+            channel.publish(String.nil, data: "nil") { _ in
                 done()
             }
         }
@@ -1275,7 +1275,7 @@ class RestClientTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: "nil") { _ in
+            channel.publish(String.nil, data: "nil") { _ in
                 done()
             }
         }
@@ -1283,7 +1283,7 @@ class RestClientTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             // RSC15j exception
             delay(1.1) {
-                channel.publish(nil, data: "nil") { _ in
+                channel.publish(String.nil, data: "nil") { _ in
                     done()
                 }
             }
@@ -1329,7 +1329,7 @@ class RestClientTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: "nil") { _ in
+            channel.publish(String.nil, data: "nil") { _ in
                 done()
             }
         }
@@ -1365,7 +1365,7 @@ class RestClientTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: "nil") { _ in
+            channel.publish(String.nil, data: "nil") { _ in
                 done()
             }
         }
@@ -1395,7 +1395,7 @@ class RestClientTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: "nil") { _ in
+            channel.publish(String.nil, data: "nil") { _ in
                 done()
             }
         }
@@ -1427,7 +1427,7 @@ class RestClientTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: "nil") { _ in
+            channel.publish(String.nil, data: "nil") { _ in
                 done()
             }
         }
@@ -1460,7 +1460,7 @@ class RestClientTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: "nil") { _ in
+            channel.publish(String.nil, data: "nil") { _ in
                 done()
             }
         }
@@ -1492,7 +1492,7 @@ class RestClientTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: "nil") { _ in
+            channel.publish(String.nil, data: "nil") { _ in
                 done()
             }
         }
@@ -1525,7 +1525,7 @@ class RestClientTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: "nil") { _ in
+            channel.publish(String.nil, data: "nil") { _ in
                 done()
             }
         }
@@ -1564,7 +1564,7 @@ class RestClientTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
 
         waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: "nil") { _ in
+            channel.publish(String.nil, data: "nil") { _ in
                 done()
             }
         }
@@ -1630,7 +1630,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
         waitUntil(timeout: testTimeout) { done in
-            rest.channels.get(test.uniqueChannelName(prefix: "rest")).publish(nil, data: "message") { _ in
+            rest.channels.get(test.uniqueChannelName(prefix: "rest")).publish(String.nil, data: "message") { _ in
                 done()
             }
         }
@@ -1646,7 +1646,7 @@ class RestClientTests: XCTestCase {
         let realtime = AblyTests.newRealtime(options).client
         defer { realtime.close() }
         waitUntil(timeout: testTimeout) { done in
-            realtime.channels.get(test.uniqueChannelName(prefix: "realtime")).publish(nil, data: "message") { _ in
+            realtime.channels.get(test.uniqueChannelName(prefix: "realtime")).publish(String.nil, data: "message") { _ in
                 done()
             }
         }
@@ -1668,7 +1668,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         rest.internal.httpExecutor = testHTTPExecutor
         waitUntil(timeout: testTimeout) { done in
-            rest.channels.get(test.uniqueChannelName(prefix: "rest")).publish(nil, data: "message") { _ in
+            rest.channels.get(test.uniqueChannelName(prefix: "rest")).publish(String.nil, data: "message") { _ in
                 done()
             }
         }
@@ -1684,7 +1684,7 @@ class RestClientTests: XCTestCase {
         let realtime = AblyTests.newRealtime(options).client
         defer { realtime.close() }
         waitUntil(timeout: testTimeout) { done in
-            realtime.channels.get(test.uniqueChannelName(prefix: "realtime")).publish(nil, data: "message") { _ in
+            realtime.channels.get(test.uniqueChannelName(prefix: "realtime")).publish(String.nil, data: "message") { _ in
                 done()
             }
         }
@@ -1702,7 +1702,7 @@ class RestClientTests: XCTestCase {
         testHTTPExecutor = TestProxyHTTPExecutor(logger: .init(clientOptions: options))
         client.internal.httpExecutor = testHTTPExecutor
         waitUntil(timeout: testTimeout) { done in
-            client.channels.get(test.uniqueChannelName()).publish(nil, data: "message") { error in
+            client.channels.get(test.uniqueChannelName()).publish(String.nil, data: "message") { error in
                 XCTAssertNil(error)
                 guard let headerAblyVersion = testHTTPExecutor.requests.first?.allHTTPHeaderFields?["X-Ably-Version"] else {
                     fail("X-Ably-Version header not found"); done()
@@ -1729,7 +1729,7 @@ class RestClientTests: XCTestCase {
         client.internal.httpExecutor = testHTTPExecutor
         let channel = client.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: "message") { error in
+            channel.publish(String.nil, data: "message") { error in
                 XCTAssertNil(error)
                 let headerAgent = testHTTPExecutor.requests.first!.allHTTPHeaderFields?["Ably-Agent"]
                 let ablyAgent = ARTClientInformation.agentIdentifier(withAdditionalAgents: options.agents)
@@ -1748,7 +1748,7 @@ class RestClientTests: XCTestCase {
         let client = ARTRest(options: options)
         waitUntil(timeout: testTimeout) { done in
             delay(0.1) {
-                client.channels.get(test.uniqueChannelName()).publish(nil, data: "message") { error in
+                client.channels.get(test.uniqueChannelName()).publish(String.nil, data: "message") { error in
                     guard let error = error else {
                         fail("Error is empty"); done()
                         return
@@ -1948,7 +1948,7 @@ class RestClientTests: XCTestCase {
         let rest = ARTRest(options: options)
         let channel = rest.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
-            channel.publish("a", data: nil) { error in
+            channel.publish("a", data: String.nil) { error in
                 XCTAssertNil(error)
                 done()
             }
@@ -1998,7 +1998,7 @@ class RestClientTests: XCTestCase {
         let rest = ARTRest(options: options)
         let channel = rest.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
-            channel.publish("a", data: nil) { error in
+            channel.publish("a", data: String.nil) { error in
                 XCTAssertNil(error)
                 done()
             }
@@ -2076,7 +2076,7 @@ class RestClientTests: XCTestCase {
         let mockHttpExecutor = MockHTTPExecutor()
         restA.internal.httpExecutor = mockHttpExecutor
         waitUntil(timeout: testTimeout) { done in
-            restA.channels.get(test.uniqueChannelName()).publish(nil, data: "something") { error in
+            restA.channels.get(test.uniqueChannelName()).publish(String.nil, data: "something") { error in
                 XCTAssertNil(error)
                 guard let url = mockHttpExecutor.requests.first?.url else {
                     fail("No requests found")
@@ -2093,7 +2093,7 @@ class RestClientTests: XCTestCase {
         let restB = ARTRest(options: options)
         restB.internal.httpExecutor = mockHttpExecutor
         waitUntil(timeout: testTimeout) { done in
-            restB.channels.get(test.uniqueChannelName()).publish(nil, data: "something") { error in
+            restB.channels.get(test.uniqueChannelName()).publish(String.nil, data: "something") { error in
                 XCTAssertNil(error)
                 XCTAssertEqual(mockHttpExecutor.requests.count, 1)
                 guard let url = mockHttpExecutor.requests.first?.url else {
@@ -2130,7 +2130,7 @@ class RestClientTests: XCTestCase {
         var requestId: String = ""
         let channel = client.channels.get(test.uniqueChannelName())
         waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: "something") { error in
+            channel.publish(String.nil, data: "something") { error in
                 guard let error = error else {
                     fail("Expecting an error"); done(); return
                 }
@@ -2158,7 +2158,7 @@ class RestClientTests: XCTestCase {
         rest.internal.httpExecutor = mockHttpExecutor
 
         waitUntil(timeout: testTimeout) { done in
-            rest.channels.get(test.uniqueChannelName()).publish(nil, data: "something") { error in
+            rest.channels.get(test.uniqueChannelName()).publish(String.nil, data: "something") { error in
                 XCTAssertNotNil(error)
                 XCTAssertNotNil(error?.requestId)
                 done()

@@ -1957,3 +1957,8 @@ extension ARTErrorCode {
         return NSInteger(rawValue)
     }
 }
+
+// Xcode 15 requires contextual type for nils in swift
+extension String {
+    static let `nil`: Self? = nil
+}
