@@ -1734,7 +1734,7 @@ class RestClientTests: XCTestCase {
                 let headerAgent = testHTTPExecutor.requests.first!.allHTTPHeaderFields?["Ably-Agent"]
                 let ablyAgent = ARTClientInformation.agentIdentifier(withAdditionalAgents: options.agents)
                 XCTAssertEqual(headerAgent, ablyAgent)
-                XCTAssertTrue(headerAgent!.hasPrefix("ably-cocoa/1.2.21-beta.1"))
+                XCTAssertTrue(headerAgent!.hasPrefix("ably-cocoa/1.2.21"))
                 done()
             }
         }
@@ -1822,7 +1822,7 @@ class RestClientTests: XCTestCase {
         let url = try XCTUnwrap(request.url, "No request url found")
         let acceptHeaderValue = try XCTUnwrap(request.allHTTPHeaderFields?["Accept"], "Accept HTTP Header is missing")
         
-        XCTAssertEqual(request.httpMethod, "patch")
+        XCTAssertEqual(request.httpMethod!.uppercased(), "PATCH")
         XCTAssertEqual(url.absoluteString, "https://rest.ably.io:443/feature?foo=1")
         XCTAssertEqual(acceptHeaderValue, "application/x-msgpack,application/json")
     }
