@@ -91,7 +91,7 @@ carthage_package:
 
 	# https://github.com/Carthage/Carthage#archive-prebuilt-frameworks-into-one-zip-file
 	# From `carthage help build` we are told that `--archive` implies `--no-skip-current`.
-	./Scripts/carthage-with-workaround-for-issue-3019.sh build --archive --no-use-binaries
+	./Scripts/carthage-with-workaround-for-issue-3019.sh build --archive --no-use-binaries --platform iOS,macOS,tvOS
 	# Add LICENSE files (ours and SocketRocket’s).
 	./Scripts/add-licenses-to-carthage-output.sh
 
@@ -105,7 +105,7 @@ carthage_clean:
 update_carthage_dependencies:
 	$(info Updating Carthage dependencies for all platforms…)
 
-	carthage update --use-xcframeworks --no-use-binaries
+	carthage update --use-xcframeworks --platform iOS,macOS,tvOS --no-use-binaries
 
 ## [Carthage] Update dependencies for just iOS
 update_carthage_dependencies_ios:
