@@ -1755,9 +1755,9 @@ class RestClientTests: XCTestCase {
         let url = try XCTUnwrap(request.url, "No request url found")
         let acceptHeaderValue = try XCTUnwrap(request.allHTTPHeaderFields?["Accept"], "Accept HTTP Header is missing")
         
-        expect(request.httpMethod) == "patch"
-        expect(url.absoluteString).to(equal("https://rest.ably.io:443/feature?foo=1"))
-        expect(acceptHeaderValue).to(equal("application/x-msgpack,application/json"))
+        XCTAssertEqual(request.httpMethod!.uppercased(), "PATCH")
+        XCTAssertEqual(url.absoluteString, "https://rest.ably.io:443/feature?foo=1")
+        XCTAssertEqual(acceptHeaderValue, "application/x-msgpack,application/json")
     }
 
     func test__087__RestClient__request__method_signature_and_arguments__should_add_a_HTTP_body() throws {
