@@ -3721,10 +3721,13 @@ class RealtimeClientChannelTests: XCTestCase {
             attachedMessageWithError.action = .attached
             attachedMessageWithError.channel = channel.name
 
-            channel.once(.update) { stateChange in
+            channel.on { stateChange in
                 XCTAssertEqual(stateChange.event, ARTChannelEvent.update)
+                XCTAssertEqual(stateChange.current, ARTRealtimeChannelState.attached)
+                XCTAssertEqual(stateChange.previous, ARTRealtimeChannelState.attached)
                 XCTAssertTrue(stateChange.reason === attachedMessageWithError.error)
-                XCTAssertTrue(channel.errorReason === stateChange.reason)
+                XCTAssertTrue(stateChange.reason === channel.errorReason)
+                XCTAssertFalse(stateChange.resumed)
                 done()
             }
 
