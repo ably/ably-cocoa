@@ -3733,6 +3733,14 @@ class RealtimeClientChannelTests: XCTestCase {
 
             // Inject additional ATTACHED action with an error
             client.internal.transport?.receive(attachedMessageWithError)
+            
+            let attachedMessage = ARTProtocolMessage()
+            attachedMessage.action = .attached
+            attachedMessage.channel = channel.name
+            attachedMessage.flags = 4 // resume
+            
+            // Inject another ATTACHED action with resume flag, should not generate neither .attached nor .update events
+            client.internal.transport?.receive(attachedMessage)
         }
         XCTAssertEqual(channel.state, ARTRealtimeChannelState.attached)
     }
