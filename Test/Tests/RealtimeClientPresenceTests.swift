@@ -777,7 +777,17 @@ class RealtimeClientPresenceTests: XCTestCase {
         let mainChannel = mainClient.channels.get(channelName)
         
         waitUntil(timeout: testTimeout) { done in
-            let partialDone = AblyTests.splitDone(5, done: done)
+            let partialDone = AblyTests.splitDone(4, done: done)
+            mainChannel.presence.subscribe { message in
+                if message.clientId == "main" {
+                    XCTAssertEqual(message.action, ARTPresenceAction.enter)
+                    partialDone()
+                }
+                else if message.clientId == "leaves" {
+                    XCTAssertEqual(message.action, ARTPresenceAction.present) // .enter was replaced by .present (RTP2d)
+                    partialDone()
+                }
+            }
             mainChannel.presence.enter(nil) { error in
                 XCTAssertNil(error)
                 partialDone()
@@ -786,29 +796,24 @@ class RealtimeClientPresenceTests: XCTestCase {
                 XCTAssertNil(error)
                 partialDone()
             }
+        }
+        
+        mainChannel.presence.unsubscribe()
+        
+        waitUntil(timeout: testTimeout) { done in
             mainChannel.presence.get { members, error in
                 XCTAssertNil(error)
                 if let members {
-                    XCTAssertEqual(members.count, 3) // "user1", "user2", "leaves"
+                    XCTAssertEqual(members.count, 4) // "main", "user1", "user2", "leaves"
                 } else {
                     XCTFail("Expected members to be non-nil")
                 }
-                partialDone()
-            }
-            mainChannel.presence.subscribe { message in
-                if message.clientId == "main" {
-                    XCTAssertEqual(message.action, ARTPresenceAction.enter)
-                    mainChannel.presence.unsubscribe()
-                    partialDone()
-                }
-                else if message.clientId == "leaves" {
-                    XCTAssertEqual(message.action, ARTPresenceAction.present) // .enter was replaced by .present (RTP2d)
-                    partialDone()
-                }
+                done()
             }
         }
 
         var presenceEvents = [ARTPresenceMessage]()
+        
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(4, done: done)
             mainChannel.presence.subscribe { presence in
@@ -841,6 +846,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         XCTAssertEqual(presenceEvents[0].clientId, "leaves")
 
         mainChannel.presence.unsubscribe()
+        
         waitUntil(timeout: testTimeout) { done in
             mainChannel.presence.get { members, error in
                 XCTAssertNil(error)
