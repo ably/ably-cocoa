@@ -1507,7 +1507,7 @@ class RestClientTests: XCTestCase {
             $0.allHTTPHeaderFields!["Host"] == $0.url?.host
         }
 
-        expect(fallbackRequests.count).to(be(fallbackRequestsWithHostHeader.count))
+        XCTAssertEqual(fallbackRequests.count, fallbackRequestsWithHostHeader.count)
     }
 
     func test__073__RestClient__Host_Fallback__retry_hosts_in_random_order__if_an_empty_array_of_fallback_hosts_is_provided__then_fallback_host_functionality_is_disabled() {
@@ -1734,7 +1734,7 @@ class RestClientTests: XCTestCase {
                 let headerAgent = testHTTPExecutor.requests.first!.allHTTPHeaderFields?["Ably-Agent"]
                 let ablyAgent = ARTClientInformation.agentIdentifier(withAdditionalAgents: options.agents)
                 XCTAssertEqual(headerAgent, ablyAgent)
-                XCTAssertTrue(headerAgent!.hasPrefix("ably-cocoa/1.2.21-beta.1"))
+                XCTAssertTrue(headerAgent!.hasPrefix("ably-cocoa/1.2.21"))
                 done()
             }
         }
@@ -1822,7 +1822,7 @@ class RestClientTests: XCTestCase {
         let url = try XCTUnwrap(request.url, "No request url found")
         let acceptHeaderValue = try XCTUnwrap(request.allHTTPHeaderFields?["Accept"], "Accept HTTP Header is missing")
         
-        XCTAssertEqual(request.httpMethod, "patch")
+        XCTAssertEqual(request.httpMethod!.uppercased(), "PATCH")
         XCTAssertEqual(url.absoluteString, "https://rest.ably.io:443/feature?foo=1")
         XCTAssertEqual(acceptHeaderValue, "application/x-msgpack,application/json")
     }
@@ -2144,7 +2144,7 @@ class RestClientTests: XCTestCase {
         }
 
         expect(fallbackRequests).toNot(beEmpty())
-        expect(fallbackRequests).to(allPass { extractURLQueryValue($0?.url, key: "request_id") == requestId })
+        expect(fallbackRequests).to(allPass { extractURLQueryValue($0.url, key: "request_id") == requestId })
     }
 
     func test__097__RestClient__request_IDs__ErrorInfo_should_have__requestId__property() {
