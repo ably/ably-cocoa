@@ -829,6 +829,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 }
                 leavesChannel.presence.leave(nil) { error in
                     XCTAssertNil(error)
+                    XCTAssertEqual(mainChannel.state, .suspended)
                     partialDone()
                 }
                 partialDone()
