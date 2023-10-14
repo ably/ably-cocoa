@@ -813,7 +813,10 @@ class RealtimeClientPresenceTests: XCTestCase {
         }
 
         var presenceEvents = [ARTPresenceMessage]()
-        
+        var mainSuspendedAt = Date()
+        var mainAttachedAt = Date()
+        var clientLeftAt = Date()
+
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(4, done: done)
             mainChannel.presence.subscribe { presence in
@@ -823,19 +826,21 @@ class RealtimeClientPresenceTests: XCTestCase {
                 }
             }
             mainChannel.once(.suspended) { _ in
+                mainSuspendedAt = Date()
                 mainChannel.internalSync { _internal in
                     XCTAssertEqual(_internal.presenceMap.members.count, 4) // "main", "user1", "user2", "leaves"
                     XCTAssertEqual(_internal.presenceMap.localMembers.count, 1) // "main"
                 }
                 leavesChannel.presence.leave(nil) { error in
                     XCTAssertNil(error)
-                    XCTAssertEqual(mainChannel.state, .suspended)
+                    clientLeftAt = Date()
                     partialDone()
                 }
                 partialDone()
             }
             mainChannel.once(.attached) { stateChange in
                 XCTAssertNil(stateChange.reason)
+                mainAttachedAt = Date()
                 partialDone()
             }
             mainChannel.internalAsync { _internal in
@@ -845,6 +850,9 @@ class RealtimeClientPresenceTests: XCTestCase {
         XCTAssertEqual(presenceEvents.count, 1)
         XCTAssertEqual(presenceEvents[0].action, ARTPresenceAction.leave)
         XCTAssertEqual(presenceEvents[0].clientId, "leaves")
+        
+        XCTAssertTrue(mainSuspendedAt < clientLeftAt)
+        XCTAssertTrue(clientLeftAt < mainAttachedAt)
 
         mainChannel.presence.unsubscribe()
         
