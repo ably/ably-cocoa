@@ -141,7 +141,7 @@ NSString *ARTRealtimeConnectionEventToStr(ARTRealtimeConnectionEvent event) {
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"%@ - \n\t current: %@; \n\t previous: %@; \n\t reason: %@; \n\t resumed: %d; \n\t retryAttempt: %@; \n", [super description], ARTRealtimeChannelStateToStr(_current), ARTRealtimeChannelStateToStr(_previous), _reason, _resumed, _retryAttempt];
+    return [NSString stringWithFormat:@"%@ - \n\t current: %@; \n\t previous: %@; \n\t event: %@; \n\t reason: %@; \n\t resumed: %d; \n\t retryAttempt: %@; \n", [super description], ARTRealtimeChannelStateToStr(_current), ARTRealtimeChannelStateToStr(_previous), ARTChannelEventToStr(_event), _reason, _resumed, _retryAttempt];
 }
 
 @end
