@@ -25,7 +25,7 @@ jobs:
         
       - name: Select Specific Xcode Version (14.2)
         run: |
-          sudo xcode-select -s /Applications/Xcode_14.2.app
+          sudo xcode-select -s /Applications/Xcode_15.0.app
           echo "Selected Xcode version:"
           xcodebuild -version
 
