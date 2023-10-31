@@ -1825,7 +1825,7 @@ class AuthTests: XCTestCase {
         var rest: ARTRest!
 
         options.authCallback = { tokenParams, completion in
-            expect(tokenParams.clientId).to(beIdenticalTo(expectedTokenParams.clientId))
+            expect(tokenParams.clientId).to(equal(expectedTokenParams.clientId))
             rest.auth.createTokenRequest(tokenParams, options: options) { tokenRequest, error in
                 completion(tokenRequest, error)
             }

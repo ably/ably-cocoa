@@ -221,7 +221,7 @@ class RealtimeClientTests: XCTestCase {
                 /**
                  Test that replacing query string default values in ARTClientOptions works properly
                  */
-                XCTAssertEqual(absoluteString.components(separatedBy: "v=").count, 2)
+                XCTAssertEqual(absoluteString!.components(separatedBy: "v=").count, 2)
 
                 done()
             }

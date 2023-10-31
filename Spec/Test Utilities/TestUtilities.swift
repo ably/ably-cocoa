@@ -175,7 +175,6 @@ class AblyTests {
         let keysArray = app["keys"] as! [[String: Any]]
         let key = keysArray[0]
         options.key = key["keyStr"] as? String
-        options.key = key["keyStr"].stringValue
         options.dispatchQueue = DispatchQueue.main
         options.internalDispatchQueue = queue
         if debug {
