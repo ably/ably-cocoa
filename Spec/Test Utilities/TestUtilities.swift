@@ -744,6 +744,7 @@ enum FakeNetworkResponse {
     case requestTimeout(timeout: TimeInterval)
     case hostInternalError(code: Int)
     case host400BadRequest
+    case arbitraryError
 
     var error: NSError {
         switch self {
@@ -757,6 +758,8 @@ enum FakeNetworkResponse {
             return NSError(domain: AblyTestsErrorDomain, code: code, userInfo: [NSLocalizedDescriptionKey: "internal error", NSLocalizedFailureReasonErrorKey: AblyTestsErrorDomain + ".FakeNetworkResponse"])
         case .host400BadRequest:
             return NSError(domain: AblyTestsErrorDomain, code: 400, userInfo: [NSLocalizedDescriptionKey: "bad request", NSLocalizedFailureReasonErrorKey: AblyTestsErrorDomain + ".FakeNetworkResponse"])
+        case .arbitraryError:
+            return NSError(domain: AblyTestsErrorDomain, code: 1, userInfo: [NSLocalizedDescriptionKey: "error from FakeNetworkResponse.arbitraryError"])
         }
     }
 
@@ -772,6 +775,8 @@ enum FakeNetworkResponse {
             return ARTRealtimeTransportError(error: error, badResponseCode: code, url: url)
         case .host400BadRequest:
             return ARTRealtimeTransportError(error: error, badResponseCode: 400, url: url)
+        case .arbitraryError:
+            return ARTRealtimeTransportError(error: error, type: .other, url: url)
         }
     }
 }
@@ -857,6 +862,8 @@ class MockHTTP: ARTHttp {
             requestCallback?(HTTPURLResponse(url: URL(string: "http://cocoa.test.suite")!, statusCode: code, httpVersion: nil, headerFields: nil), nil, nil)
         case .host400BadRequest:
             requestCallback?(HTTPURLResponse(url: URL(string: "http://cocoa.test.suite")!, statusCode: 400, httpVersion: nil, headerFields: nil), nil, nil)
+        case .arbitraryError:
+            requestCallback?(nil, nil, NSError(domain: AblyTestsErrorDomain, code: 1, userInfo: [NSLocalizedDescriptionKey: "error from FakeNetworkResponse.arbitraryError"]))
         }
     }
 
@@ -1232,7 +1239,8 @@ class TestProxyTransport: ARTWebSocketTransport {
             case .noInternet,
                  .hostUnreachable,
                  .hostInternalError,
-                 .host400BadRequest:
+                 .host400BadRequest,
+                 .arbitraryError:
                 performFakeConnectionError(0.1, error: networkResponse.transportError(for: url))
             case .requestTimeout(let timeout):
                 performFakeConnectionError(0.1 + timeout, error: networkResponse.transportError(for: url))
@@ -1613,9 +1621,11 @@ extension ARTWebSocketTransport {
     }
 
     func simulateIncomingError() {
-        let error = NSError(domain: ARTAblyErrorDomain, code: 0, userInfo: [NSLocalizedDescriptionKey:"Fail test"])
-        let webSocketDelegate = self as ARTWebSocketDelegate
-        webSocketDelegate.webSocket(self.websocket!, didFailWithError: error)
+        // Simulate receiving an ERROR ProtocolMessage, which should put a client into the FAILED state (per RTN15i)
+        let protocolMessage = ARTProtocolMessage()
+        protocolMessage.action = .error
+        protocolMessage.error = ARTErrorInfo.create(withCode: 50000 /* arbitrarily chosen */, message: "Fail test")
+        receive(protocolMessage)
     }
 }
 

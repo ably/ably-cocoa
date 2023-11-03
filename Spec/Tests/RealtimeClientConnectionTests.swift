@@ -2208,7 +2208,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     }
 
     // RTN14d
-    func test__059__Connection__connection_request_fails__connection_attempt_fails_for_any_recoverable_reason() {
+    func test__059__Connection__connection_request_fails__connection_attempt_fails_for_any_recoverable_reason__for_example_a_timeout() {
         let options = AblyTests.commonAppSetup()
         options.realtimeHost = "10.255.255.1" // non-routable IP address
         options.disconnectedRetryTimeout = 1.0
@@ -2241,6 +2241,58 @@ class RealtimeClientConnectionTests: XCTestCase {
 
             client.connection.once(.disconnected) { stateChange in
                 expect(stateChange.reason!.message).to(contain("timed out"))
+                expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.connecting))
+                expect(stateChange.retryIn).to(beCloseTo(options.disconnectedRetryTimeout))
+                partialDone()
+                start = NSDate()
+            }
+
+            client.connection.on(.suspended) { _ in
+                let end = NSDate()
+                expect(end.timeIntervalSince(start! as Date)).to(beCloseTo(expectedTime, within: 0.9))
+                partialDone()
+            }
+
+            client.connect()
+
+            client.connection.on(.connecting) { stateChange in
+                expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.disconnected))
+                totalRetry += 1
+            }
+        }
+
+        expect(totalRetry).to(equal(Int(expectedTime / options.disconnectedRetryTimeout)))
+    }
+
+    // RTN14d
+    // This is a slightly-modified copy of test__059 above, based on the test changes introduced in 86b7cc7. Since this cherry-pick is being done on a branch we intend to eventually throw away, I was happy to just make a copy instead of cherry-picking the refactoring introduced in 30a0979.
+    func test__059b__Connection__connection_request_fails__connection_attempt_fails_for_any_recoverable_reason__for_example_an_arbitrary_transport_error() {
+        let options = AblyTests.commonAppSetup()
+        options.disconnectedRetryTimeout = 1.0
+        options.autoConnect = false
+        let expectedTime = 3.0
+
+        let previousConnectionStateTtl = ARTDefault.connectionStateTtl()
+        defer { ARTDefault.setConnectionStateTtl(previousConnectionStateTtl) }
+        ARTDefault.setConnectionStateTtl(expectedTime)
+
+        let client = ARTRealtime(options: options)
+        client.internal.setTransport(TestProxyTransport.self)
+        TestProxyTransport.fakeNetworkResponse = .arbitraryError
+        defer { TestProxyTransport.fakeNetworkResponse = nil }
+        client.internal.shouldImmediatelyReconnect = false
+        defer {
+            client.connection.off()
+            client.close()
+        }
+
+        var totalRetry = 0
+        waitUntil(timeout: testTimeout) { done in
+            let partialDone = AblyTests.splitDone(2, done: done)
+            var start: NSDate?
+
+            client.connection.once(.disconnected) { stateChange in
+                expect(stateChange.reason!.message).to(contain("error from FakeNetworkResponse.arbitraryError"))
                 expect(stateChange.previous).to(equal(ARTRealtimeConnectionState.connecting))
                 expect(stateChange.retryIn).to(beCloseTo(options.disconnectedRetryTimeout))
                 partialDone()
@@ -3600,13 +3652,13 @@ class RealtimeClientConnectionTests: XCTestCase {
         afterEach__Connection__Host_Fallback()
     }
 
-    func test__090__Connection__Host_Fallback__should_not_use_an_alternative_host_when_the_client_receives_a_bad_request() {
+    func test__090__Connection__Host_Fallback__should_not_use_an_alternative_host_when_the_client_receives_a_bad_request() throws {
         beforeEach__Connection__Host_Fallback()
 
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.autoConnect = false
+        options.disconnectedRetryTimeout = 1.0 // so that the test doesn't have to wait a long time to observe a retry
         let client = ARTRealtime(options: options)
-        let channel = client.channels.get(uniqueChannelName())
 
         let previousRealtimeRequestTimeout = ARTDefault.realtimeRequestTimeout()
         defer { ARTDefault.setRealtimeRequestTimeout(previousRealtimeRequestTimeout) }
@@ -3616,26 +3668,36 @@ class RealtimeClientConnectionTests: XCTestCase {
         TestProxyTransport.fakeNetworkResponse = .host400BadRequest
         defer { TestProxyTransport.fakeNetworkResponse = nil }
 
-        var urlConnections = [URL]()
-        TestProxyTransport.networkConnectEvent = { transport, url in
-            if client.internal.transport !== transport {
-                return
+        let dataGatherer = DataGatherer<(stateChanges: [ARTConnectionStateChange], urlConnections: [URL])>(description: "Observe emitted state changes and transport connection attempts") { submit in
+            var stateChanges: [ARTConnectionStateChange] = []
+            var urlConnections = [URL]()
+
+            client.connection.on { stateChange in
+                stateChanges.append(stateChange)
+                if (stateChanges.count == 3) {
+                    submit((stateChanges: stateChanges, urlConnections: urlConnections))
+                }
             }
-            urlConnections.append(url)
+
+            TestProxyTransport.networkConnectEvent = { transport, url in
+                if client.internal.transport !== transport {
+                    return
+                }
+                urlConnections.append(url)
+            }
         }
         defer { TestProxyTransport.networkConnectEvent = nil }
 
         client.connect()
         defer { client.dispose(); client.close() }
 
-        waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: "message") { _ in
-                done()
-            }
-        }
+        let data = try dataGatherer.waitForData(timeout: testTimeout)
 
-        expect(urlConnections).to(haveCount(1))
-        expect(NSRegularExpression.match(urlConnections[0].absoluteString, pattern: "//realtime.ably.io")).to(beTrue())
+        // We expect the first connection attempt to fail due to the .fakeNetworkResponse configured above. This error does not meet the criteria for trying a fallback host, and so should not provoke the use of a fallback host. Hence the connection should transition to DISCONNECTED, and then subsequently retry, transitioning back to CONNECTING. We should see that there were two connection attempts, both to the primary host.
+
+        XCTAssertEqual(data.stateChanges.map { $0.current }, [.connecting, .disconnected, .connecting])
+        XCTAssertEqual(data.urlConnections.count, 2)
+        XCTAssertTrue(data.urlConnections.allSatisfy { url in NSRegularExpression.match(url.absoluteString, pattern: "//realtime.ably.io") })
 
         afterEach__Connection__Host_Fallback()
     }

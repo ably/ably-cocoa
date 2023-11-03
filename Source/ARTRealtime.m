@@ -1519,16 +1519,8 @@
         }
     }
     
-    switch (transportError.type) {
-        case ARTRealtimeTransportErrorTypeBadResponse:
-        case ARTRealtimeTransportErrorTypeOther:
-            [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:transportError.error]];
-            break;
-        default: {
-            ARTErrorInfo *error = [ARTErrorInfo createFromNSError:transportError.error];
-            [self transitionToDisconnectedOrSuspendedWithError:error];
-        }
-    }
+    ARTErrorInfo *error = [ARTErrorInfo createFromNSError:transportError.error];
+    [self transitionToDisconnectedOrSuspendedWithError:error];
 }
 
 - (void)realtimeTransportNeverConnected:(id<ARTRealtimeTransport>)transport {
@@ -1537,7 +1529,7 @@
         return;
     }
     
-    [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createWithCode:ARTClientCodeErrorTransport message:@"Transport never connected"]];
+    [self transitionToDisconnectedOrSuspendedWithError:[ARTErrorInfo createWithCode:ARTClientCodeErrorTransport message:@"Transport never connected"]];
 }
 
 - (void)realtimeTransportRefused:(id<ARTRealtimeTransport>)transport withError:(ARTRealtimeTransportError *)error {
@@ -1547,13 +1539,13 @@
     }
     
     if (error && error.type == ARTRealtimeTransportErrorTypeRefused) {
-        [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createWithCode:ARTClientCodeErrorTransport message:[NSString stringWithFormat:@"Connection refused using %@", error.url]]];
+        [self transitionToDisconnectedOrSuspendedWithError:[ARTErrorInfo createWithCode:ARTClientCodeErrorTransport message:[NSString stringWithFormat:@"Connection refused using %@", error.url]]];
     }
     else if (error) {
-        [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createFromNSError:error.error]];
+        [self transitionToDisconnectedOrSuspendedWithError:[ARTErrorInfo createFromNSError:error.error]];
     }
     else {
-        [self transition:ARTRealtimeFailed];
+        [self transitionToDisconnectedOrSuspendedWithError:nil];
     }
 }
 
@@ -1563,7 +1555,7 @@
         return;
     }
     
-    [self transition:ARTRealtimeFailed withErrorInfo:[ARTErrorInfo createWithCode:ARTClientCodeErrorTransport message:@"Transport too big"]];
+    [self transitionToDisconnectedOrSuspendedWithError:[ARTErrorInfo createWithCode:ARTClientCodeErrorTransport message:@"Transport too big"]];
 }
 
 - (void)realtimeTransportSetMsgSerial:(id<ARTRealtimeTransport>)transport msgSerial:(int64_t)msgSerial {
