@@ -1658,9 +1658,11 @@ extension ARTWebSocketTransport {
     }
 
     func simulateIncomingError() {
-        let error = NSError(domain: ARTAblyErrorDomain, code: 0, userInfo: [NSLocalizedDescriptionKey:"Fail test"])
-        let webSocketDelegate = self as ARTWebSocketDelegate
-        webSocketDelegate.webSocket?(self.websocket!, didFailWithError: error)
+        // Simulate receiving an ERROR ProtocolMessage, which should put a client into the FAILED state (per RTN15i)
+        let protocolMessage = ARTProtocolMessage()
+        protocolMessage.action = .error
+        protocolMessage.error = ARTErrorInfo.create(withCode: 50000 /* arbitrarily chosen */, message: "Fail test")
+        receive(protocolMessage)
     }
 }
 
