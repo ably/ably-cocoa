@@ -317,11 +317,11 @@ NS_ASSUME_NONNULL_END
 
     if ([error.domain isEqualToString:@"com.squareup.SocketRocket"] && error.code == 504) {
         type = ARTRealtimeTransportErrorTypeTimeout;
-    } else if ([error.domain isEqualToString:(NSString *)kCFErrorDomainCFNetwork]) {
+    } else if (error.domain == (NSString *)kCFErrorDomainCFNetwork) {
         type = ARTRealtimeTransportErrorTypeHostUnreachable;
-    } else if ([error.domain isEqualToString:@"NSPOSIXErrorDomain"] && (error.code == 57 || error.code == 50)) {
+    } else if (error.domain == NSPOSIXErrorDomain && (error.code == ENOTCONN || error.code == ENETDOWN)) {
         type = ARTRealtimeTransportErrorTypeNoInternet;
-    } else if ([error.domain isEqualToString:ARTSRWebSocketErrorDomain] && error.code == 2132) {
+    } else if (error.domain == ARTSRWebSocketErrorDomain && error.code == 2132) {
         id status = error.userInfo[ARTSRHTTPResponseErrorKey];
         if (status) {
             return [[ARTRealtimeTransportError alloc] initWithError:error

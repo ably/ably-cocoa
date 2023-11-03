@@ -755,7 +755,7 @@ enum FakeNetworkResponse {
     var error: NSError {
         switch self {
         case .noInternet:
-            return NSError(domain: NSPOSIXErrorDomain, code: 50, userInfo: [NSLocalizedDescriptionKey: "network is down", NSLocalizedFailureReasonErrorKey: AblyTestsErrorDomain + ".FakeNetworkResponse"])
+            return NSError(domain: NSPOSIXErrorDomain, code: Int(ENETDOWN), userInfo: [NSLocalizedDescriptionKey: "network is down", NSLocalizedFailureReasonErrorKey: AblyTestsErrorDomain + ".FakeNetworkResponse"])
         case .hostUnreachable:
             return NSError(domain: kCFErrorDomainCFNetwork as String, code: 2, userInfo: [NSLocalizedDescriptionKey: "host unreachable", NSLocalizedFailureReasonErrorKey: AblyTestsErrorDomain + ".FakeNetworkResponse"])
         case .requestTimeout:

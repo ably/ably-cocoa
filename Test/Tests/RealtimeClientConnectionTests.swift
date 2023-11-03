@@ -3670,19 +3670,19 @@ class RealtimeClientConnectionTests: XCTestCase {
         testUsesAlternativeHostOnResponse(.hostInternalError(code: 501), channelName: test.uniqueChannelName())
     }
 
-    func test__100__Connection__Host_Fallback__should_move_to_disconnected_when_there_s_no_internet__with_NSPOSIXErrorDomain_with_code_57() throws {
+    func test__100__Connection__Host_Fallback__should_move_to_disconnected_when_there_s_no_internet__with_NSPOSIXErrorDomain_with_code_ENOTCONN() throws {
         let test = Test()
-        try testMovesToDisconnectedWithNetworkingError(NSError(domain: "NSPOSIXErrorDomain", code: 57, userInfo: [NSLocalizedDescriptionKey: "shouldn't matter"]), for: test)
+        try testMovesToDisconnectedWithNetworkingError(NSError(domain: NSPOSIXErrorDomain, code: Int(ENOTCONN), userInfo: [NSLocalizedDescriptionKey: "shouldn't matter"]), for: test)
     }
 
-    func test__101__Connection__Host_Fallback__should_move_to_disconnected_when_there_s_no_internet__with_NSPOSIXErrorDomain_with_code_50() throws {
+    func test__101__Connection__Host_Fallback__should_move_to_disconnected_when_there_s_no_internet__with_NSPOSIXErrorDomain_with_code_ENETDOWN() throws {
         let test = Test()
-        try testMovesToDisconnectedWithNetworkingError(NSError(domain: "NSPOSIXErrorDomain", code: 50, userInfo: [NSLocalizedDescriptionKey: "shouldn't matter"]), for: test)
+        try testMovesToDisconnectedWithNetworkingError(NSError(domain: NSPOSIXErrorDomain, code: Int(ENETDOWN), userInfo: [NSLocalizedDescriptionKey: "shouldn't matter"]), for: test)
     }
 
     func test__102__Connection__Host_Fallback__should_move_to_disconnected_when_there_s_no_internet__with_any_kCFErrorDomainCFNetwork() throws {
         let test = Test()
-        try testMovesToDisconnectedWithNetworkingError(NSError(domain: "kCFErrorDomainCFNetwork", code: 1337, userInfo: [NSLocalizedDescriptionKey: "shouldn't matter"]), for: test)
+        try testMovesToDisconnectedWithNetworkingError(NSError(domain: kCFErrorDomainCFNetwork as String, code: 1337, userInfo: [NSLocalizedDescriptionKey: "shouldn't matter"]), for: test)
     }
 
     func test__090__Connection__Host_Fallback__should_not_use_an_alternative_host_when_the_client_receives_a_bad_request() {
