@@ -2389,6 +2389,21 @@ class RealtimeClientConnectionTests: XCTestCase {
         })
     }
 
+    // RTN14d, RTB1
+    func test__059b__Connection__connection_request_fails__connection_attempt_fails_for_any_recoverable_reason__for_example_an_arbitrary_transport_error() throws {
+        let test = Test()
+
+        try testRTN14dAndRTB1(test: test,
+                              modifyOptions: { options in
+            let transportFactory = TestProxyTransportFactory()
+            transportFactory.fakeNetworkResponse = .arbitraryError
+            options.testOptions.transportFactory = transportFactory
+        },
+                              checkError: { error in
+            XCTAssertTrue(error.message.contains("error from FakeNetworkResponse.arbitraryError"))
+        })
+    }
+
     // RTN14e
     func test__060__Connection__connection_request_fails__connection_state_has_been_in_the_DISCONNECTED_state_for_more_than_the_default_connectionStateTtl_should_change_the_state_to_SUSPENDED() throws {
         let test = Test()
@@ -3703,41 +3718,46 @@ class RealtimeClientConnectionTests: XCTestCase {
         try testMovesToDisconnectedWithNetworkingError(NSError(domain: "kCFErrorDomainCFNetwork", code: 1337, userInfo: [NSLocalizedDescriptionKey: "shouldn't matter"]), for: test)
     }
 
-    func test__090__Connection__Host_Fallback__should_not_use_an_alternative_host_when_the_client_receives_a_bad_request() {
-        let test = Test()
+    func test__090__Connection__Host_Fallback__should_not_use_an_alternative_host_when_the_client_receives_a_bad_request() throws {
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.autoConnect = false
+        options.disconnectedRetryTimeout = 1.0 // so that the test doesn't have to wait a long time to observe a retry
         options.testOptions.realtimeRequestTimeout = 1.0
         let transportFactory = TestProxyTransportFactory()
         options.testOptions.transportFactory = transportFactory
         let client = ARTRealtime(options: options)
-        let channel = client.channels.get(test.uniqueChannelName())
 
         transportFactory.fakeNetworkResponse = .host400BadRequest
 
-        var urlConnections = [URL]()
-        transportFactory.networkConnectEvent = { transport, url in
-            if client.internal.transport !== transport {
-                return
+        let dataGatherer = DataGatherer(description: "Observe emitted state changes and transport connection attempts") { submit in
+            var stateChanges: [ARTConnectionStateChange] = []
+            var urlConnections = [URL]()
+
+            client.connection.on { stateChange in
+                stateChanges.append(stateChange)
+                if (stateChanges.count == 3) {
+                    submit((stateChanges: stateChanges, urlConnections: urlConnections))
+                }
             }
-            urlConnections.append(url)
+
+            transportFactory.networkConnectEvent = { transport, url in
+                if client.internal.transport !== transport {
+                    return
+                }
+                urlConnections.append(url)
+            }
         }
 
         client.connect()
         defer { client.dispose(); client.close() }
 
-        // We expect the first connection attempt to fail due to the .fakeNetworkResponse configured above. This error does not meet the criteria for trying a fallback host, and so should not provoke the use of a fallback host. Hence the connection should give up and transition to the FAILED state (which causes the publish to fail). We should see that there was only one connection attempt, to the primary host.
+        let data = try dataGatherer.waitForData(timeout: testTimeout)
 
-        waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: "message") { error in
-                XCTAssertNotNil(error)
-                done()
-            }
-        }
+        // We expect the first connection attempt to fail due to the .fakeNetworkResponse configured above. This error does not meet the criteria for trying a fallback host, and so should not provoke the use of a fallback host. Hence the connection should transition to DISCONNECTED, and then subsequently retry, transitioning back to CONNECTING. We should see that there were two connection attempts, both to the primary host.
 
-        XCTAssertEqual(client.connection.state, .failed)
-        XCTAssertEqual(urlConnections.count, 1)
-        XCTAssertTrue(NSRegularExpression.match(urlConnections[0].absoluteString, pattern: "//realtime.ably.io"))
+        XCTAssertEqual(data.stateChanges.map(\.current), [.connecting, .disconnected, .connecting])
+        XCTAssertEqual(data.urlConnections.count, 2)
+        XCTAssertTrue(data.urlConnections.allSatisfy { url in NSRegularExpression.match(url.absoluteString, pattern: "//realtime.ably.io") })
     }
 
     // RTN17a
