@@ -282,9 +282,14 @@ NS_ASSUME_NONNULL_END
         [_delegate realtimeTransportDisconnected:self withError:nil];
         break;
     case ARTWsRefuse:
-    case ARTWsPolicyValidation:
-        [_delegate realtimeTransportRefused:self withError:[[ARTRealtimeTransportError alloc] initWithError:[ARTErrorInfo createWithCode:code message:reason] type:ARTRealtimeTransportErrorTypeRefused url:self.websocketURL]];
+    case ARTWsPolicyValidation: {
+        ARTErrorInfo *const errorInfo = [ARTErrorInfo createWithCode:code message:reason];
+        ARTRealtimeTransportError *const error = [[ARTRealtimeTransportError alloc] initWithError:errorInfo
+                                                                                             type:ARTRealtimeTransportErrorTypeRefused
+                                                                                              url:self.websocketURL];
+        [_delegate realtimeTransportRefused:self withError:error];
         break;
+    }
     case ARTWsTooBig:
         [_delegate realtimeTransportTooBig:self];
         break;
@@ -292,10 +297,15 @@ NS_ASSUME_NONNULL_END
     case ARTWsCloseProtocolError:
     case ARTWsUnexpectedCondition:
     case ARTWsExtension:
-    case ARTWsTlsError:
+    case ARTWsTlsError: {
         // Failed
-        [_delegate realtimeTransportFailed:self withError:[[ARTRealtimeTransportError alloc] initWithError:[ARTErrorInfo createWithCode:code message:reason] type:ARTRealtimeTransportErrorTypeOther url:self.websocketURL]];
+        ARTErrorInfo *const errorInfo = [ARTErrorInfo createWithCode:code message:reason];
+        ARTRealtimeTransportError *const error = [[ARTRealtimeTransportError alloc] initWithError:errorInfo
+                                                                                             type:ARTRealtimeTransportErrorTypeOther
+                                                                                              url:self.websocketURL];
+        [_delegate realtimeTransportFailed:self withError:error];
         break;
+    }
     default:
         NSAssert(true, @"WebSocket close: unknown code");
         break;
