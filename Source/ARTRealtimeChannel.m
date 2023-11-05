@@ -1050,16 +1050,6 @@ dispatch_sync(_queue, ^{
             [self setSuspended:metadata];
         }] startTimer];
     } ackCallback:nil];
-
-    if (![self.realtime shouldQueueEvents]) {
-        ARTEventListener *reconnectedListener = [self.realtime.connectedEventEmitter once:^(NSNull *n) {
-            // Disconnected and connected while attaching, re-attach.
-            [self attachAfterChecks:callback channelSerial:channelSerial];
-        }];
-        [_attachedEventEmitter once:^(ARTErrorInfo *err) {
-            [self.realtime.connectedEventEmitter off:reconnectedListener];
-        }];
-    }
 }
 
 - (void)detach:(ARTCallback)callback {
