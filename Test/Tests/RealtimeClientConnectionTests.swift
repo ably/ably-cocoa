@@ -2262,7 +2262,6 @@ class RealtimeClientConnectionTests: XCTestCase {
     func test__059__Connection__connection_request_fails__connection_attempt_fails_for_any_recoverable_reason() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        options.realtimeHost = "10.255.255.1" // non-routable IP address
         options.disconnectedRetryTimeout = 1.0
         options.autoConnect = false
         options.testOptions.realtimeRequestTimeout = 0.1
