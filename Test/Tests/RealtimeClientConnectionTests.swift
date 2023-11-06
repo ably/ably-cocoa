@@ -3708,12 +3708,16 @@ class RealtimeClientConnectionTests: XCTestCase {
         client.connect()
         defer { client.dispose(); client.close() }
 
+        // We expect the first connection attempt to fail due to the .fakeNetworkResponse configured above. This error does not meet the criteria for trying a fallback host, and so should not provoke the use of a fallback host. Hence the connection should give up and transition to the FAILED state (which causes the publish to fail). We should see that there was only one connection attempt, to the primary host.
+
         waitUntil(timeout: testTimeout) { done in
-            channel.publish(nil, data: "message") { _ in
+            channel.publish(nil, data: "message") { error in
+                XCTAssertNotNil(error)
                 done()
             }
         }
 
+        XCTAssertEqual(client.connection.state, .failed)
         XCTAssertEqual(urlConnections.count, 1)
         XCTAssertTrue(NSRegularExpression.match(urlConnections[0].absoluteString, pattern: "//realtime.ably.io"))
     }
