@@ -2258,21 +2258,21 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
     }
 
-    // RTN14d, RTB1
-    func test__059__Connection__connection_request_fails__connection_attempt_fails_for_any_recoverable_reason() throws {
-        let test = Test()
+    func testRTN14dAndRTB1(
+        test: Test,
+        extraTimeNeededToObserveEachRetry: TimeInterval = 0,
+        modifyOptions: (ARTClientOptions) -> Void,
+        checkError: (ARTErrorInfo) -> Void
+    ) throws {
         let options = try AblyTests.commonAppSetup(for: test)
         options.disconnectedRetryTimeout = 1.0
         options.autoConnect = false
-        options.testOptions.realtimeRequestTimeout = 0.1
 
         let jitterCoefficients = StaticJitterCoefficients()
         let mockJitterCoefficientGenerator = MockJitterCoefficientGenerator(coefficients: jitterCoefficients)
         options.testOptions.jitterCoefficientGenerator = mockJitterCoefficientGenerator
 
-        options.authCallback = { _, _ in
-            // Ignore `completion` closure to force a time out
-        }
+        modifyOptions(options)
 
         let numberOfRetriesToWaitFor = 5 // arbitrarily chosen, large enough for us to have confidence that a sequence of retries is occurring, with the correct retry delays
 
@@ -2283,7 +2283,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             ).prefix(numberOfRetriesToWaitFor + 1 /* The +1 can be removed after #1782 is fixed; see note below */)
         )
         let timesNeededToObserveRetries = expectedRetryDelays.map { retryDelay in
-            options.testOptions.realtimeRequestTimeout // waiting for connect to time out
+            extraTimeNeededToObserveEachRetry
             + retryDelay // waiting for retry to occur
             + 0.2 // some extra tolerance, arbitrarily chosen
         }
@@ -2341,7 +2341,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             let firstObservedStateChange = observedStateChanges[observedStateChangesStartIndexForThisRetry]
             XCTAssertEqual(firstObservedStateChange.stateChange.previous, .connecting)
             XCTAssertEqual(firstObservedStateChange.stateChange.current, .disconnected)
-            XCTAssertTrue(firstObservedStateChange.stateChange.reason!.message.contains("timed out"))
+            checkError(firstObservedStateChange.stateChange.reason!)
             XCTAssertEqual(firstObservedStateChange.stateChange.retryIn, expectedRetryDelay)
 
             if (firstObservedStateChangeToDisconnected == nil) {
@@ -2368,6 +2368,25 @@ class RealtimeClientConnectionTests: XCTestCase {
         expect(finalStateChange.observedAt.timeIntervalSince(firstObservedStateChangeToDisconnected!.observedAt))
             .to(beGreaterThan(connectionStateTtl - tolerance))
             .to(beLessThan(connectionStateTtl + timeTakenByPotentialExcessRetry + tolerance))
+    }
+
+    // RTN14d, RTB1
+    func test__059__Connection__connection_request_fails__connection_attempt_fails_for_any_recoverable_reason__for_example_a_timeout() throws {
+        let test = Test()
+
+        let realtimeRequestTimeout = 0.1
+
+        try testRTN14dAndRTB1(test: test,
+                              extraTimeNeededToObserveEachRetry: realtimeRequestTimeout, // waiting for connect to time out
+                              modifyOptions: { options in
+            options.testOptions.realtimeRequestTimeout = realtimeRequestTimeout
+            options.authCallback = { _, _ in
+                // Ignore `completion` closure to force a time out
+            }
+        },
+                              checkError: { error in
+            XCTAssertTrue(error.message.contains("timed out"))
+        })
     }
 
     // RTN14e
