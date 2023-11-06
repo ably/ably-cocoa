@@ -2,24 +2,24 @@ default_platform(:ios)
 
 platform :ios do
 
-  lane :test_iOS14_4 do
+  lane :test_iOS15_2 do
     run_tests(
       scheme: "Ably-iOS-Tests",
       derived_data_path: "derived_data",
-      devices: ["iPhone 12 (14.4)"],
+      devices: ["iPhone 12 (15.2)"],
       test_without_building: false,
       xcargs: { ABLY_ENV: ENV['ABLY_ENV'], CLANG_ANALYZER_OUTPUT: 'plist-html' },
-      output_directory: "fastlane/test_output/sdk/test_iOS14_4"
+      output_directory: "fastlane/test_output/sdk/test_iOS15_2"
     )
   end
 
-  lane :test_tvOS14_3 do
+  lane :test_tvOS15_2 do
     run_tests(
       scheme: "Ably-tvOS-Tests",
       derived_data_path: "derived_data",
-      devices: ["Apple TV 4K (14.3)"],
+      devices: ["Apple TV 4K (15.2)"],
       xcargs: { ABLY_ENV: ENV['ABLY_ENV'], CLANG_ANALYZER_OUTPUT: 'plist-html' },
-      output_directory: "fastlane/test_output/sdk/test_tvOS14_3"
+      output_directory: "fastlane/test_output/sdk/test_tvOS15_2"
     )
   end
 

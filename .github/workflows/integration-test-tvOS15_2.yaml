@@ -1,4 +1,4 @@
-name: "Integration Test: tvOS 14.3"
+name: "Integration Test: tvOS 15.2"
 
 on:
   pull_request:
@@ -50,7 +50,7 @@ jobs:
           make submodules
           bundle install
           make update_carthage_dependencies_tvos
-          bundle exec fastlane test_tvOS14_3
+          bundle exec fastlane test_tvOS15_2
 
       - name: Check Static Analyzer Output
         id: analyzer-output
@@ -66,7 +66,7 @@ jobs:
         if: ${{ failure() && steps.analyzer-output.outcome == 'failure' }}
         uses: actions/upload-artifact@v2
         with:
-          name: static-analyzer-reports-test_tvOS14_3
+          name: static-analyzer-reports-test_tvOS15_2
           path: ./derived_data/**/report-*.html
 
       # This is the script specified as the pod’s prepare_command in its Podspec.

@@ -1,4 +1,4 @@
-name: "Integration Test: iOS 14.4"
+name: "Integration Test: iOS 15.2"
 
 on:
   pull_request:
@@ -50,7 +50,7 @@ jobs:
           make submodules
           bundle install
           make update_carthage_dependencies_ios
-          bundle exec fastlane test_iOS14_4
+          bundle exec fastlane test_iOS15_2
 
       - name: Check Static Analyzer Output
         id: analyzer-output
@@ -66,7 +66,7 @@ jobs:
         if: ${{ failure() && steps.analyzer-output.outcome == 'failure' }}
         uses: actions/upload-artifact@v2
         with:
-          name: static-analyzer-reports-test_iOS14_4
+          name: static-analyzer-reports-test_iOS15_2
           path: ./derived_data/**/report-*.html
 
       # This is the script specified as the pod’s prepare_command in its Podspec.
@@ -81,7 +81,7 @@ jobs:
         run: |
           pod repo update
           pod install
-          bundle exec fastlane scan -s Tests --output-directory "fastlane/test_output/examples/test_iOS14_4"
+          bundle exec fastlane scan -s Tests --output-directory "fastlane/test_output/examples/test_iOS15_2"
 
       - name: Build APNS Example Project
         working-directory: ./Examples/AblyPush
