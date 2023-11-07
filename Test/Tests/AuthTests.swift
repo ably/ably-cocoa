@@ -262,13 +262,14 @@ class AuthTests: XCTestCase {
     func test__021__Token__authentication_method__should_transition_the_connection_to_the_FAILED_state_when_the_server_responds_with_a_token_error_and_there_is_no_way_to_renew_the_token() throws {
         let test = Test()
         let options = try AblyTests.clientOptions(for: test)
-        options.tokenDetails = try getTestTokenDetails(for: test, ttl: 0.1)
+        let tokenTtl = 0.1
+        options.tokenDetails = try getTestTokenDetails(for: test, ttl: tokenTtl)
         options.autoConnect = false
         options.testOptions.transportFactory = TestProxyTransportFactory()
 
         // Token will expire, expecting 40142
         waitUntil(timeout: testTimeout) { done in
-            delay(0.2) { done() }
+            delay(tokenTtl + AblyTests.tokenExpiryTolerance) { done() }
         }
 
         let realtime = ARTRealtime(options: options)

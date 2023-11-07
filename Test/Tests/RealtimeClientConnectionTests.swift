@@ -2184,7 +2184,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
         // Let the token expire
         waitUntil(timeout: testTimeout) { done in
-            delay(tokenTtl) {
+            delay(tokenTtl + AblyTests.tokenExpiryTolerance) {
                 done()
             }
         }
