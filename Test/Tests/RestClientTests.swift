@@ -689,7 +689,8 @@ class RestClientTests: XCTestCase {
         let auth = client.auth
 
         let tokenParams = ARTTokenParams()
-        tokenParams.ttl = 3.0 // Seconds
+        let tokenTtl = 3.0
+        tokenParams.ttl = NSNumber(value: tokenTtl) // Seconds
 
         let options: ARTClientOptions = try AblyTests.waitFor(timeout: testTimeout) { value in
             auth.requestToken(tokenParams, with: nil) { tokenDetails, error in
@@ -735,7 +736,7 @@ class RestClientTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             // Delay for token expiration
-            delay(TimeInterval(truncating: tokenParams.ttl!)) {
+            delay(tokenTtl + AblyTests.tokenExpiryTolerance) {
                 // [40140, 40150) - token expired and will not recover because authUrl is invalid
                 publishTestMessage(rest, channelName: test.uniqueChannelName()) { error in
                     guard let errorCode = testHTTPExecutor.responses.first?.value(forHTTPHeaderField: "X-Ably-Errorcode") else {
@@ -758,7 +759,8 @@ class RestClientTests: XCTestCase {
         let auth = client.auth
 
         let tokenParams = ARTTokenParams()
-        tokenParams.ttl = 3.0 // Seconds
+        let tokenTtl = 3.0
+        tokenParams.ttl = NSNumber(value: tokenTtl) // Seconds
 
         waitUntil(timeout: testTimeout) { done in
             auth.requestToken(tokenParams, with: nil) { tokenDetails, error in
@@ -798,7 +800,7 @@ class RestClientTests: XCTestCase {
                 rest.internal.httpExecutor = testHTTPExecutor
 
                 // Delay for token expiration
-                delay(TimeInterval(truncating: tokenParams.ttl!)) {
+                delay(tokenTtl + AblyTests.tokenExpiryTolerance) {
                     // [40140, 40150) - token expired and will not recover because authUrl is invalid
                     publishTestMessage(rest, channelName: test.uniqueChannelName()) { error in
                         guard let errorCode = testHTTPExecutor.responses.first?.value(forHTTPHeaderField: "X-Ably-Errorcode") else {
@@ -1744,10 +1746,11 @@ class RestClientTests: XCTestCase {
     func test__012__RestClient__should_indicate_an_error_if_there_is_no_way_to_renew_the_token() throws {
         let test = Test()
         let options = try AblyTests.clientOptions(for: test)
-        options.token = try getTestToken(for: test, ttl: 0.1)
+        let tokenTtl = 0.1
+        options.token = try getTestToken(for: test, ttl: tokenTtl)
         let client = ARTRest(options: options)
         waitUntil(timeout: testTimeout) { done in
-            delay(0.1) {
+            delay(tokenTtl + AblyTests.tokenExpiryTolerance) {
                 client.channels.get(test.uniqueChannelName()).publish(nil, data: "message") { error in
                     guard let error = error else {
                         fail("Error is empty"); done()
