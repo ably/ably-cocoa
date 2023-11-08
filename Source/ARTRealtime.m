@@ -1629,21 +1629,10 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
             return;
         }
     }
-    
-    switch (transportError.type) {
-        case ARTRealtimeTransportErrorTypeBadResponse:
-        case ARTRealtimeTransportErrorTypeOther: {
-            ARTErrorInfo *const errorInfo = [ARTErrorInfo createFromNSError:transportError.error];
-            ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:errorInfo];
-            [self transition:ARTRealtimeFailed withMetadata:metadata];
-            break;
-        }
-        default: {
-            ARTErrorInfo *error = [ARTErrorInfo createFromNSError:transportError.error];
-            ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:error];
-            [self transitionToDisconnectedOrSuspendedWithMetadata:metadata];
-        }
-    }
+
+    ARTErrorInfo *const errorInfo = [ARTErrorInfo createFromNSError:transportError.error];
+    ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:errorInfo];
+    [self transitionToDisconnectedOrSuspendedWithMetadata:metadata];
 }
 
 - (void)realtimeTransportNeverConnected:(id<ARTRealtimeTransport>)transport {
@@ -1654,7 +1643,7 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
     
     ARTErrorInfo *const errorInfo = [ARTErrorInfo createWithCode:ARTClientCodeErrorTransport message:@"Transport never connected"];
     ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:errorInfo];
-    [self transition:ARTRealtimeFailed withMetadata:metadata];
+    [self transitionToDisconnectedOrSuspendedWithMetadata:metadata];
 }
 
 - (void)realtimeTransportRefused:(id<ARTRealtimeTransport>)transport withError:(ARTRealtimeTransportError *)error {
@@ -1666,15 +1655,16 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
     if (error && error.type == ARTRealtimeTransportErrorTypeRefused) {
         ARTErrorInfo *const errorInfo = [ARTErrorInfo createWithCode:ARTClientCodeErrorTransport message:[NSString stringWithFormat:@"Connection refused using %@", error.url]];
         ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:errorInfo];
-        [self transition:ARTRealtimeFailed withMetadata:metadata];
+        [self transitionToDisconnectedOrSuspendedWithMetadata:metadata];
     }
     else if (error) {
         ARTErrorInfo *const errorInfo = [ARTErrorInfo createFromNSError:error.error];
         ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:errorInfo];
-        [self transition:ARTRealtimeFailed withMetadata:metadata];
+        [self transitionToDisconnectedOrSuspendedWithMetadata:metadata];
     }
     else {
-        [self transition:ARTRealtimeFailed withMetadata:[[ARTConnectionStateChangeMetadata alloc] init]];
+        ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] init];
+        [self transitionToDisconnectedOrSuspendedWithMetadata:metadata];
     }
 }
 
@@ -1686,7 +1676,7 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
 
     ARTErrorInfo *const errorInfo = [ARTErrorInfo createWithCode:ARTClientCodeErrorTransport message:@"Transport too big"];
     ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:errorInfo];
-    [self transition:ARTRealtimeFailed withMetadata:metadata];
+    [self transitionToDisconnectedOrSuspendedWithMetadata:metadata];
 }
 
 - (void)realtimeTransportSetMsgSerial:(id<ARTRealtimeTransport>)transport msgSerial:(int64_t)msgSerial {

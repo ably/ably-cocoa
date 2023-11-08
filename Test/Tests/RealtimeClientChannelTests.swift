@@ -497,78 +497,7 @@ class RealtimeClientChannelTests: XCTestCase {
         }
     }
 
-    // RTL2f
-    func test__011__Channel__EventEmitter__channel_states_and_events__ChannelStateChange_will_contain_a_resumed_boolean_attribute_with_value__true__if_the_bit_flag_RESUMED_was_included() throws {
-        let test = Test()
-        let options = try AblyTests.commonAppSetup(for: test)
-        options.tokenDetails = try getTestTokenDetails(for: test, ttl: 25.0)
-        let client = ARTRealtime(options: options)
-        defer { client.dispose(); client.close() }
-        let channel = client.channels.get(test.uniqueChannelName())
-
-        waitUntil(timeout: testTimeout.incremented(by: 25)) { done in
-            channel.on { stateChange in
-                switch stateChange.current {
-                case .attached:
-                    XCTAssertFalse(stateChange.resumed)
-                default:
-                    XCTAssertFalse(stateChange.resumed)
-                }
-            }
-            client.connection.once(.disconnected) { stateChange in
-                channel.off()
-                guard let error = stateChange.reason else {
-                    fail("Error is nil"); done(); return
-                }
-                XCTAssertEqual(error.code, ARTErrorCode.tokenExpired.intValue)
-
-                channel.on { stateChange in
-                    if stateChange.current == .attached {
-                        XCTAssertTrue(stateChange.resumed)
-                        XCTAssertNil(stateChange.reason)
-                        XCTAssertEqual(stateChange.current, ARTRealtimeChannelState.attached)
-                        XCTAssertEqual(stateChange.previous, ARTRealtimeChannelState.attached)
-                        done()
-                    }
-                }
-            }
-            channel.attach()
-        }
-    }
-
-    // RTL2f, TR4i
-    func test__012__Channel__EventEmitter__channel_states_and_events__bit_flag_RESUMED_was_included() throws {
-        let test = Test()
-        let options = try AblyTests.commonAppSetup(for: test)
-        let client = ARTRealtime(options: options)
-        defer { client.dispose(); client.close() }
-        let channel = client.channels.get(test.uniqueChannelName())
-
-        waitUntil(timeout: testTimeout) { done in
-            channel.once(.attached) { stateChange in
-                XCTAssertFalse(stateChange.resumed)
-                XCTAssertNil(stateChange.reason)
-                done()
-            }
-            channel.attach()
-        }
-
-        let attachedMessage = ARTProtocolMessage()
-        attachedMessage.action = .attached
-        attachedMessage.channel = channel.name
-        attachedMessage.flags = 4 // Resumed
-
-        waitUntil(timeout: testTimeout) { done in
-            channel.once(.update) { stateChange in
-                XCTAssertTrue(stateChange.resumed)
-                XCTAssertNil(stateChange.reason)
-                XCTAssertEqual(stateChange.current, ARTRealtimeChannelState.attached)
-                XCTAssertEqual(stateChange.previous, ARTRealtimeChannelState.attached)
-                done()
-            }
-            client.internal.transport?.receive(attachedMessage)
-        }
-    }
+    // TODO: RTL2f
 
     // RTL3
 
@@ -918,6 +847,7 @@ class RealtimeClientChannelTests: XCTestCase {
     }
 
     // RTL3d - https://github.com/ably/ably-cocoa/issues/881
+    // RTL2f
     func test__015__Channel__connection_state__should_attach_successfully_and_remain_attached_when_the_connection_state_without_a_successful_recovery_gets_CONNECTED() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
@@ -975,7 +905,7 @@ class RealtimeClientChannelTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.once(.attached) { stateChange in
-                XCTAssertFalse(stateChange.resumed)
+                XCTAssertFalse(stateChange.resumed) // RTL2f (resumed is false when the channel is ATTACHED following a failed connection recovery)
                 XCTAssertNil(stateChange.reason)
                 channel.on(.suspended) { _ in
                     fail("Should not reach SUSPENDED state")
@@ -3808,15 +3738,26 @@ class RealtimeClientChannelTests: XCTestCase {
             attachedMessageWithError.action = .attached
             attachedMessageWithError.channel = channel.name
 
-            channel.once(.update) { stateChange in
+            channel.on { stateChange in
                 XCTAssertEqual(stateChange.event, ARTChannelEvent.update)
+                XCTAssertEqual(stateChange.current, ARTRealtimeChannelState.attached)
+                XCTAssertEqual(stateChange.previous, ARTRealtimeChannelState.attached)
                 XCTAssertTrue(stateChange.reason === attachedMessageWithError.error)
-                XCTAssertTrue(channel.errorReason === stateChange.reason)
+                XCTAssertTrue(stateChange.reason === channel.errorReason)
+                XCTAssertFalse(stateChange.resumed)
                 done()
             }
 
             // Inject additional ATTACHED action with an error
             client.internal.transport?.receive(attachedMessageWithError)
+            
+            let attachedMessage = ARTProtocolMessage()
+            attachedMessage.action = .attached
+            attachedMessage.channel = channel.name
+            attachedMessage.flags = 4 // resume
+            
+            // Inject another ATTACHED action with resume flag, should not generate neither .attached nor .update events
+            client.internal.transport?.receive(attachedMessage)
         }
         XCTAssertEqual(channel.state, ARTRealtimeChannelState.attached)
     }
