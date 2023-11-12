@@ -1,5 +1,5 @@
 #import <Ably/ARTPushDeviceRegistrations.h>
-#import "ARTQueuedDealloc.h"
+#import <Ably/ARTQueuedDealloc.h>
 
 @class ARTRestInternal;
 @class ARTInternalLog;

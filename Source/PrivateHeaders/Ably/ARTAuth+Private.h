@@ -1,6 +1,6 @@
 #import <Ably/ARTAuth.h>
 #import <Ably/ARTEventEmitter.h>
-#import "ARTQueuedDealloc.h"
+#import <Ably/ARTQueuedDealloc.h>
 
 @class ARTRestInternal;
 @class ARTInternalLog;

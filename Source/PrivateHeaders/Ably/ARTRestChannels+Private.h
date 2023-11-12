@@ -1,6 +1,6 @@
 #import <Ably/ARTRestChannels.h>
-#import "ARTQueuedDealloc.h"
-#import "ARTRestChannel+Private.h"
+#import <Ably/ARTQueuedDealloc.h>
+#import <Ably/ARTRestChannel+Private.h>
 
 @class ARTRestChannel;
 @class ARTRestInternal;
