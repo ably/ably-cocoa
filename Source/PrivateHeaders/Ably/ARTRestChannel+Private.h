@@ -6,7 +6,7 @@
 #import <Ably/ARTRestChannel.h>
 #import <Ably/ARTRestPresence+Private.h>
 #import <Ably/ARTPushChannel+Private.h>
-#import "ARTQueuedDealloc.h"
+#import <Ably/ARTQueuedDealloc.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

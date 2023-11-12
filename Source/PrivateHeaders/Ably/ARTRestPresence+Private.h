@@ -1,5 +1,5 @@
 #import <Ably/ARTRestPresence.h>
-#import "ARTQueuedDealloc.h"
+#import <Ably/ARTQueuedDealloc.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
