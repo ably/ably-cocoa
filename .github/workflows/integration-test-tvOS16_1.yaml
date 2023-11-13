@@ -116,11 +116,3 @@ jobs:
           export PACKAGE_BRANCH_NAME=$GITHUB_HEAD_REF
           export PACKAGE_REVISION=$GITHUB_SHA
           swift test --package-path Examples/SPM -v
-      
-      - name: Carthage - Installation Test
-        working-directory: ./Examples/AblyCarthage
-        run:  |
-          echo 'Installing cathage dependencies...'
-          carthage update --use-xcframeworks --platform iOS --no-use-binaries
-          echo 'Building AblyCarthage example...'
-          xcodebuild build -scheme "AblyCarthage" -destination "platform=iOS Simulator,name=iPhone 14" -configuration "Debug"
