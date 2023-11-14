@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.2.22](https://github.com/ably/ably-cocoa/tree/1.2.22)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.21...1.2.22)
+
+**Fixed issues:**
+
+- Fixes an issue where certain errors will cause a Realtime connection to transition to `FAILED` when it should be transitioning to `DISCONNECTED` and retrying the connection attempt. [\#1817](https://github.com/ably/ably-cocoa/issues/1817)
+
 ## [1.2.21](https://github.com/ably/ably-cocoa/tree/1.2.21)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.20...1.2.21)
