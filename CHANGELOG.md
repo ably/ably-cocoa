@@ -1,5 +1,14 @@
 # Change Log
 
+## [1.2.23](https://github.com/ably/ably-cocoa/tree/1.2.23)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.22...1.2.23)
+
+**Fixed issues:**
+
+- Push device deregistration does not clear device details. [\#1177](https://github.com/ably/ably-cocoa/issues/1177)
+- App build fails due to missing dependencies. [\#1755](https://github.com/ably/ably-cocoa/issues/1755) and [\#1824](https://github.com/ably/ably-cocoa/issues/1824)
+
 ## [1.2.22](https://github.com/ably/ably-cocoa/tree/1.2.22)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.21...1.2.22)
