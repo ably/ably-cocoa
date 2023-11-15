@@ -346,6 +346,11 @@ class AblyTests {
 
         return .init(sequence)
     }
+
+    /**
+     Tests that wait for the Ably service to consider a token as having expired by waiting for its `ttl` to elapse should wait this additional tolerance (arbitarily chosen) to compensate for clock differences between different Ably servers.
+     */
+    static let tokenExpiryTolerance: TimeInterval = 2
 }
 
 /// A helper class for performing HTTP requests synchronously in tests.
