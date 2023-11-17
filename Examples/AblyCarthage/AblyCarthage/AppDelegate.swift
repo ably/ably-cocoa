@@ -1,10 +1,3 @@
-//
-//  AppDelegate.swift
-//  AblyCarthage
-//
-//  Created by Admin on 17.07.2021.
-//
-
 import UIKit
 
 @main
