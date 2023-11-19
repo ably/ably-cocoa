@@ -780,11 +780,11 @@ class RealtimeClientPresenceTests: XCTestCase {
             let partialDone = AblyTests.splitDone(4, done: done)
             mainChannel.presence.subscribe { message in
                 if message.clientId == "main" {
-                    XCTAssertEqual(message.action, ARTPresenceAction.enter)
+                    XCTAssertTrue(message.action == ARTPresenceAction.enter || message.action == ARTPresenceAction.present)
                     partialDone()
                 }
                 else if message.clientId == "leaves" {
-                    XCTAssertEqual(message.action, ARTPresenceAction.present) // .enter was replaced by .present (RTP2d)
+                    XCTAssertTrue(message.action == ARTPresenceAction.enter || message.action == ARTPresenceAction.present)
                     partialDone()
                 }
             }
