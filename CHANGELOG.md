@@ -1,12 +1,29 @@
 # Change Log
 
-## [1.2.21-beta.1](https://github.com/ably/ably-cocoa/tree/1.2.21-beta.1)
+## [1.2.23](https://github.com/ably/ably-cocoa/tree/1.2.23)
 
-[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.20...1.2.21-beta.1)
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.22...1.2.23)
+
+**Fixed issues:**
+
+- Push device deregistration does not clear device details. [\#1177](https://github.com/ably/ably-cocoa/issues/1177)
+- App build fails due to missing dependencies. [\#1755](https://github.com/ably/ably-cocoa/issues/1755) and [\#1824](https://github.com/ably/ably-cocoa/issues/1824)
+
+## [1.2.22](https://github.com/ably/ably-cocoa/tree/1.2.22)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.21...1.2.22)
+
+**Fixed issues:**
+
+- Fixes an issue where certain errors will cause a Realtime connection to transition to `FAILED` when it should be transitioning to `DISCONNECTED` and retrying the connection attempt. [\#1817](https://github.com/ably/ably-cocoa/issues/1817)
+
+## [1.2.21](https://github.com/ably/ably-cocoa/tree/1.2.21)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.20...1.2.21)
 
 **Implemented features:**
 
-- A preview of an implementation of the location pushes [\#1771](https://github.com/ably/ably-cocoa/issues/1771)
+- Location pushes [\#1771](https://github.com/ably/ably-cocoa/issues/1771)
 - Incremental backoff and jitter [\#1431](https://github.com/ably/ably-cocoa/issues/1431)
 - Handle os connectivity event while CONNECTING [\#1626](https://github.com/ably/ably-cocoa/issues/1626)
 
@@ -14,6 +31,7 @@
 
 - Compiler warning "Non-portable path to file..." [\#1757](https://github.com/ably/ably-cocoa/issues/1757)
 - App crash and dyld error message "AblyDeltaCodec cannot be loaded, image not found" [\#1183](https://github.com/ably/ably-cocoa/issues/1183)
+- Compatibility with Xcode 15 [\#1803](https://github.com/ably/ably-cocoa/issues/1803)
 
 ## [1.2.20](https://github.com/ably/ably-cocoa/tree/1.2.20)
 

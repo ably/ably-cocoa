@@ -1,5 +1,5 @@
 @import Foundation;
-#import "ARTTypes.h"
+#import <Ably/ARTTypes.h>
 
 @class ARTErrorInfo;
 @class ARTRetryAttempt;

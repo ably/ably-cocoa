@@ -741,11 +741,13 @@ dispatch_sync(_queue, ^{
     }
 
     if (self.state_nosync == ARTRealtimeChannelAttached) {
-        if (message.error != nil) {
-            _errorReason = message.error;
+        if (!message.resumed) { // RTL12
+            if (message.error != nil) {
+                _errorReason = message.error;
+            }
+            ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:self.state_nosync previous:self.state_nosync event:ARTChannelEventUpdate reason:message.error resumed:message.resumed];
+            [self emit:stateChange.event with:stateChange];
         }
-        ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:self.state_nosync previous:self.state_nosync event:ARTChannelEventUpdate reason:message.error resumed:message.resumed];
-        [self emit:stateChange.event with:stateChange];
         return;
     }
 
@@ -1213,10 +1215,16 @@ dispatch_sync(_queue, ^{
 
 - (void)map:(ARTPresenceMap *)map shouldReenterLocalMember:(ARTPresenceMessage *)presence {
     [self.presence enterClient:presence.clientId data:presence.data callback:^(ARTErrorInfo *error) {
-        NSString *message = [NSString stringWithFormat:@"Re-entering member \"%@\" as failed with code %ld (%@)", presence.clientId, (long)error.code, error.message];
-        ARTErrorInfo *reenterError = [ARTErrorInfo createWithCode:ARTErrorUnableToAutomaticallyReEnterPresenceChannel message:message];
-        ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:self.state_nosync previous:self.state_nosync event:ARTChannelEventUpdate reason:reenterError resumed:true];
-        [self emit:stateChange.event with:stateChange];
+        if (error != nil) {
+            NSString *message = [NSString stringWithFormat:@"Re-entering member \"%@\" is failed with code %ld (%@)", presence.memberKey, (long)error.code, error.message];
+            ARTErrorInfo *reenterError = [ARTErrorInfo createWithCode:ARTErrorUnableToAutomaticallyReEnterPresenceChannel message:message];
+            ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:self.state_nosync previous:self.state_nosync event:ARTChannelEventUpdate reason:reenterError resumed:true]; // RTP17e
+            [self emit:stateChange.event with:stateChange];
+            ARTLogWarn(self.logger, @"RT:%p C:%p (%@) Re-entering member \"%@\" is failed with code %ld (%@)", self->_realtime, self, self.name, presence.memberKey, (long)error.code, error.message);
+        }
+        else {
+            ARTLogDebug(self.logger, @"RT:%p C:%p (%@) re-entered local member \"%@\"", self->_realtime, self, self.name, presence.memberKey);
+        }
     }];
     ARTLogDebug(self.logger, @"RT:%p C:%p (%@) re-entering local member \"%@\"", _realtime, self, self.name, presence.memberKey);
 }

@@ -1,5 +1,5 @@
 @import Foundation;
-#import "ARTRetryDelayCalculator.h"
+#import <Ably/ARTRetryDelayCalculator.h>
 
 @protocol ARTJitterCoefficientGenerator;
 

@@ -32,6 +32,9 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportState) {
 
 @property (nonatomic) NSError *error;
 @property (nonatomic) ARTRealtimeTransportErrorType type;
+/**
+ This meaning of this property is only defined if the error is of type `ARTRealtimeTransportErrorTypeBadResponse`.
+ */
 @property (nonatomic) NSInteger badResponseCode;
 @property (nonatomic) NSURL *url;
 

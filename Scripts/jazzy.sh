@@ -7,7 +7,7 @@ jazzy \
   --objc \
   --clean \
   --author Ably \
-  --module-version 1.2.21-beta.1 \
+  --module-version 1.2.23 \
   --umbrella-header Source/include/Ably/Ably.h \
   --framework-root Source \
   --module Ably \
