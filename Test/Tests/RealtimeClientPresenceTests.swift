@@ -769,10 +769,19 @@ class RealtimeClientPresenceTests: XCTestCase {
         defer { leavesClient.dispose(); leavesClient.close() }
         
         options.clientId = "main"
-        options.tokenDetails = try getTestTokenDetails(for: test, key: options.key!, clientId: options.clientId, ttl: 5.0)
+        options.disconnectedRetryTimeout = 0.5
+        options.suspendedRetryTimeout = 1.0
         let mainClient = AblyTests.newRealtime(options).client
-        defer { mainClient.dispose(); mainClient.close() }
+        defer {
+            mainClient.simulateRestoreInternetConnection()
+            mainClient.dispose()
+            mainClient.close()
+        }
         
+        // Move to SUSPENDED
+        let ttlHookToken = mainClient.overrideConnectionStateTTL(1.0)
+        defer { ttlHookToken.remove() }
+
         let leavesChannel = leavesClient.channels.get(channelName)
         let mainChannel = mainClient.channels.get(channelName)
         
@@ -813,9 +822,6 @@ class RealtimeClientPresenceTests: XCTestCase {
         }
 
         var presenceEvents = [ARTPresenceMessage]()
-        var mainSuspendedAt = Date()
-        var mainAttachedAt = Date()
-        var clientLeftAt = Date()
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(4, done: done)
@@ -826,34 +832,27 @@ class RealtimeClientPresenceTests: XCTestCase {
                 }
             }
             mainChannel.once(.suspended) { _ in
-                mainSuspendedAt = Date()
                 mainChannel.internalSync { _internal in
                     XCTAssertEqual(_internal.presenceMap.members.count, 4) // "main", "user1", "user2", "leaves"
                     XCTAssertEqual(_internal.presenceMap.localMembers.count, 1) // "main"
                 }
                 leavesChannel.presence.leave(nil) { error in
                     XCTAssertNil(error)
-                    clientLeftAt = Date()
+                    mainClient.simulateRestoreInternetConnection()
                     partialDone()
                 }
                 partialDone()
             }
             mainChannel.once(.attached) { stateChange in
                 XCTAssertNil(stateChange.reason)
-                mainAttachedAt = Date()
                 partialDone()
             }
-            mainChannel.internalAsync { _internal in
-                _internal.setSuspended(.init(state: .ok))
-            }
+            mainClient.simulateNoInternetConnection()
         }
         XCTAssertEqual(presenceEvents.count, 1)
         XCTAssertEqual(presenceEvents[0].action, ARTPresenceAction.leave)
         XCTAssertEqual(presenceEvents[0].clientId, "leaves")
         
-        XCTAssertTrue(mainSuspendedAt < clientLeftAt)
-        XCTAssertTrue(clientLeftAt < mainAttachedAt)
-
         mainChannel.presence.unsubscribe()
         
         waitUntil(timeout: testTimeout) { done in
