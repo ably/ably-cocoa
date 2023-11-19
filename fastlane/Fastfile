@@ -22,7 +22,7 @@ end
 platform :ios do
 
   LANE_CONFIGS = [
-    LaneConfig.new(:test_iOS17_0, "Ably-iOS", ["iPhone 14 (17.0)"]),
+    LaneConfig.new(:test_iOS17_0, "Ably-iOS", ["iPhone 15"]),
     LaneConfig.new(:test_tvOS17_0, "Ably-tvOS", ["Apple TV 4K (3rd generation) (17.0)"]),
     LaneConfig.new(:test_macOS, "Ably-macOS")
   ]
