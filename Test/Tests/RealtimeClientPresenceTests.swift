@@ -756,86 +756,120 @@ class RealtimeClientPresenceTests: XCTestCase {
         }
     }
 
-    func test__023__Presence__Channel_state_change_side_effects__channel_enters_the_SUSPENDED_state__should_maintain_the_PresenceMap_and_any_members_present_before_and_after_the_sync_should_not_emit_presence_events() throws {
+    func test__023__Presence__Channel_state_change_side_effects__channel_enters_the_SUSPENDED_state__members_map_is_preserved_and_only_members_that_changed_between_ATTACHED_states_should_result_in_presence_events() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let channelName = test.uniqueChannelName()
 
-        var clientMembers: ARTRealtime?
-        clientMembers = AblyTests.addMembersSequentiallyToChannel(channelName, members: 3, options: options)
-        defer { clientMembers?.dispose(); clientMembers?.close() }
+        let clientMembers = AblyTests.addMembersSequentiallyToChannel(channelName, members: 2, options: options)
+        defer { clientMembers.dispose(); clientMembers.close() }
+        
+        options.clientId = "leaves"
+        let leavesClient = AblyTests.newRealtime(options).client
+        defer { leavesClient.dispose(); leavesClient.close() }
+        
+        options.clientId = "main"
+        options.disconnectedRetryTimeout = 0.5
+        options.suspendedRetryTimeout = 1.0
+        let mainClient = AblyTests.newRealtime(options).client
+        defer {
+            mainClient.simulateRestoreInternetConnection()
+            mainClient.dispose()
+            mainClient.close()
+        }
+        
+        // Move to SUSPENDED
+        let ttlHookToken = mainClient.overrideConnectionStateTTL(1.0)
+        defer { ttlHookToken.remove() }
 
-        options.clientId = "tester"
-        options.tokenDetails = try getTestTokenDetails(for: test, key: options.key!, clientId: options.clientId, ttl: 5.0)
-        let client = AblyTests.newRealtime(options).client
-        defer { client.dispose(); client.close() }
-        let channel = client.channels.get(channelName)
+        let leavesChannel = leavesClient.channels.get(channelName)
+        let mainChannel = mainClient.channels.get(channelName)
+        
         waitUntil(timeout: testTimeout) { done in
-            let partialDone = AblyTests.splitDone(3, done: done)
-            channel.presence.enter(nil) { error in
+            let partialDone = AblyTests.splitDone(4, done: done)
+            mainChannel.presence.subscribe { message in
+                if message.clientId == "main" {
+                    XCTAssertTrue(message.action == ARTPresenceAction.enter || message.action == ARTPresenceAction.present)
+                    partialDone()
+                }
+                else if message.clientId == "leaves" {
+                    XCTAssertTrue(message.action == ARTPresenceAction.enter || message.action == ARTPresenceAction.present)
+                    partialDone()
+                }
+            }
+            mainChannel.presence.enter(nil) { error in
                 XCTAssertNil(error)
                 partialDone()
             }
-            channel.presence.get { members, error in
+            leavesChannel.presence.enter(nil) { error in
+                XCTAssertNil(error)
+                partialDone()
+            }
+        }
+        
+        mainChannel.presence.unsubscribe()
+        
+        waitUntil(timeout: testTimeout) { done in
+            mainChannel.presence.get { members, error in
                 XCTAssertNil(error)
                 if let members {
-                    XCTAssertEqual(members.count, 3)
+                    XCTAssertEqual(members.count, 4) // "main", "user1", "user2", "leaves"
                 } else {
                     XCTFail("Expected members to be non-nil")
                 }
-                partialDone()
-            }
-            channel.presence.subscribe(.enter) { message in
-                if message.clientId == "tester" {
-                    channel.presence.unsubscribe()
-                    partialDone()
-                }
+                done()
             }
         }
+
+        var presenceEvents = [ARTPresenceMessage]()
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(4, done: done)
-            channel.presence.subscribe { presence in
-                XCTAssertEqual(presence.action, ARTPresenceAction.leave)
-                XCTAssertEqual(presence.clientId, "tester")
-                partialDone()
-            }
-            channel.once(.suspended) { _ in
-                channel.internalSync { _internal in
-                    XCTAssertEqual(_internal.presenceMap.members.count, 4)
-                    XCTAssertEqual(_internal.presenceMap.localMembers.count, 1)
+            mainChannel.presence.subscribe { presence in
+                presenceEvents += [presence]
+                delay(1) {
+                    partialDone() // Wait a bit to make sure we don't receive any other presence messages
                 }
-                partialDone()
             }
-            channel.once(.attached) { stateChange in
-                XCTAssertNil(stateChange.reason)
-                channel.presence.leave(nil) { error in
+            mainChannel.once(.suspended) { _ in
+                mainChannel.internalSync { _internal in
+                    XCTAssertEqual(_internal.presenceMap.members.count, 4) // "main", "user1", "user2", "leaves"
+                    XCTAssertEqual(_internal.presenceMap.localMembers.count, 1) // "main"
+                }
+                leavesChannel.presence.leave(nil) { error in
                     XCTAssertNil(error)
+                    mainClient.simulateRestoreInternetConnection()
                     partialDone()
                 }
                 partialDone()
             }
-            channel.internalAsync { _internal in
-                _internal.setSuspended(.init(state: .ok))
+            mainChannel.once(.attached) { stateChange in
+                XCTAssertNil(stateChange.reason)
+                partialDone()
             }
+            mainClient.simulateNoInternetConnection()
         }
-
-        channel.presence.unsubscribe()
+        XCTAssertEqual(presenceEvents.count, 1)
+        XCTAssertEqual(presenceEvents[0].action, ARTPresenceAction.leave)
+        XCTAssertEqual(presenceEvents[0].clientId, "leaves")
+        
+        mainChannel.presence.unsubscribe()
+        
         waitUntil(timeout: testTimeout) { done in
-            channel.presence.get { members, error in
+            mainChannel.presence.get { members, error in
                 XCTAssertNil(error)
                 guard let members = members else {
                     fail("Members is nil"); done(); return
                 }
-                XCTAssertEqual(members.count, 3)
+                XCTAssertEqual(members.count, 3) // "main", "user1", "user2"
                 expect(members).to(allPass { (member: ARTPresenceMessage?) in member!.action != .absent })
                 done()
             }
         }
 
-        channel.internalSync { _internal in
-            XCTAssertEqual(_internal.presenceMap.members.count, 3)
-            expect(_internal.presenceMap.localMembers).to(beEmpty())
+        mainChannel.internalSync { _internal in
+            XCTAssertEqual(_internal.presenceMap.members.count, 3) // "main", "user1", "user2"
+            XCTAssertEqual(_internal.presenceMap.localMembers.count, 1) // "main"
         }
     }
 
