@@ -2,6 +2,7 @@
 #import "ARTTokenParams.h"
 #import "ARTAuth+Private.h"
 #import "ARTDefault.h"
+#import "ARTNSDictionary+ARTDictionaryUtil.h"
 
 @implementation ARTTokenRequest
 
@@ -37,17 +38,19 @@
         return nil;
     }
 
-    ARTTokenParams *tokenParams = [[ARTTokenParams alloc] initWithClientId:dict[@"clientId"]];
+    ARTTokenParams *tokenParams = [[ARTTokenParams alloc] initWithClientId:[dict artString:@"clientId"]];
 
     ARTTokenRequest *tokenRequest = [[ARTTokenRequest alloc] initWithTokenParams:tokenParams
-                                                                         keyName:dict[@"keyName"]
-                                                                           nonce:dict[@"nonce"]
-                                                                             mac:dict[@"mac"]];
-    tokenRequest.clientId = dict[@"clientId"];
-    tokenRequest.ttl = dict[@"ttl"] ? [NSNumber numberWithDouble:millisecondsToTimeInterval([dict[@"ttl"] unsignedLongLongValue])] : nil;
-    tokenRequest.capability = dict[@"capability"];
-    tokenRequest.timestamp = [NSDate dateWithTimeIntervalSince1970:[dict[@"timestamp"] doubleValue] / 1000];
+                                                                         keyName:[dict artString:@"keyName"]
+                                                                           nonce:[dict artString:@"nonce"]
+                                                                             mac:[dict artString:@"mac"]];
+    tokenRequest.clientId = [dict artString:@"clientId"];
+    tokenRequest.capability = [dict artString:@"capability"];
+    tokenRequest.timestamp = [NSDate dateWithTimeIntervalSince1970:[[dict artNumber:@"timestamp"] doubleValue] / 1000];
 
+    NSNumber *ttlNumber = [dict artNumber:@"ttl"];
+    tokenRequest.ttl = ttlNumber != nil ? [NSNumber numberWithDouble:millisecondsToTimeInterval([ttlNumber unsignedLongLongValue])] : nil;
+    
     return tokenRequest;
 }
 
