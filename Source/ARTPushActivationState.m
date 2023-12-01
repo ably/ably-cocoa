@@ -9,6 +9,7 @@
 #import "ARTAuth+Private.h"
 #import "ARTHttp.h"
 #import "ARTTypes+Private.h"
+#import "ARTClientOptions.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -117,6 +118,12 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
     }
     else if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
         [self.machine registerForAPNS];
+#if TARGET_OS_IOS
+        ARTLocalDevice *const local = self.machine.rest.device_nosync;
+        if ([local clientId] == nil) {
+            [local setClientId:self.machine.rest.options.clientId];
+        }
+#endif
         return validateAndSync(self.machine, event, self.logger);
     }
     return nil;

@@ -134,13 +134,48 @@ class PushActivationStateMachineTests: XCTestCase {
 
     // RSH8b
     func test__016__Activation_state_machine__State_NotActivated__on_Event_CalledActivate__local_device__should_have_a_clientID_if_the_client_is_identified() {
-        beforeEach__Activation_state_machine__State_NotActivated()
 
-        let options = ARTClientOptions(key: "xxxx:xxxx")
-        options.clientId = "deviceClient"
-        let rest = ARTRest(options: options)
-        rest.internal.storage = storage
-        XCTAssertEqual(rest.device.clientId, "deviceClient")
+        let options1 = ARTClientOptions(key: "xxxx:xxxx")
+        options1.clientId = "client1"
+        let rest1 = ARTRest(options: options1)
+        httpExecutor = MockHTTPExecutor()
+        rest1.internal.httpExecutor = httpExecutor
+        rest1.internal.storage = storage
+        
+        let stateMachineDelegate = StateMachineDelegate()
+        let stateMachine1 = ARTPushActivationStateMachine(rest: rest1.internal, delegate: stateMachineDelegate, logger: .init(core: MockInternalLogCore()))
+        
+        XCTAssertEqual(rest1.device.clientId, "client1")
+        
+        let testDeviceToken = "xxxx-xxxx-xxxx-xxxx-xxxx"
+        stateMachine1.rest.device.setAndPersistAPNSDeviceToken(testDeviceToken)
+        defer { stateMachine1.rest.device.setAndPersistAPNSDeviceToken(nil) }
+
+        waitUntil(timeout: testTimeout) { done in
+            let partialDone = AblyTests.splitDone(2, done: done)
+            stateMachine1.transitions = { event, _, _ in
+                if event is ARTPushActivationEventGotPushDeviceDetails {
+                    partialDone()
+                    stateMachine1.send(ARTPushActivationEventCalledDeactivate())
+                }
+                if event is ARTPushActivationEventCalledDeactivate {
+                    partialDone()
+                }
+            }
+            stateMachine1.send(ARTPushActivationEventCalledActivate())
+        }
+        
+        let options2 = ARTClientOptions(key: "xxxx:xxxx")
+        options2.clientId = "client2"
+        let rest2 = ARTRest(options: options2)
+        rest2.internal.storage = storage
+        rest2.internal.httpExecutor = httpExecutor
+        
+        let stateMachine2 = ARTPushActivationStateMachine(rest: rest2.internal, delegate: stateMachineDelegate, logger: .init(core: MockInternalLogCore()))
+        stateMachine2.send(ARTPushActivationEventCalledActivate())
+        
+        XCTAssertEqual(rest2.device.clientId, "client2")
+        XCTAssertTrue(rest1.device === rest2.device)
     }
 
     // RSH3a2c
@@ -601,7 +636,8 @@ class PushActivationStateMachineTests: XCTestCase {
 
             stateMachine.send(ARTPushActivationEventCalledActivate())
             expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateWaitingForRegistrationSync.self))
-            if !fromEvent.isKind(of: ARTPushActivationEventCalledActivate.self) { XCTAssertTrue(activatedCallbackCalled)
+            if !fromEvent.isKind(of: ARTPushActivationEventCalledActivate.self) {
+                XCTAssertTrue(activatedCallbackCalled)
                 XCTAssertEqual(stateMachine.pendingEvents.count, 0)
             } else {
                 XCTAssertFalse(activatedCallbackCalled)

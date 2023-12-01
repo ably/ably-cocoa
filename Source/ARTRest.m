@@ -777,9 +777,6 @@ static BOOL sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = YES;
         device = [ARTLocalDevice load:clientId storage:self.storage logger:self.logger];
         sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = NO;
     }
-    else if ([device clientId] == nil) {
-        [device setClientId:clientId];
-    }
     return device;
 }
 
