@@ -20,6 +20,7 @@
 #define ARTLogInfo(logger, format, ...) ARTLog(logger, ARTLogLevelInfo, format, ##__VA_ARGS__)
 #define ARTLogWarn(logger, format, ...) ARTLog(logger, ARTLogLevelWarn, format, ##__VA_ARGS__)
 #define ARTLogError(logger, format, ...) ARTLog(logger, ARTLogLevelError, format, ##__VA_ARGS__)
+#define ARTPrint(logger, format, ...) ARTLog(logger, ARTLogLevelNone, format, ##__VA_ARGS__)
 
 NS_ASSUME_NONNULL_BEGIN
 
