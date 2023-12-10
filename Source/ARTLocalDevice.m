@@ -153,9 +153,4 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     return _identityTokenDetails != nil;
 }
 
-- (void)clearIdentityTokenDetailsAndClientId {
-    [self setAndPersistIdentityTokenDetails:nil];
-    self.clientId = nil;
-}
-
 @end

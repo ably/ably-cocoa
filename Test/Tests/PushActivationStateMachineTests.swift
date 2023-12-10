@@ -858,35 +858,26 @@ class PushActivationStateMachineTests: XCTestCase {
 
     // RSH3g2
     func test__054__Activation_state_machine__State_WaitingForDeregistration__on_Event_Deregistered() {
-        storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeregistration(machine: initialStateMachine, logger: .init(core: MockInternalLogCore())))
-        
-        let options = ARTClientOptions(key: "xxxx:xxxx")
-        options.clientId = "client1"
-        let rest = ARTRest(options: options)
-        rest.internal.storage = storage
-        stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate(), logger: .init(core: MockInternalLogCore()))
-        
-        XCTAssertEqual(stateMachine.rest.device.clientId, "client1")
-        
+        beforeEach__Activation_state_machine__State_WaitingForDeregistration()
+
         var deactivatedCallbackCalled = false
         let hook = stateMachine.testSuite_injectIntoMethod(after: NSSelectorFromString("callDeactivatedCallback:")) {
             deactivatedCallbackCalled = true
         }
         defer { hook.remove() }
 
-        var clearIdentityTokenDetailsAndClientIdCalled = false
-        let hookDevice = stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("clearIdentityTokenDetailsAndClientId")) {
-            clearIdentityTokenDetailsAndClientIdCalled = true
+        var setAndPersistIdentityTokenDetailsCalled = false
+        let hookDevice = stateMachine.rest.device.testSuite_injectIntoMethod(after: NSSelectorFromString("setAndPersistIdentityTokenDetails:")) {
+            setAndPersistIdentityTokenDetailsCalled = true
         }
         defer { hookDevice.remove() }
 
         stateMachine.send(ARTPushActivationEventDeregistered())
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
         XCTAssertTrue(deactivatedCallbackCalled)
-        XCTAssertTrue(clearIdentityTokenDetailsAndClientIdCalled)
+        XCTAssertTrue(setAndPersistIdentityTokenDetailsCalled)
         // RSH3g2a
         XCTAssertNil(stateMachine.rest.device.identityTokenDetails)
-        XCTAssertNil(stateMachine.rest.device.clientId)
     }
 
     // RSH3g3
