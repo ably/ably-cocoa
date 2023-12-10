@@ -120,9 +120,7 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
         [self.machine registerForAPNS];
 #if TARGET_OS_IOS
         ARTLocalDevice *const local = self.machine.rest.device_nosync;
-        if ([local clientId] == nil) {
-            [local setClientId:self.machine.rest.options.clientId];
-        }
+        [local setClientId:self.machine.rest.options.clientId];
 #endif
         return validateAndSync(self.machine, event, self.logger);
     }
