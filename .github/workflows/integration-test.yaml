@@ -114,5 +114,6 @@ jobs:
         env:
           TEST_OBSERVABILITY_SERVER_AUTH_KEY: ${{ secrets.TEST_OBSERVABILITY_SERVER_AUTH_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: Scripts/upload_test_results.sh
+        run: |
+           Scripts/upload_test_results.sh --job-index ${{ strategy.job-index }}
 
