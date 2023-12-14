@@ -20,6 +20,10 @@
 #define ARTLogInfo(logger, format, ...) ARTLog(logger, ARTLogLevelInfo, format, ##__VA_ARGS__)
 #define ARTLogWarn(logger, format, ...) ARTLog(logger, ARTLogLevelWarn, format, ##__VA_ARGS__)
 #define ARTLogError(logger, format, ...) ARTLog(logger, ARTLogLevelError, format, ##__VA_ARGS__)
+/**
+ This one is for local debugging only. You can replace other log macroses with it when needed and immidiatly print its message into the console without changing logLevel. Do not commit such changes.
+ */
+#define ARTPrint(logger, format, ...) ARTLog(logger, ARTLogLevelNone, format, ##__VA_ARGS__)
 
 NS_ASSUME_NONNULL_BEGIN
 
