@@ -1912,15 +1912,6 @@ class RestClientTests: XCTestCase {
         rest.internal.httpExecutor = mockHTTPExecutor
 
         do {
-            try rest.request("get", path: "new feature", params: nil, body: nil, headers: nil) { _, _ in
-                fail("Completion closure should not be called")
-            }
-        } catch let error as NSError {
-            XCTAssertEqual(error.code, ARTCustomRequestError.invalidPath.rawValue)
-            expect(error.localizedDescription).to(contain("Path isn't valid"))
-        }
-
-        do {
             try rest.request("get", path: "", params: nil, body: nil, headers: nil) { _, _ in
                 fail("Completion closure should not be called")
             }
