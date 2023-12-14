@@ -591,6 +591,8 @@ NS_ASSUME_NONNULL_END
     }
 
     NSURL *url = [NSURL URLWithString:path relativeToURL:self.baseUrl];
+    // Should not happen in iOS 17 and above. See explanation in the "Important" section here:
+    // https://developer.apple.com/documentation/foundation/nsurl/1572047-urlwithstring
     if (!url) {
         if (errorPtr) {
             *errorPtr = [NSError errorWithDomain:ARTAblyErrorDomain
