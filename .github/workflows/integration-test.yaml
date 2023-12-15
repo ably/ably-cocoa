@@ -34,7 +34,7 @@ jobs:
       ABLY_ENV: sandbox
 
     steps:
-      - name: Checkout repo
+      - name: Check out repo
         uses: actions/checkout@v2
         
       - name: Select Xcode (14.2)
@@ -46,7 +46,7 @@ jobs:
       - name: Environment Info
         run: ./Scripts/log-environment-information.sh
 
-      - name: Checkout xcparse repo
+      - name: Check out xcparse repo
         uses: actions/checkout@v3
         with:
           repository: ably-forks/xcparse
