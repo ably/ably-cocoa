@@ -271,7 +271,7 @@ dispatch_sync(_queue, ^{
     NSMutableDictionary<NSString *, NSString *> *channelSerials = [NSMutableDictionary new];
     for (ARTRealtimeChannelInternal *const channel in _realtime.channels.nosyncIterable) {
         if (channel.state_nosync == ARTRealtimeChannelAttached) {
-            channelSerials[channel.name] = channel.serial;
+            channelSerials[channel.name] = channel.channelSerial;
         }
     }
     

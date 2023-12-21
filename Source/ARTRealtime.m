@@ -253,7 +253,7 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
                 _msgSerial = recoveryKey.msgSerial; // RTN16f
                 for (NSString *const channelName in recoveryKey.channelSerials) {
                     ARTRealtimeChannelInternal *const channel = [_channels get:channelName];
-                    channel.serial = recoveryKey.channelSerials[channelName]; // RTN16j
+                    channel.channelSerial = recoveryKey.channelSerials[channelName]; // RTN16j
                 }
             }
         }
