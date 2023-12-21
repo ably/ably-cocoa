@@ -71,10 +71,10 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     #endif
     device.push.recipient[@"transportType"] = ARTDevicePushTransportType;
 
-    NSString *deviceId = [storage objectForKey:ARTDeviceIdKey] ?: @""; // PCD2, not nullable
+    NSString *deviceId = [storage objectForKey:ARTDeviceIdKey];
     NSString *deviceSecret = deviceId == nil ? nil : [storage secretForDevice:deviceId];
     
-    device.id = deviceId;
+    device.id = deviceId ?: @""; // PCD2, not nullable;
     device.secret = deviceSecret;
 
     id identityTokenDetailsInfo = [storage objectForKey:ARTDeviceIdentityTokenKey];
