@@ -234,11 +234,16 @@ class PushTests: XCTestCase {
 
         let rest = ARTRest(key: "fake:key")
         rest.internal.storage = storage
+        
+        storage.simulateOnNextRead(string: "testId", for: ARTDeviceIdKey)
+        storage.simulateOnNextRead(string: "testSecret", for: ARTDeviceSecretKey)
         storage.simulateOnNextRead(string: testToken, for: ARTAPNSDeviceTokenKey)
         storage.simulateOnNextRead(data: testIdentity.archive(withLogger: nil), for: ARTDeviceIdentityTokenKey)
 
         let device = rest.device
 
+        XCTAssertEqual(device.id, "testId")
+        XCTAssertEqual(device.secret, "testSecret")
         XCTAssertEqual(device.apnsDeviceToken(), testToken)
         XCTAssertEqual(device.identityTokenDetails?.token, testIdentity.token)
     }
@@ -336,7 +341,7 @@ class PushTests: XCTestCase {
         storage.simulateOnNextRead(string: testDeviceToken, for: ARTAPNSDeviceTokenKey)
         storage.simulateOnNextRead(data: testDeviceIdentity.archive(withLogger: nil), for: ARTDeviceIdentityTokenKey)
 
-        XCTAssertNil(realtime.device.clientId)
+        XCTAssertEqual(realtime.device.clientId, testDeviceIdentity.clientId)
 
         waitUntil(timeout: testTimeout) { done in
             stateMachine.transitions = { event, _, _ in
