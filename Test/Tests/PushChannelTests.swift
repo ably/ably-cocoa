@@ -341,6 +341,7 @@ class PushChannelTests: XCTestCase {
         options.testOptions.channelNamePrefix = nil
         let rest = ARTRest(options: options)
         rest.internal.storage = MockDeviceStorage()
+        rest.internal.setupLocalDevice()
 
         // Activate device
         let testIdentityTokenDetails = ARTDeviceIdentityTokenDetails(token: "xxxx-xxxx-xxx", issued: Date(), expires: Date.distantFuture, capability: "", clientId: "")
