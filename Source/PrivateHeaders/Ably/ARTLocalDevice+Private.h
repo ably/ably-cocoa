@@ -19,13 +19,14 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString * _Nullable tokenType);
 
 @property (nonatomic) id<ARTDeviceStorage> storage;
 
-+ (ARTLocalDevice *)load:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage logger:(nullable ARTInternalLog *)logger;
++ (instancetype)deviceWithStorage:(id<ARTDeviceStorage>)storage logger:(nullable ARTInternalLog *)logger;
 - (nullable NSString *)apnsDeviceToken;
 - (void)setAndPersistAPNSDeviceToken:(nullable NSString *)deviceToken tokenType:(NSString *)tokenType;
 - (void)setAndPersistAPNSDeviceToken:(nullable NSString *)deviceToken;
 - (void)setAndPersistIdentityTokenDetails:(nullable ARTDeviceIdentityTokenDetails *)tokenDetails;
 - (BOOL)isRegistered;
 - (void)clearIdentityTokenDetailsAndClientId;
+- (BOOL)setupDetailsWithClientId:(nullable NSString *)clientId;
 
 + (NSString *)generateId;
 + (NSString *)generateSecret;

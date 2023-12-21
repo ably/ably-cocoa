@@ -46,17 +46,16 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
 
 @implementation ARTLocalDevice
 
-- (instancetype)initWithClientId:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage logger:(nullable ARTInternalLog *)logger {
+- (instancetype)initWithStorage:(id<ARTDeviceStorage>)storage logger:(nullable ARTInternalLog *)logger {
     if (self = [super init]) {
-        self.clientId = clientId;
         self.storage = storage;
         _logger = logger;
     }
     return self;
 }
 
-+ (ARTLocalDevice *)load:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage logger:(nullable ARTInternalLog *)logger {
-    ARTLocalDevice *device = [[ARTLocalDevice alloc] initWithClientId:clientId storage:storage logger:logger];
++ (instancetype)deviceWithStorage:(id<ARTDeviceStorage>)storage logger:(nullable ARTInternalLog *)logger {
+    ARTLocalDevice *device = [[ARTLocalDevice alloc] initWithStorage:storage logger:logger];
     device.platform = ARTDevicePlatform;
     #if TARGET_OS_IOS
     switch ([[UIDevice currentDevice] userInterfaceIdiom]) {
@@ -72,16 +71,8 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     #endif
     device.push.recipient[@"transportType"] = ARTDevicePushTransportType;
 
-    NSString *deviceId = [storage objectForKey:ARTDeviceIdKey];
+    NSString *deviceId = [storage objectForKey:ARTDeviceIdKey] ?: @""; // PCD2, not nullable
     NSString *deviceSecret = deviceId == nil ? nil : [storage secretForDevice:deviceId];
-    
-    if (deviceId == nil || deviceSecret == nil) { // generate both at the same time
-        deviceId = [self generateId];
-        deviceSecret = [self generateSecret];
-        
-        [storage setObject:deviceId forKey:ARTDeviceIdKey];
-        [storage setSecret:deviceSecret forDevice:deviceId];
-    }
     
     device.id = deviceId;
     device.secret = deviceSecret;
@@ -89,6 +80,8 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     id identityTokenDetailsInfo = [storage objectForKey:ARTDeviceIdentityTokenKey];
     ARTDeviceIdentityTokenDetails *identityTokenDetails = [ARTDeviceIdentityTokenDetails unarchive:identityTokenDetailsInfo withLogger:logger];
     device->_identityTokenDetails = identityTokenDetails;
+
+    device.clientId = identityTokenDetails.clientId;
 
     NSArray *supportedTokenTypes = @[
         ARTAPNSDeviceDefaultTokenType,
@@ -100,6 +93,33 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
         [device setAPNSDeviceToken:token tokenType:tokenType];
     }
     return device;
+}
+
+- (BOOL)setupDetailsWithClientId:(NSString *)clientId {
+    NSString *deviceId = self.id;
+    NSString *deviceSecret = self.secret;
+    
+    if ([deviceId isEqualToString:@""] || deviceSecret == nil) { // generate both at the same time
+        deviceId = [self.class generateId];
+        deviceSecret = [self.class generateSecret];
+        
+        [_storage setObject:deviceId forKey:ARTDeviceIdKey];
+        [_storage setSecret:deviceSecret forDevice:deviceId];
+    }
+    
+    self.id = deviceId;
+    self.secret = deviceSecret;
+    
+    NSString *localClientId = self.clientId;
+    
+    if (localClientId && clientId && ![localClientId isEqualToString:clientId]) {
+        ARTLogError(self.logger, @"ARTLocalDevice: `clientId`s don't match: %@ vs %@.", clientId, localClientId);
+        return NO;
+    }
+    if (clientId) {
+        self.clientId = clientId;
+    }
+    return YES;
 }
 
 + (NSString *)generateId {
