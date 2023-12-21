@@ -789,6 +789,13 @@ static BOOL sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = YES;
     });
 }
 
+- (void)resetLocalDevice {
+    ARTLocalDevice *device = [self device_nosync];
+    dispatch_sync([ARTRestInternal deviceAccessQueue], ^{
+        [device resetDetails];
+    });
+}
+
 - (void)resetDeviceSingleton {
     dispatch_sync([ARTRestInternal deviceAccessQueue], ^{
         sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = YES;

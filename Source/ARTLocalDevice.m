@@ -122,6 +122,21 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     return YES;
 }
 
+- (void)resetDetails {
+    self.id = @"";
+    self.secret = nil;
+    self.clientId = nil;
+    [_storage setObject:nil forKey:ARTDeviceIdKey];
+    [self setAndPersistIdentityTokenDetails:nil];
+    NSArray *supportedTokenTypes = @[
+        ARTAPNSDeviceDefaultTokenType,
+        ARTAPNSDeviceLocationTokenType
+    ];
+    for (NSString *tokenType in supportedTokenTypes) {
+        [self setAndPersistAPNSDeviceToken:nil tokenType:tokenType];
+    }
+}
+
 + (NSString *)generateId {
     return [NSUUID new].UUIDString;
 }
@@ -171,11 +186,6 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
 
 - (BOOL)isRegistered {
     return _identityTokenDetails != nil;
-}
-
-- (void)clearIdentityTokenDetailsAndClientId {
-    [self setAndPersistIdentityTokenDetails:nil];
-    self.clientId = nil;
 }
 
 @end

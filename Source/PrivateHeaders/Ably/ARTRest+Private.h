@@ -77,6 +77,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 #if TARGET_OS_IOS
 - (void)setupLocalDevice;
+- (void)resetLocalDevice;
+
 // This is only intended to be called from test code.
 - (void)resetDeviceSingleton;
 
