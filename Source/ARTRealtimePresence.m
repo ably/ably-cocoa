@@ -182,7 +182,7 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
     ARTEventEmitter<ARTEvent * /*ARTSyncState*/, id> *_syncEventEmitter;
     
     NSMutableDictionary<NSString *, ARTPresenceMessage *> *_members;
-    NSMutableDictionary<NSString *, ARTPresenceMessage *> *_localMembers; // RTP17h
+    NSMutableDictionary<NSString *, ARTPresenceMessage *> *_internalMembers; // RTP17h
 }
 
 - (instancetype)initWithChannel:(ARTRealtimeChannelInternal *)channel logger:(ARTInternalLog *)logger {
@@ -197,7 +197,7 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
         _eventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
         _dataEncoder = _channel.dataEncoder;
         _members = [NSMutableDictionary new];
-        _localMembers = [NSMutableDictionary new];
+        _internalMembers = [NSMutableDictionary new];
         _syncSessionId = 0;
         _syncState = ARTPresenceSyncInitialized;
         _syncEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
@@ -672,7 +672,7 @@ dispatch_sync(_queue, ^{
         ARTLogDebug(self.logger, @"R:%p C:%p (%@) PresenceMap has been reset", _realtime, self, _channel.name);
     }
     [self sendPendingPresence];
-    [self reenterLocalMembers]; // RTP17i
+    [self reenterInternalMembers]; // RTP17i
 }
 
 - (void)onMessage:(ARTProtocolMessage *)message {
@@ -736,9 +736,9 @@ dispatch_sync(_queue, ^{
     ARTLogDebug(self.logger, @"RT:%p C:%p (%@) member \"%@\" no longer present", _realtime, _channel, _channel.name, pm.memberKey);
 }
 
-- (void)reenterLocalMembers {
+- (void)reenterInternalMembers {
     ARTLogDebug(self.logger, @"%p reentering local members", self);
-    for (ARTPresenceMessage *member in [self.localMembers allValues]) {
+    for (ARTPresenceMessage *member in [self.internalMembers allValues]) {
         [self enterWithPresenceMessageId:member.id clientId:member.clientId data:member.data callback:^(ARTErrorInfo *error) {
             if (error != nil) {
                 NSString *message = [NSString stringWithFormat:@"Re-entering member \"%@\" is failed with code %ld (%@)", member.memberKey, (long)error.code, error.message];
@@ -764,8 +764,8 @@ dispatch_sync(_queue, ^{
     return _members;
 }
 
-- (NSDictionary<NSString *, ARTPresenceMessage *> *)localMembers {
-    return _localMembers;
+- (NSDictionary<NSString *, ARTPresenceMessage *> *)internalMembers {
+    return _internalMembers;
 }
 
 - (BOOL)add:(ARTPresenceMessage *)message {
@@ -802,7 +802,7 @@ dispatch_sync(_queue, ^{
     [_members setObject:message forKey:message.memberKey];
     // Local member
     if ([message.connectionId isEqualToString:self.connectionId]) {
-        _localMembers[message.clientId] = message;
+        _internalMembers[message.clientId] = message;
         ARTLogDebug(_logger, @"local member %@ with action %@ has been added", message.memberKey, ARTPresenceActionToStr(message.action).uppercaseString);
     }
 }
@@ -813,7 +813,7 @@ dispatch_sync(_queue, ^{
 
 - (void)internalRemove:(ARTPresenceMessage *)message force:(BOOL)force {
     if ([message.connectionId isEqualToString:self.connectionId] && !message.isSynthesized) {
-        [_localMembers removeObjectForKey:message.clientId];
+        [_internalMembers removeObjectForKey:message.clientId];
     }
 
     const BOOL syncInProgress = self.syncInProgress;
@@ -852,7 +852,7 @@ dispatch_sync(_queue, ^{
 
 - (void)reset {
     _members = [NSMutableDictionary new];
-    _localMembers = [NSMutableDictionary new];
+    _internalMembers = [NSMutableDictionary new];
 }
 
 - (void)startSync {
