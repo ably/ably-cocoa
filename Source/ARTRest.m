@@ -781,7 +781,7 @@ static BOOL sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = YES;
     return device;
 }
 
-- (void)setupLocalDevice {
+- (void)setupLocalDevice_nosync {
     ARTLocalDevice *device = [self device_nosync];
     NSString *clientId = self.auth.clientId_nosync;
     dispatch_sync([ARTRestInternal deviceAccessQueue], ^{
@@ -789,7 +789,7 @@ static BOOL sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = YES;
     });
 }
 
-- (void)resetLocalDevice {
+- (void)resetLocalDevice_nosync {
     ARTLocalDevice *device = [self device_nosync];
     dispatch_sync([ARTRestInternal deviceAccessQueue], ^{
         [device resetDetails];

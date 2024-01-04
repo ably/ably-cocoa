@@ -477,7 +477,7 @@ class PushActivationStateMachineTests: XCTestCase {
         storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForDeviceRegistration(machine: initialStateMachine, logger: .init(core: MockInternalLogCore())))
         rest.internal.storage = storage
         stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate(), logger: .init(core: MockInternalLogCore()))
-        rest.internal.setupLocalDevice()
+        rest.internal.setupLocalDevice_nosync()
     }
 
     // RSH3c1
@@ -548,7 +548,7 @@ class PushActivationStateMachineTests: XCTestCase {
         storage = MockDeviceStorage(startWith: ARTPushActivationStateWaitingForNewPushDeviceDetails(machine: initialStateMachine, logger: .init(core: MockInternalLogCore())))
         rest.internal.storage = storage
         stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate(), logger: .init(core: MockInternalLogCore()))
-        rest.internal.setupLocalDevice()
+        rest.internal.setupLocalDevice_nosync()
     }
 
     // RSH3d1
@@ -850,7 +850,7 @@ class PushActivationStateMachineTests: XCTestCase {
         rest.internal.storage = storage
         stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate(), logger: .init(core: MockInternalLogCore()))
         
-        rest.internal.setupLocalDevice()
+        rest.internal.setupLocalDevice_nosync()
         
         XCTAssertEqual(stateMachine.rest.device.clientId, "client1")
         
@@ -1028,7 +1028,7 @@ class PushActivationStateMachineTests: XCTestCase {
             options.clientId = "deviceClient"
             let rest = ARTRest(options: options)
             rest.internal.storage = storage
-            rest.internal.setupLocalDevice()
+            rest.internal.setupLocalDevice_nosync()
             
             XCTAssertEqual(rest.device.clientId, "deviceClient")
 
@@ -1236,7 +1236,7 @@ class PushActivationStateMachineTests: XCTestCase {
         func test__should_fire_Deregistered_event_and_include_DeviceSecret_HTTP_header() throws {
             contextBeforeEach?()
             
-            rest.internal.setupLocalDevice()
+            rest.internal.setupLocalDevice_nosync()
             
             let delegate = StateMachineDelegate()
             stateMachine.delegate = delegate
@@ -1280,7 +1280,7 @@ class PushActivationStateMachineTests: XCTestCase {
         func test__should_fire_Deregistered_event_and_include_DeviceIdentityToken_HTTP_header() throws {
             contextBeforeEach?()
             
-            rest.internal.setupLocalDevice()
+            rest.internal.setupLocalDevice_nosync()
             
             let delegate = StateMachineDelegate()
             stateMachine.delegate = delegate
@@ -1337,7 +1337,7 @@ class PushActivationStateMachineTests: XCTestCase {
         func test__should_fire_DeregistrationFailed_event() throws {
             contextBeforeEach?()
             
-            rest.internal.setupLocalDevice()
+            rest.internal.setupLocalDevice_nosync()
             
             let delegate = StateMachineDelegate()
             stateMachine.delegate = delegate
