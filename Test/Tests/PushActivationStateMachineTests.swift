@@ -156,8 +156,15 @@ class PushActivationStateMachineTests: XCTestCase {
         
         let stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate(), logger: .init(core: MockInternalLogCore()))
         
+        XCTAssertEqual(rest.device.id, "")
+        XCTAssertNil(rest.device.secret)
         XCTAssertNil(rest.device.clientId)
+        
         stateMachine.send(ARTPushActivationEventCalledActivate())
+        
+        XCTAssertNotNil(rest.device.id)
+        XCTAssertNotEqual(rest.device.id, "")
+        XCTAssertNotNil(rest.device.secret)
         XCTAssertEqual(rest.device.clientId, "deviceClient")
     }
 
@@ -870,11 +877,18 @@ class PushActivationStateMachineTests: XCTestCase {
         expect(stateMachine.current).to(beAKindOf(ARTPushActivationStateNotActivated.self))
         XCTAssertTrue(deactivatedCallbackCalled)
         XCTAssertTrue(resetDetailsCalled)
+        
         // RSH3g2a
         XCTAssertEqual(stateMachine.rest.device.id, "")
         XCTAssertNil(stateMachine.rest.device.secret)
         XCTAssertNil(stateMachine.rest.device.identityTokenDetails)
         XCTAssertNil(stateMachine.rest.device.clientId)
+        XCTAssertNil(stateMachine.rest.device.push.recipient["push"])
+        
+        XCTAssertNil(storage.object(forKey: ARTDeviceIdKey))
+        XCTAssertNil(storage.object(forKey: ARTDeviceIdentityTokenKey))
+        XCTAssertNil(ARTLocalDevice.apnsDeviceToken(ofType: ARTAPNSDeviceDefaultTokenType, from: storage))
+        XCTAssertNil(ARTLocalDevice.apnsDeviceToken(ofType: ARTAPNSDeviceLocationTokenType, from: storage))
     }
 
     // RSH3g3
