@@ -168,11 +168,15 @@ echo "Result bundle found: ${result_bundles}" 2>&1
 xcparse_output_directory=$(mktemp -d)
 echo "Extracting result bundle attachments to ${xcparse_output_directory}." 2>&1
 
+echo "::group::swift build"
+
 cd xcparse
 if [[ ! -f .build/debug/xcparse ]]
 then
   swift build
 fi
+
+echo "::endgroup::"
 
 .build/debug/xcparse attachments "${result_bundles}" "${xcparse_output_directory}"
 cd ..
