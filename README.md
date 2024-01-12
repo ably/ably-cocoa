@@ -32,9 +32,9 @@ If you find any issues with unsupported platform versions, please [raise an issu
 
 We perform CI testing on the following operating systems:
 
-- iOS 16.2
-- tvOS 16.1
-- The version of macOS specified by [GitHub Actions’ `macos-latest` runner image](https://github.com/actions/runner-images#available-images).
+- iOS 17.2
+- tvOS 17.2
+- The version of macOS specified by [GitHub Actions’ `macos-13` runner image](https://github.com/actions/runner-images#available-images).
 
 ## Known Limitations
 
