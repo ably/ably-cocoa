@@ -95,7 +95,7 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     return device;
 }
 
-- (BOOL)setupDetailsWithClientId:(NSString *)clientId {
+- (void)setupDetailsWithClientId:(NSString *)clientId {
     NSString *deviceId = self.id;
     NSString *deviceSecret = self.secret;
     
@@ -110,16 +110,7 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     self.id = deviceId;
     self.secret = deviceSecret;
     
-    NSString *localClientId = self.clientId;
-    
-    if (localClientId && clientId && ![localClientId isEqualToString:clientId]) {
-        ARTLogError(self.logger, @"ARTLocalDevice: `clientId`s don't match: %@ vs %@.", clientId, localClientId);
-        return NO;
-    }
-    if (clientId) {
-        self.clientId = clientId;
-    }
-    return YES;
+    self.clientId = clientId;
 }
 
 - (void)resetDetails {

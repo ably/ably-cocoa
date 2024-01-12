@@ -26,7 +26,7 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString * _Nullable tokenType);
 - (void)setAndPersistIdentityTokenDetails:(nullable ARTDeviceIdentityTokenDetails *)tokenDetails;
 - (BOOL)isRegistered;
 - (void)resetDetails;
-- (BOOL)setupDetailsWithClientId:(nullable NSString *)clientId;
+- (void)setupDetailsWithClientId:(nullable NSString *)clientId;
 
 + (NSString *)generateId;
 + (NSString *)generateSecret;
