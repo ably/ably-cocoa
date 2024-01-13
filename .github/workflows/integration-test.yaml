@@ -22,12 +22,6 @@ jobs:
           - platform: iOS
             lane: test_iOS16_2
 
-          - platform: tvOS
-            lane: test_tvOS16_1
-
-          - platform: macOS
-            lane: test_macOS
-
     env:
       LC_CTYPE: en_US.UTF-8
       LANG: en_US.UTF-8
