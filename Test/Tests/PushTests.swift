@@ -261,6 +261,8 @@ class PushTests: XCTestCase {
         }
 
         let realtime = ARTRealtime(options: options)
+        realtime.internal.rest.storage = MockDeviceStorage()
+
         XCTAssertNil(realtime.device.clientId)
 
         waitUntil(timeout: testTimeout) { done in
@@ -280,6 +282,8 @@ class PushTests: XCTestCase {
         options.testOptions.transportFactory = TestProxyTransportFactory()
 
         let realtime = ARTRealtime(options: options)
+        realtime.internal.rest.storage = MockDeviceStorage()
+
         XCTAssertNil(realtime.device.clientId)
 
         waitUntil(timeout: testTimeout) { done in
