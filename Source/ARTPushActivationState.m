@@ -88,10 +88,10 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
     #if TARGET_OS_IOS
     ARTLocalDevice *const local = machine.rest.device_nosync;
 
+    NSString *const presentClientId = machine.rest.auth.clientId_nosync;
     if (local.identityTokenDetails) {
         // Already registered.
-        NSString *const instanceClientId = machine.rest.auth.clientId_nosync;
-        if (local.clientId != nil && instanceClientId && ![local.clientId isEqualToString:instanceClientId]) {
+        if (local.clientId != nil && presentClientId && ![local.clientId isEqualToString:presentClientId]) {
             ARTErrorInfo *const error = [ARTErrorInfo createWithCode:61002 message:@"Activation failed: present clientId is not compatible with existing device registration"];
             [machine sendEvent:[ARTPushActivationEventSyncRegistrationFailed newWithError:error]];
         } else {
@@ -102,6 +102,7 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
     } else if ([local apnsDeviceToken]) {
         [machine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
     }
+    [local setupDetailsWithClientId:presentClientId];
     #endif
 
     return [ARTPushActivationStateWaitingForPushDeviceDetails newWithMachine:machine logger:logger];
@@ -116,9 +117,6 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
         return self;
     }
     else if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
-#if TARGET_OS_IOS
-        [self.machine.rest setupLocalDevice_nosync];
-#endif
         [self.machine registerForAPNS];
         return validateAndSync(self.machine, event, self.logger);
     }
