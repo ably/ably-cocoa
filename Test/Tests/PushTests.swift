@@ -229,7 +229,7 @@ class PushTests: XCTestCase {
             issued: Date(),
             expires: Date.distantFuture,
             capability: "",
-            clientId: ""
+            clientId: "client1"
         )
 
         let rest = ARTRest(key: "fake:key")
@@ -244,6 +244,7 @@ class PushTests: XCTestCase {
 
         XCTAssertEqual(device.id, "testId")
         XCTAssertEqual(device.secret, "testSecret")
+        XCTAssertEqual(device.clientId, "client1")
         XCTAssertEqual(device.apnsDeviceToken(), testToken)
         XCTAssertEqual(device.identityTokenDetails?.token, testIdentity.token)
     }
