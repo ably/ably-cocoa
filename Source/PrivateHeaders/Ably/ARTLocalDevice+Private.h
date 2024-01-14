@@ -9,6 +9,7 @@ extern NSString *const ARTDeviceIdKey;
 extern NSString *const ARTDeviceSecretKey;
 extern NSString *const ARTDeviceIdentityTokenKey;
 extern NSString *const ARTAPNSDeviceTokenKey;
+extern NSString *const ARTClientIdKey;
 
 extern NSString *const ARTAPNSDeviceDefaultTokenType;
 extern NSString *const ARTAPNSDeviceLocationTokenType;

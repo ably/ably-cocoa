@@ -30,6 +30,7 @@ NSString *const ARTDeviceIdKey = @"ARTDeviceId";
 NSString *const ARTDeviceSecretKey = @"ARTDeviceSecret";
 NSString *const ARTDeviceIdentityTokenKey = @"ARTDeviceIdentityToken";
 NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
+NSString *const ARTClientIdKey = @"ARTClientId";
 
 NSString *const ARTAPNSDeviceDefaultTokenType = @"default";
 NSString *const ARTAPNSDeviceLocationTokenType = @"location";
@@ -81,7 +82,12 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     ARTDeviceIdentityTokenDetails *identityTokenDetails = [ARTDeviceIdentityTokenDetails unarchive:identityTokenDetailsInfo withLogger:logger];
     device->_identityTokenDetails = identityTokenDetails;
 
-    device.clientId = identityTokenDetails.clientId;
+    NSString *clientId = [storage objectForKey:ARTClientIdKey];
+    if (clientId == nil && identityTokenDetails.clientId != nil) {
+        clientId = identityTokenDetails.clientId;
+        [storage setObject:clientId forKey:ARTClientIdKey];
+    }
+    device.clientId = clientId;
 
     NSArray *supportedTokenTypes = @[
         ARTAPNSDeviceDefaultTokenType,
@@ -111,12 +117,14 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     self.secret = deviceSecret;
     
     self.clientId = clientId;
+    [_storage setObject:clientId forKey:ARTClientIdKey];
 }
 
 - (void)resetDetails {
     self.secret = nil;
     self.clientId = nil;
     [_storage setSecret:nil forDevice:self.id];
+    [_storage setObject:nil forKey:ARTClientIdKey];
     [self setAndPersistIdentityTokenDetails:nil];
     NSArray *supportedTokenTypes = @[
         ARTAPNSDeviceDefaultTokenType,
@@ -171,6 +179,7 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     _identityTokenDetails = tokenDetails;
     if (self.clientId == nil) {
         self.clientId = tokenDetails.clientId;
+        [self.storage setObject:tokenDetails.clientId forKey:ARTClientIdKey];
     }
 }
 
