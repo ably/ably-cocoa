@@ -102,6 +102,8 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
     } else if ([local apnsDeviceToken]) {
         [machine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
     }
+    [machine.rest setupLocalDevice_nosync];
+    [machine registerForAPNS];
     #endif
 
     return [ARTPushActivationStateWaitingForPushDeviceDetails newWithMachine:machine logger:logger];
@@ -116,10 +118,6 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
         return self;
     }
     else if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
-#if TARGET_OS_IOS
-        [self.machine.rest setupLocalDevice_nosync];
-#endif
-        [self.machine registerForAPNS];
         return validateAndSync(self.machine, event, self.logger);
     }
     return nil;
