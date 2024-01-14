@@ -261,9 +261,11 @@ class PushTests: XCTestCase {
         }
 
         let realtime = ARTRealtime(options: options)
-        realtime.internal.rest.storage = MockDeviceStorage()
+        let storage = MockDeviceStorage()
+        realtime.internal.rest.storage = storage
 
         XCTAssertNil(realtime.device.clientId)
+        XCTAssertNil(storage.keysWritten[ARTClientIdKey] as? String)
 
         waitUntil(timeout: testTimeout) { done in
             realtime.auth.authorize { _, _ in
@@ -272,6 +274,7 @@ class PushTests: XCTestCase {
         }
 
         XCTAssertEqual(realtime.device.clientId, "testClient")
+        XCTAssertEqual(storage.keysWritten[ARTClientIdKey] as? String, "testClient")
     }
 
     // RSH8d
@@ -282,10 +285,12 @@ class PushTests: XCTestCase {
         options.testOptions.transportFactory = TestProxyTransportFactory()
 
         let realtime = ARTRealtime(options: options)
-        realtime.internal.rest.storage = MockDeviceStorage()
+        let storage = MockDeviceStorage()
+        realtime.internal.rest.storage = storage
 
         XCTAssertNil(realtime.device.clientId)
-
+        XCTAssertNil(storage.keysWritten[ARTClientIdKey] as? String)
+        
         waitUntil(timeout: testTimeout) { done in
             realtime.connection.once(.connected) { _ in
                 done()
@@ -298,6 +303,7 @@ class PushTests: XCTestCase {
         }
 
         XCTAssertEqual(realtime.device.clientId, "testClient")
+        XCTAssertEqual(storage.keysWritten[ARTClientIdKey] as? String, "testClient")
     }
 
     // RSH8e
@@ -387,9 +393,12 @@ class PushTests: XCTestCase {
                 clientId: expectedClientId
             )
         }
+        let storage = MockDeviceStorage()
+        rest.internal.storage = storage
         rest.push.internal.activationMachine.delegate = stateMachineDelegate
 
         XCTAssertNil(rest.device.clientId)
+        XCTAssertNil(storage.keysWritten[ARTClientIdKey] as? String)
 
         waitUntil(timeout: testTimeout) { done in
             stateMachineDelegate.onDidActivateAblyPush = { _ in
@@ -402,6 +411,7 @@ class PushTests: XCTestCase {
         }
 
         XCTAssertEqual(rest.device.clientId, expectedClientId)
+        XCTAssertEqual(storage.keysWritten[ARTClientIdKey] as? String, expectedClientId)
     }
 
     func test__014__Registerer_Delegate_option__a_successful_activation_should_call_the_correct_registerer_delegate_method() throws {
