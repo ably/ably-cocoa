@@ -103,6 +103,7 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
         [machine sendEvent:[ARTPushActivationEventGotPushDeviceDetails new]];
     }
     [local setupDetailsWithClientId:presentClientId];
+    [machine registerForAPNS];
     #endif
 
     return [ARTPushActivationStateWaitingForPushDeviceDetails newWithMachine:machine logger:logger];
@@ -117,7 +118,6 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
         return self;
     }
     else if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
-        [self.machine registerForAPNS];
         return validateAndSync(self.machine, event, self.logger);
     }
     return nil;
