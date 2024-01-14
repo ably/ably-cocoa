@@ -156,14 +156,12 @@ class PushActivationStateMachineTests: XCTestCase {
         
         let stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate(), logger: .init(core: MockInternalLogCore()))
         
-        XCTAssertEqual(rest.device.id, "")
         XCTAssertNil(rest.device.secret)
         XCTAssertNil(rest.device.clientId)
         
         stateMachine.send(ARTPushActivationEventCalledActivate())
         
         XCTAssertNotNil(rest.device.id)
-        XCTAssertNotEqual(rest.device.id, "")
         XCTAssertNotNil(rest.device.secret)
         XCTAssertEqual(rest.device.clientId, "deviceClient")
     }
@@ -879,7 +877,6 @@ class PushActivationStateMachineTests: XCTestCase {
         XCTAssertTrue(resetDetailsCalled)
         
         // RSH3g2a
-        XCTAssertEqual(stateMachine.rest.device.id, "")
         XCTAssertNil(stateMachine.rest.device.secret)
         XCTAssertNil(stateMachine.rest.device.identityTokenDetails)
         XCTAssertNil(stateMachine.rest.device.clientId)

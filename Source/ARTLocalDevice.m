@@ -74,7 +74,7 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     NSString *deviceId = [storage objectForKey:ARTDeviceIdKey];
     NSString *deviceSecret = deviceId == nil ? nil : [storage secretForDevice:deviceId];
     
-    device.id = deviceId ?: @""; // PCD2, not nullable;
+    device.id = deviceId ?: [self.class generateId]; // temporarily ignore RSH8a/b, see https://github.com/ably/ably-cocoa/pull/1847#discussion_r1441954284 thread
     device.secret = deviceSecret;
 
     id identityTokenDetailsInfo = [storage objectForKey:ARTDeviceIdentityTokenKey];
@@ -99,7 +99,7 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     NSString *deviceId = self.id;
     NSString *deviceSecret = self.secret;
     
-    if ([deviceId isEqualToString:@""] || deviceSecret == nil) { // generate both at the same time
+    if (deviceId == nil || deviceSecret == nil) { // generate both at the same time
         deviceId = [self.class generateId];
         deviceSecret = [self.class generateSecret];
         
@@ -123,10 +123,9 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
 }
 
 - (void)resetDetails {
-    self.id = @"";
     self.secret = nil;
     self.clientId = nil;
-    [_storage setObject:nil forKey:ARTDeviceIdKey];
+    [_storage setSecret:nil forDevice:self.id];
     [self setAndPersistIdentityTokenDetails:nil];
     NSArray *supportedTokenTypes = @[
         ARTAPNSDeviceDefaultTokenType,
