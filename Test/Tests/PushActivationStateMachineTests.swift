@@ -156,7 +156,6 @@ class PushActivationStateMachineTests: XCTestCase {
         
         let stateMachine = ARTPushActivationStateMachine(rest: rest.internal, delegate: StateMachineDelegate(), logger: .init(core: MockInternalLogCore()))
         
-        XCTAssertNil(rest.device.secret)
         XCTAssertNil(rest.device.clientId)
         
         stateMachine.send(ARTPushActivationEventCalledActivate())
@@ -877,15 +876,19 @@ class PushActivationStateMachineTests: XCTestCase {
         XCTAssertTrue(resetDetailsCalled)
         
         // RSH3g2a
-        XCTAssertNil(stateMachine.rest.device.secret)
         XCTAssertNil(stateMachine.rest.device.identityTokenDetails)
         XCTAssertNil(stateMachine.rest.device.clientId)
         XCTAssertNil(stateMachine.rest.device.push.recipient["push"])
         
-        XCTAssertNil(storage.object(forKey: ARTDeviceIdKey))
         XCTAssertNil(storage.object(forKey: ARTDeviceIdentityTokenKey))
         XCTAssertNil(ARTLocalDevice.apnsDeviceToken(ofType: ARTAPNSDeviceDefaultTokenType, from: storage))
         XCTAssertNil(ARTLocalDevice.apnsDeviceToken(ofType: ARTAPNSDeviceLocationTokenType, from: storage))
+        
+        // Should be replaced with `nil` checks after issue https://github.com/ably/specification/issues/180 resolved
+        XCTAssertNotNil(stateMachine.rest.device.id)
+        XCTAssertNotNil(stateMachine.rest.device.secret)
+        XCTAssertEqual(storage.keysWritten[ARTDeviceIdKey] as? String, stateMachine.rest.device.id)
+        XCTAssertEqual(storage.keysWritten[ARTDeviceSecretKey] as? String, stateMachine.rest.device.secret)
     }
 
     // RSH3g3

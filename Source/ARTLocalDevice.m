@@ -55,6 +55,14 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     return self;
 }
 
+- (void)generateAndPersistPairOfDeviceIdAndSecret {
+    self.id = [self.class generateId];
+    self.secret = [self.class generateSecret];
+    
+    [_storage setObject:self.id forKey:ARTDeviceIdKey];
+    [_storage setSecret:self.secret forDevice:self.id];
+}
+
 + (instancetype)deviceWithStorage:(id<ARTDeviceStorage>)storage logger:(nullable ARTInternalLog *)logger {
     ARTLocalDevice *device = [[ARTLocalDevice alloc] initWithStorage:storage logger:logger];
     device.platform = ARTDevicePlatform;
@@ -75,8 +83,13 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     NSString *deviceId = [storage objectForKey:ARTDeviceIdKey];
     NSString *deviceSecret = deviceId == nil ? nil : [storage secretForDevice:deviceId];
     
-    device.id = deviceId ?: [self.class generateId]; // temporarily ignore RSH8a/b, see https://github.com/ably/ably-cocoa/pull/1847#discussion_r1441954284 thread
-    device.secret = deviceSecret;
+    if (deviceId == nil || deviceSecret == nil) {
+        [device generateAndPersistPairOfDeviceIdAndSecret]; // Should be removed later once spec issue #180 resolved.
+    }
+    else {
+        device.id = deviceId;
+        device.secret = deviceSecret;
+    }
 
     id identityTokenDetailsInfo = [storage objectForKey:ARTDeviceIdentityTokenKey];
     ARTDeviceIdentityTokenDetails *identityTokenDetails = [ARTDeviceIdentityTokenDetails unarchive:identityTokenDetailsInfo withLogger:logger];
@@ -105,25 +118,19 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     NSString *deviceId = self.id;
     NSString *deviceSecret = self.secret;
     
-    if (deviceId == nil || deviceSecret == nil) { // generate both at the same time
-        deviceId = [self.class generateId];
-        deviceSecret = [self.class generateSecret];
-        
-        [_storage setObject:deviceId forKey:ARTDeviceIdKey];
-        [_storage setSecret:deviceSecret forDevice:deviceId];
+    if (deviceId == nil || deviceSecret == nil) {
+        [self generateAndPersistPairOfDeviceIdAndSecret];
     }
-    
-    self.id = deviceId;
-    self.secret = deviceSecret;
     
     self.clientId = clientId;
     [_storage setObject:clientId forKey:ARTClientIdKey];
 }
 
 - (void)resetDetails {
-    self.secret = nil;
+    // Should be replaced later to resetting device's id/secret once spec issue #180 resolved.
+    [self generateAndPersistPairOfDeviceIdAndSecret];
+    
     self.clientId = nil;
-    [_storage setSecret:nil forDevice:self.id];
     [_storage setObject:nil forKey:ARTClientIdKey];
     [self setAndPersistIdentityTokenDetails:nil];
     NSArray *supportedTokenTypes = @[
