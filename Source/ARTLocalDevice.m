@@ -97,7 +97,7 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
 
     NSString *clientId = [storage objectForKey:ARTClientIdKey];
     if (clientId == nil && identityTokenDetails.clientId != nil) {
-        clientId = identityTokenDetails.clientId;
+        clientId = identityTokenDetails.clientId; // pickup some value that exists for the updated installations with already registered device
         [storage setObject:clientId forKey:ARTClientIdKey];
     }
     device.clientId = clientId;
