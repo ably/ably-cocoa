@@ -12,7 +12,7 @@ on:
 
 jobs:
   check:
-    runs-on: macos-latest
+    runs-on: macos-13
 
     strategy:
       fail-fast: false
@@ -20,10 +20,10 @@ jobs:
         include:
 
           - platform: iOS
-            lane: test_iOS16_2
+            lane: test_iOS17_2
 
           - platform: tvOS
-            lane: test_tvOS16_1
+            lane: test_tvOS17_2
 
           - platform: macOS
             lane: test_macOS
@@ -37,9 +37,9 @@ jobs:
       - name: Check out repo
         uses: actions/checkout@v2
         
-      - name: Select Xcode (14.2)
+      - name: Select Xcode (15.1)
         run: |
-          sudo xcode-select -s /Applications/Xcode_14.2.app
+          sudo xcode-select -s /Applications/Xcode_15.1.app
           echo "Selected Xcode version:"
           xcodebuild -version
 
