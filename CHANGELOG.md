@@ -1,5 +1,14 @@
 # Change Log
 
+## [1.2.24](https://github.com/ably/ably-cocoa/tree/1.2.24)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.23...1.2.24)
+
+**Fixed issues:**
+
+- Push device deregistration does not clear device details. [\#1177](https://github.com/ably/ably-cocoa/issues/1177)
+- Unrecognized selector sent to instance. [\#1837](https://github.com/ably/ably-cocoa/issues/1837)
+
 ## [1.2.23](https://github.com/ably/ably-cocoa/tree/1.2.23)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.22...1.2.23)
