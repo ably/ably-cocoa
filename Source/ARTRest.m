@@ -744,10 +744,9 @@ dispatch_async(_queue, ^{
 }
 
 - (ARTLocalDevice *)device_nosync {
-    NSString *clientId = self.auth.clientId_nosync;
     __block ARTLocalDevice *ret;
-    dispatch_sync(ARTRestInternal.deviceAccessQueue, ^{
-        ret = [self deviceWithClientId_onlyCallOnDeviceAccessQueue:clientId];
+    dispatch_sync([ARTRestInternal deviceAccessQueue], ^{
+        ret = [self sharedDevice_onlyCallOnDeviceAccessQueue];
     });
     return ret;
 }
@@ -765,7 +764,7 @@ dispatch_async(_queue, ^{
 
 static BOOL sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = YES;
 
-- (ARTLocalDevice *)deviceWithClientId_onlyCallOnDeviceAccessQueue:(NSString *)clientId {
+- (ARTLocalDevice *)sharedDevice_onlyCallOnDeviceAccessQueue {
     // The device is shared in a static variable because it's a reflection
     // of what's persisted. Having a device instance per ARTRest instance
     // could leave some instances in a stale state, if, through another
@@ -776,10 +775,25 @@ static BOOL sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = YES;
 
     static id device;
     if (sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue) {
-        device = [ARTLocalDevice load:clientId storage:self.storage logger:self.logger];
+        device = [ARTLocalDevice deviceWithStorage:self.storage logger:self.logger];
         sharedDeviceNeedsLoading_onlyAccessOnDeviceAccessQueue = NO;
     }
     return device;
+}
+
+- (void)setupLocalDevice_nosync {
+    ARTLocalDevice *device = [self device_nosync];
+    NSString *clientId = self.auth.clientId_nosync;
+    dispatch_sync([ARTRestInternal deviceAccessQueue], ^{
+        [device setupDetailsWithClientId:clientId];
+    });
+}
+
+- (void)resetLocalDevice_nosync {
+    ARTLocalDevice *device = [self device_nosync];
+    dispatch_sync([ARTRestInternal deviceAccessQueue], ^{
+        [device resetDetails];
+    });
 }
 
 - (void)resetDeviceSingleton {

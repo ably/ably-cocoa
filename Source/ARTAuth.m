@@ -21,6 +21,8 @@
 #import "ARTPushActivationState.h"
 #import "ARTFormEncode.h"
 #import "ARTInternalLog.h"
+#import "ARTLocalDeviceStorage.h"
+#import "ARTLocalDevice+Private.h"
 
 @implementation ARTAuth {
     ARTQueuedDealloc *_dealloc;
@@ -824,6 +826,7 @@ dispatch_sync(_queue, ^{
         return;
     }
     [_rest.device_nosync setClientId:clientId];
+    [_rest.storage setObject:clientId forKey:ARTClientIdKey];
     [_rest.push getActivationMachine:^(ARTPushActivationStateMachine *stateMachine) {
         if (![stateMachine.current_nosync isKindOfClass:[ARTPushActivationStateNotActivated class]]) {
             [stateMachine sendEvent:[[ARTPushActivationEventGotPushDeviceDetails alloc] init]];
