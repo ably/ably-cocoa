@@ -6,7 +6,7 @@
 # Options:
 # -u / --upload-server-base-url <url>: Allows you to specify a URL to use as the upload server base URL. Defaults to https://test-observability.herokuapp.com.
 # -i / --iteration <number>: If running the tests in a loop inside a single CI job, indicates which iteration of the loop is currently executing. Defaults to 1.
-# -j / --job-index <number>: The index to which the current job corresponds in the response from the "list jobs for a workflow run attempt" GitHub API (https://docs.github.com/en/rest/actions/workflow-jobs?apiVersion=2022-11-28#list-jobs-for-a-workflow-run-attempt). If you specify `GITHUB_TOKEN` but not `--job-index`, and the response from this API contains more than one job, the script will fail.
+# -j / --job-name <name> (optional): The `name` property of the object corresponding to the current job in the response from the "list jobs for a workflow run attempt" GitHub API (https://docs.github.com/en/rest/actions/workflow-jobs?apiVersion=2022-11-28#list-jobs-for-a-workflow-run-attempt). If there is more than one object in the response whose `name` property equals this value, the action will fail. If you specify `GITHUB_TOKEN` but not `--job-name`, and the response from this API contains more than one job, the script will fail.
 #
 # Optional environment variables:
 #
@@ -103,7 +103,7 @@ while [[ "$#" -gt 0 ]]; do
     case $1 in
         -i|--iteration) iteration="$2"; shift ;;
         -u|--upload-server-base-url) upload_server_base_url="$2"; shift ;;
-        -j|--job-index) job_index="$2"; shift ;;
+        -j|--job-name) job_name="$2"; shift ;;
         *) echo "Unknown parameter passed: $1"; exit 1 ;;
     esac
     shift
@@ -217,32 +217,45 @@ then
   temp_github_jobs_response_file=$(mktemp)
   gh api "/repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/attempts/${GITHUB_RUN_ATTEMPT}/jobs" > $temp_github_jobs_response_file
 
-  number_of_jobs=$(jq '.jobs | length' < "${temp_github_jobs_response_file}")
+  matching_jobs_file=$(mktemp)
 
-  if [[ -z $job_index && $number_of_jobs -gt 1 ]]
+  if [[ -z $job_name ]]
   then
-    echo -e "Got ${number_of_jobs} jobs from GitHub API but don’t know which one to pick. You need to provide a --job-index argument." 2>&1
-    exit 1
-  fi
+    number_of_jobs=$(jq '.jobs | length' < "${temp_github_jobs_response_file}")
 
-  if [[ -n $job_index ]]
-  then
-    if [[ $job_index -gt $number_of_jobs ]]
-    then
-      echo -e "The --job-index argument has value ${job_index}, but there are only ${number_of_jobs} jobs. This script does not currently handle pagination." 2>&1
-      exit 1
-    fi
-  else
     if [[ $number_of_jobs -eq 0 ]]
     then
-      echo -e "The GitHub API response contains no jobs." 2>&1
+      echo -e "Got no jobs from GitHub API." 2>&1
       exit 1
     fi
-    job_index=0
+
+    if [[ $number_of_jobs -gt 1 ]]
+    then
+      echo -e "Got ${number_of_jobs} jobs from GitHub API but don’t know which one to pick. You need to provide a --job-name argument." 2>&1
+      exit 1
+    fi
+
+    jq '.jobs' < "${temp_github_jobs_response_file}" > "${matching_jobs_file}"
+  else
+    jq --arg job_name "${job_name}" '.jobs | map(select(.name == $job_name))' < "${temp_github_jobs_response_file}" > "${matching_jobs_file}"
+
+    number_of_matching_jobs=$(jq '. | length' < "${matching_jobs_file}")
+
+    if [[ $number_of_matching_jobs -eq 0 ]]
+    then
+      echo -e "The GitHub API response contains no job whose \`name\` is ${job_name}. This script does not currently handle pagination." 2>&1
+      exit 1
+    fi
+
+    if [[ $number_of_matching_jobs -gt 1 ]]
+    then
+      echo -e "The GitHub API response contains multiple jobs whose \`name\` is ${job_name}." 2>&1
+      exit 1
+    fi
   fi
 
-  github_job_api_url=$(jq --exit-status --raw-output ".jobs[${job_index}].url" < "${temp_github_jobs_response_file}")
-  github_job_html_url=$(jq --exit-status --raw-output ".jobs[${job_index}].html_url" < "${temp_github_jobs_response_file}")
+  github_job_api_url=$(jq --exit-status --raw-output ".[0].url" < "${matching_jobs_file}")
+  github_job_html_url=$(jq --exit-status --raw-output ".[0].html_url" < "${matching_jobs_file}")
 fi
 
 # 9. Create the JSON request body.
