@@ -518,29 +518,6 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
     return [self.rest stats:query callback:callback error:errorPtr];
 }
 
-- (void)transition:(ARTRealtimeConnectionState)state withMetadata:(ARTConnectionStateChangeMetadata *)metadata {
-    ARTLogVerbose(self.logger, @"R:%p realtime state transitions to %tu - %@%@", self, state, ARTRealtimeConnectionStateToStr(state), metadata.retryAttempt ? [NSString stringWithFormat: @" (result of %@)", metadata.retryAttempt.id] : @"");
-    
-    ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:state 
-                                                                                     previous:self.connection.state_nosync
-                                                                                        event:(ARTRealtimeConnectionEvent)state
-                                                                                       reason:metadata.errorInfo
-                                                                                      retryIn:0
-                                                                                 retryAttempt:metadata.retryAttempt
-                                                                                      resumed:metadata.resumed];
-    [self.connection setState:state];
-    [self.connection setErrorReason:metadata.errorInfo];
-    
-    ARTEventListener *stateChangeEventListener = [self performTransitionWithStateChange:stateChange];
-    
-    [_internalEventEmitter emit:[ARTEvent newWithConnectionEvent:(ARTRealtimeConnectionEvent)state] with:stateChange];
-    
-    // stateChangeEventListener may be nil if we're in a failed state
-    if (stateChangeEventListener != nil) {
-        [stateChangeEventListener startTimer];
-    }
-}
-
 - (void)transitionToDisconnectedOrSuspendedWithMetadata:(ARTConnectionStateChangeMetadata *)metadata {
     if ([self isSuspendMode]) {
         [self transition:ARTRealtimeSuspended withMetadata:metadata];
@@ -558,14 +535,8 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
         return;
     }
     
-    ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:self.connection.state_nosync previous:self.connection.state_nosync event:ARTRealtimeConnectionEventUpdate reason:errorInfo retryIn:0];
-    
-    ARTEventListener *stateChangeEventListener = [self performTransitionWithStateChange:stateChange];
-    
-    // stateChangeEventListener may be nil if we're in a failed state
-    if (stateChangeEventListener != nil) {
-        [stateChangeEventListener startTimer];
-    }
+    ARTConnectionStateChangeMetadata *const metadata = [[ARTConnectionStateChangeMetadata alloc] initWithErrorInfo:errorInfo];
+    [self transition:ARTRealtimeConnected withMetadata:metadata];
 }
 
 - (void)handleNetworkIsReachable:(BOOL)reachable {
@@ -631,12 +602,27 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
     }
 }
 
-- (ARTEventListener *)performTransitionWithStateChange:(ARTConnectionStateChange *)stateChange {
+- (void)transition:(ARTRealtimeConnectionState)state withMetadata:(ARTConnectionStateChangeMetadata *)metadata {
     ARTChannelStateChangeMetadata *channelStateChangeMetadata = nil;
     ARTEventListener *stateChangeEventListener = nil;
     
+    ARTLogVerbose(self.logger, @"R:%p realtime state transitions to %tu - %@%@", self, state, ARTRealtimeConnectionStateToStr(state), metadata.retryAttempt ? [NSString stringWithFormat: @" (result of %@)", metadata.retryAttempt.id] : @"");
+    
+    ARTRealtimeConnectionEvent event = state == self.connection.state_nosync ? ARTRealtimeConnectionEventUpdate : (ARTRealtimeConnectionEvent)state;
+    
+    ARTConnectionStateChange *stateChange = [[ARTConnectionStateChange alloc] initWithCurrent:state
+                                                                                     previous:self.connection.state_nosync
+                                                                                        event:event
+                                                                                       reason:metadata.errorInfo
+                                                                                      retryIn:0
+                                                                                 retryAttempt:metadata.retryAttempt
+                                                                                      resumed:metadata.resumed];
+    
     ARTLogDebug(self.logger, @"RT:%p realtime is transitioning from %tu - %@ to %tu - %@", self, stateChange.previous, ARTRealtimeConnectionStateToStr(stateChange.previous), stateChange.current, ARTRealtimeConnectionStateToStr(stateChange.current));
 
+    [self.connection setState:state];
+    [self.connection setErrorReason:metadata.errorInfo];
+    
     [self.connectRetryState connectionWillTransitionToState:stateChange.current];
     
     switch (stateChange.current) {
@@ -810,7 +796,12 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
     
     [self performPendingAuthorizationWithState:stateChange.current error:stateChange.reason];
     
-    return stateChangeEventListener;
+    [_internalEventEmitter emit:[ARTEvent newWithConnectionEvent:(ARTRealtimeConnectionEvent)state] with:stateChange];
+    
+    // stateChangeEventListener may be nil if we're in a failed state
+    if (stateChangeEventListener != nil) {
+        [stateChangeEventListener startTimer];
+    }
 }
 
 - (void)createAndConnectTransportWithConnectionResume:(BOOL)resume {

@@ -5129,6 +5129,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                     fail("Reason error is nil"); done(); return
                 }
                 XCTAssertEqual(error.code, 1234)
+                XCTAssertEqual(client.connection.errorReason?.code, 1234)
                 XCTAssertEqual(client.connection.state, ARTRealtimeConnectionState.connected)
                 XCTAssertEqual(stateChange.current, ARTRealtimeConnectionState.connected)
                 XCTAssertEqual(stateChange.current, stateChange.previous)
@@ -5139,8 +5140,6 @@ class RealtimeClientConnectionTests: XCTestCase {
             connectedMessageWithError.error = ARTErrorInfo.create(withCode: 1234, message: "fabricated error")
             client.internal.transport?.receive(connectedMessageWithError)
         }
-
-        XCTAssertNil(client.connection.errorReason)
     }
 
     // https://github.com/ably/ably-cocoa/issues/454
