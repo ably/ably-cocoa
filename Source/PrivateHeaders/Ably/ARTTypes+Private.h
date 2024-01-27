@@ -15,18 +15,12 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, readonly, nullable) ARTRetryAttempt *retryAttempt;
 
-/**
- * Indicates whether the connection was resumed.
- */
-@property (assign, nonatomic) BOOL resumed;
-
 - (instancetype)initWithCurrent:(ARTRealtimeConnectionState)current
                        previous:(ARTRealtimeConnectionState)previous
                           event:(ARTRealtimeConnectionEvent)event
                          reason:(nullable ARTErrorInfo *)reason
                         retryIn:(NSTimeInterval)retryIn
-                   retryAttempt:(nullable ARTRetryAttempt *)retryAttempt
-                        resumed:(BOOL)resumed;
+                   retryAttempt:(nullable ARTRetryAttempt *)retryAttempt;
 
 @end
 

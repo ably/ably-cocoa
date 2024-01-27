@@ -615,8 +615,7 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
                                                                                         event:event
                                                                                        reason:metadata.errorInfo
                                                                                       retryIn:0
-                                                                                 retryAttempt:metadata.retryAttempt
-                                                                                      resumed:metadata.resumed];
+                                                                                 retryAttempt:metadata.retryAttempt];
     
     ARTLogDebug(self.logger, @"RT:%p realtime is transitioning from %tu - %@ to %tu - %@", self, stateChange.previous, ARTRealtimeConnectionStateToStr(stateChange.previous), stateChange.current, ARTRealtimeConnectionStateToStr(stateChange.current));
 
@@ -723,7 +722,7 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
             _fallbacks = nil;
             _connectionLostAt = nil;
             self.options.recover = nil; // RTN16k
-            [self resendPendingMessagesWithResumed:stateChange.resumed]; // RTN19a1
+            [self resendPendingMessagesWithResumed:metadata.resumed]; // RTN19a1
             [_connectedEventEmitter emit:nil with:nil];
             break;
         }
