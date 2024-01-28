@@ -430,7 +430,7 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
 }
 
 - (void)_connect {
-    if(self.connection.state_nosync == ARTRealtimeClosing) {
+    if (self.connection.state_nosync == ARTRealtimeClosing) {
         // New connection
         _transport = nil;
     }
@@ -1314,7 +1314,7 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
     [self send:msg reuseMsgSerial:NO sentCallback:sentCallback ackCallback:ackCallback];
 }
 
-- (void)resendPendingMessagesWithResumed:(BOOL)reuseMsgSerial {
+- (void)resendPendingMessagesWithResumed:(BOOL)resumed {
     NSArray<ARTPendingMessage *> *pendingMessages = self.pendingMessages;
     if (pendingMessages.count > 0) {
         ARTLogDebug(self.logger, @"RT:%p resending messages waiting for acknowledgment", self);
@@ -1322,7 +1322,7 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
     self.pendingMessages = [NSMutableArray array];
     for (ARTPendingMessage *pendingMessage in pendingMessages) {
         ARTProtocolMessage* pm = pendingMessage.msg;
-        [self send:pm reuseMsgSerial:reuseMsgSerial sentCallback:nil ackCallback:^(ARTStatus *status) {
+        [self send:pm reuseMsgSerial:resumed sentCallback:nil ackCallback:^(ARTStatus *status) {
             pendingMessage.ackCallback(status);
         }];
     }
