@@ -1632,7 +1632,9 @@ class RestClientChannelTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             realtimeChannel.presence.enter(nil) { error in
                 XCTAssertNil(error)
-                done()
+                delay(0.5) { // give Realtime some time before requesting metrics, as `metrics.presenceMembers` often returns 0
+                    done()
+                }
             }
         }
         waitUntil(timeout: testTimeout) { done in
