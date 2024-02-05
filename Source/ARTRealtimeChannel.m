@@ -731,13 +731,11 @@ dispatch_sync(_queue, ^{
     if (message.hasPresence) {
         [self.presenceMap startSync];
     }
-    else if ([self.presenceMap.members count] > 0 || [self.presenceMap.localMembers count] > 0) {
-        if (!message.resumed) {
-            // When an ATTACHED message is received without a HAS_PRESENCE flag and PresenceMap has existing members
-            [self.presenceMap startSync];
-            [self.presenceMap endSync];
-            ARTLogDebug(self.logger, @"R:%p C:%p (%@) PresenceMap has been reset", _realtime, self, self.name);
-        }
+    else {
+        // RTP1 - when an ATTACHED message is received without a HAS_PRESENCE flag, reset PresenceMap
+        [self.presenceMap startSync];
+        [self.presenceMap endSync];
+        ARTLogDebug(self.logger, @"R:%p C:%p (%@) PresenceMap has been reset", _realtime, self, self.name);
     }
 
     if (self.state_nosync == ARTRealtimeChannelAttached) {
