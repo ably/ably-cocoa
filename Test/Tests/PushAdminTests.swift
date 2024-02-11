@@ -188,6 +188,7 @@ class PushAdminTests: XCTestCase {
         rest.internal.httpExecutor = mockHttpExecutor
         storage = MockDeviceStorage()
         rest.internal.storage = storage
+        rest.internal.setupLocalDevice_nosync()
         localDevice = rest.device
     }
 

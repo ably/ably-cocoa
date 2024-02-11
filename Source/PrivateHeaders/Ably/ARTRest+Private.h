@@ -76,6 +76,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable NSObject<ARTCancellable> *)internetIsUp:(void (^)(BOOL isUp))cb;
 
 #if TARGET_OS_IOS
+- (void)setupLocalDevice_nosync;
+- (void)resetLocalDevice_nosync;
+
 // This is only intended to be called from test code.
 - (void)resetDeviceSingleton;
 

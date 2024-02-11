@@ -30,6 +30,7 @@ NSString *const ARTDeviceIdKey = @"ARTDeviceId";
 NSString *const ARTDeviceSecretKey = @"ARTDeviceSecret";
 NSString *const ARTDeviceIdentityTokenKey = @"ARTDeviceIdentityToken";
 NSString *const ARTAPNSDeviceTokenKey = @"ARTAPNSDeviceToken";
+NSString *const ARTClientIdKey = @"ARTClientId";
 
 NSString *const ARTAPNSDeviceDefaultTokenType = @"default";
 NSString *const ARTAPNSDeviceLocationTokenType = @"location";
@@ -46,17 +47,24 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
 
 @implementation ARTLocalDevice
 
-- (instancetype)initWithClientId:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage logger:(nullable ARTInternalLog *)logger {
+- (instancetype)initWithStorage:(id<ARTDeviceStorage>)storage logger:(nullable ARTInternalLog *)logger {
     if (self = [super init]) {
-        self.clientId = clientId;
         self.storage = storage;
         _logger = logger;
     }
     return self;
 }
 
-+ (ARTLocalDevice *)load:(NSString *)clientId storage:(id<ARTDeviceStorage>)storage logger:(nullable ARTInternalLog *)logger {
-    ARTLocalDevice *device = [[ARTLocalDevice alloc] initWithClientId:clientId storage:storage logger:logger];
+- (void)generateAndPersistPairOfDeviceIdAndSecret {
+    self.id = [self.class generateId];
+    self.secret = [self.class generateSecret];
+    
+    [_storage setObject:self.id forKey:ARTDeviceIdKey];
+    [_storage setSecret:self.secret forDevice:self.id];
+}
+
++ (instancetype)deviceWithStorage:(id<ARTDeviceStorage>)storage logger:(nullable ARTInternalLog *)logger {
+    ARTLocalDevice *device = [[ARTLocalDevice alloc] initWithStorage:storage logger:logger];
     device.platform = ARTDevicePlatform;
     #if TARGET_OS_IOS
     switch ([[UIDevice currentDevice] userInterfaceIdiom]) {
@@ -75,20 +83,24 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     NSString *deviceId = [storage objectForKey:ARTDeviceIdKey];
     NSString *deviceSecret = deviceId == nil ? nil : [storage secretForDevice:deviceId];
     
-    if (deviceId == nil || deviceSecret == nil) { // generate both at the same time
-        deviceId = [self generateId];
-        deviceSecret = [self generateSecret];
-        
-        [storage setObject:deviceId forKey:ARTDeviceIdKey];
-        [storage setSecret:deviceSecret forDevice:deviceId];
+    if (deviceId == nil || deviceSecret == nil) {
+        [device generateAndPersistPairOfDeviceIdAndSecret]; // Should be removed later once spec issue #180 resolved.
     }
-    
-    device.id = deviceId;
-    device.secret = deviceSecret;
+    else {
+        device.id = deviceId;
+        device.secret = deviceSecret;
+    }
 
     id identityTokenDetailsInfo = [storage objectForKey:ARTDeviceIdentityTokenKey];
     ARTDeviceIdentityTokenDetails *identityTokenDetails = [ARTDeviceIdentityTokenDetails unarchive:identityTokenDetailsInfo withLogger:logger];
     device->_identityTokenDetails = identityTokenDetails;
+
+    NSString *clientId = [storage objectForKey:ARTClientIdKey];
+    if (clientId == nil && identityTokenDetails.clientId != nil) {
+        clientId = identityTokenDetails.clientId; // Older versions of the SDK did not persist clientId, so as a fallback when loading data persisted by these versions we use the clientId of the stored identity token
+        [storage setObject:clientId forKey:ARTClientIdKey];
+    }
+    device.clientId = clientId;
 
     NSArray *supportedTokenTypes = @[
         ARTAPNSDeviceDefaultTokenType,
@@ -100,6 +112,34 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
         [device setAPNSDeviceToken:token tokenType:tokenType];
     }
     return device;
+}
+
+- (void)setupDetailsWithClientId:(NSString *)clientId {
+    NSString *deviceId = self.id;
+    NSString *deviceSecret = self.secret;
+    
+    if (deviceId == nil || deviceSecret == nil) {
+        [self generateAndPersistPairOfDeviceIdAndSecret];
+    }
+    
+    self.clientId = clientId;
+    [_storage setObject:clientId forKey:ARTClientIdKey];
+}
+
+- (void)resetDetails {
+    // Should be replaced later to resetting device's id/secret once spec issue #180 resolved.
+    [self generateAndPersistPairOfDeviceIdAndSecret];
+    
+    self.clientId = nil;
+    [_storage setObject:nil forKey:ARTClientIdKey];
+    [self setAndPersistIdentityTokenDetails:nil];
+    NSArray *supportedTokenTypes = @[
+        ARTAPNSDeviceDefaultTokenType,
+        ARTAPNSDeviceLocationTokenType
+    ];
+    for (NSString *tokenType in supportedTokenTypes) {
+        [self setAndPersistAPNSDeviceToken:nil tokenType:tokenType];
+    }
 }
 
 + (NSString *)generateId {
@@ -146,16 +186,12 @@ NSString* ARTAPNSDeviceTokenKeyOfType(NSString *tokenType) {
     _identityTokenDetails = tokenDetails;
     if (self.clientId == nil) {
         self.clientId = tokenDetails.clientId;
+        [self.storage setObject:tokenDetails.clientId forKey:ARTClientIdKey];
     }
 }
 
 - (BOOL)isRegistered {
     return _identityTokenDetails != nil;
-}
-
-- (void)clearIdentityTokenDetailsAndClientId {
-    [self setAndPersistIdentityTokenDetails:nil];
-    self.clientId = nil;
 }
 
 @end

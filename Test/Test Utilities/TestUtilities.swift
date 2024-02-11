@@ -346,6 +346,11 @@ class AblyTests {
 
         return .init(sequence)
     }
+
+    /**
+     Tests that wait for the Ably service to consider a token as having expired by waiting for its `ttl` to elapse should wait this additional tolerance (arbitarily chosen) to compensate for clock differences between different Ably servers.
+     */
+    static let tokenExpiryTolerance: TimeInterval = 2
 }
 
 /// A helper class for performing HTTP requests synchronously in tests.
@@ -1593,6 +1598,10 @@ extension String {
 
 extension ARTRealtime {
 
+    var transportFactory: TestProxyTransportFactory? {
+        self.internal.options.testOptions.transportFactory as? TestProxyTransportFactory
+    }
+    
     func simulateLostConnectionAndState() {
         //1. Abruptly disconnect
         //2. Change the `Connection#id` and `Connection#key` before the client
@@ -1622,6 +1631,16 @@ extension ARTRealtime {
             reachability.simulate(false)
         }
     }
+    
+    func simulateNoInternetConnection(during timeout: TimeInterval? = nil) {
+        guard let transportFactory = self.transportFactory else {
+            fatalError("Expected test TestProxyTransportFactory")
+        }
+        simulateNoInternetConnection(transportFactory: transportFactory)
+        if let timeout {
+            simulateRestoreInternetConnection(after: timeout, transportFactory: transportFactory)
+        }
+    }
 
     func simulateRestoreInternetConnection(after seconds: TimeInterval? = nil, transportFactory: TestProxyTransportFactory) {
         guard let reachability = self.internal.reachability as? TestReachability else {
@@ -1632,6 +1651,13 @@ extension ARTRealtime {
             transportFactory.fakeNetworkResponse = nil
             reachability.simulate(true)
         }
+    }
+
+    func simulateRestoreInternetConnection(after seconds: TimeInterval? = nil) {
+        guard let transportFactory = self.transportFactory else {
+            fatalError("Expected test TestProxyTransportFactory")
+        }
+        simulateRestoreInternetConnection(after: seconds, transportFactory: transportFactory)
     }
 
     func overrideConnectionStateTTL(_ ttl: TimeInterval) -> HookToken {
