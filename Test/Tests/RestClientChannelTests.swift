@@ -1632,18 +1632,31 @@ class RestClientChannelTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             realtimeChannel.presence.enter(nil) { error in
                 XCTAssertNil(error)
-                delay(0.5) { // give Realtime some time before requesting metrics, as `metrics.presenceMembers` often returns 0
-                    done()
-                }
+                done()
             }
         }
-        waitUntil(timeout: testTimeout) { done in
+        
+        func checkMetrics(completion: @escaping (ARTChannelDetails) -> ()) {
             restChannel.status { details, error in
                 XCTAssertNil(error)
                 guard let details = details else {
-                    fail("Channel details are empty"); done()
+                    fail("Channel details are empty");
                     return
                 }
+                if details.status.occupancy.metrics.presenceMembers == 1 {
+                    completion(details)
+                }
+                else {
+                    // `presenceMembers` is updated with a delay, so we poll every second until it's fulfilled by the realtime
+                    delay(1.0) {
+                        checkMetrics(completion: completion)
+                    }
+                }
+            }
+        }
+        
+        waitUntil(timeout: testTimeout) { done in
+            checkMetrics { details in
                 XCTAssertEqual(details.status.occupancy.metrics.connections, 1) // CHM2a
                 XCTAssertEqual(details.status.occupancy.metrics.publishers, 1) // CHM2e
                 XCTAssertEqual(details.status.occupancy.metrics.subscribers, 1) // CHM2f
