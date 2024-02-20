@@ -400,11 +400,9 @@ dispatch_async(_queue, ^{
 }
 
 - (void)registerForAPNS {
-#if !TARGET_OS_SIMULATOR
     dispatch_async(dispatch_get_main_queue(), ^{
         [[UIApplication sharedApplication] registerForRemoteNotifications];
     });
-#endif
 }
 
 @end

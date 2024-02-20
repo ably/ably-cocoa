@@ -18,6 +18,7 @@ class AblyHelper: NSObject {
     
     var activatePushCallback: ((String?, String?, ARTErrorInfo?) -> ())?
     
+    
     private override init() {
         super.init()
         guard key != "" else {
@@ -87,6 +88,40 @@ extension AblyHelper {
             print("Publish result: \(error?.localizedDescription ?? "Success")")
         }
     }
+    
+    func sendPushToChannel(_ channel: Channel) {
+        let message = ARTMessage(name: "example", data: "rest data")
+        message.extras = [
+            "push": [
+                "notification": [
+                    "title": "Channel Push",
+                    "body": "Sent push to \(channel.rawValue)"
+                ],
+                "data": [
+                    "foo": "bar",
+                    "baz": "qux"
+                ]
+            ]
+        ] as any ARTJsonCompatible
+        
+        realtime.channels.get(channel.rawValue).publish([message]) { error in
+            if let error {
+                print("Error sending push to \(channel.rawValue) with error: \(error.localizedDescription)")
+            } else {
+                print("Sent push to \(channel.rawValue)")
+            }
+        }
+    }
+    
+    func subscribeToChannel(_ channel: Channel) {
+        realtime.channels.get(channel.rawValue).push.subscribeDevice { error in
+            if let error {
+                print("Error subscribing to \(channel.rawValue) with error: \(error.localizedDescription)")
+            } else {
+                print("Succesfully subscribed to \(channel.rawValue)")
+            }
+        }
+    }
 }
 
 extension AblyHelper: ARTPushRegistererDelegate {
@@ -140,4 +175,9 @@ extension AblyHelper : CLLocationManagerDelegate {
             break
         }
     }
+}
+
+enum Channel: String {
+    case exampleChannel1
+    case exampleChannel2
 }

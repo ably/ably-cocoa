@@ -11,6 +11,7 @@ struct ContentView: View {
     @State var defaultDeviceToken: String?
     @State var locationDeviceToken: String?
     @State var deviceTokensError: ARTErrorInfo?
+    @Binding var subscribedToExampleChannel1: Bool
 
     var body: some View {
         NavigationView {
@@ -42,6 +43,16 @@ struct ContentView: View {
                     AblyHelper.shared.deactivatePush()
                 }
                 .padding()
+                PushButton(title: "Remember Me", isOn: $subscribedToExampleChannel1)
+
+                Button("Subscribe to \(Channel.exampleChannel1.rawValue)") {
+                    AblyHelper.shared.subscribeToChannel(.exampleChannel1)
+                }
+                .padding()
+                Button("Subscribe to \(Channel.exampleChannel2.rawValue)") {
+                    AblyHelper.shared.subscribeToChannel(.exampleChannel2)
+                }
+                .padding()
                 Button("Print Token") {
                     AblyHelper.shared.printIdentityToken()
                 }
@@ -63,8 +74,16 @@ struct ContentView: View {
                     return Alert(title: Text("Device Details Error"), message: Text("Unknown result."))
                 }
                 .padding()
-                Button("Send Push") {
+                Button("Send Push to deviceId") {
                     AblyHelper.shared.sendAdminPush(title: "Hello", body: "This push was sent with deviceId")
+                }
+                .padding()
+                Button("Send Push to \(Channel.exampleChannel1.rawValue)") {
+                    AblyHelper.shared.sendPushToChannel(.exampleChannel1)
+                }
+                .padding()
+                Button("Send Push to \(Channel.exampleChannel2.rawValue)") {
+                    AblyHelper.shared.sendPushToChannel(.exampleChannel2)
                 }
                 .padding()
                 #if USE_LOCATION_PUSH
@@ -85,5 +104,29 @@ struct ContentView: View {
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
+    }
+}
+
+
+struct PushButton: View {
+    let title: String
+    @Binding var isOn: Bool
+
+    var onColors = [Color.red, Color.yellow]
+    var offColors = [Color(white: 0.6), Color(white: 0.4)]
+
+    var body: some View {
+        Button(title) {
+            isOn.toggle()
+        }
+        .padding()
+        .background(LinearGradient(
+            colors: isOn ? onColors : offColors,
+            startPoint: .top, endPoint: .bottom
+            )
+        )
+        .foregroundStyle(.white)
+        .clipShape(.capsule)
+        .shadow(radius: isOn ? 0 : 5)
     }
 }
