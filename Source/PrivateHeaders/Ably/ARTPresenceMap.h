@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// List of internal members.
 /// The key is the clientId and the value is the latest relevant ARTPresenceMessage for that clientId.
-@property (readonly, atomic) NSMutableSet<ARTPresenceMessage *> *localMembers;
+@property (readonly, atomic) NSMutableDictionary<NSString *, ARTPresenceMessage *> *localMembers;
 
 @property (nullable, weak) id<ARTPresenceMapDelegate> delegate; // weak because delegates outlive their counterpart
 
@@ -48,6 +48,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)internalAdd:(ARTPresenceMessage *)message;
 - (void)internalAdd:(ARTPresenceMessage *)message withSessionId:(NSUInteger)sessionId;
+
+- (void)reenterLocalMembers;
 
 @end
 

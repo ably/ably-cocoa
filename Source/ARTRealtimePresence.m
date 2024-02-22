@@ -252,7 +252,7 @@ dispatch_async(_queue, ^{
     }
 
 dispatch_async(_queue, ^{
-    [self enterOrUpdateAfterChecks:ARTPresenceEnter clientId:nil data:data callback:cb];
+    [self enterOrUpdateAfterChecks:ARTPresenceEnter messageId:nil clientId:nil data:data callback:cb];
 });
 }
 
@@ -271,8 +271,22 @@ dispatch_async(_queue, ^{
     }
 
 dispatch_async(_queue, ^{
-    [self enterOrUpdateAfterChecks:ARTPresenceEnter clientId:clientId data:data callback:cb];
+    [self enterOrUpdateAfterChecks:ARTPresenceEnter messageId:nil clientId:clientId data:data callback:cb];
 });
+}
+
+- (void)enterWithPresenceMessageId:(NSString *)messageId clientId:(NSString *)clientId data:(id)data callback:(ARTCallback)cb {
+    if (cb) {
+        ARTCallback userCallback = cb;
+        cb = ^(ARTErrorInfo *_Nullable error) {
+            dispatch_async(self->_userQueue, ^{
+                userCallback(error);
+            });
+        };
+    }
+    dispatch_async(_queue, ^{
+        [self enterOrUpdateAfterChecks:ARTPresenceEnter messageId:messageId clientId:clientId data:data callback:cb];
+    });
 }
 
 - (void)update:(id)data {
@@ -290,7 +304,7 @@ dispatch_async(_queue, ^{
     }
 
 dispatch_async(_queue, ^{
-    [self enterOrUpdateAfterChecks:ARTPresenceUpdate clientId:nil data:data callback:cb];
+    [self enterOrUpdateAfterChecks:ARTPresenceUpdate messageId:nil clientId:nil data:data callback:cb];
 });
 }
 
@@ -309,11 +323,11 @@ dispatch_async(_queue, ^{
     }
 
 dispatch_async(_queue, ^{
-    [self enterOrUpdateAfterChecks:ARTPresenceUpdate clientId:clientId data:data callback:cb];
+    [self enterOrUpdateAfterChecks:ARTPresenceUpdate messageId:nil clientId:clientId data:data callback:cb];
 });
 }
 
-- (void)enterOrUpdateAfterChecks:(ARTPresenceAction)action clientId:(NSString *_Nullable)clientId data:(id)data callback:(ARTCallback)cb {
+- (void)enterOrUpdateAfterChecks:(ARTPresenceAction)action messageId:(NSString *_Nullable)messageId clientId:(NSString *_Nullable)clientId data:(id)data callback:(ARTCallback)cb {
     switch (_channel.state_nosync) {
         case ARTRealtimeChannelDetached:
         case ARTRealtimeChannelFailed: {
@@ -329,6 +343,7 @@ dispatch_async(_queue, ^{
 
     ARTPresenceMessage *msg = [[ARTPresenceMessage alloc] init];
     msg.action = action;
+    msg.id = messageId;
     msg.clientId = clientId;
     msg.data = data;
     msg.connectionId = _channel.realtime.connection.id_nosync;

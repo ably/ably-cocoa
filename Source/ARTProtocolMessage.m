@@ -17,8 +17,6 @@
         _channelSerial = nil;
         _connectionId = nil;
         _connectionKey = nil;
-        _connectionSerial = 0;
-        _hasConnectionSerial = false;
         _msgSerial = nil;
         _timestamp = nil;
         _messages = nil;
@@ -46,7 +44,6 @@
     [description appendFormat:@" channelSerial: %@,\n", self.channelSerial];
     [description appendFormat:@" connectionId: %@,\n", self.connectionId];
     [description appendFormat:@" connectionKey: %@,\n", self.connectionKey];
-    [description appendFormat:@" connectionSerial: %lld,\n", self.connectionSerial];
     [description appendFormat:@" msgSerial: %@,\n", self.msgSerial];
     [description appendFormat:@" timestamp: %@,\n", self.timestamp];
     [description appendFormat:@" flags: %lld,\n", self.flags];
@@ -54,6 +51,7 @@
     [description appendFormat:@" flags.hasBacklog: %@,\n", NSStringFromBOOL(self.hasBacklog)];
     [description appendFormat:@" flags.resumed: %@,\n", NSStringFromBOOL(self.resumed)];
     [description appendFormat:@" messages: %@\n", self.messages];
+    [description appendFormat:@" presence: %@\n", self.presence];
     [description appendFormat:@" params: %@\n", self.params];
     [description appendFormat:@"}"];
     return description;
@@ -68,8 +66,6 @@
     pm.channelSerial = self.channelSerial;
     pm.connectionId = self.connectionId;
     pm.connectionKey = self.connectionKey;
-    pm.connectionSerial = self.connectionSerial;
-    pm.hasConnectionSerial = self.hasConnectionSerial;
     pm.msgSerial = self.msgSerial;
     pm.timestamp = self.timestamp;
     pm.messages = self.messages;
@@ -161,11 +157,6 @@
         maxSize = _connectionDetails.maxMessageSize;
     }
     return totalSize > maxSize;
-}
-
-- (void)setConnectionSerial:(int64_t)connectionSerial {
-    _connectionSerial =connectionSerial;
-    _hasConnectionSerial = true;
 }
 
 - (BOOL)ackRequired {

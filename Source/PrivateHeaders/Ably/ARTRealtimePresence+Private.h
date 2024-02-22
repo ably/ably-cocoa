@@ -12,6 +12,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)sendPendingPresence;
 - (void)failPendingPresence:(ARTStatus *)status;
 
+/*
+ * Helper method for enforcing RTP17g, where in addition to clientId and data, message id is required.
+ */
+- (void)enterWithPresenceMessageId:(NSString *)messageId clientId:(NSString *)clientId data:(id)data callback:(ARTCallback)cb;
+
 @property (nonatomic) dispatch_queue_t queue;
 @property (readwrite, nonatomic) ARTPresenceAction lastPresenceAction;
 @property (readonly, nonatomic) NSMutableArray<ARTQueuedMessage *> *pendingPresence;

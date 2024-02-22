@@ -847,8 +847,7 @@ class RealtimeClientChannelTests: XCTestCase {
     }
 
     // RTL3d - https://github.com/ably/ably-cocoa/issues/881
-    // RTL2f
-    func test__015__Channel__connection_state__should_attach_successfully_and_remain_attached_when_the_connection_state_without_a_successful_recovery_gets_CONNECTED() throws {
+    func test__015__Channel__connection_state__should_attach_successfully_and_remain_attached_after_the_connection_goes_from_SUSPENDED_to_CONNECTED() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.disconnectedRetryTimeout = 0.5
@@ -878,6 +877,8 @@ class RealtimeClientChannelTests: XCTestCase {
             }
             client.connect()
         }
+        
+        let oldConnectionId = client.connection.id
 
         waitUntil(timeout: testTimeout) { done in
             channel.once(.suspended) { stateChange in
@@ -890,14 +891,9 @@ class RealtimeClientChannelTests: XCTestCase {
             client.simulateNoInternetConnection(transportFactory: transportFactory)
         }
 
-        AblyTests.queue.async {
-            // Do not resume
-            client.simulateLostConnectionAndState()
-        }
-
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { stateChange in
-                XCTAssertEqual(stateChange.reason?.code, ARTErrorCode.unableToRecoverConnectionExpired.intValue) // didn't resumed
+                XCTAssertNotEqual(oldConnectionId, client.connection.id) // didn't resumed
                 done()
             }
             client.simulateRestoreInternetConnection(after: 1.0, transportFactory: transportFactory)
@@ -905,7 +901,6 @@ class RealtimeClientChannelTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.once(.attached) { stateChange in
-                XCTAssertFalse(stateChange.resumed) // RTL2f (resumed is false when the channel is ATTACHED following a failed connection recovery)
                 XCTAssertNil(stateChange.reason)
                 channel.on(.suspended) { _ in
                     fail("Should not reach SUSPENDED state")
@@ -1202,6 +1197,60 @@ class RealtimeClientChannelTests: XCTestCase {
 
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
         XCTAssertEqual(transport.protocolMessagesReceived.filter { $0.action == .attached }.count, 1)
+    }
+    
+    // RTL4c1
+    func test__202__Channel__attach__protocol_message_channelSerial_must_be_set_to_channelSerial_of_the_most_recent_protocol_message_or_omitted_if_no_previous_protocol_message_received() throws {
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        options.autoConnect = false
+        let transportFactory = TestProxyTransportFactory()
+        options.testOptions.transportFactory = transportFactory
+        
+        let client = ARTRealtime(options: options)
+        client.internal.setReachabilityClass(TestReachability.self)
+        client.connect()
+        defer { client.dispose(); client.close() }
+
+        let latestAttachProtocolMessage: () throws -> ARTProtocolMessage = {
+            let transport = try XCTUnwrap(client.internal.transport as? TestProxyTransport)
+            let protocolAttachMessagesSent = transport.protocolMessagesSent.filter { $0.action == .attach }
+            return try XCTUnwrap(protocolAttachMessagesSent.last)
+        }
+        
+        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+        
+        let channel = client.channels.get(test.uniqueChannelName())
+        channel.attach()
+
+        expect(channel.state).to(equal(ARTRealtimeChannelState.attaching))
+        
+        let firstProtocolAttachMessage = try latestAttachProtocolMessage()
+        expect(firstProtocolAttachMessage.channelSerial).to(beNil())
+        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
+        
+        waitUntil(timeout: testTimeout) { done in
+            let partialDone = AblyTests.splitDone(2, done: done)
+            channel.subscribe { message in
+                expect(message.data as? String).to(equal("message"))
+                partialDone()
+            }
+            channel.publish(nil, data: "message") { error in
+                expect(error).to(beNil())
+                partialDone()
+            }
+        }
+        expect(channel.internal.serial).toEventuallyNot(beNil())
+        
+        client.simulateNoInternetConnection(transportFactory: transportFactory)
+        client.simulateRestoreInternetConnection(after: 0.1, transportFactory: transportFactory)
+        
+        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.disconnected), timeout: testTimeout)
+        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
+        
+        let secondProtocolAttachMessage = try latestAttachProtocolMessage()
+        expect(secondProtocolAttachMessage.channelSerial).to(equal(channel.internal.serial))
     }
 
     // RTL4e
@@ -4161,6 +4210,88 @@ class RealtimeClientChannelTests: XCTestCase {
         }
 
         XCTAssertEqual(channel.state, ARTRealtimeChannelState.failed)
+    }
+    
+    // RTL15
+    
+    // RTL15b
+    func test__200__channel_serial_is_updated_whenever_a_protocol_message_with_either_message_presence_or_attached_actions_is_received_in_a_channel() throws {
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        let client = AblyTests.newRealtime(options).client
+        defer { client.dispose(); client.close() }
+        let channel = client.channels.get(test.uniqueChannelName())
+        
+        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+
+        let transport = try XCTUnwrap(client.internal.transport as? TestProxyTransport)
+        
+        waitUntil(timeout: testTimeout) { done in
+            let partialDone = AblyTests.splitDone(3, done: done)
+            channel.attach { error in
+                expect(error).to(beNil())
+                let attachMessage = transport.protocolMessagesReceived.filter { $0.action == .attached }[0]
+                if attachMessage.channelSerial != nil {
+                    expect(attachMessage.channelSerial).to(equal(channel.internal.serial))
+                }
+                partialDone()
+                
+                channel.subscribe { message in
+                    let messageMessage = transport.protocolMessagesReceived.filter { $0.action == .message }[0]
+                    if messageMessage.channelSerial != nil {
+                        expect(messageMessage.channelSerial).to(equal(channel.internal.serial))
+                    }
+                    channel.presence.enterClient("client1", data: "Hey")
+                    partialDone()
+                }
+                channel.presence.subscribe { presenceMessage in
+                    let presenceMessage = transport.protocolMessagesReceived.filter { $0.action == .presence }[0]
+                    if presenceMessage.channelSerial != nil {
+                        expect(presenceMessage.channelSerial).to(equal(channel.internal.serial))
+                    }
+                    partialDone()
+                }
+                channel.publish([ARTMessage()])
+            }
+        }
+    }
+    
+    // RTP5a1
+    func test__201__channel_serial_is_cleared_whenever_a_channel_entered_into_detached_suspended_or_failed_state() throws {
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        let client = AblyTests.newRealtime(options).client
+        defer { client.dispose(); client.close() }
+        let channel = client.channels.get(test.uniqueChannelName())
+        
+        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+        
+        // Case for detached
+        channel.attach()
+        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
+        expect(channel.internal.serial).toNot(beNil())
+        
+        channel.detach()
+        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.detached), timeout: testTimeout)
+        expect(channel.internal.serial).to(beNil())
+        
+        // Case for suspended
+        channel.attach()
+        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
+        expect(channel.internal.serial).toNot(beNil())
+        
+        channel.internal.setSuspended(.init(state: .ok))
+        expect(channel.state).to(equal(ARTRealtimeChannelState.suspended))
+        expect(channel.internal.serial).to(beNil())
+        
+        // Case for failed
+        channel.attach()
+        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
+        expect(channel.internal.serial).toNot(beNil())
+        
+        channel.internal.setFailed(.init(state: .ok))
+        expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
+        expect(channel.internal.serial).to(beNil())
     }
 
     // RTL16

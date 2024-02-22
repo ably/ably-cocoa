@@ -207,16 +207,11 @@ class RealtimeClientPresenceTests: XCTestCase {
                 }
             }
 
-            guard let lastConnectionSerial = transport.protocolMessagesReceived.last?.connectionSerial else {
-                fail("No protocol message has been received yet"); done(); return
-            }
-
             // Inject a SYNC Presence message (first page)
             let sync1Message = ARTProtocolMessage()
             sync1Message.action = .sync
             sync1Message.channel = channel.name
             sync1Message.channelSerial = "sequenceid:cursor"
-            sync1Message.connectionSerial = lastConnectionSerial + 1
             sync1Message.timestamp = Date()
             sync1Message.presence = [
                 ARTPresenceMessage(clientId: "a", action: .present, connectionId: "another", id: "another:0:0"),
@@ -229,7 +224,6 @@ class RealtimeClientPresenceTests: XCTestCase {
             sync2Message.action = .sync
             sync2Message.channel = channel.name
             sync2Message.channelSerial = "sequenceid:" // indicates SYNC is complete
-            sync2Message.connectionSerial = lastConnectionSerial + 2
             sync2Message.timestamp = Date()
             sync2Message.presence = [
                 ARTPresenceMessage(clientId: "a", action: .leave, connectionId: "another", id: "another:1:0"),
@@ -285,15 +279,10 @@ class RealtimeClientPresenceTests: XCTestCase {
                 done()
             }
 
-            guard let lastConnectionSerial = transport.protocolMessagesReceived.last?.connectionSerial else {
-                fail("No protocol message has been received yet"); done(); return
-            }
-
             // Inject a SYNC Presence message (entirely contained)
             let syncMessage = ARTProtocolMessage()
             syncMessage.action = .sync
             syncMessage.channel = channel.name
-            syncMessage.connectionSerial = lastConnectionSerial + 1
             syncMessage.timestamp = Date()
             syncMessage.presence = [
                 ARTPresenceMessage(clientId: "a", action: .present, connectionId: "another", id: "another:0:0"),
@@ -785,6 +774,8 @@ class RealtimeClientPresenceTests: XCTestCase {
         let leavesChannel = leavesClient.channels.get(channelName)
         let mainChannel = mainClient.channels.get(channelName)
         
+        var oldConnectionId = ""
+        
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(4, done: done)
             mainChannel.presence.subscribe { message in
@@ -799,6 +790,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
             mainChannel.presence.enter(nil) { error in
                 XCTAssertNil(error)
+                oldConnectionId = mainChannel.internal.connectionId
                 partialDone()
             }
             leavesChannel.presence.enter(nil) { error in
@@ -826,6 +818,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(4, done: done)
             mainChannel.presence.subscribe { presence in
+                guard presence.clientId != mainClient.clientId, presence.action != .enter else { return } // ignore ENTER from "main" after re-attach, since it's not "between ATTACHED states"
                 presenceEvents += [presence]
                 delay(1) {
                     partialDone() // Wait a bit to make sure we don't receive any other presence messages
@@ -854,6 +847,14 @@ class RealtimeClientPresenceTests: XCTestCase {
         XCTAssertEqual(presenceEvents[0].clientId, "leaves")
         
         mainChannel.presence.unsubscribe()
+        
+        guard let transport = mainClient.internal.transport as? TestProxyTransport else {
+            fail("TestProxyTransport is not set"); return
+        }
+        
+        // Same can be achieved with sleep for more than 15 seconds for the Realtime to send synthesised presence LEAVE
+        // for the mainClient’s original connection after not receiving a heartbeat.
+        transport.receive(AblyTests.newPresenceProtocolMessage(id: "\(mainChannel.internal.connectionId):0:0", channel: mainChannel.name, action: .leave, clientId: mainClient.clientId!, connectionId: oldConnectionId))
         
         waitUntil(timeout: testTimeout) { done in
             mainChannel.presence.get { members, error in
@@ -1572,7 +1573,6 @@ class RealtimeClientPresenceTests: XCTestCase {
                     let presenceMessage = ARTProtocolMessage()
                     presenceMessage.action = .presence
                     presenceMessage.channel = protocolMessage.channel
-                    presenceMessage.connectionSerial = protocolMessage.connectionSerial + 1
                     presenceMessage.timestamp = Date()
                     presenceMessage.presence = presenceData
 
@@ -1583,7 +1583,6 @@ class RealtimeClientPresenceTests: XCTestCase {
                     endSyncMessage.action = .sync
                     endSyncMessage.channel = protocolMessage.channel
                     endSyncMessage.channelSerial = "validserialprefix:" // with no part after the `:` this indicates the end to the SYNC
-                    endSyncMessage.connectionSerial = protocolMessage.connectionSerial + 2
                     endSyncMessage.timestamp = Date()
 
                     transport.setAfterIncomingMessageModifier(nil)
@@ -1652,7 +1651,6 @@ class RealtimeClientPresenceTests: XCTestCase {
                     let presenceMessage = ARTProtocolMessage()
                     presenceMessage.action = .presence
                     presenceMessage.channel = protocolMessage.channel
-                    presenceMessage.connectionSerial = protocolMessage.connectionSerial + 1
                     presenceMessage.timestamp = Date()
                     presenceMessage.presence = presenceData
 
@@ -1663,7 +1661,6 @@ class RealtimeClientPresenceTests: XCTestCase {
                     endSyncMessage.action = .sync
                     endSyncMessage.channel = protocolMessage.channel
                     endSyncMessage.channelSerial = "validserialprefix:" // with no part after the `:` this indicates the end to the SYNC
-                    endSyncMessage.connectionSerial = protocolMessage.connectionSerial + 2
                     endSyncMessage.timestamp = Date()
 
                     transport.setAfterIncomingMessageModifier(nil)
@@ -1980,7 +1977,6 @@ class RealtimeClientPresenceTests: XCTestCase {
                 let leaveMessage = ARTProtocolMessage()
                 leaveMessage.action = .presence
                 leaveMessage.channel = channel.name
-                leaveMessage.connectionSerial = client.connection.internal.serial_nosync() + 1
                 leaveMessage.timestamp = Date()
                 leaveMessage.presence = [
                     ARTPresenceMessage(clientId: "user11", action: .leave, connectionId: "another", id: "another:123:0", timestamp: Date()),
@@ -2814,7 +2810,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         // Inject an additional member into the myMember set, then force a suspended state
         client.simulateSuspended(beforeSuspension: { done in
-            channel.internal.presenceMap.localMembers.add(additionalMember)
+            channel.internal.presenceMap.localMembers[additionalMember.clientId!] = additionalMember
             done()
         })
         expect(client.connection.state).toEventually(equal(.suspended), timeout: testTimeout)
@@ -2875,7 +2871,90 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
         }
     }
+    
+    // RTP17i, RTP17g
+    func test__200__Presence__PresenceMap_should_perform_re_entry_whenever_a_channel_moves_into_the_attached_state_and_presence_message_consists_of_enter_action_with_client_id_and_data() throws {
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        let client = AblyTests.newRealtime(options).client
+        let transport = client.internal.transport as! TestProxyTransport
+        defer { client.dispose(); client.close() }
 
+        let channel = client.channels.get(test.uniqueChannelName())
+        
+        var firstMsgId = ""
+        var secondMsgId = ""
+        let firstClient = "client1"
+        let secondClient = "client2"
+        let firstClientData = "client1data"
+        let secondClientData = "client2data"
+        
+        waitUntil(timeout: testTimeout) { done in
+            let partialDone = AblyTests.splitDone(2, done: done)
+            channel.once(.attached) { stateChange in
+                channel.presence.enterClient(firstClient, data: firstClientData)
+                channel.presence.enterClient(secondClient, data: secondClientData)
+            }
+            channel.presence.subscribe(.enter) { presenceMessage in
+                if presenceMessage.clientId == firstClient {
+                    firstMsgId = presenceMessage.id!
+                    partialDone()
+                }
+                else if presenceMessage.clientId == secondClient {
+                    secondMsgId = presenceMessage.id!
+                    partialDone()
+                }
+            }
+            channel.attach()
+        }
+        channel.presence.unsubscribe()
+        
+        expect(channel.internal.presenceMap.localMembers).to(haveCount(2))
+        
+        // All pending messages should complete (receive ACK or NACK) before disconnect for valid count of transport.protocolMessagesSent
+        client.waitForPendingMessages()
+        client.simulateLostConnection()
+        
+        expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
+        
+        // RTP17i
+        
+        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
+        expect(channel.internal.presenceMap.localMembers).to(haveCount(2))
+        
+        let newTransport = client.internal.transport as! TestProxyTransport
+        expect(newTransport).toNot(beIdenticalTo(transport))
+
+        var sentPresenceMessages = newTransport.protocolMessagesSent.filter({ $0.action == .presence }).compactMap { $0.presence?.first }
+        
+        expect(sentPresenceMessages).to(haveCount(2))
+
+        let client1PresenceMessage = try XCTUnwrap(sentPresenceMessages.first(where: { $0.clientId == firstClient }))
+        let client2PresenceMessage = try XCTUnwrap(sentPresenceMessages.first(where: { $0.clientId == secondClient }))
+        
+        // RTP17i - already attached with resume flag set
+        
+        let attachedMessage = ARTProtocolMessage()
+        attachedMessage.action = .attached
+        attachedMessage.channel = channel.name
+        attachedMessage.flags = 4 // resume flag
+
+        newTransport.receive(attachedMessage)
+        sentPresenceMessages = newTransport.protocolMessagesSent.filter({ $0.action == .presence }).compactMap { $0.presence?.first }
+        expect(sentPresenceMessages).to(haveCount(2)) // no changes in sentPresenceMessages => no presense messages sent
+
+        // RTP17g
+        
+        expect(client1PresenceMessage.id).to(equal(firstMsgId))
+        expect(client2PresenceMessage.id).to(equal(secondMsgId))
+        
+        expect(client1PresenceMessage.action).to(equal(ARTPresenceAction.enter))
+        expect(client2PresenceMessage.action).to(equal(ARTPresenceAction.enter))
+        
+        expect(client1PresenceMessage.data as? String).to(equal(firstClientData))
+        expect(client2PresenceMessage.data as? String).to(equal(secondClientData))
+    }
+    
     func skipped__test__083__Presence__private_and_internal_PresenceMap_containing_only_members_that_match_the_current_connectionId__events_applied_to_presence_map__should_be_applied_to_any_LEAVE_event_with_a_connectionId_that_matches_the_current_client_s_connectionId_and_is_not_a_synthesized() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
@@ -3713,7 +3792,6 @@ class RealtimeClientPresenceTests: XCTestCase {
                     let presenceMessage = ARTProtocolMessage()
                     presenceMessage.action = .presence
                     presenceMessage.channel = protocolMessage.channel
-                    presenceMessage.connectionSerial = protocolMessage.connectionSerial + 1
                     presenceMessage.timestamp = Date()
                     presenceMessage.presence = presenceData
 
@@ -3724,7 +3802,6 @@ class RealtimeClientPresenceTests: XCTestCase {
                     endSyncMessage.action = .sync
                     endSyncMessage.channel = protocolMessage.channel
                     endSyncMessage.channelSerial = "validserialprefix:" // with no part after the `:` this indicates the end to the SYNC
-                    endSyncMessage.connectionSerial = protocolMessage.connectionSerial + 2
                     endSyncMessage.timestamp = Date()
 
                     transport.setAfterIncomingMessageModifier(nil)

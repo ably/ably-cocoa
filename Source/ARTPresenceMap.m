@@ -39,7 +39,7 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
     ARTPresenceSyncState _syncState;
     ARTEventEmitter<ARTEvent * /*ARTSyncState*/, id> *_syncEventEmitter;
     NSMutableDictionary<NSString *, ARTPresenceMessage *> *_members;
-    NSMutableSet<ARTPresenceMessage *> *_localMembers;
+    NSMutableDictionary<NSString *, ARTPresenceMessage *> *_localMembers; // RTP17h
 }
 
 @end
@@ -64,7 +64,7 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
     return _members;
 }
 
-- (NSMutableSet<ARTPresenceMessage *> *)localMembers {
+- (NSDictionary<NSString *, ARTPresenceMessage *> *)localMembers {
     return _localMembers;
 }
 
@@ -102,7 +102,7 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
     [_members setObject:message forKey:message.memberKey];
     // Local member
     if ([message.connectionId isEqualToString:self.delegate.connectionId]) {
-        [_localMembers addObject:message];
+        _localMembers[message.clientId] = message;
         ARTLogDebug(_logger, @"local member %@ with action %@ has been added", message.memberKey, ARTPresenceActionToStr(message.action).uppercaseString);
     }
 }
@@ -113,7 +113,7 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
 
 - (void)internalRemove:(ARTPresenceMessage *)message force:(BOOL)force {
     if ([message.connectionId isEqualToString:self.delegate.connectionId] && !message.isSynthesized) {
-        [_localMembers removeObject:message];
+        [_localMembers removeObjectForKey:message.clientId];
     }
 
     const BOOL syncInProgress = self.syncInProgress;
@@ -144,26 +144,24 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
         if (member.syncSessionId != _syncSessionId) {
             // Handle members that have not been added or updated in the PresenceMap during the sync process
             ARTPresenceMessage *leave = [member copy];
-            [self internalRemove:member];
+            [self internalRemove:member force:true];
             [self.delegate map:self didRemovedMemberNoLongerPresent:leave];
         }
     }
 }
 
-- (void)reenterLocalMembersMissingFromSync {
-    ARTLogDebug(_logger, @"%p reentering local members missed from sync (syncSessionId=%lu)", self, (unsigned long)_syncSessionId);
-    NSSet *filteredLocalMembers = [_localMembers filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"syncSessionId != %lu", (unsigned long)_syncSessionId]];
-    for (ARTPresenceMessage *localMember in filteredLocalMembers) {
+- (void)reenterLocalMembers {
+    ARTLogDebug(_logger, @"%p reentering local members", self);
+    for (ARTPresenceMessage *localMember in [_localMembers allValues]) {
         ARTPresenceMessage *reenter = [localMember copy];
-        [self internalRemove:localMember];
         [self.delegate map:self shouldReenterLocalMember:reenter];
     }
     [self cleanUpAbsentMembers];
 }
 
 - (void)reset {
-    _members = [NSMutableDictionary dictionary];
-    _localMembers = [NSMutableSet set];
+    _members = [NSMutableDictionary new];
+    _localMembers = [NSMutableDictionary new];
 }
 
 - (void)startSync {
@@ -178,7 +176,7 @@ NSString *ARTPresenceSyncStateToStr(ARTPresenceSyncState state) {
     [self cleanUpAbsentMembers];
     [self leaveMembersNotPresentInSync];
     _syncState = ARTPresenceSyncEnded;
-    [self reenterLocalMembersMissingFromSync];
+
     [_syncEventEmitter emit:[ARTEvent newWithPresenceSyncState:ARTPresenceSyncEnded] with:[_members allValues]];
     [_syncEventEmitter off];
     ARTLogDebug(_logger, @"%p PresenceMap sync ended", self);

@@ -230,7 +230,6 @@
     ARTEventEmitter<ARTEvent *, ARTErrorInfo *> *_attachedEventEmitter;
     ARTEventEmitter<ARTEvent *, ARTErrorInfo *> *_detachedEventEmitter;
     NSString * _Nullable _lastPayloadMessageId;
-    NSString * _Nullable _lastPayloadProtocolMessageChannelSerial;
     BOOL _decodeFailureRecoveryInProgress;
 }
 
@@ -620,6 +619,7 @@ dispatch_sync(_queue, ^{
             self.attachResume = true;
             break;
         case ARTRealtimeChannelSuspended: {
+            self.serial = nil; // RTP5a1
             ARTRetryAttempt *const retryAttempt = [self.attachRetryState addRetryAttempt];
 
             [_attachedEventEmitter emit:nil with:metadata.errorInfo];
@@ -638,9 +638,11 @@ dispatch_sync(_queue, ^{
             self.attachResume = false;
             break;
         case ARTRealtimeChannelDetached:
+            self.serial = nil; // RTP5a1
             [self.presenceMap failsSync:metadata.errorInfo];
             break;
         case ARTRealtimeChannelFailed:
+            self.serial = nil; // RTP5a1
             self.attachResume = false;
             [_attachedEventEmitter emit:nil with:metadata.errorInfo];
             [_detachedEventEmitter emit:nil with:metadata.errorInfo];
@@ -727,6 +729,10 @@ dispatch_sync(_queue, ^{
     }
 
     self.attachSerial = message.channelSerial;
+    // RTL15b
+    if (message.channelSerial) {
+        self.serial = message.channelSerial;
+    }
 
     if (message.hasPresence) {
         [self.presenceMap startSync];
@@ -745,6 +751,7 @@ dispatch_sync(_queue, ^{
             }
             ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:self.state_nosync previous:self.state_nosync event:ARTChannelEventUpdate reason:message.error resumed:message.resumed];
             [self emit:stateChange.event with:stateChange];
+            [self.presenceMap reenterLocalMembers]; // RTP17i
         }
         return;
     }
@@ -759,6 +766,7 @@ dispatch_sync(_queue, ^{
     [_attachedEventEmitter emit:nil with:nil];
 
     [self.presence sendPendingPresence];
+    [self.presenceMap reenterLocalMembers]; // RTP17i
 }
 
 - (void)setDetached:(ARTProtocolMessage *)message {
@@ -835,7 +843,7 @@ dispatch_sync(_queue, ^{
                 for (int j = i + 1; j < pm.messages.count; j++) {
                     ARTLogVerbose(self.logger, @"R:%p C:%p (%@) message skipped %@", _realtime, self, self.name, pm.messages[j]);
                 }
-                [self startDecodeFailureRecoveryWithChannelSerial:_lastPayloadProtocolMessageChannelSerial error:incompatibleIdError];
+                [self startDecodeFailureRecoveryWithErrorInfo:incompatibleIdError];
                 return;
             }
         }
@@ -856,7 +864,7 @@ dispatch_sync(_queue, ^{
                 [self emit:stateChange.event with:stateChange];
 
                 if (decodeError.code == ARTErrorUnableToDecodeMessage) {
-                    [self startDecodeFailureRecoveryWithChannelSerial:_lastPayloadProtocolMessageChannelSerial error:errorInfo];
+                    [self startDecodeFailureRecoveryWithErrorInfo:errorInfo];
                     return;
                 }
             }
@@ -875,12 +883,20 @@ dispatch_sync(_queue, ^{
 
         ++i;
     }
-
-    _lastPayloadProtocolMessageChannelSerial = pm.channelSerial;
+    
+    // RTL15b
+    if (pm.channelSerial) {
+        self.serial = pm.channelSerial;
+    }
 }
 
 - (void)onPresence:(ARTProtocolMessage *)message {
     ARTLogDebug(self.logger, @"RT:%p C:%p (%@) handle PRESENCE message", _realtime, self, self.name);
+    // RTL15b
+    if (message.channelSerial) {
+        self.serial = message.channelSerial;
+    }
+    
     int i = 0;
     ARTDataEncoder *dataEncoder = self.dataEncoder;
     for (ARTPresenceMessage *p in message.presence) {
@@ -1019,15 +1035,14 @@ dispatch_sync(_queue, ^{
                                                                                                      storeErrorInfo:NO
                                                                                                        retryAttempt:metadata.retryAttempt];
     [self transition:ARTRealtimeChannelAttaching withMetadata:stateChangeMetadata];
-
-    [self attachAfterChecks:callback channelSerial:metadata.channelSerial];
+    [self attachAfterChecks:callback];
 }
 
-- (void)attachAfterChecks:(ARTCallback)callback channelSerial:(NSString *)channelSerial {
+- (void)attachAfterChecks:(ARTCallback)callback {
     ARTProtocolMessage *attachMessage = [[ARTProtocolMessage alloc] init];
     attachMessage.action = ARTProtocolMessageAttach;
     attachMessage.channel = self.name;
-    attachMessage.channelSerial = channelSerial;
+    attachMessage.channelSerial = self.serial; // RTL4c1
     attachMessage.params = self.options_nosync.params;
     attachMessage.flags = self.options_nosync.modes;
 
@@ -1173,15 +1188,14 @@ dispatch_sync(_queue, ^{
     return [_restChannel history:query callback:callback error:errorPtr];
 }
 
-- (void)startDecodeFailureRecoveryWithChannelSerial:(NSString *)channelSerial error:(ARTErrorInfo *)error {
+- (void)startDecodeFailureRecoveryWithErrorInfo:(ARTErrorInfo *)error {
     if (_decodeFailureRecoveryInProgress) {
         return;
     }
 
     ARTLogWarn(self.logger, @"R:%p C:%p (%@) starting delta decode failure recovery process", _realtime, self, self.name);
     _decodeFailureRecoveryInProgress = true;
-    ARTAttachRequestMetadata *const metadata = [[ARTAttachRequestMetadata alloc] initWithReason:error
-                                                                                  channelSerial:channelSerial];
+    ARTAttachRequestMetadata *const metadata = [[ARTAttachRequestMetadata alloc] initWithReason:error];
     [self internalAttach:^(ARTErrorInfo *e) {
         self->_decodeFailureRecoveryInProgress = false;
     } metadata:metadata];
@@ -1202,7 +1216,7 @@ dispatch_sync(_queue, ^{
 }
 
 - (void)map:(ARTPresenceMap *)map shouldReenterLocalMember:(ARTPresenceMessage *)presence {
-    [self.presence enterClient:presence.clientId data:presence.data callback:^(ARTErrorInfo *error) {
+    [self.presence enterWithPresenceMessageId:presence.id clientId:presence.clientId data:presence.data callback:^(ARTErrorInfo *error) {
         if (error != nil) {
             NSString *message = [NSString stringWithFormat:@"Re-entering member \"%@\" is failed with code %ld (%@)", presence.memberKey, (long)error.code, error.message];
             ARTErrorInfo *reenterError = [ARTErrorInfo createWithCode:ARTErrorUnableToAutomaticallyReEnterPresenceChannel message:message];

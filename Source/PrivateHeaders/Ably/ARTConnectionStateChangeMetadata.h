@@ -20,6 +20,8 @@ NS_SWIFT_NAME(ConnectionStateChangeMetadata)
 
 @property (nullable, nonatomic, readonly) ARTRetryAttempt *retryAttempt;
 
+@property (assign, nonatomic) BOOL resumed;
+
 /**
  Creates an `ARTConnectionStateChangeMetadata` instance whose `errorInfo` is `nil`.
  */

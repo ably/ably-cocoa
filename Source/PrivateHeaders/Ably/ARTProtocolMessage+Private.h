@@ -16,7 +16,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTProtocolMessage ()
 
-@property (readwrite, nonatomic) BOOL hasConnectionSerial;
 @property (readonly, nonatomic) BOOL ackRequired;
 
 @property (readonly, nonatomic) BOOL hasPresence;

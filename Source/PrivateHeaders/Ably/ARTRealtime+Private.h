@@ -110,6 +110,8 @@ NS_ASSUME_NONNULL_BEGIN
 // Message sending
 - (void)send:(ARTProtocolMessage *)msg sentCallback:(nullable ARTCallback)sentCallback ackCallback:(nullable ARTStatusCallback)ackCallback;
 
+- (void)send:(ARTProtocolMessage *)msg reuseMsgSerial:(BOOL)reuseMsgSerial sentCallback:(nullable ARTCallback)sentCallback ackCallback:(nullable ARTStatusCallback)ackCallback;
+
 @end
 
 NS_ASSUME_NONNULL_END

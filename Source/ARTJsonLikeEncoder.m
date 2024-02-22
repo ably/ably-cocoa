@@ -719,10 +719,6 @@
     message.channel = [input artString:@"channel"];
     message.channelSerial = [input artString:@"channelSerial"];
     message.connectionId = [input artString:@"connectionId"];
-    NSNumber * serial =  [input artNumber:@"connectionSerial"];
-    if (serial != nil) {
-        message.connectionSerial = [serial longLongValue];
-    }
     message.id = [input artString:@"id"];
     message.msgSerial = [input artNumber:@"msgSerial"];
     message.timestamp = [input artTimestamp:@"timestamp"];
