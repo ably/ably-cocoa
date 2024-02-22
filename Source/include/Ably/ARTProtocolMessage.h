@@ -52,7 +52,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, readwrite, nonatomic) NSString *channelSerial;
 @property (nullable, readwrite, nonatomic) NSString *connectionId;
 @property (nullable, readwrite, nonatomic, getter=getConnectionKey) NSString *connectionKey;
-@property (readwrite, nonatomic) int64_t connectionSerial;
 @property (nullable, readwrite, nonatomic) NSNumber *msgSerial;
 @property (nullable, readwrite, nonatomic) NSDate *timestamp;
 @property (nullable, readwrite, nonatomic) NSArray<ARTMessage *> *messages;

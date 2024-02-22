@@ -69,7 +69,6 @@ typedef NS_ENUM(NSUInteger, ARTRealtimeTransportState) {
 // All methods must be called from rest's serial queue.
 
 @property (readonly, nonatomic) NSString *resumeKey;
-@property (readonly, nonatomic) NSNumber *connectionSerial;
 @property (readonly, nonatomic) ARTRealtimeTransportState state;
 @property (nullable, readwrite, nonatomic) id<ARTRealtimeTransportDelegate> delegate;
 @property (nonatomic, readonly) ARTEventEmitter<ARTEvent *, id> *stateEmitter;

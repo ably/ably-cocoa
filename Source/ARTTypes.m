@@ -45,10 +45,10 @@ NSString *generateNonce(void) {
 }
 
 - (instancetype)initWithCurrent:(ARTRealtimeConnectionState)current previous:(ARTRealtimeConnectionState)previous event:(ARTRealtimeConnectionEvent)event reason:(ARTErrorInfo *)reason retryIn:(NSTimeInterval)retryIn {
-    return [self initWithCurrent:current previous:previous event:event reason:reason retryIn:retryIn retryAttempt:nil];
+    return [self initWithCurrent:current previous:previous event:event reason:reason retryIn:retryIn retryAttempt:nil resumed:NO];
 }
 
-- (instancetype)initWithCurrent:(ARTRealtimeConnectionState)current previous:(ARTRealtimeConnectionState)previous event:(ARTRealtimeConnectionEvent)event reason:(ARTErrorInfo *)reason retryIn:(NSTimeInterval)retryIn retryAttempt:(ARTRetryAttempt *)retryAttempt {
+- (instancetype)initWithCurrent:(ARTRealtimeConnectionState)current previous:(ARTRealtimeConnectionState)previous event:(ARTRealtimeConnectionEvent)event reason:(ARTErrorInfo *)reason retryIn:(NSTimeInterval)retryIn retryAttempt:(ARTRetryAttempt *)retryAttempt resumed:(BOOL)resumed {
     self = [self init];
     if (self) {
         _current = current;
@@ -57,6 +57,7 @@ NSString *generateNonce(void) {
         _reason = reason;
         _retryIn = retryIn;
         _retryAttempt = retryAttempt;
+        _resumed = resumed;
     }
     return self;
 }

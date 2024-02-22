@@ -16,7 +16,6 @@ NS_SWIFT_NAME(RealtimeTransportFactory)
 - (id<ARTRealtimeTransport>)transportWithRest:(ARTRestInternal *)rest
                                       options:(ARTClientOptions *)options
                                     resumeKey:(nullable NSString *)resumeKey
-                             connectionSerial:(nullable NSNumber *)connectionSerial
                                        logger:(ARTInternalLog *)logger;
 
 @end

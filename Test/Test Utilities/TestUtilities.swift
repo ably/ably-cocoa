@@ -165,16 +165,14 @@ class AblyTests {
         return protocolMessage
     }
 
-    class func newPresenceProtocolMessage(_ channel: String, action: ARTPresenceAction, clientId: String) -> ARTProtocolMessage {
+    class func newPresenceProtocolMessage(id: String, channel: String, action: ARTPresenceAction, clientId: String, connectionId: String) -> ARTProtocolMessage {
         let protocolMessage = ARTProtocolMessage()
         protocolMessage.action = .presence
         protocolMessage.channel = channel
         protocolMessage.timestamp = Date()
-        let presenceMessage = ARTPresenceMessage()
-        presenceMessage.action = action
-        presenceMessage.clientId = clientId
-        presenceMessage.timestamp = Date()
-        protocolMessage.presence = [presenceMessage]
+        protocolMessage.presence = [
+            ARTPresenceMessage(clientId: clientId, action: action, connectionId: connectionId, id: id, timestamp: Date())
+        ]
         return protocolMessage
     }
 
@@ -183,12 +181,13 @@ class AblyTests {
         let transportFactory: TestProxyTransportFactory
     }
 
-    class func newRealtime(_ options: ARTClientOptions) -> RealtimeTestEnvironment {
+    class func newRealtime(_ options: ARTClientOptions, onTransportCreated event: ((ARTRealtimeTransport) -> Void)? = nil) -> RealtimeTestEnvironment {
         let modifiedOptions = options.copy() as! ARTClientOptions
 
         let autoConnect = modifiedOptions.autoConnect
         modifiedOptions.autoConnect = false
         let transportFactory = TestProxyTransportFactory()
+        transportFactory.transportCreatedEvent = event
         modifiedOptions.testOptions.transportFactory = transportFactory
         let realtime = ARTRealtime(options: modifiedOptions)
         realtime.internal.setReachabilityClass(TestReachability.self)
@@ -1113,9 +1112,9 @@ class TestProxyTransport: ARTWebSocketTransport {
         return _factory
     }
 
-    init(factory: TestProxyTransportFactory, rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, connectionSerial: NSNumber?, logger: InternalLog, webSocketFactory: WebSocketFactory) {
+    init(factory: TestProxyTransportFactory, rest: ARTRestInternal, options: ARTClientOptions, resumeKey: String?, logger: InternalLog, webSocketFactory: WebSocketFactory) {
         self._factory = factory
-        super.init(rest: rest, options: options, resumeKey: resumeKey, connectionSerial: connectionSerial, logger: logger, webSocketFactory: webSocketFactory)
+        super.init(rest: rest, options: options, resumeKey: resumeKey, logger: logger, webSocketFactory: webSocketFactory)
     }
 
     fileprivate(set) var lastUrl: URL?
@@ -1227,6 +1226,16 @@ class TestProxyTransport: ARTWebSocketTransport {
             self.replacingAcksWithNacks = nil
         }
     }
+    
+    func emulateTokenRevokationBeforeConnected() {
+        setBeforeIncomingMessageModifier { protocolMessage in
+            if protocolMessage.action == .connected {
+                protocolMessage.action = .disconnected
+                protocolMessage.error = .create(withCode: ARTErrorCode.tokenRevoked.intValue, status: 401, message: "Test token revokation")
+            }
+            return protocolMessage
+        }
+    }
 
     // MARK: ARTWebSocket
 
@@ -1325,8 +1334,8 @@ class TestProxyTransport: ARTWebSocketTransport {
         }
     }
 
-    override func setupWebSocket(_ params: [String: URLQueryItem], with options: ARTClientOptions, resumeKey: String?, connectionSerial: NSNumber?) -> URL {
-        let url = super.setupWebSocket(params, with: options, resumeKey: resumeKey, connectionSerial: connectionSerial)
+    override func setupWebSocket(_ params: [String: URLQueryItem], with options: ARTClientOptions, resumeKey: String?) -> URL {
+        let url = super.setupWebSocket(params, with: options, resumeKey: resumeKey)
         lastUrl = url
         return url
     }
@@ -1440,7 +1449,6 @@ class TestProxyTransport: ARTWebSocketTransport {
         msg.action = .connected
         msg.connectionId = "x-xxxxxxxx"
         msg.connectionKey = "xxxxxxx-xxxxxxxxxxxxxx-xxxxxxxx"
-        msg.connectionSerial = -1
         msg.connectionDetails = ARTConnectionDetails(clientId: clientId, connectionKey: "a8c10!t-3D0O4ejwTdvLkl-b33a8c10", maxMessageSize: 16384, maxFrameSize: 262144, maxInboundRate: 250, connectionStateTtl: 60, serverId: "testServerId", maxIdleInterval: 15000)
         super.receive(msg)
     }
@@ -1602,6 +1610,10 @@ extension ARTRealtime {
         self.internal.options.testOptions.transportFactory as? TestProxyTransportFactory
     }
     
+    func simulateLostConnection() {
+        self.internal.onDisconnected()
+    }
+    
     func simulateLostConnectionAndState() {
         //1. Abruptly disconnect
         //2. Change the `Connection#id` and `Connection#key` before the client
@@ -1659,7 +1671,23 @@ extension ARTRealtime {
         }
         simulateRestoreInternetConnection(after: seconds, transportFactory: transportFactory)
     }
-
+    
+    @discardableResult
+    func waitUntilConnected() -> Bool {
+        var connected = false
+        waitUntil(timeout: testTimeout) { done in
+            self.connection.once(.connected) { _ in
+                connected = true
+                done()
+            }
+        }
+        return connected
+    }
+    
+    func waitForPendingMessages() {
+        expect(self.internal.pendingMessages).toEventually(haveCount(0),timeout: testTimeout)
+    }
+    
     func overrideConnectionStateTTL(_ ttl: TimeInterval) -> HookToken {
         return self.internal.testSuite_injectIntoMethod(before: NSSelectorFromString("connectionStateTtl")) {
             self.internal.connectionStateTtl = ttl

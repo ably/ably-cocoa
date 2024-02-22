@@ -3,7 +3,7 @@
 #import "ARTNSArray+ARTFunctional.h"
 #import "ARTClientInformation+Private.h"
 
-static NSString *const ARTDefault_apiVersion = @"1.2";
+static NSString *const ARTDefault_apiVersion = @"2"; // CSV2
 
 NSString *const ARTDefaultProduction = @"production";
 
