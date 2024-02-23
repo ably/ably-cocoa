@@ -6,10 +6,10 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- Provides metadata for a request to perform an operation that may ultimately call `ARTChannelRealtimeInternal`’s `internalAttach:callback:` method.
+ Provides parameters for a request to perform an operation that may ultimately call `ARTChannelRealtimeInternal`’s `internalAttach:callback:` method.
  */
-NS_SWIFT_NAME(AttachRequestMetadata)
-@interface ARTAttachRequestMetadata: NSObject
+NS_SWIFT_NAME(AttachRequestParams)
+@interface ARTAttachRequestParams: NSObject
 
 /**
  Information about the error that triggered this attach request, if any.
@@ -26,7 +26,7 @@ NS_SWIFT_NAME(AttachRequestMetadata)
 - (instancetype)init NS_UNAVAILABLE;
 
 /**
- Creates an `ARTAttachRequestMetadata` instance with the given `reason`, whose `channelSerial` is `nil`.
+ Creates an `ARTAttachRequestParams` instance with the given `reason`, whose `channelSerial` is `nil`.
  */
 - (instancetype)initWithReason:(nullable ARTErrorInfo *)reason;
 

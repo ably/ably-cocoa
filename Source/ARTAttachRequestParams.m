@@ -1,6 +1,6 @@
-#import "ARTAttachRequestMetadata.h"
+#import "ARTAttachRequestParams.h"
 
-@implementation ARTAttachRequestMetadata
+@implementation ARTAttachRequestParams
 
 - (instancetype)initWithReason:(ARTErrorInfo *)reason {
     return [self initWithReason:reason channelSerial:nil];

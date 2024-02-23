@@ -1,6 +1,6 @@
-#import "ARTChannelStateChangeMetadata.h"
+#import "ARTChannelStateChangeParams.h"
 
-@implementation ARTChannelStateChangeMetadata
+@implementation ARTChannelStateChangeParams
 
 - (instancetype)initWithState:(ARTState)state {
     return [self initWithState:state errorInfo:nil storeErrorInfo:NO];

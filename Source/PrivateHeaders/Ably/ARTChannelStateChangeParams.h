@@ -7,12 +7,12 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- Provides metadata for a request to perform an operation that may cause an `ARTRealtimeChannelInternal` instance to emit a connection state change.
+ Provides parameters for a request to perform an operation that may cause an `ARTRealtimeChannelInternal` instance to emit a connection state change.
 
  `ARTRealtimeChannelInternal` will incorporate some of this data into the `ARTChannelStateChange` object that it emits as a result of the connection state change.
  */
-NS_SWIFT_NAME(ChannelStateChangeMetadata)
-@interface ARTChannelStateChangeMetadata: NSObject
+NS_SWIFT_NAME(ChannelStateChangeParams)
+@interface ARTChannelStateChangeParams: NSObject
 
 /**
  A state that some operations will use when failing pending presence operations.
@@ -34,12 +34,12 @@ NS_SWIFT_NAME(ChannelStateChangeMetadata)
 - (instancetype)init NS_UNAVAILABLE;
 
 /**
- Creates an `ARTChannelStateChangeMetadata` instance whose `errorInfo` is `nil`, and whose `storeErrorInfo` is `NO`.
+ Creates an `ARTChannelStateChangeParams` instance whose `errorInfo` is `nil`, and whose `storeErrorInfo` is `NO`.
  */
 - (instancetype)initWithState:(ARTState)state;
 
 /**
- Creates an `ARTChannelStateChangeMetadata` instance with the given `errorInfo`, whose `storeErrorInfo` is `YES`.
+ Creates an `ARTChannelStateChangeParams` instance with the given `errorInfo`, whose `storeErrorInfo` is `YES`.
  */
 - (instancetype)initWithState:(ARTState)state
                     errorInfo:(nullable ARTErrorInfo *)errorInfo;

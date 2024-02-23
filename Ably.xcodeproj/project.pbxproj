@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -81,24 +81,24 @@
 		211A60D729D6D2C300D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */; };
 		211A60D829D6D2C400D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */; };
 		211A60D929D6D2C500D169C5 /* BackoffRetryDelayCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2132C31829D5E574000C4355 /* BackoffRetryDelayCalculatorTests.swift */; };
-		211A60DB29D726F800D169C5 /* ARTConnectionStateChangeMetadata.h in Headers */ = {isa = PBXBuildFile; fileRef = 211A60DA29D726F800D169C5 /* ARTConnectionStateChangeMetadata.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		211A60DC29D726F800D169C5 /* ARTConnectionStateChangeMetadata.h in Headers */ = {isa = PBXBuildFile; fileRef = 211A60DA29D726F800D169C5 /* ARTConnectionStateChangeMetadata.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		211A60DD29D726F800D169C5 /* ARTConnectionStateChangeMetadata.h in Headers */ = {isa = PBXBuildFile; fileRef = 211A60DA29D726F800D169C5 /* ARTConnectionStateChangeMetadata.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		211A60DF29D7272000D169C5 /* ARTConnectionStateChangeMetadata.m in Sources */ = {isa = PBXBuildFile; fileRef = 211A60DE29D7272000D169C5 /* ARTConnectionStateChangeMetadata.m */; };
-		211A60E029D7272000D169C5 /* ARTConnectionStateChangeMetadata.m in Sources */ = {isa = PBXBuildFile; fileRef = 211A60DE29D7272000D169C5 /* ARTConnectionStateChangeMetadata.m */; };
-		211A60E129D7272000D169C5 /* ARTConnectionStateChangeMetadata.m in Sources */ = {isa = PBXBuildFile; fileRef = 211A60DE29D7272000D169C5 /* ARTConnectionStateChangeMetadata.m */; };
-		211A60FB29D8ABCF00D169C5 /* ARTChannelStateChangeMetadata.h in Headers */ = {isa = PBXBuildFile; fileRef = 211A60FA29D8ABCF00D169C5 /* ARTChannelStateChangeMetadata.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		211A60FC29D8ABCF00D169C5 /* ARTChannelStateChangeMetadata.h in Headers */ = {isa = PBXBuildFile; fileRef = 211A60FA29D8ABCF00D169C5 /* ARTChannelStateChangeMetadata.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		211A60FD29D8ABCF00D169C5 /* ARTChannelStateChangeMetadata.h in Headers */ = {isa = PBXBuildFile; fileRef = 211A60FA29D8ABCF00D169C5 /* ARTChannelStateChangeMetadata.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		211A60FF29D8ABF100D169C5 /* ARTChannelStateChangeMetadata.m in Sources */ = {isa = PBXBuildFile; fileRef = 211A60FE29D8ABF100D169C5 /* ARTChannelStateChangeMetadata.m */; };
-		211A610029D8ABF100D169C5 /* ARTChannelStateChangeMetadata.m in Sources */ = {isa = PBXBuildFile; fileRef = 211A60FE29D8ABF100D169C5 /* ARTChannelStateChangeMetadata.m */; };
-		211A610129D8ABF100D169C5 /* ARTChannelStateChangeMetadata.m in Sources */ = {isa = PBXBuildFile; fileRef = 211A60FE29D8ABF100D169C5 /* ARTChannelStateChangeMetadata.m */; };
-		211A610329DA05C700D169C5 /* ARTAttachRequestMetadata.h in Headers */ = {isa = PBXBuildFile; fileRef = 211A610229DA05C700D169C5 /* ARTAttachRequestMetadata.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		211A610429DA05C700D169C5 /* ARTAttachRequestMetadata.h in Headers */ = {isa = PBXBuildFile; fileRef = 211A610229DA05C700D169C5 /* ARTAttachRequestMetadata.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		211A610529DA05C700D169C5 /* ARTAttachRequestMetadata.h in Headers */ = {isa = PBXBuildFile; fileRef = 211A610229DA05C700D169C5 /* ARTAttachRequestMetadata.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		211A610729DA05D700D169C5 /* ARTAttachRequestMetadata.m in Sources */ = {isa = PBXBuildFile; fileRef = 211A610629DA05D700D169C5 /* ARTAttachRequestMetadata.m */; };
-		211A610829DA05D700D169C5 /* ARTAttachRequestMetadata.m in Sources */ = {isa = PBXBuildFile; fileRef = 211A610629DA05D700D169C5 /* ARTAttachRequestMetadata.m */; };
-		211A610929DA05D700D169C5 /* ARTAttachRequestMetadata.m in Sources */ = {isa = PBXBuildFile; fileRef = 211A610629DA05D700D169C5 /* ARTAttachRequestMetadata.m */; };
+		211A60DB29D726F800D169C5 /* ARTConnectionStateChangeParams.h in Headers */ = {isa = PBXBuildFile; fileRef = 211A60DA29D726F800D169C5 /* ARTConnectionStateChangeParams.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		211A60DC29D726F800D169C5 /* ARTConnectionStateChangeParams.h in Headers */ = {isa = PBXBuildFile; fileRef = 211A60DA29D726F800D169C5 /* ARTConnectionStateChangeParams.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		211A60DD29D726F800D169C5 /* ARTConnectionStateChangeParams.h in Headers */ = {isa = PBXBuildFile; fileRef = 211A60DA29D726F800D169C5 /* ARTConnectionStateChangeParams.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		211A60DF29D7272000D169C5 /* ARTConnectionStateChangeParams.m in Sources */ = {isa = PBXBuildFile; fileRef = 211A60DE29D7272000D169C5 /* ARTConnectionStateChangeParams.m */; };
+		211A60E029D7272000D169C5 /* ARTConnectionStateChangeParams.m in Sources */ = {isa = PBXBuildFile; fileRef = 211A60DE29D7272000D169C5 /* ARTConnectionStateChangeParams.m */; };
+		211A60E129D7272000D169C5 /* ARTConnectionStateChangeParams.m in Sources */ = {isa = PBXBuildFile; fileRef = 211A60DE29D7272000D169C5 /* ARTConnectionStateChangeParams.m */; };
+		211A60FB29D8ABCF00D169C5 /* ARTChannelStateChangeParams.h in Headers */ = {isa = PBXBuildFile; fileRef = 211A60FA29D8ABCF00D169C5 /* ARTChannelStateChangeParams.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		211A60FC29D8ABCF00D169C5 /* ARTChannelStateChangeParams.h in Headers */ = {isa = PBXBuildFile; fileRef = 211A60FA29D8ABCF00D169C5 /* ARTChannelStateChangeParams.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		211A60FD29D8ABCF00D169C5 /* ARTChannelStateChangeParams.h in Headers */ = {isa = PBXBuildFile; fileRef = 211A60FA29D8ABCF00D169C5 /* ARTChannelStateChangeParams.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		211A60FF29D8ABF100D169C5 /* ARTChannelStateChangeParams.m in Sources */ = {isa = PBXBuildFile; fileRef = 211A60FE29D8ABF100D169C5 /* ARTChannelStateChangeParams.m */; };
+		211A610029D8ABF100D169C5 /* ARTChannelStateChangeParams.m in Sources */ = {isa = PBXBuildFile; fileRef = 211A60FE29D8ABF100D169C5 /* ARTChannelStateChangeParams.m */; };
+		211A610129D8ABF100D169C5 /* ARTChannelStateChangeParams.m in Sources */ = {isa = PBXBuildFile; fileRef = 211A60FE29D8ABF100D169C5 /* ARTChannelStateChangeParams.m */; };
+		211A610329DA05C700D169C5 /* ARTAttachRequestParams.h in Headers */ = {isa = PBXBuildFile; fileRef = 211A610229DA05C700D169C5 /* ARTAttachRequestParams.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		211A610429DA05C700D169C5 /* ARTAttachRequestParams.h in Headers */ = {isa = PBXBuildFile; fileRef = 211A610229DA05C700D169C5 /* ARTAttachRequestParams.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		211A610529DA05C700D169C5 /* ARTAttachRequestParams.h in Headers */ = {isa = PBXBuildFile; fileRef = 211A610229DA05C700D169C5 /* ARTAttachRequestParams.h */; settings = {ATTRIBUTES = (Private, ); }; };
+		211A610729DA05D700D169C5 /* ARTAttachRequestParams.m in Sources */ = {isa = PBXBuildFile; fileRef = 211A610629DA05D700D169C5 /* ARTAttachRequestParams.m */; };
+		211A610829DA05D700D169C5 /* ARTAttachRequestParams.m in Sources */ = {isa = PBXBuildFile; fileRef = 211A610629DA05D700D169C5 /* ARTAttachRequestParams.m */; };
+		211A610929DA05D700D169C5 /* ARTAttachRequestParams.m in Sources */ = {isa = PBXBuildFile; fileRef = 211A610629DA05D700D169C5 /* ARTAttachRequestParams.m */; };
 		2124B78729DB127900AD8361 /* MockVersion2Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2124B78629DB127900AD8361 /* MockVersion2Log.swift */; };
 		2124B78829DB127900AD8361 /* MockVersion2Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2124B78629DB127900AD8361 /* MockVersion2Log.swift */; };
 		2124B78929DB127900AD8361 /* MockVersion2Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2124B78629DB127900AD8361 /* MockVersion2Log.swift */; };
@@ -1143,12 +1143,12 @@
 		21113B5E29DDDDD000652C86 /* LogAdapterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogAdapterTests.swift; sourceTree = "<group>"; };
 		21113B6229DDF7E800652C86 /* ARTInternalLogTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTInternalLogTests.m; sourceTree = "<group>"; };
 		21113B5829DCA4C700652C86 /* DataGatherer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataGatherer.swift; sourceTree = "<group>"; };
-		211A60DA29D726F800D169C5 /* ARTConnectionStateChangeMetadata.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTConnectionStateChangeMetadata.h; path = PrivateHeaders/Ably/ARTConnectionStateChangeMetadata.h; sourceTree = "<group>"; };
-		211A60DE29D7272000D169C5 /* ARTConnectionStateChangeMetadata.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTConnectionStateChangeMetadata.m; sourceTree = "<group>"; };
-		211A60FA29D8ABCF00D169C5 /* ARTChannelStateChangeMetadata.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTChannelStateChangeMetadata.h; path = PrivateHeaders/Ably/ARTChannelStateChangeMetadata.h; sourceTree = "<group>"; };
-		211A60FE29D8ABF100D169C5 /* ARTChannelStateChangeMetadata.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTChannelStateChangeMetadata.m; sourceTree = "<group>"; };
-		211A610229DA05C700D169C5 /* ARTAttachRequestMetadata.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTAttachRequestMetadata.h; path = PrivateHeaders/Ably/ARTAttachRequestMetadata.h; sourceTree = "<group>"; };
-		211A610629DA05D700D169C5 /* ARTAttachRequestMetadata.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTAttachRequestMetadata.m; sourceTree = "<group>"; };
+		211A60DA29D726F800D169C5 /* ARTConnectionStateChangeParams.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTConnectionStateChangeParams.h; path = PrivateHeaders/Ably/ARTConnectionStateChangeParams.h; sourceTree = "<group>"; };
+		211A60DE29D7272000D169C5 /* ARTConnectionStateChangeParams.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTConnectionStateChangeParams.m; sourceTree = "<group>"; };
+		211A60FA29D8ABCF00D169C5 /* ARTChannelStateChangeParams.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTChannelStateChangeParams.h; path = PrivateHeaders/Ably/ARTChannelStateChangeParams.h; sourceTree = "<group>"; };
+		211A60FE29D8ABF100D169C5 /* ARTChannelStateChangeParams.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTChannelStateChangeParams.m; sourceTree = "<group>"; };
+		211A610229DA05C700D169C5 /* ARTAttachRequestParams.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ARTAttachRequestParams.h; path = PrivateHeaders/Ably/ARTAttachRequestParams.h; sourceTree = "<group>"; };
+		211A610629DA05D700D169C5 /* ARTAttachRequestParams.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ARTAttachRequestParams.m; sourceTree = "<group>"; };
 		2124B78629DB127900AD8361 /* MockVersion2Log.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MockVersion2Log.swift; sourceTree = "<group>"; };
 		2124B78A29DB12A900AD8361 /* ARTVersion2Log.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ARTVersion2Log.h; path = PrivateHeaders/Ably/ARTVersion2Log.h; sourceTree = "<group>"; };
 		2124B78E29DB13BD00AD8361 /* ARTInternalLog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARTInternalLog.m; sourceTree = "<group>"; };
@@ -1919,15 +1919,15 @@
 				96A507BB1A3791490077CDF8 /* ARTRealtime.h */,
 				1C05CF1E1AC1D7EB00687AC9 /* ARTRealtime+Private.h */,
 				96A507BC1A3791490077CDF8 /* ARTRealtime.m */,
-				211A60DA29D726F800D169C5 /* ARTConnectionStateChangeMetadata.h */,
-				211A60DE29D7272000D169C5 /* ARTConnectionStateChangeMetadata.m */,
+				211A60DA29D726F800D169C5 /* ARTConnectionStateChangeParams.h */,
+				211A60DE29D7272000D169C5 /* ARTConnectionStateChangeParams.m */,
 				D746AE3A1BBC5AE1003ECEF8 /* ARTRealtimeChannel.h */,
 				D746AE421BBC5CD0003ECEF8 /* ARTRealtimeChannel+Private.h */,
 				D746AE3B1BBC5AE1003ECEF8 /* ARTRealtimeChannel.m */,
-				211A60FA29D8ABCF00D169C5 /* ARTChannelStateChangeMetadata.h */,
-				211A60FE29D8ABF100D169C5 /* ARTChannelStateChangeMetadata.m */,
-				211A610229DA05C700D169C5 /* ARTAttachRequestMetadata.h */,
-				211A610629DA05D700D169C5 /* ARTAttachRequestMetadata.m */,
+				211A60FA29D8ABCF00D169C5 /* ARTChannelStateChangeParams.h */,
+				211A60FE29D8ABF100D169C5 /* ARTChannelStateChangeParams.m */,
+				211A610229DA05C700D169C5 /* ARTAttachRequestParams.h */,
+				211A610629DA05D700D169C5 /* ARTAttachRequestParams.m */,
 				D76F153923DB010C00B5133C /* ARTRealtimeChannelOptions.h */,
 				D76F153A23DB010C00B5133C /* ARTRealtimeChannelOptions.m */,
 				D7D29B401BE3DD0600374295 /* ARTConnection.h */,
@@ -2232,7 +2232,7 @@
 				D777EEE0206285CF002EBA03 /* ARTDeviceIdentityTokenDetails.h in Headers */,
 				2124B79F29DB14D000AD8361 /* ARTLogAdapter.h in Headers */,
 				215F76032922C76C009E0E76 /* ARTClientInformation+Private.h in Headers */,
-				211A610329DA05C700D169C5 /* ARTAttachRequestMetadata.h in Headers */,
+				211A610329DA05C700D169C5 /* ARTAttachRequestParams.h in Headers */,
 				96BF615E1A35C1C8004CF2B3 /* ARTTypes.h in Headers */,
 				EB503C881C7E4A090053AF00 /* ARTClientOptions+Private.h in Headers */,
 				EB2D84F71CD75CCE00F23CDA /* ARTReachability.h in Headers */,
@@ -2288,7 +2288,7 @@
 				D746AE401BBC5B14003ECEF8 /* ARTEventEmitter.h in Headers */,
 				D746AE531BBD85C5003ECEF8 /* ARTChannels.h in Headers */,
 				D7D8F82D1BC2C706009718F2 /* ARTTokenParams.h in Headers */,
-				211A60FB29D8ABCF00D169C5 /* ARTChannelStateChangeMetadata.h in Headers */,
+				211A60FB29D8ABCF00D169C5 /* ARTChannelStateChangeParams.h in Headers */,
 				EB0505FC1C5BD7C4006BA7E2 /* ARTBaseMessage+Private.h in Headers */,
 				D777EEE42063A64E002EBA03 /* ARTNSMutableRequest+ARTPush.h in Headers */,
 				EB20F8D71C653F2300EF3978 /* ARTPresence+Private.h in Headers */,
@@ -2309,7 +2309,7 @@
 				2105ED1E29E7242400DE6D67 /* ARTLogAdapter+Testing.h in Headers */,
 				EBF2285B1F4D9AD6009091DD /* ARTWebSocketTransport+Private.h in Headers */,
 				EBFFAC191E97919C003E7326 /* ARTLocalDevice+Private.h in Headers */,
-				211A60DB29D726F800D169C5 /* ARTConnectionStateChangeMetadata.h in Headers */,
+				211A60DB29D726F800D169C5 /* ARTConnectionStateChangeParams.h in Headers */,
 				D737F826263AF4CE0064FA05 /* ARTFallbackHosts.h in Headers */,
 				D746AE4F1BBD84E7003ECEF8 /* ARTChannelOptions.h in Headers */,
 				D7588AF31BFF91B800BB8279 /* ARTURLSessionServerTrust.h in Headers */,
@@ -2406,8 +2406,8 @@
 				D710D60F21949DDB008F54AD /* ARTHTTPPaginatedResponse.h in Headers */,
 				D710D58A21949D29008F54AD /* ARTMessage.h in Headers */,
 				D710D68721949ED5008F54AD /* ARTNSArray+ARTFunctional.h in Headers */,
-				211A60DC29D726F800D169C5 /* ARTConnectionStateChangeMetadata.h in Headers */,
-				211A60FC29D8ABCF00D169C5 /* ARTChannelStateChangeMetadata.h in Headers */,
+				211A60DC29D726F800D169C5 /* ARTConnectionStateChangeParams.h in Headers */,
+				211A60FC29D8ABCF00D169C5 /* ARTChannelStateChangeParams.h in Headers */,
 				D5BB211826AA9A9E00AA5F3E /* ARTNSMutableDictionary+ARTDictionaryUtil.h in Headers */,
 				D710D5BA21949D4F008F54AD /* ARTClientOptions+Private.h in Headers */,
 				D710D58521949D28008F54AD /* ARTChannel.h in Headers */,
@@ -2467,7 +2467,7 @@
 				D710D51921949C42008F54AD /* ARTDeviceDetails.h in Headers */,
 				D710D50621949C18008F54AD /* ARTConnection+Private.h in Headers */,
 				D710D54E21949C66008F54AD /* ARTNSMutableRequest+ARTPush.h in Headers */,
-				211A610429DA05C700D169C5 /* ARTAttachRequestMetadata.h in Headers */,
+				211A610429DA05C700D169C5 /* ARTAttachRequestParams.h in Headers */,
 				D7D06F1026330E2800DEBDAD /* ARTHttp+Private.h in Headers */,
 				210F67A329E9D718007B9345 /* ARTRealtimeTransportFactory.h in Headers */,
 				EB1B541A22FB1D7F006A59AC /* ARTPushChannelSubscriptions+Private.h in Headers */,
@@ -2574,8 +2574,8 @@
 				D710D61921949DDC008F54AD /* ARTHTTPPaginatedResponse.h in Headers */,
 				D710D5B021949D2A008F54AD /* ARTMessage.h in Headers */,
 				D710D5CA21949D50008F54AD /* ARTClientOptions+Private.h in Headers */,
-				211A60DD29D726F800D169C5 /* ARTConnectionStateChangeMetadata.h in Headers */,
-				211A60FD29D8ABCF00D169C5 /* ARTChannelStateChangeMetadata.h in Headers */,
+				211A60DD29D726F800D169C5 /* ARTConnectionStateChangeParams.h in Headers */,
+				211A60FD29D8ABCF00D169C5 /* ARTChannelStateChangeParams.h in Headers */,
 				D710D5AB21949D2A008F54AD /* ARTChannel.h in Headers */,
 				EB1B541322FB1AB4006A59AC /* ARTPushChannel+Private.h in Headers */,
 				D54C55A926957FDE00729EC4 /* ARTNSURL+ARTUtils.h in Headers */,
@@ -2635,7 +2635,7 @@
 				D710D52B21949C44008F54AD /* ARTDeviceDetails.h in Headers */,
 				D710D51221949C19008F54AD /* ARTConnection+Private.h in Headers */,
 				D710D55421949C67008F54AD /* ARTNSMutableRequest+ARTPush.h in Headers */,
-				211A610529DA05C700D169C5 /* ARTAttachRequestMetadata.h in Headers */,
+				211A610529DA05C700D169C5 /* ARTAttachRequestParams.h in Headers */,
 				D7D06F1126330E2900DEBDAD /* ARTHttp+Private.h in Headers */,
 				210F67A429E9D718007B9345 /* ARTRealtimeTransportFactory.h in Headers */,
 				EB1B541B22FB1D7F006A59AC /* ARTPushChannelSubscriptions+Private.h in Headers */,
@@ -3083,7 +3083,7 @@
 				217D182B254222F500DFF07E /* ARTSRWebSocket.m in Sources */,
 				EB2D5A911CC941A700AD1A67 /* ARTRealtimeTransport.m in Sources */,
 				D746AE391BBC3201003ECEF8 /* ARTMessage.m in Sources */,
-				211A60FF29D8ABF100D169C5 /* ARTChannelStateChangeMetadata.m in Sources */,
+				211A60FF29D8ABF100D169C5 /* ARTChannelStateChangeParams.m in Sources */,
 				D737F829263AF4CE0064FA05 /* ARTFallbackHosts.m in Sources */,
 				D7E0FEB9211DE94700659FAA /* ARTNSMutableRequest+ARTRest.m in Sources */,
 				D7B621991E4A762A00684474 /* ARTPushChannel.m in Sources */,
@@ -3161,7 +3161,7 @@
 				D70C36C6233E6831002FD6E3 /* ARTFormEncode.m in Sources */,
 				D7AE18D31E5B410F00478D82 /* ARTPushChannelSubscriptions.m in Sources */,
 				1CD8DCA01B1C7315007EAF36 /* ARTDefault.m in Sources */,
-				211A610729DA05D700D169C5 /* ARTAttachRequestMetadata.m in Sources */,
+				211A610729DA05D700D169C5 /* ARTAttachRequestParams.m in Sources */,
 				D7AE18CF1E5B40FE00478D82 /* ARTPushDeviceRegistrations.m in Sources */,
 				D7B621951E4A6FE600684474 /* ARTDeviceDetails.m in Sources */,
 				D7588AF41BFF91B800BB8279 /* ARTURLSessionServerTrust.m in Sources */,
@@ -3172,7 +3172,7 @@
 				2132C2F929D5BE3D000C4355 /* ARTRetrySequence.m in Sources */,
 				D746AE501BBD84E7003ECEF8 /* ARTChannelOptions.m in Sources */,
 				EB89D4051C61C1A4007FA5B7 /* ARTRestChannels.m in Sources */,
-				211A60DF29D7272000D169C5 /* ARTConnectionStateChangeMetadata.m in Sources */,
+				211A60DF29D7272000D169C5 /* ARTConnectionStateChangeParams.m in Sources */,
 				217D1834254222F600DFF07E /* ARTSRURLUtilities.m in Sources */,
 				2132C21E29D23196000C4355 /* ARTErrorChecker.m in Sources */,
 				D777EEE1206285CF002EBA03 /* ARTDeviceIdentityTokenDetails.m in Sources */,
@@ -3324,7 +3324,7 @@
 				217D1842254222F700DFF07E /* ARTSRWebSocket.m in Sources */,
 				D710D4F021949C0D008F54AD /* ARTRealtimePresence.m in Sources */,
 				D710D4F321949C0D008F54AD /* ARTRealtimeChannels.m in Sources */,
-				211A610029D8ABF100D169C5 /* ARTChannelStateChangeMetadata.m in Sources */,
+				211A610029D8ABF100D169C5 /* ARTChannelStateChangeParams.m in Sources */,
 				D737F82A263AF4CE0064FA05 /* ARTFallbackHosts.m in Sources */,
 				D710D53521949C54008F54AD /* ARTDevicePushDetails.m in Sources */,
 				D710D62F21949E03008F54AD /* ARTDataQuery.m in Sources */,
@@ -3402,7 +3402,7 @@
 				D710D5D121949D78008F54AD /* ARTAuthDetails.m in Sources */,
 				D710D4EC21949C0D008F54AD /* ARTRealtime.m in Sources */,
 				D710D4ED21949C0D008F54AD /* ARTRealtimeChannel.m in Sources */,
-				211A610829DA05D700D169C5 /* ARTAttachRequestMetadata.m in Sources */,
+				211A610829DA05D700D169C5 /* ARTAttachRequestParams.m in Sources */,
 				D710D67021949E78008F54AD /* ARTNSDictionary+ARTDictionaryUtil.m in Sources */,
 				D710D48C21949A97008F54AD /* ARTConstants.m in Sources */,
 				D710D5DA21949D78008F54AD /* ARTBaseMessage.m in Sources */,
@@ -3413,7 +3413,7 @@
 				2132C2FA29D5BE3D000C4355 /* ARTRetrySequence.m in Sources */,
 				D710D57421949CC4008F54AD /* ARTPushDeviceRegistrations.m in Sources */,
 				D710D5D821949D78008F54AD /* ARTChannelOptions.m in Sources */,
-				211A60E029D7272000D169C5 /* ARTConnectionStateChangeMetadata.m in Sources */,
+				211A60E029D7272000D169C5 /* ARTConnectionStateChangeParams.m in Sources */,
 				217D184B254222F700DFF07E /* ARTSRURLUtilities.m in Sources */,
 				2132C21F29D23196000C4355 /* ARTErrorChecker.m in Sources */,
 				D73B655923EF2B2900D459A6 /* ARTDeltaCodec.m in Sources */,
@@ -3449,7 +3449,7 @@
 				D710D50021949C0E008F54AD /* ARTRealtimePresence.m in Sources */,
 				D710D50321949C0E008F54AD /* ARTRealtimeChannels.m in Sources */,
 				D737F82B263AF4CE0064FA05 /* ARTFallbackHosts.m in Sources */,
-				211A610129D8ABF100D169C5 /* ARTChannelStateChangeMetadata.m in Sources */,
+				211A610129D8ABF100D169C5 /* ARTChannelStateChangeParams.m in Sources */,
 				D710D54721949C55008F54AD /* ARTDevicePushDetails.m in Sources */,
 				D710D63F21949E04008F54AD /* ARTDataQuery.m in Sources */,
 				D710D54321949C55008F54AD /* ARTPush.m in Sources */,
@@ -3527,7 +3527,7 @@
 				D710D4FC21949C0E008F54AD /* ARTRealtime.m in Sources */,
 				D710D4FD21949C0E008F54AD /* ARTRealtimeChannel.m in Sources */,
 				D710D65621949E77008F54AD /* ARTNSDictionary+ARTDictionaryUtil.m in Sources */,
-				211A610929DA05D700D169C5 /* ARTAttachRequestMetadata.m in Sources */,
+				211A610929DA05D700D169C5 /* ARTAttachRequestParams.m in Sources */,
 				D710D48E21949A98008F54AD /* ARTConstants.m in Sources */,
 				D710D60021949D79008F54AD /* ARTBaseMessage.m in Sources */,
 				D520C4DB26809BB5000012B2 /* ARTStringifiable.m in Sources */,
@@ -3538,7 +3538,7 @@
 				2132C2FB29D5BE3D000C4355 /* ARTRetrySequence.m in Sources */,
 				D710D5FE21949D79008F54AD /* ARTChannelOptions.m in Sources */,
 				D5BB213826AAA60500AA5F3E /* ARTNSError+ARTUtils.m in Sources */,
-				211A60E129D7272000D169C5 /* ARTConnectionStateChangeMetadata.m in Sources */,
+				211A60E129D7272000D169C5 /* ARTConnectionStateChangeParams.m in Sources */,
 				217D1862254222FA00DFF07E /* ARTSRURLUtilities.m in Sources */,
 				2132C22029D23196000C4355 /* ARTErrorChecker.m in Sources */,
 				D73B655A23EF2B2900D459A6 /* ARTDeltaCodec.m in Sources */,
