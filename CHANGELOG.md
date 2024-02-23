@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.2.25](https://github.com/ably/ably-cocoa/tree/1.2.25)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.24...1.2.25)
+
+**Implemented features:**
+
+- Realtime protocol v2 implementation (with no `connectionSerial`) [\#1494](https://github.com/ably/ably-cocoa/issues/1494)
+
 ## [1.2.24](https://github.com/ably/ably-cocoa/tree/1.2.24)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.23...1.2.24)
