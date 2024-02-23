@@ -1,6 +1,6 @@
-#import "ARTConnectionStateChangeMetadata.h"
+#import "ARTConnectionStateChangeParams.h"
 
-@implementation ARTConnectionStateChangeMetadata
+@implementation ARTConnectionStateChangeParams
 
 - (instancetype)init {
     return [self initWithErrorInfo:nil];

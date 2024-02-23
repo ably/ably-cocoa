@@ -27,8 +27,8 @@
 #import "ARTConnection+Private.h"
 #import "ARTRestChannels+Private.h"
 #import "ARTEventEmitter+Private.h"
-#import "ARTChannelStateChangeMetadata.h"
-#import "ARTAttachRequestMetadata.h"
+#import "ARTChannelStateChangeParams.h"
+#import "ARTAttachRequestParams.h"
 #import "ARTRetrySequence.h"
 #import "ARTBackoffRetryDelayCalculator.h"
 #import "ARTInternalLog.h"
@@ -602,13 +602,13 @@ dispatch_sync(_queue, ^{
     [self.internalEventEmitter emit:[ARTEvent newWithChannelEvent:event] with:data];
 }
 
-- (void)transition:(ARTRealtimeChannelState)state withMetadata:(ARTChannelStateChangeMetadata *)metadata {
-    ARTLogDebug(self.logger, @"RT:%p C:%p (%@) channel state transitions from %tu - %@ to %tu - %@%@", _realtime, self, self.name, self.state_nosync, ARTRealtimeChannelStateToStr(self.state_nosync), state, ARTRealtimeChannelStateToStr(state), metadata.retryAttempt ? [NSString stringWithFormat: @" (result of %@)", metadata.retryAttempt.id] : @"");
-    ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:state previous:self.state_nosync event:(ARTChannelEvent)state reason:metadata.errorInfo resumed:NO retryAttempt:metadata.retryAttempt];
+- (void)performTransitionToState:(ARTRealtimeChannelState)state withParams:(ARTChannelStateChangeParams *)params {
+    ARTLogDebug(self.logger, @"RT:%p C:%p (%@) channel state transitions from %tu - %@ to %tu - %@%@", _realtime, self, self.name, self.state_nosync, ARTRealtimeChannelStateToStr(self.state_nosync), state, ARTRealtimeChannelStateToStr(state), params.retryAttempt ? [NSString stringWithFormat: @" (result of %@)", params.retryAttempt.id] : @"");
+    ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:state previous:self.state_nosync event:(ARTChannelEvent)state reason:params.errorInfo resumed:NO retryAttempt:params.retryAttempt];
     self.state = state;
 
-    if (metadata.storeErrorInfo) {
-        _errorReason = metadata.errorInfo;
+    if (params.storeErrorInfo) {
+        _errorReason = params.errorInfo;
     }
 
     [self.attachRetryState channelWillTransitionToState:state];
@@ -622,14 +622,12 @@ dispatch_sync(_queue, ^{
             self.serial = nil; // RTP5a1
             ARTRetryAttempt *const retryAttempt = [self.attachRetryState addRetryAttempt];
 
-            [_attachedEventEmitter emit:nil with:metadata.errorInfo];
+            [_attachedEventEmitter emit:nil with:params.errorInfo];
             if (self.realtime.shouldSendEvents) {
                 channelRetryListener = [self unlessStateChangesBefore:retryAttempt.delay do:^{
                     ARTLogDebug(self.logger, @"RT:%p C:%p (%@) reattach initiated by retry timeout, acting on retry attempt %@", self->_realtime, self, self.name, retryAttempt.id);
-                    ARTAttachRequestMetadata *const attachMetadata = [[ARTAttachRequestMetadata alloc] initWithReason:nil
-                                                                                                        channelSerial:nil
-                                                                                                         retryAttempt:retryAttempt];
-                    [self reattachWithMetadata:attachMetadata];
+                    ARTAttachRequestParams *const attachParams = [[ARTAttachRequestParams alloc] initWithReason:nil channelSerial:nil retryAttempt:retryAttempt];
+                    [self reattachWithParams:attachParams];
                 }];
             }
             break;
@@ -639,14 +637,14 @@ dispatch_sync(_queue, ^{
             break;
         case ARTRealtimeChannelDetached:
             self.serial = nil; // RTP5a1
-            [self.presenceMap failsSync:metadata.errorInfo];
+            [self.presenceMap failsSync:params.errorInfo];
             break;
         case ARTRealtimeChannelFailed:
             self.serial = nil; // RTP5a1
             self.attachResume = false;
-            [_attachedEventEmitter emit:nil with:metadata.errorInfo];
-            [_detachedEventEmitter emit:nil with:metadata.errorInfo];
-            [self.presenceMap failsSync:metadata.errorInfo];
+            [_attachedEventEmitter emit:nil with:params.errorInfo];
+            [_detachedEventEmitter emit:nil with:params.errorInfo];
+            [self.presenceMap failsSync:params.errorInfo];
             break;
         default:
             break;
@@ -756,13 +754,13 @@ dispatch_sync(_queue, ^{
         return;
     }
 
-    ARTChannelStateChangeMetadata *metadata;
+    ARTChannelStateChangeParams *params;
     if (message.error) {
-        metadata = [[ARTChannelStateChangeMetadata alloc] initWithState:ARTStateError errorInfo:message.error];
+        params = [[ARTChannelStateChangeParams alloc] initWithState:ARTStateError errorInfo:message.error];
     } else {
-        metadata = [[ARTChannelStateChangeMetadata alloc] initWithState:ARTStateOk];
+        params = [[ARTChannelStateChangeParams alloc] initWithState:ARTStateOk];
     }
-    [self transition:ARTRealtimeChannelAttached withMetadata:metadata];
+    [self performTransitionToState:ARTRealtimeChannelAttached withParams:params];
     [_attachedEventEmitter emit:nil with:nil];
 
     [self.presence sendPendingPresence];
@@ -774,17 +772,17 @@ dispatch_sync(_queue, ^{
         case ARTRealtimeChannelAttached:
         case ARTRealtimeChannelSuspended: {
             ARTLogDebug(self.logger, @"RT:%p C:%p (%@) reattach initiated by DETACHED message", _realtime, self, self.name);
-            ARTAttachRequestMetadata *const metadata = [[ARTAttachRequestMetadata alloc] initWithReason:message.error];
-            [self reattachWithMetadata:metadata];
+            ARTAttachRequestParams *const params = [[ARTAttachRequestParams alloc] initWithReason:message.error];
+            [self reattachWithParams:params];
             return;
         }
         case ARTRealtimeChannelAttaching: {
             ARTLogDebug(self.logger, @"RT:%p C:%p (%@) reattach initiated by DETACHED message but it is currently attaching", _realtime, self, self.name);
             const ARTState state = message.error ? ARTStateError : ARTStateOk;
-            ARTChannelStateChangeMetadata *const metadata = [[ARTChannelStateChangeMetadata alloc] initWithState:state
-                                                                                                       errorInfo:message.error
-                                                                                                  storeErrorInfo:NO];
-            [self setSuspended:metadata];
+            ARTChannelStateChangeParams *const params = [[ARTChannelStateChangeParams alloc] initWithState:state
+                                                                                                 errorInfo:message.error
+                                                                                            storeErrorInfo:NO];
+            [self setSuspended:params];
             return;
         }
         case ARTRealtimeChannelFailed:
@@ -796,9 +794,8 @@ dispatch_sync(_queue, ^{
     self.attachSerial = nil;
 
     ARTErrorInfo *errorInfo = message.error ? message.error : [ARTErrorInfo createWithCode:0 message:@"channel has detached"];
-    ARTChannelStateChangeMetadata *const metadata = [[ARTChannelStateChangeMetadata alloc] initWithState:ARTStateNotAttached
-                                                                                               errorInfo:errorInfo];
-    [self detachChannel:metadata];
+    ARTChannelStateChangeParams *const params = [[ARTChannelStateChangeParams alloc] initWithState:ARTStateNotAttached errorInfo:errorInfo];
+    [self detachChannel:params];
     [_detachedEventEmitter emit:nil with:nil];
 }
 
@@ -807,22 +804,22 @@ dispatch_sync(_queue, ^{
     [self.presence failPendingPresence:status];
 }
 
-- (void)detachChannel:(ARTChannelStateChangeMetadata *)metadata {
+- (void)detachChannel:(ARTChannelStateChangeParams *)params {
     if (self.state_nosync == ARTRealtimeChannelDetached) {
         return;
     }
-    [self failPendingPresenceWithState:metadata.state info:metadata.errorInfo];
-    [self transition:ARTRealtimeChannelDetached withMetadata:metadata];
+    [self failPendingPresenceWithState:params.state info:params.errorInfo];
+    [self performTransitionToState:ARTRealtimeChannelDetached withParams:params];
 }
 
-- (void)setFailed:(ARTChannelStateChangeMetadata *)metadata {
-    [self failPendingPresenceWithState:metadata.state info:metadata.errorInfo];
-    [self transition:ARTRealtimeChannelFailed withMetadata:metadata];
+- (void)setFailed:(ARTChannelStateChangeParams *)params {
+    [self failPendingPresenceWithState:params.state info:params.errorInfo];
+    [self performTransitionToState:ARTRealtimeChannelFailed withParams:params];
 }
 
-- (void)setSuspended:(ARTChannelStateChangeMetadata *)metadata {
-    [self failPendingPresenceWithState:metadata.state info:metadata.errorInfo];
-    [self transition:ARTRealtimeChannelSuspended withMetadata:metadata];
+- (void)setSuspended:(ARTChannelStateChangeParams *)params {
+    [self failPendingPresenceWithState:params.state info:params.errorInfo];
+    [self performTransitionToState:ARTRealtimeChannelSuspended withParams:params];
 }
 
 - (void)onMessage:(ARTProtocolMessage *)pm {
@@ -956,9 +953,9 @@ dispatch_sync(_queue, ^{
 }
 
 - (void)onError:(ARTProtocolMessage *)msg {
-    ARTChannelStateChangeMetadata *const metadata = [[ARTChannelStateChangeMetadata alloc] initWithState:ARTStateError
+    ARTChannelStateChangeParams *const params = [[ARTChannelStateChangeParams alloc] initWithState:ARTStateError
                                                                                                errorInfo:msg.error];
-    [self transition:ARTRealtimeChannelFailed withMetadata:metadata];
+    [self performTransitionToState:ARTRealtimeChannelFailed withParams:params];
     [self failPendingPresenceWithState:ARTStateError info:msg.error];
 }
 
@@ -993,20 +990,20 @@ dispatch_sync(_queue, ^{
         default:
             break;
     }
-    ARTAttachRequestMetadata *const metadata = [[ARTAttachRequestMetadata alloc] initWithReason:nil];
-    [self internalAttach:callback metadata:metadata];
+    ARTAttachRequestParams *const params = [[ARTAttachRequestParams alloc] initWithReason:nil];
+    [self internalAttach:callback withParams:params];
 }
 
-- (void)reattachWithMetadata:(ARTAttachRequestMetadata *)metadata {
+- (void)reattachWithParams:(ARTAttachRequestParams *)params {
     if ([self canBeReattached]) {
         ARTLogDebug(self.logger, @"RT:%p C:%p (%@) %@ and will reattach", _realtime, self, self.name, ARTRealtimeChannelStateToStr(self.state_nosync));
-        [self internalAttach:nil metadata:metadata];
+        [self internalAttach:nil withParams:params];
     } else {
         ARTLogDebug(self.logger, @"RT:%p C:%p (%@) %@ should not reattach", _realtime, self, self.name, ARTRealtimeChannelStateToStr(self.state_nosync));
     }
 }
 
-- (void)internalAttach:(ARTCallback)callback metadata:(ARTAttachRequestMetadata *)metadata {
+- (void)internalAttach:(ARTCallback)callback withParams:(ARTAttachRequestParams *)params {
     switch (self.state_nosync) {
         case ARTRealtimeChannelDetaching: {
             ARTLogDebug(self.logger, @"RT:%p C:%p (%@) attach after the completion of Detaching", _realtime, self, self.name);
@@ -1029,12 +1026,9 @@ dispatch_sync(_queue, ^{
 
     if (callback) [_attachedEventEmitter once:callback];
     // Set state: Attaching
-    const ARTState stateChangeMetadataState = metadata.reason ? ARTStateError : ARTStateOk;
-    ARTChannelStateChangeMetadata *const stateChangeMetadata = [[ARTChannelStateChangeMetadata alloc] initWithState:stateChangeMetadataState
-                                                                                                          errorInfo:metadata.reason
-                                                                                                     storeErrorInfo:NO
-                                                                                                       retryAttempt:metadata.retryAttempt];
-    [self transition:ARTRealtimeChannelAttaching withMetadata:stateChangeMetadata];
+    const ARTState state = params.reason ? ARTStateError : ARTStateOk;
+    ARTChannelStateChangeParams *const stateChangeParams = [[ARTChannelStateChangeParams alloc] initWithState:state errorInfo:params.reason storeErrorInfo:NO retryAttempt:params.retryAttempt];
+    [self performTransitionToState:ARTRealtimeChannelAttaching withParams:stateChangeParams];
     [self attachAfterChecks:callback];
 }
 
@@ -1058,9 +1052,9 @@ dispatch_sync(_queue, ^{
         [[self unlessStateChangesBefore:self.realtime.options.testOptions.realtimeRequestTimeout do:^{
             // Timeout
             ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTStateAttachTimedOut message:@"attach timed out"];
-            ARTChannelStateChangeMetadata *const metadata = [[ARTChannelStateChangeMetadata alloc] initWithState:ARTStateAttachTimedOut
-                                                                                                       errorInfo:errorInfo];
-            [self setSuspended:metadata];
+            ARTChannelStateChangeParams *const params = [[ARTChannelStateChangeParams alloc] initWithState:ARTStateAttachTimedOut
+                                                                                                 errorInfo:errorInfo];
+            [self setSuspended:params];
         }] startTimer];
     } ackCallback:nil];
 }
@@ -1106,8 +1100,8 @@ dispatch_sync(_queue, ^{
             return;
         case ARTRealtimeChannelSuspended: {
             ARTLogDebug(self.logger, @"RT:%p C:%p (%@) transitions immediately to the detached", _realtime, self, self.name);
-            ARTChannelStateChangeMetadata *const metadata = [[ARTChannelStateChangeMetadata alloc] initWithState:ARTStateOk];
-            [self transition:ARTRealtimeChannelDetached withMetadata:metadata];
+            ARTChannelStateChangeParams *const params = [[ARTChannelStateChangeParams alloc] initWithState:ARTStateOk];
+            [self performTransitionToState:ARTRealtimeChannelDetached withParams:params];
             if (callback) callback(nil);
             return;
         }
@@ -1127,8 +1121,8 @@ dispatch_sync(_queue, ^{
 
     if (callback) [_detachedEventEmitter once:callback];
     // Set state: Detaching
-    ARTChannelStateChangeMetadata *const metadata = [[ARTChannelStateChangeMetadata alloc] initWithState:ARTStateOk];
-    [self transition:ARTRealtimeChannelDetaching withMetadata:metadata];
+    ARTChannelStateChangeParams *const params = [[ARTChannelStateChangeParams alloc] initWithState:ARTStateOk];
+    [self performTransitionToState:ARTRealtimeChannelDetaching withParams:params];
 
     [self detachAfterChecks:callback];
 }
@@ -1146,9 +1140,9 @@ dispatch_sync(_queue, ^{
         }
         // Timeout
         ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTStateDetachTimedOut message:@"detach timed out"];
-        ARTChannelStateChangeMetadata *const metadata = [[ARTChannelStateChangeMetadata alloc] initWithState:ARTStateAttachTimedOut
-                                                                                                   errorInfo:errorInfo];
-        [self transition:ARTRealtimeChannelAttached withMetadata:metadata];
+        ARTChannelStateChangeParams *const params = [[ARTChannelStateChangeParams alloc] initWithState:ARTStateAttachTimedOut
+                                                                                             errorInfo:errorInfo];
+        [self performTransitionToState:ARTRealtimeChannelAttached withParams:params];
         [self->_detachedEventEmitter emit:nil with:errorInfo];
     }] startTimer];
 
@@ -1195,10 +1189,10 @@ dispatch_sync(_queue, ^{
 
     ARTLogWarn(self.logger, @"R:%p C:%p (%@) starting delta decode failure recovery process", _realtime, self, self.name);
     _decodeFailureRecoveryInProgress = true;
-    ARTAttachRequestMetadata *const metadata = [[ARTAttachRequestMetadata alloc] initWithReason:error];
+    ARTAttachRequestParams *const params = [[ARTAttachRequestParams alloc] initWithReason:error];
     [self internalAttach:^(ARTErrorInfo *e) {
         self->_decodeFailureRecoveryInProgress = false;
-    } metadata:metadata];
+    } withParams:params];
 }
 
 #pragma mark - ARTPresenceMapDelegate
@@ -1279,8 +1273,8 @@ dispatch_sync(_queue, ^{
         case ARTRealtimeChannelAttached:
         case ARTRealtimeChannelAttaching: {
             ARTLogDebug(self.logger, @"RT:%p C:%p (%@) set options in %@ state", _realtime, self, self.name, ARTRealtimeChannelStateToStr(self.state_nosync));
-            ARTAttachRequestMetadata *const metadata = [[ARTAttachRequestMetadata alloc] initWithReason:nil];
-            [self internalAttach:callback metadata:metadata];
+            ARTAttachRequestParams *const params = [[ARTAttachRequestParams alloc] initWithReason:nil];
+            [self internalAttach:callback withParams:params];
             break;
         }
         default:
