@@ -301,7 +301,7 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
         ARTLogDebug(self.logger, @"RS:%p halt current connection and reconnect with %@", self.rest, tokenDetails);
         [self abortAndReleaseTransport:[ARTStatus state:ARTStateOk]];
         [self setTransportWithResumeKey:self->_transport.resumeKey];
-        [self->_transport connectWithToken:tokenDetails.token];
+        [self connectTransportWithToken:tokenDetails.token orKey:nil];
         [self cancelAllPendingAuthorizations];
         waitForResponse();
     };
@@ -644,8 +644,6 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
                 [self createAndConnectTransportWithConnectionResume:resume];
             }
             
-            [self setReachabilityActive:YES];
-            
             break;
         }
         case ARTRealtimeClosing: {
@@ -809,6 +807,16 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
     }
     [self setTransportWithResumeKey:resumeKey];
     [self transportConnectForcingNewToken:_renewingToken newConnection:true];
+}
+
+- (void)connectTransportWithToken:(nullable NSString *)token orKey:(nullable NSString *)key {
+    if (token != nil) {
+        [self.transport connectWithToken:token];
+    }
+    else {
+        [self.transport connectWithKey:key];
+    }
+    [self setReachabilityActive:YES];
 }
 
 - (void)abortAndReleaseTransport:(ARTStatus *)status {
@@ -1077,7 +1085,7 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
     ARTClientOptions *options = [self.options copy];
     if ([options isBasicAuth]) {
         // Basic
-        [self.transport connectWithKey:options.key];
+        [self connectTransportWithToken:nil orKey:options.key];
     }
     else {
         // Token
@@ -1086,7 +1094,7 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
         if (!forceNewToken && [self.auth tokenRemainsValid]) {
             // Reuse token
             ARTLogDebug(self.logger, @"R:%p reusing token for auth", self);
-            [self.transport connectWithToken:self.auth.tokenDetails.token];
+            [self connectTransportWithToken:self.auth.tokenDetails.token orKey:nil];
         }
         else {
             // New Token
@@ -1128,7 +1136,7 @@ const NSTimeInterval _reachabilityReconnectionAttemptThreshold = 0.1;
                         [self resetTransportWithResumeKey:self->_transport.resumeKey];
                     }
                     if (newConnection) {
-                        [self.transport connectWithToken:tokenDetails.token];
+                        [self connectTransportWithToken:tokenDetails.token orKey:nil];
                     }
                 }];
             }
