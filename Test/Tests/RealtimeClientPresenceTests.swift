@@ -353,15 +353,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 XCTAssertEqual(leave.clientId, localMember.clientId)
                 done()
             }
-
-            // Request a sync
-            let syncMessage = ARTProtocolMessage()
-            syncMessage.action = .sync
-            syncMessage.channel = channel.name
-            guard let transport = client.internal.transport as? TestProxyTransport else {
-                fail("TestProxyTransport is not set"); done(); return
-            }
-            transport.send(syncMessage)
+            client.requestPresenceSyncForChannel(channel)
         }
 
         waitUntil(timeout: testTimeout) { done in
@@ -2779,7 +2771,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     func skipped__test__082__Presence__private_and_internal_PresenceMap_containing_only_members_that_match_the_current_connectionId__events_applied_to_presence_map__should_be_applied_to_ENTER__PRESENT_or_UPDATE_events_with_a_connectionId_that_matches_the_current_client_s_connectionId() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let client = ARTRealtime(options: options)
+        let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
 
         let channel = client.channels.get(test.uniqueChannelName())
@@ -2856,9 +2848,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             delay(1, closure: done)
         }
 
-        channel.internalAsync { _internal in
-            _internal.presence.sync()
-        }
+        client.requestPresenceSyncForChannel(channel)
 
         XCTAssertFalse(channel.presence.syncComplete)
         waitUntil(timeout: testTimeout) { done in

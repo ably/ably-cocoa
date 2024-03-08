@@ -1701,7 +1701,17 @@ extension ARTRealtime {
         }
         self.connection.off()
     }
-
+    
+    func requestPresenceSyncForChannel(_ channel: ARTRealtimeChannel) {
+        let syncMessage = ARTProtocolMessage()
+        syncMessage.action = .sync
+        syncMessage.channel = channel.name
+        guard let transport = self.internal.transport as? TestProxyTransport else {
+            fail("TestProxyTransport is not set"); return
+        }
+        channel.internal.presence.startSync()
+        transport.send(syncMessage)
+    }
 }
 
 extension ARTWebSocketTransport {

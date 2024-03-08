@@ -15,9 +15,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)failPendingPresence:(ARTStatus *)status;
 - (void)broadcast:(ARTPresenceMessage *)pm;
 
-- (void)sync;
-- (void)sync:(nullable ARTCallback)callback;
-
 - (void)onMessage:(ARTProtocolMessage *)message;
 - (void)onSync:(ARTProtocolMessage *)message;
 - (void)onAttached:(ARTProtocolMessage *)message;

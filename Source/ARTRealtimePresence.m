@@ -664,55 +664,6 @@ dispatch_sync(_queue, ^{
     [_eventEmitter emit:[ARTEvent newWithPresenceAction:pm.action] with:pm];
 }
 
-- (void)sync {
-    [self sync:nil];
-}
-
-- (void)sync:(ARTCallback)callback {
-    if (callback) {
-        ARTCallback userCallback = callback;
-        callback = ^(ARTErrorInfo *__nullable error) {
-            dispatch_async(self->_userQueue, ^{
-                userCallback(error);
-            });
-        };
-    }
-
-    switch (_channel.state) {
-        case ARTRealtimeChannelInitialized:
-        case ARTRealtimeChannelDetaching:
-        case ARTRealtimeChannelDetached: {
-            ARTErrorInfo *error = [ARTErrorInfo createWithCode:ARTErrorBadRequest
-                                                       message:@"Unable to sync to channel; not attached."];
-            ARTLogError(self.logger, @"%@", error.message);
-            if (callback) callback(error);
-            return;
-        }
-        default:
-            break;
-    }
-
-    ARTLogVerbose(self.logger, @"R:%p C:%p (%@) requesting a sync operation", _realtime, _channel, _channel.name);
-
-    ARTProtocolMessage *msg = [[ARTProtocolMessage alloc] init];
-    msg.action = ARTProtocolMessageSync;
-    msg.channel = _channel.name;
-    msg.channelSerial = _syncChannelSerial;
-
-    [self startSync];
-    [_realtime send:msg sentCallback:^(ARTErrorInfo *error) {
-        if (error) {
-            ARTLogDebug(self.logger, @"R:%p C:%p (%@) SYNC request failed with %@", self->_realtime, self->_channel, self->_channel.name, error);
-            [self endSync];
-            if (callback) callback(error);
-        }
-        else {
-            ARTLogDebug(self.logger, @"R:%p C:%p (%@) SYNC requested with success", self->_realtime, self->_channel, self->_channel.name);
-            if (callback) callback(nil);
-        }
-    } ackCallback:nil];
-}
-
 - (void)onAttached:(ARTProtocolMessage *)message {
     [self startSync];
     if (!message.hasPresence) {
