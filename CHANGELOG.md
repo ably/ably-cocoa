@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.2.26](https://github.com/ably/ably-cocoa/tree/1.2.26)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.25...1.2.26)
+
+**Fixed issues:**
+
+- Singleton realtime instance obtains multiple connections and confuses them [\#1882](https://github.com/ably/ably-cocoa/issues/1882)
+
 ## [1.2.25](https://github.com/ably/ably-cocoa/tree/1.2.25)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.24...1.2.25)
