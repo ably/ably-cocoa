@@ -20,7 +20,6 @@
 #import "ARTWebSocketTransport+Private.h"
 #import "ARTOSReachability.h"
 #import "ARTNSArray+ARTFunctional.h"
-#import "ARTPresenceMap.h"
 #import "ARTProtocolMessage.h"
 #import "ARTProtocolMessage+Private.h"
 #import "ARTEventEmitter+Private.h"

@@ -5,7 +5,6 @@
 
 #import <Ably/ARTRestChannel+Private.h>
 #import <Ably/ARTRealtimeChannel.h>
-#import <Ably/ARTPresenceMap.h>
 #import <Ably/ARTEventEmitter.h>
 #import <Ably/ARTRealtime+Private.h>
 #import <Ably/ARTQueuedDealloc.h>
@@ -18,7 +17,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface ARTRealtimeChannelInternal : ARTChannel <ARTPresenceMapDelegate, ARTRealtimeChannelProtocol>
+@interface ARTRealtimeChannelInternal : ARTChannel <ARTRealtimeChannelProtocol>
 
 @property (readonly) ARTRealtimePresenceInternal *presence;
 #if TARGET_OS_IPHONE
@@ -28,6 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readwrite, nonatomic) ARTRealtimeChannelState state;
 @property (readonly, nonatomic, nullable) ARTErrorInfo *errorReason;
 @property (readonly, nullable, getter=getOptions_nosync) ARTRealtimeChannelOptions *options_nosync;
+@property (nonatomic, readonly) NSString *connectionId;
 
 - (ARTRealtimeChannelState)state_nosync;
 - (ARTErrorInfo *)errorReason_nosync;
@@ -43,8 +43,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic) ARTEventEmitter<ARTEvent *, ARTChannelStateChange *> *statesEventEmitter;
 @property (readonly, nonatomic) ARTEventEmitter<id<ARTEventIdentification>, ARTMessage *> *messagesEventEmitter;
 
-@property (readonly, nonatomic) ARTEventEmitter<ARTEvent *, ARTPresenceMessage *> *presenceEventEmitter;
-@property (readwrite, nonatomic) ARTPresenceMap *presenceMap;
 @property (readwrite, nonatomic) BOOL attachResume;
 
 - (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime andName:(NSString *)name withOptions:(ARTRealtimeChannelOptions *)options logger:(ARTInternalLog *)logger;
@@ -82,11 +80,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setFailed:(ARTChannelStateChangeParams *)params;
 - (void)throwOnDisconnectedOrFailed;
 
-- (void)broadcastPresence:(ARTPresenceMessage *)pm;
 - (void)detachChannel:(ARTChannelStateChangeParams *)params;
 
-- (void)sync;
-- (void)sync:(nullable ARTCallback)callback;
+- (void)emit:(ARTChannelEvent)event with:(ARTChannelStateChange *)data;
 
 @end
 

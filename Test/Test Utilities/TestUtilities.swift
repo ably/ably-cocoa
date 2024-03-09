@@ -1605,7 +1605,7 @@ extension String {
 }
 
 extension ARTRealtime {
-
+    
     var transportFactory: TestProxyTransportFactory? {
         self.internal.options.testOptions.transportFactory as? TestProxyTransportFactory
     }
@@ -1664,7 +1664,7 @@ extension ARTRealtime {
             reachability.simulate(true)
         }
     }
-
+    
     func simulateRestoreInternetConnection(after seconds: TimeInterval? = nil) {
         guard let transportFactory = self.transportFactory else {
             fatalError("Expected test TestProxyTransportFactory")
