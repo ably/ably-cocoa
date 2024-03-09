@@ -1240,7 +1240,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 partialDone()
             }
         }
-        expect(channel.internal.serial).toEventuallyNot(beNil())
+        expect(channel.internal.channelSerial).toEventuallyNot(beNil())
         
         client.simulateNoInternetConnection(transportFactory: transportFactory)
         client.simulateRestoreInternetConnection(after: 0.1, transportFactory: transportFactory)
@@ -1250,7 +1250,7 @@ class RealtimeClientChannelTests: XCTestCase {
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
         
         let secondProtocolAttachMessage = try latestAttachProtocolMessage()
-        expect(secondProtocolAttachMessage.channelSerial).to(equal(channel.internal.serial))
+        expect(secondProtocolAttachMessage.channelSerial).to(equal(channel.internal.channelSerial))
     }
 
     // RTL4e
@@ -4232,14 +4232,14 @@ class RealtimeClientChannelTests: XCTestCase {
                 expect(error).to(beNil())
                 let attachMessage = transport.protocolMessagesReceived.filter { $0.action == .attached }[0]
                 if attachMessage.channelSerial != nil {
-                    expect(attachMessage.channelSerial).to(equal(channel.internal.serial))
+                    expect(attachMessage.channelSerial).to(equal(channel.internal.channelSerial))
                 }
                 partialDone()
                 
                 channel.subscribe { message in
                     let messageMessage = transport.protocolMessagesReceived.filter { $0.action == .message }[0]
                     if messageMessage.channelSerial != nil {
-                        expect(messageMessage.channelSerial).to(equal(channel.internal.serial))
+                        expect(messageMessage.channelSerial).to(equal(channel.internal.channelSerial))
                     }
                     channel.presence.enterClient("client1", data: "Hey")
                     partialDone()
@@ -4247,7 +4247,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 channel.presence.subscribe { presenceMessage in
                     let presenceMessage = transport.protocolMessagesReceived.filter { $0.action == .presence }[0]
                     if presenceMessage.channelSerial != nil {
-                        expect(presenceMessage.channelSerial).to(equal(channel.internal.serial))
+                        expect(presenceMessage.channelSerial).to(equal(channel.internal.channelSerial))
                     }
                     partialDone()
                 }
@@ -4269,29 +4269,29 @@ class RealtimeClientChannelTests: XCTestCase {
         // Case for detached
         channel.attach()
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
-        expect(channel.internal.serial).toNot(beNil())
+        expect(channel.internal.channelSerial).toNot(beNil())
         
         channel.detach()
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.detached), timeout: testTimeout)
-        expect(channel.internal.serial).to(beNil())
+        expect(channel.internal.channelSerial).to(beNil())
         
         // Case for suspended
         channel.attach()
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
-        expect(channel.internal.serial).toNot(beNil())
+        expect(channel.internal.channelSerial).toNot(beNil())
         
         channel.internal.setSuspended(.init(state: .ok))
         expect(channel.state).to(equal(ARTRealtimeChannelState.suspended))
-        expect(channel.internal.serial).to(beNil())
+        expect(channel.internal.channelSerial).to(beNil())
         
         // Case for failed
         channel.attach()
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
-        expect(channel.internal.serial).toNot(beNil())
+        expect(channel.internal.channelSerial).toNot(beNil())
         
         channel.internal.setFailed(.init(state: .ok))
         expect(channel.state).to(equal(ARTRealtimeChannelState.failed))
-        expect(channel.internal.serial).to(beNil())
+        expect(channel.internal.channelSerial).to(beNil())
     }
 
     // RTL16

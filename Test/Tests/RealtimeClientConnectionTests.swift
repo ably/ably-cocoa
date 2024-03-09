@@ -3331,12 +3331,12 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.connection.once(.connected) { stateChange in
                 let firstChannel = client.channels.get(firstChannelName)
                 firstChannel.on(.attached) {_ in
-                    firstChannelSerial = firstChannel.internal.serial
+                    firstChannelSerial = firstChannel.internal.channelSerial
                     partialDone()
                 }
                 let secondChannel = client.channels.get(secondChannelName)
                 secondChannel.on(.attached) {_ in
-                    secondChannelSerial = secondChannel.internal.serial
+                    secondChannelSerial = secondChannel.internal.channelSerial
                     secondChannel.publish(nil, data: "message") { error in
                         expect(error).to(beNil())
                         partialDone()
@@ -3345,7 +3345,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                 }
                 let thirdChannel = client.channels.get(thirdChannelName)
                 thirdChannel.on(.attached) {_ in
-                    thirdChannelSerial = thirdChannel.internal.serial
+                    thirdChannelSerial = thirdChannel.internal.channelSerial
                     partialDone()
                 }
                 firstChannel.attach()
@@ -3399,12 +3399,12 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.connection.once(.connected) { stateChange in
                 let firstChannel = client.channels.get(sanskritChannelName)
                 firstChannel.on(.attached) {_ in
-                    firstChannelSerial = firstChannel.internal.serial
+                    firstChannelSerial = firstChannel.internal.channelSerial
                     partialDone()
                 }
                 let secondChannel = client.channels.get(koreanChannelName)
                 secondChannel.on(.attached) {_ in
-                    secondChannelSerial = secondChannel.internal.serial
+                    secondChannelSerial = secondChannel.internal.channelSerial
                     
                     secondChannel.publish(nil, data: "message") { error in
                         expect(error).to(beNil())
@@ -3539,7 +3539,7 @@ class RealtimeClientConnectionTests: XCTestCase {
             client.connection.once(.connected) { stateChange in
                 let channel = client.channels.get(channelName)
                 channel.on(.attached) { _ in
-                    expectedChannelSerial = channel.internal.serial
+                    expectedChannelSerial = channel.internal.channelSerial
                     partialDone()
                 }
                 channel.attach()
@@ -3556,7 +3556,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         
         XCTAssertTrue(recoveredClient.channels.exists(channelName))
         let recoveredChannel = recoveredClient.channels.get(channelName)
-        expect(recoveredChannel.internal.serial).to(equal(expectedChannelSerial))
+        expect(recoveredChannel.internal.channelSerial).to(equal(expectedChannelSerial))
     }
   
     // RTN16k

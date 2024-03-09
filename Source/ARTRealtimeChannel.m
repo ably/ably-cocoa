@@ -560,7 +560,7 @@ dispatch_sync(_queue, ^{
             self.attachResume = true;
             break;
         case ARTRealtimeChannelSuspended: {
-            self.serial = nil; // RTP5a1
+            self.channelSerial = nil; // RTP5a1
             ARTRetryAttempt *const retryAttempt = [self.attachRetryState addRetryAttempt];
 
             [_attachedEventEmitter emit:nil with:params.errorInfo];
@@ -577,11 +577,11 @@ dispatch_sync(_queue, ^{
             self.attachResume = false;
             break;
         case ARTRealtimeChannelDetached:
-            self.serial = nil; // RTP5a1
+            self.channelSerial = nil; // RTP5a1
             [self.presence failsSync:params.errorInfo];
             break;
         case ARTRealtimeChannelFailed:
-            self.serial = nil; // RTP5a1
+            self.channelSerial = nil; // RTP5a1
             self.attachResume = false;
             [_attachedEventEmitter emit:nil with:params.errorInfo];
             [_detachedEventEmitter emit:nil with:params.errorInfo];
@@ -671,7 +671,7 @@ dispatch_sync(_queue, ^{
     self.attachSerial = message.channelSerial;
     // RTL15b
     if (message.channelSerial) {
-        self.serial = message.channelSerial;
+        self.channelSerial = message.channelSerial;
     }
 
     if (state == ARTRealtimeChannelAttached) {
@@ -813,7 +813,7 @@ dispatch_sync(_queue, ^{
     
     // RTL15b
     if (pm.channelSerial) {
-        self.serial = pm.channelSerial;
+        self.channelSerial = pm.channelSerial;
     }
 }
 
@@ -821,7 +821,7 @@ dispatch_sync(_queue, ^{
     ARTLogDebug(self.logger, @"RT:%p C:%p (%@) handle PRESENCE message", _realtime, self, self.name);
     // RTL15b
     if (message.channelSerial) {
-        self.serial = message.channelSerial;
+        self.channelSerial = message.channelSerial;
     }
     [self.presence onMessage:message];
 }
@@ -914,7 +914,7 @@ dispatch_sync(_queue, ^{
     ARTProtocolMessage *attachMessage = [[ARTProtocolMessage alloc] init];
     attachMessage.action = ARTProtocolMessageAttach;
     attachMessage.channel = self.name;
-    attachMessage.channelSerial = self.serial; // RTL4c1
+    attachMessage.channelSerial = self.channelSerial; // RTL4c1
     attachMessage.params = self.options_nosync.params;
     attachMessage.flags = self.options_nosync.modes;
 
