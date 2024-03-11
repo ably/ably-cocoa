@@ -662,6 +662,21 @@ dispatch_sync(_queue, ^{
     [_eventEmitter emit:[ARTEvent newWithPresenceAction:pm.action] with:pm];
 }
 
+/*
+ * Checks that a channelSerial is the final serial in a sequence of sync messages,
+ * by checking that there is nothing after the colon - RTP18b, RTP18c
+ */
+- (bool)isLastChannelSerial:(NSString *)channelSerial {
+    if ([channelSerial isEqualToString:@""]) {
+        return true;
+    }
+    NSArray *a = [channelSerial componentsSeparatedByString:@":"];
+    if (a.count > 1 && ![[a objectAtIndex:1] isEqualToString:@""]) {
+        return false;
+    }
+    return true;
+}
+
 - (void)onAttached:(ARTProtocolMessage *)message {
     [self startSync];
     if (!message.hasPresence) {
@@ -716,7 +731,7 @@ dispatch_sync(_queue, ^{
 
     [self onMessage:message];
 
-    if ([_channel isLastChannelSerial:message.channelSerial]) {
+    if ([self isLastChannelSerial:message.channelSerial]) {
         [self endSync];
         ARTLogDebug(self.logger, @"RT:%p C:%p (%@) PresenceMap sync ended", _realtime, _channel, _channel.name);
     }

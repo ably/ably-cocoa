@@ -47,8 +47,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithRealtime:(ARTRealtimeInternal *)realtime andName:(NSString *)name withOptions:(ARTRealtimeChannelOptions *)options logger:(ARTInternalLog *)logger;
 
-- (bool)isLastChannelSerial:(NSString *)channelSerial;
-
 - (void)reattachWithParams:(ARTAttachRequestParams *)params;
 
 - (void)_attach:(nullable ARTCallback)callback;

@@ -608,18 +608,6 @@ dispatch_sync(_queue, ^{
     }];
 }
 
-/**
- Checks that a channelSerial is the final serial in a sequence of sync messages,
- by checking that there is nothing after the colon
- */
-- (bool)isLastChannelSerial:(NSString *)channelSerial {
-    NSArray * a = [channelSerial componentsSeparatedByString:@":"];
-    if([a count] >1 && ![[a objectAtIndex:1] isEqualToString:@""] ) {
-        return false;
-    }
-    return true;
-}
-
 - (void)onChannelMessage:(ARTProtocolMessage *)message {
     ARTLogDebug(self.logger, @"R:%p C:%p (%@) received channel message %tu - %@", _realtime, self, self.name, message.action, ARTProtocolMessageActionToStr(message.action));
     switch (message.action) {
