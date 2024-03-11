@@ -768,7 +768,6 @@ dispatch_sync(_queue, ^{
         }];
         ARTLogDebug(self.logger, @"RT:%p C:%p (%@) re-entering local member \"%@\"", _realtime, _channel, _channel.name, member.memberKey);
     }
-    [self cleanUpAbsentMembers];
 }
 
 #pragma mark - Presence Map
