@@ -696,6 +696,10 @@ dispatch_sync(_queue, ^{
             presence.id = [NSString stringWithFormat:@"%@:%d", message.id, i];
         }
 
+        if (!presence.connectionId) {
+            presence.connectionId = message.connectionId;
+        }
+        
         if ([self add:presence]) {
             [self broadcast:presence];
         }

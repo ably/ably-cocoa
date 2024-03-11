@@ -803,6 +803,9 @@ dispatch_sync(_queue, ^{
         if (!msg.id) {
             msg.id = [NSString stringWithFormat:@"%@:%d", pm.id, i];
         }
+        if (!msg.connectionId) {
+            msg.connectionId = pm.connectionId;
+        }
 
         _lastPayloadMessageId = msg.id;
 
