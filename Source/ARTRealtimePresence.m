@@ -175,8 +175,6 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
     ARTEventEmitter<ARTEvent *, ARTPresenceMessage *> *_eventEmitter;
     ARTDataEncoder *_dataEncoder;
     
-    int64_t _syncMsgSerial;
-    NSString *_syncChannelSerial;
     NSUInteger _syncSessionId;
     ARTPresenceSyncState _syncState;
     ARTEventEmitter<ARTEvent * /*ARTSyncState*/, id> *_syncEventEmitter;
@@ -709,9 +707,6 @@ dispatch_sync(_queue, ^{
 }
 
 - (void)onSync:(ARTProtocolMessage *)message {
-    _syncMsgSerial = [message.msgSerial longLongValue];
-    _syncChannelSerial = message.channelSerial;
-
     if (!self.syncInProgress) {
         [self startSync];
     }
@@ -723,7 +718,6 @@ dispatch_sync(_queue, ^{
 
     if ([_channel isLastChannelSerial:message.channelSerial]) {
         [self endSync];
-        _syncChannelSerial = nil;
         ARTLogDebug(self.logger, @"RT:%p C:%p (%@) PresenceMap sync ended", _realtime, _channel, _channel.name);
     }
 }
