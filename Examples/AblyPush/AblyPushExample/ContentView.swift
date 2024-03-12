@@ -24,7 +24,7 @@ struct ContentView: View {
                                        
                 PushButton(
                     isButtonEnabled: true, // Button to toggle push activation is always enabled
-                    systemImage: ablyHelper.isPushActivated ? "bell" : "bell.slash",
+                    systemImage: ablyHelper.isPushActivated ? "bell.slash" : "bell",
                     activeTitle: "Deactivate Push",
                     inactiveTitle: "Activate Push",
                     isActive: $ablyHelper.isPushActivated,
@@ -111,8 +111,8 @@ struct ContentView: View {
                     PushButton(
                         isButtonEnabled: ablyHelper.isPushActivated,
                         systemImage: ablyHelper.isSubscribedToExampleChannel1
-                        ? "checkmark.circle.fill"
-                        : "xmark.circle.fill",
+                        ? "xmark.circle.fill"
+                        : "checkmark.circle.fill",
                         activeTitle: "Unsubscribe from exampleChannel1",
                         inactiveTitle: "Subscribe to exampleChannel1",
                         isActive: $ablyHelper.isSubscribedToExampleChannel1,
@@ -127,8 +127,8 @@ struct ContentView: View {
                     PushButton(
                         isButtonEnabled: ablyHelper.isPushActivated,
                         systemImage: ablyHelper.isSubscribedToExampleChannel2
-                        ? "checkmark.circle.fill"
-                        : "xmark.circle.fill",
+                        ? "xmark.circle.fill"
+                        : "checkmark.circle.fill",
                         activeTitle: "Unsubscribe from exampleChannel2",
                         inactiveTitle: "Subscribe to exampleChannel2",
                         isActive: $ablyHelper.isSubscribedToExampleChannel2,
