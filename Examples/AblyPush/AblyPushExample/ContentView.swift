@@ -27,7 +27,7 @@ struct ContentView: View {
                     systemImage: ablyHelper.isPushActivated ? "bell.slash" : "bell",
                     activeTitle: "Deactivate Push",
                     inactiveTitle: "Activate Push",
-                    isActive: $ablyHelper.isPushActivated,
+                    isActive: ablyHelper.isPushActivated,
                     action: {
                         if ablyHelper.isPushActivated {
                             ablyHelper.deactivatePush()
@@ -115,7 +115,7 @@ struct ContentView: View {
                         : "checkmark.circle.fill",
                         activeTitle: "Unsubscribe from exampleChannel1",
                         inactiveTitle: "Subscribe to exampleChannel1",
-                        isActive: $ablyHelper.isSubscribedToExampleChannel1,
+                        isActive: ablyHelper.isSubscribedToExampleChannel1,
                         action: {
                             if ablyHelper.isSubscribedToExampleChannel1 {
                                 ablyHelper.unsubscribeFromChannel(.exampleChannel1)
@@ -131,7 +131,7 @@ struct ContentView: View {
                         : "checkmark.circle.fill",
                         activeTitle: "Unsubscribe from exampleChannel2",
                         inactiveTitle: "Subscribe to exampleChannel2",
-                        isActive: $ablyHelper.isSubscribedToExampleChannel2,
+                        isActive: ablyHelper.isSubscribedToExampleChannel2,
                         action: {
                             if ablyHelper.isSubscribedToExampleChannel2 {
                                 ablyHelper.unsubscribeFromChannel(.exampleChannel2)

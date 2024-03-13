@@ -6,7 +6,7 @@ struct PushButton: View {
     let inactiveTitle: String
     let action: () -> Void
     let isButtonEnabled: Bool // is the button enabled
-    @Binding var isActive: Bool // is the action in it's on or off state
+    let isActive: Bool // is the action in it's on or off state
     
     let activeColor = Color(red: 1.00, green: 0.33, blue: 0.09)
     let inActiveColor = Color(red: 0.00, green: 0.56, blue: 0.02)
@@ -16,14 +16,14 @@ struct PushButton: View {
         systemImage: String,
         activeTitle: String,
         inactiveTitle: String,
-        isActive: Binding<Bool>,
+        isActive: Bool,
         action: @escaping () -> Void
     ) {
         self.isButtonEnabled = isButtonEnabled
         self.systemImage = systemImage
         self.activeTitle = activeTitle
         self.inactiveTitle = inactiveTitle
-        self._isActive = isActive
+        self.isActive = isActive
         self.action = action
     }
 
