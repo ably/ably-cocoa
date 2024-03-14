@@ -451,7 +451,7 @@ dispatch_sync(_queue, ^{
 }
 
 - (BOOL)syncComplete_nosync {
-    return !(_syncState == ARTPresenceSyncInitialized || _syncState == ARTPresenceSyncStarted);
+    return _syncState == ARTPresenceSyncEnded || _syncState == ARTPresenceSyncFailed;
 }
 
 - (ARTEventListener *)subscribe:(ARTPresenceMessageCallback)callback {
