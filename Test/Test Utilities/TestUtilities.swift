@@ -1605,7 +1605,7 @@ extension String {
 }
 
 extension ARTRealtime {
-
+    
     var transportFactory: TestProxyTransportFactory? {
         self.internal.options.testOptions.transportFactory as? TestProxyTransportFactory
     }
@@ -1664,7 +1664,7 @@ extension ARTRealtime {
             reachability.simulate(true)
         }
     }
-
+    
     func simulateRestoreInternetConnection(after seconds: TimeInterval? = nil) {
         guard let transportFactory = self.transportFactory else {
             fatalError("Expected test TestProxyTransportFactory")
@@ -1701,7 +1701,17 @@ extension ARTRealtime {
         }
         self.connection.off()
     }
-
+    
+    func requestPresenceSyncForChannel(_ channel: ARTRealtimeChannel) {
+        let syncMessage = ARTProtocolMessage()
+        syncMessage.action = .sync
+        syncMessage.channel = channel.name
+        guard let transport = self.internal.transport as? TestProxyTransport else {
+            fail("TestProxyTransport is not set"); return
+        }
+        channel.internal.presence.startSync()
+        transport.send(syncMessage)
+    }
 }
 
 extension ARTWebSocketTransport {

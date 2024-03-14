@@ -125,10 +125,10 @@ class RealtimeClientPresenceTests: XCTestCase {
         XCTAssertEqual(attached.flags & 0x1, 0)
         XCTAssertFalse(attached.hasPresence)
         XCTAssertFalse(channel.presence.syncComplete)
-        XCTAssertFalse(channel.internal.presenceMap.syncComplete)
+        XCTAssertFalse(channel.internal.presence.syncComplete)
     }
 
-    func skipped__test__010__Presence__ProtocolMessage_bit_flag__when_members_are_present() throws {
+    func test__FLAKY__010__Presence__ProtocolMessage_bit_flag__when_members_are_present() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
 
@@ -188,8 +188,8 @@ class RealtimeClientPresenceTests: XCTestCase {
             fail("TestProxyTransport is not set"); return
         }
 
-        XCTAssertFalse(channel.internal.presenceMap.syncInProgress)
-        expect(channel.internal.presenceMap.members).to(beEmpty())
+        XCTAssertFalse(channel.internal.presence.syncInProgress)
+        expect(channel.internal.presence.members).to(beEmpty())
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.subscribe(.present) { msg in
@@ -266,8 +266,8 @@ class RealtimeClientPresenceTests: XCTestCase {
             fail("TestProxyTransport is not set"); return
         }
 
-        XCTAssertFalse(channel.internal.presenceMap.syncInProgress)
-        expect(channel.internal.presenceMap.members).to(beEmpty())
+        XCTAssertFalse(channel.internal.presence.syncInProgress)
+        expect(channel.internal.presence.members).to(beEmpty())
 
         waitUntil(timeout: testTimeout) { done in
             var aClientHasLeft = false
@@ -307,7 +307,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     // RTP19
 
-    func skipped__test__013__Presence__PresenceMap_has_existing_members_when_a_SYNC_is_started__should_ensure_that_members_no_longer_present_on_the_channel_are_removed_from_the_local_PresenceMap_once_the_sync_is_complete() throws {
+    func test__FLAKY__013__Presence__PresenceMap_has_existing_members_when_a_SYNC_is_started__should_ensure_that_members_no_longer_present_on_the_channel_are_removed_from_the_local_PresenceMap_once_the_sync_is_complete() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let channelName = test.uniqueChannelName()
@@ -330,12 +330,12 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
         }
 
-        XCTAssertEqual(channel.internal.presenceMap.members.count, 2)
+        XCTAssertEqual(channel.internal.presence.members.count, 2)
         // Inject a local member
-        let localMember = ARTPresenceMessage(clientId: NSUUID().uuidString, action: .enter, connectionId: "another", id: "another:0:0")
-        channel.internal.presenceMap.add(localMember)
-        XCTAssertEqual(channel.internal.presenceMap.members.count, 3)
-        XCTAssertEqual(channel.internal.presenceMap.members.filter { memberKey, _ in memberKey.contains(localMember.clientId!) }.count, 1)
+        let internalMember = ARTPresenceMessage(clientId: NSUUID().uuidString, action: .enter, connectionId: "another", id: "another:0:0")
+        channel.internal.presence.add(internalMember)
+        XCTAssertEqual(channel.internal.presence.members.count, 3)
+        XCTAssertEqual(channel.internal.presence.members.filter { memberKey, _ in memberKey.contains(internalMember.clientId!) }.count, 1)
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.get { members, error in
@@ -343,25 +343,17 @@ class RealtimeClientPresenceTests: XCTestCase {
                 guard let members = members, members.count == 3 else {
                     fail("Should at least have 3 members"); done(); return
                 }
-                XCTAssertEqual(members.filter { $0.clientId == localMember.clientId }.count, 1)
+                XCTAssertEqual(members.filter { $0.clientId == internalMember.clientId }.count, 1)
                 done()
             }
         }
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.subscribe(.leave) { leave in
-                XCTAssertEqual(leave.clientId, localMember.clientId)
+                XCTAssertEqual(leave.clientId, internalMember.clientId)
                 done()
             }
-
-            // Request a sync
-            let syncMessage = ARTProtocolMessage()
-            syncMessage.action = .sync
-            syncMessage.channel = channel.name
-            guard let transport = client.internal.transport as? TestProxyTransport else {
-                fail("TestProxyTransport is not set"); done(); return
-            }
-            transport.send(syncMessage)
+            client.requestPresenceSyncForChannel(channel)
         }
 
         waitUntil(timeout: testTimeout) { done in
@@ -370,7 +362,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 guard let members = members, members.count == 2 else {
                     fail("Should at least have 2 members"); done(); return
                 }
-                expect(members.filter { $0.clientId == localMember.clientId }).to(beEmpty())
+                expect(members.filter { $0.clientId == internalMember.clientId }).to(beEmpty())
                 done()
             }
         }
@@ -387,8 +379,8 @@ class RealtimeClientPresenceTests: XCTestCase {
         let channel = client.channels.get(channelName)
 
         // Inject local members
-        channel.internal.presenceMap.add(ARTPresenceMessage(clientId: "tester1", action: .enter, connectionId: "another", id: "another:0:0"))
-        channel.internal.presenceMap.add(ARTPresenceMessage(clientId: "tester2", action: .enter, connectionId: "another", id: "another:0:1"))
+        channel.internal.presence.add(ARTPresenceMessage(clientId: "tester1", action: .enter, connectionId: "another", id: "another:0:0"))
+        channel.internal.presence.add(ARTPresenceMessage(clientId: "tester2", action: .enter, connectionId: "another", id: "another:0:1"))
 
         guard let transport = client.internal.transport as? TestProxyTransport else {
             fail("TestProxyTransport is not set"); return
@@ -429,7 +421,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     }
 
     // RTP4
-    func skipped__test__002__Presence__should_receive_all_250_members() throws {
+    func test__FLAKY__002__Presence__should_receive_all_250_members() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         var clientSource: ARTRealtime!
@@ -531,9 +523,9 @@ class RealtimeClientPresenceTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
 
         let listener = channel.presence.subscribe { _ in }!
-        XCTAssertEqual(channel.internal.presenceEventEmitter.anyListeners.count, 1)
+        XCTAssertEqual(channel.internal.presence.eventEmitter.anyListeners.count, 1)
         channel.presence.unsubscribe(listener)
-        XCTAssertEqual(channel.internal.presenceEventEmitter.anyListeners.count, 0)
+        XCTAssertEqual(channel.internal.presence.eventEmitter.anyListeners.count, 0)
     }
 
     // RTP5
@@ -560,7 +552,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         }
     }
 
-    func skipped__test__019__Presence__Channel_state_change_side_effects__if_the_channel_enters_the_FAILED_state__should_clear_the_PresenceMap_including_local_members_and_does_not_emit_any_presence_events() throws {
+    func test__FLAKY__019__Presence__Channel_state_change_side_effects__if_the_channel_enters_the_FAILED_state__should_clear_the_PresenceMap_including_local_members_and_does_not_emit_any_presence_events() throws {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
@@ -578,8 +570,8 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
         }
 
-        XCTAssertEqual(channel.internal.presenceMap.members.count, 1)
-        XCTAssertEqual(channel.internal.presenceMap.localMembers.count, 1)
+        XCTAssertEqual(channel.internal.presence.members.count, 1)
+        XCTAssertEqual(channel.internal.presence.internalMembers.count, 1)
 
         channel.subscribe { _ in
             fail("Shouldn't receive any presence event")
@@ -588,8 +580,8 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.once(.failed) { _ in
-                expect(channel.internal.presenceMap.members).to(beEmpty())
-                expect(channel.internal.presenceMap.localMembers).to(beEmpty())
+                expect(channel.internal.presence.members).to(beEmpty())
+                expect(channel.internal.presence.internalMembers).to(beEmpty())
                 done()
             }
             AblyTests.queue.async {
@@ -608,13 +600,16 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.once(.attaching) { _ in
-                channel.detach()
+                AblyTests.queue.async {
+                    channel.internal.detachChannel(ChannelStateChangeParams(state: .error, errorInfo: ARTErrorInfo.create(withCode: 0, message: "Fail test")))
+                }
             }
             channel.presence.enterClient("user", data: nil) { error in
                 XCTAssertNotNil(error)
-                XCTAssertEqual(client.internal.queuedMessages.count, 0)
+                XCTAssertEqual(channel.internal.presence.pendingPresence.count, 0)
                 done()
             }
+            XCTAssertEqual(channel.internal.presence.pendingPresence.count, 1)
         }
     }
 
@@ -636,8 +631,8 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
         }
 
-        XCTAssertEqual(channel.internal.presenceMap.members.count, 1)
-        XCTAssertEqual(channel.internal.presenceMap.localMembers.count, 1)
+        XCTAssertEqual(channel.internal.presence.members.count, 1)
+        XCTAssertEqual(channel.internal.presence.internalMembers.count, 1)
 
         channel.subscribe { _ in
             fail("Shouldn't receive any presence event")
@@ -646,8 +641,8 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.once(.detached) { _ in
-                expect(channel.internal.presenceMap.members).to(beEmpty())
-                expect(channel.internal.presenceMap.localMembers).to(beEmpty())
+                expect(channel.internal.presence.members).to(beEmpty())
+                expect(channel.internal.presence.internalMembers).to(beEmpty())
                 done()
             }
             channel.detach()
@@ -686,9 +681,9 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
             channel2.presence.subscribe(.enter) { _ in
                 if channel2.presence.syncComplete {
-                    XCTAssertEqual(channel2.internal.presenceMap.members.count, 2)
+                    XCTAssertEqual(channel2.internal.presence.members.count, 2)
                 } else {
-                    XCTAssertEqual(channel2.internal.presenceMap.members.count, 1)
+                    XCTAssertEqual(channel2.internal.presence.members.count, 1)
                 }
                 channel2.presence.unsubscribe()
                 partialDone()
@@ -696,7 +691,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
             XCTAssertEqual(client2.internal.queuedMessages.count, 1)
             XCTAssertFalse(channel2.presence.syncComplete)
-            XCTAssertEqual(channel2.internal.presenceMap.members.count, 0)
+            XCTAssertEqual(channel2.internal.presence.members.count, 0)
         }
 
         guard let transport = client2.internal.transport as? TestProxyTransport else {
@@ -706,7 +701,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         XCTAssertEqual(transport.protocolMessagesReceived.filter { $0.action == .sync }.count, 1)
 
         expect(channel2.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
-        XCTAssertEqual(channel2.internal.presenceMap.members.count, 2)
+        XCTAssertEqual(channel2.internal.presence.members.count, 2)
     }
 
     // RTP5f
@@ -749,7 +744,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let channelName = test.uniqueChannelName()
-
+        
         let clientMembers = AblyTests.addMembersSequentiallyToChannel(channelName, members: 2, options: options)
         defer { clientMembers.dispose(); clientMembers.close() }
         
@@ -770,7 +765,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         // Move to SUSPENDED
         let ttlHookToken = mainClient.overrideConnectionStateTTL(1.0)
         defer { ttlHookToken.remove() }
-
+        
         let leavesChannel = leavesClient.channels.get(channelName)
         let mainChannel = mainClient.channels.get(channelName)
         
@@ -812,9 +807,9 @@ class RealtimeClientPresenceTests: XCTestCase {
                 done()
             }
         }
-
+        
         var presenceEvents = [ARTPresenceMessage]()
-
+        
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(4, done: done)
             mainChannel.presence.subscribe { presence in
@@ -826,8 +821,8 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
             mainChannel.once(.suspended) { _ in
                 mainChannel.internalSync { _internal in
-                    XCTAssertEqual(_internal.presenceMap.members.count, 4) // "main", "user1", "user2", "leaves"
-                    XCTAssertEqual(_internal.presenceMap.localMembers.count, 1) // "main"
+                    XCTAssertEqual(_internal.presence.members.count, 4) // "main", "user1", "user2", "leaves"
+                    XCTAssertEqual(_internal.presence.internalMembers.count, 1) // "main"
                 }
                 leavesChannel.presence.leave(nil) { error in
                     XCTAssertNil(error)
@@ -867,10 +862,10 @@ class RealtimeClientPresenceTests: XCTestCase {
                 done()
             }
         }
-
+        
         mainChannel.internalSync { _internal in
-            XCTAssertEqual(_internal.presenceMap.members.count, 3) // "main", "user1", "user2"
-            XCTAssertEqual(_internal.presenceMap.localMembers.count, 1) // "main"
+            XCTAssertEqual(_internal.presence.members.count, 3) // "main", "user1", "user2"
+            XCTAssertEqual(_internal.presence.internalMembers.count, 1) // "main"
         }
     }
 
@@ -915,9 +910,9 @@ class RealtimeClientPresenceTests: XCTestCase {
         let channel = client.channels.get(test.uniqueChannelName())
 
         let listener = channel.presence.subscribe(.present) { _ in }!
-        XCTAssertEqual(channel.internal.presenceEventEmitter.listeners.count, 1)
+        XCTAssertEqual(channel.internal.presence.eventEmitter.listeners.count, 1)
         channel.presence.unsubscribe(.present, listener: listener)
-        XCTAssertEqual(channel.internal.presenceEventEmitter.listeners.count, 0)
+        XCTAssertEqual(channel.internal.presence.eventEmitter.listeners.count, 0)
     }
 
     // RTP6
@@ -1032,7 +1027,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     // FIXME: Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
     // RTP8b
-    func skipped__test__030__Presence__enter__optionally_a_callback_can_be_provided_that_is_called_for_success() throws {
+    func test__FLAKY__030__Presence__enter__optionally_a_callback_can_be_provided_that_is_called_for_success() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = "john"
@@ -1304,7 +1299,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(test.uniqueChannelName())
 
-        XCTAssertEqual(channel.internal.presenceMap.members.count, 0)
+        XCTAssertEqual(channel.internal.presence.members.count, 0)
         waitUntil(timeout: testTimeout) { done in
             channel.presence.subscribe(.enter) { member in
                 XCTAssertEqual(member.clientId, "john")
@@ -1407,7 +1402,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             channel.presence.enter("online")
         }
 
-        expect(channel.internal.presenceMap.members).toEventually(haveCount(1), timeout: testTimeout)
+        expect(channel.internal.presence.members).toEventually(haveCount(1), timeout: testTimeout)
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.subscribe(.leave) { member in
@@ -1417,7 +1412,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             channel.presence.leave("offline")
         }
 
-        expect(channel.internal.presenceMap.members).toEventually(haveCount(0), timeout: testTimeout)
+        expect(channel.internal.presence.members).toEventually(haveCount(0), timeout: testTimeout)
     }
 
     // RTP10a
@@ -1447,7 +1442,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     }
 
     // RTP2
-    func skipped__test__003__Presence__should_be_used_a_PresenceMap_to_maintain_a_list_of_members() throws {
+    func test__FLAKY__003__Presence__should_be_used_a_PresenceMap_to_maintain_a_list_of_members() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         var clientSecondary: ARTRealtime!
@@ -1506,7 +1501,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
         }
 
-        guard let intialPresenceMessage = channel.internal.presenceMap.members["\(channel.internal.connectionId):tester"] else {
+        guard let intialPresenceMessage = channel.internal.presence.members["\(channel.internal.connectionId):tester"] else {
             fail("Missing Presence message"); return
         }
 
@@ -1524,7 +1519,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
         }
 
-        guard let updatedPresenceMessage = channel.internal.presenceMap.members["\(channel.internal.connectionId):tester"] else {
+        guard let updatedPresenceMessage = channel.internal.presence.members["\(channel.internal.connectionId):tester"] else {
             fail("Missing Presence message"); return
         }
 
@@ -1738,10 +1733,10 @@ class RealtimeClientPresenceTests: XCTestCase {
                 }
                 return protocolMessage
             }
-            channel.internal.presenceMap.testSuite_injectIntoMethod(after: #selector(ARTPresenceMap.endSync)) {
-                XCTAssertFalse(channel.internal.presenceMap.syncInProgress)
-                XCTAssertEqual(channel.internal.presenceMap.members.count, 120)
-                XCTAssertEqual(channel.internal.presenceMap.members.filter { _, presence in presence.clientId == "user110" && presence.action == .present }.count, 1)
+            channel.internal.presence.testSuite_injectIntoMethod(after: #selector(ARTRealtimePresenceInternal.endSync)) {
+                XCTAssertFalse(channel.internal.presence.syncInProgress)
+                XCTAssertEqual(channel.internal.presence.members.count, 120)
+                XCTAssertEqual(channel.internal.presence.members.filter { _, presence in presence.clientId == "user110" && presence.action == .present }.count, 1)
                 partialDone()
             }
             channel.attach { error in
@@ -1791,10 +1786,10 @@ class RealtimeClientPresenceTests: XCTestCase {
                 }
                 return protocolMessage
             }
-            channel.internal.presenceMap.testSuite_injectIntoMethod(after: #selector(ARTPresenceMap.endSync)) {
-                XCTAssertFalse(channel.internal.presenceMap.syncInProgress)
-                XCTAssertEqual(channel.internal.presenceMap.members.count, 119)
-                expect(channel.internal.presenceMap.members.filter { _, presence in presence.clientId == "user110" }).to(beEmpty())
+            channel.internal.presence.testSuite_injectIntoMethod(after: #selector(ARTRealtimePresenceInternal.endSync)) {
+                XCTAssertFalse(channel.internal.presence.syncInProgress)
+                XCTAssertEqual(channel.internal.presence.members.count, 119)
+                expect(channel.internal.presence.members.filter { _, presence in presence.clientId == "user110" }).to(beEmpty())
                 partialDone()
             }
             channel.attach { error in
@@ -1824,13 +1819,13 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
         }
 
-        XCTAssertEqual(channel.internal.presenceMap.members.filter { _, presence in presence.action == .present }.count, 1)
-        expect(channel.internal.presenceMap.members.filter { _, presence in presence.action == .enter }).to(beEmpty())
+        XCTAssertEqual(channel.internal.presence.members.filter { _, presence in presence.action == .present }.count, 1)
+        expect(channel.internal.presence.members.filter { _, presence in presence.action == .enter }).to(beEmpty())
     }
 
     // FIXME: Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
     // RTP2d
-    func skipped__test__047__Presence__PresenceMap__if_action_of_UPDATE_arrives__it_should_be_added_to_the_presence_map_with_the_action_set_to_PRESENT() throws {
+    func test__FLAKY__047__Presence__PresenceMap__if_action_of_UPDATE_arrives__it_should_be_added_to_the_presence_map_with_the_action_set_to_PRESENT() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRealtime(options: options)
@@ -1853,9 +1848,9 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
         }
 
-        XCTAssertEqual(channel.internal.presenceMap.members.count, 1)
-        XCTAssertEqual(channel.internal.presenceMap.members.filter { _, presence in presence.action == .present }.count, 1)
-        expect(channel.internal.presenceMap.members.filter { _, presence in presence.action == .update }).to(beEmpty())
+        XCTAssertEqual(channel.internal.presence.members.count, 1)
+        XCTAssertEqual(channel.internal.presence.members.filter { _, presence in presence.action == .present }.count, 1)
+        expect(channel.internal.presence.members.filter { _, presence in presence.action == .update }).to(beEmpty())
     }
 
     // RTP2d
@@ -1873,8 +1868,8 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
-            channel.internal.presenceMap.testSuite_injectIntoMethod(after: #selector(ARTPresenceMap.endSync)) {
-                XCTAssertFalse(channel.internal.presenceMap.syncInProgress)
+            channel.internal.presence.testSuite_injectIntoMethod(after: #selector(ARTRealtimePresenceInternal.endSync)) {
+                XCTAssertFalse(channel.internal.presence.syncInProgress)
                 partialDone()
             }
             channel.attach { error in
@@ -1883,11 +1878,11 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
         }
 
-        XCTAssertEqual(channel.internal.presenceMap.members.count, 1)
+        XCTAssertEqual(channel.internal.presence.members.count, 1)
     }
 
     // RTP2e
-    func skipped__test__049__Presence__PresenceMap__if_a_SYNC_is_not_in_progress__then_when_a_presence_message_with_an_action_of_LEAVE_arrives__that_memberKey_should_be_deleted_from_the_presence_map__if_present() throws {
+    func test__FLAKY__049__Presence__PresenceMap__if_a_SYNC_is_not_in_progress__then_when_a_presence_message_with_an_action_of_LEAVE_arrives__that_memberKey_should_be_deleted_from_the_presence_map__if_present() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
 
@@ -1912,9 +1907,9 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
         }
 
-        expect(channel.internal.presenceMap.syncInProgress).toEventually(beFalse(), timeout: testTimeout)
+        expect(channel.internal.presence.syncInProgress).toEventually(beFalse(), timeout: testTimeout)
 
-        guard let user11MemberKey = channel.internal.presenceMap.members["\(clientMembers?.connection.id ?? ""):user11"]?.memberKey() else {
+        guard let user11MemberKey = channel.internal.presence.members["\(clientMembers?.connection.id ?? ""):user11"]?.memberKey() else {
             fail("user11 memberKey is not present"); return
         }
 
@@ -1928,12 +1923,12 @@ class RealtimeClientPresenceTests: XCTestCase {
         channel.presence.unsubscribe()
 
         channel.internalSync { _internal in
-            expect(_internal.presenceMap.members.filter { _, presence in presence.memberKey() == user11MemberKey }).to(beEmpty())
+            expect(_internal.presence.members.filter { _, presence in presence.memberKey() == user11MemberKey }).to(beEmpty())
         }
     }
 
     // RTP2f
-    func skipped__test__050__Presence__PresenceMap__if_a_SYNC_is_in_progress__then_when_a_presence_message_with_an_action_of_LEAVE_arrives__it_should_be_stored_in_the_presence_map_with_the_action_set_to_ABSENT() throws {
+    func test__FLAKY__050__Presence__PresenceMap__if_a_SYNC_is_in_progress__then_when_a_presence_message_with_an_action_of_LEAVE_arrives__it_should_be_stored_in_the_presence_map_with_the_action_set_to_ABSENT() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let channelName = test.uniqueChannelName()
@@ -1959,8 +1954,8 @@ class RealtimeClientPresenceTests: XCTestCase {
                 partialDone()
             }
 
-            hook = channel.internal.presenceMap.testSuite_getArgument(
-                from: #selector(ARTPresenceMap.internalAdd(_:withSessionId:)),
+            hook = channel.internal.presence.testSuite_getArgument(
+                from: #selector(ARTRealtimePresenceInternal.internalAdd(_:withSessionId:)),
                 at: 0
             ) { arg in
                 let m = arg as? ARTPresenceMessage
@@ -1971,7 +1966,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
             channel.attach { error in
                 XCTAssertNil(error)
-                XCTAssertTrue(channel.internal.presenceMap.syncInProgress)
+                XCTAssertTrue(channel.internal.presence.syncInProgress)
 
                 // Inject a fabricated Presence message
                 let leaveMessage = ARTProtocolMessage()
@@ -1987,16 +1982,16 @@ class RealtimeClientPresenceTests: XCTestCase {
         hook?.remove()
         channel.presence.unsubscribe()
 
-        expect(channel.internal.presenceMap.syncInProgress).toEventually(beFalse(), timeout: testTimeout)
-        expect(channel.internal.presenceMap.members.filter { _, presence in presence.action == .leave }).to(beEmpty())
-        expect(channel.internal.presenceMap.members.filter { _, presence in presence.action == .absent }).to(beEmpty())
+        expect(channel.internal.presence.syncInProgress).toEventually(beFalse(), timeout: testTimeout)
+        expect(channel.internal.presence.members.filter { _, presence in presence.action == .leave }).to(beEmpty())
+        expect(channel.internal.presence.members.filter { _, presence in presence.action == .absent }).to(beEmpty())
 
         // A single clientId may be present multiple times on the same channel via different client connections and that's way user11 is present because user11 presences messages were in distinct connections.
-        XCTAssertEqual(channel.internal.presenceMap.members.count, 20)
+        XCTAssertEqual(channel.internal.presence.members.count, 20)
     }
 
     // RTP2g
-    func skipped__test__051__Presence__PresenceMap__any_incoming_presence_message_that_passes_the_newness_check_should_be_emitted_on_the_Presence_object__with_an_event_name_set_to_its_original_action() throws {
+    func test__FLAKY__051__Presence__PresenceMap__any_incoming_presence_message_that_passes_the_newness_check_should_be_emitted_on_the_Presence_object__with_an_event_name_set_to_its_original_action() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRealtime(options: options)
@@ -2016,8 +2011,8 @@ class RealtimeClientPresenceTests: XCTestCase {
         }
 
         channel.internalSync { _internal in
-            XCTAssertEqual(_internal.presenceMap.members.filter { _, presence in presence.action == .present }.count, 1)
-            expect(_internal.presenceMap.members.filter { _, presence in presence.action == .enter }).to(beEmpty())
+            XCTAssertEqual(_internal.presence.members.filter { _, presence in presence.action == .present }.count, 1)
+            expect(_internal.presence.members.filter { _, presence in presence.action == .enter }).to(beEmpty())
         }
     }
 
@@ -2626,8 +2621,8 @@ class RealtimeClientPresenceTests: XCTestCase {
                 }
                 XCTAssertEqual(presence.action, ARTPresenceAction.enter)
                 XCTAssertEqual(presence.connectionId, currentConnectionId)
-                XCTAssertEqual(channelA.internal.presenceMap.members.count, 1)
-                XCTAssertEqual(channelA.internal.presenceMap.localMembers.count, 1)
+                XCTAssertEqual(channelA.internal.presence.members.count, 1)
+                XCTAssertEqual(channelA.internal.presence.internalMembers.count, 1)
                 channelA.presence.unsubscribe()
                 partialDone()
             }
@@ -2637,8 +2632,8 @@ class RealtimeClientPresenceTests: XCTestCase {
                 }
                 expect(presence.action).to(equal(ARTPresenceAction.enter) || equal(ARTPresenceAction.present))
                 XCTAssertNotEqual(presence.connectionId, currentConnectionId)
-                XCTAssertEqual(channelB.internal.presenceMap.members.count, 1)
-                XCTAssertEqual(channelB.internal.presenceMap.localMembers.count, 0)
+                XCTAssertEqual(channelB.internal.presence.members.count, 1)
+                XCTAssertEqual(channelB.internal.presence.internalMembers.count, 0)
                 channelB.presence.unsubscribe()
                 partialDone()
             }
@@ -2653,8 +2648,8 @@ class RealtimeClientPresenceTests: XCTestCase {
                 }
                 XCTAssertEqual(presence.action, ARTPresenceAction.enter)
                 XCTAssertNotEqual(presence.connectionId, currentConnectionId)
-                XCTAssertEqual(channelA.internal.presenceMap.members.count, 2)
-                XCTAssertEqual(channelA.internal.presenceMap.localMembers.count, 1)
+                XCTAssertEqual(channelA.internal.presence.members.count, 2)
+                XCTAssertEqual(channelA.internal.presence.internalMembers.count, 1)
                 channelA.presence.unsubscribe()
                 partialDone()
             }
@@ -2664,8 +2659,8 @@ class RealtimeClientPresenceTests: XCTestCase {
                 }
                 XCTAssertEqual(presence.action, ARTPresenceAction.enter)
                 XCTAssertEqual(presence.connectionId, currentConnectionId)
-                XCTAssertEqual(channelB.internal.presenceMap.members.count, 2)
-                XCTAssertEqual(channelB.internal.presenceMap.localMembers.count, 1)
+                XCTAssertEqual(channelB.internal.presence.members.count, 2)
+                XCTAssertEqual(channelB.internal.presence.internalMembers.count, 1)
                 channelB.presence.unsubscribe()
                 partialDone()
             }
@@ -2682,8 +2677,8 @@ class RealtimeClientPresenceTests: XCTestCase {
                 XCTAssertEqual(presence.action, ARTPresenceAction.update)
                 XCTAssertEqual(presence.data as? String, "hello")
                 XCTAssertNotEqual(presence.connectionId, currentConnectionId)
-                XCTAssertEqual(channelA.internal.presenceMap.members.count, 2)
-                XCTAssertEqual(channelA.internal.presenceMap.localMembers.count, 1)
+                XCTAssertEqual(channelA.internal.presence.members.count, 2)
+                XCTAssertEqual(channelA.internal.presence.internalMembers.count, 1)
                 channelA.presence.unsubscribe()
                 partialDone()
             }
@@ -2694,8 +2689,8 @@ class RealtimeClientPresenceTests: XCTestCase {
                 XCTAssertEqual(presence.action, ARTPresenceAction.update)
                 XCTAssertEqual(presence.data as? String, "hello")
                 XCTAssertEqual(presence.connectionId, currentConnectionId)
-                XCTAssertEqual(channelB.internal.presenceMap.members.count, 2)
-                XCTAssertEqual(channelB.internal.presenceMap.localMembers.count, 1)
+                XCTAssertEqual(channelB.internal.presence.members.count, 2)
+                XCTAssertEqual(channelB.internal.presence.internalMembers.count, 1)
                 channelB.presence.unsubscribe()
                 partialDone()
             }
@@ -2712,8 +2707,8 @@ class RealtimeClientPresenceTests: XCTestCase {
                 XCTAssertEqual(presence.action, ARTPresenceAction.leave)
                 XCTAssertEqual(presence.data as? String, "bye")
                 XCTAssertNotEqual(presence.connectionId, currentConnectionId)
-                XCTAssertEqual(channelA.internal.presenceMap.members.count, 1)
-                XCTAssertEqual(channelA.internal.presenceMap.localMembers.count, 1)
+                XCTAssertEqual(channelA.internal.presence.members.count, 1)
+                XCTAssertEqual(channelA.internal.presence.internalMembers.count, 1)
                 channelA.presence.unsubscribe()
                 partialDone()
             }
@@ -2724,8 +2719,8 @@ class RealtimeClientPresenceTests: XCTestCase {
                 XCTAssertEqual(presence.action, ARTPresenceAction.leave)
                 XCTAssertEqual(presence.data as? String, "bye")
                 XCTAssertEqual(presence.connectionId, currentConnectionId)
-                XCTAssertEqual(channelB.internal.presenceMap.members.count, 1)
-                XCTAssertEqual(channelB.internal.presenceMap.localMembers.count, 0)
+                XCTAssertEqual(channelB.internal.presence.members.count, 1)
+                XCTAssertEqual(channelB.internal.presence.internalMembers.count, 0)
                 channelB.presence.unsubscribe()
                 partialDone()
             }
@@ -2734,7 +2729,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     }
 
     // RTP17a
-    func skipped__test__081__Presence__private_and_internal_PresenceMap_containing_only_members_that_match_the_current_connectionId__all_members_belonging_to_the_current_connection_are_published_as_a_PresenceMessage_on_the_Channel_by_the_server_irrespective_of_whether_the_client_has_permission_to_subscribe_or_the_Channel_is_configured_to_publish_presence_events() throws {
+    func test__FLAKY__081__Presence__private_and_internal_PresenceMap_containing_only_members_that_match_the_current_connectionId__all_members_belonging_to_the_current_connection_are_published_as_a_PresenceMessage_on_the_Channel_by_the_server_irrespective_of_whether_the_client_has_permission_to_subscribe_or_the_Channel_is_configured_to_publish_presence_events() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let channelName = test.uniqueChannelName()
@@ -2764,8 +2759,8 @@ class RealtimeClientPresenceTests: XCTestCase {
                 } else {
                     XCTFail("Expected members to be non-nil")
                 }
-                XCTAssertEqual(channel.internal.presenceMap.members.count, 1)
-                XCTAssertEqual(channel.internal.presenceMap.localMembers.count, 1)
+                XCTAssertEqual(channel.internal.presence.members.count, 1)
+                XCTAssertEqual(channel.internal.presence.internalMembers.count, 1)
                 done()
             }
         }
@@ -2776,7 +2771,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     func skipped__test__082__Presence__private_and_internal_PresenceMap_containing_only_members_that_match_the_current_connectionId__events_applied_to_presence_map__should_be_applied_to_ENTER__PRESENT_or_UPDATE_events_with_a_connectionId_that_matches_the_current_client_s_connectionId() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let client = ARTRealtime(options: options)
+        let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
 
         let channel = client.channels.get(test.uniqueChannelName())
@@ -2798,7 +2793,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         }
 
         channel.internalSync { _internal in
-            XCTAssertEqual(_internal.presenceMap.localMembers.count, 1)
+            XCTAssertEqual(_internal.presence.internalMembers.count, 1)
         }
 
         let additionalMember = ARTPresenceMessage(
@@ -2810,15 +2805,15 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         // Inject an additional member into the myMember set, then force a suspended state
         client.simulateSuspended(beforeSuspension: { done in
-            channel.internal.presenceMap.localMembers[additionalMember.clientId!] = additionalMember
+            channel.internal.presence.internalMembers[additionalMember.clientId!] = additionalMember
             done()
         })
         expect(client.connection.state).toEventually(equal(.suspended), timeout: testTimeout)
 
-        XCTAssertEqual(channel.internal.presenceMap.localMembers.count, 2)
+        XCTAssertEqual(channel.internal.presence.internalMembers.count, 2)
 
         channel.internalSync { _internal in
-            XCTAssertEqual(_internal.presenceMap.localMembers.count, 2)
+            XCTAssertEqual(_internal.presence.internalMembers.count, 2)
         }
 
         waitUntil(timeout: testTimeout) { done in
@@ -2830,10 +2825,10 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
 
             // Await Sync
-            channel.internal.presenceMap.onceSyncEnds { _ in
+            channel.internal.presence.onceSyncEnds { _ in
                 // Should remove the "two" member that was added manually because the connectionId
                 // doesn't match and it's not synthesized, it will be re-entered.
-                XCTAssertEqual(channel.internal.presenceMap.localMembers.count, 1)
+                XCTAssertEqual(channel.internal.presence.internalMembers.count, 1)
 
                 partialDone()
             }
@@ -2853,9 +2848,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             delay(1, closure: done)
         }
 
-        channel.internalAsync { _internal in
-            _internal.sync()
-        }
+        client.requestPresenceSyncForChannel(channel)
 
         XCTAssertFalse(channel.presence.syncComplete)
         waitUntil(timeout: testTimeout) { done in
@@ -2909,7 +2902,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         }
         channel.presence.unsubscribe()
         
-        expect(channel.internal.presenceMap.localMembers).to(haveCount(2))
+        expect(channel.internal.presence.internalMembers).to(haveCount(2))
         
         // All pending messages should complete (receive ACK or NACK) before disconnect for valid count of transport.protocolMessagesSent
         client.waitForPendingMessages()
@@ -2920,7 +2913,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         // RTP17i
         
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
-        expect(channel.internal.presenceMap.localMembers).to(haveCount(2))
+        expect(channel.internal.presence.internalMembers).to(haveCount(2))
         
         let newTransport = client.internal.transport as! TestProxyTransport
         expect(newTransport).toNot(beIdenticalTo(transport))
@@ -2977,9 +2970,9 @@ class RealtimeClientPresenceTests: XCTestCase {
         }
 
         waitUntil(timeout: .seconds(20)) { done in
-            channel.internal.presenceMap.onceSyncEnds { _ in
+            channel.internal.presence.onceSyncEnds { _ in
                 // Synthesized leave
-                expect(channel.internal.presenceMap.localMembers).to(beEmpty())
+                expect(channel.internal.presence.internalMembers).to(beEmpty())
                 done()
             }
             client.internal.onDisconnected()
@@ -3000,7 +2993,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 guard let presences = presences else {
                     fail("Presences is nil"); done(); return
                 }
-                XCTAssertTrue(channel.internal.presenceMap.syncComplete)
+                XCTAssertTrue(channel.internal.presence.syncComplete)
                 XCTAssertEqual(presences.count, 1)
                 expect(presences.map { $0.clientId }).to(contain(["one"]))
                 done()
@@ -3374,7 +3367,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     // FIXME: Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
     // RTP11a
-    func skipped__test__100__Presence__get__should_return_a_list_of_current_members_on_the_channel() throws {
+    func test__FLAKY__100__Presence__get__should_return_a_list_of_current_members_on_the_channel() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
 
@@ -3585,7 +3578,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         for i in 0 ..< 3 {
             let msg = ARTPresenceMessage(clientId: "client\(i)", action: .present, connectionId: "foo", id: "foo:0:0")
             msgs[msg.clientId!] = msg
-            channel.internal.presenceMap.internalAdd(msg)
+            channel.internal.presence.internalAdd(msg)
         }
 
         channel.presence.get(getParams) { result, err in
@@ -3995,7 +3988,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(test.uniqueChannelName())
-        XCTAssertEqual(channel.internal.presenceMap.members.count, 0)
+        XCTAssertEqual(channel.internal.presence.members.count, 0)
 
         let expectedData = ["test": 1]
 
@@ -4020,7 +4013,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         channel.presence.enterClient("john", data: nil)
         channel.presence.enterClient("sara", data: nil)
-        expect(channel.internal.presenceMap.members).toEventually(haveCount(3), timeout: testTimeout)
+        expect(channel.internal.presence.members).toEventually(haveCount(3), timeout: testTimeout)
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.get { members, _ in

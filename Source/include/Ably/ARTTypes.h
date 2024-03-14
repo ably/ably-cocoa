@@ -483,6 +483,9 @@ typedef void (^ARTConnectionStateCallback)(ARTConnectionStateChange *stateChange
 typedef void (^ARTPresenceMessageCallback)(ARTPresenceMessage *message);
 
 /// :nodoc:
+typedef void (^ARTPresenceMessageErrorCallback)(ARTPresenceMessage *message, ARTErrorInfo *_Nullable error);
+
+/// :nodoc:
 typedef void (^ARTPresenceMessagesCallback)(NSArray<ARTPresenceMessage *> *_Nullable result, ARTErrorInfo *_Nullable error);
 
 /// :nodoc:
