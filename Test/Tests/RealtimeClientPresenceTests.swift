@@ -333,7 +333,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         XCTAssertEqual(channel.internal.presence.members.count, 2)
         // Inject a local member
         let internalMember = ARTPresenceMessage(clientId: NSUUID().uuidString, action: .enter, connectionId: "another", id: "another:0:0")
-        channel.internal.presence.add(internalMember)
+        channel.internal.presence.processMember(internalMember)
         XCTAssertEqual(channel.internal.presence.members.count, 3)
         XCTAssertEqual(channel.internal.presence.members.filter { memberKey, _ in memberKey.contains(internalMember.clientId!) }.count, 1)
 
@@ -379,8 +379,8 @@ class RealtimeClientPresenceTests: XCTestCase {
         let channel = client.channels.get(channelName)
 
         // Inject local members
-        channel.internal.presence.add(ARTPresenceMessage(clientId: "tester1", action: .enter, connectionId: "another", id: "another:0:0"))
-        channel.internal.presence.add(ARTPresenceMessage(clientId: "tester2", action: .enter, connectionId: "another", id: "another:0:1"))
+        channel.internal.presence.processMember(ARTPresenceMessage(clientId: "tester1", action: .enter, connectionId: "another", id: "another:0:0"))
+        channel.internal.presence.processMember(ARTPresenceMessage(clientId: "tester2", action: .enter, connectionId: "another", id: "another:0:1"))
 
         guard let transport = client.internal.transport as? TestProxyTransport else {
             fail("TestProxyTransport is not set"); return
@@ -1955,7 +1955,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
 
             hook = channel.internal.presence.testSuite_getArgument(
-                from: #selector(ARTRealtimePresenceInternal.internalAdd(_:withSessionId:)),
+                from: #selector(ARTRealtimePresenceInternal.addMember(_:withSessionId:)),
                 at: 0
             ) { arg in
                 let m = arg as? ARTPresenceMessage
@@ -3578,7 +3578,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         for i in 0 ..< 3 {
             let msg = ARTPresenceMessage(clientId: "client\(i)", action: .present, connectionId: "foo", id: "foo:0:0")
             msgs[msg.clientId!] = msg
-            channel.internal.presence.internalAdd(msg)
+            channel.internal.presence.addMember(msg)
         }
 
         channel.presence.get(getParams) { result, err in

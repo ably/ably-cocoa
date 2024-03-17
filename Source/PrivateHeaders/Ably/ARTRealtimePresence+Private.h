@@ -50,7 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 - (instancetype)initWithQueue:(_Nonnull dispatch_queue_t)queue logger:(ARTInternalLog *)logger;
 
-- (BOOL)add:(ARTPresenceMessage *)message;
+- (void)processMember:(ARTPresenceMessage *)message;
 - (void)reset;
 
 - (void)startSync;
@@ -60,8 +60,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)onceSyncEnds:(void (^)(NSArray<ARTPresenceMessage *> *))callback;
 - (void)onceSyncFails:(ARTCallback)callback;
 
-- (void)internalAdd:(ARTPresenceMessage *)message;
-- (void)internalAdd:(ARTPresenceMessage *)message withSessionId:(NSUInteger)sessionId;
+- (void)addMember:(ARTPresenceMessage *)message;
+- (void)addMember:(ARTPresenceMessage *)message withSessionId:(NSUInteger)sessionId;
+- (void)removeMember:(ARTPresenceMessage *)message;
 
 - (void)cleanUpAbsentMembers;
 

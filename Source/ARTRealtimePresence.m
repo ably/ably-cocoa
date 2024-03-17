@@ -691,31 +691,29 @@ dispatch_sync(_queue, ^{
 - (void)onMessage:(ARTProtocolMessage *)message {
     int i = 0;
     for (ARTPresenceMessage *p in message.presence) {
-        ARTPresenceMessage *presence = p;
-        if (presence.data && _dataEncoder) {
+        ARTPresenceMessage *member = p;
+        if (member.data && _dataEncoder) {
             NSError *decodeError = nil;
-            presence = [p decodeWithEncoder:_dataEncoder error:&decodeError];
+            member = [p decodeWithEncoder:_dataEncoder error:&decodeError];
             if (decodeError != nil) {
                 ARTErrorInfo *errorInfo = [ARTErrorInfo wrap:[ARTErrorInfo createWithCode:ARTErrorUnableToDecodeMessage message:decodeError.localizedFailureReason] prepend:@"Failed to decode data: "];
                 ARTLogError(self.logger, @"RT:%p C:%p (%@) %@", _realtime, _channel, _channel.name, errorInfo.message);
             }
         }
 
-        if (!presence.timestamp) {
-            presence.timestamp = message.timestamp;
+        if (!member.timestamp) {
+            member.timestamp = message.timestamp;
         }
 
-        if (!presence.id) {
-            presence.id = [NSString stringWithFormat:@"%@:%d", message.id, i];
+        if (!member.id) {
+            member.id = [NSString stringWithFormat:@"%@:%d", message.id, i];
         }
 
-        if (!presence.connectionId) {
-            presence.connectionId = message.connectionId;
+        if (!member.connectionId) {
+            member.connectionId = message.connectionId;
         }
         
-        if ([self add:presence]) {
-            [self broadcast:presence];
-        }
+        [self processMember:member];
 
         ++i;
     }
@@ -780,50 +778,57 @@ dispatch_sync(_queue, ^{
     return _internalMembers;
 }
 
-- (BOOL)add:(ARTPresenceMessage *)message {
-    ARTPresenceMessage *latest = [_members objectForKey:message.memberKey];
-    if ([message isNewerThan:latest]) {
+- (void)processMember:(ARTPresenceMessage *)message {
+    BOOL memberUpdated = false;
+    ARTPresenceMessage *existing = [_members objectForKey:message.clientId];
+    if ([message isNewerThan:existing]) {
         ARTPresenceMessage *messageCopy = [message copy];
         switch (message.action) {
             case ARTPresenceEnter:
             case ARTPresenceUpdate:
-                messageCopy.action = ARTPresencePresent;
-                // intentional fallthrough
             case ARTPresencePresent:
-                [self internalAdd:messageCopy];
+                [self addMember:messageCopy];
+                memberUpdated = true;
                 break;
             case ARTPresenceLeave:
-                [self internalRemove:messageCopy];
+                if (existing) {
+                    [self removeMember:messageCopy];
+                    memberUpdated = true;
+                }
                 break;
             default:
                 break;
         }
-        return YES;
     }
-    ARTLogDebug(_logger, @"Presence member \"%@\" with action %@ has been ignored", message.memberKey, ARTPresenceActionToStr(message.action));
-    latest.syncSessionId = _syncSessionId;
-    return NO;
+    if (memberUpdated) {
+        [self broadcast:message];
+    }
+    else {
+        existing.syncSessionId = _syncSessionId;
+        ARTLogDebug(_logger, @"Presence member \"%@\" with action %@ has been ignored", message.memberKey, ARTPresenceActionToStr(message.action));
+    }
 }
 
-- (void)internalAdd:(ARTPresenceMessage *)message {
-    [self internalAdd:message withSessionId:_syncSessionId];
+- (void)addMember:(ARTPresenceMessage *)message {
+    [self addMember:message withSessionId:_syncSessionId];
 }
 
-- (void)internalAdd:(ARTPresenceMessage *)message withSessionId:(NSUInteger)sessionId {
+- (void)addMember:(ARTPresenceMessage *)message withSessionId:(NSUInteger)sessionId {
+    message.action = ARTPresencePresent;
     message.syncSessionId = sessionId;
-    [_members setObject:message forKey:message.memberKey];
-    // Local member
+    _members[message.memberKey] = message;
+    // Internal member
     if ([message.connectionId isEqualToString:self.connectionId]) {
         _internalMembers[message.clientId] = message;
         ARTLogDebug(_logger, @"local member %@ with action %@ has been added", message.memberKey, ARTPresenceActionToStr(message.action).uppercaseString);
     }
 }
 
-- (void)internalRemove:(ARTPresenceMessage *)message {
-    [self internalRemove:message force:false];
+- (void)removeMember:(ARTPresenceMessage *)message {
+    [self removeMember:message force:false];
 }
 
-- (void)internalRemove:(ARTPresenceMessage *)message force:(BOOL)force {
+- (void)removeMember:(ARTPresenceMessage *)message force:(BOOL)force {
     if ([message.connectionId isEqualToString:self.connectionId] && !message.isSynthesized) {
         [_internalMembers removeObjectForKey:message.clientId];
     }
@@ -833,7 +838,7 @@ dispatch_sync(_queue, ^{
         ARTLogDebug(_logger, @"%p \"%@\" should be removed after sync ends (syncInProgress=%d)", self, message.clientId, syncInProgress);
         message.action = ARTPresenceAbsent;
         // Should be removed after Sync ends
-        [self internalAdd:message withSessionId:message.syncSessionId];
+        [self addMember:message withSessionId:message.syncSessionId];
     }
     else {
         [_members removeObjectForKey:message.memberKey];
@@ -846,7 +851,7 @@ dispatch_sync(_queue, ^{
         return message.action == ARTPresenceAbsent;
     }];
     for (NSString *key in filteredMembers) {
-        [self internalRemove:[_members objectForKey:key] force:true];
+        [self removeMember:[_members objectForKey:key] force:true];
     }
 }
 
@@ -856,7 +861,7 @@ dispatch_sync(_queue, ^{
         if (member.syncSessionId != _syncSessionId) {
             // Handle members that have not been added or updated in the PresenceMap during the sync process
             ARTPresenceMessage *leave = [member copy];
-            [self internalRemove:member force:true];
+            [self removeMember:member force:true];
             [self didRemovedMemberNoLongerPresent:leave];
         }
     }

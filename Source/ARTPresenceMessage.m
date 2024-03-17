@@ -73,25 +73,25 @@ NSString *const ARTAblyMessageInvalidPresenceId = @"Received presence message id
     return index;
 }
 
-- (BOOL)isNewerThan:(ARTPresenceMessage *)latest {
-    if (latest == nil) {
+- (BOOL)isNewerThan:(ARTPresenceMessage *)existing {
+    if (existing == nil) {
         return YES;
     }
 
-    if ([self isSynthesized] || [latest isSynthesized]) {
-        return !self.timestamp || [latest.timestamp timeIntervalSince1970] <= [self.timestamp timeIntervalSince1970];
+    if ([self isSynthesized] || [existing isSynthesized]) {
+        return !self.timestamp || [existing.timestamp timeIntervalSince1970] <= [self.timestamp timeIntervalSince1970];
     }
 
-    NSInteger currentMsgSerial = [self msgSerialFromId];
-    NSInteger currentIndex = [self indexFromId];
-    NSInteger latestMsgSerial = [latest msgSerialFromId];
-    NSInteger latestIndex = [latest indexFromId];
+    NSInteger msgSerial = [self msgSerialFromId];
+    NSInteger index = [self indexFromId];
+    NSInteger existingMsgSerial = [existing msgSerialFromId];
+    NSInteger existingIndex = [existing indexFromId];
 
-    if (currentMsgSerial == latestMsgSerial) {
-        return currentIndex > latestIndex;
+    if (msgSerial == existingMsgSerial) {
+        return index > existingIndex;
     }
     else {
-        return currentMsgSerial > latestMsgSerial;
+        return msgSerial > existingMsgSerial;
     }
 }
 
