@@ -175,7 +175,6 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
     ARTEventEmitter<ARTEvent *, ARTPresenceMessage *> *_eventEmitter;
     ARTDataEncoder *_dataEncoder;
     
-    NSUInteger _syncSessionId;
     ARTPresenceSyncState _syncState;
     ARTEventEmitter<ARTEvent * /*ARTSyncState*/, id> *_syncEventEmitter;
     
@@ -196,7 +195,6 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
         _dataEncoder = _channel.dataEncoder;
         _members = [NSMutableDictionary new];
         _internalMembers = [NSMutableDictionary new];
-        _syncSessionId = 0;
         _syncState = ARTPresenceSyncInitialized;
         _syncEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
     }
@@ -804,13 +802,12 @@ dispatch_sync(_queue, ^{
         [self broadcast:message];
     }
     else {
-        existing.syncSessionId = _syncSessionId;
         ARTLogDebug(_logger, @"Presence member \"%@\" with action %@ has been ignored", message.memberKey, ARTPresenceActionToStr(message.action));
     }
 }
 
 - (void)addMember:(ARTPresenceMessage *)message {
-    [self addMember:message withSessionId:_syncSessionId];
+    [self addMember:message withSessionId:1];
 }
 
 - (void)addMember:(ARTPresenceMessage *)message withSessionId:(NSUInteger)sessionId {
@@ -836,9 +833,9 @@ dispatch_sync(_queue, ^{
     const BOOL syncInProgress = self.syncInProgress;
     if (!force && syncInProgress) {
         ARTLogDebug(_logger, @"%p \"%@\" should be removed after sync ends (syncInProgress=%d)", self, message.clientId, syncInProgress);
-        message.action = ARTPresenceAbsent;
         // Should be removed after Sync ends
-        [self addMember:message withSessionId:message.syncSessionId];
+        [self addMember:message withSessionId:0];
+        message.action = ARTPresenceAbsent;
     }
     else {
         [_members removeObjectForKey:message.memberKey];
@@ -846,7 +843,7 @@ dispatch_sync(_queue, ^{
 }
 
 - (void)cleanUpAbsentMembers {
-    ARTLogDebug(_logger, @"%p cleaning up absent members (syncSessionId=%lu)", self, (unsigned long)_syncSessionId);
+    ARTLogDebug(_logger, @"%p cleaning up absent members...", self);
     NSSet<NSString *> *filteredMembers = [_members keysOfEntriesPassingTest:^BOOL(NSString *key, ARTPresenceMessage *message, BOOL *stop) {
         return message.action == ARTPresenceAbsent;
     }];
@@ -855,10 +852,16 @@ dispatch_sync(_queue, ^{
     }
 }
 
-- (void)leaveMembersNotPresentInSync {
-    ARTLogDebug(_logger, @"%p leaving members not present in sync (syncSessionId=%lu)", self, (unsigned long)_syncSessionId);
+- (void)prepareMembersForSync {
     for (ARTPresenceMessage *member in [_members allValues]) {
-        if (member.syncSessionId != _syncSessionId) {
+        member.syncSessionId = 0;
+    }
+}
+
+- (void)leaveMembersNotPresentInSync {
+    ARTLogDebug(_logger, @"%p leaving members not present in sync...", self);
+    for (ARTPresenceMessage *member in [_members allValues]) {
+        if (member.syncSessionId == 0) {
             // Handle members that have not been added or updated in the PresenceMap during the sync process
             ARTPresenceMessage *leave = [member copy];
             [self removeMember:member force:true];
@@ -874,7 +877,7 @@ dispatch_sync(_queue, ^{
 
 - (void)startSync {
     ARTLogDebug(_logger, @"%p PresenceMap sync started", self);
-    _syncSessionId++;
+    [self prepareMembersForSync];
     _syncState = ARTPresenceSyncStarted;
     [_syncEventEmitter emit:[ARTEvent newWithPresenceSyncState:_syncState] with:nil];
 }
