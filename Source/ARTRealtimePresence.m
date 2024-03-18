@@ -778,7 +778,7 @@ dispatch_sync(_queue, ^{
 
 - (void)processMember:(ARTPresenceMessage *)message {
     BOOL memberUpdated = false;
-    ARTPresenceMessage *existing = [_members objectForKey:message.clientId];
+    ARTPresenceMessage *existing = [_members objectForKey:message.memberKey];
     if ([message isNewerThan:existing]) {
         ARTPresenceMessage *messageCopy = [message copy];
         switch (message.action) {
