@@ -59,8 +59,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)onceSyncEnds:(void (^)(NSArray<ARTPresenceMessage *> *))callback;
 - (void)onceSyncFails:(ARTCallback)callback;
 
-- (BOOL)addMember:(ARTPresenceMessage *)message withSessionId:(NSUInteger)sessionId;
-- (BOOL)addInternalMember:(ARTPresenceMessage *)message withSessionId:(NSUInteger)sessionId;
+- (BOOL)addMember:(ARTPresenceMessage *)message;
+- (BOOL)addInternalMember:(ARTPresenceMessage *)message;
 
 - (BOOL)removeMember:(ARTPresenceMessage *)message;
 - (BOOL)removeInternalMember:(ARTPresenceMessage *)message;

@@ -10,7 +10,6 @@ NSString *const ARTAblyMessageInvalidPresenceId = @"Received presence message id
     if (self) {
         // Default
         _action = ARTPresenceEnter;
-        _syncSessionId = 0;
     }
     return self;
 }
@@ -18,7 +17,6 @@ NSString *const ARTAblyMessageInvalidPresenceId = @"Received presence message id
 - (id)copyWithZone:(NSZone *)zone {
     ARTPresenceMessage *message = [super copyWithZone:zone];
     message->_action = self.action;
-    message->_syncSessionId = self.syncSessionId;
     return message;
 }
 
@@ -27,7 +25,6 @@ NSString *const ARTAblyMessageInvalidPresenceId = @"Received presence message id
     [description deleteCharactersInRange:NSMakeRange(description.length - (description.length>2 ? 2:0), 2)];
     [description appendFormat:@",\n"];
     [description appendFormat:@" action: %lu,\n", (unsigned long)self.action];
-    [description appendFormat:@" syncSessionId: %lu\n", (unsigned long)self.syncSessionId];
     [description appendFormat:@"}"];
     return description;
 }

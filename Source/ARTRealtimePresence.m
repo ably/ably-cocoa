@@ -180,6 +180,8 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
     
     NSMutableDictionary<NSString *, ARTPresenceMessage *> *_members;
     NSMutableDictionary<NSString *, ARTPresenceMessage *> *_internalMembers; // RTP17h
+    
+    NSMutableDictionary<NSString *, ARTPresenceMessage *> *_beforeSyncMembers; // RTP19
 }
 
 - (instancetype)initWithChannel:(ARTRealtimeChannelInternal *)channel logger:(ARTInternalLog *)logger {
@@ -785,7 +787,7 @@ dispatch_sync(_queue, ^{
             case ARTPresenceUpdate:
             case ARTPresencePresent:
                 messageCopy.action = ARTPresencePresent;
-                [self addInternalMember:messageCopy withSessionId:1];
+                [self addInternalMember:messageCopy];
                 break;
             case ARTPresenceLeave:
                 if (!message.isSynthesized) {
@@ -803,7 +805,7 @@ dispatch_sync(_queue, ^{
         case ARTPresenceUpdate:
         case ARTPresencePresent:
             messageCopy.action = ARTPresencePresent;
-            memberUpdated = [self addMember:messageCopy withSessionId:1];
+            memberUpdated = [self addMember:messageCopy];
             break;
         case ARTPresenceLeave:
             messageCopy.action = ARTPresenceAbsent; // RTP2f
@@ -814,6 +816,7 @@ dispatch_sync(_queue, ^{
     }
 
     if (memberUpdated) {
+        [_beforeSyncMembers removeObjectForKey:message.memberKey]; // RTP19
         [self broadcast:message];
     }
     else {
@@ -821,22 +824,20 @@ dispatch_sync(_queue, ^{
     }
 }
 
-- (BOOL)addMember:(ARTPresenceMessage *)message withSessionId:(NSUInteger)sessionId {
+- (BOOL)addMember:(ARTPresenceMessage *)message {
     ARTPresenceMessage *existing = [_members objectForKey:message.memberKey];
     if (existing && [existing isNewerThan:message]) {
         return false;
     }
-    message.syncSessionId = sessionId;
     _members[message.memberKey] = message;
     return true;
 }
 
-- (BOOL)addInternalMember:(ARTPresenceMessage *)message withSessionId:(NSUInteger)sessionId {
+- (BOOL)addInternalMember:(ARTPresenceMessage *)message {
     ARTPresenceMessage *existing = [_internalMembers objectForKey:message.clientId];
     if (existing && [existing isNewerThan:message]) {
         return false;
     }
-    message.syncSessionId = sessionId;
     _internalMembers[message.clientId] = message;
     ARTLogDebug(_logger, @"local member %@ with action %@ has been added", message.clientId, ARTPresenceActionToStr(message.action).uppercaseString);
     return true;
@@ -870,21 +871,13 @@ dispatch_sync(_queue, ^{
     }
 }
 
-- (void)prepareMembersForSync {
-    for (ARTPresenceMessage *member in [_members allValues]) {
-        member.syncSessionId = 0;
-    }
-}
-
 - (void)leaveMembersNotPresentInSync {
     ARTLogDebug(_logger, @"%p leaving members not present in sync...", self);
-    for (ARTPresenceMessage *member in [_members allValues]) {
-        if (member.syncSessionId == 0) {
-            // Handle members that have not been added or updated in the PresenceMap during the sync process
-            ARTPresenceMessage *leave = [member copy];
-            [self removeMember:member];
-            [self didRemovedMemberNoLongerPresent:leave];
-        }
+    for (ARTPresenceMessage *member in [_beforeSyncMembers allValues]) {
+        // Handle members that have not been added or updated in the PresenceMap during the sync process
+        ARTPresenceMessage *leave = [member copy];
+        [self removeMember:member];
+        [self didRemovedMemberNoLongerPresent:leave];
     }
 }
 
@@ -895,7 +888,7 @@ dispatch_sync(_queue, ^{
 
 - (void)startSync {
     ARTLogDebug(_logger, @"%p PresenceMap sync started", self);
-    [self prepareMembersForSync];
+    _beforeSyncMembers = [_members mutableCopy];
     _syncState = ARTPresenceSyncStarted;
     [_syncEventEmitter emit:[ARTEvent newWithPresenceSyncState:_syncState] with:nil];
 }
