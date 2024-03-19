@@ -53,7 +53,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)isEqualToPresenceMessage:(nonnull ARTPresenceMessage *)presence;
 
 /// :nodoc:
-- (BOOL)isNewerThan:(nullable ARTPresenceMessage *)latest __attribute__((warn_unused_result));
+- (BOOL)isNewerThan:(ARTPresenceMessage *)latest __attribute__((warn_unused_result));
 
 @end
 

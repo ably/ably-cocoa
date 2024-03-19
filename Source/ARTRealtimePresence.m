@@ -777,27 +777,42 @@ dispatch_sync(_queue, ^{
 }
 
 - (void)processMember:(ARTPresenceMessage *)message {
-    BOOL memberUpdated = false;
-    ARTPresenceMessage *existing = [_members objectForKey:message.memberKey];
-    if ([message isNewerThan:existing]) {
-        ARTPresenceMessage *messageCopy = [message copy];
+    ARTPresenceMessage *messageCopy = [message copy];
+    // Internal member
+    if ([message.connectionId isEqualToString:self.connectionId]) {
         switch (message.action) {
             case ARTPresenceEnter:
             case ARTPresenceUpdate:
             case ARTPresencePresent:
-                [self addMember:messageCopy];
-                memberUpdated = true;
+                messageCopy.action = ARTPresencePresent;
+                [self addInternalMember:messageCopy withSessionId:1];
                 break;
             case ARTPresenceLeave:
-                if (existing) {
-                    [self removeMember:messageCopy];
-                    memberUpdated = true;
+                if (!message.isSynthesized) {
+                    [self removeInternalMember:messageCopy];
                 }
                 break;
             default:
                 break;
         }
     }
+    
+    BOOL memberUpdated = false;
+    switch (message.action) {
+        case ARTPresenceEnter:
+        case ARTPresenceUpdate:
+        case ARTPresencePresent:
+            messageCopy.action = ARTPresencePresent;
+            memberUpdated = [self addMember:messageCopy withSessionId:1];
+            break;
+        case ARTPresenceLeave:
+            messageCopy.action = ARTPresenceAbsent; // RTP2f
+            memberUpdated = [self removeMember:messageCopy];
+            break;
+        default:
+            break;
+    }
+
     if (memberUpdated) {
         [self broadcast:message];
     }
@@ -806,49 +821,52 @@ dispatch_sync(_queue, ^{
     }
 }
 
-- (void)addMember:(ARTPresenceMessage *)message {
-    [self addMember:message withSessionId:1];
-}
-
-- (void)addMember:(ARTPresenceMessage *)message withSessionId:(NSUInteger)sessionId {
-    message.action = ARTPresencePresent;
+- (BOOL)addMember:(ARTPresenceMessage *)message withSessionId:(NSUInteger)sessionId {
+    ARTPresenceMessage *existing = [_members objectForKey:message.memberKey];
+    if (existing && [existing isNewerThan:message]) {
+        return false;
+    }
     message.syncSessionId = sessionId;
     _members[message.memberKey] = message;
-    // Internal member
-    if ([message.connectionId isEqualToString:self.connectionId]) {
-        _internalMembers[message.clientId] = message;
-        ARTLogDebug(_logger, @"local member %@ with action %@ has been added", message.memberKey, ARTPresenceActionToStr(message.action).uppercaseString);
-    }
+    return true;
 }
 
-- (void)removeMember:(ARTPresenceMessage *)message {
-    [self removeMember:message force:false];
+- (BOOL)addInternalMember:(ARTPresenceMessage *)message withSessionId:(NSUInteger)sessionId {
+    ARTPresenceMessage *existing = [_internalMembers objectForKey:message.clientId];
+    if (existing && [existing isNewerThan:message]) {
+        return false;
+    }
+    message.syncSessionId = sessionId;
+    _internalMembers[message.clientId] = message;
+    ARTLogDebug(_logger, @"local member %@ with action %@ has been added", message.clientId, ARTPresenceActionToStr(message.action).uppercaseString);
+    return true;
 }
 
-- (void)removeMember:(ARTPresenceMessage *)message force:(BOOL)force {
-    if ([message.connectionId isEqualToString:self.connectionId] && !message.isSynthesized) {
-        [_internalMembers removeObjectForKey:message.clientId];
+- (BOOL)removeMember:(ARTPresenceMessage *)message {
+    ARTPresenceMessage *existing = [_members objectForKey:message.memberKey];
+    if (existing && [existing isNewerThan:message]) {
+        return false;
     }
+    [_members removeObjectForKey:message.memberKey];
+    return true;
+}
 
-    const BOOL syncInProgress = self.syncInProgress;
-    if (!force && syncInProgress) {
-        ARTLogDebug(_logger, @"%p \"%@\" should be removed after sync ends (syncInProgress=%d)", self, message.clientId, syncInProgress);
-        // Should be removed after Sync ends
-        [self addMember:message withSessionId:0];
-        message.action = ARTPresenceAbsent;
+- (BOOL)removeInternalMember:(ARTPresenceMessage *)message {
+    ARTPresenceMessage *existing = [_internalMembers objectForKey:message.clientId];
+    if (existing && [existing isNewerThan:message]) {
+        return false;
     }
-    else {
-        [_members removeObjectForKey:message.memberKey];
-    }
+    [_internalMembers removeObjectForKey:message.clientId];
+    return true;
 }
 
 - (void)cleanUpAbsentMembers {
     ARTLogDebug(_logger, @"%p cleaning up absent members...", self);
-    NSSet<NSString *> *filteredMembers = [_members keysOfEntriesPassingTest:^BOOL(NSString *key, ARTPresenceMessage *message, BOOL *stop) {
+    NSSet<NSString *> *absentMembers = [_members keysOfEntriesPassingTest:^BOOL(NSString *key, ARTPresenceMessage *message, BOOL *stop) {
         return message.action == ARTPresenceAbsent;
     }];
-    for (NSString *key in filteredMembers) {
-        [self removeMember:[_members objectForKey:key] force:true];
+    for (NSString *key in absentMembers) {
+        [self removeMember:[_members objectForKey:key]];
     }
 }
 
@@ -864,7 +882,7 @@ dispatch_sync(_queue, ^{
         if (member.syncSessionId == 0) {
             // Handle members that have not been added or updated in the PresenceMap during the sync process
             ARTPresenceMessage *leave = [member copy];
-            [self removeMember:member force:true];
+            [self removeMember:member];
             [self didRemovedMemberNoLongerPresent:leave];
         }
     }

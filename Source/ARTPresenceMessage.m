@@ -74,10 +74,6 @@ NSString *const ARTAblyMessageInvalidPresenceId = @"Received presence message id
 }
 
 - (BOOL)isNewerThan:(ARTPresenceMessage *)existing {
-    if (existing == nil) {
-        return YES;
-    }
-
     if ([self isSynthesized] || [existing isSynthesized]) {
         return !self.timestamp || [existing.timestamp timeIntervalSince1970] <= [self.timestamp timeIntervalSince1970];
     }

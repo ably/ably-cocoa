@@ -1955,7 +1955,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
 
             hook = channel.internal.presence.testSuite_getArgument(
-                from: #selector(ARTRealtimePresenceInternal.addMember(_:withSessionId:)),
+                from: #selector(ARTRealtimePresenceInternal.processMember(_:)),
                 at: 0
             ) { arg in
                 let m = arg as? ARTPresenceMessage
@@ -3578,7 +3578,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         for i in 0 ..< 3 {
             let msg = ARTPresenceMessage(clientId: "client\(i)", action: .present, connectionId: "foo", id: "foo:0:0")
             msgs[msg.clientId!] = msg
-            channel.internal.presence.addMember(msg)
+            channel.internal.presence.processMember(msg)
         }
 
         channel.presence.get(getParams) { result, err in
