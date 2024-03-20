@@ -808,8 +808,12 @@ dispatch_sync(_queue, ^{
             memberUpdated = [self addMember:messageCopy];
             break;
         case ARTPresenceLeave:
-            messageCopy.action = ARTPresenceAbsent; // RTP2f
-            memberUpdated = [self removeMember:messageCopy];
+            if (self.syncInProgress) {
+                messageCopy.action = ARTPresenceAbsent; // RTP2f
+                memberUpdated = [self addMember:messageCopy];
+            } else {
+                memberUpdated = [self removeMember:messageCopy];
+            }
             break;
         default:
             break;
@@ -867,7 +871,7 @@ dispatch_sync(_queue, ^{
         return message.action == ARTPresenceAbsent;
     }];
     for (NSString *key in absentMembers) {
-        [self removeMember:[_members objectForKey:key]];
+        [_members removeObjectForKey:key];
     }
 }
 

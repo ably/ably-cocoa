@@ -1928,7 +1928,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     }
 
     // RTP2f
-    func test__FLAKY__050__Presence__PresenceMap__if_a_SYNC_is_in_progress__then_when_a_presence_message_with_an_action_of_LEAVE_arrives__it_should_be_stored_in_the_presence_map_with_the_action_set_to_ABSENT() throws {
+    func test__050__Presence__PresenceMap__if_a_SYNC_is_in_progress__then_when_a_presence_message_with_an_action_of_LEAVE_arrives__it_should_be_stored_in_the_presence_map_with_the_action_set_to_ABSENT() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let channelName = test.uniqueChannelName()
@@ -1944,24 +1944,16 @@ class RealtimeClientPresenceTests: XCTestCase {
         guard let transport = client.internal.transport as? TestProxyTransport else {
             fail("TestProxyTransport is not set"); return
         }
-
-        var hook: AspectToken?
+        
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
 
             channel.presence.subscribe(.leave) { leave in
                 XCTAssertEqual(leave.clientId, "user11")
+                let absentMember = channel.internal.presence.members.first { _, m in m.clientId == "user11" }.map { $0.value }
+                XCTAssertTrue(channel.internal.presence.syncInProgress)
+                XCTAssertEqual(absentMember?.action, .absent)
                 partialDone()
-            }
-
-            hook = channel.internal.presence.testSuite_getArgument(
-                from: #selector(ARTRealtimePresenceInternal.processMember(_:)),
-                at: 0
-            ) { arg in
-                let m = arg as? ARTPresenceMessage
-                if m?.clientId == "user11", m?.action == .absent {
-                    partialDone()
-                }
             }
 
             channel.attach { error in
@@ -1977,11 +1969,11 @@ class RealtimeClientPresenceTests: XCTestCase {
                     ARTPresenceMessage(clientId: "user11", action: .leave, connectionId: "another", id: "another:123:0", timestamp: Date()),
                 ]
                 transport.receive(leaveMessage)
+                partialDone()
             }
         }
-        hook?.remove()
         channel.presence.unsubscribe()
-
+        
         expect(channel.internal.presence.syncInProgress).toEventually(beFalse(), timeout: testTimeout)
         expect(channel.internal.presence.members.filter { _, presence in presence.action == .leave }).to(beEmpty())
         expect(channel.internal.presence.members.filter { _, presence in presence.action == .absent }).to(beEmpty())
