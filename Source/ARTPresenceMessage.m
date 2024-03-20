@@ -81,7 +81,7 @@ NSString *const ARTAblyMessageInvalidPresenceId = @"Received presence message id
     NSInteger otherIndex = [other indexFromId];
 
     if (msgSerial == otherMsgSerial) {
-        return index > otherIndex;
+        return index >= otherIndex;
     }
     else {
         return msgSerial > otherMsgSerial;

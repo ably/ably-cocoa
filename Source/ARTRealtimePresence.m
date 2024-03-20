@@ -816,12 +816,12 @@ dispatch_sync(_queue, ^{
     }
 
     if (memberUpdated) {
-        [_beforeSyncMembers removeObjectForKey:message.memberKey]; // RTP19
         [self broadcast:message];
     }
     else {
         ARTLogDebug(_logger, @"Presence member \"%@\" with action %@ has been ignored", message.memberKey, ARTPresenceActionToStr(message.action));
     }
+    [_beforeSyncMembers removeObjectForKey:message.memberKey]; // RTP19
 }
 
 - (BOOL)addMember:(ARTPresenceMessage *)message {
@@ -849,7 +849,7 @@ dispatch_sync(_queue, ^{
         return false;
     }
     [_members removeObjectForKey:message.memberKey];
-    return true;
+    return existing.action != ARTPresenceAbsent;
 }
 
 - (BOOL)removeInternalMember:(ARTPresenceMessage *)message {
@@ -876,7 +876,7 @@ dispatch_sync(_queue, ^{
     for (ARTPresenceMessage *member in [_beforeSyncMembers allValues]) {
         // Handle members that have not been added or updated in the PresenceMap during the sync process
         ARTPresenceMessage *leave = [member copy];
-        [self removeMember:member];
+        [_members removeObjectForKey:leave.memberKey];
         [self didRemovedMemberNoLongerPresent:leave];
     }
 }
@@ -898,6 +898,7 @@ dispatch_sync(_queue, ^{
     [self cleanUpAbsentMembers];
     [self leaveMembersNotPresentInSync];
     _syncState = ARTPresenceSyncEnded;
+    _beforeSyncMembers = nil;
 
     [_syncEventEmitter emit:[ARTEvent newWithPresenceSyncState:ARTPresenceSyncEnded] with:[_members allValues]];
     [_syncEventEmitter off];
