@@ -10,6 +10,7 @@
 @class ARTDeviceIdentityTokenDetails;
 @class ARTDevicePushDetails;
 @class ARTPushChannelSubscription;
+@class ARTLocalDevice;
 
 @protocol ARTPushRecipient;
 
@@ -66,6 +67,9 @@ NS_ASSUME_NONNULL_BEGIN
 // DeviceDetails
 - (nullable NSData *)encodeDeviceDetails:(ARTDeviceDetails *)deviceDetails error:(NSError *_Nullable *_Nullable)error;
 - (nullable ARTDeviceDetails *)decodeDeviceDetails:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
+
+// LocalDevice
+- (nullable NSData *)encodeLocalDevice:(ARTLocalDevice *)device error:(NSError *_Nullable *_Nullable)error;
 
 // ChannelDetails
 - (nullable ARTChannelDetails *)decodeChannelDetails:(NSData *)data error:(NSError *_Nullable *_Nullable)error;
