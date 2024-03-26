@@ -1,5 +1,17 @@
 # Change Log
 
+## [1.2.27](https://github.com/ably/ably-cocoa/tree/1.2.27)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.26...1.2.27)
+
+**Implemented features:**
+
+- Updated example app [\#1879](https://github.com/ably/ably-cocoa/pull/1879)
+
+**Fixed issues:**
+
+- Device registration flow omits `deviceSecret` [\#1892](https://github.com/ably/ably-cocoa/issues/1892)
+
 ## [1.2.26](https://github.com/ably/ably-cocoa/tree/1.2.26)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.25...1.2.26)
