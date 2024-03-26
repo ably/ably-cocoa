@@ -114,8 +114,12 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
 - (ARTPushActivationState *)transition:(ARTPushActivationEvent *)event {
     [self logEventTransition:event file:__FILE__ line:__LINE__];
     if ([event isKindOfClass:[ARTPushActivationEventCalledDeactivate class]]) {
-        // RSH3a1c
+        #if TARGET_OS_IOS
         ARTLocalDevice *device = self.machine.rest.device_nosync;
+        #else
+        ARTLocalDevice *device = nil;
+        #endif
+        // RSH3a1c
         if (device.isRegistered) {
             [self.machine deviceUnregistration:nil];
             return [ARTPushActivationStateWaitingForDeregistration newWithMachine:self.machine logger:self.logger];
