@@ -183,7 +183,7 @@ dispatch_async(_queue, ^{
         // Asynchronous HTTP request
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/deviceRegistrations"]];
         request.HTTPMethod = @"POST";
-        request.HTTPBody = [[self->_rest defaultEncoder] encodeDeviceDetails:local error:nil];
+        request.HTTPBody = [[self->_rest defaultEncoder] encodeLocalDevice:local error:nil];
         [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
         ARTLogDebug(self->_logger, @"%@: device registration with request %@", NSStringFromClass(self.class), request);
@@ -298,6 +298,7 @@ dispatch_async(_queue, ^{
         request.HTTPMethod = @"PUT";
         request.HTTPBody = [[self->_rest defaultEncoder] encodeDeviceDetails:local error:nil];
         [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
+        [request setDeviceAuthentication:local];
 
         ARTLogDebug(self->_logger, @"%@: sync device with request %@", NSStringFromClass(self.class), request);
         [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {

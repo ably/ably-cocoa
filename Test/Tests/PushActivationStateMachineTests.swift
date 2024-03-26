@@ -352,6 +352,7 @@ class PushActivationStateMachineTests: XCTestCase {
         XCTAssertEqual(url.host, rest.internal.options.restUrl().host)
         XCTAssertEqual(request.httpMethod, "POST")
         XCTAssertEqual(body.value(forKey: "id") as? String, rest.device.id)
+        XCTAssertEqual(body.value(forKey: "deviceSecret") as? String, rest.device.secret)
         XCTAssertEqual(body.value(forKey: "push") as? [String: [String: AnyHashable]], expectedPushRecipient)
         XCTAssertEqual(body.value(forKey: "formFactor") as? String, expectedFormFactor)
         XCTAssertEqual(body.value(forKey: "platform") as? String, expectedPlatform)
