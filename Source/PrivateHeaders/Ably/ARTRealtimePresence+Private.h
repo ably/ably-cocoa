@@ -43,14 +43,13 @@ NS_ASSUME_NONNULL_BEGIN
 /// The key is the clientId and the value is the latest relevant ARTPresenceMessage for that clientId.
 @property (readonly, atomic) NSMutableDictionary<NSString *, ARTPresenceMessage *> *internalMembers;
 
-@property (readonly, nonatomic) NSUInteger syncSessionId;
 @property (readonly, nonatomic) BOOL syncComplete;
 @property (readonly, nonatomic) BOOL syncInProgress;
 
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 - (instancetype)initWithQueue:(_Nonnull dispatch_queue_t)queue logger:(ARTInternalLog *)logger;
 
-- (BOOL)add:(ARTPresenceMessage *)message;
+- (void)processMember:(ARTPresenceMessage *)message;
 - (void)reset;
 
 - (void)startSync;
@@ -60,8 +59,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)onceSyncEnds:(void (^)(NSArray<ARTPresenceMessage *> *))callback;
 - (void)onceSyncFails:(ARTCallback)callback;
 
-- (void)internalAdd:(ARTPresenceMessage *)message;
-- (void)internalAdd:(ARTPresenceMessage *)message withSessionId:(NSUInteger)sessionId;
+- (BOOL)addMember:(ARTPresenceMessage *)message;
+- (BOOL)addInternalMember:(ARTPresenceMessage *)message;
+
+- (BOOL)removeMember:(ARTPresenceMessage *)message;
+- (BOOL)removeInternalMember:(ARTPresenceMessage *)message;
 
 - (void)cleanUpAbsentMembers;
 

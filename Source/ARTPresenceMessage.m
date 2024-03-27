@@ -10,7 +10,6 @@ NSString *const ARTAblyMessageInvalidPresenceId = @"Received presence message id
     if (self) {
         // Default
         _action = ARTPresenceEnter;
-        _syncSessionId = 0;
     }
     return self;
 }
@@ -18,7 +17,6 @@ NSString *const ARTAblyMessageInvalidPresenceId = @"Received presence message id
 - (id)copyWithZone:(NSZone *)zone {
     ARTPresenceMessage *message = [super copyWithZone:zone];
     message->_action = self.action;
-    message->_syncSessionId = self.syncSessionId;
     return message;
 }
 
@@ -27,7 +25,6 @@ NSString *const ARTAblyMessageInvalidPresenceId = @"Received presence message id
     [description deleteCharactersInRange:NSMakeRange(description.length - (description.length>2 ? 2:0), 2)];
     [description appendFormat:@",\n"];
     [description appendFormat:@" action: %lu,\n", (unsigned long)self.action];
-    [description appendFormat:@" syncSessionId: %lu\n", (unsigned long)self.syncSessionId];
     [description appendFormat:@"}"];
     return description;
 }
@@ -73,25 +70,21 @@ NSString *const ARTAblyMessageInvalidPresenceId = @"Received presence message id
     return index;
 }
 
-- (BOOL)isNewerThan:(ARTPresenceMessage *)latest {
-    if (latest == nil) {
-        return YES;
+- (BOOL)isNewerThan:(ARTPresenceMessage *)other {
+    if ([self isSynthesized] || [other isSynthesized]) {
+        return !self.timestamp || [other.timestamp timeIntervalSince1970] <= [self.timestamp timeIntervalSince1970];
     }
 
-    if ([self isSynthesized] || [latest isSynthesized]) {
-        return !self.timestamp || [latest.timestamp timeIntervalSince1970] <= [self.timestamp timeIntervalSince1970];
-    }
+    NSInteger msgSerial = [self msgSerialFromId];
+    NSInteger index = [self indexFromId];
+    NSInteger otherMsgSerial = [other msgSerialFromId];
+    NSInteger otherIndex = [other indexFromId];
 
-    NSInteger currentMsgSerial = [self msgSerialFromId];
-    NSInteger currentIndex = [self indexFromId];
-    NSInteger latestMsgSerial = [latest msgSerialFromId];
-    NSInteger latestIndex = [latest indexFromId];
-
-    if (currentMsgSerial == latestMsgSerial) {
-        return currentIndex > latestIndex;
+    if (msgSerial == otherMsgSerial) {
+        return index >= otherIndex;
     }
     else {
-        return currentMsgSerial > latestMsgSerial;
+        return msgSerial > otherMsgSerial;
     }
 }
 
