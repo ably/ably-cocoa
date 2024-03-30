@@ -52,9 +52,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// :nodoc:
 - (BOOL)isEqualToPresenceMessage:(nonnull ARTPresenceMessage *)presence;
 
-/// :nodoc:
-- (BOOL)isNewerThan:(ARTPresenceMessage *)latest __attribute__((warn_unused_result));
-
 @end
 
 #pragma mark - ARTEvent

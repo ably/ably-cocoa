@@ -1508,7 +1508,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         XCTAssertEqual(intialPresenceMessage.memberKey(), "\(client.connection.id!):tester")
 
         var compareForNewnessMethodCalls = 0
-        let hook = ARTPresenceMessage.testSuite_injectIntoClassMethod(#selector(ARTPresenceMessage.isNewerThan(_:))) {
+        let hook = channel.internal.presence.testSuite_injectIntoMethod(after: #selector(ARTRealtimePresenceInternal.member(_:isNewerThan:))) {
             compareForNewnessMethodCalls += 1
         }
 
@@ -1528,7 +1528,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         XCTAssertEqual(compareForNewnessMethodCalls, 1)
 
-        hook?.remove()
+        hook.remove()
     }
 
     // RTP2b

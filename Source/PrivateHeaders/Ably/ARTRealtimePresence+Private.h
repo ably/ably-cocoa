@@ -60,12 +60,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)onceSyncFails:(ARTCallback)callback;
 
 - (BOOL)addMember:(ARTPresenceMessage *)message;
-- (BOOL)addInternalMember:(ARTPresenceMessage *)message;
+- (void)addInternalMember:(ARTPresenceMessage *)message;
 
 - (BOOL)removeMember:(ARTPresenceMessage *)message;
-- (BOOL)removeInternalMember:(ARTPresenceMessage *)message;
+- (void)removeInternalMember:(ARTPresenceMessage *)message;
 
 - (void)cleanUpAbsentMembers;
+
+- (BOOL)member:(ARTPresenceMessage *)msg1 isNewerThan:(ARTPresenceMessage *)msg2 __attribute__((warn_unused_result));
 
 @end
 

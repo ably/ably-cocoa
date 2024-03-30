@@ -828,41 +828,61 @@ dispatch_sync(_queue, ^{
     [_beforeSyncMembers removeObjectForKey:message.memberKey]; // RTP19
 }
 
+- (BOOL)member:(ARTPresenceMessage *)msg1 isNewerThan:(ARTPresenceMessage *)msg2 {
+    if ([msg1 isSynthesized] || [msg2 isSynthesized]) {
+        return !msg1.timestamp || msg1.timestamp.timeIntervalSince1970 >= msg2.timestamp.timeIntervalSince1970;
+    }
+    
+    NSInteger msg1Serial = [msg1 msgSerialFromId];
+    NSInteger msg1Index = [msg1 indexFromId];
+    NSInteger msg2Serial = [msg2 msgSerialFromId];
+    NSInteger msg2Index = [msg2 indexFromId];
+    
+    if (msg1Serial == msg2Serial) {
+        return msg1Index > msg2Index;
+    }
+    else {
+        return msg1Serial > msg2Serial;
+    }
+}
+
 - (BOOL)addMember:(ARTPresenceMessage *)message {
     ARTPresenceMessage *existing = [_members objectForKey:message.memberKey];
-    if (existing && [existing isNewerThan:message]) {
+    if (existing) {
+        if ([self member:message isNewerThan:existing]) {
+            _members[message.memberKey] = message;
+            return true;
+        }
         return false;
     }
     _members[message.memberKey] = message;
     return true;
 }
 
-- (BOOL)addInternalMember:(ARTPresenceMessage *)message {
-    ARTPresenceMessage *existing = [_internalMembers objectForKey:message.clientId];
-    if (existing && [existing isNewerThan:message]) {
-        return false;
-    }
-    _internalMembers[message.clientId] = message;
-    ARTLogDebug(_logger, @"local member %@ with action %@ has been added", message.clientId, ARTPresenceActionToStr(message.action).uppercaseString);
-    return true;
-}
-
 - (BOOL)removeMember:(ARTPresenceMessage *)message {
     ARTPresenceMessage *existing = [_members objectForKey:message.memberKey];
-    if (existing && [existing isNewerThan:message]) {
-        return false;
+    if (existing) {
+        if ([self member:message isNewerThan:existing]) {
+            [_members removeObjectForKey:message.memberKey];
+            return existing.action != ARTPresenceAbsent;
+        }
     }
-    [_members removeObjectForKey:message.memberKey];
-    return existing.action != ARTPresenceAbsent;
+    return false;
 }
 
-- (BOOL)removeInternalMember:(ARTPresenceMessage *)message {
+- (void)addInternalMember:(ARTPresenceMessage *)message {
     ARTPresenceMessage *existing = [_internalMembers objectForKey:message.clientId];
-    if (existing && [existing isNewerThan:message]) {
-        return false;
+    if (!existing || [self member:message isNewerThan:existing]) {
+        _internalMembers[message.clientId] = message;
+        ARTLogDebug(_logger, @"local member %@ with action %@ has been added", message.clientId, ARTPresenceActionToStr(message.action).uppercaseString);
     }
-    [_internalMembers removeObjectForKey:message.clientId];
-    return true;
+}
+
+- (void)removeInternalMember:(ARTPresenceMessage *)message {
+    ARTPresenceMessage *existing = [_internalMembers objectForKey:message.clientId];
+    if (!existing || [self member:message isNewerThan:existing]) {
+        [_internalMembers removeObjectForKey:message.clientId];
+    }
 }
 
 - (void)cleanUpAbsentMembers {
