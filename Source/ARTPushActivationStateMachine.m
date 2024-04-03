@@ -334,8 +334,12 @@ dispatch_async(_queue, ^{
         dispatch_async(_userQueue, ^{
             [delegate ablyPushCustomDeregister:error deviceId:local.id callback:^(ARTErrorInfo *error) {
                 if (error) {
-                    // Failed
-                    [self sendEvent:[ARTPushActivationEventDeregistrationFailed newWithError:error]];
+                    // RSH3d2c1: ignore unauthorized or invalid credentials errors
+                    if (error.code == 401 || error.code == 40005) {
+                        [self sendEvent:[ARTPushActivationEventDeregistered new]];
+                    } else {
+                        [self sendEvent:[ARTPushActivationEventDeregistrationFailed newWithError:error]];
+                    }
                 }
                 else {
                     // Success
@@ -354,8 +358,14 @@ dispatch_async(_queue, ^{
     ARTLogDebug(_logger, @"%@: device deregistration with request %@", NSStringFromClass(self.class), request);
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
-            ARTLogError(self->_logger, @"%@: device deregistration failed (%@)", NSStringFromClass(self.class), error.localizedDescription);
-            [self sendEvent:[ARTPushActivationEventDeregistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
+            // RSH3d2c1: ignore unauthorized or invalid credentials errors
+            if (error.code == 401 || error.code == 40005) {
+                ARTLogError(self->_logger, @"%@: unauthorized error during deregistration (%@)", NSStringFromClass(self.class), error.localizedDescription);
+                [self sendEvent:[ARTPushActivationEventDeregistered new]];
+            } else {
+                ARTLogError(self->_logger, @"%@: device deregistration failed (%@)", NSStringFromClass(self.class), error.localizedDescription);
+                [self sendEvent:[ARTPushActivationEventDeregistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
+            }
             return;
         }
         ARTLogDebug(self->_logger, @"successfully deactivate device");
