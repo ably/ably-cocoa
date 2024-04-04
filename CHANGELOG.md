@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.2.29](https://github.com/ably/ably-cocoa/tree/1.2.29)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.28...1.2.29)
+
+**Fixed issues:**
+
+- Fixes typo which caused previous Push Notifiication corner cases fix to fail
+
 ## [1.2.28](https://github.com/ably/ably-cocoa/tree/1.2.28)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.27...1.2.28)
