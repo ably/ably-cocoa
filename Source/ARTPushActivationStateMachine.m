@@ -335,7 +335,7 @@ dispatch_async(_queue, ^{
             [delegate ablyPushCustomDeregister:error deviceId:local.id callback:^(ARTErrorInfo *error) {
                 if (error) {
                     // RSH3d2c1: ignore unauthorized or invalid credentials errors
-                    if (error.code == 401 || error.code == 40005) {
+                    if (error.statusCode == 401 || error.code == 40005) {
                         [self sendEvent:[ARTPushActivationEventDeregistered new]];
                     } else {
                         [self sendEvent:[ARTPushActivationEventDeregistrationFailed newWithError:error]];
@@ -359,7 +359,7 @@ dispatch_async(_queue, ^{
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
             // RSH3d2c1: ignore unauthorized or invalid credentials errors
-            if (error.code == 401 || error.code == 40005) {
+            if (response.statusCode == 401 || error.code == 40005) {
                 ARTLogError(self->_logger, @"%@: unauthorized error during deregistration (%@)", NSStringFromClass(self.class), error.localizedDescription);
                 [self sendEvent:[ARTPushActivationEventDeregistered new]];
             } else {
