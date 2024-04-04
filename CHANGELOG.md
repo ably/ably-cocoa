@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.2.28](https://github.com/ably/ably-cocoa/tree/1.2.28)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.27...1.2.28)
+
+**Fixed issues:**
+
+- Push Notification corner cases as initially reported in ably-java [\#993](https://github.com/ably/ably-java/issues/993)
+
 ## [1.2.27](https://github.com/ably/ably-cocoa/tree/1.2.27)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.26...1.2.27)
