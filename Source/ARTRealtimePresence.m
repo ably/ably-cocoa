@@ -880,7 +880,7 @@ dispatch_sync(_queue, ^{
 
 - (void)removeInternalMember:(ARTPresenceMessage *)message {
     ARTPresenceMessage *existing = [_internalMembers objectForKey:message.clientId];
-    if (!existing || [self member:message isNewerThan:existing]) {
+    if (existing && [self member:message isNewerThan:existing]) {
         [_internalMembers removeObjectForKey:message.clientId];
     }
 }
