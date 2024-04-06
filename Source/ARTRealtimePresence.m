@@ -804,6 +804,7 @@ dispatch_sync(_queue, ^{
         case ARTPresenceEnter:
         case ARTPresenceUpdate:
         case ARTPresencePresent:
+            [_beforeSyncMembers removeObjectForKey:message.memberKey]; // RTP19
             messageCopy.action = ARTPresencePresent;
             memberUpdated = [self addMember:messageCopy];
             break;
@@ -825,7 +826,6 @@ dispatch_sync(_queue, ^{
     else {
         ARTLogDebug(_logger, @"Presence member \"%@\" with action %@ has been ignored", message.memberKey, ARTPresenceActionToStr(message.action));
     }
-    [_beforeSyncMembers removeObjectForKey:message.memberKey]; // RTP19
 }
 
 - (BOOL)member:(ARTPresenceMessage *)msg1 isNewerThan:(ARTPresenceMessage *)msg2 {
