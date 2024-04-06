@@ -704,7 +704,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         XCTAssertEqual(channel2.internal.presence.members.count, 2)
     }
 
-    // RTP5f
+    // RTP5a
 
     func test__022__Presence__Channel_state_change_side_effects__channel_enters_the_SUSPENDED_state__all_queued_presence_messages_should_fail_immediately() throws {
         let test = Test()
@@ -740,6 +740,8 @@ class RealtimeClientPresenceTests: XCTestCase {
         }
     }
 
+    // RTP5f
+    
     func test__023__Presence__Channel_state_change_side_effects__channel_enters_the_SUSPENDED_state__members_map_is_preserved_and_only_members_that_changed_between_ATTACHED_states_should_result_in_presence_events() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
