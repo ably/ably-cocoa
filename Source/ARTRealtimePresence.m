@@ -191,7 +191,6 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
         _userQueue = _realtime.rest.userQueue;
         _queue = _realtime.rest.queue;
         _pendingPresence = [NSMutableArray array];
-        _lastPresenceAction = ARTPresenceAbsent;
         _logger = logger;
         _eventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_queue];
         _dataEncoder = _channel.dataEncoder;
@@ -579,8 +578,6 @@ dispatch_sync(_queue, ^{
         }
         return;
     }
-
-    _lastPresenceAction = msg.action;
 
     if (msg.data && _channel.dataEncoder) {
         ARTDataEncoderOutput *encoded = [_channel.dataEncoder encode:msg.data];

@@ -20,7 +20,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)onAttached:(ARTProtocolMessage *)message;
 
 @property (nonatomic) dispatch_queue_t queue;
-@property (readwrite, nonatomic) ARTPresenceAction lastPresenceAction;
 @property (readonly, nonatomic) NSMutableArray<ARTQueuedMessage *> *pendingPresence;
 
 @end
