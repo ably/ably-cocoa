@@ -452,6 +452,7 @@ dispatch_sync(_queue, ^{
 - (void)leaveAfterChecks:(NSString *_Nullable)clientId data:(id)data callback:(ARTCallback)cb {
     ARTPresenceMessage *msg = [[ARTPresenceMessage alloc] init];
     msg.action = ARTPresenceLeave;
+    // TODO: RTP10a (if the language permits the data argument to be omitted, then the previously set data value will be sent as a convenience)
     msg.data = data;
     msg.clientId = clientId;
     msg.connectionId = _realtime.connection.id_nosync;
@@ -619,9 +620,9 @@ dispatch_sync(_queue, ^{
     ARTRealtimeChannelState channelState = _channel.state_nosync;
     switch (channelState) {
         case ARTRealtimeChannelInitialized:
-        case ARTRealtimeChannelDetached:
+        case ARTRealtimeChannelDetached: // TODO: RTP16b (should fail if DETACHED)
             [_channel _attach:nil];
-        case ARTRealtimeChannelAttaching: {
+        case ARTRealtimeChannelAttaching: { // TODO: RTP16a (should check `ARTClientOptions.queueMessages`)
             [self addPendingPresence:pm callback:^(ARTStatus *status) {
                 if (callback) {
                     callback(status.errorInfo);
@@ -749,6 +750,7 @@ dispatch_sync(_queue, ^{
 
     [self onMessage:message];
 
+    // TODO: RTP18a (previous in-flight sync should be discarded)
     if ([self isLastChannelSerial:message.channelSerial]) { // RTP18b, RTP18c
         [self endSync];
         ARTLogDebug(self.logger, @"RT:%p C:%p (%@) PresenceMap sync ended", _realtime, _channel, _channel.name);
