@@ -578,14 +578,14 @@ dispatch_sync(_queue, ^{
             break;
         case ARTRealtimeChannelDetached:
             self.channelSerial = nil; // RTP5a1
-            [self.presence failsSync:params.errorInfo];
+            [self.presence failsSync:params.errorInfo]; // RTP5a
             break;
         case ARTRealtimeChannelFailed:
             self.channelSerial = nil; // RTP5a1
             self.attachResume = false;
             [_attachedEventEmitter emit:nil with:params.errorInfo];
             [_detachedEventEmitter emit:nil with:params.errorInfo];
-            [self.presence failsSync:params.errorInfo];
+            [self.presence failsSync:params.errorInfo]; // RTP5a
             break;
         default:
             break;
@@ -726,17 +726,17 @@ dispatch_sync(_queue, ^{
     if (self.state_nosync == ARTRealtimeChannelDetached) {
         return;
     }
-    [self failPendingPresenceWithState:params.state info:params.errorInfo];
+    [self failPendingPresenceWithState:params.state info:params.errorInfo]; // RTP5a
     [self performTransitionToState:ARTRealtimeChannelDetached withParams:params];
 }
 
 - (void)setFailed:(ARTChannelStateChangeParams *)params {
-    [self failPendingPresenceWithState:params.state info:params.errorInfo];
+    [self failPendingPresenceWithState:params.state info:params.errorInfo]; // RTP5a
     [self performTransitionToState:ARTRealtimeChannelFailed withParams:params];
 }
 
 - (void)setSuspended:(ARTChannelStateChangeParams *)params {
-    [self failPendingPresenceWithState:params.state info:params.errorInfo];
+    [self failPendingPresenceWithState:params.state info:params.errorInfo]; // RTP5f
     [self performTransitionToState:ARTRealtimeChannelSuspended withParams:params];
 }
 

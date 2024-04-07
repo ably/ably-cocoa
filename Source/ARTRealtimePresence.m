@@ -178,7 +178,7 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
     ARTPresenceSyncState _syncState;
     ARTEventEmitter<ARTEvent * /*ARTSyncState*/, id> *_syncEventEmitter;
     
-    NSMutableDictionary<NSString *, ARTPresenceMessage *> *_members;
+    NSMutableDictionary<NSString *, ARTPresenceMessage *> *_members; // RTP2
     NSMutableDictionary<NSString *, ARTPresenceMessage *> *_internalMembers; // RTP17h
     
     NSMutableDictionary<NSString *, ARTPresenceMessage *> *_beforeSyncMembers; // RTP19
@@ -202,6 +202,8 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
     return self;
 }
 
+// RTP11
+
 - (void)get:(ARTPresenceMessagesCallback)callback {
     [self get:[[ARTRealtimePresenceQuery alloc] init] callback:callback];
 }
@@ -223,7 +225,7 @@ dispatch_async(_queue, ^{
             if (callback) callback(nil, [ARTErrorInfo createWithCode:ARTErrorChannelOperationFailedInvalidState message:[NSString stringWithFormat:@"unable to return the list of current members (incompatible channel state: %@)", ARTRealtimeChannelStateToStr(self->_channel.state_nosync)]]);
             return;
         case ARTRealtimeChannelSuspended:
-            if (query && !query.waitForSync) {
+            if (query && !query.waitForSync) { // RTP11d
                 if (callback) callback(self->_members.allValues, nil);
                 return;
             }
@@ -233,12 +235,13 @@ dispatch_async(_queue, ^{
             break;
     }
 
+    // RTP11c
     BOOL (^filterMemberBlock)(ARTPresenceMessage *message) = ^BOOL(ARTPresenceMessage *message) {
         return (query.clientId == nil || [message.clientId isEqualToString:query.clientId]) &&
             (query.connectionId == nil || [message.connectionId isEqualToString:query.connectionId]);
     };
 
-    [self->_channel _attach:^(ARTErrorInfo *error) {
+    [self->_channel _attach:^(ARTErrorInfo *error) { // RTP11b
         if (error) {
             callback(nil, error);
             return;
@@ -263,6 +266,8 @@ dispatch_async(_queue, ^{
 });
 }
 
+// RTP12
+
 - (void)history:(ARTPaginatedPresenceCallback)callback {
     [self history:[[ARTRealtimeHistoryQuery alloc] init] callback:callback error:nil];
 }
@@ -271,6 +276,8 @@ dispatch_async(_queue, ^{
     query.realtimeChannel = _channel;
     return [_channel.restChannel.presence history:query callback:callback error:errorPtr];
 }
+
+// RTP8
 
 - (void)enter:(id)data {
     [self enter:data callback:nil];
@@ -290,6 +297,8 @@ dispatch_async(_queue, ^{
     [self enterOrUpdateAfterChecks:ARTPresenceEnter messageId:nil clientId:nil data:data callback:cb];
 });
 }
+
+// RTP14, RTP15
 
 - (void)enterClient:(NSString *)clientId data:(id)data {
     [self enterClient:clientId data:data callback:nil];
@@ -324,6 +333,8 @@ dispatch_async(_queue, ^{
     });
 }
 
+// RTP9
+
 - (void)update:(id)data {
     [self update:data callback:nil];
 }
@@ -342,6 +353,8 @@ dispatch_async(_queue, ^{
     [self enterOrUpdateAfterChecks:ARTPresenceUpdate messageId:nil clientId:nil data:data callback:cb];
 });
 }
+
+// RTP15
 
 - (void)updateClient:(NSString *)clientId data:(id)data {
     [self updateClient:clientId data:data callback:nil];
@@ -386,6 +399,8 @@ dispatch_async(_queue, ^{
     [self publishPresence:msg callback:cb];
 }
 
+// RTP10
+
 - (void)leave:(id)data {
     [self leave:data callback:nil];
 }
@@ -412,6 +427,8 @@ dispatch_sync(_queue, ^{
         @throw exception;
     }
 }
+
+// RTP15
 
 - (void)leaveClient:(NSString *)clientId data:(id)data {
     [self leaveClient:clientId data:data callback:nil];
@@ -449,9 +466,13 @@ dispatch_sync(_queue, ^{
     return ret;
 }
 
+// RTP13
+
 - (BOOL)syncComplete_nosync {
     return _syncState == ARTPresenceSyncEnded || _syncState == ARTPresenceSyncFailed;
 }
+
+// RTP6
 
 - (ARTEventListener *)subscribe:(ARTPresenceMessageCallback)callback {
     return [self subscribeWithAttachCallback:nil callback:callback];
@@ -523,6 +544,8 @@ dispatch_sync(_queue, ^{
     return listener;
 }
 
+// RTP7
+
 - (void)unsubscribe {
 dispatch_sync(_queue, ^{
     [self _unsubscribe];
@@ -555,9 +578,9 @@ dispatch_sync(_queue, ^{
 
 - (void)publishPresence:(ARTPresenceMessage *)msg callback:(ARTCallback)callback {
     if (msg.clientId == nil) {
-        NSString *authClientId = _realtime.auth.clientId_nosync;
+        NSString *authClientId = _realtime.auth.clientId_nosync; // RTP8c
         BOOL connected = _realtime.connection.state_nosync == ARTRealtimeConnected;
-        if (connected && (authClientId == nil || [authClientId isEqualToString:@"*"])) {
+        if (connected && (authClientId == nil || [authClientId isEqualToString:@"*"])) { // RTP8j
             if (callback) {
                 callback([ARTErrorInfo createWithCode:ARTStateNoClientId message:@"Invalid attempt to publish presence message without clientId."]);
             }
@@ -664,7 +687,7 @@ dispatch_sync(_queue, ^{
  * by checking that there is nothing after the colon - RTP18b, RTP18c
  */
 - (bool)isLastChannelSerial:(NSString *)channelSerial {
-    if ([channelSerial isEqualToString:@""]) {
+    if (!channelSerial || [channelSerial isEqualToString:@""]) {
         return true;
     }
     NSArray *a = [channelSerial componentsSeparatedByString:@":"];
@@ -677,11 +700,11 @@ dispatch_sync(_queue, ^{
 - (void)onAttached:(ARTProtocolMessage *)message {
     [self startSync];
     if (!message.hasPresence) {
-        // RTP1 - when an ATTACHED message is received without a HAS_PRESENCE flag, reset PresenceMap
+        // RTP1 - when an ATTACHED message is received without a HAS_PRESENCE flag, reset PresenceMap (also RTP19a)
         [self endSync];
         ARTLogDebug(self.logger, @"R:%p C:%p (%@) PresenceMap has been reset", _realtime, self, _channel.name);
     }
-    [self sendPendingPresence];
+    [self sendPendingPresence]; // RTP5b
     [self reenterInternalMembers]; // RTP17i
 }
 
@@ -726,7 +749,7 @@ dispatch_sync(_queue, ^{
 
     [self onMessage:message];
 
-    if ([self isLastChannelSerial:message.channelSerial]) {
+    if ([self isLastChannelSerial:message.channelSerial]) { // RTP18b, RTP18c
         [self endSync];
         ARTLogDebug(self.logger, @"RT:%p C:%p (%@) PresenceMap sync ended", _realtime, _channel, _channel.name);
     }
@@ -747,7 +770,7 @@ dispatch_sync(_queue, ^{
 - (void)reenterInternalMembers {
     ARTLogDebug(self.logger, @"%p reentering local members", self);
     for (ARTPresenceMessage *member in [self.internalMembers allValues]) {
-        [self enterWithPresenceMessageId:member.id clientId:member.clientId data:member.data callback:^(ARTErrorInfo *error) {
+        [self enterWithPresenceMessageId:member.id clientId:member.clientId data:member.data callback:^(ARTErrorInfo *error) { // RTP17g
             if (error != nil) {
                 NSString *message = [NSString stringWithFormat:@"Re-entering member \"%@\" is failed with code %ld (%@)", member.memberKey, (long)error.code, error.message];
                 ARTErrorInfo *reenterError = [ARTErrorInfo createWithCode:ARTErrorUnableToAutomaticallyReEnterPresenceChannel message:message];
@@ -778,7 +801,7 @@ dispatch_sync(_queue, ^{
 - (void)processMember:(ARTPresenceMessage *)message {
     ARTPresenceMessage *messageCopy = [message copy];
     // Internal member
-    if ([message.connectionId isEqualToString:self.connectionId]) {
+    if ([message.connectionId isEqualToString:self.connectionId]) { // RTP17b
         switch (message.action) {
             case ARTPresenceEnter:
             case ARTPresenceUpdate:
@@ -802,7 +825,7 @@ dispatch_sync(_queue, ^{
         case ARTPresenceUpdate:
         case ARTPresencePresent:
             [_beforeSyncMembers removeObjectForKey:message.memberKey]; // RTP19
-            messageCopy.action = ARTPresencePresent;
+            messageCopy.action = ARTPresencePresent; // RTP2d
             memberUpdated = [self addMember:messageCopy];
             break;
         case ARTPresenceLeave:
@@ -810,7 +833,7 @@ dispatch_sync(_queue, ^{
                 messageCopy.action = ARTPresenceAbsent; // RTP2f
                 memberUpdated = [self addMember:messageCopy];
             } else {
-                memberUpdated = [self removeMember:messageCopy];
+                memberUpdated = [self removeMember:messageCopy]; // RTP2e
             }
             break;
         default:
@@ -818,7 +841,7 @@ dispatch_sync(_queue, ^{
     }
 
     if (memberUpdated) {
-        [self broadcast:message];
+        [self broadcast:message]; // RTP2g (original action)
     }
     else {
         ARTLogDebug(_logger, @"Presence member \"%@\" with action %@ has been ignored", message.memberKey, ARTPresenceActionToStr(message.action));
@@ -826,7 +849,7 @@ dispatch_sync(_queue, ^{
 }
 
 - (BOOL)member:(ARTPresenceMessage *)msg1 isNewerThan:(ARTPresenceMessage *)msg2 {
-    if ([msg1 isSynthesized] || [msg2 isSynthesized]) {
+    if ([msg1 isSynthesized] || [msg2 isSynthesized]) { // RTP2b1
         return !msg1.timestamp || msg1.timestamp.timeIntervalSince1970 >= msg2.timestamp.timeIntervalSince1970;
     }
     
@@ -835,6 +858,7 @@ dispatch_sync(_queue, ^{
     NSInteger msg2Serial = [msg2 msgSerialFromId];
     NSInteger msg2Index = [msg2 indexFromId];
     
+    // RTP2b2
     if (msg1Serial == msg2Serial) {
         return msg1Index > msg2Index;
     }
