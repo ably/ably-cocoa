@@ -106,6 +106,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)onChannelMessage:(ARTProtocolMessage *)message;
 
 - (void)setReachabilityClass:(Class _Nullable)reachabilityClass;
+- (void)transportReconnectWithExistingParameters;
 
 // Message sending
 - (void)send:(ARTProtocolMessage *)msg sentCallback:(nullable ARTCallback)sentCallback ackCallback:(nullable ARTStatusCallback)ackCallback;
