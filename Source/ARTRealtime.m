@@ -226,6 +226,7 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
         _pingEventEmitter = [[ARTInternalEventEmitter alloc] initWithQueue:_rest.queue];
         _channels = [[ARTRealtimeChannelsInternal alloc] initWithRealtime:self logger:self.logger];
         _transport = nil;
+        _networkState = ARTNetworkStateIsUnknown;
         _reachabilityClass = [ARTOSReachability class];
         _msgSerial = 0;
         _queuedMessages = [NSMutableArray array];
@@ -578,7 +579,6 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
     if (active && _reachability == nil) {
         _reachability = [[_reachabilityClass alloc] initWithLogger:self.logger queue:_queue];
     }
-    _networkState = ARTNetworkStateIsUnknown;
     if (active) {
         __weak ARTRealtimeInternal *weakSelf = self;
         [_reachability listenForHost:[_transport host] callback:^(BOOL reachable) {
@@ -592,6 +592,7 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
     }
     else {
         [_reachability off];
+        _networkState = ARTNetworkStateIsUnknown;
     }
 }
 
