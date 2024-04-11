@@ -183,7 +183,7 @@ dispatch_async(_queue, ^{
         // Asynchronous HTTP request
         NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"/push/deviceRegistrations"]];
         request.HTTPMethod = @"POST";
-        request.HTTPBody = [[self->_rest defaultEncoder] encodeDeviceDetails:local error:nil];
+        request.HTTPBody = [[self->_rest defaultEncoder] encodeLocalDevice:local error:nil];
         [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
 
         ARTLogDebug(self->_logger, @"%@: device registration with request %@", NSStringFromClass(self.class), request);
@@ -298,6 +298,7 @@ dispatch_async(_queue, ^{
         request.HTTPMethod = @"PUT";
         request.HTTPBody = [[self->_rest defaultEncoder] encodeDeviceDetails:local error:nil];
         [request setValue:[[self->_rest defaultEncoder] mimeType] forHTTPHeaderField:@"Content-Type"];
+        [request setDeviceAuthentication:local];
 
         ARTLogDebug(self->_logger, @"%@: sync device with request %@", NSStringFromClass(self.class), request);
         [self->_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
@@ -333,8 +334,12 @@ dispatch_async(_queue, ^{
         dispatch_async(_userQueue, ^{
             [delegate ablyPushCustomDeregister:error deviceId:local.id callback:^(ARTErrorInfo *error) {
                 if (error) {
-                    // Failed
-                    [self sendEvent:[ARTPushActivationEventDeregistrationFailed newWithError:error]];
+                    // RSH3d2c1: ignore unauthorized or invalid credentials errors
+                    if (error.statusCode == 401 || error.code == 40005) {
+                        [self sendEvent:[ARTPushActivationEventDeregistered new]];
+                    } else {
+                        [self sendEvent:[ARTPushActivationEventDeregistrationFailed newWithError:error]];
+                    }
                 }
                 else {
                     // Success
@@ -353,8 +358,14 @@ dispatch_async(_queue, ^{
     ARTLogDebug(_logger, @"%@: device deregistration with request %@", NSStringFromClass(self.class), request);
     [_rest executeRequest:request withAuthOption:ARTAuthenticationOn completion:^(NSHTTPURLResponse *response, NSData *data, NSError *error) {
         if (error) {
-            ARTLogError(self->_logger, @"%@: device deregistration failed (%@)", NSStringFromClass(self.class), error.localizedDescription);
-            [self sendEvent:[ARTPushActivationEventDeregistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
+            // RSH3d2c1: ignore unauthorized or invalid credentials errors
+            if (response.statusCode == 401 || error.code == 40005) {
+                ARTLogError(self->_logger, @"%@: unauthorized error during deregistration (%@)", NSStringFromClass(self.class), error.localizedDescription);
+                [self sendEvent:[ARTPushActivationEventDeregistered new]];
+            } else {
+                ARTLogError(self->_logger, @"%@: device deregistration failed (%@)", NSStringFromClass(self.class), error.localizedDescription);
+                [self sendEvent:[ARTPushActivationEventDeregistrationFailed newWithError:[ARTErrorInfo createFromNSError:error]]];
+            }
             return;
         }
         ARTLogDebug(self->_logger, @"successfully deactivate device");

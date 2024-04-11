@@ -381,7 +381,7 @@ class RealtimeClientConnectionTests: XCTestCase {
                     done()
                 case .connected:
                     if let transport = client.internal.transport as? TestProxyTransport, let query = transport.lastUrl?.query {
-                        expect(query).to(haveParam("agent", hasPrefix: "ably-cocoa/1.2.26"))
+                        expect(query).to(haveParam("agent", hasPrefix: "ably-cocoa/1.2.29"))
                     } else {
                         XCTFail("MockTransport isn't working")
                     }
@@ -4809,26 +4809,62 @@ class RealtimeClientConnectionTests: XCTestCase {
         let client = ARTRealtime(options: options)
         client.internal.setReachabilityClass(TestReachability.self)
         defer { client.dispose(); client.close() }
-
+        
+        var reconnectMethodCallCount = 0
+        let hook = client.internal.testSuite_injectIntoMethod(after: #selector(client.internal.transportReconnectWithExistingParameters)) {
+            reconnectMethodCallCount += 1
+        }
+        defer { hook.remove() }
+        
         waitUntil(timeout: testTimeout) { done in
-            client.connection.on { stateChange in
-                switch stateChange.current {
-                case .connecting:
-                    guard let reachability = client.internal.reachability as? TestReachability else {
-                        XCTFail("expected test reachability"); return
-                    }
-                    delay(0.2) { // delay more than `_reachabilityReconnectionAttemptThreshold` constant (0.1)
-                        reachability.simulate(true)
-                    }
-                case .connected:
-                    done()
-                case .disconnected, .suspended:
-                    XCTFail("Should never reach these states in this test.")
-                default:
-                    break
+            client.connection.once(.connecting) { _ in
+                guard let reachability = client.internal.reachability as? TestReachability else {
+                    XCTFail("expected test reachability"); return
                 }
+                // Simulate initial reachability call as `false` because:
+                // a) address is non-routable
+                // b) it will be called by the system once reachability callback is set (during transition to CONNECTING)
+                reachability.simulate(false)
+                XCTAssertEqual(client.connection.state, ARTRealtimeConnectionState.disconnected)
+                client.connect()
+                XCTAssertEqual(client.connection.state, ARTRealtimeConnectionState.connecting)
+                reachability.simulate(true)
+                XCTAssertEqual(client.connection.state, ARTRealtimeConnectionState.connecting)
+            }
+            client.connection.once(.connected) { stateChange in
+                XCTAssertEqual(reconnectMethodCallCount, 1)
+                done()
             }
             client.connect()
+        }
+        
+        // Now check that reconnect will not happen if reachability haven't reported "unreachable" before
+        
+        let options2 = try AblyTests.commonAppSetup(for: test)
+        options2.autoConnect = false
+        let client2 = ARTRealtime(options: options2)
+        client2.internal.setReachabilityClass(TestReachability.self)
+        defer { client2.dispose(); client2.close() }
+        
+        reconnectMethodCallCount = 0
+        let hook2 = client2.internal.testSuite_injectIntoMethod(after: #selector(client2.internal.transportReconnectWithExistingParameters)) {
+            reconnectMethodCallCount += 1
+        }
+        defer { hook2.remove() }
+        
+        waitUntil(timeout: testTimeout) { done in
+            client2.connection.once(.connecting) { _ in
+                guard let reachability = client2.internal.reachability as? TestReachability else {
+                    XCTFail("expected test reachability"); return
+                }
+                reachability.simulate(true)
+                XCTAssertEqual(client2.connection.state, ARTRealtimeConnectionState.connecting)
+            }
+            client2.connection.once(.connected) { stateChange in
+                XCTAssertEqual(reconnectMethodCallCount, 0)
+                done()
+            }
+            client2.connect()
         }
     }
 

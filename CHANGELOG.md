@@ -1,5 +1,33 @@
 # Change Log
 
+## [1.2.29](https://github.com/ably/ably-cocoa/tree/1.2.29)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.28...1.2.29)
+
+**Fixed issues:**
+
+- Fixes typo which caused previous Push Notifiication corner cases fix to fail
+
+## [1.2.28](https://github.com/ably/ably-cocoa/tree/1.2.28)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.27...1.2.28)
+
+**Fixed issues:**
+
+- Push Notification corner cases as initially reported in ably-java [\#993](https://github.com/ably/ably-java/issues/993)
+
+## [1.2.27](https://github.com/ably/ably-cocoa/tree/1.2.27)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.26...1.2.27)
+
+**Implemented features:**
+
+- Updated example app [\#1879](https://github.com/ably/ably-cocoa/pull/1879)
+
+**Fixed issues:**
+
+- Device registration flow omits `deviceSecret` [\#1892](https://github.com/ably/ably-cocoa/issues/1892)
+
 ## [1.2.26](https://github.com/ably/ably-cocoa/tree/1.2.26)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.25...1.2.26)
