@@ -284,7 +284,6 @@
 		80E519C72BBCBE21006545B4 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 80E519C62BBCBE20006545B4 /* PrivacyInfo.xcprivacy */; };
 		80E519C82BBCBE21006545B4 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 80E519C62BBCBE20006545B4 /* PrivacyInfo.xcprivacy */; };
 		80E519C92BBCBE21006545B4 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 80E519C62BBCBE20006545B4 /* PrivacyInfo.xcprivacy */; };
-		80E519CA2BBCBE21006545B4 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 80E519C62BBCBE20006545B4 /* PrivacyInfo.xcprivacy */; };
 		841134782722205400CFA837 /* ARTArchiveTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 841134772722205400CFA837 /* ARTArchiveTests.m */; };
 		8412FDE72661AC37001FE9E6 /* AblyDeltaCodec.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE12661AC37001FE9E6 /* AblyDeltaCodec.xcframework */; };
 		8412FDED2661AC37001FE9E6 /* msgpack.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8412FDE32661AC37001FE9E6 /* msgpack.xcframework */; };
@@ -2991,7 +2990,6 @@
 			files = (
 				EB8A0C37238D53EE00A20331 /* Main.storyboard in Resources */,
 				EB8A0C36238D53EB00A20331 /* LaunchScreen.storyboard in Resources */,
-				80E519CA2BBCBE21006545B4 /* PrivacyInfo.xcprivacy in Resources */,
 				EB8A0C38238D53F300A20331 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
