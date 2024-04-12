@@ -15,6 +15,7 @@
 #import "ARTBaseMessage+Private.h"
 #import "ARTProtocolMessage+Private.h"
 #import "ARTEventEmitter+Private.h"
+#import "ARTClientOptions.h"
 
 #pragma mark - ARTRealtimePresenceQuery
 
@@ -380,7 +381,7 @@ dispatch_async(_queue, ^{
         case ARTRealtimeChannelDetached:
         case ARTRealtimeChannelFailed: {
             if (cb) {
-                ARTErrorInfo *channelError = [ARTErrorInfo createWithCode:ARTErrorChannelOperationFailedInvalidState message:[NSString stringWithFormat:@"unable to enter presence channel (incompatible channel state: %@)", ARTRealtimeChannelStateToStr(_channel.state_nosync)]];
+                ARTErrorInfo *channelError = [ARTErrorInfo createWithCode:ARTErrorUnableToEnterPresenceChannelInvalidState message:[NSString stringWithFormat:@"unable to enter presence channel (incompatible channel state: %@)", ARTRealtimeChannelStateToStr(_channel.state_nosync)]];
                 cb(channelError);
             }
             return;
@@ -449,10 +450,9 @@ dispatch_sync(_queue, ^{
 });
 }
 
-- (void)leaveAfterChecks:(NSString *_Nullable)clientId data:(id)data callback:(ARTCallback)cb {
+- (void)leaveAfterChecks:(NSString *_Nullable)clientId data:(id _Nullable)data callback:(ARTCallback)cb {
     ARTPresenceMessage *msg = [[ARTPresenceMessage alloc] init];
     msg.action = ARTPresenceLeave;
-    // TODO: RTP10a (if the language permits the data argument to be omitted, then the previously set data value will be sent as a convenience)
     msg.data = data;
     msg.clientId = clientId;
     msg.connectionId = _realtime.connection.id_nosync;
@@ -619,28 +619,35 @@ dispatch_sync(_queue, ^{
 
     ARTRealtimeChannelState channelState = _channel.state_nosync;
     switch (channelState) {
-        case ARTRealtimeChannelInitialized:
-        case ARTRealtimeChannelDetached: // TODO: RTP16b (should fail if DETACHED)
-            [_channel _attach:nil];
-        case ARTRealtimeChannelAttaching: { // TODO: RTP16a (should check `ARTClientOptions.queueMessages`)
-            [self addPendingPresence:pm callback:^(ARTStatus *status) {
-                if (callback) {
-                    callback(status.errorInfo);
-                }
-            }];
-            break;
-        }
         case ARTRealtimeChannelAttached: {
-            [_realtime send:pm sentCallback:nil ackCallback:^(ARTStatus *status) {
+            [_realtime send:pm sentCallback:nil ackCallback:^(ARTStatus *status) { // RTP16a
                 if (callback) callback(status.errorInfo);
             }];
             break;
         }
+        case ARTRealtimeChannelInitialized:
+            if (_realtime.options.queueMessages) { // RTP16b
+                [_channel _attach:nil];
+            }
+            // fallthrough
+        case ARTRealtimeChannelAttaching: {
+            if (_realtime.options.queueMessages) { // RTP16b
+                [self addPendingPresence:pm callback:^(ARTStatus *status) {
+                    if (callback) {
+                        callback(status.errorInfo);
+                    }
+                }];
+                break;
+            }
+            // else fallthrough
+        }
+        // RTP16c
         case ARTRealtimeChannelSuspended:
         case ARTRealtimeChannelDetaching:
+        case ARTRealtimeChannelDetached:
         case ARTRealtimeChannelFailed: {
             if (callback) {
-                ARTErrorInfo *invalidChannelError = [ARTErrorInfo createWithCode:ARTErrorChannelOperationFailedInvalidState message:[NSString stringWithFormat:@"channel operation failed (invalid channel state: %@)", ARTRealtimeChannelStateToStr(channelState)]];
+                ARTErrorInfo *invalidChannelError = [ARTErrorInfo createWithCode:ARTErrorUnableToEnterPresenceChannelInvalidState message:[NSString stringWithFormat:@"channel operation failed (invalid channel state: %@)", ARTRealtimeChannelStateToStr(channelState)]];
                 callback(invalidChannelError);
             }
             break;

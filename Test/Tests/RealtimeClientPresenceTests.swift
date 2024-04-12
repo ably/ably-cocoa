@@ -1182,7 +1182,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enter(nil) { error in
-                XCTAssertEqual(error?.code, ARTErrorCode.channelOperationFailedInvalidState.intValue)
+                XCTAssertEqual(error?.code, ARTErrorCode.unableToEnterPresenceChannelInvalidState.intValue)
                 done()
             }
         }
@@ -1208,7 +1208,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enter(nil) { error in
-                XCTAssertEqual(error?.code, ARTErrorCode.channelOperationFailedInvalidState.intValue)
+                XCTAssertEqual(error?.code, ARTErrorCode.unableToEnterPresenceChannelInvalidState.intValue)
                 done()
             }
         }
@@ -1418,7 +1418,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     }
 
     // RTP10a
-    func skipped__test__044__Presence__leave__should_leave_the_current_client_with_no_data() throws {
+    func test__044__Presence__leave__should_leave_the_current_client_with_no_data() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = "john"
@@ -2065,7 +2065,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.update(nil) { error in
-                XCTAssertEqual(error?.code, ARTErrorCode.channelOperationFailedInvalidState.intValue)
+                XCTAssertEqual(error?.code, ARTErrorCode.unableToEnterPresenceChannelInvalidState.intValue)
                 done()
             }
         }
@@ -2086,7 +2086,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.update(nil) { error in
-                XCTAssertEqual(error?.code, ARTErrorCode.channelOperationFailedInvalidState.intValue)
+                XCTAssertEqual(error?.code, ARTErrorCode.unableToEnterPresenceChannelInvalidState.intValue)
                 done()
             }
         }
@@ -2298,7 +2298,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enter("online") { error in
-                XCTAssertEqual(error?.code, ARTErrorCode.channelOperationFailedInvalidState.intValue)
+                XCTAssertEqual(error?.code, ARTErrorCode.unableToEnterPresenceChannelInvalidState.intValue)
                 done()
             }
         }
@@ -2330,7 +2330,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enter("online") { error in
-                XCTAssertEqual(error?.code, ARTErrorCode.channelOperationFailedInvalidState.intValue)
+                XCTAssertEqual(error?.code, ARTErrorCode.unableToEnterPresenceChannelInvalidState.intValue)
                 done()
             }
         }
@@ -3103,7 +3103,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             waitUntil(timeout: testTimeout) { done in
                 // Call: enterClient, updateClient and leaveClient
                 performMethod(channel.presence) { error in
-                    XCTAssertEqual(error?.code, ARTErrorCode.channelOperationFailedInvalidState.intValue)
+                    XCTAssertEqual(error?.code, ARTErrorCode.unableToEnterPresenceChannelInvalidState.intValue)
                     XCTAssertEqual(channel.state, ARTRealtimeChannelState.failed)
                     guard let reason = channel.errorReason else {
                         fail("Reason is empty"); done(); return
