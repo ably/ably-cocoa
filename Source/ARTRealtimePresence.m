@@ -183,6 +183,10 @@ typedef NS_ENUM(NSUInteger, ARTPresenceSyncState) {
     NSMutableDictionary<NSString *, ARTPresenceMessage *> *_internalMembers; // RTP17h
     
     NSMutableDictionary<NSString *, ARTPresenceMessage *> *_beforeSyncMembers; // RTP19
+    
+    // RTP18a
+    NSString *_syncSequenceId;
+    NSMutableDictionary<NSString *, ARTPresenceMessage *> *_membersBackup;
 }
 
 - (instancetype)initWithChannel:(ARTRealtimeChannelInternal *)channel logger:(ARTInternalLog *)logger {
@@ -690,21 +694,6 @@ dispatch_sync(_queue, ^{
     [_eventEmitter emit:[ARTEvent newWithPresenceAction:pm.action] with:pm];
 }
 
-/*
- * Checks that a channelSerial is the final serial in a sequence of sync messages,
- * by checking that there is nothing after the colon - RTP18b, RTP18c
- */
-- (bool)isLastChannelSerial:(NSString *)channelSerial {
-    if (!channelSerial || [channelSerial isEqualToString:@""]) {
-        return true;
-    }
-    NSArray *a = [channelSerial componentsSeparatedByString:@":"];
-    if (a.count > 1 && ![[a objectAtIndex:1] isEqualToString:@""]) {
-        return false;
-    }
-    return true;
-}
-
 - (void)onAttached:(ARTProtocolMessage *)message {
     [self startSync];
     if (!message.hasPresence) {
@@ -747,18 +736,31 @@ dispatch_sync(_queue, ^{
     }
 }
 
+- (BOOL)shoudRestartSyncWithSequenceId:(NSString *)sequenceId {
+    return _syncSequenceId && sequenceId && ![_syncSequenceId isEqualToString:sequenceId];
+}
+
+- (void)discardSync {
+    if (self.syncInProgress) {
+        _members = [_membersBackup mutableCopy];
+        ARTLogDebug(_logger, @"%p PresenceMap sync with sequence id = %@ was discarded", self, _syncSequenceId);
+    }
+}
+
 - (void)onSync:(ARTProtocolMessage *)message {
-    if (!self.syncInProgress) {
+    NSString *sequenceId = [message getSyncSequenceId];
+    if (!self.syncInProgress || [self shoudRestartSyncWithSequenceId:sequenceId]) {
+        [self discardSync]; // RTP18a
+        _syncSequenceId = sequenceId;
         [self startSync];
     }
     else {
-        ARTLogDebug(self.logger, @"RT:%p C:%p (%@) PresenceMap sync is in progress", _realtime, _channel, _channel.name);
+        ARTLogDebug(self.logger, @"RT:%p C:%p (%@) PresenceMap sync is in progress (syncSequenceId = %@)", _realtime, _channel, _channel.name, _syncSequenceId);
     }
 
     [self onMessage:message];
 
-    // TODO: RTP18a (previous in-flight sync should be discarded)
-    if ([self isLastChannelSerial:message.channelSerial]) { // RTP18b, RTP18c
+    if (message.isEndOfSync) { // RTP18b, RTP18c
         [self endSync];
         ARTLogDebug(self.logger, @"RT:%p C:%p (%@) PresenceMap sync ended", _realtime, _channel, _channel.name);
     }
@@ -941,22 +943,24 @@ dispatch_sync(_queue, ^{
 }
 
 - (void)startSync {
-    ARTLogDebug(_logger, @"%p PresenceMap sync started", self);
+    ARTLogDebug(_logger, @"%p PresenceMap sync started with sequence id = %@", self, _syncSequenceId);
     _beforeSyncMembers = [_members mutableCopy];
+    _membersBackup = [_members mutableCopy];
     _syncState = ARTPresenceSyncStarted;
     [_syncEventEmitter emit:[ARTEvent newWithPresenceSyncState:_syncState] with:nil];
 }
 
 - (void)endSync {
-    ARTLogVerbose(_logger, @"%p PresenceMap sync ending", self);
+    ARTLogVerbose(_logger, @"%p PresenceMap sync ending with sequence id = %@", self, _syncSequenceId);
     [self cleanUpAbsentMembers];
     [self leaveMembersNotPresentInSync];
     _syncState = ARTPresenceSyncEnded;
     _beforeSyncMembers = nil;
-
+    _membersBackup = nil;
     [_syncEventEmitter emit:[ARTEvent newWithPresenceSyncState:ARTPresenceSyncEnded] with:[_members allValues]];
     [_syncEventEmitter off];
-    ARTLogDebug(_logger, @"%p PresenceMap sync ended", self);
+    ARTLogDebug(_logger, @"%p PresenceMap sync with sequence id = %@ is ended", self, _syncSequenceId);
+    _syncSequenceId = nil;
 }
 
 - (void)failsSync:(ARTErrorInfo *)error {
