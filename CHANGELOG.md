@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.2.30](https://github.com/ably/ably-cocoa/tree/1.2.30)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.29...1.2.30)
+
+**Implemented features:**
+
+- Includes PrivacyManifest in line with Apple's new release guidelines [here](https://developer.apple.com/news/?id=3d8a9yyh)
+
 ## [1.2.29](https://github.com/ably/ably-cocoa/tree/1.2.29)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.28...1.2.29)
