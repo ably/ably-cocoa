@@ -736,20 +736,20 @@ dispatch_sync(_queue, ^{
     }
 }
 
-- (BOOL)shoudRestartSyncWithSequenceId:(NSString *)sequenceId {
+- (BOOL)shoudRestartSyncForSequenceId:(NSString *)sequenceId {
     return _syncSequenceId && sequenceId && ![_syncSequenceId isEqualToString:sequenceId];
 }
 
 - (void)discardSync {
     if (self.syncInProgress) {
         _members = [_membersBackup mutableCopy];
-        ARTLogDebug(_logger, @"%p PresenceMap sync with sequence id = %@ was discarded", self, _syncSequenceId);
+        ARTLogDebug(_logger, @"%p PresenceMap sync with syncSequenceId = %@ was discarded", self, _syncSequenceId);
     }
 }
 
 - (void)onSync:(ARTProtocolMessage *)message {
     NSString *sequenceId = [message getSyncSequenceId];
-    if (!self.syncInProgress || [self shoudRestartSyncWithSequenceId:sequenceId]) {
+    if (!self.syncInProgress || [self shoudRestartSyncForSequenceId:sequenceId]) {
         [self discardSync]; // RTP18a
         _syncSequenceId = sequenceId;
         [self startSync];
@@ -943,7 +943,7 @@ dispatch_sync(_queue, ^{
 }
 
 - (void)startSync {
-    ARTLogDebug(_logger, @"%p PresenceMap sync started with sequence id = %@", self, _syncSequenceId);
+    ARTLogDebug(_logger, @"%p PresenceMap sync started with syncSequenceId = %@", self, _syncSequenceId);
     _beforeSyncMembers = [_members mutableCopy];
     _membersBackup = [_members mutableCopy];
     _syncState = ARTPresenceSyncStarted;
@@ -951,7 +951,7 @@ dispatch_sync(_queue, ^{
 }
 
 - (void)endSync {
-    ARTLogVerbose(_logger, @"%p PresenceMap sync ending with sequence id = %@", self, _syncSequenceId);
+    ARTLogVerbose(_logger, @"%p PresenceMap sync ending with syncSequenceId = %@", self, _syncSequenceId);
     [self cleanUpAbsentMembers];
     [self leaveMembersNotPresentInSync];
     _syncState = ARTPresenceSyncEnded;
@@ -959,7 +959,7 @@ dispatch_sync(_queue, ^{
     _membersBackup = nil;
     [_syncEventEmitter emit:[ARTEvent newWithPresenceSyncState:ARTPresenceSyncEnded] with:[_members allValues]];
     [_syncEventEmitter off];
-    ARTLogDebug(_logger, @"%p PresenceMap sync with sequence id = %@ is ended", self, _syncSequenceId);
+    ARTLogDebug(_logger, @"%p PresenceMap sync with syncSequenceId = %@ is ended", self, _syncSequenceId);
     _syncSequenceId = nil;
 }
 
