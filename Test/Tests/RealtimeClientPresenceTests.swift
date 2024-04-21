@@ -188,7 +188,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             channel.internal.presence.members.compactMap { $0.value.clientId }.sorted(), ["user1", "user2", "a", "b", "c"].sorted()
         )
 
-        // Inject a SYNC Presence message (last page)
+        // Inject a SYNC Presence message (second page)
         let sync2Message = ARTProtocolMessage()
         sync2Message.action = .sync
         sync2Message.channel = channel.name
@@ -201,10 +201,11 @@ class RealtimeClientPresenceTests: XCTestCase {
             transport.receive(sync2Message)
         }
         
+        // Inject another SYNC Presence message with a different sequence id to discard previous SYNC (RTP18a)
         let sync3Message = ARTProtocolMessage()
         sync3Message.action = .sync
         sync3Message.channel = channel.name
-        sync3Message.channelSerial = "sequenceid2:cursor1" // sequence id is different, should discard 'sequenceid1' SYNC (RTP18a)
+        sync3Message.channelSerial = "sequenceid2:cursor1"
         sync3Message.timestamp = Date()
         sync3Message.presence = [
             ARTPresenceMessage(clientId: "a", action: .present, connectionId: "another", id: "another:2:0"),
@@ -217,6 +218,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             )
         }
         
+        // Inject end of SYNC
         let sync4Message = ARTProtocolMessage()
         sync4Message.action = .sync
         sync4Message.channel = channel.name
@@ -227,7 +229,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         ]
         delay(0.3) {
             transport.receive(sync4Message)
-            // At this point initial members were removed (user1, user2), first sync discarded, "a" has left, so we have only "b" presented:
+            // At this point initial members were removed as not presented in sync (user1, user2), first sync discarded, "a" has left, so we have only "b" presented:
             XCTAssertEqual(channel.internal.presence.members.compactMap { $0.value.clientId }, ["b"])
         }
         
