@@ -368,9 +368,8 @@ class RealtimeClientPresenceTests: XCTestCase {
         }
     }
 
-    // FIXME: Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
     // RTP19a
-    func skipped__test__014__Presence__PresenceMap_has_existing_members_when_a_SYNC_is_started__should_emit_a_LEAVE_event_for_each_existing_member_if_the_PresenceMap_has_existing_members_when_an_ATTACHED_message_is_received_without_a_HAS_PRESENCE_flag() throws {
+    func test__014__Presence__PresenceMap_has_existing_members_when_a_SYNC_is_started__should_emit_a_LEAVE_event_for_each_existing_member_if_the_PresenceMap_has_existing_members_when_an_ATTACHED_message_is_received_without_a_HAS_PRESENCE_flag() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let client = AblyTests.newRealtime(options).client
@@ -388,9 +387,10 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(4, done: done)
-            transport.setListenerAfterProcessingIncomingMessage { protocolMessage in
+            transport.setListenerBeforeProcessingIncomingMessage { protocolMessage in
                 if protocolMessage.action == .attached {
-                    XCTAssertFalse(protocolMessage.hasPresence)
+                    // Ensure incoming ATTACH message has no HAS_PRESENCE flag
+                    protocolMessage.flags = 0
                     partialDone()
                 }
             }
