@@ -247,9 +247,8 @@ class RealtimeClientPresenceTests: XCTestCase {
         }
     }
 
-    // FIXME: Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
     // RTP18c, RTP18b
-    func skipped__test__012__Presence__realtime_system_reserves_the_right_to_initiate_a_sync_of_the_presence_members_at_any_point_once_a_channel_is_attached__when_a_SYNC_is_sent_with_no_channelSerial_attribute_then_the_sync_data_is_entirely_contained_within_that_ProtocolMessage() throws {
+    func test__012__Presence__realtime_system_reserves_the_right_to_initiate_a_sync_of_the_presence_members_at_any_point_once_a_channel_is_attached__when_a_SYNC_is_sent_with_no_channelSerial_attribute_then_the_sync_data_is_entirely_contained_within_that_ProtocolMessage() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let client = AblyTests.newRealtime(options).client
@@ -267,7 +266,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             fail("TestProxyTransport is not set"); return
         }
 
-        XCTAssertFalse(channel.internal.presence.syncInProgress)
+        expect(channel.internal.presence.syncInProgress).toEventually(beFalse(), timeout: testTimeout)
         expect(channel.internal.presence.members).to(beEmpty())
 
         waitUntil(timeout: testTimeout) { done in
