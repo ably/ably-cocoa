@@ -1477,11 +1477,10 @@ class RealtimeClientPresenceTests: XCTestCase {
         }
     }
 
-    // FIXME: Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
     // RTP2
 
     // RTP2a
-    func skipped__test__045__Presence__PresenceMap__all_incoming_presence_messages_must_be_compared_for_newness_with_the_matching_member_already_in_the_PresenceMap() throws {
+    func test__045__Presence__PresenceMap__all_incoming_presence_messages_must_be_compared_for_newness_with_the_matching_member_already_in_the_PresenceMap() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRealtime(options: options)
@@ -1497,38 +1496,40 @@ class RealtimeClientPresenceTests: XCTestCase {
                 channel.presence.unsubscribe()
                 partialDone()
             }
-            channel.presence.enterClient("tester", data: nil) { error in
+            channel.presence.enterClient("tester", data: "existing") { error in
                 XCTAssertNil(error)
                 partialDone()
             }
         }
 
-        guard let intialPresenceMessage = channel.internal.presence.members["\(channel.internal.connectionId):tester"] else {
-            fail("Missing Presence message"); return
-        }
-
-        XCTAssertEqual(intialPresenceMessage.memberKey(), "\(client.connection.id!):tester")
-
-        var compareForNewnessMethodCalls = 0
-        let hook = channel.internal.presence.testSuite_injectIntoMethod(after: #selector(ARTRealtimePresenceInternal.member(_:isNewerThan:))) {
-            compareForNewnessMethodCalls += 1
+        var presence1: ARTPresenceMessage!
+        var presence2: ARTPresenceMessage!
+        
+        let selector = #selector(ARTRealtimePresenceInternal.member(_:isNewerThan:))
+        
+        let hook = channel.internal.presence.testSuite_injectIntoMethod(after: selector) {
+            channel.internal.presence.testSuite_getArgument(from: selector, at: 1) { arg in
+                presence1 = arg as? ARTPresenceMessage
+            }
+            channel.internal.presence.testSuite_getArgument(from: selector, at: 0) { arg in
+                presence2 = arg as? ARTPresenceMessage
+            }
         }
 
         waitUntil(timeout: testTimeout) { done in
-            channel.presence.enterClient("tester", data: nil) { error in
+            channel.presence.enterClient("tester", data: "new") { error in
                 XCTAssertNil(error)
                 done()
             }
         }
 
-        guard let updatedPresenceMessage = channel.internal.presence.members["\(channel.internal.connectionId):tester"] else {
-            fail("Missing Presence message"); return
-        }
-
-        XCTAssertEqual(intialPresenceMessage.memberKey(), updatedPresenceMessage.memberKey())
-        expect(intialPresenceMessage.timestamp).to(beLessThan(updatedPresenceMessage.timestamp))
-
-        XCTAssertEqual(compareForNewnessMethodCalls, 1)
+        XCTAssertEqual(presence1.clientId, "tester")
+        XCTAssertEqual(presence2.clientId, "tester")
+        
+        XCTAssertEqual(presence1.data as! String, "existing")
+        XCTAssertEqual(presence2.data as! String, "new")
+        
+        expect(presence1.timestamp).to(beLessThan(presence2.timestamp))
 
         hook.remove()
     }
