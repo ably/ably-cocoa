@@ -1996,11 +1996,11 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
-            channel.presence.enterClient("tester", data: nil) { error in
-                XCTAssertNil(error)
+            channel.presence.subscribe(.enter) { _ in
                 partialDone()
             }
-            channel.presence.subscribe(.enter) { _ in
+            channel.presence.enterClient("tester", data: nil) { error in
+                XCTAssertNil(error)
                 partialDone()
             }
         }
