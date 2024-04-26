@@ -1490,9 +1490,8 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
-            channel.presence.subscribe { presence in
+            channel.presence.subscribe(.enter) { presence in
                 XCTAssertEqual(presence.clientId, "tester")
-                XCTAssertEqual(presence.action, .enter)
                 channel.presence.unsubscribe()
                 partialDone()
             }
@@ -1525,6 +1524,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         XCTAssertEqual(presence1.clientId, "tester")
         XCTAssertEqual(presence2.clientId, "tester")
+        XCTAssertEqual(presence1.connectionId, presence2.connectionId)
         
         XCTAssertEqual(presence1.data as! String, "existing")
         XCTAssertEqual(presence2.data as! String, "new")
