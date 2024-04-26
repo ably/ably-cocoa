@@ -1693,12 +1693,10 @@ class RealtimeClientPresenceTests: XCTestCase {
     }
 
     // RTP2c
-
-    // FIXME: Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
-    func skipped__test__054__Presence__PresenceMap__all_presence_messages_from_a_SYNC_must_also_be_compared_for_newness_in_the_same_way_as_they_would_from_a_PRESENCE__discard_members_where_messages_have_arrived_before_the_SYNC() throws {
+    func test__054__Presence__PresenceMap__all_presence_messages_from_a_SYNC_must_also_be_compared_for_newness_in_the_same_way_as_they_would_from_a_PRESENCE__discard_members_where_messages_have_arrived_before_the_SYNC() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        let timeBeforeSync = NSDate()
+        let timeBeforeSync = Date()
         let channelName = test.uniqueChannelName()
         var clientMembers: ARTRealtime?
         defer { clientMembers?.dispose(); clientMembers?.close() }
@@ -1725,12 +1723,9 @@ class RealtimeClientPresenceTests: XCTestCase {
             let partialDone = AblyTests.splitDone(3, done: done)
             transport.setBeforeIncomingMessageModifier { protocolMessage in
                 if protocolMessage.action == .sync {
-                    let injectLeave = ARTPresenceMessage()
-                    injectLeave.action = .leave
-                    injectLeave.connectionId = membersConnectionId
-                    injectLeave.clientId = "user110"
-                    injectLeave.timestamp = timeBeforeSync as Date
-                    protocolMessage.presence?.append(injectLeave)
+                    protocolMessage.presence?.append(
+                        ARTPresenceMessage(clientId: "user110", action: .leave, connectionId: membersConnectionId, id: "\(membersConnectionId):109:0", timestamp: timeBeforeSync)
+                    )
                     transport.setBeforeIncomingMessageModifier(nil)
                     partialDone()
                 }
@@ -1739,7 +1734,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             channel.internal.presence.testSuite_injectIntoMethod(after: #selector(ARTRealtimePresenceInternal.endSync)) {
                 XCTAssertFalse(channel.internal.presence.syncInProgress)
                 XCTAssertEqual(channel.internal.presence.members.count, 120)
-                XCTAssertEqual(channel.internal.presence.members.filter { _, presence in presence.clientId == "user110" && presence.action == .present }.count, 1)
+                XCTAssertEqual(channel.internal.presence.members.filter { _, presence in presence.clientId == "user110" && presence.action == .present }.count, 1) // LEAVE for user110 is ignored, because it's timestamped before SYNC
                 partialDone()
             }
             channel.attach { error in
