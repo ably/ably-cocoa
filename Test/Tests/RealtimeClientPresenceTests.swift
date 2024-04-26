@@ -1784,17 +1784,16 @@ class RealtimeClientPresenceTests: XCTestCase {
         let channel = client.channels.get(channelName)
 
         waitUntil(timeout: testTimeout) { done in
-            let partialDone = AblyTests.splitDone(3, done: done)
+            let partialDone = AblyTests.splitDone(2, done: done)
             channel.presence.subscribe(.update) { _ in
                 partialDone()
             }
             channel.presence.enterClient("tester", data: nil) { error in
                 XCTAssertNil(error)
-                partialDone()
-            }
-            channel.presence.updateClient("tester", data: nil) { error in
-                XCTAssertNil(error)
-                partialDone()
+                channel.presence.updateClient("tester", data: nil) { error in
+                    XCTAssertNil(error)
+                    partialDone()
+                }
             }
         }
 
