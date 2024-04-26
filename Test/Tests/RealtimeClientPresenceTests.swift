@@ -1750,31 +1750,6 @@ class RealtimeClientPresenceTests: XCTestCase {
     }
 
     // RTP2d
-    func skipped__test__046__Presence__PresenceMap__if_action_of_ENTER_arrives__it_should_be_added_to_the_presence_map_with_the_action_set_to_PRESENT() throws {
-        let test = Test()
-        let options = try AblyTests.commonAppSetup(for: test)
-        let client = ARTRealtime(options: options)
-        defer { client.dispose(); client.close() }
-        let channelName = test.uniqueChannelName()
-        let channel = client.channels.get(channelName)
-
-        waitUntil(timeout: testTimeout) { done in
-            let partialDone = AblyTests.splitDone(2, done: done)
-            channel.presence.subscribe(.enter) { _ in
-                partialDone()
-            }
-            channel.presence.enterClient("tester", data: nil) { error in
-                XCTAssertNil(error)
-                partialDone()
-            }
-        }
-
-        XCTAssertEqual(channel.internal.presence.members.filter { _, presence in presence.action == .present }.count, 1)
-        expect(channel.internal.presence.members.filter { _, presence in presence.action == .enter }).to(beEmpty())
-    }
-
-    // FIXME: Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
-    // RTP2d
     func test__FLAKY__047__Presence__PresenceMap__if_action_of_UPDATE_arrives__it_should_be_added_to_the_presence_map_with_the_action_set_to_PRESENT() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
@@ -1931,7 +1906,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         XCTAssertEqual(channel.internal.presence.members.count, 20)
     }
 
-    // RTP2g
+    // RTP2d (ENTER), RTP2g
     func test__FLAKY__051__Presence__PresenceMap__any_incoming_presence_message_that_passes_the_newness_check_should_be_emitted_on_the_Presence_object__with_an_event_name_set_to_its_original_action() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
