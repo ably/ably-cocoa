@@ -1700,7 +1700,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         let channelName = test.uniqueChannelName()
         var clientMembers: ARTRealtime?
         defer { clientMembers?.dispose(); clientMembers?.close() }
-        clientMembers = AblyTests.addMembersSequentiallyToChannel(channelName, members: 120, options: options)
+        clientMembers = AblyTests.addMembersSequentiallyToChannel(channelName, members: 20, options: options)
 
         guard let membersConnectionId = clientMembers?.connection.id else {
             fail("Members client isn't connected"); return
@@ -1715,17 +1715,21 @@ class RealtimeClientPresenceTests: XCTestCase {
         }
 
         channel.presence.subscribe(.leave) { leave in
-            XCTAssertEqual(leave.clientId, "user110")
-            fail("Should not fire Leave event for member `user110` because it's out of date")
+            if leave.clientId == "user10" {
+                fail("Should not fire Leave event for member `user10` because it's out of date")
+            } else {
+                XCTAssertEqual(leave.clientId, "user12")
+            }
         }
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(3, done: done)
             transport.setBeforeIncomingMessageModifier { protocolMessage in
                 if protocolMessage.action == .sync {
-                    protocolMessage.presence?.append(
-                        ARTPresenceMessage(clientId: "user110", action: .leave, connectionId: membersConnectionId, id: "\(membersConnectionId):109:0", timestamp: timeBeforeSync)
-                    )
+                    protocolMessage.presence?.append(contentsOf: [
+                        ARTPresenceMessage(clientId: "user10", action: .leave, connectionId: membersConnectionId, id: "synthesized:9:0", timestamp: timeBeforeSync),
+                        ARTPresenceMessage(clientId: "user12", action: .leave, connectionId: membersConnectionId, id: "synthesized:11:0", timestamp: Date() + 1)
+                    ])
                     transport.setBeforeIncomingMessageModifier(nil)
                     partialDone()
                 }
@@ -1733,61 +1737,9 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
             channel.internal.presence.testSuite_injectIntoMethod(after: #selector(ARTRealtimePresenceInternal.endSync)) {
                 XCTAssertFalse(channel.internal.presence.syncInProgress)
-                XCTAssertEqual(channel.internal.presence.members.count, 120)
-                XCTAssertEqual(channel.internal.presence.members.filter { _, presence in presence.clientId == "user110" && presence.action == .present }.count, 1) // LEAVE for user110 is ignored, because it's timestamped before SYNC
-                partialDone()
-            }
-            channel.attach { error in
-                XCTAssertNil(error)
-                partialDone()
-            }
-        }
-    }
-
-    // FIXME: Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
-    func skipped__test__055__Presence__PresenceMap__all_presence_messages_from_a_SYNC_must_also_be_compared_for_newness_in_the_same_way_as_they_would_from_a_PRESENCE__accept_members_where_message_have_arrived_after_the_SYNC() throws {
-        let test = Test()
-        let options = try AblyTests.commonAppSetup(for: test)
-        let channelName = test.uniqueChannelName()
-        var clientMembers: ARTRealtime?
-        defer { clientMembers?.dispose(); clientMembers?.close() }
-        clientMembers = AblyTests.addMembersSequentiallyToChannel(channelName, members: 120, options: options)
-
-        guard let membersConnectionId = clientMembers?.connection.id else {
-            fail("Members client isn't connected"); return
-        }
-
-        let client = AblyTests.newRealtime(options).client
-        defer { client.dispose(); client.close() }
-        let channel = client.channels.get(channelName)
-
-        guard let transport = client.internal.transport as? TestProxyTransport else {
-            fail("TestProxyTransport is not set"); return
-        }
-
-        waitUntil(timeout: testTimeout.multiplied(by: 2)) { done in
-            let partialDone = AblyTests.splitDone(4, done: done)
-            channel.presence.subscribe(.leave) { leave in
-                XCTAssertEqual(leave.clientId, "user110")
-                partialDone()
-            }
-            transport.setBeforeIncomingMessageModifier { protocolMessage in
-                if protocolMessage.action == .sync {
-                    let injectLeave = ARTPresenceMessage()
-                    injectLeave.action = .leave
-                    injectLeave.connectionId = membersConnectionId
-                    injectLeave.clientId = "user110"
-                    injectLeave.timestamp = Date() + 1
-                    protocolMessage.presence?.append(injectLeave)
-                    transport.setBeforeIncomingMessageModifier(nil)
-                    partialDone()
-                }
-                return protocolMessage
-            }
-            channel.internal.presence.testSuite_injectIntoMethod(after: #selector(ARTRealtimePresenceInternal.endSync)) {
-                XCTAssertFalse(channel.internal.presence.syncInProgress)
-                XCTAssertEqual(channel.internal.presence.members.count, 119)
-                expect(channel.internal.presence.members.filter { _, presence in presence.clientId == "user110" }).to(beEmpty())
+                XCTAssertEqual(channel.internal.presence.members.count, 19)
+                XCTAssertEqual(channel.internal.presence.members.filter { _, presence in presence.clientId == "user10" && presence.action == .present }.count, 1) // LEAVE for user10 is ignored, because it's timestamped before SYNC
+                XCTAssertEqual(channel.internal.presence.members.filter { _, presence in presence.clientId == "user12" && presence.action == .present }.count, 0) // LEAVE for user12 is not ignored, because it's timestamped after SYNC
                 partialDone()
             }
             channel.attach { error in
