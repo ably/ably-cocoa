@@ -431,7 +431,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         clientSource = AblyTests.addMembersSequentiallyToChannel(channelName, members: 250, options: options)
 
         let clientTarget = ARTRealtime(options: options)
-        defer { clientTarget.close() }
+        defer { clientTarget.dispose(); clientTarget.close() }
         let channel = clientTarget.channels.get(channelName)
 
         waitUntil(timeout: testTimeout) { done in
@@ -880,13 +880,13 @@ class RealtimeClientPresenceTests: XCTestCase {
         options.clientId = "john"
 
         let client1 = ARTRealtime(options: options)
-        defer { client1.close() }
+        defer { client1.dispose(); client1.close() }
         
         let channelName = test.uniqueChannelName()
         let channel1 = client1.channels.get(channelName)
 
         let client2 = ARTRealtime(options: options)
-        defer { client2.close() }
+        defer { client2.dispose(); client2.close() }
         let channel2 = client2.channels.get(channelName)
 
         waitUntil(timeout: testTimeout) { done in
@@ -1035,13 +1035,13 @@ class RealtimeClientPresenceTests: XCTestCase {
         options.clientId = "john"
 
         let client1 = ARTRealtime(options: options)
-        defer { client1.close() }
+        defer { client1.dispose(); client1.close() }
         
         let channelName = test.uniqueChannelName()
         let channel1 = client1.channels.get(channelName)
 
         let client2 = ARTRealtime(options: options)
-        defer { client2.close() }
+        defer { client2.dispose(); client2.close() }
         let channel2 = client2.channels.get(channelName)
 
         waitUntil(timeout: testTimeout) { done in
@@ -1064,13 +1064,13 @@ class RealtimeClientPresenceTests: XCTestCase {
         options.clientId = "john"
 
         let client1 = ARTRealtime(options: options)
-        defer { client1.close() }
+        defer { client1.dispose(); client1.close() }
         
         let channelName = test.uniqueChannelName()
         let channel1 = client1.channels.get(channelName)
 
         let client2 = ARTRealtime(options: options)
-        defer { client2.close() }
+        defer { client2.dispose(); client2.close() }
         let channel2 = client2.channels.get(channelName)
 
         waitUntil(timeout: testTimeout) { done in
