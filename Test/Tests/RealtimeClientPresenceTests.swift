@@ -649,7 +649,6 @@ class RealtimeClientPresenceTests: XCTestCase {
         }
     }
 
-    // FIXME: Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
     // RTP5b
     func skipped__test__017__Presence__Channel_state_change_side_effects__if_a_channel_enters_the_ATTACHED_state_then_all_queued_presence_messages_will_be_sent_immediately_and_a_presence_SYNC_may_be_initiated() throws {
         let test = Test()
@@ -1027,7 +1026,6 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     // RTP8
 
-    // FIXME: Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
     // RTP8b
     func test__FLAKY__030__Presence__enter__optionally_a_callback_can_be_provided_that_is_called_for_success() throws {
         let test = Test()
@@ -1056,7 +1054,6 @@ class RealtimeClientPresenceTests: XCTestCase {
         }
     }
 
-    // FIXME: Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
     // RTP8b
     func skipped__test__031__Presence__enter__optionally_a_callback_can_be_provided_that_is_called_for_failure() throws {
         let test = Test()
@@ -1291,7 +1288,6 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     // RTP9
 
-    // FIXME: Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
     // RTP9b
     func skipped__test__039__Presence__update__should_enter_current_client_into_the_channel_if_the_client_was_not_already_entered() throws {
         let test = Test()
@@ -3280,7 +3276,6 @@ class RealtimeClientPresenceTests: XCTestCase {
         XCTAssertTrue(ARTRealtimePresenceQuery().waitForSync)
     }
 
-    // FIXME: Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
     // RTP11a
     func test__FLAKY__100__Presence__get__should_return_a_list_of_current_members_on_the_channel() throws {
         let test = Test()
