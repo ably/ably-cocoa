@@ -8,10 +8,11 @@ You will need a real iOS device to test this functionality.
 - Insert it instead of an empty string in the `key` property's value inside the `AblyHelper` class.
 - Make sure you've selected your development team in the `Signing & Capabilities` tab of the Xcode project target settings and all the provisioning profiles created without errors (update the `bundle-id` for the `AblyPushExample` target as needed).
 - Build and Run the app on your device.
-- Hit "Activate" button, then hit "Print Token". You should see "IDENTITY TOKEN: exists" printed in the debug output window.
+- Hit "Activate Push" button, then hit "Print Token". You should see "IDENTITY TOKEN: exists" printed in the debug output window.
 - Hit "Device Details" to display Ably push device registration info after successful activation.
 - Go to the `Notifications` tab of the Ably's app dashboard again and scroll to the `Push Inspector` section. Fill in `Title` and `Body` fields of the push notification. Then insert "basic-apns-example" in the `Client ID` field and press enter. Then hit "Push to client" button. You should now see the notification on the screen of your device.
-- Also you can send notifications from the app itself if you tick `Push Admin` capability in your API key settings in the app's dashboard. Just hit "Send Push" button to send a predefined push notification which is also will be displayed on your device's screen right away. You can change this behavior in the `UNUserNotificationCenterDelegate` extension for the `AblyHelper` by editing `completionHandler([.banner, .sound])` line of code.
+- Also you can send notifications from the app itself if you tick `Push Admin` capability in your API key settings in the app's dashboard. Just hit "Send Push to deviceId" button to send a predefined push notification which is also will be displayed on your device's screen right away. You can change this behavior in the `UNUserNotificationCenterDelegate` extension for the `AblyHelper` by editing `completionHandler([.banner, .sound])` line of code.
+- To test Channels based push, go to the `Settings` tab of the Ably dashboard and scroll down to `Channel rules`. Press `Add new rule` and name your channel ID `exampleChannel1`, tick `Push notifications enabled` before scrolling down and pressing `Create channel rule`. Repeat this step for a channel named `exampleChannel2`. You can now subscribe and send pushes to these two channels within the example app. You can also use the Push Inspector. 
 
 ### Location pushes
 

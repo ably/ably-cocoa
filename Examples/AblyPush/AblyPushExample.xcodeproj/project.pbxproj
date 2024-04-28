@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		219F937A2A4E0E44007DE767 /* LocationPushEventsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 219F93792A4E0E44007DE767 /* LocationPushEventsView.swift */; };
+		801880802B87E7BA00A698F0 /* PushButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8018807F2B87E7BA00A698F0 /* PushButton.swift */; };
+		801880822B87E80D00A698F0 /* StatelessButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801880812B87E80D00A698F0 /* StatelessButton.swift */; };
+		801880872B87E8A300A698F0 /* VerticalLabelStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801880862B87E8A300A698F0 /* VerticalLabelStyle.swift */; };
 		8405EE8427F0B06800C9E461 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8405EE8327F0B06800C9E461 /* App.swift */; };
 		8405EE8627F0B06800C9E461 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8405EE8527F0B06800C9E461 /* ContentView.swift */; };
 		8405EE8827F0B06C00C9E461 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8405EE8727F0B06C00C9E461 /* Assets.xcassets */; };
@@ -52,6 +55,9 @@
 /* Begin PBXFileReference section */
 		219F93782A4DFE41007DE767 /* AblyLocationPush.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AblyLocationPush.entitlements; sourceTree = "<group>"; };
 		219F93792A4E0E44007DE767 /* LocationPushEventsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationPushEventsView.swift; sourceTree = "<group>"; };
+		8018807F2B87E7BA00A698F0 /* PushButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushButton.swift; sourceTree = "<group>"; };
+		801880812B87E80D00A698F0 /* StatelessButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatelessButton.swift; sourceTree = "<group>"; };
+		801880862B87E8A300A698F0 /* VerticalLabelStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerticalLabelStyle.swift; sourceTree = "<group>"; };
 		8405EE8027F0B06800C9E461 /* Ably Push.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Ably Push.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8405EE8327F0B06800C9E461 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
 		8405EE8527F0B06800C9E461 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -95,6 +101,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		801880852B87E86600A698F0 /* Buttons */ = {
+			isa = PBXGroup;
+			children = (
+				801880812B87E80D00A698F0 /* StatelessButton.swift */,
+				8018807F2B87E7BA00A698F0 /* PushButton.swift */,
+				801880862B87E8A300A698F0 /* VerticalLabelStyle.swift */,
+			);
+			path = Buttons;
+			sourceTree = "<group>";
+		};
 		8405EE7727F0B06800C9E461 = {
 			isa = PBXGroup;
 			children = (
@@ -122,6 +138,7 @@
 				8405EE8327F0B06800C9E461 /* App.swift */,
 				842F124927F0B29D0029692E /* AblyHelper.swift */,
 				8405EE8527F0B06800C9E461 /* ContentView.swift */,
+				801880852B87E86600A698F0 /* Buttons */,
 				219F93792A4E0E44007DE767 /* LocationPushEventsView.swift */,
 				842F124B27F0BFC10029692E /* Info.plist */,
 				84E3D1A32A6D886E0081E898 /* InfoLP.plist */,
@@ -300,7 +317,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				801880822B87E80D00A698F0 /* StatelessButton.swift in Sources */,
 				219F937A2A4E0E44007DE767 /* LocationPushEventsView.swift in Sources */,
+				801880872B87E8A300A698F0 /* VerticalLabelStyle.swift in Sources */,
+				801880802B87E7BA00A698F0 /* PushButton.swift in Sources */,
 				8405EE8627F0B06800C9E461 /* ContentView.swift in Sources */,
 				842F124A27F0B29D0029692E /* AblyHelper.swift in Sources */,
 				8405EE8427F0B06800C9E461 /* App.swift in Sources */,
@@ -458,10 +478,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = AblyPushExample/AblyPushExample.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"AblyPushExample/Preview Content\"";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = XXY98AVDR6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AblyPushExample/Info.plist;
@@ -491,10 +512,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = AblyPushExample/AblyPushExample.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"AblyPushExample/Preview Content\"";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = XXY98AVDR6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AblyPushExample/Info.plist;
@@ -526,7 +548,7 @@
 				CODE_SIGN_ENTITLEMENTS = AblyLocationPush/AblyLocationPush.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = XXY98AVDR6;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AblyLocationPush/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = AblyLocationPush;
@@ -554,7 +576,7 @@
 				CODE_SIGN_ENTITLEMENTS = AblyLocationPush/AblyLocationPush.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = XXY98AVDR6;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AblyLocationPush/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = AblyLocationPush;
@@ -585,7 +607,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"AblyPushExample/Preview Content\"";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = XXY98AVDR6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AblyPushExample/InfoLP.plist;
@@ -621,7 +643,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"AblyPushExample/Preview Content\"";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = XXY98AVDR6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AblyPushExample/InfoLP.plist;

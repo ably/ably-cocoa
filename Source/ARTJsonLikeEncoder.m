@@ -132,6 +132,10 @@
     return [self encode:[self deviceDetailsToDictionary:deviceDetails] error:error];
 }
 
+- (NSData *)encodeLocalDevice:(ARTLocalDevice *)device error:(NSError **)error {
+    return [self encode:[self localDeviceToDictionary:device] error:error];
+}
+
 - (ARTDeviceDetails *)decodeDeviceDetails:(NSData *)data error:(NSError **)error {
     return [self deviceDetailsFromDictionary:[self decodeDictionary:data error:nil] error:error];
 }
@@ -627,7 +631,7 @@
     return dictionary;
 }
 
-- (NSDictionary *)deviceDetailsToDictionary:(ARTDeviceDetails *)deviceDetails {
+- (NSMutableDictionary *)deviceDetailsToDictionary:(ARTDeviceDetails *)deviceDetails {
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
 
     dictionary[@"id"] = deviceDetails.id;
@@ -640,6 +644,12 @@
 
     dictionary[@"push"] = [self devicePushDetailsToDictionary:deviceDetails.push];
 
+    return dictionary;
+}
+
+- (NSDictionary *)localDeviceToDictionary:(ARTLocalDevice *)device {
+    NSMutableDictionary *dictionary = [self deviceDetailsToDictionary:device];
+    dictionary[@"deviceSecret"] = device.secret;
     return dictionary;
 }
 
@@ -719,10 +729,6 @@
     message.channel = [input artString:@"channel"];
     message.channelSerial = [input artString:@"channelSerial"];
     message.connectionId = [input artString:@"connectionId"];
-    NSNumber * serial =  [input artNumber:@"connectionSerial"];
-    if (serial != nil) {
-        message.connectionSerial = [serial longLongValue];
-    }
     message.id = [input artString:@"id"];
     message.msgSerial = [input artNumber:@"msgSerial"];
     message.timestamp = [input artTimestamp:@"timestamp"];

@@ -50,7 +50,7 @@ class RealtimeClientTests: XCTestCase {
 
                 // This test should not directly validate version against ARTDefault.version(), as
                 // ultimately the version header has been derived from that value.
-                expect(transport.lastUrl!.query).to(haveParam("v", withValue: "1.2"))
+                expect(transport.lastUrl!.query).to(haveParam("v", withValue: "2"))
 
                 done()
             }
@@ -117,8 +117,10 @@ class RealtimeClientTests: XCTestCase {
                     done()
                 case .connected:
                     self.checkError(errorInfo)
-                    XCTAssertEqual(client.connection.recoveryKey, "\(client.connection.key ?? ""):\(client.connection.serial):\(client.internal.msgSerial)", "recoveryKey wrong formed")
-                    options.recover = client.connection.recoveryKey
+                    let recoveryKey = try! ARTConnectionRecoveryKey.fromJsonString(client.connection.createRecoveryKey() ?? "invalid")
+                    XCTAssertEqual(recoveryKey.connectionKey, client.internal.connection.key)
+                    XCTAssertEqual(recoveryKey.msgSerial, client.internal.msgSerial)
+                    options.recover = client.connection.createRecoveryKey()
                     done()
                 default:
                     break
@@ -198,6 +200,7 @@ class RealtimeClientTests: XCTestCase {
     func test__019__RealtimeClient__options__url_should_contains_transport_params() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
+        options.autoConnect = false
         options.transportParams = [
             "tpBool": .init(bool: true),
             "tpInt": .init(number: .init(value: 12)),
@@ -209,7 +212,7 @@ class RealtimeClientTests: XCTestCase {
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
-        waitUntil(timeout: testTimeout.multiplied(by: 2)) { done in
+        waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connecting) { _ in
                 guard let webSocketTransport = client.internal.transport as? ARTWebSocketTransport else {
                     fail("Transport should be of type ARTWebSocketTransport"); done()

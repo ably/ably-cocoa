@@ -4,6 +4,7 @@
 
 @class ARTRealtime;
 @class ARTEventEmitter;
+@class ARTConnectionRecoveryKey;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -23,16 +24,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, readonly) NSString *key;
 
 /**
- * The recovery key string can be used by another client to recover this connection's state in the recover client options property. See [connection state recover options](https://ably.com/docs/realtime/connection#connection-state-recover-options) for more information.
- */
-@property (nullable, readonly) NSString *recoveryKey;
-
-/**
- * The serial number of the last message to be received on this connection, used automatically by the library when recovering or resuming a connection. When recovering a connection explicitly, the `recoveryKey` is used in the recover client options as it contains both the key and the last message serial.
- */
-@property (readonly) int64_t serial;
-
-/**
  * The maximum message size is an attribute of an Ably account and enforced by Ably servers. `maxMessageSize` indicates the maximum message size allowed by the Ably account this connection is using. Overrides the default value of `+[ARTDefault maxMessageSize]`.
  */
 @property (readonly) NSInteger maxMessageSize;
@@ -46,6 +37,17 @@ NS_ASSUME_NONNULL_BEGIN
  * An `ARTErrorInfo` object describing the last error received if a connection failure occurs.
  */
 @property (nullable, readonly) ARTErrorInfo *errorReason;
+
+/**
+ * This property is deprecated and will be removed in future versions of the library. You should use `createRecoveryKey` method instead.
+ */
+@property (nullable, readonly) NSString *recoveryKey DEPRECATED_MSG_ATTRIBUTE("Use `createRecoveryKey` method instead.");
+
+/**
+ * The recovery key string can be used by another client to recover this connection's state in the recover client options property. See [connection state recover options](https://ably.com/docs/realtime/connection#connection-state-recover-options) for more information.
+ * This will return `nil` if connection is in `CLOSED`, `CLOSING`, `FAILED`, or `SUSPENDED` states, or when it does not have a connection `key` (for example, it has not yet become connected).
+ */
+- (nullable NSString *)createRecoveryKey;
 
 /**
  * Explicitly calling `connect` is unnecessary unless the `ARTClientOptions.autoConnect` is `false`. Unless already connected or connecting, this method causes the connection to open, entering the `ARTRealtimeConnectionState.ARTRealtimeConnecting` state.

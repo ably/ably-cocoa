@@ -1,5 +1,57 @@
 # Change Log
 
+## [1.2.30](https://github.com/ably/ably-cocoa/tree/1.2.30)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.29...1.2.30)
+
+**Implemented features:**
+
+- Includes PrivacyManifest in line with Apple's new release guidelines [here](https://developer.apple.com/news/?id=3d8a9yyh)
+
+## [1.2.29](https://github.com/ably/ably-cocoa/tree/1.2.29)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.28...1.2.29)
+
+**Fixed issues:**
+
+- Fixes typo which caused previous Push Notifiication corner cases fix to fail
+
+## [1.2.28](https://github.com/ably/ably-cocoa/tree/1.2.28)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.27...1.2.28)
+
+**Fixed issues:**
+
+- Push Notification corner cases as initially reported in ably-java [\#993](https://github.com/ably/ably-java/issues/993)
+
+## [1.2.27](https://github.com/ably/ably-cocoa/tree/1.2.27)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.26...1.2.27)
+
+**Implemented features:**
+
+- Updated example app [\#1879](https://github.com/ably/ably-cocoa/pull/1879)
+
+**Fixed issues:**
+
+- Device registration flow omits `deviceSecret` [\#1892](https://github.com/ably/ably-cocoa/issues/1892)
+
+## [1.2.26](https://github.com/ably/ably-cocoa/tree/1.2.26)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.25...1.2.26)
+
+**Fixed issues:**
+
+- Singleton realtime instance obtains multiple connections and confuses them [\#1882](https://github.com/ably/ably-cocoa/issues/1882)
+
+## [1.2.25](https://github.com/ably/ably-cocoa/tree/1.2.25)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.24...1.2.25)
+
+**Implemented features:**
+
+- Realtime protocol v2 implementation (with no `connectionSerial`) [\#1494](https://github.com/ably/ably-cocoa/issues/1494)
+
 ## [1.2.24](https://github.com/ably/ably-cocoa/tree/1.2.24)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.23...1.2.24)

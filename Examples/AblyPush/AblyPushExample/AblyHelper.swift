@@ -2,7 +2,7 @@ import Ably
 import UIKit
 import CoreLocation
 
-class AblyHelper: NSObject {
+class AblyHelper: NSObject, ObservableObject {
     
     static let shared = AblyHelper()
     
@@ -17,6 +17,10 @@ class AblyHelper: NSObject {
     var locationDeviceToken: String?
     
     var activatePushCallback: ((String?, String?, ARTErrorInfo?) -> ())?
+    
+    @Published var isSubscribedToExampleChannel1 = false
+    @Published var isSubscribedToExampleChannel2 = false
+    @Published var isPushActivated = false
     
     private override init() {
         super.init()
@@ -87,6 +91,64 @@ extension AblyHelper {
             print("Publish result: \(error?.localizedDescription ?? "Success")")
         }
     }
+    
+    func sendPushToChannel(_ channel: Channel) {
+        let message = ARTMessage(name: "example", data: "rest data")
+        message.extras = [
+            "push": [
+                "notification": [
+                    "title": "Channel Push",
+                    "body": "Sent push to \(channel.rawValue)"
+                ],
+                "data": [
+                    "foo": "bar",
+                    "baz": "qux"
+                ]
+            ]
+        ] as any ARTJsonCompatible
+        
+        realtime.channels.get(channel.rawValue).publish([message]) { error in
+            if let error {
+                print("Error sending push to \(channel.rawValue) with error: \(error.localizedDescription)")
+            } else {
+                print("Sent push to \(channel.rawValue)")
+            }
+        }
+    }
+    
+    func subscribeToChannel(_ channel: Channel) {
+        realtime.channels.get(channel.rawValue).push.subscribeDevice { error in
+            guard error == nil else {
+                print("Error subscribing to \(channel.rawValue) with error: \(error!.localizedDescription)")
+                return
+            }
+            print("Succesfully subscribed to \(channel.rawValue)")
+            
+            switch channel {
+            case .exampleChannel1:
+                self.isSubscribedToExampleChannel1 = true
+            case .exampleChannel2:
+                self.isSubscribedToExampleChannel2 = true
+            }
+        }
+    }
+    
+    func unsubscribeFromChannel(_ channel: Channel) {
+        realtime.channels.get(channel.rawValue).push.unsubscribeDevice { error in
+            guard error == nil else {
+                print("Error subscribing to \(channel.rawValue) with error: \(error!.localizedDescription)")
+                return
+            }
+            
+            print("Succesfully unsubscribed from \(channel.rawValue)")
+            switch channel {
+            case .exampleChannel1:
+                self.isSubscribedToExampleChannel1 = false
+            case .exampleChannel2:
+                self.isSubscribedToExampleChannel2 = false
+            }
+        }
+    }
 }
 
 extension AblyHelper: ARTPushRegistererDelegate {
@@ -95,10 +157,16 @@ extension AblyHelper: ARTPushRegistererDelegate {
         print("Push activation: \(error?.localizedDescription ?? "Success")")
         activatePushCallback?(defaultDeviceToken, locationDeviceToken, error)
         activateLocationPush()
+        if error == nil {
+            isPushActivated = true
+        }
     }
     
     func didDeactivateAblyPush(_ error: ARTErrorInfo?) {
         print("Push deactivation: \(error?.localizedDescription ?? "Success")")
+        if error == nil {
+            isPushActivated = false
+        }
     }
     
     func didUpdateAblyPush(_ error: ARTErrorInfo?) {
@@ -140,4 +208,9 @@ extension AblyHelper : CLLocationManagerDelegate {
             break
         }
     }
+}
+
+enum Channel: String {
+    case exampleChannel1
+    case exampleChannel2
 }

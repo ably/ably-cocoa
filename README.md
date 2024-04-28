@@ -12,7 +12,7 @@
 
 _[Ably](https://ably.com) is the platform that powers synchronized digital experiences in realtime. Whether attending an event in a virtual venue, receiving realtime financial information, or monitoring live car performance data – consumers simply expect realtime digital experiences as standard. Ably provides a suite of APIs to build, extend, and deliver powerful digital experiences in realtime for more than 250 million devices across 80 countries each month. Organizations like Bloomberg, HubSpot, Verizon, and Hopin depend on Ably’s platform to offload the growing complexity of business-critical realtime data synchronization at global scale. For more information, see the [Ably documentation](https://ably.com/docs)._
 
-This is an iOS, tvOS and macOS Objective-C and Swift client library SDK for Ably, written in Objective-C. The library currently targets the [Ably client library features spec](https://www.ably.com/docs/client-lib-development-guide/features/) Version 1.2. You can jump to the '[Known Limitations](#known-limitations)' section to see the features this client library does not yet support or [view our client library SDKs feature support matrix](https://www.ably.com/download/sdk-feature-support-matrix) to see the list of all the available features.
+This is an iOS, tvOS and macOS Objective-C and Swift client library SDK for Ably, written in Objective-C. The library currently targets the [Ably client library features spec](https://www.ably.com/docs/client-lib-development-guide/features/) Version 1.2. You can jump to the '[Known Limitations](#known-limitations)' section to see the features this client library does not yet support.
 
 ## Supported platforms
 
@@ -61,7 +61,7 @@ You can install Ably for iOS and macOS through Package Manager, CocoaPods, Carth
     - [This apple guide](https://developer.apple.com/documentation/swift_packages/adding_package_dependencies_to_your_app) explains the steps in more detail.
 - To install the `ably-cocoa` package in another **Swift Package**, then add the following to your `Package.Swift`:
 ```swift
- .package(url: "https://github.com/ably/ably-cocoa", from: "1.2.24"),
+ .package(url: "https://github.com/ably/ably-cocoa", from: "1.2.30"),
 ```
 ### Installing through [CocoaPods](https://cocoapods.org/)
 
@@ -101,7 +101,7 @@ If you see, for example, a `dyld: Library not loaded: @rpath/AblyDeltaCodec.fram
 
 ### Manual installation 
 
-1. Get the code from GitHub [from the release page](https://github.com/ably/ably-cocoa/releases/tag/1.2.24), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-cocoa.git`
+1. Get the code from GitHub [from the release page](https://github.com/ably/ably-cocoa/releases/tag/1.2.30), or clone it to get the latest, unstable and possibly underdocumented version: `git clone git@github.com:ably/ably-cocoa.git`
 2. Drag the directory `ably-cocoa/ably-cocoa` into your project as a group.
 3. Ably depends on our [MessagePack Fork](https://github.com/ably-forks/msgpack-objective-C) 0.2.0; get it [from the releases page](https://github.com/ably-forks/msgpack-objective-C/releases/tag/0.2.0-ably-1) and link it into your project.
 
