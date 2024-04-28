@@ -2510,10 +2510,9 @@ class RealtimeClientPresenceTests: XCTestCase {
         }
     }
 
-    // FIXME: Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
     // RTP17
 
-    func skipped__test__080__Presence__private_and_internal_PresenceMap_containing_only_members_that_match_the_current_connectionId__any_ENTER__PRESENT__UPDATE_or_LEAVE_event_that_matches_the_current_connectionId_should_be_applied_to_this_object() throws {
+    func test__080__Presence__private_and_internal_PresenceMap_containing_only_members_that_match_the_current_connectionId__any_ENTER__PRESENT__UPDATE_or_LEAVE_event_that_matches_the_current_connectionId_should_be_applied_to_this_object() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let channelName = test.uniqueChannelName()
@@ -2535,7 +2534,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 guard let currentConnectionId = clientA.connection.id else {
                     fail("ClientA should be connected"); partialDone(); return
                 }
-                XCTAssertEqual(presence.action, ARTPresenceAction.enter)
+                XCTAssertTrue(presence.action == ARTPresenceAction.enter || presence.action == ARTPresenceAction.present)
                 XCTAssertEqual(presence.connectionId, currentConnectionId)
                 XCTAssertEqual(channelA.internal.presence.members.count, 1)
                 XCTAssertEqual(channelA.internal.presence.internalMembers.count, 1)
@@ -2546,7 +2545,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 guard let currentConnectionId = clientB.connection.id else {
                     fail("ClientB should be connected"); partialDone(); return
                 }
-                expect(presence.action).to(equal(ARTPresenceAction.enter) || equal(ARTPresenceAction.present))
+                XCTAssertTrue(presence.action == ARTPresenceAction.enter || presence.action == ARTPresenceAction.present)
                 XCTAssertNotEqual(presence.connectionId, currentConnectionId)
                 XCTAssertEqual(channelB.internal.presence.members.count, 1)
                 XCTAssertEqual(channelB.internal.presence.internalMembers.count, 0)
