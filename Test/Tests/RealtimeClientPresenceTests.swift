@@ -408,6 +408,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 partialDone()
             }
         }
+        transport.setListenerBeforeProcessingIncomingMessage(nil)
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.get { members, error in
@@ -3522,10 +3523,12 @@ class RealtimeClientPresenceTests: XCTestCase {
         let query = ARTRealtimePresenceQuery()
         XCTAssertTrue(query.waitForSync)
 
+        var transport = client.internal.transport as! TestProxyTransport
+
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
                 XCTAssertNil(error)
-                let transport = client.internal.transport as! TestProxyTransport
+                transport = client.internal.transport as! TestProxyTransport
                 transport.setListenerBeforeProcessingIncomingMessage { protocolMessage in
                     if protocolMessage.action == .sync {
                         XCTAssertEqual(protocolMessage.presence!.count, 100)
@@ -3543,6 +3546,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 }
             }
         }
+        transport.setListenerBeforeProcessingIncomingMessage(nil)
     }
 
     // RTP11c1
@@ -3883,7 +3887,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 XCTAssertFalse(channel.presence.internal.syncComplete_nosync())
             }
         }
-
+        transport.setListenerBeforeProcessingIncomingMessage(nil)
         expect(channel.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
         XCTAssertEqual(transport.protocolMessagesReceived.filter { $0.action == .sync }.count, 3)
     }
