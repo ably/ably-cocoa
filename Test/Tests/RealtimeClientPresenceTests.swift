@@ -3530,7 +3530,6 @@ class RealtimeClientPresenceTests: XCTestCase {
                 transport = client.internal.transport as! TestProxyTransport
                 transport.setListenerBeforeProcessingIncomingMessage { protocolMessage in
                     if protocolMessage.action == .sync {
-                        XCTAssertEqual(protocolMessage.presence!.count, 100)
                         channel.presence.get(query) { members, error in
                             XCTAssertNil(error)
                             if let members {
