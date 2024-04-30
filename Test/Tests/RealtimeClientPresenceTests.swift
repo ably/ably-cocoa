@@ -331,27 +331,27 @@ class RealtimeClientPresenceTests: XCTestCase {
         }
 
         XCTAssertEqual(channel.internal.presence.members.count, 2)
-        // Inject a local member
-        let internalMember = ARTPresenceMessage(clientId: NSUUID().uuidString, action: .enter, connectionId: "another", id: "another:0:0")
+        // Inject a internal member
+        let internalMember = ARTPresenceMessage(clientId: "internal-member", action: .enter, connectionId: channel.internal.connectionId, id: "\(channel.internal.connectionId):0:0")
         channel.internal.presence.processMember(internalMember)
         XCTAssertEqual(channel.internal.presence.members.count, 3)
+        XCTAssertEqual(channel.internal.presence.internalMembers.count, 1)
         XCTAssertEqual(channel.internal.presence.members.filter { memberKey, _ in memberKey.contains(internalMember.clientId!) }.count, 1)
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.get { members, error in
                 XCTAssertNil(error)
-                guard let members = members, members.count == 3 else {
-                    fail("Should at least have 3 members"); done(); return
-                }
-                XCTAssertEqual(members.filter { $0.clientId == internalMember.clientId }.count, 1)
+                XCTAssertEqual(members?.count, 3)
+                XCTAssertEqual(members?.filter { $0.clientId == internalMember.clientId }.count, 1)
                 done()
             }
         }
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.subscribe(.leave) { leave in
-                XCTAssertEqual(leave.clientId, internalMember.clientId)
-                done()
+                if leave.clientId == internalMember.clientId {
+                    done()
+                }
             }
             client.requestPresenceSyncForChannel(channel)
         }
@@ -359,10 +359,8 @@ class RealtimeClientPresenceTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             channel.presence.get { members, error in
                 XCTAssertNil(error)
-                guard let members = members, members.count == 2 else {
-                    fail("Should at least have 2 members"); done(); return
-                }
-                expect(members.filter { $0.clientId == internalMember.clientId }).to(beEmpty())
+                XCTAssertEqual(members?.count, 2)
+                expect(members?.filter { $0.clientId == internalMember.clientId }).to(beEmpty())
                 done()
             }
         }
@@ -410,6 +408,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 partialDone()
             }
         }
+        transport.setListenerBeforeProcessingIncomingMessage(nil)
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.get { members, error in
@@ -3524,10 +3523,12 @@ class RealtimeClientPresenceTests: XCTestCase {
         let query = ARTRealtimePresenceQuery()
         XCTAssertTrue(query.waitForSync)
 
+        var transport = client.internal.transport as! TestProxyTransport
+
         waitUntil(timeout: testTimeout) { done in
             channel.attach { error in
                 XCTAssertNil(error)
-                let transport = client.internal.transport as! TestProxyTransport
+                transport = client.internal.transport as! TestProxyTransport
                 transport.setListenerBeforeProcessingIncomingMessage { protocolMessage in
                     if protocolMessage.action == .sync {
                         XCTAssertEqual(protocolMessage.presence!.count, 100)
@@ -3545,6 +3546,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 }
             }
         }
+        transport.setListenerBeforeProcessingIncomingMessage(nil)
     }
 
     // RTP11c1
@@ -3885,7 +3887,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 XCTAssertFalse(channel.presence.internal.syncComplete_nosync())
             }
         }
-
+        transport.setListenerBeforeProcessingIncomingMessage(nil)
         expect(channel.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
         XCTAssertEqual(transport.protocolMessagesReceived.filter { $0.action == .sync }.count, 3)
     }
