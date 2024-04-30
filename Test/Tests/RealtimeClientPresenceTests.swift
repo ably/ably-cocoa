@@ -1708,13 +1708,10 @@ class RealtimeClientPresenceTests: XCTestCase {
         guard let transport = client.internal.transport as? TestProxyTransport else {
             fail("TestProxyTransport is not set"); return
         }
-
-        channel.presence.subscribe(.leave) { leave in
-            if leave.clientId == "user10" {
-                fail("Should not fire Leave event for member `user10` because it's out of date")
-            } else {
-                XCTAssertEqual(leave.clientId, "user12")
-            }
+        
+        var leaveEvents = [ARTPresenceMessage]()
+        channel.presence.subscribe(.leave) { message in
+            leaveEvents.append(message)
         }
 
         waitUntil(timeout: testTimeout) { done in
@@ -1742,6 +1739,8 @@ class RealtimeClientPresenceTests: XCTestCase {
                 partialDone()
             }
         }
+        XCTAssertTrue(leaveEvents.contains(where: { $0.clientId == "user12" }))
+        XCTAssertFalse(leaveEvents.contains(where: { $0.clientId == "user10" }))
     }
 
     // RTP2d
