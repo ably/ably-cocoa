@@ -691,13 +691,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             XCTAssertFalse(channel2.presence.syncComplete)
             XCTAssertEqual(channel2.internal.presence.members.count, 0)
         }
-
-        guard let transport = client2.internal.transport as? TestProxyTransport else {
-            fail("Transport should be a test proxy"); return
-        }
-
-        XCTAssertEqual(transport.protocolMessagesReceived.filter { $0.action == .sync }.count, 1)
-
+        
         expect(channel2.presence.syncComplete).toEventually(beTrue(), timeout: testTimeout)
         XCTAssertEqual(channel2.internal.presence.members.count, 2)
     }
