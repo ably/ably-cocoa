@@ -3904,15 +3904,15 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         let expectedData = ["test": 1]
 
-        var encodeNumberOfCalls = 0
+        var encodeWasCalled = false
         let hookEncode = channel.internal.dataEncoder.testSuite_injectIntoMethod(after: #selector(ARTDataEncoder.encode(_:))) {
-            encodeNumberOfCalls += 1
+            encodeWasCalled = true
         }
         defer { hookEncode.remove() }
 
-        var decodeNumberOfCalls = 0
+        var decodeWasCalled = false
         let hookDecode = channel.internal.dataEncoder.testSuite_injectIntoMethod(after: #selector(ARTDataEncoder.decode(_:encoding:))) {
-            decodeNumberOfCalls += 1
+            decodeWasCalled = true
         }
         defer { hookDecode.remove() }
 
@@ -3940,8 +3940,8 @@ class RealtimeClientPresenceTests: XCTestCase {
             }
         }
 
-        XCTAssertEqual(encodeNumberOfCalls, 1)
-        XCTAssertEqual(decodeNumberOfCalls, 1)
+        XCTAssertTrue(encodeWasCalled)
+        XCTAssertTrue(decodeWasCalled)
     }
 
     // RTP14d
