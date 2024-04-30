@@ -105,7 +105,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     // RTP1
 
-    func test__FLAKY__010__Presence__ProtocolMessage_bit_flag__when_members_are_present() throws {
+    func test__010__Presence__ProtocolMessage_bit_flag__when_members_are_present() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
 
@@ -307,7 +307,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     // RTP19
 
-    func test__FLAKY__013__Presence__PresenceMap_has_existing_members_when_a_SYNC_is_started__should_ensure_that_members_no_longer_present_on_the_channel_are_removed_from_the_local_PresenceMap_once_the_sync_is_complete() throws {
+    func test__013__Presence__PresenceMap_has_existing_members_when_a_SYNC_is_started__should_ensure_that_members_no_longer_present_on_the_channel_are_removed_from_the_local_PresenceMap_once_the_sync_is_complete() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let channelName = test.uniqueChannelName()
@@ -420,7 +420,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     }
 
     // RTP4
-    func test__FLAKY__002__Presence__should_receive_all_250_members() throws {
+    func test__002__Presence__should_receive_all_250_members() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         var clientSource: ARTRealtime!
@@ -551,7 +551,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         }
     }
 
-    func test__FLAKY__019__Presence__Channel_state_change_side_effects__if_the_channel_enters_the_FAILED_state__should_clear_the_PresenceMap_including_local_members_and_does_not_emit_any_presence_events() throws {
+    func test__019__Presence__Channel_state_change_side_effects__if_the_channel_enters_the_FAILED_state__should_clear_the_PresenceMap_including_local_members_and_does_not_emit_any_presence_events() throws {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
@@ -649,7 +649,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     }
 
     // RTP5b
-    func test__FLAKY__017__Presence__Channel_state_change_side_effects__if_a_channel_enters_the_ATTACHED_state_then_all_queued_presence_messages_will_be_sent_immediately_and_a_presence_SYNC_may_be_initiated() throws {
+    func test__017__Presence__Channel_state_change_side_effects__if_a_channel_enters_the_ATTACHED_state_then_all_queued_presence_messages_will_be_sent_immediately_and_a_presence_SYNC_may_be_initiated() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let client1 = AblyTests.newRealtime(options).client
@@ -872,7 +872,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     // RTP8
 
     // RTP8a
-    func test__FLAKY__024__Presence__enter__should_enter_the_current_client__optionally_with_the_data_provided() throws {
+    func test__024__Presence__enter__should_enter_the_current_client__optionally_with_the_data_provided() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = "john"
@@ -1026,7 +1026,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     // RTP8
 
     // RTP8b
-    func test__FLAKY__030__Presence__enter__optionally_a_callback_can_be_provided_that_is_called_for_success() throws {
+    func test__030__Presence__enter__optionally_a_callback_can_be_provided_that_is_called_for_success() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = "john"
@@ -1054,7 +1054,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     }
 
     // RTP8b
-    func test__FLAKY__031__Presence__enter__optionally_a_callback_can_be_provided_that_is_called_for_failure() throws {
+    func test__031__Presence__enter__optionally_a_callback_can_be_provided_that_is_called_for_failure() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = "john"
@@ -1260,7 +1260,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     }
 
     // RTP9a
-    func test__FLAKY__038__Presence__update__should_update_the_data_for_the_present_member_with_null() throws {
+    func test__038__Presence__update__should_update_the_data_for_the_present_member_with_null() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = "john"
@@ -1288,7 +1288,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     // RTP9
 
     // RTP9b
-    func test__FLAKY__039__Presence__update__should_enter_current_client_into_the_channel_if_the_client_was_not_already_entered() throws {
+    func test__039__Presence__update__should_enter_current_client_into_the_channel_if_the_client_was_not_already_entered() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = "john"
@@ -1383,7 +1383,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     // RTP10
 
     // RTP10a
-    func test__FLAKY__043__Presence__leave__should_leave_the_current_client_from_the_channel_and_the_data_will_be_updated_with_the_value_provided() throws {
+    func test__043__Presence__leave__should_leave_the_current_client_from_the_channel_and_the_data_will_be_updated_with_the_value_provided() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = "john"
@@ -1439,7 +1439,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     }
 
     // RTP2
-    func test__FLAKY__003__Presence__should_be_used_a_PresenceMap_to_maintain_a_list_of_members() throws {
+    func test__003__Presence__should_be_used_a_PresenceMap_to_maintain_a_list_of_members() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         var clientSecondary: ARTRealtime!
@@ -1745,7 +1745,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     }
 
     // RTP2d
-    func test__FLAKY__047__Presence__PresenceMap__if_action_of_UPDATE_arrives__it_should_be_added_to_the_presence_map_with_the_action_set_to_PRESENT() throws {
+    func test__047__Presence__PresenceMap__if_action_of_UPDATE_arrives__it_should_be_added_to_the_presence_map_with_the_action_set_to_PRESENT() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRealtime(options: options)
@@ -1801,7 +1801,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     }
 
     // RTP2e
-    func test__FLAKY__049__Presence__PresenceMap__if_a_SYNC_is_not_in_progress__then_when_a_presence_message_with_an_action_of_LEAVE_arrives__that_memberKey_should_be_deleted_from_the_presence_map__if_present() throws {
+    func test__049__Presence__PresenceMap__if_a_SYNC_is_not_in_progress__then_when_a_presence_message_with_an_action_of_LEAVE_arrives__that_memberKey_should_be_deleted_from_the_presence_map__if_present() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
 
@@ -1902,7 +1902,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     }
 
     // RTP2d (ENTER), RTP2g
-    func test__FLAKY__051__Presence__PresenceMap__any_incoming_presence_message_that_passes_the_newness_check_should_be_emitted_on_the_Presence_object__with_an_event_name_set_to_its_original_action() throws {
+    func test__051__Presence__PresenceMap__any_incoming_presence_message_that_passes_the_newness_check_should_be_emitted_on_the_Presence_object__with_an_event_name_set_to_its_original_action() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRealtime(options: options)
@@ -2639,7 +2639,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     }
 
     // RTP17a
-    func test__FLAKY__081__Presence__private_and_internal_PresenceMap_containing_only_members_that_match_the_current_connectionId__all_members_belonging_to_the_current_connection_are_published_as_a_PresenceMessage_on_the_Channel_by_the_server_irrespective_of_whether_the_client_has_permission_to_subscribe_or_the_Channel_is_configured_to_publish_presence_events() throws {
+    func test__081__Presence__private_and_internal_PresenceMap_containing_only_members_that_match_the_current_connectionId__all_members_belonging_to_the_current_connection_are_published_as_a_PresenceMessage_on_the_Channel_by_the_server_irrespective_of_whether_the_client_has_permission_to_subscribe_or_the_Channel_is_configured_to_publish_presence_events() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let channelName = test.uniqueChannelName()
@@ -3276,7 +3276,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     }
 
     // RTP11a
-    func test__FLAKY__100__Presence__get__should_return_a_list_of_current_members_on_the_channel() throws {
+    func test__100__Presence__get__should_return_a_list_of_current_members_on_the_channel() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
 
@@ -3507,7 +3507,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     // RTP11c
 
     // RTP11c1
-    func test__FLAKY__110__Presence__get__Query__set_of_params___waitForSync_is_true__should_wait_until_SYNC_is_complete_before_returning_a_list_of_members() throws {
+    func test__110__Presence__get__Query__set_of_params___waitForSync_is_true__should_wait_until_SYNC_is_complete_before_returning_a_list_of_members() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         var clientSecondary: ARTRealtime!
@@ -3858,7 +3858,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     }
 
     // RTP13
-    func test__FLAKY__008__Presence__Presence_syncComplete_returns_true_if_the_initial_SYNC_operation_has_completed() throws {
+    func test__008__Presence__Presence_syncComplete_returns_true_if_the_initial_SYNC_operation_has_completed() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
 
@@ -3895,7 +3895,7 @@ class RealtimeClientPresenceTests: XCTestCase {
     // RTP14
 
     // RTP14a, RTP14b, RTP14c, RTP14d
-    func test__FLAKY__116__Presence__enterClient__enters_into_presence_on_a_channel_on_behalf_of_another_clientId() throws {
+    func test__116__Presence__enterClient__enters_into_presence_on_a_channel_on_behalf_of_another_clientId() throws {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
