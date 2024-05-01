@@ -32,6 +32,7 @@ let package = Package(
                 "Info-tvOS.plist",
                 "Info-macOS.plist"
             ],
+            resources: [.copy("PrivacyInfo.xcprivacy")],
             publicHeadersPath: "include",
             cSettings: [
                 .headerSearchPath("PrivateHeaders"),

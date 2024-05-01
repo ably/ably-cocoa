@@ -17,6 +17,7 @@ Pod::Spec.new do |s|
   s.requires_arc            = true
   s.swift_version           = '5.0'
   s.source_files            = 'Source/**/*.{h,m,swift}'
+  s.resource_bundles        = {'Ably' => ['Source/PrivacyInfo.xcprivacy']}
   s.private_header_files    = 'Source/PrivateHeaders/**/*.h', 'Source/SocketRocket/**/*.h'
   s.module_map              = 'Source/Ably.modulemap'
   s.dependency 'msgpack', '0.4.0'
