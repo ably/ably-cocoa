@@ -32,6 +32,7 @@ let package = Package(
                 "Info-tvOS.plist",
                 "Info-macOS.plist"
             ],
+            resources: [.copy("PrivacyInfo.xcprivacy")],
             publicHeadersPath: "include",
             cSettings: [
                 .headerSearchPath("PrivateHeaders"),
@@ -45,8 +46,7 @@ let package = Package(
                 .headerSearchPath("SocketRocket/Internal/RunLoop"),
                 .headerSearchPath("SocketRocket/Internal/Delegate"),
                 .headerSearchPath("SocketRocket/Internal/IOConsumer"),
-            ],
-            resources: [.process("PrivacyInfo.xcprivacy")]
+            ]
         )
     ]
 )
