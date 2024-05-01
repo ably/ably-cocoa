@@ -1,5 +1,13 @@
 # Change Log
 
+## [1.2.30](https://github.com/ably/ably-cocoa/tree/1.2.31)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.30...1.2.31)
+
+**Fixed issues:**
+
+- Ensures the privacy manifest is included when installed via SPM or Cocoapods
+
 ## [1.2.30](https://github.com/ably/ably-cocoa/tree/1.2.30)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.29...1.2.30)
