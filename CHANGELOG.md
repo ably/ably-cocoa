@@ -1,6 +1,6 @@
 # Change Log
 
-## [1.2.30](https://github.com/ably/ably-cocoa/tree/1.2.31)
+## [1.2.31](https://github.com/ably/ably-cocoa/tree/1.2.31)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.30...1.2.31)
 
