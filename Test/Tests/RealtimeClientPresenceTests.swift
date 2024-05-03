@@ -163,8 +163,9 @@ class RealtimeClientPresenceTests: XCTestCase {
         guard let transport = client.internal.transport as? TestProxyTransport else {
             fail("TestProxyTransport is not set"); return
         }
-
-        XCTAssertFalse(channel.internal.presence.syncInProgress)
+        
+        // Before starting artificial SYNC process we should wait for the initial one completed:
+        expect(channel.internal.presence.syncInProgress).toEventually(beFalse(), timeout: testTimeout)
         expect(channel.internal.presence.members).to(beEmpty())
 
         waitUntil(timeout: testTimeout) { done in
