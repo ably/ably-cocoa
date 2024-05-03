@@ -145,7 +145,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
     // RTP18
 
-    // RTP18a, RTP18b
+    // RTP18b
     func test__011__Presence__realtime_system_reserves_the_right_to_initiate_a_sync_of_the_presence_members_at_any_point_once_a_channel_is_attached__should_do_a_new_sync_whenever_a_SYNC_ProtocolMessage_is_received_with_a_channel_attribute_and_a_new_sync_sequence_identifier_in_the_channelSerial_attribute() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
@@ -163,83 +163,58 @@ class RealtimeClientPresenceTests: XCTestCase {
         guard let transport = client.internal.transport as? TestProxyTransport else {
             fail("TestProxyTransport is not set"); return
         }
-        
-        // Add some initial members (user1, user2)
-        let _ = AblyTests.addMembersSequentiallyToChannel(channelName, members: 2, options: options)
-        
-        // Before starting artificial SYNC process we should wait for the initial one completed:
-        expect(channel.internal.presence.syncInProgress).toEventually(beFalse(), timeout: testTimeout)
-        XCTAssertEqual(channel.internal.presence.members.compactMap { $0.value.clientId }.sorted(), ["user1", "user2"])
-        
-        // Inject a SYNC Presence message (first page)
-        let sync1Message = ARTProtocolMessage()
-        sync1Message.action = .sync
-        sync1Message.channel = channel.name
-        sync1Message.channelSerial = "sequenceid1:cursor1"
-        sync1Message.timestamp = Date()
-        sync1Message.presence = [
-            ARTPresenceMessage(clientId: "a", action: .present, connectionId: "another", id: "another:0:0"),
-            ARTPresenceMessage(clientId: "b", action: .present, connectionId: "another", id: "another:0:1"),
-            ARTPresenceMessage(clientId: "c", action: .present, connectionId: "another", id: "another:0:2")
-        ]
-        transport.receive(sync1Message)
 
-        XCTAssertEqual(
-            channel.internal.presence.members.compactMap { $0.value.clientId }.sorted(), ["user1", "user2", "a", "b", "c"].sorted()
-        )
+        XCTAssertFalse(channel.internal.presence.syncInProgress)
+        expect(channel.internal.presence.members).to(beEmpty())
 
-        // Inject a SYNC Presence message (second page)
-        let sync2Message = ARTProtocolMessage()
-        sync2Message.action = .sync
-        sync2Message.channel = channel.name
-        sync2Message.channelSerial = "sequenceid1:cursor2"
-        sync2Message.timestamp = Date()
-        sync2Message.presence = [
-            ARTPresenceMessage(clientId: "b", action: .leave, connectionId: "another", id: "another:1:1"),
-        ]
-        delay(0.1) {
-            transport.receive(sync2Message)
+        waitUntil(timeout: testTimeout) { done in
+            channel.presence.subscribe(.present) { msg in
+                if msg.clientId != "a" {
+                    return
+                }
+                XCTAssertFalse(channel.presence.syncComplete)
+                var aClientHasLeft = false
+                channel.presence.subscribe(.leave) { _ in
+                    if aClientHasLeft {
+                        return
+                    }
+                    aClientHasLeft = true
+                    done()
+                }
+            }
+
+            // Inject a SYNC Presence message (first page)
+            let sync1Message = ARTProtocolMessage()
+            sync1Message.action = .sync
+            sync1Message.channel = channel.name
+            sync1Message.channelSerial = "sequenceid:cursor"
+            sync1Message.timestamp = Date()
+            sync1Message.presence = [
+                ARTPresenceMessage(clientId: "a", action: .present, connectionId: "another", id: "another:0:0"),
+                ARTPresenceMessage(clientId: "b", action: .present, connectionId: "another", id: "another:0:1"),
+            ]
+            transport.receive(sync1Message)
+
+            // Inject a SYNC Presence message (last page)
+            let sync2Message = ARTProtocolMessage()
+            sync2Message.action = .sync
+            sync2Message.channel = channel.name
+            sync2Message.channelSerial = "sequenceid:" // indicates SYNC is complete
+            sync2Message.timestamp = Date()
+            sync2Message.presence = [
+                ARTPresenceMessage(clientId: "a", action: .leave, connectionId: "another", id: "another:1:0"),
+            ]
+            delay(0.5) {
+                transport.receive(sync2Message)
+            }
         }
-        
-        // Inject another SYNC Presence message with a different sequence id to discard previous SYNC (RTP18a)
-        let sync3Message = ARTProtocolMessage()
-        sync3Message.action = .sync
-        sync3Message.channel = channel.name
-        sync3Message.channelSerial = "sequenceid2:cursor1"
-        sync3Message.timestamp = Date()
-        sync3Message.presence = [
-            ARTPresenceMessage(clientId: "a", action: .present, connectionId: "another", id: "another:2:0"),
-            ARTPresenceMessage(clientId: "b", action: .present, connectionId: "another", id: "another:2:1"),
-        ]
-        delay(0.2) {
-            transport.receive(sync3Message)
-            XCTAssertEqual(
-                channel.internal.presence.members.compactMap { $0.value.clientId }.sorted(), ["user1", "user2", "a", "b"].sorted()
-            )
-        }
-        
-        // Inject end of SYNC
-        let sync4Message = ARTProtocolMessage()
-        sync4Message.action = .sync
-        sync4Message.channel = channel.name
-        sync4Message.channelSerial = "sequenceid2:" // indicates end of SYNC
-        sync4Message.timestamp = Date()
-        sync4Message.presence = [
-            ARTPresenceMessage(clientId: "a", action: .leave, connectionId: "another", id: "another:3:0"),
-        ]
-        delay(0.3) {
-            transport.receive(sync4Message)
-            // At this point initial members were removed as not presented in sync (user1, user2), first sync discarded, "a" has left, so we have only "b" presented:
-            XCTAssertEqual(channel.internal.presence.members.compactMap { $0.value.clientId }, ["b"])
-        }
-        
-        expect(channel.internal.presence.syncInProgress).toEventually(beFalse(), timeout: testTimeout)
-        
+
+        XCTAssertTrue(channel.presence.syncComplete)
         waitUntil(timeout: testTimeout) { done in
             channel.presence.get { members, error in
                 XCTAssertNil(error)
                 guard let members = members, members.count == 1 else {
-                    fail("Should have 1 member"); done(); return
+                    fail("Should at least have 1 member"); done(); return
                 }
                 XCTAssertEqual(members[0].clientId, "b")
                 done()

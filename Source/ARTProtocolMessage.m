@@ -35,26 +35,6 @@
     return _connectionKey;
 }
 
-- (NSString *)getSyncIdentifierAtIndex:(NSInteger)index {
-    if (!_channelSerial || [_channelSerial isEqualToString:@""] || index > 1) {
-        return @"";
-    }
-    NSArray *a = [_channelSerial componentsSeparatedByString:@":"];
-    return a.count > 1 ? a[index] : @"";
-}
-
-- (NSString *)getSyncSequenceId {
-    return [self getSyncIdentifierAtIndex:0];
-}
-
-- (NSString *)getSyncCursor {
-    return [self getSyncIdentifierAtIndex:1];
-}
-
-- (BOOL)isEndOfSync {
-    return [[self getSyncCursor] isEqualToString:@""];
-}
-
 - (NSString *)description {
     NSMutableString *description = [NSMutableString stringWithFormat:@"<%@: %p> {\n", self.class, self];
     [description appendFormat:@" count: %d,\n", self.count];
