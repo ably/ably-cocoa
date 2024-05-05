@@ -1455,46 +1455,44 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
-            channel.presence.subscribe(.enter) { presence in
+            channel.presence.subscribe { presence in
                 XCTAssertEqual(presence.clientId, "tester")
+                XCTAssertEqual(presence.action, .enter)
                 channel.presence.unsubscribe()
                 partialDone()
             }
-            channel.presence.enterClient("tester", data: "existing") { error in
+            channel.presence.enterClient("tester", data: nil) { error in
                 XCTAssertNil(error)
                 partialDone()
             }
         }
 
-        var presence1: ARTPresenceMessage!
-        var presence2: ARTPresenceMessage!
-        
-        let selector = #selector(ARTRealtimePresenceInternal.member(_:isNewerThan:))
-        
-        let hook = channel.internal.presence.testSuite_injectIntoMethod(after: selector) {
-            channel.internal.presence.testSuite_getArgument(from: selector, at: 1) { arg in
-                presence1 = arg as? ARTPresenceMessage
-            }
-            channel.internal.presence.testSuite_getArgument(from: selector, at: 0) { arg in
-                presence2 = arg as? ARTPresenceMessage
-            }
+        guard let intialPresenceMessage = channel.internal.presence.members["\(channel.internal.connectionId):tester"] else {
+            fail("Missing Presence message"); return
+        }
+
+        XCTAssertEqual(intialPresenceMessage.memberKey(), "\(client.connection.id!):tester")
+
+        var compareForNewnessMethodCalls = 0
+        let hook = channel.internal.presence.testSuite_injectIntoMethod(after: #selector(ARTRealtimePresenceInternal.member(_:isNewerThan:))) {
+            compareForNewnessMethodCalls += 1
         }
 
         waitUntil(timeout: testTimeout) { done in
-            channel.presence.enterClient("tester", data: "new") { error in
+            channel.presence.enterClient("tester", data: nil) { error in
                 XCTAssertNil(error)
                 done()
             }
         }
 
-        XCTAssertEqual(presence1.clientId, "tester")
-        XCTAssertEqual(presence2.clientId, "tester")
-        XCTAssertEqual(presence1.connectionId, presence2.connectionId)
-        
-        XCTAssertEqual(presence1.data as! String, "existing")
-        XCTAssertEqual(presence2.data as! String, "new")
-        
-        expect(presence1.timestamp).to(beLessThan(presence2.timestamp))
+        guard let updatedPresenceMessage = channel.internal.presence.members["\(channel.internal.connectionId):tester"] else {
+            fail("Missing Presence message"); return
+        }
+
+        XCTAssertEqual(intialPresenceMessage.memberKey(), updatedPresenceMessage.memberKey())
+        expect(intialPresenceMessage.timestamp).to(beLessThan(updatedPresenceMessage.timestamp))
+
+        XCTAssertEqual(compareForNewnessMethodCalls, 1)
 
         hook.remove()
     }
