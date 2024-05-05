@@ -3479,14 +3479,15 @@ class RealtimeClientPresenceTests: XCTestCase {
     func test__110__Presence__get__Query__set_of_params___waitForSync_is_true__should_wait_until_SYNC_is_complete_before_returning_a_list_of_members() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
-        var clientSecondary: ARTRealtime!
-        defer { clientSecondary.dispose(); clientSecondary.close() }
-        
         let channelName = test.uniqueChannelName()
-        clientSecondary = AblyTests.addMembersSequentiallyToChannel(channelName, members: 150, options: options)
-
+        let clientSecondary = AblyTests.addMembersSequentiallyToChannel(channelName, members: 150, options: options)
         let client = AblyTests.newRealtime(options).client
-        defer { client.dispose(); client.close() }
+        defer {
+            clientSecondary.dispose(); clientSecondary.close()
+            client.dispose(); client.close()
+            expect(clientSecondary.connection.state).toEventually(equal(.closed), timeout: testTimeout)
+            expect(client.connection.state).toEventually(equal(.closed), timeout: testTimeout)
+        }
         let channel = client.channels.get(channelName)
 
         let query = ARTRealtimePresenceQuery()
@@ -3504,10 +3505,10 @@ class RealtimeClientPresenceTests: XCTestCase {
                             XCTAssertNil(error)
                             if let members {
                                 XCTAssertEqual(members.count, 150)
+                                done()
                             } else {
                                 XCTFail("Expected members to be non-nil")
                             }
-                            done()
                         }
                         transport.setListenerBeforeProcessingIncomingMessage(nil)
                     }
