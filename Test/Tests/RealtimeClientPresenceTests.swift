@@ -2826,59 +2826,6 @@ class RealtimeClientPresenceTests: XCTestCase {
         expect(client1PresenceMessage.data as? String).to(equal(firstClientData))
         expect(client2PresenceMessage.data as? String).to(equal(secondClientData))
     }
-    
-    func skipped__test__083__Presence__private_and_internal_PresenceMap_containing_only_members_that_match_the_current_connectionId__events_applied_to_presence_map__should_be_applied_to_any_LEAVE_event_with_a_connectionId_that_matches_the_current_client_s_connectionId_and_is_not_a_synthesized() throws {
-        let test = Test()
-        let options = try AblyTests.commonAppSetup(for: test)
-        let client = ARTRealtime(options: options)
-        client.internal.shouldImmediatelyReconnect = false
-        defer { client.dispose(); client.close() }
-
-        let channel = client.channels.get(test.uniqueChannelName())
-        waitUntil(timeout: testTimeout) { done in
-            let partialDone = AblyTests.splitDone(2, done: done)
-            channel.presence.subscribe(.enter) { presence in
-                XCTAssertEqual(presence.clientId, "one")
-                channel.presence.unsubscribe()
-                partialDone()
-            }
-            channel.presence.enterClient("one", data: nil) { error in
-                XCTAssertNil(error)
-                partialDone()
-            }
-        }
-
-        waitUntil(timeout: .seconds(20)) { done in
-            channel.internal.presence.onceSyncEnds { _ in
-                // Synthesized leave
-                expect(channel.internal.presence.internalMembers).to(beEmpty())
-                done()
-            }
-            client.internal.onDisconnected()
-        }
-
-        waitUntil(timeout: testTimeout) { done in
-            channel.presence.subscribe(.enter) { presence in
-                // Re-entering...
-                XCTAssertEqual(presence.clientId, "one")
-                channel.presence.unsubscribe()
-                done()
-            }
-        }
-
-        waitUntil(timeout: testTimeout) { done in
-            channel.presence.get { presences, error in
-                XCTAssertNil(error)
-                guard let presences = presences else {
-                    fail("Presences is nil"); done(); return
-                }
-                XCTAssertTrue(channel.internal.presence.syncComplete)
-                XCTAssertEqual(presences.count, 1)
-                expect(presences.map { $0.clientId }).to(contain(["one"]))
-                done()
-            }
-        }
-    }
 
     // RTP15d
     func test__004__Presence__callback_can_be_provided_that_will_be_called_upon_success() throws {
