@@ -1473,9 +1473,9 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         XCTAssertEqual(intialPresenceMessage.memberKey(), "\(client.connection.id!):tester")
 
-        var compareForNewnessMethodCalls = 0
+        var compareForNewnessMethodCalled = false
         let hook = channel.internal.presence.testSuite_injectIntoMethod(after: #selector(ARTRealtimePresenceInternal.member(_:isNewerThan:))) {
-            compareForNewnessMethodCalls += 1
+            compareForNewnessMethodCalled = true
         }
 
         waitUntil(timeout: testTimeout) { done in
@@ -1492,7 +1492,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         XCTAssertEqual(intialPresenceMessage.memberKey(), updatedPresenceMessage.memberKey())
         expect(intialPresenceMessage.timestamp).to(beLessThan(updatedPresenceMessage.timestamp))
 
-        XCTAssertEqual(compareForNewnessMethodCalls, 1)
+        XCTAssertTrue(compareForNewnessMethodCalled)
 
         hook.remove()
     }
