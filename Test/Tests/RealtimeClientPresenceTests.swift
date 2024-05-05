@@ -1028,17 +1028,19 @@ class RealtimeClientPresenceTests: XCTestCase {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.clientId = "john"
-
-        let client1 = ARTRealtime(options: options)
-        defer { client1.dispose(); client1.close() }
-        
         let channelName = test.uniqueChannelName()
-        let channel1 = client1.channels.get(channelName)
-
+        let client1 = ARTRealtime(options: options)
         let client2 = ARTRealtime(options: options)
-        defer { client2.dispose(); client2.close() }
+        let channel1 = client1.channels.get(channelName)
         let channel2 = client2.channels.get(channelName)
-
+        
+        defer {
+            client1.dispose(); client1.close()
+            client2.dispose(); client2.close()
+            expect(client1.connection.state).toEventually(equal(.closed), timeout: testTimeout)
+            expect(client2.connection.state).toEventually(equal(.closed), timeout: testTimeout)
+        }
+        
         waitUntil(timeout: testTimeout) { done in
             channel1.presence.subscribe(.enter) { _ in
                 fail("shouldn't be called")
@@ -1048,8 +1050,8 @@ class RealtimeClientPresenceTests: XCTestCase {
                 XCTAssertTrue(error === protocolError.error)
                 done()
             }
-            delay(0.1) {
-                channel2.internal.onError(protocolError)
+            channel2.internalAsync { _internal in
+                _internal.onError(protocolError)
             }
         }
     }
