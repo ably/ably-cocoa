@@ -1859,7 +1859,9 @@ class RealtimeClientPresenceTests: XCTestCase {
                 leaveMessage.presence = [
                     ARTPresenceMessage(clientId: "user11", action: .leave, connectionId: "another", id: "another:123:0", timestamp: Date()),
                 ]
-                transport.receive(leaveMessage)
+                channel.internalAsync { _ in
+                    transport.receive(leaveMessage)
+                }
                 partialDone()
             }
         }
