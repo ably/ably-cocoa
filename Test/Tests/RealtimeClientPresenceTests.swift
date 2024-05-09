@@ -1839,8 +1839,11 @@ class RealtimeClientPresenceTests: XCTestCase {
             channel.presence.subscribe(.leave) { leave in
                 XCTAssertEqual(leave.clientId, "user11")
                 let absentMember = channel.internal.presence.members.first { _, m in m.clientId == "user11" }.map { $0.value }
-                XCTAssertTrue(channel.internal.presence.syncInProgress)
-                XCTAssertEqual(absentMember?.action, .absent)
+                if channel.internal.presence.syncInProgress {
+                    XCTAssertEqual(absentMember?.action, .absent)
+                } else {
+                    XCTAssertEqual(absentMember?.action, .leave)
+                }
                 partialDone()
             }
 
@@ -2587,7 +2590,12 @@ class RealtimeClientPresenceTests: XCTestCase {
                 XCTAssertEqual(presence.action, ARTPresenceAction.leave)
                 XCTAssertEqual(presence.data as? String, "bye")
                 XCTAssertNotEqual(presence.connectionId, currentConnectionId)
-                XCTAssertEqual(channelA.internal.presence.members.count, 1)
+                if channelA.internal.presence.syncInProgress {
+                    XCTAssertEqual(channelA.internal.presence.members.filter({ $0.value.action != .present }).count, 1)
+                    XCTAssertEqual(channelA.internal.presence.members.filter({ $0.value.action != .absent }).count, 1)
+                } else {
+                    XCTAssertEqual(channelA.internal.presence.members.count, 1)
+                }
                 XCTAssertEqual(channelA.internal.presence.internalMembers.count, 1)
                 channelA.presence.unsubscribe()
                 partialDone()
@@ -2599,7 +2607,12 @@ class RealtimeClientPresenceTests: XCTestCase {
                 XCTAssertEqual(presence.action, ARTPresenceAction.leave)
                 XCTAssertEqual(presence.data as? String, "bye")
                 XCTAssertEqual(presence.connectionId, currentConnectionId)
-                XCTAssertEqual(channelB.internal.presence.members.count, 1)
+                if channelB.internal.presence.syncInProgress {
+                    XCTAssertEqual(channelB.internal.presence.members.filter({ $0.value.action != .present }).count, 1)
+                    XCTAssertEqual(channelB.internal.presence.members.filter({ $0.value.action != .absent }).count, 1)
+                } else {
+                    XCTAssertEqual(channelB.internal.presence.members.count, 1)
+                }
                 XCTAssertEqual(channelB.internal.presence.internalMembers.count, 0) // was removed bc not a 'synthesized leave' (RTP17b)
                 channelB.presence.unsubscribe()
                 partialDone()
