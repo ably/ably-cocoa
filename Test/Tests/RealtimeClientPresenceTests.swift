@@ -3351,33 +3351,23 @@ class RealtimeClientPresenceTests: XCTestCase {
             expect(client.connection.state).toEventually(equal(.closed), timeout: testTimeout)
         }
         let channel = client.channels.get(channelName)
-
-        let query = ARTRealtimePresenceQuery()
-        XCTAssertTrue(query.waitForSync)
-
-        var transport = client.internal.transport as! TestProxyTransport
-
+        expect(channel.internal.presence.syncInProgress).toEventually(beTrue(), timeout: testTimeout)
+        
         waitUntil(timeout: testTimeout) { done in
-            channel.attach { error in
+            let query = ARTRealtimePresenceQuery()
+            XCTAssertTrue(query.waitForSync)
+            XCTAssertEqual(channel.internal.presence.syncInProgress, true)
+            channel.presence.get(query) { members, error in
                 XCTAssertNil(error)
-                transport = client.internal.transport as! TestProxyTransport
-                transport.setListenerBeforeProcessingIncomingMessage { protocolMessage in
-                    if protocolMessage.action == .sync {
-                        channel.presence.get(query) { members, error in
-                            XCTAssertNil(error)
-                            if let members {
-                                XCTAssertEqual(members.count, 150)
-                                done()
-                            } else {
-                                XCTFail("Expected members to be non-nil")
-                            }
-                        }
-                        transport.setListenerBeforeProcessingIncomingMessage(nil)
-                    }
+                if let members {
+                    XCTAssertEqual(members.count, 150)
+                    XCTAssertEqual(channel.internal.presence.syncInProgress, false)
+                    done()
+                } else {
+                    XCTFail("Expected members to be non-nil")
                 }
             }
         }
-        transport.setListenerBeforeProcessingIncomingMessage(nil)
     }
 
     // RTP11c1
