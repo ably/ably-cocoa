@@ -1709,7 +1709,6 @@ extension ARTRealtime {
         guard let transport = self.internal.transport as? TestProxyTransport else {
             fail("TestProxyTransport is not set"); return
         }
-        channel.internal.presence.startSync()
         transport.send(syncMessage)
     }
 }
