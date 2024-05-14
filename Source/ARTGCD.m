@@ -1,8 +1,13 @@
 #import "ARTGCD.h"
 
+@interface ARTScheduledBlockHandle ()
+
+// Mark this as `atomic` to syncronize access to it from `_scheduledBlock` and `cancel`.
+@property (atomic, copy, nullable) dispatch_block_t block;
+
+@end
+
 @implementation ARTScheduledBlockHandle {
-    dispatch_semaphore_t _semaphore;
-    dispatch_block_t _block;
     dispatch_block_t _scheduledBlock;
 }
 
@@ -11,21 +16,13 @@
     if (self == nil)
         return nil;
 
-    // Use a sempaphore to coorindate state. We use a reference here to decouple it when creating a block we'll schedule.
-    dispatch_semaphore_t semaphore = dispatch_semaphore_create(1);
-
     __weak ARTScheduledBlockHandle *weakSelf = self;
     _scheduledBlock = dispatch_block_create(0, ^{
         dispatch_block_t copiedBlock = nil;
-        dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
-        {
-            // Get a strong reference to self within our semaphore to avoid potential race conditions
-            ARTScheduledBlockHandle *strongSelf = weakSelf;
-            if (strongSelf != nil) {
-                copiedBlock = strongSelf->_block; // copied below
-            }
+        ARTScheduledBlockHandle *strongSelf = weakSelf;
+        if (strongSelf != nil) {
+            copiedBlock = strongSelf.block; // copied below
         }
-        dispatch_semaphore_signal(semaphore);
 
         // If our block is non-nil, our scheduled block was still valid by the time this was invoked
         if (copiedBlock != nil) {
@@ -33,8 +30,7 @@
         }
     });
 
-    _block = [block copy];
-    _semaphore = semaphore;
+    self.block = block; // copied block
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(NSEC_PER_SEC * delay)), queue, _scheduledBlock);
 
@@ -42,13 +38,8 @@
 }
 
 - (void)cancel {
-    // Cancel within our semaphore for predictable behavior if our block is invoked while we're cancelling
-    dispatch_semaphore_wait(_semaphore, DISPATCH_TIME_FOREVER);
-    {
-        dispatch_block_cancel(_scheduledBlock);
-        _block = nil;
-    }
-    dispatch_semaphore_signal(_semaphore);
+    self.block = nil;
+    dispatch_block_cancel(_scheduledBlock);
 }
 
 - (void)dealloc {
