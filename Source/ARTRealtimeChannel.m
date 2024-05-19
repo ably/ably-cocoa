@@ -545,7 +545,7 @@ dispatch_sync(_queue, ^{
 
 - (void)performTransitionToState:(ARTRealtimeChannelState)state withParams:(ARTChannelStateChangeParams *)params {
     ARTLogDebug(self.logger, @"RT:%p C:%p (%@) channel state transitions from %tu - %@ to %tu - %@%@", _realtime, self, self.name, self.state_nosync, ARTRealtimeChannelStateToStr(self.state_nosync), state, ARTRealtimeChannelStateToStr(state), params.retryAttempt ? [NSString stringWithFormat: @" (result of %@)", params.retryAttempt.id] : @"");
-    ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:state previous:self.state_nosync event:(ARTChannelEvent)state reason:params.errorInfo resumed:NO retryAttempt:params.retryAttempt];
+    ARTChannelStateChange *stateChange = [[ARTChannelStateChange alloc] initWithCurrent:state previous:self.state_nosync event:(ARTChannelEvent)state reason:params.errorInfo resumed:params.resumed retryAttempt:params.retryAttempt];
     self.state = state;
 
     if (params.storeErrorInfo) {
@@ -680,6 +680,7 @@ dispatch_sync(_queue, ^{
     } else {
         params = [[ARTChannelStateChangeParams alloc] initWithState:ARTStateOk];
     }
+    params.resumed = message.resumed;
     [self performTransitionToState:ARTRealtimeChannelAttached withParams:params];
     [self.presence onAttached:message];
     [_attachedEventEmitter emit:nil with:nil];
