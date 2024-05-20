@@ -458,10 +458,7 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
             ARTLogError(logger, @"%@ archive failed: %@", [self class], error);
         }
         return data;
-    }
-    else {
-        return [NSKeyedArchiver archivedDataWithRootObject:self];
-    }
+    } else { return nil; }
 #endif
 }
 
@@ -484,7 +481,7 @@ NSString *ARTChannelEventToStr(ARTChannelEvent event) {
         return result;
     }
     else {
-        return [NSKeyedUnarchiver unarchiveObjectWithData:data];
+        return nil;
     }
 #endif
 }

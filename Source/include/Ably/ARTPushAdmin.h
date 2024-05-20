@@ -4,7 +4,12 @@
 #import <Ably/ARTPushChannelSubscriptions.h>
 
 NS_ASSUME_NONNULL_BEGIN
+//@import Push;
 
+//
+//@interface test : RandomSwiftClass;
+//
+//@end
 /**
  The protocol upon which the `ARTPushAdmin` is implemented.
  */

@@ -410,7 +410,7 @@ dispatch_async(_queue, ^{
     #endif
 }
 
-- (void)registerForAPNS {
+- (void)registerForAPNS NS_EXTENSION_UNAVAILABLE("") {
     dispatch_async(dispatch_get_main_queue(), ^{
         [[UIApplication sharedApplication] registerForRemoteNotifications];
     });

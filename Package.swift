@@ -6,7 +6,7 @@ let package = Package(
     name: "ably-cocoa",
     platforms: [
         .macOS(.v10_11),
-        .iOS(.v9),
+        .iOS(.v13),
         .tvOS(.v10)
     ],
     products: [
@@ -47,7 +47,8 @@ let package = Package(
                 .headerSearchPath("SocketRocket/Internal/Delegate"),
                 .headerSearchPath("SocketRocket/Internal/IOConsumer"),
             ]
-        )
+        ),
+        .target(name: "Push", dependencies: ["Ably"], path: "PushSwift")
     ]
 )
 
