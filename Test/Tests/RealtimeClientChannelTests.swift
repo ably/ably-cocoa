@@ -497,8 +497,95 @@ class RealtimeClientChannelTests: XCTestCase {
         }
     }
 
-    // TODO: RTL2f
+    // RTL2f (connection resumption case)
+    func test__011a__Channel__EventEmitter__channel_states_and_events__ChannelStateChange_will_contain_a_resumed_boolean_attribute_with_value__true__if_the_bit_flag_RESUMED_was_included() throws {
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        options.tokenDetails = try getTestTokenDetails(for: test, ttl: 5.0)
+        let client = ARTRealtime(options: options)
+        defer { client.dispose(); client.close() }
+        let channel = client.channels.get(test.uniqueChannelName())
 
+        waitUntil(timeout: testTimeout) { done in
+            let partialDone = AblyTests.splitDone(4, done: done)
+            channel.on { stateChange in
+                switch stateChange.current {
+                case .attached:
+                    XCTAssertFalse(stateChange.resumed)
+                    partialDone()
+                default:
+                    XCTAssertFalse(stateChange.resumed)
+                }
+            }
+            client.connection.once(.disconnected) { stateChange in
+                channel.off()
+                guard let error = stateChange.reason else {
+                    fail("Error is nil"); done(); return
+                }
+                XCTAssertEqual(error.code, ARTErrorCode.tokenExpired.intValue)
+                XCTAssertEqual(channel.state, ARTRealtimeChannelState.attached)
+                client.connection.once(.connected) { stateChange in
+                    XCTAssertEqual(channel.state, ARTRealtimeChannelState.attaching)
+                    partialDone()
+                }
+                channel.on { stateChange in
+                    switch stateChange.current {
+                    case .attached:
+                        XCTAssertTrue(stateChange.resumed)
+                        partialDone()
+                    default:
+                        XCTAssertFalse(stateChange.resumed)
+                    }
+                }
+                partialDone()
+            }
+            channel.attach()
+        }
+    }
+    
+    // RTL2f (connection recovery case)
+    func test__011b__Channel__EventEmitter__channel_states_and_events__ChannelStateChange_will_contain_a_resumed_boolean_attribute_with_value__true__if_the_bit_flag_RESUMED_was_included_for_recovered_connection() throws {
+        let test = Test()
+        let options = try AblyTests.commonAppSetup(for: test)
+        let client = ARTRealtime(options: options)
+        defer { client.dispose(); client.close() }
+        
+        let channelName = test.uniqueChannelName()
+        let channel = client.channels.get(channelName)
+
+        waitUntil(timeout: testTimeout) { done in
+            channel.on { stateChange in
+                switch stateChange.current {
+                case .attached:
+                    XCTAssertFalse(stateChange.resumed)
+                    done()
+                default:
+                    XCTAssertFalse(stateChange.resumed)
+                }
+            }
+            channel.publish(nil, data: "A message")
+        }
+        
+        options.recover = client.connection.createRecoveryKey()
+        
+        let recoveredClient = ARTRealtime(options: options)
+        defer { recoveredClient.dispose(); recoveredClient.close() }
+        
+        let recoveredChannel = recoveredClient.channels.get(channelName)
+
+        waitUntil(timeout: testTimeout) { done in
+            recoveredChannel.on { stateChange in
+                switch stateChange.current {
+                case .attached:
+                    XCTAssertTrue(stateChange.resumed)
+                    done()
+                default:
+                    XCTAssertFalse(stateChange.resumed)
+                }
+            }
+        }
+    }
+    
     // RTL3
 
     // RTL3a
