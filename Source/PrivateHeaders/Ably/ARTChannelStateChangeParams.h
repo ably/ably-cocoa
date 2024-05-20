@@ -31,6 +31,11 @@ NS_SWIFT_NAME(ChannelStateChangeParams)
 
 @property (nullable, nonatomic, readonly) ARTRetryAttempt *retryAttempt;
 
+/**
+ The `resumed` value of the `ARTProtocolMessage` that triggered this state change.
+ */
+@property (nonatomic) BOOL resumed;
+
 - (instancetype)init NS_UNAVAILABLE;
 
 /**
