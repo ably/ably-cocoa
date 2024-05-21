@@ -1,5 +1,15 @@
 # Change Log
 
+## [1.2.32](https://github.com/ably/ably-cocoa/tree/1.2.32)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.31...1.2.32)
+
+**Fixed issues:**
+
+- Thread priority inversion runtime warning [\#1897](https://github.com/ably/ably-cocoa/issues/1897)
+
+- Fix for ignored `ARTProtocolMessage.resumed` property [\#1920](https://github.com/ably/ably-cocoa/issues/1920)
+
 ## [1.2.31](https://github.com/ably/ably-cocoa/tree/1.2.31)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.30...1.2.31)
