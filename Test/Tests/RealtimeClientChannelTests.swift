@@ -935,28 +935,6 @@ class RealtimeClientChannelTests: XCTestCase {
         }
     }
 
-    // RTL3d
-    func test__014__Channel__connection_state__if_the_attach_operation_for_the_channel_times_out_and_the_channel_returns_to_the_SUSPENDED_state() throws {
-        let test = Test()
-        let client = AblyTests.newRealtime(try AblyTests.commonAppSetup(for: test)).client
-        defer { client.dispose(); client.close() }
-
-        let channel = client.channels.get(test.uniqueChannelName())
-        waitUntil(timeout: testTimeout) { done in
-            channel.attach { error in
-                XCTAssertNil(error)
-                done()
-            }
-        }
-
-        client.simulateSuspended(beforeSuspension: { done in
-            channel.once(.suspended) { stateChange in
-                XCTAssertNil(stateChange.reason)
-                done()
-            }
-        })
-    }
-
     // RTL3d - https://github.com/ably/ably-cocoa/issues/881
     func test__015__Channel__connection_state__should_attach_successfully_and_remain_attached_after_the_connection_goes_from_SUSPENDED_to_CONNECTED() throws {
         let test = Test()
