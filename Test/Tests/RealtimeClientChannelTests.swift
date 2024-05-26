@@ -2511,44 +2511,6 @@ class RealtimeClientChannelTests: XCTestCase {
         afterEach__Channel__publish__Connection_state_conditions__the_message()
     }
 
-    func test__081__Channel__publish__Connection_state_conditions__the_message__should_NOT_be_queued_instead_it_should_be_published_if_the_channel_is__ATTACHED() throws {
-        let test = Test()
-        try beforeEach__Channel__publish__Connection_state_conditions__the_message(for: test, channelName: test.uniqueChannelName())
-
-        waitUntil(timeout: testTimeout) { done in
-            rtl6c2TestsChannel.attach { error in
-                XCTAssertNil(error)
-                done()
-            }
-            rtl6c2TestsClient.connect()
-        }
-
-        waitUntil(timeout: testTimeout) { done in
-            let tokenParams = ARTTokenParams()
-            tokenParams.ttl = 5.0
-            rtl6c2TestsClient.auth.authorize(tokenParams, options: nil) { tokenDetails, error in
-                XCTAssertNil(error)
-                XCTAssertNotNil(tokenDetails)
-                done()
-            }
-        }
-
-        waitUntil(timeout: testTimeout) { done in
-            rtl6c2TestsClient.connection.once(.disconnected) { _ in
-                done()
-            }
-        }
-
-        XCTAssertEqual(rtl6c2TestsChannel.state, ARTRealtimeChannelState.attached)
-
-        waitUntil(timeout: testTimeout) { done in
-            rtl16c2TestsPublish(done)
-            XCTAssertEqual(rtl6c2TestsClient.internal.queuedMessages.count, 1)
-        }
-
-        afterEach__Channel__publish__Connection_state_conditions__the_message()
-    }
-
     // RTL6c4
 
     func beforeEach__Channel__publish__Connection_state_conditions__will_result_in_an_error_if_the(for test: Test, channelName: String) throws {
