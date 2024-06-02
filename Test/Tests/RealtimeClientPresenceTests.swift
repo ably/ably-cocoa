@@ -1833,35 +1833,37 @@ class RealtimeClientPresenceTests: XCTestCase {
             fail("TestProxyTransport is not set"); return
         }
         
+        var leaveMessage: ARTProtocolMessage!
+        
+        let hook = channel.presence.internal.testSuite_injectIntoMethod(before: #selector(ARTRealtimePresenceInternal.endSync)) {
+            if leaveMessage != nil {
+                transport.receive(leaveMessage)
+                let absentMember = channel.internal.presence.members.first { _, m in m.action == .absent }.map { $0.value }
+                XCTAssertNotNil(absentMember)
+                XCTAssertEqual(absentMember?.clientId, "user11")
+            }
+        }
+        defer { hook.remove() }
+        
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
 
             channel.presence.subscribe(.leave) { leave in
                 XCTAssertEqual(leave.clientId, "user11")
-                let absentMember = channel.internal.presence.members.first { _, m in m.clientId == "user11" }.map { $0.value }
-                if channel.internal.presence.syncInProgress {
-                    XCTAssertEqual(absentMember?.action, .absent)
-                } else {
-                    XCTAssertEqual(absentMember?.action, .leave)
-                }
                 partialDone()
             }
 
             channel.attach { error in
                 XCTAssertNil(error)
-                XCTAssertTrue(channel.internal.presence.syncInProgress)
-
-                // Inject a fabricated Presence message
-                let leaveMessage = ARTProtocolMessage()
+                
+                // Initialize a fabricated Presence message to inject it before second sync ends
+                leaveMessage = ARTProtocolMessage()
                 leaveMessage.action = .presence
                 leaveMessage.channel = channel.name
                 leaveMessage.timestamp = Date()
                 leaveMessage.presence = [
                     ARTPresenceMessage(clientId: "user11", action: .leave, connectionId: "another", id: "another:123:0", timestamp: Date()),
                 ]
-                channel.internalAsync { _ in
-                    transport.receive(leaveMessage)
-                }
                 partialDone()
             }
         }
