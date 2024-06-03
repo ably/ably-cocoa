@@ -3916,7 +3916,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         let test = Test()
         let options = ARTClientOptions(key: "xxxx:xxxx")
         options.autoConnect = false
-        options.testOptions.realtimeRequestTimeout = 1.0
+        options.testOptions.realtimeRequestTimeout = 2.0 // this timeout should be longer than `internetIsUp` + `performFakeConnectionError` timeouts
         let transportFactory = TestProxyTransportFactory()
         options.testOptions.transportFactory = transportFactory
         let client = ARTRealtime(options: options)
