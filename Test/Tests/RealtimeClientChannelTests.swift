@@ -882,10 +882,13 @@ class RealtimeClientChannelTests: XCTestCase {
     }
 
     // RTL3d
-    func test__013__Channel__connection_state__if_the_connection_state_enters_the_CONNECTED_state__then_a_SUSPENDED_channel_will_initiate_an_attach_operation() throws {
+    func test__013__Channel__connection_state__if_the_connection_state_enters_the_CONNECTED_state__then_a_SUSPENDED_channel_will_transition_to_ATTACHING_and_goes_back_to_SUSPNDED_on_timeout() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
+        options.testOptions.transportFactory = TestProxyTransportFactory()
         options.suspendedRetryTimeout = 1.0
+        options.channelRetryTimeout = 1.0
+        options.testOptions.realtimeRequestTimeout = 1.0
         let client = ARTRealtime(options: options)
         defer { client.dispose(); client.close() }
 
@@ -908,29 +911,28 @@ class RealtimeClientChannelTests: XCTestCase {
         }
 
         expect(client.connection.state).toEventually(equal(ARTRealtimeConnectionState.connected), timeout: testTimeout)
-        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
-    }
-
-    // RTL3d
-    func test__014__Channel__connection_state__if_the_attach_operation_for_the_channel_times_out_and_the_channel_returns_to_the_SUSPENDED_state() throws {
-        let test = Test()
-        let client = AblyTests.newRealtime(try AblyTests.commonAppSetup(for: test)).client
-        defer { client.dispose(); client.close() }
-
-        let channel = client.channels.get(test.uniqueChannelName())
+        
+        XCTAssertEqual(channel.state, ARTRealtimeChannelState.attaching)
+        
+        let transport = client.internal.transport as! TestProxyTransport
+        transport.actionsIgnored += [.attached]
+        
         waitUntil(timeout: testTimeout) { done in
-            channel.attach { error in
-                XCTAssertNil(error)
-                done()
+            let splitDone = AblyTests.splitDone(2, done: done)
+            var wasSuspended = false
+            channel.once(.suspended) { stateChange in
+                XCTAssertEqual(stateChange.reason?.message.contains("attach timed out"), true)
+                transport.actionsIgnored.removeAll()
+                wasSuspended = true
+                splitDone()
+            }
+            // make sure the channel will attach eventually (RTL4f)
+            channel.once(.attached) { stateChange in
+                XCTAssertTrue(wasSuspended)
+                XCTAssertNil(stateChange.reason)
+                splitDone()
             }
         }
-
-        client.simulateSuspended(beforeSuspension: { done in
-            channel.once(.suspended) { stateChange in
-                XCTAssertNil(stateChange.reason)
-                done()
-            }
-        })
     }
 
     // RTL3d - https://github.com/ably/ably-cocoa/issues/881
