@@ -1026,7 +1026,7 @@ dispatch_sync(_queue, ^{
         }];
     }
 
-    if (self.presence.syncInProgress) {
+    if (self.presence.syncInProgress_nosync) {
         [self.presence failsSync:[ARTErrorInfo createWithCode:ARTErrorChannelOperationFailed message:@"channel is being DETACHED"]];
     }
 }

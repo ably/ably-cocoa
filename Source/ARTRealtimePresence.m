@@ -247,7 +247,7 @@ dispatch_async(_queue, ^{
             callback(nil, error);
             return;
         }
-        const BOOL syncInProgress = self.syncInProgress;
+        const BOOL syncInProgress = self.syncInProgress_nosync;
         if (syncInProgress && query.waitForSync) {
             ARTLogDebug(self.logger, @"R:%p C:%p (%@) sync is in progress, waiting until the presence members is synchronized", self->_realtime, self->_channel, self->_channel.name);
             [self onceSyncEnds:^(NSArray<ARTPresenceMessage *> *members) {
@@ -748,7 +748,7 @@ dispatch_sync(_queue, ^{
 }
 
 - (void)onSync:(ARTProtocolMessage *)message {
-    if (!self.syncInProgress) {
+    if (!self.syncInProgress_nosync) {
         [self startSync];
     }
     else {
@@ -838,7 +838,7 @@ dispatch_sync(_queue, ^{
             memberUpdated = [self addMember:messageCopy];
             break;
         case ARTPresenceLeave:
-            if (self.syncInProgress) {
+            if (self.syncInProgress_nosync) {
                 messageCopy.action = ARTPresenceAbsent; // RTP2f
                 memberUpdated = [self addMember:messageCopy];
             } else {
@@ -974,8 +974,16 @@ dispatch_sync(_queue, ^{
     [_syncEventEmitter once:[ARTEvent newWithPresenceSyncState:ARTPresenceSyncFailed] callback:callback];
 }
 
-- (BOOL)syncInProgress {
+- (BOOL)syncInProgress_nosync {
     return _syncState == ARTPresenceSyncStarted;
+}
+
+- (BOOL)syncInProgress {
+    __block BOOL ret;
+    dispatch_sync(_queue, ^{
+        ret = [self syncInProgress_nosync];
+    });
+    return ret;
 }
 
 @end

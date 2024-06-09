@@ -1698,7 +1698,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 return protocolMessage
             }
             channel.internal.presence.testSuite_injectIntoMethod(after: #selector(ARTRealtimePresenceInternal.endSync)) {
-                XCTAssertFalse(channel.internal.presence.syncInProgress)
+                XCTAssertFalse(channel.internal.presence.syncInProgress_nosync())
                 XCTAssertEqual(channel.internal.presence.members.count, 19)
                 XCTAssertEqual(channel.internal.presence.members.filter { _, presence in presence.clientId == "user10" && presence.action == .present }.count, 1) // LEAVE for user10 is ignored, because it's timestamped before SYNC
                 XCTAssertEqual(channel.internal.presence.members.filter { _, presence in presence.clientId == "user12" && presence.action == .present }.count, 0) // LEAVE for user12 is not ignored, because it's timestamped after SYNC
@@ -1757,7 +1757,7 @@ class RealtimeClientPresenceTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
             channel.internal.presence.testSuite_injectIntoMethod(after: #selector(ARTRealtimePresenceInternal.endSync)) {
-                XCTAssertFalse(channel.internal.presence.syncInProgress)
+                XCTAssertFalse(channel.internal.presence.syncInProgress_nosync())
                 partialDone()
             }
             channel.attach { error in
