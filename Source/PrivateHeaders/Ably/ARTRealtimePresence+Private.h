@@ -11,6 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithChannel:(ARTRealtimeChannelInternal *)channel logger:(ARTInternalLog *)logger;
 - (void)_unsubscribe;
 - (BOOL)syncComplete_nosync;
+- (BOOL)syncInProgress_nosync;
 
 - (void)failPendingPresence:(ARTStatus *)status;
 - (void)broadcast:(ARTPresenceMessage *)pm;

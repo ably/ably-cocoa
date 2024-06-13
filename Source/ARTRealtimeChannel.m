@@ -899,10 +899,10 @@ dispatch_sync(_queue, ^{
     const ARTState state = params.reason ? ARTStateError : ARTStateOk;
     ARTChannelStateChangeParams *const stateChangeParams = [[ARTChannelStateChangeParams alloc] initWithState:state errorInfo:params.reason storeErrorInfo:NO retryAttempt:params.retryAttempt];
     [self performTransitionToState:ARTRealtimeChannelAttaching withParams:stateChangeParams];
-    [self attachAfterChecks:callback];
+    [self attachAfterChecks];
 }
 
-- (void)attachAfterChecks:(ARTCallback)callback {
+- (void)attachAfterChecks {
     ARTProtocolMessage *attachMessage = [[ARTProtocolMessage alloc] init];
     attachMessage.action = ARTProtocolMessageAttach;
     attachMessage.channel = self.name;
@@ -1026,7 +1026,7 @@ dispatch_sync(_queue, ^{
         }];
     }
 
-    if (self.presence.syncInProgress) {
+    if (self.presence.syncInProgress_nosync) {
         [self.presence failsSync:[ARTErrorInfo createWithCode:ARTErrorChannelOperationFailed message:@"channel is being DETACHED"]];
     }
 }
