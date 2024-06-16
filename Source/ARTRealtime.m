@@ -744,13 +744,11 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
     if ([self shouldSendEvents]) {
         [self sendQueuedMessages];
         
-        // Channels
-        for (ARTRealtimeChannelInternal *channel in channels) {
-            if (stateChange.previous == ARTRealtimeInitialized ||
-                stateChange.previous == ARTRealtimeConnecting ||
-                stateChange.previous == ARTRealtimeDisconnected) {
-                // RTL4i
-                [channel _attach:nil];
+        if (_resuming) {
+            for (ARTRealtimeChannelInternal *channel in channels) {
+                // Reattach channel regardless resume success - RTN15c6, RTN15c7
+                ARTAttachRequestParams *const params = [[ARTAttachRequestParams alloc] initWithReason:stateChange.reason];
+                [channel reattachWithParams:params];
             }
         }
     } else if (![self shouldQueueEvents]) {
@@ -867,12 +865,6 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
                 else {
                     ARTLogWarn(self.logger, @"RT:%p connection \"%@\" has reconnected, but resume failed. Error: \"%@\"", self, message.connectionId, message.error.message);
                 }
-                // Reattach all channels regardless resume success - RTN15c6, RTN15c7
-                for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
-                    ARTAttachRequestParams *const params = [[ARTAttachRequestParams alloc] initWithReason:message.error];
-                    [channel reattachWithParams:params];
-                }
-                _resuming = false;
             }
             // If there's no previous connectionId, then don't reset the msgSerial
             //as it may have been set by recover data (unless the recover failed).
@@ -1219,9 +1211,6 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
 }
 
 - (BOOL)shouldQueueEvents {
-    if(!self.options.queueMessages) {
-        return false;
-    }
     switch (self.connection.state_nosync) {
         case ARTRealtimeInitialized:
         case ARTRealtimeConnecting:
@@ -1284,7 +1273,7 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
     if ([self shouldSendEvents]) {
         [self sendImpl:msg reuseMsgSerial:reuseMsgSerial sentCallback:sentCallback ackCallback:ackCallback];
     }
-    else if ([self shouldQueueEvents]) {
+    else if ([self shouldQueueEvents] && self.options.queueMessages) {
         ARTQueuedMessage *lastQueuedMessage = self.queuedMessages.lastObject; //RTL6d5
         BOOL merged = [lastQueuedMessage mergeFrom:msg sentCallback:nil ackCallback:ackCallback];
         if (!merged) {
@@ -1297,9 +1286,12 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
         }
     }
     else if (ackCallback) {
-        ARTErrorInfo *error = self.connection.errorReason_nosync;
-        if (!error) error = [ARTErrorInfo createWithCode:ARTErrorChannelOperationFailed status:400 message:[NSString stringWithFormat:@"not possile to send message (state is %@)", ARTRealtimeConnectionStateToStr(self.connection.state_nosync)]];
+        ARTErrorInfo *error = self.connection.errorReason_nosync ?: self.connection.error_nosync;
         ackCallback([ARTStatus state:ARTStateError info:error]);
+    }
+    else {
+        ARTErrorInfo *error = self.connection.errorReason_nosync ?: self.connection.error_nosync;
+        ARTLogDebug(self.logger, @"RT:%p (channel: %@) protocol message with action '%lu - %@' can't be sent or queued: %@", self, msg.channel, (unsigned long)msg.action, ARTProtocolMessageActionToStr(msg.action), error);
     }
 }
 

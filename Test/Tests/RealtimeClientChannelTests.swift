@@ -563,6 +563,7 @@ class RealtimeClientChannelTests: XCTestCase {
                     XCTAssertFalse(stateChange.resumed)
                 }
             }
+            channel.attach()
             channel.publish(nil, data: "A message")
         }
         
@@ -583,6 +584,7 @@ class RealtimeClientChannelTests: XCTestCase {
                     XCTAssertFalse(stateChange.resumed)
                 }
             }
+            recoveredChannel.attach()
         }
     }
     
@@ -712,7 +714,6 @@ class RealtimeClientChannelTests: XCTestCase {
                 done()
             }
         }
-        expect(channel.state).toEventually(equal(.attached), timeout: testTimeout)
     }
 
     // TO3g and https://github.com/ably/ably-cocoa/issues/1004
@@ -727,25 +728,17 @@ class RealtimeClientChannelTests: XCTestCase {
         defer { client.dispose(); client.close() }
         client.internal.setReachabilityClass(TestReachability.self)
         let channel = client.channels.get(test.uniqueChannelName())
-
-        waitUntil(timeout: testTimeout) { done in
-            client.connection.once(.connected) { _ in
-                done()
-            }
-            client.connect()
-        }
-
+        
+        client.connect()
+        expect(client.connection.state).toEventually(equal(.connected), timeout: testTimeout)
+        
+        channel.attach()
+        expect(channel.state).toEventually(equal(.attached), timeout: testTimeout)
+        
         waitUntil(timeout: testTimeout) { done in
             channel.publish(nil, data: "message") { error in
                 XCTAssertNil(error)
                 done()
-            }
-        }
-
-        XCTAssertEqual(channel.state, .attached)
-        channel.on { stateChange in
-            if stateChange.current != .attached {
-                fail("Channel state should not change")
             }
         }
 
@@ -766,7 +759,7 @@ class RealtimeClientChannelTests: XCTestCase {
         }
 
         channel.off()
-        XCTAssertEqual(channel.state, .attached)
+        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
     }
 
     // RTL3b
@@ -1216,8 +1209,8 @@ class RealtimeClientChannelTests: XCTestCase {
                 XCTAssertNil(stateChange.reason)
                 done()
             }
-
             client.connect()
+            channel.attach()
         }
         XCTAssertEqual(channel.state, .attached)
     }
@@ -2868,6 +2861,7 @@ class RealtimeClientChannelTests: XCTestCase {
                 XCTAssertNil(stateChange.reason)
                 done()
             }
+            channel.attach()
         }
 
         let expectationEvent0 = XCTestExpectation(description: "event0")
@@ -4614,6 +4608,7 @@ class RealtimeClientChannelTests: XCTestCase {
                     partialDone()
                 }
             }
+            channel.attach()
         }
 
         waitUntil(timeout: testTimeout) { done in
