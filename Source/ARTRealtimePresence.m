@@ -625,17 +625,14 @@ dispatch_sync(_queue, ^{
             }];
             break;
         }
-        case ARTRealtimeChannelInitialized:
-            if (_realtime.options.queueMessages) { // RTP16b
-                [_channel _attach:nil];
-            }
+        case ARTRealtimeChannelInitialized: {
+            [_channel _attach:nil]; // RTP8d
             // fallthrough
+        }
         case ARTRealtimeChannelAttaching: {
             if (_realtime.options.queueMessages) { // RTP16b
                 [self addPendingPresence:pm callback:^(ARTStatus *status) {
-                    if (callback) {
-                        callback(status.errorInfo);
-                    }
+                    if (callback) callback(status.errorInfo);
                 }];
                 break;
             }
