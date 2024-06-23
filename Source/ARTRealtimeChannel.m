@@ -905,9 +905,11 @@ dispatch_sync(_queue, ^{
 
     if (callback) [_attachedEventEmitter once:callback];
     // Set state: Attaching
-    const ARTState state = params.reason ? ARTStateError : ARTStateOk;
-    ARTChannelStateChangeParams *const stateChangeParams = [[ARTChannelStateChangeParams alloc] initWithState:state errorInfo:params.reason storeErrorInfo:NO retryAttempt:params.retryAttempt];
-    [self performTransitionToState:ARTRealtimeChannelAttaching withParams:stateChangeParams];
+    if (self.state_nosync != ARTRealtimeChannelAttaching) {
+        const ARTState state = params.reason ? ARTStateError : ARTStateOk;
+        ARTChannelStateChangeParams *const stateChangeParams = [[ARTChannelStateChangeParams alloc] initWithState:state errorInfo:params.reason storeErrorInfo:NO retryAttempt:params.retryAttempt];
+        [self performTransitionToState:ARTRealtimeChannelAttaching withParams:stateChangeParams];
+    }
     [self attachAfterChecks];
 }
 
