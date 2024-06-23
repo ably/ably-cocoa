@@ -391,6 +391,7 @@ class RestClientChannelTests: XCTestCase {
         let chanelName = test.uniqueChannelName(prefix: "ch1")
         
         let subscriber = realtime.channels.get(chanelName)
+        subscriber.attach()
         waitUntil(timeout: testTimeout) { done in
             subscriber.once(.attached) { _ in
                 done()
@@ -423,6 +424,7 @@ class RestClientChannelTests: XCTestCase {
         let chanelName = test.uniqueChannelName(prefix: "ch1")
         
         let subscriber = realtime.channels.get(chanelName)
+        subscriber.attach()
         waitUntil(timeout: testTimeout) { done in
             subscriber.once(.attached) { _ in
                 done()
@@ -453,6 +455,7 @@ class RestClientChannelTests: XCTestCase {
         let chanelName = test.uniqueChannelName(prefix: "ch1")
         
         let subscriber = realtime.channels.get(chanelName)
+        subscriber.attach()
         waitUntil(timeout: testTimeout) { done in
             subscriber.once(.attached) { _ in
                 done()
@@ -484,6 +487,7 @@ class RestClientChannelTests: XCTestCase {
         let chanelName = test.uniqueChannelName(prefix: "ch1")
         
         let subscriber = realtime.channels.get(chanelName)
+        subscriber.attach()
         waitUntil(timeout: testTimeout) { done in
             subscriber.once(.attached) { _ in
                 done()
