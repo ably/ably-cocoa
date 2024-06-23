@@ -742,16 +742,14 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
     }
     
     if ([self shouldSendEvents]) {
-        [self sendQueuedMessages];
-        
-        if (_resuming) {
-            for (ARTRealtimeChannelInternal *channel in channels) {
-                // Reattach channel regardless resume success - RTN15c6, RTN15c7
-                ARTAttachRequestParams *const params = [[ARTAttachRequestParams alloc] initWithReason:stateChange.reason];
-                [channel reattachWithParams:params];
-            }
+        for (ARTRealtimeChannelInternal *channel in channels) {
+            // Reattach channel regardless resume success - RTN15c6, RTN15c7
+            ARTAttachRequestParams *const params = [[ARTAttachRequestParams alloc] initWithReason:stateChange.reason];
+            [channel reattachWithParams:params];
         }
-    } else if (![self shouldQueueEvents]) {
+        [self sendQueuedMessages];
+    }
+    else if (![self shouldQueueEvents]) {
         if (!channelStateChangeParams) {
             if (stateChange.reason) {
                 channelStateChangeParams = [[ARTChannelStateChangeParams alloc] initWithState:ARTStateError 
