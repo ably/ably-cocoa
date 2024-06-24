@@ -864,15 +864,6 @@ dispatch_sync(_queue, ^{
     [self internalAttach:callback withParams:params];
 }
 
-- (void)reattachWithParams:(ARTAttachRequestParams *)params {
-    if ([self canBeReattached]) {
-        ARTLogDebug(self.logger, @"RT:%p C:%p (%@) %@ and will reattach", _realtime, self, self.name, ARTRealtimeChannelStateToStr(self.state_nosync));
-        [self internalAttach:nil withParams:params];
-    } else {
-        ARTLogDebug(self.logger, @"RT:%p C:%p (%@) %@ should not reattach", _realtime, self, self.name, ARTRealtimeChannelStateToStr(self.state_nosync));
-    }
-}
-
 - (void)internalAttach:(ARTCallback)callback withParams:(ARTAttachRequestParams *)params {
     switch (self.state_nosync) {
         case ARTRealtimeChannelDetaching: {
@@ -931,6 +922,20 @@ dispatch_sync(_queue, ^{
     } ackCallback:nil];
 }
 
+- (void)reattachWithParams:(ARTAttachRequestParams *)params {
+    if ([self canBeReattached]) {
+        ARTLogDebug(self.logger, @"RT:%p C:%p (%@) %@ and will reattach", _realtime, self, self.name, ARTRealtimeChannelStateToStr(self.state_nosync));
+        [self internalAttach:nil withParams:params];
+    }
+    else if (self.state_nosync == ARTChannelEventDetaching) {
+        ARTLogDebug(self.logger, @"RT:%p C:%p (%@) %@ proceeding with detach", _realtime, self, self.name, ARTRealtimeChannelStateToStr(self.state_nosync));
+        [self internalDetach:nil];
+    }
+    else {
+        ARTLogDebug(self.logger, @"RT:%p C:%p (%@) %@ should not reattach", _realtime, self, self.name, ARTRealtimeChannelStateToStr(self.state_nosync));
+    }
+}
+
 - (void)detach:(ARTCallback)callback {
     if (callback) {
         ARTCallback userCallback = callback;
@@ -951,17 +956,6 @@ dispatch_sync(_queue, ^{
             ARTLogDebug(self.logger, @"RT:%p C:%p (%@) can't detach when not attached", _realtime, self, self.name);
             if (callback) callback(nil);
             return;
-        case ARTRealtimeChannelAttaching: {
-            ARTLogDebug(self.logger, @"RT:%p C:%p (%@) waiting for the completion of the attaching operation", _realtime, self, self.name);
-            [_attachedEventEmitter once:^(ARTErrorInfo *errorInfo) {
-                if (callback && errorInfo) {
-                    callback(errorInfo);
-                    return;
-                }
-                [self _detach:callback];
-            }];
-            return;
-        }
         case ARTRealtimeChannelDetaching:
             ARTLogDebug(self.logger, @"RT:%p C:%p (%@) already detaching", _realtime, self, self.name);
             if (callback) [_detachedEventEmitter once:callback];
@@ -984,6 +978,27 @@ dispatch_sync(_queue, ^{
         default:
             break;
     }
+    [self internalDetach:callback];
+}
+
+- (void)internalDetach:(ARTCallback)callback {
+    switch (self.state_nosync) {
+        case ARTRealtimeChannelAttaching: {
+            ARTLogDebug(self.logger, @"RT:%p C:%p (%@) waiting for the completion of the attaching operation", _realtime, self, self.name);
+            [_attachedEventEmitter once:^(ARTErrorInfo *errorInfo) {
+                if (callback && errorInfo) {
+                    callback(errorInfo);
+                    return;
+                }
+                [self _detach:callback];
+            }];
+            return;
+        }
+        default:
+            break;
+    }
+
+    _errorReason = nil;
 
     if (![self.realtime isActive]) {
         ARTLogDebug(self.logger, @"RT:%p C:%p (%@) can't detach when not in an active state", _realtime, self, self.name);
@@ -1004,19 +1019,19 @@ dispatch_sync(_queue, ^{
     detachMessage.action = ARTProtocolMessageDetach;
     detachMessage.channel = self.name;
 
-    [self.realtime send:detachMessage sentCallback:nil ackCallback:nil];
-
-    [[self unlessStateChangesBefore:self.realtime.options.testOptions.realtimeRequestTimeout do:^{
-        if (!self.realtime) {
+    [self.realtime send:detachMessage sentCallback:^(ARTErrorInfo *error) {
+        if (error) {
             return;
         }
-        // Timeout
-        ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTStateDetachTimedOut message:@"detach timed out"];
-        ARTChannelStateChangeParams *const params = [[ARTChannelStateChangeParams alloc] initWithState:ARTStateAttachTimedOut
-                                                                                             errorInfo:errorInfo];
-        [self performTransitionToState:ARTRealtimeChannelAttached withParams:params];
-        [self->_detachedEventEmitter emit:nil with:errorInfo];
-    }] startTimer];
+        [[self unlessStateChangesBefore:self.realtime.options.testOptions.realtimeRequestTimeout do:^{
+            // Timeout
+            ARTErrorInfo *errorInfo = [ARTErrorInfo createWithCode:ARTStateDetachTimedOut message:@"detach timed out"];
+            ARTChannelStateChangeParams *const params = [[ARTChannelStateChangeParams alloc] initWithState:ARTStateAttachTimedOut
+                                                                                                 errorInfo:errorInfo];
+            [self performTransitionToState:ARTRealtimeChannelAttached withParams:params];
+            [self->_detachedEventEmitter emit:nil with:errorInfo];
+        }] startTimer];
+    } ackCallback:nil];
 
     if (![self.realtime shouldQueueEvents]) {
         ARTEventListener *reconnectedListener = [self.realtime.connectedEventEmitter once:^(NSNull *n) {
