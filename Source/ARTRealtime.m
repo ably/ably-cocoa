@@ -1275,22 +1275,34 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
     if ([self shouldSendEvents]) {
         [self sendImpl:msg reuseMsgSerial:reuseMsgSerial sentCallback:sentCallback ackCallback:ackCallback];
     }
-    else if ([self shouldQueueEvents]) {
-        ARTQueuedMessage *lastQueuedMessage = self.queuedMessages.lastObject; //RTL6d5
-        BOOL merged = [lastQueuedMessage mergeFrom:msg sentCallback:nil ackCallback:ackCallback];
-        if (!merged) {
-            ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg sentCallback:sentCallback ackCallback:ackCallback];
-            [self.queuedMessages addObject:qm];
-            ARTLogDebug(self.logger, @"RT:%p (channel: %@) protocol message with action '%lu - %@' has been queued (%@)", self, msg.channel, (unsigned long)msg.action, ARTProtocolMessageActionToStr(msg.action), msg.messages);
+    // see RTL6c2, RTN19, RTN7 and TO3g
+    else if (msg.ackRequired) {
+        if ([self shouldQueueEvents]) {
+            ARTQueuedMessage *lastQueuedMessage = self.queuedMessages.lastObject; //RTL6d5
+            BOOL merged = [lastQueuedMessage mergeFrom:msg sentCallback:nil ackCallback:ackCallback];
+            if (!merged) {
+                ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg sentCallback:sentCallback ackCallback:ackCallback];
+                [self.queuedMessages addObject:qm];
+                ARTLogDebug(self.logger, @"RT:%p (channel: %@) protocol message with action '%lu - %@' has been queued (%@)", self, msg.channel, (unsigned long)msg.action, ARTProtocolMessageActionToStr(msg.action), msg.messages);
+            }
+            else {
+                ARTLogVerbose(self.logger, @"RT:%p (channel: %@) message %@ has been bundled to %@", self, msg.channel, msg, lastQueuedMessage.msg);
+            }
         }
+        // RTL6c4
         else {
-            ARTLogVerbose(self.logger, @"RT:%p (channel: %@) message %@ has been bundled to %@", self, msg.channel, msg, lastQueuedMessage.msg);
+            ARTErrorInfo *error = self.connection.error_nosync;
+            ARTLogDebug(self.logger, @"RT:%p (channel: %@) protocol message with action '%lu - %@' can't be sent or queued: %@", self, msg.channel, (unsigned long)msg.action, ARTProtocolMessageActionToStr(msg.action), error);
+            if (sentCallback) {
+                sentCallback(error);
+            }
+            if (ackCallback) {
+                ackCallback([ARTStatus state:ARTStateError info:error]);
+            }
         }
     }
-    else if (ackCallback) {
-        ARTErrorInfo *error = self.connection.errorReason_nosync;
-        if (!error) error = [ARTErrorInfo createWithCode:ARTErrorChannelOperationFailed status:400 message:[NSString stringWithFormat:@"not possile to send message (state is %@)", ARTRealtimeConnectionStateToStr(self.connection.state_nosync)]];
-        ackCallback([ARTStatus state:ARTStateError info:error]);
+    else {
+        ARTLogDebug(self.logger, @"RT:%p (channel: %@) sending protocol message with action '%lu - %@' was ignored: %@", self, msg.channel, (unsigned long)msg.action, ARTProtocolMessageActionToStr(msg.action), self.connection.error_nosync);
     }
 }
 
