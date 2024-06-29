@@ -744,16 +744,13 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
     if ([self shouldSendEvents]) {
         [self sendQueuedMessages];
         
-        // Channels
         for (ARTRealtimeChannelInternal *channel in channels) {
-            if (stateChange.previous == ARTRealtimeInitialized ||
-                stateChange.previous == ARTRealtimeConnecting ||
-                stateChange.previous == ARTRealtimeDisconnected) {
-                // RTL4i
-                [channel _attach:nil];
-            }
+            // Reattach channel regardless resume success - RTN15c6, RTN15c7
+            ARTAttachRequestParams *const params = [[ARTAttachRequestParams alloc] initWithReason:stateChange.reason];
+            [channel reattachWithParams:params];
         }
-    } else if (![self shouldQueueEvents]) {
+    }
+    else if (![self shouldQueueEvents]) {
         if (!channelStateChangeParams) {
             if (stateChange.reason) {
                 channelStateChangeParams = [[ARTChannelStateChangeParams alloc] initWithState:ARTStateError 
@@ -867,12 +864,6 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
                 else {
                     ARTLogWarn(self.logger, @"RT:%p connection \"%@\" has reconnected, but resume failed. Error: \"%@\"", self, message.connectionId, message.error.message);
                 }
-                // Reattach all channels regardless resume success - RTN15c6, RTN15c7
-                for (ARTRealtimeChannelInternal *channel in self.channels.nosyncIterable) {
-                    ARTAttachRequestParams *const params = [[ARTAttachRequestParams alloc] initWithReason:message.error];
-                    [channel reattachWithParams:params];
-                }
-                _resuming = false;
             }
             // If there's no previous connectionId, then don't reset the msgSerial
             //as it may have been set by recover data (unless the recover failed).
