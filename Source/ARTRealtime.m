@@ -748,7 +748,7 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
         }
         [self sendQueuedMessages];
     }
-    else if (![self shouldQueueEvents]) {
+    else if (!self.isActive) {
         if (!channelStateChangeParams) {
             if (stateChange.reason) {
                 channelStateChangeParams = [[ARTChannelStateChangeParams alloc] initWithState:ARTStateError 
@@ -1207,9 +1207,9 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
     }
 }
 
-- (BOOL)shouldQueueEvents {
-    if(!self.options.queueMessages) {
-        return false;
+- (BOOL)isActive {
+    if (self.shouldSendEvents) {
+        return true;
     }
     switch (self.connection.state_nosync) {
         case ARTRealtimeInitialized:
@@ -1221,10 +1221,6 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
         default:
             return false;
     }
-}
-
-- (BOOL)isActive {
-    return [self shouldQueueEvents] || [self shouldSendEvents];
 }
 
 - (void)sendImpl:(ARTProtocolMessage *)pm reuseMsgSerial:(BOOL)reuseMsgSerial sentCallback:(ARTCallback)sentCallback ackCallback:(ARTStatusCallback)ackCallback {
@@ -1275,7 +1271,7 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
     }
     // see RTL6c2, RTN19, RTN7 and TO3g
     else if (msg.ackRequired) {
-        if ([self shouldQueueEvents]) {
+        if (self.isActive && self.options.queueMessages) {
             ARTQueuedMessage *lastQueuedMessage = self.queuedMessages.lastObject; //RTL6d5
             BOOL merged = [lastQueuedMessage mergeFrom:msg sentCallback:nil ackCallback:ackCallback];
             if (!merged) {
