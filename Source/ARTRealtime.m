@@ -743,9 +743,8 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
     
     if ([self shouldSendEvents]) {
         for (ARTRealtimeChannelInternal *channel in channels) {
-            // Reattach channel regardless resume success - RTN15c6, RTN15c7
             ARTAttachRequestParams *const params = [[ARTAttachRequestParams alloc] initWithReason:stateChange.reason];
-            [channel reattachWithParams:params];
+            [channel proceedAttachDetachWithParams:params];
         }
         [self sendQueuedMessages];
     }
