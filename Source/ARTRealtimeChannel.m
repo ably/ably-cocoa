@@ -1015,10 +1015,10 @@ dispatch_sync(_queue, ^{
     ARTChannelStateChangeParams *const params = [[ARTChannelStateChangeParams alloc] initWithState:ARTStateOk];
     [self performTransitionToState:ARTRealtimeChannelDetaching withParams:params];
 
-    [self detachAfterChecks:callback];
+    [self detachAfterChecks];
 }
 
-- (void)detachAfterChecks:(ARTCallback)callback {
+- (void)detachAfterChecks {
     ARTProtocolMessage *detachMessage = [[ARTProtocolMessage alloc] init];
     detachMessage.action = ARTProtocolMessageDetach;
     detachMessage.channel = self.name;
