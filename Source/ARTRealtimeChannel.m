@@ -305,6 +305,17 @@ dispatch_sync(_queue, ^{
     }
 }
 
+- (BOOL)shouldAttach {
+    switch (self.state_nosync) {
+        case ARTRealtimeChannelInitialized:
+        case ARTRealtimeChannelDetaching:
+        case ARTRealtimeChannelDetached:
+            return YES;
+        default:
+            return NO;
+    }
+}
+
 - (ARTErrorInfo *)errorReason_nosync {
     return _errorReason;
 }
@@ -435,7 +446,7 @@ dispatch_sync(_queue, ^{
         ARTLogWarn(self.logger, @"R:%p C:%p (%@) subscribe has been ignored (attempted to subscribe while channel is in FAILED state)", self->_realtime, self, self.name);
         return;
     }
-    if (self.state_nosync == ARTRealtimeChannelInitialized) { //RTL7c
+    if (self.shouldAttach) { // RTL7c
         [self _attach:onAttach];
     }
     listener = [self.messagesEventEmitter on:cb];
