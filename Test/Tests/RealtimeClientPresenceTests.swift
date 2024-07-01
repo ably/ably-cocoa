@@ -647,12 +647,6 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             let partialDone = AblyTests.splitDone(2, done: done)
-            channel2.presence.enterClient("Client 2", data: nil) { error in
-                XCTAssertNil(error)
-                XCTAssertEqual(client2.internal.queuedMessages.count, 0)
-                XCTAssertEqual(channel2.state, ARTRealtimeChannelState.attached)
-                partialDone()
-            }
             channel2.presence.subscribe(.enter) { _ in
                 if channel2.presence.syncComplete {
                     XCTAssertEqual(channel2.internal.presence.members.count, 2)
@@ -662,8 +656,13 @@ class RealtimeClientPresenceTests: XCTestCase {
                 channel2.presence.unsubscribe()
                 partialDone()
             }
-
-            XCTAssertEqual(client2.internal.queuedMessages.count, 1)
+            channel2.presence.enterClient("Client 2", data: nil) { error in
+                XCTAssertNil(error)
+                XCTAssertEqual(client2.internal.queuedMessages.count, 0)
+                XCTAssertEqual(channel2.state, ARTRealtimeChannelState.attached)
+                partialDone()
+            }
+            XCTAssertEqual(channel2.internal.presence.pendingPresence.count, 1)
             XCTAssertFalse(channel2.presence.syncComplete)
             XCTAssertEqual(channel2.internal.presence.members.count, 0)
         }
@@ -2997,7 +2996,7 @@ class RealtimeClientPresenceTests: XCTestCase {
                 done()
             }
             XCTAssertEqual(client.connection.state, ARTRealtimeConnectionState.connecting)
-            XCTAssertEqual(client.internal.queuedMessages.count, 1)
+            XCTAssertEqual(channel.internal.presence.pendingPresence.count, 1)
         }
     }
 
@@ -3071,7 +3070,7 @@ class RealtimeClientPresenceTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             channel.presence.enterClient("user", data: nil) { error in
-                XCTAssertEqual(error?.code, ARTErrorCode.invalidTransportHandle.intValue)
+                XCTAssertEqual(error?.code, ARTErrorCode.unableToEnterPresenceChannelInvalidState.intValue)
                 XCTAssertEqual(channel.presence.internal.pendingPresence.count, 0)
                 done()
             }
@@ -3355,6 +3354,7 @@ class RealtimeClientPresenceTests: XCTestCase {
             expect(client.connection.state).toEventually(equal(.closed), timeout: testTimeout)
         }
         let channel = client.channels.get(channelName)
+        channel.attach()
         expect(channel.internal.presence.syncInProgress).toEventually(beTrue(), timeout: testTimeout)
         
         waitUntil(timeout: testTimeout) { done in
