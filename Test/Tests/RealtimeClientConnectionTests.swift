@@ -2565,7 +2565,8 @@ class RealtimeClientConnectionTests: XCTestCase {
         let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(test.uniqueChannelName())
-
+        channel.attach()
+        
         XCTAssertTrue(client.waitUntilConnected())
         let expectedConnectionId = client.connection.id
 
@@ -2601,7 +2602,9 @@ class RealtimeClientConnectionTests: XCTestCase {
         defer { client.dispose(); client.close() }
         let channel1 = client.channels.get(test.uniqueChannelName())
         let channel2 = client.channels.get(test.uniqueChannelName(prefix: "second_"))
-
+        channel1.attach()
+        channel2.attach()
+        
         XCTAssertTrue(client.waitUntilConnected())
         expect(channel1.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
         expect(channel2.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
@@ -2642,7 +2645,8 @@ class RealtimeClientConnectionTests: XCTestCase {
         let client = AblyTests.newRealtime(options).client
         defer { client.dispose(); client.close() }
         let channel = client.channels.get(test.uniqueChannelName())
-
+        channel.attach()
+        
         XCTAssertTrue(client.waitUntilConnected())
         let expectedConnectionId = client.connection.id
 
