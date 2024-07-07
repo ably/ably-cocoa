@@ -408,12 +408,6 @@ dispatch_sync(_queue, ^{
     }
 }
 
-- (void)throwOnDisconnectedOrFailed {
-    if (self.realtime.connection.state_nosync == ARTRealtimeFailed || self.realtime.connection.state_nosync == ARTRealtimeDisconnected) {
-        [ARTException raise:@"realtime cannot perform action in disconnected or failed state" format:@"state: %d", (int)self.realtime.connection.state_nosync];
-    }
-}
-
 - (ARTEventListener *)subscribe:(ARTMessageCallback)callback {
     return [self subscribeWithAttachCallback:nil callback:callback];
 }

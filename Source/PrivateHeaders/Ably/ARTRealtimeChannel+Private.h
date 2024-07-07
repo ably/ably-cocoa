@@ -76,7 +76,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setSuspended:(ARTChannelStateChangeParams *)params;
 - (void)setFailed:(ARTChannelStateChangeParams *)params;
-- (void)throwOnDisconnectedOrFailed;
 
 - (void)detachChannel:(ARTChannelStateChangeParams *)params;
 
