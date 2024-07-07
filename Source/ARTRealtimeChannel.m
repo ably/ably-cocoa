@@ -408,15 +408,11 @@ dispatch_sync(_queue, ^{
     }
 }
 
-- (ARTEventListener *)subscribe:(ARTMessageCallback)callback {
-    return [self subscribeWithAttachCallback:nil callback:callback];
-}
-
-- (ARTEventListener *)subscribeWithAttachCallback:(ARTCallback)onAttach callback:(ARTMessageCallback)cb {
+- (ARTEventListener *)_subscribe:(nullable NSString *)name onAttach:(nullable ARTCallback)onAttach callback:(nullable ARTMessageCallback)cb {
     if (cb) {
         ARTMessageCallback userCallback = cb;
         cb = ^(ARTMessage *_Nonnull m) {
-            if (self.state_nosync != ARTRealtimeChannelAttached) { //RTL17
+            if (self.state_nosync != ARTRealtimeChannelAttached) { // RTL17
                 return;
             }
             dispatch_async(self->_userQueue, ^{
@@ -437,52 +433,32 @@ dispatch_sync(_queue, ^{
 dispatch_sync(_queue, ^{
     if (self.state_nosync == ARTRealtimeChannelFailed) {
         if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in FAILED state."]);
-        ARTLogWarn(self.logger, @"R:%p C:%p (%@) subscribe has been ignored (attempted to subscribe while channel is in FAILED state)", self->_realtime, self, self.name);
+        ARTLogWarn(self.logger, @"R:%p C:%p (%@) subscribe of '%@' has been ignored (attempted to subscribe while channel is in FAILED state)", self->_realtime, self, self.name, name == nil ? @"all" : name);
         return;
     }
     if (self.shouldAttach) { // RTL7c
         [self _attach:onAttach];
     }
-    listener = [self.messagesEventEmitter on:cb];
-    ARTLogVerbose(self.logger, @"R:%p C:%p (%@) subscribe to all events", self->_realtime, self, self.name);
+    listener = name == nil ? [self.messagesEventEmitter on:cb] : [self.messagesEventEmitter on:name callback:cb];
+    ARTLogVerbose(self.logger, @"R:%p C:%p (%@) subscribe to '%@' event(s)", self->_realtime, self, self.name, name == nil ? @"all" : name);
 });
     return listener;
+}
+
+- (ARTEventListener *)subscribe:(ARTMessageCallback)cb {
+    return [self _subscribe:nil onAttach:nil callback:cb];
+}
+
+- (ARTEventListener *)subscribeWithAttachCallback:(ARTCallback)onAttach callback:(ARTMessageCallback)cb {
+    return [self _subscribe:nil onAttach:onAttach callback:cb];
 }
 
 - (ARTEventListener *)subscribe:(NSString *)name callback:(ARTMessageCallback)cb {
-    return [self subscribe:name onAttach:nil callback:cb];
+    return [self _subscribe:name onAttach:nil callback:cb];
 }
 
 - (ARTEventListener *)subscribe:(NSString *)name onAttach:(ARTCallback)onAttach callback:(ARTMessageCallback)cb {
-    if (cb) {
-        ARTMessageCallback userCallback = cb;
-        cb = ^(ARTMessage *_Nonnull m) {
-            dispatch_async(self->_userQueue, ^{
-                userCallback(m);
-            });
-        };
-    }
-    if (onAttach) {
-        ARTCallback userOnAttach = onAttach;
-        onAttach = ^(ARTErrorInfo *_Nullable e) {
-            dispatch_async(self->_userQueue, ^{
-                userOnAttach(e);
-            });
-        };
-    }
-
-    __block ARTEventListener *listener = nil;
-dispatch_sync(_queue, ^{
-    if (self.state_nosync == ARTRealtimeChannelFailed) {
-        if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in FAILED state."]);
-        ARTLogWarn(self.logger, @"R:%p C:%p (%@) subscribe of '%@' has been ignored (attempted to subscribe while channel is in FAILED state)", self->_realtime, self, self.name, name);
-        return;
-    }
-    [self _attach:onAttach];
-    listener = [self.messagesEventEmitter on:name callback:cb];
-    ARTLogVerbose(self.logger, @"R:%p C:%p (%@) subscribe to event '%@'", self->_realtime, self, self.name, name);
-});
-    return listener;
+    return [self _subscribe:name onAttach:onAttach callback:cb];
 }
 
 - (void)unsubscribe {
