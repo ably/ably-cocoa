@@ -432,7 +432,7 @@ dispatch_sync(_queue, ^{
     __block ARTEventListener *listener = nil;
 dispatch_sync(_queue, ^{
     if (self.state_nosync == ARTRealtimeChannelFailed) {
-        if (onAttach) onAttach([ARTErrorInfo createWithCode:0 message:@"attempted to subscribe while channel is in FAILED state."]);
+        if (onAttach) onAttach([ARTErrorInfo createWithCode:ARTErrorChannelOperationFailedInvalidState message:@"attempted to subscribe while channel is in FAILED state."]);
         ARTLogWarn(self.logger, @"R:%p C:%p (%@) subscribe of '%@' has been ignored (attempted to subscribe while channel is in FAILED state)", self->_realtime, self, self.name, name == nil ? @"all" : name);
         return;
     }
