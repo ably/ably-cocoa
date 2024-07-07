@@ -176,8 +176,9 @@
     return self;
 }
 
-- (ARTEventListener *)on:(id<ARTEventIdentification>)event callback:(void (^)(id))cb {
-    NSString *eventId = [NSString stringWithFormat:@"%p-%@", self, [event identification]];
+- (ARTEventListener *)_on:(nullable id<ARTEventIdentification>)event callback:(void (^)(id))cb {
+    NSString *eventId = event == nil ? [NSString stringWithFormat:@"%p", self] :
+                                       [NSString stringWithFormat:@"%p-%@", self, [event identification]];
     __block ARTEventListener *listener;
     id<NSObject> observer = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
         if (listener == nil || [listener invalidated]) return;
@@ -186,56 +187,42 @@
         cb(note.object);
     }];
     listener = [[ARTEventListener alloc] initWithId:eventId observer:observer handler:self center:_notificationCenter];
-    [self addObject:listener toArrayWithKey:listener.eventId inDictionary:self.listeners];
+    [self addObject:listener toArrayWithKey:event == nil ? nil : eventId];
+    return listener;
+}
+
+- (ARTEventListener *)on:(id<ARTEventIdentification>)event callback:(void (^)(id))cb {
+    return [self _on:event callback:cb];
+}
+
+- (ARTEventListener *)_once:(nullable id<ARTEventIdentification>)event callback:(void (^)(id))cb {
+    NSString *eventId = event == nil ? [NSString stringWithFormat:@"%p", self] :
+                                       [NSString stringWithFormat:@"%p-%@", self, [event identification]];
+    __block ARTEventListener *listener;
+    __weak typeof(self) weakSelf = self; // weak to avoid a warning, but strong should be safe too since the cycle is broken when the notification fires or the observer is cancelled
+    id<NSObject> observer = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
+        if (listener == nil || [listener invalidated]) return;
+        if ([listener hasTimer] && ![listener timerIsRunning]) return;
+        if ([listener handled]) return;
+        [listener removeObserver];
+        [weakSelf removeObject:listener fromArrayWithKey:event == nil ? nil : eventId];
+        cb(note.object);
+    }];
+    listener = [[ARTEventListener alloc] initWithId:eventId observer:observer handler:self center:_notificationCenter];
+    [self addObject:listener toArrayWithKey:event == nil ? nil : eventId];
     return listener;
 }
 
 - (ARTEventListener *)once:(id<ARTEventIdentification>)event callback:(void (^)(id))cb {
-    NSString *eventId = [NSString stringWithFormat:@"%p-%@", self, [event identification]];
-    __block ARTEventListener *listener;
-    __weak typeof(self) weakSelf = self; // weak to avoid a warning, but strong should be safe too since the cycle is broken when the notification fires or the observer is cancelled
-    id<NSObject> observer = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
-        if (listener == nil || [listener invalidated]) return;
-        if ([listener hasTimer] && ![listener timerIsRunning]) return;
-        if ([listener handled]) return;
-        [listener removeObserver];
-        [weakSelf removeObject:listener fromArrayWithKey:[listener eventId] inDictionary:[weakSelf listeners]];
-        cb(note.object);
-    }];
-    listener = [[ARTEventListener alloc] initWithId:eventId observer:observer handler:self center:_notificationCenter];
-    [self addObject:listener toArrayWithKey:listener.eventId inDictionary:self.listeners];
-    return listener;
+    return [self _once:event callback:cb];
 }
 
 - (ARTEventListener *)on:(void (^)(id))cb {
-    NSString *eventId = [NSString stringWithFormat:@"%p", self];
-    __block ARTEventListener *listener;
-    id<NSObject> observer = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
-        if (listener == nil || [listener invalidated]) return;
-        if ([listener hasTimer] && ![listener timerIsRunning]) return;
-        [listener stopTimer];
-        cb(note.object);
-    }];
-    listener = [[ARTEventListener alloc] initWithId:eventId observer:observer handler:self center:_notificationCenter];
-    [self.anyListeners addObject:listener];
-    return listener;
+    return [self _on:nil callback:cb];
 }
 
 - (ARTEventListener *)once:(void (^)(id))cb {
-    NSString *eventId = [NSString stringWithFormat:@"%p", self];
-    __block ARTEventListener *listener;
-    __weak typeof(self) weakSelf = self; // weak to avoid a warning, but strong should be safe too since the cycle is broken when the notification fires or the observer is cancelled
-    id<NSObject> observer = [_notificationCenter addObserverForName:eventId object:nil queue:nil usingBlock:^(NSNotification * _Nonnull note) {
-        if (listener == nil || [listener invalidated]) return;
-        if ([listener hasTimer] && ![listener timerIsRunning]) return;
-        if ([listener handled]) return;
-        [listener removeObserver];
-        [[weakSelf anyListeners] removeObject:listener];
-        cb(note.object);
-    }];
-    listener = [[ARTEventListener alloc] initWithId:eventId observer:observer handler:self center:_notificationCenter];
-    [self.anyListeners addObject:listener];
-    return listener;
+    return [self _once:nil callback:cb];
 }
 
 - (void)off:(id<ARTEventIdentification>)event listener:(ARTEventListener *)listener {
@@ -281,37 +268,44 @@
     [self.notificationCenter postNotificationName:[NSString stringWithFormat:@"%p", self] object:data];
 }
 
-- (void)addObject:(id)obj toArrayWithKey:(id)key inDictionary:(NSMutableDictionary *)dict {
-    NSMutableArray *array = [dict objectForKey:key];
-    if (array == nil) {
-        array = [[NSMutableArray alloc] init];
-        [dict setObject:array forKey:key];
+- (void)addObject:(id)obj toArrayWithKey:(nullable id)key {
+    if (key == nil) {
+        [_anyListeners addObject:obj];
     }
-    if ([array indexOfObject:obj] == NSNotFound) {
-        [array addObject:obj];
-    }
-}
-
-- (void)removeObject:(id)obj fromArrayWithKey:(id)key inDictionary:(NSMutableDictionary *)dict {
-    NSMutableArray *array = [dict objectForKey:key];
-    if (array == nil) {
-        return;
-    }
-    [array removeObject:obj];
-    if ([array count] == 0) {
-        [dict removeObjectForKey:key];
+    else {
+        NSMutableArray *array = [_listeners objectForKey:key];
+        if (array == nil) {
+            array = [[NSMutableArray alloc] init];
+            [_listeners setObject:array forKey:key];
+        }
+        if ([array indexOfObject:obj] == NSNotFound) {
+            [array addObject:obj];
+        }
     }
 }
 
-- (void)removeObject:(id)obj fromArrayWithKey:(id)key inDictionary:(NSMutableDictionary *)dict where:(BOOL(^)(id))cond {
-    NSMutableArray *array = [dict objectForKey:key];
-    if (array == nil) {
-        return;
+- (void)removeObject:(id)obj fromArrayWithKey:(nullable id)key where:(nullable BOOL(^)(id))cond {
+    if (key == nil) {
+        [_anyListeners removeObject:obj];
     }
-    [array artRemoveWhere:cond];
-    if ([array count] == 0) {
-        [dict removeObjectForKey:key];
+    else {
+        NSMutableArray *array = [_listeners objectForKey:key];
+        if (array == nil) {
+            return;
+        }
+        if (cond) {
+            [array artRemoveWhere:cond];
+        } else {
+            [array removeObject:obj];
+        }
+        if ([array count] == 0) {
+            [_listeners removeObjectForKey:key];
+        }
     }
+}
+
+- (void)removeObject:(id)obj fromArrayWithKey:(id)key {
+    [self removeObject:obj fromArrayWithKey:key where:nil];
 }
 
 @end
