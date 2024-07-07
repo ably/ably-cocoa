@@ -102,6 +102,8 @@ NSString *ARTPresenceActionToStr(ARTPresenceAction action) {
             return @"Leave"; //3
         case ARTPresenceUpdate:
             return @"Update"; //4
+        default:
+            return @"All";
     }
 }
 
