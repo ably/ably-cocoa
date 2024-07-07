@@ -502,7 +502,9 @@ dispatch_sync(_queue, ^{
         ARTLogWarn(self.logger, @"R:%p C:%p (%@) presence subscribe to '%@' action(s) has been ignored (attempted to subscribe while channel is in FAILED state)", self->_realtime, self->_channel, self->_channel.name, ARTPresenceActionToStr(action));
         return;
     }
-    [self->_channel _attach:onAttach];
+    if (self->_channel.shouldAttach) { // RTP6c
+        [self->_channel _attach:onAttach];
+    }
     listener = action == ARTPresenceActionAll ? [_eventEmitter on:cb] : [_eventEmitter on:[ARTEvent newWithPresenceAction:action] callback:cb];
     ARTLogVerbose(self.logger, @"R:%p C:%p (%@) presence subscribe to '%@' action(s)", self->_realtime, self->_channel, self->_channel.name, ARTPresenceActionToStr(action));
 });

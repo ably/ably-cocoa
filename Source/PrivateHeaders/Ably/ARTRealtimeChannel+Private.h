@@ -33,6 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (ARTErrorInfo *)errorReason_nosync;
 - (NSString * _Nullable)clientId_nosync;
 - (BOOL)canBeReattached;
+- (BOOL)shouldAttach;
 
 @property (readonly, weak, nonatomic) ARTRealtimeInternal *realtime; // weak because realtime owns self
 @property (readonly, nonatomic) ARTRestChannelInternal *restChannel;
