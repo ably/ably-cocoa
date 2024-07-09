@@ -1000,7 +1000,7 @@ class AuthTests: XCTestCase {
 
         waitUntil(timeout: testTimeout) { done in
             realtime.connection.once(.failed) { stateChange in
-                XCTAssertEqual(stateChange.reason?.code, ARTErrorCode.invalidCredentials.intValue)
+                XCTAssertEqual(stateChange.reason?.code, ARTErrorCode.incompatibleCredentials.intValue)
                 done()
             }
             realtime.connect()

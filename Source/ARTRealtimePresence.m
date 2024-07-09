@@ -144,6 +144,8 @@
 
 #pragma mark - ARTRealtimePresenceInternal
 
+static const NSUInteger ARTPresenceActionAll = NSIntegerMax;
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface ARTRealtimePresenceInternal ()
@@ -475,74 +477,52 @@ dispatch_sync(_queue, ^{
 
 // RTP6
 
-- (ARTEventListener *)subscribe:(ARTPresenceMessageCallback)callback {
-    return [self subscribeWithAttachCallback:nil callback:callback];
+- (ARTEventListener *)_subscribe:(ARTPresenceAction)action onAttach:(nullable ARTCallback)onAttach callback:(nullable ARTPresenceMessageCallback)cb {
+    if (cb) {
+        ARTPresenceMessageCallback userCallback = cb;
+        cb = ^(ARTPresenceMessage *_Nullable m) {
+            dispatch_async(self->_userQueue, ^{
+                userCallback(m);
+            });
+        };
+    }
+    if (onAttach) {
+        ARTCallback userOnAttach = onAttach;
+        onAttach = ^(ARTErrorInfo *_Nullable m) {
+            dispatch_async(self->_userQueue, ^{
+                userOnAttach(m);
+            });
+        };
+    }
+
+    __block ARTEventListener *listener = nil;
+dispatch_sync(_queue, ^{
+    if (self->_channel.state_nosync == ARTRealtimeChannelFailed) {
+        if (onAttach) onAttach([ARTErrorInfo createWithCode:ARTErrorChannelOperationFailedInvalidState message:@"attempted to subscribe while channel is in Failed state."]);
+        ARTLogWarn(self.logger, @"R:%p C:%p (%@) presence subscribe to '%@' action(s) has been ignored (attempted to subscribe while channel is in FAILED state)", self->_realtime, self->_channel, self->_channel.name, ARTPresenceActionToStr(action));
+        return;
+    }
+    [self->_channel _attach:onAttach];
+    listener = action == ARTPresenceActionAll ? [_eventEmitter on:cb] : [_eventEmitter on:[ARTEvent newWithPresenceAction:action] callback:cb];
+    ARTLogVerbose(self.logger, @"R:%p C:%p (%@) presence subscribe to '%@' action(s)", self->_realtime, self->_channel, self->_channel.name, ARTPresenceActionToStr(action));
+});
+    return listener;
+}
+
+- (ARTEventListener *)subscribe:(ARTPresenceMessageCallback)cb {
+    return [self _subscribe:ARTPresenceActionAll onAttach:nil callback:cb];
 }
 
 - (ARTEventListener *)subscribeWithAttachCallback:(ARTCallback)onAttach callback:(ARTPresenceMessageCallback)cb {
-    if (cb) {
-        ARTPresenceMessageCallback userCallback = cb;
-        cb = ^(ARTPresenceMessage *_Nullable m) {
-            dispatch_async(self->_userQueue, ^{
-                userCallback(m);
-            });
-        };
-    }
-    if (onAttach) {
-        ARTCallback userOnAttach = onAttach;
-        onAttach = ^(ARTErrorInfo *_Nullable m) {
-            dispatch_async(self->_userQueue, ^{
-                userOnAttach(m);
-            });
-        };
-    }
-
-    __block ARTEventListener *listener = nil;
-dispatch_sync(_queue, ^{
-    if (self->_channel.state_nosync == ARTRealtimeChannelFailed) {
-        if (onAttach) onAttach([ARTErrorInfo createWithCode:ARTErrorChannelOperationFailedInvalidState message:@"attempted to subscribe while channel is in Failed state."]);
-        return;
-    }
-    [self->_channel _attach:onAttach];
-    listener = [_eventEmitter on:cb];
-    ARTLogVerbose(self.logger, @"R:%p C:%p (%@) presence subscribe to all actions", self->_realtime, self->_channel, self->_channel.name);
-});
-    return listener;
+    return [self _subscribe:ARTPresenceActionAll onAttach:onAttach callback:cb];
 }
 
 - (ARTEventListener *)subscribe:(ARTPresenceAction)action callback:(ARTPresenceMessageCallback)cb {
-    return [self subscribe:action onAttach:nil callback:cb];
+    return [self _subscribe:action onAttach:nil callback:cb];
 }
 
 - (ARTEventListener *)subscribe:(ARTPresenceAction)action onAttach:(ARTCallback)onAttach callback:(ARTPresenceMessageCallback)cb {
-    if (cb) {
-        ARTPresenceMessageCallback userCallback = cb;
-        cb = ^(ARTPresenceMessage *_Nullable m) {
-            dispatch_async(self->_userQueue, ^{
-                userCallback(m);
-            });
-        };
-    }
-    if (onAttach) {
-        ARTCallback userOnAttach = onAttach;
-        onAttach = ^(ARTErrorInfo *_Nullable m) {
-            dispatch_async(self->_userQueue, ^{
-                userOnAttach(m);
-            });
-        };
-    }
-
-    __block ARTEventListener *listener = nil;
-dispatch_sync(_queue, ^{
-    if (self->_channel.state_nosync == ARTRealtimeChannelFailed) {
-        if (onAttach) onAttach([ARTErrorInfo createWithCode:ARTErrorChannelOperationFailedInvalidState message:@"attempted to subscribe while channel is in Failed state."]);
-        return;
-    }
-    [self->_channel _attach:onAttach];
-    listener = [_eventEmitter on:[ARTEvent newWithPresenceAction:action] callback:cb];
-    ARTLogVerbose(self.logger, @"R:%p C:%p (%@) presence subscribe to action %@", self->_realtime, self->_channel, self->_channel.name, ARTPresenceActionToStr(action));
-});
-    return listener;
+    return [self _subscribe:action onAttach:onAttach callback:cb];
 }
 
 // RTP7
