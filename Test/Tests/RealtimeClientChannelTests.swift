@@ -3318,11 +3318,24 @@ class RealtimeClientChannelTests: XCTestCase {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.dispose(); client.close() }
-
         let channel = client.channels.get(test.uniqueChannelName())
 
+        // Initialized
+        XCTAssertEqual(channel.state, ARTRealtimeChannelState.initialized)
         channel.subscribe { _ in }
-
+        XCTAssertEqual(channel.state, ARTRealtimeChannelState.attaching)
+        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
+        
+        // Detaching
+        channel.detach()
+        channel.subscribe { _ in }
+        XCTAssertEqual(channel.state, ARTRealtimeChannelState.detaching)
+        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
+        
+        // Detached
+        channel.detach()
+        expect(channel.state).toEventually(equal(ARTRealtimeChannelState.detached), timeout: testTimeout)
+        channel.subscribe { _ in }
         expect(channel.state).toEventually(equal(ARTRealtimeChannelState.attached), timeout: testTimeout)
     }
 
