@@ -1066,10 +1066,7 @@ dispatch_sync(_queue, ^{
     for (ARTMessage *message in messages) {
         size += [message messageSize];
     }
-    NSInteger maxSize = [ARTDefault maxMessageSize];
-    if (self.realtime.connection.maxMessageSize) {
-        maxSize = self.realtime.connection.maxMessageSize;
-    }
+    NSInteger maxSize = _realtime.connection.maxMessageSize;
     return size > maxSize;
 }
 

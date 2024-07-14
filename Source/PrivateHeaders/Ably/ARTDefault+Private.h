@@ -7,4 +7,7 @@ extern NSString *const ARTDefaultProduction;
 + (void)setConnectionStateTtl:(NSTimeInterval)value;
 + (void)setMaxMessageSize:(NSInteger)value;
 
++ (NSInteger)maxSandboxMessageSize;
++ (NSInteger)maxProductionMessageSize;
+
 @end

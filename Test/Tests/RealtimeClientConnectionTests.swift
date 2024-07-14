@@ -168,19 +168,22 @@ class RealtimeClientConnectionTests: XCTestCase {
         options.testOptions.transportFactory = TestProxyTransportFactory()
         let client = ARTRealtime(options: options)
         let defaultMaxMessageSize = ARTDefault.maxMessageSize()
-        XCTAssertEqual(defaultMaxMessageSize, 65536)
+        // Sandbox apps have a 16384 limit
+        XCTAssertEqual(defaultMaxMessageSize, 16384)
         defer {
             ARTDefault.setMaxMessageSize(defaultMaxMessageSize)
             client.dispose()
             client.close()
         }
+        // Setting different value to check override below
         ARTDefault.setMaxMessageSize(1)
 
         waitUntil(timeout: testTimeout) { done in
             client.connection.once(.connected) { _ in
                 let transport = client.internal.transport as! TestProxyTransport
-                let firstConnectionDetails = transport.protocolMessagesReceived.filter { $0.action == .connected }[0].connectionDetails
-                XCTAssertEqual(firstConnectionDetails!.maxMessageSize, 16384) // Sandbox apps have a 16384 limit
+                let maxMessageSize = transport.protocolMessagesReceived.filter { $0.action == .connected }[0].connectionDetails?.maxMessageSize
+                XCTAssertEqual(maxMessageSize, defaultMaxMessageSize)
+                XCTAssertEqual(client.connection.maxMessageSize, maxMessageSize)
                 done()
             }
             client.connect()
