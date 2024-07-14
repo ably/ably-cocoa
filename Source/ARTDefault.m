@@ -11,7 +11,9 @@ static NSString *const ARTDefault_restHost = @"rest.ably.io";
 static NSString *const ARTDefault_realtimeHost = @"realtime.ably.io";
 
 static NSTimeInterval _connectionStateTtl = 60.0;
-static NSInteger _maxMessageSize = 65536;
+static NSInteger _maxMessageSize = 0;
+static NSInteger _maxProductionMessageSize = 65536;
+static NSInteger _maxSandboxMessageSize = 16384;
 
 @implementation ARTDefault
 
@@ -70,7 +72,21 @@ static NSInteger _maxMessageSize = 65536;
 }
 
 + (NSInteger)maxMessageSize {
-    return _maxMessageSize;
+    if (_maxMessageSize)
+        return _maxMessageSize;
+#if DEBUG
+    return _maxSandboxMessageSize;
+#else
+    return _maxProductionMessageSize;
+#endif
+}
+
++ (NSInteger)maxSandboxMessageSize {
+    return _maxSandboxMessageSize;
+}
+
++ (NSInteger)maxProductionMessageSize {
+    return _maxProductionMessageSize;
 }
 
 + (void)setConnectionStateTtl:(NSTimeInterval)value {
@@ -82,6 +98,18 @@ static NSInteger _maxMessageSize = 65536;
 + (void)setMaxMessageSize:(NSInteger)value {
     @synchronized (self) {
         _maxMessageSize = value;
+    }
+}
+
++ (void)setMaxProductionMessageSize:(NSInteger)value {
+    @synchronized (self) {
+        _maxProductionMessageSize = value;
+    }
+}
+
++ (void)setMaxSandboxMessageSize:(NSInteger)value {
+    @synchronized (self) {
+        _maxSandboxMessageSize = value;
     }
 }
 

@@ -77,12 +77,12 @@
     return pm;
 }
 
- - (BOOL)mergeFrom:(ARTProtocolMessage *)src {
+- (BOOL)mergeFrom:(ARTProtocolMessage *)src maxSize:(NSInteger)maxSize {
      if (![src.channel isEqualToString:self.channel] || src.action != self.action) {
          // RTL6d3
          return NO;
      }
-     if ([self mergeWouldExceedMaxSize:src.messages]) {
+     if ([self mergeWithMessages:src.messages wouldExceedMaxSize:maxSize]) {
          // RTL6d1
          return NO;
      }
@@ -142,7 +142,7 @@
     }
 }
 
-- (BOOL)mergeWouldExceedMaxSize:(NSArray<ARTMessage*>*)messages {
+- (BOOL)mergeWithMessages:(NSArray<ARTMessage*>*)messages wouldExceedMaxSize:(NSInteger)maxSize {
     NSInteger queuedMessagesSize = 0;
     for (ARTMessage *message in self.messages) {
         queuedMessagesSize += [message messageSize];
@@ -152,10 +152,6 @@
         messagesSize += [message messageSize];
     }
     NSInteger totalSize = queuedMessagesSize + messagesSize;
-    NSInteger maxSize = [ARTDefault maxMessageSize];
-    if (_connectionDetails.maxMessageSize) {
-        maxSize = _connectionDetails.maxMessageSize;
-    }
     return totalSize > maxSize;
 }
 

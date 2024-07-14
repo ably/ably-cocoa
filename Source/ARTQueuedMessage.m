@@ -25,8 +25,8 @@
     return [self.msg description];
 }
 
-- (BOOL)mergeFrom:(ARTProtocolMessage *)msg sentCallback:(ARTCallback)sentCallback ackCallback:(ARTStatusCallback)ackCallback {
-    if ([self.msg mergeFrom:msg]) {
+- (BOOL)mergeFrom:(ARTProtocolMessage *)msg maxSize:(NSInteger)maxSize sentCallback:(ARTCallback)sentCallback ackCallback:(ARTStatusCallback)ackCallback {
+    if ([self.msg mergeFrom:msg maxSize:maxSize]) {
         if (sentCallback) {
             [self.sentCallbacks addObject:sentCallback];
         }
