@@ -2770,7 +2770,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         XCTAssertTrue(channel.errorReason === protocolError.error)
     }
 
-    func skipped__test__072__Connection__connection_failures_once_CONNECTED__System_s_response_to_a_resume_request__should_resume_the_connection_after_an_auth_renewal() throws {
+    func test__FLAKY__072__Connection__connection_failures_once_CONNECTED__System_s_response_to_a_resume_request__should_resume_the_connection_after_an_auth_renewal() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.tokenDetails = try getTestTokenDetails(for: test, ttl: 5.0)
@@ -2847,10 +2847,9 @@ class RealtimeClientConnectionTests: XCTestCase {
             }
         }
     }
-
-    // FIXME: Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
+    
     // RTN15d
-    func skipped__test__065__Connection__connection_failures_once_CONNECTED__should_recover_from_disconnection_and_messages_should_be_delivered_once_the_connection_is_resumed() throws {
+    func test__FLAKY__065__Connection__connection_failures_once_CONNECTED__should_recover_from_disconnection_and_messages_should_be_delivered_once_the_connection_is_resumed() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
 
@@ -2992,7 +2991,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     }
 
     // RTN15g RTN15g1
-    func skipped__test__074__Connection__connection_failures_once_CONNECTED__when_connection__ttl_plus_idle_interval__period_has_passed_since_last_activity__uses_a_new_connection() throws {
+    func test__FLAKY__074__Connection__connection_failures_once_CONNECTED__when_connection__ttl_plus_idle_interval__period_has_passed_since_last_activity__uses_a_new_connection() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         // We want this to be > than the sum of customTtlInterval and customIdleInterval
@@ -3095,7 +3094,7 @@ class RealtimeClientConnectionTests: XCTestCase {
 
     // RTN15h
 
-    func skipped__test__077__Connection__connection_failures_once_CONNECTED__DISCONNECTED_message_contains_a_token_error__if_the_token_is_renewable_then_error_should_not_be_emitted() throws {
+    func test__FLAKY__077__Connection__connection_failures_once_CONNECTED__DISCONNECTED_message_contains_a_token_error__if_the_token_is_renewable_then_error_should_not_be_emitted() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.autoConnect = false
@@ -3173,7 +3172,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     }
 
     // RTN15h2
-    func skipped__test__079__Connection__connection_failures_once_CONNECTED__DISCONNECTED_message_contains_a_token_error__should_transition_to_disconnected_when_the_token_renewal_fails_and_the_error_should_be_emitted() throws {
+    func test__FLAKY__079__Connection__connection_failures_once_CONNECTED__DISCONNECTED_message_contains_a_token_error__should_transition_to_disconnected_when_the_token_renewal_fails_and_the_error_should_be_emitted() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.autoConnect = false
@@ -3293,25 +3292,6 @@ class RealtimeClientConnectionTests: XCTestCase {
                 XCTAssertEqual(clientRecover.connection.id, expectedConnectionId)
                 XCTAssertEqual(clientRecover.connection.key, firstConnectionDetails!.connectionKey)
                 done()
-            }
-        }
-    }
-
-    // RTN16c
-    func skipped__test__083__Connection__Connection_recovery__Connection_recoveryKey_should_become_becomes_null_when_a_connection_is_explicitly_CLOSED_or_CLOSED() throws {
-        let test = Test()
-        let options = try AblyTests.commonAppSetup(for: test)
-        let client = ARTRealtime(options: options)
-        defer { client.dispose(); client.close() }
-        waitUntil(timeout: testTimeout) { done in
-            client.connection.once(.connected) { _ in
-                client.connection.once(.closed) { _ in
-                    XCTAssertNil(client.connection.createRecoveryKey())
-                    XCTAssertNil(client.connection.key)
-                    XCTAssertNil(client.connection.id)
-                    done()
-                }
-                client.close()
             }
         }
     }
@@ -4006,17 +3986,17 @@ class RealtimeClientConnectionTests: XCTestCase {
 
     // RTN17d
 
-    func skipped__test__097__Connection__Host_Fallback__should_use_an_alternative_host_when___hostUnreachable() {
+    func test__FLAKY__097__Connection__Host_Fallback__should_use_an_alternative_host_when___hostUnreachable() {
         let test = Test()
         testUsesAlternativeHostOnResponse(.hostUnreachable, channelName: test.uniqueChannelName())
     }
 
-    func skipped__test__098__Connection__Host_Fallback__should_use_an_alternative_host_when___requestTimeout_timeout__0_1_() {
+    func test__FLAKY__098__Connection__Host_Fallback__should_use_an_alternative_host_when___requestTimeout_timeout__0_1_() {
         let test = Test()
         testUsesAlternativeHostOnResponse(.requestTimeout(timeout: 0.1), channelName: test.uniqueChannelName())
     }
 
-    func skipped__test__099__Connection__Host_Fallback__should_use_an_alternative_host_when___hostInternalError_code__501_() {
+    func test__FLAKY__099__Connection__Host_Fallback__should_use_an_alternative_host_when___hostInternalError_code__501_() {
         let test = Test()
         testUsesAlternativeHostOnResponse(.hostInternalError(code: 501), channelName: test.uniqueChannelName())
     }
@@ -4612,7 +4592,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     }
 
     // RTN19b
-    func skipped__test__104__Connection__Transport_disconnected_side_effects__should_resend_the_ATTACH_message_if_there_are_any_pending_channels() throws {
+    func test__FLAKY__104__Connection__Transport_disconnected_side_effects__should_resend_the_ATTACH_message_if_there_are_any_pending_channels() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let client = AblyTests.newRealtime(options).client
@@ -5332,7 +5312,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
     }
 
-    func skipped__test__113__Connection__with_fixture_messages__should_send_messages_through_MsgPack_and_JSON_and_retrieve_equal_messages_through_raw_JSON_GET() throws {
+    func test__FLAKY__113__Connection__with_fixture_messages__should_send_messages_through_MsgPack_and_JSON_and_retrieve_equal_messages_through_raw_JSON_GET() throws {
         let test = Test()
         try setupDependencies(for: test)
         let restPublishClientMsgPack = ARTRest(options: msgpackOptions)
