@@ -1914,7 +1914,7 @@ class AuthTests: XCTestCase {
                 guard let error = error else {
                     fail("Error is nil"); done(); return
                 }
-                expect(error.message).to(contain("mismatched clientId"))
+                expect(error.message).to(contain("invalid clientId"))
                 done()
             }
         }
