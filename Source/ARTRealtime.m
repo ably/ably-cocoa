@@ -1273,7 +1273,8 @@ const NSTimeInterval _immediateReconnectionDelay = 0.1;
     else if (msg.ackRequired) {
         if (self.isActive && self.options.queueMessages) {
             ARTQueuedMessage *lastQueuedMessage = self.queuedMessages.lastObject; //RTL6d5
-            BOOL merged = [lastQueuedMessage mergeFrom:msg sentCallback:nil ackCallback:ackCallback];
+            NSInteger maxSize = _connection.maxMessageSize;
+            BOOL merged = [lastQueuedMessage mergeFrom:msg maxSize:maxSize sentCallback:nil ackCallback:ackCallback];
             if (!merged) {
                 ARTQueuedMessage *qm = [[ARTQueuedMessage alloc] initWithProtocolMessage:msg sentCallback:sentCallback ackCallback:ackCallback];
                 [self.queuedMessages addObject:qm];
