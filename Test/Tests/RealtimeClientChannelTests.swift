@@ -155,7 +155,7 @@ class RealtimeClientChannelTests: XCTestCase {
     }
 
     // RTL1
-    func skipped__test__001__Channel__should_process_all_incoming_messages_and_presence_messages_as_soon_as_a_Channel_becomes_attached() throws {
+    func test__FLAKY__001__Channel__should_process_all_incoming_messages_and_presence_messages_as_soon_as_a_Channel_becomes_attached() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let client1 = AblyTests.newRealtime(options).client
@@ -1236,7 +1236,7 @@ class RealtimeClientChannelTests: XCTestCase {
         }
     }
 
-    func skipped__test__045__Channel__attach__happens_when_connection_is_CONNECTED_if_it_s_currently__DISCONNECTED() throws {
+    func test__FLAKY__045__Channel__attach__happens_when_connection_is_CONNECTED_if_it_s_currently__DISCONNECTED() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRealtime(options: options)
