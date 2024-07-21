@@ -99,7 +99,7 @@ class RestClientStatsTests: XCTestCase {
         statsOptions = try postTestStats(statsFixtures, for: test)
     }
 
-    func skipped__test__001__RestClient__stats__result__should_match_minute_level_inbound_and_outbound_fixture_data__forwards_() throws {
+    func test__FLAKY__001__RestClient__stats__result__should_match_minute_level_inbound_and_outbound_fixture_data__forwards_() throws {
         let test = Test()
         try beforeEach__RestClient__stats__result(for: test)
 
@@ -164,7 +164,7 @@ class RestClientStatsTests: XCTestCase {
         XCTAssertEqual(totalOutbound, 20 + 10 + 40)
     }
 
-    func skipped__test__004__RestClient__stats__result__should_match_month_level_inbound_and_outbound_fixture_data__forwards_() throws {
+    func test__FLAKY__004__RestClient__stats__result__should_match_month_level_inbound_and_outbound_fixture_data__forwards_() throws {
         let test = Test()
         try beforeEach__RestClient__stats__result(for: test)
 
@@ -183,7 +183,7 @@ class RestClientStatsTests: XCTestCase {
         XCTAssertEqual(totalOutbound, 20 + 10 + 40)
     }
 
-    func skipped__test__005__RestClient__stats__result__should_contain_only_one_item_when_limit_is_1__backwards() throws {
+    func test__FLAKY__005__RestClient__stats__result__should_contain_only_one_item_when_limit_is_1__backwards() throws {
         let test = Test()
         try beforeEach__RestClient__stats__result(for: test)
 
@@ -269,7 +269,7 @@ class RestClientStatsTests: XCTestCase {
         XCTAssertEqual((firstPageAgain.items)[0].inbound.all.messages.data, 7000)
     }
 
-    func skipped__test__008__RestClient__stats__result__should_be_paginated_according_to_the_limit__fowards_() throws {
+    func test__FLAKY__008__RestClient__stats__result__should_be_paginated_according_to_the_limit__fowards_() throws {
         let test = Test()
         try beforeEach__RestClient__stats__result(for: test)
 
