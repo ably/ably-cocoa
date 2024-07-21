@@ -122,7 +122,7 @@ private func expectDataToMatch(_ message: ARTMessage, _ fixtureMessage: Any) {
             fail("expected NSArray")
         }
     case "binary":
-        XCTAssertEqual(message.data as? NSData, (dictionaryValue["dictionaryValue"] as! String).dataFromHexadecimalString()! as NSData?)
+        XCTAssertEqual(message.data as? NSData, (dictionaryValue["expectedHexValue"] as! String).dataFromHexadecimalString()! as NSData?)
     default:
         fail("unhandled: \(dictionaryValue["expectedType"] as! String)")
     }
@@ -5187,7 +5187,7 @@ class RealtimeClientConnectionTests: XCTestCase {
     }
 
     // https://github.com/ably/wiki/issues/22
-    func skipped__test__111__Connection__with_fixture_messages__should_encode_and_decode_fixture_messages_as_expected() throws {
+    func test__111__Connection__with_fixture_messages__should_encode_and_decode_fixture_messages_as_expected() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.useBinaryProtocol = false
@@ -5261,7 +5261,7 @@ class RealtimeClientConnectionTests: XCTestCase {
         }
     }
 
-    func skipped__test__112__Connection__with_fixture_messages__should_send_messages_through_raw_JSON_POST_and_retrieve_equal_messages_through_MsgPack_and_JSON() throws {
+    func test__112__Connection__with_fixture_messages__should_send_messages_through_raw_JSON_POST_and_retrieve_equal_messages_through_MsgPack_and_JSON() throws {
         let test = Test()
         try setupDependencies(for: test)
         let restPublishClient = ARTRest(options: jsonOptions)
