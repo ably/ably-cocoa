@@ -6,7 +6,7 @@ class RestClientPresenceTests: XCTestCase {
     // RSP3
 
     // RSP3a
-    func test__FLAKY__002__Presence__get__should_return_a_PaginatedResult_page_containing_the_first_page_of_members() throws {
+    func test__002__Presence__get__should_return_a_PaginatedResult_page_containing_the_first_page_of_members() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRest(options: options)
@@ -222,7 +222,7 @@ class RestClientPresenceTests: XCTestCase {
     // RSP4b
 
     // RSP4b2
-    func test__FLAKY__007__Presence__history__query_argument__direction_should_change_the_order_of_the_members() throws {
+    func test__007__Presence__history__query_argument__direction_should_change_the_order_of_the_members() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRest(options: options)
