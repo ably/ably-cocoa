@@ -155,7 +155,7 @@ class RealtimeClientChannelTests: XCTestCase {
     }
 
     // RTL1
-    func skipped__test__001__Channel__should_process_all_incoming_messages_and_presence_messages_as_soon_as_a_Channel_becomes_attached() throws {
+    func test__001__Channel__should_process_all_incoming_messages_and_presence_messages_as_soon_as_a_Channel_becomes_attached() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let client1 = AblyTests.newRealtime(options).client
@@ -1236,7 +1236,7 @@ class RealtimeClientChannelTests: XCTestCase {
         }
     }
 
-    func skipped__test__045__Channel__attach__happens_when_connection_is_CONNECTED_if_it_s_currently__DISCONNECTED() throws {
+    func test__045__Channel__attach__happens_when_connection_is_CONNECTED_if_it_s_currently__DISCONNECTED() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRealtime(options: options)
@@ -2776,8 +2776,7 @@ class RealtimeClientChannelTests: XCTestCase {
         XCTAssertEqual(protocolMessages.count, 1)
     }
 
-    // FIXME: Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
-    func skipped__test__090__Channel__publish__message_bundling__should_only_bundle_messages_when_it_respects_all_of_the_constraints() throws {
+    func test__090__Channel__publish__message_bundling__should_only_bundle_messages_when_it_respects_all_of_the_constraints() throws {
         let test = Test()
         let defaultMaxMessageSize = ARTDefault.maxMessageSize()
         ARTDefault.setMaxMessageSize(256)

@@ -320,7 +320,7 @@ class RealtimeClientTests: XCTestCase {
     }
 
     // RTC5b
-    func skipped__test__023__RealtimeClient__stats__should_accept_all_the_same_params_as_RestClient() throws {
+    func test__023__RealtimeClient__stats__should_accept_all_the_same_params_as_RestClient() throws {
         let test = Test()
         let client = ARTRealtime(options: try AblyTests.commonAppSetup(for: test))
         defer { client.close() }
@@ -1014,7 +1014,7 @@ class RealtimeClientTests: XCTestCase {
     }
 
     // RTC8b1 - part 4
-    func skipped__test__036__RealtimeClient__Auth_authorize_should_upgrade_the_connection_with_current_token__authorize_call_should_complete_with_an_error_if_the_connection_moves_to_the_CLOSED_state() throws {
+    func test__036__RealtimeClient__Auth_authorize_should_upgrade_the_connection_with_current_token__authorize_call_should_complete_with_an_error_if_the_connection_moves_to_the_CLOSED_state() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         options.autoConnect = false
@@ -1280,13 +1280,12 @@ class RealtimeClientTests: XCTestCase {
             }
         }
     }
-
-    // FIXME: Fix flaky presence tests and re-enable. See https://ably-real-time.slack.com/archives/C030C5YLY/p1623172436085700
+    
     // https://github.com/ably/ably-cocoa/issues/577
-    func skipped__test__005__RealtimeClient__background_behaviour() {
+    func test__005__RealtimeClient__background_behaviour() {
         let test = Test()
         waitUntil(timeout: testTimeout) { done in
-            URLSession.shared.dataTask(with: URL(string: "https://ably.io")!) { _, _, _ in
+            URLSession.shared.dataTask(with: URL(string: "https://ably.com")!) { _, _, _ in
                 let realtime: ARTRealtime
 
                 do {
@@ -1515,7 +1514,7 @@ class RealtimeClientTests: XCTestCase {
         }
     }
 
-    func skipped__test__012__RealtimeClient__moves_to_DISCONNECTED_on_an_unexpected_normal_WebSocket_close() throws {
+    func test__012__RealtimeClient__moves_to_DISCONNECTED_on_an_unexpected_normal_WebSocket_close() throws {
         let test = Test()
         let options = try AblyTests.commonAppSetup(for: test)
         let client = ARTRealtime(options: options)
