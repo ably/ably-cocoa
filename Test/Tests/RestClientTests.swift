@@ -1310,9 +1310,9 @@ class RestClientTests: XCTestCase {
 
     // RSC15i
     func test__066__RestClient__Host_Fallback__retry_hosts_in_random_order__environment_fallback_hosts_have_the_format__environment___a_e__fallback_ably_realtime_com() {
-        let environmentFallbackHosts = ARTDefault.fallbackHosts(withEnvironment: "sandbox")
+        let environmentFallbackHosts = ARTDefault.fallbackHosts(withEnvironment: "lmars-dev")
         environmentFallbackHosts.forEach { host in
-            expect(host).to(match("sandbox-[a-e]-fallback.ably-realtime.com"))
+            expect(host).to(match("lmars-dev-[a-e]-fallback.ably-realtime.com"))
         }
         XCTAssertEqual(environmentFallbackHosts.count, 5)
     }
