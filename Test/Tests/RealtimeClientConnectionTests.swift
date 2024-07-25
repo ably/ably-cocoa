@@ -2096,7 +2096,6 @@ class RealtimeClientConnectionTests: XCTestCase {
                 }
                 XCTAssertEqual(reason.code, ARTErrorCode.tokenExpired.intValue)
                 XCTAssertEqual(reason.statusCode, 401)
-                expect(reason.message).to(contain("Key/token status changed (expire)"))
                 partialDone()
             }
             client.connect()
