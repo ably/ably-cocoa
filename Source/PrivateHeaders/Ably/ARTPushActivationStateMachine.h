@@ -13,7 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (readonly, nonatomic) ARTPushActivationEvent *lastEvent;
 @property (readonly, nonatomic) ARTPushActivationState *current;
-@property (readonly, nonatomic) NSMutableArray<ARTPushActivationEvent *> *pendingEvents;
+@property (readonly, nonatomic) NSArray<ARTPushActivationEvent *> *pendingEvents;
 
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype)new NS_UNAVAILABLE;

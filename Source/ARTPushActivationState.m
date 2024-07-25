@@ -135,6 +135,9 @@ ARTPushActivationState *validateAndSync(ARTPushActivationStateMachine *machine, 
     else if ([event isKindOfClass:[ARTPushActivationEventCalledActivate class]]) {
         return validateAndSync(self.machine, event, self.logger);
     }
+    else if ([event isKindOfClass:[ARTPushActivationEventGotPushDeviceDetails class]]) {
+        return self; // Consuming event (RSH3a3a)
+    }
     return nil;
 }
 
