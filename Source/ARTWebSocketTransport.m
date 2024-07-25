@@ -337,11 +337,6 @@ NS_ASSUME_NONNULL_END
 - (void)webSocket:(id<ARTWebSocket>)webSocket didReceiveMessage:(id)message {
     ARTLogVerbose(self.logger, @"R:%p WS:%p websocket did receive message", _delegate, self);
 
-    if (self.websocket.readyState == ARTWebSocketReadyStateClosed) {
-        ARTLogDebug(self.logger, @"R:%p WS:%p websocket is closed, message has been ignored", _delegate, self);
-        return;
-    }
-
     if ([message isKindOfClass:[NSString class]]) {
         [self webSocketMessageText:(NSString *)message];
     } else if ([message isKindOfClass:[NSData class]]) {
