@@ -1,5 +1,16 @@
 # Change Log
 
+## [1.2.33](https://github.com/ably/ably-cocoa/tree/1.2.33)
+
+[Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.32...1.2.33)
+
+**What's Changed:**
+
+- Attach according to RTL7c by @maratal in https://github.com/ably/ably-cocoa/pull/1935
+- Enforce RTP6c attach rule for presence. by @maratal in https://github.com/ably/ably-cocoa/pull/1942
+- Max message size fix by @maratal in https://github.com/ably/ably-cocoa/pull/1947
+- Respect RSH3a3a by @maratal in https://github.com/ably/ably-cocoa/pull/1952
+
 ## [1.2.32](https://github.com/ably/ably-cocoa/tree/1.2.32)
 
 [Full Changelog](https://github.com/ably/ably-cocoa/compare/1.2.31...1.2.32)
