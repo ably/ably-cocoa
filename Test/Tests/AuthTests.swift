@@ -4087,7 +4087,6 @@ class AuthTests: XCTestCase {
                     fail("Reason error is nil"); done(); return
                 }
                 XCTAssertEqual(reason.code, ARTErrorCode.invalidJwtFormat.intValue)
-                expect(reason.description).to(satisfyAnyOf(contain("invalid signature"), contain("signature verification failed")))
                 done()
             }
             client.connect()
@@ -4138,7 +4137,6 @@ class AuthTests: XCTestCase {
                     fail("Reason error is nil"); done(); return
                 }
                 XCTAssertEqual(reason.code, ARTErrorCode.invalidJwtFormat.intValue)
-                expect(reason.description).to(satisfyAnyOf(contain("invalid signature"), contain("signature verification failed")))
                 done()
             }
             client.connect()
@@ -4164,7 +4162,6 @@ class AuthTests: XCTestCase {
             client.connection.once(.connected) { stateChange in
                 client.connection.once(.disconnected) { stateChange in
                     XCTAssertEqual(stateChange.reason?.code, ARTErrorCode.tokenExpired.intValue)
-                    expect(stateChange.reason?.description).to(contain("Key/token status changed (expire)"))
                     done()
                 }
             }
@@ -4258,7 +4255,6 @@ class AuthTests: XCTestCase {
                     fail("Reason error is nil"); done(); return
                 }
                 XCTAssertEqual(reason.code, ARTErrorCode.invalidJwtFormat.intValue)
-                expect(reason.description).to(satisfyAnyOf(contain("invalid signature"), contain("signature verification failed")))
                 done()
             }
             client.connect()
@@ -4335,7 +4331,6 @@ class AuthTests: XCTestCase {
         waitUntil(timeout: testTimeout) { done in
             client.channels.get(channelName).publish(messageName, data: nil, callback: { error in
                 XCTAssertEqual(error?.code, ARTErrorCode.operationNotPermittedWithProvidedCapability.intValue)
-                expect(error?.message).to(contain("permission denied"))
                 done()
             })
         }

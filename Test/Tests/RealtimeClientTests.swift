@@ -741,10 +741,10 @@ class RealtimeClientTests: XCTestCase {
             }
 
             client.auth.authorize(nil, options: authOptions) { tokenDetails, error in
-                guard let error = error else {
+                guard let error = error as? ARTErrorInfo else {
                     fail("ErrorInfo is nil"); partialDone(); return
                 }
-                expect(error.localizedDescription).to(contain("Invalid accessToken"))
+                XCTAssertEqual(error.code, ARTErrorCode.invalidCredential.intValue)
                 XCTAssertEqual(tokenDetails?.token, invalidToken)
                 authError = error as NSError?
                 partialDone()
